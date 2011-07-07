@@ -5,5 +5,5 @@
     <name>USB Audio Shared Components</name>
     <vendor>XMOS</vendor>
     <xpd_version>1.0</xpd_version>
-    <export_git>False</export_git>
+    <git_export>False</git_export>
 </xpd>
