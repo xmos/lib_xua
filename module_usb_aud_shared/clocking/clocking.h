@@ -5,10 +5,10 @@
 /* Functions that handle master clock generation.  These need modifying for an existing design */
 
 /* Any initialisation required for master clock generation - run once at start up */
-void ClockingInit(void);
+void ClockingInit(chanend ?c);
 
 /* Configuration for a specific master clock frequency - run every sample frequency change */
-void ClockingConfig(unsigned mClkFreq);
+void ClockingConfig(unsigned mClkFreq, chanend ?c);
 
 
 /** Clock generation and digital audio I/O handling.

@@ -6,9 +6,9 @@
 /* TODO Are the channel args required? */
 
 /* Any required CODEC initialisation - run once at start up */
-void CodecInit(chanend ?c_codec);
+void CodecInit(chanend ?c_codec, chanend ?c_i2c);
 
 /* Configure condec for a specific mClk/Sample frquency - run on every sample frequency change */
-void CodecConfig(unsigned samFreq, unsigned mClk, chanend ?c_codec);
+void CodecConfig(unsigned samFreq, unsigned mClk, chanend ?c_codec, chanend ?c_i2c);
 
 #endif

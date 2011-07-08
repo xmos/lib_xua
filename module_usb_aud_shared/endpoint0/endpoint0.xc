@@ -20,7 +20,7 @@
 #include "vendorrequests.h"
 #include "dfu_types.h"
 
-/* Windows does not have a built in DFU driver (windows will prompt), so warn that DFU will not be functional in Audio 1.0 mode.Udi
+/* Windows does not have a built in DFU driver (windows will prompt), so warn that DFU will not be functional in Audio 1.0 mode.
  * Of course, OSX is unaffected.  
  */
 #if ((AUDIO_CLASS==1) || defined(AUDIO_CLASS_FALLBACK)) && defined(DFU)
@@ -63,18 +63,17 @@ int volsIn[NUM_USB_CHAN_IN + 1];
 unsigned int mutesIn[NUM_USB_CHAN_IN + 1];
 //unsigned int multIn[NUM_USB_CHAN_IN + 1];
 
+#ifdef MIXER
 unsigned char mixer1Crossbar[18];
 short mixer1Weights[18*8];
 //#define MAX_MIX_COUNT 8
 
 unsigned char channelMap[NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + MAX_MIX_COUNT];
-#if NUM_USB_CHAN_OUT > 0
 unsigned char channelMapAud[NUM_USB_CHAN_OUT];
-#endif
-#if NUM_USB_CHAN_IN > 0
 unsigned char channelMapUsb[NUM_USB_CHAN_IN];
-#endif
+
 unsigned char mixSel[MIX_INPUTS];
+#endif
 
 int min(int x, int y);
 
@@ -161,6 +160,7 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl, cha
         mutesIn[i] = 0;
     }
 
+#ifdef MIXER
     /* Set up mixer default state */
     for (int i = 0; i < 18*8; i++) {
       mixer1Weights[i] = 0x8001; //-inf
@@ -176,20 +176,17 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl, cha
     mixer1Weights[54] = 0;
     mixer1Weights[63] = 0;
 
-#if NUM_USB_CHAN_OUT > 0
     /* Setup up audio output channel mapping */
     for(int i = 0; i < NUM_USB_CHAN_OUT; i++)
     {
        channelMapAud[i] = i; 
     }
-#endif
 
-#if NUM_USB_CHAN_IN > 0
     for(int i = 0; i < NUM_USB_CHAN_IN; i++)
     {
        channelMapUsb[i] = i + NUM_USB_CHAN_OUT; 
     }
-#endif
+
 
     /* Set up channel mapping default */
     for (int i = 0; i < NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN; i++) 
@@ -210,6 +207,7 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl, cha
     {
         mixSel[i] = i;
     }
+#endif
 
     /* Copy langIDs string desc into string[0] */
     /* TODO: Macro? */
@@ -221,33 +219,33 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl, cha
     /* Build up channel string table - By default all channels are marked as analogue
      * TODO We really want to do this an build time... */
 #if defined(SPDIF_RX) && (SPDIF_RX_INDEX != 0)
-    safestrcpy(strDescs_Audio2[SPDIF_RX_INDEX + 33], "S/PDIF 1");
-    safestrcpy(strDescs_Audio2[SPDIF_RX_INDEX + 34], "S/PDIF 2");
+    safestrcpy(strDescs_Audio2[SPDIF_RX_INDEX + 31], "S/PDIF 1");
+    safestrcpy(strDescs_Audio2[SPDIF_RX_INDEX + 32], "S/PDIF 2");
 #endif
 #if defined(ADAT_RX) && (ADAT_RX_INDEX != 0)
-    safestrcpy(strDescs_Audio2[ADAT_RX_INDEX + 33], "ADAT 1");
-    safestrcpy(strDescs_Audio2[ADAT_RX_INDEX + 34], "ADAT 2");
-    safestrcpy(strDescs_Audio2[ADAT_RX_INDEX + 35], "ADAT 3");
-    safestrcpy(strDescs_Audio2[ADAT_RX_INDEX + 36], "ADAT 4");
-    safestrcpy(strDescs_Audio2[ADAT_RX_INDEX + 37], "ADAT 5");
-    safestrcpy(strDescs_Audio2[ADAT_RX_INDEX + 38], "ADAT 6");
-    safestrcpy(strDescs_Audio2[ADAT_RX_INDEX + 39], "ADAT 7");
-    safestrcpy(strDescs_Audio2[ADAT_RX_INDEX + 40], "ADAT 8");
+    safestrcpy(strDescs_Audio2[ADAT_RX_INDEX + 31], "ADAT 1");
+    safestrcpy(strDescs_Audio2[ADAT_RX_INDEX + 32], "ADAT 2");
+    safestrcpy(strDescs_Audio2[ADAT_RX_INDEX + 33], "ADAT 3");
+    safestrcpy(strDescs_Audio2[ADAT_RX_INDEX + 34], "ADAT 4");
+    safestrcpy(strDescs_Audio2[ADAT_RX_INDEX + 35], "ADAT 5");
+    safestrcpy(strDescs_Audio2[ADAT_RX_INDEX + 36], "ADAT 6");
+    safestrcpy(strDescs_Audio2[ADAT_RX_INDEX + 37], "ADAT 7");
+    safestrcpy(strDescs_Audio2[ADAT_RX_INDEX + 38], "ADAT 8");
 #endif
 
 #if defined(SPDIF) && (SPDIF_TX_INDEX != 0)     /* "Analogue naming gets priority */ 
-    safestrcpy(strDescs_Audio2[SPDIF_TX_INDEX + 15], "S/PDIF 1");
-    safestrcpy(strDescs_Audio2[SPDIF_TX_INDEX + 16], "S/PDIF 2");
+    safestrcpy(strDescs_Audio2[SPDIF_TX_INDEX + 13], "S/PDIF 1");
+    safestrcpy(strDescs_Audio2[SPDIF_TX_INDEX + 14], "S/PDIF 2");
 #endif
 #if defined(ADAT_TX) && (ADAT_TX_INDEX != 0)
-    safestrcpy(strDescs_Audio2[ADAT_TX_INDEX + 15], "ADAT 1");
-    safestrcpy(strDescs_Audio2[ADAT_TX_INDEX + 16], "ADAT 2");
-    safestrcpy(strDescs_Audio2[ADAT_TX_INDEX + 17], "ADAT 3");
-    safestrcpy(strDescs_Audio2[ADAT_TX_INDEX + 18], "ADAT 4");
-    safestrcpy(strDescs_Audio2[ADAT_TX_INDEX + 19], "ADAT 5");
-    safestrcpy(strDescs_Audio2[ADAT_TX_INDEX + 20], "ADAT 6");
-    safestrcpy(strDescs_Audio2[ADAT_TX_INDEX + 21], "ADAT 7");
-    safestrcpy(strDescs_Audio2[ADAT_TX_INDEX + 22], "ADAT 8");
+    safestrcpy(strDescs_Audio2[ADAT_TX_INDEX + 13], "ADAT 1");
+    safestrcpy(strDescs_Audio2[ADAT_TX_INDEX + 14], "ADAT 2");
+    safestrcpy(strDescs_Audio2[ADAT_TX_INDEX + 15], "ADAT 3");
+    safestrcpy(strDescs_Audio2[ADAT_TX_INDEX + 16], "ADAT 4");
+    safestrcpy(strDescs_Audio2[ADAT_TX_INDEX + 17], "ADAT 5");
+    safestrcpy(strDescs_Audio2[ADAT_TX_INDEX + 18], "ADAT 6");
+    safestrcpy(strDescs_Audio2[ADAT_TX_INDEX + 19], "ADAT 7");
+    safestrcpy(strDescs_Audio2[ADAT_TX_INDEX + 20], "ADAT 8");
 #endif
 
 #ifdef VENDOR_AUDIO_REQS
@@ -492,6 +490,7 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl, cha
                                         // Handshake
                                         //chkct(c_audioControl, XS1_CT_END);
 
+                                        //printint(8);
                                         break;
 
 #endif
@@ -730,7 +729,7 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl, cha
                             device_reboot();
                         }
 
-                        /* TODO we should not make the assumption that all DFU requests are handled */
+                        /* TODO we should not make the assumtion that all DFU requests are handled */
                         retVal = 0;
                     } 
                     /* Check for:   Audio interface request - always 0, note we check for DFU first 
@@ -739,7 +738,6 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl, cha
                         || (request == CLASS_ENDPOINT_REQUEST && ((interfaceNum == 0x82) || (interfaceNum == 0x01)))) 
 				    {
 #endif
-
 #if (AUDIO_CLASS == 2) && defined(AUDIO_CLASS_FALLBACK)
                         if(g_curUsbSpeed == XUD_SPEED_HS)
                         {
@@ -772,6 +770,7 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl, cha
                     break;
                 
                 default:
+                    // TODO: STALL
                     //printstr("unrecognised request\n");
                     //printhexln(sp.bRequest);
                     //printhexln(sp.bmRequestType.Type);
@@ -793,8 +792,7 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl, cha
                transfer, and the STALL condition terminates at the beginning of the 
                next control transfer (Setup). The remainder of this section refers to 
                the general case of a functional stall */
-              XUD_SetStall_Out(0);
-              XUD_SetStall_In(0);
+            //XUD_ProtocolStall(ep0_out, ep0_in):
         } 
         
         if (retVal < 0) 

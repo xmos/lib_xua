@@ -19,7 +19,7 @@
 void buffer(chanend c_aud_out, chanend c_aud_in, chanend c_aud_fb, 
             chanend c_midi_from_host, 
             chanend c_midi_to_host,
-            chanend c_int, 
+            chanend? c_int, 
             chanend c_sof, 
             chanend c_aud_ctl,
             in port p_off_mclk);

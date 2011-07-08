@@ -1,24 +1,6 @@
-/**
- * Module:  module_usb_aud_shared
- * Version: 2v3
- * Build:   920238b18f6b0967226369682640e1b063865f02
- * File:    decouple.xc
- *
- * The copyrights, all other intellectual and industrial 
- * property rights are retained by XMOS and/or its licensors. 
- * Terms and conditions covering the use of this code can
- * be found in the Xmos End User License Agreement.
- *
- * Copyright XMOS Ltd 2010
- *
- * In the case where this code is a modification of existing code
- * under a separate license, the separate license terms are shown
- * below. The modifications to the code are still covered by the 
- * copyright notice above.
- *
- **/                                   
 #include <xs1.h>
 #include <print.h>
+#include <assert.h>
 #include "xc_ptr.h"
 #define NO_INLINE_MIDI_SELECT_HANDLER 1
 #include "usb_midi.h"
@@ -175,7 +157,7 @@ int int_usb_ep = 0;
 
 unsigned int g_midi_to_host_buffer_A[MAX_USB_MIDI_PACKET_SIZE/4+4];
 unsigned int g_midi_to_host_buffer_B[MAX_USB_MIDI_PACKET_SIZE/4+4];
-int g_midi_from_host_buffer[MAX_USB_MIDI_PACKET_SIZE+4];
+int g_midi_from_host_buffer[MAX_USB_MIDI_PACKET_SIZE/4+4];
 
 // shared global aud buffering variables
 
@@ -805,17 +787,11 @@ void decouple(chanend c_mix_out,
                 }
 
                 /* Reset OUT buffer state */                
+                outOverflow = 0;
                 outUnderflow = 1;
                 SET_SHARED_GLOBAL(g_aud_from_host_rdptr, aud_from_host_fifo_start);              
                 SET_SHARED_GLOBAL(g_aud_from_host_wrptr, aud_from_host_fifo_start);
                 SET_SHARED_GLOBAL(aud_data_remaining_to_device, 0);
-
-                if(outOverflow)
-                {
-                    XUD_SetReady(aud_from_host_usb_ep, 1);
-                    outOverflow = 0;
-                }
-
 
                 /* Wait for handshake back and pass back up */
                 chkct(c_mix_out, XS1_CT_END);
