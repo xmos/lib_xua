@@ -9,6 +9,10 @@
 
 #include "customdefines.h"
 
+#if defined(IAP) && (IAP == 0)
+#undef IAP
+#endif
+
 #if defined(MIDI) && (MIDI == 0)
 #undef MIDI
 #endif
