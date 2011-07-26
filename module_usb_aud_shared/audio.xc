@@ -61,7 +61,7 @@ extern void device_reboot(void);
 
 /* I2S delivery thread */
 #pragma unsafe arrays
-unsigned deliver(chanend c_out, chanend c_spd_out, unsigned divide, chanend ?c_dig_rx)
+unsigned deliver(chanend c_out, chanend ?c_spd_out, unsigned divide, chanend ?c_dig_rx)
 {
 	unsigned sample;
     unsigned samplesOut[NUM_USB_CHAN_OUT];
@@ -498,7 +498,9 @@ static unsigned dummy_deliver(chanend c_out) {
 
 void audio(chanend c_mix_out, chanend ?c_dig_rx, chanend ?c_config, chanend ?c_i2c) 
 {
+#ifdef SPDIF
     chan c_spdif_out;
+#endif
     unsigned curSamFreq = DEFAULT_FREQ;
     unsigned mClk;
     unsigned divide;
@@ -572,7 +574,13 @@ void audio(chanend c_mix_out, chanend ?c_dig_rx, chanend ?c_config, chanend ?c_i
                 outuint(c_spdif_out, mClk);
 #endif 
 
-                curSamFreq = deliver(c_mix_out, c_spdif_out, divide, c_dig_rx);
+                curSamFreq = deliver(c_mix_out,
+#ifdef SPDIF
+                   c_spdif_out,
+#else
+                   null,
+#endif 
+                   divide, c_dig_rx);
 
                 // Currently no more audio will happen after this point
                 if (curSamFreq == AUDIO_STOP_FOR_DFU) 
