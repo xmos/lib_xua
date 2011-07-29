@@ -1175,16 +1175,16 @@ void decouple(chanend c_mix_out,
             if (iap_data_collected_from_device != 0) 
             {
                 /* We have some more data to send set the amount of data to send */
-                write_via_xc_ptr(iap_to_host_buffer_being_collected, midi_data_collected_from_device);
+                write_via_xc_ptr(iap_to_host_buffer_being_collected, iap_data_collected_from_device);
 
                 /* Swap the collecting and sending buffer */
-                swap(iap_to_host_buffer_being_collected, midi_to_host_buffer_being_sent);
+                swap(iap_to_host_buffer_being_collected, iap_to_host_buffer_being_sent);
             
                 {
                     /* Request to send packet */
                     int len; 
                     asm("ldw %0, %1[0]":"=r"(len):"r"(iap_to_host_buffer_being_sent));
-                    XUD_SetReady_In(iap_to_host_usb_ep, 0, midi_to_host_buffer_being_sent+4, len);
+                    XUD_SetReady_In(iap_to_host_usb_ep, 0, iap_to_host_buffer_being_sent+4, len);
                 } 
 
                 /* Mark as waiting for host to poll us */
@@ -1201,7 +1201,7 @@ void decouple(chanend c_mix_out,
         else 
         {
             /* Check if host has sent us iap OUT data */
-            GET_SHARED_GLOBAL(iap_from_host_flag, g_midi_from_host_flag);
+            GET_SHARED_GLOBAL(iap_from_host_flag, g_iap_from_host_flag);
             if (iap_from_host_flag)
             {
                 /* The buffer() thread has filled up a buffer */
@@ -1212,10 +1212,10 @@ void decouple(chanend c_mix_out,
                 SET_SHARED_GLOBAL(g_iap_from_host_flag, 0);
            
                 /* Read length from buffer[0] */
-                read_via_xc_ptr(iap_data_remaining_to_device, midi_from_host_buffer);
+                read_via_xc_ptr(iap_data_remaining_to_device, iap_from_host_buffer);
             
                 /* Increment read pointer - buffer[0] is length */
-                iap_from_host_rdptr = midi_from_host_buffer + 4;
+                iap_from_host_rdptr = iap_from_host_buffer + 4;
            
                 if (iap_data_remaining_to_device) 
                 {
@@ -1230,7 +1230,7 @@ void decouple(chanend c_mix_out,
         select 
         {   
             /* Received word from iap thread - Check for ACK or Data */                 
-            case iap_get_ack_or_data(c_midi, is_ack_iap, datum_iap):
+            case iap_get_ack_or_data(c_iap, is_ack_iap, datum_iap):
                 if (is_ack_iap) 
                 {
                     /* An ack from the iap/uart thread means it has accepted some data we sent it
@@ -1252,11 +1252,11 @@ void decouple(chanend c_mix_out,
                 else 
                 {
                     /* The iap/uart thread has sent us some data - handshake back */
-                    iap_send_ack(c_midi);
-                    if (iap_data_collected_from_device < MIDI_USB_BUFFER_TO_HOST_SIZE)
+                    iap_send_ack(c_iap);
+                    if (iap_data_collected_from_device < IAP_USB_BUFFER_TO_HOST_SIZE)
                     {
                         /* There is room in the collecting buffer for the data */
-                        xc_ptr p = (iap_to_host_buffer_being_collected + 4) + midi_data_collected_from_device;                                                            
+                        xc_ptr p = (iap_to_host_buffer_being_collected + 4) + iap_data_collected_from_device;                                                            
                         // Add data to the buffer
                         write_via_xc_ptr(p, datum_iap);
                         iap_data_collected_from_device += 4;
@@ -1269,16 +1269,16 @@ void decouple(chanend c_mix_out,
                     // If we are not sending data to the host then initiate it
                     if (!iap_waiting_on_send_to_host) 
                     {
-                        write_via_xc_ptr(iap_to_host_buffer_being_collected, midi_data_collected_from_device);
+                        write_via_xc_ptr(iap_to_host_buffer_being_collected, iap_data_collected_from_device);
                     
                         iap_data_collected_from_device = 0;
-                        swap(iap_to_host_buffer_being_collected, midi_to_host_buffer_being_sent);
+                        swap(iap_to_host_buffer_being_collected, iap_to_host_buffer_being_sent);
                     
                         // Signal other side to swap
                         {
                             int len; 
                             asm("ldw %0, %1[0]":"=r"(len):"r"(iap_to_host_buffer_being_sent));
-                            XUD_SetReady_In(iap_to_host_usb_ep, 0, midi_to_host_buffer_being_sent+4, len);
+                            XUD_SetReady_In(iap_to_host_usb_ep, 0, iap_to_host_buffer_being_sent+4, len);
                         }
                         iap_waiting_on_send_to_host = 1;                  
                     }
@@ -1287,7 +1287,7 @@ void decouple(chanend c_mix_out,
             default:
                 break;
         }
-#endif // MIDI
+#endif // IAP
     }
 }
 
