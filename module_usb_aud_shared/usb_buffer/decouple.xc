@@ -4,6 +4,8 @@
 #include "xc_ptr.h"
 #define NO_INLINE_MIDI_SELECT_HANDLER 1
 #include "usb_midi.h"
+#define NO_INLINE_IAP_SELECT_HANDLER 1
+#include "iAP.h"
 #include "devicedefines.h"
 #include "testct_byref.h"
 #include "interrupt.h"
@@ -147,17 +149,36 @@ static inline void swap(xc_ptr &a, xc_ptr &b)
 }
 
 // shared global midi buffering variables
+#ifdef MIDI
 unsigned g_midi_from_host_flag = 0;
 unsigned g_midi_to_host_flag = 0;
 int midi_to_host_usb_ep = 0;
 int midi_from_host_usb_ep = 0;
+#endif
+
+#ifdef IAP
+unsigned g_iap_from_host_flag = 0;
+unsigned g_iap_to_host_flag = 0;
+int iap_to_host_usb_ep = 0;
+int iap_to_host_int_usb_ep = 0;
+int iap_from_host_usb_ep = 0;
+#endif
+
 int aud_from_host_usb_ep = 0;
 int aud_to_host_usb_ep = 0;
 int int_usb_ep = 0;
 
+#ifdef MIDI
 unsigned int g_midi_to_host_buffer_A[MAX_USB_MIDI_PACKET_SIZE/4+4];
 unsigned int g_midi_to_host_buffer_B[MAX_USB_MIDI_PACKET_SIZE/4+4];
 int g_midi_from_host_buffer[MAX_USB_MIDI_PACKET_SIZE/4+4];
+#endif
+
+#ifdef IAP
+unsigned int g_iap_to_host_buffer_A[MAX_IAP_PACKET_SIZE/4+4];
+unsigned int g_iap_to_host_buffer_B[MAX_IAP_PACKET_SIZE/4+4];
+int g_iap_from_host_buffer[MAX_IAP_PACKET_SIZE/4+4];
+#endif
 
 // shared global aud buffering variables
 
@@ -610,7 +631,7 @@ void check_for_interrupt(chanend ?c_clk_int) {
 
 #pragma unsafe arrays
 void decouple(chanend c_mix_out,
-              chanend ?c_midi, chanend ?c_clk_int)
+              chanend ?c_midi, chanend ?c_clk_int, chanend ?c_iap)
 {   
     unsigned sampFreq = DEFAULT_FREQ;
     int aud_from_host_flag=0;
@@ -630,9 +651,23 @@ void decouple(chanend c_mix_out,
     int midi_waiting_on_send_to_host = 0;
     int midi_to_host_flag = 0;
     int midi_from_host_flag = 0;
-
-
 #endif
+
+#ifdef IAP
+    xc_ptr iap_from_host_rdptr;
+    xc_ptr iap_from_host_buffer;
+    xc_ptr iap_to_host_buffer_being_sent = array_to_xc_ptr(g_iap_to_host_buffer_A);
+    xc_ptr iap_to_host_buffer_being_collected = array_to_xc_ptr(g_iap_to_host_buffer_B);
+    
+    int is_ack_iap;
+    unsigned int datum_iap;
+    int iap_data_remaining_to_device = 0;
+    int iap_data_collected_from_device = 0;
+    int iap_waiting_on_send_to_host = 0;
+    int iap_to_host_flag = 0;
+    int iap_from_host_flag = 0;
+#endif
+
     int t = array_to_xc_ptr(outAudioBuff);
     int aud_in_ready = 0;
 
@@ -699,6 +734,22 @@ void decouple(chanend c_mix_out,
 
     // send the current host -> device buffer out of the fifo
     XUD_SetReady(midi_from_host_usb_ep, 1);
+#endif
+
+#ifdef IAP
+    //asm("ldaw %0, dp[g_iap_to_host_buffer]":"=r"(iap_to_host_buffer));
+    asm("ldaw %0, dp[g_iap_from_host_buffer]":"=r"(iap_from_host_buffer));
+
+    // wait for usb_buffer to set up
+    while(!iap_from_host_flag) {
+      GET_SHARED_GLOBAL(iap_from_host_flag, g_iap_from_host_flag);
+    }
+    
+    iap_from_host_flag = 0;
+    SET_SHARED_GLOBAL(g_iap_from_host_flag, iap_from_host_flag);
+
+    // send the current host -> device buffer out of the fifo
+    XUD_SetReady(iap_from_host_usb_ep, 1);
 #endif
 
 #ifdef OUTPUT
@@ -1106,6 +1157,130 @@ void decouple(chanend c_mix_out,
                             XUD_SetReady_In(midi_to_host_usb_ep, 0, midi_to_host_buffer_being_sent+4, len);
                         }
                         midi_waiting_on_send_to_host = 1;                  
+                    }
+                }          
+                break;
+            default:
+                break;
+        }
+#endif // MIDI
+
+#ifdef IAP
+        /* Check if buffer() has send IAP packet to host */
+        GET_SHARED_GLOBAL(iap_to_host_flag, g_iap_to_host_flag);          
+        if (iap_to_host_flag) 
+        {
+            /* The buffer has been sent to the host, so we can ack the iap thread */
+            SET_SHARED_GLOBAL(g_iap_to_host_flag, 0);
+            if (iap_data_collected_from_device != 0) 
+            {
+                /* We have some more data to send set the amount of data to send */
+                write_via_xc_ptr(iap_to_host_buffer_being_collected, midi_data_collected_from_device);
+
+                /* Swap the collecting and sending buffer */
+                swap(iap_to_host_buffer_being_collected, midi_to_host_buffer_being_sent);
+            
+                {
+                    /* Request to send packet */
+                    int len; 
+                    asm("ldw %0, %1[0]":"=r"(len):"r"(iap_to_host_buffer_being_sent));
+                    XUD_SetReady_In(iap_to_host_usb_ep, 0, midi_to_host_buffer_being_sent+4, len);
+                } 
+
+                /* Mark as waiting for host to poll us */
+                iap_waiting_on_send_to_host = 1;                                                                                                                  
+                /* Reset the collected data count */
+                iap_data_collected_from_device = 0;
+            }
+            else
+            {
+                iap_waiting_on_send_to_host = 0;              
+            }
+            continue;
+        }
+        else 
+        {
+            /* Check if host has sent us iap OUT data */
+            GET_SHARED_GLOBAL(iap_from_host_flag, g_midi_from_host_flag);
+            if (iap_from_host_flag)
+            {
+                /* The buffer() thread has filled up a buffer */
+                int datalength;
+                int space_left;
+           
+                /* Reset flag */
+                SET_SHARED_GLOBAL(g_iap_from_host_flag, 0);
+           
+                /* Read length from buffer[0] */
+                read_via_xc_ptr(iap_data_remaining_to_device, midi_from_host_buffer);
+            
+                /* Increment read pointer - buffer[0] is length */
+                iap_from_host_rdptr = midi_from_host_buffer + 4;
+           
+                if (iap_data_remaining_to_device) 
+                {
+                    read_via_xc_ptr(datum_iap, iap_from_host_rdptr);
+                    outuint(c_iap, datum_iap);
+                    iap_from_host_rdptr += 4;              
+                    iap_data_remaining_to_device -= 4;
+                }                        
+             }
+        }
+   
+        select 
+        {   
+            /* Received word from iap thread - Check for ACK or Data */                 
+            case iap_get_ack_or_data(c_midi, is_ack_iap, datum_iap):
+                if (is_ack_iap) 
+                {
+                    /* An ack from the iap/uart thread means it has accepted some data we sent it
+                     * we are okay to send another word */
+                    if (iap_data_remaining_to_device == 0) 
+                    {
+                        /* We have read an entire packet - Mark ready to receive another */
+                        XUD_SetReady(iap_from_host_usb_ep, 1);              
+                    }
+                    else 
+                    {
+                        /* Read another word from the fifo and output it to iap thread */
+                        read_via_xc_ptr(datum_iap, iap_from_host_rdptr);
+                        outuint(c_iap, datum_iap);        
+                        iap_from_host_rdptr += 4;              
+                        iap_data_remaining_to_device -= 4;
+                    }         
+                }
+                else 
+                {
+                    /* The iap/uart thread has sent us some data - handshake back */
+                    iap_send_ack(c_midi);
+                    if (iap_data_collected_from_device < MIDI_USB_BUFFER_TO_HOST_SIZE)
+                    {
+                        /* There is room in the collecting buffer for the data */
+                        xc_ptr p = (iap_to_host_buffer_being_collected + 4) + midi_data_collected_from_device;                                                            
+                        // Add data to the buffer
+                        write_via_xc_ptr(p, datum_iap);
+                        iap_data_collected_from_device += 4;
+                    }
+                    else 
+                    {
+                        // Too many events from device - drop 
+                    } 
+                
+                    // If we are not sending data to the host then initiate it
+                    if (!iap_waiting_on_send_to_host) 
+                    {
+                        write_via_xc_ptr(iap_to_host_buffer_being_collected, midi_data_collected_from_device);
+                    
+                        iap_data_collected_from_device = 0;
+                        swap(iap_to_host_buffer_being_collected, midi_to_host_buffer_being_sent);
+                    
+                        // Signal other side to swap
+                        {
+                            int len; 
+                            asm("ldw %0, %1[0]":"=r"(len):"r"(iap_to_host_buffer_being_sent));
+                            XUD_SetReady_In(iap_to_host_usb_ep, 0, midi_to_host_buffer_being_sent+4, len);
+                        }
+                        iap_waiting_on_send_to_host = 1;                  
                     }
                 }          
                 break;

@@ -11,6 +11,7 @@
 #include "usb.h"
 #include "devicedefines.h"
 #include "usb_midi.h"
+#include "iAP.h"
 #include "xc_ptr.h"
 #include "clockcmds.h"
 #include "xud.h"
@@ -45,7 +46,7 @@ unsigned g_freqChange = 0;
 /* Interrupt EP data */
 unsigned char g_intData[8];
 
-#ifdef MIDI
+#if defined (MIDI) || defined(IAP)
 static inline void swap(xc_ptr &a, xc_ptr &b) 
 {
   xc_ptr tmp;
@@ -73,6 +74,9 @@ extern unsigned g_numUsbChanIn;
 void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud_fb, 
             chanend c_midi_from_host, 
             chanend c_midi_to_host, 
+            chanend c_iap_from_host, 
+            chanend c_iap_to_host, 
+            chanend c_iap_to_host_int, 
             chanend ?c_int, chanend c_sof, 
             chanend c_aud_ctl,
             in port p_off_mclk
@@ -84,6 +88,11 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
 #ifdef MIDI
   XUD_ep ep_midi_from_host = XUD_Init_Ep(c_midi_from_host);
   XUD_ep ep_midi_to_host = XUD_Init_Ep(c_midi_to_host);
+#endif
+#ifdef IAP
+  XUD_ep ep_iap_from_host   = XUD_Init_Ep(c_iap_from_host);
+  XUD_ep ep_iap_to_host     = XUD_Init_Ep(c_iap_to_host);
+  XUD_ep ep_iap_to_host_int = XUD_Init_Ep(c_iap_to_host_int);
 #endif
 #if defined(SPDIF_RX) || defined(ADAT_RX)
   XUD_ep ep_int = XUD_Init_Ep(c_int);
@@ -114,7 +123,12 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
     xc_ptr midi_to_host_buffer = 0;
     xc_ptr midi_to_host_waiting_buffer = 0;
 #endif
-
+ 
+#ifdef IAP
+    xc_ptr iap_from_host_buffer = 0;
+    xc_ptr iap_to_host_buffer = 0;
+    xc_ptr iap_to_host_waiting_buffer = 0;
+#endif
     
     set_thread_fast_mode_on();
 
@@ -161,6 +175,22 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
     asm("stw %0, dp[midi_from_host_usb_ep]"::"r"(ep_midi_from_host));    
     swap(midi_to_host_buffer, midi_to_host_waiting_buffer);
     SET_SHARED_GLOBAL(g_midi_from_host_flag, 1);    
+#endif
+
+#ifdef IAP
+    // get the two buffers to use for iap device->host
+    asm("ldaw %0, dp[g_iap_to_host_buffer_A]":"=r"(iap_to_host_buffer));
+    asm("ldaw %0, dp[g_iap_to_host_buffer_B]":"=r"(iap_to_host_waiting_buffer));
+    asm("ldaw %0, dp[g_iap_from_host_buffer]":"=r"(iap_from_host_buffer));
+
+
+    // pass the iap->XUD chanends to decouple so that thread can
+    // initialize comm with XUD
+    asm("stw %0, dp[iap_to_host_usb_ep]"::"r"(ep_iap_to_host));
+    asm("stw %0, dp[iap_to_host_int_usb_ep]"::"r"(ep_iap_to_host_int));
+    asm("stw %0, dp[iap_from_host_usb_ep]"::"r"(ep_iap_from_host));    
+    swap(iap_to_host_buffer, iap_to_host_waiting_buffer);
+    SET_SHARED_GLOBAL(g_iap_from_host_flag, 1);    
 #endif
 
 #ifdef OUTPUT
@@ -505,7 +535,52 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
 
           break;
 #endif
-        }
+
+#ifdef IAP
+        case inuint_byref(c_iap_from_host, tmp):
+            asm("#iap h->d");
+
+            /* Get buffer data from host - IAP OUT from host always into a single buffer */
+            {
+                xc_ptr p = iap_from_host_buffer + 4;
+                xc_ptr p0 = p;
+                xc_ptr p1 = p + MAX_IAP_PACKET_SIZE;
+                while (!testct(c_iap_from_host)) 
+                {
+                    unsigned int datum = inuint(c_iap_from_host);
+                    write_via_xc_ptr(p, datum);
+                    p += 4;
+                }  
+                (void) inct(c_iap_from_host);            
+                datalength = p - p0 - 4;            
+            }
+          
+            XUD_SetNotReady(ep_iap_from_host);                     
+
+            write_via_xc_ptr(iap_from_host_buffer, datalength);
+                    
+            /* release the buffer */
+            SET_SHARED_GLOBAL(g_iap_from_host_flag, 1);
+
+            break;
+ 
+        /* IAP IN to host */                  
+        case inuint_byref(c_iap_to_host, tmp): 
+            asm("#iap d->h");
+            
+            // fill in the data
+            XUD_SetData_Inline(ep_iap_to_host, c_iap_to_host);
+
+            XUD_SetNotReady(ep_iap_to_host);                     
+
+            // ack the decouple thread to say it has been sent to host  
+            SET_SHARED_GLOBAL(g_iap_to_host_flag, 1);
+
+            swap(iap_to_host_buffer, iap_to_host_waiting_buffer);
+
+          break;
+#endif
+         }
 
     }
 
