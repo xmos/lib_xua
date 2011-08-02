@@ -17,6 +17,7 @@ static unsigned makeSymbol(unsigned data) {
 static unsigned bit_time =  XS1_TIMER_MHZ * 1000000 / (unsigned) RATE;
 static unsigned bit_time_2 =  (XS1_TIMER_MHZ * 1000000 / (unsigned) RATE) / 2;
 
+// For debugging
 int mr_count = 0;
 int th_count = 0;
 
@@ -84,8 +85,7 @@ void usb_midi(in port ?p_midi_in, out port ?p_midi_out,
   int wrptr = 0;
   unsigned rxPT, txPT;
   int midi_from_host_overflow = 0;
- int space_left;
-
+  int space_left;
 
  //configure_clock_rate(clk_midi, 100, 1);
  
@@ -105,10 +105,7 @@ void usb_midi(in port ?p_midi_in, out port ?p_midi_out,
   p_midi_out <: 1; // Start with high bit. 
   //  printstr("mout0");
 #endif
-
-
-
-    
+ 
   while (1) {
     select 
       {
@@ -131,6 +128,7 @@ void usb_midi(in port ?p_midi_in, out port ?p_midi_out,
       case isRX => t2 when timerafter(rxT) :> int _ :
         if (rxI++ < 8) 
           {
+            // shift in bits into the high end of a word
             unsigned bit;
             p_midi_in :> bit;
             rxByte = (bit << 31) | (rxByte >> 1);
@@ -189,7 +187,8 @@ void usb_midi(in port ?p_midi_in, out port ?p_midi_out,
             uout_count++;
             outputted_symbol = outputting_symbol;
             // have we got another symbol to send to uart?
-            if (rdptr != wrptr) {
+            if (rdptr != wrptr) { // FIFO not empty
+              // Take from FIFO
               outputting_symbol = symbol_fifo[rdptr];
               symbol = makeSymbol(symbol_fifo[rdptr]);
               rdptr++;
@@ -243,7 +242,6 @@ void usb_midi(in port ?p_midi_in, out port ?p_midi_out,
           int event;
           unsigned midi[3];
           unsigned size;
-          int valid;
           // received data from host
           event = byterev(datum);
           mr_count++;
@@ -267,19 +265,14 @@ void usb_midi(in port ?p_midi_in, out port ?p_midi_out,
           {midi[0], midi[1], midi[2], size} = midi_out_parse(event);
           for (int i = 0; i != size; i++) {
             // add symbol to fifo
-            unsigned sym = midi[i];
-            int new_wrptr = wrptr + 1;
-
-            if (new_wrptr > USB_MIDI_DEVICE_OUT_FIFO_SIZE - 1) {
-              new_wrptr = 0;
+            symbol_fifo[wrptr] = midi[i];
+            wrptr++;
+            if (wrptr > USB_MIDI_DEVICE_OUT_FIFO_SIZE - 1) {
+              wrptr = 0;
             }
-
-            symbol_fifo[wrptr] = sym;
-            wrptr = new_wrptr;            
           }
-
-          
-          space_left = rdptr - wrptr;            
+ 
+          space_left = rdptr - wrptr;
           if (space_left < 0)
             space_left += USB_MIDI_DEVICE_OUT_FIFO_SIZE;
           
@@ -289,7 +282,8 @@ void usb_midi(in port ?p_midi_in, out port ?p_midi_out,
           else {
             midi_from_host_overflow = 1;
           }
-          
+ 
+          // Start sending from FIFO
           if (wrptr != rdptr && !outputting) {
             outputting_symbol = symbol_fifo[rdptr];
             symbol = makeSymbol(symbol_fifo[rdptr]);
@@ -300,11 +294,12 @@ void usb_midi(in port ?p_midi_in, out port ?p_midi_out,
             if (space_left > 2 && midi_from_host_overflow) {
               midi_from_host_overflow = 0;
               midi_send_ack(c_midi);
-            }              
+            } 
 
 #ifdef MIDI_LOOPBACK         
             handle_byte_from_uart(c_midi, mips, cable_number, got_next_event, next_event, waiting_for_ack, symbol);
 #else   
+            // Start sending byte (to be continued by outputting case)
             p_midi_out <: 1 @ txPT;
             t :> time;
             time += bit_time;
