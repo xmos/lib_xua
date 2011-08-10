@@ -85,7 +85,6 @@ void usb_midi(in port ?p_midi_in, out port ?p_midi_out,
   int wrptr = 0;
   unsigned rxPT, txPT;
   int midi_from_host_overflow = 0;
-  int space_left;
 
  //configure_clock_rate(clk_midi, 100, 1);
  
@@ -188,6 +187,7 @@ void usb_midi(in port ?p_midi_in, out port ?p_midi_out,
             outputted_symbol = outputting_symbol;
             // have we got another symbol to send to uart?
             if (rdptr != wrptr) { // FIFO not empty
+              int space_left;
               // Take from FIFO
               outputting_symbol = symbol_fifo[rdptr];
               symbol = makeSymbol(symbol_fifo[rdptr]);
@@ -242,6 +242,7 @@ void usb_midi(in port ?p_midi_in, out port ?p_midi_out,
           int event;
           unsigned midi[3];
           unsigned size;
+          int space_left;
           // received data from host
           event = byterev(datum);
           mr_count++;
@@ -278,8 +279,7 @@ void usb_midi(in port ?p_midi_in, out port ?p_midi_out,
           
           if (space_left > 3) {
             midi_send_ack(c_midi);
-          }
-          else {
+          } else {
             midi_from_host_overflow = 1;
           }
  
@@ -306,7 +306,6 @@ void usb_midi(in port ?p_midi_in, out port ?p_midi_out,
             txPT += bit_time;
             outputting = 1;
 #endif
-
           }
 #endif
         }
