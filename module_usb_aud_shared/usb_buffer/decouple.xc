@@ -5,7 +5,9 @@
 #define NO_INLINE_MIDI_SELECT_HANDLER 1
 #include "usb_midi.h"
 #define NO_INLINE_IAP_SELECT_HANDLER 1
+#ifdef IAP_BUFFERED
 #include "iAP.h"
+#endif
 #include "devicedefines.h"
 #include "testct_byref.h"
 #include "interrupt.h"
@@ -157,11 +159,13 @@ int midi_from_host_usb_ep = 0;
 #endif
 
 #ifdef IAP
+#ifdef IAP_BUFFERED
 unsigned g_iap_from_host_flag = 0;
 unsigned g_iap_to_host_flag = 0;
 int iap_to_host_usb_ep = 0;
 int iap_to_host_int_usb_ep = 0;
 int iap_from_host_usb_ep = 0;
+#endif
 #endif
 
 int aud_from_host_usb_ep = 0;
@@ -175,9 +179,11 @@ int g_midi_from_host_buffer[MAX_USB_MIDI_PACKET_SIZE/4+4];
 #endif
 
 #ifdef IAP
+#ifdef IAP_BUFFERED
 unsigned int g_iap_to_host_buffer_A[MAX_IAP_PACKET_SIZE/4+4];
 unsigned int g_iap_to_host_buffer_B[MAX_IAP_PACKET_SIZE/4+4];
 int g_iap_from_host_buffer[MAX_IAP_PACKET_SIZE/4+4];
+#endif
 #endif
 
 // shared global aud buffering variables
@@ -631,7 +637,11 @@ void check_for_interrupt(chanend ?c_clk_int) {
 
 #pragma unsafe arrays
 void decouple(chanend c_mix_out,
-              chanend ?c_midi, chanend ?c_clk_int, chanend ?c_iap)
+              chanend ?c_midi, chanend ?c_clk_int
+#ifdef IAP_BUFFERED
+, chanend ?c_iap
+#endif
+)
 {   
     unsigned sampFreq = DEFAULT_FREQ;
     int aud_from_host_flag=0;
@@ -654,6 +664,7 @@ void decouple(chanend c_mix_out,
 #endif
 
 #ifdef IAP
+#ifdef IAP_BUFFERED
     xc_ptr iap_from_host_rdptr;
     xc_ptr iap_from_host_buffer;
     xc_ptr iap_to_host_buffer_being_sent = array_to_xc_ptr(g_iap_to_host_buffer_A);
@@ -666,6 +677,7 @@ void decouple(chanend c_mix_out,
     int iap_waiting_on_send_to_host = 0;
     int iap_to_host_flag = 0;
     int iap_from_host_flag = 0;
+#endif
 #endif
 
     int t = array_to_xc_ptr(outAudioBuff);
@@ -737,6 +749,7 @@ void decouple(chanend c_mix_out,
 #endif
 
 #ifdef IAP
+#ifdef IAP_BUFFERED
     //asm("ldaw %0, dp[g_iap_to_host_buffer]":"=r"(iap_to_host_buffer));
     asm("ldaw %0, dp[g_iap_from_host_buffer]":"=r"(iap_from_host_buffer));
 
@@ -750,6 +763,7 @@ void decouple(chanend c_mix_out,
 
     // send the current host -> device buffer out of the fifo
     XUD_SetReady(iap_from_host_usb_ep, 1);
+#endif
 #endif
 
 #ifdef OUTPUT
@@ -1166,6 +1180,7 @@ void decouple(chanend c_mix_out,
 #endif // MIDI
 
 #ifdef IAP
+#ifdef IAP_BUFFERED
         /* Check if buffer() has send IAP packet to host */
         GET_SHARED_GLOBAL(iap_to_host_flag, g_iap_to_host_flag);          
         if (iap_to_host_flag) 
@@ -1287,6 +1302,7 @@ void decouple(chanend c_mix_out,
             default:
                 break;
         }
+#endif
 #endif // IAP
     }
 }

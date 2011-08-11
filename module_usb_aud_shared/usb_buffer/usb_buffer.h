@@ -19,9 +19,11 @@
 void buffer(chanend c_aud_out, chanend c_aud_in, chanend c_aud_fb, 
             chanend c_midi_from_host, 
             chanend c_midi_to_host,
+#ifdef IAP_BUFFERED
             chanend c_iap_from_host, 
             chanend c_iap_to_host,
             chanend c_iap_to_host_int,
+#endif
             chanend? c_int, 
             chanend c_sof, 
             chanend c_aud_ctl,

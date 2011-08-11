@@ -74,9 +74,11 @@ extern unsigned g_numUsbChanIn;
 void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud_fb, 
             chanend c_midi_from_host, 
             chanend c_midi_to_host, 
+#ifdef IAP_BUFFERED
             chanend c_iap_from_host, 
             chanend c_iap_to_host, 
             chanend c_iap_to_host_int, 
+#endif
             chanend ?c_int, chanend c_sof, 
             chanend c_aud_ctl,
             in port p_off_mclk
@@ -90,9 +92,11 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
   XUD_ep ep_midi_to_host = XUD_Init_Ep(c_midi_to_host);
 #endif
 #ifdef IAP
+#ifdef IAP_BUFFERED
   XUD_ep ep_iap_from_host   = XUD_Init_Ep(c_iap_from_host);
   XUD_ep ep_iap_to_host     = XUD_Init_Ep(c_iap_to_host);
   XUD_ep ep_iap_to_host_int = XUD_Init_Ep(c_iap_to_host_int);
+#endif
 #endif
 #if defined(SPDIF_RX) || defined(ADAT_RX)
   XUD_ep ep_int = XUD_Init_Ep(c_int);
@@ -125,9 +129,11 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
 #endif
  
 #ifdef IAP
+#ifdef IAP_BUFFERED
     xc_ptr iap_from_host_buffer = 0;
     xc_ptr iap_to_host_buffer = 0;
     xc_ptr iap_to_host_waiting_buffer = 0;
+#endif
 #endif
     
     set_thread_fast_mode_on();
@@ -178,6 +184,7 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
 #endif
 
 #ifdef IAP
+#ifdef IAP_BUFFERED
     // get the two buffers to use for iap device->host
     asm("ldaw %0, dp[g_iap_to_host_buffer_A]":"=r"(iap_to_host_buffer));
     asm("ldaw %0, dp[g_iap_to_host_buffer_B]":"=r"(iap_to_host_waiting_buffer));
@@ -191,6 +198,7 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
     asm("stw %0, dp[iap_from_host_usb_ep]"::"r"(ep_iap_from_host));    
     swap(iap_to_host_buffer, iap_to_host_waiting_buffer);
     SET_SHARED_GLOBAL(g_iap_from_host_flag, 1);    
+#endif
 #endif
 
 #ifdef OUTPUT
@@ -537,6 +545,7 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
 #endif
 
 #ifdef IAP
+#ifdef IAP_BUFFERED
         case inuint_byref(c_iap_from_host, tmp):
             asm("#iap h->d");
 
@@ -579,6 +588,7 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
             swap(iap_to_host_buffer, iap_to_host_waiting_buffer);
 
           break;
+#endif
 #endif
          }
 
