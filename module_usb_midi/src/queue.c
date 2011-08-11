@@ -2,21 +2,21 @@
 #include "queue.h"
 
 // This presumes that the xc compiler will not re-use the mem passed to init_queue
-void init_queue(queue *q, int arr[], int size) {
+void init_queue(queue *q, unsigned arr[], int size) {
    q->rdptr = 0;
    q->wrptr = 0;
-   q->data = (intptr_t)arr;
+   q->data = (uintptr_t)arr;
    q->size = size; // presume that size is power of two
    q->mask = size - 1;
 }
 
-extern inline void enqueue(queue *q, int value) {
-   ((int *)q->data)[q->wrptr & q->mask] = value;
+extern inline void enqueue(queue *q, unsigned value) {
+   ((unsigned *)q->data)[q->wrptr & q->mask] = value;
    q->wrptr++;
 }
 
-extern inline int dequeue(queue *q) {
-   int retval = ((int *)q->data)[q->rdptr & q->mask];
+extern inline unsigned dequeue(queue *q) {
+   unsigned retval = ((unsigned *)q->data)[q->rdptr & q->mask];
    q->rdptr++;
    return retval;
 }
@@ -41,8 +41,7 @@ extern inline int space(queue *q) {
 
 void dump(queue *q) {
    for (int i = q->rdptr; i != q->wrptr; i++) {
-      printf("a[%d] = %d\n", i & q->mask, ((int *)q->data)[i & q->mask]);
+      printf("a[%d] = %d\n", i & q->mask, ((unsigned *)q->data)[i & q->mask]);
    }
 }
-
 
