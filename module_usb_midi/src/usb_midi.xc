@@ -18,8 +18,8 @@ static unsigned bit_time =  XS1_TIMER_MHZ * 1000000 / (unsigned) RATE;
 static unsigned bit_time_2 =  (XS1_TIMER_MHZ * 1000000 / (unsigned) RATE) / 2;
 
 // For debugging
-int mr_count = 0;
-int th_count = 0;
+int mr_count = 0; // MIDI received (from HOST)
+int th_count = 0; // MIDI sent (To Host)
 
 #ifdef MIDI_LOOPBACK
 static inline void handle_byte_from_uart(chanend c_midi,   struct midi_in_parse_state &mips, int cable_number, 
@@ -49,19 +49,17 @@ static inline void handle_byte_from_uart(chanend c_midi,   struct midi_in_parse_
 }
 #endif
 
-int uout_count = 0;
-int uin_count = 0;
+int uout_count = 0; // UART bytes out
+int uin_count = 0; // UART bytes in 
 
 void usb_midi(in port ?p_midi_in, out port ?p_midi_out, 
               clock ?clk_midi,
               chanend c_midi,
               unsigned cable_number)
 {
-  int is_ack;
-  unsigned int datum;
-  unsigned symbol = 0x0;
-  unsigned outputting = 0;
-  unsigned time;
+  unsigned symbol = 0x0; // Symbol in progress of being sent out
+  unsigned outputting = 0; // Guard when outputting data
+  unsigned time; // Timer value used for outputting
   //unsigned inputPortState, newInputPortState;
   int waiting_for_ack = 0;
   // Receiver
@@ -106,6 +104,8 @@ void usb_midi(in port ?p_midi_in, out port ?p_midi_out,
 #endif
  
   while (1) {
+    int is_ack;
+    unsigned int datum;
     select 
       {
         // Input to read the start bit
