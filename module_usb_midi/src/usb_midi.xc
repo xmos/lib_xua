@@ -1,9 +1,10 @@
 #include <xs1.h>
 #include <xclib.h>
+#include <print.h>
 #include "usb_midi.h"
 #include "midiinparse.h"
 #include "midioutparse.h"
-#include <print.h>
+#include "queue.h"
 
 //#define MIDI_LOOPBACK 1
 
@@ -78,22 +79,23 @@ void usb_midi(in port ?p_midi_in, out port ?p_midi_out,
   struct midi_in_parse_state mips;
 
   // the symbol fifo (to go out of uart)
+  queue q;
   unsigned symbol_fifo[USB_MIDI_DEVICE_OUT_FIFO_SIZE];
-  int rdptr = 0;
-  int wrptr = 0;
+
   unsigned rxPT, txPT;
   int midi_from_host_overflow = 0;
 
- //configure_clock_rate(clk_midi, 100, 1);
+  //configure_clock_rate(clk_midi, 100, 1);
+  init_queue(q, symbol_fifo, USB_MIDI_DEVICE_OUT_FIFO_SIZE);
+  
+  configure_out_port_no_ready(p_midi_out, clk_midi, 1);
+  configure_in_port(p_midi_in, clk_midi);
  
- configure_out_port_no_ready(p_midi_out, clk_midi, 1);
- configure_in_port(p_midi_in, clk_midi);
-
- start_clock(clk_midi);
- start_port(p_midi_out);
- start_port(p_midi_in);
-
- reset_midi_state(mips);
+  start_clock(clk_midi);
+  start_port(p_midi_out);
+  start_port(p_midi_in);
+ 
+  reset_midi_state(mips);
 
   t :> time;
   t2 :> rxT;
@@ -186,20 +188,12 @@ void usb_midi(in port ?p_midi_in, out port ?p_midi_out,
             uout_count++;
             outputted_symbol = outputting_symbol;
             // have we got another symbol to send to uart?
-            if (rdptr != wrptr) { // FIFO not empty
-              int space_left;
+            if (!isempty(q)) { // FIFO not empty
               // Take from FIFO
-              outputting_symbol = symbol_fifo[rdptr];
-              symbol = makeSymbol(symbol_fifo[rdptr]);
-              rdptr++;
-              if (rdptr > USB_MIDI_DEVICE_OUT_FIFO_SIZE - 1)
-                rdptr = 0;
+              outputting_symbol = dequeue(q);
+              symbol = makeSymbol(outputting_symbol);
 
-              space_left = rdptr - wrptr;            
-              if (space_left < 0)
-                space_left += USB_MIDI_DEVICE_OUT_FIFO_SIZE;
-
-              if (space_left > 3 && midi_from_host_overflow) {
+              if (space(q) > 3 && midi_from_host_overflow) {
                 midi_from_host_overflow = 0;
                 midi_send_ack(c_midi);
               }
@@ -242,7 +236,6 @@ void usb_midi(in port ?p_midi_in, out port ?p_midi_out,
           int event;
           unsigned midi[3];
           unsigned size;
-          int space_left;
           // received data from host
           event = byterev(datum);
           mr_count++;
@@ -266,32 +259,21 @@ void usb_midi(in port ?p_midi_in, out port ?p_midi_out,
           {midi[0], midi[1], midi[2], size} = midi_out_parse(event);
           for (int i = 0; i != size; i++) {
             // add symbol to fifo
-            symbol_fifo[wrptr] = midi[i];
-            wrptr++;
-            if (wrptr > USB_MIDI_DEVICE_OUT_FIFO_SIZE - 1) {
-              wrptr = 0;
-            }
+            enqueue(q, midi[i]);
           }
  
-          space_left = rdptr - wrptr;
-          if (space_left < 0)
-            space_left += USB_MIDI_DEVICE_OUT_FIFO_SIZE;
-          
-          if (space_left > 3) {
+          if (space(q) > 3) {
             midi_send_ack(c_midi);
           } else {
             midi_from_host_overflow = 1;
           }
  
           // Start sending from FIFO
-          if (wrptr != rdptr && !outputting) {
-            outputting_symbol = symbol_fifo[rdptr];
-            symbol = makeSymbol(symbol_fifo[rdptr]);
-            rdptr++;
-            if (rdptr > USB_MIDI_DEVICE_OUT_FIFO_SIZE - 1)
-              rdptr = 0;
+          if (!isempty(q) && !outputting) {
+            outputting_symbol = dequeue(q);
+            symbol = makeSymbol(outputting_symbol);
 
-            if (space_left > 2 && midi_from_host_overflow) {
+            if (space(q) > 2 && midi_from_host_overflow) {
               midi_from_host_overflow = 0;
               midi_send_ack(c_midi);
             } 
