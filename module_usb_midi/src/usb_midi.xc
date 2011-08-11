@@ -79,14 +79,14 @@ void usb_midi(in port ?p_midi_in, out port ?p_midi_out,
   struct midi_in_parse_state mips;
 
   // the symbol fifo (to go out of uart)
-  queue q;
-  unsigned symbol_fifo[USB_MIDI_DEVICE_OUT_FIFO_SIZE];
+  queue symbol_fifo;
+  unsigned symbol_fifo_arr[USB_MIDI_DEVICE_OUT_FIFO_SIZE];
 
   unsigned rxPT, txPT;
   int midi_from_host_overflow = 0;
 
   //configure_clock_rate(clk_midi, 100, 1);
-  init_queue(q, symbol_fifo, USB_MIDI_DEVICE_OUT_FIFO_SIZE);
+  init_queue(symbol_fifo, symbol_fifo_arr, USB_MIDI_DEVICE_OUT_FIFO_SIZE);
   
   configure_out_port_no_ready(p_midi_out, clk_midi, 1);
   configure_in_port(p_midi_in, clk_midi);
@@ -188,12 +188,12 @@ void usb_midi(in port ?p_midi_in, out port ?p_midi_out,
             uout_count++;
             outputted_symbol = outputting_symbol;
             // have we got another symbol to send to uart?
-            if (!isempty(q)) { // FIFO not empty
+            if (!isempty(symbol_fifo)) { // FIFO not empty
               // Take from FIFO
-              outputting_symbol = dequeue(q);
+              outputting_symbol = dequeue(symbol_fifo);
               symbol = makeSymbol(outputting_symbol);
 
-              if (space(q) > 3 && midi_from_host_overflow) {
+              if (space(symbol_fifo) > 3 && midi_from_host_overflow) {
                 midi_from_host_overflow = 0;
                 midi_send_ack(c_midi);
               }
@@ -259,21 +259,21 @@ void usb_midi(in port ?p_midi_in, out port ?p_midi_out,
           {midi[0], midi[1], midi[2], size} = midi_out_parse(event);
           for (int i = 0; i != size; i++) {
             // add symbol to fifo
-            enqueue(q, midi[i]);
+            enqueue(symbol_fifo, midi[i]);
           }
  
-          if (space(q) > 3) {
+          if (space(symbol_fifo) > 3) {
             midi_send_ack(c_midi);
           } else {
             midi_from_host_overflow = 1;
           }
  
           // Start sending from FIFO
-          if (!isempty(q) && !outputting) {
-            outputting_symbol = dequeue(q);
+          if (!isempty(symbol_fifo) && !outputting) {
+            outputting_symbol = dequeue(symbol_fifo);
             symbol = makeSymbol(outputting_symbol);
 
-            if (space(q) > 2 && midi_from_host_overflow) {
+            if (space(symbol_fifo) > 2 && midi_from_host_overflow) {
               midi_from_host_overflow = 0;
               midi_send_ack(c_midi);
             } 
