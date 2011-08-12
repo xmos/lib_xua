@@ -24,17 +24,17 @@ int mr_count = 0; // MIDI received (from HOST)
 int th_count = 0; // MIDI sent (To Host)
 
 #ifdef MIDI_LOOPBACK
-static inline void handle_byte_from_uart(chanend c_midi,   struct midi_in_parse_state &mips, int cable_number, 
+static inline void handle_byte_from_uart(chanend c_midi,   struct midi_in_parse_state &mips, int cable_number,
                                          int &got_next_event, int &next_event, int &waiting_for_ack, int byte)
 {
   int valid;
   unsigned event;
-  {valid, event} = midi_in_parse(mips, cable_number, byte);          
+  {valid, event} = midi_in_parse(mips, cable_number, byte);
   if (valid && !got_next_event) {
     // data to send to host
     if (!waiting_for_ack) {
-      // send data         
-      event = byterev(event);                   
+      // send data
+      event = byterev(event);
       outuint(c_midi, event);
       th_count++;
       waiting_for_ack = 1;
@@ -52,13 +52,12 @@ static inline void handle_byte_from_uart(chanend c_midi,   struct midi_in_parse_
 #endif
 
 int uout_count = 0; // UART bytes out
-int uin_count = 0; // UART bytes in 
+int uin_count = 0; // UART bytes in
 
-void usb_midi(in port ?p_midi_in, out port ?p_midi_out, 
+void usb_midi(in port ?p_midi_in, out port ?p_midi_out,
               clock ?clk_midi,
               chanend c_midi,
-              unsigned cable_number)
-{
+              unsigned cable_number) {
   unsigned symbol = 0x0; // Symbol in progress of being sent out
   unsigned outputting = 0; // Guard when outputting data
   unsigned time; // Timer value used for outputting
@@ -90,30 +89,29 @@ void usb_midi(in port ?p_midi_in, out port ?p_midi_out,
   //configure_clock_rate(clk_midi, 100, 1);
   init_queue(symbol_fifo, symbol_fifo_arr, USB_MIDI_DEVICE_OUT_FIFO_SIZE);
   init_queue(to_host_fifo, to_host_fifo_arr, 1);
-  
+
   configure_out_port_no_ready(p_midi_out, clk_midi, 1);
   configure_in_port(p_midi_in, clk_midi);
- 
+
   start_clock(clk_midi);
   start_port(p_midi_out);
   start_port(p_midi_in);
- 
+
   reset_midi_state(mips);
 
   t :> time;
   t2 :> rxT;
 
 #ifndef MIDI_LOOPBACK
-  p_midi_out <: 1; // Start with high bit. 
+  p_midi_out <: 1; // Start with high bit.
   //  printstr("mout0");
 #endif
- 
+
   while (1) {
     int is_ack;
     unsigned int datum;
-    select 
-      {
-        // Input to read the start bit
+    select {
+      // Input to read the start bit
 #ifndef MIDI_LOOPBACK
 #ifdef MIDI_IN_4BIT_PORT
       case !isRX => p_midi_in when pinseq(0xE) :> void @  rxPT:
@@ -122,31 +120,27 @@ void usb_midi(in port ?p_midi_in, out port ?p_midi_out,
 #endif
         isRX = 1;
         t2 :> rxT;
-        rxT += (bit_time + bit_time_2); 
+        rxT += (bit_time + bit_time_2);
         rxPT += (bit_time + bit_time_2); // absorb start bit and set to halfway through the next bit
         rxI = 0;
         asm("setc res[%0],1"::"r"(p_midi_in));
         asm("setpt res[%0],%1"::"r"(p_midi_in),"r"(rxPT));
-        break;        
+        break;
         // Input to read the remaining bits
       case isRX => t2 when timerafter(rxT) :> int _ :
-        if (rxI++ < 8) 
-          {
+        if (rxI++ < 8) {
             // shift in bits into the high end of a word
             unsigned bit;
             p_midi_in :> bit;
             rxByte = (bit << 31) | (rxByte >> 1);
             rxT += bit_time;
             rxPT += bit_time;
-            asm("setpt res[%0],%1"::"r"(p_midi_in),"r"(rxPT));            
-          } 
-        else 
-          { 
+            asm("setpt res[%0],%1"::"r"(p_midi_in),"r"(rxPT));
+        } else {
             unsigned bit;
             // rcv and check stop bit
             p_midi_in :> bit;
-            if ((bit & 0x1) == 1)
-              {
+            if ((bit & 0x1) == 1) {
                 unsigned valid = 0;
                 unsigned event = 0;
                 uin_count++;
@@ -158,34 +152,31 @@ void usb_midi(in port ?p_midi_in, out port ?p_midi_out,
 
                 {valid, event} = midi_in_parse(mips, cable_number, rxByte);
                 if (valid && isempty(to_host_fifo)) {
-                  event = byterev(event);   
+                  event = byterev(event);
                   // data to send to host - add to fifo
                   if (!waiting_for_ack) {
-                    // send data         
-                    //                    printstr("uart->decouple: ");  
+                    // send data
+                    //                    printstr("uart->decouple: ");
                     outuint(c_midi, event);
                     waiting_for_ack = 1;
                     th_count++;
                   } else {
                     enqueue(to_host_fifo, event);
                   }
-                }
-                else if (valid) {
+                } else if (valid) {
                   //                  printstr("g");
                 }
-
-              }
+            }
             isRX = 0;
           }
         break;
-        
+
         // Output
         // If outputting then feed the bits out one at a time
         //  until symbol is zero expect pattern like 10'b1dddddddd0
         // This code will leave the output high afterwards due to the stop bit added with makeSymbol
       case outputting => t when timerafter(time) :> int _:
-        if (symbol == 0) 
-          {
+        if (symbol == 0) {
             uout_count++;
             outputted_symbol = outputting_symbol;
             // have we got another symbol to send to uart?
@@ -204,19 +195,16 @@ void usb_midi(in port ?p_midi_in, out port ?p_midi_out,
               t :> time;
               time += bit_time;
               txPT += bit_time;
-            }
-            else 
+            } else
               outputting = 0;
-          } 
-        else 
-          {
+        } else {
             time += bit_time;
             txPT += bit_time;
             p_midi_out @ txPT <: (symbol & 1);
             //            printstr("mout2\n");
             symbol >>= 1;
-          }
-        break;        
+        }
+        break;
 #endif
 
       case midi_get_ack_or_data(c_midi, is_ack, datum):
@@ -227,12 +215,10 @@ void usb_midi(in port ?p_midi_in, out port ?p_midi_out,
             //printstr("uart->decouple\n");
             outuint(c_midi, dequeue(to_host_fifo));
             th_count++;
-          }
-          else {            
+          } else {
             waiting_for_ack = 0;
-          }         
-        }
-        else {
+          }
+        } else {
           int event;
           unsigned midi[3];
           unsigned size;
@@ -243,13 +229,12 @@ void usb_midi(in port ?p_midi_in, out port ?p_midi_out,
   if (isempty(to_host_fifo)) {
     // data to send to host
     if (!waiting_for_ack) {
-      // send data         
-      event = byterev(event);                   
+      // send data
+      event = byterev(event);
       outuint(c_midi, event);
       th_count++;
       waiting_for_ack = 1;
-    }
-    else {
+    } else {
       event = byterev(event);
       enqueue(to_host_fifo, event);
     }
@@ -260,13 +245,13 @@ void usb_midi(in port ?p_midi_in, out port ?p_midi_out,
             // add symbol to fifo
             enqueue(symbol_fifo, midi[i]);
           }
- 
+
           if (space(symbol_fifo) > 3) {
             midi_send_ack(c_midi);
           } else {
             midi_from_host_overflow = 1;
           }
- 
+
           // Start sending from FIFO
           if (!isempty(symbol_fifo) && !outputting) {
             outputting_symbol = dequeue(symbol_fifo);
@@ -275,11 +260,11 @@ void usb_midi(in port ?p_midi_in, out port ?p_midi_out,
             if (space(symbol_fifo) > 2 && midi_from_host_overflow) {
               midi_from_host_overflow = 0;
               midi_send_ack(c_midi);
-            } 
+            }
 
-#ifdef MIDI_LOOPBACK         
+#ifdef MIDI_LOOPBACK
             handle_byte_from_uart(c_midi, mips, cable_number, got_next_event, next_event, waiting_for_ack, symbol);
-#else   
+#else
             // Start sending byte (to be continued by outputting case)
             p_midi_out <: 1 @ txPT;
             t :> time;
