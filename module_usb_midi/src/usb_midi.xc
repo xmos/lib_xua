@@ -60,7 +60,7 @@ void usb_midi(in port ?p_midi_in, out port ?p_midi_out,
               unsigned cable_number) {
   unsigned symbol = 0x0; // Symbol in progress of being sent out
   unsigned outputting = 0; // Guard when outputting data
-  unsigned time; // Timer value used for outputting
+  unsigned txT; // Timer value used for outputting
   //unsigned inputPortState, newInputPortState;
   int waiting_for_ack = 0;
   // Receiver
@@ -99,7 +99,7 @@ void usb_midi(in port ?p_midi_in, out port ?p_midi_out,
 
   reset_midi_state(mips);
 
-  t :> time;
+  t :> txT;
   t2 :> rxT;
 
 #ifndef MIDI_LOOPBACK
@@ -175,7 +175,7 @@ void usb_midi(in port ?p_midi_in, out port ?p_midi_out,
         // If outputting then feed the bits out one at a time
         //  until symbol is zero expect pattern like 10'b1dddddddd0
         // This code will leave the output high afterwards due to the stop bit added with makeSymbol
-      case outputting => t when timerafter(time) :> int _:
+      case outputting => t when timerafter(txT) :> int _:
         if (symbol == 0) {
             uout_count++;
             outputted_symbol = outputting_symbol;
@@ -192,13 +192,13 @@ void usb_midi(in port ?p_midi_in, out port ?p_midi_out,
 
               p_midi_out <: 1 @ txPT;
               //              printstr("mout1\n");
-              t :> time;
-              time += bit_time;
+              t :> txT;
+              txT += bit_time;
               txPT += bit_time;
             } else
               outputting = 0;
         } else {
-            time += bit_time;
+            txT += bit_time;
             txPT += bit_time;
             p_midi_out @ txPT <: (symbol & 1);
             //            printstr("mout2\n");
@@ -267,8 +267,8 @@ void usb_midi(in port ?p_midi_in, out port ?p_midi_out,
 #else
             // Start sending byte (to be continued by outputting case)
             p_midi_out <: 1 @ txPT;
-            t :> time;
-            time += bit_time;
+            t :> txT;
+            txT += bit_time;
             txPT += bit_time;
             outputting = 1;
 #endif
