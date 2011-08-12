@@ -146,6 +146,7 @@ void usb_midi(in port ?p_midi_in, out port ?p_midi_out,
                 uin_count++;
                 rxByte >>= 24;
                 //                if (rxByte != outputted_symbol) {
+                //                  // Loopback check
                 //                  printhexln(rxByte);
                 //                  printhexln(outputted_symbol);
                 //                }
@@ -177,8 +178,10 @@ void usb_midi(in port ?p_midi_in, out port ?p_midi_out,
         // This code will leave the output high afterwards due to the stop bit added with makeSymbol
       case outputting => t when timerafter(txT) :> int _:
         if (symbol == 0) {
-            uout_count++;
-            outputted_symbol = outputting_symbol;
+            // Start sending symbol.
+            //  This case is reached when a symbol has been received from the host but not started AND
+            //  When it has just finished sending a symbol
+
             // have we got another symbol to send to uart?
             if (!isempty(symbol_fifo)) { // FIFO not empty
               // Take from FIFO
@@ -195,6 +198,7 @@ void usb_midi(in port ?p_midi_in, out port ?p_midi_out,
               t :> txT;
               txT += bit_time;
               txPT += bit_time;
+              // leave outputting set
             } else
               outputting = 0;
         } else {
@@ -203,6 +207,11 @@ void usb_midi(in port ?p_midi_in, out port ?p_midi_out,
             p_midi_out @ txPT <: (symbol & 1);
             //            printstr("mout2\n");
             symbol >>= 1;
+            if (symbol == 0) {
+               // Finished sending
+               uout_count++;
+               outputted_symbol = outputting_symbol;
+            }
         }
         break;
 #endif
@@ -251,27 +260,10 @@ void usb_midi(in port ?p_midi_in, out port ?p_midi_out,
           } else {
             midi_from_host_overflow = 1;
           }
-
-          // Start sending from FIFO
-          if (!isempty(symbol_fifo) && !outputting) {
-            outputting_symbol = dequeue(symbol_fifo);
-            symbol = makeSymbol(outputting_symbol);
-
-            if (space(symbol_fifo) > 3 && midi_from_host_overflow) {
-              midi_from_host_overflow = 0;
-              midi_send_ack(c_midi);
-            }
-
-#ifdef MIDI_LOOPBACK
-            handle_byte_from_uart(c_midi, mips, cable_number, got_next_event, next_event, waiting_for_ack, symbol);
-#else
-            // Start sending byte (to be continued by outputting case)
-            p_midi_out <: 1 @ txPT;
-            t :> txT;
-            txT += bit_time;
-            txPT += bit_time;
+          // Could this drop through to the outputting case instead......
+          if (!outputting) {
+            t :> txT; // Should be enough to trigger the other case
             outputting = 1;
-#endif
           }
 #endif
         }
