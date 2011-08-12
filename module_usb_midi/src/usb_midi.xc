@@ -172,45 +172,46 @@ void usb_midi(in port ?p_midi_in, out port ?p_midi_out,
           }
         break;
 
-        // Output
-        // If outputting then feed the bits out one at a time
-        //  until symbol is zero expect pattern like 10'b1dddddddd0
-        // This code will leave the output high afterwards due to the stop bit added with makeSymbol
+      // Output
+      // If outputting then feed the bits out one at a time
+      //  until symbol is zero expect pattern like 10'b1dddddddd0
+      // This code will leave the output high afterwards due to the stop bit added with makeSymbol
       case outputting => t when timerafter(txT) :> int _:
         if (symbol == 0) {
+            // Got something to output but not mid-symbol.
             // Start sending symbol.
             //  This case is reached when a symbol has been received from the host but not started AND
             //  When it has just finished sending a symbol
 
-            // have we got another symbol to send to uart?
-            if (!isempty(symbol_fifo)) { // FIFO not empty
-              // Take from FIFO
-              outputting_symbol = dequeue(symbol_fifo);
-              symbol = makeSymbol(outputting_symbol);
+            // Take from FIFO
+            outputting_symbol = dequeue(symbol_fifo);
+            symbol = makeSymbol(outputting_symbol);
 
-              if (space(symbol_fifo) > 3 && midi_from_host_overflow) {
-                midi_from_host_overflow = 0;
-                midi_send_ack(c_midi);
-              }
+            if (space(symbol_fifo) > 3 && midi_from_host_overflow) {
+              midi_from_host_overflow = 0;
+              midi_send_ack(c_midi);
+            }
 
-              p_midi_out <: 1 @ txPT;
-              //              printstr("mout1\n");
-              t :> txT;
-              txT += bit_time;
-              txPT += bit_time;
-              // leave outputting set
-            } else
-              outputting = 0;
+            p_midi_out <: 1 @ txPT;
+            //              printstr("mout1\n");
+            t :> txT;
+            txT += bit_time;
+            txPT += bit_time;
+            outputting = 1;
         } else {
+            // Mid-symbol
             txT += bit_time;
             txPT += bit_time;
             p_midi_out @ txPT <: (symbol & 1);
             //            printstr("mout2\n");
             symbol >>= 1;
             if (symbol == 0) {
-               // Finished sending
+               // Finished sending byte
                uout_count++;
                outputted_symbol = outputting_symbol;
+               if (isempty(symbol_fifo)) { // FIFO empty
+                  outputting = 0;
+               }
             }
         }
         break;
@@ -260,7 +261,7 @@ void usb_midi(in port ?p_midi_in, out port ?p_midi_out,
           } else {
             midi_from_host_overflow = 1;
           }
-          // Could this drop through to the outputting case instead......
+          // Drop through to the outputting guarded case
           if (!outputting) {
             t :> txT; // Should be enough to trigger the other case
             outputting = 1;
