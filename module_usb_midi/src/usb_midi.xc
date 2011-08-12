@@ -257,7 +257,7 @@ void usb_midi(in port ?p_midi_in, out port ?p_midi_out,
             outputting_symbol = dequeue(symbol_fifo);
             symbol = makeSymbol(outputting_symbol);
 
-            if (space(symbol_fifo) > 2 && midi_from_host_overflow) {
+            if (space(symbol_fifo) > 3 && midi_from_host_overflow) {
               midi_from_host_overflow = 0;
               midi_send_ack(c_midi);
             }
