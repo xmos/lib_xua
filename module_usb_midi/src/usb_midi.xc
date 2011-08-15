@@ -128,18 +128,17 @@ void usb_midi(in port ?p_midi_in, out port ?p_midi_out,
         break;
         // Input to read the remaining bits
       case isRX => t2 when timerafter(rxT) :> int _ :
+      {
+        unsigned bit;
+        p_midi_in :> bit;
         if (rxI++ < 8) {
             // shift in bits into the high end of a word
-            unsigned bit;
-            p_midi_in :> bit;
             rxByte = (bit << 31) | (rxByte >> 1);
             rxT += bit_time;
             rxPT += bit_time;
             asm("setpt res[%0],%1"::"r"(p_midi_in),"r"(rxPT));
         } else {
-            unsigned bit;
             // rcv and check stop bit
-            p_midi_in :> bit;
             if ((bit & 0x1) == 1) {
                 unsigned valid = 0;
                 unsigned event = 0;
@@ -171,6 +170,7 @@ void usb_midi(in port ?p_midi_in, out port ?p_midi_out,
             isRX = 0;
           }
         break;
+      }
 
       // Output
       // If outputting then feed the bits out one at a time
@@ -229,11 +229,10 @@ void usb_midi(in port ?p_midi_in, out port ?p_midi_out,
             waiting_for_ack = 0;
           }
         } else {
-          int event;
           unsigned midi[3];
           unsigned size;
           // received data from host
-          event = byterev(datum);
+          int event = byterev(datum);
           mr_count++;
 #ifdef MIDI_LOOPBACK
   if (isempty(to_host_fifo)) {
