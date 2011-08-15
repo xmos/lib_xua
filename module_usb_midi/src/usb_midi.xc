@@ -200,7 +200,7 @@ void usb_midi(in port ?p_midi_in, out port ?p_midi_out,
             outputting = 1;
         } else {
             // Mid-symbol
-            txT += bit_time;
+            txT += bit_time; // Should this be after the output otherwise be double the length of the high before the start bit
             txPT += bit_time;
             p_midi_out @ txPT <: (symbol & 1);
             //            printstr("mout2\n");
