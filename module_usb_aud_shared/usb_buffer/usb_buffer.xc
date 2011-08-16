@@ -576,7 +576,7 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
         /* IAP IN to host */                  
         case inuint_byref(c_iap_to_host, tmp): 
             asm("#iap d->h");
-            
+ 
             // fill in the data
             XUD_SetData_Inline(ep_iap_to_host, c_iap_to_host);
 
@@ -586,6 +586,18 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
             SET_SHARED_GLOBAL(g_iap_to_host_flag, 1);
 
             swap(iap_to_host_buffer, iap_to_host_waiting_buffer);
+
+          break;
+
+        /* IAP interrupt IN to host */                  
+        case inuint_byref(c_iap_to_host_int, tmp): 
+            asm("#iap interrupt d->h");
+ 
+            // fill in the data
+            XUD_SetData_Inline(ep_iap_to_host_int, c_iap_to_host_int);
+
+            XUD_SetNotReady(ep_iap_to_host_int);                     
+            // Don't need to handle data here as always ZLP
 
           break;
 #endif

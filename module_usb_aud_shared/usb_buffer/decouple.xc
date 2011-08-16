@@ -181,6 +181,7 @@ int g_midi_from_host_buffer[MAX_USB_MIDI_PACKET_SIZE/4+4];
 unsigned int g_iap_to_host_buffer_A[MAX_IAP_PACKET_SIZE/4+4];
 unsigned int g_iap_to_host_buffer_B[MAX_IAP_PACKET_SIZE/4+4];
 int g_iap_from_host_buffer[MAX_IAP_PACKET_SIZE/4+4];
+unsigned g_zero_buffer[1];
 #endif
 #endif
 
@@ -667,6 +668,7 @@ void decouple(chanend c_mix_out,
     xc_ptr iap_from_host_buffer;
     xc_ptr iap_to_host_buffer_being_sent = array_to_xc_ptr(g_iap_to_host_buffer_A);
     xc_ptr iap_to_host_buffer_being_collected = array_to_xc_ptr(g_iap_to_host_buffer_B);
+    xc_ptr zero_buffer = array_to_xc_ptr(g_zero_buffer);
     
     int is_ack_iap;
     unsigned int datum_iap;
@@ -1187,6 +1189,7 @@ void decouple(chanend c_mix_out,
                 swap(iap_to_host_buffer_being_collected, iap_to_host_buffer_being_sent);
             
                 /* Request to send packet */
+                XUD_SetReady_In(iap_to_host_int_usb_ep, 0, zero_buffer, 0); // ZLP to int ep
                 XUD_SetReady_In(iap_to_host_usb_ep, 0, iap_to_host_buffer_being_sent+4, iap_data_collected_from_device);
 
                 /* Mark as waiting for host to poll us */
@@ -1277,6 +1280,7 @@ void decouple(chanend c_mix_out,
                         swap(iap_to_host_buffer_being_collected, iap_to_host_buffer_being_sent);
                     
                         // Signal other side to swap
+                        XUD_SetReady_In(iap_to_host_int_usb_ep, 0, zero_buffer, 0);
                         XUD_SetReady_In(iap_to_host_usb_ep, 0, iap_to_host_buffer_being_sent+4, iap_data_collected_from_device);
                         iap_data_collected_from_device = 0;
                         iap_waiting_on_send_to_host = 1;                  
