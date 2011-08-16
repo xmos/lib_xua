@@ -1068,12 +1068,8 @@ void decouple(chanend c_mix_out,
                 /* Swap the collecting and sending buffer */
                 swap(midi_to_host_buffer_being_collected, midi_to_host_buffer_being_sent);
             
-                {
-                    /* Request to send packet */
-                    int len; 
-                    asm("ldw %0, %1[0]":"=r"(len):"r"(midi_to_host_buffer_being_sent));
-                    XUD_SetReady_In(midi_to_host_usb_ep, 0, midi_to_host_buffer_being_sent+4, len);
-                } 
+                /* Request to send packet */
+                XUD_SetReady_In(midi_to_host_usb_ep, 0, midi_to_host_buffer_being_sent+4, midi_data_collected_from_device);
 
                 /* Mark as waiting for host to poll us */
                 midi_waiting_on_send_to_host = 1;                                                                                                                  
@@ -1158,16 +1154,12 @@ void decouple(chanend c_mix_out,
                     if (!midi_waiting_on_send_to_host) 
                     {
                         write_via_xc_ptr(midi_to_host_buffer_being_collected, midi_data_collected_from_device);
-                    
-                        midi_data_collected_from_device = 0;
+ 
                         swap(midi_to_host_buffer_being_collected, midi_to_host_buffer_being_sent);
                     
                         // Signal other side to swap
-                        {
-                            int len; 
-                            asm("ldw %0, %1[0]":"=r"(len):"r"(midi_to_host_buffer_being_sent));
-                            XUD_SetReady_In(midi_to_host_usb_ep, 0, midi_to_host_buffer_being_sent+4, len);
-                        }
+                        XUD_SetReady_In(midi_to_host_usb_ep, 0, midi_to_host_buffer_being_sent+4, midi_data_collected_from_device);
+                        midi_data_collected_from_device = 0;
                         midi_waiting_on_send_to_host = 1;                  
                     }
                 }          
@@ -1179,6 +1171,7 @@ void decouple(chanend c_mix_out,
 
 #ifdef IAP
 #ifdef IAP_BUFFERED
+        // Need to handle sending ZLP on iap_to_host_usb_ep_int to signal iOS device to collect from bulk endpoint.
         /* Check if buffer() has send IAP packet to host */
         GET_SHARED_GLOBAL(iap_to_host_flag, g_iap_to_host_flag);          
         if (iap_to_host_flag) 
@@ -1193,12 +1186,8 @@ void decouple(chanend c_mix_out,
                 /* Swap the collecting and sending buffer */
                 swap(iap_to_host_buffer_being_collected, iap_to_host_buffer_being_sent);
             
-                {
-                    /* Request to send packet */
-                    int len; 
-                    asm("ldw %0, %1[0]":"=r"(len):"r"(iap_to_host_buffer_being_sent));
-                    XUD_SetReady_In(iap_to_host_usb_ep, 0, iap_to_host_buffer_being_sent+4, len);
-                } 
+                /* Request to send packet */
+                XUD_SetReady_In(iap_to_host_usb_ep, 0, iap_to_host_buffer_being_sent+4, iap_data_collected_from_device);
 
                 /* Mark as waiting for host to poll us */
                 iap_waiting_on_send_to_host = 1;                                                                                                                  
@@ -1282,17 +1271,14 @@ void decouple(chanend c_mix_out,
                     // If we are not sending data to the host then initiate it
                     if (!iap_waiting_on_send_to_host) 
                     {
+                        // Set first element of buffer to length i.e. iap_to_host_buffer_being_collected[0] = iap_data_collected_from_device;
                         write_via_xc_ptr(iap_to_host_buffer_being_collected, iap_data_collected_from_device);
                     
-                        iap_data_collected_from_device = 0;
                         swap(iap_to_host_buffer_being_collected, iap_to_host_buffer_being_sent);
                     
                         // Signal other side to swap
-                        {
-                            int len; 
-                            asm("ldw %0, %1[0]":"=r"(len):"r"(iap_to_host_buffer_being_sent));
-                            XUD_SetReady_In(iap_to_host_usb_ep, 0, iap_to_host_buffer_being_sent+4, len);
-                        }
+                        XUD_SetReady_In(iap_to_host_usb_ep, 0, iap_to_host_buffer_being_sent+4, iap_data_collected_from_device);
+                        iap_data_collected_from_device = 0;
                         iap_waiting_on_send_to_host = 1;                  
                     }
                 }          
