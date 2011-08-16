@@ -5,9 +5,7 @@
 #define NO_INLINE_MIDI_SELECT_HANDLER 1
 #include "usb_midi.h"
 #define NO_INLINE_IAP_SELECT_HANDLER 1
-#ifdef IAP_BUFFERED
 #include "iAP.h"
-#endif
 #include "devicedefines.h"
 #include "testct_byref.h"
 #include "interrupt.h"
