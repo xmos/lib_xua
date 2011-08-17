@@ -1091,9 +1091,6 @@ void decouple(chanend c_mix_out,
             if (midi_from_host_flag)
             {
                 /* The buffer() thread has filled up a buffer */
-                int datalength;
-                int space_left;
-           
                 /* Reset flag */
                 SET_SHARED_GLOBAL(g_midi_from_host_flag, 0);
            
@@ -1210,9 +1207,6 @@ void decouple(chanend c_mix_out,
             if (iap_from_host_flag)
             {
                 /* The buffer() thread has filled up a buffer */
-                int datalength;
-                int space_left;
-           
                 /* Reset flag */
                 SET_SHARED_GLOBAL(g_iap_from_host_flag, 0);
            
