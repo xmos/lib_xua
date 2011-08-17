@@ -1257,7 +1257,7 @@ void decouple(chanend c_mix_out,
                         /* There is room in the collecting buffer for the data */
                         xc_ptr p = (iap_to_host_buffer_being_collected + 4) + iap_data_collected_from_device;                                                            
                         // Add data to the buffer
-                        write_byte_via_xc_ptr_indexed(p, 0, datum_iap);
+                        write_byte_via_xc_ptr(p, datum_iap);
                         iap_data_collected_from_device += 1;
                     }
                     else 
