@@ -1218,10 +1218,10 @@ void decouple(chanend c_mix_out,
            
                 if (iap_data_remaining_to_device) 
                 {
-                    read_via_xc_ptr(datum_iap, iap_from_host_rdptr);
+                    read_byte_via_xc_ptr(datum_iap, iap_from_host_rdptr);
                     outuint(c_iap, datum_iap);
-                    iap_from_host_rdptr += 4;              
-                    iap_data_remaining_to_device -= 4;
+                    iap_from_host_rdptr += 1;
+                    iap_data_remaining_to_device -= 1;
                 }                        
              }
         }
@@ -1242,10 +1242,10 @@ void decouple(chanend c_mix_out,
                     else 
                     {
                         /* Read another word from the fifo and output it to iap thread */
-                        read_via_xc_ptr(datum_iap, iap_from_host_rdptr);
-                        outuint(c_iap, datum_iap);        
-                        iap_from_host_rdptr += 4;              
-                        iap_data_remaining_to_device -= 4;
+                        read_byte_via_xc_ptr(datum_iap, iap_from_host_rdptr);
+                        outuint(c_iap, datum_iap);
+                        iap_from_host_rdptr += 1;
+                        iap_data_remaining_to_device -= 1;
                     }         
                 }
                 else 
