@@ -12,6 +12,7 @@ inline xc_ptr array_to_xc_ptr(unsigned a[]) {
 #define write_via_xc_ptr(p,x)   asm("stw %0, %1[0]"::"r"(x),"r"(p))
 
 #define write_via_xc_ptr_indexed(p,i,x)   asm("stw %0, %1[%2]"::"r"(x),"r"(p),"r"(i))
+#define write_byte_via_xc_ptr_indexed(p,i,x)   asm("st8 %0, %1[%2]"::"r"(x),"r"(p),"r"(i))
 
 #define read_via_xc_ptr(x,p)  asm("ldw %0, %1[0]":"=r"(x):"r"(p));
 
