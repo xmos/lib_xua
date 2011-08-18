@@ -553,15 +553,14 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
             {
                 xc_ptr p = iap_from_host_buffer + 4;
                 xc_ptr p0 = p;
-                xc_ptr p1 = p + MAX_IAP_PACKET_SIZE;
-                while (!testct(c_iap_from_host)) 
+                while (!testct(c_iap_from_host))
                 {
-                    unsigned int datum = inuint(c_iap_from_host);
-                    write_via_xc_ptr(p, datum);
-                    p += 4;
-                }  
-                (void) inct(c_iap_from_host);            
-                datalength = p - p0 - 4;            
+                    unsigned char datum = inuchar(c_iap_from_host);
+                    write_byte_via_xc_ptr(p, datum);
+                    p += 1;
+                }
+                (void) inct(c_iap_from_host);
+                datalength = p - p0 - 4;
             }
           
             XUD_SetNotReady(ep_iap_from_host);                     
