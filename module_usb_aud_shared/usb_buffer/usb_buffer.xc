@@ -553,14 +553,33 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
             {
                 xc_ptr p = iap_from_host_buffer + 4;
                 xc_ptr p0 = p;
+                    int tail;
                 while (!testct(c_iap_from_host))
                 {
-                    unsigned char datum = inuchar(c_iap_from_host);
-                    write_byte_via_xc_ptr(p, datum);
-                    p += 1;
+                    unsigned int datum = inuint(c_iap_from_host);
+                    write_via_xc_ptr(p, datum);
+                    p += 4;
                 }
-                (void) inct(c_iap_from_host);
-                datalength = p - p0 - 4;
+                tail = inct(c_iap_from_host);
+                datalength = p - p0;// - 4;
+                switch (tail)
+                    {
+                        case 13:
+                        // the tail is 3 which means
+                        datalength -= 3;
+                        break;
+//                        case 10:
+//                        // the tail is 0 which means
+//                        datalength -= 6;
+//                        break;
+                        default:
+                // Case not handled before
+printstrln("Tail case not handled (tail, datalength)");
+                printintln(tail);
+                printintln(datalength);
+                        // the tail is 2 which means the input was word aligned
+                        break;
+                }
             }
           
             XUD_SetNotReady(ep_iap_from_host);                     
