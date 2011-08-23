@@ -564,14 +564,22 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
                 datalength = p - p0;// - 4;
                 switch (tail)
                     {
-                        case 13:
-                        // the tail is 3 which means
-                        datalength -= 3;
-                        break;
 //                        case 10:
 //                        // the tail is 0 which means
 //                        datalength -= 6;
 //                        break;
+                        case 11:
+                        // the tail is 1 which means
+                        datalength -= 5;
+                        break;
+                        case 12:
+                        // the tail is 1 which means
+                        datalength -= 4;
+                        break;
+                        case 13:
+                        // the tail is 3 which means
+                        datalength -= 3;
+                        break;
                         default:
                 // Case not handled before
 printstrln("Tail case not handled (tail, datalength)");
