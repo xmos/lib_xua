@@ -1212,6 +1212,10 @@ void decouple(chanend c_mix_out,
            
                 /* Read length from buffer[0] */
                 read_via_xc_ptr(iap_data_remaining_to_device, iap_from_host_buffer);
+
+                // Send length first so iAP thread knows how much data to expect
+                // Don't expect ack from this to make it simpler
+                outuint(c_iap, iap_data_remaining_to_device);
             
                 /* Increment read pointer - buffer[0] is length */
                 iap_from_host_rdptr = iap_from_host_buffer + 4;
