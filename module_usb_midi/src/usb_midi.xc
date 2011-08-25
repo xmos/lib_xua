@@ -59,7 +59,7 @@ void usb_midi(in port ?p_midi_in, out port ?p_midi_out,
               chanend c_midi,
               unsigned cable_number) {
   unsigned symbol = 0x0; // Symbol in progress of being sent out
-  unsigned outputting = 0; // Guard when outputting data
+  unsigned isTX = 0; // Guard when outputting data
   unsigned txT; // Timer value used for outputting
   //unsigned inputPortState, newInputPortState;
   int waiting_for_ack = 0;
@@ -67,7 +67,7 @@ void usb_midi(in port ?p_midi_in, out port ?p_midi_out,
   unsigned rxByte;
   int rxI;
   int rxT;
-  int isRX = 0;
+  int isRX = 0; // Guard when receiving data
   timer t;
   timer t2;
 
@@ -173,10 +173,10 @@ void usb_midi(in port ?p_midi_in, out port ?p_midi_out,
       }
 
       // Output
-      // If outputting then feed the bits out one at a time
+      // If isTX then feed the bits out one at a time
       //  until symbol is zero expect pattern like 10'b1dddddddd0
       // This code will leave the output high afterwards due to the stop bit added with makeSymbol
-      case outputting => t when timerafter(txT) :> int _:
+      case isTX => t when timerafter(txT) :> int _:
         if (symbol == 0) {
             // Got something to output but not mid-symbol.
             // Start sending symbol.
@@ -197,7 +197,7 @@ void usb_midi(in port ?p_midi_in, out port ?p_midi_out,
             t :> txT;
             txT += bit_time;
             txPT += bit_time;
-            outputting = 1;
+            isTX = 1;
         } else {
             // Mid-symbol
             txT += bit_time; // Should this be after the output otherwise be double the length of the high before the start bit
@@ -210,7 +210,7 @@ void usb_midi(in port ?p_midi_in, out port ?p_midi_out,
                uout_count++;
                outputted_symbol = outputting_symbol;
                if (isempty(symbol_fifo)) { // FIFO empty
-                  outputting = 0;
+                  isTX = 0;
                }
             }
         }
@@ -260,10 +260,10 @@ void usb_midi(in port ?p_midi_in, out port ?p_midi_out,
           } else {
             midi_from_host_overflow = 1;
           }
-          // Drop through to the outputting guarded case
-          if (!outputting) {
+          // Drop through to the isTX guarded case
+          if (!isTX) {
             t :> txT; // Should be enough to trigger the other case
-            outputting = 1;
+            isTX = 1;
           }
 #endif
         }
