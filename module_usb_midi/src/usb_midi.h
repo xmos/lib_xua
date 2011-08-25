@@ -17,7 +17,9 @@
 void usb_midi(in port ?p_midi_in, out port ?p_midi_out, 
               clock ?clk_midi,
               chanend c_midi,
-              unsigned cable_number);
+              unsigned cable_number,
+chanend c_iap, chanend ?c_i2c // iOS stuff
+);
 
 #define MAX_USB_MIDI_PACKET_SIZE 1024
 #define MIDI_USB_BUFFER_FROM_HOST_FIFO_SIZE (512+1024)
