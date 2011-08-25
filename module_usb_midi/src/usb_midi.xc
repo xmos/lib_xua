@@ -72,8 +72,8 @@ void usb_midi(in port ?p_midi_in, out port ?p_midi_out,
   timer t2;
 
   // One place buffer for data going out to host
-  queue to_host_fifo;
-  unsigned to_host_fifo_arr[1];
+  queue midi_to_host_fifo;
+  unsigned midi_to_host_fifo_arr[1];
 
   unsigned outputting_symbol, outputted_symbol;
 
@@ -88,7 +88,7 @@ void usb_midi(in port ?p_midi_in, out port ?p_midi_out,
 
   //configure_clock_rate(clk_midi, 100, 1);
   init_queue(symbol_fifo, symbol_fifo_arr, USB_MIDI_DEVICE_OUT_FIFO_SIZE);
-  init_queue(to_host_fifo, to_host_fifo_arr, 1);
+  init_queue(midi_to_host_fifo, midi_to_host_fifo_arr, 1);
 
   configure_out_port_no_ready(p_midi_out, clk_midi, 1);
   configure_in_port(p_midi_in, clk_midi);
@@ -151,7 +151,7 @@ void usb_midi(in port ?p_midi_in, out port ?p_midi_out,
                 //                }
 
                 {valid, event} = midi_in_parse(mips, cable_number, rxByte);
-                if (valid && isempty(to_host_fifo)) {
+                if (valid && isempty(midi_to_host_fifo)) {
                   event = byterev(event);
                   // data to send to host - add to fifo
                   if (!waiting_for_ack) {
@@ -161,7 +161,7 @@ void usb_midi(in port ?p_midi_in, out port ?p_midi_out,
                     waiting_for_ack = 1;
                     th_count++;
                   } else {
-                    enqueue(to_host_fifo, event);
+                    enqueue(midi_to_host_fifo, event);
                   }
                 } else if (valid) {
                   //                  printstr("g");
@@ -221,9 +221,9 @@ void usb_midi(in port ?p_midi_in, out port ?p_midi_out,
         if (is_ack) {
           // have we got more data to send
           //printstr("ack\n");
-          if (!isempty(to_host_fifo)) {
+          if (!isempty(midi_to_host_fifo)) {
             //printstr("uart->decouple\n");
-            outuint(c_midi, dequeue(to_host_fifo));
+            outuint(c_midi, dequeue(midi_to_host_fifo));
             th_count++;
           } else {
             waiting_for_ack = 0;
@@ -235,7 +235,7 @@ void usb_midi(in port ?p_midi_in, out port ?p_midi_out,
           int event = byterev(datum);
           mr_count++;
 #ifdef MIDI_LOOPBACK
-  if (isempty(to_host_fifo)) {
+  if (isempty(midi_to_host_fifo)) {
     // data to send to host
     if (!waiting_for_ack) {
       // send data
@@ -245,7 +245,7 @@ void usb_midi(in port ?p_midi_in, out port ?p_midi_out,
       waiting_for_ack = 1;
     } else {
       event = byterev(event);
-      enqueue(to_host_fifo, event);
+      enqueue(midi_to_host_fifo, event);
     }
   }
 #else
