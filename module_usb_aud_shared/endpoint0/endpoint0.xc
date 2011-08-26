@@ -19,6 +19,7 @@
 #include "audiostream.h"
 #include "vendorrequests.h"
 #include "dfu_types.h"
+#include "xc_ptr.h"
 
 /* Windows does not have a built in DFU driver (windows will prompt), so warn that DFU will not be functional in Audio 1.0 mode.
  * Of course, OSX is unaffected.  
@@ -93,6 +94,9 @@ unsigned g_curUsbSpeed = 0;
 #ifdef HOST_ACTIVE_CALL
 void VendorHostActive(int active);
 #endif
+
+/* Global used for signalling reset to decouple */
+extern unsigned g_iap_reset;
 
 /* Used when setting/clearing EP halt */
 void SetEndpointStatus(unsigned epNum, unsigned status)
@@ -797,7 +801,10 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl, cha
         
         if (retVal < 0) 
         {
+            int iap_reset = 1;
             g_curUsbSpeed = XUD_ResetEndpoint(ep0_in, ep0_out);
+            SET_SHARED_GLOBAL(g_iap_reset, iap_reset);
+            //printstrln("Resetting");
 
             g_config = 0;
 

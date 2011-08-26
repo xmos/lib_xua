@@ -158,6 +158,7 @@ int midi_from_host_usb_ep = 0;
 
 #ifdef IAP
 #ifdef IAP_BUFFERED
+unsigned g_iap_reset = 0;
 unsigned g_iap_from_host_flag = 0;
 unsigned g_iap_to_host_flag = 0;
 int iap_to_host_usb_ep = 0;
@@ -672,6 +673,7 @@ void decouple(chanend c_mix_out,
     
     int is_ack_iap;
     int is_reset;
+    int iap_reset;
     unsigned int datum_iap;
     int iap_data_remaining_to_device = 0;
     int iap_data_collected_from_device = 0;
@@ -764,7 +766,6 @@ void decouple(chanend c_mix_out,
 
     // send the current host -> device buffer out of the fifo
     XUD_SetReady(iap_from_host_usb_ep, 1);
-                    iap_send_reset(c_iap);
 #endif
 #endif
 
@@ -1172,6 +1173,12 @@ void decouple(chanend c_mix_out,
 
 #ifdef IAP
 #ifdef IAP_BUFFERED
+        GET_SHARED_GLOBAL(iap_reset, g_iap_reset);          
+        if (iap_reset) {
+           iap_send_reset(c_iap); // What if this happen in the middle of a send/ack?
+           iap_reset = 0;
+           SET_SHARED_GLOBAL(g_iap_reset, iap_reset); // Reset has been signalled
+        }
         // Need to handle sending ZLP on iap_to_host_usb_ep_int to signal iOS device to collect from bulk endpoint.
         /* Check if buffer() has send IAP packet to host */
         GET_SHARED_GLOBAL(iap_to_host_flag, g_iap_to_host_flag);          
