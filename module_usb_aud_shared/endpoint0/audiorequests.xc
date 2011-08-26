@@ -866,7 +866,7 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, SetupPacket &sp, chanend
                             int i = 2;
 
                             if(interfaceAlt[1] != 0)
-                                printint(interfaceAlt[1]);
+                                ;//printint(interfaceAlt[1]);
 
                             #if MAX_FREQ >= 44100
                             storeFreq(buffer, i, 44100);
