@@ -671,6 +671,7 @@ void decouple(chanend c_mix_out,
     xc_ptr zero_buffer = array_to_xc_ptr(g_zero_buffer);
     
     int is_ack_iap;
+    int is_reset;
     unsigned int datum_iap;
     int iap_data_remaining_to_device = 0;
     int iap_data_collected_from_device = 0;
@@ -763,6 +764,7 @@ void decouple(chanend c_mix_out,
 
     // send the current host -> device buffer out of the fifo
     XUD_SetReady(iap_from_host_usb_ep, 1);
+                    iap_send_reset(c_iap);
 #endif
 #endif
 
@@ -1233,7 +1235,7 @@ void decouple(chanend c_mix_out,
         select 
         {   
             /* Received word from iap thread - Check for ACK or Data */                 
-            case iap_get_ack_or_data(c_iap, is_ack_iap, datum_iap):
+            case iap_get_ack_or_reset_or_data(c_iap, is_ack_iap, is_reset, datum_iap):
                 if (is_ack_iap) 
                 {
                     /* An ack from the iap/uart thread means it has accepted some data we sent it

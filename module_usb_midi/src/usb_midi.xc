@@ -155,21 +155,11 @@ chanend c_iap, chanend ?c_i2c // iOS stuff
    // Initialise buffers
    init_queue(to_host_fifo, to_host_arr, 256);
    init_queue(from_host_fifo, from_host_arr, 256);
-   // Start buffer with StartIDPS message in
-   iap_bufferlen = StartIDPS(iap_buffer);
-   port32A_set(P32A_I2C_NOTMIDI);
-   for (int i = 0; i != iap_bufferlen; i++) {
-      enqueue(to_host_fifo, iap_buffer[i]);
-   }
-   //dump(to_host_fifo);
-   // Start the ball rolling (so I will be expecting an ack)
-   outuint(c_iap, dequeue(to_host_fifo));
-   ith_count++;
-
 
 
   while (1) {
     int is_ack;
+    int is_reset;
     unsigned int datum;
     select {
       // Input to read the start bit
@@ -329,7 +319,21 @@ chanend c_iap, chanend ?c_i2c // iOS stuff
 #endif
         }
         break;
-      case !(isTX || isRX) => iap_get_ack_or_data(c_iap, is_ack, datum):
+      case !(isTX || isRX) => iap_get_ack_or_reset_or_data(c_iap, is_ack, is_reset, datum):
+         if (is_reset) {
+authenticating = 1;
+   // Start buffer with StartIDPS message in
+   iap_bufferlen = StartIDPS(iap_buffer);
+   port32A_set(P32A_I2C_NOTMIDI);
+   for (int i = 0; i != iap_bufferlen; i++) {
+      enqueue(to_host_fifo, iap_buffer[i]);
+   }
+   //dump(to_host_fifo);
+   // Start the ball rolling (so I will be expecting an ack)
+   outuint(c_iap, dequeue(to_host_fifo));
+   ith_count++;
+
+         } else {
          //printstrln("iap_get_ack_or_data");
          if (is_ack) {
            // have we got more data to send
@@ -377,6 +381,7 @@ chanend c_iap, chanend ?c_i2c // iOS stuff
          if (!authenticating) {
  //           printstrln("Completed authentication");
               p_midi_in :> void; // Change port around to input again after authenticating
+         }
          }
    
          break;
