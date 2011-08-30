@@ -564,16 +564,16 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
                 datalength = p - p0;// - 4;
                 switch (tail)
                     {
-//                        case 10:
-//                        // the tail is 0 which means
-//                        datalength -= 6;
-//                        break;
+                        case 10:
+                        // the tail is 0 which means
+                        datalength -= 6;
+                        break;
                         case 11:
                         // the tail is 1 which means
                         datalength -= 5;
                         break;
                         case 12:
-                        // the tail is 1 which means
+                        // the tail is 2 which means
                         datalength -= 4;
                         break;
                         case 13:
@@ -581,11 +581,10 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
                         datalength -= 3;
                         break;
                         default:
-                // Case not handled before
-printstrln("Tail case not handled (tail, datalength)");
-                printintln(tail);
-                printintln(datalength);
-                        // the tail is 2 which means the input was word aligned
+//                // Case not handled before
+//                printstrln("Tail case not handled (tail, datalength)");
+//                printintln(tail);
+//                printintln(datalength);
                         break;
                 }
             }
