@@ -21,6 +21,10 @@
 #undef IAP_BUFFERED
 #endif
 
+#if defined(CONNECTOR_30_PIN) && (CONNECTOR_30_PIN == 0)
+#undef CONNECTOR_30_PIN 
+#endif
+
 #if defined(MIDI) && (MIDI == 0)
 #undef MIDI
 #endif
