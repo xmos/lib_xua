@@ -14,7 +14,7 @@
 void decouple(chanend c_audio_out,
               chanend ?c_led,
               chanend ?c_midi, chanend ?c_clk_int
-#ifdef IAP_BUFFERED
+#ifdef IAP
 , chanend ?c_iap
 #endif
 );

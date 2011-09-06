@@ -17,10 +17,6 @@
 #undef IAP
 #endif
 
-#if defined(IAP_BUFFERED) && (IAP_BUFFERED == 0)
-#undef IAP_BUFFERED
-#endif
-
 #if defined(CONNECTOR_30_PIN) && (CONNECTOR_30_PIN == 0)
 #undef CONNECTOR_30_PIN 
 #endif
