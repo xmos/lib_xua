@@ -1119,7 +1119,7 @@ unsigned char cfgDesc_Audio2[] =
     0x03,                            /* 3 bmAttributes : Interrupt, not shared. (field size 1 bytes) */
     0x00,                            /* 4 wMaxPacketSize : 64 bytes per packet. (field size 2 bytes) - has to be 0x200 for compliance*/
     0x02,                            /* 5 wMaxPacketSize */
-    0x08,                            /* 6 bInterval : in ms must be between 4 and 32ms (field size 1 bytes) */
+    0x08,                            /* 6 bInterval : 2^(bInterval-1) ms. Must be between 4 and 32ms (field size 1 bytes) */
 #endif
 
 };
