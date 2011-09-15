@@ -74,6 +74,7 @@ extern int data_to_send;
 //// state for GetDevAuthenticationSignature
 //int startup = 1;
 extern unsigned authenticating;
+extern unsigned identificationstarted;
 
 extern port p_i2c_scl;
 extern port p_i2c_sda;
@@ -321,18 +322,22 @@ chanend c_iap, chanend ?c_i2c // iOS stuff
         break;
       case !(isTX || isRX) => iap_get_ack_or_reset_or_data(c_iap, is_ack, is_reset, datum):
          if (is_reset) {
-authenticating = 1;
-   // Start buffer with StartIDPS message in
-   iap_bufferlen = StartIDPS(iap_buffer);
-   port32A_set(P32A_I2C_NOTMIDI);
-   for (int i = 0; i != iap_bufferlen; i++) {
-      enqueue(to_host_fifo, iap_buffer[i]);
-   }
-   //dump(to_host_fifo);
-   // Start the ball rolling (so I will be expecting an ack)
-   outuint(c_iap, dequeue(to_host_fifo));
-   ith_count++;
-
+            // Do regardless
+            authenticating = 1;
+            port32A_set(P32A_I2C_NOTMIDI);
+            // Prevent multiple issuing of StartIDPS (may need to handle it getting lost)
+            if (!identificationstarted) {
+               // Start buffer with StartIDPS message in
+               iap_bufferlen = StartIDPS(iap_buffer);
+               for (int i = 0; i != iap_bufferlen; i++) {
+                  enqueue(to_host_fifo, iap_buffer[i]);
+               }
+               //dump(to_host_fifo);
+               // Start the ball rolling (so I will be expecting an ack)
+               outuint(c_iap, dequeue(to_host_fifo));
+               ith_count++;
+               identificationstarted = 1;
+            }
          } else {
          //printstrln("iap_get_ack_or_data");
          if (is_ack) {
