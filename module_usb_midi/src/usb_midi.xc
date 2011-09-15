@@ -81,6 +81,81 @@ extern port p_i2c_sda;
 #define p_midi_out p_i2c_scl
 #define p_midi_in p_i2c_sda
 
+// Buffers
+queue to_host_fifo;
+unsigned to_host_arr[256];
+queue from_host_fifo;
+unsigned from_host_arr[256];
+// State
+unsigned expecting_length = 1; // Expecting the next data item to be a length
+unsigned expected_data_length = 0; // The length of data we are expecting
+
+void handle_iap_case(int is_ack, int is_reset, unsigned int datum, chanend c_iap, chanend ?c_i2c) {
+   if (is_reset) {
+      // Do regardless
+      authenticating = 1;
+      port32A_set(P32A_I2C_NOTMIDI);
+      // Prevent multiple issuing of StartIDPS (may need to handle it getting lost)
+      if (!identificationstarted) {
+         // Start buffer with StartIDPS message in
+         iap_bufferlen = StartIDPS(iap_buffer);
+         for (int i = 0; i != iap_bufferlen; i++) {
+            enqueue(to_host_fifo, iap_buffer[i]);
+         }
+         //dump(to_host_fifo);
+         // Start the ball rolling (so I will be expecting an ack)
+         outuint(c_iap, dequeue(to_host_fifo));
+         ith_count++;
+         identificationstarted = 1;
+      }
+   } else {
+      //printstrln("iap_get_ack_or_data");
+      if (is_ack) {
+        // have we got more data to send
+        //printstr("ack\n");
+        if (!isempty(to_host_fifo)) {
+          //printstr("iap->decouple\n");
+          outuint(c_iap, dequeue(to_host_fifo));
+          ith_count++;
+        } else {
+          //printintln(ith_count);
+        }
+      } else {
+         if (expecting_length) {
+           expected_data_length = datum;
+           expecting_length = 0;
+           // iap_send_ack(c_iap); // Don't send ack as I don't expect it at the other end!
+         } else {
+           // Expecting data
+           int fullness;
+           enqueue(from_host_fifo, datum);
+           iap_send_ack(c_iap);
+           fullness = items(from_host_fifo);
+           if (fullness == expected_data_length) {
+             // Received whole message. Transfer to iap_buffer for parse
+             for (int i = 0; i != fullness; i++) {
+                iap_buffer[i] = dequeue(from_host_fifo);
+             }
+             iap_bufferlen = expected_data_length;
+             // Parse iAP from host
+             parseiAP(c_i2c);
+             // Start the ball rolling
+             if (data_to_send) {
+                for (int i = 0; i != iap_bufferlen; i++) {
+                   enqueue(to_host_fifo, iap_buffer[i]);
+                   //printhexln(dequeue(from_host_fifo));
+                }
+                outuint(c_iap, dequeue(to_host_fifo));
+                ith_count++;
+                data_to_send = 0; // In this usage data_to_send is just used to kick off the data. The rest is pulled by ACKs.
+             }
+             expecting_length = 1;
+           }
+         }
+      }
+   }
+}
+
 void usb_midi(in port ?p_midi_inj, out port ?p_midi_outj,
               clock ?clk_midi,
               chanend c_midi,
@@ -117,15 +192,6 @@ chanend c_iap, chanend ?c_i2c // iOS stuff
   int midi_from_host_overflow = 0;
 
   // iAP declarations
-
-   // Buffers
-   queue to_host_fifo;
-   unsigned to_host_arr[256];
-   queue from_host_fifo;
-   unsigned from_host_arr[256];
-   // State
-   unsigned expecting_length = 1; // Expecting the next data item to be a length 
-   unsigned expected_data_length = 0; // The length of data we are expecting
 
 
 
@@ -321,74 +387,11 @@ chanend c_iap, chanend ?c_i2c // iOS stuff
         }
         break;
       case !(isTX || isRX) => iap_get_ack_or_reset_or_data(c_iap, is_ack, is_reset, datum):
-         if (is_reset) {
-            // Do regardless
-            authenticating = 1;
-            port32A_set(P32A_I2C_NOTMIDI);
-            // Prevent multiple issuing of StartIDPS (may need to handle it getting lost)
-            if (!identificationstarted) {
-               // Start buffer with StartIDPS message in
-               iap_bufferlen = StartIDPS(iap_buffer);
-               for (int i = 0; i != iap_bufferlen; i++) {
-                  enqueue(to_host_fifo, iap_buffer[i]);
-               }
-               //dump(to_host_fifo);
-               // Start the ball rolling (so I will be expecting an ack)
-               outuint(c_iap, dequeue(to_host_fifo));
-               ith_count++;
-               identificationstarted = 1;
-            }
-         } else {
-         //printstrln("iap_get_ack_or_data");
-         if (is_ack) {
-           // have we got more data to send
-           //printstr("ack\n");
-           if (!isempty(to_host_fifo)) {
-             //printstr("iap->decouple\n");
-             outuint(c_iap, dequeue(to_host_fifo));
-             ith_count++;
-           } else {
-             //printintln(ith_count);
-           }
-         } else {
-            if (expecting_length) {
-              expected_data_length = datum;
-              expecting_length = 0;
-              // iap_send_ack(c_iap); // Don't send ack as I don't expect it at the other end!
-            } else {
-              // Expecting data
-              int fullness;
-              enqueue(from_host_fifo, datum);
-              iap_send_ack(c_iap);
-              fullness = items(from_host_fifo);
-              if (fullness == expected_data_length) {
-                // Received whole message. Transfer to iap_buffer for parse
-                for (int i = 0; i != fullness; i++) {
-                   iap_buffer[i] = dequeue(from_host_fifo);
-                }
-                iap_bufferlen = expected_data_length;
-                // Parse iAP from host
-                parseiAP(c_i2c);
-                // Start the ball rolling
-                if (data_to_send) {
-                   for (int i = 0; i != iap_bufferlen; i++) {
-                      enqueue(to_host_fifo, iap_buffer[i]);
-                      //printhexln(dequeue(from_host_fifo));
-                   }
-                   outuint(c_iap, dequeue(to_host_fifo));
-                   ith_count++;
-                   data_to_send = 0; // In this usage data_to_send is just used to kick off the data. The rest is pulled by ACKs.
-                }
-                expecting_length = 1;
-              }
-            }
-         }
+         handle_iap_case(is_ack, is_reset, datum, c_iap, c_i2c);
          if (!authenticating) {
  //           printstrln("Completed authentication");
               p_midi_in :> void; // Change port around to input again after authenticating
          }
-         }
-   
          break;
        }
   }
