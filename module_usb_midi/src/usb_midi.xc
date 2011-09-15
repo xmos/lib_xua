@@ -56,105 +56,13 @@ static inline void handle_byte_from_uart(chanend c_midi,   struct midi_in_parse_
 int uout_count = 0; // UART bytes out
 int uin_count = 0; // UART bytes in
 
-extern int ith_count; // Count of things sent to host
-
-//// state for iAP
-extern char iap_buffer[513]; // This should be just enough to hold a maximum size RetDevAuthenticationInfo (plus one for checksum when using transaction id as well) but this exceeds wMaxPacketSize
-extern int iap_bufferlen;
-extern int data_to_send;
-//
-//// state for GetDevAuthenticationInfo (global because returned on several RetDevAuthenticationInfos)
-//char major = 0xf;
-//char minor = 0xb;
-//char cert[1920];
-//unsigned short certLen = 0;
-//int currentSectionIndex;
-//int maxSectionIndex;
-//
-//// state for GetDevAuthenticationSignature
-//int startup = 1;
+// state for iAP
 extern unsigned authenticating;
-extern unsigned identificationstarted;
 
 extern port p_i2c_scl;
 extern port p_i2c_sda;
 #define p_midi_out p_i2c_scl
 #define p_midi_in p_i2c_sda
-
-// Buffers
-queue to_host_fifo;
-unsigned to_host_arr[256];
-queue from_host_fifo;
-unsigned from_host_arr[256];
-// State
-unsigned expecting_length = 1; // Expecting the next data item to be a length
-unsigned expected_data_length = 0; // The length of data we are expecting
-
-void handle_iap_case(int is_ack, int is_reset, unsigned int datum, chanend c_iap, chanend ?c_i2c) {
-   if (is_reset) {
-      // Do regardless
-      authenticating = 1;
-      port32A_set(P32A_I2C_NOTMIDI);
-      // Prevent multiple issuing of StartIDPS (may need to handle it getting lost)
-      if (!identificationstarted) {
-         // Start buffer with StartIDPS message in
-         iap_bufferlen = StartIDPS(iap_buffer);
-         for (int i = 0; i != iap_bufferlen; i++) {
-            enqueue(to_host_fifo, iap_buffer[i]);
-         }
-         //dump(to_host_fifo);
-         // Start the ball rolling (so I will be expecting an ack)
-         outuint(c_iap, dequeue(to_host_fifo));
-         ith_count++;
-         identificationstarted = 1;
-      }
-   } else {
-      //printstrln("iap_get_ack_or_data");
-      if (is_ack) {
-        // have we got more data to send
-        //printstr("ack\n");
-        if (!isempty(to_host_fifo)) {
-          //printstr("iap->decouple\n");
-          outuint(c_iap, dequeue(to_host_fifo));
-          ith_count++;
-        } else {
-          //printintln(ith_count);
-        }
-      } else {
-         if (expecting_length) {
-           expected_data_length = datum;
-           expecting_length = 0;
-           // iap_send_ack(c_iap); // Don't send ack as I don't expect it at the other end!
-         } else {
-           // Expecting data
-           int fullness;
-           enqueue(from_host_fifo, datum);
-           iap_send_ack(c_iap);
-           fullness = items(from_host_fifo);
-           if (fullness == expected_data_length) {
-             // Received whole message. Transfer to iap_buffer for parse
-             for (int i = 0; i != fullness; i++) {
-                iap_buffer[i] = dequeue(from_host_fifo);
-             }
-             iap_bufferlen = expected_data_length;
-             // Parse iAP from host
-             parseiAP(c_i2c);
-             // Start the ball rolling
-             if (data_to_send) {
-                for (int i = 0; i != iap_bufferlen; i++) {
-                   enqueue(to_host_fifo, iap_buffer[i]);
-                   //printhexln(dequeue(from_host_fifo));
-                }
-                outuint(c_iap, dequeue(to_host_fifo));
-                ith_count++;
-                data_to_send = 0; // In this usage data_to_send is just used to kick off the data. The rest is pulled by ACKs.
-             }
-             expecting_length = 1;
-           }
-         }
-      }
-   }
-}
 
 void usb_midi(in port ?p_midi_inj, out port ?p_midi_outj,
               clock ?clk_midi,
@@ -217,12 +125,7 @@ chanend c_iap, chanend ?c_i2c // iOS stuff
   //  printstr("mout0");
 #endif
 
-
-   // iAP initialisation
-   // Initialise buffers
-   init_queue(to_host_fifo, to_host_arr, 256);
-   init_queue(from_host_fifo, from_host_arr, 256);
-
+  init_iAP();
 
   while (1) {
     int is_ack;
@@ -390,7 +293,7 @@ chanend c_iap, chanend ?c_i2c // iOS stuff
          handle_iap_case(is_ack, is_reset, datum, c_iap, c_i2c);
          if (!authenticating) {
  //           printstrln("Completed authentication");
-              p_midi_in :> void; // Change port around to input again after authenticating
+              p_midi_in :> void; // Change port around to input again after authenticating (unique to midi+iAP case)
          }
          break;
        }
