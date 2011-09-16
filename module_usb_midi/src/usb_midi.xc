@@ -99,10 +99,6 @@ chanend c_iap, chanend ?c_i2c // iOS stuff
   unsigned rxPT, txPT;
   int midi_from_host_overflow = 0;
 
-  // iAP declarations
-
-
-
   //configure_clock_rate(clk_midi, 100, 1);
   init_queue(symbol_fifo, symbol_fifo_arr, USB_MIDI_DEVICE_OUT_FIFO_SIZE);
   init_queue(midi_to_host_fifo, midi_to_host_fifo_arr, 1);
@@ -125,7 +121,7 @@ chanend c_iap, chanend ?c_i2c // iOS stuff
   //  printstr("mout0");
 #endif
 
-  init_iAP();
+  init_iAP(c_i2c);
 
   while (1) {
     int is_ack;
