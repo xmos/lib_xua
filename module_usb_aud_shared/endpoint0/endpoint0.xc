@@ -570,7 +570,10 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl, cha
                                 VendorHostActive(1);
                             }
 #endif
-
+                            {
+                               int iap_reset = 1;
+                               SET_SHARED_GLOBAL(g_iap_reset, iap_reset);
+                            }
                             /* No data stage for this request, just do status stage */
                             retVal = XUD_DoSetRequestStatus(ep0_in, 0);
                             break;
@@ -801,9 +804,7 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl, cha
         
         if (retVal < 0) 
         {
-            int iap_reset = 1;
             g_curUsbSpeed = XUD_ResetEndpoint(ep0_in, ep0_out);
-            SET_SHARED_GLOBAL(g_iap_reset, iap_reset);
             //printstrln("Resetting");
 
             g_config = 0;
