@@ -59,6 +59,9 @@ int uin_count = 0; // UART bytes in
 // state for iAP
 extern unsigned authenticating;
 
+// state for auto-selecting dock or USB B
+extern unsigned polltime;
+
 extern port p_i2c_scl;
 extern port p_i2c_sda;
 #define p_midi_out p_i2c_scl
@@ -121,8 +124,12 @@ chanend c_iap, chanend ?c_i2c // iOS stuff
   //  printstr("mout0");
 #endif
 
-  init_iAP(c_i2c);
+  init_iAP(c_i2c); // uses timer for i2c initialisation pause..
 
+  {
+   timer poll; // .. so declare this after or don't have enough timers
+   poll :> polltime;
+   polltime + XS1_TIMER_HZ / 2;
   while (1) {
     int is_ack;
     int is_reset;
@@ -292,7 +299,11 @@ chanend c_iap, chanend ?c_i2c // iOS stuff
               p_midi_in :> void; // Change port around to input again after authenticating (unique to midi+iAP case)
          }
          break;
-       }
+      case poll when timerafter(polltime) :> void:
+        handle_poll_dev_det(poll);
+        break;
+      }
   }
+ }
 }
 
