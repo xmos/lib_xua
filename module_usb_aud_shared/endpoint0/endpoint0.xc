@@ -136,8 +136,8 @@ static unsigned char strDesc_langIDs[] = DESC_STR_LANGIDS;
 void VendorAudioRequestsInit(chanend c_audioControl, chanend ?c_mix_ctl, chanend ?c_clk_ctl);
 
 /* Endpoint 0 function.  Handles all requests to the device */
-void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl, chanend ?c_mix_ctl, chanend ?c_clk_ctl
-)
+void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl, 
+    chanend ?c_mix_ctl, chanend ?c_clk_ctl, chanend ?c_usb_test)
 {
     unsigned char buffer[512];
     SetupPacket sp;
@@ -288,7 +288,7 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl, cha
                 cfgDesc_Audio2, sizeof(cfgDesc_Audio2), 
                 devQualDesc_Audio1, sizeof(devQualDesc_Audio1), 
                 cfgDesc_Audio1, sizeof(cfgDesc_Audio1), 
-                strDescs_Audio2, sp);
+                strDescs_Audio2, sp, c_usb_test);
 #else
             /* Return Audio 2.0 Descriptors */
             cfgDesc_Audio2[1] = CONFIGURATION;
@@ -299,7 +299,7 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl, cha
                 cfgDesc_Audio2, sizeof(cfgDesc_Audio2), 
                 devQualDesc_Null, sizeof(devQualDesc_Null), 
                 cfgDesc_Null, sizeof(cfgDesc_Null), 
-                strDescs_Audio2, sp);
+                strDescs_Audio2, sp, c_usb_test);
 #endif
         }
         else
@@ -314,7 +314,7 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl, cha
                 cfgDesc_Audio1, sizeof(cfgDesc_Audio1), 
                 devQualDesc_Audio2, sizeof(devQualDesc_Audio2), 
                 cfgDesc_Audio2, sizeof(cfgDesc_Audio2), 
-                strDescs_Audio1, sp);
+                strDescs_Audio1, sp, c_usb_test);
 
 #else
             cfgDesc_Null[1] = CONFIGURATION;
@@ -325,7 +325,7 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl, cha
                 cfgDesc_Null, sizeof(cfgDesc_Null), 
                 devQualDesc_Audio2, sizeof(devQualDesc_Audio2), 
                 cfgDesc_Audio2, sizeof(cfgDesc_Audio2), 
-                strDescs_Audio2, sp);
+                strDescs_Audio2, sp, c_usb_test);
 #endif 
 
         }
@@ -345,7 +345,7 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl, cha
                     cfgDesc_Audio2, sizeof(cfgDesc_Audio2), 
                     devQualDesc_Audio1, sizeof(devQualDesc_Audio1), 
                     cfgDesc_Audio1, sizeof(cfgDesc_Audio1), 
-                    strDescs_Audio2, sp);
+                    strDescs_Audio2, sp, c_usb_test);
 #else
                 /* Return Audio 2.0 Descriptors with Null device as fallback */
                 cfgDesc_Audio2[1] = CONFIGURATION;
@@ -356,7 +356,7 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl, cha
                     cfgDesc_Audio2, sizeof(cfgDesc_Audio2), 
                     devQualDesc_Null, sizeof(devQualDesc_Null), 
                     cfgDesc_Null, sizeof(cfgDesc_Null), 
-                    strDescs_Audio2, sp);
+                    strDescs_Audio2, sp, c_usb_test);
 #endif
 
             }
@@ -372,7 +372,7 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl, cha
                     cfgDesc_Audio1, sizeof(cfgDesc_Audio1), 
                     devQualDesc_Audio2, sizeof(devQualDesc_Audio2), 
                     cfgDesc_Audio2, sizeof(cfgDesc_Audio2), 
-                    strDescs_Audio1, sp);
+                    strDescs_Audio1, sp, c_usb_test);
 #else
                 cfgDesc_Null[1] = CONFIGURATION;
                 cfgDesc_Audio2[1] = OTHER_SPEED_CONFIGURATION;
@@ -382,7 +382,7 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl, cha
                     cfgDesc_Null, sizeof(cfgDesc_Null), 
                     devQualDesc_Audio2, sizeof(devQualDesc_Audio2), 
                     cfgDesc_Audio2, sizeof(cfgDesc_Audio2), 
-                    strDescs_Audio2, sp);
+                    strDescs_Audio2, sp, c_usb_test);
 #endif 
 
             }
@@ -395,7 +395,7 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl, cha
                 DFUcfgDesc, sizeof(DFUcfgDesc), 
                 DFUdevQualDesc, sizeof(DFUdevQualDesc), 
                 DFUoSpeedCfgDesc, sizeof(DFUoSpeedCfgDesc), 
-                strDescs_Audio2, sp);
+                strDescs_Audio2, sp, c_usb_test);
         }
 #endif
         
@@ -739,9 +739,12 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl, cha
                         /* TODO we should not make the assumtion that all DFU requests are handled */
                         retVal = 0;
                     } 
-                    /* Check for:   Audio interface request - always 0, note we check for DFU first 
-                     *              Audio endpoint request */
+                    /* Check for:   - Audio CONTROL interface request - always 0, note we check for DFU first 
+                     *              - Audio STREAMING interface request 
+                     *              - Audio endpoint request 
+                     */
                     else if(((request == CLASS_INTERFACE_REQUEST) && (interfaceNum == 0)) 
+                        || ((request == CLASS_INTERFACE_REQUEST) && (interfaceNum == 1 || interfaceNum == 2))
                         || (request == CLASS_ENDPOINT_REQUEST && ((interfaceNum == 0x82) || (interfaceNum == 0x01)))) 
 				    {
 #endif
