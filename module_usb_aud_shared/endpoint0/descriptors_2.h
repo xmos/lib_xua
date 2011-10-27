@@ -1086,7 +1086,7 @@ unsigned char cfgDesc_Audio2[] =
         /* Interface descriptor */
    	0x09,                          	/* 0 bLength : Size of this descriptor, in bytes. (field size 1 bytes) */
    	0x04,                           /* 1 bDescriptorType : INTERFACE descriptor. (field size 1 bytes) */
-   	(INPUT_INTERFACES+OUTPUT_INTERFACES+MIDI_INTERFACES+1+1),                           /* 2 bInterfaceNumber : Index of this interface. (field size 1 bytes) */
+   	(INPUT_INTERFACES+OUTPUT_INTERFACES+MIDI_INTERFACES+DFU_INTERFACES+1),                           /* 2 bInterfaceNumber : Index of this interface. (field size 1 bytes) */
    	0x00,                           /* 3 bAlternateSetting : Index of this setting. (field size 1 bytes) */
    	0x03,                           /* 4 bNumEndpoints : 0 endpoints. (field size 1 bytes) */
    	0xFF,                           /* 5 bInterfaceClass : DFU. (field size 1 bytes) */
