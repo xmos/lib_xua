@@ -1117,8 +1117,8 @@ unsigned char cfgDesc_Audio2[] =
     0x05,                            /* 1 bDescriptorType : ENDPOINT descriptor. (field size 1 bytes) */
     0x86,                            /* 2 bEndpointAddress : IN Endpoint 6. (field size 1 bytes) */
     0x03,                            /* 3 bmAttributes : Interrupt, not shared. (field size 1 bytes) */
-    0x00,                            /* 4 wMaxPacketSize : 64 bytes per packet. (field size 2 bytes) - has to be 0x200 for compliance*/
-    0x02,                            /* 5 wMaxPacketSize */
+    0x40,                            /* 4 wMaxPacketSize : 64 bytes per packet. (field size 2 bytes) - has to be 0x40 for compliance*/
+    0x00,                            /* 5 wMaxPacketSize */
     0x08,                            /* 6 bInterval : (2^(bInterval-1))/8 ms. Must be between 4 and 32ms (field size 1 bytes) */
 #endif
 
