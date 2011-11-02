@@ -2,7 +2,7 @@
 
 /* TODO Currently complier does not support inline select functions, hense this is in a seperate file to ensure this is not the case */
 #pragma select handler
-void testct_byref(chanend c, unsigned &isCt) 
+void testct_byrefnot(chanend c, unsigned &isCt) 
 {
     if (testct(c)) 
     {

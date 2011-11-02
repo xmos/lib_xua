@@ -15,8 +15,8 @@
 #include "xc_ptr.h"
 #include "clockcmds.h"
 #include "xud.h"
-
-
+#include "testct_byref.h"
+ 
 //typedef unsigned int XUD_ep;
 
 //int XUD_GetData_NoReq(chanend c, xc_ptr buffer);
@@ -539,84 +539,92 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
 #endif
 
 #ifdef IAP
-        case inuint_byref(c_iap_from_host, tmp):
+        case testct_byref(c_iap_from_host, tmp):
             asm("#iap h->d");
-
-            /* Get buffer data from host - IAP OUT from host always into a single buffer */
-            {
-                xc_ptr p = iap_from_host_buffer + 4;
-                xc_ptr p0 = p;
-                    int tail;
-                while (!testct(c_iap_from_host))
-                {
-                    unsigned int datum = inuint(c_iap_from_host);
-                    write_via_xc_ptr(p, datum);
-                    p += 4;
-                }
-                tail = inct(c_iap_from_host);
-                datalength = p - p0;// - 4;
-                switch (tail)
-                    {
-                        case 10:
-                        // the tail is 0 which means
-                        datalength -= 6;
-                        break;
-                        case 11:
-                        // the tail is 1 which means
-                        datalength -= 5;
-                        break;
-                        case 12:
-                        // the tail is 2 which means
-                        datalength -= 4;
-                        break;
-                        case 13:
-                        // the tail is 3 which means
-                        datalength -= 3;
-                        break;
-                        default:
-//                // Case not handled before
-//                printstrln("Tail case not handled (tail, datalength)");
-//                printintln(tail);
-//                printintln(datalength);
-                        break;
-                }
-            }
+            if (tmp) {
+              // Is a control token so reset
+            } else {
+              // Not a control token so is data
+              /* Get buffer data from host - IAP OUT from host always into a single buffer */
+              xc_ptr p = iap_from_host_buffer + 4;
+              xc_ptr p0 = p;
+                  int tail;
+              inuint(c_iap_from_host); // And discard
+              while (!testct(c_iap_from_host))
+              {
+                  unsigned int datum = inuint(c_iap_from_host);
+                  write_via_xc_ptr(p, datum);
+                  p += 4;
+              }
+              tail = inct(c_iap_from_host);
+              datalength = p - p0;// - 4;
+              switch (tail)
+                  {
+                      case 10:
+                      // the tail is 0 which means
+                      datalength -= 6;
+                      break;
+                      case 11:
+                      // the tail is 1 which means
+                      datalength -= 5;
+                      break;
+                      case 12:
+                      // the tail is 2 which means
+                      datalength -= 4;
+                      break;
+                      case 13:
+                      // the tail is 3 which means
+                      datalength -= 3;
+                      break;
+                      default:
+//              // Case not handled before
+//              printstrln("Tail case not handled (tail, datalength)");
+//              printintln(tail);
+//              printintln(datalength);
+                      break;
+              }
           
-            XUD_SetNotReady(ep_iap_from_host);                     
-
-            write_via_xc_ptr(iap_from_host_buffer, datalength);
-                    
-            /* release the buffer */
-            SET_SHARED_GLOBAL(g_iap_from_host_flag, 1);
-
+              XUD_SetNotReady(ep_iap_from_host);                     
+  
+              write_via_xc_ptr(iap_from_host_buffer, datalength);
+                      
+              /* release the buffer */
+              SET_SHARED_GLOBAL(g_iap_from_host_flag, 1);
+            }
             break;
  
         /* IAP IN to host */                  
-        case inuint_byref(c_iap_to_host, tmp): 
+        case testct_byref(c_iap_to_host, tmp): 
             asm("#iap d->h");
- 
-            // fill in the data
-            XUD_SetData_Inline(ep_iap_to_host, c_iap_to_host);
+            if (tmp) {
+              // Is a control token so reset
+            } else {
+              inuint(c_iap_to_host); // And discard
+              // fill in the data
+              XUD_SetData_Inline(ep_iap_to_host, c_iap_to_host);
 
-            XUD_SetNotReady(ep_iap_to_host);                     
+              XUD_SetNotReady(ep_iap_to_host);                     
 
-            // ack the decouple thread to say it has been sent to host  
-            SET_SHARED_GLOBAL(g_iap_to_host_flag, 1);
+              // ack the decouple thread to say it has been sent to host  
+              SET_SHARED_GLOBAL(g_iap_to_host_flag, 1);
 
-            swap(iap_to_host_buffer, iap_to_host_waiting_buffer);
-
+              swap(iap_to_host_buffer, iap_to_host_waiting_buffer);
+            }
           break;
 
         /* IAP interrupt IN to host */                  
-        case inuint_byref(c_iap_to_host_int, tmp): 
+        case testct_byref(c_iap_to_host_int, tmp): 
             asm("#iap interrupt d->h");
- 
-            // fill in the data
-            XUD_SetData_Inline(ep_iap_to_host_int, c_iap_to_host_int);
+            if (tmp) {
+              // Is a control token so reset
+            } else {
+              inuint(c_iap_to_host_int); // And discard
+              // fill in the data
+              XUD_SetData_Inline(ep_iap_to_host_int, c_iap_to_host_int);
 
-            XUD_SetNotReady(ep_iap_to_host_int);                     
-            // Don't need to handle data here as always ZLP
-
+              XUD_SetNotReady(ep_iap_to_host_int);                     
+              // Don't need to handle data here as always ZLP
+            }
           break;
 #endif
          }
@@ -624,5 +632,4 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
     }
 
      set_thread_fast_mode_off();
-
 }
