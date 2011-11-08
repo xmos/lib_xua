@@ -118,9 +118,10 @@ chanend c_iap, chanend ?c_i2c // iOS stuff
   t :> txT;
   t2 :> rxT;
 
-   //port32A_unset(P32A_I2C_NOTMIDI);
 #ifndef MIDI_LOOPBACK
+  port32A_unset(P32A_I2C_NOTMIDI);
   p_midi_out <: 1; // Start with high bit.
+  port32A_set(P32A_I2C_NOTMIDI);
   //  printstr("mout0");
 #endif
 
