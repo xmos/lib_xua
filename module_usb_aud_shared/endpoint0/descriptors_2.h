@@ -1329,7 +1329,7 @@ unsigned char oSpeedCfgDesc[] =
 #define STREAMING_INTERFACES        (INPUT_INTERFACES + OUTPUT_INTERFACES)
 
 
-#define CFG_TOTAL_LENGTH_A1            (18 + AC_TOTAL_LENGTH + (INPUT_INTERFACES * 61) + (OUTPUT_INTERFACES * 70) + (DFU_INTERFACES * 16))
+#define CFG_TOTAL_LENGTH_A1            (18 + AC_TOTAL_LENGTH + (INPUT_INTERFACES * 61) + (OUTPUT_INTERFACES * 70) + (DFU_INTERFACES * 18))
 #ifdef AUDIO_CLASS_FALLBACK
 unsigned char cfgDesc_Audio1[] = 
 {                       
