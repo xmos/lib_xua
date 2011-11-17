@@ -496,7 +496,7 @@ static unsigned dummy_deliver(chanend c_out) {
     return 0;
 }
 
-void audio(chanend c_mix_out, chanend ?c_dig_rx, chanend ?c_config, chanend ?c_i2c) 
+void audio(chanend c_mix_out, chanend ?c_dig_rx, chanend ?c_config) 
 {
 #ifdef SPDIF
     chan c_spdif_out;
@@ -511,10 +511,10 @@ void audio(chanend c_mix_out, chanend ?c_dig_rx, chanend ?c_config, chanend ?c_i
 #endif
 
   	/* Initialise master clock generation */
-    ClockingInit(c_i2c);
+    ClockingInit();
 
     /* Perform required CODEC/ADC/DAC initialisation */
-    CodecInit(c_config, c_i2c);
+    CodecInit(c_config);
 
     while(1)
     {
@@ -533,7 +533,7 @@ void audio(chanend c_mix_out, chanend ?c_dig_rx, chanend ?c_config, chanend ?c_i
         divide = mClk / ( curSamFreq * 64 );
 
         /* Configure clocking for required master clock */
-        ClockingConfig(mClk, c_i2c); 
+        ClockingConfig(mClk); 
 
         if(!firstRun)
         {
@@ -553,7 +553,7 @@ void audio(chanend c_mix_out, chanend ?c_dig_rx, chanend ?c_config, chanend ?c_i
         firstRun = 0;
       
         /* Configure CODEC/DAC/ADC for SampleFreq/MClk */
-        CodecConfig(curSamFreq, mClk, c_config, c_i2c);
+        CodecConfig(curSamFreq, mClk, c_config);
 
         /* Configure audio ports */
         ConfigAudioPorts(divide);    
