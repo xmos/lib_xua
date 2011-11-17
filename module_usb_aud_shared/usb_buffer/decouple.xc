@@ -1,6 +1,5 @@
 #include <xs1.h>
 #include <print.h>
-#include <assert.h>
 #include "xc_ptr.h"
 #define NO_INLINE_MIDI_SELECT_HANDLER 1
 #include "usb_midi.h"

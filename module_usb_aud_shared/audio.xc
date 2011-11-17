@@ -12,7 +12,6 @@
 #include <xs1.h>
 #include <xclib.h>
 #include <print.h>
-#include <assert.h>
 
 #include "clocking.h"
 #include "audioports.h"
