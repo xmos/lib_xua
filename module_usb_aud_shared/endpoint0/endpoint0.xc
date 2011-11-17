@@ -21,7 +21,7 @@
 #include "dfu_types.h"
 #include "xc_ptr.h"
 
-/* Windows does not have a built in DFU driver (windows will prompt), so warn that DFU will not be functional in Audio 1.0 mode.
+/* Windows does not have a built in DFU driver (windows will prompt), so warn that DFU will not be functional in Audio 1.0 mode.Udi
  * Of course, OSX is unaffected.  
  */
 #if ((AUDIO_CLASS==1) || defined(AUDIO_CLASS_FALLBACK)) && defined(DFU)
@@ -70,9 +70,12 @@ short mixer1Weights[18*8];
 //#define MAX_MIX_COUNT 8
 
 unsigned char channelMap[NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + MAX_MIX_COUNT];
+#if NUM_USB_CHAN_OUT > 0
 unsigned char channelMapAud[NUM_USB_CHAN_OUT];
+#endif
+#if NUM_USB_CHAN_IN > 0
 unsigned char channelMapUsb[NUM_USB_CHAN_IN];
-
+#endif
 unsigned char mixSel[MIX_INPUTS];
 #endif
 
@@ -180,16 +183,20 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
     mixer1Weights[54] = 0;
     mixer1Weights[63] = 0;
 
+#if NUM_USB_CHAN_OUT > 0
     /* Setup up audio output channel mapping */
     for(int i = 0; i < NUM_USB_CHAN_OUT; i++)
     {
        channelMapAud[i] = i; 
     }
+#endif
 
+#if NUM_USB_CHAN_IN > 0
     for(int i = 0; i < NUM_USB_CHAN_IN; i++)
     {
        channelMapUsb[i] = i + NUM_USB_CHAN_OUT; 
     }
+#endif
 
 
     /* Set up channel mapping default */
@@ -494,7 +501,6 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
                                         // Handshake
                                         //chkct(c_audioControl, XS1_CT_END);
 
-                                        //printint(8);
                                         break;
 
 #endif
@@ -736,7 +742,7 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
                             device_reboot();
                         }
 
-                        /* TODO we should not make the assumtion that all DFU requests are handled */
+                        /* TODO we should not make the assumption that all DFU requests are handled */
                         retVal = 0;
                     } 
                     /* Check for:   - Audio CONTROL interface request - always 0, note we check for DFU first 
@@ -748,6 +754,7 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
                         || (request == CLASS_ENDPOINT_REQUEST && ((interfaceNum == 0x82) || (interfaceNum == 0x01)))) 
 				    {
 #endif
+
 #if (AUDIO_CLASS == 2) && defined(AUDIO_CLASS_FALLBACK)
                         if(g_curUsbSpeed == XUD_SPEED_HS)
                         {
@@ -780,7 +787,6 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
                     break;
                 
                 default:
-                    // TODO: STALL
                     //printstr("unrecognised request\n");
                     //printhexln(sp.bRequest);
                     //printhexln(sp.bmRequestType.Type);
@@ -802,7 +808,9 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
                transfer, and the STALL condition terminates at the beginning of the 
                next control transfer (Setup). The remainder of this section refers to 
                the general case of a functional stall */
-            //XUD_ProtocolStall(ep0_out, ep0_in):
+              XUD_SetStall_Out(0);
+              XUD_SetStall_In(0);
+
         } 
         
         if (retVal < 0) 
