@@ -145,36 +145,35 @@ void GetADCCounts(unsigned samFreq, int &min, int &mid, int &max);
    it needs to be changed for a different sample rate or number of channels.
    The amount set here is what determines the latency of the buffering.
 */
-static void set_prefills(unsigned int sampFreq) {
-  int min,mid,max;
-  int usb_speed;
-  unsigned prefill;
-  int bytes_per_sample;
-  int num_channels;
-  int frame; 
-  int packet_size;
-  GET_SHARED_GLOBAL(usb_speed, g_curUsbSpeed);
-
-  frame = usb_speed == XUD_SPEED_HS ? 8000 : 1000;
-  packet_size = ((((sampFreq+frame-1)/frame))+3);
+static void set_prefills(unsigned int sampFreq)
+{
+    int usb_speed;
+    unsigned prefill;
+    int bytes_per_sample;
+    int num_channels;
+    int frame; 
+    int packet_size;
+    GET_SHARED_GLOBAL(usb_speed, g_curUsbSpeed);
   
-
-  bytes_per_sample = usb_speed == XUD_SPEED_HS ? 4 : 3;
-
-  GET_SHARED_GLOBAL(num_channels, g_numUsbChanOut);
-  prefill = ((packet_size * num_channels * bytes_per_sample + 4) * NUM_PACKETS_PREFILL);
-  SET_SHARED_GLOBAL(g_out_buffer_prefill, prefill);
-
-  GET_SHARED_GLOBAL(num_channels, g_numUsbChanIn);
-  prefill = ((packet_size * num_channels * bytes_per_sample + 4) * NUM_PACKETS_PREFILL);
-  SET_SHARED_GLOBAL(g_in_buffer_prefill, prefill);
-  return;
+    frame = usb_speed == XUD_SPEED_HS ? 8000 : 1000;
+    packet_size = ((((sampFreq+frame-1)/frame))+3);
+  
+    bytes_per_sample = usb_speed == XUD_SPEED_HS ? 4 : 3;
+  
+    GET_SHARED_GLOBAL(num_channels, g_numUsbChanOut);
+    prefill = ((packet_size * num_channels * bytes_per_sample + 4) * NUM_PACKETS_PREFILL);
+    SET_SHARED_GLOBAL(g_out_buffer_prefill, prefill);
+  
+    GET_SHARED_GLOBAL(num_channels, g_numUsbChanIn);
+    prefill = ((packet_size * num_channels * bytes_per_sample + 4) * NUM_PACKETS_PREFILL);
+    SET_SHARED_GLOBAL(g_in_buffer_prefill, prefill);
+    return;
 }
                                    
 
 
 
-
+#ifdef MIDI
 static inline void swap(xc_ptr &a, xc_ptr &b) 
 {
   xc_ptr tmp;
@@ -183,6 +182,7 @@ static inline void swap(xc_ptr &a, xc_ptr &b)
   b = tmp;
   return;
 }
+#endif
 
 // shared global midi buffering variables
 #ifdef MIDI
