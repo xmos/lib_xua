@@ -1124,7 +1124,7 @@ unsigned char cfgDesc_Audio2[] =
    	0xFE,                           /* 5 bInterfaceClass : DFU. (field size 1 bytes) */
    	0x01,                           /* 6 bInterfaceSubclass : (field size 1 bytes) */
    	0x01,                           /* 7 bInterfaceProtocol : Unused. (field size 1 bytes) */
-   	12,                             /* 8 iInterface : Used. (field size 1 bytes) */
+   	8,                             /* 8 iInterface : Used. (field size 1 bytes) */
 
 #if 0
 	/* DFU 1.0 Run-Time DFU Functional Descriptor */
