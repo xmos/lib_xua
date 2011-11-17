@@ -64,8 +64,12 @@ extern void device_reboot(void);
 unsigned deliver(chanend c_out, chanend ?c_spd_out, unsigned divide, chanend ?c_dig_rx)
 {
 	unsigned sample;
+#if NUM_USB_CHAN_OUT > 0
     unsigned samplesOut[NUM_USB_CHAN_OUT];
+#endif
+#if NUM_USB_CHAN_IN > 0
     unsigned samplesIn[NUM_USB_CHAN_IN];
+#endif
     unsigned samplesInPrev[NUM_USB_CHAN_IN];
     unsigned tmp;
     unsigned index;
@@ -73,15 +77,14 @@ unsigned deliver(chanend c_out, chanend ?c_spd_out, unsigned divide, chanend ?c_
     unsigned prev=0;
     int started = 0;
 #endif
-#ifndef CODEC_SLAVE
-    int oldtime;
-#endif
 
+#if NUM_USB_CHAN_IN > 0
     for (int i=0;i<NUM_USB_CHAN_IN;i++)
     {
         samplesIn[i] = 0;
         samplesInPrev[i] = 0;
     }
+#endif
     outuint(c_out, 0);
 
     /* Check for sample freq change or new samples from mixer*/
@@ -96,16 +99,21 @@ unsigned deliver(chanend c_out, chanend ?c_spd_out, unsigned divide, chanend ?c_
 #ifndef MIXER // Interfaces straight to decouple()
         (void) inuint(c_out);
 
+#if NUM_USB_CHAN_IN > 0
 #pragma loop unroll
         for(int i = 0; i < NUM_USB_CHAN_IN; i++)
         {
             outuint(c_out, samplesIn[i]);
         }
+#endif
+
+#if NUM_USB_CHAN_OUT > 0
 #pragma loop unroll
         for(int i = 0; i < NUM_USB_CHAN_OUT; i++)        
         {
             samplesOut[i] = inuint(c_out);
         }
+#endif
 #else
 #pragma loop unroll
         for(int i = 0; i < NUM_USB_CHAN_OUT; i++)        
@@ -201,6 +209,7 @@ unsigned deliver(chanend c_out, chanend ?c_spd_out, unsigned divide, chanend ?c_
     tmp += 33;
        
 #if (I2S_CHANS_DAC != 0)
+#pragma loop unroll
     for(int i = 0; i < I2S_WIRES_DAC; i++)
     {
         p_i2s_dac[i] @ tmp <: 0;
@@ -214,7 +223,6 @@ unsigned deliver(chanend c_out, chanend ?c_spd_out, unsigned divide, chanend ?c_
     { 
         clearbuf(p_i2s_adc[i]);
     }
-    oldtime = tmp-1+32;
 
     /* TODO In master mode, the i/o loop assumes L/RCLK = 32bit clocks.  We should check this every interation 
      * and resync if we got a bclk glitch */
@@ -237,17 +245,22 @@ unsigned deliver(chanend c_out, chanend ?c_spd_out, unsigned divide, chanend ?c_
         {
 #ifndef MIXER // Interfaces straight to decouple()
             (void) inuint(c_out);
+
+#if NUM_USB_CHAN_IN > 0
 #pragma loop unroll
             for(int i = 0; i < NUM_USB_CHAN_IN; i++)
             {
                 outuint(c_out, samplesIn[i]);
             }
+#endif
 
+#if NUM_USB_CHAN_OUT > 0
 #pragma loop unroll
             for(int i = 0; i < NUM_USB_CHAN_OUT; i++)
             {
                 samplesOut[i] = inuint(c_out);
             }
+#endif
 #else
 #pragma loop unroll
             for(int i = 0; i < NUM_USB_CHAN_OUT; i++)
@@ -297,7 +310,7 @@ unsigned deliver(chanend c_out, chanend ?c_spd_out, unsigned divide, chanend ?c_
 
 #pragma xta endpoint "i2s_output_l"
 
-#if (I2S_CHANS_DAC != 0)
+#if (I2S_CHANS_DAC != 0) && (NUM_USB_CHAN_OUT != 0)
 #pragma loop unroll
         for(int i = 0; i < I2S_CHANS_DAC; i+=2)
         {           
@@ -355,14 +368,16 @@ unsigned deliver(chanend c_out, chanend ?c_spd_out, unsigned divide, chanend ?c_
         for(int i = 1; i < I2S_CHANS_ADC; i += 2)
         {
             p_i2s_adc[index++] :> sample;
+#if NUM_USB_CHAN_IN > 0
             samplesIn[i] = bitrev(sample);
 
             /* Store the previous left in left */
             samplesIn[i-1] = samplesInPrev[i];
+#endif
         }
 #endif
 
-#ifdef SPDIF	
+#if defined(SPDIF) && (NUM_USB_CHAN_OUT > 0)
         outuint(c_spd_out, samplesOut[SPDIF_TX_INDEX]);                 /* Forward sample to SPDIF txt thread */
         sample = samplesOut[SPDIF_TX_INDEX + 1];                 
         outuint(c_spd_out, sample);                 /* Forward sample to SPDIF txt thread */
@@ -385,7 +400,7 @@ unsigned deliver(chanend c_out, chanend ?c_spd_out, unsigned divide, chanend ?c_
 
         tmp = 0;
 #pragma xta endpoint "i2s_output_r"
-#if (I2S_CHANS_DAC != 0)
+#if (I2S_CHANS_DAC != 0) && (NUM_USB_CHAN_OUT != 0)
 #pragma loop unroll
         for(int i = 1; i < I2S_CHANS_DAC; i+=2)
         { 
@@ -440,7 +455,10 @@ unsigned deliver(chanend c_out, chanend ?c_spd_out, unsigned divide, chanend ?c_
         for(int i = 1; i < I2S_CHANS_ADC; i += 2)
         {
             p_i2s_adc[index++] :> sample;
+
+#if NUM_USB_CHAN_IN > 0
             samplesInPrev[i] = bitrev(sample);
+#endif
         }
 
 
