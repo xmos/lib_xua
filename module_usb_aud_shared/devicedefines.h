@@ -9,6 +9,27 @@
 
 #include "customdefines.h"
 
+/* Tidy up historical INPUT/OUTPUT defines. INPUT/OUTPUT now enabled based on channel count defines */
+#if !defined(NUM_USB_CHAN_IN)
+    #error NUM_USB_CHAN_IN must be defined!
+#else
+    #if (NUM_USB_CHAN_IN == 0)
+        #undef INPUT
+    #else
+        #define INPUT 1
+    #endif
+#endif
+
+#if !defined(NUM_USB_CHAN_OUT)
+    #error NUM_USB_CHAN_OUT must be defined!
+#else
+    #if (NUM_USB_CHAN_OUT == 0)
+        #undef OUTPUT
+    #else
+        #define OUTPUT 1
+    #endif
+#endif
+
 #if defined(IO_EXPANSION) && (IO_EXPANSION == 0)
 #undef IO_EXPANSION
 #endif
