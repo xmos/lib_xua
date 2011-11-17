@@ -368,7 +368,7 @@ unsigned char cfgDesc_Audio2[] =
     ID_CLKSEL, 		     		    /* 7  bCSourceID: ID of Clock Entity */
     NUM_USB_CHAN_OUT,		     	/* 8  bNrChannels */
     0,0,0,0,                 		/* 9  bmChannelConfig */
-    13,           	                /* 13 iChannelNames */
+    15,           	                /* 13 iChannelNames */
     0x00, 0x00,     		        /* 14 bmControls */
     6,           		            /* 16 iTerminal */
 
@@ -487,7 +487,7 @@ unsigned char cfgDesc_Audio2[] =
     ID_CLKSEL, 	    	     		/* 7  bCSourceID: ID of Clock Entity */
     NUM_USB_CHAN_IN,		     	/* 8  bNrChannels */
     0,0,0,0,                 		/* 9  bmChannelConfig */
-    31,           	                /* 13 iChannelNames */
+    33,           	                /* 13 iChannelNames */
     0x00, 0x00,     		        /* 14 bmControls */
     0,           		            /* 16 iTerminal */
 
@@ -794,7 +794,7 @@ unsigned char cfgDesc_Audio2[] =
     PCM, 0x00, 0x00, 0x00,  		/* 6:10  bmFormats (note this is a bitmap) */
     NUM_USB_CHAN_OUT,             	/* 11 bNrChannels */
     0,0,0,0,    					/* 12:14: bmChannelConfig */
-    13,             				/* 15 iChannelNames */
+    15,             				/* 15 iChannelNames */
 
     /* Type 1 Format Type Descriptor */
     0x06,         					/* 0  bLength (in bytes): 6 */
@@ -865,7 +865,7 @@ unsigned char cfgDesc_Audio2[] =
     PCM, 0x00, 0x00, 0x00,  		/* 6:10  bmFormats (note this is a bitmap) */
     NUM_USB_CHAN_IN,            /* 11 bNrChannels */
     0,0,0,0,    					/* 12:14: bmChannelConfig */
-    31,            				    /* 15 iChannelNames */
+    33,            				    /* 15 iChannelNames */
 
     /* Type 1 Format Type Descriptor */
     0x06,         					/* 0  bLength (in bytes): 6 */
@@ -914,7 +914,7 @@ unsigned char cfgDesc_Audio2[] =
     PCM, 0x00, 0x00, 0x00,  		/* 6:10  bmFormats (note this is a bitmap) */
     NUM_USB_CHAN_IN - 4,            /* 11 bNrChannels */
     0,0,0,0,    					/* 12:14: bmChannelConfig */
-    31,            				    /* 15 iChannelNames */
+    33,            				    /* 15 iChannelNames */
 
     /* Type 1 Format Type Descriptor */
     0x06,         					/* 0  bLength (in bytes): 6 */
@@ -1053,7 +1053,7 @@ unsigned char cfgDesc_Audio2[] =
     0x02,                            /* 2 bDescriptorSubtype : MIDI_IN_JACK subtype. (field size 1 bytes) */
     0x02,                            /* 3 bJackType : EXTERNAL. (field size 1 bytes) */
     0x02,                            /* 4 bJackID : ID of this Jack. (field size 1 bytes) */
-    0x00,                            /* 5 iJack : Unused. (field size 1 bytes) */
+    0x14,                            /* 5 iJack : Unused. (field size 1 bytes) */
 
 /* Table B-9: MIDI Adapter MIDI OUT Jack Descriptor (Embedded) */
     0x09,                            /* 0 bLength : Size of this descriptor, in bytes. (field size 1 bytes) */
@@ -1075,7 +1075,7 @@ unsigned char cfgDesc_Audio2[] =
     0x01,                            /* 5 bNrInputPins : Number of Input Pins of this Jack. (field size 1 bytes) */
     0x01,                            /* 6 BaSourceID(1) : ID of the Entity to which this Pin is connected. (field size 1 bytes) */
     0x01,                            /* 7 BaSourcePin(1) : Output Pin number of the Entity to which this Input Pin is connected. */
-    0x00,                            /* 8 iJack : Unused. (field size 1 bytes) */
+    0x13,                            /* 8 iJack : Unused. (field size 1 bytes) */
 
 /* Table B-11: MIDI Adapter Standard Bulk OUT Endpoint Descriptor */
     0x09,                            /* 0 bLength : Size of this descriptor, in bytes. (field size 1 bytes) */
@@ -1161,7 +1161,7 @@ unsigned char cfgDesc_Audio2[] =
    	0xFF,                           /* 5 bInterfaceClass : DFU. (field size 1 bytes) */
    	0xF0,                           /* 6 bInterfaceSubclass : (field size 1 bytes) */
    	0x00,                           /* 7 bInterfaceProtocol : Unused. (field size 1 bytes) */
-   	57,                           /* 8 iInterface : Used. (field size 1 bytes) */
+   	59,                           /* 8 iInterface : Used. (field size 1 bytes) */
 
     /* iAP Bulk OUT Endpoint Descriptor */
     0x07,                            /* 0 bLength : Size of this descriptor, in bytes. (field size 1 bytes) */
@@ -1214,6 +1214,9 @@ static unsigned char strDescs_Audio2[][40] =
     APPEND_VENDOR_STR(S/PDIF Clock),            // 10   iClockSource
     APPEND_VENDOR_STR(ADAT Clock),              // 11   iClockSource
     APPEND_VENDOR_STR(DFU),                     // 12   iInterface for DFU interface
+
+    APPEND_VENDOR_STR(MIDI Out),
+    APPEND_VENDOR_STR(MIDI In ),
     
     "Analogue 1",                                 // 13   Output channel name place holders - Get customised at runtime based on device config 
     "Analogue 2",                                 // 14
