@@ -172,7 +172,7 @@ static void set_prefills(unsigned int sampFreq)
 
 
 
-#ifdef MIDI
+#if defined(MIDI) || defined(IAP)
 static inline void swap(xc_ptr &a, xc_ptr &b) 
 {
   xc_ptr tmp;
