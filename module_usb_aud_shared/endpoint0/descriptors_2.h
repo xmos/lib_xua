@@ -1053,7 +1053,7 @@ unsigned char cfgDesc_Audio2[] =
     0x02,                            /* 2 bDescriptorSubtype : MIDI_IN_JACK subtype. (field size 1 bytes) */
     0x02,                            /* 3 bJackType : EXTERNAL. (field size 1 bytes) */
     0x02,                            /* 4 bJackID : ID of this Jack. (field size 1 bytes) */
-    0x14,                            /* 5 iJack : Unused. (field size 1 bytes) */
+    14,                              /* 5 iJack : Unused. (field size 1 bytes) */
 
 /* Table B-9: MIDI Adapter MIDI OUT Jack Descriptor (Embedded) */
     0x09,                            /* 0 bLength : Size of this descriptor, in bytes. (field size 1 bytes) */
@@ -1075,7 +1075,7 @@ unsigned char cfgDesc_Audio2[] =
     0x01,                            /* 5 bNrInputPins : Number of Input Pins of this Jack. (field size 1 bytes) */
     0x01,                            /* 6 BaSourceID(1) : ID of the Entity to which this Pin is connected. (field size 1 bytes) */
     0x01,                            /* 7 BaSourcePin(1) : Output Pin number of the Entity to which this Input Pin is connected. */
-    0x13,                            /* 8 iJack : Unused. (field size 1 bytes) */
+    13,                              /* 8 iJack : Unused. (field size 1 bytes) */
 
 /* Table B-11: MIDI Adapter Standard Bulk OUT Endpoint Descriptor */
     0x09,                            /* 0 bLength : Size of this descriptor, in bytes. (field size 1 bytes) */
