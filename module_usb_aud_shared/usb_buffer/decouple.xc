@@ -1167,7 +1167,8 @@ void decouple(chanend c_mix_out,
 
 #ifdef IAP
         GET_SHARED_GLOBAL(iap_reset, g_iap_reset);          
-        if (iap_reset) {
+        if (iap_reset) 
+        {
            iap_send_reset(c_iap); // What if this happen in the middle of a send/ack?
            iap_reset = 0;
            iap_expecting_length = 1;
