@@ -68,8 +68,8 @@ unsigned deliver(chanend c_out, chanend ?c_spd_out, unsigned divide, chanend ?c_
 #endif
 #if NUM_USB_CHAN_IN > 0
     unsigned samplesIn[NUM_USB_CHAN_IN];
-#endif
     unsigned samplesInPrev[NUM_USB_CHAN_IN];
+#endif
     unsigned tmp;
     unsigned index;
 #ifdef RAMP_CHECK

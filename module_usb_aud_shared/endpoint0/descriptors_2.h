@@ -621,6 +621,7 @@ unsigned char cfgDesc_Audio2[] =
 
 /* Mixer Unit Descriptors */
 
+
 /* N = 144 (18 * 8) */
 /* Mixer Unit Bitmap - 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
                        0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff */
@@ -629,7 +630,7 @@ unsigned char cfgDesc_Audio2[] =
     0x04,                            /* bDescriptorSubtype: MIXER_UNIT */
     ID_MIXER_1,                      /* Mixer unit id */
     0x01,                            /* Number of input pins */
-    ID_XU_MIXSEL,                    /* Connected terminal or unit id for input pin*/
+    ID_XU_MIXSEL,                    /* Connected terminal or unit id for input pin */
     MAX_MIX_COUNT,                   /* Number of mixer output channels */
     0x00, 0x00, 0x00, 0x00,          /* Spacial location ???? */
     49,                              /* Channel name index */
@@ -737,7 +738,7 @@ unsigned char cfgDesc_Audio2[] =
     PCM, 0x00, 0x00, 0x00,  		/* 6:10  bmFormats (note this is a bitmap) */
     NUM_USB_CHAN_OUT,               /* 11 bNrChannels */
     0,0,0,0,    					/* 12:14: bmChannelConfig */
-    13,             				/* 15 iChannelNames */
+    15,             				/* 15 iChannelNames */
 
     /* Type 1 Format Type Descriptor */
     0x06,         					/* 0  bLength (in bytes): 6 */
@@ -1124,7 +1125,7 @@ unsigned char cfgDesc_Audio2[] =
    	0xFE,                           /* 5 bInterfaceClass : DFU. (field size 1 bytes) */
    	0x01,                           /* 6 bInterfaceSubclass : (field size 1 bytes) */
    	0x01,                           /* 7 bInterfaceProtocol : Unused. (field size 1 bytes) */
-   	8,                             /* 8 iInterface : Used. (field size 1 bytes) */
+   	12,                             /* 8 iInterface : Unused. (field size 1 bytes) */
 
 #if 0
 	/* DFU 1.0 Run-Time DFU Functional Descriptor */
@@ -1215,56 +1216,56 @@ static unsigned char strDescs_Audio2[][40] =
     APPEND_VENDOR_STR(ADAT Clock),              // 11   iClockSource
     APPEND_VENDOR_STR(DFU),                     // 12   iInterface for DFU interface
 
-    APPEND_VENDOR_STR(MIDI Out),
-    APPEND_VENDOR_STR(MIDI In ),
+    APPEND_VENDOR_STR(MIDI Out),                   // 13
+    APPEND_VENDOR_STR(MIDI In ),                   // 14
     
-    "Analogue 1",                                 // 13   Output channel name place holders - Get customised at runtime based on device config 
-    "Analogue 2",                                 // 14
-    "Analogue 3",                                 // 15
-    "Analogue 4",                                 // 16
-    "Analogue 5",                                 // 17
-    "Analogue 6",                                 // 18
-    "Analogue 7",                                 // 19
-    "Analogue 8",                                 // 20
-    "Analogue 9",                                 // 21
-    "Analogue 10",                                 // 22
-    "Analogue 11",                                 // 23
-    "Analogue 12",                                 // 24
-    "Analogue 13",                                 // 25
-    "Analogue 14",                                 // 26
-    "Analogue 15",                                 // 27
-    "Analogue 16",                                 // 28
-    "Analogue 17",                                 // 29
-    "Analogue 18",                                 // 30
+    "Analogue 1",                                 // 15   Output channel name place holders - Get customised at runtime based on device config 
+    "Analogue 2",                                 // 16
+    "Analogue 3",                                 // 17
+    "Analogue 4",                                 // 18
+    "Analogue 5",                                 // 19
+    "Analogue 6",                                 // 20
+    "Analogue 7",                                 // 21
+    "Analogue 8",                                 // 22
+    "Analogue 9",                                 // 23
+    "Analogue 10",                                 // 24
+    "Analogue 11",                                 // 25
+    "Analogue 12",                                 // 26
+    "Analogue 13",                                 // 27
+    "Analogue 14",                                 // 28
+    "Analogue 15",                                 // 29
+    "Analogue 16",                                 // 30
+    "Analogue 17",                                 // 31
+    "Analogue 18",                                 // 32
     
-    "Analogue 1",                                  // 31   Input channel name place holders - Get customised at runtime based on device config */ 
-    "Analogue 2",                                  // 32   Input channel name place holders - Get customised at runtime based on device config */ 
-    "Analogue 3",                                  // 33   Input channel name place holders - Get customised at runtime based on device config */ 
-    "Analogue 4",                                  // 34   Input channel name place holders - Get customised at runtime based on device config */ 
-    "Analogue 5",                                  // 35   Input channel name place holders - Get customised at runtime based on device config */ 
-    "Analogue 6",                                  // 36   Input channel name place holders - Get customised at runtime based on device config */ 
-    "Analogue 7",                                  // 37   Input channel name place holders - Get customised at runtime based on device config */ 
-    "Analogue 8",                                  // 38   Input channel name place holders - Get customised at runtime based on device config */ 
-    "Analogue 9",                                  // 39   Input channel name place holders - Get customised at runtime based on device config */ 
-    "Analogue 10",                                  // 40   Input channel name place holders - Get customised at runtime based on device config */ 
-    "Analogue 11",                                  // 41   Input channel name place holders - Get customised at runtime based on device config */ 
-    "Analogue 12",                                  // 42   Input channel name place holders - Get customised at runtime based on device config */ 
-    "Analogue 13",                                  // 43   Input channel name place holders - Get customised at runtime based on device config */ 
-    "Analogue 14",                                  // 44   Input channel name place holders - Get customised at runtime based on device config */ 
-    "Analogue 15",                                  // 45   Input channel name place holders - Get customised at runtime based on device config */ 
-    "Analogue 16",                                  // 46   Input channel name place holders - Get customised at runtime based on device config */ 
-    "Analogue 17",                                  // 47   Input channel name place holders - Get customised at runtime based on device config */ 
-    "Analogue 18",                                  // 48   Input channel name place holders - Get customised at runtime based on device config */ 
+    "Analogue 1",                                  // 33   Input channel name place holders - Get customised at runtime based on device config */ 
+    "Analogue 2",                                  // 34   Input channel name place holders - Get customised at runtime based on device config */ 
+    "Analogue 3",                                  // 35   Input channel name place holders - Get customised at runtime based on device config */ 
+    "Analogue 4",                                  // 36   Input channel name place holders - Get customised at runtime based on device config */ 
+    "Analogue 5",                                  // 37   Input channel name place holders - Get customised at runtime based on device config */ 
+    "Analogue 6",                                  // 38   Input channel name place holders - Get customised at runtime based on device config */ 
+    "Analogue 7",                                  // 39   Input channel name place holders - Get customised at runtime based on device config */ 
+    "Analogue 8",                                  // 40   Input channel name place holders - Get customised at runtime based on device config */ 
+    "Analogue 9",                                  // 41   Input channel name place holders - Get customised at runtime based on device config */ 
+    "Analogue 10",                                  // 42   Input channel name place holders - Get customised at runtime based on device config */ 
+    "Analogue 11",                                  // 43   Input channel name place holders - Get customised at runtime based on device config */ 
+    "Analogue 12",                                  // 44   Input channel name place holders - Get customised at runtime based on device config */ 
+    "Analogue 13",                                  // 45   Input channel name place holders - Get customised at runtime based on device config */ 
+    "Analogue 14",                                  // 46   Input channel name place holders - Get customised at runtime based on device config */ 
+    "Analogue 15",                                  // 47   Input channel name place holders - Get customised at runtime based on device config */ 
+    "Analogue 16",                                  // 48   Input channel name place holders - Get customised at runtime based on device config */ 
+    "Analogue 17",                                  // 49   Input channel name place holders - Get customised at runtime based on device config */ 
+    "Analogue 18",                                  // 50   Input channel name place holders - Get customised at runtime based on device config */ 
     
-    "Mixer Out 1",                              // 49/* Mixer output names */
-    "Mixer Out 2",                              // 50 /* Mixer output names */
-    "Mixer Out 3",                              // 51 /* Mixer output names */
-    "Mixer Out 4",                              // 52 /* Mixer output names */
-    "Mixer Out 5",                              // 53 /* Mixer output names */
-    "Mixer Out 6",                              // 54 /* Mixer output names */
-    "Mixer Out 7",                              // 55 /* Mixer output names */
-    "Mixer Out 8",                              // 56 /* Mixer output names */
-    "iAP Interface",                            // 57 /* Required name for iAP interface */
+    "Mixer Out 1",                              // 51/* Mixer output names */
+    "Mixer Out 2",                              // 52 /* Mixer output names */
+    "Mixer Out 3",                              // 53 /* Mixer output names */
+    "Mixer Out 4",                              // 54 /* Mixer output names */
+    "Mixer Out 5",                              // 55 /* Mixer output names */
+    "Mixer Out 6",                              // 56 /* Mixer output names */
+    "Mixer Out 7",                              // 57 /* Mixer output names */
+    "Mixer Out 8",                              // 58 /* Mixer output names */
+    "iAP Interface",                            // 59 /* Required name for iAP interface */
 };
 
 /* Configuration Descriptor for Null device */
@@ -1617,7 +1618,7 @@ unsigned char cfgDesc_Audio1[] =
    	0xFE,                           /* 5 bInterfaceClass : DFU. (field size 1 bytes) */
    	0x01,                           /* 6 bInterfaceSubclass : (field size 1 bytes) */
    	0x01,                           /* 7 bInterfaceProtocol : Unused. (field size 1 bytes) */
-   	12,                             /* 8 iInterface : Unused. (field size 1 bytes) */
+   	8,                              /* 8 iInterface : Unused. (field size 1 bytes) */
 
 #if 0
 	/* DFU 1.0 Run-Time DFU Functional Descriptor */
