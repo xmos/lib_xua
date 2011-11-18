@@ -238,6 +238,7 @@
 #define SERIAL_STR                  "0000"          /* Serial number string */
 #endif
 
+/* Note: If SERIAL_STR_INDEX is 0, Windows XP will display a balloon and Windows logo warning */
 #define SERIAL_STR_INDEX	        0x03
 #define MANUFACTURER_STR_INDEX	    0x01
 #define PRODUCT_STR_INDEX           0x02
