@@ -867,11 +867,17 @@ void decouple(chanend c_mix_out,
                 }
 
                 /* Reset OUT buffer state */                
-                outOverflow = 0;
                 outUnderflow = 1;
                 SET_SHARED_GLOBAL(g_aud_from_host_rdptr, aud_from_host_fifo_start);              
                 SET_SHARED_GLOBAL(g_aud_from_host_wrptr, aud_from_host_fifo_start);
                 SET_SHARED_GLOBAL(aud_data_remaining_to_device, 0);
+
+                if(outOverflow)
+                {
+                    XUD_SetReady(aud_from_host_usb_ep, 1);
+                    outOverflow = 0;
+                }
+
 
                 /* Wait for handshake back and pass back up */
                 chkct(c_mix_out, XS1_CT_END);
