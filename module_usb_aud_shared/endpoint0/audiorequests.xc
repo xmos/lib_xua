@@ -40,8 +40,12 @@ extern unsigned char mixer1Crossbar[];
 extern short mixer1Weights[];
 
 /* Device channel mapping */
+#if NUM_USB_CHAN_OUT > 0
 extern unsigned char channelMapAud[NUM_USB_CHAN_OUT];
+#endif
+#if NUM_USB_CHAN_IN > 0
 extern unsigned char channelMapUsb[NUM_USB_CHAN_IN];
+#endif
 
 /* Mixer input mapping */
 extern unsigned char mixSel[MIX_INPUTS];
@@ -51,10 +55,6 @@ extern unsigned char mixSel[MIX_INPUTS];
 extern unsigned int g_curSamFreq;
 extern unsigned int g_curSamFreq48000Family;
 extern unsigned int g_curSamFreqMultiplier;
-
-/* Global level data */
-//unsigned short g_lvlMixOut[MAX_MIX_COUNT];
-//unsigned short g_lvlMixIn[NUM_USB_CHAN_IN + NUM_USB_CHAN_OUT];
 
 /* Store an int into a char array: Note this allows non-word aligned access unlike reinerpret cast */
 void storeInt(unsigned char buffer[], int index, int val)

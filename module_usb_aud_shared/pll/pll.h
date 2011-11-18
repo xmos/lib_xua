@@ -1,4 +1,4 @@
-void PllInit(chanend c);
+void PllInit(void);
 
 
-void PllMult(unsigned mult, chanend c);
+void PllMult(unsigned mult);

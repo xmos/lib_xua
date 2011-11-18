@@ -170,12 +170,6 @@ unsigned char devQualDesc_Null[] =
 #define MIDI_LENGTH                 (0)
 #endif
 
-#ifdef MIXER
-#define MIXER_LENGTH                (13+1+18)
-#else
-#define MIXER_LENGTH                (0)
-#endif
-
 #ifdef IAP
 #define IAP_LENGTH                  (30)
 #else
@@ -191,9 +185,18 @@ unsigned char devQualDesc_Null[] =
 #endif
 
 #ifdef MIXER
-#define LEN_XU_MIX                  (17)
+    #define LEN_XU_MIX                  (17)
+    #define MIX_BMCONTROLS_LEN_TMP      ((MAX_MIX_COUNT * MIX_INPUTS) / 8)
+
+    #if ((MAX_MIX_COUNT * MIX_INPUTS)%8)==0
+        #define MIX_BMCONTROLS_LEN          (MIX_BMCONTROLS_LEN_TMP)
+    #else
+        #define MIX_BMCONTROLS_LEN          (MIX_BMCONTROLS_LEN_TMP+1)
+    #endif
+    #define MIXER_LENGTH                (13+1+MIX_BMCONTROLS_LEN)
 #else
-#define LEN_XU_MIX                  (0)
+    #define LEN_XU_MIX                  (0)
+    #define MIXER_LENGTH                (0)
 #endif
 
 #define LEN_CLK                     (8)
@@ -219,7 +222,7 @@ unsigned char devQualDesc_Null[] =
 
 
 /* Total length of config descriptor */
-#define CFG_TOTAL_LENGTH_A2			(7 + 26 + (INPUT_INTERFACES * 55) + (OUTPUT_INTERFACES * 62) + (MIDI_LENGTH) + (DFU_INTERFACES * 16)  + TLEN_AC + (MIXER_LENGTH) + IAP_LENGTH + INPUT_ALT_LENGTH + OUTPUT_ALT_LENGTH)
+#define CFG_TOTAL_LENGTH_A2			(7 + 26 + (INPUT_INTERFACES * 55) + (OUTPUT_INTERFACES * 62) + (MIDI_LENGTH) + (DFU_INTERFACES * 18)  + TLEN_AC + (MIXER_LENGTH) + IAP_LENGTH + INPUT_ALT_LENGTH + OUTPUT_ALT_LENGTH)
 
 /* Define for number of audio interfaces (+1 for mandatory control interface) */
 #define AUDIO_INTERFACES			(INPUT_INTERFACES + OUTPUT_INTERFACES + 1) 
@@ -365,7 +368,7 @@ unsigned char cfgDesc_Audio2[] =
     ID_CLKSEL, 		     		    /* 7  bCSourceID: ID of Clock Entity */
     NUM_USB_CHAN_OUT,		     	/* 8  bNrChannels */
     0,0,0,0,                 		/* 9  bmChannelConfig */
-    13,           	                /* 13 iChannelNames */
+    15,           	                /* 13 iChannelNames */
     0x00, 0x00,     		        /* 14 bmControls */
     6,           		            /* 16 iTerminal */
 
@@ -484,7 +487,7 @@ unsigned char cfgDesc_Audio2[] =
     ID_CLKSEL, 	    	     		/* 7  bCSourceID: ID of Clock Entity */
     NUM_USB_CHAN_IN,		     	/* 8  bNrChannels */
     0,0,0,0,                 		/* 9  bmChannelConfig */
-    31,           	                /* 13 iChannelNames */
+    33,           	                /* 13 iChannelNames */
     0x00, 0x00,     		        /* 14 bmControls */
     0,           		            /* 16 iTerminal */
 
@@ -604,7 +607,7 @@ unsigned char cfgDesc_Audio2[] =
     2,                              /* 6    bNrPins */
     ID_IT_USB,                      /* 7    baSourceId(1) */
     ID_IT_AUD,                      /* 7    baSourceId(2) */
-    MIX_INPUTS,                  /* 8+p  bNrChannels */
+    MIX_INPUTS,                     /* 8+p  bNrChannels */
     0,                              /* 9+p  bmChannelConfig */  
     0,                              /* 10+p bmChannelConfig */  
     0,                              /* 11+p bmChannelConfig */  
@@ -621,20 +624,72 @@ unsigned char cfgDesc_Audio2[] =
 /* N = 144 (18 * 8) */
 /* Mixer Unit Bitmap - 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
                        0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff */
-    0x0D+0x01+0x12,                  /* 0 bLength : 13 + num inputs + bit map (inputs * outputs) */
+    MIXER_LENGTH,                  /* 0 bLength : 13 + num inputs + bit map (inputs * outputs) */
     CS_INTERFACE,                    /* 1  bDescriptorType: 0x24 */
     0x04,                            /* bDescriptorSubtype: MIXER_UNIT */
     ID_MIXER_1,                      /* Mixer unit id */
     0x01,                            /* Number of input pins */
-    ID_XU_MIXSEL,                       /* Connected terminal or unit id for input pin*/
-    0x08,                            /* Number of mixer output channels */
+    ID_XU_MIXSEL,                    /* Connected terminal or unit id for input pin*/
+    MAX_MIX_COUNT,                   /* Number of mixer output channels */
     0x00, 0x00, 0x00, 0x00,          /* Spacial location ???? */
-    49,                            /* Channel name index */
-    0xff, 0xff, 0xff, 0xff,          /* Mixer programmable control bitmap */
-    0xff, 0xff, 0xff, 0xff,
-    0xff, 0xff, 0xff, 0xff,
-    0xff, 0xff, 0xff, 0xff,
-    0xff, 0xff,
+    49,                              /* Channel name index */
+#if MIX_BMCONTROLS_LEN > 0           /* Mixer programmable control bitmap */
+    0xff, 
+#endif    
+#if MIX_BMCONTROLS_LEN > 1
+    0xff, 
+#endif   
+#if MIX_BMCONTROLS_LEN > 2
+    0xff, 
+#endif      
+#if MIX_BMCONTROLS_LEN > 3
+    0xff, 
+#endif   
+#if MIX_BMCONTROLS_LEN > 4
+    0xff, 
+#endif   
+#if MIX_BMCONTROLS_LEN > 5
+    0xff, 
+#endif   
+#if MIX_BMCONTROLS_LEN > 6
+    0xff, 
+#endif   
+#if MIX_BMCONTROLS_LEN > 7
+    0xff, 
+#endif   
+#if MIX_BMCONTROLS_LEN > 8
+    0xff, 
+#endif 
+#if MIX_BMCONTROLS_LEN > 9
+    0xff, 
+#endif   
+#if MIX_BMCONTROLS_LEN > 10
+    0xff, 
+#endif   
+#if MIX_BMCONTROLS_LEN > 11
+    0xff, 
+#endif   
+#if MIX_BMCONTROLS_LEN > 12
+    0xff, 
+#endif   
+#if MIX_BMCONTROLS_LEN > 13
+    0xff, 
+#endif   
+#if MIX_BMCONTROLS_LEN > 14
+    0xff, 
+#endif   
+#if MIX_BMCONTROLS_LEN > 15
+    0xff, 
+#endif   
+#if MIX_BMCONTROLS_LEN > 16
+    0xff, 
+#endif   
+#if MIX_BMCONTROLS_LEN > 17
+    0xff, 
+#endif   
+#if MIX_BMCONTROLS_LEN > 18
+#error unxpected BMCONTROLS_LEN
+#endif   
     0x00,                            /* bmControls */
     0,                            /* Mixer unit string descriptor index */
 #endif
@@ -680,7 +735,7 @@ unsigned char cfgDesc_Audio2[] =
     0x00,           				/* 4  bmControls */
     0x01,           				/* 5  bFormatType */
     PCM, 0x00, 0x00, 0x00,  		/* 6:10  bmFormats (note this is a bitmap) */
-    NUM_USB_CHAN_OUT,             /* 11 bNrChannels */
+    NUM_USB_CHAN_OUT,               /* 11 bNrChannels */
     0,0,0,0,    					/* 12:14: bmChannelConfig */
     13,             				/* 15 iChannelNames */
 
@@ -715,7 +770,7 @@ unsigned char cfgDesc_Audio2[] =
     0x81,            				/* 2  bEndpointAddress (D7: 0:out, 1:in) */
     17,              				/* 3  bmAttributes (bitmap)  */ 
     4,0,            				/* 4  wMaxPacketSize */
-    8,              				/* 6  bInterval */
+    4,              				/* 6  bInterval. Only values <= 1 frame (8) supported by MS */
 
 #ifdef ADAT_TX
      /* Standard AS Interface Descriptor (4.9.1) (Alt) */
@@ -739,7 +794,7 @@ unsigned char cfgDesc_Audio2[] =
     PCM, 0x00, 0x00, 0x00,  		/* 6:10  bmFormats (note this is a bitmap) */
     NUM_USB_CHAN_OUT,             	/* 11 bNrChannels */
     0,0,0,0,    					/* 12:14: bmChannelConfig */
-    13,             				/* 15 iChannelNames */
+    15,             				/* 15 iChannelNames */
 
     /* Type 1 Format Type Descriptor */
     0x06,         					/* 0  bLength (in bytes): 6 */
@@ -810,7 +865,7 @@ unsigned char cfgDesc_Audio2[] =
     PCM, 0x00, 0x00, 0x00,  		/* 6:10  bmFormats (note this is a bitmap) */
     NUM_USB_CHAN_IN,            /* 11 bNrChannels */
     0,0,0,0,    					/* 12:14: bmChannelConfig */
-    31,            				    /* 15 iChannelNames */
+    33,            				    /* 15 iChannelNames */
 
     /* Type 1 Format Type Descriptor */
     0x06,         					/* 0  bLength (in bytes): 6 */
@@ -859,7 +914,7 @@ unsigned char cfgDesc_Audio2[] =
     PCM, 0x00, 0x00, 0x00,  		/* 6:10  bmFormats (note this is a bitmap) */
     NUM_USB_CHAN_IN - 4,            /* 11 bNrChannels */
     0,0,0,0,    					/* 12:14: bmChannelConfig */
-    31,            				    /* 15 iChannelNames */
+    33,            				    /* 15 iChannelNames */
 
     /* Type 1 Format Type Descriptor */
     0x06,         					/* 0  bLength (in bytes): 6 */
@@ -998,7 +1053,7 @@ unsigned char cfgDesc_Audio2[] =
     0x02,                            /* 2 bDescriptorSubtype : MIDI_IN_JACK subtype. (field size 1 bytes) */
     0x02,                            /* 3 bJackType : EXTERNAL. (field size 1 bytes) */
     0x02,                            /* 4 bJackID : ID of this Jack. (field size 1 bytes) */
-    0x00,                            /* 5 iJack : Unused. (field size 1 bytes) */
+    0x14,                            /* 5 iJack : Unused. (field size 1 bytes) */
 
 /* Table B-9: MIDI Adapter MIDI OUT Jack Descriptor (Embedded) */
     0x09,                            /* 0 bLength : Size of this descriptor, in bytes. (field size 1 bytes) */
@@ -1020,7 +1075,7 @@ unsigned char cfgDesc_Audio2[] =
     0x01,                            /* 5 bNrInputPins : Number of Input Pins of this Jack. (field size 1 bytes) */
     0x01,                            /* 6 BaSourceID(1) : ID of the Entity to which this Pin is connected. (field size 1 bytes) */
     0x01,                            /* 7 BaSourcePin(1) : Output Pin number of the Entity to which this Input Pin is connected. */
-    0x00,                            /* 8 iJack : Unused. (field size 1 bytes) */
+    0x13,                            /* 8 iJack : Unused. (field size 1 bytes) */
 
 /* Table B-11: MIDI Adapter Standard Bulk OUT Endpoint Descriptor */
     0x09,                            /* 0 bLength : Size of this descriptor, in bytes. (field size 1 bytes) */
@@ -1068,17 +1123,31 @@ unsigned char cfgDesc_Audio2[] =
    	0x00,                           /* 4 bNumEndpoints : 0 endpoints. (field size 1 bytes) */
    	0xFE,                           /* 5 bInterfaceClass : DFU. (field size 1 bytes) */
    	0x01,                           /* 6 bInterfaceSubclass : (field size 1 bytes) */
-   	0x00,                           /* 7 bInterfaceProtocol : Unused. (field size 1 bytes) */
-   	12,                           /* 8 iInterface : Used. (field size 1 bytes) */
+   	0x01,                           /* 7 bInterfaceProtocol : Unused. (field size 1 bytes) */
+   	8,                             /* 8 iInterface : Used. (field size 1 bytes) */
 
-	/* Standard DFU class functional descriptor */
-   	0x07,
+#if 0
+	/* DFU 1.0 Run-Time DFU Functional Descriptor */
+        0x07,
    	0x21,
    	0x07,
    	0xFA,
    	0x00,
    	0x40,
    	0x00,
+#else
+    /* DFU 1.1 Run-Time DFU Functional Descriptor */
+    0x09,                           /* 0    Size */
+    0x21,                           /* 1    bDescriptorType : DFU FUNCTIONAL */
+    0x07,                           /* 2    bmAttributes */
+    0xFA,                           /* 3    wDetachTimeOut */
+    0x00,                           /* 4    wDetachTimeOut */
+    0x40,                           /* 5    wTransferSize */
+    0x00,                           /* 6    wTransferSize */
+    0x10,                           /* 7    bcdDFUVersion */
+    0x01,                           /* 7    bcdDFUVersion */
+
+#endif
 #endif
     
 #ifdef IAP
@@ -1092,7 +1161,7 @@ unsigned char cfgDesc_Audio2[] =
    	0xFF,                           /* 5 bInterfaceClass : DFU. (field size 1 bytes) */
    	0xF0,                           /* 6 bInterfaceSubclass : (field size 1 bytes) */
    	0x00,                           /* 7 bInterfaceProtocol : Unused. (field size 1 bytes) */
-   	57,                           /* 8 iInterface : Used. (field size 1 bytes) */
+   	59,                           /* 8 iInterface : Used. (field size 1 bytes) */
 
     /* iAP Bulk OUT Endpoint Descriptor */
     0x07,                            /* 0 bLength : Size of this descriptor, in bytes. (field size 1 bytes) */
@@ -1145,6 +1214,9 @@ static unsigned char strDescs_Audio2[][40] =
     APPEND_VENDOR_STR(S/PDIF Clock),            // 10   iClockSource
     APPEND_VENDOR_STR(ADAT Clock),              // 11   iClockSource
     APPEND_VENDOR_STR(DFU),                     // 12   iInterface for DFU interface
+
+    APPEND_VENDOR_STR(MIDI Out),
+    APPEND_VENDOR_STR(MIDI In ),
     
     "Analogue 1",                                 // 13   Output channel name place holders - Get customised at runtime based on device config 
     "Analogue 2",                                 // 14
@@ -1257,7 +1329,7 @@ unsigned char oSpeedCfgDesc[] =
 #define STREAMING_INTERFACES        (INPUT_INTERFACES + OUTPUT_INTERFACES)
 
 
-#define CFG_TOTAL_LENGTH_A1            (18 + AC_TOTAL_LENGTH + (INPUT_INTERFACES * 61) + (OUTPUT_INTERFACES * 70) + (DFU_INTERFACES * 16))
+#define CFG_TOTAL_LENGTH_A1            (18 + AC_TOTAL_LENGTH + (INPUT_INTERFACES * 61) + (OUTPUT_INTERFACES * 70) + (DFU_INTERFACES * 18))
 #ifdef AUDIO_CLASS_FALLBACK
 unsigned char cfgDesc_Audio1[] = 
 {                       
@@ -1536,19 +1608,19 @@ unsigned char cfgDesc_Audio1[] =
     0x00, 0x00,                     /* Unused */  
 
 #endif
-#ifdef DFU
 	/* Standard DFU class Interface descriptor */
    	0x09,                          	/* 0 bLength : Size of this descriptor, in bytes. (field size 1 bytes) */
    	0x04,                           /* 1 bDescriptorType : INTERFACE descriptor. (field size 1 bytes) */
-   	(INPUT_INTERFACES+OUTPUT_INTERFACES+1),  /* 2 bInterfaceNumber : Index of this interface. (field size 1 bytes) */
+   	(INPUT_INTERFACES+OUTPUT_INTERFACES+1),                           /* 2 bInterfaceNumber : Index of this interface. (field size 1 bytes) */
    	0x00,                           /* 3 bAlternateSetting : Index of this setting. (field size 1 bytes) */
    	0x00,                           /* 4 bNumEndpoints : 0 endpoints. (field size 1 bytes) */
    	0xFE,                           /* 5 bInterfaceClass : DFU. (field size 1 bytes) */
    	0x01,                           /* 6 bInterfaceSubclass : (field size 1 bytes) */
-   	0x00,                           /* 7 bInterfaceProtocol : Unused. (field size 1 bytes) */
-   	0x08,                           /* 8 iInterface : Unused. (field size 1 bytes) */
+   	0x01,                           /* 7 bInterfaceProtocol : Unused. (field size 1 bytes) */
+   	12,                             /* 8 iInterface : Unused. (field size 1 bytes) */
 
-	/* Standard DFU class functional descriptor */
+#if 0
+	/* DFU 1.0 Run-Time DFU Functional Descriptor */
    	0x07,
    	0x21,
    	0x07,
@@ -1556,6 +1628,18 @@ unsigned char cfgDesc_Audio1[] =
    	0x00,
    	0x40,
    	0x00
+#else
+    /* DFU 1.1 Run-Time DFU Functional Descriptor */
+    0x09,                           /* 0    Size */
+    0x21,                           /* 1    bDescriptorType : DFU FUNCTIONAL */
+    0x07,                           /* 2    bmAttributes */
+    0xFA,                           /* 3    wDetachTimeOut */
+    0x00,                           /* 4    wDetachTimeOut */
+    0x40,                           /* 5    wTransferSize */
+    0x00,                           /* 6    wTransferSize */
+    0x10,                           /* 7    bcdDFUVersion */
+    0x01,                           /* 7    bcdDFUVersion */
+
 #endif
 };
 

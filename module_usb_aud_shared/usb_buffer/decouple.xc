@@ -1,6 +1,5 @@
 #include <xs1.h>
 #include <print.h>
-#include <assert.h>
 #include "xc_ptr.h"
 #define NO_INLINE_MIDI_SELECT_HANDLER 1
 #include "usb_midi.h"
@@ -58,11 +57,8 @@ inline void XUD_Change_ReadyIn_Buffer(XUD_ep e, unsigned bufferPtr, int len)
 #define BUFF_SIZE_OUT MAX(4 * CLASS_TWO_PACKET_SIZE * NUM_USB_CHAN_OUT, 4 * CLASS_ONE_PACKET_SIZE * MAX_CLASS_ONE_CHAN)
 #define BUFF_SIZE_IN  MAX(4 * CLASS_TWO_PACKET_SIZE * NUM_USB_CHAN_IN, 4 * CLASS_ONE_PACKET_SIZE * MAX_CLASS_ONE_CHAN)
 #define MAX_USB_AUD_PACKET_SIZE 1028
-//#define OUT_BUFFER_PREFILL (2*4*BUFF_SIZE_OUT/3)
-//#define OUT_BUFFER_PREFILL MAX(CLASS_ONE_PACKET_SIZE*3+4,CLASS_TWO_PACKET_SIZE*4+4)*2
-//#define IN_BUFFER_PREFILL MAX(CLASS_ONE_PACKET_SIZE*3+4,CLASS_TWO_PACKET_SIZE*4+4)*2
-#define OUT_BUFFER_PREFILL (MAX(MAX_CLASS_ONE_CHAN*CLASS_ONE_PACKET_SIZE*3+4,NUM_USB_CHAN_OUT*CLASS_TWO_PACKET_SIZE*4+4)*1)
-#define IN_BUFFER_PREFILL (MAX(CLASS_ONE_PACKET_SIZE*3+4,CLASS_TWO_PACKET_SIZE*4+4)*2)
+#define NUM_PACKETS_PREFILL (1)
+
 //#pragma xta command "add exclusion out_underflow"
 //#pragma xta command "add exclusion freq_change"
 //#pragma xta command "add exclusion print_err"is_as
@@ -92,6 +88,9 @@ unsigned outAudioBuff[BUFF_SIZE_OUT + (MAX_USB_AUD_PACKET_SIZE>>2) + 4];
 unsigned audioBuffIn[BUFF_SIZE_IN + (MAX_DEVICE_AUD_PACKET_SIZE>>2) + 4];
 
 unsigned inZeroBuff[(MAX_DEVICE_AUD_PACKET_SIZE>>2)+4];
+
+unsigned g_in_buffer_prefill = 0;
+unsigned g_out_buffer_prefill = 0;
 
 unsigned ledVal = 1;
 unsigned dir = 0;
@@ -139,6 +138,41 @@ void led(chanend ?c_led)
 
 void GetADCCounts(unsigned samFreq, int &min, int &mid, int &max);
 
+
+
+/* This function sets the prefill levels for the in and out buffers,
+   it needs to be changed for a different sample rate or number of channels.
+   The amount set here is what determines the latency of the buffering.
+*/
+static void set_prefills(unsigned int sampFreq)
+{
+    int usb_speed;
+    unsigned prefill;
+    int bytes_per_sample;
+    int num_channels;
+    int frame; 
+    int packet_size;
+    GET_SHARED_GLOBAL(usb_speed, g_curUsbSpeed);
+  
+    frame = usb_speed == XUD_SPEED_HS ? 8000 : 1000;
+    packet_size = ((((sampFreq+frame-1)/frame))+3);
+  
+    bytes_per_sample = usb_speed == XUD_SPEED_HS ? 4 : 3;
+  
+    GET_SHARED_GLOBAL(num_channels, g_numUsbChanOut);
+    prefill = ((packet_size * num_channels * bytes_per_sample + 4) * NUM_PACKETS_PREFILL);
+    SET_SHARED_GLOBAL(g_out_buffer_prefill, prefill);
+  
+    GET_SHARED_GLOBAL(num_channels, g_numUsbChanIn);
+    prefill = ((packet_size * num_channels * bytes_per_sample + 4) * NUM_PACKETS_PREFILL);
+    SET_SHARED_GLOBAL(g_in_buffer_prefill, prefill);
+    return;
+}
+                                   
+
+
+
+#if defined(MIDI) || defined(IAP)
 static inline void swap(xc_ptr &a, xc_ptr &b) 
 {
   xc_ptr tmp;
@@ -147,6 +181,7 @@ static inline void swap(xc_ptr &a, xc_ptr &b)
   b = tmp;
   return;
 }
+#endif
 
 // shared global midi buffering variables
 #ifdef MIDI
@@ -283,6 +318,15 @@ void handle_audio_request(chanend c_mix_out, chanend ?c_led)
         if (space_left > (BUFF_SIZE_IN*4/2)) 
         {
             inOverflow = 0;
+            // When we come out of overflow we clear the buffer and
+            // go into underflow and do a prefill again - this is to
+            // get a low latency and to ensure consistency between
+            // coming out of underflow or overflow
+            inUnderflow = 1;
+            SET_SHARED_GLOBAL(g_aud_to_host_rdptr,
+                              aud_to_host_fifo_start);
+            SET_SHARED_GLOBAL(g_aud_to_host_wrptr,
+                              aud_to_host_fifo_start);
         }
     }
     else
@@ -370,6 +414,7 @@ void handle_audio_request(chanend c_mix_out, chanend ?c_led)
 
     if(outUnderflow)
     {      
+      unsigned prefill;
 #pragma xta endpoint "out_underflow"
         /* We're still pre-buffering, send out 0 samps */
         for(int i = 0; i < NUM_USB_CHAN_OUT; i++) 
@@ -384,8 +429,9 @@ void handle_audio_request(chanend c_mix_out, chanend ?c_led)
             outSamps += BUFF_SIZE_OUT*4;
         }
         
+        GET_SHARED_GLOBAL(prefill, g_out_buffer_prefill);
         /* If we have a decent number of samples, come out of underflow cond */
-        if (outSamps >= (OUT_BUFFER_PREFILL)) 
+        if (outSamps >= prefill) 
         {
           outUnderflow = 0;
         }
@@ -799,6 +845,8 @@ void decouple(chanend c_mix_out,
     }
 #endif
 
+    set_prefills(sampFreq);
+
     while(1)
     {
         if (!isnull(c_clk_int)) 
@@ -854,13 +902,14 @@ void decouple(chanend c_mix_out,
                 SET_SHARED_GLOBAL(g_aud_from_host_rdptr, aud_from_host_fifo_start);              
                 SET_SHARED_GLOBAL(g_aud_from_host_wrptr, aud_from_host_fifo_start);
                 SET_SHARED_GLOBAL(aud_data_remaining_to_device, 0);
-
                 /* Wait for handshake back and pass back up */
                 chkct(c_mix_out, XS1_CT_END);
 
                 SET_SHARED_GLOBAL(g_freqChange, 0);
                 asm("outct res[%0],%1"::"r"(buffer_aud_ctl_chan),"r"(XS1_CT_END));
               
+                set_prefills(sampFreq);
+
                 ENABLE_INTERRUPTS();
 
                 speedRem = 0;
@@ -883,6 +932,7 @@ void decouple(chanend c_mix_out,
                 SET_SHARED_GLOBAL(g_aud_to_host_buffer, g_aud_to_host_zeros);
               
                 SET_SHARED_GLOBAL(g_freqChange, 0);
+                set_prefills(sampFreq);
                 ENABLE_INTERRUPTS();
             }
         }
@@ -959,9 +1009,22 @@ void decouple(chanend c_mix_out,
             if (space_left >= (BUFF_SIZE_OUT*4/2)) 
             {
                 /* Come out of OUT overflow state */
-                outOverflow = 0;
+                DISABLE_INTERRUPTS(); 
+                outOverflow = 0;               
+                // When we come out of overflow we clear the buffer and
+                // go into underflow and do a prefill again - this is to
+                // get a low latency and to ensure consistency between
+                // coming out of underflow or overflow
+                outUnderflow = 1;
+                SET_SHARED_GLOBAL(g_aud_from_host_rdptr,
+                                  aud_from_host_fifo_start);
+                SET_SHARED_GLOBAL(g_aud_from_host_wrptr,
+                                  aud_from_host_fifo_start);
+                SET_SHARED_GLOBAL(aud_data_remaining_to_device, 0);
+
                 SET_SHARED_GLOBAL(g_aud_from_host_buffer, aud_from_host_wrptr);
                 XUD_SetReady(aud_from_host_usb_ep, 1);
+                ENABLE_INTERRUPTS();
 #ifdef DEBUG_LEDS
                   led(c_led);
 #endif
@@ -988,6 +1051,7 @@ void decouple(chanend c_mix_out,
                     int aud_to_host_wrptr;
                     int aud_to_host_rdptr;
                     int fill_level;
+                    unsigned prefill;
                     GET_SHARED_GLOBAL(aud_to_host_wrptr, g_aud_to_host_wrptr);
                     GET_SHARED_GLOBAL(aud_to_host_rdptr, g_aud_to_host_rdptr);
 
@@ -997,7 +1061,8 @@ void decouple(chanend c_mix_out,
                     if (fill_level < 0)
                         fill_level += BUFF_SIZE_IN*4;
 
-                    if (fill_level >= IN_BUFFER_PREFILL) 
+                    GET_SHARED_GLOBAL(prefill, g_in_buffer_prefill);
+                    if (fill_level >= prefill) 
                     {                  
                         inUnderflow = 0;
                         SET_SHARED_GLOBAL(g_aud_to_host_buffer, aud_to_host_rdptr);

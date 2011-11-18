@@ -9,6 +9,27 @@
 
 #include "customdefines.h"
 
+/* Tidy up historical INPUT/OUTPUT defines. INPUT/OUTPUT now enabled based on channel count defines */
+#if !defined(NUM_USB_CHAN_IN)
+    #error NUM_USB_CHAN_IN must be defined!
+#else
+    #if (NUM_USB_CHAN_IN == 0)
+        #undef INPUT
+    #else
+        #define INPUT 1
+    #endif
+#endif
+
+#if !defined(NUM_USB_CHAN_OUT)
+    #error NUM_USB_CHAN_OUT must be defined!
+#else
+    #if (NUM_USB_CHAN_OUT == 0)
+        #undef OUTPUT
+    #else
+        #define OUTPUT 1
+    #endif
+#endif
+
 #if defined(IO_EXPANSION) && (IO_EXPANSION == 0)
 #undef IO_EXPANSION
 #endif
@@ -207,18 +228,18 @@
 #define ID_CLKSRC_EXT           42              /* Clock source ID (external) */
 #define ID_CLKSRC_ADAT           43              /* Clock source ID (external) */
 
-#define ID_XU_MIXSEL               50
-#define ID_XU_OUT                  51
-#define ID_XU_IN                   52
+#define ID_XU_MIXSEL                50
+#define ID_XU_OUT                   51
+#define ID_XU_IN                    52
 
-#define ID_MIXER_1             60
+#define ID_MIXER_1                  60
 
 #ifndef SERIAL_STR
-#define SERIAL_STR               "0000"          /* Serial number string */
+#define SERIAL_STR                  "0000"          /* Serial number string */
 #endif
 
-#define SERIAL_STR_INDEX	     0x03
-#define MANUFACTURER_STR_INDEX	     0x01
+#define SERIAL_STR_INDEX	        0x03
+#define MANUFACTURER_STR_INDEX	    0x01
 #define PRODUCT_STR_INDEX           0x02
 
 /* Mixer defines */
