@@ -134,6 +134,10 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
     
     set_thread_fast_mode_on();
 
+#ifdef IAP
+    XUD_ResetEndpoint(ep_iap_to_host_int, null);
+#endif
+
 #if defined(SPDIF_RX) || defined(ADAT_RX)
     asm("stw %0, dp[int_usb_ep]"::"r"(ep_int));    
 #endif
@@ -615,15 +619,20 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
         /* IAP interrupt IN to host */                  
         case testct_byref(c_iap_to_host_int, tmp): 
             asm("#iap interrupt d->h");
-            if (tmp) {
-              // Is a control token so reset
-            } else {
-              inuint(c_iap_to_host_int); // And discard
-              // fill in the data
-              XUD_SetData_Inline(ep_iap_to_host_int, c_iap_to_host_int);
-
-              XUD_SetNotReady(ep_iap_to_host_int);                     
-              // Don't need to handle data here as always ZLP
+            if (tmp) 
+            {
+                // Is a control token so reset
+                //printint(1);
+                XUD_ResetEndpoint(ep_iap_to_host_int, null);
+                XUD_SetNotReady(ep_iap_to_host_int);                     
+            } 
+            else 
+            {
+                inuint(c_iap_to_host_int); // And discard
+                // fill in the data
+                XUD_SetData_Inline(ep_iap_to_host_int, c_iap_to_host_int);
+                XUD_SetNotReady(ep_iap_to_host_int);                     
+                // Don't need to handle data here as always ZLP
             }
           break;
 #endif
