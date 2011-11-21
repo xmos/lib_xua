@@ -1197,6 +1197,9 @@ void decouple(chanend c_mix_out,
            iap_reset = 0;
            iap_expecting_length = 1;
            SET_SHARED_GLOBAL(g_iap_reset, iap_reset); // Reset has been signalled
+           iap_waiting_on_send_to_host = 0;
+           iap_data_collected_from_device = 0;
+           SET_SHARED_GLOBAL(g_iap_to_host_flag, 0);
         }
         // Need to handle sending ZLP on iap_to_host_usb_ep_int to signal iOS device to collect from bulk endpoint.
         /* Check if buffer() has send IAP packet to host */
