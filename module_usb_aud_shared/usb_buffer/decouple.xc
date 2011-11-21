@@ -1033,12 +1033,8 @@ void decouple(chanend c_mix_out,
                 /* Swap the collecting and sending buffer */
                 swap(midi_to_host_buffer_being_collected, midi_to_host_buffer_being_sent);
             
-                {
-                    /* Request to send packet */
-                    int len; 
-                    asm("ldw %0, %1[0]":"=r"(len):"r"(midi_to_host_buffer_being_sent));
-                    XUD_SetReady_In(midi_to_host_usb_ep, 0, midi_to_host_buffer_being_sent+4, len);
-                } 
+                /* Request to send packet */
+                XUD_SetReady_In(midi_to_host_usb_ep, 0, midi_to_host_buffer_being_sent+4, midi_data_collected_from_device);
 
                 /* Mark as waiting for host to poll us */
                 midi_waiting_on_send_to_host = 1;                                                                                                                  
@@ -1058,9 +1054,6 @@ void decouple(chanend c_mix_out,
             if (midi_from_host_flag)
             {
                 /* The buffer() thread has filled up a buffer */
-                int datalength;
-                int space_left;
-           
                 /* Reset flag */
                 SET_SHARED_GLOBAL(g_midi_from_host_flag, 0);
            
@@ -1123,16 +1116,12 @@ void decouple(chanend c_mix_out,
                     if (!midi_waiting_on_send_to_host) 
                     {
                         write_via_xc_ptr(midi_to_host_buffer_being_collected, midi_data_collected_from_device);
-                    
-                        midi_data_collected_from_device = 0;
+ 
                         swap(midi_to_host_buffer_being_collected, midi_to_host_buffer_being_sent);
                     
                         // Signal other side to swap
-                        {
-                            int len; 
-                            asm("ldw %0, %1[0]":"=r"(len):"r"(midi_to_host_buffer_being_sent));
-                            XUD_SetReady_In(midi_to_host_usb_ep, 0, midi_to_host_buffer_being_sent+4, len);
-                        }
+                        XUD_SetReady_In(midi_to_host_usb_ep, 0, midi_to_host_buffer_being_sent+4, midi_data_collected_from_device);
+                        midi_data_collected_from_device = 0;
                         midi_waiting_on_send_to_host = 1;                  
                     }
                 }          
