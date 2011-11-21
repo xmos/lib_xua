@@ -178,7 +178,7 @@ int int_usb_ep = 0;
 #ifdef MIDI
 unsigned int g_midi_to_host_buffer_A[MAX_USB_MIDI_PACKET_SIZE/4+4];
 unsigned int g_midi_to_host_buffer_B[MAX_USB_MIDI_PACKET_SIZE/4+4];
-int g_midi_from_host_buffer[MAX_USB_MIDI_PACKET_SIZE+4];
+int g_midi_from_host_buffer[MAX_USB_MIDI_PACKET_SIZE/4+4];
 #endif
 
 // shared global aud buffering variables
