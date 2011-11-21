@@ -35,6 +35,7 @@ extern int volsIn[];
 extern unsigned int mutesIn[];
 
 /* Mixer settings */
+#ifdef MIXER
 extern unsigned char mixer1Crossbar[];
 extern short mixer1Weights[];
 
@@ -48,6 +49,7 @@ extern unsigned char channelMapUsb[NUM_USB_CHAN_IN];
 
 /* Mixer input mapping */
 extern unsigned char mixSel[MIX_INPUTS];
+#endif
 
 /* Global var for current frequency */
 extern unsigned int g_curSamFreq;

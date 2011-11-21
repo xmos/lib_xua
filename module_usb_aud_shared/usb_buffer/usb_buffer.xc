@@ -85,7 +85,9 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
   XUD_ep ep_midi_from_host = XUD_Init_Ep(c_midi_from_host);
   XUD_ep ep_midi_to_host = XUD_Init_Ep(c_midi_to_host);
 #endif
+#if defined(SPDIF_RX) || defined(ADAT_RX)
   XUD_ep ep_int = XUD_Init_Ep(c_int);
+#endif
   
     unsigned datalength;
     unsigned tmp;
@@ -116,7 +118,9 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
     
     set_thread_fast_mode_on();
 
+#if defined(SPDIF_RX) || defined(ADAT_RX)
     asm("stw %0, dp[int_usb_ep]"::"r"(ep_int));    
+#endif
     asm("stw %0, dp[aud_from_host_usb_ep]"::"r"(ep_aud_out));
     asm("stw %0, dp[aud_to_host_usb_ep]"::"r"(ep_aud_in));
     asm("stw %0, dp[buffer_aud_ctl_chan]"::"r"(c_aud_ctl));    
@@ -195,6 +199,7 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
         /* Wait for response from XUD and service relevant EP */
         select
         {
+#if defined(SPDIF_RX) || defined(ADAT_RX)
             /* Interrupt EP, send back interrupt data.  Note, request made from decouple */
             case inuint_byref(c_int, tmp):
             { 
@@ -221,6 +226,7 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
                 XUD_SetNotReady(ep_int);
                 break;
               }
+#endif
 
             /* Sample Freq our chan count update from ep 0 */     
             case inuint_byref(c_aud_ctl, tmp):
