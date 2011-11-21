@@ -63,10 +63,10 @@ extern void device_reboot(void);
 unsigned deliver(chanend c_out, chanend ?c_spd_out, unsigned divide, chanend ?c_dig_rx)
 {
 	unsigned sample;
-#if NUM_USB_CHAN_OUT > 0
+#if NUM_USB_CHAN_OUT > 0 
     unsigned samplesOut[NUM_USB_CHAN_OUT];
 #endif
-#if NUM_USB_CHAN_IN > 0
+#if NUM_USB_CHAN_IN > 0 
     unsigned samplesIn[NUM_USB_CHAN_IN];
     unsigned samplesInPrev[NUM_USB_CHAN_IN];
 #endif
@@ -208,7 +208,7 @@ unsigned deliver(chanend c_out, chanend ?c_spd_out, unsigned divide, chanend ?c_
     tmp += 33;
        
 #if (I2S_CHANS_DAC != 0)
-#pragma loop unroll
+#pragma loop unroll 
     for(int i = 0; i < I2S_WIRES_DAC; i++)
     {
         p_i2s_dac[i] @ tmp <: 0;
@@ -376,7 +376,7 @@ unsigned deliver(chanend c_out, chanend ?c_spd_out, unsigned divide, chanend ?c_
         }
 #endif
 
-#if defined(SPDIF) && (NUM_USB_CHAN_OUT > 0)
+#if defined(SPDIF) && (NUM_USB_CHAN_OUT > 0)	
         outuint(c_spd_out, samplesOut[SPDIF_TX_INDEX]);                 /* Forward sample to SPDIF txt thread */
         sample = samplesOut[SPDIF_TX_INDEX + 1];                 
         outuint(c_spd_out, sample);                 /* Forward sample to SPDIF txt thread */

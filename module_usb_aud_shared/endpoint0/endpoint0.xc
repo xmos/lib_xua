@@ -198,7 +198,6 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
     }
 #endif
 
-
     /* Set up channel mapping default */
     for (int i = 0; i < NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN; i++) 
     {
@@ -810,13 +809,11 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
                the general case of a functional stall */
               XUD_SetStall_Out(0);
               XUD_SetStall_In(0);
-
         } 
         
         if (retVal < 0) 
         {
             g_curUsbSpeed = XUD_ResetEndpoint(ep0_in, ep0_out);
-            //printstrln("Resetting");
 
             g_config = 0;
 

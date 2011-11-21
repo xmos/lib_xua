@@ -641,4 +641,5 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
     }
 
      set_thread_fast_mode_off();
+
 }
