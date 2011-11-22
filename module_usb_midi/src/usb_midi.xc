@@ -6,8 +6,9 @@
 #include "midioutparse.h"
 #include "queue.h"
 #include "port32A.h"
+#ifdef IAP
 #include "iAP.h"
-
+#endif
 //#define MIDI_LOOPBACK 1
 
 static unsigned makeSymbol(unsigned data) {
@@ -62,10 +63,16 @@ extern unsigned authenticating;
 // state for auto-selecting dock or USB B
 extern unsigned polltime;
 
+#ifdef IAP
 extern port p_i2c_scl;
 extern port p_i2c_sda;
 #define p_midi_out p_i2c_scl
 #define p_midi_in p_i2c_sda
+#else
+extern port p_midi_out;
+extern port p_midi_in;
+#endif
+
 
 void usb_midi(in port ?p_midi_inj, out port ?p_midi_outj,
               clock ?clk_midi,
@@ -119,13 +126,18 @@ chanend c_iap, chanend ?c_i2c // iOS stuff
   t2 :> rxT;
 
 #ifndef MIDI_LOOPBACK
+#ifdef IAP
   port32A_unset(P32A_I2C_NOTMIDI);
+#endif  
   p_midi_out <: 1; // Start with high bit.
+#ifdef IAP  
   port32A_set(P32A_I2C_NOTMIDI);
-  //  printstr("mout0");
+#endif
 #endif
 
+#ifdef IAP
   init_iAP(c_i2c); // uses timer for i2c initialisation pause..
+#endif
 
   {
    timer poll; // .. so declare this after or don't have enough timers
@@ -293,6 +305,7 @@ chanend c_iap, chanend ?c_i2c // iOS stuff
 #endif
         }
         break;
+#ifdef IAP
       case !(isTX || isRX) => iap_get_ack_or_reset_or_data(c_iap, is_ack, is_reset, datum):
          handle_iap_case(is_ack, is_reset, datum, c_iap, c_i2c);
          if (!authenticating) {
@@ -300,9 +313,12 @@ chanend c_iap, chanend ?c_i2c // iOS stuff
               p_midi_in :> void; // Change port around to input again after authenticating (unique to midi+iAP case)
          }
          break;
+#endif
+#ifdef IAP
       case poll when timerafter(polltime) :> void:
         handle_poll_dev_det(poll);
         break;
+#endif
       }
   }
  }

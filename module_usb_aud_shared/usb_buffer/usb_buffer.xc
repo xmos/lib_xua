@@ -135,7 +135,11 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
     set_thread_fast_mode_on();
 
 #ifdef IAP
-    XUD_ResetEndpoint(ep_iap_to_host_int, null);
+    /* Note the order here is important */
+    XUD_ResetDrain(c_iap_to_host);
+    XUD_ResetDrain(c_iap_to_host_int);
+    XUD_GetBusSpeed(c_iap_to_host);
+    XUD_GetBusSpeed(c_iap_to_host_int);
 #endif
 
 #if defined(SPDIF_RX) || defined(ADAT_RX)
@@ -600,7 +604,22 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
         /* IAP IN to host */                  
         case testct_byref(c_iap_to_host, tmp): 
             asm("#iap d->h");
-            if (tmp) {
+            if (tmp) 
+            {
+                // Is a control token so reset
+                //XUD_ResetEndpoint(ep_iap_to_host, null);
+                //printint(1);
+                //XUD_SetNotReady(ep_iap_to_host); 
+                 //XUD_ResetDrain(c_iap_to_host);
+                    //XUD_GetBusSpeed(c_iap_to_host);
+                XUD_ResetDrain(c_iap_to_host);
+                XUD_ResetDrain(c_iap_to_host_int);
+                XUD_GetBusSpeed(c_iap_to_host);
+                XUD_GetBusSpeed(c_iap_to_host_int);
+               
+                XUD_SetNotReady(ep_iap_to_host); 
+                XUD_SetNotReady(ep_iap_to_host_int);                     
+
               // Is a control token so reset
             } else {
               inuint(c_iap_to_host); // And discard
@@ -623,7 +642,13 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
             {
                 // Is a control token so reset
                 //printint(1);
-                XUD_ResetEndpoint(ep_iap_to_host_int, null);
+                //XUD_ResetEndpoint(ep_iap_to_host_int, null);
+                XUD_ResetDrain(c_iap_to_host);
+                XUD_ResetDrain(c_iap_to_host_int);
+                XUD_GetBusSpeed(c_iap_to_host);
+                XUD_GetBusSpeed(c_iap_to_host_int);
+               
+                XUD_SetNotReady(ep_iap_to_host);                     
                 XUD_SetNotReady(ep_iap_to_host_int);                     
             } 
             else 

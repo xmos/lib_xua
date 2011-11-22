@@ -813,7 +813,7 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
         
         if (retVal < 0) 
         {
-            g_curUsbSpeed = XUD_ResetEndpoint(ep0_in, ep0_out);
+            g_curUsbSpeed = XUD_ResetEndpoint(ep0_out, ep0_in);
 
             g_config = 0;
 
