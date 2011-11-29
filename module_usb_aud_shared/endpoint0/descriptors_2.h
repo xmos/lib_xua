@@ -239,7 +239,7 @@ unsigned char cfgDesc_Audio2[] =
     0x00,            				/* 6  iConfiguration */ 
 #ifdef SELF_POWERED
     192,                            /* 7  bmAttributes */
-    1,             				    /* 8  bMaxPower */  
+    5,             				    /* 8  bMaxPower */  
 #else
     128,                            /* 7  bmAttributes */ 
     250,             				/* 8  bMaxPower */  
@@ -1283,7 +1283,7 @@ unsigned char cfgDesc_Null[] =
 #else
     128, 
 #endif   
-    1,                            /* 8  bMaxPower */
+    250,                            /* 8  bMaxPower */
 
     0x09,                           /* 0 bLength : Size of this descriptor, in bytes. (field size 1 bytes) */
     0x04,                           /* 1 bDescriptorType : INTERFACE descriptor. (field size 1 bytes) */
@@ -1347,7 +1347,7 @@ unsigned char cfgDesc_Audio1[] =
     0x00,                           /* Unused */
 #ifdef SELF_POWERED
     192,                            /* 7  bmAttributes */
-    1,             				    /* 8  bMaxPower */  
+    5,             				    /* 8  bMaxPower */  
 #else
     128,                            /* 7  bmAttributes */ 
     250,             				/* 8  bMaxPower */  
