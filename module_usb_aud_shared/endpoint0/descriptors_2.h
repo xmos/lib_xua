@@ -239,7 +239,7 @@ unsigned char cfgDesc_Audio2[] =
     0x00,            				/* 6  iConfiguration */ 
 #ifdef SELF_POWERED
     192,                            /* 7  bmAttributes */
-    0,             				    /* 8  bMaxPower */  
+    5,             				    /* 8  bMaxPower */  
 #else
     128,                            /* 7  bmAttributes */ 
     250,             				/* 8  bMaxPower */  
@@ -1347,7 +1347,7 @@ unsigned char cfgDesc_Audio1[] =
     0x00,                           /* Unused */
 #ifdef SELF_POWERED
     192,                            /* 7  bmAttributes */
-    0,             				    /* 8  bMaxPower */  
+    5,             				    /* 8  bMaxPower */  
 #else
     128,                            /* 7  bmAttributes */ 
     250,             				/* 8  bMaxPower */  
