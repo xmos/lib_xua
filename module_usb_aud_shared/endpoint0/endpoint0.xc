@@ -591,7 +591,11 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
                         /* Get Status request */
                         case GET_STATUS:
 
+#ifdef SELF_POWERED
+                            buffer[0] = 1; // self powered
+#else
                             buffer[0] = 0; // bus powered
+#endif
                             buffer[1] = 0; // remote wakeup not supported
                             
                             retVal = XUD_DoGetRequest(ep0_out, ep0_in, buffer,  2, sp.wLength);
