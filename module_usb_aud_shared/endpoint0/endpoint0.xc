@@ -99,7 +99,9 @@ void VendorHostActive(int active);
 #endif
 
 /* Global used for signalling reset to decouple */
+#ifdef IAP
 extern unsigned g_iap_reset;
+#endif
 
 /* Used when setting/clearing EP halt */
 void SetEndpointStatus(unsigned epNum, unsigned status)
@@ -575,10 +577,12 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
                                 VendorHostActive(1);
                             }
 #endif
+#ifdef IAP
                             {
                                int iap_reset = 1;
                                SET_SHARED_GLOBAL(g_iap_reset, iap_reset);
                             }
+#endif
                             /* No data stage for this request, just do status stage */
                             retVal = XUD_DoSetRequestStatus(ep0_in, 0);
                             break;

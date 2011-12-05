@@ -63,15 +63,10 @@ extern unsigned authenticating;
 // state for auto-selecting dock or USB B
 extern unsigned polltime;
 
-#ifdef IAP
 extern port p_i2c_scl;
 extern port p_i2c_sda;
 #define p_midi_out p_i2c_scl
 #define p_midi_in p_i2c_sda
-#else
-extern port p_midi_out;
-extern port p_midi_in;
-#endif
 
 
 void usb_midi(in port ?p_midi_inj, out port ?p_midi_outj,
