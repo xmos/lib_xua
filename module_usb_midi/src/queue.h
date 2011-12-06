@@ -9,10 +9,11 @@ typedef struct queue {
    int rdptr; // Using absolute indices which count reads and writes so this needs to be considered when accessing.
    int wrptr;
    int size;
+   int element_size;
    int mask;
 } queue;
 
-void init_queue(REFERENCE_PARAM(queue, q), unsigned arr[], int size);
+void init_queue(REFERENCE_PARAM(queue, q), unsigned char arr[], int size, int element_size);
 void enqueue(REFERENCE_PARAM(queue, q), unsigned value);
 unsigned dequeue(REFERENCE_PARAM(queue, q));
 int isempty(REFERENCE_PARAM(queue, q));

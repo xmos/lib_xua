@@ -1,6 +1,7 @@
 #include <xs1.h>
 #include <xclib.h>
 #include <print.h>
+#include <stdint.h>
 #include "usb_midi.h"
 #include "midiinparse.h"
 #include "midioutparse.h"
@@ -91,7 +92,7 @@ chanend c_iap, chanend ?c_i2c // iOS stuff
 
   // One place buffer for data going out to host
   queue midi_to_host_fifo;
-  unsigned midi_to_host_fifo_arr[1];
+  unsigned char midi_to_host_fifo_arr[4]; // Used for 32bit USB MIDI events
 
   unsigned outputting_symbol, outputted_symbol;
 
@@ -99,14 +100,14 @@ chanend c_iap, chanend ?c_i2c // iOS stuff
 
   // the symbol fifo (to go out of uart)
   queue symbol_fifo;
-  unsigned symbol_fifo_arr[USB_MIDI_DEVICE_OUT_FIFO_SIZE];
+  unsigned char symbol_fifo_arr[USB_MIDI_DEVICE_OUT_FIFO_SIZE * 4]; // Used for 32bit USB MIDI events
 
   unsigned rxPT, txPT;
   int midi_from_host_overflow = 0;
 
   //configure_clock_rate(clk_midi, 100, 1);
-  init_queue(symbol_fifo, symbol_fifo_arr, USB_MIDI_DEVICE_OUT_FIFO_SIZE);
-  init_queue(midi_to_host_fifo, midi_to_host_fifo_arr, 1);
+  init_queue(symbol_fifo, symbol_fifo_arr, USB_MIDI_DEVICE_OUT_FIFO_SIZE, 4);
+  init_queue(midi_to_host_fifo, midi_to_host_fifo_arr, 1, 4);
 
   configure_out_port_no_ready(p_midi_out, clk_midi, 1);
   configure_in_port(p_midi_in, clk_midi);
