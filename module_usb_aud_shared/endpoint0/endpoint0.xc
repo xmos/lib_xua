@@ -63,6 +63,7 @@ int volsIn[NUM_USB_CHAN_IN + 1];
 unsigned int mutesIn[NUM_USB_CHAN_IN + 1];
 //unsigned int multIn[NUM_USB_CHAN_IN + 1];
 
+#ifdef MIXER
 unsigned char mixer1Crossbar[18];
 short mixer1Weights[18*8];
 //#define MAX_MIX_COUNT 8
@@ -75,6 +76,7 @@ unsigned char channelMapAud[NUM_USB_CHAN_OUT];
 unsigned char channelMapUsb[NUM_USB_CHAN_IN];
 #endif
 unsigned char mixSel[MIX_INPUTS];
+#endif
 
 int min(int x, int y);
 
@@ -161,6 +163,7 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
         mutesIn[i] = 0;
     }
 
+#ifdef MIXER
     /* Set up mixer default state */
     for (int i = 0; i < 18*8; i++) {
       mixer1Weights[i] = 0x8001; //-inf
@@ -210,6 +213,7 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
     {
         mixSel[i] = i;
     }
+#endif
 
     /* Copy langIDs string desc into string[0] */
     /* TODO: Macro? */

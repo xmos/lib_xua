@@ -35,6 +35,7 @@ extern int volsIn[];
 extern unsigned int mutesIn[];
 
 /* Mixer settings */
+#ifdef MIXER
 extern unsigned char mixer1Crossbar[];
 extern short mixer1Weights[];
 
@@ -48,6 +49,7 @@ extern unsigned char channelMapUsb[NUM_USB_CHAN_IN];
 
 /* Mixer input mapping */
 extern unsigned char mixSel[MIX_INPUTS];
+#endif
 
 /* Global var for current frequency */
 extern unsigned int g_curSamFreq;
@@ -862,9 +864,6 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, SetupPacket &sp, chanend
                           {
                             int num_freqs = 0;
                             int i = 2;
-
-                            if(interfaceAlt[1] != 0)
-                                printint(interfaceAlt[1]);
 
                             #if MAX_FREQ >= 44100
                             storeFreq(buffer, i, 44100);
