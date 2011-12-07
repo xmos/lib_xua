@@ -6,6 +6,9 @@
 #include <print.h>
 
 //#define MIDI_LOOPBACK 1
+#ifndef MIDI_SHIFT
+#define MIDI_SHIFT 0
+#endif
 
 static unsigned makeSymbol(unsigned data) {
     // Start and stop bits to the data packet
@@ -102,7 +105,7 @@ void usb_midi(in port ?p_midi_in, out port ?p_midi_out,
   t2 :> rxT;
 
 #ifndef MIDI_LOOPBACK
-  p_midi_out <: 1; // Start with high bit. 
+  p_midi_out <: 1<<MIDI_SHIFT; // Start with high bit. 
   //  printstr("mout0");
 #endif
 
@@ -205,7 +208,7 @@ void usb_midi(in port ?p_midi_in, out port ?p_midi_out,
                 midi_send_ack(c_midi);
               }
 
-              p_midi_out <: 1 @ txPT;
+              p_midi_out <: (1<<MIDI_SHIFT) @ txPT;
               //              printstr("mout1\n");
               t :> time;
               time += bit_time;
@@ -218,7 +221,7 @@ void usb_midi(in port ?p_midi_in, out port ?p_midi_out,
           {
             time += bit_time;
             txPT += bit_time;
-            p_midi_out @ txPT <: (symbol & 1);
+            p_midi_out @ txPT <: ((symbol & 1)<<MIDI_SHIFT);
             //            printstr("mout2\n");
             symbol >>= 1;
           }
@@ -305,7 +308,7 @@ void usb_midi(in port ?p_midi_in, out port ?p_midi_out,
 #ifdef MIDI_LOOPBACK         
             handle_byte_from_uart(c_midi, mips, cable_number, got_next_event, next_event, waiting_for_ack, symbol);
 #else   
-            p_midi_out <: 1 @ txPT;
+            p_midi_out <: (1<<MIDI_SHIFT) @ txPT;
             t :> time;
             time += bit_time;
             txPT += bit_time;
