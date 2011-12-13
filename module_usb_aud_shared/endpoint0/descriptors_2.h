@@ -1279,11 +1279,12 @@ unsigned char cfgDesc_Null[] =
     0x01,                           /* 5  bConfigurationValue */
     0x00,                           /* 6  iConfiguration */
 #ifdef SELF_POWERED
-    192,                             /* 7  bmAttributes */
+    192,                            /* 7  bmAttributes */
+    0,                              /* 8  bMaxPower */
 #else
     128, 
-#endif   
     250,                            /* 8  bMaxPower */
+#endif
 
     0x09,                           /* 0 bLength : Size of this descriptor, in bytes. (field size 1 bytes) */
     0x04,                           /* 1 bDescriptorType : INTERFACE descriptor. (field size 1 bytes) */
