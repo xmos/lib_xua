@@ -550,7 +550,7 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
         case testct_byref(c_iap_from_host, tmp):
             asm("#iap h->d");
             if (tmp) {
-              // Is a control token so reset
+              // Is a control token, not expected
             } else {
               // Not a control token so is data
               /* Get buffer data from host - IAP OUT from host always into a single buffer */
@@ -607,11 +607,6 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
             if (tmp) 
             {
                 // Is a control token so reset
-                //XUD_ResetEndpoint(ep_iap_to_host, null);
-                //printint(1);
-                //XUD_SetNotReady(ep_iap_to_host); 
-                 //XUD_ResetDrain(c_iap_to_host);
-                    //XUD_GetBusSpeed(c_iap_to_host);
                 XUD_ResetDrain(c_iap_to_host);
                 XUD_ResetDrain(c_iap_to_host_int);
                 XUD_GetBusSpeed(c_iap_to_host);
@@ -619,8 +614,6 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
                
                 XUD_SetNotReady(ep_iap_to_host); 
                 XUD_SetNotReady(ep_iap_to_host_int);                     
-
-              // Is a control token so reset
             } else {
               inuint(c_iap_to_host); // And discard
               // fill in the data
@@ -641,8 +634,6 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
             if (tmp) 
             {
                 // Is a control token so reset
-                //printint(1);
-                //XUD_ResetEndpoint(ep_iap_to_host_int, null);
                 XUD_ResetDrain(c_iap_to_host);
                 XUD_ResetDrain(c_iap_to_host_int);
                 XUD_GetBusSpeed(c_iap_to_host);
