@@ -69,6 +69,7 @@ extern port p_i2c_sda;
 #define p_midi_out p_i2c_scl
 #define p_midi_in p_i2c_sda
 
+   extern timer iAPTimer; // .. so declare this after or don't have enough timers
 
 void usb_midi(in port ?p_midi_inj, out port ?p_midi_outj,
               clock ?clk_midi,
@@ -136,9 +137,10 @@ chanend c_iap, chanend ?c_i2c // iOS stuff
 #endif
 
   {
-   timer poll; // .. so declare this after or don't have enough timers
-   poll :> polltime;
+#ifdef IAP
+   iAPTimer :> polltime;
    polltime + XS1_TIMER_HZ / 2;
+#endif
   while (1) {
     int is_ack;
     int is_reset;
@@ -311,8 +313,8 @@ chanend c_iap, chanend ?c_i2c // iOS stuff
          break;
 #endif
 #ifdef IAP
-      case poll when timerafter(polltime) :> void:
-        handle_poll_dev_det(poll);
+      case iAPTimer when timerafter(polltime) :> void:
+        handle_poll_dev_det(iAPTimer);
         break;
 #endif
       }
