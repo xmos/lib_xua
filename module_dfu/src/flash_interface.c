@@ -211,8 +211,8 @@ int flash_cmd_erase_all(void) {
 }
 
 int flash_cmd_reboot(void) {
-  unsigned int pllVal;
-  read_sswitch_reg(0, 6, &pllVal);
-  write_sswitch_reg(0, 6, pllVal);
+  //unsigned int pllVal;
+  //read_sswitch_reg(0, 6, &pllVal);
+  //write_sswitch_reg(0, 6, pllVal);
   return 0;
 }
