@@ -447,13 +447,13 @@ int DFUDeviceRequests(XUD_ep ep0_out, XUD_ep &?ep0_in, SetupPacket &sp, chanend 
   	{
 		if (!user_reset) 
 		{
-      		unsigned int cmd_data[16];
+      		        unsigned int cmd_data[16];
       			HandleUserDeviceRequest(FLASH_CMD_REBOOT, 1, 0, cmd_data, c_user_cmd);
-    	} 
+                } 
 		else 
 		{
       		return 1; 
-    	}
+                }
   	}
 
   	return 0;
