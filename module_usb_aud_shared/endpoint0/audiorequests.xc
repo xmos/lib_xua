@@ -266,7 +266,7 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, SetupPacket &sp, chanend
 #endif
 )
 {
-    unsigned char buffer[1024];
+    unsigned char buffer[128];
     int i_tmp;
     int unitID;
     int loop = 1;
