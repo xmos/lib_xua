@@ -43,7 +43,7 @@
 #define DFU_IF_NUM INPUT_INTERFACES + OUTPUT_INTERFACES + MIDI_INTERFACES + 1
 
 unsigned int DFU_mode_active = 0;         // 0 - App active, 1 - DFU active
-extern void device_reboot(void);
+extern void device_reboot(chanend);
 #endif
 
 /* Handles Audio Class requests */
@@ -746,7 +746,7 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
                             //outuint(c_audioControl, AUDIO_REBOOT_FROM_DFU);
                             tmr :> s;
                             tmr when timerafter(s + 50000000) :> s;
-                            device_reboot();
+                            device_reboot(c_audioControl);
                         }
 
                         /* TODO we should not make the assumption that all DFU requests are handled */
@@ -852,7 +852,7 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
                     // No handshake on reboot
                     tmr :> s;
                     tmr when timerafter(s + 5000000) :> s;
-                    device_reboot();
+                    device_reboot(c_audioControl);
                 }
             }
 #endif

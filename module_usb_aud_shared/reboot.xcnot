@@ -5,11 +5,17 @@
 int write_sswitch_reg_blind(unsigned coreid, unsigned reg, unsigned data);
 
 /* Reboots XMOS device by writing to the PLL config register */
-void device_reboot(void) 
+void device_reboot(chanend spare) 
 {
+    // Need a spare chanend so we can talk to the pll register
+    asm("freer res[%0]"::"r"(spare));
+    // Need to tell the mapper we have freed one
+    //asm(".set device_reboot.maxchanends, 0");
+    {
     unsigned int pllVal;
     unsigned int core_id = get_core_id();
-    read_sswitch_reg(core_id, 6, &pllVal);
+    read_sswitch_reg(core_id, 6, pllVal);
     write_sswitch_reg_blind(core_id^0x8000, 6, pllVal);
     write_sswitch_reg_blind(core_id, 6, pllVal);
+    }
 }
