@@ -69,7 +69,8 @@ extern port p_i2c_sda;
 #define p_midi_out p_i2c_scl
 #define p_midi_in p_i2c_sda
 
-   extern timer iAPTimer; // .. so declare this after or don't have enough timers
+extern timer i2ctimer;
+#define iAPTimer i2ctimer
 
 void usb_midi(in port ?p_midi_inj, out port ?p_midi_outj,
               clock ?clk_midi,
