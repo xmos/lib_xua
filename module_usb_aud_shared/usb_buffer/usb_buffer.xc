@@ -156,7 +156,7 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
         int frameTime;
 
         while(usb_speed == 0)
-            asm("ldw   %0, dp[g_curUsbSpeed]" : "=r" (usb_speed) :);
+           GET_SHARED_GLOBAL(usb_speed, g_curUsbSpeed);
 
         GetADCCounts(DEFAULT_FREQ, min, mid, max);
         asm("stw %0, dp[g_speed]"::"r"(mid << 16));
@@ -219,7 +219,7 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
         int x;
        
         asm("ldaw %0, dp[fb_clocks]":"=r"(x));
-        asm("ldw   %0, dp[g_curUsbSpeed]" : "=r" (usb_speed) :);
+        GET_SHARED_GLOBAL(usb_speed, g_curUsbSpeed);
         
         if (usb_speed == XUD_SPEED_HS)  
         {                  
@@ -361,13 +361,13 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
                 {
                     unsigned mask = MASK_16_13, usb_speed;
 
-                    asm("ldw   %0, dp[g_curUsbSpeed]" : "=r" (usb_speed) :);
+                    GET_SHARED_GLOBAL(usb_speed, g_curUsbSpeed);
                     
                     if(usb_speed != XUD_SPEED_HS)
                         mask = MASK_16_10;
                     
                     /* Number of MCLKS this SOF, approx 125 * 24 (3000), sample by sample rate */
-                    asm("ldw %0, dp[g_curSamFreqMultiplier]":"=r"(cycles));
+                    GET_SHARED_GLOBAL(cycles, g_curSamFreqMultiplier);
                     cycles = ((int)((short)(tmp - lastClock))) * cycles;
                 
                     /* Any odd bits (lower than 16.23) have to be kept seperate */
@@ -396,7 +396,7 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
                             asm("stw %0, dp[g_speed]"::"r"(clocks));   // g_speed = clocks
                             //fb_clocks = clocks;
 
-                            asm("ldw   %0, dp[g_curUsbSpeed]" : "=r" (usb_speed) :);
+                            GET_SHARED_GLOBAL(usb_speed, g_curUsbSpeed);
         
                             if (usb_speed == XUD_SPEED_HS)  
                             {                     
@@ -486,7 +486,7 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
                 XUD_SetData_Inline(ep_aud_fb, c_aud_fb);
 
                 asm("ldaw %0, dp[fb_clocks]":"=r"(x));
-                asm("ldw   %0, dp[g_curUsbSpeed]" : "=r" (usb_speed) :);
+                GET_SHARED_GLOBAL(usb_speed, g_curUsbSpeed);
         
                 if (usb_speed == XUD_SPEED_HS)  
                 {                     
