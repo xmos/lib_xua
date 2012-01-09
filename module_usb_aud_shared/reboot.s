@@ -1,7 +1,7 @@
 #########################################################
 # XMOS Compiled Assembly File                           #
 #########################################################
-#       generated: Mon Jan 09 2012, 13:44               #
+#       generated: Mon Jan 09 2012, 15:48               #
 #         product: XS1-040                              #
 #        compiler: XMOS 32-bit XC Compiler 11.11.0beta1 (build 2136)#
 #           input: reboot.xi                            #
@@ -194,6 +194,7 @@
           .align    4
 .LDBG5:
 .call device_reboot, __builtin_outct
+.call device_reboot, __builtin_inct
 .call device_reboot, get_core_id
 .call device_reboot, read_sswitch_reg
 .call device_reboot, write_sswitch_reg_blind
@@ -201,6 +202,9 @@
 .set __builtin_outct, 0
 .linkset __builtin_outct.locnoside, 0
 .linkset __builtin_outct.locnochandec, 1
+.set __builtin_inct, 0
+.linkset __builtin_inct.locnoside, 0
+.linkset __builtin_inct.locnochandec, 1
 .globl device_reboot, "f{0}(chd)"
 .globl device_reboot.nstackwords
 .globl device_reboot.maxthreads
@@ -228,10 +232,10 @@
 # -----1-| _t0
 # -----0-| rsvd
 # ------------------------
-# r0 = [f:spare, t:8, l:core_id, t:10, t:11, t:12, t:14, t:15, t:16, t:17, t:19, t:21, t:24]
-# r1 = [t:23, t:25, t:26]
-# r2 = [t:13, t:18, t:22]
-# r4 = [t:9, t:20]
+# r0 = [f:spare, t:8, l:core_id, t:11, t:12, t:13, t:15, t:16, t:17, t:18, t:20, t:22, t:25]
+# r1 = [t:9, t:24, t:26, t:27]
+# r2 = [t:14, t:19, t:23]
+# r4 = [t:10, t:21]
 # r5 = [t:1]
 # r6 = [t:2]
 # r7 = [t:3]
@@ -254,60 +258,69 @@ device_reboot:
 
           .loc      1 10 0
 
-.L17_EndPoint:
+.L20_EndPoint:
           outct     res[r0], 0x1     # output ctrl token on `_t0_r0'
-.L4_bb_begin:
+          .loc      1 11 0
+
+.L5_bb_begin:
+          .loc      1 11 0
+
+          .loc      1 11 0
+
+.L21_EndPoint:
+          inct      r1, res[r0]      # input control token on `_t0_r0'
+.L7_bb_begin:
           freer res[r0]
 .LDBG6:
-          .loc      1 17 0
+          .loc      1 18 0
 
-.L18_Call:
+.L22_Call:
           bl        get_core_id 
           mov       r4, r0           # move r4 <-- r0
-.L7_bb_begin:
-          .loc      1 18 0
-
 .L10_bb_begin:
-          .loc      1 18 0
-
-          ldaw      r2, sp[0x2] 
-          ldc       r1, 0x6
-          .loc      1 18 0
-
-.L19_Call:
-          bl        read_sswitch_reg 
           .loc      1 19 0
 
 .L13_bb_begin:
           .loc      1 19 0
 
+          ldaw      r2, sp[0x2] 
+          ldc       r1, 0x6
+          .loc      1 19 0
+
+.L23_Call:
+          bl        read_sswitch_reg 
+          .loc      1 20 0
+
+.L16_bb_begin:
+          .loc      1 20 0
+
           ldc       r0, 0x8000
           xor       r0, r4, r0
           ldw       r2, sp[0x2] 
           ldc       r1, 0x6
-          .loc      1 19 0
+          .loc      1 20 0
 
-.L20_Call:
+.L24_Call:
           bl        write_sswitch_reg_blind 
-          .loc      1 20 0
+          .loc      1 21 0
 
-.L15_bb_begin:
-          .loc      1 20 0
+.L18_bb_begin:
+          .loc      1 21 0
 
           ldw       r2, sp[0x2] 
           mov       r0, r4           # move r0 <-- r4
           ldc       r1, 0x6
-          .loc      1 20 0
+          .loc      1 21 0
 
-.L21_Call:
+.L25_Call:
           bl        write_sswitch_reg_blind 
 .LDBG7:
-          .loc      1 22 0
+          .loc      1 23 0
 
 .LDBG13:
           ldw       r4, sp[0x1] 
 .LDBG14:
-.L16_bb_begin:
+.L19_bb_begin:
           retsp     0x3              # return: dealloc and link (pc=r15=mem[sp])
 .LDBG10:
 .LDBG15:
@@ -510,7 +523,7 @@ device_reboot:
           .uleb128  0x6
           .asciiz   "pllVal"
           .byte     0x01
-          .short    0x0010
+          .short    0x0011
           .short    .LDBG47-.LDBG46
           .int      .LDBG28-.LDBG22
           .int      .LDBG48
@@ -532,7 +545,7 @@ device_reboot:
           .uleb128  0x6
           .asciiz   "core_id"
           .byte     0x01
-          .short    0x0011
+          .short    0x0012
           .short    0x0000
           .int      .LDBG28-.LDBG22
           .int      .LDBG51
@@ -655,58 +668,68 @@ device_reboot:
 
           .byte     0x00
           .section .xtaendpointtable,       "", @progbits
-.L22_xta_begin:
-          .int      .L23_xta_end-.L22_xta_begin
-          .int      0x00000000
-          .asciiz   "/local/USBAudio/sw_usb_aud_l1_ios/app_usb_aud_l1/.build"
-.cc_top device_reboot.function, device_reboot
-          .asciiz  "../../../sc_usb_audio/module_usb_aud_shared/reboot.xc"
-          .int      0x0000000a
-          .long    .L17_EndPoint
-.cc_bottom device_reboot.function
-.L23_xta_end:
-          .section .xtacalltable,       "", @progbits
-.L24_xta_begin:
-          .int      .L25_xta_end-.L24_xta_begin
-          .int      0x00000000
-          .asciiz   "/local/USBAudio/sw_usb_aud_l1_ios/app_usb_aud_l1/.build"
-.cc_top device_reboot.function, device_reboot
-          .asciiz  "../../../sc_usb_audio/module_usb_aud_shared/reboot.xc"
-          .int      0x00000014
-          .long    .L21_Call
-.cc_bottom device_reboot.function
-.cc_top device_reboot.function, device_reboot
-          .asciiz  "../../../sc_usb_audio/module_usb_aud_shared/reboot.xc"
-          .int      0x00000013
-          .long    .L20_Call
-.cc_bottom device_reboot.function
-.cc_top device_reboot.function, device_reboot
-          .asciiz  "../../../sc_usb_audio/module_usb_aud_shared/reboot.xc"
-          .int      0x00000012
-          .long    .L19_Call
-.cc_bottom device_reboot.function
-.cc_top device_reboot.function, device_reboot
-          .asciiz  "../../../sc_usb_audio/module_usb_aud_shared/reboot.xc"
-          .int      0x00000011
-          .long    .L18_Call
-.cc_bottom device_reboot.function
-.L25_xta_end:
-          .section .xtalabeltable,       "", @progbits
 .L26_xta_begin:
           .int      .L27_xta_end-.L26_xta_begin
           .int      0x00000000
           .asciiz   "/local/USBAudio/sw_usb_aud_l1_ios/app_usb_aud_l1/.build"
 .cc_top device_reboot.function, device_reboot
           .asciiz  "../../../sc_usb_audio/module_usb_aud_shared/reboot.xc"
-          .int      0x00000016
-          .int      0x00000016
-# line info for line 22 
-          .long    .L16_bb_begin
+          .int      0x0000000b
+          .long    .L21_EndPoint
+.cc_bottom device_reboot.function
+.cc_top device_reboot.function, device_reboot
+          .asciiz  "../../../sc_usb_audio/module_usb_aud_shared/reboot.xc"
+          .int      0x0000000a
+          .long    .L20_EndPoint
+.cc_bottom device_reboot.function
+.L27_xta_end:
+          .section .xtacalltable,       "", @progbits
+.L28_xta_begin:
+          .int      .L29_xta_end-.L28_xta_begin
+          .int      0x00000000
+          .asciiz   "/local/USBAudio/sw_usb_aud_l1_ios/app_usb_aud_l1/.build"
+.cc_top device_reboot.function, device_reboot
+          .asciiz  "../../../sc_usb_audio/module_usb_aud_shared/reboot.xc"
+          .int      0x00000015
+          .long    .L25_Call
+.cc_bottom device_reboot.function
+.cc_top device_reboot.function, device_reboot
+          .asciiz  "../../../sc_usb_audio/module_usb_aud_shared/reboot.xc"
+          .int      0x00000014
+          .long    .L24_Call
+.cc_bottom device_reboot.function
+.cc_top device_reboot.function, device_reboot
+          .asciiz  "../../../sc_usb_audio/module_usb_aud_shared/reboot.xc"
+          .int      0x00000013
+          .long    .L23_Call
+.cc_bottom device_reboot.function
+.cc_top device_reboot.function, device_reboot
+          .asciiz  "../../../sc_usb_audio/module_usb_aud_shared/reboot.xc"
+          .int      0x00000012
+          .long    .L22_Call
+.cc_bottom device_reboot.function
+.L29_xta_end:
+          .section .xtalabeltable,       "", @progbits
+.L30_xta_begin:
+          .int      .L31_xta_end-.L30_xta_begin
+          .int      0x00000000
+          .asciiz   "/local/USBAudio/sw_usb_aud_l1_ios/app_usb_aud_l1/.build"
+.cc_top device_reboot.function, device_reboot
+          .asciiz  "../../../sc_usb_audio/module_usb_aud_shared/reboot.xc"
+          .int      0x00000017
+          .int      0x00000017
+# line info for line 23 
+          .long    .L19_bb_begin
+          .asciiz  "../../../sc_usb_audio/module_usb_aud_shared/reboot.xc"
+          .int      0x00000015
+          .int      0x00000015
+# line info for line 21 
+          .long    .L18_bb_begin
           .asciiz  "../../../sc_usb_audio/module_usb_aud_shared/reboot.xc"
           .int      0x00000014
           .int      0x00000014
 # line info for line 20 
-          .long    .L15_bb_begin
+          .long    .L16_bb_begin
           .asciiz  "../../../sc_usb_audio/module_usb_aud_shared/reboot.xc"
           .int      0x00000013
           .int      0x00000013
@@ -718,22 +741,22 @@ device_reboot:
 # line info for line 18 
           .long    .L10_bb_begin
           .asciiz  "../../../sc_usb_audio/module_usb_aud_shared/reboot.xc"
-          .int      0x00000011
-          .int      0x00000011
-# line info for line 17 
+          .int      0x0000000d
+          .int      0x0000000d
+# line info for line 13 
           .long    .L7_bb_begin
           .asciiz  "../../../sc_usb_audio/module_usb_aud_shared/reboot.xc"
-          .int      0x0000000c
-          .int      0x0000000c
-# line info for line 12 
-          .long    .L4_bb_begin
+          .int      0x0000000b
+          .int      0x0000000b
+# line info for line 11 
+          .long    .L5_bb_begin
           .asciiz  "../../../sc_usb_audio/module_usb_aud_shared/reboot.xc"
           .int      0x0000000a
           .int      0x0000000a
 # line info for line 10 
           .long    .L2_bb_begin
 .cc_bottom device_reboot.function
-.L27_xta_end:
+.L31_xta_end:
           .section .dp.data,       "adw", @progbits
 .align 4
           .align    4
@@ -744,5 +767,5 @@ device_reboot:
           .corerev  "REVB"
 
 # memory access instructions: 6
-# total instructions: 19
+# total instructions: 20
 ########################################
