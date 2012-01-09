@@ -7,6 +7,7 @@ int write_sswitch_reg_blind(unsigned coreid, unsigned reg, unsigned data);
 /* Reboots XMOS device by writing to the PLL config register */
 void device_reboot(chanend spare) 
 {
+    outct(spare, XS1_CT_END); // have to do this before freeing the chanend
     // Need a spare chanend so we can talk to the pll register
     asm("freer res[%0]"::"r"(spare));
     // Need to tell the mapper we have freed one
