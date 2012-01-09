@@ -1,0 +1,9 @@
+//#include <xs1.h>
+
+void device_reboot_implementation(chanend spare);
+
+// This version just exists so generate an assembly wrapper function for me.
+void device_reboot(chanend spare) 
+{
+    device_reboot_implementation(spare);
+}
