@@ -220,16 +220,44 @@ unsigned char devQualDesc_Null[] =
 #define OUTPUT_ALT_LENGTH 0
 #endif
 
-#define OUTPUT_INTERFACE_STRING_INDEX 15
-#define INPUT_INTERFACE_STRING_INDEX 15 + NUM_USB_CHAN_OUT
-#define MIXER_STRING_INDEX 15 + NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN
+// Positions in strDescs_Audio2
+#define INTERNAL_CLOCK_STRING_INDEX 9
+#define SPDIF_CLOCK_STRING_INDEX 10
 
-#ifdef IAP
-#ifdef MIXER
-#define IAP_INTERFACE_STRING_INDEX 15 + NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + MAX_MIX_COUNT
+#ifdef SPDIF_RX
+#define ADAT_CLOCK_STRING_INDEX (SPDIF_CLOCK_STRING_INDEX + 1)
 #else
-#define IAP_INTERFACE_STRING_INDEX 15 + NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN
+#define ADAT_CLOCK_STRING_INDEX (SPDIF_CLOCK_STRING_INDEX)
 #endif
+
+#ifdef ADAT_RX
+#define DFU_STRING_INDEX (ADAT_CLOCK_STRING_INDEX + 1)
+#else
+#define DFU_STRING_INDEX (ADAT_CLOCK_STRING_INDEX)
+#endif
+
+#ifdef DFU
+#define MIDI_OUT_STRING_INDEX (DFU_STRING_INDEX + 1)
+#else
+#define MIDI_OUT_STRING_INDEX (DFU_STRING_INDEX)
+#endif
+
+#define MIDI_IN_STRING_INDEX (MIDI_OUT_STRING_INDEX + 1)
+
+#ifdef MIDI
+#define OUTPUT_INTERFACE_STRING_INDEX (MIDI_OUT_STRING_INDEX + 2)
+#else
+#define OUTPUT_INTERFACE_STRING_INDEX (MIDI_OUT_STRING_INDEX)
+#endif
+
+#define INPUT_INTERFACE_STRING_INDEX (OUTPUT_INTERFACE_STRING_INDEX + NUM_USB_CHAN_OUT)
+
+#define MIXER_STRING_INDEX (INPUT_INTERFACE_STRING_INDEX + NUM_USB_CHAN_IN)
+
+#ifdef MIXER
+#define IAP_INTERFACE_STRING_INDEX (MIXER_STRING_INDEX + MAX_MIX_COUNT)
+#else
+#define IAP_INTERFACE_STRING_INDEX (MIXER_STRING_INDEX)
 #endif
 
 /* Total length of config descriptor */
@@ -305,7 +333,7 @@ unsigned char cfgDesc_Audio2[] =
                 							D[3:2] : Clock Validity Control
                 							D[7:4] : Reserved (0) */
     0x00,        					/* 6   bAssocTerminal */
-    0x09,        					/* 7   iClockSource (String Index) */  
+    INTERNAL_CLOCK_STRING_INDEX,        					/* 7   iClockSource (String Index) */
 
 #ifdef SPDIF_RX
     /* Clock Source Descriptor (4.7.2.1) */ 
@@ -326,7 +354,7 @@ unsigned char cfgDesc_Audio2[] =
                 							D[3:2] : Clock Validity Control
                 							D[7:4] : Reserved (0) */
     0x00,        					/* 6   bAssocTerminal */
-    10,        					    /* 7   iClockSource (String Index) */  
+    SPDIF_CLOCK_STRING_INDEX,        					    /* 7   iClockSource (String Index) */
 #endif
 #ifdef ADAT_RX
     /* Clock Source Descriptor (4.7.2.1) */ 
@@ -347,7 +375,7 @@ unsigned char cfgDesc_Audio2[] =
                 							D[3:2] : Clock Validity Control
                 							D[7:4] : Reserved (0) */
     0x00,        					/* 6   bAssocTerminal */
-    11,        					    /* 7   iClockSource (String Index) */  
+    ADAT_CLOCK_STRING_INDEX,        					    /* 7   iClockSource (String Index) */
 #endif
     /* Clock Selector Descriptor (4.7.2.2) */ 
     LEN_CLK_SEL,                    /* 0    bLength */
@@ -1065,7 +1093,7 @@ unsigned char cfgDesc_Audio2[] =
     0x02,                            /* 2 bDescriptorSubtype : MIDI_IN_JACK subtype. (field size 1 bytes) */
     0x02,                            /* 3 bJackType : EXTERNAL. (field size 1 bytes) */
     0x02,                            /* 4 bJackID : ID of this Jack. (field size 1 bytes) */
-    14,                              /* 5 iJack : Unused. (field size 1 bytes) */
+    MIDI_IN_STRING_INDEX,            /* 5 iJack : Unused. (field size 1 bytes) */
 
 /* Table B-9: MIDI Adapter MIDI OUT Jack Descriptor (Embedded) */
     0x09,                            /* 0 bLength : Size of this descriptor, in bytes. (field size 1 bytes) */
@@ -1087,7 +1115,7 @@ unsigned char cfgDesc_Audio2[] =
     0x01,                            /* 5 bNrInputPins : Number of Input Pins of this Jack. (field size 1 bytes) */
     0x01,                            /* 6 BaSourceID(1) : ID of the Entity to which this Pin is connected. (field size 1 bytes) */
     0x01,                            /* 7 BaSourcePin(1) : Output Pin number of the Entity to which this Input Pin is connected. */
-    13,                              /* 8 iJack : Unused. (field size 1 bytes) */
+    MIDI_OUT_STRING_INDEX,           /* 8 iJack : Unused. (field size 1 bytes) */
 
 /* Table B-11: MIDI Adapter Standard Bulk OUT Endpoint Descriptor */
     0x09,                            /* 0 bLength : Size of this descriptor, in bytes. (field size 1 bytes) */
@@ -1136,7 +1164,7 @@ unsigned char cfgDesc_Audio2[] =
    	0xFE,                           /* 5 bInterfaceClass : DFU. (field size 1 bytes) */
    	0x01,                           /* 6 bInterfaceSubclass : (field size 1 bytes) */
    	0x01,                           /* 7 bInterfaceProtocol : Unused. (field size 1 bytes) */
-   	12,                             /* 8 iInterface : Unused. (field size 1 bytes) */
+        DFU_STRING_INDEX,               /* 8 iInterface : Unused. (field size 1 bytes) */
 
 #if 0
 	/* DFU 1.0 Run-Time DFU Functional Descriptor */
@@ -1223,12 +1251,20 @@ static unsigned char strDescs_Audio2[][40] =
     
     APPEND_VENDOR_STR(Clock Selector),          // 8    iClockSel
     APPEND_VENDOR_STR(Internal Clock),          // 9    iClockSource
-    APPEND_VENDOR_STR(S/PDIF Clock),            // 10   iClockSource
-    APPEND_VENDOR_STR(ADAT Clock),              // 11   iClockSource
-    APPEND_VENDOR_STR(DFU),                     // 12   iInterface for DFU interface
+#ifdef SPDIF_RX
+    APPEND_VENDOR_STR(S/PDIF Clock),            // iClockSource
+#endif
+#ifdef ADAT_RX
+    APPEND_VENDOR_STR(ADAT Clock),              // iClockSource
+#endif
+#ifdef DFU
+    APPEND_VENDOR_STR(DFU),                     // iInterface for DFU interface
+#endif
 
-    APPEND_VENDOR_STR(MIDI Out),                   // 13
-    APPEND_VENDOR_STR(MIDI In ),                   // 14
+#ifdef MIDI
+    APPEND_VENDOR_STR(MIDI Out),                   // iJack for MIDI OUT
+    APPEND_VENDOR_STR(MIDI In ),                   // iJack for MIDI IN
+#endif
     
 #if (NUM_USB_CHAN_OUT > 0)
     "Analogue 1",                                 // Output channel name place holders - Get customised at runtime based on device config 
