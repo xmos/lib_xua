@@ -120,7 +120,7 @@ static int DFU_Dnload(unsigned int request_len, unsigned int block_num, unsigned
     { 
       unsigned s = 0;
 
-#if 0
+#if 1
       /* Flash lib does erase on add image */
       // Erase flash on first block
       HandleUserDeviceRequest(FLASH_CMD_ERASE_ALL, 1, 0, cmd_data, c_user_cmd);
