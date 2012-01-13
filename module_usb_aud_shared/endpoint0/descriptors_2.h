@@ -1239,15 +1239,15 @@ unsigned char cfgDesc_Audio2[] =
 
 static unsigned char strDescs_Audio2[][40] = 
 {
-	"Langids",						            /* String 0 (LangIDs) place holder */ 
-	APPEND_VENDOR_STR( ),                       // 1    iManufacturer (at MANUFACTURER_STRING_INDEX)
-	APPEND_VENDOR_STR(USB Audio 2.0),           // 2    iProduct and iInterface for control interface (at PRODUCT_STR_INDEX)
-	SERIAL_STR,                                 // 3    iSerialNumber (at SERIAL_STR_INDEX)
-	APPEND_VENDOR_STR(USB 2.0 Audio Out),       // 4    iInterface for Streaming interaces
-	APPEND_VENDOR_STR(USB 2.0 Audio In),        // 5
+    "Langids",						            /* String 0 (LangIDs) place holder */ 
+    APPEND_VENDOR_STR( ),                       // 1    iManufacturer (at MANUFACTURER_STRING_INDEX)
+    APPEND_VENDOR_STR(USB Audio 2.0),           // 2    iProduct and iInterface for control interface (at PRODUCT_STR_INDEX)
+    SERIAL_STR,                                 // 3    iSerialNumber (at SERIAL_STR_INDEX)
+    APPEND_VENDOR_STR(USB 2.0 Audio Out),       // 4    iInterface for Streaming interaces
+    APPEND_VENDOR_STR(USB 2.0 Audio In),        // 5
 
     APPEND_VENDOR_STR(Audio 2.0 Output), 		// 6    "USB Input Terminal" (User sees as output from host) 
-	APPEND_VENDOR_STR(Audio 2.0 Input),  		// 7    "USB Output Terminal" (User sees as input to host) 
+    APPEND_VENDOR_STR(Audio 2.0 Input),  		// 7    "USB Output Terminal" (User sees as input to host) 
     
     APPEND_VENDOR_STR(Clock Selector),          // 8    iClockSel
     APPEND_VENDOR_STR(Internal Clock),          // 9    iClockSource
