@@ -1,5 +1,46 @@
+/**
+ * Module:  module_usb_aud_shared
+ * Version: 2v3_iosrc0
+ * Build:   c1785ffa61c5d34613093518d78adcebd79ae1cc
+ * File:    i2c.xc
+ *
+ * The copyrights, all other intellectual and industrial 
+ * property rights are retained by XMOS and/or its licensors. 
+ * Terms and conditions covering the use of this code can
+ * be found in the Xmos End User License Agreement.
+ *
+ * Copyright XMOS Ltd 2010
+ *
+ * In the case where this code is a modification of existing code
+ * under a separate license, the separate license terms are shown
+ * below. The modifications to the code are still covered by the 
+ * copyright notice above.
+ *
+ **/                                   
 #include <xs1.h>
 #include <print.h>
+
+int I2cRegReadC(int device, int addr, chanend c) {
+   int read;
+   int retVal;
+   c <: 0; // isWrite
+   c <: device;
+   c <: addr;
+   c <: 1; // only ever one byte
+   c :> read;
+   c :> retVal;
+   return read;
+}
+
+void I2cRegWriteC(int device, int addr, int data, chanend c) {
+   int retVal;
+   c <: 1; // isWrite
+   c <: device;
+   c <: addr;
+   c <: 1; // only ever one byte
+   c <: data;
+   c :> retVal;
+}
 
 int I2cRegRead(int device, int addr, port scl, port sda)
 {

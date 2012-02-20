@@ -528,7 +528,7 @@ void audio(chanend c_mix_out, chanend ?c_dig_rx, chanend ?c_config)
 #endif
 
   	/* Initialise master clock generation */
-    ClockingInit();
+    ClockingInit(c_config);
 
     /* Perform required CODEC/ADC/DAC initialisation */
     CodecInit(c_config);
@@ -550,7 +550,7 @@ void audio(chanend c_mix_out, chanend ?c_dig_rx, chanend ?c_config)
         divide = mClk / ( curSamFreq * 64 );
 
         /* Configure clocking for required master clock */
-        ClockingConfig(mClk); 
+        ClockingConfig(mClk, c_config); 
 
         if(!firstRun)
         {

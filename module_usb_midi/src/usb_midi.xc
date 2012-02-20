@@ -6,7 +6,7 @@
 #include "midiinparse.h"
 #include "midioutparse.h"
 #include "queue.h"
-#include "port32A.h"
+//#include "port32A.h"
 #ifdef IAP
 #include "iAP.h"
 #endif
@@ -64,77 +64,93 @@ extern unsigned authenticating;
 // state for auto-selecting dock or USB B
 extern unsigned polltime;
 
+#ifdef IO_EXPANSION
 extern port p_i2c_scl;
 extern port p_i2c_sda;
 #define p_midi_out p_i2c_scl
 #define p_midi_in p_i2c_sda
+#else
+//extern out port p_midi_tx;
+//extern port p_midi_rx;
+#define p_midi_out p_midi_tx
+#define p_midi_in p_midi_rx
+#endif
 
+//#ifdef IO_EXPANSION
+#if 0
 extern timer i2ctimer;
 #define iAPTimer i2ctimer
+#else
+timer iAPTimer;
+#endif
 
-void usb_midi(in port ?p_midi_inj, out port ?p_midi_outj,
+void usb_midi(in port ?p_midi_in, out port ?p_midi_out,
               clock ?clk_midi,
               chanend c_midi,
               unsigned cable_number,
 chanend c_iap, chanend ?c_i2c // iOS stuff
 )
- {
-  unsigned symbol = 0x0; // Symbol in progress of being sent out
-  unsigned isTX = 0; // Guard when outputting data
-  unsigned txT; // Timer value used for outputting
-  //unsigned inputPortState, newInputPortState;
-  int waiting_for_ack = 0;
-  // Receiver
-  unsigned rxByte;
-  int rxI;
-  int rxT;
-  int isRX = 0; // Guard when receiving data
-  timer t;
-  timer t2;
+{
+    unsigned symbol = 0x0; // Symbol in progress of being sent out
+    unsigned isTX = 0; // Guard when outputting data
+    unsigned txT; // Timer value used for outputting
+    //unsigned inputPortState, newInputPortState;
+    int waiting_for_ack = 0;
+    // Receiver
+    unsigned rxByte;
+    int rxI;
+    int rxT;
+    int isRX = 0; // Guard when receiving data
+    timer t;
+    timer t2;
 
-  // One place buffer for data going out to host
-  queue midi_to_host_fifo;
-  unsigned char midi_to_host_fifo_arr[4]; // Used for 32bit USB MIDI events
+    // One place buffer for data going out to host
+    queue midi_to_host_fifo;
+    unsigned char midi_to_host_fifo_arr[4]; // Used for 32bit USB MIDI events
 
-  unsigned outputting_symbol, outputted_symbol;
+    unsigned outputting_symbol, outputted_symbol;
 
-  struct midi_in_parse_state mips;
+    struct midi_in_parse_state mips;
 
-  // the symbol fifo (to go out of uart)
-  queue symbol_fifo;
-  unsigned char symbol_fifo_arr[USB_MIDI_DEVICE_OUT_FIFO_SIZE * 4]; // Used for 32bit USB MIDI events
+    // the symbol fifo (to go out of uart)
+    queue symbol_fifo;
+    unsigned char symbol_fifo_arr[USB_MIDI_DEVICE_OUT_FIFO_SIZE * 4]; // Used for 32bit USB MIDI events
 
-  unsigned rxPT, txPT;
-  int midi_from_host_overflow = 0;
+    unsigned rxPT, txPT;
+    int midi_from_host_overflow = 0;
 
-  //configure_clock_rate(clk_midi, 100, 1);
-  init_queue(symbol_fifo, symbol_fifo_arr, USB_MIDI_DEVICE_OUT_FIFO_SIZE, 4);
-  init_queue(midi_to_host_fifo, midi_to_host_fifo_arr, 1, 4);
+    //configure_clock_rate(clk_midi, 100, 1);
+    init_queue(symbol_fifo, symbol_fifo_arr, USB_MIDI_DEVICE_OUT_FIFO_SIZE, 4);
+    init_queue(midi_to_host_fifo, midi_to_host_fifo_arr, 1, 4);
 
-  configure_out_port_no_ready(p_midi_out, clk_midi, 1);
-  configure_in_port(p_midi_in, clk_midi);
+    configure_out_port_no_ready(p_midi_out, clk_midi, 1);
+    configure_in_port(p_midi_in, clk_midi);
 
-  start_clock(clk_midi);
-  start_port(p_midi_out);
-  start_port(p_midi_in);
+    start_clock(clk_midi);
+    start_port(p_midi_out);
+    start_port(p_midi_in);
 
-  reset_midi_state(mips);
+    reset_midi_state(mips);
 
-  t :> txT;
-  t2 :> rxT;
+    t :> txT;
+    t2 :> rxT;
 
 #ifndef MIDI_LOOPBACK
 #ifdef IAP
-  port32A_unset(P32A_I2C_NOTMIDI);
+#ifdef IO_EXPANSION
+    port32A_unset(P32A_I2C_NOTMIDI);
 #endif  
-  p_midi_out <: 1; // Start with high bit.
+#endif  
+    p_midi_out <: 1; // Start with high bit.
 #ifdef IAP  
-  port32A_set(P32A_I2C_NOTMIDI);
+#ifdef IO_EXPANSION
+    port32A_set(P32A_I2C_NOTMIDI);
+#endif
 #endif
 #endif
 
 #ifdef IAP
-  init_iAP(c_i2c); // uses timer for i2c initialisation pause..
+    init_iAP(c_i2c); // uses timer for i2c initialisation pause..
 #endif
 
   {
