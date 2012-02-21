@@ -4,11 +4,15 @@
 
 /* Functions that handle master clock generation.  These need modifying for an existing design */
 
-/* Any initialisation required for master clock generation - run once at start up */
-void ClockingInit(void);
+/* Any initialisation required for master clock generation - run once at start up 
+ * An optional chanend is passed for communcation to another thread e.g. a I2C server thread
+ */
+void ClockingInit(chanend ?c);
 
-/* Configuration for a specific master clock frequency - run every sample frequency change */
-void ClockingConfig(unsigned mClkFreq);
+/* Configuration for a specific master clock frequency - run every sample frequency change 
+* An optional chanend is passed for communcation to another thread e.g. a I2C server thread
+ */
+void ClockingConfig(unsigned mClkFreq, chanend ?c);
 
 
 /** Clock generation and digital audio I/O handling.
