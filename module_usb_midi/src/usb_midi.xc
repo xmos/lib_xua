@@ -59,7 +59,11 @@ int uout_count = 0; // UART bytes out
 int uin_count = 0; // UART bytes in
 
 // state for iAP
+#ifdef IAP
 extern unsigned authenticating;
+#else
+unsigned authenticating = 0;
+#endif
 
 // state for auto-selecting dock or USB B
 extern unsigned polltime;
@@ -85,10 +89,11 @@ timer iAPTimer;
 #endif
 
 void usb_midi(in port ?p_midi_in, out port ?p_midi_out,
-              clock ?clk_midi,
-              chanend c_midi,
-              unsigned cable_number,
-chanend c_iap, chanend ?c_i2c // iOS stuff
+            clock ?clk_midi,
+            chanend c_midi,
+            unsigned cable_number,
+            chanend ?c_iap, chanend ?c_i2c, // iOS stuff
+            port ?p_scl, port ?p_sda
 )
 {
     unsigned symbol = 0x0; // Symbol in progress of being sent out
@@ -321,18 +326,17 @@ chanend c_iap, chanend ?c_i2c // iOS stuff
         }
         break;
 #ifdef IAP
-      case !(isTX || isRX) => iap_get_ack_or_reset_or_data(c_iap, is_ack, is_reset, datum):
-         handle_iap_case(is_ack, is_reset, datum, c_iap, c_i2c);
-         if (!authenticating) {
+        case !(isTX || isRX) => iap_get_ack_or_reset_or_data(c_iap, is_ack, is_reset, datum):
+            handle_iap_case(is_ack, is_reset, datum, c_iap, c_i2c, p_scl, p_sda);
+            if (!authenticating) 
+            {
  //           printstrln("Completed authentication");
               p_midi_in :> void; // Change port around to input again after authenticating (unique to midi+iAP case)
-         }
-         break;
-#endif
-#ifdef IAP
-      case iAPTimer when timerafter(polltime) :> void:
-        handle_poll_dev_det(iAPTimer);
-        break;
+            }
+            break;
+        case iAPTimer when timerafter(polltime) :> void:
+            handle_poll_dev_det(iAPTimer);
+             break;
 #endif
       }
   }
