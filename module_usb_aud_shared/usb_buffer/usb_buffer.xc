@@ -11,7 +11,9 @@
 #include "usb.h"
 #include "devicedefines.h"
 #include "usb_midi.h"
+#ifdef IAP
 #include "iAP.h"
+#endif
 #include "xc_ptr.h"
 #include "clockcmds.h"
 #include "xud.h"
