@@ -155,7 +155,7 @@ void usb_midi(in port ?p_midi_in, out port ?p_midi_out,
 #endif
 
 #ifdef IAP
-    init_iAP(c_i2c); // uses timer for i2c initialisation pause..
+    init_iAP(c_i2c, p_scl, p_sda); // uses timer for i2c initialisation pause..
 #endif
 
   {
