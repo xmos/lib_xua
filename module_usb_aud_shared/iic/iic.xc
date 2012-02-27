@@ -41,7 +41,7 @@
 //extern port p_i2c_sda;
 #define PORT_IIC_SDA p_sda
 
-extern timer i2ctimer;
+//extern timer i2ctimer;
 
 #define SCLHIGH() \
   { \
@@ -101,12 +101,12 @@ int iic_initialise(timer t, port p_scl, port p_sda)
 // Generate start condition
 void iic_phy_master_start(timer t, port p_scl, port p_sda)
 {
-  SCLHIGH();
-  PORT_IIC_SDA <: 1;
-  iic_phy_wait(iic_start_cond_setup_time, t);
+    SCLHIGH();
+    PORT_IIC_SDA <: 1;
+    iic_phy_wait(iic_start_cond_setup_time, t);
 
-  PORT_IIC_SDA <: 0;
-  iic_phy_wait(iic_start_cond_hold_time, t);
+    PORT_IIC_SDA <: 0;
+    iic_phy_wait(iic_start_cond_hold_time, t);
 
   PORT_IIC_SCL <: 0;
 }
@@ -304,7 +304,8 @@ int iic_writeC(unsigned int address, unsigned int reg, char data[], unsigned int
     /* If null channel end arg passed in use i2c ports */
     if(isnull(c))
     {
-        return iic_write(address, reg, data, numBytes, i2ctimer, p_scl, p_sda);
+        timer t;
+        return iic_write(address, reg, data, numBytes, t, p_scl, p_sda);
     }
     else
     {
@@ -377,7 +378,8 @@ int iic_readC(unsigned int address, unsigned int reg, char data[], unsigned int 
     /* If null channend argument passed in use i2c ports */
     if(isnull(c))
     {
-        return iic_read(address, reg, data, numBytes, i2ctimer, p_scl, p_sda);
+        timer t;
+        return iic_read(address, reg, data, numBytes, t, p_scl, p_sda);
     }
     else
     {
