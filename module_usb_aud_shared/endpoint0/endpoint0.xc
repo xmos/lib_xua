@@ -231,33 +231,33 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
     /* Build up channel string table - By default all channels are marked as analogue
      * TODO We really want to do this an build time... */
 #if defined(SPDIF_RX) && (SPDIF_RX_INDEX != 0)
-    safestrcpy(strDescs_Audio2[SPDIF_RX_INDEX + 33], "S/PDIF 1");
-    safestrcpy(strDescs_Audio2[SPDIF_RX_INDEX + 34], "S/PDIF 2");
+    safestrcpy(strDescs_Audio2[SPDIF_RX_INDEX + STR_INDEX_IN_CHAN], "S/PDIF 1");
+    safestrcpy(strDescs_Audio2[SPDIF_RX_INDEX + STR_INDEX_IN_CHAN + 1], "S/PDIF 2");
 #endif
 #if defined(ADAT_RX) && (ADAT_RX_INDEX != 0)
-    safestrcpy(strDescs_Audio2[ADAT_RX_INDEX + 33], "ADAT 1");
-    safestrcpy(strDescs_Audio2[ADAT_RX_INDEX + 34], "ADAT 2");
-    safestrcpy(strDescs_Audio2[ADAT_RX_INDEX + 35], "ADAT 3");
-    safestrcpy(strDescs_Audio2[ADAT_RX_INDEX + 36], "ADAT 4");
-    safestrcpy(strDescs_Audio2[ADAT_RX_INDEX + 37], "ADAT 5");
-    safestrcpy(strDescs_Audio2[ADAT_RX_INDEX + 38], "ADAT 6");
-    safestrcpy(strDescs_Audio2[ADAT_RX_INDEX + 39], "ADAT 7");
-    safestrcpy(strDescs_Audio2[ADAT_RX_INDEX + 40], "ADAT 8");
+    safestrcpy(strDescs_Audio2[ADAT_RX_INDEX + STR_INDEX_IN_CHAN], "ADAT 1");
+    safestrcpy(strDescs_Audio2[ADAT_RX_INDEX + STR_INDEX_IN_CHAN + 1], "ADAT 2");
+    safestrcpy(strDescs_Audio2[ADAT_RX_INDEX + STR_INDEX_IN_CHAN + 2], "ADAT 3");
+    safestrcpy(strDescs_Audio2[ADAT_RX_INDEX + STR_INDEX_IN_CHAN + 3], "ADAT 4");
+    safestrcpy(strDescs_Audio2[ADAT_RX_INDEX + STR_INDEX_IN_CHAN + 4], "ADAT 5");
+    safestrcpy(strDescs_Audio2[ADAT_RX_INDEX + STR_INDEX_IN_CHAN + 5], "ADAT 6");
+    safestrcpy(strDescs_Audio2[ADAT_RX_INDEX + STR_INDEX_IN_CHAN + 6], "ADAT 7");
+    safestrcpy(strDescs_Audio2[ADAT_RX_INDEX + STR_INDEX_IN_CHAN + 7], "ADAT 8");
 #endif
 
 #if defined(SPDIF) && (SPDIF_TX_INDEX != 0)     /* "Analogue naming gets priority */ 
-    safestrcpy(strDescs_Audio2[SPDIF_TX_INDEX + 15], "S/PDIF 1");
-    safestrcpy(strDescs_Audio2[SPDIF_TX_INDEX + 16], "S/PDIF 2");
+    safestrcpy(strDescs_Audio2[SPDIF_TX_INDEX + STR_INDEX_OUT_CHAN], "S/PDIF 1");
+    safestrcpy(strDescs_Audio2[SPDIF_TX_INDEX + STR_INDEX_OUT_CHAN + 1], "S/PDIF 2");
 #endif
 #if defined(ADAT_TX) && (ADAT_TX_INDEX != 0)
-    safestrcpy(strDescs_Audio2[ADAT_TX_INDEX + 15], "ADAT 1");
-    safestrcpy(strDescs_Audio2[ADAT_TX_INDEX + 16], "ADAT 2");
-    safestrcpy(strDescs_Audio2[ADAT_TX_INDEX + 17], "ADAT 3");
-    safestrcpy(strDescs_Audio2[ADAT_TX_INDEX + 18], "ADAT 4");
-    safestrcpy(strDescs_Audio2[ADAT_TX_INDEX + 19], "ADAT 5");
-    safestrcpy(strDescs_Audio2[ADAT_TX_INDEX + 20], "ADAT 6");
-    safestrcpy(strDescs_Audio2[ADAT_TX_INDEX + 21], "ADAT 7");
-    safestrcpy(strDescs_Audio2[ADAT_TX_INDEX + 22], "ADAT 8");
+    safestrcpy(strDescs_Audio2[ADAT_TX_INDEX + STR_INDEX_OUT_CHAN], "ADAT 1");
+    safestrcpy(strDescs_Audio2[ADAT_TX_INDEX + STR_INDEX_OUT_CHAN + 1], "ADAT 2");
+    safestrcpy(strDescs_Audio2[ADAT_TX_INDEX + STR_INDEX_OUT_CHAN + 2], "ADAT 3");
+    safestrcpy(strDescs_Audio2[ADAT_TX_INDEX + STR_INDEX_OUT_CHAN + 3], "ADAT 4");
+    safestrcpy(strDescs_Audio2[ADAT_TX_INDEX + STR_INDEX_OUT_CHAN + 4], "ADAT 5");
+    safestrcpy(strDescs_Audio2[ADAT_TX_INDEX + STR_INDEX_OUT_CHAN + 5], "ADAT 6");
+    safestrcpy(strDescs_Audio2[ADAT_TX_INDEX + STR_INDEX_OUT_CHAN + 6], "ADAT 7");
+    safestrcpy(strDescs_Audio2[ADAT_TX_INDEX + STR_INDEX_OUT_CHAN + 7], "ADAT 8");
 #endif
 
 #ifdef VENDOR_AUDIO_REQS
