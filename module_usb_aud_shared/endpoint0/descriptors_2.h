@@ -526,7 +526,7 @@ unsigned char cfgDesc_Audio2[] =
     ID_CLKSEL, 	    	     		/* 7  bCSourceID: ID of Clock Entity */
     NUM_USB_CHAN_IN,		     	/* 8  bNrChannels */
     0,0,0,0,                 		/* 9  bmChannelConfig */
-    OUTPUT_INTERFACE_STRING_INDEX,           	                /* 13 iChannelNames */
+    INPUT_INTERFACE_STRING_INDEX,           	                /* 13 iChannelNames */
     0x00, 0x00,     		        /* 14 bmControls */
     0,           		            /* 16 iTerminal */
 
@@ -777,7 +777,7 @@ unsigned char cfgDesc_Audio2[] =
     PCM, 0x00, 0x00, 0x00,  		/* 6:10  bmFormats (note this is a bitmap) */
     NUM_USB_CHAN_OUT,               /* 11 bNrChannels */
     0,0,0,0,    					/* 12:14: bmChannelConfig */
-    INPUT_INTERFACE_STRING_INDEX,             				/* 15 iChannelNames */
+    OUTPUT_INTERFACE_STRING_INDEX,             				/* 15 iChannelNames */
 
     /* Type 1 Format Type Descriptor */
     0x06,         					/* 0  bLength (in bytes): 6 */
@@ -905,7 +905,7 @@ unsigned char cfgDesc_Audio2[] =
     PCM, 0x00, 0x00, 0x00,  		/* 6:10  bmFormats (note this is a bitmap) */
     NUM_USB_CHAN_IN,            /* 11 bNrChannels */
     0,0,0,0,    					/* 12:14: bmChannelConfig */
-    OUTPUT_INTERFACE_STRING_INDEX,            				    /* 15 iChannelNames */
+    INPUT_INTERFACE_STRING_INDEX,            				    /* 15 iChannelNames */
 
     /* Type 1 Format Type Descriptor */
     0x06,         					/* 0  bLength (in bytes): 6 */
@@ -954,7 +954,7 @@ unsigned char cfgDesc_Audio2[] =
     PCM, 0x00, 0x00, 0x00,  		/* 6:10  bmFormats (note this is a bitmap) */
     NUM_USB_CHAN_IN - 4,            /* 11 bNrChannels */
     0,0,0,0,    					/* 12:14: bmChannelConfig */
-    OUTPUT_INTERFACE_STRING_INDEX,            				    /* 15 iChannelNames */
+    INPUT_INTERFACE_STRING_INDEX,            				    /* 15 iChannelNames */
 
     /* Type 1 Format Type Descriptor */
     0x06,         					/* 0  bLength (in bytes): 6 */
