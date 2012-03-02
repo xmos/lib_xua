@@ -6,13 +6,14 @@
 #include "midiinparse.h"
 #include "midioutparse.h"
 #include "queue.h"
-//#include "port32A.h"
 #ifdef IAP
 #include "iAP.h"
+#include "iapuser.h"
 #endif
 //#define MIDI_LOOPBACK 1
 
-static unsigned makeSymbol(unsigned data) {
+static unsigned makeSymbol(unsigned data)
+{
     // Start and stop bits to the data packet
     //  like 10'b1dddddddd0
     return (data << 1) | 0x200;
@@ -31,27 +32,31 @@ int th_count = 0; // MIDI sent (To Host)
 static inline void handle_byte_from_uart(chanend c_midi,   struct midi_in_parse_state &mips, int cable_number,
                                          int &got_next_event, int &next_event, int &waiting_for_ack, int byte)
 {
-  int valid;
-  unsigned event;
-  {valid, event} = midi_in_parse(mips, cable_number, byte);
-  if (valid && !got_next_event) {
-    // data to send to host
-    if (!waiting_for_ack) {
-      // send data
-      event = byterev(event);
-      outuint(c_midi, event);
-      th_count++;
-      waiting_for_ack = 1;
+    int valid;
+    unsigned event;
+    {valid, event} = midi_in_parse(mips, cable_number, byte);
+    if (valid && !got_next_event) 
+    {
+        // data to send to host
+        if (!waiting_for_ack) 
+        {
+            // send data
+            event = byterev(event);
+            outuint(c_midi, event);
+            th_count++;
+            waiting_for_ack = 1;
+        }
+        else 
+        {
+            event = byterev(event);
+            next_event = event;
+            got_next_event = 1;
+        }
     }
-    else {
-      event = byterev(event);
-      next_event = event;
-      got_next_event = 1;
+    else if (valid) 
+    {
+        // printstr("g\n");
     }
-  }
-  else if (valid) {
-    // printstr("g\n");
-  }
 }
 #endif
 
@@ -68,27 +73,11 @@ unsigned authenticating = 0;
 // state for auto-selecting dock or USB B
 extern unsigned polltime;
 
-#ifdef IO_EXPANSION
-extern port p_i2c_scl;
-extern port p_i2c_sda;
-#define p_midi_out p_i2c_scl
-#define p_midi_in p_i2c_sda
-#else
-//extern out port p_midi_tx;
-//extern port p_midi_rx;
-#define p_midi_out p_midi_tx
-#define p_midi_in p_midi_rx
-#endif
-
-//#ifdef IO_EXPANSION
-#if 0
-extern timer i2ctimer;
-#define iAPTimer i2ctimer
-#else
+#ifdef IAP
 timer iAPTimer;
 #endif
 
-void usb_midi(in port ?p_midi_in, out port ?p_midi_out,
+void usb_midi(port ?p_midi_in, port ?p_midi_out,
             clock ?clk_midi,
             chanend c_midi,
             unsigned cable_number,
@@ -142,204 +131,250 @@ void usb_midi(in port ?p_midi_in, out port ?p_midi_out,
 
 #ifndef MIDI_LOOPBACK
 #ifdef IAP
-#ifdef IO_EXPANSION
-    port32A_unset(P32A_I2C_NOTMIDI);
-#endif  
+    CoProcessorDisable();
 #endif  
     p_midi_out <: 1; // Start with high bit.
 #ifdef IAP  
-#ifdef IO_EXPANSION
-    port32A_set(P32A_I2C_NOTMIDI);
-#endif
+    CoProcessorEnable();
 #endif
 #endif
 
 #ifdef IAP
-    init_iAP(c_i2c, p_scl, p_sda); // uses timer for i2c initialisation pause..
+    /* Check for special case where MIDI and i2c ports are shared... */
+    if(isnull(c_i2c) && isnull(p_scl) && isnull(p_sda))
+    {
+        init_iAP(c_i2c, p_midi_out, p_midi_in); // uses timer for i2c initialisation pause..
+    }
+    else
+    {   
+        init_iAP(c_i2c, p_scl, p_sda); // uses timer for i2c initialisation pause..
+    }
 #endif
 
-  {
+    {
 #ifdef IAP
-   iAPTimer :> polltime;
-   polltime + XS1_TIMER_HZ / 2;
+        iAPTimer :> polltime;
+        polltime += XS1_TIMER_HZ / 2;
 #endif
-  while (1) {
-    int is_ack;
-    int is_reset;
-    unsigned int datum;
-    select {
-      // Input to read the start bit
+        while (1) 
+        {
+            int is_ack;
+            int is_reset;
+            unsigned int datum;
+            select 
+            {
+                // Input to read the start bit
 #ifndef MIDI_LOOPBACK
-#ifdef MIDI_IN_4BIT_PORT
-      case (!authenticating && !isRX) => p_midi_in when pinseq(0xE) :> void @  rxPT:
-#else
-      case (!authenticating && !isRX) => p_midi_in when pinseq(0) :> void @  rxPT:
-#endif
-        isRX = 1;
-        t2 :> rxT;
-        rxT += (bit_time + bit_time_2);
-        rxPT += (bit_time + bit_time_2); // absorb start bit and set to halfway through the next bit
-        rxI = 0;
-        asm("setc res[%0],1"::"r"(p_midi_in));
-        asm("setpt res[%0],%1"::"r"(p_midi_in),"r"(rxPT));
-        break;
-        // Input to read the remaining bits
-      case (!authenticating && isRX) => t2 when timerafter(rxT) :> int _ :
-      {
-        unsigned bit;
-        p_midi_in :> bit;
-        if (rxI++ < 8) {
-            // shift in bits into the high end of a word
-            rxByte = (bit << 31) | (rxByte >> 1);
-            rxT += bit_time;
-            rxPT += bit_time;
-            asm("setpt res[%0],%1"::"r"(p_midi_in),"r"(rxPT));
-        } else {
-            // rcv and check stop bit
-            if ((bit & 0x1) == 1) {
-                unsigned valid = 0;
-                unsigned event = 0;
-                uin_count++;
-                rxByte >>= 24;
-                //                if (rxByte != outputted_symbol) {
-                //                  // Loopback check
-                //                  printhexln(rxByte);
-                //                  printhexln(outputted_symbol);
-                //                }
+                case (!authenticating && !isRX) => p_midi_in when pinseq(0) :> void @  rxPT:
+                    isRX = 1;
+                    t2 :> rxT;
+                    rxT += (bit_time + bit_time_2);
+                    rxPT += (bit_time + bit_time_2); // absorb start bit and set to halfway through the next bit
+                    rxI = 0;
+                    asm("setc res[%0],1"::"r"(p_midi_in));
+                    asm("setpt res[%0],%1"::"r"(p_midi_in),"r"(rxPT));
+                    break;
+        
+                // Input to read the remaining bits
+                case (!authenticating && isRX) => t2 when timerafter(rxT) :> int _ :
+                {
+                    unsigned bit;
+                    p_midi_in :> bit;
+                    if (rxI++ < 8) 
+                    {
+                        // shift in bits into the high end of a word
+                        rxByte = (bit << 31) | (rxByte >> 1);
+                        rxT += bit_time;
+                        rxPT += bit_time;
+                        asm("setpt res[%0],%1"::"r"(p_midi_in),"r"(rxPT));
+                    } 
+                    else 
+                    {
+                        // rcv and check stop bit
+                        if ((bit & 0x1) == 1) 
+                        {
+                            unsigned valid = 0;
+                            unsigned event = 0;
+                            uin_count++;
+                            rxByte >>= 24;
+                            //                if (rxByte != outputted_symbol) {
+                            //                  // Loopback check
+                            //                  printhexln(rxByte);
+                            //                  printhexln(outputted_symbol);
+                            //                }
 
-                {valid, event} = midi_in_parse(mips, cable_number, rxByte);
-                if (valid && isempty(midi_to_host_fifo)) {
-                  event = byterev(event);
-                  // data to send to host - add to fifo
-                  if (!waiting_for_ack) {
-                    // send data
-                    //                    printstr("uart->decouple: ");
-                    outuint(c_midi, event);
-                    waiting_for_ack = 1;
-                    th_count++;
-                  } else {
-                    enqueue(midi_to_host_fifo, event);
-                  }
-                } else if (valid) {
-                  //                  printstr("g");
+                            {valid, event} = midi_in_parse(mips, cable_number, rxByte);
+                            if (valid && isempty(midi_to_host_fifo)) 
+                            {
+                                event = byterev(event);
+                                // data to send to host - add to fifo
+                                if (!waiting_for_ack) 
+                                {
+                                    // send data
+                                    // printstr("uart->decouple: ");
+                                    outuint(c_midi, event);
+                                    waiting_for_ack = 1;
+                                    th_count++;
+                                } 
+                                else 
+                                {
+                                    enqueue(midi_to_host_fifo, event);
+                                }
+                            } 
+                            else if (valid) 
+                            {
+                                // printstr("g");
+                            }
+                        }
+                    isRX = 0;
+                }
+                break;
+            }
+
+        // Output
+        // If isTX then feed the bits out one at a time
+        //  until symbol is zero expect pattern like 10'b1dddddddd0
+        // This code will leave the output high afterwards due to the stop bit added with makeSymbol
+        case (!authenticating && isTX) => t when timerafter(txT) :> int _:
+            if (symbol == 0) 
+            {
+                // Got something to output but not mid-symbol.
+                // Start sending symbol.
+                //  This case is reached when a symbol has been received from the host but not started AND
+                //  When it has just finished sending a symbol
+
+                // Take from FIFO
+                outputting_symbol = dequeue(symbol_fifo);
+                symbol = makeSymbol(outputting_symbol);
+
+                if (space(symbol_fifo) > 3 && midi_from_host_overflow) 
+                {
+                    midi_from_host_overflow = 0;
+                    midi_send_ack(c_midi);
+                }
+
+                p_midi_out <: 1 @ txPT;
+                //              printstr("mout1\n");
+                t :> txT;
+                txT += bit_time;
+                txPT += bit_time;
+                isTX = 1;
+            } 
+            else 
+            {
+                // Mid-symbol
+                txT += bit_time; // Should this be after the output otherwise be double the length of the high before the start bit
+                txPT += bit_time;
+                p_midi_out @ txPT <: (symbol & 1);
+                //            printstr("mout2\n");
+                symbol >>= 1;
+                if (symbol == 0) 
+                {
+                    // Finished sending byte
+                    uout_count++;
+                    outputted_symbol = outputting_symbol;
+                    if (isempty(symbol_fifo)) 
+                    { // FIFO empty
+                        isTX = 0;
+                    }
                 }
             }
-            isRX = 0;
-          }
-        break;
-      }
-
-      // Output
-      // If isTX then feed the bits out one at a time
-      //  until symbol is zero expect pattern like 10'b1dddddddd0
-      // This code will leave the output high afterwards due to the stop bit added with makeSymbol
-      case (!authenticating && isTX) => t when timerafter(txT) :> int _:
-        if (symbol == 0) {
-            // Got something to output but not mid-symbol.
-            // Start sending symbol.
-            //  This case is reached when a symbol has been received from the host but not started AND
-            //  When it has just finished sending a symbol
-
-            // Take from FIFO
-            outputting_symbol = dequeue(symbol_fifo);
-            symbol = makeSymbol(outputting_symbol);
-
-            if (space(symbol_fifo) > 3 && midi_from_host_overflow) {
-              midi_from_host_overflow = 0;
-              midi_send_ack(c_midi);
-            }
-
-            p_midi_out <: 1 @ txPT;
-            //              printstr("mout1\n");
-            t :> txT;
-            txT += bit_time;
-            txPT += bit_time;
-            isTX = 1;
-        } else {
-            // Mid-symbol
-            txT += bit_time; // Should this be after the output otherwise be double the length of the high before the start bit
-            txPT += bit_time;
-            p_midi_out @ txPT <: (symbol & 1);
-            //            printstr("mout2\n");
-            symbol >>= 1;
-            if (symbol == 0) {
-               // Finished sending byte
-               uout_count++;
-               outputted_symbol = outputting_symbol;
-               if (isempty(symbol_fifo)) { // FIFO empty
-                  isTX = 0;
-               }
-            }
-        }
-        break;
+            break;
 #endif
 
-      case !authenticating => midi_get_ack_or_data(c_midi, is_ack, datum):
-        if (is_ack) {
-          // have we got more data to send
-          //printstr("ack\n");
-          if (!isempty(midi_to_host_fifo)) {
-            //printstr("uart->decouple\n");
-            outuint(c_midi, dequeue(midi_to_host_fifo));
-            th_count++;
-          } else {
-            waiting_for_ack = 0;
-          }
-        } else {
-          unsigned midi[3];
-          unsigned size;
-          // received data from host
-          int event = byterev(datum);
-          mr_count++;
-#ifdef MIDI_LOOPBACK
-  if (isempty(midi_to_host_fifo)) {
-    // data to send to host
-    if (!waiting_for_ack) {
-      // send data
-      event = byterev(event);
-      outuint(c_midi, event);
-      th_count++;
-      waiting_for_ack = 1;
-    } else {
-      event = byterev(event);
-      enqueue(midi_to_host_fifo, event);
-    }
-  }
-#else
-          {midi[0], midi[1], midi[2], size} = midi_out_parse(event);
-          for (int i = 0; i != size; i++) {
-            // add symbol to fifo
-            enqueue(symbol_fifo, midi[i]);
-          }
+        case !authenticating => midi_get_ack_or_data(c_midi, is_ack, datum):
 
-          if (space(symbol_fifo) > 3) {
-            midi_send_ack(c_midi);
-          } else {
-            midi_from_host_overflow = 1;
-          }
-          // Drop through to the isTX guarded case
-          if (!isTX) {
-            t :> txT; // Should be enough to trigger the other case
-            isTX = 1;
-          }
-#endif
-        }
-        break;
-#ifdef IAP
-        case !(isTX || isRX) => iap_get_ack_or_reset_or_data(c_iap, is_ack, is_reset, datum):
-            handle_iap_case(is_ack, is_reset, datum, c_iap, c_i2c, p_scl, p_sda);
-            if (!authenticating) 
+            if (is_ack) 
             {
- //           printstrln("Completed authentication");
-              p_midi_in :> void; // Change port around to input again after authenticating (unique to midi+iAP case)
+                // have we got more data to send
+                //printstr("ack\n");
+                if (!isempty(midi_to_host_fifo)) 
+                {
+                    //printstr("uart->decouple\n");
+                    outuint(c_midi, dequeue(midi_to_host_fifo));
+                    th_count++;
+                } 
+                else 
+                {
+                    waiting_for_ack = 0;
+                }
+            } 
+            else 
+            {
+                unsigned midi[3];
+                unsigned size;
+                // received data from host
+                int event = byterev(datum);
+                mr_count++;
+#ifdef MIDI_LOOPBACK
+                if (isempty(midi_to_host_fifo)) 
+                {
+                    // data to send to host
+                    if (!waiting_for_ack) 
+                    {
+                        // send data
+                        event = byterev(event);
+                        outuint(c_midi, event);
+                        th_count++;
+                        waiting_for_ack = 1;
+                    } 
+                    else 
+                    {
+                        event = byterev(event);
+                        enqueue(midi_to_host_fifo, event);
+                    }
+                }
+#else
+                {midi[0], midi[1], midi[2], size} = midi_out_parse(event);
+                for (int i = 0; i != size; i++) 
+                {
+                    // add symbol to fifo
+                    enqueue(symbol_fifo, midi[i]);
+                }
+
+                if (space(symbol_fifo) > 3) 
+                {
+                    midi_send_ack(c_midi);
+                } 
+                else 
+                {
+                    midi_from_host_overflow = 1;
+                }
+                // Drop through to the isTX guarded case
+                if (!isTX) 
+                {
+                    t :> txT; // Should be enough to trigger the other case
+                    isTX = 1;
+                }
+#endif
             }
             break;
-        case iAPTimer when timerafter(polltime) :> void:
-            handle_poll_dev_det(iAPTimer);
-             break;
+#ifdef IAP
+                case !(isTX || isRX) => iap_get_ack_or_reset_or_data(c_iap, is_ack, is_reset, datum):
+
+                    /* Check for special case where MIDI ports are shared with i2c ports */
+                    if(isnull(c_i2c) && isnull(p_scl) && isnull(p_sda))
+                    {
+                        handle_iap_case(is_ack, is_reset, datum, c_iap, c_i2c, p_midi_out, p_midi_in);
+                    }
+                    else
+                    {
+                        handle_iap_case(is_ack, is_reset, datum, c_iap, c_i2c, p_scl, p_sda);
+                    }
+                    if (!authenticating) 
+                    {
+                        // printstrln("Completed authentication");
+                        p_midi_in :> void; // Change port around to input again after authenticating (unique to midi+iAP case)
+                    }
+                    break;
+
+                /* Slow timer looking for IDevice plug/unplug event */
+                case iAPTimer when timerafter(polltime) :> void:
+                    handle_poll_dev_det(iAPTimer);
+                    break;
 #endif
-      }
-  }
- }
+            }
+        }
+    }
 }
 

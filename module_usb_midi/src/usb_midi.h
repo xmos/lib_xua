@@ -15,7 +15,7 @@
  *  \param cable_number the cable number of the MIDI implementation.
  *                      This should be set to 0.
  **/
-void usb_midi(in port ?p_midi_in, out port ?p_midi_out, 
+void usb_midi(port ?p_midi_in, port ?p_midi_out, 
               clock ?clk_midi,
               chanend c_midi,
               unsigned cable_number,
@@ -61,5 +61,7 @@ INLINE void midi_send_ack(chanend c) {
   outuchar(c, 0);
   outuchar(c, 0);
 }
-
+#define MIDI_RATE           (31250)
+#define MIDI_BITTIME        (XS1_TIMER_MHZ * 1000000 / MIDI_RATE)
+#define MIDI_BITTIME_2      (MIDI_BITTIME>>1)
 #endif // __usb_midi_h__

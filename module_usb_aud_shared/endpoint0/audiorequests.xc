@@ -889,6 +889,14 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, SetupPacket &sp, chanend
                             storeFreq(buffer, i, 192000);
                             num_freqs++;
                             #endif
+                            #if MAX_FREQ >= 352800
+                            storeFreq(buffer, i, 352800);
+                            num_freqs++;
+                            #endif
+                            #if MAX_FREQ >= 384000
+                            storeFreq(buffer, i, 384000);
+                            num_freqs++;
+                            #endif
                             storeShort(buffer, 0, num_freqs);
                                  //   break;
                             //}
