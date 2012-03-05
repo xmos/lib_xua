@@ -18,7 +18,6 @@
 #include <stdio.h>
 #include "print.h"
 #include "iic.h"
-#include "freqConst.h"
 
 #define EXPECT_ACK 0
 
