@@ -38,6 +38,10 @@
 #undef IAP
 #endif
 
+#if defined(HID_CONTROLS) && (HID_CONTROLS == 0)
+#undef HID_CONTROLS
+#endif
+
 #if defined(MIDI) && (MIDI == 0)
 #undef MIDI
 #endif
@@ -181,11 +185,17 @@
 #define OUTPUT_INTERFACES       (0)
 #endif
 
+#define NUM_EP_OUT_AUD          (OUTPUT_INTERFACES)
+#define NUM_EP_IN_AUD           (OUTPUT_INTERFACES + INPUT_INTERFACES)
 
 #if defined(MIDI)
 #define MIDI_INTERFACES         (2)
+#define NUM_EP_OUT_MIDI         (1)
+#define NUM_EP_IN_MIDI          (1)
 #else
 #define MIDI_INTERFACES         (0)
+#define NUM_EP_OUT_MIDI         (0)
+#define NUM_EP_IN_MIDI          (0)
 #endif
 
 #if defined(IAP)
@@ -194,6 +204,56 @@
 #define IAP_INTERFACES         (0)
 #endif
 
+#if defined(HID_CONTROLS)
+#define HID_INTERFACES          (1)
+#else
+#define HID_INTERFACES          (0)
+#endif
+
+#define NUM_EP_OUT_IAP          (IAP_INTERFACES)
+#define NUM_EP_IN_IAP           (IAP_INTERFACES * 2)
+
+#define NUM_EP_OUT_HID          (0)
+#define NUM_EP_IN_HID           (HID_INTERFACES)
+
+
+/* Define for number of audio interfaces (+1 for mandatory control interface) */
+#define AUDIO_INTERFACES			(INPUT_INTERFACES + OUTPUT_INTERFACES + 1) 
+
+/* Interface number defines */
+#define INTERFACE_NUM_IAP (INPUT_INTERFACES+OUTPUT_INTERFACES+MIDI_INTERFACES+DFU_INTERFACES+1)
+#define INTERFACE_NUM_HID (INPUT_INTERFACES+OUTPUT_INTERFACES+MIDI_INTERFACES+DFU_INTERFACES+IAP_INTERFACES+1)
+
+/* Endpoint Number Defines */
+#define EP_NUM_IN_FB              (1)     /* Always 1 */
+#define EP_NUM_IN_AUD             (2)    /* Always 2 */
+#define EP_NUM_IN_AUD_INT         (3)     /* Audio interrupt/status EP */
+#define EP_NUM_IN_MIDI            ((EP_NUM_IN_AUD_INT + 1))
+#define EP_NUM_IN_HID             ((EP_NUM_IN_AUD_INT + NUM_EP_IN_MIDI + 1))
+#define EP_NUM_IN_IAP             ((EP_NUM_IN_AUD_INT + NUM_EP_IN_MIDI + NUM_EP_IN_HID + 1)) /* iAP Bulk */
+#define EP_NUM_IN_IAP_INT         ((EP_NUM_IN_AUD_INT + NUM_EP_IN_MIDI + NUM_EP_IN_HID + 2)) /* iAP interrupt */
+
+#define EP_NUM_OUT_AUD            1       /* Always 1 */
+#define EP_NUM_OUT_MIDI           2       /* Always 2 */
+#define EP_NUM_OUT_IAP            3       /* Always 3 */
+
+/* Endpoint Address Defines */
+#define EP_ADR_IN_FB              (EP_NUM_IN_FB | 0x80)
+#define EP_ADR_IN_AUD             (EP_NUM_IN_AUD | 0x80)
+#define EP_ADR_IN_AUD_INT         (EP_NUM_IN_AUD_INT | 0x80)
+#define EP_ADR_IN_MIDI            (EP_NUM_IN_MIDI | 0x80)
+#define EP_ADR_IN_HID             (EP_NUM_IN_HID | 0x80)
+#define EP_ADR_IN_IAP             (EP_NUM_IN_IAP | 0x80)
+#define EP_ADR_IN_IAP_INT         (EP_NUM_IAP_INT | 0x80)
+
+#define EP_ADR_OUT_AUD            EP_NUM_OUT_AUD            
+#define EP_ADR_OUT_MIDI           EP_NUM_OUT_MIDI           
+#define EP_ADR_OUT_IAP            EP_NUM_OUT_IAP            
+
+/* Endpoint count totals */
+#define NUM_EP_OUT                  (1 + NUM_EP_OUT_AUD + NUM_EP_OUT_MIDI + NUM_EP_OUT_IAP) /* +1 due to EP0 */ 
+#define NUM_EP_IN                   (2 + NUM_EP_IN_AUD + NUM_EP_IN_MIDI + NUM_EP_IN_IAP + NUM_EP_IN_HID)    /* +1 due to EP0 and Int EP */
+
 #define AUDIO_STOP_FOR_DFU	    (0x12345678)
 #define AUDIO_START_FROM_DFU    (0x87654321)
 #define AUDIO_REBOOT_FROM_DFU   (0xa5a5a5a5)
@@ -201,8 +261,8 @@
 
 #define MAX_VOL                 (0x20000000)
 
-#define NUM_EP_OUT               4               /* Max number of device endpoints used */
-#define NUM_EP_IN                7
+
+
 /* Length of clock unit/clock-selector units */
 #if defined(SPDIF_RX) && defined(ADAT_RX)
 #define NUM_CLOCKS                  3
@@ -214,7 +274,7 @@
 
 
 /* Total number of USB interfaces this device implements (+1 for required control interface) */
-#define NUM_INTERFACES          INPUT_INTERFACES + OUTPUT_INTERFACES + DFU_INTERFACES + MIDI_INTERFACES + IAP_INTERFACES + 1
+#define NUM_INTERFACES          INPUT_INTERFACES + OUTPUT_INTERFACES + DFU_INTERFACES + MIDI_INTERFACES + IAP_INTERFACES + 1 + HID_INTERFACES
 /* Audio Unit ID defines */
 #define FU_USBIN                11              /* Feature Unit: USB Audio device -> host */ 
 #define FU_USBOUT               10              /* Feature Unit: USB Audio host -> device*/ 

@@ -20,6 +20,9 @@
 #include "vendorrequests.h"
 #include "dfu_types.h"
 #include "xc_ptr.h"
+#ifdef HID_CONTROLS
+#include "hid.h"
+#endif
 
 /* Windows does not have a built in DFU driver (windows will prompt), so warn that DFU will not be functional in Audio 1.0 mode.Udi
  * Of course, OSX is unaffected.  
@@ -524,14 +527,30 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
 
                             retVal = XUD_DoGetRequest(ep0_out, ep0_in,  buffer, 1, sp.wLength);
                             break;
-            
+#ifdef HID_CONTROLS
+                        case GET_DESCRIPTOR:
 
+                            if(sp.wIndex == INTERFACE_NUM_HID)
+                            {
+                                switch (sp.wValue>>8)
+                                {
+                                    case REPORT:
+                                        /* Return HID report descriptor */
+                                        retVal = XUD_DoGetRequest(ep0_out, ep0_in, hidReportDescriptor, 
+                                            min(sizeof(hidReportDescriptor),sp.wLength), sp.wLength);
+
+                                    break;
+                                }
+                            }
+                        
+                            break;           
+#endif
                         default:
-                                printstr("Unknown Standard Interface Request: ");
-                                printhexln(sp.bRequest);
-                                printhexln(sp.bmRequestType.Type);
-                                printhexln(sp.bmRequestType.Recipient);
-                                printhexln(sp.bmRequestType.Recipient | (sp.bmRequestType.Type << 5));
+                                //printstr("Unknown Standard Interface Request: ");
+                                //printhexln(sp.bRequest);
+                                //printhexln(sp.bmRequestType.Type);
+                                //printhexln(sp.bmRequestType.Recipient);
+                                //printhexln(sp.bmRequestType.Recipient | (sp.bmRequestType.Type << 5));
                                 break;
                    }
                    break;

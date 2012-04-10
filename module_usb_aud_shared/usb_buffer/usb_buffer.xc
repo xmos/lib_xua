@@ -19,11 +19,9 @@
 #include "xud.h"
 #include "testct_byref.h"
  
-//typedef unsigned int XUD_ep;
-
-//int XUD_GetData_NoReq(chanend c, xc_ptr buffer);
-//int XUD_SetData_NoReq(chanend c, xc_ptr buffer, unsigned datalength, unsigned startIndex);
 XUD_ep XUD_Init_Ep(chanend c_ep);
+
+
 
 inline void XUD_SetNotReady(XUD_ep e)
 {
@@ -73,9 +71,11 @@ extern unsigned g_numUsbChanIn;
  * @param   c_aud_fb      chanend for feeback to xud
  * @return  void
  */
-void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud_fb, 
+void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud_fb,
+#ifdef MIDI 
             chanend c_midi_from_host, 
             chanend c_midi_to_host, 
+#endif
 #ifdef IAP
             chanend c_iap_from_host, 
             chanend c_iap_to_host, 
@@ -84,6 +84,9 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
             chanend ?c_int, chanend c_sof, 
             chanend c_aud_ctl,
             in port p_off_mclk
+#ifdef HID_CONTROLS
+            ,chanend c_hid
+#endif
             )
 {
   XUD_ep ep_aud_out = XUD_Init_Ep(c_aud_out);
@@ -100,6 +103,10 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
 #endif
 #if defined(SPDIF_RX) || defined(ADAT_RX)
   XUD_ep ep_int = XUD_Init_Ep(c_int);
+#endif
+
+#ifdef HID_CONTROLS
+    XUD_ep ep_hid = XUD_Init_Ep(c_hid);
 #endif
   
     unsigned datalength;
@@ -149,6 +156,7 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
 #endif
     asm("stw %0, dp[aud_from_host_usb_ep]"::"r"(ep_aud_out));
     asm("stw %0, dp[aud_to_host_usb_ep]"::"r"(ep_aud_in));
+    asm("stw %0, dp[g_ep_hid]"::"r"(ep_hid));
     asm("stw %0, dp[buffer_aud_ctl_chan]"::"r"(c_aud_ctl));    
 
     /* Wait for USB connect then setup our first packet */     
@@ -214,7 +222,6 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
 #endif
 
     (fb_clocks, unsigned[])[0] = 0;
-
 
     {
         int usb_speed;
@@ -661,6 +668,20 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
             }
           break;
 #endif
+
+#ifdef HID_CONTROLS
+            /* HID Report Data */
+            case inuint_byref(c_hid, tmp):
+            {
+                XUD_SetData_Inline(ep_hid, c_hid);
+
+                asm("stw   %0, dp[g_hidFlag]" :: "r" (0)  );       
+                
+                XUD_SetNotReady(ep_hid);
+            }
+            break;
+#endif
+
          }
 
     }

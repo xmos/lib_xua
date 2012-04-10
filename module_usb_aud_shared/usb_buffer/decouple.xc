@@ -32,6 +32,9 @@
 #include "clockcmds.h"
 #include "xud.h"
 #include "usb.h"
+#ifdef HID_CONTROLS
+#include "vendor_hid.h"
+#endif
 
 /* This function changes the buffer staged for an IN transaction.
  * **It can only be used if you know that the IN transaction will not occur**
@@ -200,6 +203,13 @@ unsigned int g_iap_to_host_buffer_A[MAX_IAP_PACKET_SIZE/4+4];
 unsigned int g_iap_to_host_buffer_B[MAX_IAP_PACKET_SIZE/4+4];
 int g_iap_from_host_buffer[MAX_IAP_PACKET_SIZE/4+4];
 unsigned g_zero_buffer[1];
+#endif
+#ifdef HID_CONTROLS
+extern in port p_but;
+unsigned char g_hidData[16] = {0};
+unsigned char g_hidFlag = 0;
+unsigned g_ep_hid = 0;
+
 #endif
 
 // shared global aud buffering variables
@@ -821,16 +831,32 @@ void decouple(chanend c_mix_out,
 
     while(1)
     {
+            int tmp;
         if (!isnull(c_clk_int)) 
         {
-          check_for_interrupt(c_clk_int);
+            check_for_interrupt(c_clk_int);
         }
-             
-        asm("#decouple-default");
-
-        /* Check for freq change or other update */
+           
         {   
-            int tmp;
+            p_but :> tmp;
+            tmp = ~tmp;
+            tmp &=3;
+            g_hidData[0] = tmp;
+
+#ifdef HID_CONTROLS
+            Vendor_ReadHIDButtons(g_hidData);
+            
+            asm("ldaw %0, dp[g_hidData]":"=r"(tmp));
+            if(g_hidFlag==0)
+            {    
+                XUD_SetReady_In(g_ep_hid, 0, tmp, 1);
+                g_hidFlag = 1;
+            }
+#endif
+            asm("#decouple-default");
+
+            /* Check for freq change or other update */
+       
             GET_SHARED_GLOBAL(tmp, g_freqChange_flag);
             if (tmp == SET_SAMPLE_FREQ) 
             {

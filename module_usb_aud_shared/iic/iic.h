@@ -3,7 +3,7 @@
 
 #include <xccompat.h>
 
-int iic_initialise(timer t, port p_scl, port p_sda);
+//int iic_initialise(timer t, port p_scl, port p_sda);
 
 // Write to IIC device
 #if defined __XC__

@@ -5,6 +5,8 @@
  * @version 1.4
 */
 
+
+
 #ifndef _DEVICE_DESCRIPTORS_2_
 #define _DEVICE_DESCRIPTORS_2_
 
@@ -260,11 +262,32 @@ unsigned char devQualDesc_Null[] =
 #define IAP_INTERFACE_STRING_INDEX (MIXER_STRING_INDEX)
 #endif
 
-/* Total length of config descriptor */
-#define CFG_TOTAL_LENGTH_A2			(7 + 26 + (INPUT_INTERFACES * 55) + (OUTPUT_INTERFACES * 62) + (MIDI_LENGTH) + (DFU_INTERFACES * 18)  + TLEN_AC + (MIXER_LENGTH) + IAP_LENGTH + INPUT_ALT_LENGTH + OUTPUT_ALT_LENGTH)
+#ifdef HID_CONTROLS
+unsigned char hidReportDescriptor[] = {
+0x05, 0x0c,     /* Usage Page (Consumer Device) */
+0x09, 0x01,     /* Usage (Consumer Control) */
+0xa1, 0x01,     /* Collection (Application) */
+0x15, 0x00,     /* Logical Minimum (0) */
+0x25, 0x01,     /* Logical Maximum (1) */
+0x09, 0xb0,     /* Usage (Play/Pause) */
+0x09, 0xb5,     /* Usage (Scan Next Track) */
+0x09, 0xb6,     /* Usage (Scan Previous Track) */
+0x09, 0xe9,     /* Usage (Volume Up) */
+0x09, 0xea,     /* Usage (Volume Down) */
+0x09, 0xe2,     /* Usage (Mute) */
+0x75, 0x01,     /* Report Size (1) */
+0x95, 0x06,     /* Report Count (6) */
+0x81, 0x02,     /* Input (Data, Var, Abs) */
+0x95,0x02,      /* Report Count (2) */
+0x81, 0x01,     /* Input (Cnst, Ary, Abs) */
+0xc0            /* End collection */
+};
+#endif
 
-/* Define for number of audio interfaces (+1 for mandatory control interface) */
-#define AUDIO_INTERFACES			(INPUT_INTERFACES + OUTPUT_INTERFACES + 1) 
+#define HID_LENGTH (25*HID_INTERFACES)
+
+/* Total length of config descriptor */
+#define CFG_TOTAL_LENGTH_A2			(7 + 26 + (INPUT_INTERFACES * 55) + (OUTPUT_INTERFACES * 62) + (MIDI_LENGTH) + (DFU_INTERFACES * 18)  + TLEN_AC + (MIXER_LENGTH) + IAP_LENGTH + INPUT_ALT_LENGTH + OUTPUT_ALT_LENGTH + HID_LENGTH)
 
 /* Configuration Descriptor for Audio 2.0 (HS) operation */
 unsigned char cfgDesc_Audio2[] = 
@@ -738,7 +761,7 @@ unsigned char cfgDesc_Audio2[] =
     /* Standard AS Interrupt Endpoint Descriptor (4.8.2.1): */ 
     0x07,                           /* 0  bLength: 7 */
     0x05,                           /* 1  bDescriptorType: ENDPOINT */
-    0x84,                           /* 2  bEndpointAddress (D7: 0:out, 1:in) */
+    EP_ADR_IN_AUD_INT,        /* 2  bEndpointAddress (D7: 0:out, 1:in) */
     3,                              /* 3  bmAttributes (bitmap)  */ 
     6,0,                            /* 4  wMaxPacketSize */
     8,                              /* 6  bInterval */
@@ -1120,7 +1143,7 @@ unsigned char cfgDesc_Audio2[] =
 /* Table B-11: MIDI Adapter Standard Bulk OUT Endpoint Descriptor */
     0x09,                            /* 0 bLength : Size of this descriptor, in bytes. (field size 1 bytes) */
     0x05,                            /* 1 bDescriptorType : ENDPOINT descriptor. (field size 1 bytes) */
-    0x02,                            /* 2 bEndpointAddress : OUT Endpoint 3. (field size 1 bytes) */
+    EP_ADR_OUT_MIDI,           /* 2 bEndpointAddress : OUT Endpoint 3. (field size 1 bytes) */
     0x02,                            /* 3 bmAttributes : Bulk, not shared. (field size 1 bytes) */
     0x00,                            /* 4 wMaxPacketSize : 64 bytes per packet. (field size 2 bytes) - has to be 0x200 for compliance*/
     0x02,                            /* 5 wMaxPacketSize */
@@ -1138,7 +1161,7 @@ unsigned char cfgDesc_Audio2[] =
 /* Table B-13: MIDI Adapter Standard Bulk IN Endpoint Descriptor */
     0x09,                            /* 0 bLength : Size of this descriptor, in bytes. (field size 1 bytes) */
     0x05,                            /* 1 bDescriptorType : ENDPOINT descriptor. (field size 1 bytes) */
-    0x83,                            /* 2 bEndpointAddress : IN Endpoint 3. (field size 1 bytes) */
+    EP_ADR_IN_MIDI,            /* 2 bEndpointAddress : IN Endpoint 3. (field size 1 bytes) */
     0x02,                            /* 3 bmAttributes : Bulk, not shared. (field size 1 bytes) */
     0x00,                            /* 4 wMaxPacketSize : 64 bytes per packet. (field size 2 bytes) - has to be 0x200 for compliance*/
     0x02,                            /* 5 wMaxPacketSize */
@@ -1229,9 +1252,55 @@ unsigned char cfgDesc_Audio2[] =
     0x40,                            /* 4 wMaxPacketSize : 64 bytes per packet. (field size 2 bytes) - has to be 0x40 for compliance*/
     0x00,                            /* 5 wMaxPacketSize */
     0x08,                            /* 6 bInterval : (2^(bInterval-1))/8 ms. Must be between 4 and 32ms (field size 1 bytes) */
+
 #endif
 
+#ifdef HID_CONTROLS
+    /* HID */
+    /* Interface descriptor details */
+    9,                                /* 0  bLength : Size of descriptor in Bytes */
+    4,                                /* 1  bDescriptorType (Interface: 0x04)*/
+    INTERFACE_NUM_HID,                /* 2  bInterfacecNumber : Number of interface */
+    0,                                /* 3  bAlternateSetting : Value used  alternate interfaces using SetInterface Request */
+    1,                                /* 4: bNumEndpoints : Number of endpoitns for this interface (excluding 0) */
+    3,                                /* 5: bInterfaceClass */
+    0,                                /* 6: bInterfaceSubClass - no boot device */
+    0,                                /* 7: bInterfaceProtocol*/
+    0,                                /* 8  iInterface */
+
+
+
+    /* The device implements HID Descriptor: */
+    9,                                /* 0  bLength : Size of descriptor in Bytes */
+    0x21,                             /* 1  bDescriptorType (HID) */
+    0x10,                             /* 2  bcdHID */
+    0x01,                             /* 3  bcdHID */
+    0,                                /* 4  bCountryCode */
+    1,                                /* 5  bNumDescriptors */
+    0x22,                             /* 6  bDescriptorType[0] (Report) */
+    sizeof(hidReportDescriptor) & 0xff,  /* 7  wDescriptorLength[0] */
+    sizeof(hidReportDescriptor) >> 8,    /* 8  wDescriptorLength[0] */
+
+    /* Endpoint descriptor (IN) */
+    0x7,                              /* 0  bLength */
+    5,                                /* 1  bDescriptorType */
+    EP_ADR_IN_HID,              /* 2  bEndpointAddress  */
+    3,                                /* 3  bmAttributes (INTERRUPT) */
+    64,                               /* 4  wMaxPacketSize */
+    0,                                /* 5  wMaxPacketSize */
+    8,                                /* 6  bInterval */
+
+#endif
+
+
+
+
+
+
+
 };
+
+
 
 #define APPEND_VENDOR_STR(x) VENDOR_STR#x
 

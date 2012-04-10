@@ -21,6 +21,10 @@ static unsigned makeSymbol(unsigned data)
 
 #define RATE 31250
 
+#ifndef MIDI_SHIFT_TX
+#define MIDI_SHIFT_TX 0
+#endif
+
 static unsigned bit_time =  XS1_TIMER_MHZ * 1000000 / (unsigned) RATE;
 static unsigned bit_time_2 =  (XS1_TIMER_MHZ * 1000000 / (unsigned) RATE) / 2;
 
@@ -133,7 +137,7 @@ void usb_midi(port ?p_midi_in, port ?p_midi_out,
 #ifdef IAP
     CoProcessorDisable();
 #endif  
-    p_midi_out <: 1; // Start with high bit.
+    p_midi_out <: 1 << MIDI_SHIFT_TX; // Start with high bit.
 #ifdef IAP  
     CoProcessorEnable();
 #endif
@@ -253,7 +257,7 @@ void usb_midi(port ?p_midi_in, port ?p_midi_out,
                     midi_send_ack(c_midi);
                 }
 
-                p_midi_out <: 1 @ txPT;
+                p_midi_out <: (1<<MIDI_SHIFT_TX) @ txPT;
                 //              printstr("mout1\n");
                 t :> txT;
                 txT += bit_time;
@@ -265,7 +269,7 @@ void usb_midi(port ?p_midi_in, port ?p_midi_out,
                 // Mid-symbol
                 txT += bit_time; // Should this be after the output otherwise be double the length of the high before the start bit
                 txPT += bit_time;
-                p_midi_out @ txPT <: (symbol & 1);
+                p_midi_out @ txPT <: ((symbol & 1)<<MIDI_SHIFT_TX);
                 //            printstr("mout2\n");
                 symbol >>= 1;
                 if (symbol == 0) 
