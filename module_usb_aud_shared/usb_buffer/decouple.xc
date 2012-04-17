@@ -27,7 +27,6 @@
 #include "iAP.h"
 #endif
 #include "devicedefines.h"
-#include "testct_byref.h"
 #include "interrupt.h"
 #include "clockcmds.h"
 #include "xud.h"
@@ -41,7 +40,7 @@
  * Otherwise a race condition can occur.
  *
  */
-inline void XUD_Change_ReadyIn_Buffer(XUD_ep e, unsigned bufferPtr, int len)
+static inline void XUD_Change_ReadyIn_Buffer(XUD_ep e, unsigned bufferPtr, int len)
 {
     int chan_array_ptr;
     int xud_chan;
@@ -96,9 +95,11 @@ inline void XUD_Change_ReadyIn_Buffer(XUD_ep e, unsigned bufferPtr, int len)
 /* Volume and mute tables */ 
 #ifndef OUT_VOLUME_IN_MIXER
 unsigned int multOut[NUM_USB_CHAN_OUT + 1];
+static xc_ptr p_multOut;
 #endif
 #ifndef IN_VOLUME_IN_MIXER
 unsigned int multIn[NUM_USB_CHAN_IN + 1];
+static xc_ptr p_multIn;
 #endif
 
 /* Number of channels to/from the USB bus */
@@ -331,7 +332,7 @@ void handle_audio_request(chanend c_mix_out, chanend ?c_led)
                 int mult;
                 int h;
                 unsigned l;
-                asm("ldw %0, %1[%2]":"=r"(mult):"r"(multIn),"r"(i));          
+                asm("ldw %0, %1[%2]":"=r"(mult):"r"(p_multIn),"r"(i));
                 {h, l} = macs(mult, sample, 0, 0);
                 sample = h << 3;
 #elif defined(IN_VOLUME_IN_MIXER) && defined(IN_VOLUME_AFTER_MIX)
@@ -356,7 +357,7 @@ void handle_audio_request(chanend c_mix_out, chanend ?c_led)
                 int mult;
                 int h;
                 unsigned l;
-                asm("ldw %0, %1[%2]":"=r"(mult):"r"(multIn),"r"(i));          
+                asm("ldw %0, %1[%2]":"=r"(mult):"r"(p_multIn),"r"(i));
                 {h, l} = macs(mult, sample, 0, 0);
                 sample = h << 3;
 #endif
@@ -437,7 +438,7 @@ void handle_audio_request(chanend c_mix_out, chanend ?c_led)
                 g_aud_from_host_rdptr+=4;
 
 #ifndef OUT_VOLUME_IN_MIXER
-                asm("ldw %0, %1[%2]":"=r"(mult):"r"(multOut),"r"(i));          
+                asm("ldw %0, %1[%2]":"=r"(mult):"r"(p_multOut),"r"(i));
                 {h, l} = macs(mult, sample, 0, 0);
                 h <<= 3;
                 outuint(c_mix_out, h);
@@ -486,7 +487,7 @@ void handle_audio_request(chanend c_mix_out, chanend ?c_led)
                 unpackState++;
 
 #ifndef OUT_VOLUME_IN_MIXER
-            asm("ldw %0, %1[%2]":"=r"(mult):"r"(multOut),"r"(i));          
+            asm("ldw %0, %1[%2]":"=r"(mult):"r"(p_multOut),"r"(i));
             {h, l} = macs(mult, sample, 0, 0);
             h <<= 3;
             outuint(c_mix_out, h);
@@ -712,6 +713,12 @@ void decouple(chanend c_mix_out,
     int t = array_to_xc_ptr(outAudioBuff);
     int aud_in_ready = 0;
 
+#ifndef OUT_VOLUME_IN_MIXER
+    p_multOut = array_to_xc_ptr(multOut);
+#endif
+#ifndef IN_VOLUME_IN_MIXER
+    p_multIn = array_to_xc_ptr(multIn);
+#endif
 
     aud_from_host_fifo_start = t;
     aud_from_host_fifo_end = aud_from_host_fifo_start + BUFF_SIZE_OUT*4;
@@ -740,14 +747,14 @@ void decouple(chanend c_mix_out,
 #ifndef OUT_VOLUME_IN_MIXER
     for (int i = 0; i < NUM_USB_CHAN_OUT + 1; i++)
     {
-      asm("stw %0, %1[%2]"::"r"(MAX_VOL),"r"(multOut),"r"(i));
+      asm("stw %0, %1[%2]"::"r"(MAX_VOL),"r"(p_multOut),"r"(i));
     }
 #endif
     
 #ifndef IN_VOLUME_IN_MIXER
     for (int i = 0; i < NUM_USB_CHAN_IN + 1; i++)
     {
-      asm("stw %0, %1[%2]"::"r"(MAX_VOL),"r"(multIn),"r"(i));
+      asm("stw %0, %1[%2]"::"r"(MAX_VOL),"r"(p_multIn),"r"(i));
     }
 #endif
 
@@ -837,13 +844,14 @@ void decouple(chanend c_mix_out,
             check_for_interrupt(c_clk_int);
         }
            
-        {   
+        {
+#ifdef HID_CONTROLS
+
             p_but :> tmp;
             tmp = ~tmp;
             tmp &=3;
             g_hidData[0] = tmp;
 
-#ifdef HID_CONTROLS
             Vendor_ReadHIDButtons(g_hidData);
             
             asm("ldaw %0, dp[g_hidData]":"=r"(tmp));

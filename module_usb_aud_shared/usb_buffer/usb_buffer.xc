@@ -21,9 +21,7 @@
  
 XUD_ep XUD_Init_Ep(chanend c_ep);
 
-
-
-inline void XUD_SetNotReady(XUD_ep e)
+static inline void XUD_SetNotReady(XUD_ep e)
 {
   int chan_array_ptr;
   asm ("ldw %0, %1[0]":"=r"(chan_array_ptr):"r"(e));
@@ -134,12 +132,8 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
     xc_ptr midi_to_host_buffer = 0;
     xc_ptr midi_to_host_waiting_buffer = 0;
 #endif
- 
-#ifdef IAP
-    xc_ptr iap_from_host_buffer = 0;
-    xc_ptr iap_to_host_buffer = 0;
-    xc_ptr iap_to_host_waiting_buffer = 0;
-#endif
+
+    xc_ptr p_inZeroBuff = array_to_xc_ptr(inZeroBuff);
     
     set_thread_fast_mode_on();
 
@@ -156,7 +150,9 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
 #endif
     asm("stw %0, dp[aud_from_host_usb_ep]"::"r"(ep_aud_out));
     asm("stw %0, dp[aud_to_host_usb_ep]"::"r"(ep_aud_in));
+#ifdef HID_CONTROLS
     asm("stw %0, dp[g_ep_hid]"::"r"(ep_hid));
+#endif
     asm("stw %0, dp[buffer_aud_ctl_chan]"::"r"(c_aud_ctl));    
 
     /* Wait for USB connect then setup our first packet */     
@@ -174,7 +170,8 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
           mid*=NUM_USB_CHAN_IN*4;
         else
           mid*=NUM_USB_CHAN_IN*3;
-        asm("stw %0, %1[0]"::"r"(mid),"r"(inZeroBuff));
+
+        asm("stw %0, %1[0]"::"r"(mid),"r"(p_inZeroBuff));
 
 #ifdef FB_TOLERANCE_TEST
         expected_fb = ((DEFAULT_FREQ * 0x2000) / 1000);
@@ -324,7 +321,7 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
                        else 
                          mid *= NUM_USB_CHAN_IN*3;
    
-                       asm("stw %0, %1[0]"::"r"(mid),"r"(inZeroBuff));
+                       asm("stw %0, %1[0]"::"r"(mid),"r"(p_inZeroBuff));
                        
                        /* Reset FB */
                        /* Note, Endpoint 0 will hold off host for a sufficient period to allow out feedback 

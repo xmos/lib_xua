@@ -15,6 +15,7 @@
 #include "devicedefines.h"
 #include "common.h"
 #include "clockcmds.h"
+#include "xc_ptr.h"
 #ifdef MIXER
 #include "mixer.h"
 #endif
@@ -105,6 +106,12 @@ void setG_curSamFreqMultiplier(int x) {
 void updateMasterVol( int unitID, chanend ?c_mix_ctl)
 {
     int x;
+#ifndef OUT_VOLUME_IN_MIXER
+    xc_ptr p_multOut = array_to_xc_ptr(multOut);
+#endif
+#ifndef IN_VOLUME_IN_MIXER
+    xc_ptr p_multIn = array_to_xc_ptr(multIn);
+#endif
     switch( unitID)
     {
         case FU_USBOUT:
@@ -126,7 +133,7 @@ void updateMasterVol( int unitID, chanend ?c_mix_ctl)
                 outct(c_mix_ctl, XS1_CT_END);
               }
 #else
-              asm("stw %0, %1[%2]"::"r"(x),"r"(multOut),"r"(i-1));
+              asm("stw %0, %1[%2]"::"r"(x),"r"(p_multOut),"r"(i-1));
 #endif
 
             }
@@ -160,7 +167,7 @@ void updateMasterVol( int unitID, chanend ?c_mix_ctl)
 
               }
 #else
-                asm("stw %0, %1[%2]"::"r"(x),"r"(multIn),"r"(i-1));
+                asm("stw %0, %1[%2]"::"r"(x),"r"(p_multIn),"r"(i-1));
 #endif
             }
             break;
@@ -174,7 +181,12 @@ void updateMasterVol( int unitID, chanend ?c_mix_ctl)
 void updateVol(int unitID, int channel, chanend ?c_mix_ctl)
 {   
     int x;
-
+#ifndef OUT_VOLUME_IN_MIXER
+    xc_ptr p_multOut = array_to_xc_ptr(multOut);
+#endif
+#ifndef IN_VOLUME_IN_MIXER
+    xc_ptr p_multIn = array_to_xc_ptr(multIn);
+#endif
     /* Check for master volume update */
     if (channel == 0)
     {
@@ -210,7 +222,7 @@ void updateVol(int unitID, int channel, chanend ?c_mix_ctl)
 
 
 #else
-                asm("stw %0, %1[%2]"::"r"(x),"r"(multOut),"r"(channel-1));  
+                asm("stw %0, %1[%2]"::"r"(x),"r"(p_multOut),"r"(channel-1));
 #endif
 
 
@@ -239,7 +251,7 @@ void updateVol(int unitID, int channel, chanend ?c_mix_ctl)
 
               }
 #else
-                asm("stw %0, %1[%2]"::"r"(x),"r"(multIn),"r"(channel-1));  
+                asm("stw %0, %1[%2]"::"r"(x),"r"(p_multIn),"r"(channel-1));
 #endif            
             break;
             }

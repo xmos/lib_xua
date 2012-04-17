@@ -4,6 +4,7 @@
 #include <print.h>
 #include "mixer.h"
 #include "devicedefines.h"
+#include "xc_ptr.h"
 
 #ifdef MIXER
 
@@ -11,10 +12,12 @@
 #warning USING FAST MIXER
 
 #ifdef OUT_VOLUME_IN_MIXER
-static unsigned int multOut[NUM_USB_CHAN_OUT + 1];
+static unsigned int multOut_array[NUM_USB_CHAN_OUT + 1];
+static xc_ptr multOut;
 #endif
 #ifdef IN_VOLUME_IN_MIXER
-unsigned int multIn[NUM_USB_CHAN_IN + 1];
+unsigned int multIn_array[NUM_USB_CHAN_IN + 1];
+static xc_ptr multIn;
 #endif
 
 #if defined (LEVEL_METER_LEDS) || defined (LEVEL_METER_HOST) 
@@ -31,17 +34,27 @@ static unsigned abs(int x)
 }
 #endif
 
-int samples[NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + MAX_MIX_COUNT + 1]; /* One larger for an "off" channel for mixer sources" */
+int samples_array[NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + MAX_MIX_COUNT + 1]; /* One larger for an "off" channel for mixer sources" */
+xc_ptr samples;
+
 int savedsamples2[NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + MAX_MIX_COUNT];
 
-int samples_to_host_map[NUM_USB_CHAN_IN];
+int samples_to_host_map_array[NUM_USB_CHAN_IN];
+xc_ptr samples_to_host_map;
 
-int samples_to_device_map[NUM_USB_CHAN_OUT];
+int samples_to_device_map_array[NUM_USB_CHAN_OUT];
+xc_ptr samples_to_device_map;
 
 #if MAX_MIX_COUNT > 0
-int mix_mult[MAX_MIX_COUNT][MIX_INPUTS];
+int mix_mult_array[MAX_MIX_COUNT][MIX_INPUTS];
+xc_ptr mix_mult;
+#define write_word_to_mix_mult(x,y,val) write_via_xc_ptr_indexed(mix_mult,((x)*MAX_MIX_COUNT)+(y), val)
+#define mix_mult_slice(x) (mix_mult + x * MAX_MIX_COUNT * sizeof(int))
 #ifndef FAST_MIXER  
-int mix_map[MAX_MIX_COUNT][MIX_INPUTS];
+int mix_map_array[MAX_MIX_COUNT][MIX_INPUTS];
+xc_ptr mix_map;
+#define write_word_to_mix_map(x,y,val) write_via_xc_ptr_indexed(mix_map,((x)*MAX_MIX_COUNT)+(y), val)
+#define mix_map_slice(x) (mix_map + x * MAX_MIX_COUNT * sizeof(int))
 #endif
 #endif
 
@@ -70,7 +83,7 @@ static inline void ComputeMixerLevel(int sample, int i)
 {
     int x;
     int y;
-    unsigned ptr;
+    xc_ptr ptr;
 
 
     x = abs(sample);
@@ -82,26 +95,27 @@ static inline void ComputeMixerLevel(int sample, int i)
     if(x > y)
     {
         /* samples_to_host_outputs[i] = x; */
-        asm("stw %0, %1[%2]"::"r"(y),"r"(ptr),"r"(i));
+      write_via_xc_ptr_indexed(ptr,i,y);
+      //asm("stw %0, %1[%2]"::"r"(y),"r"(ptr),"r"(i));
     }
 }
 #endif
 #ifdef FAST_MIXER
 void setPtr(int src, int dst, int mix);
-int doMix0(const int samples[], int mult[]);
-int doMix1(const int samples[], int mult[]);
-int doMix2(const int samples[], int mult[]);
-int doMix3(const int samples[], int mult[]);
-int doMix4(const int samples[], int mult[]);
-int doMix5(const int samples[], int mult[]);
-int doMix6(const int samples[], int mult[]);
-int doMix7(const int samples[], int mult[]);
-int doMix8(const int samples[], int mult[]);
+int doMix0(xc_ptr samples, xc_ptr mult);
+int doMix1(xc_ptr samples, xc_ptr mult);
+int doMix2(xc_ptr samples, xc_ptr mult);
+int doMix3(xc_ptr samples, xc_ptr mult);
+int doMix4(xc_ptr samples, xc_ptr mult);
+int doMix5(xc_ptr samples, xc_ptr mult);
+int doMix6(xc_ptr samples, xc_ptr mult);
+int doMix7(xc_ptr samples, xc_ptr mult);
+int doMix8(xc_ptr samples, xc_ptr mult);
 #else
 /* DO NOT inline, causes 10.4.2 tools to add extra loads in loop */
 /* At 18 x 12dB we could get 64 x bigger */
 #pragma unsafe arrays
-int doMix(const int samples[], const int ptr[], int mult[])
+int doMix(xc_ptr samples, xc_ptr ptr, xc_ptr mult)
 {
     int h=0; 
     int l=0; 
@@ -110,7 +124,13 @@ int doMix(const int samples[], const int ptr[], int mult[])
 #pragma loop unroll
     for (int i=0; i<MIX_INPUTS; i++) 
     {
-        {h,l} = macs(samples[ptr[i]], mult[i], h, l);
+      int sample;
+      int index;
+      int m;
+      read_via_xc_ptr_indexed(index, ptr, i);
+      read_via_xc_ptr_indexed(sample,samples,index);
+      read_via_xc_ptr_indexed(m, mult, i);
+      {h,l} = macs(sample, m, h, l);
     }
     
 #if 1
@@ -131,7 +151,7 @@ int doMix(const int samples[], const int ptr[], int mult[])
 #endif
 
 #pragma unsafe arrays
-void giveSamplesToHost(chanend c, const int samples[], const int ptr[], const unsigned multIn[])
+void giveSamplesToHost(chanend c, xc_ptr samples, xc_ptr ptr, xc_ptr multIn)
 {
 #if defined(IN_VOLUME_IN_MIXER) && defined(IN_VOLUME_AFTER_MIX)
     int mult;
@@ -143,12 +163,14 @@ void giveSamplesToHost(chanend c, const int samples[], const int ptr[], const un
   for (int i=0;i<NUM_USB_CHAN_IN;i++) 
   {
         int sample;
-        sample = samples[ptr[i]];
+        int index;
+        read_via_xc_ptr_indexed(index,ptr,i);
+        read_via_xc_ptr_indexed(sample,samples,index);
 
 #if defined(IN_VOLUME_IN_MIXER) && defined(IN_VOLUME_AFTER_MIX)
 #warning IN Vols in mixer, AFTER mix & map
-        //asm("ldw %0, %1[%2]":"=r"(mult):"r"(multIn),"r"(i));          
-        mult = multIn[i];
+        //asm("ldw %0, %1[%2]":"=r"(mult):"r"(multIn),"r"(i));
+        read_via_xc_ptr_indexed(mult, multIn, i);
         {h, l} = macs(mult, sample, 0, 0);
     
         //h <<= 3 done on other side */
@@ -162,7 +184,7 @@ void giveSamplesToHost(chanend c, const int samples[], const int ptr[], const un
 }
 
 #pragma unsafe arrays
-static void getSamplesFromHost(chanend c, const int samples[], int base)
+static void getSamplesFromHost(chanend c, xc_ptr samples, int base)
 {
 #pragma loop unroll
     for (int i=0;i<NUM_USB_CHAN_OUT;i++)
@@ -185,18 +207,20 @@ static void getSamplesFromHost(chanend c, const int samples[], int base)
 
 #if defined(OUT_VOLUME_IN_MIXER) && !defined(OUT_VOLUME_AFTER_MIX)
 #warning OUT Vols in mixer, BEFORE mix & map
-        asm("ldw %0, %1[%2]":"=r"(mult):"r"(multOut),"r"(i));          
+        read_via_xc_ptr_indexed(mult, multOut, i);
         {h, l} = macs(mult, sample, 0, 0);
         h<<=3;
-        asm("stw %0, %1[%2]"::"r"(h),"r"(samples),"r"(base+i));
+
+        write_via_xc_ptr_indexed(multOut, index, val);
+        write_via_xc_ptr_indexed(samples,base+i,h);
 #else
-        asm("stw %0, %1[%2]"::"r"(sample),"r"(samples),"r"(base+i));
+        write_via_xc_ptr_indexed(samples,base+i,sample);
 #endif
   }
 }
 
 #pragma unsafe arrays
-void giveSamplesToDevice(chanend c, const int samples[],const int ptr[], const unsigned multOut[])
+void giveSamplesToDevice(chanend c, xc_ptr samples, xc_ptr ptr, xc_ptr multOut)
 {
 #pragma loop unroll
     for (int i=0;i<NUM_USB_CHAN_OUT;i++) 
@@ -207,13 +231,13 @@ void giveSamplesToDevice(chanend c, const int samples[],const int ptr[], const u
         int h;
         unsigned l;
 #endif
-
-        sample = samples[ptr[i]];
+        int index;
+        read_via_xc_ptr_indexed(index, ptr, i);
+        read_via_xc_ptr_indexed(sample, samples, index)
 
 #if defined(OUT_VOLUME_IN_MIXER) && defined(OUT_VOLUME_AFTER_MIX)
 #warning OUT Vols in mixer, AFTER mix & map
-        mult = multOut[i];
-        //asm("ldw %0, %1[%2]":"=r"(mult):"r"(multOut),"r"(i));          
+        read_via_xc_ptr_indexed(mult, multOut, i);
         {h, l} = macs(mult, sample, 0, 0);
         //h <<= 3 done in audio thread
         outuint(c, h);
@@ -224,7 +248,7 @@ void giveSamplesToDevice(chanend c, const int samples[],const int ptr[], const u
 }
 
 #pragma unsafe arrays
-void getSamplesFromDevice(chanend c, const int samples[], int base)
+void getSamplesFromDevice(chanend c, xc_ptr samples, int base)
 {
 #if defined(IN_VOLUME_IN_MIXER) && !defined(IN_VOLUME_AFTER_MIX)
     int mult;
@@ -247,12 +271,12 @@ void getSamplesFromDevice(chanend c, const int samples[], int base)
 #endif
 
 #if defined(IN_VOLUME_IN_MIXER) && !defined(IN_VOLUME_AFTER_MIX)
-        asm("ldw %0, %1[%2]":"=r"(mult):"r"(multIn),"r"(i));          
+        read_via_xc_ptr_indexed(mult, multIn, i);
         {h, l} = macs(mult, sample, 0, 0);
         h <<=3;
-        asm("stw %0, %1[%2]"::"r"(h),"r"(samples),"r"(base+i));
+        write_via_xc_ptr_indexed(samples,base+i,h);
 #else
-        asm("stw %0, %1[%2]"::"r"(sample),"r"(samples),"r"(base+i));
+        write_via_xc_ptr_indexed(samples,base+i,sample);
 #endif
   }
 }
@@ -287,15 +311,18 @@ void mixer1(chanend c_host, chanend c_mix_ctl, chanend c_mixer2)
                         index = inuint(c_mix_ctl);
                         val = inuint(c_mix_ctl);
                         inct(c_mix_ctl);
-                        
-                        asm("stw %0, %1[%2]"::"r"(val),"r"(samples_to_host_map),"r"(index));
+
+
+                        write_via_xc_ptr_indexed(samples_to_host_map,
+                                                 index,
+                                                 val);
                         break;
 
                     case SET_SAMPLES_TO_DEVICE_MAP:
                         index = inuint(c_mix_ctl);
                         val = inuint(c_mix_ctl);
                         inct(c_mix_ctl);
-                        asm("stw %0, %1[%2]"::"r"(val),"r"(samples_to_device_map),"r"(index));
+                        write_via_xc_ptr_indexed(samples_to_device_map,index,val);
                         break;
         
                     case SET_MIX_MULT:
@@ -303,8 +330,8 @@ void mixer1(chanend c_host, chanend c_mix_ctl, chanend c_mixer2)
                         index = inuint(c_mix_ctl);
                         val = inuint(c_mix_ctl);
                         inct(c_mix_ctl);
-                        
-                        asm("stw %0, %1[%2]"::"r"(val),"r"(mix_mult[mix]),"r"(index));
+
+                        write_word_to_mix_mult(mix, index, val);
                         break;
         
                     case SET_MIX_MAP:
@@ -315,7 +342,8 @@ void mixer1(chanend c_host, chanend c_mix_ctl, chanend c_mixer2)
 #ifdef FAST_MIXER
                         setPtr(index, val, mix);
 #else
-                        asm("stw %0, %1[%2]"::"r"(val),"r"(mix_map[mix]),"r"(index));
+                        write_word_to_mix_map(mix, index, val);
+
 #endif
                         break;
 #endif /* if MAX_MIX_COUNT > 0 */
@@ -326,7 +354,7 @@ void mixer1(chanend c_host, chanend c_mix_ctl, chanend c_mixer2)
                         val = inuint(c_mix_ctl);
                         inct(c_mix_ctl);
 
-                        asm("stw %0, %1[%2]"::"r"(val),"r"(multIn),"r"(index));
+                        write_via_xc_ptr_indexed(multIn, index, val);
                         break;
 #endif
 #ifdef OUT_VOLUME_IN_MIXER
@@ -335,7 +363,7 @@ void mixer1(chanend c_host, chanend c_mix_ctl, chanend c_mixer2)
                         val = inuint(c_mix_ctl);
                         inct(c_mix_ctl);
 
-                        asm("stw %0, %1[%2]"::"r"(val),"r"(multOut),"r"(index));
+                        write_via_xc_ptr_indexed(multOut, index, val);
                         break;
 #endif
 
@@ -352,13 +380,13 @@ void mixer1(chanend c_host, chanend c_mix_ctl, chanend c_mixer2)
                         chkct(c_mix_ctl, XS1_CT_END);
 #ifdef LEVEL_METER_LEDS    
                         /* Level LEDS process reseting samples_to_host_inputs 
-                         * Other side makes sure we don't miss a peak */ 
-                        asm("ldw %0, %1[%2]":"=r"(val):"r"(samples_to_host_inputs_buff),"r"(index));
-                        asm("stw %0, %1[%2]"::"r"(0),"r"(samples_to_host_inputs_buff),"r"(index));
+                         * Other side makes sure we don't miss a peak */
+                        read_via_xc_ptr_indexed(val, samples_to_host_inputs_buff, index);
+                        write_via_xc_ptr_indexed(samples_to_host_inputs_buff, index, 0);
 #else
                         /* We dont have a level LEDs process, so reset ourselves */
-                        asm("ldw %0, %1[%2]":"=r"(val):"r"(samples_to_host_inputs),"r"(index));
-                        asm("stw %0, %1[%2]"::"r"(0),"r"(samples_to_host_inputs),"r"(index));
+                        read_via_xc_ptr_indexed(val, samples_to_host_inputs, index);
+                        write_via_xc_ptr_indexed(samples_to_host_inputs, index, 0);
 #endif
                         outuint(c_mix_ctl, val);
                         outct(c_mix_ctl, XS1_CT_END);
@@ -368,8 +396,8 @@ void mixer1(chanend c_host, chanend c_mix_ctl, chanend c_mixer2)
                     case GET_OUTPUT_LEVELS:
                         index = inuint(c_mix_ctl);
                         chkct(c_mix_ctl, XS1_CT_END);
-                        asm("ldw %0, %1[%2]":"=r"(val):"r"(samples_to_host_outputs),"r"(index));
-                        asm("stw %0, %1[%2]"::"r"(mix),"r"(samples_to_host_outputs),"r"(index));
+                        read_via_xc_ptr_indexed(val, samples_to_host_outputs, index);
+                        write_via_xc_ptr_indexed(samples_to_host_outputs, index, mix);
                         outuint(c_mix_ctl, val);
                         outct(c_mix_ctl, XS1_CT_END);
                         break;
@@ -396,7 +424,9 @@ void mixer1(chanend c_host, chanend c_mix_ctl, chanend c_mixer2)
 #pragma loop unroll 
             for (int i=0;i<MAX_MIX_COUNT;i++) 
             {
-                asm("stw %0, %1[%2]"::"r"(0),"r"(samples),"r"(NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + i));
+              write_via_xc_ptr_indexed(samples,
+                                       (NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + i),
+                                       0);
             }
 
             /* Inform mixer 2 about freq change */
@@ -420,13 +450,11 @@ void mixer1(chanend c_host, chanend c_mix_ctl, chanend c_mixer2)
             outuint(c_mixer2, 0);
             inuint(c_mixer2);
 #ifdef FAST_MIXER
-            mixed = doMix0(samples, mix_mult[0]);
+            mixed = doMix0(samples, mix_mult_slice(0));
 #else
-            mixed = doMix(samples,mix_map[0],mix_mult[0]);
+            mixed = doMix(samples,mix_map_slice(0),mix_mult_slice(0));
 #endif
-            asm("stw %0, %1[%2]"::
-          "r"(mixed),"r"(samples),
-          "r"(NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + 0));
+            write_via_xc_ptr_indexed(samples, (NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + 0), mixed);
 
 #if defined (LEVEL_METER_HOST) || defined(LEVEL_METER_LEDS)
             ComputeMixerLevel(mixed, 0);
@@ -439,13 +467,11 @@ void mixer1(chanend c_host, chanend c_mix_ctl, chanend c_mixer2)
 
 #if MAX_MIX_COUNT > 2
 #ifdef FAST_MIXER
-                mixed = doMix2(samples, mix_mult[2]);
+              mixed = doMix2(samples, mix_mult_slice(2));
 #else
-                mixed = doMix(samples,mix_map[2],mix_mult[2]);
-#endif     
-                asm("stw %0, %1[%2]"::
-                    "r"(mixed),"r"(samples),
-                    "r"(NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + 2));
+              mixed = doMix(samples,mix_map_slice(2),mix_mult_slice(2));
+#endif
+              write_via_xc_ptr_indexed(samples, (NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + 2), mixed);
 
 #if defined (LEVEL_METER_HOST) || defined(LEVEL_METER_LEDS)
                 ComputeMixerLevel(mixed, 2);
@@ -454,14 +480,12 @@ void mixer1(chanend c_host, chanend c_mix_ctl, chanend c_mixer2)
 
 #if MAX_MIX_COUNT > 4
 #ifdef FAST_MIXER
-                mixed = doMix4(samples, mix_mult[4]);
+                mixed = doMix4(samples, mix_mult_slice(4));
 #else
-                mixed = doMix(samples,mix_map[4],mix_mult[4]);
+                mixed = doMix(samples,mix_map_slice(4),mix_mult_slice(4));
 #endif
-                asm("stw %0, %1[%2]"::
-                    "r"(mixed),"r"(samples),
-                    "r"(NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + 4));
-            
+                write_via_xc_ptr_indexed(samples, (NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + 4), mixed);
+
 #if defined (LEVEL_METER_HOST) || defined(LEVEL_METER_LEDS)
                 ComputeMixerLevel(mixed, 4);
 #endif
@@ -469,14 +493,12 @@ void mixer1(chanend c_host, chanend c_mix_ctl, chanend c_mixer2)
 
 #if MAX_MIX_COUNT > 6
 #ifdef FAST_MIXER
-                mixed = doMix6(samples, mix_mult[6]);
+                mixed = doMix6(samples, mix_mult_slice(6));
 #else
-                mixed = doMix(samples,mix_map[6],mix_mult[6]);
+                mixed = doMix(samples,mix_map_slice(6),mix_mult_slice(6));
 #endif
-                    asm("stw %0, %1[%2]"::
-                        "r"(mixed),"r"(samples),
-                        "r"(NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + 6));      
-            
+                write_via_xc_ptr_indexed(samples, (NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + 6), mixed);
+
 #if defined (LEVEL_METER_HOST) || defined(LEVEL_METER_LEDS)
                 ComputeMixerLevel(mixed, 6);
 #endif
@@ -516,7 +538,7 @@ void mixer2(chanend c_mixer1, chanend c_audio)
         
         for (int i=0;i<MAX_MIX_COUNT;i++) 
         {
-          asm("stw %0, %1[%2]":: "r"(0),"r"(samples),"r"(NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + i));
+          write_via_xc_ptr_indexed(samples, (NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + i), 0);
         }
 
         /* Inform audio thread about freq change */
@@ -538,14 +560,12 @@ void mixer2(chanend c_mixer1, chanend c_audio)
 
 #if MAX_MIX_COUNT > 1
 #ifdef FAST_MIXER
-      mixed = doMix1(samples, mix_mult[1]);
+      mixed = doMix1(samples, mix_mult_slice(1));
 #else
-      mixed = doMix(samples,mix_map[1],mix_mult[1]);
+      mixed = doMix(samples,mix_map_slice(1),mix_mult_slice(1));
 #endif     
-     
-      asm("stw %0, %1[%2]"::
-          "r"(mixed),"r"(samples),
-          "r"(NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + 1));
+
+      write_via_xc_ptr_indexed(samples, (NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + 1), mixed);
 
 #if defined (LEVEL_METER_HOST) || defined(LEVEL_METER_LEDS)
         ComputeMixerLevel(mixed, 1);
@@ -560,14 +580,13 @@ void mixer2(chanend c_mixer1, chanend c_audio)
       {
 #if MAX_MIX_COUNT > 3
 #ifdef FAST_MIXER
-      mixed = doMix3(samples, mix_mult[3]);
+        mixed = doMix3(samples, mix_mult_slice(3));
 #else
-    mixed = doMix(samples,mix_map[3],mix_mult[3]);
+        mixed = doMix(samples,mix_map_slice(3),mix_mult_slice(3));
 #endif
 
-        asm("stw %0, %1[%2]"::
-            "r"(mixed),"r"(samples),
-            "r"(NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + 3));
+        write_via_xc_ptr_indexed(samples, (NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + 3), mixed);
+
 #if defined (LEVEL_METER_HOST) || defined(LEVEL_METER_LEDS)
             ComputeMixerLevel(mixed, 3);
 #endif
@@ -575,13 +594,12 @@ void mixer2(chanend c_mixer1, chanend c_audio)
 
 #if MAX_MIX_COUNT > 5
 #ifdef FAST_MIXER
-     mixed = doMix5(samples, mix_mult[5]);
+    mixed = doMix5(samples, mix_mult_slice(5));
 #else
-    mixed = doMix(samples,mix_map[5],mix_mult[5]);
+    mixed = doMix(samples,mix_map_slice(5),mix_mult_slice(5));
 #endif
-        asm("stw %0, %1[%2]"::
-            "r"(mixed),"r"(samples),
-            "r"(NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + 5));
+    write_via_xc_ptr_indexed(samples, NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + 5, mixed);
+
 #if defined (LEVEL_METER_HOST) || defined(LEVEL_METER_LEDS)
             ComputeMixerLevel(mixed, 5);
 #endif
@@ -589,13 +607,12 @@ void mixer2(chanend c_mixer1, chanend c_audio)
         
 #if MAX_MIX_COUNT > 7
 #ifdef FAST_MIXER
-     mixed = doMix7(samples, mix_mult[7]);
+    mixed = doMix7(samples, mix_mult_slice(7));
 #else
-    mixed = doMix(samples,mix_map[7],mix_mult[7]);
+    mixed = doMix(samples,mix_map_slice(7),mix_mult_slice(7));
 #endif
-        asm("stw %0, %1[%2]"::
-            "r"(mixed),"r"(samples),
-            "r"(NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + 7));      
+
+    write_via_xc_ptr_indexed(samples, NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + 7, mixed);
 #if defined (LEVEL_METER_HOST) || defined(LEVEL_METER_LEDS)
             ComputeMixerLevel(mixed, 7);
 #endif
@@ -609,15 +626,32 @@ void mixer2(chanend c_mixer1, chanend c_audio)
 void mixer(chanend c_mix_in, chanend c_mix_out, chanend c_mix_ctl)
 {
     chan c;
+    multOut = array_to_xc_ptr((multOut_array,unsigned[]));
+    multIn = array_to_xc_ptr((multIn_array,unsigned[]));
+    samples = array_to_xc_ptr((samples_array,unsigned[]));
+    samples_to_host_map =
+      array_to_xc_ptr((samples_to_host_map_array,unsigned[]));
+
+    samples_to_device_map =
+      array_to_xc_ptr((samples_to_device_map_array,unsigned[]));
+
+#if MAX_MIX_COUNT >0
+    mix_mult = array_to_xc_ptr((mix_mult,unsigned[]));
+#ifndef FAST_MIXER
+    mix_map = array_to_xc_ptr((mix_map,unsigned[]));
+#endif
+#endif
+
     for (int i=0;i<NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + MAX_MIX_COUNT;i++) 
     {
-        samples[i] = 0;
+      write_via_xc_ptr_indexed(samples,i,0);
     }
 
     {
         int num_mixes = DEFAULT_FREQ > 96000 ? 2 : MAX_MIX_COUNT;
         for (int i=0;i<NUM_USB_CHAN_OUT;i++) 
         {
+
             asm("stw %0, %1[%2]"::
             "r"(i),
             "r"(samples_to_device_map),
@@ -628,20 +662,20 @@ void mixer(chanend c_mix_in, chanend c_mix_out, chanend c_mix_ctl)
 #ifdef OUT_VOLUME_IN_MIXER
     for (int i=0;i<NUM_USB_CHAN_OUT;i++) 
     {
-        multOut[i] = MAX_VOL;
+      write_via_xc_ptr_indexed(multOut, i, MAX_VOL);
     }
 #endif
 
 #ifdef IN_VOLUME_IN_MIXER
     for (int i=0;i<NUM_USB_CHAN_IN;i++) 
     {
-        multIn[i] = MAX_VOL;
+      write_via_xc_ptr_indexed(multIn, i, MAX_VOL);
     }
 #endif
 
     for (int i=0;i<NUM_USB_CHAN_IN;i++) 
     {
-        samples_to_host_map[i] = NUM_USB_CHAN_OUT + i;
+      write_via_xc_ptr_indexed(samples_to_host_map, i, NUM_USB_CHAN_OUT + i);
     }
 
 #if MAX_MIX_COUNT> 0
@@ -649,9 +683,9 @@ void mixer(chanend c_mix_in, chanend c_mix_out, chanend c_mix_ctl)
         for (int j=0;j<MIX_INPUTS;j++) 
         {
 #ifndef FAST_MIXER
-            mix_map[i][j] = j < 16 ? j : j + 2;
+            write_word_to_mix_map(i,j, j < 16 ? j : j + 2);
 #endif
-            mix_mult[i][j] = i==j ? MAX_VOL >> 3 : 0;
+            write_word_to_mix_mult(i,j, i==j ? MAX_VOL >> 3 : 0);
         }
 #endif
 

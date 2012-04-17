@@ -3,7 +3,12 @@
 
 typedef unsigned int xc_ptr;
 
-inline xc_ptr array_to_xc_ptr(unsigned a[]) {
+// Note that this function is marked as const to avoid the XC
+// parallel usage checks, this is only really going to work if this
+// is the *only* way the array a is accessed (and everything else uses
+// the xc_ptr)
+inline xc_ptr array_to_xc_ptr(const unsigned a[])
+{
   xc_ptr x;
   asm("mov %0, %1":"=r"(x):"r"(a));
   return x;
