@@ -8,10 +8,7 @@
 #include "SpdifReceive.h"
 
 
-#ifdef SPDIF_RX
-#pragma xta command "analyse path digital_out digital_out"
-#pragma xta command "set required - 5200 ns"             /* 192kHz */
-#endif
+
 
 #define LOCAL_CLOCK_INCREMENT       166667
 #define LOCAL_CLOCK_MARGIN          1666
@@ -697,7 +694,7 @@ void clockGen (streaming chanend c_spdif_rx, chanend c_adat_rx, out port p, chan
                         spdifRd += 2;
 					    spdifRd &= (MAX_SPDIF_SAMPLES - 1);
 
-#pragma xta endpoint "digital_out"
+
 
                         g_digData[0] = tmp;
                         g_digData[1] = tmp2;

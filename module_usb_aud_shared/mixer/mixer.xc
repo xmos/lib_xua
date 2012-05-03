@@ -48,13 +48,13 @@ xc_ptr samples_to_device_map;
 #if MAX_MIX_COUNT > 0
 int mix_mult_array[MAX_MIX_COUNT][MIX_INPUTS];
 xc_ptr mix_mult;
-#define write_word_to_mix_mult(x,y,val) write_via_xc_ptr_indexed(mix_mult,((x)*MAX_MIX_COUNT)+(y), val)
-#define mix_mult_slice(x) (mix_mult + x * MAX_MIX_COUNT * sizeof(int))
+#define write_word_to_mix_mult(x,y,val) write_via_xc_ptr_indexed(mix_mult,((x)*MIX_INPUTS)+(y), val)
+#define mix_mult_slice(x) (mix_mult + x * MIX_INPUTS * sizeof(int))
 #ifndef FAST_MIXER  
 int mix_map_array[MAX_MIX_COUNT][MIX_INPUTS];
 xc_ptr mix_map;
-#define write_word_to_mix_map(x,y,val) write_via_xc_ptr_indexed(mix_map,((x)*MAX_MIX_COUNT)+(y), val)
-#define mix_map_slice(x) (mix_map + x * MAX_MIX_COUNT * sizeof(int))
+#define write_word_to_mix_map(x,y,val) write_via_xc_ptr_indexed(mix_map,((x)*MIX_INPUTS)+(y), val)
+#define mix_map_slice(x) (mix_map + x * MIX_INPUTS * sizeof(int))
 #endif
 #endif
 
@@ -636,9 +636,9 @@ void mixer(chanend c_mix_in, chanend c_mix_out, chanend c_mix_ctl)
       array_to_xc_ptr((samples_to_device_map_array,unsigned[]));
 
 #if MAX_MIX_COUNT >0
-    mix_mult = array_to_xc_ptr((mix_mult,unsigned[]));
+    mix_mult = array_to_xc_ptr((mix_mult_array,unsigned[]));
 #ifndef FAST_MIXER
-    mix_map = array_to_xc_ptr((mix_map,unsigned[]));
+    mix_map = array_to_xc_ptr((mix_map_array,unsigned[]));
 #endif
 #endif
 
@@ -683,11 +683,12 @@ void mixer(chanend c_mix_in, chanend c_mix_out, chanend c_mix_ctl)
         for (int j=0;j<MIX_INPUTS;j++) 
         {
 #ifndef FAST_MIXER
-            write_word_to_mix_map(i,j, j < 16 ? j : j + 2);
+          write_word_to_mix_map(i,j, j < 16 ? j : j + 2);
 #endif
-            write_word_to_mix_mult(i,j, i==j ? MAX_VOL >> 3 : 0);
+          write_word_to_mix_mult(i,j, i==j ? MAX_VOL >> 3 : 0);
         }
 #endif
+
 
     par 
     {
