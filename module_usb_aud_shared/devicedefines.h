@@ -251,8 +251,8 @@
 #define EP_ADR_OUT_IAP            EP_NUM_OUT_IAP            
 
 /* Endpoint count totals */
-#define NUM_EP_OUT                  (1 + NUM_EP_OUT_AUD + NUM_EP_OUT_MIDI + NUM_EP_OUT_IAP) /* +1 due to EP0 */ 
-#define NUM_EP_IN                   (2 + NUM_EP_IN_AUD + NUM_EP_IN_MIDI + NUM_EP_IN_IAP + NUM_EP_IN_HID)    /* +1 due to EP0 and Int EP */
+#define NUM_EP_OUT                 4// (1 + NUM_EP_OUT_AUD + NUM_EP_OUT_MIDI + NUM_EP_OUT_IAP) /* +1 due to EP0 */ 
+#define NUM_EP_IN                  5 //(2 + NUM_EP_IN_AUD + NUM_EP_IN_MIDI + NUM_EP_IN_IAP + NUM_EP_IN_HID)    /* +1 due to EP0 and Int EP */
 
 #define AUDIO_STOP_FOR_DFU	    (0x12345678)
 #define AUDIO_START_FROM_DFU    (0x87654321)

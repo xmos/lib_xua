@@ -70,10 +70,10 @@ extern unsigned g_numUsbChanIn;
  * @return  void
  */
 void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud_fb,
-#ifdef MIDI 
+//#ifdef MIDI 
             chanend c_midi_from_host, 
             chanend c_midi_to_host, 
-#endif
+//#endif
 #ifdef IAP
             chanend c_iap_from_host, 
             chanend c_iap_to_host, 
@@ -224,19 +224,19 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
         int usb_speed;
         int x;
        
-        asm("ldaw %0, dp[fb_clocks]":"=r"(x));
+        //asm("ldaw %0, dp[fb_clocks]":"=r"(x));
         GET_SHARED_GLOBAL(usb_speed, g_curUsbSpeed);
         
         if (usb_speed == XUD_SPEED_HS)  
         {                  
                 
-            XUD_SetReady_In(ep_aud_fb, PIDn_DATA0, x, 4);
+            XUD_SetReady_In(ep_aud_fb, fb_clocks, 4);
                 
         }
         else 
         {
         
-            XUD_SetReady_In(ep_aud_fb, PIDn_DATA0, x, 3);
+            XUD_SetReady_In(ep_aud_fb, fb_clocks, 3);
         }
     }
 
@@ -503,11 +503,11 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
         
                 if (usb_speed == XUD_SPEED_HS)  
                 {                     
-                    XUD_SetReady_In(ep_aud_fb, PIDn_DATA0, x, 4);
+                    XUD_SetReady_In(ep_aud_fb, fb_clocks, 4);
                 }
                 else 
                 {
-                    XUD_SetReady_In(ep_aud_fb, PIDn_DATA0, x, 3);
+                    XUD_SetReady_In(ep_aud_fb, fb_clocks, 3);
                 }
             }
             break;

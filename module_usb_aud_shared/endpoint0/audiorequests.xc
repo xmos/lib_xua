@@ -361,7 +361,7 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, SetupPacket &sp, chanend
 
                                                         
                                 /* Send 0 Length as status stage */
-                                return XUD_SetBuffer_ResetPid(ep0_in,   buffer, 0, PIDn_DATA1);
+                                return XUD_SetBuffer(ep0_in, buffer, 0);
                                 
                             }
                             /* Direction: Device-to-host: Send Current Sample Freq */
@@ -526,13 +526,18 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, SetupPacket &sp, chanend
                             
                             if(sp.bmRequestType.Direction == BM_REQTYPE_DIRECTION_OUT) /* Direction: Host-to-device */
                             {
+
                                 /* Expect OUT here (with v2yyolume) */
                                 loop = XUD_GetBuffer(ep0_out, buffer);
-                               
+ 
                                 /* Check for rst/suspend */ 
                                 if(loop < 0)
-                                return loop;
-                                
+                                {
+                                    printintln(loop);
+                                    return loop;
+                                }
+
+#if 0
                                 if(unitID == FU_USBOUT)
                                 {    
                                   if ((sp.wValue & 0xff) <= NUM_USB_CHAN_OUT) {   
@@ -547,6 +552,7 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, SetupPacket &sp, chanend
                                     updateVol( unitID, ( sp.wValue & 0xff ), c_mix_ctl );
                                   }
                                 }
+#endif
 
                                 /* Send 0 Length as status stage */
                                 return XUD_DoSetRequestStatus(ep0_in, 0);
@@ -581,6 +587,16 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, SetupPacket &sp, chanend
                                                     
                             if(sp.bmRequestType.Direction == BM_REQTYPE_DIRECTION_OUT) // Direction: Host-to-device
                             {
+
+                                
+                                {
+                                    unsigned time;
+                                    timer t;
+                                    t :> time;
+                                    t when timerafter(time+10000000):> void;
+
+                                }
+                                
                                 /* Expect OUT here with mute */
                                 loop = XUD_GetBuffer(ep0_out, buffer);
 
@@ -1102,18 +1118,22 @@ int AudioClassRequests_1(XUD_ep c_ep0_out, XUD_ep c_ep0_in, SetupPacket &sp, cha
     {
         case SET_INTERFACE: 
         {
-            return XUD_SetBuffer_ResetPid(c_ep0_in, buffer, 0, PIDn_DATA1);
+            return XUD_SetBuffer(c_ep0_in, buffer, 0);
 
             break; 
         }
               
         case B_REQ_SET_CUR:
         {
+        
             loop = XUD_GetBuffer(c_ep0_out, buffer);
 
             /* Inspect for rst/suspend */
             if(loop < 0)
                 return loop;
+ 
+            
+ 
             
             unitID = sp.wIndex >> 8;
   
@@ -1205,7 +1225,7 @@ int AudioClassRequests_1(XUD_ep c_ep0_out, XUD_ep c_ep0_in, SetupPacket &sp, cha
                 }
             }
 
-            return XUD_SetBuffer_ResetPid(c_ep0_in, buffer, 0, PIDn_DATA1);
+            return XUD_SetBuffer(c_ep0_in, buffer, 0);
 
             break;
         }
@@ -1248,10 +1268,10 @@ int AudioClassRequests_1(XUD_ep c_ep0_out, XUD_ep c_ep0_in, SetupPacket &sp, cha
             }     
             else if(unitID == 0)
             {
-                printintln(unitID);   
+                //printintln(unitID);   
             }     
             
-            loop = XUD_SetBuffer_ResetPid(c_ep0_in,  buffer, sp.wLength, PIDn_DATA1);
+            loop = XUD_SetBuffer(c_ep0_in,  buffer, sp.wLength);
             
             if(loop < 0)
                 return loop;
@@ -1265,7 +1285,7 @@ int AudioClassRequests_1(XUD_ep c_ep0_out, XUD_ep c_ep0_in, SetupPacket &sp, cha
             buffer[0] = (MIN_MIXER_VOLUME & 0xff);
             buffer[1] = (MIN_MIXER_VOLUME >> 8);
             
-            loop = XUD_SetBuffer_ResetPid(c_ep0_in, buffer, sp.wLength, PIDn_DATA1);
+            loop = XUD_SetBuffer(c_ep0_in, buffer, sp.wLength);
             
             if(loop < 0)
                 return loop;
@@ -1279,7 +1299,7 @@ int AudioClassRequests_1(XUD_ep c_ep0_out, XUD_ep c_ep0_in, SetupPacket &sp, cha
             buffer[0] = (MAX_MIXER_VOLUME & 0xff);
             buffer[1] = (MAX_MIXER_VOLUME >> 8);
             
-            loop = XUD_SetBuffer_ResetPid(c_ep0_in,  buffer, sp.wLength, PIDn_DATA1);
+            loop = XUD_SetBuffer(c_ep0_in,  buffer, sp.wLength);
             
             if(loop < 0)
                 return 0;
@@ -1292,7 +1312,7 @@ int AudioClassRequests_1(XUD_ep c_ep0_out, XUD_ep c_ep0_in, SetupPacket &sp, cha
         {
             buffer[0] = (VOLUME_RES_MIXER & 0xff);
             buffer[1] = (VOLUME_RES_MIXER >> 8);
-            loop = XUD_SetBuffer_ResetPid(c_ep0_in,  buffer, sp.wLength, PIDn_DATA1);
+            loop = XUD_SetBuffer(c_ep0_in,  buffer, sp.wLength);
             
             if(loop < 0)
                 return loop;

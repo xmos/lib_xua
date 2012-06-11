@@ -95,7 +95,7 @@ unsigned g_epStatusOut[NUM_EP_OUT];
 unsigned g_epStatusIn[NUM_EP_IN];
 
 /* Global variable for current USB bus speed (i.e. FS/HS) */
-unsigned g_curUsbSpeed = 0;
+unsigned g_curUsbSpeed = XUD_SPEED_HS;
 
 #ifdef HOST_ACTIVE_CALL
 void VendorHostActive(int active);
@@ -566,7 +566,7 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
                         case SET_ADDRESS:
             
                             /* Status stage: Send a zero length packet */
-                            retVal = XUD_SetBuffer_ResetPid(ep0_in,  buffer, 0, PIDn_DATA1);
+                            retVal = XUD_SetBuffer(ep0_in,  buffer, 0);
 
                             /* TODO We should wait until ACK is received for status stage before changing address */
                             //XUD_Sup_Delay(50000);
