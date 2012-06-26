@@ -19,10 +19,10 @@
 void buffer(chanend c_aud_out, 
             chanend c_aud_in, 
             chanend c_aud_fb,
-//#ifdef MIDI 
+#ifdef MIDI 
             chanend c_midi_from_host, 
             chanend c_midi_to_host,
-//#endif
+#endif
 #ifdef IAP
 #error IAP
             chanend c_iap_from_host, 

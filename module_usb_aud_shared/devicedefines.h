@@ -225,42 +225,40 @@
 #define INTERFACE_NUM_HID (INPUT_INTERFACES+OUTPUT_INTERFACES+MIDI_INTERFACES+DFU_INTERFACES+IAP_INTERFACES+1)
 
 /* Endpoint Number Defines */
-#define EP_NUM_IN_FB              (1)     /* Always 1 */
-#define EP_NUM_IN_AUD             (2)    /* Always 2 */
-#define EP_NUM_IN_AUD_INT         (3)     /* Audio interrupt/status EP */
-#define EP_NUM_IN_MIDI            ((EP_NUM_IN_AUD_INT + 1))
-#define EP_NUM_IN_HID             ((EP_NUM_IN_AUD_INT + NUM_EP_IN_MIDI + 1))
-#define EP_NUM_IN_IAP             ((EP_NUM_IN_AUD_INT + NUM_EP_IN_MIDI + NUM_EP_IN_HID + 1)) /* iAP Bulk */
-#define EP_NUM_IN_IAP_INT         ((EP_NUM_IN_AUD_INT + NUM_EP_IN_MIDI + NUM_EP_IN_HID + 2)) /* iAP interrupt */
+#define EP_NUM_IN_FB            (1)     /* Always 1 */
+#define EP_NUM_IN_AUD           (2)    /* Always 2 */
+#define EP_NUM_IN_AUD_INT       (3)     /* Audio interrupt/status EP */
+#define EP_NUM_IN_MIDI          ((EP_NUM_IN_AUD_INT + 1))
+#define EP_NUM_IN_HID           ((EP_NUM_IN_AUD_INT + NUM_EP_IN_MIDI + 1))
+#define EP_NUM_IN_IAP           ((EP_NUM_IN_AUD_INT + NUM_EP_IN_MIDI + NUM_EP_IN_HID + 1)) /* iAP Bulk */
+#define EP_NUM_IN_IAP_INT       ((EP_NUM_IN_AUD_INT + NUM_EP_IN_MIDI + NUM_EP_IN_HID + 2)) /* iAP interrupt */
 
-#define EP_NUM_OUT_AUD            1       /* Always 1 */
-#define EP_NUM_OUT_MIDI           2       /* Always 2 */
-#define EP_NUM_OUT_IAP            3       /* Always 3 */
+#define EP_NUM_OUT_AUD          1       /* Always 1 */
+#define EP_NUM_OUT_MIDI         2       /* Always 2 */
+#define EP_NUM_OUT_IAP          3       /* Always 3 */
 
 /* Endpoint Address Defines */
-#define EP_ADR_IN_FB              (EP_NUM_IN_FB | 0x80)
-#define EP_ADR_IN_AUD             (EP_NUM_IN_AUD | 0x80)
-#define EP_ADR_IN_AUD_INT         (EP_NUM_IN_AUD_INT | 0x80)
-#define EP_ADR_IN_MIDI            (EP_NUM_IN_MIDI | 0x80)
-#define EP_ADR_IN_HID             (EP_NUM_IN_HID | 0x80)
-#define EP_ADR_IN_IAP             (EP_NUM_IN_IAP | 0x80)
-#define EP_ADR_IN_IAP_INT         (EP_NUM_IAP_INT | 0x80)
+#define EP_ADR_IN_FB            (EP_NUM_IN_FB | 0x80)
+#define EP_ADR_IN_AUD           (EP_NUM_IN_AUD | 0x80)
+#define EP_ADR_IN_AUD_INT       (EP_NUM_IN_AUD_INT | 0x80)
+#define EP_ADR_IN_MIDI          (EP_NUM_IN_MIDI | 0x80)
+#define EP_ADR_IN_HID           (EP_NUM_IN_HID | 0x80)
+#define EP_ADR_IN_IAP           (EP_NUM_IN_IAP | 0x80)
+#define EP_ADR_IN_IAP_INT       (EP_NUM_IAP_INT | 0x80)
 
-#define EP_ADR_OUT_AUD            EP_NUM_OUT_AUD            
-#define EP_ADR_OUT_MIDI           EP_NUM_OUT_MIDI           
-#define EP_ADR_OUT_IAP            EP_NUM_OUT_IAP            
+#define EP_ADR_OUT_AUD          EP_NUM_OUT_AUD            
+#define EP_ADR_OUT_MIDI         EP_NUM_OUT_MIDI           
+#define EP_ADR_OUT_IAP          EP_NUM_OUT_IAP            
 
 /* Endpoint count totals */
-#define NUM_EP_OUT                 4// (1 + NUM_EP_OUT_AUD + NUM_EP_OUT_MIDI + NUM_EP_OUT_IAP) /* +1 due to EP0 */ 
-#define NUM_EP_IN                  5 //(2 + NUM_EP_IN_AUD + NUM_EP_IN_MIDI + NUM_EP_IN_IAP + NUM_EP_IN_HID)    /* +1 due to EP0 and Int EP */
+#define NUM_EP_OUT              (1 + 1 /*NUM_EP_OUT_AUD*/ + NUM_EP_OUT_MIDI + NUM_EP_OUT_IAP) /* +1 due to EP0 */ 
+#define NUM_EP_IN               (2 + 2 /*NUM_EP_IN_AUD*/ + NUM_EP_IN_MIDI + NUM_EP_IN_IAP + NUM_EP_IN_HID)    /* +1 due to EP0 and Int EP */
 
-#define AUDIO_STOP_FOR_DFU	    (0x12345678)
+#define AUDIO_STOP_FOR_DFU      (0x12345678)
 #define AUDIO_START_FROM_DFU    (0x87654321)
 #define AUDIO_REBOOT_FROM_DFU   (0xa5a5a5a5)
 
-
 #define MAX_VOL                 (0x20000000)
-
 
 
 /* Length of clock unit/clock-selector units */

@@ -537,7 +537,7 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, SetupPacket &sp, chanend
                                     return loop;
                                 }
 
-#if 0
+#if 1
                                 if(unitID == FU_USBOUT)
                                 {    
                                   if ((sp.wValue & 0xff) <= NUM_USB_CHAN_OUT) {   

@@ -20,13 +20,13 @@
 #include "testct_byref.h"
  
 XUD_ep XUD_Init_Ep(chanend c_ep);
-
-static inline void XUD_SetNotReady(XUD_ep e)
-{
-  int chan_array_ptr;
-  asm ("ldw %0, %1[0]":"=r"(chan_array_ptr):"r"(e));
-  asm ("stw %0, %1[0]"::"r"(0),"r"(chan_array_ptr));
-}
+//
+//static inline void XUD_SetNotReady(XUD_ep e)
+///{
+ // int chan_array_ptr;
+ // asm ("ldw %0, %1[0]":"=r"(chan_array_ptr):"r"(e));
+ // asm ("stw %0, %1[0]"::"r"(0),"r"(chan_array_ptr));
+//}
 
 void GetADCCounts(unsigned samFreq, int &min, int &mid, int &max);
 #define BUFFER_SIZE_OUT       (1028 >> 2)
@@ -70,10 +70,10 @@ extern unsigned g_numUsbChanIn;
  * @return  void
  */
 void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud_fb,
-//#ifdef MIDI 
+#ifdef MIDI 
             chanend c_midi_from_host, 
             chanend c_midi_to_host, 
-//#endif
+#endif
 #ifdef IAP
             chanend c_iap_from_host, 
             chanend c_iap_to_host, 
@@ -106,6 +106,7 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
 #ifdef HID_CONTROLS
     XUD_ep ep_hid = XUD_Init_Ep(c_hid);
 #endif
+ 
   
     unsigned datalength;
     unsigned tmp;
@@ -224,7 +225,7 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
         int usb_speed;
         int x;
        
-        //asm("ldaw %0, dp[fb_clocks]":"=r"(x));
+        asm("ldaw %0, dp[fb_clocks]":"=r"(x));
         GET_SHARED_GLOBAL(usb_speed, g_curUsbSpeed);
         
         if (usb_speed == XUD_SPEED_HS)  
@@ -242,6 +243,7 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
 
     while(1)
     {
+
         /* Wait for response from XUD and service relevant EP */
         select
         {
@@ -252,7 +254,7 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
                 int sent_ok = 0;
                 /* Start XUD_SetData */
                 
-                XUD_SetData_Inline(ep_int, c_int);
+                //XUD_SetData_Inline(ep_int, c_int);
 
 #if 0
                 while (!sent_ok) 
@@ -268,7 +270,7 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
                 }
 #endif
                 asm("stw   %0, dp[g_intFlag]" :: "r" (0)  );  
-                XUD_SetNotReady(ep_int);
+                //XUD_SetNotReady(ep_int);
                 break;
               }
 #endif
@@ -431,53 +433,15 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
                 }
             break;
 
-#ifdef OUTPUT
-            /* Audio HOST -> DEVICE */
-            case inuint_byref(c_aud_out, tmp):
 
-                asm("#h->d aud data");
-                GET_SHARED_GLOBAL(aud_from_host_buffer, g_aud_from_host_buffer);
-              
-                // XUD_GetData
-                {
-                    xc_ptr p = aud_from_host_buffer+4;
-                    xc_ptr p0 = p;
-                    int tail;
-                    while (!testct(c_aud_out)) 
-                    {
-                        unsigned int datum = inuint(c_aud_out);
-                        write_via_xc_ptr(p, datum);
-                        p += 4;
-                    }  
-                    tail = inct(c_aud_out);
-                    datalength = p - p0 - 4;
-                    switch (tail) 
-                    {                  
-                        case 10:
-                        // the tail is 0 which means 
-                        datalength -= 2;
-                        break;
-                        default:
-                        // the tail is 2 which means the input was word aligned      
-                        break;
-                    }                
-                }
-
-                XUD_SetNotReady(ep_aud_out);              
-                write_via_xc_ptr(aud_from_host_buffer, datalength);
-                /* Sync with audio thread */
-                SET_SHARED_GLOBAL(g_aud_from_host_flag, 1);             
-                         
-                break;
-#endif
 
 #ifdef INPUT
             /* DEVICE -> HOST */
-            case inuint_byref(c_aud_in, tmp):
+            case XUD_SetData_Select(c_aud_in, ep_aud_in, tmp):
             {
-                XUD_SetData_Inline(ep_aud_in, c_aud_in);
+                //XUD_SetData_Inline(ep_aud_in, c_aud_in);
 
-                XUD_SetNotReady(ep_aud_in);
+                //XUD_SetNotReady(ep_aud_in);
 
                 /* Inform stream that buffer sent */
                 SET_SHARED_GLOBAL(g_aud_to_host_flag, bufferIn+1);             
@@ -488,7 +452,7 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
                 
 #ifdef OUTPUT 
             /* Feedback Pipe */
-            case inuint_byref(c_aud_fb, tmp):
+            case XUD_SetData_Select(c_aud_fb, ep_aud_fb, tmp):
             {
 
                 int usb_speed;
@@ -496,8 +460,6 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
 
                 asm("#aud fb");
                 
-                XUD_SetData_Inline(ep_aud_fb, c_aud_fb);
-
                 asm("ldaw %0, dp[fb_clocks]":"=r"(x));
                 GET_SHARED_GLOBAL(usb_speed, g_curUsbSpeed);
         
@@ -511,31 +473,29 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
                 }
             }
             break;
+            
+            /* Audio HOST -> DEVICE */
+            case XUD_GetData_Select(c_aud_out, ep_aud_out, tmp):
+
+                asm("#h->d aud data");
+
+                GET_SHARED_GLOBAL(aud_from_host_buffer, g_aud_from_host_buffer);
+                
+                write_via_xc_ptr(aud_from_host_buffer, tmp);
+                /* Sync with audio thread */
+                SET_SHARED_GLOBAL(g_aud_from_host_flag, 1);
+                
+                break;
 #endif
 
 
 #ifdef MIDI
-        case inuint_byref(c_midi_from_host, tmp):
+        case XUD_GetData_Select(c_midi_from_host, ep_midi_from_host, tmp):
             asm("#midi h->d");
 
             /* Get buffer data from host - MIDI OUT from host always into a single buffer */
-            {
-                xc_ptr p = midi_from_host_buffer + 4;
-                xc_ptr p0 = p;
-                xc_ptr p1 = p + MAX_USB_MIDI_PACKET_SIZE;
-                while (!testct(c_midi_from_host)) 
-                {
-                    unsigned int datum = inuint(c_midi_from_host);
-                    write_via_xc_ptr(p, datum);
-                    p += 4;
-                }  
-                (void) inct(c_midi_from_host);            
-                datalength = p - p0 - 4;            
-            }
-          
-            XUD_SetNotReady(ep_midi_from_host);                     
-
-            write_via_xc_ptr(midi_from_host_buffer, datalength);
+            /* Write datalength (tmp) into buffer[0], data stored in buffer[4] onwards */
+            write_via_xc_ptr(midi_from_host_buffer, tmp);
                     
             /* release the buffer */
             SET_SHARED_GLOBAL(g_midi_from_host_flag, 1);
@@ -543,15 +503,10 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
             break;
  
         /* MIDI IN to host */                  
-        case inuint_byref(c_midi_to_host, tmp): 
+        case XUD_SetData_Select(c_midi_to_host, ep_midi_to_host, tmp): 
             asm("#midi d->h");
             
-            // fill in the data
-            XUD_SetData_Inline(ep_midi_to_host, c_midi_to_host);
-
-            XUD_SetNotReady(ep_midi_to_host);                     
-
-            // ack the decouple thread to say it has been sent to host  
+            // Ack the decouple thread to say it has been sent to host  
             SET_SHARED_GLOBAL(g_midi_to_host_flag, 1);
 
             swap(midi_to_host_buffer, midi_to_host_waiting_buffer);
@@ -605,7 +560,7 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
                       break;
               }
           
-              XUD_SetNotReady(ep_iap_from_host);                     
+             // XUD_SetNotReady(ep_iap_from_host);                     
   
               write_via_xc_ptr(iap_from_host_buffer, datalength);
                       
@@ -630,9 +585,9 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
             } else {
               inuint(c_iap_to_host); // And discard
               // fill in the data
-              XUD_SetData_Inline(ep_iap_to_host, c_iap_to_host);
+              //XUD_SetData_Inline(ep_iap_to_host, c_iap_to_host);
 
-              XUD_SetNotReady(ep_iap_to_host);                     
+              //XUD_SetNotReady(ep_iap_to_host);                     
 
               // ack the decouple thread to say it has been sent to host  
               SET_SHARED_GLOBAL(g_iap_to_host_flag, 1);
@@ -659,8 +614,8 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
             {
                 inuint(c_iap_to_host_int); // And discard
                 // fill in the data
-                XUD_SetData_Inline(ep_iap_to_host_int, c_iap_to_host_int);
-                XUD_SetNotReady(ep_iap_to_host_int);                     
+               // XUD_SetData_Inline(ep_iap_to_host_int, c_iap_to_host_int);
+                //XUD_SetNotReady(ep_iap_to_host_int);                     
                 // Don't need to handle data here as always ZLP
             }
           break;
@@ -670,11 +625,11 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
             /* HID Report Data */
             case inuint_byref(c_hid, tmp):
             {
-                XUD_SetData_Inline(ep_hid, c_hid);
+                //XUD_SetData_Inline(ep_hid, c_hid);
 
                 asm("stw   %0, dp[g_hidFlag]" :: "r" (0)  );       
                 
-                XUD_SetNotReady(ep_hid);
+                //XUD_SetNotReady(ep_hid);
             }
             break;
 #endif

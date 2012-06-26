@@ -22,7 +22,7 @@ static unsigned makeSymbol(unsigned data)
 #define RATE 31250
 
 #ifndef MIDI_SHIFT_TX
-#define MIDI_SHIFT_TX 0
+#define MIDI_SHIFT_TX 7
 #endif
 
 static unsigned bit_time =  XS1_TIMER_MHZ * 1000000 / (unsigned) RATE;
@@ -136,11 +136,13 @@ void usb_midi(port ?p_midi_in, port ?p_midi_out,
 #ifndef MIDI_LOOPBACK
 #ifdef IAP
     CoProcessorDisable();
-#endif  
+#endif
+      
     p_midi_out <: 1 << MIDI_SHIFT_TX; // Start with high bit.
 #ifdef IAP  
     CoProcessorEnable();
 #endif
+
 #endif
 
 #ifdef IAP

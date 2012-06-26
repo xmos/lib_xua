@@ -652,7 +652,7 @@ void check_for_interrupt(chanend ?c_clk_int) {
                 //XUD_SetReady(int_usb_ep, 0);
 
                 //asm("ldaw %0, dp[g_intData]":"=r"(x));
-                XUD_SetReady_In(int_usb_ep, g_intData, 6); 
+                //XUD_SetReady_In(int_usb_ep, g_intData, 6); 
             }
 
             break;
@@ -661,6 +661,7 @@ void check_for_interrupt(chanend ?c_clk_int) {
     }
 }
 
+unsigned char tmpBuffer[1026]; 
 
 #pragma unsafe arrays
 void decouple(chanend c_mix_out,
@@ -781,7 +782,7 @@ void decouple(chanend c_mix_out,
     SET_SHARED_GLOBAL(g_midi_from_host_flag, midi_from_host_flag);
 
     // send the current host -> device buffer out of the fifo
-    //XUD_SetReady(midi_from_host_usb_ep, 1);
+    XUD_SetReady_OutPtr(midi_from_host_usb_ep, midi_from_host_buffer);
 #endif
 
 #ifdef IAP
@@ -797,12 +798,13 @@ void decouple(chanend c_mix_out,
     SET_SHARED_GLOBAL(g_iap_from_host_flag, iap_from_host_flag);
 
     // send the current host -> device buffer out of the fifo
-    XUD_SetReady(iap_from_host_usb_ep, 1);
+    //XUD_SetReady(iap_from_host_usb_ep, 1);
 #endif
 
 #ifdef OUTPUT
     // wait for usb_buffer to set up
-    while(!aud_from_host_flag) {
+    while(!aud_from_host_flag) 
+    {
       GET_SHARED_GLOBAL(aud_from_host_flag, g_aud_from_host_flag);
     }
     
@@ -811,12 +813,13 @@ void decouple(chanend c_mix_out,
 
     // send the current host -> device buffer out of the fifo
     SET_SHARED_GLOBAL(g_aud_from_host_buffer, g_aud_from_host_wrptr);
-    //XUD_SetReady(aud_from_host_usb_ep, 1);
+    XUD_SetReady_OutPtr(aud_from_host_usb_ep, g_aud_from_host_wrptr);
 #endif
 
 #ifdef INPUT
-    // wait for usb_buffer to set up
-    while(!aud_to_host_flag) {
+    // Wait for usb_buffer to set up
+    while(!aud_to_host_flag) 
+    {
       GET_SHARED_GLOBAL(aud_to_host_flag, g_aud_to_host_flag);
     }
     
@@ -857,7 +860,7 @@ void decouple(chanend c_mix_out,
             asm("ldaw %0, dp[g_hidData]":"=r"(tmp));
             if(g_hidFlag==0)
             {    
-                XUD_SetReady_In(g_ep_hid, 0, tmp, 1);
+                //XUD_SetReady_In(g_ep_hid, 0, tmp, 1);
                 g_hidFlag = 1;
             }
 #endif
@@ -899,7 +902,7 @@ void decouple(chanend c_mix_out,
                     
                     /* Update the audio in buffer to send the correct
                      * length back to the host for the new sample rate */
-                    XUD_Change_ReadyIn_Buffer(aud_to_host_usb_ep, p+4, len);
+                    //XUD_Change_ReadyIn_Buffer(aud_to_host_usb_ep, p+4, len);
                 }
 
                 /* Reset OUT buffer state */                
@@ -994,7 +997,7 @@ void decouple(chanend c_mix_out,
             if (space_left <= 0 || space_left >= MAX_USB_AUD_PACKET_SIZE) 
             {   
                 SET_SHARED_GLOBAL(g_aud_from_host_buffer, aud_from_host_wrptr);
-               // XUD_SetReady(aud_from_host_usb_ep, 1);
+                XUD_SetReady_OutPtr(aud_from_host_usb_ep, aud_from_host_wrptr);
             }
             else 
             {  
@@ -1153,6 +1156,8 @@ void decouple(chanend c_mix_out,
            
                 /* Read length from buffer[0] */
                 read_via_xc_ptr(midi_data_remaining_to_device, midi_from_host_buffer);
+ 
+                //printintln(midi_data_remaining_to_device);
             
                 /* Increment read pointer - buffer[0] is length */
                 midi_from_host_rdptr = midi_from_host_buffer + 4;
@@ -1161,6 +1166,7 @@ void decouple(chanend c_mix_out,
                 {
                     read_via_xc_ptr(datum, midi_from_host_rdptr);
                     outuint(c_midi, datum);
+                    //printhexln(datum);
                     midi_from_host_rdptr += 4;              
                     midi_data_remaining_to_device -= 4;
                 }                        
@@ -1178,7 +1184,7 @@ void decouple(chanend c_mix_out,
                     if (midi_data_remaining_to_device == 0) 
                     {
                         /* We have read an entire packet - Mark ready to receive another */
-                        //XUD_SetReady(midi_from_host_usb_ep, 1);              
+                        XUD_SetReady_OutPtr(midi_from_host_usb_ep, midi_from_host_buffer+4);              
                     }
                     else 
                     {
@@ -1212,7 +1218,7 @@ void decouple(chanend c_mix_out,
                         write_via_xc_ptr(midi_to_host_buffer_being_collected, midi_data_collected_from_device);
  
                         swap(midi_to_host_buffer_being_collected, midi_to_host_buffer_being_sent);
-                    
+                        
                         // Signal other side to swap
                         XUD_SetReady_InPtr(midi_to_host_usb_ep, midi_to_host_buffer_being_sent+4, midi_data_collected_from_device);
                         midi_data_collected_from_device = 0;
@@ -1253,8 +1259,8 @@ void decouple(chanend c_mix_out,
                 swap(iap_to_host_buffer_being_collected, iap_to_host_buffer_being_sent);
             
                 /* Request to send packet */
-                XUD_SetReady_InPtr(iap_to_host_int_usb_ep, 0, zero_buffer, 0); // ZLP to int ep
-                XUD_SetReady_InPtr(iap_to_host_usb_ep, 0, iap_to_host_buffer_being_sent+4, iap_data_collected_from_device);
+                //XUD_SetReady_InPtr(iap_to_host_int_usb_ep, 0, zero_buffer, 0); // ZLP to int ep
+                //XUD_SetReady_InPtr(iap_to_host_usb_ep, 0, iap_to_host_buffer_being_sent+4, iap_data_collected_from_device);
 
                 /* Mark as waiting for host to poll us */
                 iap_waiting_on_send_to_host = 1;                                                                                                                  
@@ -1308,7 +1314,7 @@ void decouple(chanend c_mix_out,
                     if (iap_data_remaining_to_device == 0) 
                     {
                         /* We have read an entire packet - Mark ready to receive another */
-                        XUD_SetReady(iap_from_host_usb_ep, 1);
+                        //XUD_SetReady(iap_from_host_usb_ep, 1);
                     }
                     else 
                     {
@@ -1349,8 +1355,8 @@ void decouple(chanend c_mix_out,
                            swap(iap_to_host_buffer_being_collected, iap_to_host_buffer_being_sent);
 
                            // Signal other side to swap
-                           XUD_SetReady_In(iap_to_host_int_usb_ep, 0, zero_buffer, 0);
-                           XUD_SetReady_In(iap_to_host_usb_ep, 0, iap_to_host_buffer_being_sent+4, iap_data_collected_from_device);
+                           //XUD_SetReady_In(iap_to_host_int_usb_ep, 0, zero_buffer, 0);
+                           //XUD_SetReady_In(iap_to_host_usb_ep, 0, iap_to_host_buffer_being_sent+4, iap_data_collected_from_device);
                            iap_data_collected_from_device = 0;
                            iap_waiting_on_send_to_host = 1;
                            iap_expecting_length = 1;
