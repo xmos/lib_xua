@@ -42,11 +42,13 @@
  */
 static inline void XUD_Change_ReadyIn_Buffer(XUD_ep e, unsigned bufferPtr, int len)
 {
+
     int chan_array_ptr;
     int xud_chan;
     int my_chan;
     int tail;
 
+    printstr("TODO");
     asm ("ldw %0, %1[0]":"=r"(chan_array_ptr):"r"(e));
     asm ("ldw %0, %1[2]":"=r"(my_chan):"r"(e));
 
@@ -173,7 +175,8 @@ static inline void swap(xc_ptr &a, xc_ptr &b)
 }
 
 // shared global midi buffering variables
-#ifdef MIDI
+#if 0
+//#ifdef MIDI
 unsigned g_midi_from_host_flag = 0;
 unsigned g_midi_to_host_flag = 0;
 int midi_to_host_usb_ep = 0;
@@ -193,7 +196,8 @@ int aud_from_host_usb_ep = 0;
 int aud_to_host_usb_ep = 0;
 int int_usb_ep = 0;
 
-#ifdef MIDI
+#if 0
+//#ifdef MIDI
 unsigned int g_midi_to_host_buffer_A[MAX_USB_MIDI_PACKET_SIZE/4+4];
 unsigned int g_midi_to_host_buffer_B[MAX_USB_MIDI_PACKET_SIZE/4+4];
 int g_midi_from_host_buffer[MAX_USB_MIDI_PACKET_SIZE/4+4];
@@ -292,7 +296,7 @@ void handle_audio_request(chanend c_mix_out, chanend ?c_led)
         slotSize = 3;   /* 3 bytes per sample */
     }
 #endif
-            
+ 
     /* If in overflow condition then receive samples and throw away */
     if(inOverflow || sampsToWrite == 0)
     {
@@ -437,6 +441,7 @@ void handle_audio_request(chanend c_mix_out, chanend ?c_led)
                 read_via_xc_ptr(sample, g_aud_from_host_rdptr);
                 g_aud_from_host_rdptr+=4;
 
+                
 #ifndef OUT_VOLUME_IN_MIXER
                 asm("ldw %0, %1[%2]":"=r"(mult):"r"(p_multOut),"r"(i));
                 {h, l} = macs(mult, sample, 0, 0);
@@ -485,6 +490,14 @@ void handle_audio_request(chanend c_mix_out, chanend ?c_led)
                         break;
                  }
                 unpackState++;
+        
+            if(sample!=0)
+            {        //printhexln(sample);
+                    //printintln(g_numUsbChanOut);
+                //printhexln(g_aud_from_host_rdptr);
+                //printintln(aud_data_remaining_to_device);
+                //while(1);
+            }
 
 #ifndef OUT_VOLUME_IN_MIXER
             asm("ldw %0, %1[%2]":"=r"(mult):"r"(p_multOut),"r"(i));
@@ -588,6 +601,7 @@ void handle_audio_request(chanend c_mix_out, chanend ?c_led)
         /* Handle any tail - incase a bad driver sent us a datalength not a multiple of chan count */
         if (aud_data_remaining_to_device) 
         {
+            printintln(aud_data_remaining_to_device);
             /* Round up to nearest word */
             aud_data_remaining_to_device +=3;
             aud_data_remaining_to_device &= (~3);
@@ -609,6 +623,7 @@ void handle_audio_request(chanend c_mix_out, chanend ?c_led)
         if (!outUnderflow) 
         {   
             read_via_xc_ptr(aud_data_remaining_to_device, g_aud_from_host_rdptr);
+ 
             
             unpackState = 0;
             
@@ -665,7 +680,8 @@ unsigned char tmpBuffer[1026];
 
 #pragma unsafe arrays
 void decouple(chanend c_mix_out,
-              chanend ?c_midi, chanend ?c_clk_int
+              //chanend ?c_midi, 
+              chanend ?c_clk_int
 #ifdef IAP
 , chanend ?c_iap
 #endif
@@ -675,21 +691,6 @@ void decouple(chanend c_mix_out,
     int aud_from_host_flag=0;
     int aud_to_host_flag=0;
     xc_ptr released_buffer;
-
-#ifdef MIDI
-    xc_ptr midi_from_host_rdptr;
-    xc_ptr midi_from_host_buffer;
-    xc_ptr midi_to_host_buffer_being_sent = array_to_xc_ptr(g_midi_to_host_buffer_A);
-    xc_ptr midi_to_host_buffer_being_collected = array_to_xc_ptr(g_midi_to_host_buffer_B);
-    
-    int is_ack;
-    unsigned int datum;
-    int midi_data_remaining_to_device = 0;
-    int midi_data_collected_from_device = 0;
-    int midi_waiting_on_send_to_host = 0;
-    int midi_to_host_flag = 0;
-    int midi_from_host_flag = 0;
-#endif
 
 #ifdef IAP
     xc_ptr iap_from_host_rdptr;
@@ -771,18 +772,19 @@ void decouple(chanend c_mix_out,
 
 #ifdef MIDI
     //asm("ldaw %0, dp[g_midi_to_host_buffer]":"=r"(midi_to_host_buffer));
-    asm("ldaw %0, dp[g_midi_from_host_buffer]":"=r"(midi_from_host_buffer));
+    //asm("ldaw %0, dp[g_midi_from_host_buffer]":"=r"(midi_from_host_buffer));
 
     // wait for usb_buffer to set up
-    while(!midi_from_host_flag) {
-      GET_SHARED_GLOBAL(midi_from_host_flag, g_midi_from_host_flag);
-    }
+    //while(!midi_from_host_flag) {
+      //GET_SHARED_GLOBAL(midi_from_host_flag, g_midi_from_host_flag);
+   // }
+//#if 1 
     
-    midi_from_host_flag = 0;
-    SET_SHARED_GLOBAL(g_midi_from_host_flag, midi_from_host_flag);
+    //midi_from_host_flag = 0;
+    //SET_SHARED_GLOBAL(g_midi_from_host_flag, midi_from_host_flag);
 
     // send the current host -> device buffer out of the fifo
-    XUD_SetReady_OutPtr(midi_from_host_usb_ep, midi_from_host_buffer);
+    //XUD_SetReady_OutPtr(midi_from_host_usb_ep, midi_from_host_buffer);
 #endif
 
 #ifdef IAP
@@ -813,7 +815,7 @@ void decouple(chanend c_mix_out,
 
     // send the current host -> device buffer out of the fifo
     SET_SHARED_GLOBAL(g_aud_from_host_buffer, g_aud_from_host_wrptr);
-    XUD_SetReady_OutPtr(aud_from_host_usb_ep, g_aud_from_host_wrptr);
+    XUD_SetReady_OutPtr(aud_from_host_usb_ep, g_aud_from_host_wrptr+4);
 #endif
 
 #ifdef INPUT
@@ -841,7 +843,7 @@ void decouple(chanend c_mix_out,
 
     while(1)
     {
-            int tmp;
+        int tmp;
         if (!isnull(c_clk_int)) 
         {
             check_for_interrupt(c_clk_int);
@@ -849,18 +851,11 @@ void decouple(chanend c_mix_out,
            
         {
 #ifdef HID_CONTROLS
-
-            p_but :> tmp;
-            tmp = ~tmp;
-            tmp &=3;
-            g_hidData[0] = tmp;
-
             Vendor_ReadHIDButtons(g_hidData);
             
-            asm("ldaw %0, dp[g_hidData]":"=r"(tmp));
-            if(g_hidFlag==0)
+            if(g_hidFlag == 0)
             {    
-                //XUD_SetReady_In(g_ep_hid, 0, tmp, 1);
+                XUD_SetReady_In(g_ep_hid, g_hidData, 1);
                 g_hidFlag = 1;
             }
 #endif
@@ -968,12 +963,28 @@ void decouple(chanend c_mix_out,
               
             /* Read datalength from buffer */
             read_via_xc_ptr(datalength, released_buffer);
- 
+
+            //printintln(datalength);
+
             /* Ignore bad small packets */             
             if ((datalength >= (g_numUsbChanOut * slotSize)) && (released_buffer == g_aud_from_host_wrptr))
             {
+            
+#if 0
+                for(int i = 0; i < (datalength+4); i++)
+                {
+                    unsigned samp;
+                    read_byte_via_xc_ptr(samp, aud_from_host_wrptr);
+                    aud_from_host_wrptr+=1;
+                    printint(i);
+                    printhexln(samp);
+                }
+#endif           
                 /* Move the write pointer of the fifo on - round up to nearest word */
                 aud_from_host_wrptr = aud_from_host_wrptr + ((datalength+3)&~0x3) + 4;
+
+
+
 
                 /* Wrap pointer */
                 if (aud_from_host_wrptr >= aud_from_host_fifo_end)
@@ -997,7 +1008,7 @@ void decouple(chanend c_mix_out,
             if (space_left <= 0 || space_left >= MAX_USB_AUD_PACKET_SIZE) 
             {   
                 SET_SHARED_GLOBAL(g_aud_from_host_buffer, aud_from_host_wrptr);
-                XUD_SetReady_OutPtr(aud_from_host_usb_ep, aud_from_host_wrptr);
+                XUD_SetReady_OutPtr(aud_from_host_usb_ep, aud_from_host_wrptr+4);
             }
             else 
             {  
@@ -1024,6 +1035,7 @@ void decouple(chanend c_mix_out,
                 /* Come out of OUT overflow state */
                 outOverflow = 0;
                 SET_SHARED_GLOBAL(g_aud_from_host_buffer, aud_from_host_wrptr);
+                printintln(1);
                 //XUD_SetReady(aud_from_host_usb_ep, 1);
 #ifdef DEBUG_LEDS
                   led(c_led);
@@ -1115,121 +1127,6 @@ void decouple(chanend c_mix_out,
         }
 #endif // INPUT
 
-#ifdef MIDI
-        /* Check if buffer() has send MIDI packet to host */
-        GET_SHARED_GLOBAL(midi_to_host_flag, g_midi_to_host_flag);          
-        if (midi_to_host_flag) 
-        {
-            /* The buffer has been sent to the host, so we can ack the midi thread */
-            SET_SHARED_GLOBAL(g_midi_to_host_flag, 0);
-            if (midi_data_collected_from_device != 0) 
-            {
-                /* We have some more data to send set the amount of data to send */
-                write_via_xc_ptr(midi_to_host_buffer_being_collected, midi_data_collected_from_device);
-
-                /* Swap the collecting and sending buffer */
-                swap(midi_to_host_buffer_being_collected, midi_to_host_buffer_being_sent);
-            
-                /* Request to send packet */
-                XUD_SetReady_InPtr(midi_to_host_usb_ep, midi_to_host_buffer_being_sent+4, midi_data_collected_from_device);
-
-                /* Mark as waiting for host to poll us */
-                midi_waiting_on_send_to_host = 1;                                                                                                                  
-                /* Reset the collected data count */
-                midi_data_collected_from_device = 0;
-            }
-            else
-            {
-                midi_waiting_on_send_to_host = 0;              
-            }
-            continue;
-        }
-        else 
-        {
-            /* Check if host has sent us MIDI OUT data */
-            GET_SHARED_GLOBAL(midi_from_host_flag, g_midi_from_host_flag);
-            if (midi_from_host_flag)
-            {
-                /* The buffer() thread has filled up a buffer */
-                /* Reset flag */
-                SET_SHARED_GLOBAL(g_midi_from_host_flag, 0);
-           
-                /* Read length from buffer[0] */
-                read_via_xc_ptr(midi_data_remaining_to_device, midi_from_host_buffer);
- 
-                //printintln(midi_data_remaining_to_device);
-            
-                /* Increment read pointer - buffer[0] is length */
-                midi_from_host_rdptr = midi_from_host_buffer + 4;
-           
-                if (midi_data_remaining_to_device) 
-                {
-                    read_via_xc_ptr(datum, midi_from_host_rdptr);
-                    outuint(c_midi, datum);
-                    //printhexln(datum);
-                    midi_from_host_rdptr += 4;              
-                    midi_data_remaining_to_device -= 4;
-                }                        
-             }
-        }
-   
-        select 
-        {   
-            /* Received word from MIDI thread - Check for ACK or Data */                 
-            case midi_get_ack_or_data(c_midi, is_ack, datum):
-                if (is_ack) 
-                {
-                    /* An ack from the midi/uart thread means it has accepted some data we sent it
-                     * we are okay to send another word */
-                    if (midi_data_remaining_to_device == 0) 
-                    {
-                        /* We have read an entire packet - Mark ready to receive another */
-                        XUD_SetReady_OutPtr(midi_from_host_usb_ep, midi_from_host_buffer+4);              
-                    }
-                    else 
-                    {
-                        /* Read another word from the fifo and output it to MIDI thread */
-                        read_via_xc_ptr(datum, midi_from_host_rdptr);
-                        outuint(c_midi, datum);        
-                        midi_from_host_rdptr += 4;              
-                        midi_data_remaining_to_device -= 4;
-                    }         
-                }
-                else 
-                {
-                    /* The midi/uart thread has sent us some data - handshake back */
-                    midi_send_ack(c_midi);
-                    if (midi_data_collected_from_device < MIDI_USB_BUFFER_TO_HOST_SIZE)
-                    {
-                        /* There is room in the collecting buffer for the data */
-                        xc_ptr p = (midi_to_host_buffer_being_collected + 4) + midi_data_collected_from_device;                                                            
-                        // Add data to the buffer
-                        write_via_xc_ptr(p, datum);
-                        midi_data_collected_from_device += 4;
-                    }
-                    else 
-                    {
-                        // Too many events from device - drop 
-                    } 
-                
-                    // If we are not sending data to the host then initiate it
-                    if (!midi_waiting_on_send_to_host) 
-                    {
-                        write_via_xc_ptr(midi_to_host_buffer_being_collected, midi_data_collected_from_device);
- 
-                        swap(midi_to_host_buffer_being_collected, midi_to_host_buffer_being_sent);
-                        
-                        // Signal other side to swap
-                        XUD_SetReady_InPtr(midi_to_host_usb_ep, midi_to_host_buffer_being_sent+4, midi_data_collected_from_device);
-                        midi_data_collected_from_device = 0;
-                        midi_waiting_on_send_to_host = 1;                  
-                    }
-                }          
-                break;
-            default:
-                break;
-        }
-#endif // MIDI
 
 #ifdef IAP
         GET_SHARED_GLOBAL(iap_reset, g_iap_reset);          

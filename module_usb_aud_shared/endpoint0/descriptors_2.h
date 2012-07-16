@@ -1284,7 +1284,7 @@ unsigned char cfgDesc_Audio2[] =
     /* Endpoint descriptor (IN) */
     0x7,                              /* 0  bLength */
     5,                                /* 1  bDescriptorType */
-    EP_ADR_IN_HID,              /* 2  bEndpointAddress  */
+    EP_ADR_IN_HID,                    /* 2  bEndpointAddress  */
     3,                                /* 3  bmAttributes (INTERRUPT) */
     64,                               /* 4  wMaxPacketSize */
     0,                                /* 5  wMaxPacketSize */

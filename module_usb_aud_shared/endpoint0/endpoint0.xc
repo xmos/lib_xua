@@ -95,7 +95,7 @@ unsigned g_epStatusOut[NUM_EP_OUT];
 unsigned g_epStatusIn[NUM_EP_IN];
 
 /* Global variable for current USB bus speed (i.e. FS/HS) */
-unsigned g_curUsbSpeed = XUD_SPEED_HS;
+unsigned g_curUsbSpeed = 0;
 
 #ifdef HOST_ACTIVE_CALL
 void VendorHostActive(int active);
@@ -841,6 +841,8 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
         if (retVal < 0) 
         {
             g_curUsbSpeed = XUD_ResetEndpoint(ep0_out, ep0_in);
+
+            //printintln(g_curUsbSpeed);
 
             g_config = 0;
 

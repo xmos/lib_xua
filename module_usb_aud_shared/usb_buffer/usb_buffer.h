@@ -22,6 +22,7 @@ void buffer(chanend c_aud_out,
 #ifdef MIDI 
             chanend c_midi_from_host, 
             chanend c_midi_to_host,
+			chanend c_midi,
 #endif
 #ifdef IAP
 #error IAP

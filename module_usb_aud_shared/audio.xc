@@ -579,7 +579,8 @@ void audio(chanend c_mix_out, chanend ?c_dig_rx, chanend ?c_config)
         {
             
 #ifdef SPDIF   
-            {  //set_thread_fast_mode_on();
+            {  
+                set_thread_fast_mode_on();
                 SpdifTransmit(p_spdif_tx, c_spdif_out);
             }
 #endif  
