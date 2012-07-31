@@ -272,48 +272,54 @@ static int DFU_Abort(void) {
 }
 
 // Tell the DFU state machine that a USB reset has occured
-int DFUReportResetState(chanend ?c_user_cmd) {
-  unsigned int inDFU = 0;
-  unsigned int currentTime = 0;
+int DFUReportResetState(chanend ?c_user_cmd) 
+{
+    unsigned int inDFU = 0;
+    unsigned int currentTime = 0;
 
-  if (DFU_reset_override == 0x11042011) {
-    unsigned int cmd_data[16];
-    inDFU = 1;
-    DFU_state = STATE_DFU_IDLE;
-    return inDFU;
-  }
-
-  switch(DFU_state) {
-    case STATE_APP_DETACH:
-    case STATE_DFU_IDLE:
-      DFU_state = STATE_DFU_IDLE;
-
-      DFUTimer :> currentTime;
-      if (currentTime - DFUTimerStart > DFUResetTimeout) {
-        DFU_state = STATE_APP_IDLE;
-        //printintln(currentTime - DFUTimerStart);
-        //printintln(DFUResetTimeout);
-        inDFU = 0;
-      } else {
+    if (DFU_reset_override == 0x11042011) 
+    {
+        unsigned int cmd_data[16];
         inDFU = 1;
-      }
-      break;
-    case STATE_APP_IDLE:
-    case STATE_DFU_DOWNLOAD_SYNC:
-    case STATE_DFU_DOWNLOAD_BUSY:
-    case STATE_DFU_DOWNLOAD_IDLE:
-    case STATE_DFU_MANIFEST_SYNC:
-    case STATE_DFU_MANIFEST:
-    case STATE_DFU_MANIFEST_WAIT_RESET:
-    case STATE_DFU_UPLOAD_IDLE:
-    case STATE_DFU_ERROR:
-      inDFU = 0;
-      DFU_state = STATE_APP_IDLE;
-      break;
-    default: 
-      DFU_state = STATE_DFU_ERROR;
-      inDFU = 1;
-      break;
+        DFU_state = STATE_DFU_IDLE;
+        return inDFU;
+    }
+
+    switch(DFU_state) 
+    {
+        case STATE_APP_DETACH:
+        case STATE_DFU_IDLE:
+            DFU_state = STATE_DFU_IDLE;
+
+            DFUTimer :> currentTime;
+            if (currentTime - DFUTimerStart > DFUResetTimeout) 
+            {
+                DFU_state = STATE_APP_IDLE;
+                //printintln(currentTime - DFUTimerStart);
+                //printintln(DFUResetTimeout);
+                inDFU = 0;
+            } 
+            else 
+            {
+                inDFU = 1;
+            }
+            break;
+        case STATE_APP_IDLE:
+        case STATE_DFU_DOWNLOAD_SYNC:
+        case STATE_DFU_DOWNLOAD_BUSY:
+        case STATE_DFU_DOWNLOAD_IDLE:
+        case STATE_DFU_MANIFEST_SYNC:
+        case STATE_DFU_MANIFEST:
+        case STATE_DFU_MANIFEST_WAIT_RESET:
+        case STATE_DFU_UPLOAD_IDLE:
+        case STATE_DFU_ERROR:
+            inDFU = 0;
+            DFU_state = STATE_APP_IDLE;
+            break;
+        default: 
+            DFU_state = STATE_DFU_ERROR;
+            inDFU = 1;
+        break;
   }
 
   if (!inDFU) {

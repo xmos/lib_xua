@@ -292,11 +292,6 @@
 
 #define ID_MIXER_1                  60
 
-#ifndef SERIAL_STR
-#define SERIAL_STR                  "0000"          /* Serial number string */
-#endif
-
-#define SERIAL_STR_INDEX	        0x03
 #define MANUFACTURER_STR_INDEX	    0x01
 #define PRODUCT_STR_INDEX           0x02
 

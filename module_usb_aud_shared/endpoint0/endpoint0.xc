@@ -24,6 +24,20 @@
 #include "hid.h"
 #endif
 
+#define GLXID  0x0001
+#define PLL_CTRL_VAL ((1<<23) | (499<<8) | (2<<0))
+void glx_link_setup(unsigned myid, unsigned glxid);
+void glx_link_setup_with(unsigned myid, unsigned glxid, unsigned link_setup_val);
+int write_glx_periph_word(unsigned destId, unsigned periphAddress, unsigned destRegAddr, unsigned data);
+int read_glx_periph_word(unsigned dest_id, unsigned periph_addr, unsigned dest_reg_addr, unsigned &rd_data);
+int read_glx_periph_reg(unsigned dest_id, unsigned periph_addr, unsigned dest_reg_addr, unsigned bad_format, unsigned data_size, char buf[]);
+int write_glx_periph_reg(unsigned dest_id, unsigned periph_addr, unsigned dest_reg_addr, unsigned bad_packet, unsigned data_size, char buf[]);
+void read_sswitch_reg_verify(unsigned coreid, unsigned reg, unsigned &data, unsigned failval);
+void write_sswitch_reg_verify(unsigned coreid, unsigned reg, unsigned data, unsigned failval);
+
+#define XS1_GLX_PERIPH_SCTH_ID 0x3
+
+
 /* Windows does not have a built in DFU driver (windows will prompt), so warn that DFU will not be functional in Audio 1.0 mode.Udi
  * Of course, OSX is unaffected.  
  */
@@ -265,6 +279,24 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
 
 #ifdef VENDOR_AUDIO_REQS
     VendorAudioRequestsInit(c_audioControl, c_mix_ctl, c_clk_ctl);
+#endif
+
+#if 0
+        {
+            char rdata[1];
+            char wdata[1];
+            
+            //wdata[0] = 77;
+            //write_glx_periph_reg(GLXID, XS1_GLX_PERIPH_SCTH_ID, 0x0, 0, 1, wdata);
+
+
+            read_glx_periph_reg(GLXID, XS1_GLX_PERIPH_SCTH_ID, 0x1, 0, 1, rdata);
+
+            if(rdata[0] != 0)
+            {
+                while(1);
+            }
+     //           printintln(rdata[0]);
 #endif
 
 #ifdef DFU
@@ -867,6 +899,13 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
                     // Restart audio
                     //outuint(c_audioControl, AUDIO_START_FROM_DFU);
                     DFU_mode_active = 0;
+
+                    {
+                        unsigned char wdata[1];
+                        wdata[0] = 77;
+                        write_glx_periph_reg(GLXID, XS1_GLX_PERIPH_SCTH_ID, 0x0, 0, 1, wdata);
+                    }
+
                     // Send reboot command
                     //outuint(c_audioControl, SET_SAMPLE_FREQ);
                     //outuint(c_audioControl, AUDIO_REBOOT_FROM_DFU);

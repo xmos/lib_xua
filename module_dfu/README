@@ -1,1 +1,3 @@
 Code providing firmware upgrade over USB.
+
+./host provides an example of a host application for DFU.  This is written and tested for OSX.  LibUSB is used to aid cross-platform porting.

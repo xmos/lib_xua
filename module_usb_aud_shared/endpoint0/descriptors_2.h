@@ -36,7 +36,7 @@ unsigned char devDesc_Audio1[] =
     (BCD_DEVICE >> 8),              /* 13 bcdDevice : Device release number */ 
     MANUFACTURER_STR_INDEX,         /* 14 iManufacturer : Index of manufacturer string */ 
     PRODUCT_STR_INDEX,              /* 15 iProduct : Index of product string descriptor */ 
-    SERIAL_STR_INDEX,               /* 16 iSerialNumber : Index of serial number decriptor */ 
+    0,//SERIAL_STR_INDEX,               /* 16 iSerialNumber : Index of serial number decriptor */ 
 	0x01             				/* 17 bNumConfigurations : Number of possible configs. */ 
 };    
 #endif
@@ -60,7 +60,7 @@ unsigned char devDesc_Audio2[] =
     (BCD_DEVICE >> 8),              /* 13 bcdDevice : Device release number */ 
     MANUFACTURER_STR_INDEX,         /* 14 iManufacturer : Index of manufacturer string */ 
     PRODUCT_STR_INDEX,           	/* 15 iProduct : Index of product string descriptor */ 
-    SERIAL_STR_INDEX,            	/* 16 iSerialNumber : Index of serial number decriptor */ 
+    0,//    SERIAL_STR_INDEX,            	/* 16 iSerialNumber : Index of serial number decriptor */ 
     0x02             				/* 17 bNumConfigurations : Number of possible configs. Set to 2 so that Windows 
                         				  does not load Composite driver. */ 
 };
@@ -84,7 +84,7 @@ unsigned char devDesc_Null[] =
     (BCD_DEVICE >> 8),              /* 13 bcdDevice : Device release number */ 
     MANUFACTURER_STR_INDEX,         /* 14 iManufacturer : Index of manufacturer string */ 
 	PRODUCT_STR_INDEX,              /* 15 iProduct : Index of product string descriptor */ 
-    SERIAL_STR_INDEX,            	/* 16 iSerialNumber : Index of serial number decriptor */ 
+    0,//SERIAL_STR_INDEX,            	/* 16 iSerialNumber : Index of serial number decriptor */ 
     0x01             				/* 17 bNumConfigurations : Number of possible configs */
 };
 
@@ -1338,7 +1338,7 @@ static unsigned char strDescs_Audio2[][40] =
     "Langids",						            /* String 0 (LangIDs) place holder */ 
     APPEND_VENDOR_STR( ),                       // 1    iManufacturer (at MANUFACTURER_STRING_INDEX)
     APPEND_VENDOR_STR(USB Audio 2.0),           // 2    iProduct and iInterface for control interface (at PRODUCT_STR_INDEX)
-    SERIAL_STR,                                 // 3    iSerialNumber (at SERIAL_STR_INDEX)
+    "",//SERIAL_STR,                                 // 3    iSerialNumber (at SERIAL_STR_INDEX)
     APPEND_VENDOR_STR(USB 2.0 Audio Out),       // 4    iInterface for Streaming interaces
     APPEND_VENDOR_STR(USB 2.0 Audio In),        // 5
 
@@ -1576,7 +1576,7 @@ unsigned char oSpeedCfgDesc[] =
 #define STREAMING_INTERFACES        (INPUT_INTERFACES + OUTPUT_INTERFACES)
 
 
-#define CFG_TOTAL_LENGTH_A1            (18 + AC_TOTAL_LENGTH + (INPUT_INTERFACES * 61) + (OUTPUT_INTERFACES * 70) + (DFU_INTERFACES * 18))
+#define CFG_TOTAL_LENGTH_A1            (18 + AC_TOTAL_LENGTH + (INPUT_INTERFACES * 61) + (OUTPUT_INTERFACES * 70))
 #ifdef AUDIO_CLASS_FALLBACK
 unsigned char cfgDesc_Audio1[] = 
 {                       
@@ -1876,6 +1876,7 @@ unsigned char cfgDesc_Audio1[] =
    	0x40,
    	0x00
 #else
+#if 0
     /* DFU 1.1 Run-Time DFU Functional Descriptor */
     0x09,                           /* 0    Size */
     0x21,                           /* 1    bDescriptorType : DFU FUNCTIONAL */
@@ -1886,7 +1887,7 @@ unsigned char cfgDesc_Audio1[] =
     0x00,                           /* 6    wTransferSize */
     0x10,                           /* 7    bcdDFUVersion */
     0x01,                           /* 7    bcdDFUVersion */
-
+#endif
 #endif
 };
 
@@ -1899,7 +1900,7 @@ static unsigned char strDescs_Audio1[][40] =
 	"Langids",						            /* String 0 (LangIDs) place holder */ 
 	APPEND_VENDOR_STR(),                       // 1    iManufacturer
 	APPEND_VENDOR_STR(USB Audio 1.0),           // 2    iProduct and iInterface for control interface
-	SERIAL_STR,                                 // 3    iSerialNumber
+	"",//SERIAL_STR,                                 // 3    iSerialNumber
 
 	APPEND_VENDOR_STR(USB 1.0 Audio Out),       // 4    iInterface for Streaming interaces
 	APPEND_VENDOR_STR(USB 1.0 Audio In),        // 5
