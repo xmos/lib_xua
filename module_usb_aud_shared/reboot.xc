@@ -22,42 +22,16 @@ void read_sswitch_reg_verify(unsigned coreid, unsigned reg, unsigned &data, unsi
 /* Reboots XMOS device by writing to the PLL config register */
 void device_reboot_implementation(chanend spare) 
 {
-//#ifdef ARCH_S
- #if 1
+#ifdef ARCH_S
 
     unsigned wdata;
     char wdatac[1]; 
 
     write_glx_periph_word(GLXID, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_FUNC_CONTROL_REG, 4);
-                 //     (0<<XS1_UIFM_FUNC_CONTROL_XCVRSELECT) 
-                  //  | (0<<XS1_UIFM_FUNC_CONTROL_TERMSELECT));
-
     // Turn off All term resistors and d+ pullup 
     // Term select and opmode 
-
-#if 0
-    /* Write to glx scratch reg so we know rebooting into DFU mode */  
-    wdatac[0] = 0x77;
-    write_glx_periph_reg(GLXID, XS1_GLX_PERIPH_SCTH_ID, 0x1, 0, 1, wdatac);
-    
-    // Issue soft boot
-    wdata = 0x000c0001;
-    write_sswitch_reg_verify(GLXID, XS1_GLX_CFG_RST_MISC_ADRS, wdata, 2);
-
-    while(1); // Should reset before it executes this.
-#endif
-    /* Keep usb clock active, enter active mode */
-    //rite_sswitch_reg(GLXID, XS1_GLX_CFG_RST_MISC_ADRS, (0 << XS1_GLX_CFG_USB_CLK_EN_BASE) | (0<<XS1_GLX_CFG_USB_EN_BASE)  );
-    
-    /* Now reset the phy */
-   // write_glx_periph_word(GLXID, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_PHY_CONTROL_REG,  (1<<XS1_UIFM_PHY_CONTROL_FORCERESET));
-
-
-    /* Enable the USB clock */
-    //write_sswitch_reg(GLXID, XS1_GLX_CFG_RST_MISC_ADRS, ( ( 0 << XS1_GLX_CFG_USB_CLK_EN_BASE ) ) );
 #endif
 
-#if 1
     outct(spare, XS1_CT_END); // have to do this before freeing the chanend
     inct(spare); // Receive end ct from usb_buffer to close down in both directions
     // Need a spare chanend so we can talk to the pll register
@@ -71,5 +45,4 @@ void device_reboot_implementation(chanend spare)
     }
 
     
-#endif
 }
