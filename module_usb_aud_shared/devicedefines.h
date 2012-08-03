@@ -273,6 +273,11 @@
 
 /* Total number of USB interfaces this device implements (+1 for required control interface) */
 #define NUM_INTERFACES          INPUT_INTERFACES + OUTPUT_INTERFACES + DFU_INTERFACES + MIDI_INTERFACES + IAP_INTERFACES + 1 + HID_INTERFACES
+
+/* Number of interfaces for Audio 1.0 */
+#define NUM_INTERFACES_A1 (1+INPUT_INTERFACES+OUTPUT_INTERFACES)
+
+
 /* Audio Unit ID defines */
 #define FU_USBIN                11              /* Feature Unit: USB Audio device -> host */ 
 #define FU_USBOUT               10              /* Feature Unit: USB Audio host -> device*/ 

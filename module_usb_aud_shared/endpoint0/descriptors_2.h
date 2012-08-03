@@ -1585,9 +1585,9 @@ unsigned char cfgDesc_Audio1[] =
     (CFG_TOTAL_LENGTH_A1 & 0xFF),   /* wTotalLength */ 
     (CFG_TOTAL_LENGTH_A1 >> 8),     /* wTotalLength */
 #ifdef MIDI 
-    NUM_INTERFACES-2,                 /* numInterfaces - we dont support MIDI in audio 1.0 mode*/
+    NUM_INTERFACES_A1-2,                 /* numInterfaces - we dont support MIDI in audio 1.0 mode*/
 #else
-    NUM_INTERFACES,
+    NUM_INTERFACES_A1,
 #endif
     0x01,                           /* ID of this configuration */
     0x00,                           /* Unused */
@@ -1855,6 +1855,7 @@ unsigned char cfgDesc_Audio1[] =
     0x00, 0x00,                     /* Unused */  
 
 #endif
+#if 0
 	/* Standard DFU class Interface descriptor */
    	0x09,                          	/* 0 bLength : Size of this descriptor, in bytes. (field size 1 bytes) */
    	0x04,                           /* 1 bDescriptorType : INTERFACE descriptor. (field size 1 bytes) */
@@ -1865,7 +1866,7 @@ unsigned char cfgDesc_Audio1[] =
    	0x01,                           /* 6 bInterfaceSubclass : (field size 1 bytes) */
    	0x01,                           /* 7 bInterfaceProtocol : Unused. (field size 1 bytes) */
    	8,                             /* 8 iInterface : Unused. (field size 1 bytes) */
-
+#endif
 #if 0
 	/* DFU 1.0 Run-Time DFU Functional Descriptor */
    	0x07,
