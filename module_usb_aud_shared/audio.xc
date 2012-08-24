@@ -12,12 +12,17 @@
 #include <xs1.h>
 #include <xclib.h>
 #include <print.h>
+#include <xs1_su.h>
 
 #include "clocking.h"
 #include "audioports.h"
 #include "codec.h"
 #include "devicedefines.h"
 #include "SpdifTransmit.h"
+
+extern out port p_test;
+
+unsigned g_adcVal = 0;
 
 //#define RAMP_CHECK 1
 
@@ -60,7 +65,7 @@ extern void device_reboot(void);
 
 /* I2S delivery thread */
 #pragma unsafe arrays
-unsigned deliver(chanend c_out, chanend ?c_spd_out, unsigned divide, chanend ?c_dig_rx)
+unsigned deliver(chanend c_out, chanend ?c_spd_out, unsigned divide, chanend ?c_dig_rx, chanend ?c_adc)
 {
 	unsigned sample;
 #if NUM_USB_CHAN_OUT > 0 
@@ -76,6 +81,8 @@ unsigned deliver(chanend c_out, chanend ?c_spd_out, unsigned divide, chanend ?c_
     unsigned prev=0;
     int started = 0;
 #endif
+    unsigned test = 0;
+
 
 #if NUM_USB_CHAN_IN > 0
     for (int i=0;i<NUM_USB_CHAN_IN;i++)
@@ -227,7 +234,7 @@ unsigned deliver(chanend c_out, chanend ?c_spd_out, unsigned divide, chanend ?c_
      * and resync if we got a bclk glitch */
 
 #endif
-   
+
     /* Main Audio I/O loop */    
     while (1)
     {
@@ -358,7 +365,7 @@ unsigned deliver(chanend c_out, chanend ?c_spd_out, unsigned divide, chanend ?c_
                 break;
         }
 #endif
-    
+  
  
 #if (I2S_CHANS_ADC != 0)
         /* Input prevous R sample into R in buffer */
@@ -375,6 +382,9 @@ unsigned deliver(chanend c_out, chanend ?c_spd_out, unsigned divide, chanend ?c_
 #endif
         }
 #endif
+        
+
+
 
 #if defined(SPDIF) && (NUM_USB_CHAN_OUT > 0)	
         outuint(c_spd_out, samplesOut[SPDIF_TX_INDEX]);                 /* Forward sample to SPDIF txt thread */
@@ -444,7 +454,9 @@ unsigned deliver(chanend c_out, chanend ?c_spd_out, unsigned divide, chanend ?c_
                 p_lrclk <: 0x7FFFFFFF;
                 break;
         }
-#endif 
+#endif  
+        
+        
 
 
 #if (I2S_CHANS_ADC != 0)
@@ -460,7 +472,15 @@ unsigned deliver(chanend c_out, chanend ?c_spd_out, unsigned divide, chanend ?c_
 #endif
         }
 
+#ifdef SU1_ADC
+        {
+            unsigned x;
 
+            x = inuint(c_adc);
+            inct(c_adc);
+            asm("stw %0, dp[g_adcVal]"::"r"(x));
+        }
+#endif
 #endif
     }
     return 0;
@@ -512,8 +532,14 @@ static unsigned dummy_deliver(chanend c_out) {
     }
     return 0;
 }
+#define SAMPLE_RATE      200000
+#define NUMBER_CHANNELS  1
+#define NUMBER_SAMPLES  100
+#define NUMBER_WORDS ((NUMBER_SAMPLES * NUMBER_CHANNELS+1)/2)
+#define SAMPLES_PER_PRINT 1
 
-void audio(chanend c_mix_out, chanend ?c_dig_rx, chanend ?c_config) 
+
+void audio(chanend c_mix_out, chanend ?c_dig_rx, chanend ?c_config, chanend ?c) 
 {
 #ifdef SPDIF
     chan c_spdif_out;
@@ -522,6 +548,39 @@ void audio(chanend c_mix_out, chanend ?c_dig_rx, chanend ?c_config)
     unsigned mClk;
     unsigned divide;
     unsigned firstRun = 1;
+
+#ifdef SU1_ADC
+    /* Setup galaxian ADC */
+    unsigned data[1],  channel;
+    int r;
+    unsigned int vals[NUMBER_WORDS];
+    int cnt = 0;
+    int div;
+        unsigned val = 0;
+        int val2 = 0;
+        int adcOk = 0;
+
+    /* Enable adc on channel */
+        enable_xs1_su_adc_input(0, c);
+
+    /* General ADC control (enabled, 1 samples per packet, 32 bits per sample) */
+    data[0] = 0x10201;
+    data[0] = 0x30101;
+    r = write_periph_32(xs1_su, 2, 0x20, 1, data);
+
+    /* ADC needs a few clocks before it starts pumping out samples */
+    for(int i = 0; i< 10; i++)
+    {
+        p_lrclk <: val;
+        val = ~val;
+        {
+            timer t;
+            unsigned time;
+            t :> time;
+            t when timerafter(time+1000):> void;
+        }
+    }
+#endif
 
 #ifdef SPDIF
     SpdifTransmitPortConfig(p_spdif_tx, clk_mst_spd, p_mclk);
@@ -532,6 +591,10 @@ void audio(chanend c_mix_out, chanend ?c_dig_rx, chanend ?c_config)
 
     /* Perform required CODEC/ADC/DAC initialisation */
     CodecInit(c_config);
+
+    {
+
+    }
 
     while(1)
     {
@@ -598,7 +661,7 @@ void audio(chanend c_mix_out, chanend ?c_dig_rx, chanend ?c_config)
 #else
                    null,
 #endif 
-                   divide, c_dig_rx);
+                   divide, c_dig_rx, c);
 
                 // Currently no more audio will happen after this point
                 if (curSamFreq == AUDIO_STOP_FOR_DFU) 

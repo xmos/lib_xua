@@ -13,6 +13,6 @@
  *  \param c_config An optional channel that will be passed on to the 
  *                  CODEC configuration functions.
  */
-void audio(chanend c_in, chanend ?c_dig, chanend ?c_config);
+void audio(chanend c_in, chanend ?c_dig, chanend ?c_config, chanend ?c_adc);
 
 #endif // __audio_h__

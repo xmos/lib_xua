@@ -118,7 +118,6 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
 #endif
  
   
-    unsigned datalength;
     unsigned tmp;
     unsigned sampleFreq = 0;
     unsigned lastClock;
@@ -188,7 +187,6 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
         while(usb_speed == 0)
         {
            GET_SHARED_GLOBAL(usb_speed, g_curUsbSpeed);
-           //printintln(usb_speed);
         }
 
         GetADCCounts(DEFAULT_FREQ, min, mid, max);
@@ -503,29 +501,12 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
             /* Audio HOST -> DEVICE */
             case XUD_GetData_Select(c_aud_out, ep_aud_out, tmp):
             {
-                unsigned samp;
                 asm("#h->d aud data");
-
-                pktCount++;
-
-                if(pktCount ==3)
-                {
-                 //   asm("ecallf %0"::"r"(0));
-                }
 
                 GET_SHARED_GLOBAL(aud_from_host_buffer, g_aud_from_host_buffer);
  
-                //printintln(tmp);
-#if 0
-                for(int i = 0; i < (tmp); i++)
-                {
-                    read_byte_via_xc_ptr(samp, aud_from_host_buffer);
-                    aud_from_host_buffer+=1;
-                    printint(i);
-                    printhexln(samp);
-                }
-#endif           
                 write_via_xc_ptr(aud_from_host_buffer, tmp);
+                
                 /* Sync with audio thread */
                 SET_SHARED_GLOBAL(g_aud_from_host_flag, 1);
              }   
@@ -622,10 +603,6 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
                       datalength -= 3;
                       break;
                       default:
-//              // Case not handled before
-//              printstrln("Tail case not handled (tail, datalength)");
-//              printintln(tail);
-//              printintln(datalength);
                       break;
               }
           
@@ -700,8 +677,6 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
 #endif
 
 #ifdef MIDI
-//select 
-  //      {   
             /* Received word from MIDI thread - Check for ACK or Data */                 
             case midi_get_ack_or_data(c_midi, is_ack, datum):
                 if (is_ack) 
@@ -753,14 +728,7 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
                     }
                 }          
                 break;
-           // default:
-             //   break;
-        //}
-
-
-
-#endif
-
+#endif  /* ifdef MIDI */
          }
 
     }

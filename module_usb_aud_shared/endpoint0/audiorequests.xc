@@ -326,8 +326,11 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, SetupPacket &sp, chanend
                                     i_tmp = buffer[0] | (buffer[1] << 8) | buffer[2] << 16 | buffer[3] << 24; 
 
                                     /* Instruct audio thread to change sample freq */
-                                    g_curSamFreq = i_tmp;
-                                    g_curSamFreq48000Family = g_curSamFreq % 48000 == 0;
+
+                                    if(i_tmp != g_curSamFreq)
+                                    {
+                                        g_curSamFreq = i_tmp;
+                                        g_curSamFreq48000Family = g_curSamFreq % 48000 == 0;
 
                                     if(g_curSamFreq48000Family)
                                     {
@@ -349,7 +352,7 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, SetupPacket &sp, chanend
 
                                     /* Wait for handshake back - i.e. pll locked and clocks okay */
                                     chkct(c_audioControl, XS1_CT_END);
-
+                                    }
                                     /* Allow time for our feedback to stabalise*/
                                     {
                                         timer t;

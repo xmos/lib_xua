@@ -278,7 +278,7 @@ unsigned char hidReportDescriptor[] = {
 0x75, 0x01,     /* Report Size (1) */
 0x95, 0x06,     /* Report Count (6) */
 0x81, 0x02,     /* Input (Data, Var, Abs) */
-0x95,0x02,      /* Report Count (2) */
+0x95, 0x02,      /* Report Count (2) */
 0x81, 0x01,     /* Input (Cnst, Ary, Abs) */
 0xc0            /* End collection */
 };
@@ -1857,6 +1857,7 @@ unsigned char cfgDesc_Audio1[] =
 #endif
 #if 0
 	/* Standard DFU class Interface descriptor */
+    /* NOTE, DFU DISABLED FOR AUDIO CLASS 1.0 BY DEFAULT DUE TO WINDOWS REQUESTING DRIVER */
    	0x09,                          	/* 0 bLength : Size of this descriptor, in bytes. (field size 1 bytes) */
    	0x04,                           /* 1 bDescriptorType : INTERFACE descriptor. (field size 1 bytes) */
    	(INPUT_INTERFACES+OUTPUT_INTERFACES+1),                           /* 2 bInterfaceNumber : Index of this interface. (field size 1 bytes) */

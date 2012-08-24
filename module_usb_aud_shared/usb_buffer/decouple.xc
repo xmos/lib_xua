@@ -18,7 +18,6 @@
  *
  **/                                   
 #include <xs1.h>
-#include <print.h>
 #include "xc_ptr.h"
 #define NO_INLINE_MIDI_SELECT_HANDLER 1
 #include "usb_midi.h"
@@ -35,43 +34,6 @@
 #include "vendor_hid.h"
 #endif
 
-/* This function changes the buffer staged for an IN transaction.
- * **It can only be used if you know that the IN transaction will not occur**
- * Otherwise a race condition can occur.
- *
- */
-static inline void XUD_Change_ReadyIn_Buffer(XUD_ep e, unsigned bufferPtr, int len)
-{
-
-    int chan_array_ptr;
-    int xud_chan;
-    int my_chan;
-    int tail;
-
-    printstr("TODO");
-    asm ("ldw %0, %1[0]":"=r"(chan_array_ptr):"r"(e));
-    asm ("ldw %0, %1[2]":"=r"(my_chan):"r"(e));
-
-    tail = len & 0x3;
-    bufferPtr += (len-tail);
-    tail <<= 5;
-                                                
-    asm ("ldw %0, %1[1]":"=r"(xud_chan):"r"(e));
-
-    len >>= 2;
-    len = -len;
-
-    /* Store buffer pointer */
-    asm ("stw %0, %1[5]"::"r"(bufferPtr),"r"(e));
-                                                                        
-    /* Store length */
-    asm ("stw %0, %1[3]"::"r"(len),"r"(e));
-
-    /* Mark EP ready with pointer */
-    asm ("stw %0, %1[0]"::"r"(xud_chan),"r"(chan_array_ptr));
-}
-
-
 #define MAX(x,y) ((x)>(y) ? (x) : (y))
 #define MAX_CLASS_ONE_FREQ 96000
 #define MAX_CLASS_ONE_CHAN 2
@@ -82,17 +44,8 @@ static inline void XUD_Change_ReadyIn_Buffer(XUD_ep e, unsigned bufferPtr, int l
 #define BUFF_SIZE_OUT MAX(4 * CLASS_TWO_PACKET_SIZE * NUM_USB_CHAN_OUT, 4 * CLASS_ONE_PACKET_SIZE * MAX_CLASS_ONE_CHAN)
 #define BUFF_SIZE_IN  MAX(4 * CLASS_TWO_PACKET_SIZE * NUM_USB_CHAN_IN, 4 * CLASS_ONE_PACKET_SIZE * MAX_CLASS_ONE_CHAN)
 #define MAX_USB_AUD_PACKET_SIZE 1028
-//#define OUT_BUFFER_PREFILL (2*4*BUFF_SIZE_OUT/3)
-//#define OUT_BUFFER_PREFILL MAX(CLASS_ONE_PACKET_SIZE*3+4,CLASS_TWO_PACKET_SIZE*4+4)*2
-//#define IN_BUFFER_PREFILL MAX(CLASS_ONE_PACKET_SIZE*3+4,CLASS_TWO_PACKET_SIZE*4+4)*2
 #define OUT_BUFFER_PREFILL (MAX(MAX_CLASS_ONE_CHAN*CLASS_ONE_PACKET_SIZE*3+4,NUM_USB_CHAN_OUT*CLASS_TWO_PACKET_SIZE*4+4)*1)
 #define IN_BUFFER_PREFILL (MAX(CLASS_ONE_PACKET_SIZE*3+4,CLASS_TWO_PACKET_SIZE*4+4)*2)
-//#pragma xta command "add exclusion out_underflow"
-//#pragma xta command "add exclusion freq_change"
-//#pragma xta command "add exclusion print_err"is_as
-//#pragma xta command "add exclusion out_soverflow"
-//#pragma xta command "analyse path mixer_request mixer_request"
-//#pragma xta command "set required - 5200 ns"             /* 192kHz */
 
 /* Volume and mute tables */ 
 #ifndef OUT_VOLUME_IN_MIXER
@@ -122,49 +75,9 @@ unsigned inZeroBuff[(MAX_DEVICE_AUD_PACKET_SIZE>>2)+4];
 unsigned ledVal = 1;
 unsigned dir = 0;
 
-void led(chanend ?c_led)
-{
-  if(dir == 0)
-    ledVal <<= 1;
-  else 
-    ledVal >>= 1;
-
-  if(ledVal == 0b10000000 || ledVal == 1)
-    dir = !dir;
-
-  if (!isnull(c_led)) {
-    c_led <: ledVal;
-  }
-}
-
-/* Returns the max and min packet sizes to send back to host for a given sample frequency 
- * See page 13 of USB Audio Device Class Definitions for Audio Data Formats Spec (v2.0) 
- * 
- * Audio samples per frame = INT(sampFreq/frametime); Variation allowed is + 1;
- *
- * For HS frame time = 8 * 1000
- *
- * so n = INT(SampFreq/8000) | INT (SampFreq/8000) + 1
- *
- * In the case where INT(SampFreq/8000) == SampFreq/8000) n may vary between
- *
- * INT(SamFreq/8000) - 1 | INT(SampFreq/8000) | INT (SampFreq/8000) + 1
- *
- * Note: Assumes HS (i.e. 8 frames per 1ms)
- *
- * Examples: 
- * 44100:  min: 5  max: 6
- * 48000:  min: 5  max: 7
- * 96000:  min: 11 max: 13
- * 88200:  min: 11 max: 12
- * 176400: min: 22 max: 23
- * 192000: min: 23 max: 25
- *
- * Note: This function uses the multiple return value feature of XC
- */
-
 void GetADCCounts(unsigned samFreq, int &min, int &mid, int &max);
 
+#ifdef IAP
 static inline void swap(xc_ptr &a, xc_ptr &b) 
 {
   xc_ptr tmp;
@@ -174,50 +87,31 @@ static inline void swap(xc_ptr &a, xc_ptr &b)
   return;
 }
 
-// shared global midi buffering variables
-#if 0
-//#ifdef MIDI
-unsigned g_midi_from_host_flag = 0;
-unsigned g_midi_to_host_flag = 0;
-int midi_to_host_usb_ep = 0;
-int midi_from_host_usb_ep = 0;
-#endif
-
-#ifdef IAP
 unsigned g_iap_reset = 0;
 unsigned g_iap_from_host_flag = 0;
 unsigned g_iap_to_host_flag = 0;
 int iap_to_host_usb_ep = 0;
 int iap_to_host_int_usb_ep = 0;
 int iap_from_host_usb_ep = 0;
+unsigned int g_iap_to_host_buffer_A[MAX_IAP_PACKET_SIZE/4+4];
+unsigned int g_iap_to_host_buffer_B[MAX_IAP_PACKET_SIZE/4+4];
+int g_iap_from_host_buffer[MAX_IAP_PACKET_SIZE/4+4];
+unsigned g_zero_buffer[1];
+#endif
+
+#ifdef HID_CONTROLS
+extern in port p_but;
+unsigned char g_hidData[16] = {0};
+unsigned char g_hidFlag = 0;
+unsigned g_ep_hid = 0;
 #endif
 
 int aud_from_host_usb_ep = 0;
 int aud_to_host_usb_ep = 0;
 int int_usb_ep = 0;
 
-#if 0
-//#ifdef MIDI
-unsigned int g_midi_to_host_buffer_A[MAX_USB_MIDI_PACKET_SIZE/4+4];
-unsigned int g_midi_to_host_buffer_B[MAX_USB_MIDI_PACKET_SIZE/4+4];
-int g_midi_from_host_buffer[MAX_USB_MIDI_PACKET_SIZE/4+4];
-#endif
 
-#ifdef IAP
-unsigned int g_iap_to_host_buffer_A[MAX_IAP_PACKET_SIZE/4+4];
-unsigned int g_iap_to_host_buffer_B[MAX_IAP_PACKET_SIZE/4+4];
-int g_iap_from_host_buffer[MAX_IAP_PACKET_SIZE/4+4];
-unsigned g_zero_buffer[1];
-#endif
-#ifdef HID_CONTROLS
-extern in port p_but;
-unsigned char g_hidData[16] = {0};
-unsigned char g_hidFlag = 0;
-unsigned g_ep_hid = 0;
-
-#endif
-
-// shared global aud buffering variables
+/* Shared global audio buffering variables */
 
 unsigned g_aud_from_host_buffer;
 unsigned g_aud_to_host_buffer;
@@ -229,12 +123,10 @@ unsigned g_freqChange_flag = 0;
 unsigned g_freqChange_sampFreq;
 int speedRem = 0;
 
-
 xc_ptr aud_from_host_fifo_start;
 xc_ptr aud_from_host_fifo_end;
 xc_ptr g_aud_from_host_wrptr;
 xc_ptr g_aud_from_host_rdptr; 
-
 
 xc_ptr aud_to_host_fifo_start;
 xc_ptr aud_to_host_fifo_end;
@@ -244,17 +136,13 @@ xc_ptr g_aud_to_host_rdptr;
 xc_ptr g_aud_to_host_zeros; 
 int sampsToWrite = 0;
 int totalSampsToWrite = 0;
-
-
 int aud_data_remaining_to_device = 0;
 
-
-/* Over/under flow flags */
+/* Audio over/under flow flags */
 unsigned outUnderflow = 1;
 unsigned outOverflow = 0;
 unsigned inUnderflow = 1;
 unsigned inOverflow = 0;
-
 
 int aud_req_in_count = 0;
 int aud_req_out_count = 0;
@@ -273,7 +161,7 @@ int slotSize = 3;    /* 3 bytes per sample for Audio Class 1.0 */
 
 #pragma select handler
 #pragma unsafe arrays
-void handle_audio_request(chanend c_mix_out, chanend ?c_led) 
+void handle_audio_request(chanend c_mix_out) 
 {
     int outSamps;
     int space_left;
@@ -440,7 +328,6 @@ void handle_audio_request(chanend c_mix_out, chanend ?c_led)
                 
                 read_via_xc_ptr(sample, g_aud_from_host_rdptr);
                 g_aud_from_host_rdptr+=4;
-
                 
 #ifndef OUT_VOLUME_IN_MIXER
                 asm("ldw %0, %1[%2]":"=r"(mult):"r"(p_multOut),"r"(i));
@@ -449,13 +336,11 @@ void handle_audio_request(chanend c_mix_out, chanend ?c_led)
                 outuint(c_mix_out, h);
 #else
                 outuint(c_mix_out, sample);
-
 #endif
             }
         }
         else
         {
-
             /* Buffering not underflow condition send out some samples...*/
             for(int i = 0; i < g_numUsbChanOut; i++) 
             {
@@ -491,14 +376,6 @@ void handle_audio_request(chanend c_mix_out, chanend ?c_led)
                  }
                 unpackState++;
         
-            if(sample!=0)
-            {        //printhexln(sample);
-                    //printintln(g_numUsbChanOut);
-                //printhexln(g_aud_from_host_rdptr);
-                //printintln(aud_data_remaining_to_device);
-                //while(1);
-            }
-
 #ifndef OUT_VOLUME_IN_MIXER
             asm("ldw %0, %1[%2]":"=r"(mult):"r"(p_multOut),"r"(i));
             {h, l} = macs(mult, sample, 0, 0);
@@ -589,7 +466,7 @@ void handle_audio_request(chanend c_mix_out, chanend ?c_led)
             }
             else 
             {
-                inOverflow = 1;  
+                inOverflow = 1;
                 totalSampsToWrite = 0;
             }
             sampsToWrite = totalSampsToWrite;                              
@@ -601,7 +478,6 @@ void handle_audio_request(chanend c_mix_out, chanend ?c_led)
         /* Handle any tail - incase a bad driver sent us a datalength not a multiple of chan count */
         if (aud_data_remaining_to_device) 
         {
-            printintln(aud_data_remaining_to_device);
             /* Round up to nearest word */
             aud_data_remaining_to_device +=3;
             aud_data_remaining_to_device &= (~3);
@@ -629,14 +505,7 @@ void handle_audio_request(chanend c_mix_out, chanend ?c_led)
             
             g_aud_from_host_rdptr+=4;
         }
-#ifdef DEBUG_LEDS
-        else 
-        {
-            led(c_led);
-        }
-#endif
     }
-
 }
 
 
@@ -835,9 +704,10 @@ void decouple(chanend c_mix_out,
         int len;
 
         GET_SHARED_GLOBAL(p, g_aud_to_host_buffer);
-        read_via_xc_ptr(len, p);
-
+        read_via_xc_ptr(len, p)
         XUD_SetReady_InPtr(aud_to_host_usb_ep, g_aud_to_host_buffer, len); 
+        aud_in_ready = 1;   
+ 
     }
 #endif
 
@@ -883,9 +753,26 @@ void decouple(chanend c_mix_out,
                                   aud_to_host_fifo_start);
                 SET_SHARED_GLOBAL(sampsToWrite, 0);
                 SET_SHARED_GLOBAL(totalSampsToWrite, 0);
-                SET_SHARED_GLOBAL(g_aud_to_host_buffer,
-                                  g_aud_to_host_zeros);
+                
+                /* Set buffer to send back to zeros buffer */
+                SET_SHARED_GLOBAL(g_aud_to_host_buffer,g_aud_to_host_zeros);
 
+                /* Update size of zeros buffer */
+                {
+                    int min, mid, max, usb_speed;
+                    GET_SHARED_GLOBAL(usb_speed, g_curUsbSpeed);
+                    GetADCCounts(sampFreq, min, mid, max);
+                    if (usb_speed == XUD_SPEED_HS) 
+                        mid*=NUM_USB_CHAN_IN*4;
+                    else
+                        mid*=NUM_USB_CHAN_IN*3;
+
+                    asm("stw %0, %1[0]"::"r"(mid),"r"(g_aud_to_host_zeros));
+                }
+
+
+               #if 1
+               //TODO RACE HERE
                 /* Check if we have an IN packet ready to go */
                 if (aud_in_ready)
                 {
@@ -895,10 +782,11 @@ void decouple(chanend c_mix_out,
                     GET_SHARED_GLOBAL(p, g_aud_to_host_buffer);
                     read_via_xc_ptr(len, p);                   
                     
-                    /* Update the audio in buffer to send the correct
-                     * length back to the host for the new sample rate */
                     //XUD_Change_ReadyIn_Buffer(aud_to_host_usb_ep, p+4, len);
+                    XUD_SetReady_InPtr(aud_to_host_usb_ep, p+4, len);
                 }
+                
+                #endif
 
                 /* Reset OUT buffer state */                
                 outUnderflow = 1;
@@ -964,27 +852,12 @@ void decouple(chanend c_mix_out,
             /* Read datalength from buffer */
             read_via_xc_ptr(datalength, released_buffer);
 
-            //printintln(datalength);
-
             /* Ignore bad small packets */             
             if ((datalength >= (g_numUsbChanOut * slotSize)) && (released_buffer == g_aud_from_host_wrptr))
             {
             
-#if 0
-                for(int i = 0; i < (datalength+4); i++)
-                {
-                    unsigned samp;
-                    read_byte_via_xc_ptr(samp, aud_from_host_wrptr);
-                    aud_from_host_wrptr+=1;
-                    printint(i);
-                    printhexln(samp);
-                }
-#endif           
                 /* Move the write pointer of the fifo on - round up to nearest word */
                 aud_from_host_wrptr = aud_from_host_wrptr + ((datalength+3)&~0x3) + 4;
-
-
-
 
                 /* Wrap pointer */
                 if (aud_from_host_wrptr >= aud_from_host_fifo_end)
@@ -1035,7 +908,6 @@ void decouple(chanend c_mix_out,
                 /* Come out of OUT overflow state */
                 outOverflow = 0;
                 SET_SHARED_GLOBAL(g_aud_from_host_buffer, aud_from_host_wrptr);
-                printintln(1);
                 //XUD_SetReady(aud_from_host_usb_ep, 1);
 #ifdef DEBUG_LEDS
                   led(c_led);

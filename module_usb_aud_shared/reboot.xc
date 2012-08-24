@@ -23,13 +23,8 @@ void read_sswitch_reg_verify(unsigned coreid, unsigned reg, unsigned &data, unsi
 void device_reboot_implementation(chanend spare) 
 {
 #ifdef ARCH_S
-
-    unsigned wdata;
-    char wdatac[1]; 
-
+    /* Disconnect from bus */
     write_glx_periph_word(GLXID, XS1_GLX_PERIPH_USB_ID, XS1_UIFM_FUNC_CONTROL_REG, 4);
-    // Turn off All term resistors and d+ pullup 
-    // Term select and opmode 
 #endif
 
     outct(spare, XS1_CT_END); // have to do this before freeing the chanend
