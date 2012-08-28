@@ -160,8 +160,6 @@ void xscope_user_init()
 }
 #endif
 
-on stdcore[0] : out port p_test = XS1_PORT_32A;
-
 int main()
 {
     chan c_sof;
