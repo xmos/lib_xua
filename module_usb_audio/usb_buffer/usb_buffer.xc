@@ -152,8 +152,6 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
     int midi_data_remaining_to_device = 0;
     int midi_data_collected_from_device = 0;
     int midi_waiting_on_send_to_host = 0;
-    int midi_to_host_flag = 0;
-    int midi_from_host_flag = 0;
 #endif
 
     xc_ptr p_inZeroBuff = array_to_xc_ptr(inZeroBuff);
