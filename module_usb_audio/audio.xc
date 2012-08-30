@@ -20,8 +20,6 @@
 #include "devicedefines.h"
 #include "SpdifTransmit.h"
 
-extern out port p_test;
-
 unsigned g_adcVal = 0;
 
 //#define RAMP_CHECK 1
@@ -81,7 +79,6 @@ unsigned deliver(chanend c_out, chanend ?c_spd_out, unsigned divide, chanend ?c_
     unsigned prev=0;
     int started = 0;
 #endif
-    unsigned test = 0;
 
 
 #if NUM_USB_CHAN_IN > 0

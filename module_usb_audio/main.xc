@@ -109,8 +109,6 @@ on stdcore[0] : clock    clk_mst_spd               = XS1_CLKBLK_1;
 #ifdef ARCH_L
 #ifdef PORT_USB_RESET
 on stdcore[0] : out port p_usb_rst                 = PORT_USB_RESET;
-#else
-#error Need a USB Reset port for L series
 #endif
 /* L Series also needs a clock for this port */
 clock clk                                          = XS1_CLKBLK_4;
@@ -119,7 +117,6 @@ clock clk                                          = XS1_CLKBLK_4;
 #define p_usb_rst   null
 #define clk         null
 #endif
-
 
 /* Endpoint type tables for XUD */
 XUD_EpType epTypeTableOut[NUM_EP_OUT] = { XUD_EPTYPE_CTL | XUD_STATUS_ENABLE, 
