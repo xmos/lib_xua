@@ -9,7 +9,9 @@
 #include <xs1.h>
 #include <xclib.h>
 #include <print.h>
+#ifdef XSCOPE
 #include <xscope.h>
+#endif
 
 #include "xud.h"                 /* XMOS USB Device Layer defines and functions */
 #include "usb.h"                 /* Defines from the USB 2.0 Specification */
@@ -81,28 +83,32 @@ on stdcore[0] : buffered in port:32 p_i2s_adc[I2S_WIRES_ADC] =
                 };
 #endif
 
-on stdcore[0] : buffered out port:32 p_lrclk       = PORT_I2S_LRCLK;
-on stdcore[0] : buffered out port:32 p_bclk        = PORT_I2S_BCLK;
-on stdcore[0] : port p_mclk                        = PORT_MCLK_IN;
+#ifndef AUDIO_IO_CORE
+#define AUDIO_IO_CORE 0
+#endif
+
+on stdcore[AUDIO_IO_CORE] : buffered out port:32 p_lrclk       = PORT_I2S_LRCLK;
+on stdcore[AUDIO_IO_CORE] : buffered out port:32 p_bclk        = PORT_I2S_BCLK;
+on stdcore[AUDIO_IO_CORE] : port p_mclk                        = PORT_MCLK_IN;
 on stdcore[0] : in port p_for_mclk_count           = PORT_MCLK_COUNT;
 
 #ifdef SPDIF  
-on stdcore[0] : buffered out port:32 p_spdif_tx   = PORT_SPDIF_OUT;
+on stdcore[AUDIO_IO_CORE] : buffered out port:32 p_spdif_tx   = PORT_SPDIF_OUT;
 #endif
 
 #ifdef MIDI
-on stdcore[0] : port p_midi_tx                     = PORT_MIDI_OUT;
-on stdcore[0] : port p_midi_rx                     = PORT_MIDI_IN;
+on stdcore[AUDIO_IO_CORE] : port p_midi_tx                     = PORT_MIDI_OUT;
+on stdcore[AUDIO_IO_CORE] : port p_midi_rx                     = PORT_MIDI_IN;
 #endif
 
 /* Clock blocks */
 #ifdef MIDI
-on stdcore[0] : clock    clk_midi                  = XS1_CLKBLK_REF;
+on stdcore[AUDIO_IO_CORE] : clock    clk_midi                  = XS1_CLKBLK_REF;
 #endif
-on stdcore[0] : clock    clk_audio_mclk            = XS1_CLKBLK_2;     /* Master clock */
-on stdcore[0] : clock    clk_audio_bclk            = XS1_CLKBLK_3;     /* Bit clock */
+on stdcore[AUDIO_IO_CORE] : clock    clk_audio_mclk            = XS1_CLKBLK_2;     /* Master clock */
+on stdcore[AUDIO_IO_CORE] : clock    clk_audio_bclk            = XS1_CLKBLK_3;     /* Bit clock */
 #ifdef SPDIF
-on stdcore[0] : clock    clk_mst_spd               = XS1_CLKBLK_1;
+on stdcore[AUDIO_IO_CORE] : clock    clk_mst_spd               = XS1_CLKBLK_1;
 #endif
 
 /* L Series needs a port to use for USB reset */
@@ -167,6 +173,9 @@ int main()
 #ifdef MIDI
     chan c_midi;
 #endif
+#ifdef IAP
+    chan c_iap;
+#endif
 
 #ifdef TEST_MODE_SUPPORT
 #warning Building with test mode support
@@ -225,6 +234,10 @@ int main()
                 c_xud_in[EP_NUM_IN_MIDI],    /* MIDI In */  // 4
                 c_midi,
 #endif
+#ifdef IAP
+                c_xud_out[3], c_xud_in[5], c_xud_in[6],
+#endif
+
                 c_xud_in[EP_NUM_IN_AUD_INT], /* Int */
                 c_sof, c_aud_ctl, p_for_mclk_count
 #ifdef HID_CONTROLS
@@ -237,19 +250,23 @@ int main()
         on stdcore[0]:
         {
             thread_speed();
-            decouple(c_mix_out, null);
+            decouple(c_mix_out, null
+#ifdef IAP
+                , c_iap
+#endif
+            );
         }
 
-        on stdcore[0]:
+        on stdcore[AUDIO_IO_CORE]:
         {
             thread_speed();
+
             /* Audio I/O (pars additional S/PDIF TX thread) */ 
             audio(c_mix_out, null, null, c_adc);
         }
 
-        //on stdcore[0]: test(c_adc2);
 #ifdef MIDI
-        on stdcore[0]:
+        on stdcore[AUDIO_IO_CORE]:
         {
             thread_speed();
             usb_midi(p_midi_rx, p_midi_tx, clk_midi, c_midi, 0, null, null, null, null);
