@@ -9,7 +9,7 @@
 typedef unsigned lock;
 
 /* Allocates and returns a lock resource - returns 0 if out of lock */
-lock GetLockResource() ;
+lock GetLockResource();
 
 /* Claims the passed lock, this is a blocking call */
 void ClaimLock(lock l);
