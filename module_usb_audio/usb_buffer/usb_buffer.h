@@ -25,7 +25,6 @@ void buffer(chanend c_aud_out,
 			chanend c_midi,
 #endif
 #ifdef IAP
-#error IAP
             chanend c_iap_from_host, 
             chanend c_iap_to_host,
             chanend c_iap_to_host_int,
