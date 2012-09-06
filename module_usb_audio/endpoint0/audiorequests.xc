@@ -115,65 +115,59 @@ void updateMasterVol( int unitID, chanend ?c_mix_ctl)
     switch( unitID)
     {
         case FU_USBOUT:
-            for (int i = 1; i < (NUM_USB_CHAN_OUT + 1); i++)
             {
-              /* Calc multipliers with 29 fractional bits from a db value with 8 fractional bits */
-              /* 0x8000 is a special value representing -inf (i.e. mute) */
-              unsigned master_vol = volsOut[0] == 0x8000 ? 0 : db_to_mult(volsOut[0], 8, 29);
-              unsigned vol = volsOut[i] == 0x8000 ? 0 : db_to_mult(volsOut[i], 8, 29);
+                unsigned master_vol = volsOut[0] == 0x8000 ? 0 : db_to_mult(volsOut[0], 8, 29);
+        
+                for (int i = 1; i < (NUM_USB_CHAN_OUT + 1); i++)
+                {
+                    /* Calc multipliers with 29 fractional bits from a db value with 8 fractional bits */
+                    /* 0x8000 is a special value representing -inf (i.e. mute) */
+                    unsigned vol = volsOut[i] == 0x8000 ? 0 : db_to_mult(volsOut[i], 8, 29);
 
-              x = longMul(master_vol, vol, 29) * !mutesOut[0] * !mutesOut[i];
+                    x = longMul(master_vol, vol, 29) * !mutesOut[0] * !mutesOut[i];
 
 #ifdef OUT_VOLUME_IN_MIXER
-              if (!isnull(c_mix_ctl)) 
-              {
-                outuint(c_mix_ctl, SET_MIX_OUT_VOL); 
-                outuint(c_mix_ctl, i-1);
-                outuint(c_mix_ctl, x);
-                outct(c_mix_ctl, XS1_CT_END);
-              }
+                    if (!isnull(c_mix_ctl)) 
+                    {
+                        outuint(c_mix_ctl, SET_MIX_OUT_VOL); 
+                        outuint(c_mix_ctl, i-1);
+                        outuint(c_mix_ctl, x);
+                        outct(c_mix_ctl, XS1_CT_END);
+                    }
 #else
-              asm("stw %0, %1[%2]"::"r"(x),"r"(p_multOut),"r"(i-1));
+                    asm("stw %0, %1[%2]"::"r"(x),"r"(p_multOut),"r"(i-1));
 #endif
-
+                }
             }
             break;
 
         case FU_USBIN:
-            for (int i = 1; i < (NUM_USB_CHAN_IN + 1); i++) 
             {
-              /* Calc multipliers with 29 fractional bits from a db value with 8 fractional bits */
-              /* 0x8000 is a special value representing -inf (i.e. mute) */
-              unsigned master_vol = volsIn[0] == 0x8000 ? 0 : db_to_mult(volsIn[0], 8, 29);
-              unsigned vol = volsIn[i] == 0x8000 ? 0 : db_to_mult(volsIn[i], 8, 29);
+                unsigned master_vol = volsIn[0] == 0x8000 ? 0 : db_to_mult(volsIn[0], 8, 29);
+                for (int i = 1; i < (NUM_USB_CHAN_IN + 1); i++) 
+                {
+                    /* Calc multipliers with 29 fractional bits from a db value with 8 fractional bits */
+                    /* 0x8000 is a special value representing -inf (i.e. mute) */
+                    unsigned vol = volsIn[i] == 0x8000 ? 0 : db_to_mult(volsIn[i], 8, 29);
 
-              x = longMul(master_vol, vol, 29) * !mutesIn[0] * !mutesIn[i];
+                    x = longMul(master_vol, vol, 29) * !mutesIn[0] * !mutesIn[i];
 
 #ifdef IN_VOLUME_IN_MIXER
-              if (!isnull(c_mix_ctl))
-               {
-                //master 
-                //{
-                  //c_mix_ctl <: SET_MIX_IN_VOL;
-                  //c_mix_ctl <: i-1;
-                  //c_mix_ctl <: x;
-                //}
-                  outuint(c_mix_ctl, SET_MIX_IN_VOL); 
-                outuint(c_mix_ctl, i-1);
-                outuint(c_mix_ctl, x);
-                outct(c_mix_ctl, XS1_CT_END);
-
-
-
-              }
+                    if (!isnull(c_mix_ctl))
+                    {
+                        outuint(c_mix_ctl, SET_MIX_IN_VOL); 
+                        outuint(c_mix_ctl, i-1);
+                        outuint(c_mix_ctl, x);
+                        outct(c_mix_ctl, XS1_CT_END);
+                    }
 #else
-                asm("stw %0, %1[%2]"::"r"(x),"r"(p_multIn),"r"(i-1));
+                    asm("stw %0, %1[%2]"::"r"(x),"r"(p_multIn),"r"(i-1));
 #endif
+                }
             }
             break;
 
         default:
-            XUD_Error_hex("MVol: No such unit: ", unitID);
             break;
     }
 }  
@@ -263,19 +257,12 @@ void updateVol(int unitID, int channel, chanend ?c_mix_ctl)
     }
 }
 
-#ifdef EP0_THREAD_COMBINED_WITH_SPI
-void spi(chanend c_spi, chanend c_spi_ss);
-#endif
-
 /* Handles the audio class specific requests 
  * returns:     0   if request delt with successfully without error, 
  *              <0  for device reset suspend 
  *              else 1 
  */
 int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, SetupPacket &sp, chanend c_audioControl, chanend ?c_mix_ctl, chanend ?c_clk_ctl
-#ifdef EP0_THREAD_COMBINED_WITH_SPI
-  , chanend c_spi, chanend c_spi_ss
-#endif
 )
 {
     unsigned char buffer[128];
@@ -312,7 +299,7 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, SetupPacket &sp, chanend
                             {
                                 /* Get OUT data with Sample Rate into buffer*/
                                 datalength = XUD_GetBuffer(ep0_out, buffer);
-                                                      
+                                
                                 /* Check for reset/suspend */
                                 if(datalength < 0)
                                 {
@@ -325,34 +312,31 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, SetupPacket &sp, chanend
                                     /* Re-construct Sample Freq */
                                     i_tmp = buffer[0] | (buffer[1] << 8) | buffer[2] << 16 | buffer[3] << 24; 
 
-                                    /* Instruct audio thread to change sample freq */
-
+                                    /* Instruct audio thread to change sample freq (if change required) */
                                     if(i_tmp != g_curSamFreq)
                                     {
                                         g_curSamFreq = i_tmp;
                                         g_curSamFreq48000Family = g_curSamFreq % 48000 == 0;
 
-                                    if(g_curSamFreq48000Family)
-                                    {
-                                        i_tmp = MCLK_48;
+                                        if(g_curSamFreq48000Family)
+                                        {
+                                            i_tmp = MCLK_48;
+                                        }
+                                        else
+                                        {
+                                            i_tmp = MCLK_441;
+                                        }
+
+                                        setG_curSamFreqMultiplier(g_curSamFreq/(i_tmp/512));
+
+                                        outuint(c_audioControl, SET_SAMPLE_FREQ);
+                                        outuint(c_audioControl, g_curSamFreq); 
+
+                                        /* Wait for handshake back - i.e. pll locked and clocks okay */
+                                        chkct(c_audioControl, XS1_CT_END);
+                                        
                                     }
-                                    else
-                                    {
-                                        i_tmp = MCLK_441;
-                                    }
 
-                                    setG_curSamFreqMultiplier(g_curSamFreq/(i_tmp/512));
-
-                                    outuint(c_audioControl, SET_SAMPLE_FREQ);
-                                    outuint(c_audioControl, g_curSamFreq); 
-
-#ifdef EP0_THREAD_COMBINED_WITH_SPI
-				                    spi(c_spi, c_spi_ss);  /* CodecConfig */
-#endif
-
-                                    /* Wait for handshake back - i.e. pll locked and clocks okay */
-                                    chkct(c_audioControl, XS1_CT_END);
-                                    }
                                     /* Allow time for our feedback to stabalise*/
                                     {
                                         timer t;
@@ -361,8 +345,7 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, SetupPacket &sp, chanend
                                         t when timerafter(time+5000000):> void;
                                     }
                                 }
-
-                                                        
+ 
                                 /* Send 0 Length as status stage */
                                 return XUD_SetBuffer(ep0_in, buffer, 0);
                                 
@@ -401,7 +384,8 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, SetupPacket &sp, chanend
                                         break;
                                                         
                                     default:
-                                        XUD_Error_hex("Unknown Unit ID in Sample Frequency Control Request", unitID); break;
+                                       // XUD_Error_hex("Unknown Unit ID in Sample Frequency Control Request", unitID); 
+                                        break;
                                 }
                                 
                                 return XUD_DoGetRequest(ep0_out, ep0_in, buffer, sp.wLength, sp.wLength );
@@ -449,7 +433,7 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, SetupPacket &sp, chanend
                                     break;
                                 
                                 default:
-                                    XUD_Error_hex("Unknown Unit ID in Clock Valid Control Request: ", unitID); 
+                                    //XUD_Error_hex("Unknown Unit ID in Clock Valid Control Request: ", unitID); 
                                     break;
                             }
                             
@@ -459,7 +443,7 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, SetupPacket &sp, chanend
                         }
 
                         default:
-                            XUD_Error_hex("Unknown Control Selector for Clock Unit: ", sp.wValue >> 8 );
+                            //XUD_Error_hex("Unknown Control Selector for Clock Unit: ", sp.wValue >> 8 );
                             break;
                                                 
                     }
@@ -513,7 +497,7 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, SetupPacket &sp, chanend
                     } 
                     else 
                     {
-                        XUD_Error_hex("Unknown control on clock selector", sp.wValue);
+                       // XUD_Error_hex("Unknown control on clock selector", sp.wValue);
                     }
                     break;
                 }
@@ -1106,9 +1090,6 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, SetupPacket &sp, chanend
 #if defined (AUDIO_CLASS_FALLBACK) || (AUDIO_CLASS==1)
 /* Handles the Audio Class 1.0 specific requests */
 int AudioClassRequests_1(XUD_ep c_ep0_out, XUD_ep c_ep0_in, SetupPacket &sp, chanend c_audioControl, chanend ?c_mix_ctl, chanend ?c_clk_ctl
-#ifdef EP0_THREAD_COMBINED_WITH_SPI
-  , chanend c_spi, chanend c_spi_ss
-#endif
 )
 {
     unsigned char buffer[1024];
@@ -1209,13 +1190,8 @@ int AudioClassRequests_1(XUD_ep c_ep0_out, XUD_ep c_ep0_in, SetupPacket &sp, cha
                         outuint(c_audioControl, SET_SAMPLE_FREQ);
                         outuint(c_audioControl, g_curSamFreq); 
 
-#ifdef EP0_THREAD_COMBINED_WITH_SPI
-		                spi(c_spi, c_spi_ss);  /* CodecConfig */
-#endif
-
                         /* Wait for handshake back - i.e. pll locked and clocks okay */
                         chkct(c_audioControl, XS1_CT_END);
-                
                 
                         /* Allow time for the change - feedback to stabalise */
                         {
