@@ -87,8 +87,14 @@ on stdcore[0] : buffered in port:32 p_i2s_adc[I2S_WIRES_ADC] =
 #define AUDIO_IO_CORE 0
 #endif
 
+#if CODEC_SLAVE == 1
 on stdcore[AUDIO_IO_CORE] : buffered out port:32 p_lrclk       = PORT_I2S_LRCLK;
 on stdcore[AUDIO_IO_CORE] : buffered out port:32 p_bclk        = PORT_I2S_BCLK;
+#else
+on stdcore[AUDIO_IO_CORE] : in port p_lrclk       = PORT_I2S_LRCLK;
+on stdcore[AUDIO_IO_CORE] : in port p_bclk        = PORT_I2S_BCLK;
+#endif
+
 on stdcore[AUDIO_IO_CORE] : port p_mclk                        = PORT_MCLK_IN;
 on stdcore[0] : in port p_for_mclk_count           = PORT_MCLK_COUNT;
 

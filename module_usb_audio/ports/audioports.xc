@@ -110,11 +110,16 @@ void ConfigAudioPorts(unsigned int divide)
     /* Pause until output completes */
     sync(p_bclk);
 
-#else
-    /* Stop bit and master clock blocks and clear port buffers */
+#else /* CODEC_SLAVE = 1 */
+
+    /* Stop bit and master clock blocks */
     stop_clock(clk_audio_bclk);
     stop_clock(clk_audio_mclk);
 
+    /* Clock master clock-block from master-clock port - 
+     * though not directly used in I2S slave mode it is required for FB */
+    configure_clock_src(clk_audio_mclk, p_mclk);
+    
     /* Clock bclk clock-block from bclk pin */
     configure_clock_src(clk_audio_bclk, p_bclk);
 
@@ -133,6 +138,7 @@ void ConfigAudioPorts(unsigned int divide)
     configure_in_port_no_ready(p_lrclk, clk_audio_bclk);
 
     start_clock(clk_audio_bclk);
+    start_clock(clk_audio_mclk);
 
 #endif
 }
