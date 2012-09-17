@@ -70,8 +70,8 @@
 #undef DFU
 #endif
 
-#if defined(CODEC_SLAVE) && (CODEC_SLAVE == 0)
-#undef CODEC_SLAVE
+#if defined(CODEC_MASTER) && (CODEC_MASTER == 0)
+#undef CODEC_MASTER
 #endif
 
 #if defined(LEVEL_METER_LEDS) && !defined(LEVEL_UPDATE_RATE)
