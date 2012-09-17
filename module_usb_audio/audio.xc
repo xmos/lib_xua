@@ -40,7 +40,7 @@ extern buffered in port:32  p_i2s_adc[I2S_WIRES_ADC];
 #endif
 
 /* I2S LR/Bit clock I/O */
-#ifdef CODEC_SLAVE 
+#ifndef CODEC_MASTER
 extern buffered out port:32 p_lrclk;
 extern buffered out port:32 p_bclk;
 #else
@@ -136,7 +136,7 @@ unsigned deliver(chanend c_out, chanend ?c_spd_out, unsigned divide, chanend ?c_
 #endif
     }
 
-#ifdef CODEC_SLAVE 
+#ifndef CODEC_MASTER
     /* Clear I2S port buffers */
     clearbuf(p_lrclk);
     
@@ -321,7 +321,7 @@ unsigned deliver(chanend c_out, chanend ?c_spd_out, unsigned divide, chanend ?c_
         }
 #endif
       
-#ifdef CODEC_SLAVE  
+#ifndef CODEC_MASTER  
         /* Generate clocks LR Clock low - LEFT */ 
         switch (divide)
         {
@@ -414,7 +414,7 @@ unsigned deliver(chanend c_out, chanend ?c_spd_out, unsigned divide, chanend ?c_
         }
 #endif
 
-#ifdef CODEC_SLAVE 
+#ifndef CODEC_MASTER 
         /* Clock out data (and LR clock) */
         switch (divide)
         {
