@@ -13,7 +13,7 @@ extern buffered in port:32  p_i2s_adc[I2S_WIRES_ADC];
 #endif
 
 #if (I2S_CHANS_DAC != 0) || (I2S_CHANS_ADC != 0)
-#ifdef CODEC_SLAVE
+#ifndef CODEC_MASTER
 extern buffered out port:32 p_lrclk;
 extern buffered out port:32 p_bclk;
 #else
@@ -30,7 +30,7 @@ extern clock    clk_audio_bclk;
 void ConfigAudioPorts(unsigned int divide) 
 {
 
-#ifdef CODEC_SLAVE
+#ifndef CODEC_MASTER
     /* Output 0 on BCLK to ensure clock is low
      * Required as stop_clock will only complete when the clock is low
      */
@@ -110,7 +110,7 @@ void ConfigAudioPorts(unsigned int divide)
     /* Pause until output completes */
     sync(p_bclk);
 
-#else /* CODEC_SLAVE = 1 */
+#else /* CODEC_MASTER */
 
     /* Stop bit and master clock blocks */
     stop_clock(clk_audio_bclk);
