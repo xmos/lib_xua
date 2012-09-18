@@ -221,18 +221,18 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
 
 #ifdef IAP
     // get the two buffers to use for iap device->host
-    asm("ldaw %0, dp[g_iap_to_host_buffer_A]":"=r"(iap_to_host_buffer));
-    asm("ldaw %0, dp[g_iap_to_host_buffer_B]":"=r"(iap_to_host_waiting_buffer));
-    asm("ldaw %0, dp[g_iap_from_host_buffer]":"=r"(iap_from_host_buffer));
+   // asm("ldaw %0, dp[g_iap_to_host_buffer_A]":"=r"(iap_to_host_buffer));
+   // asm("ldaw %0, dp[g_iap_to_host_buffer_B]":"=r"(iap_to_host_waiting_buffer));
+   // asm("ldaw %0, dp[g_iap_from_host_buffer]":"=r"(iap_from_host_buffer));
 
 
     // pass the iap->XUD chanends to decouple so that thread can
     // initialize comm with XUD
-    asm("stw %0, dp[iap_to_host_usb_ep]"::"r"(ep_iap_to_host));
-    asm("stw %0, dp[iap_to_host_int_usb_ep]"::"r"(ep_iap_to_host_int));
-    asm("stw %0, dp[iap_from_host_usb_ep]"::"r"(ep_iap_from_host));    
-    swap(iap_to_host_buffer, iap_to_host_waiting_buffer);
-    SET_SHARED_GLOBAL(g_iap_from_host_flag, 1);    
+   // asm("stw %0, dp[iap_to_host_usb_ep]"::"r"(ep_iap_to_host));
+    //asm("stw %0, dp[iap_to_host_int_usb_ep]"::"r"(ep_iap_to_host_int));
+    //asm("stw %0, dp[iap_from_host_usb_ep]"::"r"(ep_iap_from_host));    
+    //swap(iap_to_host_buffer, iap_to_host_waiting_buffer);
+    //SET_SHARED_GLOBAL(g_iap_from_host_flag, 1);    
 #endif
 
 #ifdef OUTPUT
@@ -563,7 +563,8 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
 #endif
 
 #ifdef IAP
-        case testct_byref(c_iap_from_host, tmp):
+        //case testct_byref(c_iap_from_host, tmp):
+        case XUD_GetData_Select(c_iap_from_host, ep_iap_from_host, tmp):
             asm("#iap h->d");
             if (tmp) {
               // Is a control token, not expected
