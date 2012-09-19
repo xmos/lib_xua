@@ -617,7 +617,7 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
 #ifdef IAP
                             {
                                int iap_reset = 1;
-                               SET_SHARED_GLOBAL(g_iap_reset, iap_reset);
+                               //SET_SHARED_GLOBAL(g_iap_reset, iap_reset);
                             }
 #endif
                             /* No data stage for this request, just do status stage */
