@@ -71,13 +71,14 @@ unsigned outAudioBuff[BUFF_SIZE_OUT + (MAX_USB_AUD_PACKET_SIZE>>2) + 4];
 unsigned audioBuffIn[BUFF_SIZE_IN + (MAX_DEVICE_AUD_PACKET_SIZE>>2) + 4];
 
 unsigned inZeroBuff[(MAX_DEVICE_AUD_PACKET_SIZE>>2)+4];
-
+//
 unsigned ledVal = 1;
 unsigned dir = 0;
 
 void GetADCCounts(unsigned samFreq, int &min, int &mid, int &max);
 
-#ifdef IAP
+//#ifdef IAP
+#if 0
 static inline void swap(xc_ptr &a, xc_ptr &b) 
 {
   xc_ptr tmp;
@@ -99,7 +100,8 @@ int g_iap_from_host_buffer[MAX_IAP_PACKET_SIZE/4+4];
 unsigned g_zero_buffer[1];
 #endif
 
-#ifdef HID_CONTROLS
+//#ifdef HID_CONTROLS
+#if 0
 extern in port p_but;
 unsigned char g_hidData[16] = {0};
 unsigned char g_hidFlag = 0;
@@ -561,7 +563,8 @@ void decouple(chanend c_mix_out,
     int aud_to_host_flag=0;
     xc_ptr released_buffer;
 
-#ifdef IAP
+#if 0
+//#ifdef IAP
     xc_ptr iap_from_host_rdptr;
     xc_ptr iap_from_host_buffer;
     xc_ptr iap_to_host_buffer_being_sent = array_to_xc_ptr(g_iap_to_host_buffer_A);
@@ -639,24 +642,8 @@ void decouple(chanend c_mix_out,
 
     set_interrupt_handler(handle_audio_request, 200, 1, c_mix_out, 0);
 
-#ifdef MIDI
-    //asm("ldaw %0, dp[g_midi_to_host_buffer]":"=r"(midi_to_host_buffer));
-    //asm("ldaw %0, dp[g_midi_from_host_buffer]":"=r"(midi_from_host_buffer));
-
-    // wait for usb_buffer to set up
-    //while(!midi_from_host_flag) {
-      //GET_SHARED_GLOBAL(midi_from_host_flag, g_midi_from_host_flag);
-   // }
-//#if 1 
-    
-    //midi_from_host_flag = 0;
-    //SET_SHARED_GLOBAL(g_midi_from_host_flag, midi_from_host_flag);
-
-    // send the current host -> device buffer out of the fifo
-    //XUD_SetReady_OutPtr(midi_from_host_usb_ep, midi_from_host_buffer);
-#endif
-
-#ifdef IAP
+#if 0
+//#ifdef IAP
     //asm("ldaw %0, dp[g_iap_to_host_buffer]":"=r"(iap_to_host_buffer));
     asm("ldaw %0, dp[g_iap_from_host_buffer]":"=r"(iap_from_host_buffer));
 
@@ -720,7 +707,8 @@ void decouple(chanend c_mix_out,
         }
            
         {
-#ifdef HID_CONTROLS
+#if 0
+//#ifdef HID_CONTROLS
             Vendor_ReadHIDButtons(g_hidData);
             
             if(g_hidFlag == 0)
@@ -1000,7 +988,8 @@ void decouple(chanend c_mix_out,
 #endif // INPUT
 
 
-#ifdef IAP
+#if 0
+//#ifdef IAP
         GET_SHARED_GLOBAL(iap_reset, g_iap_reset);          
         if (iap_reset) 
         {
