@@ -19,16 +19,10 @@
 #include "xud.h"
 #include "testct_byref.h"
 
-int pktCount = 0;
- 
-XUD_ep XUD_Init_Ep(chanend c_ep);
-//
-//static inline void XUD_SetNotReady(XUD_ep e)
-///{
- // int chan_array_ptr;
- // asm ("ldw %0, %1[0]":"=r"(chan_array_ptr):"r"(e));
- // asm ("stw %0, %1[0]"::"r"(0),"r"(chan_array_ptr));
-//}
+#ifdef HID_CONTROLS
+#include "vendor_hid.h"
+unsigned char g_hidData[1] = {0};
+#endif
 
 void GetADCCounts(unsigned samFreq, int &min, int &mid, int &max);
 #define BUFFER_SIZE_OUT       (1028 >> 2)
@@ -63,6 +57,11 @@ unsigned int g_midi_to_host_buffer_B[MAX_USB_MIDI_PACKET_SIZE/4+4];
 int g_midi_from_host_buffer[MAX_USB_MIDI_PACKET_SIZE/4+4];
 #endif
 
+#ifdef IAP
+/* iAP buffers */
+unsigned int g_iap_to_host_buffer_A[MAX_IAP_PACKET_SIZE/4+4];
+unsigned int g_iap_to_host_buffer_B[MAX_IAP_PACKET_SIZE/4+4];
+#endif
 
 unsigned char fb_clocks[16];
 
@@ -97,20 +96,20 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
 #endif
             )
 {
-  XUD_ep ep_aud_out = XUD_Init_Ep(c_aud_out);
-  XUD_ep ep_aud_in = XUD_Init_Ep(c_aud_in);
-  XUD_ep ep_aud_fb = XUD_Init_Ep(c_aud_fb);
+    XUD_ep ep_aud_out = XUD_Init_Ep(c_aud_out);
+    XUD_ep ep_aud_in = XUD_Init_Ep(c_aud_in);
+    XUD_ep ep_aud_fb = XUD_Init_Ep(c_aud_fb);
 #ifdef MIDI
-  XUD_ep ep_midi_from_host = XUD_Init_Ep(c_midi_from_host);
-  XUD_ep ep_midi_to_host = XUD_Init_Ep(c_midi_to_host);
+    XUD_ep ep_midi_from_host = XUD_Init_Ep(c_midi_from_host);
+    XUD_ep ep_midi_to_host = XUD_Init_Ep(c_midi_to_host);
 #endif
 #ifdef IAP
-  XUD_ep ep_iap_from_host   = XUD_Init_Ep(c_iap_from_host);
-  XUD_ep ep_iap_to_host     = XUD_Init_Ep(c_iap_to_host);
-  XUD_ep ep_iap_to_host_int = XUD_Init_Ep(c_iap_to_host_int);
+    XUD_ep ep_iap_from_host   = XUD_Init_Ep(c_iap_from_host);
+    XUD_ep ep_iap_to_host     = XUD_Init_Ep(c_iap_to_host);
+    XUD_ep ep_iap_to_host_int = XUD_Init_Ep(c_iap_to_host_int);
 #endif
 #if defined(SPDIF_RX) || defined(ADAT_RX)
-  XUD_ep ep_int = XUD_Init_Ep(c_int);
+    XUD_ep ep_int = XUD_Init_Ep(c_int);
 #endif
 
 #ifdef HID_CONTROLS
@@ -154,6 +153,27 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
     int midi_waiting_on_send_to_host = 0;
 #endif
 
+#ifdef IAP
+    xc_ptr iap_from_host_rdptr;
+    xc_ptr iap_from_host_buffer;
+    //xc_ptr iap_to_host_buffer_being_sent = array_to_xc_ptr(g_iap_to_host_buffer_A);
+    //xc_ptr iap_to_host_buffer_being_collected = array_to_xc_ptr(g_iap_to_host_buffer_B);
+    //xc_ptr zero_buffer = array_to_xc_ptr(g_zero_buffer);
+    
+    int is_ack_iap;
+    int is_reset;
+    int iap_reset;
+    unsigned int datum_iap;
+    int iap_data_remaining_to_device = 0;
+    int iap_data_collected_from_device = 0;
+    int iap_waiting_on_send_to_host = 0;
+    int iap_to_host_flag = 0;
+    int iap_from_host_flag = 0;
+    int iap_expecting_length = 1;
+    int iap_expecting_data_length = 0;
+#endif
+
+
     xc_ptr p_inZeroBuff = array_to_xc_ptr(inZeroBuff);
     
     set_thread_fast_mode_on();
@@ -171,9 +191,6 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
 #endif
     asm("stw %0, dp[aud_from_host_usb_ep]"::"r"(ep_aud_out));
     asm("stw %0, dp[aud_to_host_usb_ep]"::"r"(ep_aud_in));
-#ifdef HID_CONTROLS
-    asm("stw %0, dp[g_ep_hid]"::"r"(ep_hid));
-#endif
     asm("stw %0, dp[buffer_aud_ctl_chan]"::"r"(c_aud_ctl));    
 
     /* Wait for USB connect then setup our first packet */     
@@ -565,7 +582,9 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
 #ifdef IAP
         //case testct_byref(c_iap_from_host, tmp):
         case XUD_GetData_Select(c_iap_from_host, ep_iap_from_host, tmp):
-            asm("#iap h->d");
+            {asm("#iap h->d");
+           
+#if 0
             if (tmp) {
               // Is a control token, not expected
             } else {
@@ -606,11 +625,11 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
               }
           
              // XUD_SetNotReady(ep_iap_from_host);                     
-  
-              write_via_xc_ptr(iap_from_host_buffer, datalength);
+#endif 
+              //write_via_xc_ptr(iap_from_host_buffer, datalength);
                       
               /* release the buffer */
-              SET_SHARED_GLOBAL(g_iap_from_host_flag, 1);
+              //SET_SHARED_GLOBAL(g_iap_from_host_flag, 1);
             }
             break;
  
@@ -625,8 +644,8 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
                 XUD_GetBusSpeed(c_iap_to_host);
                 XUD_GetBusSpeed(c_iap_to_host_int);
                
-                XUD_SetNotReady(ep_iap_to_host); 
-                XUD_SetNotReady(ep_iap_to_host_int);                     
+                //XUD_SetNotReady(ep_iap_to_host); 
+                //XUD_SetNotReady(ep_iap_to_host_int);                     
             } else {
               inuint(c_iap_to_host); // And discard
               // fill in the data
@@ -635,9 +654,9 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
               //XUD_SetNotReady(ep_iap_to_host);                     
 
               // ack the decouple thread to say it has been sent to host  
-              SET_SHARED_GLOBAL(g_iap_to_host_flag, 1);
+              //SET_SHARED_GLOBAL(g_iap_to_host_flag, 1);
 
-              swap(iap_to_host_buffer, iap_to_host_waiting_buffer);
+              //swap(iap_to_host_buffer, iap_to_host_waiting_buffer);
             }
           break;
 
@@ -652,8 +671,8 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
                 XUD_GetBusSpeed(c_iap_to_host);
                 XUD_GetBusSpeed(c_iap_to_host_int);
                
-                XUD_SetNotReady(ep_iap_to_host);                     
-                XUD_SetNotReady(ep_iap_to_host_int);                     
+                //XUD_SetNotReady(ep_iap_to_host);                     
+                //XUD_SetNotReady(ep_iap_to_host_int);                     
             } 
             else 
             {
@@ -670,7 +689,8 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
             /* HID Report Data */
             case XUD_SetData_Select(c_hid, ep_hid, tmp):
             {
-                asm("stw   %0, dp[g_hidFlag]" :: "r" (0)  );       
+                Vendor_ReadHIDButtons(g_hidData);
+                XUD_SetReady_In(ep_hid, g_hidData, 1);
             }
             break;
 #endif
