@@ -278,10 +278,11 @@ unsigned char hidReportDescriptor[] = {
 0x75, 0x01,     /* Report Size (1) */
 0x95, 0x06,     /* Report Count (6) */
 0x81, 0x02,     /* Input (Data, Var, Abs) */
-0x95, 0x02,      /* Report Count (2) */
+0x95, 0x02,     /* Report Count (2) */
 0x81, 0x01,     /* Input (Cnst, Ary, Abs) */
 0xc0            /* End collection */
 };
+
 #endif
 
 #define HID_LENGTH (25*HID_INTERFACES)
