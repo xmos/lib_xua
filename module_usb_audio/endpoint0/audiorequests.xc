@@ -1184,7 +1184,10 @@ int AudioClassRequests_1(XUD_ep c_ep0_out, XUD_ep c_ep0_in, SetupPacket &sp, cha
                             i_tmp = MCLK_441;
                         }
 
-                        setG_curSamFreqMultiplier(g_curSamFreq/(i_tmp/512));
+                       // setG_curSamFreqMultiplier(g_curSamFreq/(i_tmp/512)); 
+                        setG_curSamFreqMultiplier((g_curSamFreq*512)/i_tmp); 
+
+                        
 
                         /* Instruct audio thread to change sample freq */
                         outuint(c_audioControl, SET_SAMPLE_FREQ);
