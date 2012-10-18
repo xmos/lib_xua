@@ -197,9 +197,6 @@ int main()
 #endif
 
     
-    //SPI_SS Mux - disable access to SPI_SS
-    //p_gpio <: 1;
-
     par 
     {
     
