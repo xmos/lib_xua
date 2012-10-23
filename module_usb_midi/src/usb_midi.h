@@ -15,7 +15,7 @@
  *  \param cable_number the cable number of the MIDI implementation.
  *                      This should be set to 0.
  **/
-void usb_midi(port ?p_midi_in, port ?p_midi_out, 
+void usb_midi(in port ?p_midi_in, out port ?p_midi_out, 
               clock ?clk_midi,
               chanend c_midi,
               unsigned cable_number,

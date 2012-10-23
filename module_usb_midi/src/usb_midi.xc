@@ -81,7 +81,7 @@ extern unsigned polltime;
 timer iAPTimer;
 #endif
 
-void usb_midi(port ?p_midi_in, port ?p_midi_out,
+void usb_midi(in port ?p_midi_in, out port ?p_midi_out,
             clock ?clk_midi,
             chanend c_midi,
             unsigned cable_number,
@@ -121,12 +121,11 @@ void usb_midi(port ?p_midi_in, port ?p_midi_out,
     init_queue(symbol_fifo, symbol_fifo_arr, USB_MIDI_DEVICE_OUT_FIFO_SIZE, 4);
     init_queue(midi_to_host_fifo, midi_to_host_fifo_arr, 1, 4);
 
-    configure_out_port_no_ready(p_midi_out, clk_midi, 1);
+    configure_out_port(p_midi_out, clk_midi, 1<<MIDI_SHIFT_TX);
     configure_in_port(p_midi_in, clk_midi);
 
+    /* Just in case not using CLKBLK_REF */
     start_clock(clk_midi);
-    start_port(p_midi_out);
-    start_port(p_midi_in);
 
     reset_midi_state(mips);
 
@@ -138,7 +137,7 @@ void usb_midi(port ?p_midi_in, port ?p_midi_out,
     CoProcessorDisable();
 #endif
       
-    p_midi_out <: 1 << MIDI_SHIFT_TX; // Start with high bit.
+   // p_midi_out <: 1 << MIDI_SHIFT_TX; // Start with high bit.
 #ifdef IAP  
     CoProcessorEnable();
 #endif

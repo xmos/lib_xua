@@ -103,8 +103,8 @@ on stdcore[AUDIO_IO_CORE] : buffered out port:32 p_spdif_tx   = PORT_SPDIF_OUT;
 #endif
 
 #ifdef MIDI
-on stdcore[AUDIO_IO_CORE] : port p_midi_tx                     = PORT_MIDI_OUT;
-on stdcore[AUDIO_IO_CORE] : port p_midi_rx                     = PORT_MIDI_IN;
+on stdcore[AUDIO_IO_CORE] :  port p_midi_tx                     = PORT_MIDI_OUT;
+on stdcore[AUDIO_IO_CORE] : in port p_midi_rx                     = PORT_MIDI_IN;
 #endif
 
 /* Clock blocks */
