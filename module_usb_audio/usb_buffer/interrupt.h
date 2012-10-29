@@ -120,20 +120,6 @@
   "stw r2, sp[" "__"#f"_handler_r2_save" "]\n" \
   ".linkset __"#f"_handler_r3_save, "#args"+3\n"   \
   "stw r3, sp[" "__"#f"_handler_r3_save" "]\n" \
-  ".linkset __"#f"_handler_r4_save, "#args"+4\n"   \
-  "stw r4, sp[" "__"#f"_handler_r4_save" "]\n" \
-  ".linkset __"#f"_handler_r5_save, "#args"+5\n"   \
-  "stw r5, sp[" "__"#f"_handler_r5_save" "]\n" \
-  ".linkset __"#f"_handler_r6_save, "#args"+6\n"   \
-  "stw r6, sp[" "__"#f"_handler_r6_save" "]\n" \
-  ".linkset __"#f"_handler_r7_save, "#args"+7\n"   \
-  "stw r7, sp[" "__"#f"_handler_r7_save" "]\n" \
-  ".linkset __"#f"_handler_r8_save, "#args"+8\n"   \
-  "stw r8, sp[" "__"#f"_handler_r8_save" "]\n" \
-  ".linkset __"#f"_handler_r9_save, "#args"+9\n"   \
-  "stw r9, sp[" "__"#f"_handler_r9_save" "]\n" \
-  ".linkset __"#f"_handler_r10_save, "#args"+10\n"   \
-  "stw r10, sp[" "__"#f"_handler_r10_save" "]\n" \
   ".linkset __"#f"_handler_r11_save, "#args"+11\n"   \
   "stw r11, sp[" "__"#f"_handler_r11_save" "]\n" \
   ".linkset __"#f"_handler_lr_save, "#args"+14\n"   \
@@ -144,13 +130,6 @@
   "ldw r1, sp[" "__"#f"_handler_r1_save" "]\n" \
   "ldw r2, sp[" "__"#f"_handler_r2_save" "]\n" \
   "ldw r3, sp[" "__"#f"_handler_r3_save" "]\n" \
-  "ldw r4, sp[" "__"#f"_handler_r4_save" "]\n" \
-  "ldw r5, sp[" "__"#f"_handler_r5_save" "]\n" \
-  "ldw r6, sp[" "__"#f"_handler_r6_save" "]\n" \
-  "ldw r7, sp[" "__"#f"_handler_r7_save" "]\n" \
-  "ldw r8, sp[" "__"#f"_handler_r8_save" "]\n" \
-  "ldw r9, sp[" "__"#f"_handler_r9_save" "]\n" \
-  "ldw r10, sp[" "__"#f"_handler_r10_save" "]\n" \
   "ldw r11, sp[" "__"#f"_handler_r11_save" "]\n" \
   "ldw lr, sp[" "__"#f"_handler_lr_save" "]\n" 
 
