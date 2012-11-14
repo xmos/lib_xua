@@ -8,6 +8,8 @@
 #define XMOS_L1_AUDIO2_PID 0x0002
 #define XMOS_L1_AUDIO1_PID 0x0003
 #define XMOS_L2_AUDIO2_PID 0x0004
+#define XMOS_SU1_AUDIO2_PID 0x0008
+
 unsigned int XMOS_DFU_IF = 0;
 
 #define DFU_REQUEST_TO_DEV 0x21
@@ -49,6 +51,7 @@ static int find_xmos_device(unsigned int id)
         if (desc.idVendor == XMOS_VID && 
             ((desc.idProduct == XMOS_L1_AUDIO1_PID) || 
             (desc.idProduct == XMOS_L1_AUDIO2_PID) ||
+            (desc.idProduct == XMOS_SU1_AUDIO2_PID) ||
             (desc.idProduct == XMOS_L2_AUDIO2_PID))) 
         {
             if (found == id) 
