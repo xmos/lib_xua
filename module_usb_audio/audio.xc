@@ -589,10 +589,6 @@ void audio(chanend c_mix_out, chanend ?c_dig_rx, chanend ?c_config, chanend ?c)
     /* Perform required CODEC/ADC/DAC initialisation */
     CodecInit(c_config);
 
-    {
-
-    }
-
     while(1)
     {
       
@@ -677,8 +673,6 @@ void audio(chanend c_mix_out, chanend ?c_dig_rx, chanend ?c_config, chanend ?c)
                     	}
                   	}
                 }
-
-                
 
 #ifdef SPDIF 
                 /* Notify S/PDIF thread of impending new freq... */
