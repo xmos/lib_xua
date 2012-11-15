@@ -38,6 +38,20 @@ int flash_cmd_disable_ports() {
   return 0;
 }
 
+void DFUCustomFlashEnable() __attribute__ ((weak));
+void DFUCustomFlashEnable()
+{
+    return;
+}
+
+
+void DFUCustomFlashDisable() __attribute__ ((weak));
+void DFUCustomFlashDisable()
+{
+    return;
+}
+
+
 int flash_cmd_init(void) {
   fl_BootImageInfo image;
 

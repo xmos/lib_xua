@@ -1,6 +1,7 @@
 #include <xs1.h>
 #include <platform.h>
 #include <print.h>
+#include "devicedefines.h"
 
 #include "xud.h"
 #ifdef ARCH_G
@@ -23,9 +24,13 @@ static unsigned int subPagesLeft = 0;
 
 extern int DFU_reset_override;
 
-void temp() {
- asm(".linkset DFU_reset_override, _edp.bss");
- asm(".globl DFU_reset_override");
+extern void DFUCustomFlashEnable();
+extern void DFUCustomFlashDisable();
+
+void temp() 
+{
+    asm(".linkset DFU_reset_override, _edp.bss");
+    asm(".globl DFU_reset_override");
 }
 
 static int DFU_OpenFlash(chanend ?c_user_cmd) 
@@ -33,38 +38,46 @@ static int DFU_OpenFlash(chanend ?c_user_cmd)
 	if (!DFU_flash_connected) 
 	{
     	unsigned int cmd_data[16];
-    	HandleUserDeviceRequest(FLASH_CMD_INIT, 1, 0, cmd_data, c_user_cmd);
+        DFUCustomFlashEnable();
+    	HandleUserDeviceRequest(FLASH_CMD_INIT, 1, 0, cmd_data);
     	DFU_flash_connected = 1;
   	}
   
   	return 0;
 }
 
-static int DFU_CloseFlash(chanend ?c_user_cmd) {
-  if (DFU_flash_connected) {
-    unsigned int cmd_data[16];
-    HandleUserDeviceRequest(FLASH_CMD_DEINIT, 1, 0, cmd_data, c_user_cmd);
-    DFU_flash_connected = 0;
-  }
-  return 0;
+static int DFU_CloseFlash(chanend ?c_user_cmd) 
+{
+    if (DFU_flash_connected) 
+    {
+        unsigned int cmd_data[16];
+        DFUCustomFlashDisable();
+        HandleUserDeviceRequest(FLASH_CMD_DEINIT, 1, 0, cmd_data);
+        DFU_flash_connected = 0;
+    }
+    return 0;
 }
 
-static int DFU_Detach(unsigned int timeout, chanend ?c_user_cmd) {
-  if (DFU_state == STATE_APP_IDLE) {
+static int DFU_Detach(unsigned int timeout, chanend ?c_user_cmd) 
+{
+    if (DFU_state == STATE_APP_IDLE) 
+    {
 
-    DFU_state = STATE_APP_DETACH;
+        DFU_state = STATE_APP_DETACH;
 
-    DFU_OpenFlash(c_user_cmd);
+        DFU_OpenFlash(c_user_cmd);
 
-    // Setup DFU timeout value
-    DFUResetTimeout = timeout * 100000;
+        // Setup DFU timeout value
+        DFUResetTimeout = timeout * 100000;
     
-    // Start DFU reset timer
-    DFUTimer :> DFUTimerStart;
-  } else {
-    DFU_state = STATE_DFU_ERROR;
-  }
-  return 0; 
+        // Start DFU reset timer
+        DFUTimer :> DFUTimerStart;
+    } 
+    else 
+    {
+        DFU_state = STATE_DFU_ERROR;
+    }
+    return 0; 
 }
 
 static int DFU_Dnload(unsigned int request_len, unsigned int block_num, unsigned int request_data[16], chanend ?c_user_cmd) {
@@ -102,12 +115,12 @@ static int DFU_Dnload(unsigned int request_len, unsigned int block_num, unsigned
     if (subPagesLeft) {
       unsigned int subPagePad[16] = {0};
       for (i = 0; i < subPagesLeft; i++) {
-        HandleUserDeviceRequest(FLASH_CMD_WRITE_PAGE_DATA, 1, 64, subPagePad, c_user_cmd);
+        HandleUserDeviceRequest(FLASH_CMD_WRITE_PAGE_DATA, 1, 64, subPagePad);
       }
     }
 
     cmd_data[0] = 2; // Terminate write
-    HandleUserDeviceRequest(FLASH_CMD_WRITE_PAGE, 1, 4, cmd_data, c_user_cmd);
+    HandleUserDeviceRequest(FLASH_CMD_WRITE_PAGE, 1, 4, cmd_data);
 
     DFU_state = STATE_DFU_MANIFEST_SYNC;
   } else {
@@ -120,24 +133,16 @@ static int DFU_Dnload(unsigned int request_len, unsigned int block_num, unsigned
     { 
       unsigned s = 0;
 
-#if 1
-      /* Flash lib does erase on add image */
       // Erase flash on first block
-      HandleUserDeviceRequest(FLASH_CMD_ERASE_ALL, 1, 0, cmd_data, c_user_cmd);
-#endif
+      HandleUserDeviceRequest(FLASH_CMD_ERASE_ALL, 1, 0, cmd_data);
 
-#if 0
-      /* Delay should not be required.  Erase now blocking call */
-      DFUTimer :> s;
-      DFUTimer when timerafter(s + 25000000) :> s; // Wait for flash erase
-#endif   
     }
 
     // Program firmware, STATE_DFU_DOWNLOAD_BUSY not currently used
-
-    if (!(block_num % 4)) {
+    if (!(block_num % 4)) 
+    {
       cmd_data[0] = !fromDfuIdle; // 0 for first page, 1 for other pages.
-      HandleUserDeviceRequest(FLASH_CMD_WRITE_PAGE, 1, 4, cmd_data, c_user_cmd);
+      HandleUserDeviceRequest(FLASH_CMD_WRITE_PAGE, 1, 4, cmd_data);
       subPagesLeft = 4;
     }
  
@@ -145,7 +150,7 @@ static int DFU_Dnload(unsigned int request_len, unsigned int block_num, unsigned
       cmd_data[i] = request_data[i];
     }
 
-    HandleUserDeviceRequest(FLASH_CMD_WRITE_PAGE_DATA, 1, 64, cmd_data, c_user_cmd);
+    HandleUserDeviceRequest(FLASH_CMD_WRITE_PAGE_DATA, 1, 64, cmd_data);
     subPagesLeft--;
 
     DFU_state = STATE_DFU_DOWNLOAD_SYNC;
@@ -188,7 +193,7 @@ static int DFU_Upload(unsigned int request_len, unsigned int block_num, unsigned
     cmd_data[0] = !firstRead;
 
     // Read page
-    HandleUserDeviceRequest(FLASH_CMD_READ_PAGE, 0, 4, cmd_data, c_user_cmd);
+    HandleUserDeviceRequest(FLASH_CMD_READ_PAGE, 0, 4, cmd_data);
     subPagesLeft = 4;
 
     // If address out of range, terminate!
@@ -201,7 +206,7 @@ static int DFU_Upload(unsigned int request_len, unsigned int block_num, unsigned
   }  
 
   // Read page data
-  HandleUserDeviceRequest(FLASH_CMD_READ_PAGE_DATA, 0, 0, request_data, c_user_cmd);
+  HandleUserDeviceRequest(FLASH_CMD_READ_PAGE_DATA, 0, 0, request_data);
 
   subPagesLeft--;
 
@@ -329,18 +334,19 @@ int DFUReportResetState(chanend ?c_user_cmd)
   return inDFU;
 }
 
-int XMOS_DFU_RevertFactory(chanend ?c_user_cmd) {
-  unsigned int cmd_data[16];
-  unsigned s = 0;
+int XMOS_DFU_RevertFactory(chanend ?c_user_cmd) 
+{
+    unsigned int cmd_data[16];
+    unsigned s = 0;
 
-  DFU_OpenFlash(c_user_cmd);
+    DFU_OpenFlash(c_user_cmd);
 
-  HandleUserDeviceRequest(FLASH_CMD_ERASE_ALL, 1, 0, cmd_data, c_user_cmd);
+    HandleUserDeviceRequest(FLASH_CMD_ERASE_ALL, 1, 0, cmd_data);
 
-  DFUTimer :> s;
-  DFUTimer when timerafter(s + 25000000) :> s; // Wait for flash erase
+    DFUTimer :> s;
+    DFUTimer when timerafter(s + 25000000) :> s; // Wait for flash erase
   
-  return 0;
+    return 0;
 }
 
 int XMOS_DFU_SelectImage(unsigned int index, chanend ?c_user_cmd) {
@@ -453,13 +459,13 @@ int DFUDeviceRequests(XUD_ep ep0_out, XUD_ep &?ep0_in, SetupPacket &sp, chanend 
   	{
 		if (!user_reset) 
 		{
-      		        unsigned int cmd_data[16];
-      			HandleUserDeviceRequest(FLASH_CMD_REBOOT, 1, 0, cmd_data, c_user_cmd);
-                } 
+      	    unsigned int cmd_data[16];
+      		HandleUserDeviceRequest(FLASH_CMD_REBOOT, 1, 0, cmd_data);
+        } 
 		else 
 		{
       		return 1; 
-                }
+        }
   	}
 
   	return 0;

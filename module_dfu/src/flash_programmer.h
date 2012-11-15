@@ -9,6 +9,5 @@
 
 unsigned int flash_programmer(unsigned int cmd, unsigned int request_data[16]);
 int HandleUserDeviceRequest(unsigned int cmd, unsigned int to_device, 
-                            unsigned int request_size, unsigned int request_data[16], 
-                            chanend ?c_user_cmd);
+                            unsigned int request_size, unsigned int request_data[16]);
 
