@@ -778,9 +778,6 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
                         {
                             timer tmr;
                             unsigned s;
-                            /* Send reboot command */
-                            //outuint(c_audioControl, SET_SAMPLE_FREQ);
-                            //outuint(c_audioControl, AUDIO_REBOOT_FROM_DFU);
                             tmr :> s;
                             tmr when timerafter(s + 50000000) :> s;
                             device_reboot(c_audioControl);
