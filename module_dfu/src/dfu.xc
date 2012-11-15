@@ -11,7 +11,7 @@
 #endif
 
 #include "dfu_types.h"
-#include "flash_programmer.h"
+#include "flash_interface.h"
 
 static int DFU_state = STATE_APP_IDLE;
 static int DFU_status = DFU_OK;
@@ -39,7 +39,8 @@ static int DFU_OpenFlash(chanend ?c_user_cmd)
 	{
     	unsigned int cmd_data[16];
         DFUCustomFlashEnable();
-    	HandleUserDeviceRequest(FLASH_CMD_INIT, 1, 0, cmd_data);
+    	//HandleUserDeviceRequest(FLASH_CMD_INIT, 1, 0, cmd_data);
+        flash_cmd_init();
     	DFU_flash_connected = 1;
   	}
   
@@ -52,7 +53,8 @@ static int DFU_CloseFlash(chanend ?c_user_cmd)
     {
         unsigned int cmd_data[16];
         DFUCustomFlashDisable();
-        HandleUserDeviceRequest(FLASH_CMD_DEINIT, 1, 0, cmd_data);
+        //HandleUserDeviceRequest(FLASH_CMD_DEINIT, 1, 0, cmd_data);
+        flash_cmd_deinit();
         DFU_flash_connected = 0;
     }
     return 0;
@@ -114,13 +116,16 @@ static int DFU_Dnload(unsigned int request_len, unsigned int block_num, unsigned
     unsigned int cmd_data[16];
     if (subPagesLeft) {
       unsigned int subPagePad[16] = {0};
-      for (i = 0; i < subPagesLeft; i++) {
-        HandleUserDeviceRequest(FLASH_CMD_WRITE_PAGE_DATA, 1, 64, subPagePad);
+      for (i = 0; i < subPagesLeft; i++) 
+      {
+        //HandleUserDeviceRequest(FLASH_CMD_WRITE_PAGE_DATA, 1, 64, subPagePad);
+        flash_cmd_write_page_data((subPagePad, unsigned char[64]));
       }
     }
 
     cmd_data[0] = 2; // Terminate write
-    HandleUserDeviceRequest(FLASH_CMD_WRITE_PAGE, 1, 4, cmd_data);
+    //HandleUserDeviceRequest(FLASH_CMD_WRITE_PAGE, 1, 4, cmd_data);
+    flash_cmd_write_page((cmd_data, unsigned char[]));
 
     DFU_state = STATE_DFU_MANIFEST_SYNC;
   } else {
@@ -134,7 +139,9 @@ static int DFU_Dnload(unsigned int request_len, unsigned int block_num, unsigned
       unsigned s = 0;
 
       // Erase flash on first block
-      HandleUserDeviceRequest(FLASH_CMD_ERASE_ALL, 1, 0, cmd_data);
+      //HandleUserDeviceRequest(FLASH_CMD_ERASE_ALL, 1, 0, cmd_data);
+        flash_cmd_erase_all();
+    
 
     }
 
@@ -142,7 +149,8 @@ static int DFU_Dnload(unsigned int request_len, unsigned int block_num, unsigned
     if (!(block_num % 4)) 
     {
       cmd_data[0] = !fromDfuIdle; // 0 for first page, 1 for other pages.
-      HandleUserDeviceRequest(FLASH_CMD_WRITE_PAGE, 1, 4, cmd_data);
+      //HandleUserDeviceRequest(FLASH_CMD_WRITE_PAGE, 1, 4, cmd_data);
+      flash_cmd_write_page((cmd_data, unsigned char[64]));
       subPagesLeft = 4;
     }
  
@@ -150,7 +158,8 @@ static int DFU_Dnload(unsigned int request_len, unsigned int block_num, unsigned
       cmd_data[i] = request_data[i];
     }
 
-    HandleUserDeviceRequest(FLASH_CMD_WRITE_PAGE_DATA, 1, 64, cmd_data);
+    //HandleUserDeviceRequest(FLASH_CMD_WRITE_PAGE_DATA, 1, 64, cmd_data);
+    flash_cmd_write_page_data((cmd_data, unsigned char[64]));
     subPagesLeft--;
 
     DFU_state = STATE_DFU_DOWNLOAD_SYNC;
@@ -160,120 +169,136 @@ static int DFU_Dnload(unsigned int request_len, unsigned int block_num, unsigned
 }
 
 
-static int DFU_Upload(unsigned int request_len, unsigned int block_num, unsigned int request_data[16], chanend ?c_user_cmd) {
-  unsigned int cmd_data[16];
-  unsigned int firstRead = 0;
+static int DFU_Upload(unsigned int request_len, unsigned int block_num, unsigned int request_data[16], chanend ?c_user_cmd) 
+{
+    unsigned int cmd_data[16];
+    unsigned int firstRead = 0;
 
-  // Start at flash address 0
-  // Keep reading flash pages until read_page returns 1 (address out of range)
-  // Return terminating upload packet at this point
+    // Start at flash address 0
+    // Keep reading flash pages until read_page returns 1 (address out of range)
+    // Return terminating upload packet at this point
  
-  DFU_OpenFlash(c_user_cmd);
+    DFU_OpenFlash(c_user_cmd);
  
-  switch (DFU_state) {
-    case STATE_DFU_IDLE:
-    case STATE_DFU_UPLOAD_IDLE:
-      break;
-    default:
-      DFU_state = STATE_DFU_ERROR;
-      return 0;
-  }
-
-  //printintln(request_len);
-
-  if ((DFU_state == STATE_DFU_IDLE) && (request_len == 0)) {
-    DFU_state = STATE_DFU_ERROR;
-    return 0;
-  } else if (DFU_state == STATE_DFU_IDLE) {
-    firstRead = 1;
-    subPagesLeft = 0;
-  }
-
-  if (!subPagesLeft) {
-    cmd_data[0] = !firstRead;
-
-    // Read page
-    HandleUserDeviceRequest(FLASH_CMD_READ_PAGE, 0, 4, cmd_data);
-    subPagesLeft = 4;
-
-    // If address out of range, terminate!
-    if (cmd_data[0] == 1) {
-      subPagesLeft = 0;
-      // Back to idle state, upload complete
-      DFU_state = STATE_DFU_IDLE;
-      return 0;
+    switch (DFU_state) 
+    {
+        case STATE_DFU_IDLE:
+        case STATE_DFU_UPLOAD_IDLE:
+            break;
+        default:
+            DFU_state = STATE_DFU_ERROR;
+            return 0;
     }
-  }  
 
-  // Read page data
-  HandleUserDeviceRequest(FLASH_CMD_READ_PAGE_DATA, 0, 0, request_data);
+    if ((DFU_state == STATE_DFU_IDLE) && (request_len == 0)) 
+    {
+        DFU_state = STATE_DFU_ERROR;
+        return 0;
+    } 
+    else if (DFU_state == STATE_DFU_IDLE) 
+    {
+        firstRead = 1;
+        subPagesLeft = 0;
+    }
 
-  subPagesLeft--;
+    if (!subPagesLeft) 
+    {
+        cmd_data[0] = !firstRead;
 
-  DFU_state = STATE_DFU_UPLOAD_IDLE;
+        // Read page
+        // HandleUserDeviceRequest(FLASH_CMD_READ_PAGE, 0, 4, cmd_data);
+        flash_cmd_read_page((cmd_data, unsigned char[64]));
+        subPagesLeft = 4;
 
-  return 64; 
+        // If address out of range, terminate!
+        if (cmd_data[0] == 1) 
+        {
+            subPagesLeft = 0;
+            // Back to idle state, upload complete
+            DFU_state = STATE_DFU_IDLE;
+            return 0;
+        }
+    }      
+
+    // Read page data
+    // HandleUserDeviceRequest(FLASH_CMD_READ_PAGE_DATA, 0, 0, request_data);
+    flash_cmd_write_page_data((request_data, unsigned char[64]));
+
+    subPagesLeft--;
+
+    DFU_state = STATE_DFU_UPLOAD_IDLE;
+
+    return 64; 
 }
 
-static int DFU_GetStatus(unsigned int request_len, unsigned int request_data[16], chanend ?c_user_cmd) {
-  unsigned int timeout = 0;
+static int DFU_GetStatus(unsigned int request_len, unsigned int request_data[16], chanend ?c_user_cmd) 
+{
+    unsigned int timeout = 0;
 
-  request_data[0] = timeout << 8 | (unsigned char)DFU_status;
+    request_data[0] = timeout << 8 | (unsigned char)DFU_status;
  
-  switch (DFU_state) {
-    case STATE_DFU_MANIFEST:
-    case STATE_DFU_MANIFEST_WAIT_RESET:
-      DFU_state = STATE_DFU_ERROR;
-      break;
-    case STATE_DFU_DOWNLOAD_BUSY:
-      // If download completes -> DFU_DOWNLOAD_SYNC
-      // Currently all transactions are synchronous so no busy state
-      break;
-    case STATE_DFU_DOWNLOAD_SYNC:
-      DFU_state = STATE_DFU_DOWNLOAD_IDLE;
-      break;
-    case STATE_DFU_MANIFEST_SYNC:
-      // Check if complete here
-      DFU_state = STATE_DFU_IDLE;
-      break;
-    default:
-      break;
-  }
+    switch (DFU_state) 
+    {
+        case STATE_DFU_MANIFEST:
+        case STATE_DFU_MANIFEST_WAIT_RESET:
+            DFU_state = STATE_DFU_ERROR;
+            break;
+        case STATE_DFU_DOWNLOAD_BUSY:
+            // If download completes -> DFU_DOWNLOAD_SYNC
+            // Currently all transactions are synchronous so no busy state
+            break;
+        case STATE_DFU_DOWNLOAD_SYNC:
+            DFU_state = STATE_DFU_DOWNLOAD_IDLE;
+            break;
+        case STATE_DFU_MANIFEST_SYNC:
+            // Check if complete here
+            DFU_state = STATE_DFU_IDLE;
+            break;
+        default:
+            break;
+    }
 
-  request_data[1] = DFU_state;
+    request_data[1] = DFU_state;
 
-  return 6; 
+    return 6; 
 }
 
-static int DFU_ClrStatus(void) {
-  if (DFU_state == STATE_DFU_ERROR) {
+static int DFU_ClrStatus(void) 
+{
+    if (DFU_state == STATE_DFU_ERROR) 
+    {
+        DFU_state = STATE_DFU_IDLE;
+    } 
+    else 
+    {
+        DFU_state = STATE_DFU_ERROR;
+    }
+    return 0; 
+}
+
+static int DFU_GetState(unsigned int request_len, unsigned int request_data[16], chanend ?c_user_cmd) 
+{
+
+    request_data[0] = DFU_state;
+
+    switch (DFU_state) 
+    {
+        case STATE_DFU_DOWNLOAD_BUSY:
+        case STATE_DFU_MANIFEST:
+        case STATE_DFU_MANIFEST_WAIT_RESET:
+            DFU_state = STATE_DFU_ERROR;
+            break;
+        default:
+        break;
+    }
+
+    return 1; 
+}
+
+static int DFU_Abort(void) 
+{
     DFU_state = STATE_DFU_IDLE;
-  } else {
-    DFU_state = STATE_DFU_ERROR;
-  }
-  return 0; 
-}
-
-static int DFU_GetState(unsigned int request_len, unsigned int request_data[16], chanend ?c_user_cmd) {
-
-  request_data[0] = DFU_state;
-
-  switch (DFU_state) {
-    case STATE_DFU_DOWNLOAD_BUSY:
-    case STATE_DFU_MANIFEST:
-    case STATE_DFU_MANIFEST_WAIT_RESET:
-      DFU_state = STATE_DFU_ERROR;
-      break;
-    default:
-      break;
-  }
-
-  return 1; 
-}
-
-static int DFU_Abort(void) {
-  DFU_state = STATE_DFU_IDLE;
-  return 0; 
+    return 0; 
 }
 
 // Tell the DFU state machine that a USB reset has occured
@@ -341,7 +366,8 @@ int XMOS_DFU_RevertFactory(chanend ?c_user_cmd)
 
     DFU_OpenFlash(c_user_cmd);
 
-    HandleUserDeviceRequest(FLASH_CMD_ERASE_ALL, 1, 0, cmd_data);
+    //HandleUserDeviceRequest(FLASH_CMD_ERASE_ALL, 1, 0, cmd_data);
+    flash_cmd_erase_all();
 
     DFUTimer :> s;
     DFUTimer when timerafter(s + 25000000) :> s; // Wait for flash erase
@@ -460,7 +486,8 @@ int DFUDeviceRequests(XUD_ep ep0_out, XUD_ep &?ep0_in, SetupPacket &sp, chanend 
 		if (!user_reset) 
 		{
       	    unsigned int cmd_data[16];
-      		HandleUserDeviceRequest(FLASH_CMD_REBOOT, 1, 0, cmd_data);
+      		//HandleUserDeviceRequest(FLASH_CMD_REBOOT, 1, 0, cmd_data);
+            flash_cmd_reboot();
         } 
 		else 
 		{

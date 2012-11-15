@@ -44,7 +44,6 @@ void DFUCustomFlashEnable()
     return;
 }
 
-
 void DFUCustomFlashDisable() __attribute__ ((weak));
 void DFUCustomFlashDisable()
 {
@@ -52,40 +51,46 @@ void DFUCustomFlashDisable()
 }
 
 
-int flash_cmd_init(void) {
-  fl_BootImageInfo image;
+int flash_cmd_init(void) 
+{
+    fl_BootImageInfo image;
 
-  if (!flash_device_open) {
-    if (flash_cmd_enable_ports());
-      flash_device_open = 1;
-  }
+    if (!flash_device_open) 
+    {
+        if (flash_cmd_enable_ports())
+            flash_device_open = 1;
+    }
 
-  if (!flash_device_open)
-    return 0;
+    if (!flash_device_open)
+        return 0;
 
-  // Disable flash protection
-  fl_setProtection(0);
+    // Disable flash protection
+    fl_setProtection(0);
 
-  if (fl_getFactoryImage(&image) != 0) {
-    return 0;
-  }
-  factory_image = image;
+    if (fl_getFactoryImage(&image) != 0) 
+    {
+        return 0;
+    }
+    
+    factory_image = image;
 
-  if (fl_getNextBootImage(&image) == 0) {
-    upgrade_image_valid = 1;
-    upgrade_image = image;
-  }
+    if (fl_getNextBootImage(&image) == 0) 
+    {
+        upgrade_image_valid = 1;
+        upgrade_image = image;
+    }
 
-  return 0;
+     return 0;
 }
 
-int flash_cmd_deinit(void) {
-  if (!flash_device_open)
-    return 0;
+int flash_cmd_deinit(void) 
+{
+    if (!flash_device_open)
+        return 0;
  
-  flash_cmd_disable_ports();
-  flash_device_open = 0;
-  return 0;
+    flash_cmd_disable_ports();
+    flash_device_open = 0;
+    return 0;
 }
 
 int flash_cmd_read_page(unsigned char *data) {
@@ -113,21 +118,6 @@ int flash_cmd_read_page_data(unsigned char *data) {
 
   return 64;
 }
-
-#if 0
-static int roundUpToSectorBoundary(unsigned address)
-{
-  unsigned curAddress = 0;
-  unsigned numSectors = fl_getNumSectors();
-  unsigned i;
-  for (i = 0; i < numSectors; i++) {
-    curAddress += fl_getSectorSize(i);
-    if (curAddress >= address)
-      return curAddress;
-  }
-  return address;
-}
-#endif
 
 static void begin_write()
 {
