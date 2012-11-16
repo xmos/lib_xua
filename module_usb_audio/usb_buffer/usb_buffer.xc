@@ -225,15 +225,7 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
     asm("ldaw %0, dp[g_midi_to_host_buffer_B]":"=r"(midi_to_host_waiting_buffer));
     asm("ldaw %0, dp[g_midi_from_host_buffer]":"=r"(midi_from_host_buffer));
 
-
-    // pass the midi->XUD chanends to decouple so that thread can
-    // initialize comm with XUD
-    //asm("stw %0, dp[midi_to_host_usb_ep]"::"r"(ep_midi_to_host));
-    //asm("stw %0, dp[midi_from_host_usb_ep]"::"r"(ep_midi_from_host));    
     swap(midi_to_host_buffer, midi_to_host_waiting_buffer);
-    //SET_SHARED_GLOBAL(g_midi_from_host_flag, 1);   
-    
-     
 #endif
 
 #ifdef IAP
@@ -321,75 +313,83 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
             /* Sample Freq our chan count update from ep 0 */     
             case testct_byref(c_aud_ctl, tmp):
             {
-                if (tmp) {
+                if (tmp) 
+                {
                    // is a control token sent by reboot_device
                    inct(c_aud_ctl);
                    outct(c_aud_ctl, XS1_CT_END);
                    while(1) {};
-                } else {
-                   int min, mid, max;
-                   int usb_speed;
-                   int frameTime;
-                   tmp = inuint(c_aud_ctl);
-                   GET_SHARED_GLOBAL(usb_speed, g_curUsbSpeed);
+                } 
+                else 
+                {
+                    int min, mid, max;
+                    int usb_speed;
+                    int frameTime;
+                    tmp = inuint(c_aud_ctl);
+                    GET_SHARED_GLOBAL(usb_speed, g_curUsbSpeed);
    
-                   if(tmp == SET_SAMPLE_FREQ)
-                   { 
-                       sampleFreq = inuint(c_aud_ctl);
-                
-                       /* Tidy up double buffer, note we can do better than this for 44.1 etc but better 
-                        * than sending two packets at old speed! */               
-                       if (usb_speed == XUD_SPEED_HS) 
-                         frameTime = 8000;
-                       else 
-                         frameTime = 1000;
+                    if(tmp == SET_SAMPLE_FREQ)
+                    { 
+                        sampleFreq = inuint(c_aud_ctl);
+ 
+                        /* Don't update things for DFU command.. */
+                        if(sampleFreq != AUDIO_STOP_FOR_DFU)
+                        {
+                                   
+                            /* Tidy up double buffer, note we can do better than this for 44.1 etc but better 
+                             * than sending two packets at old speed! */               
+                            if (usb_speed == XUD_SPEED_HS) 
+                                frameTime = 8000;
+                            else 
+                                frameTime = 1000;
    
-                       min = sampleFreq / frameTime;
+                            min = sampleFreq / frameTime;
    
-                       max = min + 1;
+                            max = min + 1;
                    
-                       mid = min;
+                            mid = min;
                    
-                       /* Check for INT(SampFreq/8000) == SampFreq/8000 */    
-                       if((sampleFreq % frameTime) == 0)
-                       {
-                           min -= 1;
-                       }
+                            /* Check for INT(SampFreq/8000) == SampFreq/8000 */    
+                            if((sampleFreq % frameTime) == 0)
+                            {
+                                min -= 1;
+                            }
    #ifdef FB_TOLERANCE_TEST
-                       expected_fb = ((sampleFreq * 0x2000) / frametime);
+                            expected_fb = ((sampleFreq * 0x2000) / frametime);
    #endif
                        
-                       asm("stw %0, dp[g_speed]"::"r"(mid << 16));
+                            asm("stw %0, dp[g_speed]"::"r"(mid << 16));
    
-                       if (usb_speed == XUD_SPEED_HS) 
-                         mid *= NUM_USB_CHAN_IN*4;
-                       else 
-                         mid *= NUM_USB_CHAN_IN*3;
+                            if (usb_speed == XUD_SPEED_HS) 
+                                mid *= NUM_USB_CHAN_IN*4;
+                            else 
+                                mid *= NUM_USB_CHAN_IN*3;
    
-                       asm("stw %0, %1[0]"::"r"(mid),"r"(p_inZeroBuff));
+                            asm("stw %0, %1[0]"::"r"(mid),"r"(p_inZeroBuff));
                        
-                       /* Reset FB */
-                       /* Note, Endpoint 0 will hold off host for a sufficient period to allow out feedback 
-                        * to stabilise (i.e. sofCount == 128 to fire) */ 
-                       sofCount = 0;
-                       clocks = 0;
-                       remnant = 0;
-   
-                       /* Ideally we want to wait for handshake (and pass back up) here.  But we cannot keep this
-                       * thread locked, it must stay responsive to packets/SOFs.  So, set a flag and check for 
-                       * handshake elsewhere */
-                       /* Pass on sample freq change to decouple */
-                       SET_SHARED_GLOBAL(g_freqChange, SET_SAMPLE_FREQ);
-                       SET_SHARED_GLOBAL(g_freqChange_sampFreq, sampleFreq);
-                       SET_SHARED_GLOBAL(g_freqChange_flag, SET_SAMPLE_FREQ);
-                   }
-                   else
-                   {
-                       sampleFreq = inuint(c_aud_ctl);         
-                       SET_SHARED_GLOBAL(g_freqChange, tmp);   /* Set command */
-                       SET_SHARED_GLOBAL(g_freqChange_sampFreq, sampleFreq); /* Set flag */
-                       SET_SHARED_GLOBAL(g_freqChange_flag, tmp);
-                   }
+                            /* Reset FB */
+                            /* Note, Endpoint 0 will hold off host for a sufficient period to allow out feedback 
+                             * to stabilise (i.e. sofCount == 128 to fire) */ 
+                            sofCount = 0;
+                            clocks = 0;
+                            remnant = 0;
+                    
+                        }  
+                        /* Ideally we want to wait for handshake (and pass back up) here.  But we cannot keep this
+                        * thread locked, it must stay responsive to packets/SOFs.  So, set a flag and check for 
+                        * handshake elsewhere */
+                        /* Pass on sample freq change to decouple */
+                        SET_SHARED_GLOBAL(g_freqChange, SET_SAMPLE_FREQ);
+                        SET_SHARED_GLOBAL(g_freqChange_sampFreq, sampleFreq);
+                        SET_SHARED_GLOBAL(g_freqChange_flag, SET_SAMPLE_FREQ);
+                    }
+                    else
+                    {
+                        sampleFreq = inuint(c_aud_ctl);         
+                        SET_SHARED_GLOBAL(g_freqChange, tmp);   /* Set command */
+                        SET_SHARED_GLOBAL(g_freqChange_sampFreq, sampleFreq); /* Set flag */
+                        SET_SHARED_GLOBAL(g_freqChange_flag, tmp);
+                    }
                    
                   
    
