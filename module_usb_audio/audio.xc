@@ -553,12 +553,12 @@ void audio(chanend c_mix_out, chanend ?c_dig_rx, chanend ?c_config, chanend ?c)
     unsigned int vals[NUMBER_WORDS];
     int cnt = 0;
     int div;
-        unsigned val = 0;
-        int val2 = 0;
-        int adcOk = 0;
+    unsigned val = 0;
+    int val2 = 0;
+    int adcOk = 0;
 
     /* Enable adc on channel */
-        enable_xs1_su_adc_input(0, c);
+    enable_xs1_su_adc_input(0, c);
 
     /* General ADC control (enabled, 1 samples per packet, 32 bits per sample) */
     data[0] = 0x10201;
