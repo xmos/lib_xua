@@ -759,8 +759,6 @@ void decouple(chanend c_mix_out,
                 }
 
 
-               #if 1
-               //TODO RACE HERE
                 /* Check if we have an IN packet ready to go */
                 if (aud_in_ready)
                 {
@@ -770,11 +768,9 @@ void decouple(chanend c_mix_out,
                     GET_SHARED_GLOBAL(p, g_aud_to_host_buffer);
                     read_via_xc_ptr(len, p);                   
                     
-                    //XUD_Change_ReadyIn_Buffer(aud_to_host_usb_ep, p+4, len);
+                    /* Update packet size */
                     XUD_SetReady_InPtr(aud_to_host_usb_ep, p+4, len);
                 }
-                
-                #endif
 
                 /* Reset OUT buffer state */                
                 outUnderflow = 1;
@@ -784,7 +780,8 @@ void decouple(chanend c_mix_out,
 
                 if(outOverflow)
                 {
-                    //XUD_SetReady(aud_from_host_usb_ep, 1);
+                    /* If we were previously in overflow we wont have marked as ready */   
+                    XUD_SetReady_OutPtr(aud_from_host_usb_ep, aud_from_host_fifo_start+4);
                     outOverflow = 0;
                 }
 
@@ -896,7 +893,7 @@ void decouple(chanend c_mix_out,
                 /* Come out of OUT overflow state */
                 outOverflow = 0;
                 SET_SHARED_GLOBAL(g_aud_from_host_buffer, aud_from_host_wrptr);
-                //XUD_SetReady(aud_from_host_usb_ep, 1);
+                XUD_SetReady_OutPtr(aud_from_host_usb_ep, aud_from_host_wrptr+4);
 #ifdef DEBUG_LEDS
                   led(c_led);
 #endif
