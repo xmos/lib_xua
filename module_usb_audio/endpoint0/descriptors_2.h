@@ -1646,7 +1646,7 @@ unsigned char cfgDesc_Audio1[] =
     0x0A,                           /* unitID */
     0x01,                           /* sourceID - ID of the unit/terminal to which this feature unit is connected */
     0x01,                           /* controlSize - 1 */
-    0x03,                           /* bmaControls(0) */
+    0x00,                           /* bmaControls(0) */
     0x03,                           /* bmaControls(1) */
     0x03,                           /* bmaControls(2) */
     0x00,                           /* String table index */  
@@ -1693,10 +1693,9 @@ unsigned char cfgDesc_Audio1[] =
     0x0B,                           /* unitID */                                                                    
     0x02,                           /* sourceID - ID of the unit/terminal to which this feature unit is connected */
     0x01,                           /* controlSize - 1 */                                      
-    0x03,                           /* bmaControls(0) */                                                            
-    0x03,                           /* bmaControls(1) */                                                            
-    0x03,                           /* bmaControls(2) */                                                            
-    0x00,                           /* String table index */                                                        
+    0x00,                           /* bmaControls(0) */     
+    0x03,                           /* bmaControls(1) */     
+    0x03,                           /* bmaControls(2) */                                                         0x00,                           /* String table index */                                                        
 #endif
 
 
@@ -1739,7 +1738,7 @@ unsigned char cfgDesc_Audio1[] =
     2,                              /* nrChannels */
     0x03,                           /* subFrameSize - 4 bytes per slot */
     24,                             /* bitResolution - 24bit */
-    0x04,                            /* SamFreqType - 4 sample freq */
+    0x04,                           /* SamFreqType - 4 sample freq */
     0x44, 0xAC, 0x00,               /* sampleFreq - 44.1Khz */
     0x80, 0xBB, 0x00,               /* sampleFreq - 48KHz */ 
 #if defined(OUTPUT) && defined(INPUT)
