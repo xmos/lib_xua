@@ -153,35 +153,6 @@ unsigned char DFUdevQualDesc[] =
 int DFUReportResetState(chanend ?c_user_cmd);
 int DFUDeviceRequests(XUD_ep c_ep0_out, XUD_ep &?ep0_in, SetupPacket &sp, chanend ?c_user_cmd, unsigned int altInterface, unsigned int user_reset);
 
-// Overload the USB user command handler if present
-extern unsigned int flash_programmer(unsigned int cmd, unsigned int request_data[16]);
-void user_cmd_handler(unsigned int cmd, chanend ?c_user_cmd) {
-
-  if (!isnull(c_user_cmd)) {
-    unsigned int request_data_len = 0;
-    unsigned int request_data[16];
-    unsigned int return_data_len = 0;
-    int i = 0;
-
-    // Read request data length
-    request_data_len = inuint(c_user_cmd);
-
-    // Read request data
-    for (i = 0; i < request_data_len; i++) {
-      request_data[i] = inuint(c_user_cmd);
-    }
-
-    return_data_len = flash_programmer(cmd, request_data);
-
-    outuint(c_user_cmd, return_data_len);
-
-    if (return_data_len) {
-      for (i = 0; i < return_data_len/4; i++) {
-        outuint(c_user_cmd, request_data[i]);
-      }
-    }
-  }
-}
 
 
 
