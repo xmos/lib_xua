@@ -214,7 +214,7 @@ int main()
         /* Endpoint 0 */
         on stdcore[0]:{
             thread_speed();
-            Endpoint0( c_xud_out[0], c_xud_in[0], c_aud_ctl, null,null, c_usb_test);
+            Endpoint0( c_xud_out[0], c_xud_in[0], c_aud_ctl, null, null, c_usb_test);
         }
 
         on stdcore[0]:
@@ -240,8 +240,10 @@ int main()
 #ifdef IAP
                 c_xud_out[3], c_xud_in[5], c_xud_in[6],
 #endif
-
-                c_xud_in[EP_NUM_IN_AUD_INT], /* Int */
+#if defined(SPDIF_RX) || defined(ADAT_RX)
+                /* Audio Interrupt - only used for interrupts on external clock change */
+                c_xud_in[EP_NUM_IN_AUD_INT], 
+#endif                
                 c_sof, c_aud_ctl, p_for_mclk_count
 #ifdef HID_CONTROLS
                 ,c_xud_in[EP_NUM_IN_HID]

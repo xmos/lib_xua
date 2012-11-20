@@ -88,7 +88,10 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
             chanend c_iap_to_host, 
             chanend c_iap_to_host_int, 
 #endif
-            chanend ?c_int, chanend c_sof, 
+#if defined(SPDIF_RX) || defined(ADAT_RX)
+            chanend ?c_int, 
+#endif
+            chanend c_sof, 
             chanend c_aud_ctl,
             in port p_off_mclk
 #ifdef HID_CONTROLS
@@ -287,25 +290,8 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
             case inuint_byref(c_int, tmp):
             { 
                 int sent_ok = 0;
-                /* Start XUD_SetData */
-                
-                //XUD_SetData_Inline(ep_int, c_int);
-
-#if 0
-                while (!sent_ok) 
-                {
-                    outct(c_int, 64);
-                    asm("ldw %0, dp[g_intData]":"=r"(tmp));
-                    outuint(c_int, tmp);
-                    asm("ldw %0, dp[g_intData+4]":"=r"(tmp));
-                    outct(c_int, 64);
-                    outuint(c_int, tmp);
-                    sent_ok = inuint(c_int);
-                    /* End XUD_SetData */
-                }
-#endif
+                XUD_SetData_Inline(ep_int, c_int);
                 asm("stw   %0, dp[g_intFlag]" :: "r" (0)  );  
-                //XUD_SetNotReady(ep_int);
                 break;
               }
 #endif

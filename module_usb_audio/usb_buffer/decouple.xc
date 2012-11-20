@@ -838,7 +838,7 @@ void decouple(chanend c_mix_out,
             read_via_xc_ptr(datalength, released_buffer);
 
             /* Ignore bad small packets */             
-            if ((datalength >= (g_numUsbChanOut * slotSize)) && (released_buffer == g_aud_from_host_wrptr))
+            if ((datalength >= (g_numUsbChanOut * slotSize)) && (released_buffer == aud_from_host_wrptr))
             {
             
                 /* Move the write pointer of the fifo on - round up to nearest word */

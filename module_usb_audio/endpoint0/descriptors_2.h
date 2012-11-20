@@ -178,6 +178,12 @@ unsigned char devQualDesc_Null[] =
 #define IAP_LENGTH                  (0)
 #endif
 
+#if defined(SPDIF_RX) || defined(ADAT_RX)
+#define AUD_INT_EP_LEN              (7)
+#else
+#define AUD_INT_EP_LEN              (0)
+#endif
+
 #ifdef AUDIO_PATH_XUS
 #define LEN_XU_OUT                  (16 * OUTPUT_INTERFACES)
 #define LEN_XU_IN                   (16 * INPUT_INTERFACES)
@@ -288,7 +294,7 @@ unsigned char hidReportDescriptor[] = {
 #define HID_LENGTH (25*HID_INTERFACES)
 
 /* Total length of config descriptor */
-#define CFG_TOTAL_LENGTH_A2			(7 + 26 + (INPUT_INTERFACES * 55) + (OUTPUT_INTERFACES * 62) + (MIDI_LENGTH) + (DFU_INTERFACES * 18)  + TLEN_AC + (MIXER_LENGTH) + IAP_LENGTH + INPUT_ALT_LENGTH + OUTPUT_ALT_LENGTH + HID_LENGTH)
+#define CFG_TOTAL_LENGTH_A2			(7 + 19 + (AUD_INT_EP_LEN) + (INPUT_INTERFACES * 55) + (OUTPUT_INTERFACES * 62) + (MIDI_LENGTH) + (DFU_INTERFACES * 18)  + TLEN_AC + (MIXER_LENGTH) + IAP_LENGTH + INPUT_ALT_LENGTH + OUTPUT_ALT_LENGTH + HID_LENGTH)
 
 /* Configuration Descriptor for Audio 2.0 (HS) operation */
 unsigned char cfgDesc_Audio2[] = 
@@ -323,7 +329,11 @@ unsigned char cfgDesc_Audio2[] =
     INTERFACE,            			/* 1  bDescriptorType: INTERFACE */
     0x00,            				/* 2  bInterfaceNumber */
     0x00,            				/* 3  bAlternateSetting: Must be 0 */
+#if defined(SPDIF_RX) || defined(ADAT_RX)
     0x01,            				/* 4  bNumEndpoints (0 or 1 if optional interrupt endpoint is present */
+#else
+    0x00,
+#endif
     AUDIO,               			/* 5  bInterfaceClass: AUDIO */
     AUDIOCONTROL,               	/* 6  bInterfaceSubClass: AUDIOCONTROL*/
     IP_VERSION_02_00,            	/* 7  bInterfaceProtocol: IP_VERSION_02_00 */
@@ -456,7 +466,7 @@ unsigned char cfgDesc_Audio2[] =
 #endif
 
     /* Feature Unit Descriptor */ 
-    LEN_FU_OUT,                  /* 0  bLength: 6+(ch + 1)*4 */ 
+    LEN_FU_OUT,                     /* 0  bLength: 6+(ch + 1)*4 */ 
     0x24,    						/* 1  bDescriptorType: CS_INTERFACE */ 
     0x06,    						/* 2  bDescriptorSubType: FEATURE_UNIT */
     FU_USBOUT, 						/* 3  bUnitID */
@@ -754,15 +764,15 @@ unsigned char cfgDesc_Audio2[] =
 #if MIX_BMCONTROLS_LEN > 18
 #error unxpected BMCONTROLS_LEN
 #endif   
-    0x00,                            /* bmControls */
-    0,                            /* Mixer unit string descriptor index */
+    0x00,                           /* bmControls */
+    0,                              /* Mixer unit string descriptor index */
 #endif
 
-#if 1
+#if defined(SPDIF_RX) || defined (ADAT_RX)
     /* Standard AS Interrupt Endpoint Descriptor (4.8.2.1): */ 
     0x07,                           /* 0  bLength: 7 */
     0x05,                           /* 1  bDescriptorType: ENDPOINT */
-    EP_ADR_IN_AUD_INT,        /* 2  bEndpointAddress (D7: 0:out, 1:in) */
+    EP_ADR_IN_AUD_INT,              /* 2  bEndpointAddress (D7: 0:out, 1:in) */
     3,                              /* 3  bmAttributes (bitmap)  */ 
     6,0,                            /* 4  wMaxPacketSize */
     8,                              /* 6  bInterval */
@@ -1585,11 +1595,7 @@ unsigned char cfgDesc_Audio1[] =
     CONFIGURATION, 
     (CFG_TOTAL_LENGTH_A1 & 0xFF),   /* wTotalLength */ 
     (CFG_TOTAL_LENGTH_A1 >> 8),     /* wTotalLength */
-#ifdef MIDI 
-    NUM_INTERFACES_A1-2,                 /* numInterfaces - we dont support MIDI in audio 1.0 mode*/
-#else
-    NUM_INTERFACES_A1,
-#endif
+    NUM_INTERFACES_A1,              /* numInterfaces - we dont support MIDI in audio 1.0 mode*/
     0x01,                           /* ID of this configuration */
     0x00,                           /* Unused */
 #ifdef SELF_POWERED
