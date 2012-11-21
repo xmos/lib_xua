@@ -559,30 +559,13 @@ void decouple(chanend c_mix_out,
 )
 {   
     unsigned sampFreq = DEFAULT_FREQ;
+#ifdef OUTPUT 
     int aud_from_host_flag=0;
-    int aud_to_host_flag=0;
     xc_ptr released_buffer;
-
-#if 0
-//#ifdef IAP
-    xc_ptr iap_from_host_rdptr;
-    xc_ptr iap_from_host_buffer;
-    xc_ptr iap_to_host_buffer_being_sent = array_to_xc_ptr(g_iap_to_host_buffer_A);
-    xc_ptr iap_to_host_buffer_being_collected = array_to_xc_ptr(g_iap_to_host_buffer_B);
-    xc_ptr zero_buffer = array_to_xc_ptr(g_zero_buffer);
-    
-    int is_ack_iap;
-    int is_reset;
-    int iap_reset;
-    unsigned int datum_iap;
-    int iap_data_remaining_to_device = 0;
-    int iap_data_collected_from_device = 0;
-    int iap_waiting_on_send_to_host = 0;
-    int iap_to_host_flag = 0;
-    int iap_from_host_flag = 0;
-    int iap_expecting_length = 1;
-    int iap_expecting_data_length = 0;
 #endif
+#ifdef INPUT
+    int aud_to_host_flag = 0;
+#endif 
 
     int t = array_to_xc_ptr(outAudioBuff);
     int aud_in_ready = 0;

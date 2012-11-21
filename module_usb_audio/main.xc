@@ -131,17 +131,19 @@ clock clk                                          = XS1_CLKBLK_4;
 #endif
 
 /* Endpoint type tables for XUD */
-XUD_EpType epTypeTableOut[NUM_EP_OUT] = { XUD_EPTYPE_CTL | XUD_STATUS_ENABLE, 
+XUD_EpType epTypeTableOut[EP_CNT_OUT] = { XUD_EPTYPE_CTL | XUD_STATUS_ENABLE, 
                                             XUD_EPTYPE_ISO,    /* Audio */
 #ifdef MIDI
                                             XUD_EPTYPE_BUL     /* MIDI */
 #endif
                                         };    
 
-XUD_EpType epTypeTableIn[NUM_EP_IN] = { XUD_EPTYPE_CTL | XUD_STATUS_ENABLE,
+XUD_EpType epTypeTableIn[EP_CNT_IN] = { XUD_EPTYPE_CTL | XUD_STATUS_ENABLE,
                                             XUD_EPTYPE_ISO, 
                                             XUD_EPTYPE_ISO,
+#if defined (SPDIF_RX) || defined (ADAT_RX)
                                             XUD_EPTYPE_BUL,
+#endif
 #ifdef MIDI
                                             XUD_EPTYPE_BUL,
 #endif
@@ -172,8 +174,8 @@ void xscope_user_init()
 int main()
 {
     chan c_sof;
-    chan c_xud_out[NUM_EP_OUT];              /* Endpoint channels for XUD */
-    chan c_xud_in[NUM_EP_IN];
+    chan c_xud_out[EP_CNT_OUT];              /* Endpoint channels for XUD */
+    chan c_xud_in[EP_CNT_IN];
     chan c_aud_ctl;
     chan c_mix_out;
 #ifdef MIDI
@@ -202,11 +204,11 @@ int main()
     
         /* USB Interface */
 #if (AUDIO_CLASS==2) 
-        on stdcore[0]: XUD_Manager(c_xud_out, NUM_EP_OUT, c_xud_in, NUM_EP_IN, 
+        on stdcore[0]: XUD_Manager(c_xud_out, EP_CNT_OUT, c_xud_in, EP_CNT_IN, 
                   c_sof, epTypeTableOut, epTypeTableIn, p_usb_rst, 
                   clk, 1, XUD_SPEED_HS, c_usb_test);  
 #else
-        on stdcore[0]:XUD_Manager(c_xud_out, NUM_EP_OUT, c_xud_in, NUM_EP_IN, 
+        on stdcore[0]:XUD_Manager(c_xud_out, EP_CNT_OUT, c_xud_in, EP_CNT_IN, 
                   c_sof, epTypeTableOut, epTypeTableIn, p_usb_rst, 
                   clk, 1, XUD_SPEED_FS, c_usb_test);  
 #endif

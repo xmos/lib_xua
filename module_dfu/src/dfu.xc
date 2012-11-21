@@ -360,7 +360,6 @@ int DFUReportResetState(chanend ?c_user_cmd)
 
 int XMOS_DFU_RevertFactory(chanend ?c_user_cmd) 
 {
-    unsigned int cmd_data[16];
     unsigned s = 0;
 
     DFU_OpenFlash(c_user_cmd);

@@ -185,17 +185,17 @@
 #define OUTPUT_INTERFACES       (0)
 #endif
 
-#define NUM_EP_OUT_AUD          (OUTPUT_INTERFACES)
-#define NUM_EP_IN_AUD           (OUTPUT_INTERFACES + INPUT_INTERFACES)
+#define EP_CNT_OUT_AUD          (OUTPUT_INTERFACES)
+#define EP_CNT_IN_AUD           (OUTPUT_INTERFACES + INPUT_INTERFACES)
 
 #if defined(MIDI)
 #define MIDI_INTERFACES         (2)
-#define NUM_EP_OUT_MIDI         (1)
-#define NUM_EP_IN_MIDI          (1)
+#define EP_CNT_OUT_MIDI         (1)
+#define EP_CNT_IN_MIDI          (1)
 #else
 #define MIDI_INTERFACES         (0)
-#define NUM_EP_OUT_MIDI         (0)
-#define NUM_EP_IN_MIDI          (0)
+#define EP_CNT_OUT_MIDI         (0)
+#define EP_CNT_IN_MIDI          (0)
 #endif
 
 #if defined(IAP)
@@ -210,15 +210,20 @@
 #define HID_INTERFACES          (0)
 #endif
 
-#define NUM_EP_OUT_IAP          (IAP_INTERFACES)
-#define NUM_EP_IN_IAP           (IAP_INTERFACES * 2)
+#define EP_CNT_OUT_IAP          (IAP_INTERFACES)
+#define EP_CNT_IN_IAP           (IAP_INTERFACES * 2)
 
-#define NUM_EP_OUT_HID          (0)
-#define NUM_EP_IN_HID           (HID_INTERFACES)
+#define EP_CNT_OUT_HID          (0)
+#define EP_CNT_IN_HID           (HID_INTERFACES)
 
+#if defined(SPDIF_RX) || defined(ADAT_RX)
+#define EP_CNT_IN_AUD_INT       (1)
+#else
+#define EP_CNT_IN_AUD_INT       (0)
+#endif
 
 /* Define for number of audio interfaces (+1 for mandatory control interface) */
-#define AUDIO_INTERFACES			(INPUT_INTERFACES + OUTPUT_INTERFACES + 1) 
+#define AUDIO_INTERFACES		(INPUT_INTERFACES + OUTPUT_INTERFACES + 1) 
 
 /* Interface number defines */
 #define INTERFACE_NUM_IAP (INPUT_INTERFACES+OUTPUT_INTERFACES+MIDI_INTERFACES+DFU_INTERFACES+1)
@@ -226,16 +231,16 @@
 
 /* Endpoint Number Defines */
 #define EP_NUM_IN_FB            (1)     /* Always 1 */
-#define EP_NUM_IN_AUD           (2)    /* Always 2 */
-#define EP_NUM_IN_AUD_INT       (3)     /* Audio interrupt/status EP */
-#define EP_NUM_IN_MIDI          ((EP_NUM_IN_AUD_INT + 1))
-#define EP_NUM_IN_HID           ((EP_NUM_IN_AUD_INT + NUM_EP_IN_MIDI + 1))
-#define EP_NUM_IN_IAP           ((EP_NUM_IN_AUD_INT + NUM_EP_IN_MIDI + NUM_EP_IN_HID + 1)) /* iAP Bulk */
-#define EP_NUM_IN_IAP_INT       ((EP_NUM_IN_AUD_INT + NUM_EP_IN_MIDI + NUM_EP_IN_HID + 2)) /* iAP interrupt */
+#define EP_NUM_IN_AUD           (2)     /* Always 2 */
+#define EP_NUM_IN_AUD_INT       (EP_NUM_IN_AUD + EP_CNT_IN_AUD_INT)     /* Audio interrupt/status EP */
+#define EP_NUM_IN_MIDI          (EP_NUM_IN_AUD_INT + 1)
+#define EP_NUM_IN_HID           (EP_NUM_IN_AUD_INT + EP_CNT_IN_MIDI + 1)
+#define EP_NUM_IN_IAP           (EP_NUM_IN_AUD_INT + EP_CNT_IN_MIDI + EP_CNT_IN_HID + 1) /* iAP Bulk */
+#define EP_NUM_IN_IAP_INT       (EP_NUM_IN_AUD_INT + EP_CNT_IN_MIDI + EP_CNT_IN_HID + 2) /* iAP interrupt */
 
-#define EP_NUM_OUT_AUD          1       /* Always 1 */
-#define EP_NUM_OUT_MIDI         2       /* Always 2 */
-#define EP_NUM_OUT_IAP          3       /* Always 3 */
+#define EP_NUM_OUT_AUD          (1)     /* Always 1 */
+#define EP_NUM_OUT_MIDI         (2)     /* Always 2 */
+#define EP_NUM_OUT_IAP          (3)     /* Always 3 */
 
 /* Endpoint Address Defines */
 #define EP_ADR_IN_FB            (EP_NUM_IN_FB | 0x80)
@@ -251,8 +256,8 @@
 #define EP_ADR_OUT_IAP          EP_NUM_OUT_IAP            
 
 /* Endpoint count totals */
-#define NUM_EP_OUT              (1 + 1 /*NUM_EP_OUT_AUD*/ + NUM_EP_OUT_MIDI + NUM_EP_OUT_IAP) /* +1 due to EP0 */ 
-#define NUM_EP_IN               (2 + 2 /*NUM_EP_IN_AUD*/ + NUM_EP_IN_MIDI + NUM_EP_IN_IAP + NUM_EP_IN_HID)    /* +1 due to EP0 and Int EP */
+#define EP_CNT_OUT              (1 + 1 /*NUM_EP_OUT_AUD*/ + EP_CNT_OUT_MIDI + EP_CNT_OUT_IAP) /* +1 due to EP0 */ 
+#define EP_CNT_IN               (1 + 2 /*NUM_EP_IN_AUD*/ + EP_CNT_IN_AUD_INT + EP_CNT_IN_MIDI + EP_CNT_IN_IAP + EP_CNT_IN_HID)    /* +1 due to EP0 */
 
 #define AUDIO_STOP_FOR_DFU      (0x12345678)
 #define AUDIO_START_FROM_DFU    (0x87654321)
@@ -263,11 +268,11 @@
 
 /* Length of clock unit/clock-selector units */
 #if defined(SPDIF_RX) && defined(ADAT_RX)
-#define NUM_CLOCKS                  3
+#define NUM_CLOCKS              (3)
 #elif defined(SPDIF_RX) || defined(ADAT_RX)
-#define NUM_CLOCKS                  2
+#define NUM_CLOCKS              (2)
 #else 
-#define NUM_CLOCKS                  1
+#define NUM_CLOCKS              (1)
 #endif
 
 
@@ -275,7 +280,7 @@
 #define NUM_INTERFACES          INPUT_INTERFACES + OUTPUT_INTERFACES + DFU_INTERFACES + MIDI_INTERFACES + IAP_INTERFACES + 1 + HID_INTERFACES
 
 /* Number of interfaces for Audio 1.0 */
-#define NUM_INTERFACES_A1 (1+INPUT_INTERFACES+OUTPUT_INTERFACES)
+#define NUM_INTERFACES_A1       (1+INPUT_INTERFACES+OUTPUT_INTERFACES)
 
 
 /* Audio Unit ID defines */
@@ -289,16 +294,16 @@
 #define ID_CLKSEL               40              /* Clock selector ID */
 #define ID_CLKSRC_INT           41              /* Clock source ID (internal) */
 #define ID_CLKSRC_EXT           42              /* Clock source ID (external) */
-#define ID_CLKSRC_ADAT           43              /* Clock source ID (external) */
+#define ID_CLKSRC_ADAT          43              /* Clock source ID (external) */
 
-#define ID_XU_MIXSEL                50
-#define ID_XU_OUT                   51
-#define ID_XU_IN                    52
+#define ID_XU_MIXSEL            50
+#define ID_XU_OUT               51
+#define ID_XU_IN                52
 
-#define ID_MIXER_1                  60
+#define ID_MIXER_1              60
 
-#define MANUFACTURER_STR_INDEX	    0x01
-#define PRODUCT_STR_INDEX           0x02
+#define MANUFACTURER_STR_INDEX	0x01
+#define PRODUCT_STR_INDEX       0x02
 
 /* Mixer defines */
 #ifndef MIX_INPUTS

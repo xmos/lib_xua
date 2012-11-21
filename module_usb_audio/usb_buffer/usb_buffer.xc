@@ -126,12 +126,12 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
 
     unsigned clocks = 0;
 
-
+#ifdef INPUT
     unsigned bufferIn = 1;
+#endif   
     unsigned remnant = 0, cycles;
     unsigned sofCount = 0;
     unsigned freqChange = 0;
-    //unsigned expected = (DEFAULT_FREQ/8000)<<16;
 
 #ifdef FB_TOLERANCE_TEST
     unsigned expected_fb = 0;
@@ -470,8 +470,8 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
             {
                 /* Inform stream that buffer sent */
                 SET_SHARED_GLOBAL(g_aud_to_host_flag, bufferIn+1);             
-              }
-              break;
+            }
+            break;
                 
 #endif
                 

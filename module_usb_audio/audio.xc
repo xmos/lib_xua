@@ -74,7 +74,9 @@ unsigned deliver(chanend c_out, chanend ?c_spd_out, unsigned divide, chanend ?c_
     unsigned samplesInPrev[NUM_USB_CHAN_IN];
 #endif
     unsigned tmp;
+#if (I2S_CHANS_ADC != 0)
     unsigned index;
+#endif
 #ifdef RAMP_CHECK
     unsigned prev=0;
     int started = 0;

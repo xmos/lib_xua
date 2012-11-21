@@ -91,8 +91,8 @@ int interfaceAlt[NUM_INTERFACES] = {0, 0, 0, 0};
 unsigned g_config = 0;
 
 /* Global endpoint status arrays */
-unsigned g_epStatusOut[NUM_EP_OUT];
-unsigned g_epStatusIn[NUM_EP_IN];
+unsigned g_epStatusOut[EP_CNT_OUT];
+unsigned g_epStatusIn[EP_CNT_IN];
 
 /* Global variable for current USB bus speed (i.e. FS/HS) */
 unsigned g_curUsbSpeed = 0;
@@ -115,14 +115,14 @@ void SetEndpointStatus(unsigned epNum, unsigned status)
         epNum &= 0x7f;
 
         /* Range check */
-        if(epNum < NUM_EP_IN)
+        if(epNum < EP_CNT_IN)
         {
             g_epStatusIn[ epNum & 0x7F ] = status;  
         }
     }
     else
     {
-        if(epNum < NUM_EP_OUT)
+        if(epNum < EP_CNT_OUT)
         {
             g_epStatusOut[ epNum ] = status;  
         }
@@ -153,10 +153,10 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
     XUD_ep ep0_in  = XUD_Init_Ep(c_ep0_in);
 
     /* Init endpoint status tables */
-    for (int i = 0; i++; i < NUM_EP_OUT)
+    for (int i = 0; i++; i < EP_CNT_OUT)
         g_epStatusOut[i] = 0;
     
-    for (int i = 0; i++; i < NUM_EP_IN)
+    for (int i = 0; i++; i < EP_CNT_IN)
         g_epStatusIn[i] = 0;
 
     /* Init tables for volumes (+ 1 for master) */
@@ -713,7 +713,7 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
                             if( sp.wIndex & 0x80 )
                             {
                                 /* IN Endpoint */
-                                if((sp.wIndex&0x7f) < NUM_EP_IN)
+                                if((sp.wIndex&0x7f) < EP_CNT_IN)
                                 {
                                     buffer[0] = ( g_epStatusIn[ sp.wIndex & 0x7F ] & 0xff );
                                     buffer[1] = ( g_epStatusIn[ sp.wIndex & 0x7F ] >> 8 );
@@ -722,7 +722,7 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
                             else
                             {
                                 /* OUT Endpoint */
-                                if(sp.wIndex < NUM_EP_OUT)
+                                if(sp.wIndex < EP_CNT_OUT)
                                 {
                                     buffer[0] = ( g_epStatusOut[ sp.wIndex ] & 0xff );
                                     buffer[1] = ( g_epStatusOut[ sp.wIndex ] >> 8 );
