@@ -275,7 +275,7 @@ unsigned char hidReportDescriptor[] = {
 0xa1, 0x01,     /* Collection (Application) */
 0x15, 0x00,     /* Logical Minimum (0) */
 0x25, 0x01,     /* Logical Maximum (1) */
-0x09, 0xb0,     /* Usage (Play/Pause) */
+0x09, 0xb0,     /* Usage (Play) */
 0x09, 0xb5,     /* Usage (Scan Next Track) */
 0x09, 0xb6,     /* Usage (Scan Previous Track) */
 0x09, 0xe9,     /* Usage (Volume Up) */
