@@ -279,6 +279,10 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
     XUD_SetReady_OutPtr(ep_midi_from_host, midi_from_host_buffer);
 #endif
 
+#ifdef HID_CONTROLS
+    XUD_SetReady_In(ep_hid, g_hidData, 1);
+#endif
+
     while(1)
     {
 
