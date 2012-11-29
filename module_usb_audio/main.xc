@@ -192,7 +192,7 @@ int main()
 #define c_usb_test null
 #endif
 
-#ifdef SU1_ADC
+#ifdef SU1_ADC_ENABLE
     chan c_adc;
 #else
 #define c_adc null
@@ -280,7 +280,7 @@ int main()
         }
 #endif
 
-#ifdef SU1_ADC
+#ifdef SU1_ADC_ENABLE
         xs1_su_adc_service(c_adc);
 #endif
 

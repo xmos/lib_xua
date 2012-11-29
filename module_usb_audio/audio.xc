@@ -471,7 +471,7 @@ unsigned deliver(chanend c_out, chanend ?c_spd_out, unsigned divide, chanend ?c_
 #endif
         }
 
-#ifdef SU1_ADC
+#ifdef SU1_ADC_ENABLE
         {
             unsigned x;
 
@@ -548,7 +548,7 @@ void audio(chanend c_mix_out, chanend ?c_dig_rx, chanend ?c_config, chanend ?c)
     unsigned divide;
     unsigned firstRun = 1;
 
-#ifdef SU1_ADC
+#ifdef SU1_ADC_ENABLE
     /* Setup galaxian ADC */
     unsigned data[1],  channel;
     int r;
