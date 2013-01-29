@@ -38,6 +38,10 @@
 #undef IAP
 #endif
 
+#if defined(SU1_ADC_ENABLE) && (SU1_ADC_ENABLE == 0)
+#undef SU1_ADC_ENABLE
+#endif
+
 #if defined(HID_CONTROLS) && (HID_CONTROLS == 0)
 #undef HID_CONTROLS
 #endif
@@ -240,7 +244,7 @@
 
 #define EP_NUM_OUT_AUD          (1)     /* Always 1 */
 #define EP_NUM_OUT_MIDI         (2)     /* Always 2 */
-#define EP_NUM_OUT_IAP          (3)     /* Always 3 */
+#define EP_NUM_OUT_IAP          (EP_NUM_OUT_AUD + EP_CNT_OUT_MIDI + 1)
 
 /* Endpoint Address Defines */
 #define EP_ADR_IN_FB            (EP_NUM_IN_FB | 0x80)
@@ -249,11 +253,12 @@
 #define EP_ADR_IN_MIDI          (EP_NUM_IN_MIDI | 0x80)
 #define EP_ADR_IN_HID           (EP_NUM_IN_HID | 0x80)
 #define EP_ADR_IN_IAP           (EP_NUM_IN_IAP | 0x80)
-#define EP_ADR_IN_IAP_INT       (EP_NUM_IAP_INT | 0x80)
+#define EP_ADR_IN_IAP_INT       (EP_NUM_IN_IAP_INT | 0x80)
 
 #define EP_ADR_OUT_AUD          EP_NUM_OUT_AUD            
 #define EP_ADR_OUT_MIDI         EP_NUM_OUT_MIDI           
 #define EP_ADR_OUT_IAP          EP_NUM_OUT_IAP            
+
 
 /* Endpoint count totals */
 #define EP_CNT_OUT              (1 + 1 /*NUM_EP_OUT_AUD*/ + EP_CNT_OUT_MIDI + EP_CNT_OUT_IAP) /* +1 due to EP0 */ 

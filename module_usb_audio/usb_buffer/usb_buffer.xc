@@ -59,8 +59,8 @@ int g_midi_from_host_buffer[MAX_USB_MIDI_PACKET_SIZE/4+4];
 
 #ifdef IAP
 /* iAP buffers */
-unsigned int g_iap_to_host_buffer_A[MAX_IAP_PACKET_SIZE/4+4];
-unsigned int g_iap_to_host_buffer_B[MAX_IAP_PACKET_SIZE/4+4];
+//unsigned int g_iap_to_host_buffer_A[MAX_IAP_PACKET_SIZE/4+4];
+//unsigned int g_iap_to_host_buffer_B[MAX_IAP_PACKET_SIZE/4+4];
 #endif
 
 unsigned char fb_clocks[16];
@@ -158,7 +158,7 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
 
 #ifdef IAP
     xc_ptr iap_from_host_rdptr;
-    xc_ptr iap_from_host_buffer;
+    //xc_ptr iap_from_host_buffer;
     //xc_ptr iap_to_host_buffer_being_sent = array_to_xc_ptr(g_iap_to_host_buffer_A);
     //xc_ptr iap_to_host_buffer_being_collected = array_to_xc_ptr(g_iap_to_host_buffer_B);
     //xc_ptr zero_buffer = array_to_xc_ptr(g_zero_buffer);
@@ -174,6 +174,10 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
     int iap_from_host_flag = 0;
     int iap_expecting_length = 1;
     int iap_expecting_data_length = 0;
+
+    xc_ptr iap_from_host_buffer =0;
+    xc_ptr iap_to_host_buffer = 0;
+    xc_ptr iap_to_host_waiting_buffer = 0;
 #endif
 
 
@@ -183,11 +187,16 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
 
 #ifdef IAP
     /* Note the order here is important */
-    XUD_ResetDrain(c_iap_to_host);
-    XUD_ResetDrain(c_iap_to_host_int);
-    XUD_GetBusSpeed(c_iap_to_host);
-    XUD_GetBusSpeed(c_iap_to_host_int);
+    //XUD_ResetDrain(c_iap_to_host);
+    //XUD_ResetDrain(c_iap_to_host_int);
+    //XUD_GetBusSpeed(c_iap_to_host);
+    //XUD_GetBusSpeed(c_iap_to_host_int);
+    #warning TODO ADD BACK IAP RESET
+
 #endif
+
+
+
 
 #if defined(SPDIF_RX) || defined(ADAT_RX)
     asm("stw %0, dp[int_usb_ep]"::"r"(ep_int));    
@@ -233,18 +242,18 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
 
 #ifdef IAP
     // get the two buffers to use for iap device->host
-   // asm("ldaw %0, dp[g_iap_to_host_buffer_A]":"=r"(iap_to_host_buffer));
-   // asm("ldaw %0, dp[g_iap_to_host_buffer_B]":"=r"(iap_to_host_waiting_buffer));
-   // asm("ldaw %0, dp[g_iap_from_host_buffer]":"=r"(iap_from_host_buffer));
+    asm("ldaw %0, dp[g_iap_to_host_buffer_A]":"=r"(iap_to_host_buffer));
+    asm("ldaw %0, dp[g_iap_to_host_buffer_B]":"=r"(iap_to_host_waiting_buffer));
+    asm("ldaw %0, dp[g_iap_from_host_buffer]":"=r"(iap_from_host_buffer));
 
 
     // pass the iap->XUD chanends to decouple so that thread can
     // initialize comm with XUD
-   // asm("stw %0, dp[iap_to_host_usb_ep]"::"r"(ep_iap_to_host));
-    //asm("stw %0, dp[iap_to_host_int_usb_ep]"::"r"(ep_iap_to_host_int));
-    //asm("stw %0, dp[iap_from_host_usb_ep]"::"r"(ep_iap_from_host));    
-    //swap(iap_to_host_buffer, iap_to_host_waiting_buffer);
-    //SET_SHARED_GLOBAL(g_iap_from_host_flag, 1);    
+    asm("stw %0, dp[iap_to_host_usb_ep]"::"r"(ep_iap_to_host));
+    asm("stw %0, dp[iap_to_host_int_usb_ep]"::"r"(ep_iap_to_host_int));
+    asm("stw %0, dp[iap_from_host_usb_ep]"::"r"(ep_iap_from_host));    
+    swap(iap_to_host_buffer, iap_to_host_waiting_buffer);
+    SET_SHARED_GLOBAL(g_iap_from_host_flag, 1);    
 #endif
 
 #ifdef OUTPUT
@@ -277,6 +286,10 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
 
 #ifdef MIDI
     XUD_SetReady_OutPtr(ep_midi_from_host, midi_from_host_buffer);
+#endif
+
+#ifdef IAP
+    XUD_SetReady_OutPtr(ep_iap_from_host, iap_from_host_buffer+4);
 #endif
 
 #ifdef HID_CONTROLS
@@ -570,15 +583,30 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
 #endif
 
 #ifdef IAP
-        #error IAP NOT SUPPORTED IN THIS RELEASE!!
+#warning IAP NOT SUPPORTED IN THIS RELEASE!!
         /* IAP OUT from host */
         case XUD_GetData_Select(c_iap_from_host, ep_iap_from_host, tmp):
             asm("#iap h->d");
+            
+              write_via_xc_ptr(iap_from_host_buffer, tmp);
+                      
+              /* release the buffer */
+              SET_SHARED_GLOBAL(g_iap_from_host_flag, 1);
             break;
  
         /* IAP IN to host */                  
-        case testct_byref(c_iap_to_host, tmp): 
+        case XUD_SetData_Select(c_iap_to_host, ep_iap_to_host, tmp): 
             asm("#iap d->h");
+            
+            // ack the decouple thread to say it has been sent to host  
+              SET_SHARED_GLOBAL(g_iap_to_host_flag, 1);
+
+              swap(iap_to_host_buffer, iap_to_host_waiting_buffer);
+            break;  /* IAP IN to host */                  
+        
+        case XUD_SetData_Select(c_iap_to_host_int, ep_iap_to_host_int, tmp): 
+            asm("#iap int d->h");
+            //printintln(1);
             break;
 #endif
 

@@ -1225,8 +1225,7 @@ unsigned char cfgDesc_Audio2[] =
 #endif
     
 #ifdef IAP
-        /* Please write an iAP descriptor here */
-        /* Interface descriptor */
+    /* Interface descriptor */
    	0x09,                          	/* 0 bLength : Size of this descriptor, in bytes. (field size 1 bytes) */
    	0x04,                           /* 1 bDescriptorType : INTERFACE descriptor. (field size 1 bytes) */
    	(INPUT_INTERFACES+OUTPUT_INTERFACES+MIDI_INTERFACES+DFU_INTERFACES+1),                           /* 2 bInterfaceNumber : Index of this interface. (field size 1 bytes) */
@@ -1240,7 +1239,7 @@ unsigned char cfgDesc_Audio2[] =
     /* iAP Bulk OUT Endpoint Descriptor */
     0x07,                            /* 0 bLength : Size of this descriptor, in bytes. (field size 1 bytes) */
     0x05,                            /* 1 bDescriptorType : ENDPOINT descriptor. (field size 1 bytes) */
-    0x03,                            /* 2 bEndpointAddress : OUT Endpoint 3. High bit isIn (field size 1 bytes) */
+    EP_ADR_OUT_IAP,                  /* 2 bEndpointAddress : OUT Endpoint 3. High bit isIn (field size 1 bytes) */
     0x02,                            /* 3 bmAttributes : Bulk, not shared. (field size 1 bytes) */
     0x00,                            /* 4 wMaxPacketSize : 64 bytes per packet. (field size 2 bytes) - has to be 0x200 for compliance*/
     0x02,                            /* 5 wMaxPacketSize */
@@ -1249,7 +1248,7 @@ unsigned char cfgDesc_Audio2[] =
     /* iAP Bulk IN Endpoint Descriptor */
     0x07,                            /* 0 bLength : Size of this descriptor, in bytes. (field size 1 bytes) */
     0x05,                            /* 1 bDescriptorType : ENDPOINT descriptor. (field size 1 bytes) */
-    0x85,                            /* 2 bEndpointAddress : IN Endpoint 5. (field size 1 bytes) */
+    EP_ADR_IN_IAP,                            /* 2 bEndpointAddress : IN Endpoint 5. (field size 1 bytes) */
     0x02,                            /* 3 bmAttributes : Bulk, not shared. (field size 1 bytes) */
     0x00,                            /* 4 wMaxPacketSize : 64 bytes per packet. (field size 2 bytes) - has to be 0x200 for compliance*/
     0x02,                            /* 5 wMaxPacketSize */
@@ -1258,7 +1257,7 @@ unsigned char cfgDesc_Audio2[] =
     /* iAP Interrupt IN Endpoint Descriptor */
     0x07,                            /* 0 bLength : Size of this descriptor, in bytes. (field size 1 bytes) */
     0x05,                            /* 1 bDescriptorType : ENDPOINT descriptor. (field size 1 bytes) */
-    0x86,                            /* 2 bEndpointAddress : IN Endpoint 6. (field size 1 bytes) */
+    EP_ADR_IN_IAP_INT,               /* 2 bEndpointAddress : IN Endpoint 6. (field size 1 bytes) */
     0x03,                            /* 3 bmAttributes : Interrupt, not shared. (field size 1 bytes) */
     0x40,                            /* 4 wMaxPacketSize : 64 bytes per packet. (field size 2 bytes) - has to be 0x40 for compliance*/
     0x00,                            /* 5 wMaxPacketSize */

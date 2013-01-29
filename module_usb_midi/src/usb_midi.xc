@@ -81,9 +81,9 @@ extern unsigned polltime;
 timer iAPTimer;
 #endif
 
-void usb_midi(in port ?p_midi_in, out port ?p_midi_out,
+void usb_midi(port ?p_midi_in, port ?p_midi_out,
             clock ?clk_midi,
-            chanend c_midi,
+            chanend ?c_midi,
             unsigned cable_number,
             chanend ?c_iap, chanend ?c_i2c, // iOS stuff
             port ?p_scl, port ?p_sda
@@ -375,6 +375,7 @@ void usb_midi(in port ?p_midi_in, out port ?p_midi_out,
 
                 /* Slow timer looking for IDevice plug/unplug event */
                 case iAPTimer when timerafter(polltime) :> void:
+                    printintln(polltime);
                     handle_poll_dev_det(iAPTimer);
                     break;
 #endif

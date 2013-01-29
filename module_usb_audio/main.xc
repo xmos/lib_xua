@@ -24,6 +24,10 @@
 #include "audio.h"
 #include "ports.h"               /* Portmap defines and ports for current app instance */
 
+#ifdef IAP
+#include "iap.h"
+#endif
+
 /* Audio I/O */
 #if I2S_WIRES_DAC > 0
 on stdcore[0] : buffered out port:32 p_i2s_dac[I2S_WIRES_DAC] = 
@@ -95,26 +99,26 @@ on stdcore[AUDIO_IO_CORE] : in port p_lrclk       = PORT_I2S_LRCLK;
 on stdcore[AUDIO_IO_CORE] : in port p_bclk        = PORT_I2S_BCLK;
 #endif
 
-on stdcore[AUDIO_IO_CORE] : port p_mclk                        = PORT_MCLK_IN;
-on stdcore[0] : in port p_for_mclk_count           = PORT_MCLK_COUNT;
+on stdcore[AUDIO_IO_CORE] : port p_mclk                         = PORT_MCLK_IN;
+on stdcore[0] : in port p_for_mclk_count                        = PORT_MCLK_COUNT;
 
 #ifdef SPDIF  
-on stdcore[AUDIO_IO_CORE] : buffered out port:32 p_spdif_tx   = PORT_SPDIF_OUT;
+on stdcore[AUDIO_IO_CORE] : buffered out port:32 p_spdif_tx     = PORT_SPDIF_OUT;
 #endif
 
 #ifdef MIDI
 on stdcore[AUDIO_IO_CORE] :  port p_midi_tx                     = PORT_MIDI_OUT;
-on stdcore[AUDIO_IO_CORE] : in port p_midi_rx                     = PORT_MIDI_IN;
+on stdcore[AUDIO_IO_CORE] :  port p_midi_rx                     = PORT_MIDI_IN;
 #endif
 
 /* Clock blocks */
 #ifdef MIDI
-on stdcore[AUDIO_IO_CORE] : clock    clk_midi                  = XS1_CLKBLK_REF;
+on stdcore[AUDIO_IO_CORE] : clock    clk_midi                   = XS1_CLKBLK_REF;
 #endif
-on stdcore[AUDIO_IO_CORE] : clock    clk_audio_mclk            = XS1_CLKBLK_2;     /* Master clock */
-on stdcore[AUDIO_IO_CORE] : clock    clk_audio_bclk            = XS1_CLKBLK_3;     /* Bit clock */
+on stdcore[AUDIO_IO_CORE] : clock    clk_audio_mclk             = XS1_CLKBLK_2;     /* Master clock */
+on stdcore[AUDIO_IO_CORE] : clock    clk_audio_bclk             = XS1_CLKBLK_3;     /* Bit clock */
 #ifdef SPDIF
-on stdcore[AUDIO_IO_CORE] : clock    clk_mst_spd               = XS1_CLKBLK_1;
+on stdcore[AUDIO_IO_CORE] : clock    clk_mst_spd                = XS1_CLKBLK_1;
 #endif
 
 /* L Series needs a port to use for USB reset */
@@ -136,6 +140,10 @@ XUD_EpType epTypeTableOut[EP_CNT_OUT] = { XUD_EPTYPE_CTL | XUD_STATUS_ENABLE,
 #ifdef MIDI
                                             XUD_EPTYPE_BUL     /* MIDI */
 #endif
+#ifdef IAP
+                                            XUD_EPTYPE_BUL     /* iAP */
+#endif
+
                                         };    
 
 XUD_EpType epTypeTableIn[EP_CNT_IN] = { XUD_EPTYPE_CTL | XUD_STATUS_ENABLE,
@@ -148,6 +156,10 @@ XUD_EpType epTypeTableIn[EP_CNT_IN] = { XUD_EPTYPE_CTL | XUD_STATUS_ENABLE,
                                             XUD_EPTYPE_BUL,
 #endif
 #ifdef HID_CONTROLS
+                                            XUD_EPTYPE_BUL,
+#endif
+#ifdef IAP
+                                            XUD_EPTYPE_BUL,
                                             XUD_EPTYPE_BUL,
 #endif
                                         };
@@ -198,7 +210,6 @@ int main()
 #define c_adc null
 #endif
 
-    
     par 
     {
     
@@ -240,7 +251,7 @@ int main()
                 c_midi,
 #endif
 #ifdef IAP
-                c_xud_out[3], c_xud_in[5], c_xud_in[6],
+                c_xud_out[EP_NUM_OUT_IAP], c_xud_in[EP_NUM_IN_IAP], c_xud_in[EP_NUM_IN_IAP_INT],
 #endif
 #if defined(SPDIF_RX) || defined(ADAT_RX)
                 /* Audio Interrupt - only used for interrupts on external clock change */
@@ -272,11 +283,15 @@ int main()
             audio(c_mix_out, null, null, c_adc);
         }
 
-#ifdef MIDI
+#if defined  (MIDI) || defined IAP
         on stdcore[AUDIO_IO_CORE]:
         {
             thread_speed();
+#ifdef MIDI
             usb_midi(p_midi_rx, p_midi_tx, clk_midi, c_midi, 0, null, null, null, null);
+#else
+            iAP(c_iap, null, p_i2c_scl, p_i2c_sda);
+#endif        
         }
 #endif
 

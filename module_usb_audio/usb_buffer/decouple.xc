@@ -77,8 +77,7 @@ unsigned dir = 0;
 
 void GetADCCounts(unsigned samFreq, int &min, int &mid, int &max);
 
-//#ifdef IAP
-#if 0
+#ifdef IAP
 static inline void swap(xc_ptr &a, xc_ptr &b) 
 {
   xc_ptr tmp;
@@ -88,7 +87,7 @@ static inline void swap(xc_ptr &a, xc_ptr &b)
   return;
 }
 
-unsigned g_iap_reset = 0;
+unsigned g_iap_reset = 1;
 unsigned g_iap_from_host_flag = 0;
 unsigned g_iap_to_host_flag = 0;
 int iap_to_host_usb_ep = 0;
@@ -98,6 +97,7 @@ unsigned int g_iap_to_host_buffer_A[MAX_IAP_PACKET_SIZE/4+4];
 unsigned int g_iap_to_host_buffer_B[MAX_IAP_PACKET_SIZE/4+4];
 int g_iap_from_host_buffer[MAX_IAP_PACKET_SIZE/4+4];
 unsigned g_zero_buffer[1];
+unsigned char  gc_zero_buffer[4];
 #endif
 
 //#ifdef HID_CONTROLS
@@ -567,6 +567,26 @@ void decouple(chanend c_mix_out,
     int aud_to_host_flag = 0;
 #endif 
 
+#ifdef IAP
+    xc_ptr iap_from_host_rdptr;
+    xc_ptr iap_from_host_buffer;
+    xc_ptr iap_to_host_buffer_being_sent = array_to_xc_ptr(g_iap_to_host_buffer_A);
+    xc_ptr iap_to_host_buffer_being_collected = array_to_xc_ptr(g_iap_to_host_buffer_B);
+    xc_ptr zero_buffer = array_to_xc_ptr(g_zero_buffer);
+    
+    int is_ack_iap;
+    int is_reset;
+    int iap_reset;
+    unsigned int datum_iap;
+    int iap_data_remaining_to_device = 0;
+    int iap_data_collected_from_device = 0;
+    int iap_waiting_on_send_to_host = 0;
+    int iap_to_host_flag = 0;
+    int iap_from_host_flag = 0;
+    int iap_expecting_length = 1;
+    int iap_expecting_data_length = 0;
+#endif
+
     int t = array_to_xc_ptr(outAudioBuff);
     int aud_in_ready = 0;
 
@@ -625,16 +645,16 @@ void decouple(chanend c_mix_out,
 
     set_interrupt_handler(handle_audio_request, 200, 1, c_mix_out, 0);
 
-#if 0
-//#ifdef IAP
+#ifdef IAP
     //asm("ldaw %0, dp[g_iap_to_host_buffer]":"=r"(iap_to_host_buffer));
     asm("ldaw %0, dp[g_iap_from_host_buffer]":"=r"(iap_from_host_buffer));
 
     // wait for usb_buffer to set up
-    while(!iap_from_host_flag) {
-      GET_SHARED_GLOBAL(iap_from_host_flag, g_iap_from_host_flag);
+    while(!iap_from_host_flag)
+    {
+        GET_SHARED_GLOBAL(iap_from_host_flag, g_iap_from_host_flag);
     }
-    
+
     iap_from_host_flag = 0;
     SET_SHARED_GLOBAL(g_iap_from_host_flag, iap_from_host_flag);
 
@@ -968,8 +988,8 @@ void decouple(chanend c_mix_out,
 #endif // INPUT
 
 
-#if 0
-//#ifdef IAP
+//#if 0
+#ifdef IAP
         GET_SHARED_GLOBAL(iap_reset, g_iap_reset);          
         if (iap_reset) 
         {
@@ -997,8 +1017,8 @@ void decouple(chanend c_mix_out,
                 swap(iap_to_host_buffer_being_collected, iap_to_host_buffer_being_sent);
             
                 /* Request to send packet */
-                //XUD_SetReady_InPtr(iap_to_host_int_usb_ep, 0, zero_buffer, 0); // ZLP to int ep
-                //XUD_SetReady_InPtr(iap_to_host_usb_ep, 0, iap_to_host_buffer_being_sent+4, iap_data_collected_from_device);
+                XUD_SetReady_In(iap_to_host_int_usb_ep, gc_zero_buffer, 0); // ZLP to int ep
+                XUD_SetReady_InPtr(iap_to_host_usb_ep, iap_to_host_buffer_being_sent+4, iap_data_collected_from_device);
 
                 /* Mark as waiting for host to poll us */
                 iap_waiting_on_send_to_host = 1;                                                                                                                  
@@ -1028,12 +1048,15 @@ void decouple(chanend c_mix_out,
                 // Don't expect ack from this to make it simpler
                 outuint(c_iap, iap_data_remaining_to_device);
 
+                //printintln(iap_data_remaining_to_device);
+
                 /* Increment read pointer - buffer[0] is length */
                 iap_from_host_rdptr = iap_from_host_buffer + 4;
 
                 if (iap_data_remaining_to_device) 
                 {
                     read_byte_via_xc_ptr(datum_iap, iap_from_host_rdptr);
+                    //printintln(datum_iap);
                     outuint(c_iap, datum_iap);
                     iap_from_host_rdptr += 1;
                     iap_data_remaining_to_device -= 1;
@@ -1045,6 +1068,7 @@ void decouple(chanend c_mix_out,
         {
             /* Received word from iap thread - Check for ACK or Data */
             case iap_get_ack_or_reset_or_data(c_iap, is_ack_iap, is_reset, datum_iap):
+
                 if (is_ack_iap) 
                 {
                     /* An ack from the iap/uart thread means it has accepted some data we sent it
@@ -1052,7 +1076,7 @@ void decouple(chanend c_mix_out,
                     if (iap_data_remaining_to_device == 0) 
                     {
                         /* We have read an entire packet - Mark ready to receive another */
-                        //XUD_SetReady(iap_from_host_usb_ep, 1);
+                        XUD_SetReady_OutPtr(iap_from_host_usb_ep, iap_from_host_buffer+4);
                     }
                     else 
                     {
@@ -1093,8 +1117,9 @@ void decouple(chanend c_mix_out,
                            swap(iap_to_host_buffer_being_collected, iap_to_host_buffer_being_sent);
 
                            // Signal other side to swap
-                           //XUD_SetReady_In(iap_to_host_int_usb_ep, 0, zero_buffer, 0);
-                           //XUD_SetReady_In(iap_to_host_usb_ep, 0, iap_to_host_buffer_being_sent+4, iap_data_collected_from_device);
+                           XUD_SetReady_In(iap_to_host_int_usb_ep, gc_zero_buffer, 0);
+                           //printintln(iap_data_collected_from_device);
+                           XUD_SetReady_InPtr(iap_to_host_usb_ep, iap_to_host_buffer_being_sent+4, iap_data_collected_from_device);
                            iap_data_collected_from_device = 0;
                            iap_waiting_on_send_to_host = 1;
                            iap_expecting_length = 1;
