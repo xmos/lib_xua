@@ -11,7 +11,7 @@
 #include "iapuser.h"
 #endif
 //#define MIDI_LOOPBACK 1
-
+int icount = 0;
 static unsigned makeSymbol(unsigned data)
 {
     // Start and stop bits to the data packet
@@ -31,38 +31,6 @@ static unsigned bit_time_2 =  (XS1_TIMER_MHZ * 1000000 / (unsigned) RATE) / 2;
 // For debugging
 int mr_count = 0; // MIDI received (from HOST)
 int th_count = 0; // MIDI sent (To Host)
-
-#ifdef MIDI_LOOPBACK
-static inline void handle_byte_from_uart(chanend c_midi,   struct midi_in_parse_state &mips, int cable_number,
-                                         int &got_next_event, int &next_event, int &waiting_for_ack, int byte)
-{
-    int valid;
-    unsigned event;
-    {valid, event} = midi_in_parse(mips, cable_number, byte);
-    if (valid && !got_next_event) 
-    {
-        // data to send to host
-        if (!waiting_for_ack) 
-        {
-            // send data
-            event = byterev(event);
-            outuint(c_midi, event);
-            th_count++;
-            waiting_for_ack = 1;
-        }
-        else 
-        {
-            event = byterev(event);
-            next_event = event;
-            got_next_event = 1;
-        }
-    }
-    else if (valid) 
-    {
-        // printstr("g\n");
-    }
-}
-#endif
 
 int uout_count = 0; // UART bytes out
 int uin_count = 0; // UART bytes in
@@ -132,7 +100,6 @@ void usb_midi(port ?p_midi_in, port ?p_midi_out,
     t :> txT;
     t2 :> rxT;
 
-#ifndef MIDI_LOOPBACK
 #ifdef IAP
     CoProcessorDisable();
 #endif
@@ -140,8 +107,6 @@ void usb_midi(port ?p_midi_in, port ?p_midi_out,
    // p_midi_out <: 1 << MIDI_SHIFT_TX; // Start with high bit.
 #ifdef IAP  
     CoProcessorEnable();
-#endif
-
 #endif
 
 #ifdef IAP
@@ -211,6 +176,7 @@ void usb_midi(port ?p_midi_in, port ?p_midi_out,
                             {valid, event} = midi_in_parse(mips, cable_number, rxByte);
                             if (valid && isempty(midi_to_host_fifo)) 
                             {
+
                                 event = byterev(event);
                                 // data to send to host - add to fifo
                                 if (!waiting_for_ack) 
@@ -228,7 +194,7 @@ void usb_midi(port ?p_midi_in, port ?p_midi_out,
                             } 
                             else if (valid) 
                             {
-                                // printstr("g");
+                                //printstr("g");
                             }
                         }
                     isRX = 0;
@@ -328,6 +294,11 @@ void usb_midi(port ?p_midi_in, port ?p_midi_out,
                         event = byterev(event);
                         enqueue(midi_to_host_fifo, event);
                     }
+                    midi_send_ack(c_midi);
+                }
+                else
+                {
+                    //printstr("DROP\n");
                 }
 #else
                 {midi[0], midi[1], midi[2], size} = midi_out_parse(event);
