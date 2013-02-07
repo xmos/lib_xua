@@ -69,7 +69,6 @@ unsigned char fb_clocks[16];
 #define FB_TOLERANCE 0x100
 
 extern unsigned inZeroBuff[];
-extern unsigned g_numUsbChanIn;
 /** 
  * Buffers data from audio endpoints 
  * @param   c_aud_out     chanend for audio from xud
@@ -221,7 +220,7 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
         if (usb_speed == XUD_SPEED_HS) 
           mid*=NUM_USB_CHAN_IN*4;
         else
-          mid*=NUM_USB_CHAN_IN*3;
+          mid*=NUM_USB_CHAN_IN_A1*3;
 
         asm("stw %0, %1[0]"::"r"(mid),"r"(p_inZeroBuff));
 
@@ -366,7 +365,7 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
                             if (usb_speed == XUD_SPEED_HS) 
                                 mid *= NUM_USB_CHAN_IN*4;
                             else 
-                                mid *= NUM_USB_CHAN_IN*3;
+                                mid *= NUM_USB_CHAN_IN_A1*3;
    
                             asm("stw %0, %1[0]"::"r"(mid),"r"(p_inZeroBuff));
                        
@@ -539,8 +538,7 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
             /* Write datalength (tmp) into buffer[0], data stored in buffer[4] onwards */
             midi_data_remaining_to_device = tmp;           
                     
-            /* Increment read pointer - buffer[0] is length */
-            midi_from_host_rdptr = midi_from_host_buffer + 4;
+            midi_from_host_rdptr = midi_from_host_buffer;
            
             if (midi_data_remaining_to_device) 
             {
@@ -554,7 +552,8 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
         /* MIDI IN to host */                  
         case XUD_SetData_Select(c_midi_to_host, ep_midi_to_host, tmp): 
             asm("#midi d->h");
-            
+ 
+#if 1 
             swap(midi_to_host_buffer, midi_to_host_waiting_buffer);
 
             /* The buffer has been sent to the host, so we can ack the midi thread */
@@ -565,7 +564,7 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
 
                 /* Swap the collecting and sending buffer */
                 swap(midi_to_host_buffer_being_collected, midi_to_host_buffer_being_sent);
-            
+                
                 /* Request to send packet */
                 XUD_SetReady_InPtr(ep_midi_to_host, midi_to_host_buffer_being_sent+4, midi_data_collected_from_device);
 
@@ -578,7 +577,7 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
             {
                 midi_waiting_on_send_to_host = 0;              
             }
-
+#endif
           break;
 #endif
 
@@ -627,10 +626,10 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
                 {
                     /* An ack from the midi/uart thread means it has accepted some data we sent it
                      * we are okay to send another word */
-                    if (midi_data_remaining_to_device == 0) 
+                    if (midi_data_remaining_to_device <= 0) 
                     {
                         /* We have read an entire packet - Mark ready to receive another */
-                        XUD_SetReady_OutPtr(ep_midi_from_host, midi_from_host_buffer+4);              
+                        XUD_SetReady_OutPtr(ep_midi_from_host, midi_from_host_buffer);              
                     }
                     else 
                     {
@@ -664,7 +663,7 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
                         write_via_xc_ptr(midi_to_host_buffer_being_collected, midi_data_collected_from_device);
  
                         swap(midi_to_host_buffer_being_collected, midi_to_host_buffer_being_sent);
-                        
+ 
                         // Signal other side to swap
                         XUD_SetReady_InPtr(ep_midi_to_host, midi_to_host_buffer_being_sent+4, midi_data_collected_from_device);
                         midi_data_collected_from_device = 0;
