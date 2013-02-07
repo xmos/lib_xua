@@ -35,16 +35,16 @@
 #endif
 
 #define MAX(x,y) ((x)>(y) ? (x) : (y))
-#define MAX_CLASS_ONE_FREQ 96000
-#define MAX_CLASS_ONE_CHAN 2
 
 #define CLASS_TWO_PACKET_SIZE ((((MAX_FREQ+7999)/8000))+3)
-#define CLASS_ONE_PACKET_SIZE  ((((MAX_CLASS_ONE_FREQ+999)/1000))+3)
+#define CLASS_ONE_PACKET_SIZE  ((((MAX_FREQ_A1+999)/1000))+3)
 
-#define BUFF_SIZE_OUT MAX(4 * CLASS_TWO_PACKET_SIZE * NUM_USB_CHAN_OUT, 4 * CLASS_ONE_PACKET_SIZE * MAX_CLASS_ONE_CHAN)
-#define BUFF_SIZE_IN  MAX(4 * CLASS_TWO_PACKET_SIZE * NUM_USB_CHAN_IN, 4 * CLASS_ONE_PACKET_SIZE * MAX_CLASS_ONE_CHAN)
+#define BUFF_SIZE_OUT MAX(4 * CLASS_TWO_PACKET_SIZE * NUM_USB_CHAN_OUT, 4 * CLASS_ONE_PACKET_SIZE * NUM_USB_CHAN_OUT_A1)
+#define BUFF_SIZE_IN  MAX(4 * CLASS_TWO_PACKET_SIZE * NUM_USB_CHAN_IN, 4 * CLASS_ONE_PACKET_SIZE * NUM_USB_CHAN_IN_A1)
+
 #define MAX_USB_AUD_PACKET_SIZE 1028
-#define OUT_BUFFER_PREFILL (MAX(MAX_CLASS_ONE_CHAN*CLASS_ONE_PACKET_SIZE*3+4,NUM_USB_CHAN_OUT*CLASS_TWO_PACKET_SIZE*4+4)*1)
+
+#define OUT_BUFFER_PREFILL (MAX(NUM_USB_CHAN_OUT_A1*CLASS_ONE_PACKET_SIZE*3+4,NUM_USB_CHAN_OUT*CLASS_TWO_PACKET_SIZE*4+4)*1)
 #define IN_BUFFER_PREFILL (MAX(CLASS_ONE_PACKET_SIZE*3+4,CLASS_TWO_PACKET_SIZE*4+4)*2)
 
 /* Volume and mute tables */ 
@@ -57,12 +57,12 @@ unsigned int multIn[NUM_USB_CHAN_IN + 1];
 static xc_ptr p_multIn;
 #endif
 
-/* Number of channels to/from the USB bus */
+/* Number of channels to/from the USB bus - initialised to HS Audio 2.0 */
 unsigned g_numUsbChanOut = NUM_USB_CHAN_OUT;
 unsigned g_numUsbChanIn = NUM_USB_CHAN_IN;
 
 #define MAX_DEVICE_AUD_PACKET_SIZE_CLASS_TWO ((MAX_FREQ/8000+1)*NUM_USB_CHAN_IN*4)
-#define MAX_DEVICE_AUD_PACKET_SIZE_CLASS_ONE (((MAX_CLASS_ONE_FREQ/1000+1)*MAX_CLASS_ONE_CHAN*3)+4)
+#define MAX_DEVICE_AUD_PACKET_SIZE_CLASS_ONE (((MAX_FREQ_A1/1000+1)*NUM_USB_CHAN_IN_A1*3)+4)
 
 #define MAX_DEVICE_AUD_PACKET_SIZE (MAX(MAX_DEVICE_AUD_PACKET_SIZE_CLASS_ONE, MAX_DEVICE_AUD_PACKET_SIZE_CLASS_TWO))
 
@@ -414,7 +414,7 @@ void handle_audio_request(chanend c_mix_out)
                 }
                 else 
                 {
-                    unsigned int datasize = totalSampsToWrite*3*g_numUsbChanIn;
+                    unsigned int datasize = totalSampsToWrite*3*NUM_USB_CHAN_IN_A1;
                     datasize = (datasize+3) & (~0x3); // round up to nearest word
                     g_aud_to_host_wrptr += 4+datasize;                
                 }
@@ -441,7 +441,7 @@ void handle_audio_request(chanend c_mix_out)
             }
             else  
             {
-                if (totalSampsToWrite < 0 || totalSampsToWrite*3*g_numUsbChanIn > (MAX_DEVICE_AUD_PACKET_SIZE_CLASS_ONE)) 
+                if (totalSampsToWrite < 0 || totalSampsToWrite*3*NUM_USB_CHAN_IN_A1 > (MAX_DEVICE_AUD_PACKET_SIZE_CLASS_ONE)) 
                 {
                     totalSampsToWrite = 0;
                 }
@@ -701,6 +701,21 @@ void decouple(chanend c_mix_out,
     }
 #endif
 
+     {
+        int usb_speed = 0;
+
+        while(usb_speed == 0)
+        {
+           GET_SHARED_GLOBAL(usb_speed, g_curUsbSpeed);
+        }
+
+        if(usb_speed == XUD_SPEED_FS)
+        {
+            g_numUsbChanOut = NUM_USB_CHAN_OUT_A1;
+            g_numUsbChanIn = NUM_USB_CHAN_IN_A1;
+        }
+    }
+
     while(1)
     {
         int tmp;
@@ -756,7 +771,7 @@ void decouple(chanend c_mix_out,
                     if (usb_speed == XUD_SPEED_HS) 
                         mid*=NUM_USB_CHAN_IN*4;
                     else
-                        mid*=NUM_USB_CHAN_IN*3;
+                        mid*=NUM_USB_CHAN_IN_A1*3;
 
                     asm("stw %0, %1[0]"::"r"(mid),"r"(g_aud_to_host_zeros));
                 }
@@ -819,6 +834,28 @@ void decouple(chanend c_mix_out,
                 SET_SHARED_GLOBAL(g_freqChange, 0);
                 ENABLE_INTERRUPTS();
             }
+            else if(tmp == SET_CHAN_COUNT_OUT)
+            {
+                /* Change in OUT channel count */
+                DISABLE_INTERRUPTS(); 
+                SET_SHARED_GLOBAL(g_freqChange_flag, 0);
+                GET_SHARED_GLOBAL(g_numUsbChanOut, g_freqChange_sampFreq);  /* Misuse of g_freqChange_sampFreq */
+ 
+                /* Reset OUT buffer state */             
+                SET_SHARED_GLOBAL(g_aud_from_host_rdptr, aud_from_host_fifo_start);
+                SET_SHARED_GLOBAL(g_aud_from_host_wrptr, aud_from_host_fifo_start);
+                
+                outUnderflow = 1;
+                if(outOverflow)
+                {
+                    /* If we were previously in overflow we wont have marked as ready */   
+                    XUD_SetReady_OutPtr(aud_from_host_usb_ep, aud_from_host_fifo_start+4);
+                    outOverflow = 0;
+                }
+              
+                SET_SHARED_GLOBAL(g_freqChange, 0);
+                ENABLE_INTERRUPTS();
+            }
         }
 
 #ifdef OUTPUT
@@ -864,7 +901,6 @@ void decouple(chanend c_mix_out,
             {
                 space_left = aud_from_host_fifo_end - g_aud_from_host_wrptr;
             }
- 
          
             if (space_left <= 0 || space_left >= MAX_USB_AUD_PACKET_SIZE) 
             {   
