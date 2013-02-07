@@ -476,8 +476,9 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
                             if( sp.wIndex < NUM_INTERFACES )
                                 interfaceAlt[sp.wIndex] = sp.wValue;
 #if 1
+
                             /* Check for audio stream from host start/stop */
-                            if(sp.wIndex == 2) // Input interface
+                            if(sp.wIndex == 1)  // Ouput interface
                             {
                                 switch(sp.wValue)
                                 {
@@ -487,9 +488,44 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
 
                                     case 1:
                                         /* Stream active + 0 chans */
-                                        outuint(c_audioControl, SET_CHAN_COUNT_IN);
-                                        outuint(c_audioControl, NUM_USB_CHAN_IN);
-                                        
+                                        /* NOTE there could be a difference between HS/UAC1 and FS/UAC1 channel count */
+                                        /* Also note, currently we assume with won't be doing ADAT in FS/UAC1...*/
+                                        if(g_curUsbSpeed == XUD_SPEED_HS)
+                                        { 
+                                            outuint(c_audioControl, SET_CHAN_COUNT_OUT);
+                                            outuint(c_audioControl, NUM_USB_CHAN_OUT);
+                                        }
+                                        else
+                                        {
+                                            outuint(c_audioControl, SET_CHAN_COUNT_OUT);
+                                            outuint(c_audioControl, NUM_USB_CHAN_OUT_A1);
+                                        }
+                                        break;
+                                }
+
+                            }
+                            else if(sp.wIndex == 2) // Input interface
+                            {
+                                switch(sp.wValue)
+                                {
+                                    case 0:
+                                       
+                                        break;
+
+                                    case 1:
+                                        /* Stream active + 0 chans */
+                                        /* NOTE there could be a difference between HS/UAC1 and FS/UAC1 channel count */
+                                        /* Also note, currently we assume with won't be doing ADAT in FS/UAC1...*/
+                                        if(g_curUsbSpeed == XUD_SPEED_HS)
+                                        { 
+                                            outuint(c_audioControl, SET_CHAN_COUNT_IN);
+                                            outuint(c_audioControl, NUM_USB_CHAN_IN);
+                                        }
+                                        else
+                                        {
+                                            outuint(c_audioControl, SET_CHAN_COUNT_IN);
+                                            outuint(c_audioControl, NUM_USB_CHAN_IN_A1);
+                                        }
 #ifdef ADAT_RX 
                                         outuint(c_clk_ctl, SET_SMUX);
                                         outuint(c_clk_ctl, 0); 
