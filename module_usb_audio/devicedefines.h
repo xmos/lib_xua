@@ -30,6 +30,25 @@
     #endif
 #endif
 
+#if (MAX_FREQ > 96000)
+#define MAX_FREQ_A1             96000
+#else
+#define MAX_FREQ_A1             MAX_FREQ
+#endif
+
+/* For Audio Class 1.0 we always have at most 2 channels */
+#if (NUM_USB_CHAN_OUT > 2)
+#define NUM_USB_CHAN_OUT_A1  (2)
+#else
+#define NUM_USB_CHAN_OUT_A1  (NUM_USB_CHAN_OUT)
+#endif
+
+#if (NUM_USB_CHAN_IN > 2)
+#define NUM_USB_CHAN_IN_A1  (2)
+#else
+#define NUM_USB_CHAN_IN_A1  (NUM_USB_CHAN_IN)
+#endif
+
 #if defined(IO_EXPANSION) && (IO_EXPANSION == 0)
 #undef IO_EXPANSION
 #endif
@@ -86,6 +105,8 @@
 #warning AUDIO_CLASS not defined, using 2
 #define AUDIO_CLASS 2
 #endif
+
+
 
 /* Number of IS2 chans to DAC */
 #ifndef I2S_CHANS_DAC
