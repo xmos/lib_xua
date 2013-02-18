@@ -53,11 +53,11 @@ extern port p_mclk;
 
 #ifdef SPDIF 
 extern buffered out port:32 p_spdif_tx;
+extern clock    clk_mst_spd;  
 #endif
 
 extern clock    clk_audio_mclk;  
 extern clock    clk_audio_bclk;  
-extern clock    clk_mst_spd;  
 
 extern void device_reboot(void);
 
