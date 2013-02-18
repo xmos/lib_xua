@@ -57,12 +57,6 @@ unsigned int g_midi_to_host_buffer_B[MAX_USB_MIDI_PACKET_SIZE/4+4];
 int g_midi_from_host_buffer[MAX_USB_MIDI_PACKET_SIZE/4+4];
 #endif
 
-#ifdef IAP
-/* iAP buffers */
-//unsigned int g_iap_to_host_buffer_A[MAX_IAP_PACKET_SIZE/4+4];
-//unsigned int g_iap_to_host_buffer_B[MAX_IAP_PACKET_SIZE/4+4];
-#endif
-
 unsigned char fb_clocks[16];
 
 //#define FB_TOLERANCE_TEST
@@ -582,15 +576,16 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
 #endif
 
 #ifdef IAP
-#warning IAP NOT SUPPORTED IN THIS RELEASE!!
         /* IAP OUT from host */
         case XUD_GetData_Select(c_iap_from_host, ep_iap_from_host, tmp):
             asm("#iap h->d");
-            
-              write_via_xc_ptr(iap_from_host_buffer, tmp);
+            if(tmp >= 0)
+            {    
+                write_via_xc_ptr(iap_from_host_buffer, tmp);
                       
-              /* release the buffer */
-              SET_SHARED_GLOBAL(g_iap_from_host_flag, 1);
+                /* release the buffer */
+                SET_SHARED_GLOBAL(g_iap_from_host_flag, 1);
+            }
             break;
  
         /* IAP IN to host */                  
