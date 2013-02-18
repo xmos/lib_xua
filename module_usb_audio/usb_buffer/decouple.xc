@@ -100,14 +100,6 @@ unsigned g_zero_buffer[1];
 unsigned char  gc_zero_buffer[4];
 #endif
 
-//#ifdef HID_CONTROLS
-#if 0
-extern in port p_but;
-unsigned char g_hidData[16] = {0};
-unsigned char g_hidFlag = 0;
-unsigned g_ep_hid = 0;
-#endif
-
 int aud_from_host_usb_ep = 0;
 int aud_to_host_usb_ep = 0;
 int int_usb_ep = 0;
@@ -658,8 +650,6 @@ void decouple(chanend c_mix_out,
     iap_from_host_flag = 0;
     SET_SHARED_GLOBAL(g_iap_from_host_flag, iap_from_host_flag);
 
-    // send the current host -> device buffer out of the fifo
-    //XUD_SetReady(iap_from_host_usb_ep, 1);
 #endif
 
 #ifdef OUTPUT
@@ -725,16 +715,6 @@ void decouple(chanend c_mix_out,
         }
            
         {
-#if 0
-//#ifdef HID_CONTROLS
-            Vendor_ReadHIDButtons(g_hidData);
-            
-            if(g_hidFlag == 0)
-            {    
-                XUD_SetReady_In(g_ep_hid, g_hidData, 1);
-                g_hidFlag = 1;
-            }
-#endif
             asm("#decouple-default");
 
             /* Check for freq change or other update */
@@ -1024,7 +1004,6 @@ void decouple(chanend c_mix_out,
 #endif // INPUT
 
 
-//#if 0
 #ifdef IAP
         GET_SHARED_GLOBAL(iap_reset, g_iap_reset);          
         if (iap_reset) 
@@ -1083,8 +1062,6 @@ void decouple(chanend c_mix_out,
                 // Send length first so iAP thread knows how much data to expect
                 // Don't expect ack from this to make it simpler
                 outuint(c_iap, iap_data_remaining_to_device);
-
-                //printintln(iap_data_remaining_to_device);
 
                 /* Increment read pointer - buffer[0] is length */
                 iap_from_host_rdptr = iap_from_host_buffer + 4;
@@ -1154,7 +1131,6 @@ void decouple(chanend c_mix_out,
 
                            // Signal other side to swap
                            XUD_SetReady_In(iap_to_host_int_usb_ep, gc_zero_buffer, 0);
-                           //printintln(iap_data_collected_from_device);
                            XUD_SetReady_InPtr(iap_to_host_usb_ep, iap_to_host_buffer_being_sent+4, iap_data_collected_from_device);
                            iap_data_collected_from_device = 0;
                            iap_waiting_on_send_to_host = 1;
