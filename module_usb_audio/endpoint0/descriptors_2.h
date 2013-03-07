@@ -1,8 +1,7 @@
 /** 
  * @file    DeviceDescriptors_2.h 
- * @brief   Device Descriptors and params for Audio 2.0  
+ * @brief   Device Descriptors 
  * @author  Ross Owen, XMOS Limited
- * @version 1.4
 */
 
 

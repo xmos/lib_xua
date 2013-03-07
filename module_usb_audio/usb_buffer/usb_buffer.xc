@@ -592,7 +592,7 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
         case XUD_SetData_Select(c_iap_to_host, ep_iap_to_host, tmp): 
             asm("#iap d->h");
             
-            // ack the decouple thread to say it has been sent to host  
+              // ack the decouple thread to say it has been sent to host  
               SET_SHARED_GLOBAL(g_iap_to_host_flag, 1);
 
               swap(iap_to_host_buffer, iap_to_host_waiting_buffer);
@@ -600,7 +600,6 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
         
         case XUD_SetData_Select(c_iap_to_host_int, ep_iap_to_host_int, tmp): 
             asm("#iap int d->h");
-            //printintln(1);
             break;
 #endif
 

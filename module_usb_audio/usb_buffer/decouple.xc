@@ -1005,6 +1005,7 @@ void decouple(chanend c_mix_out,
 
 
 #ifdef IAP
+#if 1
         GET_SHARED_GLOBAL(iap_reset, g_iap_reset);          
         if (iap_reset) 
         {
@@ -1016,6 +1017,7 @@ void decouple(chanend c_mix_out,
            iap_data_collected_from_device = 0;
            SET_SHARED_GLOBAL(g_iap_to_host_flag, 0);
         }
+#endif
         // Need to handle sending ZLP on iap_to_host_usb_ep_int to signal iOS device to collect from bulk endpoint.
         /* Check if buffer() has send IAP packet to host */
         GET_SHARED_GLOBAL(iap_to_host_flag, g_iap_to_host_flag);          
@@ -1069,7 +1071,6 @@ void decouple(chanend c_mix_out,
                 if (iap_data_remaining_to_device) 
                 {
                     read_byte_via_xc_ptr(datum_iap, iap_from_host_rdptr);
-                    //printintln(datum_iap);
                     outuint(c_iap, datum_iap);
                     iap_from_host_rdptr += 1;
                     iap_data_remaining_to_device -= 1;

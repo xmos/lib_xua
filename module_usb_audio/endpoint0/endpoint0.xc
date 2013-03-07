@@ -85,7 +85,7 @@ unsigned char mixSel[MIX_INPUTS];
 int min(int x, int y);
 
 /* Records alt setting for each interface */
-int interfaceAlt[NUM_INTERFACES] = {0, 0, 0, 0};
+int interfaceAlt[NUM_INTERFACES];
 
 /* Global current device config var*/
 unsigned g_config = 0;
@@ -265,24 +265,6 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
 
 #ifdef VENDOR_AUDIO_REQS
     VendorAudioRequestsInit(c_audioControl, c_mix_ctl, c_clk_ctl);
-#endif
-
-#if 0
-        {
-            char rdata[1];
-            char wdata[1];
-            
-            //wdata[0] = 77;
-            //write_glx_periph_reg(GLXID, XS1_GLX_PERIPH_SCTH_ID, 0x0, 0, 1, wdata);
-
-
-            read_glx_periph_reg(GLXID, XS1_GLX_PERIPH_SCTH_ID, 0x1, 0, 1, rdata);
-
-            if(rdata[0] != 0)
-            {
-                while(1);
-            }
-     //           printintln(rdata[0]);
 #endif
 
 #ifdef DFU
@@ -892,8 +874,6 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
         if (retVal < 0) 
         {
             g_curUsbSpeed = XUD_ResetEndpoint(ep0_out, ep0_in);
-
-            //printintln(g_curUsbSpeed);
 
             g_config = 0;
 
