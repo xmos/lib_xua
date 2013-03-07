@@ -28,6 +28,7 @@ void buffer(chanend c_aud_out,
             chanend c_iap_from_host, 
             chanend c_iap_to_host,
             chanend c_iap_to_host_int,
+            chanend c_iap,
 #endif
 #if defined(SPDIF_RX) || defined(ADAT_RX)
             chanend? c_int, 

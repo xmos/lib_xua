@@ -251,7 +251,7 @@ int main()
                 c_midi,
 #endif
 #ifdef IAP
-                c_xud_out[EP_NUM_OUT_IAP], c_xud_in[EP_NUM_IN_IAP], c_xud_in[EP_NUM_IN_IAP_INT],
+                c_xud_out[EP_NUM_OUT_IAP], c_xud_in[EP_NUM_IN_IAP], c_xud_in[EP_NUM_IN_IAP_INT], c_iap,
 #endif
 #if defined(SPDIF_RX) || defined(ADAT_RX)
                 /* Audio Interrupt - only used for interrupts on external clock change */
@@ -269,9 +269,6 @@ int main()
         {
             thread_speed();
             decouple(c_mix_out, null
-#ifdef IAP
-                , c_iap
-#endif
             );
         }
 

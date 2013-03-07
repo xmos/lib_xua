@@ -57,6 +57,13 @@ unsigned int g_midi_to_host_buffer_B[MAX_USB_MIDI_PACKET_SIZE/4+4];
 int g_midi_from_host_buffer[MAX_USB_MIDI_PACKET_SIZE/4+4];
 #endif
 
+#ifdef IAP
+extern unsigned int g_iap_to_host_buffer_A[MAX_IAP_PACKET_SIZE/4+4];
+extern unsigned int g_iap_to_host_buffer_B[MAX_IAP_PACKET_SIZE/4+4];
+extern int g_iap_from_host_buffer[MAX_IAP_PACKET_SIZE/4+4];
+unsigned char  gc_zero_buffer2[4];
+#endif
+
 unsigned char fb_clocks[16];
 
 //#define FB_TOLERANCE_TEST
@@ -79,7 +86,8 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
 #ifdef IAP
             chanend c_iap_from_host, 
             chanend c_iap_to_host, 
-            chanend c_iap_to_host_int, 
+            chanend c_iap_to_host_int,
+            chanend c_iap, 
 #endif
 #if defined(SPDIF_RX) || defined(ADAT_RX)
             chanend ?c_int, 
@@ -152,8 +160,8 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
 #ifdef IAP
     xc_ptr iap_from_host_rdptr;
     //xc_ptr iap_from_host_buffer;
-    //xc_ptr iap_to_host_buffer_being_sent = array_to_xc_ptr(g_iap_to_host_buffer_A);
-    //xc_ptr iap_to_host_buffer_being_collected = array_to_xc_ptr(g_iap_to_host_buffer_B);
+    xc_ptr iap_to_host_buffer_being_sent = array_to_xc_ptr(g_iap_to_host_buffer_A);
+    xc_ptr iap_to_host_buffer_being_collected = array_to_xc_ptr(g_iap_to_host_buffer_B);
     //xc_ptr zero_buffer = array_to_xc_ptr(g_zero_buffer);
     
     int is_ack_iap;
@@ -291,6 +299,22 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
 
     while(1)
     {
+
+        { 
+            int iap_reset;
+          GET_SHARED_GLOBAL(iap_reset, g_iap_reset);          
+        if (iap_reset) 
+        {
+           iap_send_reset(c_iap); // What if this happen in the middle of a send/ack?
+           iap_reset = 0;
+           iap_expecting_length = 1;
+           SET_SHARED_GLOBAL(g_iap_reset, iap_reset); // Reset has been signalled
+           iap_waiting_on_send_to_host = 0;
+           iap_data_collected_from_device = 0;
+           SET_SHARED_GLOBAL(g_iap_to_host_flag, 0);
+        }
+        }
+    
 
         /* Wait for response from XUD and service relevant EP */
         select
@@ -585,6 +609,37 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
                       
                 /* release the buffer */
                 SET_SHARED_GLOBAL(g_iap_from_host_flag, 1);
+
+            /* Check if host has sent us iap OUT data */
+            GET_SHARED_GLOBAL(iap_from_host_flag, g_iap_from_host_flag);
+            if (iap_from_host_flag)
+            {
+                /* The buffer() thread has filled up a buffer */
+                /* Reset flag */
+                SET_SHARED_GLOBAL(g_iap_from_host_flag, 0);
+
+                /* Read length from buffer[0] */
+                read_via_xc_ptr(iap_data_remaining_to_device, iap_from_host_buffer);
+
+                // Send length first so iAP thread knows how much data to expect
+                // Don't expect ack from this to make it simpler
+                outuint(c_iap, iap_data_remaining_to_device);
+
+                /* Increment read pointer - buffer[0] is length */
+                iap_from_host_rdptr = iap_from_host_buffer + 4;
+
+                if (iap_data_remaining_to_device) 
+                {
+                    read_byte_via_xc_ptr(datum_iap, iap_from_host_rdptr);
+                    outuint(c_iap, datum_iap);
+                    iap_from_host_rdptr += 1;
+                    iap_data_remaining_to_device -= 1;
+                }
+             }
+
+
+
+
             }
             break;
  
@@ -593,9 +648,40 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
             asm("#iap d->h");
             
               // ack the decouple thread to say it has been sent to host  
-              SET_SHARED_GLOBAL(g_iap_to_host_flag, 1);
+              //SET_SHARED_GLOBAL(g_iap_to_host_flag, 1);
 
               swap(iap_to_host_buffer, iap_to_host_waiting_buffer);
+
+                /* The buffer has been sent to the host, so we can ack the iap thread */
+                //SET_SHARED_GLOBAL(g_iap_to_host_flag, 0);
+                if (iap_data_collected_from_device != 0) 
+                {
+                    /* We have some more data to send set the amount of data to send */
+                    write_via_xc_ptr(iap_to_host_buffer_being_collected, iap_data_collected_from_device);
+
+                    /* Swap the collecting and sending buffer */
+                    swap(iap_to_host_buffer_being_collected, iap_to_host_buffer_being_sent);
+            
+                    /* Request to send packet */
+                    XUD_SetReady_In(ep_iap_to_host_int, gc_zero_buffer2, 0); // ZLP to int ep
+                    XUD_SetReady_InPtr(ep_iap_to_host, iap_to_host_buffer_being_sent+4, iap_data_collected_from_device);
+
+                    /* Mark as waiting for host to poll us */
+                    iap_waiting_on_send_to_host = 1;                                                                                                                  
+                    /* Reset the collected data count */
+                    iap_data_collected_from_device = 0;
+                }
+                else
+                {
+                    iap_waiting_on_send_to_host = 0;              
+                }
+
+
+
+
+
+
+
             break;  /* IAP IN to host */                  
         
         case XUD_SetData_Select(c_iap_to_host_int, ep_iap_to_host_int, tmp): 
@@ -666,6 +752,71 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
                 }          
                 break;
 #endif  /* ifdef MIDI */
+
+#ifdef IAP
+            /* Received word from iap thread - Check for ACK or Data */
+            case iap_get_ack_or_reset_or_data(c_iap, is_ack_iap, is_reset, datum_iap):
+
+                if (is_ack_iap) 
+                {
+                    /* An ack from the iap/uart thread means it has accepted some data we sent it
+                     * we are okay to send another word */
+                    if (iap_data_remaining_to_device == 0) 
+                    {
+                        /* We have read an entire packet - Mark ready to receive another */
+                        XUD_SetReady_OutPtr(ep_iap_from_host, iap_from_host_buffer+4);
+                    }
+                    else 
+                    {
+                        /* Read another word from the fifo and output it to iap thread */
+                        read_byte_via_xc_ptr(datum_iap, iap_from_host_rdptr);
+                        outuint(c_iap, datum_iap);
+                        iap_from_host_rdptr += 1;
+                        iap_data_remaining_to_device -= 1;
+                    }
+                }
+                else
+                {
+                    /* The iap/uart thread has sent us some data - handshake back */
+                    iap_send_ack(c_iap);
+                    if (iap_expecting_length) {
+                       iap_expecting_data_length = datum_iap;
+                       iap_expecting_length = 0;
+                    } else {
+                       if (iap_data_collected_from_device < IAP_USB_BUFFER_TO_HOST_SIZE)
+                       {
+                           /* There is room in the collecting buffer for the data */
+                           xc_ptr p = (iap_to_host_buffer_being_collected + 4) + iap_data_collected_from_device;
+                           // Add data to the buffer
+                           write_byte_via_xc_ptr(p, datum_iap);
+                           iap_data_collected_from_device += 1;
+                       }
+                       else 
+                       {
+                           // Too many events from device - drop 
+                       } 
+
+                       // If we are not sending data to the host then initiate it (ONLY IF GOT WHOLE MESSAGE)
+                       if (!iap_waiting_on_send_to_host && (iap_data_collected_from_device == iap_expecting_data_length)) 
+                       {
+                           // Set first element of buffer to length i.e. iap_to_host_buffer_being_collected[0] = iap_data_collected_from_device;
+                           write_via_xc_ptr(iap_to_host_buffer_being_collected, iap_data_collected_from_device);
+
+                           swap(iap_to_host_buffer_being_collected, iap_to_host_buffer_being_sent);
+
+                           // Signal other side to swap
+                           XUD_SetReady_In(ep_iap_to_host_int, gc_zero_buffer2, 0);
+                           XUD_SetReady_InPtr(ep_iap_to_host, iap_to_host_buffer_being_sent+4, iap_data_collected_from_device);
+                           iap_data_collected_from_device = 0;
+                           iap_waiting_on_send_to_host = 1;
+                           iap_expecting_length = 1;
+                       }
+                    }
+                }
+                break;
+#endif
+
+
         }
 
     }
