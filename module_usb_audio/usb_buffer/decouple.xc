@@ -19,12 +19,6 @@
  **/                                   
 #include <xs1.h>
 #include "xc_ptr.h"
-#define NO_INLINE_MIDI_SELECT_HANDLER 1
-#include "usb_midi.h"
-#define NO_INLINE_IAP_SELECT_HANDLER 1
-#ifdef IAP
-#include "iAP.h"
-#endif
 #include "devicedefines.h"
 #include "interrupt.h"
 #include "clockcmds.h"
@@ -77,36 +71,11 @@ unsigned dir = 0;
 
 void GetADCCounts(unsigned samFreq, int &min, int &mid, int &max);
 
-#ifdef IAP
-static inline void swap(xc_ptr &a, xc_ptr &b) 
-{
-  xc_ptr tmp;
-  tmp = a;
-  a = b;
-  b = tmp;
-  return;
-}
-
-unsigned g_iap_reset = 1;
-unsigned g_iap_from_host_flag = 0;
-unsigned g_iap_to_host_flag = 0;
-int iap_to_host_usb_ep = 0;
-int iap_to_host_int_usb_ep = 0;
-int iap_from_host_usb_ep = 0;
-unsigned int g_iap_to_host_buffer_A[MAX_IAP_PACKET_SIZE/4+4];
-unsigned int g_iap_to_host_buffer_B[MAX_IAP_PACKET_SIZE/4+4];
-int g_iap_from_host_buffer[MAX_IAP_PACKET_SIZE/4+4];
-unsigned g_zero_buffer[1];
-unsigned char  gc_zero_buffer[4];
-#endif
-
 int aud_from_host_usb_ep = 0;
 int aud_to_host_usb_ep = 0;
 int int_usb_ep = 0;
 
-
 /* Shared global audio buffering variables */
-
 unsigned g_aud_from_host_buffer;
 unsigned g_aud_to_host_buffer;
 unsigned g_aud_to_host_flag = 0;
@@ -555,26 +524,6 @@ void decouple(chanend c_mix_out,
 #ifdef INPUT
     int aud_to_host_flag = 0;
 #endif 
-
-#ifdef IAP
-    xc_ptr iap_from_host_rdptr;
-    xc_ptr iap_from_host_buffer;
-    xc_ptr iap_to_host_buffer_being_sent = array_to_xc_ptr(g_iap_to_host_buffer_A);
-    xc_ptr iap_to_host_buffer_being_collected = array_to_xc_ptr(g_iap_to_host_buffer_B);
-    xc_ptr zero_buffer = array_to_xc_ptr(g_zero_buffer);
-    
-    int is_ack_iap;
-    int is_reset;
-    int iap_reset;
-    unsigned int datum_iap;
-    int iap_data_remaining_to_device = 0;
-    int iap_data_collected_from_device = 0;
-    int iap_waiting_on_send_to_host = 0;
-    int iap_to_host_flag = 0;
-    int iap_from_host_flag = 0;
-    int iap_expecting_length = 1;
-    int iap_expecting_data_length = 0;
-#endif
 
     int t = array_to_xc_ptr(outAudioBuff);
     int aud_in_ready = 0;

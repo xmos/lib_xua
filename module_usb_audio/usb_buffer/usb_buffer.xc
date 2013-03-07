@@ -58,10 +58,16 @@ int g_midi_from_host_buffer[MAX_USB_MIDI_PACKET_SIZE/4+4];
 #endif
 
 #ifdef IAP
-extern unsigned int g_iap_to_host_buffer_A[MAX_IAP_PACKET_SIZE/4+4];
-extern unsigned int g_iap_to_host_buffer_B[MAX_IAP_PACKET_SIZE/4+4];
-extern int g_iap_from_host_buffer[MAX_IAP_PACKET_SIZE/4+4];
+unsigned int g_iap_to_host_buffer_A[MAX_IAP_PACKET_SIZE/4+4];
+unsigned int g_iap_to_host_buffer_B[MAX_IAP_PACKET_SIZE/4+4];
+int g_iap_from_host_buffer[MAX_IAP_PACKET_SIZE/4+4];
 unsigned char  gc_zero_buffer2[4];
+unsigned g_iap_reset = 1;
+unsigned g_iap_from_host_flag = 0;
+unsigned g_iap_to_host_flag = 0;
+int iap_to_host_usb_ep = 0;
+int iap_to_host_int_usb_ep = 0;
+int iap_from_host_usb_ep = 0;
 #endif
 
 unsigned char fb_clocks[16];
