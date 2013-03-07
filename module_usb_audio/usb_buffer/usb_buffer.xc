@@ -167,7 +167,10 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
     xc_ptr iap_from_host_rdptr;
     xc_ptr iap_to_host_buffer_being_sent = array_to_xc_ptr(g_iap_to_host_buffer_A);
     xc_ptr iap_to_host_buffer_being_collected = array_to_xc_ptr(g_iap_to_host_buffer_B);
-    xc_ptr iap_from_host_buffer = array_to_xc_ptr(g_iap_from_host_buffer);
+    //xc_ptr iap_from_host_buffer = array_to_xc_ptr(g_iap_from_host_buffer);
+ 
+    unsigned char iap_from_host_buffer[MAX_IAP_PACKET_SIZE+4];
+ 
     
     int is_ack_iap;
     int is_reset;
@@ -277,7 +280,7 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
 #endif
 
 #ifdef IAP
-    XUD_SetReady_OutPtr(ep_iap_from_host, iap_from_host_buffer+4);
+    XUD_SetReady_Out(ep_iap_from_host, iap_from_host_buffer);
 #endif
 
 #ifdef HID_CONTROLS
@@ -597,18 +600,18 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
             {   
                 iap_data_remaining_to_device = tmp;
 
-                // Send length first so iAP thread knows how much data to expect
-                // Don't expect ack from this to make it simpler
-                outuint(c_iap, iap_data_remaining_to_device);
-
-                /* Increment read pointer - buffer[0] is length */
-                iap_from_host_rdptr = iap_from_host_buffer;
-
-                if (iap_data_remaining_to_device) 
+                if(iap_data_remaining_to_device)
                 {
-                    read_byte_via_xc_ptr(datum_iap, iap_from_host_rdptr);
+                    // Send length first so iAP thread knows how much data to expect
+                    // Don't expect ack from this to make it simpler
+                    outuint(c_iap, iap_data_remaining_to_device);
+
+                    /* Send out first byte in buffer */
+                    datum_iap = iap_from_host_buffer[0];
                     outuint(c_iap, datum_iap);
-                    iap_from_host_rdptr += 1;
+                    
+                    /* Set read ptr to next byte in buffer */
+                    iap_from_host_rdptr = 1;
                     iap_data_remaining_to_device -= 1;
                 }
             }
@@ -735,12 +738,12 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
                     if (iap_data_remaining_to_device == 0) 
                     {
                         /* We have read an entire packet - Mark ready to receive another */
-                        XUD_SetReady_OutPtr(ep_iap_from_host, iap_from_host_buffer);
+                        XUD_SetReady_Out(ep_iap_from_host, iap_from_host_buffer);
                     }
                     else 
                     {
                         /* Read another word from the fifo and output it to iap thread */
-                        read_byte_via_xc_ptr(datum_iap, iap_from_host_rdptr);
+                        datum_iap = iap_from_host_buffer[iap_from_host_rdptr];
                         outuint(c_iap, datum_iap);
                         iap_from_host_rdptr += 1;
                         iap_data_remaining_to_device -= 1;
