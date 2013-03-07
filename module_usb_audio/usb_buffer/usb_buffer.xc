@@ -595,11 +595,6 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
             asm("#iap h->d");
             if(tmp >= 0)
             {   
-                /* Stick length in beginning of buffer.. */ 
-                write_via_xc_ptr(iap_from_host_buffer, tmp);
-                      
-                /* Read length from buffer[0] */
-                //read_via_xc_ptr(iap_data_remaining_to_device, iap_from_host_buffer);
                 iap_data_remaining_to_device = tmp;
 
                 // Send length first so iAP thread knows how much data to expect
@@ -607,7 +602,7 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
                 outuint(c_iap, iap_data_remaining_to_device);
 
                 /* Increment read pointer - buffer[0] is length */
-                iap_from_host_rdptr = iap_from_host_buffer + 4;
+                iap_from_host_rdptr = iap_from_host_buffer;
 
                 if (iap_data_remaining_to_device) 
                 {
@@ -740,7 +735,7 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
                     if (iap_data_remaining_to_device == 0) 
                     {
                         /* We have read an entire packet - Mark ready to receive another */
-                        XUD_SetReady_OutPtr(ep_iap_from_host, iap_from_host_buffer+4);
+                        XUD_SetReady_OutPtr(ep_iap_from_host, iap_from_host_buffer);
                     }
                     else 
                     {
