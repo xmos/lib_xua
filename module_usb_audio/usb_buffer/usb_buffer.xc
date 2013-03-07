@@ -183,8 +183,8 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
     int iap_expecting_data_length = 0;
 
     xc_ptr iap_from_host_buffer =0;
-    xc_ptr iap_to_host_buffer = 0;
-    xc_ptr iap_to_host_waiting_buffer = 0;
+    //xc_ptr iap_to_host_buffer = 0;
+    //xc_ptr iap_to_host_waiting_buffer = 0;
 #endif
 
 
@@ -249,8 +249,8 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
 
 #ifdef IAP
     // get the two buffers to use for iap device->host
-    asm("ldaw %0, dp[g_iap_to_host_buffer_A]":"=r"(iap_to_host_buffer));
-    asm("ldaw %0, dp[g_iap_to_host_buffer_B]":"=r"(iap_to_host_waiting_buffer));
+    //asm("ldaw %0, dp[g_iap_to_host_buffer_A]":"=r"(iap_to_host_buffer));
+    //asm("ldaw %0, dp[g_iap_to_host_buffer_B]":"=r"(iap_to_host_waiting_buffer));
     asm("ldaw %0, dp[g_iap_from_host_buffer]":"=r"(iap_from_host_buffer));
 
 
@@ -259,7 +259,6 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
     asm("stw %0, dp[iap_to_host_usb_ep]"::"r"(ep_iap_to_host));
     asm("stw %0, dp[iap_to_host_int_usb_ep]"::"r"(ep_iap_to_host_int));
     asm("stw %0, dp[iap_from_host_usb_ep]"::"r"(ep_iap_from_host));    
-    swap(iap_to_host_buffer, iap_to_host_waiting_buffer);
     SET_SHARED_GLOBAL(g_iap_from_host_flag, 1);    
 #endif
 
@@ -656,7 +655,7 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
               // ack the decouple thread to say it has been sent to host  
               //SET_SHARED_GLOBAL(g_iap_to_host_flag, 1);
 
-              swap(iap_to_host_buffer, iap_to_host_waiting_buffer);
+              //swap(iap_to_host_buffer, iap_to_host_waiting_buffer);
 
                 /* The buffer has been sent to the host, so we can ack the iap thread */
                 //SET_SHARED_GLOBAL(g_iap_to_host_flag, 0);
