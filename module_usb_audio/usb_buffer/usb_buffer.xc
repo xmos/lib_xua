@@ -60,7 +60,7 @@ int g_midi_from_host_buffer[MAX_USB_MIDI_PACKET_SIZE/4+4];
 #ifdef IAP
 unsigned int g_iap_to_host_buffer_A[MAX_IAP_PACKET_SIZE/4+4];
 unsigned int g_iap_to_host_buffer_B[MAX_IAP_PACKET_SIZE/4+4];
-int g_iap_from_host_buffer[MAX_IAP_PACKET_SIZE/4+4];
+unsigned int g_iap_from_host_buffer[MAX_IAP_PACKET_SIZE/4+4];
 unsigned char  gc_zero_buffer2[4];
 unsigned g_iap_reset = 1;
 unsigned g_iap_from_host_flag = 0;
@@ -165,10 +165,9 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
 
 #ifdef IAP
     xc_ptr iap_from_host_rdptr;
-    //xc_ptr iap_from_host_buffer;
     xc_ptr iap_to_host_buffer_being_sent = array_to_xc_ptr(g_iap_to_host_buffer_A);
     xc_ptr iap_to_host_buffer_being_collected = array_to_xc_ptr(g_iap_to_host_buffer_B);
-    //xc_ptr zero_buffer = array_to_xc_ptr(g_zero_buffer);
+    xc_ptr iap_from_host_buffer = array_to_xc_ptr(g_iap_from_host_buffer);
     
     int is_ack_iap;
     int is_reset;
@@ -182,7 +181,6 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
     int iap_expecting_length = 1;
     int iap_expecting_data_length = 0;
 
-    xc_ptr iap_from_host_buffer =0;
     //xc_ptr iap_to_host_buffer = 0;
     //xc_ptr iap_to_host_waiting_buffer = 0;
 #endif
@@ -247,11 +245,6 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
     swap(midi_to_host_buffer, midi_to_host_waiting_buffer);
 #endif
 
-#ifdef IAP
-    // get the two buffers to use for iap device->host
-    asm("ldaw %0, dp[g_iap_from_host_buffer]":"=r"(iap_from_host_buffer));
-#endif
-
 #ifdef OUTPUT
     SET_SHARED_GLOBAL(g_aud_from_host_flag, 1);    
 #endif
@@ -275,7 +268,6 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
         }
         else 
         {
-        
             XUD_SetReady_In(ep_aud_fb, fb_clocks, 3);
         }
     }
@@ -295,6 +287,8 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
     while(1)
     {
 
+#ifdef IAP
+#warning TIDY ME UP!!
         { 
             int iap_reset;
           GET_SHARED_GLOBAL(iap_reset, g_iap_reset);          
@@ -309,6 +303,7 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
            SET_SHARED_GLOBAL(g_iap_to_host_flag, 0);
         }
         }
+#endif
     
 
         /* Wait for response from XUD and service relevant EP */
@@ -599,22 +594,13 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
         case XUD_GetData_Select(c_iap_from_host, ep_iap_from_host, tmp):
             asm("#iap h->d");
             if(tmp >= 0)
-            {    
+            {   
+                /* Stick length in beginning of buffer.. */ 
                 write_via_xc_ptr(iap_from_host_buffer, tmp);
                       
-                /* release the buffer */
-                SET_SHARED_GLOBAL(g_iap_from_host_flag, 1);
-
-            /* Check if host has sent us iap OUT data */
-            GET_SHARED_GLOBAL(iap_from_host_flag, g_iap_from_host_flag);
-            if (iap_from_host_flag)
-            {
-                /* The buffer() thread has filled up a buffer */
-                /* Reset flag */
-                SET_SHARED_GLOBAL(g_iap_from_host_flag, 0);
-
                 /* Read length from buffer[0] */
-                read_via_xc_ptr(iap_data_remaining_to_device, iap_from_host_buffer);
+                //read_via_xc_ptr(iap_data_remaining_to_device, iap_from_host_buffer);
+                iap_data_remaining_to_device = tmp;
 
                 // Send length first so iAP thread knows how much data to expect
                 // Don't expect ack from this to make it simpler
@@ -630,11 +616,6 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
                     iap_from_host_rdptr += 1;
                     iap_data_remaining_to_device -= 1;
                 }
-             }
-
-
-
-
             }
             break;
  
