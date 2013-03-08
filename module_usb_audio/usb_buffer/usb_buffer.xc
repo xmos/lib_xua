@@ -119,7 +119,8 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
 #endif
  
   
-    unsigned tmp;
+    int tmp;
+    unsigned u_tmp;
     unsigned sampleFreq = 0;
     unsigned lastClock;
 
@@ -175,13 +176,8 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
     set_thread_fast_mode_on();
 
 #ifdef IAP
-    /* Note the order here is important */
-    //XUD_ResetDrain(c_iap_to_host);
-    //XUD_ResetDrain(c_iap_to_host_int);
-    //XUD_GetBusSpeed(c_iap_to_host);
-    //XUD_GetBusSpeed(c_iap_to_host_int);
-    #warning TODO ADD BACK IAP RESET
-
+    XUD_ResetEndpoint(ep_iap_from_host, null);
+    iap_send_reset(c_iap); 
 #endif
 
 
@@ -270,22 +266,6 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
 
     while(1)
     {
-
-#ifdef IAP
-#warning TIDY ME UP!!
-        { 
-            int iap_reset;
-          GET_SHARED_GLOBAL(iap_reset, g_iap_reset);          
-        if (iap_reset) 
-        {
-           iap_send_reset(c_iap); // What if this happen in the middle of a send/ack?
-           SET_SHARED_GLOBAL(g_iap_reset, 0); // Reset has been signalled
-           iap_data_collected_from_device = 0;
-        }
-        }
-#endif
-    
-
         /* Wait for response from XUD and service relevant EP */
         select
         {
@@ -301,9 +281,9 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
 #endif
 
             /* Sample Freq our chan count update from ep 0 */     
-            case testct_byref(c_aud_ctl, tmp):
+            case testct_byref(c_aud_ctl, u_tmp):
             {
-                if (tmp) 
+                if (u_tmp) 
                 {
                    // is a control token sent by reboot_device
                    inct(c_aud_ctl);
@@ -390,20 +370,20 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
             #define MASK_16_13            (7)                                       // Bits that should not be transmitted as part of feedback.
             #define MASK_16_10            (127) //(63)      /* For Audio 1.0 we use a mask 1 bit longer than expected to avoid Windows LSB isses */
 
-            case inuint_byref(c_sof, tmp):
+            case inuint_byref(c_sof, u_tmp):
                
                 /* NOTE our feedback will be wrong for a couple of SOF's after a SF change due to 
                  * lastClock being incorrect */ 
                 asm("#sof");
                 
                 /* Get MCLK count */
-                asm (" getts %0, res[%1]" : "=r" (tmp) : "r" (p_off_mclk));   
+                asm (" getts %0, res[%1]" : "=r" (u_tmp) : "r" (p_off_mclk));   
               
                 GET_SHARED_GLOBAL(freqChange, g_freqChange);
                 if(freqChange == SET_SAMPLE_FREQ)
                 {
                     /* Keep getting MCLK counts */
-                  lastClock = tmp;
+                  lastClock = u_tmp;
                 }
                 else
                 {
@@ -416,7 +396,7 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
                     
                     /* Number of MCLKS this SOF, approx 125 * 24 (3000), sample by sample rate */
                     GET_SHARED_GLOBAL(cycles, g_curSamFreqMultiplier);
-                    cycles = ((int)((short)(tmp - lastClock))) * cycles;
+                    cycles = ((int)((short)(u_tmp - lastClock))) * cycles;
                 
                     /* Any odd bits (lower than 16.23) have to be kept seperate */
                     remnant += cycles & mask;                                   
@@ -428,7 +408,7 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
                     remnant &= mask;                                                             
                 
                     /* Store MCLK for next time around... */
-                    lastClock = tmp;                                                    
+                    lastClock = u_tmp;                                                    
 
                     /* Reset counts based on SOF counting.  Expect 16ms (128 HS SOFs/16 FS SOFS) per feedback poll 
                      * We always could 128 sofs, so 16ms @ HS, 128ms @ FS */   
@@ -591,6 +571,12 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
                     iap_from_host_rdptr = 1;
                     iap_data_remaining_to_device -= 1;
                 }
+            }
+            else if(tmp==-1)
+            {
+                XUD_ResetEndpoint(ep_iap_from_host, null);
+                iap_send_reset(c_iap); // What if this happen in the middle of a send/ack?
+                iap_data_collected_from_device = 0;
             }
             break;
  
