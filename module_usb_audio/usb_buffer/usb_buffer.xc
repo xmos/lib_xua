@@ -163,13 +163,9 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
     
     int is_ack_iap;
     int is_reset;
-    int iap_reset;
     unsigned int datum_iap;
     int iap_data_remaining_to_device = 0;
     int iap_data_collected_from_device = 0;
-    int iap_waiting_on_send_to_host = 0;
-    int iap_to_host_flag = 0;
-    int iap_from_host_flag = 0;
     int iap_expected_data_length = 0;
 #endif
 
@@ -283,9 +279,7 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
         if (iap_reset) 
         {
            iap_send_reset(c_iap); // What if this happen in the middle of a send/ack?
-           iap_reset = 0;
-           SET_SHARED_GLOBAL(g_iap_reset, iap_reset); // Reset has been signalled
-           iap_waiting_on_send_to_host = 0;
+           SET_SHARED_GLOBAL(g_iap_reset, 0); // Reset has been signalled
            iap_data_collected_from_device = 0;
         }
         }
@@ -729,7 +723,6 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
                             XUD_SetReady_In(ep_iap_to_host_int, gc_zero_buffer, 0);
                             XUD_SetReady_In(ep_iap_to_host, iap_to_host_buffer, iap_data_collected_from_device);
                             iap_data_collected_from_device = 0;
-                            iap_waiting_on_send_to_host = 1;
                             iap_expected_data_length = 0;
                         }
                         else
