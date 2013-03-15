@@ -1317,7 +1317,7 @@ unsigned char cfgDesc_Audio2[] =
 #ifdef SPDIF_RX
 #define SPDIF_RX_NUM_STRS   1
 #else
-#define SPDIF_TX_NUM_STRS   0
+#define SPDIF_RX_NUM_STRS   0
 #endif
 
 #ifdef ADAT_RX

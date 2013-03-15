@@ -1,13 +1,9 @@
 /**
- * @file    AudioRequests.xc
  * @brief   Implements relevant requests from the USB Audio 2.0 Specification
  * @author  Ross Owen, XMOS Semiconductor
- * @version 1.4
  */
 
 #include <xs1.h>
-//#include <print.h>
-
 #include "xud.h"
 #include "usb.h"
 #include "usbaudio20.h"
