@@ -30,6 +30,18 @@ unsigned g_adcVal = 0;
 //#pragma xta command "analyse path i2s_output_r i2s_output_l"
 //#pragma xta command "set required - 2000 ns"
 
+#define DSD_OVER_PCM 1
+#ifdef DSD_OVER_PCM
+unsigned dopMarkerCount = 0;
+#define DOP_MARKER_1       0x05 
+#define DOP_MARKER_2       0xFA 
+#define DOP_MARKER_XOR     0xFF
+#define DOP_MARKER_THRESH  32          /* How many DSD markers we must see before switching to DSD mode */
+#define DSD_MASK_IN(x)     ((x & 0xFF000000) >> 24)
+
+unsigned dopMarker = DOP_MARKER_1; 
+#endif
+
 /* I2S Data I/O*/
 #if (I2S_CHANS_DAC != 0)
 extern buffered out port:32 p_i2s_dac[I2S_WIRES_DAC];  
@@ -63,7 +75,11 @@ extern void device_reboot(void);
 
 /* I2S delivery thread */
 #pragma unsafe arrays
-unsigned deliver(chanend c_out, chanend ?c_spd_out, unsigned divide, chanend ?c_dig_rx, chanend ?c_adc)
+unsigned deliver(chanend c_out, chanend ?c_spd_out, unsigned divide, chanend ?c_dig_rx, chanend ?c_adc
+#ifdef DSD_OVER_PCM
+, int dop
+#endif
+)
 {
 	unsigned sample;
 #if NUM_USB_CHAN_OUT > 0 
@@ -81,6 +97,8 @@ unsigned deliver(chanend c_out, chanend ?c_spd_out, unsigned divide, chanend ?c_
     unsigned prev=0;
     int started = 0;
 #endif
+
+    int dsdmode = 0;
 
 
 #if NUM_USB_CHAN_IN > 0
@@ -304,17 +322,57 @@ unsigned deliver(chanend c_out, chanend ?c_spd_out, unsigned divide, chanend ?c_
         asm("ldw %0, dp[g_digData+36]":"=r"(samplesIn[ADAT_RX_INDEX + 7]));
 #endif
 
+#ifdef DSD_OVER_PCM
+        /* Inspect for DSD markers */
+        if((DSD_MASK_IN(samplesOut[0]) == dopMarker) && (DSD_MASK_IN(samplesOut[1]) == dopMarker))
+        {
+            dopMarker ^= DOP_MARKER_XOR;
+
+            dopMarkerCount++;
+            
+            if(!dsdmode)
+            {
+                if(dopMarkerCount >= DOP_MARKER_THRESH)
+                {
+                    dopMarkerCount=0;
+                    dopMarker ^= DOP_MARKER_XOR;
+                    printstr("DSD\n");
+                    dsdmode = 1;
+                    //return 0;
+                }
+            }
+        }
+        else
+        {
+            /* Reset DOP detect state */
+            dopMarkerCount = 0;
+            if(dsdmode)
+            {
+                //if(samplesOut[0] == 0)
+                //else
+                if(DSD_MASK_IN(samplesOut[0]) == (dopMarker ^ 0xff))
+                {
+                    printstr("almost stopped");
+                    //dopMarker ^= 0xff;
+                }
+                else
+                {
+                    /* We were running in DOP mode, but it stopped... */
+                    //return 0;
+                    dsdmode = 0;
+                    printstr("PCM\n");
+                }
+            }
+        }
+#endif
+
 #if defined(SPDIF_RX) || defined(ADAT_RX)
         /* Request digital data (with prefill) */
         outuint(c_dig_rx, 0);
 #endif
 
-
-
         tmp = 0;
-
 #pragma xta endpoint "i2s_output_l"
-
 #if (I2S_CHANS_DAC != 0) && (NUM_USB_CHAN_OUT != 0)
 #pragma loop unroll
         for(int i = 0; i < I2S_CHANS_DAC; i+=2)
@@ -382,13 +440,12 @@ unsigned deliver(chanend c_out, chanend ?c_spd_out, unsigned divide, chanend ?c_
         }
 #endif
         
-
-
-
 #if defined(SPDIF) && (NUM_USB_CHAN_OUT > 0)	
-        outuint(c_spd_out, samplesOut[SPDIF_TX_INDEX]);                 /* Forward sample to SPDIF txt thread */
+if(!dop)        
+{        outuint(c_spd_out, samplesOut[SPDIF_TX_INDEX]);                 /* Forward sample to SPDIF txt thread */
         sample = samplesOut[SPDIF_TX_INDEX + 1];                 
         outuint(c_spd_out, sample);                 /* Forward sample to SPDIF txt thread */
+}
 #ifdef RAMP_CHECK
         sample >>= 8;
         if (started<10000) {
@@ -547,6 +604,9 @@ void audio(chanend c_mix_out, chanend ?c_dig_rx, chanend ?c_config, chanend ?c)
     unsigned mClk;
     unsigned divide;
     unsigned firstRun = 1;
+#ifdef DSD_OVER_PCM
+    unsigned dop = 0;
+#endif
 
 #ifdef SU1_ADC_ENABLE
     /* Setup galaxian ADC */
@@ -593,61 +653,92 @@ void audio(chanend c_mix_out, chanend ?c_dig_rx, chanend ?c_config, chanend ?c)
 
     while(1)
     {
+
+        if(curSamFreq)
+        {
       
-        /* Calculate what master clock we should be using */
-        if ((curSamFreq % 22050) == 0)
-        {
-            mClk = MCLK_441;
-        }
-        else if ((curSamFreq % 24000) == 0)
-        {
-            mClk = MCLK_48;
-        }
-
-        /* Calculate divide required for bit clock e.g. 11.289600 / (176400 * 64)  = 1 */
-        divide = mClk / ( curSamFreq * 64 );
-
-        /* Configure clocking for required master clock */
-        ClockingConfig(mClk, c_config); 
-
-        if(!firstRun)
-        {
-            /* TODO wait for good mclk instead of delay */ 
-            /* No delay for DFU modes */
-            if ((curSamFreq != AUDIO_REBOOT_FROM_DFU) && (curSamFreq != AUDIO_STOP_FOR_DFU)) 
+            /* Calculate what master clock we should be using */
+            if ((curSamFreq % 22050) == 0)
             {
-                timer t;
-                unsigned time;
-                t :> time;
-                t when timerafter(time+AUDIO_PLL_LOCK_DELAY) :> void;
-
-                /* Handshake back */
-                outct(c_mix_out, XS1_CT_END);
+                mClk = MCLK_441;
             }
-        } 
-        firstRun = 0;
-      
-        /* Configure CODEC/DAC/ADC for SampleFreq/MClk */
-        CodecConfig(curSamFreq, mClk, c_config);
+            else if ((curSamFreq % 24000) == 0)
+            {
+                mClk = MCLK_48;
+            }
 
-        /* Configure audio ports */
-        ConfigAudioPorts(divide);    
+            /* Calculate divide required for bit clock e.g. 11.289600 / (176400 * 64)  = 1 */
+            divide = mClk / ( curSamFreq * 64 );
+
+            /* Configure clocking for required master clock */
+            ClockingConfig(mClk, c_config); 
+
+            if(!firstRun)
+            {
+                /* TODO wait for good mclk instead of delay */ 
+                /* No delay for DFU modes */
+                if ((curSamFreq != AUDIO_REBOOT_FROM_DFU) && (curSamFreq != AUDIO_STOP_FOR_DFU)) 
+                {
+                    timer t;
+                    unsigned time;
+                    t :> time;
+                    t when timerafter(time+AUDIO_PLL_LOCK_DELAY) :> void;
+
+                    /* Handshake back */
+                    outct(c_mix_out, XS1_CT_END);
+                }
+            } 
+            firstRun = 0;
+
+            /* Configure CODEC/DAC/ADC for SampleFreq/MClk */
+            CodecConfig(curSamFreq, mClk, c_config);
+
+            /* Configure audio ports */
+            ConfigAudioPorts(divide);    
+        }
+        else
+        {
+            if(!dop)
+            {
+                /* DOP detected! */
+                printstrln("DOP Detect");
+                dop = 1;
+                /* TODO:
+                * Config ports for DSD 
+                * Config CODEC for DSD 
+                */
+            }
+            else
+            {
+                /* DOP mode end */
+                printstrln("DOP end");
+                dop = 0;
+            }
+        }
 
         par
         {
             
 #ifdef SPDIF   
+
+            
             {  
-                set_thread_fast_mode_on();
-                SpdifTransmit(p_spdif_tx, c_spdif_out);
+                if(!dop)
+                {
+                    set_thread_fast_mode_on();
+                    SpdifTransmit(p_spdif_tx, c_spdif_out);
+                }
             }
 #endif  
   
             {     
 #ifdef SPDIF
+                if(!dop)
+                {
                 /* Communicate master clock and sample freq to S/PDIF thread */
                 outuint(c_spdif_out, curSamFreq);
                 outuint(c_spdif_out, mClk);
+                }
 #endif 
 
                 curSamFreq = deliver(c_mix_out,
@@ -656,7 +747,11 @@ void audio(chanend c_mix_out, chanend ?c_dig_rx, chanend ?c_config, chanend ?c)
 #else
                    null,
 #endif 
-                   divide, c_dig_rx, c);
+                   divide, c_dig_rx, c
+#ifdef DSD_OVER_PCM
+                   , dop
+#endif
+                   );
 
                 // Currently no more audio will happen after this point
                 if (curSamFreq == AUDIO_STOP_FOR_DFU) 
@@ -678,6 +773,7 @@ void audio(chanend c_mix_out, chanend ?c_dig_rx, chanend ?c_config, chanend ?c)
 
 #ifdef SPDIF 
                 /* Notify S/PDIF thread of impending new freq... */
+                if(!dop)
                 outct(c_spdif_out, XS1_CT_END);   
 #endif
             }
