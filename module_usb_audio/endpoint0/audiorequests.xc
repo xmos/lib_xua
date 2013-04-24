@@ -9,7 +9,6 @@
 #include "usbaudio20.h"
 #include "dbcalc.h"
 #include "devicedefines.h"
-#include "common.h"
 #include "clockcmds.h"
 #include "xc_ptr.h"
 #ifdef MIXER
@@ -246,8 +245,8 @@ void updateVol(int unitID, int channel, chanend ?c_mix_ctl)
             break;
             }
             default: 
-                /* Don't hit */
-                 XUD_Error_hex("Vol: No such unit: ",  unitID);
+                /* Don't hit - We hope */
+                 //"Vol: No such unit: unitID;
                 break;
         }
     }
@@ -258,7 +257,7 @@ void updateVol(int unitID, int channel, chanend ?c_mix_ctl)
  *              <0  for device reset suspend 
  *              else 1 
  */
-int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, SetupPacket &sp, chanend c_audioControl, chanend ?c_mix_ctl, chanend ?c_clk_ctl
+int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, chanend c_audioControl, chanend ?c_mix_ctl, chanend ?c_clk_ctl
 )
 {
     unsigned char buffer[128];
@@ -916,9 +915,9 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, SetupPacket &sp, chanend
                           }
                             break;
                      
-                        //default:
-                          //  XUD_Error_hex("Unknown Control Selector in Clock Source Range Request: ", sp.wValue);
-                            // break;
+                        default:
+                            //Unknown Control Selector in Clock Source Range Request
+                             break;
                     }
                 
                     break;
@@ -942,9 +941,9 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, SetupPacket &sp, chanend
 
                             break;
                                                  
-                    //default:
-                      //XUD_Error_hex("Unknown control selector for FU: ", sp.wValue);
-                        //        break;
+                    default:
+                      //Unknown control selector for FU: ", sp.wValue);
+                                break;
 
                     }
                     break;
@@ -964,9 +963,9 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, SetupPacket &sp, chanend
 #endif    
 
 
-            //default:
+            default:
               //XUD_Error_hex("Unknown Unit ID in Range Request selector for FU: ", sp.wIndex >> 8);
-              //break;
+              break;
                    
             }                
   
@@ -1085,7 +1084,7 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, SetupPacket &sp, chanend
 
 #if defined (AUDIO_CLASS_FALLBACK) || (AUDIO_CLASS==1)
 /* Handles the Audio Class 1.0 specific requests */
-int AudioClassRequests_1(XUD_ep c_ep0_out, XUD_ep c_ep0_in, SetupPacket &sp, chanend c_audioControl, chanend ?c_mix_ctl, chanend ?c_clk_ctl
+int AudioClassRequests_1(XUD_ep c_ep0_out, XUD_ep c_ep0_in, USB_SetupPacket_t &sp, chanend c_audioControl, chanend ?c_mix_ctl, chanend ?c_clk_ctl
 )
 {
     unsigned char buffer[1024];
