@@ -471,7 +471,7 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
                             }
                                                                             
                             /* Send 0 Length as status stage */
-                            return XUD_DoSetRequestStatus(ep0_in, 0);
+                            return XUD_DoSetRequestStatus(ep0_in);
                         } 
                         else 
                         {  
@@ -492,7 +492,7 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
                     } 
                     else 
                     {
-                       // XUD_Error_hex("Unknown control on clock selector", sp.wValue);
+                       //Unknown control on clock selector: sp.wValue
                     }
                     break;
                 }
@@ -537,7 +537,7 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
 #endif
 
                                 /* Send 0 Length as status stage */
-                                return XUD_DoSetRequestStatus(ep0_in, 0);
+                                return XUD_DoSetRequestStatus(ep0_in);
                             }
                             else /* Direction: Device-to-host */
                             {
@@ -599,7 +599,7 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
                                 }
 
                                 /* Send 0 Length as status stage */
-                                return XUD_DoSetRequestStatus(ep0_in, 0);
+                                return XUD_DoSetRequestStatus(ep0_in);
                             }
                             else // Direction: Device-to-host
                             {
@@ -620,9 +620,9 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
                             }
                             break;
                         
-                        //default:
-                          //  XUD_Error("Unknown Control Selector for FU");
-                            //break;
+                        default:
+                          // Unknown Control Selector for FU
+                            break;
                     }
                      
                     break; /* FU_USBIN */
@@ -660,7 +660,7 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
                         }
 
                         /* Send 0 Length as status stage */
-                        return XUD_DoSetRequestStatus(ep0_in, 0);
+                        return XUD_DoSetRequestStatus(ep0_in);
                     }
                     else
                     {
@@ -705,7 +705,7 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
                         }
 
                         /* Send 0 Length as status stage */
-                        return XUD_DoSetRequestStatus(ep0_in, 0);
+                        return XUD_DoSetRequestStatus(ep0_in);
                     }
                     else
                     {
@@ -764,7 +764,7 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
                         }
 
                         /* Send 0 Length as status stage */
-                        return XUD_DoSetRequestStatus(ep0_in, 0);
+                        return XUD_DoSetRequestStatus(ep0_in);
 
 
                     }
@@ -826,7 +826,7 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
                         }
 
                         /* Send 0 Length as status stage */
-                        return XUD_DoSetRequestStatus(ep0_in, 0);
+                        return XUD_DoSetRequestStatus(ep0_in);
                     }
                     else
                     {
@@ -1063,7 +1063,7 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
                         }
 
                         /* Send 0 Length as status stage */
-                        return XUD_DoSetRequestStatus(ep0_in, 0);
+                        return XUD_DoSetRequestStatus(ep0_in);
                     
                     }
                     break;
