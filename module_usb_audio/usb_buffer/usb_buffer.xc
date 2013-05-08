@@ -2,12 +2,6 @@
 #include <xs1.h>
 #include <print.h>
 
-//In this file xud.h is not included since we are interpreting the
-//assembly functions GetData/SetData as taking xc_ptrs
-//#include "xud.h"
-
-#define XUD_SPEED_HS 2
-
 #include "usb.h"
 #include "devicedefines.h"
 #include "usb_midi.h"
@@ -98,24 +92,24 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
 #endif
             )
 {
-    XUD_ep ep_aud_out = XUD_Init_Ep(c_aud_out);
-    XUD_ep ep_aud_in = XUD_Init_Ep(c_aud_in);
-    XUD_ep ep_aud_fb = XUD_Init_Ep(c_aud_fb);
+    XUD_ep ep_aud_out = XUD_InitEp(c_aud_out);
+    XUD_ep ep_aud_in = XUD_InitEp(c_aud_in);
+    XUD_ep ep_aud_fb = XUD_InitEp(c_aud_fb);
 #ifdef MIDI
-    XUD_ep ep_midi_from_host = XUD_Init_Ep(c_midi_from_host);
-    XUD_ep ep_midi_to_host = XUD_Init_Ep(c_midi_to_host);
+    XUD_ep ep_midi_from_host = XUD_InitEp(c_midi_from_host);
+    XUD_ep ep_midi_to_host = XUD_InitEp(c_midi_to_host);
 #endif
 #ifdef IAP
-    XUD_ep ep_iap_from_host   = XUD_Init_Ep(c_iap_from_host);
-    XUD_ep ep_iap_to_host     = XUD_Init_Ep(c_iap_to_host);
-    XUD_ep ep_iap_to_host_int = XUD_Init_Ep(c_iap_to_host_int);
+    XUD_ep ep_iap_from_host   = XUD_InitEp(c_iap_from_host);
+    XUD_ep ep_iap_to_host     = XUD_InitEp(c_iap_to_host);
+    XUD_ep ep_iap_to_host_int = XUD_InitEp(c_iap_to_host_int);
 #endif
 #if defined(SPDIF_RX) || defined(ADAT_RX)
-    XUD_ep ep_int = XUD_Init_Ep(c_int);
+    XUD_ep ep_int = XUD_InitEp(c_int);
 #endif
 
 #ifdef HID_CONTROLS
-    XUD_ep ep_hid = XUD_Init_Ep(c_hid);
+    XUD_ep ep_hid = XUD_InitEp(c_hid);
 #endif
  
   
@@ -699,7 +693,7 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
                         else 
                         {
                            // Too many events from device - drop 
-                           printstr("DROP");
+                           //printstr("DROP");
                         } 
 
                         /* Once we have the whole message, sent it to host */

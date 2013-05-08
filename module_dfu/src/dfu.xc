@@ -390,14 +390,14 @@ int XMOS_DFU_LoadState()
     return 0;
 }
 
-int DFUDeviceRequests(XUD_ep ep0_out, XUD_ep &?ep0_in, SetupPacket &sp, chanend ?c_user_cmd, unsigned int altInterface, unsigned int user_reset)
+int DFUDeviceRequests(XUD_ep ep0_out, XUD_ep &?ep0_in, USB_SetupPacket_t &sp, chanend ?c_user_cmd, unsigned int altInterface, unsigned int user_reset)
 {
     unsigned int return_data_len = 0;
     unsigned int data_buffer_len = 0;
     unsigned int data_buffer[17];
     unsigned int reset_device_after_ack = 0;
  
-    if(sp.bmRequestType.Direction == BM_REQTYPE_DIRECTION_OUT) 
+    if(sp.bmRequestType.Direction == USB_BM_REQTYPE_DIRECTION_H2D) 
     { 
         // Host to device
         if (sp.wLength) 
@@ -465,7 +465,7 @@ int DFUDeviceRequests(XUD_ep ep0_out, XUD_ep &?ep0_in, SetupPacket &sp, chanend 
             break;
     }
 
-    if (sp.bmRequestType.Direction == BM_REQTYPE_DIRECTION_IN && sp.wLength != 0) 
+    if (sp.bmRequestType.Direction == USB_BM_REQTYPE_DIRECTION_D2H && sp.wLength != 0) 
     { 
         // Device to host
 #ifdef ARCH_G
@@ -477,9 +477,9 @@ int DFUDeviceRequests(XUD_ep ep0_out, XUD_ep &?ep0_in, SetupPacket &sp, chanend 
     else 
     {
 #ifdef ARCH_G
-        XUD_DoSetRequestStatus(ep0_out, 0);
+        XUD_DoSetRequestStatus(ep0_out);
 #else
-        XUD_DoSetRequestStatus(ep0_in, 0);
+        XUD_DoSetRequestStatus(ep0_in);
 #endif
     }
 

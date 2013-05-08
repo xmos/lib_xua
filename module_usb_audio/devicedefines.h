@@ -1,5 +1,4 @@
 /** 
- * @file        internaldefines.h
  * @brief       Defines relating to device configuration and customisation.
  * @author      Ross Owen, XMOS Limited
  */

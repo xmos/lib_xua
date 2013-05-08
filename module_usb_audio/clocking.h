@@ -2,15 +2,6 @@
 #ifndef _CLOCKING_H_
 #define _CLOCKING_H_
 
-/* Functions that handle master clock generation.  These need modifying for an existing design */
-
-/* Any initialisation required for master clock generation - run once at start up */
-void ClockingInit(chanend ?c);
-
-/* Configuration for a specific master clock frequency - run every sample frequency change */
-void ClockingConfig(unsigned mClkFreq, chanend ?c);
-
-
 /** Clock generation and digital audio I/O handling.
  *
  *  \param c_spdif_rx channel connected to S/PDIF receive thread

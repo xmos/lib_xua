@@ -20,7 +20,7 @@
 unsigned char devDesc_Audio1[] = 
 {                                                                                                                                                            
     18,                            	/* 0  bLength : Size of descriptor in Bytes (18 Bytes) */ 
-	DEVICE,     					/* 1  bdescriptorType */  
+	USB_DEVICE,     				/* 1  bdescriptorType */  
 	0x0, 							/* 2  bcd USB */	
     0x1,          					/* 3  bcdUSB */ 
     0,  							/* 4  bDeviceClass */ 
@@ -34,8 +34,8 @@ unsigned char devDesc_Audio1[] =
     (BCD_DEVICE & 0xFF),           	/* 12 bcdDevice : Device release number */ 
     (BCD_DEVICE >> 8),              /* 13 bcdDevice : Device release number */ 
     MANUFACTURER_STR_INDEX,         /* 14 iManufacturer : Index of manufacturer string */ 
-    PRODUCT_STR_INDEX,              /* 15 iProduct : Index of product string descriptor */ 
-    0,//SERIAL_STR_INDEX,               /* 16 iSerialNumber : Index of serial number decriptor */ 
+    8,                              /* 15 iProduct : Index of product string descriptor */ 
+    0,//SERIAL_STR_INDEX,           /* 16 iSerialNumber : Index of serial number decriptor */ 
 	0x01             				/* 17 bNumConfigurations : Number of possible configs. */ 
 };    
 #endif
@@ -44,7 +44,7 @@ unsigned char devDesc_Audio1[] =
 unsigned char devDesc_Audio2[] = 
 {
     18,              				/* 0  bLength : Size of descriptor in Bytes (18 Bytes) */ 
-    DEVICE,               			/* 1  bdescriptorType */ 
+    USB_DEVICE,               		/* 1  bdescriptorType */ 
     0,               				/* 2  bcdUSB */ 
     2,               				/* 3  bcdUSB */ 
     0xEF,            				/* 4  bDeviceClass (See Audio Class Spec page 45) */ 
@@ -68,7 +68,7 @@ unsigned char devDesc_Audio2[] =
 unsigned char devDesc_Null[] = 
 {
     18,              				/* 0  bLength : Size of descriptor in Bytes (18 Bytes) */ 
-    DEVICE,               			/* 1  bdescriptorType */ 
+    USB_DEVICE,               		/* 1  bdescriptorType */ 
     0,               				/* 2  bcdUSB */ 
     2,               				/* 3  bcdUSB */ 
     0x0,            				/* 4  bDeviceClass */ 
@@ -94,7 +94,7 @@ unsigned char devDesc_Null[] =
 unsigned char devQualDesc_Audio2[] =
 { 
     10,                             /* 0  bLength (10 Bytes) */ 
-    DEVICE_QUALIFIER, 				/* 1  bDescriptorType */ 
+    USB_DEVICE_QUALIFIER, 			/* 1  bDescriptorType */ 
     0x00,							/* 2  bcdUSB (Binary Coded Decimal of usb version) */ 
     0x02,      						/* 3  bcdUSB */ 
     0xEF,                           /* 4  bDeviceClass */ 
@@ -110,7 +110,7 @@ unsigned char devQualDesc_Audio2[] =
 unsigned char devQualDesc_Audio1[] =
 { 
     10,                             /* 0  bLength (10 Bytes) */ 
-    DEVICE_QUALIFIER, 				/* 1  bDescriptorType */ 
+    USB_DEVICE_QUALIFIER, 			/* 1  bDescriptorType */ 
     0x00,							/* 2  bcdUSB (Binary Coded Decimal of usb version) */ 
     0x02,      						/* 3  bcdUSB */ 
     0x00,                           /* 4  bDeviceClass */ 
@@ -126,7 +126,7 @@ unsigned char devQualDesc_Audio1[] =
 unsigned char devQualDesc_Null[] =
 { 
     10,                             /* 0  bLength (10 Bytes) */ 
-    DEVICE_QUALIFIER, 				/* 1  bDescriptorType */ 
+    USB_DEVICE_QUALIFIER, 			/* 1  bDescriptorType */ 
     0x00,							/* 2  bcdUSB (Binary Coded Decimal of usb version) */ 
     0x02,      						/* 3  bcdUSB */ 
     0x00,                           /* 4  bDeviceClass */ 
@@ -228,8 +228,8 @@ unsigned char devQualDesc_Null[] =
 #endif
 
 // Positions in strDescs_Audio2
-#define INTERNAL_CLOCK_STRING_INDEX 9
-#define SPDIF_CLOCK_STRING_INDEX 10
+#define INTERNAL_CLOCK_STRING_INDEX 14
+#define SPDIF_CLOCK_STRING_INDEX 15
 
 #ifdef SPDIF_RX
 #define ADAT_CLOCK_STRING_INDEX (SPDIF_CLOCK_STRING_INDEX + 1)
@@ -299,7 +299,7 @@ unsigned char hidReportDescriptor[] = {
 unsigned char cfgDesc_Audio2[] = 
 {
     0x09,            				/* 0  bLength */ 
-    CONFIGURATION,            		/* 1  bDescriptorType */ 
+    USB_CONFIGURATION,            	/* 1  bDescriptorType */ 
     (CFG_TOTAL_LENGTH_A2 & 0xFF),   /* 2  wTotalLength */ 
     (CFG_TOTAL_LENGTH_A2 >> 8),     /* 3  wTotalLength */ 
     NUM_INTERFACES,               	/* 4  bNumInterface: Number of interfaces*/ 
@@ -325,7 +325,7 @@ unsigned char cfgDesc_Audio2[] =
 
     /* Standard Audio Control Interface Descriptor (Note: Must be first with lowest interface number)r */
     0x09,            				/* 0  bLength: 9 */
-    INTERFACE,            			/* 1  bDescriptorType: INTERFACE */
+    USB_INTERFACE,            		/* 1  bDescriptorType: INTERFACE */
     0x00,            				/* 2  bInterfaceNumber */
     0x00,            				/* 3  bAlternateSetting: Must be 0 */
 #if defined(SPDIF_RX) || defined(ADAT_RX)
@@ -780,7 +780,7 @@ unsigned char cfgDesc_Audio2[] =
 #ifdef OUTPUT
     /* Standard AS Interface Descriptor (4.9.1) */
     0x09,           				/* 0  bLength: (in bytes, 9) */
-    INTERFACE,           			/* 1  bDescriptorType: INTERFACE */
+    USB_INTERFACE,           		/* 1  bDescriptorType: INTERFACE */
     1,              				/* 2  bInterfaceNumber: Number of interface */
     0,              				/* 3  bAlternateSetting */
     0,              				/* 4  bNumEndpoints */
@@ -791,7 +791,7 @@ unsigned char cfgDesc_Audio2[] =
 
     /* Standard AS Interface Descriptor (4.9.1) (Alt) */
     0x09,           				/* 0  bLength: (in bytes, 9) */
-    INTERFACE,           			/* 1  bDescriptorType: INTERFACE */
+    USB_INTERFACE,           		/* 1  bDescriptorType: INTERFACE */
     1,              				/* 2  bInterfaceNumber: Number of interface */
     1,              				/* 3  bAlternateSetting */
     2,              				/* 4  bNumEndpoints */
@@ -822,7 +822,7 @@ unsigned char cfgDesc_Audio2[] =
 
     /* Standard AS Isochronous Audio Data Endpoint Descriptor (4.10.1.1) */
     0x07,           				/* 0  bLength: 7 */
-    ENDPOINT,           			/* 1  bDescriptorType: ENDPOINT */
+    USB_ENDPOINT,           		/* 1  bDescriptorType: ENDPOINT */
     0x01,            				/* 2  bEndpointAddress (D7: 0:out, 1:in) */
     0x05,              				/* 3  bmAttributes (bitmap)  */ 
     0,4,            				/* 4  wMaxPacketSize */
@@ -839,7 +839,7 @@ unsigned char cfgDesc_Audio2[] =
 
     /* Feedback EP */
     0x07,           				/* 0  bLength: 7 */
-    ENDPOINT,           			/* 1  bDescriptorType: ENDPOINT */
+    USB_ENDPOINT,           		/* 1  bDescriptorType: ENDPOINT */
     0x81,            				/* 2  bEndpointAddress (D7: 0:out, 1:in) */
     17,              				/* 3  bmAttributes (bitmap)  */ 
     4,0,            				/* 4  wMaxPacketSize */
@@ -848,7 +848,7 @@ unsigned char cfgDesc_Audio2[] =
 #ifdef ADAT_TX
      /* Standard AS Interface Descriptor (4.9.1) (Alt) */
     0x09,           				/* 0  bLength: (in bytes, 9) */
-    INTERFACE,           			/* 1  bDescriptorType: INTERFACE */
+    USB_INTERFACE,           		/* 1  bDescriptorType: INTERFACE */
     1,              				/* 2  bInterfaceNumber: Number of interface */
     2,              				/* 3  bAlternateSetting */
     2,              				/* 4  bNumEndpoints */
@@ -879,7 +879,7 @@ unsigned char cfgDesc_Audio2[] =
 
     /* Standard AS Isochronous Audio Data Endpoint Descriptor (4.10.1.1) */
     0x07,           				/* 0  bLength: 7 */
-    ENDPOINT,           			/* 1  bDescriptorType: ENDPOINT */
+    USB_ENDPOINT,           		/* 1  bDescriptorType: ENDPOINT */
     0x01,            				/* 2  bEndpointAddress (D7: 0:out, 1:in) */
     0x05,              				/* 3  bmAttributes (bitmap)  */ 
     0,4,            				/* 4  wMaxPacketSize */
@@ -896,7 +896,7 @@ unsigned char cfgDesc_Audio2[] =
 
     /* Feedback EP */
     0x07,           				/* 0  bLength: 7 */
-    ENDPOINT,           			/* 1  bDescriptorType: ENDPOINT */
+    USB_ENDPOINT,           		/* 1  bDescriptorType: ENDPOINT */
     0x81,            				/* 2  bEndpointAddress (D7: 0:out, 1:in) */
     17,              				/* 3  bmAttributes (bitmap)  */ 
     4,0,            				/* 4  wMaxPacketSize */
@@ -908,7 +908,7 @@ unsigned char cfgDesc_Audio2[] =
 #ifdef INPUT
     /* Standard AS Interface Descriptor (4.9.1) */
     0x09,          			 		/* 0  bLength: (in bytes, 9) */
-	INTERFACE,           			/* 1  bDescriptorType: INTERFACE */
+	USB_INTERFACE,           		/* 1  bDescriptorType: INTERFACE */
     (OUTPUT_INTERFACES + 1),        /* 2  bInterfaceNumber: Number of interface */
     0,              				/* 3  bAlternateSetting */
     0,              				/* 4  bNumEndpoints */
@@ -919,7 +919,7 @@ unsigned char cfgDesc_Audio2[] =
 
     /* Standard AS Interface Descriptor (4.9.1) (Alt) */
     0x09,           				/* 0  bLength: (in bytes, 9) */
-    INTERFACE,           			/* 1  bDescriptorType: INTERFACE */
+    USB_INTERFACE,           		/* 1  bDescriptorType: INTERFACE */
     (OUTPUT_INTERFACES + 1),        /* 2  bInterfaceNumber: Number of interface */
     1,              				/* 3  bAlternateSetting */
     1,              				/* 4  bNumEndpoints */
@@ -950,7 +950,7 @@ unsigned char cfgDesc_Audio2[] =
 
     /* Standard AS Isochronous Audio Data Endpoint Descriptor (4.10.1.1) */
     0x07,           				/* 0  bLength: 7 */
-    ENDPOINT,           			/* 1  bDescriptorType: ENDPOINT */
+    USB_ENDPOINT,           		/* 1  bDescriptorType: ENDPOINT */
     0x82,            				/* 2  bEndpointAddress (D7: 0:out, 1:in) */
     5,              				/* 3  bmAttributes (bitmap)  */ 
     0,4,            				/* 4  wMaxPacketSize */
@@ -968,7 +968,7 @@ unsigned char cfgDesc_Audio2[] =
 #ifdef ADAT_RX
  /* Standard AS Interface Descriptor (4.9.1) (Alt) */
     0x09,           				/* 0  bLength: (in bytes, 9) */
-    INTERFACE,           			/* 1  bDescriptorType: INTERFACE */
+    USB_INTERFACE,           		/* 1  bDescriptorType: INTERFACE */
     (OUTPUT_INTERFACES + 1),        /* 2  bInterfaceNumber: Number of interface */
     2,              				/* 3  bAlternateSetting */
     1,              				/* 4  bNumEndpoints */
@@ -999,7 +999,7 @@ unsigned char cfgDesc_Audio2[] =
 
     /* Standard AS Isochronous Audio Data Endpoint Descriptor (4.10.1.1) */
     0x07,           				/* 0  bLength: 7 */
-    ENDPOINT,           			/* 1  bDescriptorType: ENDPOINT */
+    USB_ENDPOINT,           		/* 1  bDescriptorType: ENDPOINT */
     0x82,            				/* 2  bEndpointAddress (D7: 0:out, 1:in) */
     5,              				/* 3  bmAttributes (bitmap)  */ 
     0,4,            				/* 4  wMaxPacketSize */
@@ -1342,20 +1342,29 @@ unsigned char cfgDesc_Audio2[] =
 #define STR_INDEX_OUT_CHAN  (10 + SPDIF_RX_NUM_STRS + ADAT_RX_NUM_STRS + MIDI_NUM_STRS + DFU_NUM_STRS)
 #define STR_INDEX_IN_CHAN   (STR_INDEX_OUT_CHAN + NUM_USB_CHAN_OUT)
 
-static unsigned char strDescs_Audio2[][40] = 
+static unsigned char strDescs[][40] = 
 {
     "Langids",						            /* String 0 (LangIDs) place holder */ 
     APPEND_VENDOR_STR( ),                       // 1    iManufacturer (at MANUFACTURER_STRING_INDEX)
+
+    /* Audio 2.0 Strings */
     APPEND_VENDOR_STR(USB Audio 2.0),           // 2    iProduct and iInterface for control interface (at PRODUCT_STR_INDEX)
-    "",//SERIAL_STR,                                 // 3    iSerialNumber (at SERIAL_STR_INDEX)
+    "",//SERIAL_STR,                            // 3    iSerialNumber (at SERIAL_STR_INDEX)
     APPEND_VENDOR_STR(USB 2.0 Audio Out),       // 4    iInterface for Streaming interaces
     APPEND_VENDOR_STR(USB 2.0 Audio In),        // 5
 
     APPEND_VENDOR_STR(Audio 2.0 Output), 		// 6    "USB Input Terminal" (User sees as output from host) 
     APPEND_VENDOR_STR(Audio 2.0 Input),  		// 7    "USB Output Terminal" (User sees as input to host) 
-    
-    APPEND_VENDOR_STR(Clock Selector),          // 8    iClockSel
-    APPEND_VENDOR_STR(Internal Clock),          // 9    iClockSource
+ 
+    /* Audio 1.0 Strings */
+    APPEND_VENDOR_STR(USB Audio 1.0),           // 8    iProduct and iInterface for control interface
+	APPEND_VENDOR_STR(USB 1.0 Audio Out),       // 9    iInterface for Streaming interaces
+	APPEND_VENDOR_STR(USB 1.0 Audio In),        // 10
+    APPEND_VENDOR_STR(Audio 1.0 Output), 		// 11   "USB Input Terminal" (User sees as output from host) 
+	APPEND_VENDOR_STR(Audio 1.0 Input),  		// 12    "USB Output Terminal" (User sees as input to host) 
+
+    APPEND_VENDOR_STR(Clock Selector),          // 13    iClockSel
+    APPEND_VENDOR_STR(Internal Clock),          // 14    iClockSource
 #ifdef SPDIF_RX
     APPEND_VENDOR_STR(S/PDIF Clock),            // iClockSource
 #endif
@@ -1526,7 +1535,7 @@ static unsigned char strDescs_Audio2[][40] =
 unsigned char cfgDesc_Null[] = 
 {
     0x09,                          	/* 0  bLength */
-    CONFIGURATION,		            /* 1  bDescriptorType */
+    USB_CONFIGURATION,		        /* 1  bDescriptorType */
     0x12,                           /* 2  wTotalLength */
     0x00,                           /* 3  wTotalLength */
     0x01,                           /* 4  bNumInterface: Number of interfaces*/
@@ -1589,8 +1598,9 @@ unsigned char oSpeedCfgDesc[] =
 #ifdef AUDIO_CLASS_FALLBACK
 unsigned char cfgDesc_Audio1[] = 
 {                       
-    /* Configuration descriptor */                                                                                                                   0x09, 
-    CONFIGURATION, 
+    /* Configuration descriptor */
+    0x09, 
+    USB_CONFIGURATION, 
     (CFG_TOTAL_LENGTH_A1 & 0xFF),   /* wTotalLength */ 
     (CFG_TOTAL_LENGTH_A1 >> 8),     /* wTotalLength */
     NUM_INTERFACES_A1,              /* numInterfaces - we dont support MIDI in audio 1.0 mode*/
@@ -1606,22 +1616,22 @@ unsigned char cfgDesc_Audio1[] =
 
     /* Standard AC interface descriptor */
     0x09, 
-    INTERFACE, 
+    USB_INTERFACE, 
     0x00,                           /* Interface No */
     0x00,                           /* Alternate setting*/
     0x00,                           /* Num endpoints */
     AUDIO, 
     AUDIOCONTROL,                   
     0x00,                           /* Unused */
-    PRODUCT_STR_INDEX,              /* iInterface - re-use iProduct */ 
+    8,                              /* iInterface - re-use iProduct */ 
 
     /* CS (Class Specific) AudioControl interface header descriptor (4.3.2) */
     AC_LENGTH, 
     CS_INTERFACE, 
     0x01,                           /* HEADER */
     0x00, 0x01,                     /* Class spec revision - 1.0 */
-    (AC_TOTAL_LENGTH & 0xFF),      /* wTotallength (Combined length of this descriptor and all Unit and Terminal Descriptors) */ 
-    (AC_TOTAL_LENGTH >> 8),        /* wTotalLength */
+    (AC_TOTAL_LENGTH & 0xFF),       /* wTotallength (Combined length of this descriptor and all Unit and Terminal Descriptors) */ 
+    (AC_TOTAL_LENGTH >> 8),         /* wTotalLength */
     STREAMING_INTERFACES,           /* Num streaming interfaces */
 #ifdef OUTPUT
     0x01,                           /* AudioStreaming interface 1 belongs to AC interface */
@@ -1641,7 +1651,7 @@ unsigned char cfgDesc_Audio1[] =
     2,                              /* bNrChannels */
     0x03, 0x00,                     /* wChannelConfig */
     0x00,                           /* iChannelNames - Unused */
-    0x06,                           /* iTerminal */
+    11,                           /* iTerminal */
 
     /* CS_Interface class specific AC interface feature unit descriptor - mute & volume for dac */
     0x0A, 
@@ -1678,7 +1688,7 @@ unsigned char cfgDesc_Audio1[] =
     2,                              /* bNrChannels */          
     0x03, 0x00,                     /* wChannelConfigs */   
     0x00,                           /* iChannelNames */          
-    0x07,                           /* iTerminal */                          
+    12,                             /* iTerminal */                          
     
     /* CS_Interface Output Terminal Descriptor - USB Streaming Device to Host*/
     0x09, 
@@ -1713,7 +1723,7 @@ unsigned char cfgDesc_Audio1[] =
     0x01,                           /* bInterfaceClass - AUDIO */
     0x02,                           /* bInterfaceSubclass - AUDIO_STREAMING */
     0x00,                           /* bInterfaceProtocol - Not used */
-    0x04,                           /* iInterface */
+    0x09,                           /* iInterface */
 
     /* Standard As Interface Descriptor (4.5.1) */
     0x09, 
@@ -1807,7 +1817,7 @@ unsigned char cfgDesc_Audio1[] =
     0x01,                           /* Interface class - AUDIO */     
     0x02,                           /* Subclass - AUDIO_STREAMING */  
     0x00,                           /* Unused */                      
-    0x05,                           /* String table index */                      
+    0x0A,                           /* String table index */                      
 
     /* CS_Interface AC interface header descriptor */
     0x07, 
@@ -1900,7 +1910,7 @@ unsigned char cfgDesc_Audio1[] =
 #endif
 
 #define APPEND_VENDOR_STR(x) VENDOR_STR#x
-
+#if 0
 static unsigned char strDescs_Audio1[][40] =
 {
 	"Langids",						            /* String 0 (LangIDs) place holder */ 
@@ -1916,5 +1926,5 @@ static unsigned char strDescs_Audio1[][40] =
     
     APPEND_VENDOR_STR(DFU)                      // 8     iInterface for DFU interface
 };                                                                                                                                                              
-
+#endif      
 #endif      

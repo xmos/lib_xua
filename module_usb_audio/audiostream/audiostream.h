@@ -8,10 +8,10 @@
  * */
 
 /* Any actions required for stream start e.g. DAC un-mute - run every stream start */
-void AudioStreamStart(void);
+void UserAudioStreamStart(void);
 
 /* Any actions required on stream stop e.g. DAC mute - run every steam stop  */
-void AudioStreamStop(void);
+void UserAudioStreamStop(void);
 
 #endif
 
