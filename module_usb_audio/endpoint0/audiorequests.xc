@@ -787,58 +787,41 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
                         case CS_SAM_FREQ_CONTROL: 
                                         
                             /* Currently always return all freqs for all clocks */
-                            //switch(unitID) 
-                            //{
-                              //  case ID_CLKSRC_INT:
-                               // case ID_CLKSRC_EXT:
-
-                          {
-                            int num_freqs = 0;
-                            int i = 2;
-
-                            #if MAX_FREQ >= 44100
-                            storeFreq(buffer, i, 44100);
-                            num_freqs++;
-                            #endif
-                            #if MAX_FREQ >= 48000
-                            storeFreq(buffer, i, 48000);
-                            num_freqs++;
-                            #endif
-                            #if MAX_FREQ >= 88200
-                            storeFreq(buffer, i, 88200);
-                            num_freqs++;
-                            #endif
-                            #if MAX_FREQ >= 96000
-                            storeFreq(buffer, i, 96000);
-                            num_freqs++;
-                            #endif
-                            #if MAX_FREQ >= 176400
-                            storeFreq(buffer, i, 176400);
-                            num_freqs++;
-                            #endif
-                            #if MAX_FREQ >= 192000
-                            storeFreq(buffer, i, 192000);
-                            num_freqs++;
-                            #endif
-                            #if MAX_FREQ >= 352800
-                            storeFreq(buffer, i, 352800);
-                            num_freqs++;
-                            #endif
-                            #if MAX_FREQ >= 384000
-                            storeFreq(buffer, i, 384000);
-                            num_freqs++;
-                            #endif
-                            storeShort(buffer, 0, num_freqs);
-                                 //   break;
-                            //}
+                            {
+                                int num_freqs = 0;
+                                int i = 2;
+                                int currentFreq44 = 44100;
+                                int currentFreq48 = 48000;
+                                while(1)
+                                {
+                                    if(currentFreq48 <= MAX_FREQ)
+                                    {
+                                        /* Note i passed byref here */
+                                        storeFreq(buffer, i, currentFreq48);
+                                        num_freqs++;
+                                        currentFreq48*=2;
+                                        storeFreq(buffer, i, currentFreq44);
+                                        num_freqs++;
+                                        currentFreq44*=2;
+                                    }
+                                    else if(currentFreq44 <= MAX_FREQ)
+                                    {
+                                        storeFreq(buffer, i, currentFreq44);
+                                        num_freqs++;
+                                        currentFreq44*=2;
+                                    }
+                                    else
+                                        break;
+                                }
+                                storeShort(buffer, 0, num_freqs);
                     
-                            return XUD_DoGetRequest(ep0_out, ep0_in, buffer, i, sp.wLength); 
-                          }
+                                return XUD_DoGetRequest(ep0_out, ep0_in, buffer, i, sp.wLength); 
+                            }
                             break;
                      
                         default:
                             //Unknown Control Selector in Clock Source Range Request
-                             break;
+                            break;
                     }
                 
                     break;
