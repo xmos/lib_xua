@@ -379,7 +379,7 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
                     {
 
 #ifdef HID_CONTROLS
-                        case GET_DESCRIPTOR:
+                        case USB_GET_DESCRIPTOR:
 
                             /* Check what inteface request is for */
                             if(sp.wIndex == INTERFACE_NUM_HID)
@@ -388,7 +388,7 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
                                 unsigned descriptorType = sp.wValue & 0xff00;
                                 switch (descriptorType)
                                 {
-                                    case REPORT:
+                                    case HID_REPORT:
                                         /* Return HID report descriptor */
                                         retVal = XUD_DoGetRequest(ep0_out, ep0_in, hidReportDescriptor, 
                                             sizeof(hidReportDescriptor), sp.wLength);
