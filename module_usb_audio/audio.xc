@@ -182,9 +182,9 @@ unsigned deliver(chanend c_out, chanend ?c_spd_out, unsigned divide, chanend ?c_
     if(divide == 1)
     {
         p_lrclk <: 0 @ tmp;
-        tmp += 30;
-  
-        /* Prefill the ports so data starts to be input */
+        tmp += 100;
+
+        /* Since BCLK is free-running, setup outputs/inputs at a know point in the future */ 
 #if (I2S_CHANS_DAC != 0)
 #pragma loop unroll
         for(int i = 0; i < I2S_WIRES_DAC; i++)
@@ -197,17 +197,14 @@ unsigned deliver(chanend c_out, chanend ?c_spd_out, unsigned divide, chanend ?c_
 
 
 #if (I2S_CHANS_ADC != 0)
-        p_i2s_adc[0]  @ (tmp - 1) :> void;  
-#endif
-
-
-#if (I2S_CHANS_ADC != 0)
-#pragma loop unroll 
-        for(int i = 0; i < I2S_WIRES_ADC; i++)
-        { 
+        for(int i = 0; i < I2S_WIRES_DAC; i++)
+        {
+            //p_i2s_adc[0]  @ (tmp - 1) :> void;  
+            asm("setpt res[%0], %1"::"r"(p_i2s_adc[i]),"r"(tmp-1));
             clearbuf(p_i2s_adc[i]);
         }
 #endif
+
     }
     else
     {
@@ -223,8 +220,31 @@ unsigned deliver(chanend c_out, chanend ?c_spd_out, unsigned divide, chanend ?c_
 #endif
 
         p_lrclk <: 0x7FFFFFFF; 
-        p_bclk <: 0xAAAAAAAA;//32clks
-        p_bclk <: 0xAAAAAAAA;
+        switch (divide)
+        {
+           case 8:
+                p_bclk <: 0xF0F0F0F0;   
+                p_bclk <: 0xF0F0F0F0;   
+                p_bclk <: 0xF0F0F0F0;   
+                p_bclk <: 0xF0F0F0F0;   
+                p_bclk <: 0xF0F0F0F0;   
+                p_bclk <: 0xF0F0F0F0;   
+                p_bclk <: 0xF0F0F0F0;   
+                p_bclk <: 0xF0F0F0F0;   
+                break;
+      
+            case 4:
+                p_bclk <: 0xCCCCCCCC;
+                p_bclk <: 0xCCCCCCCC;
+                p_bclk <: 0xCCCCCCCC;
+                p_bclk <: 0xCCCCCCCC;
+                break;
+      
+            case 2: 
+                p_bclk <: 0xAAAAAAAA;
+                p_bclk <: 0xAAAAAAAA;
+                break;
+        }
     }
 #else          
     /* CODEC is master */
@@ -371,7 +391,9 @@ unsigned deliver(chanend c_out, chanend ?c_spd_out, unsigned divide, chanend ?c_
                     p_bclk <: 0xAAAAAAAA;
                     break;
                 case 1:
-                    break;
+                    {unsigned xxx = 0;
+                    asm("out res[%0], %1",::"r"(XS1_PORT_8D),"r"(xxx));
+                    }break;
             } 
         }
         else if(everyOther)
@@ -468,6 +490,9 @@ unsigned deliver(chanend c_out, chanend ?c_spd_out, unsigned divide, chanend ?c_
 
             case 1:
                 p_lrclk <: 0x80000000;
+                {unsigned xxx = 0x00;
+                    asm("out res[%0], %1"::"r"(XS1_PORT_8D),"r"(xxx));
+                }
                 break;
         }
 #endif
