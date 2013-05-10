@@ -592,6 +592,7 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
             /* HID Report Data */
             case XUD_SetData_Select(c_hid, ep_hid, tmp):
             {
+                g_hidData[0]=0;
                 Vendor_ReadHIDButtons(g_hidData);
                 XUD_SetReady_In(ep_hid, g_hidData, 1);
             }
