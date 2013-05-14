@@ -391,9 +391,7 @@ unsigned deliver(chanend c_out, chanend ?c_spd_out, unsigned divide, chanend ?c_
                     p_bclk <: 0xAAAAAAAA;
                     break;
                 case 1:
-                    {unsigned xxx = 0;
-                    asm("out res[%0], %1",::"r"(XS1_PORT_8D),"r"(xxx));
-                    }break;
+                    break;
             } 
         }
         else if(everyOther)
@@ -490,9 +488,6 @@ unsigned deliver(chanend c_out, chanend ?c_spd_out, unsigned divide, chanend ?c_
 
             case 1:
                 p_lrclk <: 0x80000000;
-                {unsigned xxx = 0x00;
-                    asm("out res[%0], %1"::"r"(XS1_PORT_8D),"r"(xxx));
-                }
                 break;
         }
 #endif
