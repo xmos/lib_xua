@@ -14,7 +14,7 @@
 #include "testct_byref.h"
 
 #ifdef HID_CONTROLS
-#include "vendor_hid.h"
+#include "user_hid.h"
 unsigned char g_hidData[1] = {0};
 #endif
 
@@ -593,7 +593,7 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
             case XUD_SetData_Select(c_hid, ep_hid, tmp):
             {
                 g_hidData[0]=0;
-                Vendor_ReadHIDButtons(g_hidData);
+                UserReadHIDButtons(g_hidData);
                 XUD_SetReady_In(ep_hid, g_hidData, 1);
             }
             break;

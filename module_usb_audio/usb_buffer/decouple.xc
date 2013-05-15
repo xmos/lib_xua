@@ -25,7 +25,7 @@
 #include "xud.h"
 #include "usb.h"
 #ifdef HID_CONTROLS
-#include "vendor_hid.h"
+#include "user_hid.h"
 #endif
 
 #define MAX(x,y) ((x)>(y) ? (x) : (y))
