@@ -52,7 +52,7 @@ extern in port p_bclk;
 
 unsigned dsdMode = 0;
 #ifdef DSD_OUTPUT
-#define p_dsd_clk   p_i2s_dac[1]
+#define p_dsd_clk   p_bclk
 #define p_dsd_left p_i2s_dac[0]
 #define p_dsd_right p_lrclk
 #define DSD_MARKER_1       0xFA
@@ -353,8 +353,7 @@ unsigned deliver(chanend c_out, chanend ?c_spd_out, unsigned divide, chanend ?c_
 #endif
 
         tmp = 0;
-#ifdef DSD_OUTPUT
-#error
+#if defined(DSD_OUTPUT) && (NUM_USB_CHAN_OUT > 0)
     if(dsdMode)
     {
         //while(1)
@@ -369,26 +368,19 @@ unsigned deliver(chanend c_out, chanend ?c_spd_out, unsigned divide, chanend ?c_
             switch (divide*4)
             {
                 case 8:
-                    p_bclk <: 0xF0F0F0F0;   
-                    p_bclk <: 0xF0F0F0F0;   
-                    p_bclk <: 0xF0F0F0F0;   
-                    p_bclk <: 0xF0F0F0F0;   
-                    //p_bclk <: 0xF0F0F0F0;   
-                    //p_bclk <: 0xF0F0F0F0;   
-                    //p_bclk <: 0xF0F0F0F0;   
-                    //p_bclk <: 0xF0F0F0F0;   
+                    p_dsd_clk <: 0xF0F0F0F0;   
+                    p_dsd_clk <: 0xF0F0F0F0;   
+                    p_dsd_clk <: 0xF0F0F0F0;   
+                    p_dsd_clk <: 0xF0F0F0F0;   
                     break;
       
                 case 4:
-                    p_bclk <: 0xCCCCCCCC;
-                    p_bclk <: 0xCCCCCCCC;
-                    //p_bclk <: 0xCCCCCCCC;
-                    //p_bclk <: 0xCCCCCCCC;
+                    p_dsd_clk <: 0xCCCCCCCC;
+                    p_dsd_clk <: 0xCCCCCCCC;
                     break;
       
                 case 2: 
-                    //p_bclk <: 0xAAAAAAAA;
-                    p_bclk <: 0xAAAAAAAA;
+                    p_dsd_clk <: 0xAAAAAAAA;
                     break;
                 case 1:
                     break;
@@ -407,26 +399,19 @@ unsigned deliver(chanend c_out, chanend ?c_spd_out, unsigned divide, chanend ?c_
              switch (divide*4)
             {
                 case 8:
-                    p_bclk <: 0xF0F0F0F0;   
-                    p_bclk <: 0xF0F0F0F0;   
-                    p_bclk <: 0xF0F0F0F0;   
-                    p_bclk <: 0xF0F0F0F0;   
-                    //p_bclk <: 0xF0F0F0F0;   
-                    //p_bclk <: 0xF0F0F0F0;   
-                    //p_bclk <: 0xF0F0F0F0;   
-                    //p_bclk <: 0xF0F0F0F0;   
+                    p_dsd_clk <: 0xF0F0F0F0;   
+                    p_dsd_clk <: 0xF0F0F0F0;   
+                    p_dsd_clk <: 0xF0F0F0F0;   
+                    p_dsd_clk <: 0xF0F0F0F0;   
                     break;
       
                 case 4:
-                    p_bclk <: 0xCCCCCCCC;
-                    p_bclk <: 0xCCCCCCCC;
-                    //p_bclk <: 0xCCCCCCCC;
-                    //p_bclk <: 0xCCCCCCCC;
+                    p_dsd_clk <: 0xCCCCCCCC;
+                    p_dsd_clk <: 0xCCCCCCCC;
                     break;
       
                 case 2: 
-                    //p_bclk <: 0xAAAAAAAA;
-                    p_bclk <: 0xAAAAAAAA;
+                    p_dsd_clk <: 0xAAAAAAAA;
                     break;
                 case 1:
                     break;
@@ -605,7 +590,6 @@ unsigned deliver(chanend c_out, chanend ?c_spd_out, unsigned divide, chanend ?c_
 
         }  // !dsdMode       
 #if defined (DSD_OUTPUT) && (NUM_USB_CHAN_OUT > 0)
-#error
         /* Check for DSD */
         /* Currently we only check on channel 0 - we get all 0's on channels without data */
 
