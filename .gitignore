@@ -3,9 +3,13 @@
 *.o
 *.xe
 *.vcd
+*.swo
 *.s
 *.xi
 *.i
+*.bin
+.*
+*~
 *.a
 *.swp
 *.*~
