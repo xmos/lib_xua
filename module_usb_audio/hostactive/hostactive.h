@@ -1,0 +1,2 @@
+
+void UserHostActive(int active);
