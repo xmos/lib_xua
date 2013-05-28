@@ -114,7 +114,7 @@ unsigned int divide)
     start_clock(clk_audio_bclk);
 
     /* bclk initial state needs to be high  */
-    //p_bclk <: 0xFFFFFFFF;
+    p_bclk <: 0xFFFFFFFF;
 
     /* Pause until output completes */
     sync(p_bclk);
