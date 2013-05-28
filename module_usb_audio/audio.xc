@@ -14,9 +14,9 @@
 #include <print.h>
 #include <xs1_su.h>
 
+#include "devicedefines.h"
 #include "audioports.h"
 #include "audiohw.h"
-#include "devicedefines.h"
 #include "SpdifTransmit.h"
 
 //#define DSD_OUTPUT 1
@@ -52,9 +52,8 @@ extern in port p_bclk;
 
 unsigned dsdMode = 0;
 #ifdef DSD_OUTPUT
-#define p_dsd_clk   p_bclk
-#define p_dsd_left p_i2s_dac[0]
-#define p_dsd_right p_lrclk
+
+
 #define DSD_MARKER_1       0xFA
 #define DSD_MARKER_2       0x05
 #define DSD_MARKER_XOR     0xFF
@@ -75,6 +74,9 @@ extern clock    clk_audio_bclk;
 extern clock    clk_mst_spd;  
 
 extern void device_reboot(void);
+
+
+
 
 /* I2S delivery thread */
 #pragma unsafe arrays
@@ -100,7 +102,7 @@ unsigned deliver(chanend c_out, chanend ?c_spd_out, unsigned divide, chanend ?c_
 #ifdef DSD_OUTPUT
     unsigned dsdMarker = DSD_MARKER_2;    /* This alternates between DSD_MARKER_1 and DSD_MARKER_2 */
     int dsdCount = 0;
-    int everyOther = 0;
+    int everyOther = 1;
     unsigned dsdSample_l = 0;
     unsigned dsdSample_r = 0;
 #endif
@@ -162,6 +164,9 @@ unsigned deliver(chanend c_out, chanend ?c_spd_out, unsigned divide, chanend ?c_
     }
 
 #ifndef CODEC_MASTER
+
+    if(!dsdMode)
+    {
     /* Clear I2S port buffers */
     clearbuf(p_lrclk);
     
@@ -219,6 +224,7 @@ unsigned deliver(chanend c_out, chanend ?c_spd_out, unsigned divide, chanend ?c_
         }
 #endif
 
+
         p_lrclk <: 0x7FFFFFFF; 
         switch (divide)
         {
@@ -245,6 +251,7 @@ unsigned deliver(chanend c_out, chanend ?c_spd_out, unsigned divide, chanend ?c_
                 p_bclk <: 0xAAAAAAAA;
                 break;
         }
+    }
     }
 #else          
     /* CODEC is master */
@@ -754,14 +761,40 @@ void audio(chanend c_mix_out, chanend ?c_dig_rx, chanend ?c_config, chanend ?c)
         /* Calculate divide required for bit clock e.g. 11.289600 / (176400 * 64)  = 1 */
         divide = mClk / ( curSamFreq * 64 );
 
-        /* Configure clocking for required master clock */
-        //ClockingConfig(mClk, c_config); 
-       
-        /* Configure CODEC/DAC/ADC for SampleFreq/MClk */
+        /* Configure Clocking/CODEC/DAC/ADC for SampleFreq/MClk */
         AudioHwConfig(curSamFreq, mClk, c_config, dsdMode);
         
         /* Configure audio ports */
-        ConfigAudioPorts(divide);    
+        if(dsdMode)
+        {
+            /* re-arrange ports */
+
+            //ConfigAudioPorts_dsd(divide); 
+            //unsigned dsdDataPorts[I2S_CHANS_DAC];
+            
+            //dsdDataPorts = p_dsd_left;
+               
+        }
+        else
+        {
+            ConfigAudioPortsWrapper(
+#if (I2S_CHANS_DAC != 0)
+                p_i2s_dac,
+#endif
+#if (I2S_CHANS_ADC != 0)
+                p_i2s_adc,
+#endif
+#if (I2S_CHANS_DAC != 0) || (I2S_CHANS_ADC != 0)
+#ifndef CODEC_MASTER
+                p_lrclk,
+                p_bclk,
+#else
+                p_lrclk,
+                p_bclk,
+#endif
+#endif
+            divide, dsdMode);    
+        }
 
         if(!firstRun)
         {
@@ -806,6 +839,13 @@ void audio(chanend c_mix_out, chanend ?c_dig_rx, chanend ?c_config, chanend ?c)
                    null,
 #endif 
                    divide, c_dig_rx, c);
+                
+                    
+                    // TODO TIDY THIS!
+                    //if(dsdMode)
+                    //p_dsd_clk <: 0;
+                    //else
+                    //p_bclk <: 0;
 
 #ifdef DSD_OUTPUT
                 if(retVal == 0)

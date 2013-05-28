@@ -1,33 +1,42 @@
 #include <xs1.h>
+#include <xccompat.h>
 #include "devicedefines.h"
 #include "audioports.h"
 
-/* Audio IOs */
+/* Configure audio ports.  This is in C such that can we can mess around with arrays of ports */
 
-#if (I2S_CHANS_DAC != 0)
-extern buffered out port:32 p_i2s_dac[I2S_WIRES_DAC];
-#endif
-
-#if (I2S_CHANS_ADC != 0)
-extern buffered in port:32  p_i2s_adc[I2S_WIRES_ADC];
-#endif
-
-#if (I2S_CHANS_DAC != 0) || (I2S_CHANS_ADC != 0)
-#ifndef CODEC_MASTER
-extern buffered out port:32 p_lrclk;
-extern buffered out port:32 p_bclk;
-#else
-extern in port p_lrclk;
-extern in port p_bclk;
-#endif
-#endif
+//extern void configure_in_port_no_ready(port p, const clock clk);
+//extern void configure_out_port_no_ready(port p, const clock clk, unsigned initial);
+//extern void configure_clock_src(clock clk, port p);
 
 extern port p_mclk;
 
 extern clock    clk_audio_mclk;
 extern clock    clk_audio_bclk;
 
-void ConfigAudioPorts(unsigned int divide) 
+void ConfigAudioPorts(
+#if (I2S_CHANS_DAC != 0)
+                buffered out port:32 p_i2s_dac[I2S_WIRES_DAC],
+             //   port p_i2s_dac[I2S_WIRES_DAC],
+#endif
+
+#if (I2S_CHANS_ADC != 0)
+                buffered in port:32  p_i2s_adc[I2S_WIRES_ADC],
+            //    port p_i2s_adc[I2S_WIRES_ADC],
+#endif
+
+#if (I2S_CHANS_DAC != 0) || (I2S_CHANS_ADC != 0)
+#ifndef CODEC_MASTER
+            buffered out port:32 p_lrclk,
+            buffered out port:32 p_bclk,
+            //port p_lrclk, 
+            //port p_bclk,
+#else
+            in port p_lrclk,
+            in port p_bclk,
+#endif
+#endif
+unsigned int divide) 
 {
 
 #ifndef CODEC_MASTER
@@ -105,7 +114,7 @@ void ConfigAudioPorts(unsigned int divide)
     start_clock(clk_audio_bclk);
 
     /* bclk initial state needs to be high  */
-    p_bclk <: 0xFFFFFFFF;
+    //p_bclk <: 0xFFFFFFFF;
 
     /* Pause until output completes */
     sync(p_bclk);
@@ -142,3 +151,66 @@ void ConfigAudioPorts(unsigned int divide)
 
 #endif
 }
+
+#if 0
+void ConfigAudioPorts_dsd(unsigned int divide) 
+{
+
+#ifndef CODEC_MASTER
+    /* Output 0 on BCLK to ensure clock is low
+     * Required as stop_clock will only complete when the clock is low
+     */
+    //configure_out_port_no_ready(p_dsd_clk, clk_audio_bclk, 0);
+    //configure_clock_src(clk_audio_mclk, p_mclk);
+    configure_out_port_no_ready(p_dsd_clk, clk_audio_mclk, 0);
+    p_dsd_clk <: 0;
+
+    /* Stop bit and master clock blocks and clear port buffers */
+    stop_clock(clk_audio_bclk);
+    stop_clock(clk_audio_mclk);
+
+    clearbuf(p_dsd_clk);
+    clearbuf(p_dsd_left);
+    clearbuf(p_dsd_right);
+
+    /* Clock master clock-block from master-clock port */
+    configure_clock_src(clk_audio_mclk, p_mclk);
+
+    /* For a divide of one (i.e. bitclock == master-clock) BClk is set to clock_output mode.
+     * In this mode it outputs an edge clock on every tick of itsassociated clock_block.
+     *
+     * For all other divides, BClk is clocked by the master clock and data
+     * will be output to p_bclk to generate the bit clock.
+     */
+    if (divide == 1) /* e.g. 176.4KHz from 11.2896 */
+    {
+        configure_port_clock_output(p_dsd_clk, clk_audio_mclk);
+    }
+    else
+    {
+        /* bit clock port from master clock clock-clock block */
+        configure_out_port_no_ready(p_dsd_clk, clk_audio_mclk, 0);
+    }
+
+    /* bclk clock-blocked clocked by dsd_clk pin */
+    configure_clock_src(clk_audio_bclk, p_dsd_clk);
+
+    
+    configure_out_port_no_ready(p_dsd_left, clk_audio_bclk, 0);
+    configure_out_port_no_ready(p_dsd_right, clk_audio_bclk, 0);
+
+    /* Start clock blocks ticking */
+    start_clock(clk_audio_mclk);
+    start_clock(clk_audio_bclk);
+
+    /* bclk initial state needs to be high  */
+    p_dsd_clk<: 0xFFFFFFFF;
+
+    /* Pause until output completes */
+    sync(p_dsd_clk);
+
+#else /* CODEC_MASTER */
+#error CODEC MASTER for DSD not currently implemented
+#endif
+}
+#endif

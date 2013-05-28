@@ -30,7 +30,7 @@
 
 /* Audio I/O */
 #if I2S_WIRES_DAC > 0
-on stdcore[0] : buffered out port:32 p_i2s_dac[I2S_WIRES_DAC] = 
+on tile[0] : buffered out port:32 p_i2s_dac[I2S_WIRES_DAC] = 
                 {PORT_I2S_DAC0,
 #endif 
 #if I2S_WIRES_DAC > 1
@@ -59,7 +59,7 @@ on stdcore[0] : buffered out port:32 p_i2s_dac[I2S_WIRES_DAC] =
 #endif
 
 #if I2S_WIRES_ADC > 0
-on stdcore[0] : buffered in port:32 p_i2s_adc[I2S_WIRES_ADC] = 
+on tile[0] : buffered in port:32 p_i2s_adc[I2S_WIRES_ADC] = 
                 {PORT_I2S_ADC0,
 #endif 
 #if I2S_WIRES_ADC > 1
@@ -92,40 +92,40 @@ on stdcore[0] : buffered in port:32 p_i2s_adc[I2S_WIRES_ADC] =
 #endif
 
 #ifndef CODEC_MASTER
-on stdcore[AUDIO_IO_CORE] : buffered out port:32 p_lrclk       = PORT_I2S_LRCLK;
-on stdcore[AUDIO_IO_CORE] : buffered out port:32 p_bclk        = PORT_I2S_BCLK;
+on tile[AUDIO_IO_CORE] : buffered out port:32 p_lrclk       = PORT_I2S_LRCLK;
+on tile[AUDIO_IO_CORE] : buffered out port:32 p_bclk        = PORT_I2S_BCLK;
 #else
-on stdcore[AUDIO_IO_CORE] : in port p_lrclk       = PORT_I2S_LRCLK;
-on stdcore[AUDIO_IO_CORE] : in port p_bclk        = PORT_I2S_BCLK;
+on tile[AUDIO_IO_CORE] : in port p_lrclk       = PORT_I2S_LRCLK;
+on tile[AUDIO_IO_CORE] : in port p_bclk        = PORT_I2S_BCLK;
 #endif
 
-on stdcore[AUDIO_IO_CORE] : port p_mclk                         = PORT_MCLK_IN;
-on stdcore[0] : in port p_for_mclk_count                        = PORT_MCLK_COUNT;
+on tile[AUDIO_IO_CORE] : port p_mclk                         = PORT_MCLK_IN;
+on tile[0] : in port p_for_mclk_count                        = PORT_MCLK_COUNT;
 
 #ifdef SPDIF  
-on stdcore[AUDIO_IO_CORE] : buffered out port:32 p_spdif_tx     = PORT_SPDIF_OUT;
+on tile[AUDIO_IO_CORE] : buffered out port:32 p_spdif_tx     = PORT_SPDIF_OUT;
 #endif
 
 #ifdef MIDI
-on stdcore[AUDIO_IO_CORE] :  port p_midi_tx                     = PORT_MIDI_OUT;
-on stdcore[AUDIO_IO_CORE] :  port p_midi_rx                     = PORT_MIDI_IN;
+on tile[AUDIO_IO_CORE] :  port p_midi_tx                     = PORT_MIDI_OUT;
+on tile[AUDIO_IO_CORE] :  port p_midi_rx                     = PORT_MIDI_IN;
 #endif
 
 /* Clock blocks */
 #ifdef MIDI
-on stdcore[AUDIO_IO_CORE] : clock    clk_midi                   = XS1_CLKBLK_REF;
+on tile[AUDIO_IO_CORE] : clock    clk_midi                   = XS1_CLKBLK_REF;
 #endif
-on stdcore[AUDIO_IO_CORE] : clock    clk_audio_mclk             = XS1_CLKBLK_2;     /* Master clock */
-on stdcore[AUDIO_IO_CORE] : clock    clk_audio_bclk             = XS1_CLKBLK_3;     /* Bit clock */
+on tile[AUDIO_IO_CORE] : clock    clk_audio_mclk             = XS1_CLKBLK_2;     /* Master clock */
+on tile[AUDIO_IO_CORE] : clock    clk_audio_bclk             = XS1_CLKBLK_3;     /* Bit clock */
 #ifdef SPDIF
-on stdcore[AUDIO_IO_CORE] : clock    clk_mst_spd                = XS1_CLKBLK_1;
+on tile[AUDIO_IO_CORE] : clock    clk_mst_spd                = XS1_CLKBLK_1;
 #endif
 
 /* L Series needs a port to use for USB reset */
 #ifdef ARCH_L
 #ifdef PORT_USB_RESET
 /* This define is checked since it could be on a shift reg or similar */
-on stdcore[0] : out port p_usb_rst                              = PORT_USB_RESET;
+on tile[0] : out port p_usb_rst                              = PORT_USB_RESET;
 #endif
 /* L Series also needs a clock for this port */
 clock clk                                                       = XS1_CLKBLK_4;
@@ -216,22 +216,22 @@ int main()
     
         /* USB Interface */
 #if (AUDIO_CLASS==2) 
-        on stdcore[0]: XUD_Manager(c_xud_out, EP_CNT_OUT, c_xud_in, EP_CNT_IN, 
+        on tile[0]: XUD_Manager(c_xud_out, EP_CNT_OUT, c_xud_in, EP_CNT_IN, 
                   c_sof, epTypeTableOut, epTypeTableIn, p_usb_rst, 
                   clk, 1, XUD_SPEED_HS, c_usb_test);  
 #else
-        on stdcore[0]:XUD_Manager(c_xud_out, EP_CNT_OUT, c_xud_in, EP_CNT_IN, 
+        on tile[0]:XUD_Manager(c_xud_out, EP_CNT_OUT, c_xud_in, EP_CNT_IN, 
                   c_sof, epTypeTableOut, epTypeTableIn, p_usb_rst, 
                   clk, 1, XUD_SPEED_FS, c_usb_test);  
 #endif
         
         /* Endpoint 0 */
-        on stdcore[0]:{
+        on tile[0]:{
             thread_speed();
             Endpoint0( c_xud_out[0], c_xud_in[0], c_aud_ctl, null, null, c_usb_test);
         }
 
-        on stdcore[0]:
+        on tile[0]:
         {
             thread_speed();
             
@@ -266,14 +266,14 @@ int main()
 
         }
 
-        on stdcore[0]:
+        on tile[0]:
         {
             thread_speed();
             decouple(c_mix_out, null
             );
         }
 
-        on stdcore[AUDIO_IO_CORE]:
+        on tile[AUDIO_IO_CORE]:
         {
             thread_speed();
 
@@ -282,7 +282,7 @@ int main()
         }
 
 #if defined  (MIDI) || defined IAP
-        on stdcore[AUDIO_IO_CORE]:
+        on tile[AUDIO_IO_CORE]:
         {
             thread_speed();
 #ifdef MIDI
