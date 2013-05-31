@@ -440,7 +440,7 @@ unsigned char cfgDesc_Audio2[] =
     ID_CLKSEL, 		     		    /* 7  bCSourceID: ID of Clock Entity */
     NUM_USB_CHAN_OUT,		     	/* 8  bNrChannels */
     0,0,0,0,                 		/* 9  bmChannelConfig */
-    INPUT_INTERFACE_STRING_INDEX,           	                /* 13 iChannelNames */
+    OUTPUT_INTERFACE_STRING_INDEX,  /* 13 iChannelNames */
     0x00, 0x00,     		        /* 14 bmControls */
     6,           		            /* 16 iTerminal */
 
