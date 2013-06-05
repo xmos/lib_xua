@@ -307,11 +307,10 @@ unsigned char cfgDesc_Audio2[] =
     0x00,            				/* 6  iConfiguration */ 
 #ifdef SELF_POWERED
     192,                            /* 7  bmAttributes */
-    0,             				    /* 8  bMaxPower */  
 #else
     128,                            /* 7  bmAttributes */ 
-    250,             				/* 8  bMaxPower */  
 #endif   
+    BMAX_POWER,             		/* 8  bMaxPower */  
 
     /* Interface Association Descriptor */ 
     0x08,            				/* 0  bLength */
@@ -1543,11 +1542,10 @@ unsigned char cfgDesc_Null[] =
     0x00,                           /* 6  iConfiguration */
 #ifdef SELF_POWERED
     192,                            /* 7  bmAttributes */
-    0,                              /* 8  bMaxPower */
 #else
     128, 
-    250,                            /* 8  bMaxPower */
 #endif
+    BMAX_POWER,                     /* 8  bMaxPower */
 
     0x09,                           /* 0 bLength : Size of this descriptor, in bytes. (field size 1 bytes) */
     0x04,                           /* 1 bDescriptorType : INTERFACE descriptor. (field size 1 bytes) */
@@ -1608,11 +1606,10 @@ unsigned char cfgDesc_Audio1[] =
     0x00,                           /* Unused */
 #ifdef SELF_POWERED
     192,                            /* 7  bmAttributes */
-    0,             				    /* 8  bMaxPower */  
 #else
     128,                            /* 7  bmAttributes */ 
-    250,             				/* 8  bMaxPower */  
 #endif  
+    BMAX_POWER,             		/* 8  bMaxPower */  
 
     /* Standard AC interface descriptor */
     0x09, 

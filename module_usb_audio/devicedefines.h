@@ -186,8 +186,8 @@
 
 /* Device release number in BCD: 0xJJMNi */
 #ifndef BCD_DEVICE
-#define BCD_DEVICE               (0x0610)       
-#warning BCD_DEVICE not defined. Using 0x0610
+#define BCD_DEVICE               (0x0620)       
+#warning BCD_DEVICE not defined. Using 0x0620
 #endif
 
 /* Addition interfaces based on defines */
@@ -289,6 +289,14 @@
 #define AUDIO_REBOOT_FROM_DFU   (0xa5a5a5a5)
 
 #define MAX_VOL                 (0x20000000)
+
+#ifdef SELF_POWERED
+#define BMAX_POWER 0
+#else
+#ifndef BMAX_POWER
+#define BMAX_POWER 250
+#endif
+#endif
 
 
 /* Length of clock unit/clock-selector units */
