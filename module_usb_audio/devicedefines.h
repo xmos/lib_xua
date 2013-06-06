@@ -174,14 +174,20 @@
 #define VENDOR_ID                (0x20B1)        /* XMOS VID */
 #endif
 
+#if defined(AUDIO_CLASS_FALLBACK) && (AUDIO_CLASS_FALLBACK==0)
+#undef AUDIO_CLASS_FALLBACK
+#endif
+
+#if (AUDIO_CLASS==1) || defined(AUDIO_CLASS_FALLBACK)
 #ifndef PID_AUDIO_1
 #define PID_AUDIO_1               (0x0001)        
-#warning PRODUCT_ID not defined. Using 0x0001
+#warning PID_AUDIO_1 not defined. Using 0x0001
+#endif
 #endif
 
 #ifndef PID_AUDIO_2
 #define PID_AUDIO_2               (0x0001)        
-#warning PRODUCT_ID not defined. Using 0x0001
+#warning PID_AUDIO_2 not defined. Using 0x0001
 #endif
 
 /* Device release number in BCD: 0xJJMNi */
@@ -436,9 +442,7 @@
 #endif
 #endif
 
-#if defined(AUDIO_CLASS_FALLBACK) && (AUDIO_CLASS_FALLBACK==0)
-#undef AUDIO_CLASS_FALLBACK
-#endif
+
 
 /* Defines for DFU */
 #ifndef PID_DFU
