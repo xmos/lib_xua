@@ -442,7 +442,7 @@ void handle_audio_request(chanend c_mix_out)
         if (aud_data_remaining_to_device) 
         {
             /* Round up to nearest word */
-            aud_data_remaining_to_device +=3;
+            aud_data_remaining_to_device +=3 - (unpackState&0x3);
             aud_data_remaining_to_device &= (~3);
 
             /* Skip the rest of this malformed packet */
