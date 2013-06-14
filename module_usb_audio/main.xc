@@ -116,6 +116,12 @@ on tile[AUDIO_IO_CORE] :  port p_midi_rx                     = PORT_MIDI_IN;
 on tile[AUDIO_IO_CORE] : clock    clk_midi                   = XS1_CLKBLK_REF;
 #endif
 on tile[AUDIO_IO_CORE] : clock    clk_audio_mclk             = XS1_CLKBLK_2;     /* Master clock */
+
+#if(AUDIO_IO_CORE != 0)
+on tile[0] : clock    clk_audio_mclk2             = XS1_CLKBLK_2;     /* Master clock */
+#endif
+
+
 on tile[AUDIO_IO_CORE] : clock    clk_audio_bclk             = XS1_CLKBLK_3;     /* Bit clock */
 #ifdef SPDIF
 on tile[AUDIO_IO_CORE] : clock    clk_mst_spd                = XS1_CLKBLK_1;
@@ -239,7 +245,11 @@ int main()
             //set_port_clock(p_for_mclk_count, clk_audio_mclk);
             {
                 unsigned x;
+#if(AUDIO_IO_CORE != 0)
+                asm("ldw %0, dp[clk_audio_mclk2]":"=r"(x));
+#else
                 asm("ldw %0, dp[clk_audio_mclk]":"=r"(x));
+#endif
                 asm("setclk res[%0], %1"::"r"(p_for_mclk_count), "r"(x));
             }
 
