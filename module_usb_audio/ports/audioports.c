@@ -1,5 +1,6 @@
 
 #include <xccompat.h>
+#include "devicedefines.h"
 #include "audioports.h"
 
 //#define p_dsd_left   p_i2s_dac[0]
@@ -27,6 +28,8 @@ dsdPorts[0] = PORT_DSD_DAC0;
 #endif 
 
 #endif
+
+/* C wrapper for ConfigAudioPorts() such that we can mess around with arrays of ports */
 
 void ConfigAudioPortsWrapper(
 #if (I2S_CHANS_DAC != 0)

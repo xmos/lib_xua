@@ -96,33 +96,34 @@ on tile[AUDIO_IO_CORE] : buffered out port:32 p_lrclk       = PORT_I2S_LRCLK;
 on tile[AUDIO_IO_CORE] : buffered out port:32 p_bclk        = PORT_I2S_BCLK;
 #else
 on tile[AUDIO_IO_CORE] : in port p_lrclk       = PORT_I2S_LRCLK;
-on tile[AUDIO_IO_CORE] : in port p_bclk        = PORT_I2S_BCLK;
+on tile[AUDIO_IO_CORE] : in port p_bclk                     = PORT_I2S_BCLK;
 #endif
 
-on tile[AUDIO_IO_CORE] : port p_mclk                         = PORT_MCLK_IN;
-on tile[0] : in port p_for_mclk_count                        = PORT_MCLK_COUNT;
+on tile[AUDIO_IO_CORE] : port p_mclk_in                     = PORT_MCLK_IN;
+on tile[0] : in port p_for_mclk_count                       = PORT_MCLK_COUNT;
 
 #ifdef SPDIF  
-on tile[AUDIO_IO_CORE] : buffered out port:32 p_spdif_tx     = PORT_SPDIF_OUT;
+on tile[AUDIO_IO_CORE] : buffered out port:32 p_spdif_tx    = PORT_SPDIF_OUT;
 #endif
 
 #ifdef MIDI
-on tile[AUDIO_IO_CORE] :  port p_midi_tx                     = PORT_MIDI_OUT;
-on tile[AUDIO_IO_CORE] :  port p_midi_rx                     = PORT_MIDI_IN;
+on tile[AUDIO_IO_CORE] :  port p_midi_tx                    = PORT_MIDI_OUT;
+on tile[AUDIO_IO_CORE] :  port p_midi_rx                    = PORT_MIDI_IN;
 #endif
 
 /* Clock blocks */
 #ifdef MIDI
-on tile[AUDIO_IO_CORE] : clock    clk_midi                   = XS1_CLKBLK_REF;
+on tile[AUDIO_IO_CORE] : clock    clk_midi                  = XS1_CLKBLK_REF;
 #endif
-on tile[AUDIO_IO_CORE] : clock    clk_audio_mclk             = XS1_CLKBLK_2;     /* Master clock */
+on tile[AUDIO_IO_CORE] : clock    clk_audio_mclk            = XS1_CLKBLK_2;     /* Master clock */
 
 #if(AUDIO_IO_CORE != 0)
-on tile[0] : clock    clk_audio_mclk2             = XS1_CLKBLK_2;     /* Master clock */
+on tile[0] : clock    clk_audio_mclk2                       = XS1_CLKBLK_2;     /* Master clock */
+on tile[0] : in port  p_mclk_in2                            = PORT_MCLK_IN2; 
 #endif
 
 
-on tile[AUDIO_IO_CORE] : clock    clk_audio_bclk             = XS1_CLKBLK_3;     /* Bit clock */
+on tile[AUDIO_IO_CORE] : clock    clk_audio_bclk            = XS1_CLKBLK_3;     /* Bit clock */
 #ifdef SPDIF
 on tile[AUDIO_IO_CORE] : clock    clk_mst_spd                = XS1_CLKBLK_1;
 #endif
@@ -246,11 +247,14 @@ int main()
             {
                 unsigned x;
 #if(AUDIO_IO_CORE != 0)
-                asm("ldw %0, dp[clk_audio_mclk2]":"=r"(x));
+                set_clock_src(clk_audio_mclk2, p_mclk_in2);
+                set_port_clock(p_for_mclk_count, clk_audio_mclk2); 
+                start_clock(clk_audio_mclk2);
 #else
+                /* Uses same clock-block as I2S */
                 asm("ldw %0, dp[clk_audio_mclk]":"=r"(x));
-#endif
                 asm("setclk res[%0], %1"::"r"(p_for_mclk_count), "r"(x));
+#endif
             }
 
             buffer(c_xud_out[EP_NUM_OUT_AUD],/* Audio Out*/

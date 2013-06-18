@@ -3,13 +3,29 @@
 #include "devicedefines.h"
 #include "audioports.h"
 
-/* Configure audio ports.  This is in C such that can we can mess around with arrays of ports */
+#ifdef DSD_OUTPUT
+#error Building audioports with DSD
+#ifndef p_dsd_clk
+buffered out port:32 p_dsd_clk = P_DSD_CLK;
+#endif
 
-//extern void configure_in_port_no_ready(port p, const clock clk);
-//extern void configure_out_port_no_ready(port p, const clock clk, unsigned initial);
-//extern void configure_clock_src(clock clk, port p);
+#ifndef p_dsd_left
+extern buffered out port:32 p_dsd_left;
+#endif
 
-extern port p_mclk;
+#ifndef p_dsd_right
+extern buffered out port:32 p_dsd_right;
+#endif
+
+#if I2S_WIRES_DAC > 0
+#ifndef p_dsd_dac0
+on tile[0] : buffered out port:32 p_dsd_dac0 = PORT_DSD_DAC0; 
+#endif
+dsdPorts[0] = PORT_DSD_DAC0;
+#endif 
+#endif
+
+extern port p_mclk_in;
 
 extern clock    clk_audio_mclk;
 extern clock    clk_audio_bclk;
@@ -68,7 +84,7 @@ unsigned int divide)
 #endif
 
     /* Clock master clock-block from master-clock port */
-    configure_clock_src(clk_audio_mclk, p_mclk);
+    configure_clock_src(clk_audio_mclk, p_mclk_in);
 
     /* For a divide of one (i.e. bitclock == master-clock) BClk is set to clock_output mode.
      * In this mode it outputs an edge clock on every tick of itsassociated clock_block.
@@ -127,7 +143,7 @@ unsigned int divide)
 
     /* Clock master clock-block from master-clock port - 
      * though not directly used in I2S slave mode it is required for FB */
-    configure_clock_src(clk_audio_mclk, p_mclk);
+    configure_clock_src(clk_audio_mclk, p_mclk_in);
     
     /* Clock bclk clock-block from bclk pin */
     configure_clock_src(clk_audio_bclk, p_bclk);
@@ -161,7 +177,7 @@ void ConfigAudioPorts_dsd(unsigned int divide)
      * Required as stop_clock will only complete when the clock is low
      */
     //configure_out_port_no_ready(p_dsd_clk, clk_audio_bclk, 0);
-    //configure_clock_src(clk_audio_mclk, p_mclk);
+    //configure_clock_src(clk_audio_mclk, p_mclk_in);
     configure_out_port_no_ready(p_dsd_clk, clk_audio_mclk, 0);
     p_dsd_clk <: 0;
 
@@ -174,7 +190,7 @@ void ConfigAudioPorts_dsd(unsigned int divide)
     clearbuf(p_dsd_right);
 
     /* Clock master clock-block from master-clock port */
-    configure_clock_src(clk_audio_mclk, p_mclk);
+    configure_clock_src(clk_audio_mclk, p_mclk_in);
 
     /* For a divide of one (i.e. bitclock == master-clock) BClk is set to clock_output mode.
      * In this mode it outputs an edge clock on every tick of itsassociated clock_block.

@@ -63,7 +63,7 @@ unsigned dsdMode = 0;
 
 
 /* Master clock input */
-extern port p_mclk;
+extern port p_mclk_in;
 
 #ifdef SPDIF 
 extern buffered out port:32 p_spdif_tx;
@@ -737,7 +737,7 @@ void audio(chanend c_mix_out, chanend ?c_dig_rx, chanend ?c_config, chanend ?c)
 #endif
 
 #ifdef SPDIF
-    SpdifTransmitPortConfig(p_spdif_tx, clk_mst_spd, p_mclk);
+    SpdifTransmitPortConfig(p_spdif_tx, clk_mst_spd, p_mclk_in);
 #endif
 
   	/* Initialise master clock generation */
