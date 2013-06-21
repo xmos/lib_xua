@@ -1310,8 +1310,6 @@ unsigned char cfgDesc_Audio2[] =
 
 
 
-#define APPEND_VENDOR_STR(x) VENDOR_STR#x
-
 /* String table */
 #ifdef SPDIF_RX
 #define SPDIF_RX_NUM_STRS   1
@@ -1337,30 +1335,42 @@ unsigned char cfgDesc_Audio2[] =
 #define DFU_NUM_STRS       0
 #endif
 
-
 #define STR_INDEX_OUT_CHAN  (10 + SPDIF_RX_NUM_STRS + ADAT_RX_NUM_STRS + MIDI_NUM_STRS + DFU_NUM_STRS)
 #define STR_INDEX_IN_CHAN   (STR_INDEX_OUT_CHAN + NUM_USB_CHAN_OUT)
 
+
+#define APPEND_VENDOR_STR(x) VENDOR_STR#x
+
+//#define xstr(s) str(s)
+//#define str(s) #s
+
+
+#define APPEND_PRODUCT_STR_A2_(x) PRODUCT_STR_A2 #x
+#define APPEND_PRODUCT_STR_A2(x) APPEND_PRODUCT_STR_A2_(x)
+
+#define APPEND_PRODUCT_STR_A1_(x) PRODUCT_STR_A1 #x
+#define APPEND_PRODUCT_STR_A1(x) APPEND_PRODUCT_STR_A1_(x)
+
 static unsigned char strDescs[][40] = 
 {
-    "Langids",						            /* String 0 (LangIDs) place holder */ 
+    "Langids",						            /* 0    LangIDs) place holder */ 
     APPEND_VENDOR_STR( ),                       // 1    iManufacturer (at MANUFACTURER_STRING_INDEX)
 
     /* Audio 2.0 Strings */
-    APPEND_VENDOR_STR(USB Audio 2.0),           // 2    iProduct and iInterface for control interface (at PRODUCT_STR_INDEX)
+    PRODUCT_STR_A2,                             // 2    iProduct and iInterface for control interface (at PRODUCT_STR_INDEX)
     "",//SERIAL_STR,                            // 3    iSerialNumber (at SERIAL_STR_INDEX)
-    APPEND_VENDOR_STR(USB 2.0 Audio Out),       // 4    iInterface for Streaming interaces
-    APPEND_VENDOR_STR(USB 2.0 Audio In),        // 5
+    APPEND_PRODUCT_STR_A2(Output),              // 4    iInterface for Streaming interaces
+    APPEND_PRODUCT_STR_A2(Input),               // 5
 
-    APPEND_VENDOR_STR(Audio 2.0 Output), 		// 6    "USB Input Terminal" (User sees as output from host) 
-    APPEND_VENDOR_STR(Audio 2.0 Input),  		// 7    "USB Output Terminal" (User sees as input to host) 
+    APPEND_PRODUCT_STR_A2(Output), 		        // 6    "USB Input Terminal" (User sees as output from host) 
+    APPEND_PRODUCT_STR_A2(Input),  		        // 7    "USB Output Terminal" (User sees as input to host) 
  
     /* Audio 1.0 Strings */
-    APPEND_VENDOR_STR(USB Audio 1.0),           // 8    iProduct and iInterface for control interface
-	APPEND_VENDOR_STR(USB 1.0 Audio Out),       // 9    iInterface for Streaming interaces
-	APPEND_VENDOR_STR(USB 1.0 Audio In),        // 10
-    APPEND_VENDOR_STR(Audio 1.0 Output), 		// 11   "USB Input Terminal" (User sees as output from host) 
-	APPEND_VENDOR_STR(Audio 1.0 Input),  		// 12    "USB Output Terminal" (User sees as input to host) 
+    PRODUCT_STR_A1,                             // 8    iProduct and iInterface for control interface
+	APPEND_PRODUCT_STR_A1(Output),              // 9    iInterface for Streaming interaces
+	APPEND_PRODUCT_STR_A1(Input),               // 10
+    APPEND_PRODUCT_STR_A1(Output), 	            // 11   "USB Input Terminal" (User sees as output from host) 
+	APPEND_PRODUCT_STR_A1(Input),  	            // 12    "USB Output Terminal" (User sees as input to host) 
 
     APPEND_VENDOR_STR(Clock Selector),          // 13    iClockSel
     APPEND_VENDOR_STR(Internal Clock),          // 14    iClockSource
