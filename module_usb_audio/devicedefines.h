@@ -160,6 +160,10 @@
 #error MCLK_441 not defined
 #endif
 
+#if defined(AUDIO_CLASS_FALLBACK) && (AUDIO_CLASS_FALLBACK==0)
+#undef AUDIO_CLASS_FALLBACK
+#endif
+
 /* The number of clock ticks to wait for the audio PLL to lock */
 #define AUDIO_PLL_LOCK_DELAY     (40000000) 
 
@@ -174,8 +178,22 @@
 #define VENDOR_ID                (0x20B1)        /* XMOS VID */
 #endif
 
-#if defined(AUDIO_CLASS_FALLBACK) && (AUDIO_CLASS_FALLBACK==0)
-#undef AUDIO_CLASS_FALLBACK
+#ifdef PRODUCT_STR
+#define PRODUCT_STR_A2 PRODUCT_STR
+#define PRODUCT_STR_A1 PRODUCT_STR
+#endif
+
+/* Product string for Audio Class 2.0 mode */
+#ifndef PRODUCT_STR_A2
+#warning PRODUCT_STR_A2 not defined. Using default string
+#define PRODUCT_STR_A2             "xCORE USB Audio 2.0 "
+#endif
+
+
+/* Product string for Audio Class 1.0 mode */
+#ifndef PRODUCT_STR_A1
+#warning PRODUCT_STR_A1 not defined. Using default string
+#define PRODUCT_STR_A1             "xCORE USB Audio 1.0 "
 #endif
 
 #if (AUDIO_CLASS==1) || defined(AUDIO_CLASS_FALLBACK)
