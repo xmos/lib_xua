@@ -1,54 +1,29 @@
 #include <xs1.h>
-#include <xccompat.h>
+#include <platform.h>
 #include "devicedefines.h"
 #include "audioports.h"
 
-#ifdef DSD_OUTPUT
-#error Building audioports with DSD
-#ifndef p_dsd_clk
-buffered out port:32 p_dsd_clk = P_DSD_CLK;
-#endif
-
-#ifndef p_dsd_left
-extern buffered out port:32 p_dsd_left;
-#endif
-
-#ifndef p_dsd_right
-extern buffered out port:32 p_dsd_right;
-#endif
-
-#if I2S_WIRES_DAC > 0
-#ifndef p_dsd_dac0
-on tile[0] : buffered out port:32 p_dsd_dac0 = PORT_DSD_DAC0; 
-#endif
-dsdPorts[0] = PORT_DSD_DAC0;
-#endif 
-#endif
-
 extern port p_mclk_in;
-
 extern clock    clk_audio_mclk;
 extern clock    clk_audio_bclk;
 
 void ConfigAudioPorts(
-#if (I2S_CHANS_DAC != 0)
-                buffered out port:32 p_i2s_dac[I2S_WIRES_DAC],
-             //   port p_i2s_dac[I2S_WIRES_DAC],
+#if (I2S_CHANS_DAC != 0) || (DSD_CHANS_DAC != 0)
+                buffered out port:32 p_i2s_dac[], 
+                int numPortsDac,
 #endif
 
 #if (I2S_CHANS_ADC != 0)
-                buffered in port:32  p_i2s_adc[I2S_WIRES_ADC],
-            //    port p_i2s_adc[I2S_WIRES_ADC],
+                buffered in port:32  p_i2s_adc[],
+                int numPortsAdc,
 #endif
 
 #if (I2S_CHANS_DAC != 0) || (I2S_CHANS_ADC != 0)
 #ifndef CODEC_MASTER
-            buffered out port:32 p_lrclk,
+            buffered out port:32 ?p_lrclk,
             buffered out port:32 p_bclk,
-            //port p_lrclk, 
-            //port p_bclk,
 #else
-            in port p_lrclk,
+            in port ?p_lrclk,
             in port p_bclk,
 #endif
 #endif
@@ -66,18 +41,21 @@ unsigned int divide)
     stop_clock(clk_audio_bclk);
     stop_clock(clk_audio_mclk);
 
-    clearbuf(p_lrclk);
+    if(!isnull(p_lrclk))
+    {
+        clearbuf(p_lrclk);
+    }
     clearbuf(p_bclk);
 
 #if (I2S_CHANS_ADC != 0)
-    for(int i = 0; i < I2S_WIRES_ADC; i++)
+    for(int i = 0; i < numPortsAdc; i++)
     {
         clearbuf(p_i2s_adc[i]);
     }
 #endif
 
 #if (I2S_CHANS_DAC != 0)
-    for(int i = 0; i < I2S_WIRES_DAC; i++)
+    for(int i = 0; i < numPortsDac; i++)
     {
         clearbuf(p_i2s_dac[i]);
     }
@@ -105,10 +83,15 @@ unsigned int divide)
     /* Generate bit clock block from pin */
     configure_clock_src(clk_audio_bclk, p_bclk);
 
+    if(!isnull(p_lrclk))
+    {
+        /* Clock LR clock from bit clock-block */
+        configure_out_port_no_ready(p_lrclk, clk_audio_bclk, 0);
+    }
 
 #if (I2S_CHANS_DAC != 0)
     /* Clock I2S output data ports from clock block */
-    for(int i = 0; i < I2S_WIRES_DAC; i++)
+    for(int i = 0; i < numPortsDac; i++)
     {
         configure_out_port_no_ready(p_i2s_dac[i], clk_audio_bclk, 0);
     }
@@ -116,14 +99,12 @@ unsigned int divide)
 
 #if (I2S_CHANS_ADC != 0)
     /* Clock I2S input data ports from clock block */
-    for(int i = 0; i < I2S_WIRES_ADC; i++)
+    for(int i = 0; i < numPortsAdc; i++)
     {
         configure_in_port_no_ready(p_i2s_adc[i], clk_audio_bclk);
     }
 #endif
 
-    /* Clock LR clock from bit clock-block */
-    configure_out_port_no_ready(p_lrclk, clk_audio_bclk, 0);
 
     /* Start clock blocks ticking */
     start_clock(clk_audio_mclk);

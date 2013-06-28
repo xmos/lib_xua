@@ -1,36 +1,38 @@
 
-#include <xccompat.h>
+#include <xs1.h>
+#define __ASSEMBLER__ // Work around for bug #14118
+#include <platform.h>
+#undef __ASSEMBLER__
 #include "devicedefines.h"
 #include "audioports.h"
 
-//#define p_dsd_left   p_i2s_dac[0]
-//#define p_dsd_right  p_bclk
-#define p_dsd_clk    p_lrclk
-//#d
-#if 0
-#ifndef p_dsd_clk
-buffered out port:32 p_dsd_clk = P_DSD_CLK;
-#endif
-
-#ifndef p_dsd_left
-extern buffered out port:32 p_dsd_left;
-#endif
-
-#ifndef p_dsd_right
-extern buffered out port:32 p_dsd_right;
-#endif
-
-#if I2S_WIRES_DAC > 0
-#ifndef p_dsd_dac0
-on tile[0] : buffered out port:32 p_dsd_dac0 = PORT_DSD_DAC0; 
-#endif
-dsdPorts[0] = PORT_DSD_DAC0;
+#ifdef DSD_OUTPUT
+/* Note since DSD ports could be reused for I2S ports we do all the setup manually in C */
+#if DSD_CHANS_DAC > 0
+port p_dsd_dac[DSD_CHANS_DAC] = {
+                PORT_DSD_DAC0,
 #endif 
-
+#if DSD_CHANS_DAC > 1
+                PORT_DSD_DAC1, 
 #endif
+#if DSD_CHANS_DAC > 2
+#error > 2 DSD chans currently not supported
+#endif
+#if DSD_CHANS_DAC > 0
+                };
+port p_dsd_clk = PORT_DSD_CLK;
+#endif
+
+static inline void EnableBufferedPort(port p, unsigned transferWidth)
+{
+    //set_port_use_on(p_dsd_dac[i]);
+    asm volatile("setc res[%0], %1"::"r"(p), "r"(XS1_SETC_INUSE_ON));
+    asm volatile("setc res[%0], %1"::"r"(p), "r"(XS1_SETC_BUF_BUFFERS));
+    asm volatile("settw res[%0], %1"::"r"(p),"r"(transferWidth));
+}
+
 
 /* C wrapper for ConfigAudioPorts() such that we can mess around with arrays of ports */
-
 void ConfigAudioPortsWrapper(
 #if (I2S_CHANS_DAC != 0)
                 port p_i2s_dac[I2S_WIRES_DAC],
@@ -52,18 +54,46 @@ void ConfigAudioPortsWrapper(
 unsigned int divide, unsigned int dsdMode) 
 {
 
-   if(dsdMode)
+    if(dsdMode)
     {
-    
+        /* Make sure the ports are on and buffered - just in case they are not shared with I2S */
+        for(int i = 0; i< DSD_CHANS_DAC; i++)
+        {
+            EnableBufferedPort(p_dsd_dac[i], 32);            
+        }
+        EnableBufferedPort(p_dsd_clk, 32);            
+
+        ConfigAudioPorts(
+#if (DSD_CHANS_DAC != 0)
+                p_dsd_dac,
+                DSD_CHANS_DAC,
+#endif
+#if (I2S_CHANS_ADC != 0)
+                p_i2s_adc,
+                I2S_WIRES_ADC,
+#endif
+#if (I2S_CHANS_DAC != 0) || (I2S_CHANS_ADC != 0)
+#ifndef CODEC_MASTER
+                0, /* NULL */
+                p_dsd_clk,
+#else
+                0, /* NULL */
+                p_dsd_clock,
+#endif
+#endif
+                divide);
+
     }
     else
     {
         ConfigAudioPorts(
-#if (I2S_CHANS_DAC != 0)
+#if (I2S_CHANS_DAC != 0) 
                 p_i2s_dac,
+                I2S_WIRES_DAC,
 #endif
 #if (I2S_CHANS_ADC != 0)
                 p_i2s_adc,
+                I2S_WIRES_ADC,
 #endif
 #if (I2S_CHANS_DAC != 0) || (I2S_CHANS_ADC != 0)
 #ifndef CODEC_MASTER
@@ -77,3 +107,4 @@ unsigned int divide, unsigned int dsdMode)
                 divide); 
     }
 }
+#endif
