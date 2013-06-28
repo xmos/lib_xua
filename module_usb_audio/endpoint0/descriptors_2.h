@@ -22,7 +22,7 @@ unsigned char devDesc_Audio1[] =
     18,                            	/* 0  bLength : Size of descriptor in Bytes (18 Bytes) */ 
 	USB_DEVICE,     				/* 1  bdescriptorType */  
 	0x0, 							/* 2  bcd USB */	
-    0x1,          					/* 3  bcdUSB */ 
+    0x2,          					/* 3  bcdUSB */ 
     0,  							/* 4  bDeviceClass */ 
     0,                              /* 5  bDeviceSubClass */ 
     0,                              /* 6  bDeviceProtocol */ 
