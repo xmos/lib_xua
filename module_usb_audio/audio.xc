@@ -19,12 +19,12 @@
 #include "audiohw.h"
 #include "SpdifTransmit.h"
 
-//#define DSD_OUTPUT 1
-
+#ifdef DSD_OUTPUT 
+extern unsigned  p_dsd_dac[DSD_CHANS_DAC];
+extern port p_dsd_clk;
+#endif
 
 unsigned g_adcVal = 0;
-
-//#define RAMP_CHECK 1
 
 //#pragma xta command "analyse path i2s_output_l i2s_output_r"
 //#pragma xta command "set required - 2000 ns"
@@ -52,8 +52,6 @@ extern in port p_bclk;
 
 unsigned dsdMode = 0;
 #ifdef DSD_OUTPUT
-
-
 #define DSD_MARKER_1       0xFA
 #define DSD_MARKER_2       0x05
 #define DSD_MARKER_XOR     0xFF
@@ -292,6 +290,10 @@ unsigned deliver(chanend c_out, chanend ?c_spd_out, unsigned divide, chanend ?c_
         /* Check for sample freq change or new samples from mixer*/
         if(testct(c_out))
         {
+            // Set clocks low
+            p_lrclk <: 0;
+            p_bclk <: 0;
+
             inct(c_out);
             return inuint(c_out);
 
@@ -398,12 +400,13 @@ unsigned deliver(chanend c_out, chanend ?c_spd_out, unsigned divide, chanend ?c_
             everyOther = 0;
             dsdSample_l =  dsdSample_l | ((samplesOut[0] & 0xffff00) >> 8);   
             dsdSample_r =  dsdSample_r | ((samplesOut[1] & 0xffff00) >> 8);   
-            
 
             // Output 16 clocks DSD to all
-            p_dsd_left <: bitrev(dsdSample_l);
-            p_dsd_right <: bitrev(dsdSample_r);
-             switch (divide*4)
+            //p_dsd_dac[0] <: bitrev(dsdSample_l);
+            //p_dsd_dac[1] <: bitrev(dsdSample_r);
+            asm volatile("out res[%0], %1"::"r"(p_dsd_dac[0]),"r"(bitrev(dsdSample_l)));
+            asm volatile("out res[%0], %1"::"r"(p_dsd_dac[1]),"r"(bitrev(dsdSample_r)));
+            switch (divide*4)
             {
                 case 8:
                     p_dsd_clk <: 0xF0F0F0F0;   
@@ -611,6 +614,11 @@ unsigned deliver(chanend c_out, chanend ?c_spd_out, unsigned divide, chanend ?c_
                     dsdMode = 1;
                     dsdCount = 0;
                     dsdMarker = DSD_MARKER_2;
+                    
+                    // Set clocks low
+                    p_lrclk <: 0;
+                    p_bclk <: 0;
+
                     return 0;
                 }
             }
@@ -629,6 +637,8 @@ unsigned deliver(chanend c_out, chanend ?c_spd_out, unsigned divide, chanend ?c_
                 {
                     dsdCount = 0;
                     dsdMode = 0;
+                    // Set clocks low
+                    p_dsd_clk <: 0;
                     return 0;
                 }
             }
@@ -763,21 +773,10 @@ void audio(chanend c_mix_out, chanend ?c_dig_rx, chanend ?c_config, chanend ?c)
 
         /* Configure Clocking/CODEC/DAC/ADC for SampleFreq/MClk */
         AudioHwConfig(curSamFreq, mClk, c_config, dsdMode);
-        
+ 
+#ifdef DSD_OUTPUT
         /* Configure audio ports */
-        if(dsdMode)
-        {
-            /* re-arrange ports */
-
-            //ConfigAudioPorts_dsd(divide); 
-            //unsigned dsdDataPorts[I2S_CHANS_DAC];
-            
-            //dsdDataPorts = p_dsd_left;
-               
-        }
-        else
-        {
-            ConfigAudioPortsWrapper(
+        ConfigAudioPortsWrapper(
 #if (I2S_CHANS_DAC != 0)
                 p_i2s_dac,
 #endif
@@ -793,8 +792,31 @@ void audio(chanend c_mix_out, chanend ?c_dig_rx, chanend ?c_config, chanend ?c)
                 p_bclk,
 #endif
 #endif
-            divide, dsdMode);    
-        }
+            divide, dsdMode);
+#else
+ /* Configure audio ports */
+        ConfigAudioPorts(
+#if (I2S_CHANS_DAC != 0)
+                p_i2s_dac,
+                I2S_WIRES_DAC,
+#endif
+#if (I2S_CHANS_ADC != 0)
+                p_i2s_adc,
+                I2S_WIRES_ADC,
+#endif
+#if (I2S_CHANS_DAC != 0) || (I2S_CHANS_ADC != 0)
+#ifndef CODEC_MASTER
+                p_lrclk,
+                p_bclk,
+#else
+                p_lrclk,
+                p_bclk,
+#endif
+#endif
+            divide);
+
+#endif
+            
 
         if(!firstRun)
         {
