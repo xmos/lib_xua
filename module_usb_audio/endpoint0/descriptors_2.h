@@ -1359,11 +1359,11 @@ static unsigned char strDescs[][40] =
     /* Audio 2.0 Strings */
     PRODUCT_STR_A2,                             // 2    iProduct and iInterface for control interface (at PRODUCT_STR_INDEX)
     "",//SERIAL_STR,                            // 3    iSerialNumber (at SERIAL_STR_INDEX)
-    APPEND_PRODUCT_STR_A2(Output),              // 4    iInterface for Streaming interaces
-    APPEND_PRODUCT_STR_A2(Input),               // 5
+    APPEND_PRODUCT_STR_A2(),              // 4    iInterface for Streaming interaces
+    APPEND_PRODUCT_STR_A2(),               // 5
 
-    APPEND_PRODUCT_STR_A2(Output), 		        // 6    "USB Input Terminal" (User sees as output from host) 
-    APPEND_PRODUCT_STR_A2(Input),  		        // 7    "USB Output Terminal" (User sees as input to host) 
+    APPEND_PRODUCT_STR_A2(), 		        // 6    "USB Input Terminal" (User sees as output from host) 
+    APPEND_PRODUCT_STR_A2(),  		        // 7    "USB Output Terminal" (User sees as input to host) 
  
     /* Audio 1.0 Strings */
     PRODUCT_STR_A1,                             // 8    iProduct and iInterface for control interface
