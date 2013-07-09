@@ -6,7 +6,7 @@
 #include "devicedefines.h"
 #include "audioports.h"
 
-#ifdef DSD_OUTPUT
+#if (DSD_CHANS_DAC != 0)
 /* Note since DSD ports could be reused for I2S ports we do all the setup manually in C */
 #if DSD_CHANS_DAC > 0
 port p_dsd_dac[DSD_CHANS_DAC] = {

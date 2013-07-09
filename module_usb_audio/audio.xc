@@ -19,7 +19,7 @@
 #include "audiohw.h"
 #include "SpdifTransmit.h"
 
-#ifdef DSD_OUTPUT 
+#if (DSD_CHANS_DAC != 0) 
 extern unsigned  p_dsd_dac[DSD_CHANS_DAC];
 extern port p_dsd_clk;
 #endif
@@ -51,7 +51,7 @@ extern in port p_bclk;
 #endif
 
 unsigned dsdMode = 0;
-#ifdef DSD_OUTPUT
+#if (DSD_CHANS_DAC != 0)
 #define DSD_MARKER_1       0xFA
 #define DSD_MARKER_2       0x05
 #define DSD_MARKER_XOR     0xFF
@@ -97,7 +97,7 @@ unsigned deliver(chanend c_out, chanend ?c_spd_out, unsigned divide, chanend ?c_
     int started = 0;
 #endif
 
-#ifdef DSD_OUTPUT
+#if (DSD_CHANS_DAC != 0)
     unsigned dsdMarker = DSD_MARKER_2;    /* This alternates between DSD_MARKER_1 and DSD_MARKER_2 */
     int dsdCount = 0;
     int everyOther = 1;
@@ -362,7 +362,7 @@ unsigned deliver(chanend c_out, chanend ?c_spd_out, unsigned divide, chanend ?c_
 #endif
 
         tmp = 0;
-#if defined(DSD_OUTPUT) && (NUM_USB_CHAN_OUT > 0)
+#if (DSD_CHANS_DAC != 0) && (NUM_USB_CHAN_OUT > 0)
     if(dsdMode)
     {
         //while(1)
@@ -599,7 +599,7 @@ unsigned deliver(chanend c_out, chanend ?c_spd_out, unsigned divide, chanend ?c_
 #endif
 
         }  // !dsdMode       
-#if defined (DSD_OUTPUT) && (NUM_USB_CHAN_OUT > 0)
+#if (DSD_CHANS_DAC) && (NUM_USB_CHAN_OUT > 0)
         /* Check for DSD */
         /* Currently we only check on channel 0 - we get all 0's on channels without data */
 
@@ -774,7 +774,7 @@ void audio(chanend c_mix_out, chanend ?c_dig_rx, chanend ?c_config, chanend ?c)
         /* Configure Clocking/CODEC/DAC/ADC for SampleFreq/MClk */
         AudioHwConfig(curSamFreq, mClk, c_config, dsdMode);
  
-#ifdef DSD_OUTPUT
+#if (DSD_CHANS_DAC != 0)
         /* Configure audio ports */
         ConfigAudioPortsWrapper(
 #if (I2S_CHANS_DAC != 0)
@@ -869,7 +869,7 @@ void audio(chanend c_mix_out, chanend ?c_dig_rx, chanend ?c_config, chanend ?c)
                     //else
                     //p_bclk <: 0;
 
-#ifdef DSD_OUTPUT
+#if (DSD_CHANS_DAC != 0)
                 if(retVal == 0)
                 {
                     // Check DSD mode here..
