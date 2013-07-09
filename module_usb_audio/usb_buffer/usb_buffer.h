@@ -1,5 +1,5 @@
-#ifndef __usb_buffer_h__
-#define __usb_buffer_h__
+#ifndef __USB_BUFFER_H__
+#define __USB_BUFFER_H__
 /** USB Audio Buffering Thread.
  *
  *  This function buffers USB audio data between the XUD layer and the decouple
@@ -37,7 +37,10 @@ void buffer(chanend c_aud_out,
             chanend c_aud_ctl,
             in port p_off_mclk
 #ifdef HID_CONTROLS
-            ,chanend c_hid
+            , chanend c_hid
+#endif
+#ifdef CHAN_BUFF_CTRL
+            , chanend c_buff_ctrl
 #endif
         );
 #endif

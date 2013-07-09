@@ -512,8 +512,10 @@ unsigned char tmpBuffer[1026];
 
 #pragma unsafe arrays
 void decouple(chanend c_mix_out,
-              //chanend ?c_midi, 
               chanend ?c_clk_int
+#ifdef CHAN_BUFF_CTRL
+              , chanend c_buf_ctrl
+#endif 
 )
 {   
     unsigned sampFreq = DEFAULT_FREQ;
@@ -640,6 +642,11 @@ void decouple(chanend c_mix_out,
     while(1)
     {
         int tmp;
+
+#ifdef CHAN_BUFF_CTRL
+        inuchar(c_buf_ctrl);
+#endif
+
         if (!isnull(c_clk_int)) 
         {
             check_for_interrupt(c_clk_int);
@@ -649,7 +656,6 @@ void decouple(chanend c_mix_out,
             asm("#decouple-default");
 
             /* Check for freq change or other update */
-       
             GET_SHARED_GLOBAL(tmp, g_freqChange_flag);
             if (tmp == SET_SAMPLE_FREQ) 
             {
