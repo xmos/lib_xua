@@ -472,3 +472,7 @@
 #define DFU_MANUFACTURER_INDEX      MANUFACTURER_STR_INDEX
 #define DFU_PRODUCT_INDEX           PRODUCT_STR_INDEX
 #endif
+
+#if defined(FAST_MODE) && (FAST_MODE == 0)
+#undef FAST_MODE
+#endif
