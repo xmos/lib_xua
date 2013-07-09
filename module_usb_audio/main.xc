@@ -171,11 +171,11 @@ XUD_EpType epTypeTableIn[EP_CNT_IN] = { XUD_EPTYPE_CTL | XUD_STATUS_ENABLE,
                                             XUD_EPTYPE_BUL,
 #endif
                                         };
-#define FAST_MODE 0
 
 void thread_speed()
 {
-#if (FAST_MODE)
+#ifdef FAST_MODE
+#warning Building with fast mode enabled
     set_thread_fast_mode_on();
 #else
     set_thread_fast_mode_off();
@@ -218,6 +218,11 @@ int main()
 #define c_adc null
 #endif
 
+#ifdef CHAN_BUFF_CTRL
+#warning Using channel to control buffering - this may reduce performance but improve power consumption
+    chan c_buff_ctrl;
+#endif
+
     par 
     {
     
@@ -232,13 +237,7 @@ int main()
                   clk, 1, XUD_SPEED_FS, c_usb_test);  
 #endif
         
-        /* Endpoint 0 */
-        on tile[0]:{
-            thread_speed();
-            Endpoint0( c_xud_out[0], c_xud_in[0], c_aud_ctl, null, null, c_usb_test);
-        }
-
-        on tile[0]:
+              on tile[0]:
         {
             thread_speed();
             
@@ -274,17 +273,14 @@ int main()
 #endif                
                 c_sof, c_aud_ctl, p_for_mclk_count
 #ifdef HID_CONTROLS
-                ,c_xud_in[EP_NUM_IN_HID]
+                , c_xud_in[EP_NUM_IN_HID]
 #endif
+#ifdef CHAN_BUFF_CTRL
+                , c_buff_ctrl
+#endif
+
                 );
 
-        }
-
-        on tile[0]:
-        {
-            thread_speed();
-            decouple(c_mix_out, null
-            );
         }
 
         on tile[AUDIO_IO_CORE]:
@@ -293,6 +289,23 @@ int main()
 
             /* Audio I/O (pars additional S/PDIF TX thread) */ 
             audio(c_mix_out, null, null, c_adc);
+        }
+        
+        on tile[0]:
+        {
+            thread_speed();
+            decouple(c_mix_out, null
+#ifdef CHAN_BUFF_CTRL
+            , c_buff_ctrl
+#endif
+            );
+        }
+
+          /* Endpoint 0 */
+        on tile[0]:
+        {
+            thread_speed();
+            Endpoint0( c_xud_out[0], c_xud_in[0], c_aud_ctl, null, null, c_usb_test);
         }
 
 #if defined  (MIDI) || defined IAP
@@ -306,6 +319,8 @@ int main()
 #endif        
         }
 #endif
+
+
 
 #ifdef SU1_ADC_ENABLE
         xs1_su_adc_service(c_adc);
