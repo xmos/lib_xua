@@ -15,7 +15,7 @@ void device_reboot_implementation(chanend spare)
 
     /* Ideally we would reset SU1 here but then we loose power to the xcore and therefore the DFU flag */
     /* Disable USB and issue reset to xcore only - not analogue chip */
-    write_node_config_reg(xs1_su_periph, XS1_SU_CFG_RST_MISC_NUM,0b10);
+    write_node_config_reg(usb_tile, XS1_SU_CFG_RST_MISC_NUM,0b10);
 #else
     outct(spare, XS1_CT_END);   // have to do this before freeing the chanend
     inct(spare);                // Receive end ct from usb_buffer to close down in both directions
