@@ -11,7 +11,7 @@ void device_reboot_implementation(chanend spare)
 #ifdef ARCH_S
     /* Disconnect from bus */
     unsigned data[] = {4};
-    write_periph_32(xs1_su_periph, XS1_SU_PERIPH_USB_ID, XS1_SU_PER_UIFM_FUNC_CONTROL_NUM, 1, data);
+    write_periph_32(usb_tile, XS1_SU_PERIPH_USB_ID, XS1_SU_PER_UIFM_FUNC_CONTROL_NUM, 1, data);
 
     /* Ideally we would reset SU1 here but then we loose power to the xcore and therefore the DFU flag */
     /* Disable USB and issue reset to xcore only - not analogue chip */
