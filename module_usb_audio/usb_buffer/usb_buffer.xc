@@ -27,9 +27,9 @@ void GetADCCounts(unsigned samFreq, int &min, int &mid, int &max);
 extern unsigned int g_curSamFreqMultiplier;
 
 #ifdef CHAN_BUFF_CTRL
-#define SET_SHARED_GLOBAL2(x,y) SET_SHARED_GLOBAL(x,y); outuchar(c_buff_ctrl, 0);
+#define SET_SHARED_GLOBAL0(x,y) SET_SHARED_GLOBAL(x,y); outuchar(c_buff_ctrl, 0);
 #else
-#define SET_SHARED_GLOBAL2(x,y) SET_SHARED_GLOBAL(x,y)
+#define SET_SHARED_GLOBAL0(x,y) SET_SHARED_GLOBAL(x,y)
 #endif
 
 
@@ -347,14 +347,14 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
                         * thread locked, it must stay responsive to packets/SOFs.  So, set a flag and check for 
                         * handshake elsewhere */
                         /* Pass on sample freq change to decouple */
-                        SET_SHARED_GLOBAL2(g_freqChange, SET_SAMPLE_FREQ);
+                        SET_SHARED_GLOBAL0(g_freqChange, SET_SAMPLE_FREQ);
                         SET_SHARED_GLOBAL(g_freqChange_sampFreq, sampleFreq);
                         SET_SHARED_GLOBAL(g_freqChange_flag, SET_SAMPLE_FREQ);
                     }
                     else
                     {
                         sampleFreq = inuint(c_aud_ctl);         
-                        SET_SHARED_GLOBAL2(g_freqChange, tmp);   /* Set command */
+                        SET_SHARED_GLOBAL0(g_freqChange, tmp);   /* Set command */
                         SET_SHARED_GLOBAL(g_freqChange_sampFreq, sampleFreq); /* Set flag */
                         SET_SHARED_GLOBAL(g_freqChange_flag, tmp);
                     }
@@ -451,10 +451,9 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
             case XUD_SetData_Select(c_aud_in, ep_aud_in, tmp):
             {
                 /* Inform stream that buffer sent */
-                SET_SHARED_GLOBAL2(g_aud_to_host_flag, bufferIn+1);             
+                SET_SHARED_GLOBAL0(g_aud_to_host_flag, bufferIn+1);             
             }
             break;
-                
 #endif
                 
 #ifdef OUTPUT 
@@ -491,7 +490,7 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
                 write_via_xc_ptr(aud_from_host_buffer, tmp);
                 
                 /* Sync with decouple thread */
-                SET_SHARED_GLOBAL2(g_aud_from_host_flag, 1);
+                SET_SHARED_GLOBAL0(g_aud_from_host_flag, 1);
              }   
                 break;
 #endif
