@@ -644,18 +644,23 @@ void decouple(chanend c_mix_out,
         int tmp;
 
 #ifdef CHAN_BUFF_CTRL
-        inuchar(c_buf_ctrl);
+        if(!outOverflow)
+        {
+            /* Need to keep polling in overflow case */
+            inuchar(c_buf_ctrl);
+        }
 #endif
 
         if (!isnull(c_clk_int)) 
         {
             check_for_interrupt(c_clk_int);
         }
-           
+        
         {
             asm("#decouple-default");
 
             /* Check for freq change or other update */
+
             GET_SHARED_GLOBAL(tmp, g_freqChange_flag);
             if (tmp == SET_SAMPLE_FREQ) 
             {
@@ -857,7 +862,6 @@ void decouple(chanend c_mix_out,
         }
 #endif
 
-          
 #ifdef INPUT
         { 
             /* Check if buffer() has sent a packet to host - uses shared mem flag to save chanends */
