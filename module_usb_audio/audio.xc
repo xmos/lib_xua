@@ -599,10 +599,9 @@ unsigned deliver(chanend c_out, chanend ?c_spd_out, unsigned divide, chanend ?c_
 #endif
 
         }  // !dsdMode       
-#if (DSD_CHANS_DAC) && (NUM_USB_CHAN_OUT > 0)
+#if (DSD_CHANS_DAC != 0) && (NUM_USB_CHAN_OUT > 0)
         /* Check for DSD */
         /* Currently we only check on channel 0 - we get all 0's on channels without data */
-
         if(!dsdMode)
         {
             if((DSD_MASK(samplesOut[0]) == dsdMarker) && (DSD_MASK(samplesOut[1]) == dsdMarker))
