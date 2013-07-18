@@ -191,6 +191,13 @@ void xscope_user_init()
 }
 #endif
 
+#ifdef SELF_POWERED
+#define pwrConfig XUD_PWR_SELF
+#else
+#define pwrConfig XUD_PWR_BUS
+#endif
+
+
 int main()
 {
     chan c_sof;
@@ -223,6 +230,8 @@ int main()
     chan c_buff_ctrl;
 #endif
 
+
+
     par 
     {
     
@@ -230,11 +239,11 @@ int main()
 #if (AUDIO_CLASS==2) 
         on tile[0]: XUD_Manager(c_xud_out, EP_CNT_OUT, c_xud_in, EP_CNT_IN, 
                   c_sof, epTypeTableOut, epTypeTableIn, p_usb_rst, 
-                  clk, 1, XUD_SPEED_HS, c_usb_test);  
+                  clk, 1, XUD_SPEED_HS, c_usb_test, pwrConfig);  
 #else
         on tile[0]:XUD_Manager(c_xud_out, EP_CNT_OUT, c_xud_in, EP_CNT_IN, 
                   c_sof, epTypeTableOut, epTypeTableIn, p_usb_rst, 
-                  clk, 1, XUD_SPEED_FS, c_usb_test);  
+                  clk, 1, XUD_SPEED_FS, c_usb_test, pwrConfig);  
 #endif
         
               on tile[0]:
