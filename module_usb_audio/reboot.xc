@@ -8,7 +8,7 @@
 /* Reboots XMOS device by writing to the PLL config register */
 void device_reboot_implementation(chanend spare) 
 {
-#ifdef ARCH_S
+#ifdef XUD_ON_U_SERIES
     /* Disconnect from bus */
     unsigned data[] = {4};
     write_periph_32(usb_tile, XS1_SU_PERIPH_USB_ID, XS1_SU_PER_UIFM_FUNC_CONTROL_NUM, 1, data);
