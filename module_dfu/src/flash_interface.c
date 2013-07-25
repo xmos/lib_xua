@@ -218,11 +218,33 @@ int flash_cmd_write_page_data(unsigned char *data)
 
 int flash_cmd_erase_all(void) 
 {
+    fl_BootImageInfo tmp_image = upgrade_image;
+
     if (upgrade_image_valid) 
     {
         if (fl_deleteImage(&upgrade_image) != 0)
+        {
             FLASH_ERROR();
-        upgrade_image_valid = 0;
+        }
+        
+        // Keep deleting all upgrade images
+        // TODO Perhaps using replace would be nicer... 
+        while(1)
+        {
+            if (fl_getNextBootImage(&tmp_image) == 0) 
+            {
+                if (fl_deleteImage(&tmp_image) != 0)
+                {
+                    FLASH_ERROR();
+                }
+            }
+            else
+            {
+                break;
+            }
+        }
+            
+    upgrade_image_valid = 0;
     }
     return 0;
 }
