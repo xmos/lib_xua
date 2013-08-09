@@ -14,7 +14,7 @@
 
 #include "devicedefines.h"
 #include "usb_device.h"          /* Standard descriptor requests */
-#include "descriptors_2.h"       /* This devices descriptors */
+#include "descriptors.h"       /* This devices descriptors */
 #include "clockcmds.h"
 #include "audiostream.h"
 #include "hostactive.h"
