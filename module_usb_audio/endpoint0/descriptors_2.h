@@ -1,13 +1,13 @@
 /** 
- * @file    DeviceDescriptors_2.h 
+ * @file    DeviceDescriptors.h 
  * @brief   Device Descriptors 
  * @author  Ross Owen, XMOS Limited
 */
 
 
 
-#ifndef _DEVICE_DESCRIPTORS_2_
-#define _DEVICE_DESCRIPTORS_2_
+#ifndef _DEVICE_DESCRIPTORS_
+#define _DEVICE_DESCRIPTORS_
 
 #include "usb.h"
 #include "usbaudio20.h"             /* Defines from the USB Audio 2.0 Specifications */
