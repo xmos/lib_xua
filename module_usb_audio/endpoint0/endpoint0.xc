@@ -5,7 +5,6 @@
  */
 
 #include <xs1.h>
-#include <print.h>
 #include <safestring.h>
 
 #include "xud.h"                 /* XUD user defines and functions */
@@ -302,6 +301,12 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
                             switch(sp.wValue)
                             {
                                 case 0:
+#ifdef NATIVE_DSD
+                                    outuint(c_audioControl, SET_DSD_MODE);
+                                    outuint(c_audioControl, DSD_MODE_OFF);
+                                    // Handshake
+							        chkct(c_audioControl, XS1_CT_END);
+#endif /* NATIVE_DSD */
                                     break;
                                 case 1:
                                     /* Stream active + 0 chans */
@@ -317,7 +322,28 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
                                         outuint(c_audioControl, SET_CHAN_COUNT_OUT);
                                         outuint(c_audioControl, NUM_USB_CHAN_OUT_A1);
                                     }
+#ifdef NATIVE_DSD
+                                    outuint(c_audioControl, SET_DSD_MODE);
+                                    outuint(c_audioControl, DSD_MODE_OFF);
+                                    
+                                    // Handshake
+							        chkct(c_audioControl, XS1_CT_END);
+#endif /* NATIVE_DSD */
+
+
+
                                     break;
+#ifdef NATIVE_DSD
+                                case 2:
+                    
+                                    outuint(c_audioControl, SET_DSD_MODE);
+                                    outuint(c_audioControl, DSD_MODE_NATIVE);
+                                    
+                                    // Handshake
+							        chkct(c_audioControl, XS1_CT_END);
+
+                                    break;
+#endif /* NATIVE_DSD */
                             }
                         }
                         else if(sp.wIndex == 2) // Input interface

@@ -278,7 +278,7 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
               }
 #endif
 
-            /* Sample Freq our chan count update from ep 0 */     
+            /* Sample Freq or chan count update from ep 0 */     
             case testct_byref(c_aud_ctl, u_tmp):
             {
                 if (u_tmp) 
@@ -354,19 +354,18 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
                     else
                     {
                         sampleFreq = inuint(c_aud_ctl);         
-                        SET_SHARED_GLOBAL0(g_freqChange, tmp);   /* Set command */
+                        
+                        SET_SHARED_GLOBAL0(g_freqChange, tmp);                /* Set command */
                         SET_SHARED_GLOBAL(g_freqChange_sampFreq, sampleFreq); /* Set flag */
                         SET_SHARED_GLOBAL(g_freqChange_flag, tmp);
                     }
-                   
-                  
-   
                 }
                 break;
             }
 
-            #define MASK_16_13            (7)                                       // Bits that should not be transmitted as part of feedback.
-            #define MASK_16_10            (127) //(63)      /* For Audio 1.0 we use a mask 1 bit longer than expected to avoid Windows LSB isses */
+            #define MASK_16_13            (7)   /* Bits that should not be transmitted as part of feedback */
+            #define MASK_16_10            (127) /* For Audio 1.0 we use a mask 1 bit longer than expected to avoid Windows LSB issues */
+                                                /* (previously used 63 instead of 127) */
 
             case inuint_byref(c_sof, u_tmp):
                
@@ -381,7 +380,7 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
                 if(freqChange == SET_SAMPLE_FREQ)
                 {
                     /* Keep getting MCLK counts */
-                  lastClock = u_tmp;
+                    lastClock = u_tmp;
                 }
                 else
                 {
@@ -434,7 +433,9 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
                             }
                         }
 #ifdef FB_TOLERANCE_TEST
-                        else {
+                        else 
+                        {
+                            
                         }
 #endif
                         clocks = 0;
@@ -697,7 +698,6 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
                         else 
                         {
                            // Too many events from device - drop 
-                           //printstr("DROP");
                         } 
 
                         /* Once we have the whole message, sent it to host */

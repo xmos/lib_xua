@@ -216,34 +216,35 @@ unsigned char devQualDesc_Null[] =
 
 
 #ifdef ADAT_RX
-#define INPUT_ALT_LENGTH         (46)
+#define INPUT_ALT_LENGTH            (46)
 #else
-#define INPUT_ALT_LENGTH         (0)
+#define INPUT_ALT_LENGTH            (0)
 #endif
 
 #ifdef ADAT_TX
-#define OUTPUT_ALT_LENGTH_ADAT   (46)
+#define OUTPUT_ALT_LENGTH_ADAT      (46)
 #else
-#define OUTPUT_ALT_LENGTH_ADAT   (0)
+#define OUTPUT_ALT_LENGTH_ADAT      (0)
 #endif
 
 #ifdef NATIVE_DSD
-#define ALT_SETTING_DSD          (2)
+#define ALT_SETTING_DSD             (2)
 #endif
 
 #ifdef ALT_SETTING_DSD
-#define ALT_SETTING_ADAT_TX      (3)
-#define OUTPUT_ALT_LENGTH_DSD    (46)
+#define ALT_SETTING_ADAT_TX         (3)
+#define OUTPUT_ALT_LENGTH_DSD       (53)
 #else
-#define ALT_SETTING_ADAT_TX      (2)
-#define OUTPUT_ALT_LENGTH_DSD    (0)
+#define ALT_SETTING_ADAT_TX         (2)
+#define OUTPUT_ALT_LENGTH_DSD       (0)
 #endif
 
-#define OUTPUT_ALT_LENGTH        (OUTPUT_ALT_LENGTH_ADAT + OUTPUT_ALT_LENGTH_DSD)
+#define OUTPUT_ALT_LENGTH           (OUTPUT_ALT_LENGTH_ADAT + OUTPUT_ALT_LENGTH_DSD)
+
 
 // Positions in strDescs_Audio2
-#define INTERNAL_CLOCK_STRING_INDEX 14
-#define SPDIF_CLOCK_STRING_INDEX 15
+#define INTERNAL_CLOCK_STRING_INDEX (14)
+#define SPDIF_CLOCK_STRING_INDEX    (15)
 
 #ifdef SPDIF_RX
 #define ADAT_CLOCK_STRING_INDEX (SPDIF_CLOCK_STRING_INDEX + 1)
@@ -304,7 +305,7 @@ unsigned char hidReportDescriptor[] = {
 
 #endif
 
-#define HID_LENGTH (25*HID_INTERFACES)
+#define HID_LENGTH (25 * HID_INTERFACES)
 
 /* Total length of config descriptor */
 #define CFG_TOTAL_LENGTH_A2			(7 + 19 + (AUD_INT_EP_LEN) + (INPUT_INTERFACES * 55) + (OUTPUT_INTERFACES * 62) + (MIDI_LENGTH) + (DFU_INTERFACES * 18)  + TLEN_AC + (MIXER_LENGTH) + IAP_LENGTH + INPUT_ALT_LENGTH + OUTPUT_ALT_LENGTH + HID_LENGTH)
@@ -439,7 +440,7 @@ unsigned char cfgDesc_Audio2[] =
     0x03,                           /* 5   bmControls       
                                             D[1:0] : Clock Selector Control
                                             D[7:4] : Reserved (0) */
-    8,                           /* 7   iClockSel (String Index) */  
+    13,                              /* 7   iClockSel (String Index) */  
 
 #ifdef OUTPUT
 	/* OUTPUT PATH FROM HOST TO DEVICE */
@@ -825,7 +826,7 @@ unsigned char cfgDesc_Audio2[] =
     PCM, 0x00, 0x00, 0x00,  		/* 6:10  bmFormats (note this is a bitmap) */
     NUM_USB_CHAN_OUT,               /* 11 bNrChannels */
     0,0,0,0,    					/* 12:14: bmChannelConfig */
-    OUTPUT_INTERFACE_STRING_INDEX,             				/* 15 iChannelNames */
+    OUTPUT_INTERFACE_STRING_INDEX,  /* 15 iChannelNames */
 
     /* Type 1 Format Type Descriptor */
     0x06,         					/* 0  bLength (in bytes): 6 */
@@ -858,7 +859,7 @@ unsigned char cfgDesc_Audio2[] =
     0x81,            				/* 2  bEndpointAddress (D7: 0:out, 1:in) */
     17,              				/* 3  bmAttributes (bitmap)  */ 
     4,0,            				/* 4  wMaxPacketSize */
-    4,              				/* 6  bInterval. Only values <= 1 frame (8) supported by MS */
+    4,              				/* 6  bInterval. Only values <= 1 frame (4) supported by MS */
 
 #ifdef NATIVE_DSD
      /* Standard AS Interface Descriptor (4.9.1) (Alt) */
@@ -879,10 +880,10 @@ unsigned char cfgDesc_Audio2[] =
     ID_IT_USB,              		/* 3  bTerminalLink (Linked to USB input terminal) */
     0x00,           				/* 4  bmControls */
     0x01,           				/* 5  bFormatType */
-    TYPE_1_RAW_DATA, 0x00, 0x00, 0x00,  		/* 6:10  bmFormats (note this is a bitmap) */
+    0x00, 0x00, 0x00, TYPE_1_RAW_DATA, /* 6:10  bmFormats (note this is a bitmap) */
     NUM_USB_CHAN_OUT,             	/* 11 bNrChannels */
     0,0,0,0,    					/* 12:14: bmChannelConfig */
-    INPUT_INTERFACE_STRING_INDEX,   /* 15 iChannelNames */
+    OUTPUT_INTERFACE_STRING_INDEX,  /* 15 iChannelNames */
 
     /* Type 1 Format Type Descriptor */
     0x06,         					/* 0  bLength (in bytes): 6 */
@@ -915,7 +916,7 @@ unsigned char cfgDesc_Audio2[] =
     0x81,            				/* 2  bEndpointAddress (D7: 0:out, 1:in) */
     17,              				/* 3  bmAttributes (bitmap)  */ 
     4,0,            				/* 4  wMaxPacketSize */
-    8,              				/* 6  bInterval */
+    4,              				/* 6  bInterval */
 
 #endif /* NATIVE_DSD */
 
@@ -975,7 +976,7 @@ unsigned char cfgDesc_Audio2[] =
     0x81,            				/* 2  bEndpointAddress (D7: 0:out, 1:in) */
     17,              				/* 3  bmAttributes (bitmap)  */ 
     4,0,            				/* 4  wMaxPacketSize */
-    8,              				/* 6  bInterval */
+    4,              				/* 6  bInterval */
 
 #endif /* ADAT_TX */
 #endif /* OUTPUT */

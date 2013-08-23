@@ -164,7 +164,7 @@ XUD_EpType epTypeTableIn[EP_CNT_IN] = { XUD_EPTYPE_CTL | XUD_STATUS_ENABLE,
                                             XUD_EPTYPE_BUL,
 #endif
 #ifdef HID_CONTROLS
-                                            XUD_EPTYPE_BUL,
+                                            XUD_EPTYPE_INT,
 #endif
 #ifdef IAP
                                             XUD_EPTYPE_BUL,

@@ -18,7 +18,10 @@
 #include "audioports.h"
 #include "audiohw.h"
 #include "SpdifTransmit.h"
-
+#include "clockcmds.h"
+unsigned testsamples[100];
+int p = 0;
+unsigned lastSample =0;
 #if (DSD_CHANS_DAC != 0) 
 extern unsigned  p_dsd_dac[DSD_CHANS_DAC];
 extern port p_dsd_clk;
@@ -78,7 +81,7 @@ extern void device_reboot(void);
 
 /* I2S delivery thread */
 #pragma unsafe arrays
-unsigned deliver(chanend c_out, chanend ?c_spd_out, unsigned divide, chanend ?c_dig_rx, chanend ?c_adc)
+{unsigned, unsigned} deliver(chanend c_out, chanend ?c_spd_out, unsigned divide, chanend ?c_dig_rx, chanend ?c_adc)
 {
 	unsigned sample;
 #if NUM_USB_CHAN_OUT > 0 
@@ -118,9 +121,8 @@ unsigned deliver(chanend c_out, chanend ?c_spd_out, unsigned divide, chanend ?c_
     /* Check for sample freq change or new samples from mixer*/
     if(testct(c_out))
     {
-        inct(c_out);
-        return inuint(c_out);
-
+        unsigned command = inct(c_out);
+        return {command, inuint(c_out)};
     }
     else
     {
@@ -250,7 +252,7 @@ unsigned deliver(chanend c_out, chanend ?c_spd_out, unsigned divide, chanend ?c_
                 break;
         }
     }
-    }
+    } /* if (!dsdMode) */
 #else          
     /* CODEC is master */
     /* Wait for LRCLK edge */
@@ -287,15 +289,21 @@ unsigned deliver(chanend c_out, chanend ?c_spd_out, unsigned divide, chanend ?c_
     {
         outuint(c_out, 0);
 
-        /* Check for sample freq change or new samples from mixer*/
+        /* Check for sample freq change (or other command) or new samples from mixer*/
         if(testct(c_out))
         {
+            unsigned command;
+
             // Set clocks low
             p_lrclk <: 0;
             p_bclk <: 0;
-
-            inct(c_out);
-            return inuint(c_out);
+#if(DSD_CHANS_DAC != 0) 
+            /* DSD Clock might not be shared with lrclk or bclk... */
+            if(dsdMode)
+            p_dsd_clk <: 0;
+#endif
+            command = inct(c_out);
+            return {command, inuint(c_out)};
 
         }
         else
@@ -363,10 +371,80 @@ unsigned deliver(chanend c_out, chanend ?c_spd_out, unsigned divide, chanend ?c_
 
         tmp = 0;
 #if (DSD_CHANS_DAC != 0) && (NUM_USB_CHAN_OUT > 0)
-    if(dsdMode)
+    if(dsdMode == DSD_MODE_NATIVE)
     {
-        //while(1)
-        {
+        /* 8 bits per chan, 1st 1-bit sample in MSB */
+        dsdSample_l =  samplesOut[0];  
+        dsdSample_r =  samplesOut[1];
+        dsdSample_r = bitrev(byterev(dsdSample_r)); 
+        dsdSample_l = bitrev(byterev(dsdSample_l)); 
+ 
+        //if(dsdSample_l != 0)
+        //testsamples[p++] = dsdSample_l;
+               
+        //if(p > 20)
+        //for (int i = 0; i < 20; i++)
+          //  printhexln(testsamples[i]);
+            
+        //if(lastSample+1 != dsdSample_l)
+        //{
+          //  printhexln(lastSample);
+        //}
+
+        //lastSample = dsdSample_l;
+
+
+        // Output 32 clocks DSD to all
+            //p_dsd_dac[0] <: bitrev(dsdSample_l);
+            //p_dsd_dac[1] <: bitrev(dsdSample_r);
+            
+            switch (divide*2)
+            {
+                case 8:
+                    asm volatile("out res[%0], %1"::"r"(p_dsd_dac[0]),"r"(dsdSample_l));
+                    asm volatile("out res[%0], %1"::"r"(p_dsd_dac[1]),"r"(dsdSample_r));
+                    p_dsd_clk <: 0xF0F0F0F0;   
+                    p_dsd_clk <: 0xF0F0F0F0;   
+                    p_dsd_clk <: 0xF0F0F0F0;   
+                    p_dsd_clk <: 0xF0F0F0F0;   
+                    p_dsd_clk <: 0xF0F0F0F0;   
+                    p_dsd_clk <: 0xF0F0F0F0;   
+                    p_dsd_clk <: 0xF0F0F0F0;   
+                    p_dsd_clk <: 0xF0F0F0F0;   
+                    break;
+      
+                case 4:
+                    asm volatile("out res[%0], %1"::"r"(p_dsd_dac[0]),"r"(dsdSample_l));
+                    asm volatile("out res[%0], %1"::"r"(p_dsd_dac[1]),"r"(dsdSample_r));
+                    p_dsd_clk <: 0xCCCCCCCC;
+                    p_dsd_clk <: 0xCCCCCCCC;
+                    p_dsd_clk <: 0xCCCCCCCC;
+                    p_dsd_clk <: 0xCCCCCCCC;
+                    break;
+      
+                case 2: 
+                    asm volatile("out res[%0], %1"::"r"(p_dsd_dac[0]),"r"(dsdSample_l));
+                    asm volatile("out res[%0], %1"::"r"(p_dsd_dac[1]),"r"(dsdSample_r));
+                    p_dsd_clk <: 0xAAAAAAAA;
+                    p_dsd_clk <: 0xAAAAAAAA;
+                    break;
+                
+                default:
+                    /* Do some clocks anyway - this will stop us interrupting decouple too much */
+                    p_dsd_clk <: 0xF0F0F0F0;   
+                    p_dsd_clk <: 0xF0F0F0F0;   
+                    p_dsd_clk <: 0xF0F0F0F0;   
+                    p_dsd_clk <: 0xF0F0F0F0;   
+                    p_dsd_clk <: 0xF0F0F0F0;   
+                    p_dsd_clk <: 0xF0F0F0F0;   
+                    p_dsd_clk <: 0xF0F0F0F0;   
+                    p_dsd_clk <: 0xF0F0F0F0; 
+                    break;
+            } 
+
+    }
+    else if(dsdMode == DSD_MODE_DOP)
+    {
         if(!everyOther)
         {
             dsdSample_l = ((samplesOut[0] & 0xffff00) << 8);
@@ -427,7 +505,6 @@ unsigned deliver(chanend c_out, chanend ?c_spd_out, unsigned divide, chanend ?c_
                     break;
             } 
 
-        }
         }
     }
     else
@@ -610,7 +687,7 @@ unsigned deliver(chanend c_out, chanend ?c_spd_out, unsigned divide, chanend ?c_
                 dsdMarker ^= DSD_MARKER_XOR;
                 if(dsdCount == DSD_EN_THRESH)
                 {
-                    dsdMode = 1;
+                    dsdMode = DSD_MODE_DOP;
                     dsdCount = 0;
                     dsdMarker = DSD_MARKER_2;
                     
@@ -618,7 +695,7 @@ unsigned deliver(chanend c_out, chanend ?c_spd_out, unsigned divide, chanend ?c_
                     p_lrclk <: 0;
                     p_bclk <: 0;
 
-                    return 0;
+                    return {0,0};
                 }
             }
             else
@@ -627,8 +704,9 @@ unsigned deliver(chanend c_out, chanend ?c_spd_out, unsigned divide, chanend ?c_
                 dsdMarker = DSD_MARKER_2;
             }
         }
-        else // DSD Mode
+        else if(dsdMode == DSD_MODE_DOP) // DSD Mode
         {
+            /* If we are running in DOP mode, check if we need to come out */
             if((DSD_MASK(samplesOut[0]) != dsdMarker) && (DSD_MASK(samplesOut[1]) != dsdMarker))
             {
                 if(!((dsdCount == 0) && (DSD_MASK(samplesOut[0]) == (dsdMarker ^DSD_MARKER_XOR))
@@ -638,19 +716,20 @@ unsigned deliver(chanend c_out, chanend ?c_spd_out, unsigned divide, chanend ?c_
                     dsdMode = 0;
                     // Set clocks low
                     p_dsd_clk <: 0;
-                    return 0;
+                    return {0,0};
                 }
             }
         }
 #endif
 
     }
-    return 0;
+    return {0,0};
 }
 
 /* This function is a dummy version of the deliver thread that does not 
    connect to the codec ports. It is used during DFU reset. */
-static unsigned dummy_deliver(chanend c_out) {
+{unsigned,unsigned} dummy_deliver(chanend c_out) 
+{
     while (1)
     {
         outuint(c_out, 0);
@@ -658,8 +737,8 @@ static unsigned dummy_deliver(chanend c_out) {
         /* Check for sample freq change or new samples from mixer*/
         if(testct(c_out))
         {
-            inct(c_out);
-            return inuint(c_out);
+            unsigned command = inct(c_out);
+             return {command, inuint(c_out)};
 
         }
         else
@@ -692,7 +771,7 @@ static unsigned dummy_deliver(chanend c_out) {
 #endif
         }
     }
-    return 0;
+    return {0,0};
 }
 #define SAMPLE_RATE      200000
 #define NUMBER_CHANNELS  1
@@ -707,7 +786,7 @@ void audio(chanend c_mix_out, chanend ?c_dig_rx, chanend ?c_config, chanend ?c)
     chan c_spdif_out;
 #endif
     unsigned curSamFreq = DEFAULT_FREQ;
-    unsigned retVal;
+    unsigned retVal1, retVal2;
     unsigned mClk;
     unsigned divide;
     unsigned firstRun = 1;
@@ -821,7 +900,7 @@ void audio(chanend c_mix_out, chanend ?c_dig_rx, chanend ?c_config, chanend ?c)
         {
             /* TODO wait for good mclk instead of delay */ 
             /* No delay for DFU modes */
-            if ((curSamFreq != AUDIO_REBOOT_FROM_DFU) && (curSamFreq != AUDIO_STOP_FOR_DFU) && retVal) 
+            if ((curSamFreq != AUDIO_REBOOT_FROM_DFU) && (curSamFreq != AUDIO_STOP_FOR_DFU) && retVal1) 
             {
                 timer t;
                 unsigned time;
@@ -853,33 +932,30 @@ void audio(chanend c_mix_out, chanend ?c_dig_rx, chanend ?c_config, chanend ?c)
                 outuint(c_spdif_out, mClk);
 #endif 
 
-                retVal = deliver(c_mix_out,
+                {retVal1, retVal2} = deliver(c_mix_out,
 #ifdef SPDIF
                    c_spdif_out,
 #else
                    null,
 #endif 
                    divide, c_dig_rx, c);
-                
-                    
-                    // TODO TIDY THIS!
-                    //if(dsdMode)
-                    //p_dsd_clk <: 0;
-                    //else
-                    //p_bclk <: 0;
 
 #if (DSD_CHANS_DAC != 0)
-                if(retVal == 0)
+                if(retVal1 == SET_SAMPLE_FREQ)
                 {
-                    // Check DSD mode here..
+                    curSamFreq = retVal2;
                 }
-                else
+                else if(retVal1 == SET_DSD_MODE)
                 {
-                    curSamFreq = retVal;
+                    /* Off = 0
+                     * DOP = 1
+                     * Native = 2
+                     */
+                    dsdMode = retVal2;
                 }
 
 #else
-                curSamFreq = retVal;
+                curSamFreq = retVal2;
 #endif
 
                 // Currently no more audio will happen after this point
@@ -890,7 +966,7 @@ void audio(chanend c_mix_out, chanend ?c_dig_rx, chanend ?c_config, chanend ?c)
                   	while (1) 
 					{
 
-                    	curSamFreq = dummy_deliver(c_mix_out);
+                    	{retVal1, curSamFreq} = dummy_deliver(c_mix_out);
 
                     	if (curSamFreq == AUDIO_START_FROM_DFU) 
 						{

@@ -190,6 +190,7 @@ void handle_audio_request(chanend c_mix_out)
                 asm("ldw %0, %1[%2]":"=r"(mult):"r"(p_multIn),"r"(i));
                 {h, l} = macs(mult, sample, 0, 0);
                 sample = h << 3;
+                sample |= (l >> 29) & 0x7; // Note, this step is not required if we assume sample depth is 24 (rather than 32)
 #elif defined(IN_VOLUME_IN_MIXER) && defined(IN_VOLUME_AFTER_MIX)
                 sample = sample << 3;
 #endif
@@ -296,6 +297,7 @@ void handle_audio_request(chanend c_mix_out)
                 asm("ldw %0, %1[%2]":"=r"(mult):"r"(p_multOut),"r"(i));
                 {h, l} = macs(mult, sample, 0, 0);
                 h <<= 3;
+                h |= (l >>29)& 0x7; // Note this step is not required if we assume sample depth is 24bit (rather than 32bit)
                 outuint(c_mix_out, h);
 #else
                 outuint(c_mix_out, sample);
@@ -670,7 +672,7 @@ void decouple(chanend c_mix_out,
                 /* Pass on to mixer */
                 DISABLE_INTERRUPTS(); 
                 inuint(c_mix_out);
-                outct(c_mix_out, 9);
+                outct(c_mix_out, SET_SAMPLE_FREQ);
                 outuint(c_mix_out, sampFreq);
 
                 inOverflow = 0;
@@ -778,6 +780,41 @@ void decouple(chanend c_mix_out,
                 SET_SHARED_GLOBAL(g_freqChange, 0);
                 ENABLE_INTERRUPTS();
             }
+#ifdef NATIVE_DSD
+            else if(tmp == SET_DSD_MODE)
+            {
+                unsigned dsdMode;
+                DISABLE_INTERRUPTS(); 
+
+                /* Clear the buffer as we dont want to send out old PCM samples.. */
+                SET_SHARED_GLOBAL(g_freqChange_flag, 0);
+                GET_SHARED_GLOBAL(dsdMode, g_freqChange_sampFreq);  /* Misuse of g_freqChange_sampFreq */
+ 
+                /* Reset OUT buffer state */             
+                SET_SHARED_GLOBAL(g_aud_from_host_rdptr, aud_from_host_fifo_start);
+                SET_SHARED_GLOBAL(g_aud_from_host_wrptr, aud_from_host_fifo_start);
+                
+                outUnderflow = 1;
+                if(outOverflow)
+                {
+                    /* If we were previously in overflow we wont have marked as ready */   
+                    XUD_SetReady_OutPtr(aud_from_host_usb_ep, aud_from_host_fifo_start+4);
+                    outOverflow = 0;
+                }
+                
+                inuint(c_mix_out);
+                outct(c_mix_out, SET_DSD_MODE);
+                outuint(c_mix_out, dsdMode); 
+ 
+                /* Wait for handshake back */               
+                chkct(c_mix_out, XS1_CT_END);
+
+                SET_SHARED_GLOBAL(g_freqChange, 0);
+                asm("outct res[%0],%1"::"r"(buffer_aud_ctl_chan),"r"(XS1_CT_END));
+           
+                ENABLE_INTERRUPTS();
+            }
+#endif
         }
 
 #ifdef OUTPUT
