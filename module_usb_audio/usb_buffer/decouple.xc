@@ -261,7 +261,9 @@ void handle_audio_request(chanend c_mix_out)
         /* We're still pre-buffering, send out 0 samps */
         for(int i = 0; i < NUM_USB_CHAN_OUT; i++) 
         {
-            outuint(c_mix_out, 0);
+            unsigned sample;
+            GET_SHARED_GLOBAL(sample, g_muteSample);
+            outuint(c_mix_out, sample);
         }
 
         /* Calc how many samples left in buffer */
