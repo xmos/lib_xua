@@ -110,6 +110,13 @@ extern unsigned g_iap_reset;
   '\0' \
 }
 
+#ifdef NATIVE_DSD
+/* We remember if we are in DSD mode to avoid Configuring the DAC too often - thus avoiding pops and clicks */
+unsigned g_dsdMode = 0;
+#endif
+
+unsigned g_muteSample = 0;
+
 /* String descriptors */
 static unsigned char strDesc_langIDs[] = DESC_STR_LANGIDS;
 
@@ -262,51 +269,13 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
                     /* Over-riding USB_StandardRequests implementation */
                     if(sp.bRequest == USB_SET_INTERFACE)
                     {
-#if defined(OUTPUT) && defined(INPUT)
-                        /* Check for stream start stop on output and input audio interfaces */
-                        if(sp.wValue && !g_interfaceAlt[1] && !g_interfaceAlt[2])
-                        {
-                            /* If start and input AND output not currently running */
-                            UserAudioStreamStart();
-                        }
-                        else if(((sp.wIndex == 1) && (!sp.wValue)) && g_interfaceAlt[1] && (!g_interfaceAlt[2]))
-                        {
-                            /* if output stop and output running and input not running */
-                            UserAudioStreamStop();
-                        }
-                        else if(((sp.wIndex == 2) && (!sp.wValue)) && g_interfaceAlt[2] && (!g_interfaceAlt[1]))
-                        {
-                            /* if input stop and input running and output not running */
-                            UserAudioStreamStop();
-                        }
-#elif defined(OUTPUT) || defined(INPUT)
-                        if(sp.wValue && (!g_interfaceAlt[1]))
-                        {
-                            /* if start and not currently running */
-                            UserAudioStreamStart();
-                        }
-                        else if (!sp.wValue && g_interfaceAlt[1])
-                        {
-                            /* if stop and currently running */
-                            UserAudioStreamStop();
-                        }
-#endif
-                        /* Record interface change */
-                        if(sp.wIndex < NUM_INTERFACES)
-                            g_interfaceAlt[sp.wIndex] = sp.wValue;
-
                         /* Check for audio stream from host start/stop */
                         if(sp.wIndex == 1)  // Ouput interface
                         {
                             switch(sp.wValue)
                             {
                                 case 0:
-#ifdef NATIVE_DSD
-                                    outuint(c_audioControl, SET_DSD_MODE);
-                                    outuint(c_audioControl, DSD_MODE_OFF);
-                                    // Handshake
-							        chkct(c_audioControl, XS1_CT_END);
-#endif /* NATIVE_DSD */
+                                    /* Stream stop */
                                     break;
                                 case 1:
                                     /* Stream active + 0 chans */
@@ -323,25 +292,29 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
                                         outuint(c_audioControl, NUM_USB_CHAN_OUT_A1);
                                     }
 #ifdef NATIVE_DSD
-                                    outuint(c_audioControl, SET_DSD_MODE);
-                                    outuint(c_audioControl, DSD_MODE_OFF);
+                                    if(g_dsdMode)
+                                    {
+                                        outuint(c_audioControl, SET_DSD_MODE);
+                                        outuint(c_audioControl, DSD_MODE_OFF);
+                                        SET_SHARED_GLOBAL(g_muteSample, 0);
                                     
-                                    // Handshake
-							        chkct(c_audioControl, XS1_CT_END);
+                                        // Handshake
+							            chkct(c_audioControl, XS1_CT_END);
+                                        g_dsdMode = 0;
+                                    }
 #endif /* NATIVE_DSD */
-
-
-
                                     break;
 #ifdef NATIVE_DSD
                                 case 2:
-                    
-                                    outuint(c_audioControl, SET_DSD_MODE);
-                                    outuint(c_audioControl, DSD_MODE_NATIVE);
-                                    
-                                    // Handshake
-							        chkct(c_audioControl, XS1_CT_END);
-
+            
+                                    if(!g_dsdMode)
+                                    {                   
+                                        outuint(c_audioControl, SET_DSD_MODE);
+                                        outuint(c_audioControl, DSD_MODE_NATIVE);
+                                        SET_SHARED_GLOBAL(g_muteSample, 0x96969696);
+							            chkct(c_audioControl, XS1_CT_END);
+                                        g_dsdMode = 1;
+                                    }
                                     break;
 #endif /* NATIVE_DSD */
                             }
@@ -393,8 +366,44 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
 #endif
                             }              
                         }
+#if 1
+#if defined(OUTPUT) && defined(INPUT)
+                        /* Check for stream start stop on output and input audio interfaces */
+                        if(sp.wValue && !g_interfaceAlt[1] && !g_interfaceAlt[2])
+                        {
+                            /* If start and input AND output not currently running */
+                            UserAudioStreamStart();
+                        }
+                        else if(((sp.wIndex == 1) && (!sp.wValue)) && g_interfaceAlt[1] && (!g_interfaceAlt[2]))
+                        {
+                            /* if output stop and output running and input not running */
+                            UserAudioStreamStop();
+                        }
+                        else if(((sp.wIndex == 2) && (!sp.wValue)) && g_interfaceAlt[2] && (!g_interfaceAlt[1]))
+                        {
+                            /* if input stop and input running and output not running */
+                            UserAudioStreamStop();
+                        }
+#elif defined(OUTPUT) || defined(INPUT)
+                        if(sp.wValue && (!g_interfaceAlt[1]))
+                        {
+                            /* if start and not currently running */
+                            UserAudioStreamStart();
+                        }
+                        else if (!sp.wValue && g_interfaceAlt[1])
+                        {
+                            /* if stop and currently running */
+                            UserAudioStreamStop();
+                        }
+#endif
+#endif
+                        /* Record interface change */
+                        if(sp.wIndex < NUM_INTERFACES)
+                            g_interfaceAlt[sp.wIndex] = sp.wValue;
+
                         /* No data stage for this request, just do data stage */
                         retVal = XUD_DoSetRequestStatus(ep0_in);
+
                     } /* if(sp.bRequest == SET_INTERFACE) */
                    
                     break; /* BMREQ_H2D_STANDARD_INT */
