@@ -1415,12 +1415,9 @@ unsigned char cfgDesc_Audio2[] =
 #define STR_INDEX_OUT_CHAN  (10 + SPDIF_RX_NUM_STRS + ADAT_RX_NUM_STRS + MIDI_NUM_STRS + DFU_NUM_STRS)
 #define STR_INDEX_IN_CHAN   (STR_INDEX_OUT_CHAN + NUM_USB_CHAN_OUT)
 
+#define VENDOR_STR_WITH_SPACE VENDOR_STR " "
 
-#define APPEND_VENDOR_STR(x) VENDOR_STR#x
-
-//#define xstr(s) str(s)
-//#define str(s) #s
-
+#define APPEND_VENDOR_STR(x) VENDOR_STR_WITH_SPACE#x
 
 #define APPEND_PRODUCT_STR_A2_(x) PRODUCT_STR_A2 #x
 #define APPEND_PRODUCT_STR_A2(x) APPEND_PRODUCT_STR_A2_(x)
@@ -1436,11 +1433,11 @@ static unsigned char strDescs[][40] =
     /* Audio 2.0 Strings */
     PRODUCT_STR_A2,                             // 2    iProduct and iInterface for control interface (at PRODUCT_STR_INDEX)
     "",//SERIAL_STR,                            // 3    iSerialNumber (at SERIAL_STR_INDEX)
-    APPEND_PRODUCT_STR_A2(),              // 4    iInterface for Streaming interaces
-    APPEND_PRODUCT_STR_A2(),               // 5
+    APPEND_PRODUCT_STR_A2(),                    // 4    iInterface for Streaming interaces
+    APPEND_PRODUCT_STR_A2(),                    // 5
 
-    APPEND_PRODUCT_STR_A2(), 		        // 6    "USB Input Terminal" (User sees as output from host) 
-    APPEND_PRODUCT_STR_A2(),  		        // 7    "USB Output Terminal" (User sees as input to host) 
+    APPEND_PRODUCT_STR_A2(), 		            // 6    "USB Input Terminal" (User sees as output from host) 
+    APPEND_PRODUCT_STR_A2(),  		            // 7    "USB Output Terminal" (User sees as input to host) 
  
     /* Audio 1.0 Strings */
     PRODUCT_STR_A1,                             // 8    iProduct and iInterface for control interface
