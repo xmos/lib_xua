@@ -11,7 +11,7 @@
 
 #include "usb.h"
 #include "usbaudio20.h"             /* Defines from the USB Audio 2.0 Specifications */
-#include "devicedefines.h"      	/* Define specific define */   
+#include "devicedefines.h"      	/* Device specific define */   
 
 /***** Device Descriptors *****/
 
@@ -58,8 +58,8 @@ unsigned char devDesc_Audio2[] =
     (BCD_DEVICE & 0xFF),           	/* 12 bcdDevice : Device release number */ 
     (BCD_DEVICE >> 8),              /* 13 bcdDevice : Device release number */ 
     MANUFACTURER_STR_INDEX,         /* 14 iManufacturer : Index of manufacturer string */ 
-    PRODUCT_STR_INDEX,           	/* 15 iProduct : Index of product string descriptor */ 
-    0,//    SERIAL_STR_INDEX,            	/* 16 iSerialNumber : Index of serial number decriptor */ 
+    PRODUCT_STR_INDEX_A2,           /* 15 iProduct : Index of product string descriptor */ 
+    0,//    SERIAL_STR_INDEX,       /* 16 iSerialNumber : Index of serial number decriptor */ 
     0x02             				/* 17 bNumConfigurations : Number of possible configs. Set to 2 so that Windows 
                         				  does not load Composite driver. */ 
 };
@@ -82,7 +82,7 @@ unsigned char devDesc_Null[] =
     (BCD_DEVICE & 0xFF),           	/* 12 bcdDevice : Device release number */ 
     (BCD_DEVICE >> 8),              /* 13 bcdDevice : Device release number */ 
     MANUFACTURER_STR_INDEX,         /* 14 iManufacturer : Index of manufacturer string */ 
-	PRODUCT_STR_INDEX,              /* 15 iProduct : Index of product string descriptor */ 
+	PRODUCT_STR_INDEX_A2,           /* 15 iProduct : Index of product string descriptor */ 
     0,//SERIAL_STR_INDEX,            	/* 16 iSerialNumber : Index of serial number decriptor */ 
     0x01             				/* 17 bNumConfigurations : Number of possible configs */
 };
@@ -335,7 +335,7 @@ unsigned char cfgDesc_Audio2[] =
     AUDIO_FUNCTION,            		/* 4  bFunctionClass: AUDIO_FUNCTION */
     FUNCTION_SUBCLASS_UNDEFINED,    /* 5  bFunctionSubClass: FUNCTION_SUBCLASS_UNDEFINED */
     AF_VERSION_02_00,            	/* 6  bFunctionProtocol: AF_VERSION_02_00 */
-    0x00,            				/* 7  iFunction (String Index) *(re-use iProduct) */
+    0x00,            				/* 7  iFunction (String Index) */
 
     /* Standard Audio Control Interface Descriptor (Note: Must be first with lowest interface number)r */
     0x09,            				/* 0  bLength: 9 */
@@ -350,7 +350,7 @@ unsigned char cfgDesc_Audio2[] =
     AUDIO,               			/* 5  bInterfaceClass: AUDIO */
     AUDIOCONTROL,               	/* 6  bInterfaceSubClass: AUDIOCONTROL*/
     IP_VERSION_02_00,            	/* 7  bInterfaceProtocol: IP_VERSION_02_00 */
-    PRODUCT_STR_INDEX,              /* 8  iInterface (re-use iProduct) */ 
+    PRODUCT_STR_INDEX_A2,           /* 8  iInterface (re-use iProduct) */ 
 
     /* Class Specific Audio Control Interface Header Descriptor: */
     LEN_AC,            				/* 0   bLength */
@@ -408,7 +408,7 @@ unsigned char cfgDesc_Audio2[] =
     LEN_CLK,           				/* 0   bLength: 8 */
     CS_INTERFACE,           		/* 1   bDescriptorType */
     CLOCK_SOURCE,           		/* 2   bDescriptorSubtype */
-    ID_CLKSRC_ADAT,             		/* 3   bClockID */
+    ID_CLKSRC_ADAT,             	/* 3   bClockID */
     0x00,              				/* 4   bmAttributes:   
                        						D[1:0] :
                                 				00: External Clock 
@@ -422,7 +422,7 @@ unsigned char cfgDesc_Audio2[] =
                 							D[3:2] : Clock Validity Control
                 							D[7:4] : Reserved (0) */
     0x00,        					/* 6   bAssocTerminal */
-    ADAT_CLOCK_STRING_INDEX,        					    /* 7   iClockSource (String Index) */
+    ADAT_CLOCK_STRING_INDEX,        /* 7   iClockSource (String Index) */
 #endif
     /* Clock Selector Descriptor (4.7.2.2) */ 
     LEN_CLK_SEL,                    /* 0    bLength */
@@ -440,7 +440,7 @@ unsigned char cfgDesc_Audio2[] =
     0x03,                           /* 5   bmControls       
                                             D[1:0] : Clock Selector Control
                                             D[7:4] : Reserved (0) */
-    13,                              /* 7   iClockSel (String Index) */  
+    13,                             /* 7   iClockSel (String Index) */  
 
 #ifdef OUTPUT
 	/* OUTPUT PATH FROM HOST TO DEVICE */
@@ -862,7 +862,7 @@ unsigned char cfgDesc_Audio2[] =
     4,              				/* 6  bInterval. Only values <= 1 frame (4) supported by MS */
 
 #ifdef NATIVE_DSD
-     /* Standard AS Interface Descriptor (4.9.1) (Alt) */
+    /* Standard AS Interface Descriptor (4.9.1) (Alt) */
     0x09,           				/* 0  bLength: (in bytes, 9) */
     USB_INTERFACE,           		/* 1  bDescriptorType: INTERFACE */
     1,              				/* 2  bInterfaceNumber: Number of interface */
@@ -920,9 +920,8 @@ unsigned char cfgDesc_Audio2[] =
 
 #endif /* NATIVE_DSD */
 
-
 #ifdef ADAT_TX
-     /* Standard AS Interface Descriptor (4.9.1) (Alt) */
+    /* Standard AS Interface Descriptor (4.9.1) (Alt) */
     0x09,           				/* 0  bLength: (in bytes, 9) */
     USB_INTERFACE,           		/* 1  bDescriptorType: INTERFACE */
     1,              				/* 2  bInterfaceNumber: Number of interface */
@@ -1417,31 +1416,37 @@ unsigned char cfgDesc_Audio2[] =
 
 #define APPEND_VENDOR_STR(x) VENDOR_STR " "#x
 
-#define APPEND_PRODUCT_STR_A2_(x) PRODUCT_STR_A2 #x
-#define APPEND_PRODUCT_STR_A2(x) APPEND_PRODUCT_STR_A2_(x)
+#define APPEND_PRODUCT_STR_A2(x) PRODUCT_STR_A2 " " #x
 
-#define APPEND_PRODUCT_STR_A1_(x) PRODUCT_STR_A1 #x
-#define APPEND_PRODUCT_STR_A1(x) APPEND_PRODUCT_STR_A1_(x)
+#define APPEND_PRODUCT_STR_A1(x) PRODUCT_STR_A1 " " #x
+
+#if defined(SPDIF) 
+#if ((NUM_USB_CHAN_OUT - 2) <= 0) 
+#define SPDIF_TX_OVERLAP   1
+#else
+#define SPDIF_TX_OVERLAP   0
+#endif
+#endif
 
 static unsigned char strDescs[][40] = 
 {
-    "Langids",						            /* 0    LangIDs) place holder */ 
-    APPEND_VENDOR_STR( ),                       // 1    iManufacturer (at MANUFACTURER_STRING_INDEX)
+    "Langids",						            // 0     LangIDs place holder
+    APPEND_VENDOR_STR( ),                       // 1     iManufacturer (at MANUFACTURER_STRING_INDEX)
 
+    "",//SERIAL_STR,                            // 2     iSerialNumber (at SERIAL_STR_INDEX)
+    
     /* Audio 2.0 Strings */
-    PRODUCT_STR_A2,                             // 2    iProduct and iInterface for control interface (at PRODUCT_STR_INDEX)
-    "",//SERIAL_STR,                            // 3    iSerialNumber (at SERIAL_STR_INDEX)
-    APPEND_PRODUCT_STR_A2(),                    // 4    iInterface for Streaming interaces
+    PRODUCT_STR_A2,                             // 3     iProduct and iInterface for control interface (at PRODUCT_STR_INDEX)
+    APPEND_PRODUCT_STR_A2(),                    // 4     iInterface for Streaming interaces
     APPEND_PRODUCT_STR_A2(),                    // 5
-
-    APPEND_PRODUCT_STR_A2(), 		            // 6    "USB Input Terminal" (User sees as output from host) 
-    APPEND_PRODUCT_STR_A2(),  		            // 7    "USB Output Terminal" (User sees as input to host) 
+    APPEND_PRODUCT_STR_A2(), 		            // 6     "USB Input Terminal" (User sees as output from host) 
+    APPEND_PRODUCT_STR_A2(),  		            // 7     "USB Output Terminal" (User sees as input to host) 
  
     /* Audio 1.0 Strings */
-    PRODUCT_STR_A1,                             // 8    iProduct and iInterface for control interface
-	APPEND_PRODUCT_STR_A1(Output),              // 9    iInterface for Streaming interaces
+    PRODUCT_STR_A1,                             // 8     iProduct and iInterface for control interface
+	APPEND_PRODUCT_STR_A1(Output),              // 9     iInterface for Streaming interaces
 	APPEND_PRODUCT_STR_A1(Input),               // 10
-    APPEND_PRODUCT_STR_A1(Output), 	            // 11   "USB Input Terminal" (User sees as output from host) 
+    APPEND_PRODUCT_STR_A1(Output), 	            // 11    "USB Input Terminal" (User sees as output from host) 
 	APPEND_PRODUCT_STR_A1(Input),  	            // 12    "USB Output Terminal" (User sees as input to host) 
 
     APPEND_VENDOR_STR(Clock Selector),          // 13    iClockSel
@@ -1457,20 +1462,21 @@ static unsigned char strDescs[][40] =
 #endif
 
 #ifdef MIDI
-    APPEND_VENDOR_STR(MIDI Out),                   // iJack for MIDI OUT
-    APPEND_VENDOR_STR(MIDI In ),                   // iJack for MIDI IN
+    APPEND_VENDOR_STR(MIDI Out),                // iJack for MIDI OUT
+    APPEND_VENDOR_STR(MIDI In ),                // iJack for MIDI IN
 #endif
     
-#if (NUM_USB_CHAN_OUT > 0)
-    "Analogue 1",                                 // Output channel name place holders - Get customised at runtime based on device config 
+                                                // Output channel name place holders - Get customised at runtime based on devic
+#if (NUM_USB_CHAN_OUT > 0) 
+    "Analogue 1",
 #endif
-#if (NUM_USB_CHAN_OUT > 1)
+#if (NUM_USB_CHAN_OUT > 1) 
     "Analogue 2",
 #endif
-#if (NUM_USB_CHAN_OUT > 2)
+#if (NUM_USB_CHAN_OUT > 2) 
     "Analogue 3",
 #endif
-#if (NUM_USB_CHAN_OUT > 3)
+#if (NUM_USB_CHAN_OUT > 3) 
     "Analogue 4",
 #endif
 #if (NUM_USB_CHAN_OUT > 4)
