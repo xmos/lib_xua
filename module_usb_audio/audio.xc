@@ -11,7 +11,6 @@
 #include <platform.h>
 #include <xs1.h>
 #include <xclib.h>
-#include <print.h>
 #include <xs1_su.h>
 
 #include "devicedefines.h"
@@ -19,6 +18,8 @@
 #include "audiohw.h"
 #include "SpdifTransmit.h"
 #include "clockcmds.h"
+#include "xc_ptr.h"
+
 unsigned testsamples[100];
 int p = 0;
 unsigned lastSample =0;
@@ -104,10 +105,10 @@ extern void device_reboot(void);
     unsigned dsdMarker = DSD_MARKER_2;    /* This alternates between DSD_MARKER_1 and DSD_MARKER_2 */
     int dsdCount = 0;
     int everyOther = 1;
-    unsigned dsdSample_l = 0;
-    unsigned dsdSample_r = 0;
+    unsigned dsdSample_l = 0x69696969;
+    unsigned dsdSample_r = 0x69696969;
 #endif
-
+    int counter = 0;
 
 #if NUM_USB_CHAN_IN > 0
     for (int i=0;i<NUM_USB_CHAN_IN;i++)
@@ -289,6 +290,7 @@ extern void device_reboot(void);
     {
         outuint(c_out, 0);
 
+        
         /* Check for sample freq change (or other command) or new samples from mixer*/
         if(testct(c_out))
         {
@@ -310,7 +312,7 @@ extern void device_reboot(void);
         {
 #ifndef MIXER // Interfaces straight to decouple()
             (void) inuint(c_out);
-
+            counter++;
 #if NUM_USB_CHAN_IN > 0
 #pragma loop unroll
             for(int i = 0; i < NUM_USB_CHAN_IN; i++)
@@ -379,25 +381,6 @@ extern void device_reboot(void);
         dsdSample_r = bitrev(byterev(dsdSample_r)); 
         dsdSample_l = bitrev(byterev(dsdSample_l)); 
  
-        //if(dsdSample_l != 0)
-        //testsamples[p++] = dsdSample_l;
-               
-        //if(p > 20)
-        //for (int i = 0; i < 20; i++)
-          //  printhexln(testsamples[i]);
-            
-        //if(lastSample+1 != dsdSample_l)
-        //{
-          //  printhexln(lastSample);
-        //}
-
-        //lastSample = dsdSample_l;
-
-
-        // Output 32 clocks DSD to all
-            //p_dsd_dac[0] <: bitrev(dsdSample_l);
-            //p_dsd_dac[1] <: bitrev(dsdSample_r);
-            
             switch (divide*2)
             {
                 case 8:
@@ -704,22 +687,20 @@ extern void device_reboot(void);
                 dsdMarker = DSD_MARKER_2;
             }
         }
-        else if(dsdMode == DSD_MODE_DOP) // DSD Mode
+        else if(dsdMode == DSD_MODE_DOP) // DSD DoP Mode
         {
             /* If we are running in DOP mode, check if we need to come out */
-            if((DSD_MASK(samplesOut[0]) != dsdMarker) && (DSD_MASK(samplesOut[1]) != dsdMarker))
+            if((DSD_MASK(samplesOut[0]) != DSD_MARKER_1) && (DSD_MASK(samplesOut[1]) != DSD_MARKER_1))
             {
-                if(!((dsdCount == 0) && (DSD_MASK(samplesOut[0]) == (dsdMarker ^DSD_MARKER_XOR))
-                        && (DSD_MASK(samplesOut[1]) == (dsdMarker ^ DSD_MARKER_XOR))))
+                if((DSD_MASK(samplesOut[0]) != DSD_MARKER_2) && (DSD_MASK(samplesOut[1]) != DSD_MARKER_2))
                 {
-                    dsdCount = 0;
                     dsdMode = 0;
-                    // Set clocks low
                     p_dsd_clk <: 0;
                     return {0,0};
                 }
             }
         }
+    
 #endif
 
     }
@@ -849,8 +830,6 @@ void audio(chanend c_mix_out, chanend ?c_dig_rx, chanend ?c_config, chanend ?c)
         /* Calculate divide required for bit clock e.g. 11.289600 / (176400 * 64)  = 1 */
         divide = mClk / ( curSamFreq * 64 );
 
-        /* Configure Clocking/CODEC/DAC/ADC for SampleFreq/MClk */
-        AudioHwConfig(curSamFreq, mClk, c_config, dsdMode);
  
 #if (DSD_CHANS_DAC != 0)
         /* Configure audio ports */
@@ -895,6 +874,8 @@ void audio(chanend c_mix_out, chanend ?c_dig_rx, chanend ?c_config, chanend ?c)
 
 #endif
             
+        /* Configure Clocking/CODEC/DAC/ADC for SampleFreq/MClk */
+        AudioHwConfig(curSamFreq, mClk, c_config, dsdMode);
 
         if(!firstRun)
         {
@@ -952,6 +933,11 @@ void audio(chanend c_mix_out, chanend ?c_dig_rx, chanend ?c_config, chanend ?c)
                      * Native = 2
                      */
                     dsdMode = retVal2;
+                    //printstrln("set");
+                }
+                else
+                {
+                    //printstrln("err\n");
                 }
 
 #else
