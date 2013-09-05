@@ -27,7 +27,6 @@
 #ifdef HID_CONTROLS
 #include "user_hid.h"
 #endif
-
 #define MAX(x,y) ((x)>(y) ? (x) : (y))
 
 #define CLASS_TWO_PACKET_SIZE ((((MAX_FREQ+7999)/8000))+3)
@@ -262,7 +261,13 @@ void handle_audio_request(chanend c_mix_out)
         for(int i = 0; i < NUM_USB_CHAN_OUT; i++) 
         {
             unsigned sample;
+            unsigned mode;
             GET_SHARED_GLOBAL(sample, g_muteSample);
+            GET_SHARED_GLOBAL(mode, dsdMode);
+
+            if(mode == DSD_MODE_DOP)
+                outuint(c_mix_out, 0xFA696969);
+            else
             outuint(c_mix_out, sample);
         }
 
@@ -274,9 +279,11 @@ void handle_audio_request(chanend c_mix_out)
         }
         
         /* If we have a decent number of samples, come out of underflow cond */
-        if (outSamps >= (OUT_BUFFER_PREFILL)) 
+        if(outSamps >= (OUT_BUFFER_PREFILL)) 
         {
-          outUnderflow = 0;
+            outUnderflow = 0;
+            outSamps++;
+
         }
     }
     else
@@ -462,11 +469,11 @@ void handle_audio_request(chanend c_mix_out)
         }
 
         outUnderflow = (g_aud_from_host_rdptr == g_aud_from_host_wrptr);
-    
+        
+        
         if (!outUnderflow) 
         {   
             read_via_xc_ptr(aud_data_remaining_to_device, g_aud_from_host_rdptr);
- 
             
             unpackState = 0;
             
@@ -856,7 +863,7 @@ void decouple(chanend c_mix_out,
             /* if we have enough space left then send a new buffer pointer 
              * back to the buffer thread */
             space_left = aud_from_host_rdptr - aud_from_host_wrptr;
-  
+ 
             /* Mod and special case */
             if(space_left <= 0 && g_aud_from_host_rdptr == aud_from_host_fifo_start)
             {
@@ -872,6 +879,9 @@ void decouple(chanend c_mix_out,
             {  
                 /* Enter OUT over flow state */                         
                 outOverflow = 1; 
+
+
+                
 #ifdef DEBUG_LEDS               
                 led(c_led);
 #endif
