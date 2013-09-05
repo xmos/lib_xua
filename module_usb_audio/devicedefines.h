@@ -171,13 +171,13 @@
 
 /* Vendor/Product strings */
 #ifndef VENDOR_STR
-#define VENDOR_STR               "XMOS "   
-//#warning VENDOR_STR not defined. Using XMOS
+#define VENDOR_STR               "XMOS"   
+#warning VENDOR_STR not defined. Using "XMOS"
 #endif
 
 #ifndef VENDOR_ID
-#warning VENDOR_ID not defined. Using XMOS vendor ID
-#define VENDOR_ID                (0x20B1)        /* XMOS VID */
+#warning VENDOR_ID not defined. Using XMOS vendor ID (0x20B1)
+#define VENDOR_ID                (0x20B1)
 #endif
 
 #ifdef PRODUCT_STR
@@ -267,54 +267,54 @@
 #define EP_CNT_IN_HID           (HID_INTERFACES)
 
 #if defined(SPDIF_RX) || defined(ADAT_RX)
-#define EP_CNT_IN_AUD_INT       (1)
+#define EP_CNT_IN_AUD_INT        (1)
 #else
-#define EP_CNT_IN_AUD_INT       (0)
+#define EP_CNT_IN_AUD_INT        (0)
 #endif
 
 /* Define for number of audio interfaces (+1 for mandatory control interface) */
-#define AUDIO_INTERFACES		(INPUT_INTERFACES + OUTPUT_INTERFACES + 1) 
+#define AUDIO_INTERFACES		 (INPUT_INTERFACES + OUTPUT_INTERFACES + 1) 
 
 /* Interface number defines */
 #define INTERFACE_NUM_IAP (INPUT_INTERFACES+OUTPUT_INTERFACES+MIDI_INTERFACES+DFU_INTERFACES+1)
 #define INTERFACE_NUM_HID (INPUT_INTERFACES+OUTPUT_INTERFACES+MIDI_INTERFACES+DFU_INTERFACES+IAP_INTERFACES+1)
 
 /* Endpoint Number Defines */
-#define EP_NUM_IN_FB            (1)     /* Always 1 */
-#define EP_NUM_IN_AUD           (2)     /* Always 2 */
-#define EP_NUM_IN_AUD_INT       (EP_NUM_IN_AUD + EP_CNT_IN_AUD_INT)     /* Audio interrupt/status EP */
-#define EP_NUM_IN_MIDI          (EP_NUM_IN_AUD_INT + 1)
-#define EP_NUM_IN_HID           (EP_NUM_IN_AUD_INT + EP_CNT_IN_MIDI + 1)
-#define EP_NUM_IN_IAP           (EP_NUM_IN_AUD_INT + EP_CNT_IN_MIDI + EP_CNT_IN_HID + 1) /* iAP Bulk */
-#define EP_NUM_IN_IAP_INT       (EP_NUM_IN_AUD_INT + EP_CNT_IN_MIDI + EP_CNT_IN_HID + 2) /* iAP interrupt */
+#define EP_NUM_IN_FB             (1)     /* Always 1 */
+#define EP_NUM_IN_AUD            (2)     /* Always 2 */
+#define EP_NUM_IN_AUD_INT        (EP_NUM_IN_AUD + EP_CNT_IN_AUD_INT)     /* Audio interrupt/status EP */
+#define EP_NUM_IN_MIDI           (EP_NUM_IN_AUD_INT + 1)
+#define EP_NUM_IN_HID            (EP_NUM_IN_AUD_INT + EP_CNT_IN_MIDI + 1)
+#define EP_NUM_IN_IAP            (EP_NUM_IN_AUD_INT + EP_CNT_IN_MIDI + EP_CNT_IN_HID + 1) /* iAP Bulk */
+#define EP_NUM_IN_IAP_INT        (EP_NUM_IN_AUD_INT + EP_CNT_IN_MIDI + EP_CNT_IN_HID + 2) /* iAP interrupt */
 
-#define EP_NUM_OUT_AUD          (1)     /* Always 1 */
-#define EP_NUM_OUT_MIDI         (2)     /* Always 2 */
-#define EP_NUM_OUT_IAP          (EP_NUM_OUT_AUD + EP_CNT_OUT_MIDI + 1)
+#define EP_NUM_OUT_AUD           (1)     /* Always 1 */
+#define EP_NUM_OUT_MIDI          (2)     /* Always 2 */
+#define EP_NUM_OUT_IAP           (EP_NUM_OUT_AUD + EP_CNT_OUT_MIDI + 1)
 
 /* Endpoint Address Defines */
-#define EP_ADR_IN_FB            (EP_NUM_IN_FB | 0x80)
-#define EP_ADR_IN_AUD           (EP_NUM_IN_AUD | 0x80)
-#define EP_ADR_IN_AUD_INT       (EP_NUM_IN_AUD_INT | 0x80)
-#define EP_ADR_IN_MIDI          (EP_NUM_IN_MIDI | 0x80)
-#define EP_ADR_IN_HID           (EP_NUM_IN_HID | 0x80)
-#define EP_ADR_IN_IAP           (EP_NUM_IN_IAP | 0x80)
-#define EP_ADR_IN_IAP_INT       (EP_NUM_IN_IAP_INT | 0x80)
+#define EP_ADR_IN_FB             (EP_NUM_IN_FB | 0x80)
+#define EP_ADR_IN_AUD            (EP_NUM_IN_AUD | 0x80)
+#define EP_ADR_IN_AUD_INT        (EP_NUM_IN_AUD_INT | 0x80)
+#define EP_ADR_IN_MIDI           (EP_NUM_IN_MIDI | 0x80)
+#define EP_ADR_IN_HID            (EP_NUM_IN_HID | 0x80)
+#define EP_ADR_IN_IAP            (EP_NUM_IN_IAP | 0x80)
+#define EP_ADR_IN_IAP_INT        (EP_NUM_IN_IAP_INT | 0x80)
 
-#define EP_ADR_OUT_AUD          EP_NUM_OUT_AUD            
-#define EP_ADR_OUT_MIDI         EP_NUM_OUT_MIDI           
-#define EP_ADR_OUT_IAP          EP_NUM_OUT_IAP            
+#define EP_ADR_OUT_AUD           EP_NUM_OUT_AUD            
+#define EP_ADR_OUT_MIDI          EP_NUM_OUT_MIDI           
+#define EP_ADR_OUT_IAP           EP_NUM_OUT_IAP            
 
 
 /* Endpoint count totals */
-#define EP_CNT_OUT              (1 + 1 /*NUM_EP_OUT_AUD*/ + EP_CNT_OUT_MIDI + EP_CNT_OUT_IAP) /* +1 due to EP0 */ 
-#define EP_CNT_IN               (1 + 2 /*NUM_EP_IN_AUD*/ + EP_CNT_IN_AUD_INT + EP_CNT_IN_MIDI + EP_CNT_IN_IAP + EP_CNT_IN_HID)    /* +1 due to EP0 */
+#define EP_CNT_OUT               (1 + 1 /*NUM_EP_OUT_AUD*/ + EP_CNT_OUT_MIDI + EP_CNT_OUT_IAP) /* +1 due to EP0 */ 
+#define EP_CNT_IN                (1 + 2 /*NUM_EP_IN_AUD*/ + EP_CNT_IN_AUD_INT + EP_CNT_IN_MIDI + EP_CNT_IN_IAP + EP_CNT_IN_HID)    /* +1 due to EP0 */
 
-#define AUDIO_STOP_FOR_DFU      (0x12345678)
-#define AUDIO_START_FROM_DFU    (0x87654321)
-#define AUDIO_REBOOT_FROM_DFU   (0xa5a5a5a5)
+#define AUDIO_STOP_FOR_DFU       (0x12345678)
+#define AUDIO_START_FROM_DFU     (0x87654321)
+#define AUDIO_REBOOT_FROM_DFU    (0xa5a5a5a5)
 
-#define MAX_VOL                 (0x20000000)
+#define MAX_VOL                  (0x20000000)
 
 #ifdef SELF_POWERED
 #define BMAX_POWER 0
@@ -327,11 +327,11 @@
 
 /* Length of clock unit/clock-selector units */
 #if defined(SPDIF_RX) && defined(ADAT_RX)
-#define NUM_CLOCKS              (3)
+#define NUM_CLOCKS               (3)
 #elif defined(SPDIF_RX) || defined(ADAT_RX)
-#define NUM_CLOCKS              (2)
+#define NUM_CLOCKS               (2)
 #else 
-#define NUM_CLOCKS              (1)
+#define NUM_CLOCKS               (1)
 #endif
 
 
@@ -339,30 +339,30 @@
 #define NUM_INTERFACES          INPUT_INTERFACES + OUTPUT_INTERFACES + DFU_INTERFACES + MIDI_INTERFACES + IAP_INTERFACES + 1 + HID_INTERFACES
 
 /* Number of interfaces for Audio 1.0 */
-#define NUM_INTERFACES_A1       (1+INPUT_INTERFACES+OUTPUT_INTERFACES)
+#define NUM_INTERFACES_A1        (1+INPUT_INTERFACES+OUTPUT_INTERFACES)
 
 
 /* Audio Unit ID defines */
-#define FU_USBIN                11              /* Feature Unit: USB Audio device -> host */ 
-#define FU_USBOUT               10              /* Feature Unit: USB Audio host -> device*/ 
-#define ID_IT_USB               2               /* Input terminal: USB streaming */
-#define ID_IT_AUD               1               /* Input terminal: Analogue input */
-#define ID_OT_USB               22              /* Output terminal: USB streaming */
-#define ID_OT_AUD               20              /* Output terminal: Analogue output */
+#define FU_USBIN                 11              /* Feature Unit: USB Audio device -> host */ 
+#define FU_USBOUT                10              /* Feature Unit: USB Audio host -> device*/ 
+#define ID_IT_USB                2               /* Input terminal: USB streaming */
+#define ID_IT_AUD                1               /* Input terminal: Analogue input */
+#define ID_OT_USB                22              /* Output terminal: USB streaming */
+#define ID_OT_AUD                20              /* Output terminal: Analogue output */
 
-#define ID_CLKSEL               40              /* Clock selector ID */
-#define ID_CLKSRC_INT           41              /* Clock source ID (internal) */
-#define ID_CLKSRC_EXT           42              /* Clock source ID (external) */
-#define ID_CLKSRC_ADAT          43              /* Clock source ID (external) */
+#define ID_CLKSEL                40              /* Clock selector ID */
+#define ID_CLKSRC_INT            41              /* Clock source ID (internal) */
+#define ID_CLKSRC_EXT            42              /* Clock source ID (external) */
+#define ID_CLKSRC_ADAT           43              /* Clock source ID (external) */
 
-#define ID_XU_MIXSEL            50
-#define ID_XU_OUT               51
-#define ID_XU_IN                52
+#define ID_XU_MIXSEL             50
+#define ID_XU_OUT                51
+#define ID_XU_IN                 52
 
-#define ID_MIXER_1              60
+#define ID_MIXER_1               60
 
-#define MANUFACTURER_STR_INDEX	0x01
-#define PRODUCT_STR_INDEX       0x02
+#define MANUFACTURER_STR_INDEX	 0x01
+#define PRODUCT_STR_INDEX_A2     0x03
 
 /* Mixer defines */
 #ifndef MIX_INPUTS
@@ -462,17 +462,12 @@
 #endif
 #endif
 
-
-
 /* Defines for DFU */
-#ifndef PID_DFU
-#define PID_DFU PID_AUDIO_2
-#endif
-
+#define DFU_PID                     PID_AUDIO_2
 #define DFU_VENDOR_ID               VENDOR_ID
 #define DFU_BCD_DEVICE              BCD_DEVICE
-#define DFU_MANUFACTURER_INDEX      MANUFACTURER_STR_INDEX
-#define DFU_PRODUCT_INDEX           PRODUCT_STR_INDEX
+#define DFU_MANUFACTURER_STR_INDEX  MANUFACTURER_STR_INDEX
+#define DFU_PRODUCT_STR_INDEX       PRODUCT_STR_INDEX_A2
 #endif
 
 #if defined(FAST_MODE) && (FAST_MODE == 0)
