@@ -123,6 +123,8 @@ extern void device_reboot(void);
     if(testct(c_out))
     {
         unsigned command = inct(c_out);
+        if(dsdMode == DSD_MODE_DOP)
+            dsdMode = 0;
         return {command, inuint(c_out)};
     }
     else
@@ -305,6 +307,8 @@ extern void device_reboot(void);
             p_dsd_clk <: 0;
 #endif
             command = inct(c_out);
+            if(dsdMode == DSD_MODE_DOP)
+            dsdMode = 0;
             return {command, inuint(c_out)};
 
         }
@@ -677,7 +681,6 @@ extern void device_reboot(void);
                     // Set clocks low
                     p_lrclk <: 0;
                     p_bclk <: 0;
-
                     return {0,0};
                 }
             }
