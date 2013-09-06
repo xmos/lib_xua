@@ -105,8 +105,8 @@ extern void device_reboot(void);
     unsigned dsdMarker = DSD_MARKER_2;    /* This alternates between DSD_MARKER_1 and DSD_MARKER_2 */
     int dsdCount = 0;
     int everyOther = 1;
-    unsigned dsdSample_l = 0x69690000;
-    unsigned dsdSample_r = 0x69690000;
+    unsigned dsdSample_l = 0x96960000;
+    unsigned dsdSample_r = 0x96960000;
 #endif
     int counter = 0;
 
