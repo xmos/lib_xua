@@ -308,7 +308,7 @@ extern void device_reboot(void);
 #endif
             command = inct(c_out);
             if(dsdMode == DSD_MODE_DOP)
-            dsdMode = 0;
+                dsdMode = 0;
             return {command, inuint(c_out)};
 
         }
