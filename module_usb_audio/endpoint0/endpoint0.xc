@@ -54,10 +54,7 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
 int AudioClassRequests_1(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, chanend c_audioControl, chanend ?c_mix_ctl, chanend ?c_clk_ctl);
 int AudioEndpointRequests_1(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, chanend c_audioControl, chanend ?c_mix_ctl, chanend ?c_clk_ctl);
 
-/* Global var for current frequency, set to default freq */
-unsigned int g_curSamFreq = DEFAULT_FREQ;
-unsigned int g_curSamFreq48000Family = DEFAULT_FREQ % 48000 == 0;
-unsigned int g_curSamFreqMultiplier = DEFAULT_FREQ / 48000;
+
 
 /* Global volume and mute tables */ 
 int volsOut[NUM_USB_CHAN_OUT + 1];
