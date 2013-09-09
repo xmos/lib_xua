@@ -808,6 +808,11 @@ void audio(chanend c_mix_out, chanend ?c_dig_rx, chanend ?c_config, chanend ?c)
     }
 #endif
 
+/* Clock master clock-block from master-clock port */
+    configure_clock_src(clk_audio_mclk, p_mclk_in);
+
+    start_clock(clk_audio_mclk);
+
 #ifdef SPDIF
     SpdifTransmitPortConfig(p_spdif_tx, clk_mst_spd, p_mclk_in);
 #endif
@@ -815,6 +820,8 @@ void audio(chanend c_mix_out, chanend ?c_dig_rx, chanend ?c_config, chanend ?c)
   	/* Initialise master clock generation */
     //ClockingInit(c_config);
 
+    
+    
     /* Perform required CODEC/ADC/DAC initialisation */
     AudioHwInit(c_config);
 
