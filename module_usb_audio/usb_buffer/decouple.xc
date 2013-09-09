@@ -266,7 +266,7 @@ void handle_audio_request(chanend c_mix_out)
             GET_SHARED_GLOBAL(mode, dsdMode);
 
             if(mode == DSD_MODE_DOP)
-                outuint(c_mix_out, 0xFA696969);
+                outuint(c_mix_out, 0xFA969600);
             else
             outuint(c_mix_out, sample);
         }
