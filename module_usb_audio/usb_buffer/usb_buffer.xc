@@ -323,7 +323,7 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
                                 min -= 1;
                             }
    #ifdef FB_TOLERANCE_TEST
-                            expected_fb = ((sampleFreq * 0x2000) / frametime);
+                            expected_fb = ((sampleFreq * 0x2000) / frameTime);
    #endif
                        
                             asm("stw %0, dp[g_speed]"::"r"(mid << 16));
@@ -435,7 +435,6 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
 #ifdef FB_TOLERANCE_TEST
                         else 
                         {
-                            
                         }
 #endif
                         clocks = 0;
