@@ -48,10 +48,10 @@ extern unsigned char channelMapUsb[NUM_USB_CHAN_IN];
 extern unsigned char mixSel[MIX_INPUTS];
 #endif
 
-/* Global var for current frequency */
-extern unsigned int g_curSamFreq;
-extern unsigned int g_curSamFreq48000Family;
-extern unsigned int g_curSamFreqMultiplier;
+/* Global var for current frequency, set to default freq */
+unsigned int g_curSamFreq = DEFAULT_FREQ;
+unsigned int g_curSamFreq48000Family = DEFAULT_FREQ % 48000 == 0;
+unsigned int g_curSamFreqMultiplier = DEFAULT_FREQ / 48000;
 
 /* Store an int into a char array: Note this allows non-word aligned access unlike reinerpret cast */
 void storeInt(unsigned char buffer[], int index, int val)
