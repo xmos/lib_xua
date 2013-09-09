@@ -39,7 +39,7 @@ unsigned int divide)
 
     /* Stop bit and master clock blocks and clear port buffers */
     stop_clock(clk_audio_bclk);
-    stop_clock(clk_audio_mclk);
+    //stop_clock(clk_audio_mclk);
 
     if(!isnull(p_lrclk))
     {
@@ -62,7 +62,8 @@ unsigned int divide)
 #endif
 
     /* Clock master clock-block from master-clock port */
-    configure_clock_src(clk_audio_mclk, p_mclk_in);
+    // Now done outside of function
+    //configure_clock_src(clk_audio_mclk, p_mclk_in);
 
     /* For a divide of one (i.e. bitclock == master-clock) BClk is set to clock_output mode.
      * In this mode it outputs an edge clock on every tick of itsassociated clock_block.
@@ -107,7 +108,7 @@ unsigned int divide)
 
 
     /* Start clock blocks ticking */
-    start_clock(clk_audio_mclk);
+    //start_clock(clk_audio_mclk);
     start_clock(clk_audio_bclk);
 
     /* bclk initial state needs to be high  */
@@ -120,11 +121,11 @@ unsigned int divide)
 
     /* Stop bit and master clock blocks */
     stop_clock(clk_audio_bclk);
-    stop_clock(clk_audio_mclk);
+    //stop_clock(clk_audio_mclk);
 
     /* Clock master clock-block from master-clock port - 
      * though not directly used in I2S slave mode it is required for FB */
-    configure_clock_src(clk_audio_mclk, p_mclk_in);
+    //configure_clock_src(clk_audio_mclk, p_mclk_in);
     
     /* Clock bclk clock-block from bclk pin */
     configure_clock_src(clk_audio_bclk, p_bclk);
@@ -144,7 +145,7 @@ unsigned int divide)
     configure_in_port_no_ready(p_lrclk, clk_audio_bclk);
 
     start_clock(clk_audio_bclk);
-    start_clock(clk_audio_mclk);
+    //start_clock(clk_audio_mclk);
 
 #endif
 }
