@@ -136,7 +136,7 @@ void handle_audio_request(chanend c_mix_out)
     asm("ldw   %0, dp[g_curUsbSpeed]" : "=r" (usb_speed) :);
 
     /* slotSize different for Audio Class 1.0/2.0. */
-#if defined(AUDIO_CLASS_FALLBACK)
+#if defined(AUDIO_CLASS_FALLBACK) || defined (FULL_SPEED_AUDIO_2)
     if (usb_speed == XUD_SPEED_HS)
     {
         slotSize = 4;   /* 4 bytes per sample */
