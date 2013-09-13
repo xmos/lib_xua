@@ -124,6 +124,7 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
     chanend ?c_mix_ctl, chanend ?c_clk_ctl, chanend ?c_usb_test)
 {
     unsigned char buffer[2];
+
     USB_SetupPacket_t sp;
     XUD_ep ep0_out = XUD_InitEp(c_ep0_out);
     XUD_ep ep0_in  = XUD_InitEp(c_ep0_in);
@@ -612,6 +613,27 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
                     cfgDesc_Audio2, sizeof(cfgDesc_Audio2), 
                     devDesc_Audio1, sizeof(devDesc_Audio1), 
                     cfgDesc_Audio1, sizeof(cfgDesc_Audio1), 
+                    strDescs, sp, c_usb_test, g_curUsbSpeed);
+#elif FULL_SPEED_AUDIO_2
+                /* Return Audio 2.0 Descriptors for high_speed and full-speed */
+
+                /* Unfortunately we need to munge the descriptors a bit between full and high-speed */
+                if(g_curUsbSpeed == XUD_SPEED_HS)
+                {
+                    /* Mod bSlotSize */
+                    cfgDesc_Audio2[STREAMING_ALT1_OFFSET+4] = 4;
+                }
+                else
+                {
+                    /* Mod bSlotSize */
+                    cfgDesc_Audio2[STREAMING_ALT1_OFFSET+4] = 3;
+                }
+
+                retVal = USB_StandardRequests(ep0_out, ep0_in, 
+                    devDesc_Audio2, sizeof(devDesc_Audio2), 
+                    cfgDesc_Audio2, sizeof(cfgDesc_Audio2), 
+                    null, 0, 
+                    null, 0, 
                     strDescs, sp, c_usb_test, g_curUsbSpeed);
 #else
                 /* Return Audio 2.0 Descriptors with Null device as fallback */
