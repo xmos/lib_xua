@@ -308,7 +308,16 @@ unsigned char hidReportDescriptor[] = {
 #define HID_LENGTH (25 * HID_INTERFACES)
 
 /* Total length of config descriptor */
-#define CFG_TOTAL_LENGTH_A2			(7 + 19 + (AUD_INT_EP_LEN) + (INPUT_INTERFACES * 55) + (OUTPUT_INTERFACES * 62) + (MIDI_LENGTH) + (DFU_INTERFACES * 18)  + TLEN_AC + (MIXER_LENGTH) + IAP_LENGTH + INPUT_ALT_LENGTH + OUTPUT_ALT_LENGTH + HID_LENGTH)
+#define CONFIG_DESC_LENGTH      (9)
+#define INTERFACE_ASS_LENGTH    (8)
+#define AUD_CTRL_INT_LENGTH     (9)
+#define AUD_CS_INT_LENGTH       (9)
+
+
+#define CFG_TOTAL_LENGTH_A2		(CONFIG_DESC_LENGTH + INTERFACE_ASS_LENGTH + AUD_CTRL_INT_LENGTH + (AUD_INT_EP_LEN) + (INPUT_INTERFACES * 55) + (OUTPUT_INTERFACES * 62) + (MIDI_LENGTH) + (DFU_INTERFACES * 18)  + TLEN_AC + (MIXER_LENGTH) + IAP_LENGTH + INPUT_ALT_LENGTH + OUTPUT_ALT_LENGTH + HID_LENGTH)
+
+/* We need to this for patching descriptor for audio class 1.0 mode changing */
+#define STREAMING_ALT1_OFFSET (CONFIG_DESC_LENGTH + INTERFACE_ASS_LENGTH + AUD_CTRL_INT_LENGTH + TLEN_AC + AUD_INT_EP_LEN + 9 + 9 + 0x10)
 
 /* Configuration Descriptor for Audio 2.0 (HS) operation */
 unsigned char cfgDesc_Audio2[] = 
