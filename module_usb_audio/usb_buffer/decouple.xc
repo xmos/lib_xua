@@ -1,22 +1,3 @@
-/**
- * Module:  module_usb_aud_shared
- * Version: 2v3
- * Build:   920238b18f6b0967226369682640e1b063865f02
- * File:    decouple.xc
- *
- * The copyrights, all other intellectual and industrial 
- * property rights are retained by XMOS and/or its licensors. 
- * Terms and conditions covering the use of this code can
- * be found in the Xmos End User License Agreement.
- *
- * Copyright XMOS Ltd 2010
- *
- * In the case where this code is a modification of existing code
- * under a separate license, the separate license terms are shown
- * below. The modifications to the code are still covered by the 
- * copyright notice above.
- *
- **/                                   
 #include <xs1.h>
 #include "xc_ptr.h"
 #include "devicedefines.h"
@@ -29,8 +10,9 @@
 #endif
 #define MAX(x,y) ((x)>(y) ? (x) : (y))
 
-#define CLASS_TWO_PACKET_SIZE ((((MAX_FREQ+7999)/8000))+3)
-#define CLASS_ONE_PACKET_SIZE  ((((MAX_FREQ_A1+999)/1000))+3)
+#define CLASS_TWO_PACKET_SIZE ((((MAX_FREQ+7999)/8000))+3) // Samples per channel
+#define CLASS_ONE_PACKET_SIZE  ((((MAX_FREQ_A1+999)/1000))+3) // Samples per channel
+
 
 #define BUFF_SIZE_OUT MAX(4 * CLASS_TWO_PACKET_SIZE * NUM_USB_CHAN_OUT, 4 * CLASS_ONE_PACKET_SIZE * NUM_USB_CHAN_OUT_A1)
 #define BUFF_SIZE_IN  MAX(4 * CLASS_TWO_PACKET_SIZE * NUM_USB_CHAN_IN, 4 * CLASS_ONE_PACKET_SIZE * NUM_USB_CHAN_IN_A1)
