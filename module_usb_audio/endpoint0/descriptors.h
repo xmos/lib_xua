@@ -319,6 +319,13 @@ unsigned char hidReportDescriptor[] = {
 /* We need to this for patching descriptor for audio class 1.0 mode changing */
 #define STREAMING_ALT1_OFFSET (CONFIG_DESC_LENGTH + INTERFACE_ASS_LENGTH + AUD_CTRL_INT_LENGTH + TLEN_AC + AUD_INT_EP_LEN + 9 + 9 + 0x10)
 
+/* Max packet sizes: 
+ * Samples per channel. e.g (192000+7999/8000) = 24
+ * Must allow 1 sample extra per chan (24 + 1) = 25 
+ * Multiply by number of channels and bytes      25 * 2 * 4 = 200 bytes
+*/
+#define MAX_PACKET_SIZE_OUT_AUDIO_2 ((((MAX_FREQ+7999)/8000)+1) * NUM_USB_CHAN_OUT * 4) 
+
 /* Configuration Descriptor for Audio 2.0 (HS) operation */
 unsigned char cfgDesc_Audio2[] = 
 {
@@ -850,7 +857,9 @@ unsigned char cfgDesc_Audio2[] =
     USB_ENDPOINT,           		/* 1  bDescriptorType: ENDPOINT */
     0x01,            				/* 2  bEndpointAddress (D7: 0:out, 1:in) */
     0x05,              				/* 3  bmAttributes (bitmap)  */ 
-    0,4,            				/* 4  wMaxPacketSize */
+    //(MAX_PACKET_SIZE_OUT_AUDIO_2)&0xff,      /* 4  wMaxPacketSize */
+    //(MAX_PACKET_SIZE_OUT_AUDIO_2&0xff00)>>8, /* 5  wMaxPacketSize */
+    0, 4, 
     1,              				/* 6  bInterval */
 
     /* Class-Specific AS Isochronous Audio Data Endpoint Descriptor (4.10.1.2) */
