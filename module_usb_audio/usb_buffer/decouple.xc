@@ -113,7 +113,9 @@ void handle_audio_request(chanend c_mix_out)
 
     /* Input word that triggered interrupt and handshake back */
     (void) inuint(c_mix_out);
-    outuint(c_mix_out, 0);
+
+    /* Reply with underflow */
+    outuint(c_mix_out, outUnderflow);
 
     asm("ldw   %0, dp[g_curUsbSpeed]" : "=r" (usb_speed) :);
 
@@ -239,6 +241,7 @@ void handle_audio_request(chanend c_mix_out)
     if(outUnderflow)
     {      
 #pragma xta endpoint "out_underflow"
+#if 0
         /* We're still pre-buffering, send out 0 samps */
         for(int i = 0; i < NUM_USB_CHAN_OUT; i++) 
         {
@@ -252,6 +255,7 @@ void handle_audio_request(chanend c_mix_out)
             else
             outuint(c_mix_out, sample);
         }
+#endif
 
         /* Calc how many samples left in buffer */
         outSamps = g_aud_from_host_wrptr - g_aud_from_host_rdptr;
@@ -265,7 +269,6 @@ void handle_audio_request(chanend c_mix_out)
         {
             outUnderflow = 0;
             outSamps++;
-
         }
     }
     else
