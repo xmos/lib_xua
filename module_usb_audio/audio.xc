@@ -85,6 +85,7 @@ extern void device_reboot(void);
 {unsigned, unsigned} deliver(chanend c_out, chanend ?c_spd_out, unsigned divide, chanend ?c_dig_rx, chanend ?c_adc)
 {
 	unsigned sample;
+    unsigned underflow = 0;
 #if NUM_USB_CHAN_OUT > 0 
     unsigned samplesOut[NUM_USB_CHAN_OUT];
 #endif
@@ -109,6 +110,7 @@ extern void device_reboot(void);
     unsigned dsdSample_r = 0x96960000;
 #endif
     int counter = 0;
+    unsigned underflowWord = 0;
 
 #if NUM_USB_CHAN_IN > 0
     for (int i=0;i<NUM_USB_CHAN_IN;i++)
@@ -117,6 +119,15 @@ extern void device_reboot(void);
         samplesInPrev[i] = 0;
     }
 #endif
+
+#if(DSD_CHANS_DAC != 0) 
+    if(dsdMode == DSD_MODE_DOP)
+        underflowWord = 0xFA969600;
+    else if(dsdMode == DSD_MODE_NATIVE)
+        underflowWord = 0x96969696;
+#endif
+
+
     outuint(c_out, 0);
 
     /* Check for sample freq change or new samples from mixer*/
@@ -130,7 +141,7 @@ extern void device_reboot(void);
     else
     {
 #ifndef MIXER // Interfaces straight to decouple()
-        (void) inuint(c_out);
+        underflow = inuint(c_out);
 
 #if NUM_USB_CHAN_IN > 0
 #pragma loop unroll
@@ -141,10 +152,21 @@ extern void device_reboot(void);
 #endif
 
 #if NUM_USB_CHAN_OUT > 0
-#pragma loop unroll
-        for(int i = 0; i < NUM_USB_CHAN_OUT; i++)        
+        if(underflow)
         {
-            samplesOut[i] = inuint(c_out);
+#pragma loop unroll
+            for(int i = 0; i < NUM_USB_CHAN_OUT; i++)        
+            {
+                samplesOut[i] = underflowWord;
+            }
+        }
+        else
+        {
+#pragma loop unroll
+            for(int i = 0; i < NUM_USB_CHAN_OUT; i++)        
+            {
+                samplesOut[i] = inuint(c_out);
+            }
         }
 #endif
 #else
@@ -315,7 +337,7 @@ extern void device_reboot(void);
         else
         {
 #ifndef MIXER // Interfaces straight to decouple()
-            (void) inuint(c_out);
+            underflow = inuint(c_out);
             counter++;
 #if NUM_USB_CHAN_IN > 0
 #pragma loop unroll
@@ -326,10 +348,21 @@ extern void device_reboot(void);
 #endif
 
 #if NUM_USB_CHAN_OUT > 0
-#pragma loop unroll
-            for(int i = 0; i < NUM_USB_CHAN_OUT; i++)
+            if(underflow)
             {
-                samplesOut[i] = inuint(c_out);
+#pragma loop unroll
+                for(int i = 0; i < NUM_USB_CHAN_OUT; i++)
+                {
+                    samplesOut[i] = underflowWord;
+                }
+            }
+            else
+            {
+#pragma loop unroll
+                for(int i = 0; i < NUM_USB_CHAN_OUT; i++)
+                {
+                    samplesOut[i] = inuint(c_out);
+                }
             }
 #endif
 #else
