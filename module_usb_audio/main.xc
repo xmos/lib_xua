@@ -22,7 +22,6 @@
 #include "decouple.h"
 #include "usb_midi.h"
 #include "audio.h"
-#include "ports.h"               /* Portmap defines and ports for current app instance */
 
 #ifdef IAP
 #include "iap.h"
