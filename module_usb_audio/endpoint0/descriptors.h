@@ -304,7 +304,6 @@ unsigned char hidReportDescriptor[] = {
 };
 
 #endif
-
 #define HID_LENGTH (25 * HID_INTERFACES)
 
 /* Total length of config descriptor */
@@ -324,7 +323,8 @@ unsigned char hidReportDescriptor[] = {
  * Must allow 1 sample extra per chan (24 + 1) = 25 
  * Multiply by number of channels and bytes      25 * 2 * 4 = 200 bytes
 */
-#define MAX_PACKET_SIZE_OUT_AUDIO_2 ((((MAX_FREQ+7999)/8000)+1) * NUM_USB_CHAN_OUT * 4) 
+#define MAX_PACKET_SIZE_OUT_HS  ((((MAX_FREQ+7999)/8000)+1) * NUM_USB_CHAN_OUT * 4) 
+#define MAX_PACKET_SIZE_OUT_FS  ((((MAX_FREQ_A1+999)/1000)+1) * NUM_USB_CHAN_OUT_FS * 3) // Samples per channel
 
 /* Configuration Descriptor for Audio 2.0 (HS) operation */
 unsigned char cfgDesc_Audio2[] = 
@@ -857,9 +857,9 @@ unsigned char cfgDesc_Audio2[] =
     USB_ENDPOINT,           		/* 1  bDescriptorType: ENDPOINT */
     0x01,            				/* 2  bEndpointAddress (D7: 0:out, 1:in) */
     0x05,              				/* 3  bmAttributes (bitmap)  */ 
-    //(MAX_PACKET_SIZE_OUT_AUDIO_2)&0xff,      /* 4  wMaxPacketSize */
-    //(MAX_PACKET_SIZE_OUT_AUDIO_2&0xff00)>>8, /* 5  wMaxPacketSize */
-    0, 4, 
+    MAX_PACKET_SIZE_OUT_HS&0xff,        /* 4  wMaxPacketSize */
+    (MAX_PACKET_SIZE_OUT_HS&0xff00)>>8, /* 5  wMaxPacketSize */
+    //0, 4,                         // 1024 
     1,              				/* 6  bInterval */
 
     /* Class-Specific AS Isochronous Audio Data Endpoint Descriptor (4.10.1.2) */
@@ -1029,7 +1029,7 @@ unsigned char cfgDesc_Audio2[] =
     0x00,           				/* 4  bmControls */
     0x01,           				/* 5  bFormatType */
     PCM, 0x00, 0x00, 0x00,  		/* 6:10  bmFormats (note this is a bitmap) */
-    NUM_USB_CHAN_IN,            /* 11 bNrChannels */
+    NUM_USB_CHAN_IN,                /* 11 bNrChannels */
     0,0,0,0,    					/* 12:14: bmChannelConfig */
     INPUT_INTERFACE_STRING_INDEX,            				    /* 15 iChannelNames */
 
@@ -1751,10 +1751,10 @@ unsigned char cfgDesc_Audio1[] =
     0x01,                           /* Terminal ID */
     0x01, 0x01,                     /* Type - streaming */
     0x00,                           /* Associated terminal - unused  */
-    2,                              /* bNrChannels */
+    NUM_USB_CHAN_OUT_FS,            /* bNrChannels */
     0x03, 0x00,                     /* wChannelConfig */
     0x00,                           /* iChannelNames - Unused */
-    11,                           /* iTerminal */
+    11,                             /* iTerminal */
 
     /* CS_Interface class specific AC interface feature unit descriptor - mute & volume for dac */
     0x0A, 
@@ -1788,7 +1788,7 @@ unsigned char cfgDesc_Audio1[] =
     0x02,                           /* Terminal ID */   
     0x01, 0x02,                     /* Type - streaming in, mic */
     0x00,                           /* Associated terminal - unused  */
-    2,                              /* bNrChannels */          
+    NUM_USB_CHAN_IN_FS,             /* bNrChannels */          
     0x03, 0x00,                     /* wChannelConfigs */   
     0x00,                           /* iChannelNames */          
     12,                             /* iTerminal */                          
@@ -1852,7 +1852,7 @@ unsigned char cfgDesc_Audio1[] =
     CS_INTERFACE, 
     0x02,                           /* Subtype - FORMAT_TYPE */
     0x01,                           /* Format type - FORMAT_TYPE_1 */
-    2,                              /* nrChannels */
+    NUM_USB_CHAN_OUT_FS,            /* nrChannels */
     0x03,                           /* subFrameSize - 4 bytes per slot */
     24,                             /* bitResolution - 24bit */
     0x04,                           /* SamFreqType - 4 sample freq */
@@ -1935,7 +1935,7 @@ unsigned char cfgDesc_Audio1[] =
     CS_INTERFACE,                   
     0x02,                           /* Subtype - FORMAT_TYPE */          
     0x01,                           /* Format type - FORMAT_TYPE_1 */    
-    2,                              /* bNrChannels - 2 */                 
+    NUM_USB_CHAN_IN_FS,             /* bNrChannels - 2 */                 
     0x03,                           /* subFrameSize - 4 bytes per slot */
     24,                             /* bitResolution - 24bit */          
     0x04,                           /* SamFreqType - 4 sample freq */    
