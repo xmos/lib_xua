@@ -112,8 +112,6 @@ extern unsigned g_iap_reset;
 unsigned g_dsdMode = 0;
 #endif
 
-unsigned g_muteSample = 0;
-
 /* String descriptors */
 static unsigned char strDesc_langIDs[] = DESC_STR_LANGIDS;
 
@@ -294,7 +292,6 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
                                     {
                                         outuint(c_audioControl, SET_DSD_MODE);
                                         outuint(c_audioControl, DSD_MODE_OFF);
-                                        SET_SHARED_GLOBAL(g_muteSample, 0);
                                     
                                         // Handshake
 							            chkct(c_audioControl, XS1_CT_END);
@@ -309,7 +306,6 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
                                     {                   
                                         outuint(c_audioControl, SET_DSD_MODE);
                                         outuint(c_audioControl, DSD_MODE_NATIVE);
-                                        SET_SHARED_GLOBAL(g_muteSample, 0x96969696);
 							            chkct(c_audioControl, XS1_CT_END);
                                         g_dsdMode = 1;
                                     }
@@ -587,7 +583,7 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
                 cfgDesc_Audio2, sizeof(cfgDesc_Audio2), 
                 devDesc_Audio1, sizeof(devDesc_Audio1), 
                 cfgDesc_Audio1, sizeof(cfgDesc_Audio1), 
-                strDescs, 
+                strDescs, sizeof(strDescs)/sizeof(strDescs[0]), 
                 sp, c_usb_test, g_curUsbSpeed);
 #else
             /* Return Audio 2.0 Descriptors */
@@ -599,7 +595,7 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
                 cfgDesc_Audio2, sizeof(cfgDesc_Audio2),
                 devDesc_Null, sizeof(devDesc_Null), 
                 cfgDesc_Null, sizeof(cfgDesc_Null), 
-                strDescs, 
+                strDescs, sizeof(strDescs)/sizeof(strDescs[0]),
                 sp, c_usb_test, g_curUsbSpeed);
 #endif
 
@@ -613,7 +609,8 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
                     cfgDesc_Audio2, sizeof(cfgDesc_Audio2), 
                     devDesc_Audio1, sizeof(devDesc_Audio1), 
                     cfgDesc_Audio1, sizeof(cfgDesc_Audio1), 
-                    strDescs, sp, c_usb_test, g_curUsbSpeed);
+                    strDescs, sizeof(strDescs)/sizeof(strDescs[0]), 
+                    sp, c_usb_test, g_curUsbSpeed);
 #elif FULL_SPEED_AUDIO_2
                 /* Return Audio 2.0 Descriptors for high_speed and full-speed */
 
@@ -622,11 +619,19 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
                 {
                     /* Mod bSlotSize */
                     cfgDesc_Audio2[STREAMING_ALT1_OFFSET+4] = 4;
+
+                    /* wMaxPacketSize */
+                    cfgDesc_Audio2[STREAMING_ALT1_OFFSET+10] = MAX_PACKET_SIZE_OUT_HS&0xff;     
+                    cfgDesc_Audio2[STREAMING_ALT1_OFFSET+11] = (MAX_PACKET_SIZE_OUT_HS&0xff00)>>8;
                 }
                 else
                 {
                     /* Mod bSlotSize */
                     cfgDesc_Audio2[STREAMING_ALT1_OFFSET+4] = 3;
+                    
+                    /* wMaxPacketSize */
+                    cfgDesc_Audio2[STREAMING_ALT1_OFFSET+10] = MAX_PACKET_SIZE_OUT_FS&0xff;     
+                    cfgDesc_Audio2[STREAMING_ALT1_OFFSET+11] = (MAX_PACKET_SIZE_OUT_FS&0xff00)>>8;
                 }
 
                 retVal = USB_StandardRequests(ep0_out, ep0_in, 
@@ -634,7 +639,7 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
                     cfgDesc_Audio2, sizeof(cfgDesc_Audio2), 
                     null, 0, 
                     null, 0, 
-                    strDescs, sp, c_usb_test, g_curUsbSpeed);
+                    strDescs, sizeof(strDescs)/sizeof(strDescs[0]), sp, c_usb_test, g_curUsbSpeed);
 #else
                 /* Return Audio 2.0 Descriptors with Null device as fallback */
                 retVal = USB_StandardRequests(ep0_out, ep0_in, 
@@ -642,7 +647,7 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
                     cfgDesc_Audio2, sizeof(cfgDesc_Audio2), 
                     devDesc_Null, sizeof(devDesc_Null), 
                     cfgDesc_Null, sizeof(cfgDesc_Null), 
-                    strDescs, sp, c_usb_test, g_curUsbSpeed);
+                    strDescs, sizeof(strDescs)/sizeof(strDescs[0], sp, c_usb_test, g_curUsbSpeed);
 #endif
         } 
         else 
@@ -653,7 +658,7 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
                 DFUcfgDesc, sizeof(DFUcfgDesc), 
                 null, 0, /* Used same descriptors for full and high-speed */
                 null, 0, 
-                strDescs, sp, c_usb_test, g_curUsbSpeed);
+                strDescs, sizeof(strDescs), sp, c_usb_test, g_curUsbSpeed);
         }
 #endif /* ifndef DFU else */
  
