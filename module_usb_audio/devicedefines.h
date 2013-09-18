@@ -48,6 +48,11 @@
 #define NUM_USB_CHAN_IN_A1  (NUM_USB_CHAN_IN)
 #endif
 
+/* Channel count defines for FS mode */
+#define NUM_USB_CHAN_OUT_FS     (NUM_USB_CHAN_OUT_A1)
+#define NUM_USB_CHAN_IN_FS      (NUM_USB_CHAN_IN_A1)
+
+
 #if defined(IO_EXPANSION) && (IO_EXPANSION == 0)
 #undef IO_EXPANSION
 #endif
