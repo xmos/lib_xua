@@ -442,7 +442,7 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
                         /* Overriding implementation in USB_StandardRequests */
                         case USB_SET_CONFIGURATION:
                 
-                            g_currentConfig = sp.wValue;
+                            //g_currentConfig = sp.wValue;
                             //if(g_current_config == 1)
                             {
                                 /* Consider host active with valid driver at this point */
@@ -454,8 +454,12 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
                                SET_SHARED_GLOBAL(g_iap_reset, iap_reset);
                             }
 #endif
-                            /* No data stage for this request, just do status stage */
-                            retVal = XUD_DoSetRequestStatus(ep0_in);
+                            ///* No data stage for this request, just do status stage */
+                            //retVal = XUD_DoSetRequestStatus(ep0_in);
+
+                           // /* We want to run USB_StandardsRequests() implementation also */
+                            //if(retVal == 0)
+                              //  retVal = 1;
                             break;
                         
                         default:
