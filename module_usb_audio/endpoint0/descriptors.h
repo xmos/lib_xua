@@ -1432,11 +1432,11 @@ unsigned char cfgDesc_Audio2[] =
 #define STR_INDEX_OUT_CHAN  (10 + SPDIF_RX_NUM_STRS + ADAT_RX_NUM_STRS + MIDI_NUM_STRS + DFU_NUM_STRS)
 #define STR_INDEX_IN_CHAN   (STR_INDEX_OUT_CHAN + NUM_USB_CHAN_OUT)
 
-#define APPEND_VENDOR_STR(x) VENDOR_STR " "#x
+#define APPEND_VENDOR_STR(x) VENDOR_STR#x
 
-#define APPEND_PRODUCT_STR_A2(x) PRODUCT_STR_A2 " " #x
+#define APPEND_PRODUCT_STR_A2(x) PRODUCT_STR_A2 " "#x
 
-#define APPEND_PRODUCT_STR_A1(x) PRODUCT_STR_A1 " " #x
+#define APPEND_PRODUCT_STR_A1(x) PRODUCT_STR_A1 " "#x
 
 #if defined(SPDIF) 
 #if ((NUM_USB_CHAN_OUT - 2) <= 0) 
@@ -1449,7 +1449,7 @@ unsigned char cfgDesc_Audio2[] =
 static unsigned char strDescs[][40] = 
 {
     "Langids",						            // 0     LangIDs place holder
-    APPEND_VENDOR_STR( ),                       // 1     iManufacturer (at MANUFACTURER_STRING_INDEX)
+    APPEND_VENDOR_STR(),                       // 1     iManufacturer (at MANUFACTURER_STRING_INDEX)
 
     "",//SERIAL_STR,                            // 2     iSerialNumber (at SERIAL_STR_INDEX)
     
