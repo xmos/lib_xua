@@ -32,16 +32,7 @@ unsigned int divide)
 {
 
 #ifndef CODEC_MASTER
-    /* Output 0 on BCLK to ensure clock is low
-     * Required as stop_clock will only complete when the clock is low
-     */
- //   configure_out_port_no_ready(p_bclk, clk_audio_mclk, 0);
-  //  p_bclk <: 0;
-    
-    /* Stop_clock() will not complete if the source to the clock-block is not low
-     * since we are switching between DSD and I2S we grab the source from the clock
-     * -block and set it low
-     */
+#if 0
     {
         unsigned clockResId;
         unsigned portResId;
@@ -50,6 +41,11 @@ unsigned int divide)
         if(portResId !=1)
             asm("out res[%0], %1":: "r"(portResId), "r"(0));
     }
+#endif
+
+    /* Note this call to stop_clock() will pause forever if the port clocking the clock-block is not low.
+     * deliver() should return with this being the case - however, if you are having trouble the code 
+     * above can be enabled */
     stop_clock(clk_audio_bclk);
 
     if(!isnull(p_lrclk))

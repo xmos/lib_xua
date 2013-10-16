@@ -325,7 +325,6 @@ extern void device_reboot(void);
             p_bclk <: 0;
 #if(DSD_CHANS_DAC != 0) 
             /* DSD Clock might not be shared with lrclk or bclk... */
-            if(dsdMode)
             p_dsd_clk <: 0;
 #endif
             command = inct(c_out);
@@ -714,6 +713,7 @@ extern void device_reboot(void);
                     // Set clocks low
                     p_lrclk <: 0;
                     p_bclk <: 0;
+                    p_dsd_clk <: 0;
                     return {0,0};
                 }
             }
@@ -731,6 +731,9 @@ extern void device_reboot(void);
                 if((DSD_MASK(samplesOut[0]) != DSD_MARKER_2) && (DSD_MASK(samplesOut[1]) != DSD_MARKER_2))
                 {
                     dsdMode = 0;
+                    // Set clocks low
+                    p_lrclk <: 0;
+                    p_bclk <: 0;
                     p_dsd_clk <: 0;
                     return {0,0};
                 }
