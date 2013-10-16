@@ -418,7 +418,7 @@ extern void device_reboot(void);
         dsdSample_r = bitrev(byterev(dsdSample_r)); 
         dsdSample_l = bitrev(byterev(dsdSample_l)); 
  
-            switch (divide*2)
+            switch (divide)
             {
                 case 8:
                     asm volatile("out res[%0], %1"::"r"(p_dsd_dac[0]),"r"(dsdSample_l));
@@ -471,8 +471,8 @@ extern void device_reboot(void);
             dsdSample_r = ((samplesOut[1] & 0xffff00) << 8);
  
             everyOther = 1;
-           
-            switch (divide*4)
+          
+            switch (divide)
             {
                 case 8:
                     p_dsd_clk <: 0xF0F0F0F0;   
@@ -504,7 +504,7 @@ extern void device_reboot(void);
             //p_dsd_dac[1] <: bitrev(dsdSample_r);
             asm volatile("out res[%0], %1"::"r"(p_dsd_dac[0]),"r"(bitrev(dsdSample_l)));
             asm volatile("out res[%0], %1"::"r"(p_dsd_dac[1]),"r"(bitrev(dsdSample_r)));
-            switch (divide*4)
+            switch (divide)
             {
                 case 8:
                     p_dsd_clk <: 0xF0F0F0F0;   
@@ -870,10 +870,26 @@ void audio(chanend c_mix_out, chanend ?c_dig_rx, chanend ?c_config, chanend ?c)
             mClk = MCLK_48;
         }
 
-        /* Calculate divide required for bit clock e.g. 11.289600 / (176400 * 64)  = 1 */
-        divide = mClk / ( curSamFreq * 64 );
-
- 
+        /* Calculate master clock to bit clock (or DSD clock) divide for current sample freq
+         * e.g. 11.289600 / (176400 * 64)  = 1 */
+        {
+            /* I2S has 32 bits per sample. *2 as 2 channels */
+            unsigned numBits = 64;
+             
+            if(dsdMode == DSD_MODE_DOP)
+            {
+                /* DoP we receive in 16bit chunks */
+                numBits = 16;
+            }
+            else if(dsdMode == DSD_MODE_NATIVE)
+            {
+                /* DSD native we receive in 32bit chunks */
+                numBits = 32;
+            }  
+            divide = mClk / ( curSamFreq * numBits );
+             
+       } 
+        
 #if (DSD_CHANS_DAC != 0)
         /* Configure audio ports */
         ConfigAudioPortsWrapper(
@@ -976,13 +992,7 @@ void audio(chanend c_mix_out, chanend ?c_dig_rx, chanend ?c_config, chanend ?c)
                      * Native = 2
                      */
                     dsdMode = retVal2;
-                    //printstrln("set");
                 }
-                else
-                {
-                    //printstrln("err\n");
-                }
-
 #else
                 curSamFreq = retVal2;
 #endif
