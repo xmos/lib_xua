@@ -790,10 +790,11 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
                             {
                                 int num_freqs = 0;
                                 int i = 2;
-                                int currentFreq44 = 44100;
-                                int currentFreq48 = 48000;
+
+                                int currentFreq44 = MIN_FREQ_44;
+                                int currentFreq48 = MIN_FREQ_48;
                                 unsigned maxFreq = MAX_FREQ;
-                               
+
 #if defined (FULL_SPEED_AUDIO_2)
                                 unsigned usbSpeed; 
                                 asm("ldw   %0, dp[g_curUsbSpeed]" : "=r" (usbSpeed) :);
@@ -803,20 +804,21 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
                                     maxFreq = MAX_FREQ_A1;
                                 }                         
 #endif 
-                               
+ 
                                 while(1)
                                 {
-                                    if(currentFreq48 <= maxFreq)
+                                    if((currentFreq48 <= maxFreq))
                                     {
                                         /* Note i passed byref here */
-                                        storeFreq(buffer, i, currentFreq48);
-                                        num_freqs++;
-                                        currentFreq48*=2;
                                         storeFreq(buffer, i, currentFreq44);
                                         num_freqs++;
                                         currentFreq44*=2;
+                                        
+                                        storeFreq(buffer, i, currentFreq48);
+                                        num_freqs++;
+                                        currentFreq48*=2;
                                     }
-                                    else if(currentFreq44 <= maxFreq)
+                                    else if((currentFreq44 <= maxFreq))
                                     {
                                         storeFreq(buffer, i, currentFreq44);
                                         num_freqs++;

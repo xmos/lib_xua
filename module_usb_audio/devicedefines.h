@@ -29,10 +29,38 @@
     #endif
 #endif
 
-#if (MAX_FREQ > 96000)
-#define MAX_FREQ_A1             96000
+#if !defined (DSD_CHANS_DAC)
+#define DSD_CHANS_DAC   0
 #else
-#define MAX_FREQ_A1             MAX_FREQ
+#define NATIVE_DSD      1        /* Always enable Native DSD when DSD mode is enabled */
+#endif
+
+/* Max supported sample freq for device */
+#ifndef MAX_FREQ
+#warning MAX_FREQ not defined! Using 192000
+#define MAX_FREQ                 (192000)       
+#endif
+
+/* Min supported sample freq for device */
+#ifndef MIN_FREQ
+#warning MIN_FREQ not defined! Using 44100
+#define MIN_FREQ                 (44100)       
+#endif
+
+#if ((MCLK_44 % MIN_FREQ) == 0)
+#define MIN_FREQ_44 MIN_FREQ
+#define MIN_FREQ_48 ((48000 * 512)/((44100 * 512)/MIN_FREQ)) 
+#endif
+
+#if ((MCLK_48 % MIN_FREQ) == 0)
+#define MIN_FREQ_48 MIN_FREQ
+#define MIN_FREQ_44 (((44100*512)/((48000 * 512)/MIN_FREQ))*2)
+#endif
+
+#if (MAX_FREQ > 96000)
+#define MAX_FREQ_A1              96000
+#else
+#define MAX_FREQ_A1              MAX_FREQ
 #endif
 
 /* For Audio Class 1.0 we always have at most 2 channels */
@@ -144,16 +172,11 @@
 #define SPDIF_TX_INDEX                  (0)
 #endif
 
-/* Max supported freq for device */
-#ifndef MAX_FREQ
-#warning MAX_FREQ not defined! Using 48000
-#define MAX_FREQ                        (48000)       
-#endif
 
 /* Default device freq */
 #ifndef DEFAULT_FREQ
-#warning DEFAULT not defined! Using MAX_FREQ
-#define DEFAULT_FREQ                    (MAX_FREQ)     
+#warning DEFAULT not defined! Using 48000
+#define DEFAULT_FREQ                   (48000)     
 #endif
 
 /* Master clock defines (in Hz) */

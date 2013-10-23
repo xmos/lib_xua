@@ -124,17 +124,17 @@ on tile[0] : in port  p_mclk_in2                            = PORT_MCLK_IN2;
 
 on tile[AUDIO_IO_CORE] : clock    clk_audio_bclk            = XS1_CLKBLK_3;     /* Bit clock */
 #ifdef SPDIF
-on tile[AUDIO_IO_CORE] : clock    clk_mst_spd                = XS1_CLKBLK_1;
+on tile[AUDIO_IO_CORE] : clock    clk_mst_spd               = XS1_CLKBLK_1;
 #endif
 
 /* L Series needs a port to use for USB reset */
 #ifdef ARCH_L
 #ifdef PORT_USB_RESET
 /* This define is checked since it could be on a shift reg or similar */
-on tile[0] : out port p_usb_rst                              = PORT_USB_RESET;
+on tile[0] : out port p_usb_rst                             = PORT_USB_RESET;
 #endif
 /* L Series also needs a clock for this port */
-clock clk                                                       = XS1_CLKBLK_4;
+clock clk                                                   = XS1_CLKBLK_4;
 #else
 /* Reset port not required for SU1 due to built in Phy */
 #define p_usb_rst   null
@@ -150,7 +150,6 @@ XUD_EpType epTypeTableOut[EP_CNT_OUT] = { XUD_EPTYPE_CTL | XUD_STATUS_ENABLE,
 #ifdef IAP
                                             XUD_EPTYPE_BUL | XUD_STATUS_ENABLE /* iAP */
 #endif
-
                                         };    
 
 XUD_EpType epTypeTableIn[EP_CNT_IN] = { XUD_EPTYPE_CTL | XUD_STATUS_ENABLE,
