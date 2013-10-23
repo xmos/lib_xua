@@ -24,7 +24,7 @@ unsigned testsamples[100];
 int p = 0;
 unsigned lastSample =0;
 #if (DSD_CHANS_DAC != 0) 
-extern unsigned  p_dsd_dac[DSD_CHANS_DAC];
+extern unsigned p_dsd_dac[DSD_CHANS_DAC];
 extern port p_dsd_clk;
 #endif
 
@@ -56,6 +56,7 @@ extern in port p_bclk;
 
 unsigned dsdMode = 0;
 #if (DSD_CHANS_DAC != 0)
+/* DoP defines */
 #define DSD_MARKER_1       0xFA
 #define DSD_MARKER_2       0x05
 #define DSD_MARKER_XOR     0xFF
@@ -420,6 +421,7 @@ extern void device_reboot(void);
             switch (divide)
             {
                 case 8:
+                    /* Output DSD data to ports then 32 clocks */
                     asm volatile("out res[%0], %1"::"r"(p_dsd_dac[0]),"r"(dsdSample_l));
                     asm volatile("out res[%0], %1"::"r"(p_dsd_dac[1]),"r"(dsdSample_r));
                     p_dsd_clk <: 0xF0F0F0F0;   
@@ -600,10 +602,10 @@ extern void device_reboot(void);
         }
 #endif
  
-  #if defined(SPDIF) && (NUM_USB_CHAN_OUT > 0)	
-        outuint(c_spd_out, samplesOut[SPDIF_TX_INDEX]);                 /* Forward sample to SPDIF txt thread */
+#if defined(SPDIF) && (NUM_USB_CHAN_OUT > 0)	
+        outuint(c_spd_out, samplesOut[SPDIF_TX_INDEX]);  /* Forward sample to S/PDIF Tx thread */
         sample = samplesOut[SPDIF_TX_INDEX + 1];                 
-        outuint(c_spd_out, sample);                 /* Forward sample to SPDIF txt thread */
+        outuint(c_spd_out, sample);                      /* Forward sample to S/PDIF Tx thread */
 #ifdef RAMP_CHECK
         sample >>= 8;
         if (started<10000) {
@@ -844,7 +846,7 @@ void audio(chanend c_mix_out, chanend ?c_dig_rx, chanend ?c_config, chanend ?c)
     }
 #endif
 
-/* Clock master clock-block from master-clock port */
+    /* Clock master clock-block from master-clock port */
     configure_clock_src(clk_audio_mclk, p_mclk_in);
 
     start_clock(clk_audio_mclk);
@@ -853,22 +855,17 @@ void audio(chanend c_mix_out, chanend ?c_dig_rx, chanend ?c_config, chanend ?c)
     SpdifTransmitPortConfig(p_spdif_tx, clk_mst_spd, p_mclk_in);
 #endif
 
-  	/* Initialise master clock generation */
-    //ClockingInit(c_config);
-
-    
-    
     /* Perform required CODEC/ADC/DAC initialisation */
     AudioHwInit(c_config);
 
     while(1)
     {
         /* Calculate what master clock we should be using */
-        if ((curSamFreq % 22050) == 0)
+        if ((MCLK_441 % curSamFreq) == 0)
         {
             mClk = MCLK_441;
         }
-        else if ((curSamFreq % 24000) == 0)
+        else if ((MCLK_48 % curSamFreq) == 0)
         {
             mClk = MCLK_48;
         }
@@ -878,7 +875,8 @@ void audio(chanend c_mix_out, chanend ?c_dig_rx, chanend ?c_config, chanend ?c)
         {
             /* I2S has 32 bits per sample. *2 as 2 channels */
             unsigned numBits = 64;
-             
+ 
+#if (DSD_CHANS_DAC > 0)
             if(dsdMode == DSD_MODE_DOP)
             {
                 /* DoP we receive in 16bit chunks */
@@ -888,7 +886,8 @@ void audio(chanend c_mix_out, chanend ?c_dig_rx, chanend ?c_config, chanend ?c)
             {
                 /* DSD native we receive in 32bit chunks */
                 numBits = 32;
-            }  
+            }
+#endif  
             divide = mClk / ( curSamFreq * numBits );
              
        } 
@@ -935,9 +934,23 @@ void audio(chanend c_mix_out, chanend ?c_dig_rx, chanend ?c_config, chanend ?c)
             divide);
 
 #endif
-            
-        /* Configure Clocking/CODEC/DAC/ADC for SampleFreq/MClk */
-        AudioHwConfig(curSamFreq, mClk, c_config, dsdMode);
+ 
+        {
+            unsigned curFreq = curSamFreq;         
+#if (DSD_CHANS_DAC > 0)  
+            /* Make AudioHwConfig() implementation a little more user friendly in DSD mode...*/ 
+            if(dsdMode == DSD_MODE_NATIVE)
+            {
+                curFreq *= 32;                      
+            }
+            else if(dsdMode == DSD_MODE_DOP)
+            {
+                curFreq *= 16;                      
+            }
+#endif
+            /* Configure Clocking/CODEC/DAC/ADC for SampleFreq/MClk */
+            AudioHwConfig(curFreq, mClk, c_config, dsdMode);
+        }
 
         if(!firstRun)
         {
