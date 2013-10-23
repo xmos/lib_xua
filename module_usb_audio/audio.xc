@@ -17,7 +17,7 @@
 #include "audioports.h"
 #include "audiohw.h"
 #include "SpdifTransmit.h"
-#include "clockcmds.h"
+#include "commands.h"
 #include "xc_ptr.h"
 
 unsigned testsamples[100];
@@ -54,14 +54,11 @@ extern in port p_lrclk;
 extern in port p_bclk;
 #endif
 
-unsigned dsdMode = 0;
 #if (DSD_CHANS_DAC != 0)
-/* DoP defines */
-#define DSD_MARKER_1       0xFA
-#define DSD_MARKER_2       0x05
-#define DSD_MARKER_XOR     0xFF
-#define DSD_EN_THRESH      32          /* Number of consecutive DSD markers before switching to DSD mode */
-#define DSD_MASK(x)        ((x >> 24) & 0xff)
+
+unsigned dsdMode = 0;
+
+
 #endif
 
 

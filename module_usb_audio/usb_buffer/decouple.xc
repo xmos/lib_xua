@@ -2,7 +2,7 @@
 #include "xc_ptr.h"
 #include "devicedefines.h"
 #include "interrupt.h"
-#include "clockcmds.h"
+#include "commands.h"
 #include "xud.h"
 #include "usb.h"
 #ifdef HID_CONTROLS

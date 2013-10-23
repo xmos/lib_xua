@@ -9,7 +9,7 @@
 #include "iAP.h"
 #endif
 #include "xc_ptr.h"
-#include "clockcmds.h"
+#include "commands.h"
 #include "xud.h"
 #include "testct_byref.h"
 

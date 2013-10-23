@@ -10,7 +10,7 @@
 #include "usbaudio10.h"
 #include "dbcalc.h"
 #include "devicedefines.h"
-#include "clockcmds.h"
+#include "commands.h"
 #include "xc_ptr.h"
 #ifdef MIXER
 #include "mixer.h"

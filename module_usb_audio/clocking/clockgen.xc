@@ -4,7 +4,7 @@
 #include <print.h>
 
 #include "devicedefines.h"
-#include "clockcmds.h"
+#include "commands.h"
 #include "SpdifReceive.h"
 
 
@@ -536,9 +536,6 @@ void clockGen (streaming chanend c_spdif_rx, chanend c_adat_rx, out port p, chan
                             continue;
                             break;
                     }
-
-
-                
 
                 spdifCounters.samples += 1;
 

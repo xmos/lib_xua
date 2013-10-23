@@ -25,11 +25,9 @@
 #define SET_SAMPLE_FREQ         4
 #define SET_CHAN_COUNT_IN       5
 #define SET_CHAN_COUNT_OUT      6
-
 #define SET_DSD_MODE            7
-#define DSD_MODE_OFF            0
-#define DSD_MODE_DOP            1
-#define DSD_MODE_NATIVE         2
+
+#include "dsd.h"
 
 
 
