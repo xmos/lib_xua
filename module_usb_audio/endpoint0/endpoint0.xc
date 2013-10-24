@@ -293,9 +293,8 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
 #ifdef NATIVE_DSD
                                     if(g_dsdMode)
                                     {
-                                        DsdMode dsdMode = DSD_MODE_OFF;
                                         outuint(c_audioControl, SET_DSD_MODE);
-                                        outuint(c_audioControl, dsdMode);
+                                        outuint(c_audioControl, DSD_MODE_OFF);
                                     
                                         // Handshake
 							            chkct(c_audioControl, XS1_CT_END);
@@ -308,9 +307,8 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
             
                                     if(!g_dsdMode)
                                     {  
-                                        DsdMode dsdMode = DSD_MODE_NATIVE;                 
                                         outuint(c_audioControl, SET_DSD_MODE);
-                                        outuint(c_audioControl, dsdMode);
+                                        outuint(c_audioControl, DSD_MODE_NATIVE);
 							            chkct(c_audioControl, XS1_CT_END);
                                         g_dsdMode = 1;
                                     }

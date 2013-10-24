@@ -11,6 +11,6 @@
 void AudioHwInit(chanend ?c_codec);
 
 /* Configure audio hardware (clocking, CODECs etc) for a specific mClk/Sample frquency - run on every sample frequency change */
-void AudioHwConfig(unsigned samFreq, unsigned mClk, chanend ?c_codec, DsdMode dsdMode);
+void AudioHwConfig(unsigned samFreq, unsigned mClk, chanend ?c_codec, unsigned dsdMode);
 
 #endif

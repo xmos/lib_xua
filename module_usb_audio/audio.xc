@@ -54,7 +54,7 @@ extern in port p_lrclk;
 extern in port p_bclk;
 #endif
 
-DsdMode dsdMode = DSD_MODE_OFF;
+unsigned dsdMode = DSD_MODE_OFF;
 
 /* Master clock input */
 extern port p_mclk_in;
