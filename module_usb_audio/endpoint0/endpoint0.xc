@@ -23,6 +23,9 @@
 #ifdef HID_CONTROLS
 #include "hid.h"
 #endif
+#if DSD_CHANS_DAC > 0
+#include "dsd.h"
+#endif
 
 /* Some warnings.... */
 
@@ -290,8 +293,9 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
 #ifdef NATIVE_DSD
                                     if(g_dsdMode)
                                     {
+                                        DsdMode dsdMode = DSD_MODE_OFF;
                                         outuint(c_audioControl, SET_DSD_MODE);
-                                        outuint(c_audioControl, DSD_MODE_OFF);
+                                        outuint(c_audioControl, dsdMode);
                                     
                                         // Handshake
 							            chkct(c_audioControl, XS1_CT_END);
@@ -303,9 +307,10 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
                                 case 2:
             
                                     if(!g_dsdMode)
-                                    {                   
+                                    {  
+                                        DsdMode dsdMode = DSD_MODE_NATIVE;                 
                                         outuint(c_audioControl, SET_DSD_MODE);
-                                        outuint(c_audioControl, DSD_MODE_NATIVE);
+                                        outuint(c_audioControl, dsdMode);
 							            chkct(c_audioControl, XS1_CT_END);
                                         g_dsdMode = 1;
                                     }
