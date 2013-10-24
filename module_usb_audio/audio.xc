@@ -22,7 +22,7 @@
 
 unsigned testsamples[100];
 int p = 0;
-unsigned lastSample =0;
+unsigned lastSample = 0;
 #if (DSD_CHANS_DAC != 0) 
 extern unsigned p_dsd_dac[DSD_CHANS_DAC];
 extern port p_dsd_clk;
@@ -54,13 +54,7 @@ extern in port p_lrclk;
 extern in port p_bclk;
 #endif
 
-#if (DSD_CHANS_DAC != 0)
-
-unsigned dsdMode = 0;
-
-
-#endif
-
+DsdMode dsdMode = DSD_MODE_OFF;
 
 /* Master clock input */
 extern port p_mclk_in;
@@ -132,8 +126,10 @@ extern void device_reboot(void);
     if(testct(c_out))
     {
         unsigned command = inct(c_out);
+#if (DSD_CHANS_DAC > 0)
         if(dsdMode == DSD_MODE_DOP)
-            dsdMode = 0;
+            dsdMode = DSD_MODE_OFF; 
+#endif
         return {command, inuint(c_out)};
     }
     else
@@ -188,8 +184,10 @@ extern void device_reboot(void);
 
 #ifndef CODEC_MASTER
 
-    if(!dsdMode)
+#if (DSD_CHANS_DAC > 0)
+    if(dsdMode == DSD_MODE_OFF)
     {
+#endif
     /* Clear I2S port buffers */
     clearbuf(p_lrclk);
     
@@ -275,7 +273,9 @@ extern void device_reboot(void);
                 break;
         }
     }
+#if (DSD_CHANS_DAC > 0)
     } /* if (!dsdMode) */
+#endif
 #else          
     /* CODEC is master */
     /* Wait for LRCLK edge */
@@ -326,8 +326,11 @@ extern void device_reboot(void);
             p_dsd_clk <: 0;
 #endif
             command = inct(c_out);
+            
+#if (DSD_CHANS_DAC > 0)
             if(dsdMode == DSD_MODE_DOP)
-                dsdMode = 0;
+                dsdMode = DSD_MODE_OFF;
+#endif
             return {command, inuint(c_out)};
 
         }
@@ -529,7 +532,6 @@ extern void device_reboot(void);
 #endif
     {
 
-
 #pragma xta endpoint "i2s_output_l"
 
 #if (I2S_CHANS_DAC != 0) && (NUM_USB_CHAN_OUT != 0)
@@ -697,7 +699,7 @@ extern void device_reboot(void);
 #if (DSD_CHANS_DAC != 0) && (NUM_USB_CHAN_OUT > 0)
         /* Check for DSD */
         /* Currently we only check on channel 0 - we get all 0's on channels without data */
-        if(!dsdMode)
+        if(dsdMode == DSD_MODE_OFF)
         {
             if((DSD_MASK(samplesOut[0]) == dsdMarker) && (DSD_MASK(samplesOut[1]) == dsdMarker))
             {
@@ -729,7 +731,7 @@ extern void device_reboot(void);
             {
                 if((DSD_MASK(samplesOut[0]) != DSD_MARKER_2) && (DSD_MASK(samplesOut[1]) != DSD_MARKER_2))
                 {
-                    dsdMode = 0;
+                    dsdMode = DSD_MODE_OFF;
                     // Set clocks low
                     p_lrclk <: 0;
                     p_bclk <: 0;
