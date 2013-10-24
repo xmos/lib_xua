@@ -1,8 +1,6 @@
 #ifndef _CODEC_H_
 #define _CODEC_H_
 
-#include "dsd.h"
-
 /* These functions must be implemented for the CODEC/ADC/DAC arrangement of a specific design */
 
 /* TODO Are the channel args required? */

@@ -27,7 +27,7 @@
 #define SET_CHAN_COUNT_OUT      6
 #define SET_DSD_MODE            7
 
-#include "dsd.h"
+#include "dsd_support.h"
 
 
 
