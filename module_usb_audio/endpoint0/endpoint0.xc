@@ -24,7 +24,7 @@
 #include "hid.h"
 #endif
 #if DSD_CHANS_DAC > 0
-#include "dsd.h"
+#include "dsd_support.h"
 #endif
 
 /* Some warnings.... */
@@ -654,7 +654,7 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
                     cfgDesc_Audio2, sizeof(cfgDesc_Audio2), 
                     devDesc_Null, sizeof(devDesc_Null), 
                     cfgDesc_Null, sizeof(cfgDesc_Null), 
-                    strDescs, sizeof(strDescs)/sizeof(strDescs[0], sp, c_usb_test, g_curUsbSpeed);
+                    strDescs, sizeof(strDescs)/sizeof(strDescs[0]), sp, c_usb_test, g_curUsbSpeed);
 #endif
         } 
         else 
