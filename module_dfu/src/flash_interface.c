@@ -6,11 +6,7 @@
 #include <xclib.h>
 
 #ifndef FLASH_MAX_UPGRADE_SIZE 
-#ifdef ARCH_G
 #define FLASH_MAX_UPGRADE_SIZE 128 * 1024 // 128K default
-#else
-#define FLASH_MAX_UPGRADE_SIZE 128 * 1024 // 128K default
-#endif
 #endif
 
 #define FLASH_ERROR() do {} while(0)
