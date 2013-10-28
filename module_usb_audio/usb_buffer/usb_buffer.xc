@@ -4,7 +4,9 @@
 
 #include "usb.h"
 #include "devicedefines.h"
+#ifdef MIDI
 #include "usb_midi.h"
+#endif
 #ifdef IAP
 #include "iAP.h"
 #endif
