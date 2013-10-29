@@ -12,11 +12,14 @@
 #include <xs1.h>
 #include <xclib.h>
 #include <xs1_su.h>
+#include <print.h>
 
 #include "devicedefines.h"
 #include "audioports.h"
 #include "audiohw.h"
+#ifdef SPDIF
 #include "SpdifTransmit.h"
+#endif
 #include "commands.h"
 #include "xc_ptr.h"
 
@@ -69,6 +72,74 @@ extern clock    clk_mst_spd;
 
 extern void device_reboot(void);
 
+#define MAX_DIVIDE_48 (MCLK_48/MIN_FREQ_48/64)
+#define MAX_DIVIDE_44 (MCLK_44/MIN_FREQ_44/64)
+#if (MAX_DIVIDE_44 > MAX_DIVIDE_48)
+#define MAX_DIVIDE (MAX_DIVIDE_44)
+#else
+#define MAX_DIVIDE (MAX_DIVIDE_48)
+#endif
+
+static inline void doI2SClocks(unsigned divide)
+{ 
+    switch (divide)
+    {
+#if (MAX_DIVIDE > 16)
+#error MCLK/BCLK Ratio not supported!! 
+#endif
+#if (MAX_DIVIDE > 8)
+             case 16:
+                p_bclk <: 0xff00ff00;   
+                p_bclk <: 0xff00ff00;   
+                p_bclk <: 0xff00ff00;   
+                p_bclk <: 0xff00ff00;   
+                p_bclk <: 0xff00ff00;   
+                p_bclk <: 0xff00ff00;   
+                p_bclk <: 0xff00ff00;   
+                p_bclk <: 0xff00ff00;   
+                
+                p_bclk <: 0xff00ff00;   
+                p_bclk <: 0xff00ff00;   
+                p_bclk <: 0xff00ff00;   
+                p_bclk <: 0xff00ff00;   
+                p_bclk <: 0xff00ff00;   
+                p_bclk <: 0xff00ff00;   
+                p_bclk <: 0xff00ff00;   
+                p_bclk <: 0xff00ff00; 
+                break;
+#endif
+#if (MAX_DIVIDE > 4)
+           case 8:
+                p_bclk <: 0xF0F0F0F0;   
+                p_bclk <: 0xF0F0F0F0;   
+                p_bclk <: 0xF0F0F0F0;   
+                p_bclk <: 0xF0F0F0F0;   
+                p_bclk <: 0xF0F0F0F0;   
+                p_bclk <: 0xF0F0F0F0;   
+                p_bclk <: 0xF0F0F0F0;   
+                p_bclk <: 0xF0F0F0F0;   
+                break;
+#endif
+#if (MAX_DIVIDE > 2)
+            case 4:
+                p_bclk <: 0xCCCCCCCC;
+                p_bclk <: 0xCCCCCCCC;
+                p_bclk <: 0xCCCCCCCC;
+                p_bclk <: 0xCCCCCCCC;
+                break;
+#endif
+#if (MAX_DIVIDE > 1)
+            case 2: 
+                p_bclk <: 0xAAAAAAAA;
+                p_bclk <: 0xAAAAAAAA;
+                break;
+#endif
+#if (MAX_DIVIDE > 0)
+            case 1:
+                break;
+#endif     
+   }
+}
 
 
 
@@ -247,31 +318,8 @@ extern void device_reboot(void);
 
 
         p_lrclk <: 0x7FFFFFFF; 
-        switch (divide)
-        {
-           case 8:
-                p_bclk <: 0xF0F0F0F0;   
-                p_bclk <: 0xF0F0F0F0;   
-                p_bclk <: 0xF0F0F0F0;   
-                p_bclk <: 0xF0F0F0F0;   
-                p_bclk <: 0xF0F0F0F0;   
-                p_bclk <: 0xF0F0F0F0;   
-                p_bclk <: 0xF0F0F0F0;   
-                p_bclk <: 0xF0F0F0F0;   
-                break;
-      
-            case 4:
-                p_bclk <: 0xCCCCCCCC;
-                p_bclk <: 0xCCCCCCCC;
-                p_bclk <: 0xCCCCCCCC;
-                p_bclk <: 0xCCCCCCCC;
-                break;
-      
-            case 2: 
-                p_bclk <: 0xAAAAAAAA;
-                p_bclk <: 0xAAAAAAAA;
-                break;
-        }
+        doI2SClocks(divide);
+        
     }
 #if (DSD_CHANS_DAC > 0)
     } /* if (!dsdMode) */
@@ -543,45 +591,11 @@ extern void device_reboot(void);
 #endif
       
 #ifndef CODEC_MASTER  
+        /* LR clock delayed by one clock, This is so MSB is output on the falling edge of BCLK 
+         * after the falling edge on which LRCLK was toggled. (see I2S spec) */
         /* Generate clocks LR Clock low - LEFT */ 
-        switch (divide)
-        {
-           case 8:
-       
-               /* LR clock delayed by one clock, This is so MSB is output on the falling edge of BCLK 
-                  * after the falling edge on which LRCLK was toggled. (see I2S spec) */
-                p_lrclk <: 0x80000000;
-      
-                p_bclk <: 0xF0F0F0F0;   
-                p_bclk <: 0xF0F0F0F0;   
-                p_bclk <: 0xF0F0F0F0;   
-                p_bclk <: 0xF0F0F0F0;   
-                p_bclk <: 0xF0F0F0F0;   
-                p_bclk <: 0xF0F0F0F0;   
-                p_bclk <: 0xF0F0F0F0;   
-                p_bclk <: 0xF0F0F0F0;   
-                break;
-      
-            case 4:
-                p_lrclk <: 0x80000000;
-      
-                p_bclk <: 0xCCCCCCCC;
-                p_bclk <: 0xCCCCCCCC;
-                p_bclk <: 0xCCCCCCCC;
-                p_bclk <: 0xCCCCCCCC;
-                break;
-      
-            case 2: 
-                p_lrclk <: 0x80000000;
-          
-                p_bclk <: 0xAAAAAAAA;
-                p_bclk <: 0xAAAAAAAA;
-                break;
-
-            case 1:
-                p_lrclk <: 0x80000000;
-                break;
-        }
+        p_lrclk <: 0x80000000;
+        doI2SClocks(divide);
 #endif
   
  
@@ -633,41 +647,8 @@ extern void device_reboot(void);
 
 #ifndef CODEC_MASTER 
         /* Clock out data (and LR clock) */
-        switch (divide)
-        {
-            case 8: 
-                p_lrclk <: 0x7FFFFFFF;
-
-                p_bclk <: 0xF0F0F0F0;   
-                p_bclk <: 0xF0F0F0F0;   
-                p_bclk <: 0xF0F0F0F0;   
-                p_bclk <: 0xF0F0F0F0;   
-                p_bclk <: 0xF0F0F0F0;   
-                p_bclk <: 0xF0F0F0F0;   
-                p_bclk <: 0xF0F0F0F0;   
-                p_bclk <: 0xF0F0F0F0;   
-                break;
-      
-            case 4: 
-                p_lrclk <: 0x7FFFFFFF;
-          
-                p_bclk <: 0xCCCCCCCC;
-                p_bclk <: 0xCCCCCCCC;
-                p_bclk <: 0xCCCCCCCC;
-                p_bclk <: 0xCCCCCCCC;
-                break;
-      
-            case 2: 
-                p_lrclk <: 0x7FFFFFFF;
-          
-                p_bclk <: 0xAAAAAAAA;
-                p_bclk <: 0xAAAAAAAA;
-                break;
-
-            case 1:
-                p_lrclk <: 0x7FFFFFFF;
-                break;
-        }
+        p_lrclk <: 0x7FFFFFFF;
+        doI2SClocks(divide);
 #endif  
         
 
@@ -888,7 +869,10 @@ void audio(chanend c_mix_out, chanend ?c_dig_rx, chanend ?c_config, chanend ?c)
             }
 #endif  
             divide = mClk / ( curSamFreq * numBits );
-             
+ 
+            //if(divide > 8)
+                //asm("ecallf %0"::"r"(0));
+            
        } 
         
 #if (DSD_CHANS_DAC != 0)
