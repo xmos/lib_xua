@@ -20,7 +20,9 @@
 #include "endpoint0.h"
 #include "usb_buffer.h"
 #include "decouple.h"
+#ifdef MIDI
 #include "usb_midi.h"
+#endif
 #include "audio.h"
 
 #ifdef IAP
