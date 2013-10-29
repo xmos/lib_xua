@@ -12,7 +12,6 @@
 #include <xs1.h>
 #include <xclib.h>
 #include <xs1_su.h>
-#include <print.h>
 
 #include "devicedefines.h"
 #include "audioports.h"
