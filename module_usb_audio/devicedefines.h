@@ -133,12 +133,20 @@
 #define LEVEL_UPDATE_RATE   400000
 #endif
 
-#if(AUDIO_CLASS != 1) && (AUDIO_CLASS != 2)
+#ifndef AUDIO_CLASS
 #warning AUDIO_CLASS not defined, using 2
 #define AUDIO_CLASS 2
 #endif
 
+/* Wether or not to fall back to Audio Class 1.0 in USB Full-speed */
+#ifndef AUDIO_CLASS_FALLBACK
+#warning AUDIO_CLASS_FALLBACK not defined, using 0
+#define AUDIO_CLASS_FALLBACK 0
+#endif
 
+#if defined(AUDIO_CLASS_FALLBACK) && (AUDIO_CLASS_FALLBACK==0)
+#undef AUDIO_CLASS_FALLBACK
+#endif
 
 /* Number of IS2 chans to DAC */
 #ifndef I2S_CHANS_DAC
@@ -175,8 +183,8 @@
 
 /* Default device freq */
 #ifndef DEFAULT_FREQ
-#warning DEFAULT not defined! Using 48000
-#define DEFAULT_FREQ                   (48000)     
+#warning DEFAULT not defined! Using MIN_FREQ
+#define DEFAULT_FREQ                   (MIN_FREQ)     
 #endif
 
 /* Master clock defines (in Hz) */
@@ -188,9 +196,7 @@
 #error MCLK_441 not defined
 #endif
 
-#if defined(AUDIO_CLASS_FALLBACK) && (AUDIO_CLASS_FALLBACK==0)
-#undef AUDIO_CLASS_FALLBACK
-#endif
+
 
 /* The number of clock ticks to wait for the audio PLL to lock */
 #ifndef AUDIO_PLL_LOCK_DELAY
