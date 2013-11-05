@@ -20,9 +20,7 @@
 #include "endpoint0.h"
 #include "usb_buffer.h"
 #include "decouple.h"
-#ifdef MIDI
 #include "usb_midi.h"
-#endif
 #include "audio.h"
 
 #ifdef IAP
@@ -92,6 +90,8 @@ on tile[0] : buffered in port:32 p_i2s_adc[I2S_WIRES_ADC] =
 #define AUDIO_IO_CORE 0
 #endif
 
+
+
 #ifndef CODEC_MASTER
 on tile[AUDIO_IO_CORE] : buffered out port:32 p_lrclk       = PORT_I2S_LRCLK;
 on tile[AUDIO_IO_CORE] : buffered out port:32 p_bclk        = PORT_I2S_BCLK;
@@ -141,6 +141,11 @@ clock clk                                                   = XS1_CLKBLK_4;
 /* Reset port not required for SU1 due to built in Phy */
 #define p_usb_rst   null
 #define clk         null
+#endif
+
+#ifdef IAP
+on tile [AUDIO_IO_CORE] : port p_i2c_sda = PORT_I2C_SDA;
+on tile [AUDIO_IO_CORE] : port p_i2c_scl = PORT_I2C_SCL;
 #endif
 
 /* Endpoint type tables for XUD */
@@ -324,7 +329,7 @@ int main()
 #ifdef MIDI
             usb_midi(p_midi_rx, p_midi_tx, clk_midi, c_midi, 0, null, null, null, null);
 #else
-            iAP(c_iap, null, i2cPorts.scl, i2cPorts.sda);
+            iAP(c_iap, null, p_i2c_scl, p_i2c_sda);
 #endif        
         }
 #endif
