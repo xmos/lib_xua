@@ -196,6 +196,14 @@ static inline void doI2SClocks(unsigned divide)
     if(testct(c_out))
     {
         unsigned command = inct(c_out);
+        
+            // Set clocks low
+            p_lrclk <: 0;
+            p_bclk <: 0;
+#if(DSD_CHANS_DAC != 0) 
+            /* DSD Clock might not be shared with lrclk or bclk... */
+            p_dsd_clk <: 0;
+#endif
 #if (DSD_CHANS_DAC > 0)
         if(dsdMode == DSD_MODE_DOP)
             dsdMode = DSD_MODE_OFF; 
