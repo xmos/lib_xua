@@ -567,9 +567,7 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
                             	    c_audioControl, c_mix_ctl, c_clk_ctl); 
                             }
 #endif
-#ifdef DFU
                         }
-#endif
                     }
                     break;
                 
