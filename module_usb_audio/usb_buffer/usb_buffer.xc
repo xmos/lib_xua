@@ -24,7 +24,7 @@ void GetADCCounts(unsigned samFreq, int &min, int &mid, int &max);
 #define BUFFER_SIZE_OUT       (1028 >> 2)
 #define BUFFER_SIZE_IN        (1028 >> 2)
 
-/* Packet buffers for audio data */
+/* Packet nuffers for audio data */
 
 extern unsigned int g_curSamFreqMultiplier;
 
@@ -520,7 +520,6 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
         case XUD_SetData_Select(c_midi_to_host, ep_midi_to_host, tmp): 
             asm("#midi d->h");
  
-#if 1 
             swap(midi_to_host_buffer, midi_to_host_waiting_buffer);
 
             /* The buffer has been sent to the host, so we can ack the midi thread */
@@ -544,7 +543,6 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
             {
                 midi_waiting_on_send_to_host = 0;              
             }
-#endif
           break;
 #endif
 
