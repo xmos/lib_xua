@@ -140,11 +140,9 @@ static inline void doI2SClocks(unsigned divide)
    }
 }
 
-
-
 /* I2S delivery thread */
 #pragma unsafe arrays
-{unsigned, unsigned} deliver(chanend c_out, chanend ?c_spd_out, unsigned divide, chanend ?c_dig_rx, chanend ?c_adc)
+{unsigned, unsigned} deliver(chanend c_out, chanend ?c_spd_out, unsigned divide, unsigned curSamFreq, chanend ?c_dig_rx, chanend ?c_adc)
 {
 	unsigned sample;
     unsigned underflow = 0;
@@ -685,9 +683,9 @@ static inline void doI2SClocks(unsigned divide)
 
         }  // !dsdMode       
 #if (DSD_CHANS_DAC != 0) && (NUM_USB_CHAN_OUT > 0)
-        /* Check for DSD */
+        /* Check for DSD - note we only move into DoP mode if valid DoP Freq */
         /* Currently we only check on channel 0 - we get all 0's on channels without data */
-        if(dsdMode == DSD_MODE_OFF)
+        if((dsdMode == DSD_MODE_OFF) && (curSamFreq > 96000))
         {
             if((DSD_MASK(samplesOut[0]) == dsdMarker) && (DSD_MASK(samplesOut[1]) == dsdMarker))
             {
@@ -876,10 +874,6 @@ void audio(chanend c_mix_out, chanend ?c_dig_rx, chanend ?c_config, chanend ?c)
             }
 #endif  
             divide = mClk / ( curSamFreq * numBits );
- 
-            //if(divide > 8)
-                //asm("ecallf %0"::"r"(0));
-            
        } 
         
 #if (DSD_CHANS_DAC != 0)
@@ -984,7 +978,7 @@ void audio(chanend c_mix_out, chanend ?c_dig_rx, chanend ?c_config, chanend ?c)
 #else
                    null,
 #endif 
-                   divide, c_dig_rx, c);
+                   divide, curSamFreq, c_dig_rx, c);
 
 #if (DSD_CHANS_DAC != 0)
                 if(retVal1 == SET_SAMPLE_FREQ)
