@@ -93,7 +93,6 @@ on tile[AUDIO_IO_TILE] : buffered in port:32 p_i2s_adc[I2S_WIRES_ADC] =
 #endif
 
 
-
 #ifndef CODEC_MASTER
 on tile[AUDIO_IO_TILE] : buffered out port:32 p_lrclk       = PORT_I2S_LRCLK;
 on tile[AUDIO_IO_TILE] : buffered out port:32 p_bclk        = PORT_I2S_BCLK;
@@ -145,14 +144,11 @@ clock clk                                                   = XS1_CLKBLK_4;
 #define clk         null
 #endif
 
-<<<<<<< HEAD
 #ifdef IAP
 on tile [AUDIO_IO_TILE] : port p_i2c_sda = PORT_I2C_SDA;
 on tile [AUDIO_IO_TILE] : port p_i2c_scl = PORT_I2C_SCL;
 #endif
 
-=======
->>>>>>> parent of d52b8ee... Added iAP i2c ports
 /* Endpoint type tables for XUD */
 XUD_EpType epTypeTableOut[EP_CNT_OUT] = { XUD_EPTYPE_CTL | XUD_STATUS_ENABLE, 
                                             XUD_EPTYPE_ISO,    /* Audio */
