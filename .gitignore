@@ -1,3 +1,5 @@
+xmosdfu
+xmosdfu.*
 */.build_*/*
 */bin/*
 *.o
