@@ -137,7 +137,7 @@ on tile[AUDIO_IO_TILE] : clock    clk_mst_spd               = XS1_CLKBLK_1;
 on tile[0] : out port p_usb_rst                             = PORT_USB_RESET;
 #endif
 /* L Series also needs a clock for this port */
-clock clk                                                   = XS1_CLKBLK_4;
+on tile[0] : clock clk                                      = XS1_CLKBLK_4;
 #else
 /* Reset port not required for SU1 due to built in Phy */
 #define p_usb_rst   null
