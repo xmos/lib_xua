@@ -246,8 +246,8 @@
 
 /* Device release number in BCD: 0xJJMNi */
 #ifndef BCD_DEVICE
-#define BCD_DEVICE               (0x0630)
-#warning BCD_DEVICE not defined. Using 0x0630
+#define BCD_DEVICE               (0x0620)
+#warning BCD_DEVICE not defined. Using 0x0620
 #endif
 
 /* Addition interfaces based on defines */
