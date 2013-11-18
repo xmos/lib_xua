@@ -580,34 +580,10 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
      
         if(retVal > 0)
         {
-#ifndef DFU
-
-#ifdef AUDIO_CLASS_FALLBACK
-            /* Return Audio 2.0 Descriptors with Audio 1.0 as fallback */
-            retVal = USB_StandardRequests(ep0_out, ep0_in, 
-                devDesc_Audio2, sizeof(devDesc_Audio2), 
-                cfgDesc_Audio2, sizeof(cfgDesc_Audio2), 
-                devDesc_Audio1, sizeof(devDesc_Audio1), 
-                cfgDesc_Audio1, sizeof(cfgDesc_Audio1), 
-                strDescs, sizeof(strDescs)/sizeof(strDescs[0]), 
-                sp, c_usb_test, g_curUsbSpeed);
-#else
-            /* Return Audio 2.0 Descriptors */
-            cfgDesc_Audio2[1] = CONFIGURATION;
-            cfgDesc_Null[1] = OTHER_SPEED_CONFIGURATION;
-        
-            retVal = USB_StandardRequests(ep0_out, ep0_in, 
-                devDesc_Audio2, sizeof(devDesc_Audio2), 
-                cfgDesc_Audio2, sizeof(cfgDesc_Audio2),
-                devDesc_Null, sizeof(devDesc_Null), 
-                cfgDesc_Null, sizeof(cfgDesc_Null), 
-                strDescs, sizeof(strDescs)/sizeof(strDescs[0]),
-                sp, c_usb_test, g_curUsbSpeed);
+#ifdef DFU
+            if (!DFU_mode_active) 
+            {
 #endif
-
-#else /* ifndef DFU */
-        if (!DFU_mode_active) 
-        {
 #ifdef AUDIO_CLASS_FALLBACK
                 /* Return Audio 2.0 Descriptors with Audio 1.0 as fallback */
                 retVal = USB_StandardRequests(ep0_out, ep0_in, 
@@ -655,19 +631,19 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
                     cfgDesc_Null, sizeof(cfgDesc_Null), 
                     strDescs, sizeof(strDescs)/sizeof(strDescs[0]), sp, c_usb_test, g_curUsbSpeed);
 #endif
-        } 
-        else 
-        {
-            /* Running in DFU mode - always return same descs for DFU whether HS or FS */
-            retVal = USB_StandardRequests(ep0_out, ep0_in, 
-                DFUdevDesc, sizeof(DFUdevDesc), 
-                DFUcfgDesc, sizeof(DFUcfgDesc), 
-                null, 0, /* Used same descriptors for full and high-speed */
-                null, 0, 
-                strDescs, sizeof(strDescs), sp, c_usb_test, g_curUsbSpeed);
-        }
-#endif /* ifndef DFU else */
- 
+#ifdef DFU
+            } 
+            else 
+            {
+                /* Running in DFU mode - always return same descs for DFU whether HS or FS */
+                retVal = USB_StandardRequests(ep0_out, ep0_in, 
+                    DFUdevDesc, sizeof(DFUdevDesc), 
+                    DFUcfgDesc, sizeof(DFUcfgDesc), 
+                    null, 0, /* Used same descriptors for full and high-speed */
+                    null, 0, 
+                    strDescs, sizeof(strDescs), sp, c_usb_test, g_curUsbSpeed);
+            }
+#endif
         }
         
         if (retVal < 0) 
@@ -684,8 +660,6 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
                     timer tmr;
                     unsigned s;
                     DFU_mode_active = 1;
-                    //tmr :> s;
-                    //tmr when timerafter(s + 500000) :> s;
                 }
             } 
             else 
@@ -694,11 +668,9 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
                 {
                     timer tmr;
                     unsigned s;
-                    // Restart audio
-                    //outuint(c_audioControl, AUDIO_START_FROM_DFU);
                     DFU_mode_active = 0;
 
-                    // Send reboot command
+                    /* Send reboot command */
                     tmr :> s;
                     tmr when timerafter(s + 5000000) :> s;
                     device_reboot(c_audioControl);
