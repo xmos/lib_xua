@@ -37,13 +37,11 @@
 
 /* Max supported sample freq for device */
 #ifndef MAX_FREQ
-#warning MAX_FREQ not defined! Using 192000
 #define MAX_FREQ                 (192000)       
 #endif
 
 /* Min supported sample freq for device */
 #ifndef MIN_FREQ
-#warning MIN_FREQ not defined! Using 44100
 #define MIN_FREQ                 (44100)       
 #endif
 
@@ -133,14 +131,13 @@
 #define LEVEL_UPDATE_RATE   400000
 #endif
 
+/* USB Audio Class Version. Default to 2.0  */
 #ifndef AUDIO_CLASS
-#warning AUDIO_CLASS not defined, using 2
 #define AUDIO_CLASS 2
 #endif
 
-/* Wether or not to fall back to Audio Class 1.0 in USB Full-speed */
+/* Whether or not to fall back to Audio Class 1.0 in USB Full-speed */
 #ifndef AUDIO_CLASS_FALLBACK
-#warning AUDIO_CLASS_FALLBACK not defined, using 0
 #define AUDIO_CLASS_FALLBACK 0
 #endif
 
@@ -175,16 +172,14 @@
 #endif
 #endif
 
+/* S/PDIF Tx channel index */
 #ifndef SPDIF_TX_INDEX
-#warning SPDIF_TX_INDEX not defined! Using 0
 #define SPDIF_TX_INDEX                  (0)
 #endif
 
-
-/* Default device freq */
+/* Default device sample frequency */
 #ifndef DEFAULT_FREQ
-#warning DEFAULT not defined! Using MIN_FREQ
-#define DEFAULT_FREQ                   (MIN_FREQ)     
+#define DEFAULT_FREQ                   (MIN_FREQ)    
 #endif
 
 /* Master clock defines (in Hz) */
@@ -196,24 +191,22 @@
 #error MCLK_441 not defined
 #endif
 
-
-
 /* The number of clock ticks to wait for the audio PLL to lock */
 #ifndef AUDIO_PLL_LOCK_DELAY
 #define AUDIO_PLL_LOCK_DELAY     (40000000) 
 #endif
 
-/* Vendor/Product strings */
+/* Vendor String */
 #ifndef VENDOR_STR
 #define VENDOR_STR               "XMOS"   
-#warning VENDOR_STR not defined. Using "XMOS"
 #endif
 
+/* USB Vendor ID */
 #ifndef VENDOR_ID
-#warning VENDOR_ID not defined. Using XMOS vendor ID (0x20B1)
 #define VENDOR_ID                (0x20B1)
 #endif
 
+/* USB Product String */
 #ifdef PRODUCT_STR
 #define PRODUCT_STR_A2 PRODUCT_STR
 #define PRODUCT_STR_A1 PRODUCT_STR
@@ -221,33 +214,29 @@
 
 /* Product string for Audio Class 2.0 mode */
 #ifndef PRODUCT_STR_A2
-#warning PRODUCT_STR_A2 not defined. Using default string
 #define PRODUCT_STR_A2             "xCORE USB Audio 2.0"
 #endif
 
-
 /* Product string for Audio Class 1.0 mode */
 #ifndef PRODUCT_STR_A1
-#warning PRODUCT_STR_A1 not defined. Using default string
 #define PRODUCT_STR_A1             "xCORE USB Audio 1.0"
 #endif
 
+/* USB Product ID (PID) for Audio Class 1.0 mode */
 #if (AUDIO_CLASS==1) || defined(AUDIO_CLASS_FALLBACK)
 #ifndef PID_AUDIO_1
-#define PID_AUDIO_1               (0x0001)        
-#warning PID_AUDIO_1 not defined. Using 0x0001
+#define PID_AUDIO_1               (0x0003)        
 #endif
 #endif
 
+/* USB Product ID (PID) for Audio Class 2.0 mode */
 #ifndef PID_AUDIO_2
-#define PID_AUDIO_2               (0x0001)        
-#warning PID_AUDIO_2 not defined. Using 0x0001
+#define PID_AUDIO_2               (0x0002)        
 #endif
 
 /* Device release number in BCD: 0xJJMNi */
 #ifndef BCD_DEVICE
 #define BCD_DEVICE               (0x0630)
-#warning BCD_DEVICE not defined. Using 0x0630
 #endif
 
 /* Addition interfaces based on defines */
