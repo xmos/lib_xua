@@ -124,8 +124,6 @@ void VendorAudioRequestsInit(chanend c_audioControl, chanend ?c_mix_ctl, chanend
 void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl, 
     chanend ?c_mix_ctl, chanend ?c_clk_ctl, chanend ?c_usb_test)
 {
-    unsigned char buffer[2];
-
     USB_SetupPacket_t sp;
     XUD_ep ep0_out = XUD_InitEp(c_ep0_out);
     XUD_ep ep0_in  = XUD_InitEp(c_ep0_in);
