@@ -330,7 +330,7 @@ int main()
 #ifdef MIDI
             usb_midi(p_midi_rx, p_midi_tx, clk_midi, c_midi, 0, null, null, null, null);
 #else
-            iAP(c_iap, null, i2cPorts.scl, i2cPorts.sda);
+            iAP(c_iap, null, null, null);
 #endif        
         }
 #endif
