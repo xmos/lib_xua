@@ -236,7 +236,7 @@
 
 /* Device release number in BCD: 0xJJMNi */
 #ifndef BCD_DEVICE
-#define BCD_DEVICE               ((XMOS_USB_AUD_APP_MAJOR_VERSION << 8) | ((XMOS_USB_AUD_APP_MINOR_VERSION&0xF) << 4) | (XMOS_USB_AUD_APP_POINT_VERSION&0xF))
+#define BCD_DEVICE               (0x0630)
 #endif
 
 /* Addition interfaces based on defines */
