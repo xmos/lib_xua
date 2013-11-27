@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <xpd>
     <description>USB Audio Shared Components. For use in the XMOS USB Audio Refererence Designs.</description>
-    <location>ssh://git@github.com:22/xcore/sc_usb_audio.git</location>
+    <location>git://git/apps/sc_usb_audio</location>
     <name>USB Audio Shared Components</name>
     <vendor>XMOS</vendor>
     <xpd_version>1.0</xpd_version>
