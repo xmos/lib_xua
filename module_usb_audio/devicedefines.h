@@ -191,6 +191,14 @@
 #error MCLK_441 not defined
 #endif
 
+#if ((MCLK_441 % DEFAULT_FREQ) == 0)
+#define DEFAULT_MCLK_FREQ MCLK_441
+#elif ((MCLK_48 % DEFAULT_FREQ) == 0)
+#define DEFAULT_MCLK_FREQ MCLK_48
+#else
+#error Bad DEFAULT_MCLK_FREQ
+#endif
+
 /* The number of clock ticks to wait for the audio PLL to lock */
 #ifndef AUDIO_PLL_LOCK_DELAY
 #define AUDIO_PLL_LOCK_DELAY     (40000000) 

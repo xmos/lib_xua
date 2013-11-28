@@ -1,6 +1,5 @@
 #include <xs1.h>
 #include <platform.h>
-#include <print.h>
 #include "devicedefines.h"
 
 #include "xud.h"
