@@ -26,7 +26,7 @@
 #include "audio.h"
 
 #ifdef IAP
-#include "iap.h"
+#include "iAP.h"
 #endif
 
 #ifndef AUDIO_IO_TILE
