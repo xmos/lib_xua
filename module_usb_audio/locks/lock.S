@@ -7,7 +7,6 @@
 
 /////////////////////////////////////////////////////////////////////////
 // void GetLockResource()
-.extern GetLockResource
 .globl GetLockResource.nstackwords
 .linkset GetLockResource.nstackwords, 0
 .globl GetLockResource
@@ -19,7 +18,6 @@ GetLockResource:
 
 /////////////////////////////////////////////////////////////////////////
 // void ClaimLock(lock l)
-.extern ClaimLock
 .globl ClaimLock.nstackwords
 .linkset ClaimLock.nstackwords, 0
 .globl ClaimLock
@@ -31,7 +29,6 @@ ClaimLock:
 
 /////////////////////////////////////////////////////////////////////////
 // void FreeLock(lock l)
-.extern FreeLock
 .globl FreeLock.nstackwords
 .linkset FreeLock.nstackwords, 0
 .globl FreeLock
@@ -43,7 +40,6 @@ FreeLock:
 
 /////////////////////////////////////////////////////////////////////////
 // void FreeLockResource(lock l)
-.extern FreeLockResource
 .globl FreeLockResource.nstackwords
 .linkset FreeLockResource.nstackwords, 0
 .globl FreeLockResource
