@@ -9,6 +9,7 @@
 .cc_top doMix##i.function,doMix##i; \
           .align    4 ;\
 .globl doMix##i ;\
+.type doMix##i, @function ;\
 .globl doMix##i##.nstackwords ;\
 .globl doMix##i##.maxthreads ; \
 .globl doMix##i##.maxtimers ; \
@@ -42,6 +43,7 @@ doMix##i##: ;\
           retsp     0x0;\
 \
 \
+.size doMix##i, .-doMix##i; \
 .cc_bottom doMix##i##.function;
 
 #define N MIX_INPUTS
@@ -124,9 +126,10 @@ DOMIX_BOT(7)
 #undef BODY
 #define N MAX_MIX_COUNT
 .cc_top setPtr.function,setPtr;
-          .align    4 ;
-.globl setPtr.nstackwords;
+.align    4 ;
 .globl setPtr;
+.type setPtr, @function
+.globl setPtr.nstackwords;
 .globl setPtr.maxthreads;
 .globl setPtr.maxtimers;
 .globl setPtr.maxchanends;
@@ -151,14 +154,20 @@ setPtr_go:
   add   r1, r1, r2;
   st8   r1, r11[r0];
   retsp 0;
+.size setPtr, .-setPtr
 .cc_bottom setPtr.function
 
           .section .cp.const4,     "acM", @progbits, 4
-.LC0:
+.cc_top .LC0.data
           .align    4
+.LC0:
           .int      0x7fffff00
+.cc_bottom .LC0.data
+.cc_top .LC1.data
+          .align    4
 .LC1:
           .int      0x80000000
+.cc_bottom .LC1.data
 
 #undef N
 #undef BODY
