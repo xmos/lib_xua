@@ -169,7 +169,6 @@ static inline void doI2SClocks(unsigned divide)
     unsigned dsdSample_l = 0x96960000;
     unsigned dsdSample_r = 0x96960000;
 #endif
-    int counter = 0;
     unsigned underflowWord = 0;
 
 #if NUM_USB_CHAN_IN > 0
@@ -364,7 +363,6 @@ static inline void doI2SClocks(unsigned divide)
     while (1)
     {
         outuint(c_out, 0);
-
         
         /* Check for sample freq change (or other command) or new samples from mixer*/
         if(testct(c_out))
@@ -391,7 +389,6 @@ static inline void doI2SClocks(unsigned divide)
         {
 #ifndef MIXER // Interfaces straight to decouple()
             underflow = inuint(c_out);
-            counter++;
 #if NUM_USB_CHAN_IN > 0
 #pragma loop unroll
             for(int i = 0; i < NUM_USB_CHAN_IN; i++)
@@ -418,7 +415,7 @@ static inline void doI2SClocks(unsigned divide)
                 }
             }
 #endif
-#else
+#else /* ifndef MIXER */
 #pragma loop unroll
             for(int i = 0; i < NUM_USB_CHAN_OUT; i++)
             {
@@ -463,13 +460,13 @@ static inline void doI2SClocks(unsigned divide)
 
         tmp = 0;
 #if (DSD_CHANS_DAC != 0) && (NUM_USB_CHAN_OUT > 0)
-    if(dsdMode == DSD_MODE_NATIVE)
-    {
-        /* 8 bits per chan, 1st 1-bit sample in MSB */
-        dsdSample_l =  samplesOut[0];  
-        dsdSample_r =  samplesOut[1];
-        dsdSample_r = bitrev(byterev(dsdSample_r)); 
-        dsdSample_l = bitrev(byterev(dsdSample_l)); 
+        if(dsdMode == DSD_MODE_NATIVE)
+        {
+            /* 8 bits per chan, 1st 1-bit sample in MSB */
+            dsdSample_l =  samplesOut[0];  
+            dsdSample_r =  samplesOut[1];
+            dsdSample_r = bitrev(byterev(dsdSample_r)); 
+            dsdSample_l = bitrev(byterev(dsdSample_l)); 
  
             switch (divide)
             {
@@ -516,168 +513,149 @@ static inline void doI2SClocks(unsigned divide)
                     break;
             } 
 
-    }
-    else if(dsdMode == DSD_MODE_DOP)
-    {
-        if(!everyOther)
+        }
+        else if(dsdMode == DSD_MODE_DOP)
         {
-            dsdSample_l = ((samplesOut[0] & 0xffff00) << 8);
-            dsdSample_r = ((samplesOut[1] & 0xffff00) << 8);
+            if(!everyOther)
+            {
+                dsdSample_l = ((samplesOut[0] & 0xffff00) << 8);
+                dsdSample_r = ((samplesOut[1] & 0xffff00) << 8);
  
-            everyOther = 1;
+                everyOther = 1;
           
-            switch (divide)
-            {
-                case 8:
+                switch (divide)
+                {
+                    case 8:
                     p_dsd_clk <: 0xF0F0F0F0;   
                     p_dsd_clk <: 0xF0F0F0F0;   
                     p_dsd_clk <: 0xF0F0F0F0;   
                     p_dsd_clk <: 0xF0F0F0F0;   
                     break;
       
-                case 4:
+                    case 4:
                     p_dsd_clk <: 0xCCCCCCCC;
                     p_dsd_clk <: 0xCCCCCCCC;
                     break;
       
-                case 2: 
+                    case 2: 
                     p_dsd_clk <: 0xAAAAAAAA;
                     break;
-                case 1:
-                    break;
-            } 
-        }
-        else if(everyOther)
-        {
-            everyOther = 0;
-            dsdSample_l =  dsdSample_l | ((samplesOut[0] & 0xffff00) >> 8);   
-            dsdSample_r =  dsdSample_r | ((samplesOut[1] & 0xffff00) >> 8);   
-
-            // Output 16 clocks DSD to all
-            //p_dsd_dac[0] <: bitrev(dsdSample_l);
-            //p_dsd_dac[1] <: bitrev(dsdSample_r);
-            asm volatile("out res[%0], %1"::"r"(p_dsd_dac[0]),"r"(bitrev(dsdSample_l)));
-            asm volatile("out res[%0], %1"::"r"(p_dsd_dac[1]),"r"(bitrev(dsdSample_r)));
-            switch (divide)
+                }    
+            }
+            else // everyOther
             {
-                case 8:
+                everyOther = 0;
+                dsdSample_l =  dsdSample_l | ((samplesOut[0] & 0xffff00) >> 8);   
+                dsdSample_r =  dsdSample_r | ((samplesOut[1] & 0xffff00) >> 8);   
+
+                // Output 16 clocks DSD to all
+                //p_dsd_dac[0] <: bitrev(dsdSample_l);
+                //p_dsd_dac[1] <: bitrev(dsdSample_r);
+                asm volatile("out res[%0], %1"::"r"(p_dsd_dac[0]),"r"(bitrev(dsdSample_l)));
+                asm volatile("out res[%0], %1"::"r"(p_dsd_dac[1]),"r"(bitrev(dsdSample_r)));
+                switch (divide)
+                {
+                    case 8:
                     p_dsd_clk <: 0xF0F0F0F0;   
                     p_dsd_clk <: 0xF0F0F0F0;   
                     p_dsd_clk <: 0xF0F0F0F0;   
                     p_dsd_clk <: 0xF0F0F0F0;   
                     break;
       
-                case 4:
+                    case 4:
                     p_dsd_clk <: 0xCCCCCCCC;
                     p_dsd_clk <: 0xCCCCCCCC;
                     break;
       
-                case 2: 
+                    case 2: 
                     p_dsd_clk <: 0xAAAAAAAA;
                     break;
-                case 1:
-                    break;
-            } 
+                } 
 
+            }
         }
-    }
-    else
+        else
 #endif
-    {
+        {
 
 #pragma xta endpoint "i2s_output_l"
 
 #if (I2S_CHANS_DAC != 0) && (NUM_USB_CHAN_OUT != 0)
 #pragma loop unroll
-        for(int i = 0; i < I2S_CHANS_DAC; i+=2)
-        {           
-            p_i2s_dac[tmp++] <: bitrev(samplesOut[i]);            /* Output LEFT sample to DAC */
-        }
+            for(int i = 0; i < I2S_CHANS_DAC; i+=2)
+            {           
+                p_i2s_dac[tmp++] <: bitrev(samplesOut[i]);            /* Output LEFT sample to DAC */
+            }
 #endif
       
 #ifndef CODEC_MASTER  
-        /* LR clock delayed by one clock, This is so MSB is output on the falling edge of BCLK 
-         * after the falling edge on which LRCLK was toggled. (see I2S spec) */
-        /* Generate clocks LR Clock low - LEFT */ 
-        p_lrclk <: 0x80000000;
-        doI2SClocks(divide);
+            /* LR clock delayed by one clock, This is so MSB is output on the falling edge of BCLK 
+             * after the falling edge on which LRCLK was toggled. (see I2S spec) */
+            /* Generate clocks LR Clock low - LEFT */ 
+            p_lrclk <: 0x80000000;
+            doI2SClocks(divide);
 #endif
   
  
 #if (I2S_CHANS_ADC != 0)
-        /* Input prevous R sample into R in buffer */
-        index = 0;
+            /* Input prevous R sample into R in buffer */
+            index = 0;
 #pragma loop unroll
-        for(int i = 1; i < I2S_CHANS_ADC; i += 2)
-        {
-            p_i2s_adc[index++] :> sample;
+            for(int i = 1; i < I2S_CHANS_ADC; i += 2)
+            {   
+                p_i2s_adc[index++] :> sample;
 #if NUM_USB_CHAN_IN > 0
-            samplesIn[i] = bitrev(sample);
+                samplesIn[i] = bitrev(sample);
 
-            /* Store the previous left in left */
-            samplesIn[i-1] = samplesInPrev[i];
+                /* Store the previous left in left */
+                samplesIn[i-1] = samplesInPrev[i];
 #endif
-        }
+            }
 #endif
  
 #if defined(SPDIF) && (NUM_USB_CHAN_OUT > 0)	
-        outuint(c_spd_out, samplesOut[SPDIF_TX_INDEX]);  /* Forward sample to S/PDIF Tx thread */
-        sample = samplesOut[SPDIF_TX_INDEX + 1];                 
-        outuint(c_spd_out, sample);                      /* Forward sample to S/PDIF Tx thread */
-#ifdef RAMP_CHECK
-        sample >>= 8;
-        if (started<10000) {
-          if (sample == prev+1) 
-            started++;
-        }
-        else
-          if (sample != prev+1 && sample != 0) {
-            printintln(prev);
-            printintln(sample);
-            printintln(prev-sample+1);
-          }        
-        prev = sample;
-#endif
-
+            outuint(c_spd_out, samplesOut[SPDIF_TX_INDEX]);  /* Forward sample to S/PDIF Tx thread */
+            sample = samplesOut[SPDIF_TX_INDEX + 1];                 
+            outuint(c_spd_out, sample);                      /* Forward sample to S/PDIF Tx thread */
 #endif      
-        tmp = 0;
+            tmp = 0;
 #pragma xta endpoint "i2s_output_r"
 #if (I2S_CHANS_DAC != 0) && (NUM_USB_CHAN_OUT != 0)
 #pragma loop unroll
-        for(int i = 1; i < I2S_CHANS_DAC; i+=2)
-        { 
-            p_i2s_dac[tmp++] <: bitrev(samplesOut[i]);            /* Output RIGHT sample to DAC */
-        }
+            for(int i = 1; i < I2S_CHANS_DAC; i+=2)
+            { 
+                p_i2s_dac[tmp++] <: bitrev(samplesOut[i]);            /* Output RIGHT sample to DAC */
+            }
 #endif
 
 #ifndef CODEC_MASTER 
-        /* Clock out data (and LR clock) */
-        p_lrclk <: 0x7FFFFFFF;
-        doI2SClocks(divide);
+            /* Clock out data (and LR clock) */
+            p_lrclk <: 0x7FFFFFFF;
+            doI2SClocks(divide);
 #endif  
         
 
 #if (I2S_CHANS_ADC != 0)
-        /* Input previous L ADC sample */
-        index = 0;
+            /* Input previous L ADC sample */
+            index = 0;
 #pragma loop unroll
-        for(int i = 1; i < I2S_CHANS_ADC; i += 2)
-        {
-            p_i2s_adc[index++] :> sample;
+            for(int i = 1; i < I2S_CHANS_ADC; i += 2)
+            {
+                p_i2s_adc[index++] :> sample;
 
 #if NUM_USB_CHAN_IN > 0
-            samplesInPrev[i] = bitrev(sample);
+                samplesInPrev[i] = bitrev(sample);
 #endif
-        }
+            }
 
 #ifdef SU1_ADC_ENABLE
-        {
-            unsigned x;
+            {
+                unsigned x;
 
-            x = inuint(c_adc);
-            inct(c_adc);
-            asm("stw %0, dp[g_adcVal]"::"r"(x));
-        }
+                x = inuint(c_adc);
+                inct(c_adc);
+                asm("stw %0, dp[g_adcVal]"::"r"(x));
+            }
 #endif
 #endif
 
@@ -726,9 +704,7 @@ static inline void doI2SClocks(unsigned divide)
                 }
             }
         }
-    
 #endif
-
     }
     return {0,0};
 }
