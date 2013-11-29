@@ -209,7 +209,11 @@ void xscope_user_init()
 #endif
 
 /* Core USB Audio functions - must be called on the Tile connected to the USB Phy */
-void usb_audio_core(chanend c_mix_out)
+void usb_audio_core(chanend c_mix_out
+#ifdef MIDI
+, chanend c_midi
+#endif
+)
 { 
     chan c_sof; 
     chan c_xud_out[EP_CNT_OUT];              /* Endpoint channels for XUD */ 
@@ -297,7 +301,11 @@ void usb_audio_core(chanend c_mix_out)
     }
 }
 
-void usb_audio_io(chanend c_mix_out, chanend ?c_adc)
+void usb_audio_io(chanend c_mix_out, chanend ?c_adc
+#ifdef MIDI
+, chanend c_midi
+#endif
+)
 {
     par
     {
@@ -336,6 +344,8 @@ int main()
     chan c_mix_out;
 #ifdef MIDI
     chan c_midi;
+#else
+#define c_midi null
 #endif
 #ifdef IAP
     chan c_iap;
@@ -351,9 +361,17 @@ int main()
 
     par
     {
-        on tile[XUD_TILE]: usb_audio_core(c_mix_out);
+        on tile[XUD_TILE]: usb_audio_core(c_mix_out 
+#ifdef MIDI    
+            , c_midi
+#endif
+);
         
-        on tile[AUDIO_IO_TILE]: usb_audio_io(c_mix_out, c_adc);
+        on tile[AUDIO_IO_TILE]: usb_audio_io(c_mix_out, c_adc
+#ifdef MIDI
+            , c_midi
+#endif
+        );
 
         USER_MAIN_CORES
     }
