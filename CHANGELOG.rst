@@ -1,8 +1,8 @@
 sc_usb_audio
 ============
 
-1.0.0
+6.3.0
 -----
-   * Initial release
+   * see sw_usb_audio for changelog
 
 

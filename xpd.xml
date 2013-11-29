@@ -1,6 +1,8 @@
 <?xml version="1.0" ?>
 <xpd>
+    <components></components>
     <description>USB Audio Shared Components. For use in the XMOS USB Audio Refererence Designs.</description>
+    <git_export>False</git_export>
     <location>git://git/apps/sc_usb_audio</location>
     <name>USB Audio Shared Components</name>
     <vendor>XMOS</vendor>
@@ -10,5 +12,4 @@
         <version_define name = "BDC_DEVICE_N" format = "%POINT%"></version_define>
     </version_defines>
     <xpd_version>1.0</xpd_version>
-    <git_export>False</git_export>
 </xpd>
