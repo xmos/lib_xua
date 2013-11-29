@@ -42,7 +42,7 @@ unsigned g_numUsbChanIn = NUM_USB_CHAN_IN;
 #define MAX_DEVICE_AUD_PACKET_SIZE (MAX(MAX_DEVICE_AUD_PACKET_SIZE_CLASS_ONE, MAX_DEVICE_AUD_PACKET_SIZE_CLASS_TWO))
 
 /* Circular audio buffers */
-unsigned outAudioBuff[BUFF_SIZE_OUT + (MAX_USB_AUD_PACKET_SIZE>>2) + 4];
+unsigned outAudioBuff[BUFF_SIZE_OUT + (MAX_DEVICE_AUD_PACKET_SIZE>>2) + 4];
 unsigned audioBuffIn[BUFF_SIZE_IN + (MAX_DEVICE_AUD_PACKET_SIZE>>2) + 4];
 
 unsigned inZeroBuff[(MAX_DEVICE_AUD_PACKET_SIZE>>2)+4];
