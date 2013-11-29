@@ -1,9 +1,11 @@
-<Add title here>
-================
+module_dfu
+==========
 
-:scope: <Put one of Roadmap, Example, Early Development or General Use>
-:description: <Add one line here>
-:keywords: <Add comma separated list of keywords>
-:boards: <Add comma separated list of supported boards>
+:scope: General Use
+:description: module_dfu
+:keywords: DFU
+:boards: XMOS USB Audio Reference Designes
 
-<Add description of software block>
+Code providing firmware upgrade over USB.
+
+./host provides an example of a host application for DFU.  This is written and tested for OSX.  LibUSB is used to aid cross-platform porting.
