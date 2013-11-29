@@ -3,7 +3,6 @@
  * @brief   Top level for XMOS USB 2.0 Audio 2.0 Reference Designs.
  * @author  Ross Owen, XMOS Semiconductor Ltd 
  */                               
-
 #include <syscall.h>
 #include <platform.h>
 #include <xs1.h>
@@ -30,10 +29,14 @@
 #endif
 
 #ifndef AUDIO_IO_TILE
-#define AUDIO_IO_TILE 0
+#define AUDIO_IO_TILE   0
 #endif
 
-/* Audio I/O */
+#ifndef XUD_TILE
+#define XUD_TILE        0
+#endif
+
+/* Audio I/O - Port declarations */
 #if I2S_WIRES_DAC > 0
 on tile[AUDIO_IO_TILE] : buffered out port:32 p_i2s_dac[I2S_WIRES_DAC] = 
                 {PORT_I2S_DAC0,
@@ -97,7 +100,7 @@ on tile[AUDIO_IO_TILE] : buffered in port:32 p_i2s_adc[I2S_WIRES_ADC] =
 on tile[AUDIO_IO_TILE] : buffered out port:32 p_lrclk       = PORT_I2S_LRCLK;
 on tile[AUDIO_IO_TILE] : buffered out port:32 p_bclk        = PORT_I2S_BCLK;
 #else
-on tile[AUDIO_IO_TILE] : in port p_lrclk       = PORT_I2S_LRCLK;
+on tile[AUDIO_IO_TILE] : in port p_lrclk                    = PORT_I2S_LRCLK;
 on tile[AUDIO_IO_TILE] : in port p_bclk                     = PORT_I2S_BCLK;
 #endif
 
@@ -134,10 +137,10 @@ on tile[AUDIO_IO_TILE] : clock    clk_mst_spd               = XS1_CLKBLK_1;
 #ifdef ARCH_L
 #ifdef PORT_USB_RESET
 /* This define is checked since it could be on a shift reg or similar */
-on tile[0] : out port p_usb_rst                             = PORT_USB_RESET;
+on tile[XUD_TILE] : out port p_usb_rst                      = PORT_USB_RESET;
 #endif
 /* L Series also needs a clock for this port */
-on tile[0] : clock clk                                      = XS1_CLKBLK_4;
+on tile[XUD_TILE] : clock clk                               = XS1_CLKBLK_4;
 #else
 /* Reset port not required for SU1 due to built in Phy */
 #define p_usb_rst   null
@@ -145,9 +148,10 @@ on tile[0] : clock clk                                      = XS1_CLKBLK_4;
 #endif
 
 #ifdef IAP
-on tile [AUDIO_IO_TILE] : port p_i2c_sda = PORT_I2C_SDA;
-on tile [AUDIO_IO_TILE] : port p_i2c_scl = PORT_I2C_SCL;
+on tile [AUDIO_IO_TILE] : port p_i2c_sda                    = PORT_I2C_SDA;
+on tile [AUDIO_IO_TILE] : port p_i2c_scl                    = PORT_I2C_SCL;
 #endif
+
 
 /* Endpoint type tables for XUD */
 XUD_EpType epTypeTableOut[EP_CNT_OUT] = { XUD_EPTYPE_CTL | XUD_STATUS_ENABLE, 
