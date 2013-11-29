@@ -357,7 +357,7 @@ int DFUReportResetState(chanend ?c_user_cmd)
     return inDFU;
 }
 
-int XMOS_DFU_RevertFactory(chanend ?c_user_cmd) 
+static int XMOS_DFU_RevertFactory(chanend ?c_user_cmd)
 {
     unsigned s = 0;
 
@@ -371,7 +371,7 @@ int XMOS_DFU_RevertFactory(chanend ?c_user_cmd)
     return 0;
 }
 
-int XMOS_DFU_SelectImage(unsigned int index, chanend ?c_user_cmd)
+static int XMOS_DFU_SelectImage(unsigned int index, chanend ?c_user_cmd)
 {
     // Select the image index for firmware update
     // Currently not used or implemented
@@ -379,12 +379,12 @@ int XMOS_DFU_SelectImage(unsigned int index, chanend ?c_user_cmd)
 }
 
 
-int XMOS_DFU_SaveState()
+static int XMOS_DFU_SaveState()
 { 
     return 0;
 }
 
-int XMOS_DFU_LoadState()
+static int XMOS_DFU_LoadState()
 {
     return 0;
 }

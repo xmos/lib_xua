@@ -115,7 +115,7 @@ int doMix8(xc_ptr samples, xc_ptr mult);
 /* DO NOT inline, causes 10.4.2 tools to add extra loads in loop */
 /* At 18 x 12dB we could get 64 x bigger */
 #pragma unsafe arrays
-int doMix(xc_ptr samples, xc_ptr ptr, xc_ptr mult)
+static int doMix(xc_ptr samples, xc_ptr ptr, xc_ptr mult)
 {
     int h=0; 
     int l=0; 
@@ -151,7 +151,7 @@ int doMix(xc_ptr samples, xc_ptr ptr, xc_ptr mult)
 #endif
 
 #pragma unsafe arrays
-void giveSamplesToHost(chanend c, xc_ptr samples, xc_ptr ptr, xc_ptr multIn)
+static void giveSamplesToHost(chanend c, xc_ptr samples, xc_ptr ptr, xc_ptr multIn)
 {
 #if defined(IN_VOLUME_IN_MIXER) && defined(IN_VOLUME_AFTER_MIX)
     int mult;
@@ -220,7 +220,7 @@ static void getSamplesFromHost(chanend c, xc_ptr samples, int base)
 }
 
 #pragma unsafe arrays
-void giveSamplesToDevice(chanend c, xc_ptr samples, xc_ptr ptr, xc_ptr multOut)
+static void giveSamplesToDevice(chanend c, xc_ptr samples, xc_ptr ptr, xc_ptr multOut)
 {
 #pragma loop unroll
     for (int i=0;i<NUM_USB_CHAN_OUT;i++) 
@@ -248,7 +248,7 @@ void giveSamplesToDevice(chanend c, xc_ptr samples, xc_ptr ptr, xc_ptr multOut)
 }
 
 #pragma unsafe arrays
-void getSamplesFromDevice(chanend c, xc_ptr samples, int base)
+static void getSamplesFromDevice(chanend c, xc_ptr samples, int base)
 {
 #if defined(IN_VOLUME_IN_MIXER) && !defined(IN_VOLUME_AFTER_MIX)
     int mult;
@@ -281,10 +281,10 @@ void getSamplesFromDevice(chanend c, xc_ptr samples, int base)
   }
 }
 
-int mixer1_mix2_flag = (DEFAULT_FREQ > 96000);
+static int mixer1_mix2_flag = (DEFAULT_FREQ > 96000);
 
 #pragma unsafe arrays
-void mixer1(chanend c_host, chanend c_mix_ctl, chanend c_mixer2)
+static void mixer1(chanend c_host, chanend c_mix_ctl, chanend c_mixer2)
 {
     int mixed;
     unsigned cmd;
@@ -515,10 +515,10 @@ void mixer1(chanend c_host, chanend c_mix_ctl, chanend c_mixer2)
     }
 }
 
-int mixer2_mix2_flag = (DEFAULT_FREQ > 96000);
+static int mixer2_mix2_flag = (DEFAULT_FREQ > 96000);
 
 #pragma unsafe arrays
-void mixer2(chanend c_mixer1, chanend c_audio)
+static void mixer2(chanend c_mixer1, chanend c_audio)
 {
   int mixed;
 

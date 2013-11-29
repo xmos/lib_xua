@@ -42,7 +42,7 @@ void reset_midi_state(struct midi_in_parse_state &mips) {
  * @brief Construct USB MIDI event 
  *
  */
-unsigned makeEvent(unsigned cable_number, unsigned codeIndexNumber, unsigned midi0, unsigned midi1, unsigned midi2) {
+static unsigned makeEvent(unsigned cable_number, unsigned codeIndexNumber, unsigned midi0, unsigned midi1, unsigned midi2) {
     unsigned event = (cable_number << 28);
     event |= (codeIndexNumber << 24);
     event |= (midi0 << 16);
