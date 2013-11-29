@@ -5,6 +5,7 @@
     <git_export>False</git_export>
     <location>git://git/apps/sc_usb_audio</location>
     <name>USB Audio Shared Components</name>
+    <maintainer>xross</maintainer>
     <vendor>XMOS</vendor>
     <version_defines>
         <version_define name = "BCD_DEVICE_J" format = "%MAJOR%"></version_define>

@@ -1,5 +1,6 @@
-sc_usb_audio
-============
+sc_usb_audio Change Log
+=======================
+
 
 6.3.0
 -----
