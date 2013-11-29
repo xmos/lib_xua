@@ -242,11 +242,13 @@
 #define PID_AUDIO_2               (0x0002)        
 #endif
 
+#define BCD_DEVICE_J             6
+#define BCD_DEVICE_M             2
+#define BCD_DEVICE_N             0
+
 /* Device release number in BCD: 0xJJMN */
 #ifndef BCD_DEVICE
-#define BCD_DEVICE               (0x0630)
-
-//((XMOS_USB_AUD_APP_MAJOR_VERSION << 8) | ((XMOS_USB_AUD_APP_MINOR_VERSION&0xF) << 4) | (XMOS_USB_AUD_APP_POINT_VERSION&0xF))
+#define BCD_DEVICE               ((BCD_DEVICE_J << 8) | ((BCD_DEVICE&0xF) << 4) | (XMOS_USB_AUD_APP_POINT_VERSION&0xF))
 #endif
 
 /* Addition interfaces based on defines */
