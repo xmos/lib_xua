@@ -182,6 +182,7 @@ XUD_EpType epTypeTableIn[EP_CNT_IN] = { XUD_EPTYPE_CTL | XUD_STATUS_ENABLE,
 #endif
                                         };
 
+
 void thread_speed()
 {
 #ifdef FAST_MODE
@@ -207,74 +208,52 @@ void xscope_user_init()
 #define pwrConfig XUD_PWR_BUS
 #endif
 
-
-int main()
-{
-    chan c_sof;
-    chan c_xud_out[EP_CNT_OUT];              /* Endpoint channels for XUD */
-    chan c_xud_in[EP_CNT_IN];
-    chan c_aud_ctl;
-    chan c_mix_out;
-#ifdef MIDI
-    chan c_midi;
-#endif
-#ifdef IAP
-    chan c_iap;
-#endif
-
-#ifdef TEST_MODE_SUPPORT
-#warning Building with test mode support
-    chan c_usb_test;
-#else
-#define c_usb_test null
-#endif
-
-#ifdef SU1_ADC_ENABLE
-    chan c_adc;
-#else
-#define c_adc null
-#endif
-
-#ifdef CHAN_BUFF_CTRL
-#warning Using channel to control buffering - this may reduce performance but improve power consumption
-    chan c_buff_ctrl;
-#endif
-
-
-
+/* Core USB Audio functions - must be called on the Tile connected to the USB Phy */
+void usb_audio_core(chanend c_mix_out)
+{ 
+    chan c_sof; 
+    chan c_xud_out[EP_CNT_OUT];              /* Endpoint channels for XUD */ 
+    chan c_xud_in[EP_CNT_IN]; 
+    chan c_aud_ctl; 
+#ifdef TEST_MODE_SUPPORT 
+#warning Building with test mode support 
+    chan c_usb_test; 
+#else 
+#define c_usb_test null 
+#endif 
+#ifdef CHAN_BUFF_CTRL 
+#warning Using channel to control buffering - this may reduce performance but improve power consumption 
+    chan c_buff_ctrl; 
+#endif 
     par 
-    {
-    
-        /* USB Interface */
+    {  
+        /* USB Interface Core */ 
 #if (AUDIO_CLASS==2) 
-        on tile[0]: XUD_Manager(c_xud_out, EP_CNT_OUT, c_xud_in, EP_CNT_IN, 
-                  c_sof, epTypeTableOut, epTypeTableIn, p_usb_rst, 
-                  clk, 1, XUD_SPEED_HS, c_usb_test, pwrConfig);  
-#else
-        on tile[0]:XUD_Manager(c_xud_out, EP_CNT_OUT, c_xud_in, EP_CNT_IN, 
-                  c_sof, epTypeTableOut, epTypeTableIn, p_usb_rst, 
-                  clk, 1, XUD_SPEED_FS, c_usb_test, pwrConfig);  
-#endif
-        
-              on tile[0]:
+        XUD_Manager(c_xud_out, EP_CNT_OUT, c_xud_in, EP_CNT_IN, 
+            c_sof, epTypeTableOut, epTypeTableIn, p_usb_rst, 
+            clk, 1, XUD_SPEED_HS, c_usb_test, pwrConfig);  
+#else 
+        XUD_Manager(c_xud_out, EP_CNT_OUT, c_xud_in, EP_CNT_IN, 
+            c_sof, epTypeTableOut, epTypeTableIn, p_usb_rst, 
+            clk, 1, XUD_SPEED_FS, c_usb_test, pwrConfig);  
+#endif 
+
+        /* USB Packet buffering Core */        
         {
+            unsigned x;
             thread_speed();
             
             /* Attach mclk count port to mclk clock-block (for feedback) */
             //set_port_clock(p_for_mclk_count, clk_audio_mclk);
-            {
-                unsigned x;
 #if(AUDIO_IO_TILE != 0)
-                set_clock_src(clk_audio_mclk2, p_mclk_in2);
-                set_port_clock(p_for_mclk_count, clk_audio_mclk2); 
-                start_clock(clk_audio_mclk2);
+            set_clock_src(clk_audio_mclk2, p_mclk_in2);
+            set_port_clock(p_for_mclk_count, clk_audio_mclk2); 
+            start_clock(clk_audio_mclk2);
 #else
-                /* Uses same clock-block as I2S */
-                asm("ldw %0, dp[clk_audio_mclk]":"=r"(x));
-                asm("setclk res[%0], %1"::"r"(p_for_mclk_count), "r"(x));
+            /* Uses same clock-block as I2S */
+            asm("ldw %0, dp[clk_audio_mclk]":"=r"(x));
+            asm("setclk res[%0], %1"::"r"(p_for_mclk_count), "r"(x));
 #endif
-            }
-
             buffer(c_xud_out[EP_NUM_OUT_AUD],/* Audio Out*/
                 c_xud_in[EP_NUM_IN_AUD],     /* Audio In */
                 c_xud_in[EP_NUM_IN_FB],      /* Audio FB */
@@ -297,38 +276,39 @@ int main()
 #ifdef CHAN_BUFF_CTRL
                 , c_buff_ctrl
 #endif
-
-                );
-
-        }
-
-        on tile[AUDIO_IO_TILE]:
-        {
-            thread_speed();
-
-            /* Audio I/O (pars additional S/PDIF TX thread) */ 
-            audio(c_mix_out, null, null, c_adc);
-        }
-        
-        on tile[0]:
-        {
-            thread_speed();
-            decouple(c_mix_out, null
-#ifdef CHAN_BUFF_CTRL
-            , c_buff_ctrl
-#endif
             );
         }
 
-          /* Endpoint 0 */
-        on tile[0]:
+        /* Endpoint 0 Core */
         {
             thread_speed();
             Endpoint0( c_xud_out[0], c_xud_in[0], c_aud_ctl, null, null, c_usb_test);
         }
+               
+        /* Decoupling core */ 
+        {
+            thread_speed();
+            decouple(c_mix_out, null
+#ifdef CHAN_BUFF_CTRL
+                , c_buff_ctrl
+#endif
+            );
+        }
+    }
+}
 
+void usb_audio_io(chanend c_mix_out, chanend ?c_adc)
+{
+    par
+    {
+        /* Audio I/O Core (pars additional S/PDIF TX Core) */ 
+        {
+            thread_speed();
+            audio(c_mix_out, null, null, c_adc);
+        }
+       
+        /* MIDI/iAP Core */
 #if defined  (MIDI) || defined IAP
-        on tile[AUDIO_IO_TILE]:
         {
             thread_speed();
 #ifdef MIDI
@@ -339,15 +319,49 @@ int main()
         }
 #endif
 
+    }
+}
 
+#ifndef USER_MAIN_DECLARATIONS
+#define USER_MAIN_DECLARATIONS
+#endif
+
+#ifndef USER_MAIN_CORES
+#define USER_MAIN_CORES
+#endif
+
+/* Main for USB Audio Applications */
+int main()
+{
+    chan c_mix_out;
+#ifdef MIDI
+    chan c_midi;
+#endif
+#ifdef IAP
+    chan c_iap;
+#endif
+
+#ifdef SU1_ADC_ENABLE
+    chan c_adc;
+#else
+#define c_adc null
+#endif
+
+    USER_MAIN_DECLARATIONS
+
+    par
+    {
+        on tile[XUD_TILE]: usb_audio_core(c_mix_out);
+        
+        on tile[AUDIO_IO_TILE]: usb_audio_io(c_mix_out, c_adc);
+
+        USER_MAIN_CORES
+    }
 
 #ifdef SU1_ADC_ENABLE
         xs1_su_adc_service(c_adc);
 #endif
-
-    }
+    
     return 0;
 }
-
-
 
