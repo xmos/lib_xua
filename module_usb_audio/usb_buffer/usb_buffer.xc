@@ -54,9 +54,9 @@ static inline void swap(xc_ptr &a, xc_ptr &b)
 #endif
 
 #ifdef MIDI
-static unsigned int g_midi_to_host_buffer_A[MAX_USB_MIDI_PACKET_SIZE/4+4];
-static unsigned int g_midi_to_host_buffer_B[MAX_USB_MIDI_PACKET_SIZE/4+4];
-static unsigned int g_midi_from_host_buffer[MAX_USB_MIDI_PACKET_SIZE/4+4];
+static unsigned int g_midi_to_host_buffer_A[MAX_USB_MIDI_PACKET_SIZE/4];
+static unsigned int g_midi_to_host_buffer_B[MAX_USB_MIDI_PACKET_SIZE/4];
+static unsigned int g_midi_from_host_buffer[MAX_USB_MIDI_PACKET_SIZE/4];
 #endif
 
 #ifdef IAP
@@ -511,14 +511,11 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
             /* The buffer has been sent to the host, so we can ack the midi thread */
             if (midi_data_collected_from_device != 0) 
             {
-                /* We have some more data to send set the amount of data to send */
-                write_via_xc_ptr(midi_to_host_buffer_being_collected, midi_data_collected_from_device);
-
                 /* Swap the collecting and sending buffer */
                 swap(midi_to_host_buffer_being_collected, midi_to_host_buffer_being_sent);
                 
                 /* Request to send packet */
-                XUD_SetReady_InPtr(ep_midi_to_host, midi_to_host_buffer_being_sent+4, midi_data_collected_from_device);
+                XUD_SetReady_InPtr(ep_midi_to_host, midi_to_host_buffer_being_sent, midi_data_collected_from_device);
 
                 /* Mark as waiting for host to poll us */
                 midi_waiting_on_send_to_host = 1;                                                                                                                  
@@ -616,7 +613,7 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
                     if (midi_data_collected_from_device < MIDI_USB_BUFFER_TO_HOST_SIZE)
                     {
                         /* There is room in the collecting buffer for the data */
-                        xc_ptr p = (midi_to_host_buffer_being_collected + 4) + midi_data_collected_from_device;                                                            
+                        xc_ptr p = midi_to_host_buffer_being_collected + midi_data_collected_from_device;
                         // Add data to the buffer
                         write_via_xc_ptr(p, datum);
                         midi_data_collected_from_device += 4;
@@ -629,12 +626,10 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
                     // If we are not sending data to the host then initiate it
                     if (!midi_waiting_on_send_to_host) 
                     {
-                        write_via_xc_ptr(midi_to_host_buffer_being_collected, midi_data_collected_from_device);
- 
                         swap(midi_to_host_buffer_being_collected, midi_to_host_buffer_being_sent);
  
                         // Signal other side to swap
-                        XUD_SetReady_InPtr(ep_midi_to_host, midi_to_host_buffer_being_sent+4, midi_data_collected_from_device);
+                        XUD_SetReady_InPtr(ep_midi_to_host, midi_to_host_buffer_being_sent, midi_data_collected_from_device);
                         midi_data_collected_from_device = 0;
                         midi_waiting_on_send_to_host = 1;                  
                     }
