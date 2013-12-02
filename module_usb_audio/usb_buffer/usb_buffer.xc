@@ -54,8 +54,8 @@ static inline void swap(xc_ptr &a, xc_ptr &b)
 #endif
 
 #ifdef MIDI
-static unsigned int g_midi_to_host_buffer_A[MAX_USB_MIDI_PACKET_SIZE/4];
-static unsigned int g_midi_to_host_buffer_B[MAX_USB_MIDI_PACKET_SIZE/4];
+static unsigned int g_midi_to_host_buffer_A[MIDI_USB_BUFFER_TO_HOST_SIZE/4];
+static unsigned int g_midi_to_host_buffer_B[MIDI_USB_BUFFER_TO_HOST_SIZE/4];
 static unsigned int g_midi_from_host_buffer[MAX_USB_MIDI_PACKET_SIZE/4];
 #endif
 
