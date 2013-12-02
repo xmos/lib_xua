@@ -56,7 +56,7 @@ static inline void swap(xc_ptr &a, xc_ptr &b)
 #ifdef MIDI
 unsigned int g_midi_to_host_buffer_A[MAX_USB_MIDI_PACKET_SIZE/4+4];
 unsigned int g_midi_to_host_buffer_B[MAX_USB_MIDI_PACKET_SIZE/4+4];
-int g_midi_from_host_buffer[MAX_USB_MIDI_PACKET_SIZE/4+4];
+unsigned int g_midi_from_host_buffer[MAX_USB_MIDI_PACKET_SIZE/4+4];
 #endif
 
 #ifdef IAP
@@ -145,14 +145,11 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
     xc_ptr aud_from_host_buffer = 0;
 
 #ifdef MIDI
-    xc_ptr midi_from_host_buffer = 0;
-    xc_ptr midi_to_host_buffer = 0;
-    xc_ptr midi_to_host_waiting_buffer = 0;
+    xc_ptr midi_from_host_buffer = array_to_xc_ptr(g_midi_from_host_buffer);
 
     xc_ptr midi_from_host_rdptr;
     xc_ptr midi_to_host_buffer_being_sent = array_to_xc_ptr(g_midi_to_host_buffer_A);
     xc_ptr midi_to_host_buffer_being_collected = array_to_xc_ptr(g_midi_to_host_buffer_B);
-
 
     int is_ack;
     unsigned int datum;
@@ -214,16 +211,7 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
         expected_fb = ((DEFAULT_FREQ * 0x2000) / 1000);
 #endif
         
-    } 
-
-#ifdef MIDI
-    // get the two buffers to use for midi device->host
-    asm("ldaw %0, dp[g_midi_to_host_buffer_A]":"=r"(midi_to_host_buffer));
-    asm("ldaw %0, dp[g_midi_to_host_buffer_B]":"=r"(midi_to_host_waiting_buffer));
-    asm("ldaw %0, dp[g_midi_from_host_buffer]":"=r"(midi_from_host_buffer));
-
-    swap(midi_to_host_buffer, midi_to_host_waiting_buffer);
-#endif
+    }
 
 #ifdef OUTPUT
     SET_SHARED_GLOBAL(g_aud_from_host_flag, 1);    
@@ -519,8 +507,6 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
         /* MIDI IN to host */                  
         case XUD_SetData_Select(c_midi_to_host, ep_midi_to_host, tmp): 
             asm("#midi d->h");
- 
-            swap(midi_to_host_buffer, midi_to_host_waiting_buffer);
 
             /* The buffer has been sent to the host, so we can ack the midi thread */
             if (midi_data_collected_from_device != 0) 
