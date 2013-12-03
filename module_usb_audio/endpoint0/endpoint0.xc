@@ -193,11 +193,6 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
     }
 #endif
 
-    /* Copy langIDs string desc into string[0] */
-    /* TODO: Macro? */
-#if defined(AUDIO_CLASS_FALLBACK) || (AUDIO_CLASS == 1) 
-    //safememcpy(strDescs_Audio1[0], strDesc_langIDs, sizeof(strDesc_langIDs));
-#endif
     safememcpy(strDescs[0], strDesc_langIDs, sizeof(strDesc_langIDs));
 
     /* Build up channel string table - By default all channels are marked as analogue
