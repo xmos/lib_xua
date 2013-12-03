@@ -242,7 +242,7 @@ unsigned char devQualDesc_Null[] =
 #define OUTPUT_ALT_LENGTH           (OUTPUT_ALT_LENGTH_ADAT + OUTPUT_ALT_LENGTH_DSD)
 
 
-// Positions in strDescs_Audio2
+// Positions in strDescs
 enum {
     INTERNAL_CLOCK_STRING_INDEX = 14,
 #ifdef SPDIF_RX
