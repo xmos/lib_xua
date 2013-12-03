@@ -29,10 +29,14 @@
     #endif
 #endif
 
-#if !defined (DSD_CHANS_DAC)
-#define DSD_CHANS_DAC   0
-#else
-#define NATIVE_DSD      1        /* Always enable Native DSD when DSD mode is enabled */
+#if defined(DSD_CHANS_DAC)
+    #if defined(NATIVE_DSD) && (NATIVE_DSD == 0)
+        #undef NATIVE_DSD
+    #else
+        #define NATIVE_DSD       1  /* Always enable Native DSD when DSD mode is enabled */
+    #endif
+#else    
+    #define DSD_CHANS_DAC        0
 #endif
 
 /* Max supported sample freq for device */
