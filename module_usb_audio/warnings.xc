@@ -1,6 +1,8 @@
 
 /* Warnings relating to defines have been moved to this XC file to avoid multiple warnings being issued from the devicedefines.h header file */
 
+#include "customdefines.h"
+
 #ifndef DEFAULT_FREQ
 #warning DEFAULT_FREQ not defined. Using MIN_FREQ
 #endif
@@ -54,4 +56,5 @@
 #ifndef AUDIO_CLASS_FALLBACK
 #warning AUDIO_CLASS_FALLBACK not defined, using 0
 #endif
+
 
