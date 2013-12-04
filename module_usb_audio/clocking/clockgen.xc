@@ -5,8 +5,10 @@
 
 #include "devicedefines.h"
 #include "commands.h"
-#include "SpdifReceive.h"
 
+#if defined(SPDIF_RX)
+#include "SpdifReceive.h"
+#endif
 
 
 
