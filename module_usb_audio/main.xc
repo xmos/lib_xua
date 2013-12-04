@@ -213,6 +213,9 @@ void usb_audio_core(chanend c_mix_out
 #ifdef MIDI
 , chanend c_midi
 #endif
+#ifdef IAP
+, chanend c_iap
+#endif
 )
 { 
     chan c_sof; 
@@ -305,6 +308,9 @@ void usb_audio_io(chanend c_mix_out, chanend ?c_adc
 #ifdef MIDI
 , chanend c_midi
 #endif
+#ifdef IAP
+, chanend c_iap
+#endif
 )
 {
     par
@@ -365,11 +371,17 @@ int main()
 #ifdef MIDI    
             , c_midi
 #endif
+#ifdef IAP
+            , c_iap
+#endif
 );
         
         on tile[AUDIO_IO_TILE]: usb_audio_io(c_mix_out, c_adc
 #ifdef MIDI
             , c_midi
+#endif
+#ifdef IAP
+            , c_iap
 #endif
         );
 
