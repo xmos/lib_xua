@@ -256,7 +256,7 @@
 #endif
 
 #if defined(IAP) && !defined(ACCESSORY_FIRMWARE_VERSION)
-#define ACCESSORY_FIRMWARE_VERSION BCD_DEVICE
+#define ACCESSORY_FIRMWARE_VERSION  {BCD_DEVICE_J, BCD_DEVICE_M, BCD_DEVICE_N}
 #endif
 
 /* Addition interfaces based on defines */
