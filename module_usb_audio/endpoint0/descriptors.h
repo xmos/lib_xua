@@ -1390,36 +1390,6 @@ unsigned char cfgDesc_Audio2[] =
 
 };
 
-
-
-/* String table */
-#ifdef SPDIF_RX
-#define SPDIF_RX_NUM_STRS   1
-#else
-#define SPDIF_RX_NUM_STRS   0
-#endif
-
-#ifdef ADAT_RX
-#define ADAT_RX_NUM_STRS    1
-#else
-#define ADAT_RX_NUM_STRS    0
-#endif
-
-#ifdef MIDI
-#define MIDI_NUM_STRS       2
-#else
-#define MIDI_NUM_STRS       0
-#endif
-
-#ifdef DFU
-#define DFU_NUM_STRS       1
-#else
-#define DFU_NUM_STRS       0
-#endif
-
-#define STR_INDEX_OUT_CHAN  (10 + SPDIF_RX_NUM_STRS + ADAT_RX_NUM_STRS + MIDI_NUM_STRS + DFU_NUM_STRS)
-#define STR_INDEX_IN_CHAN   (STR_INDEX_OUT_CHAN + NUM_USB_CHAN_OUT)
-
 #define APPEND_VENDOR_STR(x) VENDOR_STR" "#x
 
 #define APPEND_PRODUCT_STR_A2(x) PRODUCT_STR_A2 " "#x
