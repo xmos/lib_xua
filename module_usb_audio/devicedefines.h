@@ -226,24 +226,24 @@
 
 /* Product string for Audio Class 2.0 mode */
 #ifndef PRODUCT_STR_A2
-#define PRODUCT_STR_A2             "xCORE USB Audio 2.0"
+#define PRODUCT_STR_A2           "xCORE USB Audio 2.0"
 #endif
 
 /* Product string for Audio Class 1.0 mode */
 #ifndef PRODUCT_STR_A1
-#define PRODUCT_STR_A1             "xCORE USB Audio 1.0"
+#define PRODUCT_STR_A1           "xCORE USB Audio 1.0"
 #endif
 
 /* USB Product ID (PID) for Audio Class 1.0 mode */
 #if (AUDIO_CLASS==1) || defined(AUDIO_CLASS_FALLBACK)
 #ifndef PID_AUDIO_1
-#define PID_AUDIO_1               (0x0003)        
+#define PID_AUDIO_1              (0x0003)        
 #endif
 #endif
 
 /* USB Product ID (PID) for Audio Class 2.0 mode */
 #ifndef PID_AUDIO_2
-#define PID_AUDIO_2               (0x0002)        
+#define PID_AUDIO_2              (0x0002)        
 #endif
 
 #define BCD_DEVICE_J             6
@@ -255,17 +255,21 @@
 #define BCD_DEVICE               ((BCD_DEVICE_J << 8) | ((BCD_DEVICE_M & 0xF) << 4) | (BCD_DEVICE_N & 0xF))
 #endif
 
+#if defined(IAP) && !defined(ACCESSORY_FIRMWARE_VERSION)
+#define ACCESSORY_FIRMWARE_VERSION BCD_DEVICE
+#endif
+
 /* Addition interfaces based on defines */
 #if defined(DFU) && DFU != 0
-#define DFU_INTERFACES          (1)               /* DFU interface count */
+#define DFU_INTERFACES           (1)               /* DFU interface count */
 #else
-#define DFU_INTERFACES          (0)
+#define DFU_INTERFACES           (0)
 #endif
 
 #ifdef INPUT
-#define INPUT_INTERFACES        (1)
+#define INPUT_INTERFACES         (1)
 #else
-#define INPUT_INTERFACES        (0)
+#define INPUT_INTERFACES         (0)
 #endif
 
 #if defined(OUTPUT) && OUTPUT != 0
