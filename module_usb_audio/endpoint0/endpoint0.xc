@@ -100,23 +100,10 @@ unsigned g_curUsbSpeed = 0;
 extern unsigned g_iap_reset;
 #endif
 
-
-#define STR_USENG 0x0409
-
-#define DESC_STR_LANGIDS \
-{ \
-  STR_USENG & 0xff,              /* 2  wLangID[0] */ \
-  STR_USENG>>8,                  /* 3  wLangID[0] */ \
-  '\0' \
-}
-
 #ifdef NATIVE_DSD
 /* We remember if we are in DSD mode to avoid Configuring the DAC too often - thus avoiding pops and clicks */
 unsigned g_dsdMode = 0;
 #endif
-
-/* String descriptors */
-static unsigned char strDesc_langIDs[] = DESC_STR_LANGIDS;
 
 void VendorAudioRequestsInit(chanend c_audioControl, chanend ?c_mix_ctl, chanend ?c_clk_ctl);
 
@@ -192,8 +179,6 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
         mixSel[i] = i;
     }
 #endif
-
-    safememcpy(strDescs[0], strDesc_langIDs, sizeof(strDesc_langIDs));
 
     /* Build up channel string table - By default all channels are marked as analogue
      * TODO We really want to do this an build time... */
