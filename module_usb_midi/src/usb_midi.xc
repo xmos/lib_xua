@@ -7,8 +7,8 @@
 #include "midioutparse.h"
 #include "queue.h"
 #ifdef IAP
-#include "iAP.h"
-#include "iapuser.h"
+#include "iap.h"
+#include "iap_user.h"
 #endif
 //#define MIDI_LOOPBACK 1
 int icount = 0;

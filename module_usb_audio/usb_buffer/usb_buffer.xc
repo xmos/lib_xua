@@ -8,7 +8,7 @@
 #include "usb_midi.h"
 #endif
 #ifdef IAP
-#include "iAP.h"
+#include "iap.h"
 #endif
 #include "xc_ptr.h"
 #include "commands.h"
