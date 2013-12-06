@@ -331,11 +331,11 @@ void usb_midi(port ?p_midi_in, port ?p_midi_out,
                     /* Check for special case where MIDI ports are shared with i2c ports */
                     if(isnull(c_i2c) && isnull(p_scl) && isnull(p_sda))
                     {
-                        handle_iap_case(is_ack, is_reset, datum, c_iap, c_i2c, p_midi_out, p_midi_in);
+                        iap_handle_ack_or_reset_or_data(is_ack, is_reset, datum, c_iap, c_i2c, p_midi_out, p_midi_in);
                     }
                     else
                     {
-                        handle_iap_case(is_ack, is_reset, datum, c_iap, c_i2c, p_scl, p_sda);
+                        iap_handle_ack_or_reset_or_data(is_ack, is_reset, datum, c_iap, c_i2c, p_scl, p_sda);
                     }
                     if (!authenticating) 
                     {
