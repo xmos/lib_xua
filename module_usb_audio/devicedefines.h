@@ -8,10 +8,6 @@
 
 #include "customdefines.h"
 
-#ifdef __iap_conf_h_exists__
-#include "iap_conf.h"
-#endif
-
 /* Tidy up historical INPUT/OUTPUT defines. INPUT/OUTPUT now enabled based on channel count defines */
 #if !defined(NUM_USB_CHAN_IN)
     #error NUM_USB_CHAN_IN must be defined!
