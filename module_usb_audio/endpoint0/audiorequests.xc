@@ -583,10 +583,10 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
                      
                     break; /* FU_USBIN */
       
-#ifdef MIXER
+#if defined(MIXER) && (MAX_MIX_COUNT > 0)
                 case ID_XU_OUT:
                 {
-                    if(sp.bmRequestType.Direction == BM_REQTYPE_DIRECTION_H2D) /* Direction: Host-to-device */
+                    if(sp.bmRequestType.Direction == USB_BM_REQTYPE_DIRECTION_H2D) /* Direction: Host-to-device */
                     {
                         unsigned volume = 0;
                         int c = sp.wValue & 0xff;
@@ -624,7 +624,7 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
                     break;
 
                 case ID_XU_IN:
-                    if(sp.bmRequestType.Direction == BM_REQTYPE_DIRECTION_H2D) /* Direction: Host-to-device */
+                    if(sp.bmRequestType.Direction == USB_BM_REQTYPE_DIRECTION_H2D) /* Direction: Host-to-device */
                     {
                         unsigned volume = 0;
                         int c = sp.wValue & 0xff;
@@ -660,10 +660,10 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
                 case ID_XU_MIXSEL:
                 {
                     int cs = sp.wValue >> 8;    /* Control Selector */
-                    int cn = sp.wValue & 0xff; /* Channel number */
+                    int cn = sp.wValue & 0xff;  /* Channel number */
 
                     /* Check for Get or Set */
-                    if(sp.bmRequestType.Direction == BM_REQTYPE_DIRECTION_OUT)                     
+                    if(sp.bmRequestType.Direction == USB_BM_REQTYPE_DIRECTION_OUT)                     
                     {
                         /* Direction: Host-to-device */ /* Host-to-device */   
                         datalength = XUD_GetBuffer(ep0_out, buffer);
@@ -720,7 +720,7 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
                 
                 case ID_MIXER_1:
                     
-                    if(sp.bmRequestType.Direction == BM_REQTYPE_DIRECTION_OUT) /* Direction: Host-to-device */
+                    if(sp.bmRequestType.Direction == USB_BM_REQTYPE_DIRECTION_OUT) /* Direction: Host-to-device */
                     {
                         unsigned volume = 0;
                         
@@ -884,7 +884,7 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
             break; /* case: RANGE */
         }
 
-#ifdef MIXER        
+#if defined (MIXER) && (MAX_MIX_COUNT > 0)        
         case MEM:   /* Memory Requests (5.2.7.1) */
 
             unitID = sp.wIndex >> 8;
@@ -893,7 +893,7 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
             {
                 case ID_MIXER_1:
                     
-                    if(sp.bmRequestType.Direction == BM_REQTYPE_DIRECTION_IN) 
+                    if(sp.bmRequestType.Direction == USB_BM_REQTYPE_DIRECTION_IN) 
                     {
                         int length = 0;
                         
