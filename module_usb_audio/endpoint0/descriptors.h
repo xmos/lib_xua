@@ -191,7 +191,7 @@ unsigned char devQualDesc_Null[] =
 #define LEN_XU_IN                   (0)
 #endif
 
-#ifdef MIXER
+#if defined (MIXER) && (MAX_MIX_COUNT > 0) 
     #define LEN_XU_MIX                  (17)
     #define MIX_BMCONTROLS_LEN_TMP      ((MAX_MIX_COUNT * MIX_INPUTS) / 8)
 
@@ -698,7 +698,7 @@ unsigned char cfgDesc_Audio2[] =
 
    
 
-#ifdef MIXER
+#if defined (MIXER) && (MAX_MIX_COUNT > 0)
     /* Extension Unit Descriptor (4.7.2.12) */
     LEN_XU_MIX,                     /* 0    bLength (15 + p, when p is number of sources) */
     CS_INTERFACE,                   /* 1    bDescriptorType */
