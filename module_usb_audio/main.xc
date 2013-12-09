@@ -28,6 +28,10 @@
 #include "iap.h"
 #endif
 
+#ifdef MIXER
+#include "mixer.h"
+#endif
+
 #ifndef AUDIO_IO_TILE
 #define AUDIO_IO_TILE   0
 #endif
@@ -216,6 +220,9 @@ void usb_audio_core(chanend c_mix_out
 #ifdef IAP
 , chanend c_iap
 #endif
+#ifdef MIXER
+, chanend c_mix_ctl
+#endif
 )
 { 
     chan c_sof; 
@@ -232,6 +239,11 @@ void usb_audio_core(chanend c_mix_out
 #warning Using channel to control buffering - this may reduce performance but improve power consumption 
     chan c_buff_ctrl; 
 #endif 
+
+#ifndef MIXER
+#define c_mix_ctl null
+#endif
+
     par 
     {  
         /* USB Interface Core */ 
@@ -289,7 +301,7 @@ void usb_audio_core(chanend c_mix_out
         /* Endpoint 0 Core */
         {
             thread_speed();
-            Endpoint0( c_xud_out[0], c_xud_in[0], c_aud_ctl, null, null, c_usb_test);
+            Endpoint0( c_xud_out[0], c_xud_in[0], c_aud_ctl, c_mix_ctl, null, c_usb_test);
         }
                
         /* Decoupling core */ 
@@ -304,21 +316,38 @@ void usb_audio_core(chanend c_mix_out
     }
 }
 
-void usb_audio_io(chanend c_mix_out, chanend ?c_adc
+void usb_audio_io(chanend c_aud_in, chanend ?c_adc
 #ifdef MIDI
 , chanend c_midi
 #endif
 #ifdef IAP
 , chanend c_iap
 #endif
+#ifdef MIXER
+, chanend c_mix_ctl
+#endif
 )
 {
+    chan c_mix_out;
+
     par
     {
+        
+#ifdef MIXER
+        /* Mixer cores(s) */
+        {   
+            thread_speed();
+            mixer(c_aud_in, c_mix_out, c_mix_ctl);
+        }
+#endif
         /* Audio I/O Core (pars additional S/PDIF TX Core) */ 
         {
             thread_speed();
+#ifdef MIXER
             audio(c_mix_out, null, null, c_adc);
+#else
+            audio(c_aud_in, null, null, c_adc);
+#endif     
         }
        
         /* MIDI/iAP Core */
@@ -363,6 +392,10 @@ int main()
 #define c_adc null
 #endif
 
+#ifdef MIXER
+    chan c_mix_ctl;
+#endif
+
     USER_MAIN_DECLARATIONS
 
     par
@@ -374,6 +407,9 @@ int main()
 #ifdef IAP
             , c_iap
 #endif
+#ifdef MIXER
+            , c_mix_ctl
+#endif
 );
         
         on tile[AUDIO_IO_TILE]: usb_audio_io(c_mix_out, c_adc
@@ -383,6 +419,10 @@ int main()
 #ifdef IAP
             , c_iap
 #endif
+#ifdef MIXER
+            , c_mix_ctl
+#endif
+
         );
 
         USER_MAIN_CORES
