@@ -2011,23 +2011,4 @@ unsigned char cfgDesc_Audio1[] =
 };
 
 #endif
-
-#define APPEND_VENDOR_STR(x) VENDOR_STR#x
-#if 0
-static unsigned char strDescs_Audio1[][40] =
-{
-    "Langids",                                  /* String 0 (LangIDs) place holder */ 
-    APPEND_VENDOR_STR(),                       // 1    iManufacturer
-    APPEND_VENDOR_STR(USB Audio 1.0),           // 2    iProduct and iInterface for control interface
-    "",//SERIAL_STR,                                 // 3    iSerialNumber
-
-    APPEND_VENDOR_STR(USB 1.0 Audio Out),       // 4    iInterface for Streaming interaces
-    APPEND_VENDOR_STR(USB 1.0 Audio In),        // 5
-
-    APPEND_VENDOR_STR(Audio 1.0 Output),        // 6    "USB Input Terminal" (User sees as output from host) 
-    APPEND_VENDOR_STR(Audio 1.0 Input),         // 7    "USB Output Terminal" (User sees as input to host) 
-    
-    APPEND_VENDOR_STR(DFU)                      // 8     iInterface for DFU interface
-};                                                                                                                                                              
-#endif      
 #endif      
