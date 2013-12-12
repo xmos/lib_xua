@@ -658,11 +658,8 @@ void mixer(chanend c_mix_in, chanend c_mix_out, chanend c_mix_ctl)
         int num_mixes = DEFAULT_FREQ > 96000 ? 2 : MAX_MIX_COUNT;
         for (int i=0;i<NUM_USB_CHAN_OUT;i++) 
         {
-
-            asm("stw %0, %1[%2]"::
-            "r"(i),
-            "r"(samples_to_device_map),
-            "r"(i));
+            //samples_to_device_map_array[i] = i;
+            asm("stw %0, %1[%2]":: "r"(i), "r"(samples_to_device_map), "r"(i));
         }
     }
 
