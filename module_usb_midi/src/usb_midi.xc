@@ -49,6 +49,8 @@ extern unsigned polltime;
 timer iAPTimer;
 #endif
 
+#define ARRAY_SIZE(x) (sizeof(x) / sizeof(x[0]))
+
 void usb_midi(port ?p_midi_in, port ?p_midi_out,
             clock ?clk_midi,
             chanend ?c_midi,
@@ -71,23 +73,23 @@ void usb_midi(port ?p_midi_in, port ?p_midi_out,
     timer t2;
 
     // One place buffer for data going out to host
-    queue midi_to_host_fifo;
-    unsigned char midi_to_host_fifo_arr[4]; // Used for 32bit USB MIDI events
+    queue_t midi_to_host_fifo;
+    unsigned midi_to_host_fifo_arr[1]; // Used for 32bit USB MIDI events
 
     unsigned outputting_symbol, outputted_symbol;
 
     struct midi_in_parse_state mips;
 
     // the symbol fifo (to go out of uart)
-    queue symbol_fifo;
-    unsigned char symbol_fifo_arr[USB_MIDI_DEVICE_OUT_FIFO_SIZE * 4]; // Used for 32bit USB MIDI events
+    queue_t symbol_fifo;
+    unsigned symbol_fifo_arr[USB_MIDI_DEVICE_OUT_FIFO_SIZE]; // Used for 32bit USB MIDI events
 
     unsigned rxPT, txPT;
     int midi_from_host_overflow = 0;
 
     //configure_clock_rate(clk_midi, 100, 1);
-    init_queue(symbol_fifo, symbol_fifo_arr, USB_MIDI_DEVICE_OUT_FIFO_SIZE, 4);
-    init_queue(midi_to_host_fifo, midi_to_host_fifo_arr, 1, 4);
+    queue_init(symbol_fifo, ARRAY_SIZE(symbol_fifo_arr));
+    queue_init(midi_to_host_fifo, ARRAY_SIZE(midi_to_host_fifo_arr));
 
     configure_out_port(p_midi_out, clk_midi, 1<<MIDI_SHIFT_TX);
     configure_in_port(p_midi_in, clk_midi);
@@ -174,7 +176,7 @@ void usb_midi(port ?p_midi_in, port ?p_midi_out,
                             //                }
 
                             {valid, event} = midi_in_parse(mips, cable_number, rxByte);
-                            if (valid && isempty(midi_to_host_fifo)) 
+                            if (valid && queue_is_empty(midi_to_host_fifo))
                             {
 
                                 event = byterev(event);
@@ -189,7 +191,7 @@ void usb_midi(port ?p_midi_in, port ?p_midi_out,
                                 } 
                                 else 
                                 {
-                                    enqueue(midi_to_host_fifo, event);
+                                    queue_push_word(midi_to_host_fifo, midi_to_host_fifo_arr, event);
                                 }
                             } 
                             else if (valid) 
@@ -215,10 +217,10 @@ void usb_midi(port ?p_midi_in, port ?p_midi_out,
                 //  When it has just finished sending a symbol
 
                 // Take from FIFO
-                outputting_symbol = dequeue(symbol_fifo);
+                outputting_symbol = queue_pop_word(symbol_fifo, symbol_fifo_arr);
                 symbol = makeSymbol(outputting_symbol);
 
-                if (space(symbol_fifo) > 3 && midi_from_host_overflow) 
+                if (queue_space(symbol_fifo) > 3 && midi_from_host_overflow)
                 {
                     midi_from_host_overflow = 0;
                     midi_send_ack(c_midi);
@@ -244,7 +246,7 @@ void usb_midi(port ?p_midi_in, port ?p_midi_out,
                     // Finished sending byte
                     uout_count++;
                     outputted_symbol = outputting_symbol;
-                    if (isempty(symbol_fifo)) 
+                    if (queue_is_empty(symbol_fifo))
                     { // FIFO empty
                         isTX = 0;
                     }
@@ -259,10 +261,10 @@ void usb_midi(port ?p_midi_in, port ?p_midi_out,
             {
                 // have we got more data to send
                 //printstr("ack\n");
-                if (!isempty(midi_to_host_fifo)) 
+                if (!queue_is_empty(midi_to_host_fifo))
                 {
                     //printstr("uart->decouple\n");
-                    outuint(c_midi, dequeue(midi_to_host_fifo));
+                    outuint(c_midi, queue_pop_word(midi_to_host_fifo, midi_to_host_fifo_arr));
                     th_count++;
                 } 
                 else 
@@ -278,7 +280,7 @@ void usb_midi(port ?p_midi_in, port ?p_midi_out,
                 int event = byterev(datum);
                 mr_count++;
 #ifdef MIDI_LOOPBACK
-                if (isempty(midi_to_host_fifo)) 
+                if (queue_is_empty(midi_to_host_fifo))
                 {
                     // data to send to host
                     if (!waiting_for_ack) 
@@ -292,7 +294,7 @@ void usb_midi(port ?p_midi_in, port ?p_midi_out,
                     else 
                     {
                         event = byterev(event);
-                        enqueue(midi_to_host_fifo, event);
+                        queue_push_word(midi_to_host_fifo, midi_to_host_fifo_arr, event);
                     }
                     midi_send_ack(c_midi);
                 }
@@ -305,10 +307,10 @@ void usb_midi(port ?p_midi_in, port ?p_midi_out,
                 for (int i = 0; i != size; i++) 
                 {
                     // add symbol to fifo
-                    enqueue(symbol_fifo, midi[i]);
+                    queue_push_word(symbol_fifo, symbol_fifo_arr, midi[i]);
                 }
 
-                if (space(symbol_fifo) > 3) 
+                if (queue_space(symbol_fifo) > 3)
                 {
                     midi_send_ack(c_midi);
                 } 
