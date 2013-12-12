@@ -105,7 +105,7 @@ int slotSize = 3;    /* 3 bytes per sample for Audio Class 1.0 */
 
 #pragma select handler
 #pragma unsafe arrays
-void handle_audio_request(chanend c_mix_out) 
+void handle_audio_request(chanend c_mix_out)
 {
     int outSamps;
     int space_left;
@@ -472,7 +472,7 @@ unsigned g_intFlag = 0;
 
 extern unsigned char g_intData[8];
 
-void check_for_interrupt(chanend ?c_clk_int) {
+static void check_for_interrupt(chanend ?c_clk_int) {
     unsigned tmp;
 
     select

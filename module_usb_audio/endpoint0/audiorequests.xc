@@ -54,7 +54,7 @@ unsigned int g_curSamFreq48000Family = DEFAULT_FREQ % 48000 == 0;
 unsigned int g_curSamFreqMultiplier = DEFAULT_FREQ / 48000;
 
 /* Store an int into a char array: Note this allows non-word aligned access unlike reinerpret cast */
-void storeInt(unsigned char buffer[], int index, int val)
+static void storeInt(unsigned char buffer[], int index, int val)
 {
     buffer[index+3] = val>>24;
     buffer[index+2] = val>>16;
@@ -63,13 +63,13 @@ void storeInt(unsigned char buffer[], int index, int val)
 }
 
 /* Store an short into a char array: Note this allows non-word aligned access unlike reinerpret cast */
-void storeShort(unsigned char buffer[], int index, short val)
+static void storeShort(unsigned char buffer[], int index, short val)
 {
     buffer[index+1] = val>>8;
     buffer[index]  =  val;
 }
 
-void storeFreq(unsigned char buffer[], int &i, int freq)
+static void storeFreq(unsigned char buffer[], int &i, int freq)
 {
     storeInt(buffer, i, freq);
     i+=4;
@@ -81,7 +81,7 @@ void storeFreq(unsigned char buffer[], int &i, int freq)
 }
 
 
-unsigned longMul(unsigned a, unsigned b, int prec) 
+static unsigned longMul(unsigned a, unsigned b, int prec)
 {
     unsigned x,y;
     unsigned ret;
@@ -94,12 +94,12 @@ unsigned longMul(unsigned a, unsigned b, int prec)
     return ret;
 }
 
-void setG_curSamFreqMultiplier(int x) {
+static void setG_curSamFreqMultiplier(int x) {
     asm(" stw %0, dp[g_curSamFreqMultiplier]" :: "r"(x));
 }
 
 /* Update master volume i.e. i.e update weights for all channels */
-void updateMasterVol( int unitID, chanend ?c_mix_ctl)
+static void updateMasterVol( int unitID, chanend ?c_mix_ctl)
 {
     int x;
 #ifndef OUT_VOLUME_IN_MIXER
@@ -168,7 +168,7 @@ void updateMasterVol( int unitID, chanend ?c_mix_ctl)
     }
 }  
 
-void updateVol(int unitID, int channel, chanend ?c_mix_ctl)
+static void updateVol(int unitID, int channel, chanend ?c_mix_ctl)
 {   
     int x;
 #ifndef OUT_VOLUME_IN_MIXER

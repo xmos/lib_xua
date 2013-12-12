@@ -142,7 +142,7 @@ static inline void doI2SClocks(unsigned divide)
 
 /* I2S delivery thread */
 #pragma unsafe arrays
-{unsigned, unsigned} deliver(chanend c_out, chanend ?c_spd_out, unsigned divide, unsigned curSamFreq, chanend ?c_dig_rx, chanend ?c_adc)
+{unsigned, unsigned} static deliver(chanend c_out, chanend ?c_spd_out, unsigned divide, unsigned curSamFreq, chanend ?c_dig_rx, chanend ?c_adc)
 {
 	unsigned sample;
     unsigned underflow = 0;
@@ -734,7 +734,7 @@ static inline void doI2SClocks(unsigned divide)
 
 /* This function is a dummy version of the deliver thread that does not 
    connect to the codec ports. It is used during DFU reset. */
-{unsigned,unsigned} dummy_deliver(chanend c_out) 
+{unsigned,unsigned} static dummy_deliver(chanend c_out)
 {
     while (1)
     {
