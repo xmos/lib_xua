@@ -109,7 +109,7 @@ on tile[AUDIO_IO_TILE] : in port p_bclk                     = PORT_I2S_BCLK;
 #endif
 
 on tile[AUDIO_IO_TILE] : port p_mclk_in                     = PORT_MCLK_IN;
-on tile[0] : in port p_for_mclk_count                       = PORT_MCLK_COUNT;
+on tile[XUD_TILE] : in port p_for_mclk_count                = PORT_MCLK_COUNT;
 
 #ifdef SPDIF  
 on tile[AUDIO_IO_TILE] : buffered out port:32 p_spdif_tx    = PORT_SPDIF_OUT;
@@ -126,9 +126,9 @@ on tile[AUDIO_IO_TILE] : clock    clk_midi                  = XS1_CLKBLK_REF;
 #endif
 on tile[AUDIO_IO_TILE] : clock    clk_audio_mclk            = XS1_CLKBLK_2;     /* Master clock */
 
-#if(AUDIO_IO_TILE != 0)
-on tile[0] : clock    clk_audio_mclk2                       = XS1_CLKBLK_2;     /* Master clock */
-on tile[0] : in port  p_mclk_in2                            = PORT_MCLK_IN2; 
+#if(AUDIO_IO_TILE != XUD_TILE)
+on tile[XUD_TILE] : clock    clk_audio_mclk2                = XS1_CLKBLK_2;     /* Master clock */
+on tile[XUD_TILE] : in port  p_mclk_in2                     = PORT_MCLK_IN2; 
 #endif
 
 
@@ -138,7 +138,7 @@ on tile[AUDIO_IO_TILE] : clock    clk_mst_spd               = XS1_CLKBLK_1;
 #endif
 
 /* L Series needs a port to use for USB reset */
-#ifdef ARCH_L
+#if defined(ARCH_L) || defined(ARCH_G)
 #ifdef PORT_USB_RESET
 /* This define is checked since it could be on a shift reg or similar */
 on tile[XUD_TILE] : out port p_usb_rst                      = PORT_USB_RESET;

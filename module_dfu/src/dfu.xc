@@ -3,11 +3,11 @@
 #include "devicedefines.h"
 
 #include "xud.h"
-#ifdef ARCH_G
-#include "XUD_USB_Defines.h"
-#else
+//#ifdef ARCH_G
+//#include "XUD_USB_Defines.h"
+//#else
 #include "usb.h"
-#endif
+//#endif
 
 #include "dfu_types.h"
 #include "flash_interface.h"
@@ -400,11 +400,7 @@ int DFUDeviceRequests(XUD_ep ep0_out, XUD_ep &?ep0_in, USB_SetupPacket_t &sp, ch
     { 
         // Host to device
         if (sp.wLength) 
-#ifdef ARCH_G
-            data_buffer_len = XUD_GetBuffer_(ep0_out, 0, (data_buffer, unsigned char[]));
-#else
             data_buffer_len = XUD_GetBuffer(ep0_out, (data_buffer, unsigned char[]));
-#endif
     }
 
     // Map Standard DFU commands onto device level firmware upgrade mechanism
