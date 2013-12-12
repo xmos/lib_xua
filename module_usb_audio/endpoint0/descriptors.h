@@ -242,45 +242,33 @@ unsigned char devQualDesc_Null[] =
 #define OUTPUT_ALT_LENGTH           (OUTPUT_ALT_LENGTH_ADAT + OUTPUT_ALT_LENGTH_DSD)
 
 
-// Positions in strDescs_Audio2
-#define INTERNAL_CLOCK_STRING_INDEX (14)
-#define SPDIF_CLOCK_STRING_INDEX    (15)
-
+// Positions in strDescs
+enum {
+    INTERNAL_CLOCK_STRING_INDEX = 14,
 #ifdef SPDIF_RX
-#define ADAT_CLOCK_STRING_INDEX (SPDIF_CLOCK_STRING_INDEX + 1)
-#else
-#define ADAT_CLOCK_STRING_INDEX (SPDIF_CLOCK_STRING_INDEX)
+    SPDIF_CLOCK_STRING_INDEX,
 #endif
-
 #ifdef ADAT_RX
-#define DFU_STRING_INDEX (ADAT_CLOCK_STRING_INDEX + 1)
-#else
-#define DFU_STRING_INDEX (ADAT_CLOCK_STRING_INDEX)
+    ADAT_CLOCK_STRING_INDEX,
 #endif
-
 #ifdef DFU
-#define MIDI_OUT_STRING_INDEX (DFU_STRING_INDEX + 1)
-#else
-#define MIDI_OUT_STRING_INDEX (DFU_STRING_INDEX)
+    DFU_STRING_INDEX,
 #endif
-
-#define MIDI_IN_STRING_INDEX (MIDI_OUT_STRING_INDEX + 1)
-
 #ifdef MIDI
-#define OUTPUT_INTERFACE_STRING_INDEX (MIDI_OUT_STRING_INDEX + 2)
-#else
-#define OUTPUT_INTERFACE_STRING_INDEX (MIDI_OUT_STRING_INDEX)
+    MIDI_OUT_STRING_INDEX,
+    MIDI_IN_STRING_INDEX,
 #endif
-
-#define INPUT_INTERFACE_STRING_INDEX (OUTPUT_INTERFACE_STRING_INDEX + NUM_USB_CHAN_OUT)
-
-#define MIXER_STRING_INDEX (INPUT_INTERFACE_STRING_INDEX + NUM_USB_CHAN_IN)
-
+    OUTPUT_INTERFACE_STRING_INDEX,
+    OUTPUT_INTERFACE_LAST_STRING_INDEX = OUTPUT_INTERFACE_STRING_INDEX + NUM_USB_CHAN_OUT - 1,
+    INPUT_INTERFACE_STRING_INDEX,
+    INPUT_INTERFACE_LAST_STRING_INDEX = INPUT_INTERFACE_STRING_INDEX + NUM_USB_CHAN_IN - 1,
 #ifdef MIXER
-#define IAP_INTERFACE_STRING_INDEX (MIXER_STRING_INDEX + MAX_MIX_COUNT)
-#else
-#define IAP_INTERFACE_STRING_INDEX (MIXER_STRING_INDEX)
+    MIXER_STRING_INDEX,
 #endif
+#ifdef IAP
+    IAP_INTERFACE_STRING_INDEX,
+#endif
+};
 
 #ifdef HID_CONTROLS
 unsigned char hidReportDescriptor[] = {
@@ -1394,43 +1382,7 @@ unsigned char cfgDesc_Audio2[] =
 
 #endif
 
-
-
-
-
-
-
 };
-
-
-
-/* String table */
-#ifdef SPDIF_RX
-#define SPDIF_RX_NUM_STRS   1
-#else
-#define SPDIF_RX_NUM_STRS   0
-#endif
-
-#ifdef ADAT_RX
-#define ADAT_RX_NUM_STRS    1
-#else
-#define ADAT_RX_NUM_STRS    0
-#endif
-
-#ifdef MIDI
-#define MIDI_NUM_STRS       2
-#else
-#define MIDI_NUM_STRS       0
-#endif
-
-#ifdef DFU
-#define DFU_NUM_STRS       1
-#else
-#define DFU_NUM_STRS       0
-#endif
-
-#define STR_INDEX_OUT_CHAN  (15 + SPDIF_RX_NUM_STRS + ADAT_RX_NUM_STRS + MIDI_NUM_STRS + DFU_NUM_STRS)
-#define STR_INDEX_IN_CHAN   (STR_INDEX_OUT_CHAN + NUM_USB_CHAN_OUT)
 
 #define APPEND_VENDOR_STR(x) VENDOR_STR" "#x
 
@@ -1446,10 +1398,13 @@ unsigned char cfgDesc_Audio2[] =
 #endif
 #endif
 
+
+#define STR_USENG 0x0409
+
 static unsigned char strDescs[][40] = 
 {
-    "Langids",                                  // 0     LangIDs place holder
-    APPEND_VENDOR_STR(),                       // 1     iManufacturer (at MANUFACTURER_STRING_INDEX)
+    { STR_USENG & 0xff, STR_USENG >> 8, '\0'},   // 0     LangID
+    APPEND_VENDOR_STR(),                        // 1     iManufacturer (at MANUFACTURER_STRING_INDEX)
 
     "",//SERIAL_STR,                            // 2     iSerialNumber (at SERIAL_STR_INDEX)
     
