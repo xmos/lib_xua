@@ -1,6 +1,11 @@
 <?xml version="1.0" ?>
 <xpd>
     <components></components>
+    <dependency repo = "sc_util">
+        <githash>d0531d7c68ab67334582c324828e36d617baf8b3</githash>
+        <uri>git://github.com/xcore/sc_util</uri>
+        <version>1.0.3rc0</version>
+    </dependency>
     <description>USB Audio Shared Components. For use in the XMOS USB Audio Refererence Designs.</description>
     <git_export>False</git_export>
     <location>git://git/apps/sc_usb_audio</location>
