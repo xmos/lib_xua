@@ -1,6 +1,11 @@
 <?xml version="1.0" ?>
 <xpd>
-    <components></components>
+    <components>
+        <component description = "module_dfu" type = "demoCode" scope = "General Use" path = "module_dfu" local = "false" id = "module_dfu" name = "module_dfu">
+            <board>XMOS USB Audio Reference Designes</board>
+            <keyword>DFU</keyword>
+        </component>
+    </components>
     <dependency repo = "sc_util">
         <githash>d0531d7c68ab67334582c324828e36d617baf8b3</githash>
         <uri>git://github.com/xcore/sc_util</uri>
