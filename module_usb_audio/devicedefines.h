@@ -255,6 +255,7 @@
 #define BCD_DEVICE               ((BCD_DEVICE_J << 8) | ((BCD_DEVICE_M & 0xF) << 4) | (BCD_DEVICE_N & 0xF))
 #endif
 
+/* By default base the iAP version number on USB BCD_DEVICE */
 #if defined(IAP) && !defined(ACCESSORY_FIRMWARE_VERSION)
 #define ACCESSORY_FIRMWARE_VERSION {BCD_DEVICE_J, BCD_DEVICE_M, BCD_DEVICE_N}
 #endif
