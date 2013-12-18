@@ -256,8 +256,16 @@
 #endif
 
 /* By default base the iAP version number on USB BCD_DEVICE */
-#if defined(IAP) && !defined(ACCESSORY_FIRMWARE_VERSION)
-#define ACCESSORY_FIRMWARE_VERSION {BCD_DEVICE_J, BCD_DEVICE_M, BCD_DEVICE_N}
+#if defined(IAP)
+#ifndef ACCESSORY_FIRMWARE_MAJOR
+#define ACCESSORY_FIRMWARE_MAJOR BCD_DEVICE_J
+#endif
+#ifndef ACCESSORY_FIRMWARE_MINOR
+#define ACCESSORY_FIRMWARE_MINOR BCD_DEVICE_M
+#endif
+#ifndef ACCESSORY_FIRMWARE_POINT
+#define ACCESSORY_FIRMWARE_POINT BCD_DEVICE_N
+#endif
 #endif
 
 /* Addition interfaces based on defines */
