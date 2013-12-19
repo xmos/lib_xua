@@ -839,8 +839,8 @@ unsigned char cfgDesc_Audio2[] =
     CS_INTERFACE,                   /* 1  bDescriptorType: 0x24 */
     FORMAT_TYPE,                    /* 2  bDescriptorSubtype: FORMAT_TYPE */
     FORMAT_TYPE_I,                  /* 3  bFormatType: FORMAT_TYPE_1 */
-    0x04,                           /* 4  bSubslotSize (Number of bytes per subslot) */
-    24,                             /* 5  bBitResolution (Number of bits used per subslot) */ 
+    SAMPLE_SUBSLOT_SIZE_HS,         /* 4  bSubslotSize (Number of bytes per subslot) */
+    SAMPLE_BIT_RESOLUTION_HS,       /* 5  bBitResolution (Number of bits used per subslot) */ 
 
     /* Standard AS Isochronous Audio Data Endpoint Descriptor (4.10.1.1) */
     0x07,                           /* 0  bLength: 7 */
@@ -849,7 +849,6 @@ unsigned char cfgDesc_Audio2[] =
     0x05,                           /* 3  bmAttributes (bitmap)  */ 
     MAX_PACKET_SIZE_OUT_HS&0xff,        /* 4  wMaxPacketSize */
     (MAX_PACKET_SIZE_OUT_HS&0xff00)>>8, /* 5  wMaxPacketSize */
-    //0, 4,                         // 1024 
     1,                              /* 6  bInterval */
 
     /* Class-Specific AS Isochronous Audio Data Endpoint Descriptor (4.10.1.2) */
@@ -898,7 +897,7 @@ unsigned char cfgDesc_Audio2[] =
     CS_INTERFACE,                   /* 1  bDescriptorType: 0x24 */
     FORMAT_TYPE,                    /* 2  bDescriptorSubtype: FORMAT_TYPE */
     FORMAT_TYPE_I,                  /* 3  bFormatType: FORMAT_TYPE_1 */
-    0x04,                           /* 4  bSubslotSize (Number of bytes per subslot) */
+    SAMPLE_SUBSLOT_SIZE_HS,         /* 4  bSubslotSize (Number of bytes per subslot) */
     32,                             /* 5  bBitResolution (Number of bits used per subslot) */ 
 
     /* Standard AS Isochronous Audio Data Endpoint Descriptor (4.10.1.1) */
@@ -958,8 +957,8 @@ unsigned char cfgDesc_Audio2[] =
     CS_INTERFACE,                   /* 1  bDescriptorType: 0x24 */
     FORMAT_TYPE,                    /* 2  bDescriptorSubtype: FORMAT_TYPE */
     FORMAT_TYPE_I,                  /* 3  bFormatType: FORMAT_TYPE_1 */
-    0x04,                           /* 4  bSubslotSize (Number of bytes per subslot) */
-    24,                             /* 5  bBitResolution (Number of bits used per subslot) */ 
+    SAMPLE_SUBSLOT_SIZE_HS,         /* 4  bSubslotSize (Number of bytes per subslot) */
+    SAMPLE_BIT_RESOLUTION_HS,       /* 5  bBitResolution (Number of bits used per subslot) */ 
 
     /* Standard AS Isochronous Audio Data Endpoint Descriptor (4.10.1.1) */
     0x07,                           /* 0  bLength: 7 */
@@ -1080,8 +1079,8 @@ unsigned char cfgDesc_Audio2[] =
     CS_INTERFACE,                   /* 1  bDescriptorType: 0x24 */
     FORMAT_TYPE,                    /* 2  bDescriptorSubtype: FORMAT_TYPE */    
     FORMAT_TYPE_I,                  /* 3  bFormatType: FORMAT_TYPE_1 */
-    0x04,                           /* 4  bSubslotSize (Number of bytes per subslot) */
-    24,                             /* 5  bBitResolution (Number of bits used per subslot) */ 
+    SAMPLE_SUBSLOT_SIZE_HS,         /* 4  bSubslotSize (Number of bytes per subslot) */
+    SAMPLE_BIT_RESOLUTION_HS,       /* 5  bBitResolution (Number of bits used per subslot) */ 
 
     /* Standard AS Isochronous Audio Data Endpoint Descriptor (4.10.1.1) */
     0x07,                           /* 0  bLength: 7 */
@@ -1814,8 +1813,8 @@ unsigned char cfgDesc_Audio1[] =
     0x02,                           /* Subtype - FORMAT_TYPE */
     0x01,                           /* Format type - FORMAT_TYPE_1 */
     NUM_USB_CHAN_OUT_FS,            /* nrChannels */
-    0x03,                           /* subFrameSize - 4 bytes per slot */
-    24,                             /* bitResolution - 24bit */
+    SAMPLE_SUBSLOT_SIZE_FS,         /* subFrameSize */
+    SAMPLE_BIT_RESOLUTION_FS,       /* bitResolution */
     0x04,                           /* SamFreqType - 4 sample freq */
     0x44, 0xAC, 0x00,               /* sampleFreq - 44.1Khz */
     0x80, 0xBB, 0x00,               /* sampleFreq - 48KHz */ 
@@ -1896,9 +1895,9 @@ unsigned char cfgDesc_Audio1[] =
     CS_INTERFACE,                   
     0x02,                           /* Subtype - FORMAT_TYPE */          
     0x01,                           /* Format type - FORMAT_TYPE_1 */    
-    NUM_USB_CHAN_IN_FS,             /* bNrChannels - 2 */                 
-    0x03,                           /* subFrameSize - 4 bytes per slot */
-    24,                             /* bitResolution - 24bit */          
+    NUM_USB_CHAN_IN_FS,             /* bNrChannels - Typically 2 */                 
+    SAMPLE_SUBSLOT_SIZE_FS,         /* subFrameSize - Typically 4 bytes per slot */
+    SAMPLE_BIT_RESOLUTION_FS,       /* bitResolution - Typically 24bit */          
     0x04,                           /* SamFreqType - 4 sample freq */    
     0x44, 0xAC, 0x00,               /* sampleFreq - 44.1Khz */
     0x80, 0xBB, 0x00,               /* sampleFreq - 48KHz */ 
