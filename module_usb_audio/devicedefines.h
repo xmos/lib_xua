@@ -246,13 +246,49 @@
 #define PID_AUDIO_2              (0x0002)        
 #endif
 
+/* Device release number in BCD: 0xJJMN */
 #define BCD_DEVICE_J             6
 #define BCD_DEVICE_M             3
 #define BCD_DEVICE_N             1
 
-/* Device release number in BCD: 0xJJMN */
 #ifndef BCD_DEVICE
 #define BCD_DEVICE               ((BCD_DEVICE_J << 8) | ((BCD_DEVICE_M & 0xF) << 4) | (BCD_DEVICE_N & 0xF))
+#endif
+
+/* Sample Sub-slot size (bytes) for High Speed. Default is 4 bytes */
+#ifndef SAMPLE_SUBSLOT_SIZE_HS
+#define SAMPLE_SUBSLOT_SIZE_HS   4
+#endif 
+
+#if (SAMPLE_SUBSLOT_SIZE_HS != 2) && (SAMPLE_SUBSLOT_SIZE_HS != 3) && (SAMPLE_SUBSLOT_SIZE_HS != 4)
+#error Only SAMPLE_SUBSLOT_SIZE_HS 2, 3 or 4 supported #SAMPLE_SUBSLOT_SIZE_HS
+#endif
+
+/* Sample Sub-slot size (bytes) for Full Speed. Default is 3 bytes */
+#ifndef SAMPLE_SUBSLOT_SIZE_FS
+#define SAMPLE_SUBSLOT_SIZE_FS   3
+#endif 
+
+#if (SAMPLE_SUBSLOT_SIZE_FS != 2) && (SAMPLE_SUBSLOT_SIZE_FS != 3) && (SAMPLE_SUBSLOT_SIZE_FS != 4)
+#error Only SAMPLE_SUBSLOT_SIZE_FS 2, 3 or 4 supported
+#endif
+
+/* Sample bit resolution for High Speed. Default 24bit*/
+#ifndef SAMPLE_BIT_RESOLUTION_HS
+#define SAMPLE_BIT_RESOLUTION_HS   24
+#endif 
+
+#if (SAMPLE_BIT_RESOLUTION_HS/8) > SAMPLE_SUBSLOT_SIZE_HS
+#error SAMPLE_BIT_RESOLUTION_HS is too big for SAMPLE_SUBSLOT_SIZE_HS
+#endif
+
+/* Sample bit resolution for Full Speed. Default 24bit*/
+#ifndef SAMPLE_BIT_RESOLUTION_FS
+#define SAMPLE_BIT_RESOLUTION_FS   24
+#endif 
+
+#if (SAMPLE_BIT_RESOLUTION_FS/8) > SAMPLE_SUBSLOT_SIZE_FS
+#error SAMPLE_BIT_RESOLUTION_FS is too big for SAMPLE_SUBSLOT_SIZE_FS
 #endif
 
 /* By default base the iAP version number on USB BCD_DEVICE */
