@@ -98,9 +98,11 @@ unsigned packState = 0;
 unsigned packData = 0;
 
 #if (AUDIO_CLASS==2)
-int slotSize = 4;    /* 4 bytes per ssample for Audio Class 2.0 */
+int g_slotSize = SAMPLE_SUBSLOT_SIZE_HS;    /* 4 bytes per ssample for Audio Class 2.0 */
+int g_maxPacketSize = MAX_DEVICE_AUD_PACKET_SIZE_CLASS_TWO;
 #else
-int slotSize = 3;    /* 3 bytes per sample for Audio Class 1.0 */
+int g_slotSize = SAMPLE_SUBSLOT_SIZE_FS;    /* 3 bytes per sample for Audio Class 1.0 */
+int g_maxPacketSize = MAX_DEVICE_AUD_PACKET_SIZE_CLASS_ONE;
 #endif
 
 #pragma select handler
@@ -123,11 +125,13 @@ void handle_audio_request(chanend c_mix_out)
 #if defined(AUDIO_CLASS_FALLBACK) || defined (FULL_SPEED_AUDIO_2)
     if (usb_speed == XUD_SPEED_HS)
     {
-        slotSize = 4;   /* 4 bytes per sample */
+        g_slotSize = SAMPLE_SUBSLOT_SIZE_HS;   /* Typically 4 bytes per sample for HS */
+        g_maxPacketSize = MAX_DEVICE_AUD_PACKET_SIZE_CLASS_TWO;
     }
     else
     {
-        slotSize = 3;   /* 3 bytes per sample */
+        g_slotSize = SAMPLE_SUBSLOT_SIZE_FS;   /* Typically 3 bytes per sample for FS */
+        g_maxPacketSize = MAX_DEVICE_AUD_PACKET_SIZE_CLASS_ONE;
     }
 #endif
  
@@ -156,77 +160,130 @@ void handle_audio_request(chanend c_mix_out)
     }
     else
     {
-        /* Not in overflow, store samples from mixer into sample buffer */
-        if (usb_speed == XUD_SPEED_HS)
-        {
-            unsigned ptr = g_aud_to_host_dptr;
 
-            for(int i = 0; i < g_numUsbChanIn; i++) 
+        /* Not in overflow, store samples from mixer into sample buffer */
+        switch(g_slotSize)
+        {
+            case 4:
             {
-                /* Receive sample */
-                int sample = inuint(c_mix_out);
-#if !defined(IN_VOLUME_IN_MIXER)
-                /* Apply volume */
-                int mult;
-                int h;
-                unsigned l;
-                asm("ldw %0, %1[%2]":"=r"(mult):"r"(p_multIn),"r"(i));
-                {h, l} = macs(mult, sample, 0, 0);
-                sample = h << 3;
-                sample |= (l >> 29) & 0x7; // Note, this step is not required if we assume sample depth is 24 (rather than 32)
-#elif defined(IN_VOLUME_IN_MIXER) && defined(IN_VOLUME_AFTER_MIX)
-                sample = sample << 3;
+#if (SAMPLE_SUBSLOT_SIZE_HS != 4) && (SAMPLE_SUBSLOT_SIZE_FS != 4)
+__builtin_unreachable();
 #endif
-                /* Write into fifo */
-                write_via_xc_ptr(ptr, sample);              
-                ptr+=4;
+                unsigned ptr = g_aud_to_host_dptr;
+
+                for(int i = 0; i < g_numUsbChanIn; i++) 
+                {
+                    /* Receive sample */
+                    int sample = inuint(c_mix_out);
+#if !defined(IN_VOLUME_IN_MIXER)
+                    /* Apply volume */
+                    int mult;
+                    int h;
+                    unsigned l;
+                    asm("ldw %0, %1[%2]":"=r"(mult):"r"(p_multIn),"r"(i));
+                    {h, l} = macs(mult, sample, 0, 0);
+                    sample = h << 3;
+                    sample |= (l >> 29) & 0x7; // Note, this step is not required if we assume sample depth is 24 (rather than 32)
+#elif defined(IN_VOLUME_IN_MIXER) && defined(IN_VOLUME_AFTER_MIX)
+                    sample = sample << 3;
+#endif
+                    /* Write into fifo */
+                    write_via_xc_ptr(ptr, sample);              
+                    ptr+=4;
+                }
+            
+                /* Update global pointer */
+                g_aud_to_host_dptr = ptr;
+                break;
             }
             
-            /* Update global pointer */
-            g_aud_to_host_dptr = ptr;
-        }
-        else
-        {
-            for(int i = 0; i < g_numUsbChanIn; i++) 
-            {
-                /* Receive sample */
-                int sample = inuint(c_mix_out);
-#ifndef IN_VOLUME_IN_MIXER
-                /* Apply volume */
-                int mult;
-                int h;
-                unsigned l;
-                asm("ldw %0, %1[%2]":"=r"(mult):"r"(p_multIn),"r"(i));
-                {h, l} = macs(mult, sample, 0, 0);
-                sample = h << 3;
+            case 3:
+#if (SAMPLE_SUBSLOT_SIZE_HS != 3) && (SAMPLE_SUBSLOT_SIZE_FS != 3)
+__builtin_unreachable();
 #endif
-                /* Pack 3 byte samples */
-                switch (packState&0x3) 
+                for(int i = 0; i < g_numUsbChanIn; i++) 
                 {
-                    case 0:                  
-                        packData = sample;
-                        break;
-                    case 1:
-                        packData = packData >> 8 | ((sample & 0xff00)<<16);
-                        write_via_xc_ptr(g_aud_to_host_dptr, packData);          
-                        g_aud_to_host_dptr+=4;
-                        write_via_xc_ptr(g_aud_to_host_dptr, sample>>16);          
-                        packData = sample;
-                        break;
-                    case 2:
-                        packData = (packData>>16) | ((sample & 0xffff00) << 8);
-                        write_via_xc_ptr(g_aud_to_host_dptr, packData);          
-                        g_aud_to_host_dptr+=4;
-                        packData = sample;
-                        break;
-                    case 3:
-                        packData = (packData >> 24) | (sample & 0xffffff00);
-                        write_via_xc_ptr(g_aud_to_host_dptr, packData);          
-                        g_aud_to_host_dptr+=4;                  
-                        break;
+                    /* Receive sample */
+                    int sample = inuint(c_mix_out);
+#ifndef IN_VOLUME_IN_MIXER
+                    /* Apply volume */
+                    int mult;
+                    int h;
+                    unsigned l;
+                    asm("ldw %0, %1[%2]":"=r"(mult):"r"(p_multIn),"r"(i));
+                    {h, l} = macs(mult, sample, 0, 0);
+                    sample = h << 3;
+#endif
+                    /* Pack 3 byte samples */
+                    switch (packState&0x3) 
+                    { 
+                        case 0:                  
+                            packData = sample;
+                            break;
+                        case 1:
+                            packData = (packData >> 8) | ((sample & 0xff00)<<16);
+                            write_via_xc_ptr(g_aud_to_host_dptr, packData);          
+                            g_aud_to_host_dptr+=4;
+                            write_via_xc_ptr(g_aud_to_host_dptr, sample>>16);          
+                            packData = sample;
+                            break;
+                        case 2:
+                            packData = (packData>>16) | ((sample & 0xffff00) << 8);
+                            write_via_xc_ptr(g_aud_to_host_dptr, packData);          
+                            g_aud_to_host_dptr+=4;
+                            packData = sample;
+                            break;
+                        case 3:
+                            packData = (packData >> 24) | (sample & 0xffffff00);
+                            write_via_xc_ptr(g_aud_to_host_dptr, packData);          
+                            g_aud_to_host_dptr+=4;                  
+                            break;
+                    }
+                    packState++;
                 }
-                packState++;
-            }
+                break;
+
+            case 2:
+
+#if (SAMPLE_SUBSLOT_SIZE_HS != 2) && (SAMPLE_SUBSLOT_SIZE_FS != 2)
+__builtin_unreachable();
+#endif
+                for(int i = 0; i < g_numUsbChanIn; i++) 
+                {
+                    /* Receive sample */
+                    int sample = inuint(c_mix_out);
+#if !defined(IN_VOLUME_IN_MIXER)
+                    /* Apply volume */
+                    int mult;
+                    int h;
+                    unsigned l;
+                    asm("ldw %0, %1[%2]":"=r"(mult):"r"(p_multIn),"r"(i));
+                    {h, l} = macs(mult, sample, 0, 0);
+                    sample = h << 3;
+#if (SAMPLE_BIT_RESOLUTION_HS > 24) || (SAMPLE_BIT_RESOLUTION_FS > 24)
+                    sample |= (l >> 29) & 0x7; // Note, this step is not required if we assume sample depth is 24 (rather than 32)
+#endif
+#elif defined(IN_VOLUME_IN_MIXER) && defined(IN_VOLUME_AFTER_MIX)
+                    sample = sample << 3;
+#endif
+                    /* Write into fifo */
+                    switch (packState&0x1)
+                    {
+                        case 0:
+                            packData = sample;                            
+                            break;
+                        case 1:    
+                            packData = (packData>>16) | (sample & 0xffff0000);
+                            write_via_xc_ptr(g_aud_to_host_dptr, packData);          
+                            g_aud_to_host_dptr+=4; 
+                            break;
+                    }
+                }
+                break;
+
+            default:
+                __builtin_unreachable();
+               break; 
         }
      
         /* Input any remaining channels - past this thread we always operate on max channel count */
@@ -273,79 +330,132 @@ void handle_audio_request(chanend c_mix_out)
     }
     else
     {
-        if (usb_speed == XUD_SPEED_HS)
+        switch(g_slotSize)
         {
-            /* Buffering not underflow condition send out some samples...*/
-            for(int i = 0; i < g_numUsbChanOut; i++) 
-            {
+            case 4:
+#if (SAMPLE_SUBSLOT_SIZE_HS != 4) && (SAMPLE_SUBSLOT_SIZE_FS != 4)
+__builtin_unreachable();
+#endif          
+                /* Buffering not underflow condition send out some samples...*/
+                for(int i = 0; i < g_numUsbChanOut; i++) 
+                {
 #pragma xta endpoint "mixer_request"
-                int sample;
-                int mult;
-                int h;
-                unsigned l;
+                    int sample;
+                    int mult;
+                    int h;
+                    unsigned l;
                 
-                read_via_xc_ptr(sample, g_aud_from_host_rdptr);
-                g_aud_from_host_rdptr+=4;
+                    read_via_xc_ptr(sample, g_aud_from_host_rdptr);
+                    g_aud_from_host_rdptr+=4;
                 
 #ifndef OUT_VOLUME_IN_MIXER
-                asm("ldw %0, %1[%2]":"=r"(mult):"r"(p_multOut),"r"(i));
-                {h, l} = macs(mult, sample, 0, 0);
-                h <<= 3;
-                h |= (l >>29)& 0x7; // Note this step is not required if we assume sample depth is 24bit (rather than 32bit)
-                outuint(c_mix_out, h);
-#else
-                outuint(c_mix_out, sample);
+                    asm("ldw %0, %1[%2]":"=r"(mult):"r"(p_multOut),"r"(i));
+                    {h, l} = macs(mult, sample, 0, 0);
+                    h <<= 3;
+#if (SAMPLE_BIT_RESOLUTION_HS > 24) || (SAMPLE_BIT_RESOLUTION_FS > 24)
+                    h |= (l >>29)& 0x7; // Note this step is not required if we assume sample depth is 24bit (rather than 32bit)
 #endif
-            }
-        }
-        else
-        {
-            /* Buffering not underflow condition send out some samples...*/
-            for(int i = 0; i < g_numUsbChanOut; i++) 
-            {
-#pragma xta endpoint "mixer_request"
-                int sample;
-                int mult;
-                int h;
-                unsigned l;
+                    outuint(c_mix_out, h);
+#else
+                    outuint(c_mix_out, sample);
+#endif
+                }
 
-                /* Unpack 3 byte samples */
-                switch (unpackState&0x3) 
+                break;
+            
+            case 3:
+#if (SAMPLE_SUBSLOT_SIZE_HS != 3) && (SAMPLE_SUBSLOT_SIZE_FS != 3)
+__builtin_unreachable();
+#endif 
+                /* Buffering not underflow condition send out some samples...*/
+                for(int i = 0; i < g_numUsbChanOut; i++) 
                 {
-                    case 0:
-                        read_via_xc_ptr(unpackData, g_aud_from_host_rdptr);
-                        g_aud_from_host_rdptr+=4;
-                        sample = unpackData << 8;                               
-                        break;
-                    case 1:
-                        sample = (unpackData >> 16);
-                        read_via_xc_ptr(unpackData, g_aud_from_host_rdptr);
-                        g_aud_from_host_rdptr+=4;
-                        sample = sample | (unpackData << 16);
-                        break;
-                    case 2:
-                        sample = (unpackData >> 8);
-                        read_via_xc_ptr(unpackData, g_aud_from_host_rdptr);         
-                        g_aud_from_host_rdptr+=4;
-                        sample = sample | (unpackData<< 24);
-                        break;
-                    case 3:
-                        sample = unpackData & 0xffffff00;
-                        break;
-                 }
-                unpackState++;
+#pragma xta endpoint "mixer_request"
+                    int sample;
+                    int mult;
+                    int h;
+                    unsigned l;
+
+                    /* Unpack 3 byte samples */
+                    switch (unpackState&0x3) 
+                    {
+                        case 0:
+                            read_via_xc_ptr(unpackData, g_aud_from_host_rdptr);
+                            g_aud_from_host_rdptr+=4;
+                            sample = unpackData << 8;                               
+                            break;
+                        case 1:
+                            sample = (unpackData >> 16);
+                            read_via_xc_ptr(unpackData, g_aud_from_host_rdptr);
+                            g_aud_from_host_rdptr+=4;
+                            sample = sample | (unpackData << 16);
+                            break;
+                        case 2:
+                            sample = (unpackData >> 8);
+                            read_via_xc_ptr(unpackData, g_aud_from_host_rdptr);         
+                            g_aud_from_host_rdptr+=4;
+                            sample = sample | (unpackData<< 24);
+                            break;
+                        case 3:
+                            sample = unpackData & 0xffffff00;
+                            break;
+                    }
+                    unpackState++;
         
 #ifndef OUT_VOLUME_IN_MIXER
-            asm("ldw %0, %1[%2]":"=r"(mult):"r"(p_multOut),"r"(i));
-            {h, l} = macs(mult, sample, 0, 0);
-            h <<= 3;
-            outuint(c_mix_out, h);
+                    asm("ldw %0, %1[%2]":"=r"(mult):"r"(p_multOut),"r"(i));
+                    {h, l} = macs(mult, sample, 0, 0);
+                    h <<= 3;
+                    outuint(c_mix_out, h);
 #else
-            outuint(c_mix_out, sample);
+                    outuint(c_mix_out, sample);
 
 #endif
-            }
-        }
+                }
+                break;
+
+            case 2:
+#if (SAMPLE_SUBSLOT_SIZE_HS != 3) && (SAMPLE_SUBSLOT_SIZE_FS != 3)
+__builtin_unreachable();
+#endif 
+/* Buffering not underflow condition send out some samples...*/
+                for(int i = 0; i < g_numUsbChanOut; i++) 
+                {
+#pragma xta endpoint "mixer_request"
+                    int sample;
+                    int mult;
+                    int h;
+                    unsigned l;
+                
+                    switch (unpackState&0x1)
+                    {
+                        case 0:
+                            read_via_xc_ptr(unpackData, g_aud_from_host_rdptr);
+                            sample = unpackData << 16;                               
+                            break;
+                        case 1:    
+                            g_aud_from_host_rdptr+=4;
+                            sample = unpackData & 0xffff0000;                               
+                            break;
+                    }
+                    unpackState++;
+
+#ifndef OUT_VOLUME_IN_MIXER
+                    asm("ldw %0, %1[%2]":"=r"(mult):"r"(p_multOut),"r"(i));
+                    {h, l} = macs(mult, sample, 0, 0);
+                    h <<= 3;
+                    outuint(c_mix_out, h);
+#else
+                    outuint(c_mix_out, sample);
+#endif
+                }
+                break;
+            
+            default:
+                __builtin_unreachable();
+                break;
+
+        } /* switch(g_slotsize) */
 
         /* Output remaining channels. Past this point we always operate on MAX chan count */
         for(int i = 0; i < NUM_USB_CHAN_OUT - g_numUsbChanOut; i++)
@@ -354,7 +464,7 @@ void handle_audio_request(chanend c_mix_out)
         }
         
         /* 3/4 bytes per sample */                    
-        aud_data_remaining_to_device -= (g_numUsbChanOut*slotSize);
+        aud_data_remaining_to_device -= (g_numUsbChanOut*g_slotSize);
     }
     
     if (!inOverflow) 
@@ -365,16 +475,13 @@ void handle_audio_request(chanend c_mix_out)
 
             if (totalSampsToWrite) 
             {
-                if (usb_speed == XUD_SPEED_HS) 
-                {
-                    g_aud_to_host_wrptr += 4+totalSampsToWrite*4*g_numUsbChanIn;
-                }
-                else 
-                {
-                    unsigned int datasize = totalSampsToWrite*3*NUM_USB_CHAN_IN_A1;
-                    datasize = (datasize+3) & (~0x3); // round up to nearest word
-                    g_aud_to_host_wrptr += 4+datasize;                
-                }
+                unsigned datasize = totalSampsToWrite * g_slotSize * g_numUsbChanIn;
+
+                /* Round up to nearest word - note, not needed for slotsize == 4! */
+                datasize = (datasize+3) & (~0x3);
+
+                g_aud_to_host_wrptr += 4+datasize;
+                
                 if (g_aud_to_host_wrptr >= aud_to_host_fifo_end)
                 {
                     g_aud_to_host_wrptr = aud_to_host_fifo_start;
@@ -389,6 +496,7 @@ void handle_audio_request(chanend c_mix_out)
             totalSampsToWrite = speedRem >> 16;
             speedRem &= 0xffff;
 
+#if 0
             if (usb_speed == XUD_SPEED_HS) 
             {
                 if (totalSampsToWrite < 0 || totalSampsToWrite*4*g_numUsbChanIn > (MAX_DEVICE_AUD_PACKET_SIZE_CLASS_TWO)) 
@@ -403,6 +511,12 @@ void handle_audio_request(chanend c_mix_out)
                     totalSampsToWrite = 0;
                 }
             }
+#else
+            if (totalSampsToWrite < 0 || totalSampsToWrite * g_slotSize * g_numUsbChanIn > g_maxPacketSize) 
+            {
+                    totalSampsToWrite = 0;
+            }
+#endif
 
             /* Calc slots left in fifo */      
             space_left = g_aud_to_host_rdptr - g_aud_to_host_wrptr;      
@@ -413,12 +527,12 @@ void handle_audio_request(chanend c_mix_out)
                 space_left = aud_to_host_fifo_end - g_aud_to_host_wrptr;
             }
 
-            if ((space_left <= 0) || (space_left > totalSampsToWrite*g_numUsbChanIn*4+4)) 
+            if ((space_left <= 0) || (space_left > totalSampsToWrite*g_numUsbChanIn * 4 + 4)) 
             {    
                 /* Packet okay, write to fifo */
                 if (totalSampsToWrite) 
                 {
-                    write_via_xc_ptr(g_aud_to_host_wrptr, totalSampsToWrite*slotSize*g_numUsbChanIn);
+                    write_via_xc_ptr(g_aud_to_host_wrptr, totalSampsToWrite*g_slotSize*g_numUsbChanIn);
                     packState = 0;
                     g_aud_to_host_dptr = g_aud_to_host_wrptr + 4;
                 }
@@ -432,7 +546,7 @@ void handle_audio_request(chanend c_mix_out)
         }
     }
   
-    if (!outUnderflow && (aud_data_remaining_to_device<(slotSize*g_numUsbChanOut))) 
+    if (!outUnderflow && (aud_data_remaining_to_device<(g_slotSize*g_numUsbChanOut))) 
     {
         /* Handle any tail - incase a bad driver sent us a datalength not a multiple of chan count */
         if (aud_data_remaining_to_device) 
@@ -831,7 +945,7 @@ void decouple(chanend c_mix_out,
             read_via_xc_ptr(datalength, released_buffer);
 
             /* Ignore bad small packets */             
-            if ((datalength >= (g_numUsbChanOut * slotSize)) && (released_buffer == aud_from_host_wrptr))
+            if ((datalength >= (g_numUsbChanOut * g_slotSize)) && (released_buffer == aud_from_host_wrptr))
             {
             
                 /* Move the write pointer of the fifo on - round up to nearest word */
