@@ -312,7 +312,9 @@ unsigned char hidReportDescriptor[] = {
  * Multiply by number of channels and bytes      25 * 2 * 4 = 200 bytes
 */
 #define MAX_PACKET_SIZE_OUT_HS  ((((MAX_FREQ+7999)/8000)+1) * NUM_USB_CHAN_OUT * 4) 
-#define MAX_PACKET_SIZE_OUT_FS  ((((MAX_FREQ_A1+999)/1000)+1) * NUM_USB_CHAN_OUT_FS * 3) // Samples per channel
+#define MAX_PACKET_SIZE_OUT_FS  ((((MAX_FREQ_A1+999)/1000)+1) * NUM_USB_CHAN_OUT_FS * 3)    // Samples per channel
+#define MAX_PACKET_SIZE_IN_HS   ((((MAX_FREQ+7999)/8000)+1) * NUM_USB_CHAN_IN * 4) 
+#define MAX_PACKET_SIZE_IN_FS   ((((MAX_FREQ_A1+999)/1000)+1) * NUM_USB_CHAN_IN_FS * 3)     // Samples per channel
 
 /* Configuration Descriptor for Audio 2.0 (HS) operation */
 unsigned char cfgDesc_Audio2[] = 
@@ -904,7 +906,8 @@ unsigned char cfgDesc_Audio2[] =
     USB_ENDPOINT,                   /* 1  bDescriptorType: ENDPOINT */
     0x01,                           /* 2  bEndpointAddress (D7: 0:out, 1:in) */
     0x05,                           /* 3  bmAttributes (bitmap)  */ 
-    0,4,                            /* 4  wMaxPacketSize */
+    MAX_PACKET_SIZE_OUT_HS&0xff,        /* 4  wMaxPacketSize */
+    (MAX_PACKET_SIZE_OUT_HS&0xff00)>>8, /* 5  wMaxPacketSize */
     1,                              /* 6  bInterval */
 
     /* Class-Specific AS Isochronous Audio Data Endpoint Descriptor (4.10.1.2) */
@@ -963,7 +966,8 @@ unsigned char cfgDesc_Audio2[] =
     USB_ENDPOINT,                   /* 1  bDescriptorType: ENDPOINT */
     0x01,                           /* 2  bEndpointAddress (D7: 0:out, 1:in) */
     0x05,                           /* 3  bmAttributes (bitmap)  */ 
-    0,4,                            /* 4  wMaxPacketSize */
+    MAX_PACKET_SIZE_OUT_HS&0xff,        /* 4  wMaxPacketSize */
+    (MAX_PACKET_SIZE_OUT_HS&0xff00)>>8, /* 5  wMaxPacketSize */
     1,                              /* 6  bInterval */
 
     /* Class-Specific AS Isochronous Audio Data Endpoint Descriptor (4.10.1.2) */
@@ -1026,15 +1030,16 @@ unsigned char cfgDesc_Audio2[] =
     CS_INTERFACE,                   /* 1  bDescriptorType: 0x24 */
     FORMAT_TYPE,                    /* 2  bDescriptorSubtype: FORMAT_TYPE */    
     FORMAT_TYPE_I,                  /* 3  bFormatType: FORMAT_TYPE_1 */
-    0x04,                           /* 4  bSubslotSize (Number of bytes per subslot) */
-    24,                             /* 5  bBitResolution (Number of bits used per subslot) */ 
+    SAMPLE_SUBSLOT_SIZE_HS,         /* 4  bSubslotSize (Number of bytes per subslot) */
+    SAMPLE_BIT_RESOLUTION_HS,       /* 5  bBitResolution (Number of bits used per subslot) */ 
 
     /* Standard AS Isochronous Audio Data Endpoint Descriptor (4.10.1.1) */
     0x07,                           /* 0  bLength: 7 */
     USB_ENDPOINT,                   /* 1  bDescriptorType: ENDPOINT */
     0x82,                           /* 2  bEndpointAddress (D7: 0:out, 1:in) */
     5,                              /* 3  bmAttributes (bitmap)  */ 
-    0,4,                            /* 4  wMaxPacketSize */
+    MAX_PACKET_SIZE_IN_HS&0xff,        /* 4  wMaxPacketSize */
+    (MAX_PACKET_SIZE_IN_HS&0xff00)>>8, /* 5  wMaxPacketSize */
     1,                              /* 6  bInterval */
 
     /* Class-Specific AS Isochronous Audio Data Endpoint Descriptor (4.10.1.2) */
@@ -1083,7 +1088,8 @@ unsigned char cfgDesc_Audio2[] =
     USB_ENDPOINT,                   /* 1  bDescriptorType: ENDPOINT */
     0x82,                           /* 2  bEndpointAddress (D7: 0:out, 1:in) */
     5,                              /* 3  bmAttributes (bitmap)  */ 
-    0,4,                            /* 4  wMaxPacketSize */
+    MAX_PACKET_SIZE_IN_HS&0xff,        /* 4  wMaxPacketSize */
+    (MAX_PACKET_SIZE_IN_HS&0xff00)>>8, /* 5  wMaxPacketSize */
     1,                              /* 6  bInterval */
 
     /* Class-Specific AS Isochronous Audio Data Endpoint Descriptor (4.10.1.2) */
