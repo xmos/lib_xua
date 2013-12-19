@@ -578,7 +578,10 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
                 if(g_curUsbSpeed == XUD_SPEED_HS)
                 {
                     /* Mod bSlotSize */
-                    cfgDesc_Audio2[STREAMING_ALT1_OFFSET+4] = 4;
+                    cfgDesc_Audio2[STREAMING_ALT1_OFFSET+4] = SAMPLE_SUBSLOT_SIZE_HS;
+
+                    /* Mod bBitResolution */  
+                    cfgDesc_Audio2[STREAMING_ALT1_OFFSET+5] = SAMPLE_BIT_RESOLUTION_HS;
 
                     /* wMaxPacketSize */
                     cfgDesc_Audio2[STREAMING_ALT1_OFFSET+10] = MAX_PACKET_SIZE_OUT_HS&0xff;     
@@ -587,7 +590,10 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
                 else
                 {
                     /* Mod bSlotSize */
-                    cfgDesc_Audio2[STREAMING_ALT1_OFFSET+4] = 3;
+                    cfgDesc_Audio2[STREAMING_ALT1_OFFSET+4] = SAMPLE_SUBSLOT_SIZE_FS;
+                    
+                    /* Mod bBitResolution */  
+                    cfgDesc_Audio2[STREAMING_ALT1_OFFSET+5] = SAMPLE_BIT_RESOLUTION_FS;
                     
                     /* wMaxPacketSize */
                     cfgDesc_Audio2[STREAMING_ALT1_OFFSET+10] = MAX_PACKET_SIZE_OUT_FS&0xff;     
