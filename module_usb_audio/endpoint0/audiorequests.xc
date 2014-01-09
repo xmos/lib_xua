@@ -807,25 +807,24 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
  
                                 while(1)
                                 {
-                                    if((currentFreq48 <= maxFreq))
+                                    if((currentFreq44 <= maxFreq) && (currentFreq44 >= MIN_FREQ))
                                     {
-                                        /* Note i passed byref here */
                                         storeFreq(buffer, i, currentFreq44);
                                         num_freqs++;
                                         currentFreq44*=2;
-                                        
+                                    }
+
+                                    if((currentFreq48 <= maxFreq))
+                                    {
+                                        /* Note i passed byref here */
                                         storeFreq(buffer, i, currentFreq48);
                                         num_freqs++;
                                         currentFreq48*=2;
                                     }
-                                    else if((currentFreq44 <= maxFreq))
-                                    {
-                                        storeFreq(buffer, i, currentFreq44);
-                                        num_freqs++;
-                                        currentFreq44*=2;
-                                    }
                                     else
+                                    {
                                         break;
+                                    }
                                 }
                                 storeShort(buffer, 0, num_freqs);
                     
