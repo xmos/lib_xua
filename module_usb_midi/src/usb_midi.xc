@@ -22,7 +22,7 @@ static unsigned makeSymbol(unsigned data)
 #define RATE 31250
 
 #ifndef MIDI_SHIFT_TX
-#define MIDI_SHIFT_TX 7
+#define MIDI_SHIFT_TX 0
 #endif
 
 static unsigned bit_time =  XS1_TIMER_MHZ * 1000000 / (unsigned) RATE;
@@ -51,7 +51,7 @@ timer iAPTimer;
 
 #define ARRAY_SIZE(x) (sizeof(x) / sizeof(x[0]))
 
-void usb_midi(port ?p_midi_in, port ?p_midi_out,
+void usb_midi(buffered in port:1 ?p_midi_in, port ?p_midi_out,
             clock ?clk_midi,
             chanend ?c_midi,
             unsigned cable_number,
@@ -169,12 +169,14 @@ void usb_midi(port ?p_midi_in, port ?p_midi_out,
                             unsigned event = 0;
                             uin_count++;
                             rxByte >>= 24;
-                            //                if (rxByte != outputted_symbol) {
-                            //                  // Loopback check
-                            //                  printhexln(rxByte);
-                            //                  printhexln(outputted_symbol);
-                            //                }
-
+#if 0
+                            // Loopback check
+                            if ((rxByte != outputted_symbol)) 
+                            {
+                                printhexln(rxByte);
+                                printhexln(outputted_symbol);
+                            }
+#endif
                             {valid, event} = midi_in_parse(mips, cable_number, rxByte);
                             if (valid && queue_is_empty(midi_to_host_fifo))
                             {
