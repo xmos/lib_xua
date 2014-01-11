@@ -1241,7 +1241,7 @@ unsigned char cfgDesc_Audio2[] =
     0x05,                            /* 1 bDescriptorType : ENDPOINT descriptor. (field size 1 bytes) */
     EP_ADR_OUT_MIDI,           /* 2 bEndpointAddress : OUT Endpoint 3. (field size 1 bytes) */
     0x02,                            /* 3 bmAttributes : Bulk, not shared. (field size 1 bytes) */
-    0x00,                            /* 4 wMaxPacketSize : 64 bytes per packet. (field size 2 bytes) - has to be 0x200 for compliance*/
+    0x00,                            /* 4 wMaxPacketSize : 512 bytes per packet. (field size 2 bytes) - has to be 0x200 for compliance*/
     0x02,                            /* 5 wMaxPacketSize */
     0x00,                            /* 6 bInterval : Ignored for Bulk. Set to zero. (field size 1 bytes) */
     0x00,                            /* 7 bRefresh : Unused. (field size 1 bytes) */
@@ -1259,7 +1259,7 @@ unsigned char cfgDesc_Audio2[] =
     0x05,                            /* 1 bDescriptorType : ENDPOINT descriptor. (field size 1 bytes) */
     EP_ADR_IN_MIDI,            /* 2 bEndpointAddress : IN Endpoint 3. (field size 1 bytes) */
     0x02,                            /* 3 bmAttributes : Bulk, not shared. (field size 1 bytes) */
-    0x00,                            /* 4 wMaxPacketSize : 64 bytes per packet. (field size 2 bytes) - has to be 0x200 for compliance*/
+    0x00,                            /* 4 wMaxPacketSize : 512 bytes per packet. (field size 2 bytes) - has to be 0x200 for compliance*/
     0x02,                            /* 5 wMaxPacketSize */
     0x00,                            /* 6 bInterval : Ignored for Bulk. Set to zero. (field size 1 bytes) */
     0x00,                            /* 7 bRefresh : Unused. (field size 1 bytes) */
