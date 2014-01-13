@@ -38,13 +38,13 @@ static int clockValid[NUM_CLOCKS];                          /* Store current val
 static int clockInt[NUM_CLOCKS];                            /* Interupt flag for clocks */
 static int clockId[NUM_CLOCKS];
 
-int abs(int x) 
+static int abs(int x)
 {
     if (x < 0) return -x;
     return x;
 }
 
-int channelContainsControlToken(chanend x)
+static int channelContainsControlToken(chanend x)
 {
     unsigned char tmpc;
 
@@ -58,7 +58,7 @@ int channelContainsControlToken(chanend x)
 
 }
 
-void outInterrupt(chanend c_interruptControl, int value) 
+static void outInterrupt(chanend c_interruptControl, int value)
 {
     /* Non-blocking check for control token */
     //if (channelContainsControlToken(c_interruptControl)) 

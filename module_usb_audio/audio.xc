@@ -142,7 +142,7 @@ static inline void doI2SClocks(unsigned divide)
 
 /* I2S delivery thread */
 #pragma unsafe arrays
-{unsigned, unsigned} deliver(chanend c_out, chanend ?c_spd_out, unsigned divide, unsigned curSamFreq, chanend ?c_dig_rx, chanend ?c_adc)
+{unsigned, unsigned} static deliver(chanend c_out, chanend ?c_spd_out, unsigned divide, unsigned curSamFreq, chanend ?c_dig_rx, chanend ?c_adc)
 {
 	unsigned sample;
     unsigned underflow = 0;
@@ -209,8 +209,8 @@ static inline void doI2SClocks(unsigned divide)
     }
     else
     {
-#ifndef MIXER // Interfaces straight to decouple()
         underflow = inuint(c_out);
+#ifndef MIXER // Interfaces straight to decouple()
 
 #if NUM_USB_CHAN_IN > 0
 #pragma loop unroll
@@ -238,7 +238,18 @@ static inline void doI2SClocks(unsigned divide)
             }
         }
 #endif
-#else
+#else /* ifndef MIXER */
+
+        if(underflow)
+        {
+            #pragma loop unroll
+            for(int i = 0; i < NUM_USB_CHAN_OUT; i++)        
+            {
+                samplesOut[i] = underflowWord;
+            }
+        }
+        else
+        {        
 #pragma loop unroll
         for(int i = 0; i < NUM_USB_CHAN_OUT; i++)        
         {
@@ -247,6 +258,7 @@ static inline void doI2SClocks(unsigned divide)
             tmp<<=3;
 #endif
             samplesOut[i] = tmp;
+        }
         }
         	 
 #pragma loop unroll
@@ -387,8 +399,8 @@ static inline void doI2SClocks(unsigned divide)
         }
         else
         {
-#ifndef MIXER // Interfaces straight to decouple()
             underflow = inuint(c_out);
+#ifndef MIXER // Interfaces straight to decouple()
 #if NUM_USB_CHAN_IN > 0
 #pragma loop unroll
             for(int i = 0; i < NUM_USB_CHAN_IN; i++)
@@ -416,14 +428,25 @@ static inline void doI2SClocks(unsigned divide)
             }
 #endif
 #else /* ifndef MIXER */
-#pragma loop unroll
-            for(int i = 0; i < NUM_USB_CHAN_OUT; i++)
+
+            if(underflow)
+            { 
+                for(int i = 0; i < NUM_USB_CHAN_OUT; i++)
+                {
+                    samplesOut[i] = underflowWord;
+                }
+            }
+            else
             {
-                int tmp = inuint(c_out);
+#pragma loop unroll
+                for(int i = 0; i < NUM_USB_CHAN_OUT; i++)
+                {   
+                    int tmp = inuint(c_out);
 #if defined(OUT_VOLUME_IN_MIXER) && defined(OUT_VOLUME_AFTER_MIX)
-                tmp<<=3;
+                    tmp<<=3;
 #endif
-                samplesOut[i] = tmp;
+                    samplesOut[i] = tmp;
+                }
             }
 
 #pragma loop unroll
@@ -711,7 +734,7 @@ static inline void doI2SClocks(unsigned divide)
 
 /* This function is a dummy version of the deliver thread that does not 
    connect to the codec ports. It is used during DFU reset. */
-{unsigned,unsigned} dummy_deliver(chanend c_out) 
+{unsigned,unsigned} static dummy_deliver(chanend c_out)
 {
     while (1)
     {

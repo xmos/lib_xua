@@ -51,10 +51,10 @@ extern unsigned char mixSel[MIX_INPUTS];
 /* Global var for current frequency, set to default freq */
 unsigned int g_curSamFreq = DEFAULT_FREQ;
 unsigned int g_curSamFreq48000Family = DEFAULT_FREQ % 48000 == 0;
-unsigned int g_curSamFreqMultiplier = DEFAULT_FREQ / 48000;
+unsigned int g_curSamFreqMultiplier = DEFAULT_FREQ / (DEFAULT_MCLK_FREQ / 512); 
 
 /* Store an int into a char array: Note this allows non-word aligned access unlike reinerpret cast */
-void storeInt(unsigned char buffer[], int index, int val)
+static void storeInt(unsigned char buffer[], int index, int val)
 {
     buffer[index+3] = val>>24;
     buffer[index+2] = val>>16;
@@ -63,13 +63,13 @@ void storeInt(unsigned char buffer[], int index, int val)
 }
 
 /* Store an short into a char array: Note this allows non-word aligned access unlike reinerpret cast */
-void storeShort(unsigned char buffer[], int index, short val)
+static void storeShort(unsigned char buffer[], int index, short val)
 {
     buffer[index+1] = val>>8;
     buffer[index]  =  val;
 }
 
-void storeFreq(unsigned char buffer[], int &i, int freq)
+static void storeFreq(unsigned char buffer[], int &i, int freq)
 {
     storeInt(buffer, i, freq);
     i+=4;
@@ -81,7 +81,7 @@ void storeFreq(unsigned char buffer[], int &i, int freq)
 }
 
 
-unsigned longMul(unsigned a, unsigned b, int prec) 
+static unsigned longMul(unsigned a, unsigned b, int prec)
 {
     unsigned x,y;
     unsigned ret;
@@ -94,12 +94,12 @@ unsigned longMul(unsigned a, unsigned b, int prec)
     return ret;
 }
 
-void setG_curSamFreqMultiplier(int x) {
+static void setG_curSamFreqMultiplier(int x) {
     asm(" stw %0, dp[g_curSamFreqMultiplier]" :: "r"(x));
 }
 
 /* Update master volume i.e. i.e update weights for all channels */
-void updateMasterVol( int unitID, chanend ?c_mix_ctl)
+static void updateMasterVol( int unitID, chanend ?c_mix_ctl)
 {
     int x;
 #ifndef OUT_VOLUME_IN_MIXER
@@ -168,7 +168,7 @@ void updateMasterVol( int unitID, chanend ?c_mix_ctl)
     }
 }  
 
-void updateVol(int unitID, int channel, chanend ?c_mix_ctl)
+static void updateVol(int unitID, int channel, chanend ?c_mix_ctl)
 {   
     int x;
 #ifndef OUT_VOLUME_IN_MIXER
@@ -583,10 +583,10 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
                      
                     break; /* FU_USBIN */
       
-#ifdef MIXER
+#if defined(MIXER) && (MAX_MIX_COUNT > 0)
                 case ID_XU_OUT:
                 {
-                    if(sp.bmRequestType.Direction == BM_REQTYPE_DIRECTION_H2D) /* Direction: Host-to-device */
+                    if(sp.bmRequestType.Direction == USB_BM_REQTYPE_DIRECTION_H2D) /* Direction: Host-to-device */
                     {
                         unsigned volume = 0;
                         int c = sp.wValue & 0xff;
@@ -624,7 +624,7 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
                     break;
 
                 case ID_XU_IN:
-                    if(sp.bmRequestType.Direction == BM_REQTYPE_DIRECTION_H2D) /* Direction: Host-to-device */
+                    if(sp.bmRequestType.Direction == USB_BM_REQTYPE_DIRECTION_H2D) /* Direction: Host-to-device */
                     {
                         unsigned volume = 0;
                         int c = sp.wValue & 0xff;
@@ -660,10 +660,10 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
                 case ID_XU_MIXSEL:
                 {
                     int cs = sp.wValue >> 8;    /* Control Selector */
-                    int cn = sp.wValue & 0xff; /* Channel number */
+                    int cn = sp.wValue & 0xff;  /* Channel number */
 
                     /* Check for Get or Set */
-                    if(sp.bmRequestType.Direction == BM_REQTYPE_DIRECTION_OUT)                     
+                    if(sp.bmRequestType.Direction == USB_BM_REQTYPE_DIRECTION_OUT)                     
                     {
                         /* Direction: Host-to-device */ /* Host-to-device */   
                         datalength = XUD_GetBuffer(ep0_out, buffer);
@@ -720,7 +720,7 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
                 
                 case ID_MIXER_1:
                     
-                    if(sp.bmRequestType.Direction == BM_REQTYPE_DIRECTION_OUT) /* Direction: Host-to-device */
+                    if(sp.bmRequestType.Direction == USB_BM_REQTYPE_DIRECTION_OUT) /* Direction: Host-to-device */
                     {
                         unsigned volume = 0;
                         
@@ -807,25 +807,24 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
  
                                 while(1)
                                 {
-                                    if((currentFreq48 <= maxFreq))
+                                    if((currentFreq44 <= maxFreq) && (currentFreq44 >= MIN_FREQ))
                                     {
-                                        /* Note i passed byref here */
                                         storeFreq(buffer, i, currentFreq44);
                                         num_freqs++;
                                         currentFreq44*=2;
-                                        
+                                    }
+
+                                    if((currentFreq48 <= maxFreq))
+                                    {
+                                        /* Note i passed byref here */
                                         storeFreq(buffer, i, currentFreq48);
                                         num_freqs++;
                                         currentFreq48*=2;
                                     }
-                                    else if((currentFreq44 <= maxFreq))
-                                    {
-                                        storeFreq(buffer, i, currentFreq44);
-                                        num_freqs++;
-                                        currentFreq44*=2;
-                                    }
                                     else
+                                    {
                                         break;
+                                    }
                                 }
                                 storeShort(buffer, 0, num_freqs);
                     
@@ -884,7 +883,7 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
             break; /* case: RANGE */
         }
 
-#ifdef MIXER        
+#if defined (MIXER) && (MAX_MIX_COUNT > 0)        
         case MEM:   /* Memory Requests (5.2.7.1) */
 
             unitID = sp.wIndex >> 8;
@@ -893,7 +892,7 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
             {
                 case ID_MIXER_1:
                     
-                    if(sp.bmRequestType.Direction == BM_REQTYPE_DIRECTION_IN) 
+                    if(sp.bmRequestType.Direction == USB_BM_REQTYPE_DIRECTION_IN) 
                     {
                         int length = 0;
                         

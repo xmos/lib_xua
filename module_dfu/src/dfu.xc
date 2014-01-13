@@ -3,11 +3,11 @@
 #include "devicedefines.h"
 
 #include "xud.h"
-#ifdef ARCH_G
-#include "XUD_USB_Defines.h"
-#else
+//#ifdef ARCH_G
+//#include "XUD_USB_Defines.h"
+//#else
 #include "usb.h"
-#endif
+//#endif
 
 #include "dfu_types.h"
 #include "flash_interface.h"
@@ -357,7 +357,7 @@ int DFUReportResetState(chanend ?c_user_cmd)
     return inDFU;
 }
 
-int XMOS_DFU_RevertFactory(chanend ?c_user_cmd) 
+static int XMOS_DFU_RevertFactory(chanend ?c_user_cmd)
 {
     unsigned s = 0;
 
@@ -371,7 +371,7 @@ int XMOS_DFU_RevertFactory(chanend ?c_user_cmd)
     return 0;
 }
 
-int XMOS_DFU_SelectImage(unsigned int index, chanend ?c_user_cmd)
+static int XMOS_DFU_SelectImage(unsigned int index, chanend ?c_user_cmd)
 {
     // Select the image index for firmware update
     // Currently not used or implemented
@@ -379,12 +379,12 @@ int XMOS_DFU_SelectImage(unsigned int index, chanend ?c_user_cmd)
 }
 
 
-int XMOS_DFU_SaveState()
+static int XMOS_DFU_SaveState()
 { 
     return 0;
 }
 
-int XMOS_DFU_LoadState()
+static int XMOS_DFU_LoadState()
 {
     return 0;
 }
@@ -400,11 +400,7 @@ int DFUDeviceRequests(XUD_ep ep0_out, XUD_ep &?ep0_in, USB_SetupPacket_t &sp, ch
     { 
         // Host to device
         if (sp.wLength) 
-#ifdef ARCH_G
-            data_buffer_len = XUD_GetBuffer_(ep0_out, 0, (data_buffer, unsigned char[]));
-#else
             data_buffer_len = XUD_GetBuffer(ep0_out, (data_buffer, unsigned char[]));
-#endif
     }
 
     // Map Standard DFU commands onto device level firmware upgrade mechanism

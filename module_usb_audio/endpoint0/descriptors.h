@@ -191,7 +191,7 @@ unsigned char devQualDesc_Null[] =
 #define LEN_XU_IN                   (0)
 #endif
 
-#ifdef MIXER
+#if defined (MIXER) && (MAX_MIX_COUNT > 0) 
     #define LEN_XU_MIX                  (17)
     #define MIX_BMCONTROLS_LEN_TMP      ((MAX_MIX_COUNT * MIX_INPUTS) / 8)
 
@@ -242,45 +242,33 @@ unsigned char devQualDesc_Null[] =
 #define OUTPUT_ALT_LENGTH           (OUTPUT_ALT_LENGTH_ADAT + OUTPUT_ALT_LENGTH_DSD)
 
 
-// Positions in strDescs_Audio2
-#define INTERNAL_CLOCK_STRING_INDEX (14)
-#define SPDIF_CLOCK_STRING_INDEX    (15)
-
+// Positions in strDescs
+enum {
+    INTERNAL_CLOCK_STRING_INDEX = 14,
 #ifdef SPDIF_RX
-#define ADAT_CLOCK_STRING_INDEX (SPDIF_CLOCK_STRING_INDEX + 1)
-#else
-#define ADAT_CLOCK_STRING_INDEX (SPDIF_CLOCK_STRING_INDEX)
+    SPDIF_CLOCK_STRING_INDEX,
 #endif
-
 #ifdef ADAT_RX
-#define DFU_STRING_INDEX (ADAT_CLOCK_STRING_INDEX + 1)
-#else
-#define DFU_STRING_INDEX (ADAT_CLOCK_STRING_INDEX)
+    ADAT_CLOCK_STRING_INDEX,
 #endif
-
 #ifdef DFU
-#define MIDI_OUT_STRING_INDEX (DFU_STRING_INDEX + 1)
-#else
-#define MIDI_OUT_STRING_INDEX (DFU_STRING_INDEX)
+    DFU_STRING_INDEX,
 #endif
-
-#define MIDI_IN_STRING_INDEX (MIDI_OUT_STRING_INDEX + 1)
-
 #ifdef MIDI
-#define OUTPUT_INTERFACE_STRING_INDEX (MIDI_OUT_STRING_INDEX + 2)
-#else
-#define OUTPUT_INTERFACE_STRING_INDEX (MIDI_OUT_STRING_INDEX)
+    MIDI_OUT_STRING_INDEX,
+    MIDI_IN_STRING_INDEX,
 #endif
-
-#define INPUT_INTERFACE_STRING_INDEX (OUTPUT_INTERFACE_STRING_INDEX + NUM_USB_CHAN_OUT)
-
-#define MIXER_STRING_INDEX (INPUT_INTERFACE_STRING_INDEX + NUM_USB_CHAN_IN)
-
+    OUTPUT_INTERFACE_STRING_INDEX,
+    OUTPUT_INTERFACE_LAST_STRING_INDEX = OUTPUT_INTERFACE_STRING_INDEX + NUM_USB_CHAN_OUT - 1,
+    INPUT_INTERFACE_STRING_INDEX,
+    INPUT_INTERFACE_LAST_STRING_INDEX = INPUT_INTERFACE_STRING_INDEX + NUM_USB_CHAN_IN - 1,
 #ifdef MIXER
-#define IAP_INTERFACE_STRING_INDEX (MIXER_STRING_INDEX + MAX_MIX_COUNT)
-#else
-#define IAP_INTERFACE_STRING_INDEX (MIXER_STRING_INDEX)
+    MIXER_STRING_INDEX,
 #endif
+#ifdef IAP
+    IAP_INTERFACE_STRING_INDEX,
+#endif
+};
 
 #ifdef HID_CONTROLS
 unsigned char hidReportDescriptor[] = {
@@ -324,7 +312,9 @@ unsigned char hidReportDescriptor[] = {
  * Multiply by number of channels and bytes      25 * 2 * 4 = 200 bytes
 */
 #define MAX_PACKET_SIZE_OUT_HS  ((((MAX_FREQ+7999)/8000)+1) * NUM_USB_CHAN_OUT * 4) 
-#define MAX_PACKET_SIZE_OUT_FS  ((((MAX_FREQ_A1+999)/1000)+1) * NUM_USB_CHAN_OUT_FS * 3) // Samples per channel
+#define MAX_PACKET_SIZE_OUT_FS  ((((MAX_FREQ_A1+999)/1000)+1) * NUM_USB_CHAN_OUT_FS * 3)    // Samples per channel
+#define MAX_PACKET_SIZE_IN_HS   ((((MAX_FREQ+7999)/8000)+1) * NUM_USB_CHAN_IN * 4) 
+#define MAX_PACKET_SIZE_IN_FS   ((((MAX_FREQ_A1+999)/1000)+1) * NUM_USB_CHAN_IN_FS * 3)     // Samples per channel
 
 /* Configuration Descriptor for Audio 2.0 (HS) operation */
 unsigned char cfgDesc_Audio2[] = 
@@ -698,7 +688,7 @@ unsigned char cfgDesc_Audio2[] =
 
    
 
-#ifdef MIXER
+#if defined (MIXER) && (MAX_MIX_COUNT > 0)
     /* Extension Unit Descriptor (4.7.2.12) */
     LEN_XU_MIX,                     /* 0    bLength (15 + p, when p is number of sources) */
     CS_INTERFACE,                   /* 1    bDescriptorType */
@@ -849,8 +839,8 @@ unsigned char cfgDesc_Audio2[] =
     CS_INTERFACE,                   /* 1  bDescriptorType: 0x24 */
     FORMAT_TYPE,                    /* 2  bDescriptorSubtype: FORMAT_TYPE */
     FORMAT_TYPE_I,                  /* 3  bFormatType: FORMAT_TYPE_1 */
-    0x04,                           /* 4  bSubslotSize (Number of bytes per subslot) */
-    24,                             /* 5  bBitResolution (Number of bits used per subslot) */ 
+    SAMPLE_SUBSLOT_SIZE_HS,         /* 4  bSubslotSize (Number of bytes per subslot) */
+    SAMPLE_BIT_RESOLUTION_HS,       /* 5  bBitResolution (Number of bits used per subslot) */ 
 
     /* Standard AS Isochronous Audio Data Endpoint Descriptor (4.10.1.1) */
     0x07,                           /* 0  bLength: 7 */
@@ -859,7 +849,6 @@ unsigned char cfgDesc_Audio2[] =
     0x05,                           /* 3  bmAttributes (bitmap)  */ 
     MAX_PACKET_SIZE_OUT_HS&0xff,        /* 4  wMaxPacketSize */
     (MAX_PACKET_SIZE_OUT_HS&0xff00)>>8, /* 5  wMaxPacketSize */
-    //0, 4,                         // 1024 
     1,                              /* 6  bInterval */
 
     /* Class-Specific AS Isochronous Audio Data Endpoint Descriptor (4.10.1.2) */
@@ -908,7 +897,7 @@ unsigned char cfgDesc_Audio2[] =
     CS_INTERFACE,                   /* 1  bDescriptorType: 0x24 */
     FORMAT_TYPE,                    /* 2  bDescriptorSubtype: FORMAT_TYPE */
     FORMAT_TYPE_I,                  /* 3  bFormatType: FORMAT_TYPE_1 */
-    0x04,                           /* 4  bSubslotSize (Number of bytes per subslot) */
+    SAMPLE_SUBSLOT_SIZE_HS,         /* 4  bSubslotSize (Number of bytes per subslot) */
     32,                             /* 5  bBitResolution (Number of bits used per subslot) */ 
 
     /* Standard AS Isochronous Audio Data Endpoint Descriptor (4.10.1.1) */
@@ -916,7 +905,8 @@ unsigned char cfgDesc_Audio2[] =
     USB_ENDPOINT,                   /* 1  bDescriptorType: ENDPOINT */
     0x01,                           /* 2  bEndpointAddress (D7: 0:out, 1:in) */
     0x05,                           /* 3  bmAttributes (bitmap)  */ 
-    0,4,                            /* 4  wMaxPacketSize */
+    MAX_PACKET_SIZE_OUT_HS&0xff,        /* 4  wMaxPacketSize */
+    (MAX_PACKET_SIZE_OUT_HS&0xff00)>>8, /* 5  wMaxPacketSize */
     1,                              /* 6  bInterval */
 
     /* Class-Specific AS Isochronous Audio Data Endpoint Descriptor (4.10.1.2) */
@@ -967,15 +957,16 @@ unsigned char cfgDesc_Audio2[] =
     CS_INTERFACE,                   /* 1  bDescriptorType: 0x24 */
     FORMAT_TYPE,                    /* 2  bDescriptorSubtype: FORMAT_TYPE */
     FORMAT_TYPE_I,                  /* 3  bFormatType: FORMAT_TYPE_1 */
-    0x04,                           /* 4  bSubslotSize (Number of bytes per subslot) */
-    24,                             /* 5  bBitResolution (Number of bits used per subslot) */ 
+    SAMPLE_SUBSLOT_SIZE_HS,         /* 4  bSubslotSize (Number of bytes per subslot) */
+    SAMPLE_BIT_RESOLUTION_HS,       /* 5  bBitResolution (Number of bits used per subslot) */ 
 
     /* Standard AS Isochronous Audio Data Endpoint Descriptor (4.10.1.1) */
     0x07,                           /* 0  bLength: 7 */
     USB_ENDPOINT,                   /* 1  bDescriptorType: ENDPOINT */
     0x01,                           /* 2  bEndpointAddress (D7: 0:out, 1:in) */
     0x05,                           /* 3  bmAttributes (bitmap)  */ 
-    0,4,                            /* 4  wMaxPacketSize */
+    MAX_PACKET_SIZE_OUT_HS&0xff,        /* 4  wMaxPacketSize */
+    (MAX_PACKET_SIZE_OUT_HS&0xff00)>>8, /* 5  wMaxPacketSize */
     1,                              /* 6  bInterval */
 
     /* Class-Specific AS Isochronous Audio Data Endpoint Descriptor (4.10.1.2) */
@@ -1038,15 +1029,16 @@ unsigned char cfgDesc_Audio2[] =
     CS_INTERFACE,                   /* 1  bDescriptorType: 0x24 */
     FORMAT_TYPE,                    /* 2  bDescriptorSubtype: FORMAT_TYPE */    
     FORMAT_TYPE_I,                  /* 3  bFormatType: FORMAT_TYPE_1 */
-    0x04,                           /* 4  bSubslotSize (Number of bytes per subslot) */
-    24,                             /* 5  bBitResolution (Number of bits used per subslot) */ 
+    SAMPLE_SUBSLOT_SIZE_HS,         /* 4  bSubslotSize (Number of bytes per subslot) */
+    SAMPLE_BIT_RESOLUTION_HS,       /* 5  bBitResolution (Number of bits used per subslot) */ 
 
     /* Standard AS Isochronous Audio Data Endpoint Descriptor (4.10.1.1) */
     0x07,                           /* 0  bLength: 7 */
     USB_ENDPOINT,                   /* 1  bDescriptorType: ENDPOINT */
     0x82,                           /* 2  bEndpointAddress (D7: 0:out, 1:in) */
     5,                              /* 3  bmAttributes (bitmap)  */ 
-    0,4,                            /* 4  wMaxPacketSize */
+    MAX_PACKET_SIZE_IN_HS&0xff,        /* 4  wMaxPacketSize */
+    (MAX_PACKET_SIZE_IN_HS&0xff00)>>8, /* 5  wMaxPacketSize */
     1,                              /* 6  bInterval */
 
     /* Class-Specific AS Isochronous Audio Data Endpoint Descriptor (4.10.1.2) */
@@ -1087,15 +1079,16 @@ unsigned char cfgDesc_Audio2[] =
     CS_INTERFACE,                   /* 1  bDescriptorType: 0x24 */
     FORMAT_TYPE,                    /* 2  bDescriptorSubtype: FORMAT_TYPE */    
     FORMAT_TYPE_I,                  /* 3  bFormatType: FORMAT_TYPE_1 */
-    0x04,                           /* 4  bSubslotSize (Number of bytes per subslot) */
-    24,                             /* 5  bBitResolution (Number of bits used per subslot) */ 
+    SAMPLE_SUBSLOT_SIZE_HS,         /* 4  bSubslotSize (Number of bytes per subslot) */
+    SAMPLE_BIT_RESOLUTION_HS,       /* 5  bBitResolution (Number of bits used per subslot) */ 
 
     /* Standard AS Isochronous Audio Data Endpoint Descriptor (4.10.1.1) */
     0x07,                           /* 0  bLength: 7 */
     USB_ENDPOINT,                   /* 1  bDescriptorType: ENDPOINT */
     0x82,                           /* 2  bEndpointAddress (D7: 0:out, 1:in) */
     5,                              /* 3  bmAttributes (bitmap)  */ 
-    0,4,                            /* 4  wMaxPacketSize */
+    MAX_PACKET_SIZE_IN_HS&0xff,        /* 4  wMaxPacketSize */
+    (MAX_PACKET_SIZE_IN_HS&0xff00)>>8, /* 5  wMaxPacketSize */
     1,                              /* 6  bInterval */
 
     /* Class-Specific AS Isochronous Audio Data Endpoint Descriptor (4.10.1.2) */
@@ -1248,7 +1241,7 @@ unsigned char cfgDesc_Audio2[] =
     0x05,                            /* 1 bDescriptorType : ENDPOINT descriptor. (field size 1 bytes) */
     EP_ADR_OUT_MIDI,           /* 2 bEndpointAddress : OUT Endpoint 3. (field size 1 bytes) */
     0x02,                            /* 3 bmAttributes : Bulk, not shared. (field size 1 bytes) */
-    0x00,                            /* 4 wMaxPacketSize : 64 bytes per packet. (field size 2 bytes) - has to be 0x200 for compliance*/
+    0x00,                            /* 4 wMaxPacketSize : 512 bytes per packet. (field size 2 bytes) - has to be 0x200 for compliance*/
     0x02,                            /* 5 wMaxPacketSize */
     0x00,                            /* 6 bInterval : Ignored for Bulk. Set to zero. (field size 1 bytes) */
     0x00,                            /* 7 bRefresh : Unused. (field size 1 bytes) */
@@ -1266,7 +1259,7 @@ unsigned char cfgDesc_Audio2[] =
     0x05,                            /* 1 bDescriptorType : ENDPOINT descriptor. (field size 1 bytes) */
     EP_ADR_IN_MIDI,            /* 2 bEndpointAddress : IN Endpoint 3. (field size 1 bytes) */
     0x02,                            /* 3 bmAttributes : Bulk, not shared. (field size 1 bytes) */
-    0x00,                            /* 4 wMaxPacketSize : 64 bytes per packet. (field size 2 bytes) - has to be 0x200 for compliance*/
+    0x00,                            /* 4 wMaxPacketSize : 512 bytes per packet. (field size 2 bytes) - has to be 0x200 for compliance*/
     0x02,                            /* 5 wMaxPacketSize */
     0x00,                            /* 6 bInterval : Ignored for Bulk. Set to zero. (field size 1 bytes) */
     0x00,                            /* 7 bRefresh : Unused. (field size 1 bytes) */
@@ -1394,43 +1387,7 @@ unsigned char cfgDesc_Audio2[] =
 
 #endif
 
-
-
-
-
-
-
 };
-
-
-
-/* String table */
-#ifdef SPDIF_RX
-#define SPDIF_RX_NUM_STRS   1
-#else
-#define SPDIF_RX_NUM_STRS   0
-#endif
-
-#ifdef ADAT_RX
-#define ADAT_RX_NUM_STRS    1
-#else
-#define ADAT_RX_NUM_STRS    0
-#endif
-
-#ifdef MIDI
-#define MIDI_NUM_STRS       2
-#else
-#define MIDI_NUM_STRS       0
-#endif
-
-#ifdef DFU
-#define DFU_NUM_STRS       1
-#else
-#define DFU_NUM_STRS       0
-#endif
-
-#define STR_INDEX_OUT_CHAN  (10 + SPDIF_RX_NUM_STRS + ADAT_RX_NUM_STRS + MIDI_NUM_STRS + DFU_NUM_STRS)
-#define STR_INDEX_IN_CHAN   (STR_INDEX_OUT_CHAN + NUM_USB_CHAN_OUT)
 
 #define APPEND_VENDOR_STR(x) VENDOR_STR" "#x
 
@@ -1446,10 +1403,13 @@ unsigned char cfgDesc_Audio2[] =
 #endif
 #endif
 
+
+#define STR_USENG 0x0409
+
 static unsigned char strDescs[][40] = 
 {
-    "Langids",                                  // 0     LangIDs place holder
-    APPEND_VENDOR_STR(),                       // 1     iManufacturer (at MANUFACTURER_STRING_INDEX)
+    { STR_USENG & 0xff, STR_USENG >> 8, '\0'},   // 0     LangID
+    APPEND_VENDOR_STR(),                        // 1     iManufacturer (at MANUFACTURER_STRING_INDEX)
 
     "",//SERIAL_STR,                            // 2     iSerialNumber (at SERIAL_STR_INDEX)
     
@@ -1853,8 +1813,8 @@ unsigned char cfgDesc_Audio1[] =
     0x02,                           /* Subtype - FORMAT_TYPE */
     0x01,                           /* Format type - FORMAT_TYPE_1 */
     NUM_USB_CHAN_OUT_FS,            /* nrChannels */
-    0x03,                           /* subFrameSize - 4 bytes per slot */
-    24,                             /* bitResolution - 24bit */
+    SAMPLE_SUBSLOT_SIZE_FS,         /* subFrameSize */
+    SAMPLE_BIT_RESOLUTION_FS,       /* bitResolution */
     0x04,                           /* SamFreqType - 4 sample freq */
     0x44, 0xAC, 0x00,               /* sampleFreq - 44.1Khz */
     0x80, 0xBB, 0x00,               /* sampleFreq - 48KHz */ 
@@ -1935,9 +1895,9 @@ unsigned char cfgDesc_Audio1[] =
     CS_INTERFACE,                   
     0x02,                           /* Subtype - FORMAT_TYPE */          
     0x01,                           /* Format type - FORMAT_TYPE_1 */    
-    NUM_USB_CHAN_IN_FS,             /* bNrChannels - 2 */                 
-    0x03,                           /* subFrameSize - 4 bytes per slot */
-    24,                             /* bitResolution - 24bit */          
+    NUM_USB_CHAN_IN_FS,             /* bNrChannels - Typically 2 */                 
+    SAMPLE_SUBSLOT_SIZE_FS,         /* subFrameSize - Typically 4 bytes per slot */
+    SAMPLE_BIT_RESOLUTION_FS,       /* bitResolution - Typically 24bit */          
     0x04,                           /* SamFreqType - 4 sample freq */    
     0x44, 0xAC, 0x00,               /* sampleFreq - 44.1Khz */
     0x80, 0xBB, 0x00,               /* sampleFreq - 48KHz */ 
@@ -2011,23 +1971,4 @@ unsigned char cfgDesc_Audio1[] =
 };
 
 #endif
-
-#define APPEND_VENDOR_STR(x) VENDOR_STR#x
-#if 0
-static unsigned char strDescs_Audio1[][40] =
-{
-    "Langids",                                  /* String 0 (LangIDs) place holder */ 
-    APPEND_VENDOR_STR(),                       // 1    iManufacturer
-    APPEND_VENDOR_STR(USB Audio 1.0),           // 2    iProduct and iInterface for control interface
-    "",//SERIAL_STR,                                 // 3    iSerialNumber
-
-    APPEND_VENDOR_STR(USB 1.0 Audio Out),       // 4    iInterface for Streaming interaces
-    APPEND_VENDOR_STR(USB 1.0 Audio In),        // 5
-
-    APPEND_VENDOR_STR(Audio 1.0 Output),        // 6    "USB Input Terminal" (User sees as output from host) 
-    APPEND_VENDOR_STR(Audio 1.0 Input),         // 7    "USB Output Terminal" (User sees as input to host) 
-    
-    APPEND_VENDOR_STR(DFU)                      // 8     iInterface for DFU interface
-};                                                                                                                                                              
-#endif      
 #endif      

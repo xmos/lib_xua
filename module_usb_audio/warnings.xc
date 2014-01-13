@@ -1,5 +1,9 @@
 
-/* Warnings relating to defines have been moved to this XC file to avoid multiple warnings being issued from the devicedefines.h header file */
+/*
+Warnings relating to configuration defines located in this XC source file rather than the devicedefines.h header file in order to avoid multiple warnings being issued when the devicedefines.h header file is included in multiple files.
+*/
+
+#include "customdefines.h"
 
 #include "customdefines.h"
 
@@ -36,7 +40,7 @@
 #endif
 
 #ifndef BCD_DEVICE
-#warning BCD_DEVICE not defined. Using 0x0620
+#warning BCD_DEVICE not defined. Using XMOS release version number
 #endif
 
 #if (AUDIO_CLASS==1) || defined(AUDIO_CLASS_FALLBACK)
@@ -54,7 +58,7 @@
 #endif
 
 #ifndef AUDIO_CLASS_FALLBACK
-#warning AUDIO_CLASS_FALLBACK not defined, using 0
+#warning AUDIO_CLASS_FALLBACK not defined, using 0 (i.e. disabled)
 #endif
 
 

@@ -5,6 +5,7 @@
 #include <xs1_l_registers.h>
 #include <xs1_su_registers.h>
 #include <platform.h>
+#include <hwtimer.h>
 
 #ifndef VOLTAGE_REDUCTION_mV
 #define VOLTAGE_REDUCTION_mV 20
@@ -25,7 +26,7 @@ void archU_powerSaving()
         // Reduce the VDDCORE voltage level
         for (unsigned count=0; count < (VOLTAGE_REDUCTION_mV/10); count++)
         {
-            timer t;
+            hwtimer_t t;
             int time;
 
             writeval[0] = (ARCH_U_VOLTAGE_FIRST_STEP - count);

@@ -56,6 +56,7 @@
 
 #if ((MCLK_48 % MIN_FREQ) == 0)
 #define MIN_FREQ_48 MIN_FREQ
+/* * 2 required since we want the next 44.1 based freq above MIN_FREQ */
 #define MIN_FREQ_44 (((44100*512)/((48000 * 512)/MIN_FREQ))*2)
 #endif
 
@@ -226,42 +227,95 @@
 
 /* Product string for Audio Class 2.0 mode */
 #ifndef PRODUCT_STR_A2
-#define PRODUCT_STR_A2             "xCORE USB Audio 2.0"
+#define PRODUCT_STR_A2           "xCORE USB Audio 2.0"
 #endif
 
 /* Product string for Audio Class 1.0 mode */
 #ifndef PRODUCT_STR_A1
-#define PRODUCT_STR_A1             "xCORE USB Audio 1.0"
+#define PRODUCT_STR_A1           "xCORE USB Audio 1.0"
 #endif
 
 /* USB Product ID (PID) for Audio Class 1.0 mode */
 #if (AUDIO_CLASS==1) || defined(AUDIO_CLASS_FALLBACK)
 #ifndef PID_AUDIO_1
-#define PID_AUDIO_1               (0x0003)        
+#define PID_AUDIO_1              (0x0003)        
 #endif
 #endif
 
 /* USB Product ID (PID) for Audio Class 2.0 mode */
 #ifndef PID_AUDIO_2
-#define PID_AUDIO_2               (0x0002)        
+#define PID_AUDIO_2              (0x0002)        
 #endif
 
-/* Device release number in BCD: 0xJJMNi */
+/* Device release number in BCD: 0xJJMN */
+#define BCD_DEVICE_J             6
+#define BCD_DEVICE_M             3
+#define BCD_DEVICE_N             2
+
 #ifndef BCD_DEVICE
-#define BCD_DEVICE               (0x0620)       
+#define BCD_DEVICE               ((BCD_DEVICE_J << 8) | ((BCD_DEVICE_M & 0xF) << 4) | (BCD_DEVICE_N & 0xF))
+#endif
+
+/* Sample Sub-slot size (bytes) for High Speed. Default is 4 bytes */
+#ifndef SAMPLE_SUBSLOT_SIZE_HS
+#define SAMPLE_SUBSLOT_SIZE_HS   4
+#endif 
+
+#if (SAMPLE_SUBSLOT_SIZE_HS != 2) && (SAMPLE_SUBSLOT_SIZE_HS != 3) && (SAMPLE_SUBSLOT_SIZE_HS != 4)
+#error Only SAMPLE_SUBSLOT_SIZE_HS 2, 3 or 4 supported #SAMPLE_SUBSLOT_SIZE_HS
+#endif
+
+/* Sample Sub-slot size (bytes) for Full Speed. Default is 3 bytes */
+#ifndef SAMPLE_SUBSLOT_SIZE_FS
+#define SAMPLE_SUBSLOT_SIZE_FS   3
+#endif 
+
+#if (SAMPLE_SUBSLOT_SIZE_FS != 2) && (SAMPLE_SUBSLOT_SIZE_FS != 3) && (SAMPLE_SUBSLOT_SIZE_FS != 4)
+#error Only SAMPLE_SUBSLOT_SIZE_FS 2, 3 or 4 supported
+#endif
+
+/* Sample bit resolution for High Speed. Default 24bit*/
+#ifndef SAMPLE_BIT_RESOLUTION_HS
+#define SAMPLE_BIT_RESOLUTION_HS   24
+#endif 
+
+#if (SAMPLE_BIT_RESOLUTION_HS/8) > SAMPLE_SUBSLOT_SIZE_HS
+#error SAMPLE_BIT_RESOLUTION_HS is too big for SAMPLE_SUBSLOT_SIZE_HS
+#endif
+
+/* Sample bit resolution for Full Speed. Default 24bit*/
+#ifndef SAMPLE_BIT_RESOLUTION_FS
+#define SAMPLE_BIT_RESOLUTION_FS   24
+#endif 
+
+#if (SAMPLE_BIT_RESOLUTION_FS/8) > SAMPLE_SUBSLOT_SIZE_FS
+#error SAMPLE_BIT_RESOLUTION_FS is too big for SAMPLE_SUBSLOT_SIZE_FS
+#endif
+
+/* By default base the iAP version number on USB BCD_DEVICE */
+#if defined(IAP)
+#ifndef ACCESSORY_FIRMWARE_MAJOR
+#define ACCESSORY_FIRMWARE_MAJOR BCD_DEVICE_J
+#endif
+#ifndef ACCESSORY_FIRMWARE_MINOR
+#define ACCESSORY_FIRMWARE_MINOR BCD_DEVICE_M
+#endif
+#ifndef ACCESSORY_FIRMWARE_POINT
+#define ACCESSORY_FIRMWARE_POINT BCD_DEVICE_N
+#endif
 #endif
 
 /* Addition interfaces based on defines */
 #if defined(DFU) && DFU != 0
-#define DFU_INTERFACES          (1)               /* DFU interface count */
+#define DFU_INTERFACES           (1)               /* DFU interface count */
 #else
-#define DFU_INTERFACES          (0)
+#define DFU_INTERFACES           (0)
 #endif
 
 #ifdef INPUT
-#define INPUT_INTERFACES        (1)
+#define INPUT_INTERFACES         (1)
 #else
-#define INPUT_INTERFACES        (0)
+#define INPUT_INTERFACES         (0)
 #endif
 
 #if defined(OUTPUT) && OUTPUT != 0
