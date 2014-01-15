@@ -38,6 +38,8 @@ int uin_count = 0; // UART bytes in
 // state for iAP
 #ifdef IAP
 extern unsigned authenticating;
+extern struct iap_buf iap_incoming_buffer;
+extern struct iap_buf iap_outgoing_buffer;
 #else
 unsigned authenticating = 0;
 #endif
@@ -115,11 +117,11 @@ void usb_midi(buffered in port:1 ?p_midi_in, port ?p_midi_out,
     /* Check for special case where MIDI and i2c ports are shared... */
     if(isnull(c_i2c) && isnull(p_scl) && isnull(p_sda))
     {
-        init_iAP(c_i2c, p_midi_out, p_midi_in); // uses timer for i2c initialisation pause..
+        init_iAP(iap_incoming_buffer, iap_outgoing_buffer, null, null, null); // uses timer for i2c initialisation pause..
     }
     else
     {   
-        init_iAP(c_i2c, p_scl, p_sda); // uses timer for i2c initialisation pause..
+        init_iAP(iap_incoming_buffer, iap_outgoing_buffer, c_i2c, p_scl, p_sda); // uses timer for i2c initialisation pause..
     }
 #endif
 
@@ -335,11 +337,11 @@ void usb_midi(buffered in port:1 ?p_midi_in, port ?p_midi_out,
                     /* Check for special case where MIDI ports are shared with i2c ports */
                     if(isnull(c_i2c) && isnull(p_scl) && isnull(p_sda))
                     {
-                        iap_handle_ack_or_reset_or_data(is_ack, is_reset, datum, c_iap, c_i2c, p_midi_out, p_midi_in);
+                        iap_handle_ack_or_reset_or_data(iap_incoming_buffer, iap_outgoing_buffer, is_ack, is_reset, datum, c_iap, null, null, null);
                     }
                     else
                     {
-                        iap_handle_ack_or_reset_or_data(is_ack, is_reset, datum, c_iap, c_i2c, p_scl, p_sda);
+                        iap_handle_ack_or_reset_or_data(iap_incoming_buffer, iap_outgoing_buffer, is_ack, is_reset, datum, c_iap, c_i2c, p_scl, p_sda);
                     }
                     if (!authenticating) 
                     {
