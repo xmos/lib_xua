@@ -240,6 +240,7 @@ static inline void doI2SClocks(unsigned divide)
 #endif
 #else /* ifndef MIXER */
 
+#if NUM_USB_CHAN_OUT > 0
         if(underflow)
         {
             #pragma loop unroll
@@ -260,12 +261,15 @@ static inline void doI2SClocks(unsigned divide)
             samplesOut[i] = tmp;
         }
         }
+#endif
         	 
+#if NUM_USB_CHAN_IN > 0
 #pragma loop unroll
         for(int i = 0; i < NUM_USB_CHAN_IN; i++)
         {
             outuint(c_out, samplesIn[i]);
         }
+#endif
 #endif
     }
 
@@ -428,7 +432,7 @@ static inline void doI2SClocks(unsigned divide)
             }
 #endif
 #else /* ifndef MIXER */
-
+#if NUM_USB_CHAN_OUT > 0
             if(underflow)
             { 
                 for(int i = 0; i < NUM_USB_CHAN_OUT; i++)
@@ -448,12 +452,14 @@ static inline void doI2SClocks(unsigned divide)
                     samplesOut[i] = tmp;
                 }
             }
-
+#endif
+#if NUM_USB_CHAN_IN > 0
 #pragma loop unroll
             for(int i = 0; i < NUM_USB_CHAN_IN; i++)
             {
                 outuint(c_out, samplesIn[i]);
             }
+#endif
 #endif
         }
 
