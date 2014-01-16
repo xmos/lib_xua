@@ -79,6 +79,8 @@ extern void device_reboot(void);
 #define MAX_DIVIDE (MAX_DIVIDE_48)
 #endif
 
+#ifndef CODEC_MASTER
+#error
 static inline void doI2SClocks(unsigned divide)
 { 
     switch (divide)
@@ -139,6 +141,7 @@ static inline void doI2SClocks(unsigned divide)
 #endif     
    }
 }
+#endif
 
 /* I2S delivery thread */
 #pragma unsafe arrays
@@ -193,13 +196,14 @@ static inline void doI2SClocks(unsigned divide)
     if(testct(c_out))
     {
         unsigned command = inct(c_out);
-        
+#ifndef CODEC_MASTER 
             // Set clocks low
             p_lrclk <: 0;
             p_bclk <: 0;
 #if(DSD_CHANS_DAC != 0) 
             /* DSD Clock might not be shared with lrclk or bclk... */
             p_dsd_clk <: 0;
+#endif
 #endif
 #if (DSD_CHANS_DAC > 0)
         if(dsdMode == DSD_MODE_DOP)
@@ -384,13 +388,14 @@ static inline void doI2SClocks(unsigned divide)
         if(testct(c_out))
         {
             unsigned command;
-
+#ifndef CODEC_MASTER
             // Set clocks low
             p_lrclk <: 0;
             p_bclk <: 0;
 #if(DSD_CHANS_DAC != 0) 
             /* DSD Clock might not be shared with lrclk or bclk... */
             p_dsd_clk <: 0;
+#endif
 #endif
             command = inct(c_out);
             
