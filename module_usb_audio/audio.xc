@@ -80,7 +80,6 @@ extern void device_reboot(void);
 #endif
 
 #ifndef CODEC_MASTER
-#error
 static inline void doI2SClocks(unsigned divide)
 { 
     switch (divide)
