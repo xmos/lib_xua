@@ -10,9 +10,7 @@ unsigned get_tile_id(tileref);
 
 extern tileref tile[];
 
-/* Reboots XMOS device by writing to the PLL config register */
-void device_reboot_implementation(chanend spare) 
-{  
+void device_reboot_aux(void) {
 #ifdef XUD_ON_U_SERIES
     /* Disconnect from bus */
     unsigned data[] = {4};
@@ -26,12 +24,6 @@ void device_reboot_implementation(chanend spare)
     unsigned int localTileId = get_local_tile_id();
     unsigned int tileId;
     unsigned int tileArrayLength;
-    
-    outct(spare, XS1_CT_END);   // have to do this before freeing the chanend
-    inct(spare);                // Receive end ct from usb_buffer to close down in both directions
-    
-    /* Need a spare chanend so we can talk to the pll register */
-    asm("freer res[%0]"::"r"(spare));
     
     /* Find size of tile array - note in future tools versions this will be available from platform.h */
     asm volatile ("ldc %0, tile.globound":"=r"(tileArrayLength));
@@ -54,5 +46,17 @@ void device_reboot_implementation(chanend spare)
     read_sswitch_reg(localTileId, 6, pllVal);
     write_sswitch_reg_no_ack(localTileId, 6, pllVal);
 #endif
+}
 
+/* Reboots XMOS device by writing to the PLL config register */
+void device_reboot_implementation(chanend spare) 
+{
+#ifndef XUD_ON_U_SERIES
+    outct(spare, XS1_CT_END);   // have to do this before freeing the chanend
+    inct(spare);                // Receive end ct from usb_buffer to close down in both directions
+    
+    /* Need a spare chanend so we can talk to the pll register */
+    asm("freer res[%0]"::"r"(spare));
+#endif
+    device_reboot_aux();
 }
