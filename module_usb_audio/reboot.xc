@@ -10,8 +10,9 @@ unsigned get_tile_id(tileref);
 
 extern tileref tile[];
 
-void device_reboot_aux(void) {
-#ifdef XUD_ON_U_SERIES
+void device_reboot_aux(void) 
+{
+#if (XUD_SERIES_SUPPORT == 1)
     /* Disconnect from bus */
     unsigned data[] = {4};
     write_periph_32(usb_tile, XS1_SU_PERIPH_USB_ID, XS1_SU_PER_UIFM_FUNC_CONTROL_NUM, 1, data);
@@ -51,7 +52,7 @@ void device_reboot_aux(void) {
 /* Reboots XMOS device by writing to the PLL config register */
 void device_reboot_implementation(chanend spare) 
 {
-#ifndef XUD_ON_U_SERIES
+#if (XUD_SERIES_SUPPORT != 1)
     outct(spare, XS1_CT_END);   // have to do this before freeing the chanend
     inct(spare);                // Receive end ct from usb_buffer to close down in both directions
     
