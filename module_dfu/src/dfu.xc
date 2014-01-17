@@ -3,11 +3,7 @@
 #include "devicedefines.h"
 
 #include "xud.h"
-//#ifdef ARCH_G
-//#include "XUD_USB_Defines.h"
-//#else
 #include "usb.h"
-//#endif
 
 #include "dfu_types.h"
 #include "flash_interface.h"
