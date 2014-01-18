@@ -150,6 +150,11 @@
 #undef AUDIO_CLASS_FALLBACK
 #endif
 
+/* Whether to run in Audio Class 2.0 mode in USB Full-speed */
+#if defined(FULL_SPEED_AUDIO_2) && (FULL_SPEED_AUDIO_2==0)
+#undef FULL_SPEED_AUDIO_2
+#endif
+
 /* Number of IS2 chans to DAC */
 #ifndef I2S_CHANS_DAC
 #error I2S_CHANS_DAC not defined
