@@ -352,8 +352,9 @@ __builtin_unreachable();
                     asm("ldw %0, %1[%2]":"=r"(mult):"r"(p_multOut),"r"(i));
                     {h, l} = macs(mult, sample, 0, 0);
                     h <<= 3;
-#if (SAMPLE_BIT_RESOLUTION_HS > 24) || (SAMPLE_BIT_RESOLUTION_FS > 24)
-                    h |= (l >>29)& 0x7; // Note this step is not required if we assume sample depth is 24bit (rather than 32bit)
+#if (SAMPLE_BIT_RESOLUTION_HS > 24) || (SAMPLE_BIT_RESOLUTION_FS > 24) || defined(NATIVE_DSD)
+                    h |= (l >>29)& 0x7; // Note: This step is not required if we assume sample depth is 24bit (rather than 32bit)
+                                        // Note: We need all 32bits for Native DSD
 #endif
                     outuint(c_mix_out, h);
 #else
