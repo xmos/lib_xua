@@ -253,6 +253,18 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
                             {
                                 case 0:
                                     /* Stream stop */
+#if defined(NATIVE_DSD) && defined(DEFAULT_TO_PCM)
+                                    /* Default to PCM mode */
+                                    if(g_dsdMode)
+                                    {
+                                        outuint(c_audioControl, SET_DSD_MODE);
+                                        outuint(c_audioControl, DSD_MODE_OFF);
+                                    
+                                        /* Handshake */
+							            chkct(c_audioControl, XS1_CT_END);
+                                        g_dsdMode = 0;
+                                    }
+#endif
                                     break;
                                 case 1:
                                     /* Stream active + 0 chans */
