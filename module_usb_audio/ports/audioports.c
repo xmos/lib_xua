@@ -78,7 +78,7 @@ unsigned int divide, unsigned int dsdMode)
                 p_dsd_clk,
 #else
                 0, /* NULL */
-                p_dsd_clock,
+                p_dsd_clk,
 #endif
 #endif
                 divide);
