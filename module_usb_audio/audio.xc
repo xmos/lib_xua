@@ -185,9 +185,10 @@ static inline void doI2SClocks(unsigned divide)
     if(dsdMode == DSD_MODE_DOP)
         underflowWord = 0xFA969600;
     else if(dsdMode == DSD_MODE_NATIVE)
+    {
         underflowWord = 0x96969696;
+    }
 #endif
-
 
     outuint(c_out, 0);
 
@@ -329,7 +330,6 @@ static inline void doI2SClocks(unsigned divide)
     else
     {
         clearbuf(p_bclk);
-  
 
 #if (I2S_CHANS_DAC != 0)
         /* Prefill the ports so data is input in advance */
@@ -338,7 +338,9 @@ static inline void doI2SClocks(unsigned divide)
             p_i2s_dac[i] <: 0;
         }
 #endif
-
+        /* b_clk must start high */
+        p_bclk <: 0x80000000;
+        sync(p_bclk);
 
         p_lrclk <: 0x7FFFFFFF; 
         doI2SClocks(divide);
@@ -346,6 +348,12 @@ static inline void doI2SClocks(unsigned divide)
     }
 #if (DSD_CHANS_DAC > 0)
     } /* if (!dsdMode) */
+    else
+    {
+        /* p_dsd_clk must start high */
+        p_dsd_clk <: 0x80000000;
+        //sync(p_dsd_clk);
+    }
 #endif
 #else          
     /* CODEC is master */

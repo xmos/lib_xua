@@ -113,16 +113,8 @@ unsigned int divide)
     }
 #endif
 
-
     /* Start clock blocks ticking */
-    //start_clock(clk_audio_mclk);
     start_clock(clk_audio_bclk);
-
-    /* bclk initial state needs to be high  */
-    p_bclk <: 0xFFFFFFFF;
-
-    /* Pause until output completes */
-    sync(p_bclk);
 
 #else /* CODEC_MASTER */
 
