@@ -318,7 +318,7 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
                                         timer t;
                                         unsigned time;         
                                         t :> time;
-                                        t when timerafter(time+5000000+MCLK_STABILITY_DELAY):> void;
+                                        t when timerafter(time+FEEDBACK_STABILITY_DELAY):> void;
                                     }
                                 }
  
@@ -1049,7 +1049,7 @@ int AudioEndpointRequests_1(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp
                                     timer t;
                                     unsigned time;
                                     t :> time;
-                                    t when timerafter(time+50000000+MCLK_STABILTY_DELAY):> void;
+                                    t when timerafter(time+FEEDBACK_STABILTY_DELAY):> void;
                                 }
                             }
                         }
