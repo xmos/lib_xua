@@ -308,17 +308,17 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
                                         outuint(c_audioControl, SET_SAMPLE_FREQ);
                                         outuint(c_audioControl, g_curSamFreq); 
 
-                                        /* Wait for handshake back - i.e. pll locked and clocks okay */
+                                        /* Wait for handshake back - i.e. PLL locked and clocks okay */
                                         chkct(c_audioControl, XS1_CT_END);
                                         
                                     }
 
-                                    /* Allow time for our feedback to stabalise*/
+                                    /* Allow time for our feedback to stabilise*/
                                     {
                                         timer t;
                                         unsigned time;         
                                         t :> time;
-                                        t when timerafter(time+5000000):> void;
+                                        t when timerafter(time+5000000+40000000):> void;
                                     }
                                 }
  
@@ -1049,7 +1049,7 @@ int AudioEndpointRequests_1(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp
                                     timer t;
                                     unsigned time;
                                     t :> time;
-                                    t when timerafter(time+50000000):> void;
+                                    t when timerafter(time+50000000+40000000):> void;
                                 }
                             }
                         }

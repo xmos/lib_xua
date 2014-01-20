@@ -948,11 +948,16 @@ void audio(chanend c_mix_out, chanend ?c_dig_rx, chanend ?c_config, chanend ?c)
             /* No delay for DFU modes */
             if ((curSamFreq != AUDIO_REBOOT_FROM_DFU) && (curSamFreq != AUDIO_STOP_FOR_DFU) && retVal1) 
             {
-                timer t;
-                unsigned time;
-                t :> time;
-                t when timerafter(time+AUDIO_PLL_LOCK_DELAY) :> void;
-
+#if 0
+                /* User should ensure MCLK is stable in AudioHwConfig */
+                if(retVal1 == SET_SAMPLE_FREQ)
+                {
+                    timer t;
+                    unsigned time;
+                    t :> time;
+                    t when timerafter(time+AUDIO_PLL_LOCK_DELAY) :> void;
+                }
+#endif
                 /* Handshake back */
                 outct(c_mix_out, XS1_CT_END);
             }
