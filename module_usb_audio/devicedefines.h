@@ -210,8 +210,8 @@
 #endif
 
 /* The number of clock ticks to wait for the audio PLL to lock */
-#ifndef AUDIO_PLL_LOCK_DELAY
-#define AUDIO_PLL_LOCK_DELAY     (40000000) 
+#ifndef MCLK_STABILITY_DELAY
+#define MCLK_STABILITY_DELAY     (40000000) 
 #endif
 
 /* Vendor String */
