@@ -509,22 +509,9 @@ static inline void doI2SClocks(unsigned divide)
             dsdSample_r = bitrev(byterev(dsdSample_r)); 
             dsdSample_l = bitrev(byterev(dsdSample_l)); 
  
+            /* Output DSD data to ports then 32 clocks */
             switch (divide)
             {
-                case 8:
-                    /* Output DSD data to ports then 32 clocks */
-                    asm volatile("out res[%0], %1"::"r"(p_dsd_dac[0]),"r"(dsdSample_l));
-                    asm volatile("out res[%0], %1"::"r"(p_dsd_dac[1]),"r"(dsdSample_r));
-                    p_dsd_clk <: 0xF0F0F0F0;   
-                    p_dsd_clk <: 0xF0F0F0F0;   
-                    p_dsd_clk <: 0xF0F0F0F0;   
-                    p_dsd_clk <: 0xF0F0F0F0;   
-                    p_dsd_clk <: 0xF0F0F0F0;   
-                    p_dsd_clk <: 0xF0F0F0F0;   
-                    p_dsd_clk <: 0xF0F0F0F0;   
-                    p_dsd_clk <: 0xF0F0F0F0;   
-                    break;
-      
                 case 4:
                     asm volatile("out res[%0], %1"::"r"(p_dsd_dac[0]),"r"(dsdSample_l));
                     asm volatile("out res[%0], %1"::"r"(p_dsd_dac[1]),"r"(dsdSample_r));
@@ -543,6 +530,8 @@ static inline void doI2SClocks(unsigned divide)
                 
                 default:
                     /* Do some clocks anyway - this will stop us interrupting decouple too much */
+                    asm volatile("out res[%0], %1"::"r"(p_dsd_dac[0]),"r"(dsdSample_l));
+                    asm volatile("out res[%0], %1"::"r"(p_dsd_dac[1]),"r"(dsdSample_r));
                     p_dsd_clk <: 0xF0F0F0F0;   
                     p_dsd_clk <: 0xF0F0F0F0;   
                     p_dsd_clk <: 0xF0F0F0F0;   
