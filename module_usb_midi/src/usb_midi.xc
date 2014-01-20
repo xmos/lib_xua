@@ -38,8 +38,8 @@ int uin_count = 0; // UART bytes in
 // state for iAP
 #ifdef IAP
 extern unsigned authenticating;
-extern struct iap_buf iap_incoming_buffer;
-extern struct iap_buf iap_outgoing_buffer;
+extern iap_in_buf iap_incoming_buffer;
+extern iap_out_buf iap_outgoing_buffer;
 #else
 unsigned authenticating = 0;
 #endif
