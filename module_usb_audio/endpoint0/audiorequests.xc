@@ -80,6 +80,31 @@ static void storeFreq(unsigned char buffer[], int &i, int freq)
     return;
 }
 
+/* Delay based on USB speed. Feedback takes longer to stabilise at FS */
+void FeedbackStabilityDelay()
+{
+    
+    unsigned usbSpeed; 
+    timer t;
+    unsigned time;
+    unsigned delay;
+   
+    asm("ldw   %0, dp[g_curUsbSpeed]" : "=r" (usbSpeed) :);
+   
+    if (usbSpeed == XUD_SPEED_HS)
+    {
+        delay = FEEDBACK_STABILITY_DELAY_HS;
+    }
+    else
+    {
+        delay = FEEDBACK_STABILITY_DELAY_FS;
+    }
+
+    t :> time;
+    t when timerafter(time + delay):> void;
+}
+
+
 
 static unsigned longMul(unsigned a, unsigned b, int prec)
 {
@@ -314,12 +339,7 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
                                     }
 
                                     /* Allow time for our feedback to stabilise*/
-                                    {
-                                        timer t;
-                                        unsigned time;         
-                                        t :> time;
-                                        t when timerafter(time+FEEDBACK_STABILITY_DELAY):> void;
-                                    }
+                                    FeedbackStabilityDelay();
                                 }
  
                                 /* Send 0 Length as status stage */
@@ -1044,14 +1064,9 @@ int AudioEndpointRequests_1(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp
                                 /* Wait for handshake back - i.e. pll locked and clocks okay */
                                 chkct(c_audioControl, XS1_CT_END);
                 
-                                /* Allow time for the change - feedback to stabalise */
-                                {
-                                    timer t;
-                                    unsigned time;
-                                    t :> time;
-                                    t when timerafter(time+FEEDBACK_STABILTY_DELAY):> void;
-                                }
-                            }
+                                /* Allow time for the change - feedback to stabilise */
+                                FeedbackStabilityDelay();
+                                                            }
                         }
                         return XUD_SetBuffer(ep0_in, buffer, 0);
                     }

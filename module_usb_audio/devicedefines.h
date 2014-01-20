@@ -209,10 +209,14 @@
 #error Bad DEFAULT_MCLK_FREQ
 #endif
 
-/* The number of clock ticks to wait for the audio feeback to stabalise */
-#ifndef FEEDBACK_STABILITY_DELAY
-/* Note, feedback always counts 128 SOFs (16ms @ HS, 128ms @ FS) */
-#define FEEDBACK_STABILITY_DELAY     (20000000) 
+/* The number of clock ticks to wait for the audio feeback to stabalise 
+ * Note, feedback always counts 128 SOFs (16ms @ HS, 128ms @ FS) */
+#ifndef FEEDBACK_STABILITY_DELAY_HS
+#define FEEDBACK_STABILITY_DELAY_HS     (2000000) 
+#endif
+
+#ifndef FEEDBACK_STABILITY_DELAY_FS
+#define FEEDBACK_STABILITY_DELAY_FS     (20000000) 
 #endif
 
 /* Vendor String */
