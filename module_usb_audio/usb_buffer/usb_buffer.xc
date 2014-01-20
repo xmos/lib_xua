@@ -398,7 +398,7 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
                     lastClock = u_tmp;                                                    
 
                     /* Reset counts based on SOF counting.  Expect 16ms (128 HS SOFs/16 FS SOFS) per feedback poll 
-                     * We always could 128 sofs, so 16ms @ HS, 128ms @ FS */   
+                     * We always count 128 SOFs, so 16ms @ HS, 128ms @ FS */   
                     if(sofCount == 128)  
                     {
                         sofCount = 0;
