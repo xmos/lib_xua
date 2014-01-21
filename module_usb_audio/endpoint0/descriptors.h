@@ -1408,8 +1408,8 @@ unsigned char cfgDesc_Audio2[] =
 
 static unsigned char strDescs[][40] = 
 {
-    { STR_USENG & 0xff, STR_USENG >> 8, '\0'},   // 0     LangID
-    APPEND_VENDOR_STR(),                        // 1     iManufacturer (at MANUFACTURER_STRING_INDEX)
+    { STR_USENG & 0xff, STR_USENG >> 8, '\0'},  // 0     LangID
+    VENDOR_STR,                                 // 1     iManufacturer (at MANUFACTURER_STRING_INDEX)
 
     "",//SERIAL_STR,                            // 2     iSerialNumber (at SERIAL_STR_INDEX)
     
