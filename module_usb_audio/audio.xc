@@ -355,8 +355,8 @@ static inline void doI2SClocks(unsigned divide)
         //sync(p_dsd_clk);
     }
 #endif
-#else          
-    /* CODEC is master */
+#else /* ifndef CODEC_MASTER */          
+    
     /* Wait for LRCLK edge */
     p_lrclk when pinseq(0) :> void;
     p_lrclk when pinseq(1) :> void;
