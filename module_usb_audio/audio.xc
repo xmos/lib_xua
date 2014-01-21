@@ -278,6 +278,9 @@ static inline void doI2SClocks(unsigned divide)
     }
 
 #ifndef CODEC_MASTER
+    /* b_clk must start high */
+    p_bclk <: 0x80000000;
+    sync(p_bclk);
 
 #if (DSD_CHANS_DAC > 0)
     if(dsdMode == DSD_MODE_OFF)
@@ -338,9 +341,7 @@ static inline void doI2SClocks(unsigned divide)
             p_i2s_dac[i] <: 0;
         }
 #endif
-        /* b_clk must start high */
-        p_bclk <: 0x80000000;
-        sync(p_bclk);
+        
 
         p_lrclk <: 0x7FFFFFFF; 
         doI2SClocks(divide);
