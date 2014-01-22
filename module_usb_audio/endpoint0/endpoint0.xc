@@ -589,27 +589,65 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
                 /* Unfortunately we need to munge the descriptors a bit between full and high-speed */
                 if(g_curUsbSpeed == XUD_SPEED_HS)
                 {
+                    /* Output interface - Interface 1 */
                     /* Mod bSlotSize */
-                    cfgDesc_Audio2[STREAMING_ALT1_OFFSET+4] = SAMPLE_SUBSLOT_SIZE_HS;
+                    cfgDesc_Audio2[STREAMING_OUTPUT_ALT1_OFFSET+20] = SAMPLE_SUBSLOT_SIZE_HS;
 
                     /* Mod bBitResolution */
-                    cfgDesc_Audio2[STREAMING_ALT1_OFFSET+5] = SAMPLE_BIT_RESOLUTION_HS;
+                    cfgDesc_Audio2[STREAMING_OUTPUT_ALT1_OFFSET+21] = SAMPLE_BIT_RESOLUTION_HS;
 
                     /* wMaxPacketSize */
-                    cfgDesc_Audio2[STREAMING_ALT1_OFFSET+10] = MAX_PACKET_SIZE_OUT_HS&0xff;
-                    cfgDesc_Audio2[STREAMING_ALT1_OFFSET+11] = (MAX_PACKET_SIZE_OUT_HS&0xff00)>>8;
+                    cfgDesc_Audio2[STREAMING_OUTPUT_ALT1_OFFSET+26] = MAX_PACKET_SIZE_OUT_HS&0xff;
+                    cfgDesc_Audio2[STREAMING_OUTPUT_ALT1_OFFSET+27] = (MAX_PACKET_SIZE_OUT_HS&0xff00)>>8;
+                    
+                    /* bNrChannels */
+                    cfgDesc_Audio2[STREAMING_OUTPUT_ALT1_OFFSET+10] = NUM_USB_CHAN_OUT;
+
+                    /* Input interface - Interface 2 */
+                    /* Mod bSlotSize */
+                    cfgDesc_Audio2[STREAMING_INPUT_ALT1_OFFSET+20] = SAMPLE_SUBSLOT_SIZE_HS;
+
+                    /* Mod bBitResolution */
+                    cfgDesc_Audio2[STREAMING_INPUT_ALT1_OFFSET+21] = SAMPLE_BIT_RESOLUTION_HS;
+
+                    /* wMaxPacketSize */
+                    cfgDesc_Audio2[STREAMING_INPUT_ALT1_OFFSET+26] = MAX_PACKET_SIZE_IN_HS&0xff;
+                    cfgDesc_Audio2[STREAMING_INPUT_ALT1_OFFSET+27] = (MAX_PACKET_SIZE_IN_HS&0xff00)>>8;
+                    
+                    /* bNrChannels */
+                    cfgDesc_Audio2[STREAMING_INPUT_ALT1_OFFSET+10] = NUM_USB_CHAN_IN;
+
                 }
                 else
                 {
+                    /* Output interface - Interface 1 */
                     /* Mod bSlotSize */
-                    cfgDesc_Audio2[STREAMING_ALT1_OFFSET+4] = SAMPLE_SUBSLOT_SIZE_FS;
+                    cfgDesc_Audio2[STREAMING_OUTPUT_ALT1_OFFSET+20] = SAMPLE_SUBSLOT_SIZE_FS;
 
                     /* Mod bBitResolution */
-                    cfgDesc_Audio2[STREAMING_ALT1_OFFSET+5] = SAMPLE_BIT_RESOLUTION_FS;
+                    cfgDesc_Audio2[STREAMING_OUTPUT_ALT1_OFFSET+21] = SAMPLE_BIT_RESOLUTION_FS;
 
                     /* wMaxPacketSize */
-                    cfgDesc_Audio2[STREAMING_ALT1_OFFSET+10] = MAX_PACKET_SIZE_OUT_FS&0xff;
-                    cfgDesc_Audio2[STREAMING_ALT1_OFFSET+11] = (MAX_PACKET_SIZE_OUT_FS&0xff00)>>8;
+                    cfgDesc_Audio2[STREAMING_OUTPUT_ALT1_OFFSET+26] = MAX_PACKET_SIZE_OUT_FS&0xff;
+                    cfgDesc_Audio2[STREAMING_OUTPUT_ALT1_OFFSET+27] = (MAX_PACKET_SIZE_OUT_FS&0xff00)>>8;
+
+                    /* bNrChannels */
+                    cfgDesc_Audio2[STREAMING_OUTPUT_ALT1_OFFSET+10] = NUM_USB_CHAN_OUT_FS;
+                    
+                    /* Input interface - Interface 2 */
+                    /* Mod bSlotSize */
+                    cfgDesc_Audio2[STREAMING_INPUT_ALT1_OFFSET+20] = SAMPLE_SUBSLOT_SIZE_FS;
+
+                    /* Mod bBitResolution */
+                    cfgDesc_Audio2[STREAMING_INPUT_ALT1_OFFSET+21] = SAMPLE_BIT_RESOLUTION_FS;
+
+                    /* wMaxPacketSize */
+                    cfgDesc_Audio2[STREAMING_INPUT_ALT1_OFFSET+26] = MAX_PACKET_SIZE_IN_FS&0xff;
+                    cfgDesc_Audio2[STREAMING_INPUT_ALT1_OFFSET+27] = (MAX_PACKET_SIZE_IN_FS&0xff00)>>8;
+                    
+                    /* bNrChannels */
+                    cfgDesc_Audio2[STREAMING_INPUT_ALT1_OFFSET+10] = NUM_USB_CHAN_IN_FS;
+
                 }
 
                 retVal = USB_StandardRequests(ep0_out, ep0_in,
