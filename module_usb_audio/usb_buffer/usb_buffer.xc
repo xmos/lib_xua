@@ -201,9 +201,9 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
         GetADCCounts(DEFAULT_FREQ, min, mid, max);
         asm("stw %0, dp[g_speed]"::"r"(mid << 16));
         if (usb_speed == XUD_SPEED_HS)
-          mid*=NUM_USB_CHAN_IN*4;
+          mid*=NUM_USB_CHAN_IN*SAMPLE_SUBSLOT_SIZE_HS;
         else
-          mid*=NUM_USB_CHAN_IN_A1*3;
+          mid*=NUM_USB_CHAN_IN_FS*SAMPLE_SUBSLOT_SIZE_FS;
 
         asm("stw %0, %1[0]"::"r"(mid),"r"(p_inZeroBuff));
 
@@ -319,9 +319,9 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
                             asm("stw %0, dp[g_speed]"::"r"(mid << 16));
 
                             if (usb_speed == XUD_SPEED_HS)
-                                mid *= NUM_USB_CHAN_IN*4;
+                                mid *= NUM_USB_CHAN_IN*SAMPLE_SUBSLOT_SIZE_HS;
                             else
-                                mid *= NUM_USB_CHAN_IN_A1*3;
+                                mid *= NUM_USB_CHAN_IN_FS*SAMPLE_SUBSLOT_SIZE_FS;
 
                             asm("stw %0, %1[0]"::"r"(mid),"r"(p_inZeroBuff));
 
