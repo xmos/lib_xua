@@ -1,9 +1,9 @@
-<Add title here>
-================
+MIDI Module for USB Audio Framework
+===================================
 
-:scope: <Put one of Roadmap, Example, Early Development or General Use>
-:description: <Add one line here>
-:keywords: <Add comma separated list of keywords>
-:boards: <Add comma separated list of supported boards>
+:scope: General Use
+:description: MIDI
+:keywords: MIDI
+:boards: 
 
-<Add description of software block>
+

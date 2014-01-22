@@ -1,6 +1,10 @@
 <?xml version="1.0" ?>
 <xpd>
     <components>
+        <component description = "ADAT" type = "demoCode" scope = "General Use" path = "module_usb_audio_adat" local = "false" id = "module_usb_audio_adat" name = "ADAT Module for UAC2 MC Reference Design">
+            <board>XR-USB-AUDIO-20-MC</board>
+            <keyword>ADAT</keyword>
+        </component>
         <component description = "module_dfu" type = "demoCode" scope = "General Use" path = "module_dfu" local = "false" id = "module_dfu" name = "module_dfu">
             <board>XMOS USB Audio Reference Designes</board>
             <keyword>DFU</keyword>
