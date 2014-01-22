@@ -1,6 +1,10 @@
 <?xml version="1.0" ?>
 <xpd>
     <components>
+        <component description = "Core USB Audio Module" type = "demoCode" scope = "General Use" path = "module_usb_audio" local = "false" id = "module_usb_audio" name = "USB AUDIO MODULE">
+            <board>XR-USB-AUDIO-20-MC</board>
+            <keyword>USB Audio UAC2</keyword>
+        </component>
         <component description = "queue" type = "demoCode" scope = "General Use" path = "module_queue" local = "false" id = "module_queue" name = "Queing Module For USB Audio Framwwork">
             <board></board>
             <componentDependency repo = "git://github.com/xcore/sc_util" version = "1.0.3">module_xassert</componentDependency>
