@@ -1,6 +1,17 @@
 <?xml version="1.0" ?>
 <xpd>
     <components>
+        <component description = "queue" type = "demoCode" scope = "General Use" path = "module_queue" local = "false" id = "module_queue" name = "Queing Module For USB Audio Framwwork">
+            <board></board>
+            <componentDependency repo = "git://github.com/xcore/sc_util" version = "1.0.3">module_xassert</componentDependency>
+            <keyword>UAC2</keyword>
+        </component>
+        <component description = "MIDI" type = "demoCode" scope = "General Use" path = "module_usb_midi" local = "false" id = "module_usb_midi" name = "MIDI Module for USB Audio Framework">
+            <board></board>
+            <componentDependency repo = "git://github.com/xcore/sc_util" version = "1.0.3">module_xassert</componentDependency>
+            <componentDependency repo = "git://git/apps/sc_usb_audio">module_queue</componentDependency>
+            <keyword>MIDI</keyword>
+        </component>
         <component description = "ADAT" type = "demoCode" scope = "General Use" path = "module_usb_audio_adat" local = "false" id = "module_usb_audio_adat" name = "ADAT Module for UAC2 MC Reference Design">
             <board>XR-USB-AUDIO-20-MC</board>
             <keyword>ADAT</keyword>
