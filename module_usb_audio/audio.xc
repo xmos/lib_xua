@@ -353,7 +353,6 @@ static inline void doI2SClocks(unsigned divide)
     {
         /* p_dsd_clk must start high */
         p_dsd_clk <: 0x80000000;
-        //sync(p_dsd_clk);
     }
 #endif
 #else /* ifndef CODEC_MASTER */
