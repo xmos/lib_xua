@@ -727,7 +727,7 @@ unsigned char cfgDesc_Audio2[] =
     ID_XU_MIXSEL,                    /* Connected terminal or unit id for input pin */
     MAX_MIX_COUNT,                   /* Number of mixer output channels */
     0x00, 0x00, 0x00, 0x00,          /* Spacial location ???? */
-    MIXER_STRING_INDEX,                              /* Channel name index */
+    MIXER_STRING_INDEX,              /* Channel name index */
 #if MIX_BMCONTROLS_LEN > 0           /* Mixer programmable control bitmap */
     0xff,
 #endif
@@ -824,6 +824,7 @@ unsigned char cfgDesc_Audio2[] =
     IP_VERSION_02_00,               /* 7  bInterfaceProtocol: IP_VERSION_02_00 */
     4,                              /* 8  iInterface: (Sting index) */
 
+    /* STREAMING_OUTPUT_ALT1_OFFSET: */
     /* Class Specific AS Interface Descriptor */
     0x10,                           /* 0  bLength: 16 */
     CS_INTERFACE,                   /* 1  bDescriptorType: 0x24 */
