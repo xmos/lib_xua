@@ -599,7 +599,7 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
                     /* wMaxPacketSize */
                     cfgDesc_Audio2[STREAMING_OUTPUT_ALT1_OFFSET+26] = MAX_PACKET_SIZE_OUT_HS&0xff;
                     cfgDesc_Audio2[STREAMING_OUTPUT_ALT1_OFFSET+27] = (MAX_PACKET_SIZE_OUT_HS&0xff00)>>8;
-                    
+
                     /* bNrChannels */
                     cfgDesc_Audio2[STREAMING_OUTPUT_ALT1_OFFSET+10] = NUM_USB_CHAN_OUT;
 
@@ -613,7 +613,7 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
                     /* wMaxPacketSize */
                     cfgDesc_Audio2[STREAMING_INPUT_ALT1_OFFSET+26] = MAX_PACKET_SIZE_IN_HS&0xff;
                     cfgDesc_Audio2[STREAMING_INPUT_ALT1_OFFSET+27] = (MAX_PACKET_SIZE_IN_HS&0xff00)>>8;
-                    
+
                     /* bNrChannels */
                     cfgDesc_Audio2[STREAMING_INPUT_ALT1_OFFSET+10] = NUM_USB_CHAN_IN;
 
@@ -633,7 +633,7 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
 
                     /* bNrChannels */
                     cfgDesc_Audio2[STREAMING_OUTPUT_ALT1_OFFSET+10] = NUM_USB_CHAN_OUT_FS;
-                    
+
                     /* Input interface - Interface 2 */
                     /* Mod bSlotSize */
                     cfgDesc_Audio2[STREAMING_INPUT_ALT1_OFFSET+20] = SAMPLE_SUBSLOT_SIZE_FS;
@@ -644,7 +644,7 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
                     /* wMaxPacketSize */
                     cfgDesc_Audio2[STREAMING_INPUT_ALT1_OFFSET+26] = MAX_PACKET_SIZE_IN_FS&0xff;
                     cfgDesc_Audio2[STREAMING_INPUT_ALT1_OFFSET+27] = (MAX_PACKET_SIZE_IN_FS&0xff00)>>8;
-                    
+
                     /* bNrChannels */
                     cfgDesc_Audio2[STREAMING_INPUT_ALT1_OFFSET+10] = NUM_USB_CHAN_IN_FS;
 
