@@ -21,7 +21,7 @@ static unsigned coef[14] = {2407, 13778, 64588, 308051, 1346110, 5261991, 182775
 
    Parameters:
        db               - The db value to convert.
-       db_frac_bits     - The number of binary fractional bits in the supplied decibel value  
+       db_frac_bits     - The number of binary fractional bits in the supplied decibel value
        result_frac_bits - The number of required fractional bits in the result.
 
    Returns:
@@ -37,24 +37,24 @@ unsigned db_to_mult(int db, int db_frac_bits, int result_frac_bits)
   unsigned mask = ~((1<<DB_CALC_PREC)-1);
 
   /* Make sure we get 0db bang on */
-  if (db == 0) 
+  if (db == 0)
     return (1 << result_frac_bits);
 
 
-  /* First scale the decibal value to the required precision and divide by 10 
+  /* First scale the decibal value to the required precision and divide by 10
      We scale to DB_CALC_PREC - 4 before the division with to make sure we don't overflow */
   db = db << (DB_CALC_PREC - 4 - 1 - db_frac_bits);
   db = db / 10;
   db = db << 4;
- 
+
 
   /* Extract the integer part of the exponent and calculate the integer power */
-  /* This could have been done a bit more efficiently by extracting the largest multiple log_10(2) 
-     and then calculating a power of 2 (with the polynomial calc in the range [-log_10(2),log_10(2)]. 
+  /* This could have been done a bit more efficiently by extracting the largest multiple log_10(2)
+     and then calculating a power of 2 (with the polynomial calc in the range [-log_10(2),log_10(2)].
      But we have something that works here and ultra-fast performance is not a requirement */
   if (db < 0) {
     intpart = ((-db) & mask);
-    db = db + intpart; 
+    db = db + intpart;
     intpart = intpart >> DB_CALC_PREC;
 
     if (intpart) {
@@ -65,7 +65,7 @@ unsigned db_to_mult(int db, int db_frac_bits, int result_frac_bits)
   }
   else {
     intpart = (db & mask);
-    db = db - intpart; 
+    db = db - intpart;
     intpart = intpart >> DB_CALC_PREC;
     if (intpart) {
       val0 = 1 << DB_CALC_PREC;
@@ -86,20 +86,20 @@ unsigned db_to_mult(int db, int db_frac_bits, int result_frac_bits)
       val = (hi << (32-DB_CALC_PREC)) | (lo >> DB_CALC_PREC);
       val += coef[i] >> (COEF_PREC - DB_CALC_PREC);
     }
-  
+
   /* Finally multiply by the integer power (if there was an integer part) */
   if (val0) {
       int hi=0;
       unsigned lo=0;
 
       {hi, lo} = macs(val0,val,hi,lo);
-      val = (hi << (32-DB_CALC_PREC)) | (lo >> DB_CALC_PREC);      
+      val = (hi << (32-DB_CALC_PREC)) | (lo >> DB_CALC_PREC);
   }
-  
+
 
   /* We now have the result, just need to scale it to the required precision */
   ret = val;
-  
+
   if (result_frac_bits > DB_CALC_PREC) {
     return ret<<(result_frac_bits-DB_CALC_PREC);
   }
@@ -113,7 +113,7 @@ unsigned db_to_mult(int db, int db_frac_bits, int result_frac_bits)
 
 int main() {
 
-  /* Check that we don't overflow up to 9db 
+  /* Check that we don't overflow up to 9db
      Should give a value just under 0x80000 */
   printhexln(db_to_mult(9,0,16));
 

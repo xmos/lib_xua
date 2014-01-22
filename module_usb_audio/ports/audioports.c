@@ -11,9 +11,9 @@
 #if DSD_CHANS_DAC > 0
 port p_dsd_dac[DSD_CHANS_DAC] = {
                 PORT_DSD_DAC0,
-#endif 
+#endif
 #if DSD_CHANS_DAC > 1
-                PORT_DSD_DAC1, 
+                PORT_DSD_DAC1,
 #endif
 #if DSD_CHANS_DAC > 2
 #error > 2 DSD chans currently not supported
@@ -44,14 +44,14 @@ void ConfigAudioPortsWrapper(
 
 #if (I2S_CHANS_DAC != 0) || (I2S_CHANS_ADC != 0)
 #ifndef CODEC_MASTER
-                port p_lrclk, 
+                port p_lrclk,
                 port p_bclk,
 #else
                 in port p_lrclk,
                 in port p_bclk,
 #endif
 #endif
-unsigned int divide, unsigned int dsdMode) 
+unsigned int divide, unsigned int dsdMode)
 {
 
     if(dsdMode)
@@ -59,9 +59,9 @@ unsigned int divide, unsigned int dsdMode)
         /* Make sure the ports are on and buffered - just in case they are not shared with I2S */
         for(int i = 0; i< DSD_CHANS_DAC; i++)
         {
-            EnableBufferedPort(p_dsd_dac[i], 32);            
+            EnableBufferedPort(p_dsd_dac[i], 32);
         }
-        EnableBufferedPort(p_dsd_clk, 32);            
+        EnableBufferedPort(p_dsd_clk, 32);
 
         ConfigAudioPorts(
 #if (DSD_CHANS_DAC != 0)
@@ -87,7 +87,7 @@ unsigned int divide, unsigned int dsdMode)
     else
     {
         ConfigAudioPorts(
-#if (I2S_CHANS_DAC != 0) 
+#if (I2S_CHANS_DAC != 0)
                 p_i2s_dac,
                 I2S_WIRES_DAC,
 #endif
@@ -104,7 +104,7 @@ unsigned int divide, unsigned int dsdMode)
                 p_bclk,
 #endif
 #endif
-                divide); 
+                divide);
     }
 }
 #endif

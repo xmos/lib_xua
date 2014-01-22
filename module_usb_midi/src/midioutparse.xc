@@ -1,12 +1,12 @@
 /**
  * @file midioutparse.xc
  * @brief Parses USB-MIDI events into set of MIDI bytes
- * @author Russell Gallop, XMOS Semiconductor 
+ * @author Russell Gallop, XMOS Semiconductor
  */
 
 #include "midioutparse.h"
 
-/** 
+/**
  * @brief Breaks a USB-MIDI event into it's constituant fields
  *
  * @param[in]   ev    USB-MIDI event
@@ -23,7 +23,7 @@
 #endif
 
 
-/** 
+/**
  * @brief Parse a USB-MIDI event into the MIDI bytes and a length field
  *
  * @param[in]   ev    USB-MIDI event
@@ -35,7 +35,7 @@
     unsigned size = 0;
 
     {cable_number, codeIndexNumber, midi[0], midi[1], midi[2]} = breakEvent(event);
-   
+
     // Not doing anything with cable number
     switch (codeIndexNumber) {
     case 0x3: // Three-byte system Common messages like SPP, etc.

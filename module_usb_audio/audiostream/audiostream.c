@@ -4,7 +4,7 @@ void UserAudioStreamStop() __attribute__ ((weak));
 void UserAudioStreamStop()
 {
     return;
-}  
+}
 
 void UserAudioStreamStart() __attribute__ ((weak));
 void UserAudioStreamStart()

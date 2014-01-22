@@ -10,7 +10,7 @@ extern clock    clk_audio_bclk;
 
 void ConfigAudioPorts(
 #if (I2S_CHANS_DAC != 0) || (DSD_CHANS_DAC != 0)
-                buffered out port:32 p_i2s_dac[], 
+                buffered out port:32 p_i2s_dac[],
                 int numPortsDac,
 #endif
 
@@ -28,12 +28,12 @@ void ConfigAudioPorts(
             in port p_bclk,
 #endif
 #endif
-unsigned int divide) 
+unsigned int divide)
 {
 
 #ifndef CODEC_MASTER
     /* Note this call to stop_clock() will pause forever if the port clocking the clock-block is not low.
-     * deliver() should return with this being the case - however, if you are having trouble the code 
+     * deliver() should return with this being the case - however, if you are having trouble the code
      * above can be enabled */
     stop_clock(clk_audio_bclk);
 
@@ -104,7 +104,7 @@ unsigned int divide)
 
     /* Stop bit and master clock blocks */
     stop_clock(clk_audio_bclk);
-    
+
     /* Clock bclk clock-block from bclk pin */
     configure_clock_src(clk_audio_bclk, p_bclk);
 

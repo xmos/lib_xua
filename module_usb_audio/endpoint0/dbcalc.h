@@ -8,7 +8,7 @@
 
    Parameters:
        db               - The db value to convert.
-       db_frac_bits     - The number of binary fractional bits in the supplied decibel value  
+       db_frac_bits     - The number of binary fractional bits in the supplied decibel value
        result_frac_bits - The number of required fractional bits in the result.
 
    Returns:

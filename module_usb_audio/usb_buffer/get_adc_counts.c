@@ -1,9 +1,9 @@
 extern unsigned int g_curUsbSpeed;
 #define XUD_SPEED_HS 2
 
-/* Returns the max and min packet sizes to send back to host for a given sample frequency 
- * See page 13 of USB Audio Device Class Definitions for Audio Data Formats Spec (v2.0) 
- * 
+/* Returns the max and min packet sizes to send back to host for a given sample frequency
+ * See page 13 of USB Audio Device Class Definitions for Audio Data Formats Spec (v2.0)
+ *
  * Audio samples per frame = INT(sampFreq/frametime); Variation allowed is + 1;
  *
  * For HS frame time = 8 * 1000
@@ -16,7 +16,7 @@ extern unsigned int g_curUsbSpeed;
  *
  * Note: Assumes HS (i.e. 8 frames per 1ms)
  *
- * Examples: 
+ * Examples:
  * 44100:  min: 5  max: 6
  * 48000:  min: 5  max: 7
  * 96000:  min: 11 max: 13
@@ -30,9 +30,9 @@ void GetADCCounts(unsigned samFreq, int *min, int *mid, int *max)
     unsigned frameTime;
     int usb_speed;
     usb_speed = g_curUsbSpeed;
-    if (usb_speed == XUD_SPEED_HS) 
+    if (usb_speed == XUD_SPEED_HS)
       frameTime = 8000;
-    else 
+    else
       frameTime = 1000;
 
     *min = samFreq / frameTime;
@@ -40,7 +40,7 @@ void GetADCCounts(unsigned samFreq, int *min, int *mid, int *max)
 
     *mid = *min;
 
-    /* Check for INT(SampFreq/8000) == SampFreq/8000 */    
+    /* Check for INT(SampFreq/8000) == SampFreq/8000 */
     if((samFreq % frameTime) == 0)
     {
         *min -= 1;

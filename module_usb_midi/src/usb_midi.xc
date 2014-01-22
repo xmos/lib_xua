@@ -107,9 +107,9 @@ void usb_midi(buffered in port:1 ?p_midi_in, port ?p_midi_out,
 #ifdef IAP
     CoProcessorDisable();
 #endif
-      
+
    // p_midi_out <: 1 << MIDI_SHIFT_TX; // Start with high bit.
-#ifdef IAP  
+#ifdef IAP
     CoProcessorEnable();
 #endif
 
@@ -120,7 +120,7 @@ void usb_midi(buffered in port:1 ?p_midi_in, port ?p_midi_out,
         init_iAP(iap_incoming_buffer, iap_outgoing_buffer, null, null, null); // uses timer for i2c initialisation pause..
     }
     else
-    {   
+    {
         init_iAP(iap_incoming_buffer, iap_outgoing_buffer, c_i2c, p_scl, p_sda); // uses timer for i2c initialisation pause..
     }
 #endif
@@ -130,12 +130,12 @@ void usb_midi(buffered in port:1 ?p_midi_in, port ?p_midi_out,
         iAPTimer :> polltime;
         polltime += XS1_TIMER_HZ / 2;
 #endif
-        while (1) 
+        while (1)
         {
             int is_ack;
             int is_reset;
             unsigned int datum;
-            select 
+            select
             {
                 // Input to read the start bit
 #ifndef MIDI_LOOPBACK
@@ -148,24 +148,24 @@ void usb_midi(buffered in port:1 ?p_midi_in, port ?p_midi_out,
                     asm("setc res[%0],1"::"r"(p_midi_in));
                     asm("setpt res[%0],%1"::"r"(p_midi_in),"r"(rxPT));
                     break;
-        
+
                 // Input to read the remaining bits
                 case (!authenticating && isRX) => t2 when timerafter(rxT) :> int _ :
                 {
                     unsigned bit;
                     p_midi_in :> bit;
-                    if (rxI++ < 8) 
+                    if (rxI++ < 8)
                     {
                         // shift in bits into the high end of a word
                         rxByte = (bit << 31) | (rxByte >> 1);
                         rxT += bit_time;
                         rxPT += bit_time;
                         asm("setpt res[%0],%1"::"r"(p_midi_in),"r"(rxPT));
-                    } 
-                    else 
+                    }
+                    else
                     {
                         // rcv and check stop bit
-                        if ((bit & 0x1) == 1) 
+                        if ((bit & 0x1) == 1)
                         {
                             unsigned valid = 0;
                             unsigned event = 0;
@@ -173,7 +173,7 @@ void usb_midi(buffered in port:1 ?p_midi_in, port ?p_midi_out,
                             rxByte >>= 24;
 #if 0
                             // Loopback check
-                            if ((rxByte != outputted_symbol)) 
+                            if ((rxByte != outputted_symbol))
                             {
                                 printhexln(rxByte);
                                 printhexln(outputted_symbol);
@@ -185,20 +185,20 @@ void usb_midi(buffered in port:1 ?p_midi_in, port ?p_midi_out,
 
                                 event = byterev(event);
                                 // data to send to host - add to fifo
-                                if (!waiting_for_ack) 
+                                if (!waiting_for_ack)
                                 {
                                     // send data
                                     // printstr("uart->decouple: ");
                                     outuint(c_midi, event);
                                     waiting_for_ack = 1;
                                     th_count++;
-                                } 
-                                else 
+                                }
+                                else
                                 {
                                     queue_push_word(midi_to_host_fifo, midi_to_host_fifo_arr, event);
                                 }
-                            } 
-                            else if (valid) 
+                            }
+                            else if (valid)
                             {
                                 //printstr("g");
                             }
@@ -213,7 +213,7 @@ void usb_midi(buffered in port:1 ?p_midi_in, port ?p_midi_out,
         //  until symbol is zero expect pattern like 10'b1dddddddd0
         // This code will leave the output high afterwards due to the stop bit added with makeSymbol
         case (!authenticating && isTX) => t when timerafter(txT) :> int _:
-            if (symbol == 0) 
+            if (symbol == 0)
             {
                 // Got something to output but not mid-symbol.
                 // Start sending symbol.
@@ -236,8 +236,8 @@ void usb_midi(buffered in port:1 ?p_midi_in, port ?p_midi_out,
                 txT += bit_time;
                 txPT += bit_time;
                 isTX = 1;
-            } 
-            else 
+            }
+            else
             {
                 // Mid-symbol
                 txT += bit_time; // Should this be after the output otherwise be double the length of the high before the start bit
@@ -245,7 +245,7 @@ void usb_midi(buffered in port:1 ?p_midi_in, port ?p_midi_out,
                 p_midi_out @ txPT <: ((symbol & 1)<<MIDI_SHIFT_TX);
                 //            printstr("mout2\n");
                 symbol >>= 1;
-                if (symbol == 0) 
+                if (symbol == 0)
                 {
                     // Finished sending byte
                     uout_count++;
@@ -261,7 +261,7 @@ void usb_midi(buffered in port:1 ?p_midi_in, port ?p_midi_out,
 
         case !authenticating => midi_get_ack_or_data(c_midi, is_ack, datum):
 
-            if (is_ack) 
+            if (is_ack)
             {
                 // have we got more data to send
                 //printstr("ack\n");
@@ -270,13 +270,13 @@ void usb_midi(buffered in port:1 ?p_midi_in, port ?p_midi_out,
                     //printstr("uart->decouple\n");
                     outuint(c_midi, queue_pop_word(midi_to_host_fifo, midi_to_host_fifo_arr));
                     th_count++;
-                } 
-                else 
+                }
+                else
                 {
                     waiting_for_ack = 0;
                 }
-            } 
-            else 
+            }
+            else
             {
                 unsigned midi[3];
                 unsigned size;
@@ -287,15 +287,15 @@ void usb_midi(buffered in port:1 ?p_midi_in, port ?p_midi_out,
                 if (queue_is_empty(midi_to_host_fifo))
                 {
                     // data to send to host
-                    if (!waiting_for_ack) 
+                    if (!waiting_for_ack)
                     {
                         // send data
                         event = byterev(event);
                         outuint(c_midi, event);
                         th_count++;
                         waiting_for_ack = 1;
-                    } 
-                    else 
+                    }
+                    else
                     {
                         event = byterev(event);
                         queue_push_word(midi_to_host_fifo, midi_to_host_fifo_arr, event);
@@ -308,7 +308,7 @@ void usb_midi(buffered in port:1 ?p_midi_in, port ?p_midi_out,
                 }
 #else
                 {midi[0], midi[1], midi[2], size} = midi_out_parse(event);
-                for (int i = 0; i != size; i++) 
+                for (int i = 0; i != size; i++)
                 {
                     // add symbol to fifo
                     queue_push_word(symbol_fifo, symbol_fifo_arr, midi[i]);
@@ -317,13 +317,13 @@ void usb_midi(buffered in port:1 ?p_midi_in, port ?p_midi_out,
                 if (queue_space(symbol_fifo) > 3)
                 {
                     midi_send_ack(c_midi);
-                } 
-                else 
+                }
+                else
                 {
                     midi_from_host_overflow = 1;
                 }
                 // Drop through to the isTX guarded case
-                if (!isTX) 
+                if (!isTX)
                 {
                     t :> txT; // Should be enough to trigger the other case
                     isTX = 1;
@@ -343,7 +343,7 @@ void usb_midi(buffered in port:1 ?p_midi_in, port ?p_midi_out,
                     {
                         iap_handle_ack_or_reset_or_data(iap_incoming_buffer, iap_outgoing_buffer, is_ack, is_reset, datum, c_iap, c_i2c, p_scl, p_sda);
                     }
-                    if (!authenticating) 
+                    if (!authenticating)
                     {
                         // printstrln("Completed authentication");
                         p_midi_in :> void; // Change port around to input again after authenticating (unique to midi+iAP case)

@@ -1,4 +1,4 @@
-/** 
+/**
  * @brief       Defines relating to device configuration and customisation.
  * @author      Ross Owen, XMOS Limited
  */
@@ -35,23 +35,23 @@
     #else
         #define NATIVE_DSD       1  /* Always enable Native DSD when DSD mode is enabled */
     #endif
-#else    
+#else
     #define DSD_CHANS_DAC        0
 #endif
 
 /* Max supported sample freq for device */
 #ifndef MAX_FREQ
-#define MAX_FREQ                 (192000)       
+#define MAX_FREQ                 (192000)
 #endif
 
 /* Min supported sample freq for device */
 #ifndef MIN_FREQ
-#define MIN_FREQ                 (44100)       
+#define MIN_FREQ                 (44100)
 #endif
 
 #if ((MCLK_44 % MIN_FREQ) == 0)
 #define MIN_FREQ_44 MIN_FREQ
-#define MIN_FREQ_48 ((48000 * 512)/((44100 * 512)/MIN_FREQ)) 
+#define MIN_FREQ_48 ((48000 * 512)/((44100 * 512)/MIN_FREQ))
 #endif
 
 #if ((MCLK_48 % MIN_FREQ) == 0)
@@ -189,15 +189,15 @@
 
 /* Default device sample frequency */
 #ifndef DEFAULT_FREQ
-#define DEFAULT_FREQ                   (MIN_FREQ)    
+#define DEFAULT_FREQ                   (MIN_FREQ)
 #endif
 
 /* Master clock defines (in Hz) */
-#ifndef MCLK_441                 
+#ifndef MCLK_441
 #error MCLK_441 not defined
 #endif
 
-#ifndef MCLK_48                
+#ifndef MCLK_48
 #error MCLK_441 not defined
 #endif
 
@@ -209,19 +209,19 @@
 #error Bad DEFAULT_MCLK_FREQ
 #endif
 
-/* The number of clock ticks to wait for the audio feeback to stabalise 
+/* The number of clock ticks to wait for the audio feeback to stabalise
  * Note, feedback always counts 128 SOFs (16ms @ HS, 128ms @ FS) */
 #ifndef FEEDBACK_STABILITY_DELAY_HS
-#define FEEDBACK_STABILITY_DELAY_HS     (2000000) 
+#define FEEDBACK_STABILITY_DELAY_HS     (2000000)
 #endif
 
 #ifndef FEEDBACK_STABILITY_DELAY_FS
-#define FEEDBACK_STABILITY_DELAY_FS     (20000000) 
+#define FEEDBACK_STABILITY_DELAY_FS     (20000000)
 #endif
 
 /* Vendor String */
 #ifndef VENDOR_STR
-#define VENDOR_STR               "XMOS"   
+#define VENDOR_STR               "XMOS"
 #endif
 
 /* USB Vendor ID */
@@ -248,18 +248,18 @@
 /* USB Product ID (PID) for Audio Class 1.0 mode */
 #if (AUDIO_CLASS==1) || defined(AUDIO_CLASS_FALLBACK)
 #ifndef PID_AUDIO_1
-#define PID_AUDIO_1              (0x0003)        
+#define PID_AUDIO_1              (0x0003)
 #endif
 #endif
 
 /* USB Product ID (PID) for Audio Class 2.0 mode */
 #ifndef PID_AUDIO_2
-#define PID_AUDIO_2              (0x0002)        
+#define PID_AUDIO_2              (0x0002)
 #endif
 
 /* Device release number in BCD: 0xJJMN */
-#define BCD_DEVICE_J             6
-#define BCD_DEVICE_M             3
+#define BCD_DEVICE_J             1
+#define BCD_DEVICE_M             0
 #define BCD_DEVICE_N             3
 
 #ifndef BCD_DEVICE
@@ -269,7 +269,7 @@
 /* Sample Sub-slot size (bytes) for High Speed. Default is 4 bytes */
 #ifndef SAMPLE_SUBSLOT_SIZE_HS
 #define SAMPLE_SUBSLOT_SIZE_HS   4
-#endif 
+#endif
 
 #if (SAMPLE_SUBSLOT_SIZE_HS != 2) && (SAMPLE_SUBSLOT_SIZE_HS != 3) && (SAMPLE_SUBSLOT_SIZE_HS != 4)
 #error Only SAMPLE_SUBSLOT_SIZE_HS 2, 3 or 4 supported #SAMPLE_SUBSLOT_SIZE_HS
@@ -278,7 +278,7 @@
 /* Sample Sub-slot size (bytes) for Full Speed. Default is 3 bytes */
 #ifndef SAMPLE_SUBSLOT_SIZE_FS
 #define SAMPLE_SUBSLOT_SIZE_FS   3
-#endif 
+#endif
 
 #if (SAMPLE_SUBSLOT_SIZE_FS != 2) && (SAMPLE_SUBSLOT_SIZE_FS != 3) && (SAMPLE_SUBSLOT_SIZE_FS != 4)
 #error Only SAMPLE_SUBSLOT_SIZE_FS 2, 3 or 4 supported
@@ -287,7 +287,7 @@
 /* Sample bit resolution for High Speed. Default 24bit*/
 #ifndef SAMPLE_BIT_RESOLUTION_HS
 #define SAMPLE_BIT_RESOLUTION_HS   24
-#endif 
+#endif
 
 #if (SAMPLE_BIT_RESOLUTION_HS/8) > SAMPLE_SUBSLOT_SIZE_HS
 #error SAMPLE_BIT_RESOLUTION_HS is too big for SAMPLE_SUBSLOT_SIZE_HS
@@ -296,7 +296,7 @@
 /* Sample bit resolution for Full Speed. Default 24bit*/
 #ifndef SAMPLE_BIT_RESOLUTION_FS
 #define SAMPLE_BIT_RESOLUTION_FS   24
-#endif 
+#endif
 
 #if (SAMPLE_BIT_RESOLUTION_FS/8) > SAMPLE_SUBSLOT_SIZE_FS
 #error SAMPLE_BIT_RESOLUTION_FS is too big for SAMPLE_SUBSLOT_SIZE_FS
@@ -372,7 +372,7 @@
 #endif
 
 /* Define for number of audio interfaces (+1 for mandatory control interface) */
-#define AUDIO_INTERFACES		 (INPUT_INTERFACES + OUTPUT_INTERFACES + 1) 
+#define AUDIO_INTERFACES		 (INPUT_INTERFACES + OUTPUT_INTERFACES + 1)
 
 /* Interface number defines */
 #define INTERFACE_NUM_IAP (INPUT_INTERFACES+OUTPUT_INTERFACES+MIDI_INTERFACES+DFU_INTERFACES+1)
@@ -400,13 +400,13 @@
 #define EP_ADR_IN_IAP            (EP_NUM_IN_IAP | 0x80)
 #define EP_ADR_IN_IAP_INT        (EP_NUM_IN_IAP_INT | 0x80)
 
-#define EP_ADR_OUT_AUD           EP_NUM_OUT_AUD            
-#define EP_ADR_OUT_MIDI          EP_NUM_OUT_MIDI           
-#define EP_ADR_OUT_IAP           EP_NUM_OUT_IAP            
+#define EP_ADR_OUT_AUD           EP_NUM_OUT_AUD
+#define EP_ADR_OUT_MIDI          EP_NUM_OUT_MIDI
+#define EP_ADR_OUT_IAP           EP_NUM_OUT_IAP
 
 
 /* Endpoint count totals */
-#define EP_CNT_OUT               (1 + 1 /*NUM_EP_OUT_AUD*/ + EP_CNT_OUT_MIDI + EP_CNT_OUT_IAP) /* +1 due to EP0 */ 
+#define EP_CNT_OUT               (1 + 1 /*NUM_EP_OUT_AUD*/ + EP_CNT_OUT_MIDI + EP_CNT_OUT_IAP) /* +1 due to EP0 */
 #define EP_CNT_IN                (1 + 2 /*NUM_EP_IN_AUD*/ + EP_CNT_IN_AUD_INT + EP_CNT_IN_MIDI + EP_CNT_IN_IAP + EP_CNT_IN_HID)    /* +1 due to EP0 */
 
 #define AUDIO_STOP_FOR_DFU       (0x12345678)
@@ -429,7 +429,7 @@
 #define NUM_CLOCKS               (3)
 #elif defined(SPDIF_RX) || defined(ADAT_RX)
 #define NUM_CLOCKS               (2)
-#else 
+#else
 #define NUM_CLOCKS               (1)
 #endif
 
@@ -442,8 +442,8 @@
 
 
 /* Audio Unit ID defines */
-#define FU_USBIN                 11              /* Feature Unit: USB Audio device -> host */ 
-#define FU_USBOUT                10              /* Feature Unit: USB Audio host -> device*/ 
+#define FU_USBIN                 11              /* Feature Unit: USB Audio device -> host */
+#define FU_USBOUT                10              /* Feature Unit: USB Audio host -> device*/
 #define ID_IT_USB                2               /* Input terminal: USB streaming */
 #define ID_IT_AUD                1               /* Input terminal: Analogue input */
 #define ID_OT_USB                22              /* Output terminal: USB streaming */
@@ -496,7 +496,7 @@
 
 
 #ifndef MIN_MIXER_VOLUME
-/* The minimum volume setting for the mixer unit above -inf. 
+/* The minimum volume setting for the mixer unit above -inf.
    This is a signed 8.8 fixed point
    number that must be strictly greater than -128 (0x8000) */
 /* Default min volume is -127db */
@@ -504,7 +504,7 @@
 #endif
 
 #ifndef MAX_MIXER_VOLUME
-/* The maximum volume setting for the mixer. 
+/* The maximum volume setting for the mixer.
    This is a signed 8.8 fixed point number. */
 /* Default max volume is 0db */
 #define MAX_MIXER_VOLUME (0x0000)

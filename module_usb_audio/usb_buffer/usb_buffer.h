@@ -16,24 +16,24 @@
  *  \param c_aud_ctl Audio control channel connected to  Endpoint0()
  *  \param p_off_mclk A port that is clocked of the MCLK input (not the MCLK input itself)
  */
-void buffer(chanend c_aud_out, 
-            chanend c_aud_in, 
+void buffer(chanend c_aud_out,
+            chanend c_aud_in,
             chanend c_aud_fb,
-#ifdef MIDI 
-            chanend c_midi_from_host, 
+#ifdef MIDI
+            chanend c_midi_from_host,
             chanend c_midi_to_host,
 			chanend c_midi,
 #endif
 #ifdef IAP
-            chanend c_iap_from_host, 
+            chanend c_iap_from_host,
             chanend c_iap_to_host,
             chanend c_iap_to_host_int,
             chanend c_iap,
 #endif
 #if defined(SPDIF_RX) || defined(ADAT_RX)
-            chanend? c_int, 
+            chanend? c_int,
 #endif
-            chanend c_sof, 
+            chanend c_sof,
             chanend c_aud_ctl,
             in port p_off_mclk
 #ifdef HID_CONTROLS

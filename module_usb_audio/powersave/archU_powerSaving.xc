@@ -36,10 +36,10 @@ void archU_powerSaving()
             time += (1 * PLATFORM_REFERENCE_MHZ); // Wait 1us per step
             t when timerafter(time) :> void;
         }
-        
+
         // Set switch prescaler down
         write_node_config_reg(tile[0], XS1_SSWITCH_CLK_DIVIDER_NUM, (ARCH_U_SSWITCH_PRESCALER - 1)); // PLL clk will be divided by value + 1
-        
+
         // Both DC-DCs in PWM mode, I/O and PLL supply on, Analogue & core on
         writeval[0] = XS1_SU_PWR_VOUT1_EN_SET(0, 1);
         writeval[0] = XS1_SU_PWR_VOUT2_EN_SET(writeval[0], 1);
@@ -57,7 +57,7 @@ void archU_powerSaving()
         writevalc[0] = XS1_SU_ON_SI_OSC_EN_SET(0, 1);
         writevalc[0] = XS1_SU_ON_SI_OSC_SLOW_SET(writevalc[0], 1);
         write_periph_8(usb_tile, XS1_SU_PER_OSC_CHANEND_NUM, XS1_SU_PER_OSC_ON_SI_CTRL_NUM, 1, writevalc);
-    }   
+    }
 }
 #endif
 

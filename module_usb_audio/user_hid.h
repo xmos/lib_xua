@@ -1,3 +1,3 @@
 
-void UserReadHIDButtons(unsigned char hidData[]); 
+void UserReadHIDButtons(unsigned char hidData[]);
 

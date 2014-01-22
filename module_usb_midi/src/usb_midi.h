@@ -9,13 +9,13 @@
  *
  *  \param p_midi_in 1-bit input port for MIDI
  *  \param p_midi_out 1-bit output port for MIDI
- *  \param clk_midi clock block used for clockin the UART; should have 
+ *  \param clk_midi clock block used for clockin the UART; should have
  *                  a rate of 100MHz
  *  \param c_midi chanend connected to the decouple() thread
  *  \param cable_number the cable number of the MIDI implementation.
  *                      This should be set to 0.
  **/
-void usb_midi(buffered in port:1 ?p_midi_in, port ?p_midi_out, 
+void usb_midi(buffered in port:1 ?p_midi_in, port ?p_midi_out,
               clock ?clk_midi,
               chanend ?c_midi,
               unsigned cable_number,

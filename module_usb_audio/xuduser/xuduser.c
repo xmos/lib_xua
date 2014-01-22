@@ -16,7 +16,7 @@ void XUD_UserResume(void)
     unsigned config;
 
     asm("ldw %0, dp[g_currentConfig]" : "=r" (config):);
-    
+
     if(config == 1)
     {
         UserHostActive(1);

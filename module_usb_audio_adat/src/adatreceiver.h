@@ -8,7 +8,7 @@
  *  signal. Normally the 48000 function is called in a while(1) loop. If
  *  both 44,100 and 48,000 need to be supported, they should be called in
  *  sequence in a while(1) loop. Note that the functions are large, and
- *  that 44,100 should not be called if it does not need to be supported. 
+ *  that 44,100 should not be called if it does not need to be supported.
  **/
 void adatReceiver48000(buffered in port:32 p, chanend oChan);
 
@@ -21,7 +21,7 @@ void adatReceiver48000(buffered in port:32 p, chanend oChan);
  *  signal. Normally the 48000 function is called in a while(1) loop. If
  *  both 44,100 and 48,000 need to be supported, they should be called in
  *  sequence in a while(1) loop. Note that the functions are large, and
- *  that 44,100 should not be called if it does not need to be supported. 
+ *  that 44,100 should not be called if it does not need to be supported.
  **/
 
 void adatReceiver44100(buffered in port:32 p, chanend oChan);

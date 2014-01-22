@@ -18,7 +18,7 @@
 fl_DeviceSpec flash_devices[] = {DFU_FLASH_DEVICE};
 #endif
 
-fl_PortHolderStruct p_flash = 
+fl_PortHolderStruct p_flash =
 {
     XS1_PORT_1A,
     XS1_PORT_1B,
@@ -27,7 +27,7 @@ fl_PortHolderStruct p_flash =
     XS1_CLKBLK_1
 };
 
-int flash_cmd_enable_ports() 
+int flash_cmd_enable_ports()
 {
     int result = 0;
     setc(p_flash.spiMISO, XS1_SETC_INUSE_OFF);
@@ -61,17 +61,17 @@ int flash_cmd_enable_ports()
     /* Use default flash list */
     result = fl_connect(&p_flash);
 #endif
-    if (!result) 
+    if (!result)
     {
         return 1;
-    } 
-    else 
+    }
+    else
     {
         return 0;
     }
 }
 
-int flash_cmd_disable_ports() 
+int flash_cmd_disable_ports()
 {
     fl_disconnect();
 
