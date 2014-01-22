@@ -66,22 +66,22 @@
 #define MAX_FREQ_A1              MAX_FREQ
 #endif
 
-/* For Audio Class 1.0 we always have at most 2 channels */
+/* For Audio Class 1.0 and Full-speed Audio 2.0 we always have at most 2 channels */
 #if (NUM_USB_CHAN_OUT > 2)
-#define NUM_USB_CHAN_OUT_A1  (2)
+#define NUM_USB_CHAN_OUT_FS  (2)
 #else
-#define NUM_USB_CHAN_OUT_A1  (NUM_USB_CHAN_OUT)
+#define NUM_USB_CHAN_OUT_FS  (NUM_USB_CHAN_OUT)
 #endif
 
 #if (NUM_USB_CHAN_IN > 2)
-#define NUM_USB_CHAN_IN_A1  (2)
+#define NUM_USB_CHAN_IN_FS (2)
 #else
-#define NUM_USB_CHAN_IN_A1  (NUM_USB_CHAN_IN)
+#define NUM_USB_CHAN_IN_FS  (NUM_USB_CHAN_IN)
 #endif
 
-/* Channel count defines for FS mode */
-#define NUM_USB_CHAN_OUT_FS     (NUM_USB_CHAN_OUT_A1)
-#define NUM_USB_CHAN_IN_FS      (NUM_USB_CHAN_IN_A1)
+/* Channel count defines for Audio 1.0 mode */
+//#define NUM_USB_CHAN_OUT_A1     (NUM_USB_CHAN_OUT_FS)
+//#define NUM_USB_CHAN_IN_A1      (NUM_USB_CHAN_IN_FS)
 
 
 #if defined(IO_EXPANSION) && (IO_EXPANSION == 0)

@@ -10,16 +10,17 @@
 #endif
 #define MAX(x,y) ((x)>(y) ? (x) : (y))
 
-#define CLASS_TWO_PACKET_SIZE ((((MAX_FREQ+7999)/8000))+3) // Samples per channel
-#define CLASS_ONE_PACKET_SIZE  ((((MAX_FREQ_A1+999)/1000))+3) // Samples per channel
+#define CLASS_TWO_PACKET_SIZE ((((MAX_FREQ+7999)/8000))+3)     // Samples per channel
+#define CLASS_ONE_PACKET_SIZE  ((((MAX_FREQ_A1+999)/1000))+3)  // Samples per channel
 
+/* TODO user SLOTSIZE to potentially save memory */
+#define BUFF_SIZE_OUT MAX(4 * CLASS_TWO_PACKET_SIZE * NUM_USB_CHAN_OUT, 4 * CLASS_ONE_PACKET_SIZE * NUM_USB_CHAN_OUT_FS)
+#define BUFF_SIZE_IN  MAX(4 * CLASS_TWO_PACKET_SIZE * NUM_USB_CHAN_IN, 4 * CLASS_ONE_PACKET_SIZE * NUM_USB_CHAN_IN_FS)
 
-#define BUFF_SIZE_OUT MAX(4 * CLASS_TWO_PACKET_SIZE * NUM_USB_CHAN_OUT, 4 * CLASS_ONE_PACKET_SIZE * NUM_USB_CHAN_OUT_A1)
-#define BUFF_SIZE_IN  MAX(4 * CLASS_TWO_PACKET_SIZE * NUM_USB_CHAN_IN, 4 * CLASS_ONE_PACKET_SIZE * NUM_USB_CHAN_IN_A1)
-
+/* Maximum USB buffer size (1024 bytes + 1 word to store length) */
 #define MAX_USB_AUD_PACKET_SIZE 1028
 
-#define OUT_BUFFER_PREFILL (MAX(NUM_USB_CHAN_OUT_A1*CLASS_ONE_PACKET_SIZE*3+4,NUM_USB_CHAN_OUT*CLASS_TWO_PACKET_SIZE*4+4)*1)
+#define OUT_BUFFER_PREFILL (MAX(NUM_USB_CHAN_OUT_FS*CLASS_ONE_PACKET_SIZE*3+4,NUM_USB_CHAN_OUT*CLASS_TWO_PACKET_SIZE*4+4)*1)
 #define IN_BUFFER_PREFILL (MAX(CLASS_ONE_PACKET_SIZE*3+4,CLASS_TWO_PACKET_SIZE*4+4)*2)
 
 /* Volume and mute tables */
@@ -37,7 +38,7 @@ unsigned g_numUsbChanOut = NUM_USB_CHAN_OUT;
 unsigned g_numUsbChanIn = NUM_USB_CHAN_IN;
 
 #define MAX_DEVICE_AUD_PACKET_SIZE_CLASS_TWO ((MAX_FREQ/8000+1)*NUM_USB_CHAN_IN*4)
-#define MAX_DEVICE_AUD_PACKET_SIZE_CLASS_ONE (((MAX_FREQ_A1/1000+1)*NUM_USB_CHAN_IN_A1*3)+4)
+#define MAX_DEVICE_AUD_PACKET_SIZE_CLASS_ONE (((MAX_FREQ_A1/1000+1)*NUM_USB_CHAN_IN_FS*3)+4)
 
 #define MAX_DEVICE_AUD_PACKET_SIZE (MAX(MAX_DEVICE_AUD_PACKET_SIZE_CLASS_ONE, MAX_DEVICE_AUD_PACKET_SIZE_CLASS_TWO))
 
@@ -745,8 +746,8 @@ void decouple(chanend c_mix_out,
 
         if(usb_speed == XUD_SPEED_FS)
         {
-            g_numUsbChanOut = NUM_USB_CHAN_OUT_A1;
-            g_numUsbChanIn = NUM_USB_CHAN_IN_A1;
+            g_numUsbChanOut = NUM_USB_CHAN_OUT_FS;
+            g_numUsbChanIn = NUM_USB_CHAN_IN_FS;
         }
     }
 
@@ -804,7 +805,7 @@ void decouple(chanend c_mix_out,
                     if (usb_speed == XUD_SPEED_HS)
                         mid*=NUM_USB_CHAN_IN*SAMPLE_SUBSLOT_SIZE_HS;
                     else
-                        mid*=NUM_USB_CHAN_IN_A1*SAMPLE_SUBSLOT_SIZE_FS;
+                        mid*=NUM_USB_CHAN_IN_FS*SAMPLE_SUBSLOT_SIZE_FS;
 
                     asm("stw %0, %1[0]"::"r"(mid),"r"(g_aud_to_host_zeros));
                 }

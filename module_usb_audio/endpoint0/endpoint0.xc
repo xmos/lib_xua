@@ -278,7 +278,7 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
                                     else
                                     {
                                         outuint(c_audioControl, SET_CHAN_COUNT_OUT);
-                                        outuint(c_audioControl, NUM_USB_CHAN_OUT_A1);
+                                        outuint(c_audioControl, NUM_USB_CHAN_OUT_FS);
                                     }
 #ifdef NATIVE_DSD
                                     if(g_dsdMode)
@@ -324,7 +324,7 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
                                     else
                                     {
                                         outuint(c_audioControl, SET_CHAN_COUNT_IN);
-                                        outuint(c_audioControl, NUM_USB_CHAN_IN_A1);
+                                        outuint(c_audioControl, NUM_USB_CHAN_IN_FS);
                                     }
 #ifdef ADAT_RX
                                     outuint(c_clk_ctl, SET_SMUX);
