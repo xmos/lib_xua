@@ -1,28 +1,28 @@
 <?xml version="1.0" ?>
 <xpd>
     <components>
-        <component description = "Core USB Audio Module" type = "demoCode" scope = "General Use" path = "module_usb_audio" local = "false" id = "module_usb_audio" name = "USB AUDIO MODULE">
-            <board>XR-USB-AUDIO-20-MC</board>
-            <keyword>USB Audio UAC2</keyword>
+        <component description = "module_dfu" type = "demoCode" scope = "General Use" path = "module_dfu" local = "false" id = "module_dfu" name = "module_dfu">
+            <board>XMOS USB Audio Reference Designes</board>
+            <keyword>DFU</keyword>
         </component>
         <component description = "queue" type = "demoCode" scope = "General Use" path = "module_queue" local = "false" id = "module_queue" name = "Queing Module For USB Audio Framwwork">
             <board></board>
             <componentDependency repo = "git://github.com/xcore/sc_util" version = "1.0.3">module_xassert</componentDependency>
             <keyword>UAC2</keyword>
         </component>
-        <component description = "MIDI" type = "demoCode" scope = "General Use" path = "module_usb_midi" local = "false" id = "module_usb_midi" name = "MIDI Module for USB Audio Framework">
-            <board></board>
-            <componentDependency repo = "git://git/apps/sc_usb_audio">module_queue</componentDependency>
-            <componentDependency repo = "git://github.com/xcore/sc_util" version = "1.0.3">module_xassert</componentDependency>
-            <keyword>MIDI</keyword>
+        <component description = "Core USB Audio Module" type = "demoCode" scope = "General Use" path = "module_usb_audio" local = "false" id = "module_usb_audio" name = "USB AUDIO MODULE">
+            <board>XR-USB-AUDIO-20-MC</board>
+            <keyword>USB Audio UAC2</keyword>
         </component>
         <component description = "ADAT" type = "demoCode" scope = "General Use" path = "module_usb_audio_adat" local = "false" id = "module_usb_audio_adat" name = "ADAT Module for UAC2 MC Reference Design">
             <board>XR-USB-AUDIO-20-MC</board>
             <keyword>ADAT</keyword>
         </component>
-        <component description = "module_dfu" type = "demoCode" scope = "General Use" path = "module_dfu" local = "false" id = "module_dfu" name = "module_dfu">
-            <board>XMOS USB Audio Reference Designes</board>
-            <keyword>DFU</keyword>
+        <component description = "MIDI" type = "demoCode" scope = "General Use" path = "module_usb_midi" local = "false" id = "module_usb_midi" name = "MIDI Module for USB Audio Framework">
+            <board></board>
+            <componentDependency version = "1.0.0">module_queue</componentDependency>
+            <componentDependency repo = "git://github.com/xcore/sc_util" version = "1.0.3">module_xassert</componentDependency>
+            <keyword>MIDI</keyword>
         </component>
     </components>
     <dependency repo = "sc_util">
@@ -36,7 +36,8 @@
     <name>USB Audio Shared Components</name>
     <maintainer>xross</maintainer>
     <partnumber>XM-004719-DH</partnumber>
-    <release parenthash = "98b3bdba959bbaff0eba0e73f3b05d6adea82bbd" version = "1.0.0rc0"></release>
+    <release parenthash = "98b3bdba959bbaff0eba0e73f3b05d6adea82bbd" version = "1.0.0rc0" githash = "543155aaefc8f2b0109393c543429edd16eefa8c"></release>
+    <release parenthash = "45f920c8adaad076c5e5f391094950a7de2fe8bb" version = "6.3.3alpha0"></release>
     <subpartnumber>XM-004720-SM</subpartnumber>
     <vendor>XMOS</vendor>
     <version_defines>
