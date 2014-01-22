@@ -802,9 +802,9 @@ void decouple(chanend c_mix_out,
                     GET_SHARED_GLOBAL(usb_speed, g_curUsbSpeed);
                     GetADCCounts(sampFreq, min, mid, max);
                     if (usb_speed == XUD_SPEED_HS)
-                        mid*=NUM_USB_CHAN_IN*4;
+                        mid*=NUM_USB_CHAN_IN*SAMPLE_SUBSLOT_SIZE_HS;
                     else
-                        mid*=NUM_USB_CHAN_IN_A1*3;
+                        mid*=NUM_USB_CHAN_IN_A1*SAMPLE_SUBSLOT_SIZE_FS;
 
                     asm("stw %0, %1[0]"::"r"(mid),"r"(g_aud_to_host_zeros));
                 }
