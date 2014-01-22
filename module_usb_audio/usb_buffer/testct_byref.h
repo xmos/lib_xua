@@ -5,11 +5,11 @@
 #pragma select handler
 static inline void testct_byref(chanend c, unsigned &isCt)
 {
-    if (testct(c)) 
+    if (testct(c))
     {
         isCt = 1;
     }
-    else 
+    else
     {
         isCt = 0;
     }

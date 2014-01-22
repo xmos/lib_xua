@@ -1,7 +1,7 @@
 /**
  * @file midiinparse.xc
  * @brief Generates USB MIDI events from MIDI events
- * @author Russell Gallop, XMOS Semiconductor 
+ * @author Russell Gallop, XMOS Semiconductor
  * @version 0.1
  */
 
@@ -39,7 +39,7 @@ void reset_midi_state(struct midi_in_parse_state &mips) {
 }
 
 /**
- * @brief Construct USB MIDI event 
+ * @brief Construct USB MIDI event
  *
  */
 static unsigned makeEvent(unsigned cable_number, unsigned codeIndexNumber, unsigned midi0, unsigned midi1, unsigned midi2) {
@@ -92,7 +92,7 @@ static unsigned makeEvent(unsigned cable_number, unsigned codeIndexNumber, unsig
                     state.received++;
                     // Compose sysex bytes that we've got and send them out.
                     // This will depend how many we have.
-                    state.codeIndexNumber = state.received + 0x4; 
+                    state.codeIndexNumber = state.received + 0x4;
                     valid = 1;
                     data = makeEvent(cable_number, state.codeIndexNumber,
                                      state.receivebuffer[0],  state.receivebuffer[1],  state.receivebuffer[2]);
@@ -101,7 +101,7 @@ static unsigned makeEvent(unsigned cable_number, unsigned codeIndexNumber, unsig
                     reset_midi_state(state);
                     state.receivebuffer[state.received] = b;
                     state.received++;
-                    switch (lowNibble) 
+                    switch (lowNibble)
                     {
                     case 0x2: // Song Position Pointer (3 byte system common)
                     {
@@ -119,7 +119,7 @@ static unsigned makeEvent(unsigned cable_number, unsigned codeIndexNumber, unsig
                         break;
                     }
                     case 0x6: // Tune request (1 byte system common)
-                        state.codeIndexNumber = 5; 
+                        state.codeIndexNumber = 5;
                         valid = 1;
                         data = makeEvent(cable_number, state.codeIndexNumber,
                                          state.receivebuffer[0],  state.receivebuffer[1],  state.receivebuffer[2]);
@@ -143,7 +143,7 @@ static unsigned makeEvent(unsigned cable_number, unsigned codeIndexNumber, unsig
             state.received++;
             // code index number is always the high nibble for channel messages
             state.codeIndexNumber = highNibble;
-            switch (highNibble) 
+            switch (highNibble)
             {
             case 0x8: // Note-off
             case 0x9: // Note-on

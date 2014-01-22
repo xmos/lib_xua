@@ -50,10 +50,10 @@ doMix##i##: ;\
 #define BODY(i) \
           ldw       r2,cp[i]; \
           ldw       r11, dp[i];  \
-          maccs     r1, r0, r2, r11; 
+          maccs     r1, r0, r2, r11;
 
 
-.text 
+.text
 
 .L20:\
           lss       r0, r1, r3;\
@@ -69,50 +69,50 @@ doMix##i##: ;\
 
 #if(MAX_MIX_COUNT > 0)
 DOMIX_TOP(0)
-#include "repeat.h" 
+#include "repeat.h"
 DOMIX_BOT(0)
 #endif
 
 
 #if(MAX_MIX_COUNT > 1)
 DOMIX_TOP(1)
-#include "repeat.h" 
+#include "repeat.h"
 DOMIX_BOT(1)
 #endif
 
 #if(MAX_MIX_COUNT > 2)
 DOMIX_TOP(2)
-#include "repeat.h" 
+#include "repeat.h"
 DOMIX_BOT(2)
 #endif
 
 #if(MAX_MIX_COUNT > 3)
 DOMIX_TOP(3)
-#include "repeat.h" 
+#include "repeat.h"
 DOMIX_BOT(3)
 #endif
 
 #if(MAX_MIX_COUNT > 4)
 DOMIX_TOP(4)
-#include "repeat.h" 
+#include "repeat.h"
 DOMIX_BOT(4)
 #endif
 
 #if(MAX_MIX_COUNT > 5)
 DOMIX_TOP(5)
-#include "repeat.h" 
+#include "repeat.h"
 DOMIX_BOT(5)
 #endif
 
 #if(MAX_MIX_COUNT > 6)
 DOMIX_TOP(6)
-#include "repeat.h" 
+#include "repeat.h"
 DOMIX_BOT(6)
 #endif
 
 #if(MAX_MIX_COUNT > 7)
 DOMIX_TOP(7)
-#include "repeat.h" 
+#include "repeat.h"
 DOMIX_BOT(7)
 #endif
 

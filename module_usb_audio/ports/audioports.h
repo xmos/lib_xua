@@ -8,7 +8,7 @@ void ConfigAudioPorts_dsd(unsigned int divide);
 
 
 #ifdef __XC__
-void ConfigAudioPorts(  
+void ConfigAudioPorts(
 #if (I2S_CHANS_DAC != 0) || (DSD_CHANS_DAC != 0)
                 buffered out port:32 p_i2s_dac[],
                 int numDacPorts,
@@ -32,7 +32,7 @@ void ConfigAudioPorts(
                 unsigned int divide);
 #else
 
-void ConfigAudioPorts(  
+void ConfigAudioPorts(
 #if (I2S_CHANS_DAC != 0) || (DSD_CHANS_DAC != 0)
                 port p_i2s_dac[],
                 int numDacPorts,
@@ -59,7 +59,7 @@ void ConfigAudioPorts(
 
 
 #ifdef __XC__
-void ConfigAudioPortsWrapper(  
+void ConfigAudioPortsWrapper(
 #if (I2S_CHANS_DAC != 0)
                 buffered out port:32 p_i2s_dac[I2S_WIRES_DAC],
 #endif
@@ -80,7 +80,7 @@ void ConfigAudioPortsWrapper(
                 unsigned int divide, unsigned int dsdMode);
 #else
 
-void ConfigAudioPortsWrapper(  
+void ConfigAudioPortsWrapper(
 #if (I2S_CHANS_DAC != 0)
                 port p_i2s_dac[I2S_WIRES_DAC],
 #endif

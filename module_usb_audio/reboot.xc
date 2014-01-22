@@ -10,7 +10,7 @@ unsigned get_tile_id(tileref);
 
 extern tileref tile[];
 
-void device_reboot_aux(void) 
+void device_reboot_aux(void)
 {
 #if (XUD_SERIES_SUPPORT == 1)
     /* Disconnect from bus */
@@ -25,15 +25,15 @@ void device_reboot_aux(void)
     unsigned int localTileId = get_local_tile_id();
     unsigned int tileId;
     unsigned int tileArrayLength;
-    
+
     /* Find size of tile array - note in future tools versions this will be available from platform.h */
     asm volatile ("ldc %0, tile.globound":"=r"(tileArrayLength));
-  
+
     /* Reset all remote tiles */
-    for(int i = 0; i< tileArrayLength; i++) 
+    for(int i = 0; i< tileArrayLength; i++)
     {
         /* Cannot cast tileref to unsigned! */
-        tileId = get_tile_id(tile[i]); 
+        tileId = get_tile_id(tile[i]);
 
         /* Do not reboot local tile yet! */
         if(localTileId != tileId)
@@ -42,7 +42,7 @@ void device_reboot_aux(void)
             write_sswitch_reg_no_ack(tileId, 6, pllVal);
         }
     }
-    
+
     /* Finally reboot this tile! */
     read_sswitch_reg(localTileId, 6, pllVal);
     write_sswitch_reg_no_ack(localTileId, 6, pllVal);
@@ -50,12 +50,12 @@ void device_reboot_aux(void)
 }
 
 /* Reboots XMOS device by writing to the PLL config register */
-void device_reboot_implementation(chanend spare) 
+void device_reboot_implementation(chanend spare)
 {
 #if (XUD_SERIES_SUPPORT != 1)
     outct(spare, XS1_CT_END);   // have to do this before freeing the chanend
     inct(spare);                // Receive end ct from usb_buffer to close down in both directions
-    
+
     /* Need a spare chanend so we can talk to the pll register */
     asm("freer res[%0]"::"r"(spare));
 #endif

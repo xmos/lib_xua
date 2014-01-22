@@ -1,11 +1,11 @@
 /**
  * @file audio.xc
  * @brief XMOS L1/L2 USB 2,0 Audio Reference Design.  Audio Functions.
- * @author Ross Owen, XMOS Semiconductor Ltd 
+ * @author Ross Owen, XMOS Semiconductor Ltd
  *
  * This thread handles I2S and pars an additional SPDIF Tx thread.  It forwards samples to the SPDIF Tx thread.
  * Additionally this thread handles clocking and CODEC/DAC/ADC config.
- **/                               
+ **/
 
 #include <syscall.h>
 #include <platform.h>
@@ -25,7 +25,7 @@
 unsigned testsamples[100];
 int p = 0;
 unsigned lastSample = 0;
-#if (DSD_CHANS_DAC != 0) 
+#if (DSD_CHANS_DAC != 0)
 extern unsigned p_dsd_dac[DSD_CHANS_DAC];
 extern port p_dsd_clk;
 #endif
@@ -40,7 +40,7 @@ unsigned g_adcVal = 0;
 
 /* I2S Data I/O*/
 #if (I2S_CHANS_DAC != 0)
-extern buffered out port:32 p_i2s_dac[I2S_WIRES_DAC];  
+extern buffered out port:32 p_i2s_dac[I2S_WIRES_DAC];
 #endif
 
 #if (I2S_CHANS_ADC != 0)
@@ -61,13 +61,13 @@ unsigned dsdMode = DSD_MODE_OFF;
 /* Master clock input */
 extern port p_mclk_in;
 
-#ifdef SPDIF 
+#ifdef SPDIF
 extern buffered out port:32 p_spdif_tx;
 #endif
 
-extern clock    clk_audio_mclk;  
-extern clock    clk_audio_bclk;  
-extern clock    clk_mst_spd;  
+extern clock    clk_audio_mclk;
+extern clock    clk_audio_bclk;
+extern clock    clk_mst_spd;
 
 extern void device_reboot(void);
 
@@ -81,43 +81,43 @@ extern void device_reboot(void);
 
 #ifndef CODEC_MASTER
 static inline void doI2SClocks(unsigned divide)
-{ 
+{
     switch (divide)
     {
 #if (MAX_DIVIDE > 16)
-#error MCLK/BCLK Ratio not supported!! 
+#error MCLK/BCLK Ratio not supported!!
 #endif
 #if (MAX_DIVIDE > 8)
              case 16:
-                p_bclk <: 0xff00ff00;   
-                p_bclk <: 0xff00ff00;   
-                p_bclk <: 0xff00ff00;   
-                p_bclk <: 0xff00ff00;   
-                p_bclk <: 0xff00ff00;   
-                p_bclk <: 0xff00ff00;   
-                p_bclk <: 0xff00ff00;   
-                p_bclk <: 0xff00ff00;   
-                
-                p_bclk <: 0xff00ff00;   
-                p_bclk <: 0xff00ff00;   
-                p_bclk <: 0xff00ff00;   
-                p_bclk <: 0xff00ff00;   
-                p_bclk <: 0xff00ff00;   
-                p_bclk <: 0xff00ff00;   
-                p_bclk <: 0xff00ff00;   
-                p_bclk <: 0xff00ff00; 
+                p_bclk <: 0xff00ff00;
+                p_bclk <: 0xff00ff00;
+                p_bclk <: 0xff00ff00;
+                p_bclk <: 0xff00ff00;
+                p_bclk <: 0xff00ff00;
+                p_bclk <: 0xff00ff00;
+                p_bclk <: 0xff00ff00;
+                p_bclk <: 0xff00ff00;
+
+                p_bclk <: 0xff00ff00;
+                p_bclk <: 0xff00ff00;
+                p_bclk <: 0xff00ff00;
+                p_bclk <: 0xff00ff00;
+                p_bclk <: 0xff00ff00;
+                p_bclk <: 0xff00ff00;
+                p_bclk <: 0xff00ff00;
+                p_bclk <: 0xff00ff00;
                 break;
 #endif
 #if (MAX_DIVIDE > 4)
            case 8:
-                p_bclk <: 0xF0F0F0F0;   
-                p_bclk <: 0xF0F0F0F0;   
-                p_bclk <: 0xF0F0F0F0;   
-                p_bclk <: 0xF0F0F0F0;   
-                p_bclk <: 0xF0F0F0F0;   
-                p_bclk <: 0xF0F0F0F0;   
-                p_bclk <: 0xF0F0F0F0;   
-                p_bclk <: 0xF0F0F0F0;   
+                p_bclk <: 0xF0F0F0F0;
+                p_bclk <: 0xF0F0F0F0;
+                p_bclk <: 0xF0F0F0F0;
+                p_bclk <: 0xF0F0F0F0;
+                p_bclk <: 0xF0F0F0F0;
+                p_bclk <: 0xF0F0F0F0;
+                p_bclk <: 0xF0F0F0F0;
+                p_bclk <: 0xF0F0F0F0;
                 break;
 #endif
 #if (MAX_DIVIDE > 2)
@@ -129,7 +129,7 @@ static inline void doI2SClocks(unsigned divide)
                 break;
 #endif
 #if (MAX_DIVIDE > 1)
-            case 2: 
+            case 2:
                 p_bclk <: 0xAAAAAAAA;
                 p_bclk <: 0xAAAAAAAA;
                 break;
@@ -137,7 +137,7 @@ static inline void doI2SClocks(unsigned divide)
 #if (MAX_DIVIDE > 0)
             case 1:
                 break;
-#endif     
+#endif
    }
 }
 #endif
@@ -148,10 +148,10 @@ static inline void doI2SClocks(unsigned divide)
 {
 	unsigned sample;
     unsigned underflow = 0;
-#if NUM_USB_CHAN_OUT > 0 
+#if NUM_USB_CHAN_OUT > 0
     unsigned samplesOut[NUM_USB_CHAN_OUT];
 #endif
-#if NUM_USB_CHAN_IN > 0 
+#if NUM_USB_CHAN_IN > 0
     unsigned samplesIn[NUM_USB_CHAN_IN];
     unsigned samplesInPrev[NUM_USB_CHAN_IN];
 #endif
@@ -181,7 +181,7 @@ static inline void doI2SClocks(unsigned divide)
     }
 #endif
 
-#if(DSD_CHANS_DAC != 0) 
+#if(DSD_CHANS_DAC != 0)
     if(dsdMode == DSD_MODE_DOP)
         underflowWord = 0xFA969600;
     else if(dsdMode == DSD_MODE_NATIVE)
@@ -196,18 +196,18 @@ static inline void doI2SClocks(unsigned divide)
     if(testct(c_out))
     {
         unsigned command = inct(c_out);
-#ifndef CODEC_MASTER 
+#ifndef CODEC_MASTER
             // Set clocks low
             p_lrclk <: 0;
             p_bclk <: 0;
-#if(DSD_CHANS_DAC != 0) 
+#if(DSD_CHANS_DAC != 0)
             /* DSD Clock might not be shared with lrclk or bclk... */
             p_dsd_clk <: 0;
 #endif
 #endif
 #if (DSD_CHANS_DAC > 0)
         if(dsdMode == DSD_MODE_DOP)
-            dsdMode = DSD_MODE_OFF; 
+            dsdMode = DSD_MODE_OFF;
 #endif
         return {command, inuint(c_out)};
     }
@@ -228,7 +228,7 @@ static inline void doI2SClocks(unsigned divide)
         if(underflow)
         {
 #pragma loop unroll
-            for(int i = 0; i < NUM_USB_CHAN_OUT; i++)        
+            for(int i = 0; i < NUM_USB_CHAN_OUT; i++)
             {
                 samplesOut[i] = underflowWord;
             }
@@ -236,7 +236,7 @@ static inline void doI2SClocks(unsigned divide)
         else
         {
 #pragma loop unroll
-            for(int i = 0; i < NUM_USB_CHAN_OUT; i++)        
+            for(int i = 0; i < NUM_USB_CHAN_OUT; i++)
             {
                 samplesOut[i] = inuint(c_out);
             }
@@ -248,15 +248,15 @@ static inline void doI2SClocks(unsigned divide)
         if(underflow)
         {
             #pragma loop unroll
-            for(int i = 0; i < NUM_USB_CHAN_OUT; i++)        
+            for(int i = 0; i < NUM_USB_CHAN_OUT; i++)
             {
                 samplesOut[i] = underflowWord;
             }
         }
         else
-        {        
+        {
 #pragma loop unroll
-        for(int i = 0; i < NUM_USB_CHAN_OUT; i++)        
+        for(int i = 0; i < NUM_USB_CHAN_OUT; i++)
         {
             int tmp = inuint(c_out);
 #if defined(OUT_VOLUME_IN_MIXER) && defined(OUT_VOLUME_AFTER_MIX)
@@ -266,7 +266,7 @@ static inline void doI2SClocks(unsigned divide)
         }
         }
 #endif
-        	 
+
 #if NUM_USB_CHAN_IN > 0
 #pragma loop unroll
         for(int i = 0; i < NUM_USB_CHAN_IN; i++)
@@ -288,7 +288,7 @@ static inline void doI2SClocks(unsigned divide)
 #endif
     /* Clear I2S port buffers */
     clearbuf(p_lrclk);
-    
+
 #if (I2S_CHANS_DAC != 0)
     for(int i = 0; i < I2S_WIRES_DAC; i++)
     {
@@ -308,7 +308,7 @@ static inline void doI2SClocks(unsigned divide)
         p_lrclk <: 0 @ tmp;
         tmp += 100;
 
-        /* Since BCLK is free-running, setup outputs/inputs at a know point in the future */ 
+        /* Since BCLK is free-running, setup outputs/inputs at a know point in the future */
 #if (I2S_CHANS_DAC != 0)
 #pragma loop unroll
         for(int i = 0; i < I2S_WIRES_DAC; i++)
@@ -317,13 +317,13 @@ static inline void doI2SClocks(unsigned divide)
         }
 #endif
 
-        p_lrclk @ tmp <: 0x7FFFFFFF;  
+        p_lrclk @ tmp <: 0x7FFFFFFF;
 
 
 #if (I2S_CHANS_ADC != 0)
         for(int i = 0; i < I2S_WIRES_DAC; i++)
         {
-            //p_i2s_adc[0]  @ (tmp - 1) :> void;  
+            //p_i2s_adc[0]  @ (tmp - 1) :> void;
             asm("setpt res[%0], %1"::"r"(p_i2s_adc[i]),"r"(tmp-1));
             clearbuf(p_i2s_adc[i]);
         }
@@ -341,11 +341,11 @@ static inline void doI2SClocks(unsigned divide)
             p_i2s_dac[i] <: 0;
         }
 #endif
-        
 
-        p_lrclk <: 0x7FFFFFFF; 
+
+        p_lrclk <: 0x7FFFFFFF;
         doI2SClocks(divide);
-        
+
     }
 #if (DSD_CHANS_DAC > 0)
     } /* if (!dsdMode) */
@@ -356,8 +356,8 @@ static inline void doI2SClocks(unsigned divide)
         //sync(p_dsd_clk);
     }
 #endif
-#else /* ifndef CODEC_MASTER */          
-    
+#else /* ifndef CODEC_MASTER */
+
     /* Wait for LRCLK edge */
     p_lrclk when pinseq(0) :> void;
     p_lrclk when pinseq(1) :> void;
@@ -365,33 +365,33 @@ static inline void doI2SClocks(unsigned divide)
     p_lrclk when pinseq(1) :> void;
     p_lrclk when pinseq(0) :> void @ tmp;
     tmp += 33;
-       
+
 #if (I2S_CHANS_DAC != 0)
-#pragma loop unroll 
+#pragma loop unroll
     for(int i = 0; i < I2S_WIRES_DAC; i++)
     {
         p_i2s_dac[i] @ tmp <: 0;
     }
 #endif
 
-    p_i2s_adc[0] @ tmp - 1 :> void;  
+    p_i2s_adc[0] @ tmp - 1 :> void;
 
-#pragma loop unroll 
+#pragma loop unroll
     for(int i = 0; i < I2S_WIRES_ADC; i++)
-    { 
+    {
         clearbuf(p_i2s_adc[i]);
     }
 
-    /* TODO In master mode, the i/o loop assumes L/RCLK = 32bit clocks.  We should check this every interation 
+    /* TODO In master mode, the i/o loop assumes L/RCLK = 32bit clocks.  We should check this every interation
      * and resync if we got a bclk glitch */
 
 #endif
 
-    /* Main Audio I/O loop */    
+    /* Main Audio I/O loop */
     while (1)
     {
         outuint(c_out, 0);
-        
+
         /* Check for sample freq change (or other command) or new samples from mixer*/
         if(testct(c_out))
         {
@@ -400,13 +400,13 @@ static inline void doI2SClocks(unsigned divide)
             // Set clocks low
             p_lrclk <: 0;
             p_bclk <: 0;
-#if(DSD_CHANS_DAC != 0) 
+#if(DSD_CHANS_DAC != 0)
             /* DSD Clock might not be shared with lrclk or bclk... */
             p_dsd_clk <: 0;
 #endif
 #endif
             command = inct(c_out);
-            
+
 #if (DSD_CHANS_DAC > 0)
             if(dsdMode == DSD_MODE_DOP)
                 dsdMode = DSD_MODE_OFF;
@@ -447,7 +447,7 @@ static inline void doI2SClocks(unsigned divide)
 #else /* ifndef MIXER */
 #if NUM_USB_CHAN_OUT > 0
             if(underflow)
-            { 
+            {
                 for(int i = 0; i < NUM_USB_CHAN_OUT; i++)
                 {
                     samplesOut[i] = underflowWord;
@@ -457,7 +457,7 @@ static inline void doI2SClocks(unsigned divide)
             {
 #pragma loop unroll
                 for(int i = 0; i < NUM_USB_CHAN_OUT; i++)
-                {   
+                {
                     int tmp = inuint(c_out);
 #if defined(OUT_VOLUME_IN_MIXER) && defined(OUT_VOLUME_AFTER_MIX)
                     tmp<<=3;
@@ -505,11 +505,11 @@ static inline void doI2SClocks(unsigned divide)
         if(dsdMode == DSD_MODE_NATIVE)
         {
             /* 8 bits per chan, 1st 1-bit sample in MSB */
-            dsdSample_l =  samplesOut[0];  
+            dsdSample_l =  samplesOut[0];
             dsdSample_r =  samplesOut[1];
-            dsdSample_r = bitrev(byterev(dsdSample_r)); 
-            dsdSample_l = bitrev(byterev(dsdSample_l)); 
- 
+            dsdSample_r = bitrev(byterev(dsdSample_r));
+            dsdSample_l = bitrev(byterev(dsdSample_l));
+
             /* Output DSD data to ports then 32 clocks */
             switch (divide)
             {
@@ -521,28 +521,28 @@ static inline void doI2SClocks(unsigned divide)
                     p_dsd_clk <: 0xCCCCCCCC;
                     p_dsd_clk <: 0xCCCCCCCC;
                     break;
-      
-                case 2: 
+
+                case 2:
                     asm volatile("out res[%0], %1"::"r"(p_dsd_dac[0]),"r"(dsdSample_l));
                     asm volatile("out res[%0], %1"::"r"(p_dsd_dac[1]),"r"(dsdSample_r));
                     p_dsd_clk <: 0xAAAAAAAA;
                     p_dsd_clk <: 0xAAAAAAAA;
                     break;
-                
+
                 default:
                     /* Do some clocks anyway - this will stop us interrupting decouple too much */
                     asm volatile("out res[%0], %1"::"r"(p_dsd_dac[0]),"r"(dsdSample_l));
                     asm volatile("out res[%0], %1"::"r"(p_dsd_dac[1]),"r"(dsdSample_r));
-                    p_dsd_clk <: 0xF0F0F0F0;   
-                    p_dsd_clk <: 0xF0F0F0F0;   
-                    p_dsd_clk <: 0xF0F0F0F0;   
-                    p_dsd_clk <: 0xF0F0F0F0;   
-                    p_dsd_clk <: 0xF0F0F0F0;   
-                    p_dsd_clk <: 0xF0F0F0F0;   
-                    p_dsd_clk <: 0xF0F0F0F0;   
-                    p_dsd_clk <: 0xF0F0F0F0; 
+                    p_dsd_clk <: 0xF0F0F0F0;
+                    p_dsd_clk <: 0xF0F0F0F0;
+                    p_dsd_clk <: 0xF0F0F0F0;
+                    p_dsd_clk <: 0xF0F0F0F0;
+                    p_dsd_clk <: 0xF0F0F0F0;
+                    p_dsd_clk <: 0xF0F0F0F0;
+                    p_dsd_clk <: 0xF0F0F0F0;
+                    p_dsd_clk <: 0xF0F0F0F0;
                     break;
-            } 
+            }
 
         }
         else if(dsdMode == DSD_MODE_DOP)
@@ -551,33 +551,33 @@ static inline void doI2SClocks(unsigned divide)
             {
                 dsdSample_l = ((samplesOut[0] & 0xffff00) << 8);
                 dsdSample_r = ((samplesOut[1] & 0xffff00) << 8);
- 
+
                 everyOther = 1;
-          
+
                 switch (divide)
                 {
                     case 8:
-                    p_dsd_clk <: 0xF0F0F0F0;   
-                    p_dsd_clk <: 0xF0F0F0F0;   
-                    p_dsd_clk <: 0xF0F0F0F0;   
-                    p_dsd_clk <: 0xF0F0F0F0;   
+                    p_dsd_clk <: 0xF0F0F0F0;
+                    p_dsd_clk <: 0xF0F0F0F0;
+                    p_dsd_clk <: 0xF0F0F0F0;
+                    p_dsd_clk <: 0xF0F0F0F0;
                     break;
-      
+
                     case 4:
                     p_dsd_clk <: 0xCCCCCCCC;
                     p_dsd_clk <: 0xCCCCCCCC;
                     break;
-      
-                    case 2: 
+
+                    case 2:
                     p_dsd_clk <: 0xAAAAAAAA;
                     break;
-                }    
+                }
             }
             else // everyOther
             {
                 everyOther = 0;
-                dsdSample_l =  dsdSample_l | ((samplesOut[0] & 0xffff00) >> 8);   
-                dsdSample_r =  dsdSample_r | ((samplesOut[1] & 0xffff00) >> 8);   
+                dsdSample_l =  dsdSample_l | ((samplesOut[0] & 0xffff00) >> 8);
+                dsdSample_r =  dsdSample_r | ((samplesOut[1] & 0xffff00) >> 8);
 
                 // Output 16 clocks DSD to all
                 //p_dsd_dac[0] <: bitrev(dsdSample_l);
@@ -587,21 +587,21 @@ static inline void doI2SClocks(unsigned divide)
                 switch (divide)
                 {
                     case 8:
-                    p_dsd_clk <: 0xF0F0F0F0;   
-                    p_dsd_clk <: 0xF0F0F0F0;   
-                    p_dsd_clk <: 0xF0F0F0F0;   
-                    p_dsd_clk <: 0xF0F0F0F0;   
+                    p_dsd_clk <: 0xF0F0F0F0;
+                    p_dsd_clk <: 0xF0F0F0F0;
+                    p_dsd_clk <: 0xF0F0F0F0;
+                    p_dsd_clk <: 0xF0F0F0F0;
                     break;
-      
+
                     case 4:
                     p_dsd_clk <: 0xCCCCCCCC;
                     p_dsd_clk <: 0xCCCCCCCC;
                     break;
-      
-                    case 2: 
+
+                    case 2:
                     p_dsd_clk <: 0xAAAAAAAA;
                     break;
-                } 
+                }
 
             }
         }
@@ -614,26 +614,26 @@ static inline void doI2SClocks(unsigned divide)
 #if (I2S_CHANS_DAC != 0) && (NUM_USB_CHAN_OUT != 0)
 #pragma loop unroll
             for(int i = 0; i < I2S_CHANS_DAC; i+=2)
-            {           
+            {
                 p_i2s_dac[tmp++] <: bitrev(samplesOut[i]);            /* Output LEFT sample to DAC */
             }
 #endif
-      
-#ifndef CODEC_MASTER  
-            /* LR clock delayed by one clock, This is so MSB is output on the falling edge of BCLK 
+
+#ifndef CODEC_MASTER
+            /* LR clock delayed by one clock, This is so MSB is output on the falling edge of BCLK
              * after the falling edge on which LRCLK was toggled. (see I2S spec) */
-            /* Generate clocks LR Clock low - LEFT */ 
+            /* Generate clocks LR Clock low - LEFT */
             p_lrclk <: 0x80000000;
             doI2SClocks(divide);
 #endif
-  
- 
+
+
 #if (I2S_CHANS_ADC != 0)
             /* Input prevous R sample into R in buffer */
             index = 0;
 #pragma loop unroll
             for(int i = 1; i < I2S_CHANS_ADC; i += 2)
-            {   
+            {
                 p_i2s_adc[index++] :> sample;
 #if NUM_USB_CHAN_IN > 0
                 samplesIn[i] = bitrev(sample);
@@ -643,28 +643,28 @@ static inline void doI2SClocks(unsigned divide)
 #endif
             }
 #endif
- 
-#if defined(SPDIF) && (NUM_USB_CHAN_OUT > 0)	
+
+#if defined(SPDIF) && (NUM_USB_CHAN_OUT > 0)
             outuint(c_spd_out, samplesOut[SPDIF_TX_INDEX]);  /* Forward sample to S/PDIF Tx thread */
-            sample = samplesOut[SPDIF_TX_INDEX + 1];                 
+            sample = samplesOut[SPDIF_TX_INDEX + 1];
             outuint(c_spd_out, sample);                      /* Forward sample to S/PDIF Tx thread */
-#endif      
+#endif
             tmp = 0;
 #pragma xta endpoint "i2s_output_r"
 #if (I2S_CHANS_DAC != 0) && (NUM_USB_CHAN_OUT != 0)
 #pragma loop unroll
             for(int i = 1; i < I2S_CHANS_DAC; i+=2)
-            { 
+            {
                 p_i2s_dac[tmp++] <: bitrev(samplesOut[i]);            /* Output RIGHT sample to DAC */
             }
 #endif
 
-#ifndef CODEC_MASTER 
+#ifndef CODEC_MASTER
             /* Clock out data (and LR clock) */
             p_lrclk <: 0x7FFFFFFF;
             doI2SClocks(divide);
-#endif  
-        
+#endif
+
 
 #if (I2S_CHANS_ADC != 0)
             /* Input previous L ADC sample */
@@ -690,7 +690,7 @@ static inline void doI2SClocks(unsigned divide)
 #endif
 #endif
 
-        }  // !dsdMode       
+        }  // !dsdMode
 #if (DSD_CHANS_DAC != 0) && (NUM_USB_CHAN_OUT > 0)
         /* Check for DSD - note we only move into DoP mode if valid DoP Freq */
         /* Currently we only check on channel 0 - we get all 0's on channels without data */
@@ -705,7 +705,7 @@ static inline void doI2SClocks(unsigned divide)
                     dsdMode = DSD_MODE_DOP;
                     dsdCount = 0;
                     dsdMarker = DSD_MARKER_2;
-                    
+
                     // Set clocks low
                     p_lrclk <: 0;
                     p_bclk <: 0;
@@ -740,7 +740,7 @@ static inline void doI2SClocks(unsigned divide)
     return {0,0};
 }
 
-/* This function is a dummy version of the deliver thread that does not 
+/* This function is a dummy version of the deliver thread that does not
    connect to the codec ports. It is used during DFU reset. */
 {unsigned,unsigned} static dummy_deliver(chanend c_out)
 {
@@ -794,7 +794,7 @@ static inline void doI2SClocks(unsigned divide)
 #define SAMPLES_PER_PRINT 1
 
 
-void audio(chanend c_mix_out, chanend ?c_dig_rx, chanend ?c_config, chanend ?c) 
+void audio(chanend c_mix_out, chanend ?c_dig_rx, chanend ?c_config, chanend ?c)
 {
 #ifdef SPDIF
     chan c_spdif_out;
@@ -867,7 +867,7 @@ void audio(chanend c_mix_out, chanend ?c_dig_rx, chanend ?c_config, chanend ?c)
         {
             /* I2S has 32 bits per sample. *2 as 2 channels */
             unsigned numBits = 64;
- 
+
 #if (DSD_CHANS_DAC > 0)
             if(dsdMode == DSD_MODE_DOP)
             {
@@ -879,10 +879,10 @@ void audio(chanend c_mix_out, chanend ?c_dig_rx, chanend ?c_config, chanend ?c)
                 /* DSD native we receive in 32bit chunks */
                 numBits = 32;
             }
-#endif  
+#endif
             divide = mClk / ( curSamFreq * numBits );
-       } 
-        
+       }
+
 #if (DSD_CHANS_DAC != 0)
         /* Configure audio ports */
         ConfigAudioPortsWrapper(
@@ -925,18 +925,18 @@ void audio(chanend c_mix_out, chanend ?c_dig_rx, chanend ?c_config, chanend ?c)
             divide);
 
 #endif
- 
+
         {
-            unsigned curFreq = curSamFreq;         
-#if (DSD_CHANS_DAC > 0)  
-            /* Make AudioHwConfig() implementation a little more user friendly in DSD mode...*/ 
+            unsigned curFreq = curSamFreq;
+#if (DSD_CHANS_DAC > 0)
+            /* Make AudioHwConfig() implementation a little more user friendly in DSD mode...*/
             if(dsdMode == DSD_MODE_NATIVE)
             {
-                curFreq *= 32;                      
+                curFreq *= 32;
             }
             else if(dsdMode == DSD_MODE_DOP)
             {
-                curFreq *= 16;                      
+                curFreq *= 16;
             }
 #endif
             /* Configure Clocking/CODEC/DAC/ADC for SampleFreq/MClk */
@@ -945,9 +945,9 @@ void audio(chanend c_mix_out, chanend ?c_dig_rx, chanend ?c_config, chanend ?c)
 
         if(!firstRun)
         {
-            /* TODO wait for good mclk instead of delay */ 
+            /* TODO wait for good mclk instead of delay */
             /* No delay for DFU modes */
-            if ((curSamFreq != AUDIO_REBOOT_FROM_DFU) && (curSamFreq != AUDIO_STOP_FOR_DFU) && retVal1) 
+            if ((curSamFreq != AUDIO_REBOOT_FROM_DFU) && (curSamFreq != AUDIO_STOP_FOR_DFU) && retVal1)
             {
 #if 0
                 /* User should ensure MCLK is stable in AudioHwConfig */
@@ -962,34 +962,34 @@ void audio(chanend c_mix_out, chanend ?c_dig_rx, chanend ?c_config, chanend ?c)
                 /* Handshake back */
                 outct(c_mix_out, XS1_CT_END);
             }
-        } 
+        }
         firstRun = 0;
-      
+
 
 
         par
         {
-            
-#ifdef SPDIF   
-            {  
+
+#ifdef SPDIF
+            {
                 set_thread_fast_mode_on();
                 SpdifTransmit(p_spdif_tx, c_spdif_out);
             }
-#endif  
-  
-            {     
+#endif
+
+            {
 #ifdef SPDIF
                 /* Communicate master clock and sample freq to S/PDIF thread */
                 outuint(c_spdif_out, curSamFreq);
                 outuint(c_spdif_out, mClk);
-#endif 
+#endif
 
                 {retVal1, retVal2} = deliver(c_mix_out,
 #ifdef SPDIF
                    c_spdif_out,
 #else
                    null,
-#endif 
+#endif
                    divide, curSamFreq, c_dig_rx, c);
 
 #if (DSD_CHANS_DAC != 0)
@@ -1010,16 +1010,16 @@ void audio(chanend c_mix_out, chanend ?c_dig_rx, chanend ?c_config, chanend ?c)
 #endif
 
                 // Currently no more audio will happen after this point
-                if (curSamFreq == AUDIO_STOP_FOR_DFU) 
+                if (curSamFreq == AUDIO_STOP_FOR_DFU)
 				{
                   	outct(c_mix_out, XS1_CT_END);
 
-                  	while (1) 
+                  	while (1)
 					{
 
                     	{retVal1, curSamFreq} = dummy_deliver(c_mix_out);
 
-                    	if (curSamFreq == AUDIO_START_FROM_DFU) 
+                    	if (curSamFreq == AUDIO_START_FROM_DFU)
 						{
                       		outct(c_mix_out, XS1_CT_END);
                       		break;
@@ -1027,9 +1027,9 @@ void audio(chanend c_mix_out, chanend ?c_dig_rx, chanend ?c_config, chanend ?c)
                   	}
                 }
 
-#ifdef SPDIF 
+#ifdef SPDIF
                 /* Notify S/PDIF thread of impending new freq... */
-                outct(c_spdif_out, XS1_CT_END);   
+                outct(c_spdif_out, XS1_CT_END);
 #endif
             }
         }

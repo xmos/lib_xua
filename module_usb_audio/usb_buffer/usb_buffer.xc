@@ -43,7 +43,7 @@ unsigned g_freqChange = 0;
 unsigned char g_intData[8];
 
 #if defined (MIDI) || defined(IAP)
-static inline void swap(xc_ptr &a, xc_ptr &b) 
+static inline void swap(xc_ptr &a, xc_ptr &b)
 {
   xc_ptr tmp;
   tmp = a;
@@ -70,29 +70,29 @@ unsigned char fb_clocks[16];
 #define FB_TOLERANCE 0x100
 
 extern unsigned inZeroBuff[];
-/** 
- * Buffers data from audio endpoints 
+/**
+ * Buffers data from audio endpoints
  * @param   c_aud_out     chanend for audio from xud
  * @param   c_aud_in      chanend for audio to xud
  * @param   c_aud_fb      chanend for feeback to xud
  * @return  void
  */
 void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud_fb,
-#ifdef MIDI 
-            chanend c_midi_from_host, 
+#ifdef MIDI
+            chanend c_midi_from_host,
             chanend c_midi_to_host,
-            chanend c_midi, 
+            chanend c_midi,
 #endif
 #ifdef IAP
-            chanend c_iap_from_host, 
-            chanend c_iap_to_host, 
+            chanend c_iap_from_host,
+            chanend c_iap_to_host,
             chanend c_iap_to_host_int,
-            chanend c_iap, 
+            chanend c_iap,
 #endif
 #if defined(SPDIF_RX) || defined(ADAT_RX)
-            chanend ?c_int, 
+            chanend ?c_int,
 #endif
-            chanend c_sof, 
+            chanend c_sof,
             chanend c_aud_ctl,
             in port p_off_mclk
 #ifdef HID_CONTROLS
@@ -122,8 +122,8 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
 #ifdef HID_CONTROLS
     XUD_ep ep_hid = XUD_InitEp(c_hid);
 #endif
- 
-  
+
+
     int tmp;
     unsigned u_tmp;
     unsigned sampleFreq = 0;
@@ -133,7 +133,7 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
 
 #ifdef INPUT
     unsigned bufferIn = 1;
-#endif   
+#endif
     unsigned remnant = 0, cycles;
     unsigned sofCount = 0;
     unsigned freqChange = 0;
@@ -162,8 +162,8 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
     xc_ptr iap_from_host_rdptr;
     unsigned char iap_from_host_buffer[MAX_IAP_PACKET_SIZE+4];
     unsigned char iap_to_host_buffer[MAX_IAP_PACKET_SIZE+4];
- 
-    
+
+
     int is_ack_iap;
     int is_reset;
     unsigned int datum_iap;
@@ -174,20 +174,20 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
 
 
     xc_ptr p_inZeroBuff = array_to_xc_ptr(inZeroBuff);
-   
+
 #ifdef IAP
     XUD_ResetEndpoint(ep_iap_from_host, null);
-    iap_send_reset(c_iap); 
+    iap_send_reset(c_iap);
 #endif
 
 #if defined(SPDIF_RX) || defined(ADAT_RX)
-    asm("stw %0, dp[int_usb_ep]"::"r"(ep_int));    
+    asm("stw %0, dp[int_usb_ep]"::"r"(ep_int));
 #endif
     asm("stw %0, dp[aud_from_host_usb_ep]"::"r"(ep_aud_out));
     asm("stw %0, dp[aud_to_host_usb_ep]"::"r"(ep_aud_in));
-    asm("stw %0, dp[buffer_aud_ctl_chan]"::"r"(c_aud_ctl));    
+    asm("stw %0, dp[buffer_aud_ctl_chan]"::"r"(c_aud_ctl));
 
-    /* Wait for USB connect then setup our first packet */     
+    /* Wait for USB connect then setup our first packet */
     {
         int min, mid, max;
         int usb_speed = 0;
@@ -200,7 +200,7 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
 
         GetADCCounts(DEFAULT_FREQ, min, mid, max);
         asm("stw %0, dp[g_speed]"::"r"(mid << 16));
-        if (usb_speed == XUD_SPEED_HS) 
+        if (usb_speed == XUD_SPEED_HS)
           mid*=NUM_USB_CHAN_IN*4;
         else
           mid*=NUM_USB_CHAN_IN_A1*3;
@@ -210,15 +210,15 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
 #ifdef FB_TOLERANCE_TEST
         expected_fb = ((DEFAULT_FREQ * 0x2000) / 1000);
 #endif
-        
+
     }
 
 #ifdef OUTPUT
-    SET_SHARED_GLOBAL(g_aud_from_host_flag, 1);    
+    SET_SHARED_GLOBAL(g_aud_from_host_flag, 1);
 #endif
 
 #ifdef INPUT
-    SET_SHARED_GLOBAL(g_aud_to_host_flag, 1);    
+    SET_SHARED_GLOBAL(g_aud_to_host_flag, 1);
 #endif
 
     (fb_clocks, unsigned[])[0] = 0;
@@ -226,15 +226,15 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
     {
         int usb_speed;
         int x;
-       
+
         asm("ldaw %0, dp[fb_clocks]":"=r"(x));
         GET_SHARED_GLOBAL(usb_speed, g_curUsbSpeed);
-        
-        if (usb_speed == XUD_SPEED_HS)  
-        {                  
+
+        if (usb_speed == XUD_SPEED_HS)
+        {
             XUD_SetReady_In(ep_aud_fb, fb_clocks, 4);
         }
-        else 
+        else
         {
             XUD_SetReady_In(ep_aud_fb, fb_clocks, 3);
         }
@@ -260,54 +260,54 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
 #if defined(SPDIF_RX) || defined(ADAT_RX)
             /* Interrupt EP, send back interrupt data.  Note, request made from decouple */
             case inuint_byref(c_int, tmp):
-            { 
+            {
                 int sent_ok = 0;
                 XUD_SetData_Inline(ep_int, c_int);
-                asm("stw   %0, dp[g_intFlag]" :: "r" (0)  );  
+                asm("stw   %0, dp[g_intFlag]" :: "r" (0)  );
                 break;
               }
 #endif
 
-            /* Sample Freq or chan count update from ep 0 */     
+            /* Sample Freq or chan count update from ep 0 */
             case testct_byref(c_aud_ctl, u_tmp):
             {
-                if (u_tmp) 
+                if (u_tmp)
                 {
                    // is a control token sent by reboot_device
                    inct(c_aud_ctl);
                    outct(c_aud_ctl, XS1_CT_END);
                    while(1) {};
-                } 
-                else 
+                }
+                else
                 {
                     int min, mid, max;
                     int usb_speed;
                     int frameTime;
                     tmp = inuint(c_aud_ctl);
                     GET_SHARED_GLOBAL(usb_speed, g_curUsbSpeed);
-   
+
                     if(tmp == SET_SAMPLE_FREQ)
-                    { 
+                    {
                         sampleFreq = inuint(c_aud_ctl);
- 
+
                         /* Don't update things for DFU command.. */
                         if(sampleFreq != AUDIO_STOP_FOR_DFU)
                         {
-                                   
-                            /* Tidy up double buffer, note we can do better than this for 44.1 etc but better 
-                             * than sending two packets at old speed! */               
-                            if (usb_speed == XUD_SPEED_HS) 
+
+                            /* Tidy up double buffer, note we can do better than this for 44.1 etc but better
+                             * than sending two packets at old speed! */
+                            if (usb_speed == XUD_SPEED_HS)
                                 frameTime = 8000;
-                            else 
+                            else
                                 frameTime = 1000;
-   
+
                             min = sampleFreq / frameTime;
-   
+
                             max = min + 1;
-                   
+
                             mid = min;
-                   
-                            /* Check for INT(SampFreq/8000) == SampFreq/8000 */    
+
+                            /* Check for INT(SampFreq/8000) == SampFreq/8000 */
                             if((sampleFreq % frameTime) == 0)
                             {
                                 min -= 1;
@@ -315,26 +315,26 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
    #ifdef FB_TOLERANCE_TEST
                             expected_fb = ((sampleFreq * 0x2000) / frameTime);
    #endif
-                       
+
                             asm("stw %0, dp[g_speed]"::"r"(mid << 16));
-   
-                            if (usb_speed == XUD_SPEED_HS) 
+
+                            if (usb_speed == XUD_SPEED_HS)
                                 mid *= NUM_USB_CHAN_IN*4;
-                            else 
+                            else
                                 mid *= NUM_USB_CHAN_IN_A1*3;
-   
+
                             asm("stw %0, %1[0]"::"r"(mid),"r"(p_inZeroBuff));
-                       
+
                             /* Reset FB */
-                            /* Note, Endpoint 0 will hold off host for a sufficient period to allow out feedback 
-                             * to stabilise (i.e. sofCount == 128 to fire) */ 
+                            /* Note, Endpoint 0 will hold off host for a sufficient period to allow out feedback
+                             * to stabilise (i.e. sofCount == 128 to fire) */
                             sofCount = 0;
                             clocks = 0;
                             remnant = 0;
-                    
-                        }  
+
+                        }
                         /* Ideally we want to wait for handshake (and pass back up) here.  But we cannot keep this
-                        * thread locked, it must stay responsive to packets/SOFs.  So, set a flag and check for 
+                        * thread locked, it must stay responsive to packets/SOFs.  So, set a flag and check for
                         * handshake elsewhere */
                         /* Pass on sample freq change to decouple */
                         SET_SHARED_GLOBAL0(g_freqChange, SET_SAMPLE_FREQ);
@@ -343,8 +343,8 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
                     }
                     else
                     {
-                        sampleFreq = inuint(c_aud_ctl);         
-                        
+                        sampleFreq = inuint(c_aud_ctl);
+
                         SET_SHARED_GLOBAL0(g_freqChange, tmp);                /* Set command */
                         SET_SHARED_GLOBAL(g_freqChange_sampFreq, sampleFreq); /* Set flag */
                         SET_SHARED_GLOBAL(g_freqChange_flag, tmp);
@@ -358,14 +358,14 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
                                                 /* (previously used 63 instead of 127) */
 
             case inuint_byref(c_sof, u_tmp):
-               
-                /* NOTE our feedback will be wrong for a couple of SOF's after a SF change due to 
-                 * lastClock being incorrect */ 
+
+                /* NOTE our feedback will be wrong for a couple of SOF's after a SF change due to
+                 * lastClock being incorrect */
                 asm("#sof");
-                
+
                 /* Get MCLK count */
-                asm (" getts %0, res[%1]" : "=r" (u_tmp) : "r" (p_off_mclk));   
-              
+                asm (" getts %0, res[%1]" : "=r" (u_tmp) : "r" (p_off_mclk));
+
                 GET_SHARED_GLOBAL(freqChange, g_freqChange);
                 if(freqChange == SET_SAMPLE_FREQ)
                 {
@@ -377,34 +377,34 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
                     unsigned mask = MASK_16_13, usb_speed;
 
                     GET_SHARED_GLOBAL(usb_speed, g_curUsbSpeed);
-                    
+
                     if(usb_speed != XUD_SPEED_HS)
                         mask = MASK_16_10;
-                    
+
                     /* Number of MCLKS this SOF, approx 125 * 24 (3000), sample by sample rate */
                     GET_SHARED_GLOBAL(cycles, g_curSamFreqMultiplier);
                     cycles = ((int)((short)(u_tmp - lastClock))) * cycles;
-                
+
                     /* Any odd bits (lower than 16.23) have to be kept seperate */
-                    remnant += cycles & mask;                                   
-                
-                    /* Add 16.13 bits into clock count */  
-                    clocks += (cycles & ~mask) + (remnant & ~mask);      
+                    remnant += cycles & mask;
+
+                    /* Add 16.13 bits into clock count */
+                    clocks += (cycles & ~mask) + (remnant & ~mask);
 
                     /* and overflow from odd bits. Remove overflow from odd bits. */
-                    remnant &= mask;                                                             
-                
-                    /* Store MCLK for next time around... */
-                    lastClock = u_tmp;                                                    
+                    remnant &= mask;
 
-                    /* Reset counts based on SOF counting.  Expect 16ms (128 HS SOFs/16 FS SOFS) per feedback poll 
-                     * We always count 128 SOFs, so 16ms @ HS, 128ms @ FS */   
-                    if(sofCount == 128)  
+                    /* Store MCLK for next time around... */
+                    lastClock = u_tmp;
+
+                    /* Reset counts based on SOF counting.  Expect 16ms (128 HS SOFs/16 FS SOFS) per feedback poll
+                     * We always count 128 SOFs, so 16ms @ HS, 128ms @ FS */
+                    if(sofCount == 128)
                     {
                         sofCount = 0;
 #ifdef FB_TOLERANCE_TEST
                         if (clocks > (expected_fb - FB_TOLERANCE) &&
-                            clocks < (expected_fb + FB_TOLERANCE)) 
+                            clocks < (expected_fb + FB_TOLERANCE))
 #endif
                         {
                             int usb_speed;
@@ -412,24 +412,24 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
                             //fb_clocks = clocks;
 
                             GET_SHARED_GLOBAL(usb_speed, g_curUsbSpeed);
-        
-                            if (usb_speed == XUD_SPEED_HS)  
-                            {                     
+
+                            if (usb_speed == XUD_SPEED_HS)
+                            {
                                 (fb_clocks, unsigned[])[0] = clocks;
                             }
-                            else 
+                            else
                             {
                                 (fb_clocks, unsigned[])[0] = clocks>>2;
                             }
                         }
 #ifdef FB_TOLERANCE_TEST
-                        else 
+                        else
                         {
                         }
 #endif
                         clocks = 0;
                     }
-			
+
                     sofCount++;
                 }
             break;
@@ -441,12 +441,12 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
             case XUD_SetData_Select(c_aud_in, ep_aud_in, tmp):
             {
                 /* Inform stream that buffer sent */
-                SET_SHARED_GLOBAL0(g_aud_to_host_flag, bufferIn+1);             
+                SET_SHARED_GLOBAL0(g_aud_to_host_flag, bufferIn+1);
             }
             break;
 #endif
-                
-#ifdef OUTPUT 
+
+#ifdef OUTPUT
             /* Feedback Pipe */
             case XUD_SetData_Select(c_aud_fb, ep_aud_fb, tmp):
             {
@@ -455,33 +455,33 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
                 int x;
 
                 asm("#aud fb");
-                
+
                 asm("ldaw %0, dp[fb_clocks]":"=r"(x));
                 GET_SHARED_GLOBAL(usb_speed, g_curUsbSpeed);
-        
-                if (usb_speed == XUD_SPEED_HS)  
-                {                     
+
+                if (usb_speed == XUD_SPEED_HS)
+                {
                     XUD_SetReady_In(ep_aud_fb, fb_clocks, 4);
                 }
-                else 
+                else
                 {
                     XUD_SetReady_In(ep_aud_fb, fb_clocks, 3);
                 }
             }
             break;
-            
+
             /* Audio HOST -> DEVICE */
             case XUD_GetData_Select(c_aud_out, ep_aud_out, tmp):
             {
                 asm("#h->d aud data");
 
                 GET_SHARED_GLOBAL(aud_from_host_buffer, g_aud_from_host_buffer);
- 
+
                 write_via_xc_ptr(aud_from_host_buffer, tmp);
-                
+
                 /* Sync with decouple thread */
                 SET_SHARED_GLOBAL0(g_aud_from_host_flag, 1);
-             }   
+             }
                 break;
 #endif
 
@@ -491,40 +491,40 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
 
             /* Get buffer data from host - MIDI OUT from host always into a single buffer */
             /* Write datalength (tmp) into buffer[0], data stored in buffer[4] onwards */
-            midi_data_remaining_to_device = tmp;           
-                    
+            midi_data_remaining_to_device = tmp;
+
             midi_from_host_rdptr = midi_from_host_buffer;
-           
-            if (midi_data_remaining_to_device) 
+
+            if (midi_data_remaining_to_device)
             {
                 read_via_xc_ptr(datum, midi_from_host_rdptr);
                 outuint(c_midi, datum);
-                midi_from_host_rdptr += 4;              
+                midi_from_host_rdptr += 4;
                 midi_data_remaining_to_device -= 4;
-            }                        
+            }
             break;
- 
-        /* MIDI IN to host */                  
-        case XUD_SetData_Select(c_midi_to_host, ep_midi_to_host, tmp): 
+
+        /* MIDI IN to host */
+        case XUD_SetData_Select(c_midi_to_host, ep_midi_to_host, tmp):
             asm("#midi d->h");
 
             /* The buffer has been sent to the host, so we can ack the midi thread */
-            if (midi_data_collected_from_device != 0) 
+            if (midi_data_collected_from_device != 0)
             {
                 /* Swap the collecting and sending buffer */
                 swap(midi_to_host_buffer_being_collected, midi_to_host_buffer_being_sent);
-                
+
                 /* Request to send packet */
                 XUD_SetReady_InPtr(ep_midi_to_host, midi_to_host_buffer_being_sent, midi_data_collected_from_device);
 
                 /* Mark as waiting for host to poll us */
-                midi_waiting_on_send_to_host = 1;                                                                                                                  
+                midi_waiting_on_send_to_host = 1;
                 /* Reset the collected data count */
                 midi_data_collected_from_device = 0;
             }
             else
             {
-                midi_waiting_on_send_to_host = 0;              
+                midi_waiting_on_send_to_host = 0;
             }
           break;
 #endif
@@ -534,7 +534,7 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
         case XUD_GetData_Select(c_iap_from_host, ep_iap_from_host, tmp):
             asm("#iap h->d");
             if(tmp >= 0)
-            {   
+            {
                 iap_data_remaining_to_device = tmp;
 
                 if(iap_data_remaining_to_device)
@@ -546,7 +546,7 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
                     /* Send out first byte in buffer */
                     datum_iap = iap_from_host_buffer[0];
                     outuint(c_iap, datum_iap);
-                    
+
                     /* Set read ptr to next byte in buffer */
                     iap_from_host_rdptr = 1;
                     iap_data_remaining_to_device -= 1;
@@ -559,16 +559,16 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
                 iap_data_collected_from_device = 0;
             }
             break;
- 
-        /* IAP IN to host */                  
-        case XUD_SetData_Select(c_iap_to_host, ep_iap_to_host, tmp): 
+
+        /* IAP IN to host */
+        case XUD_SetData_Select(c_iap_to_host, ep_iap_to_host, tmp):
             asm("#iap d->h");
-            
+
             /* Send out an iAP packet to host, ACK last msg from iAP to let it know we can move on..*/
             iap_send_ack(c_iap);
-            break;  /* IAP IN to host */                  
-        
-        case XUD_SetData_Select(c_iap_to_host_int, ep_iap_to_host_int, tmp): 
+            break;  /* IAP IN to host */
+
+        case XUD_SetData_Select(c_iap_to_host_int, ep_iap_to_host_int, tmp):
             asm("#iap int d->h");
             /* Do nothing.. */
             break;
@@ -586,27 +586,27 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
 #endif
 
 #ifdef MIDI
-            /* Received word from MIDI thread - Check for ACK or Data */                 
+            /* Received word from MIDI thread - Check for ACK or Data */
             case midi_get_ack_or_data(c_midi, is_ack, datum):
-                if (is_ack) 
+                if (is_ack)
                 {
                     /* An ack from the midi/uart thread means it has accepted some data we sent it
                      * we are okay to send another word */
-                    if (midi_data_remaining_to_device <= 0) 
+                    if (midi_data_remaining_to_device <= 0)
                     {
                         /* We have read an entire packet - Mark ready to receive another */
-                        XUD_SetReady_OutPtr(ep_midi_from_host, midi_from_host_buffer);              
+                        XUD_SetReady_OutPtr(ep_midi_from_host, midi_from_host_buffer);
                     }
-                    else 
+                    else
                     {
                         /* Read another word from the fifo and output it to MIDI thread */
                         read_via_xc_ptr(datum, midi_from_host_rdptr);
-                        outuint(c_midi, datum);        
-                        midi_from_host_rdptr += 4;              
+                        outuint(c_midi, datum);
+                        midi_from_host_rdptr += 4;
                         midi_data_remaining_to_device -= 4;
-                    }         
+                    }
                 }
-                else 
+                else
                 {
                     /* The midi/uart thread has sent us some data - handshake back */
                     midi_send_ack(c_midi);
@@ -618,22 +618,22 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
                         write_via_xc_ptr(p, datum);
                         midi_data_collected_from_device += 4;
                     }
-                    else 
+                    else
                     {
-                        // Too many events from device - drop 
-                    } 
-                
+                        // Too many events from device - drop
+                    }
+
                     // If we are not sending data to the host then initiate it
-                    if (!midi_waiting_on_send_to_host) 
+                    if (!midi_waiting_on_send_to_host)
                     {
                         swap(midi_to_host_buffer_being_collected, midi_to_host_buffer_being_sent);
- 
+
                         // Signal other side to swap
                         XUD_SetReady_InPtr(ep_midi_to_host, midi_to_host_buffer_being_sent, midi_data_collected_from_device);
                         midi_data_collected_from_device = 0;
-                        midi_waiting_on_send_to_host = 1;                  
+                        midi_waiting_on_send_to_host = 1;
                     }
-                }          
+                }
                 break;
 #endif  /* ifdef MIDI */
 
@@ -641,16 +641,16 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
             /* Received word from iap thread - Check for ACK or Data */
             case iap_get_ack_or_reset_or_data(c_iap, is_ack_iap, is_reset, datum_iap):
 
-                if (is_ack_iap) 
+                if (is_ack_iap)
                 {
                     /* An ack from the iap/uart thread means it has accepted some data we sent it
                      * we are okay to send another word */
-                    if (iap_data_remaining_to_device == 0) 
+                    if (iap_data_remaining_to_device == 0)
                     {
                         /* We have read an entire packet - Mark ready to receive another */
                         XUD_SetReady_Out(ep_iap_from_host, iap_from_host_buffer);
                     }
-                    else 
+                    else
                     {
                         /* Read another byte from the fifo and output it to iap thread */
                         datum_iap = iap_from_host_buffer[iap_from_host_rdptr];
@@ -661,13 +661,13 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
                 }
                 else
                 {
-                    if (iap_expected_data_length == 0) 
+                    if (iap_expected_data_length == 0)
                     {
                         /* Expect a length from iAP core */
                         iap_send_ack(c_iap);
                         iap_expected_data_length = datum_iap;
-                    } 
-                    else 
+                    }
+                    else
                     {
                         if (iap_data_collected_from_device < IAP_USB_BUFFER_TO_HOST_SIZE)
                         {
@@ -675,14 +675,14 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
                             iap_to_host_buffer[iap_data_collected_from_device] = datum_iap;
                             iap_data_collected_from_device += 1;
                         }
-                        else 
+                        else
                         {
-                           // Too many events from device - drop 
-                        } 
+                           // Too many events from device - drop
+                        }
 
                         /* Once we have the whole message, sent it to host */
                         /* Note we don't ack the last byte yet... */
-                        if (iap_data_collected_from_device == iap_expected_data_length) 
+                        if (iap_data_collected_from_device == iap_expected_data_length)
                         {
                             XUD_SetReady_In(ep_iap_to_host_int, gc_zero_buffer, 0);
                             XUD_SetReady_In(ep_iap_to_host, iap_to_host_buffer, iap_data_collected_from_device);

@@ -1,14 +1,14 @@
 /**
  * @file    dbtable.h
  * @brief   128 entry + neg inf db table from -inf to 0xffffffff
- * @author  Ross Owen, XMOS Semiconductor 
+ * @author  Ross Owen, XMOS Semiconductor
  * @version 1.0
  */
 
 #ifndef _DBTABLE_
 #define _DBTABLE_
 
-static unsigned dbTable[129] = 
+static unsigned dbTable[129] =
 {
     4294967295, /* 0 -> 0xffffffff */
     3827893631,

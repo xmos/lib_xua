@@ -1,11 +1,12 @@
 USB Audio Shared
 ................
 
-:Stable release:  unreleased (apart from within usb audio ref designs)
+:Latest release: 1.0.0rc0
+:Maintainer: xross
+:Description: USB Audio Shared Components. For use in the XMOS USB Audio Refererence Designs.
 
-:Status:  Feature complete, mature
+Required software (dependencies)
+================================
 
-:Maintainer:  XMOS
-
-:Description:  USB Audio Shared Components
+  * sc_util (git://github.com/xcore/sc_util)
 

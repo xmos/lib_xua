@@ -1,5 +1,5 @@
 // GENERATED CODE - DO NOT EDIT
-// Comments are in the generator 
+// Comments are in the generator
 #include <xs1.h>
 #include <stdio.h>
 #pragma unsafe arrays
@@ -449,7 +449,7 @@ void adatReceiver48000(buffered in port:32 p, chanend oChan) {
 }
 
 // GENERATED CODE - DO NOT EDIT
-// Comments are in the generator 
+// Comments are in the generator
 #include <xs1.h>
 #include <stdio.h>
 #pragma unsafe arrays

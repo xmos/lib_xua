@@ -10,7 +10,7 @@
 #error DFU_PID not defined!
 #endif
 
-#ifndef DFU_BCD_DEVICE 
+#ifndef DFU_BCD_DEVICE
 #error DFU_BCD_DEVICE not defined!
 #endif
 
@@ -36,12 +36,12 @@ unsigned char DFUdevDesc[] = {
     0x00,                           /* 5  bDeviceSubClass:   See interface */
     0,                              /* 6  bDeviceProtocol:   See interface */
     64,                             /* 7  bMaxPacketSize */
-    (DFU_VENDOR_ID & 0xFF),         /* 8  idVendor */ 
-    (DFU_VENDOR_ID >> 8),           /* 9  idVendor */ 
-    (DFU_PID & 0xFF),               /* 10 idProduct */ 
-    (DFU_PID >> 8),                 /* 11 idProduct */ 
-    (DFU_BCD_DEVICE & 0xFF),        /* 12 bcdDevice : Device release number */ 
-    (DFU_BCD_DEVICE >> 8),          /* 13 bcdDevice : Device release number */ 
+    (DFU_VENDOR_ID & 0xFF),         /* 8  idVendor */
+    (DFU_VENDOR_ID >> 8),           /* 9  idVendor */
+    (DFU_PID & 0xFF),               /* 10 idProduct */
+    (DFU_PID >> 8),                 /* 11 idProduct */
+    (DFU_BCD_DEVICE & 0xFF),        /* 12 bcdDevice : Device release number */
+    (DFU_BCD_DEVICE >> 8),          /* 13 bcdDevice : Device release number */
     DFU_MANUFACTURER_STR_INDEX,     /* 14 iManufacturer : Index of manufacturer string */
     DFU_PRODUCT_STR_INDEX,          /* 15 iProduct : Index of product string descriptor */
     DFU_SERIAL_STR_INDEX,           /* 16 iSerialNumber : Index of serial number decriptor */
@@ -49,7 +49,7 @@ unsigned char DFUdevDesc[] = {
 };
 
 unsigned char DFUcfgDesc[] = {
-    /* Standard USB device descriptor */ 
+    /* Standard USB device descriptor */
     0x09,                           /* 0  bLength */
     USB_CONFIGURATION,              /* 1  bDescriptorType */
     0x1b,                           /* 2  wTotalLength */

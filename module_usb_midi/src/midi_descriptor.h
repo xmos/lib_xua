@@ -1,4 +1,4 @@
-/* This file contains the MID device descriptor 
+/* This file contains the MID device descriptor
    It is intended to be included in the main device descriptor definition */
 
 /* MIDI Descriptors */

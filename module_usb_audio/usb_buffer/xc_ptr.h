@@ -31,4 +31,4 @@ inline xc_ptr array_to_xc_ptr(const unsigned a[])
 #define GET_SHARED_GLOBAL(x, g) asm volatile("ldw %0, dp[" #g "]":"=r"(x)::"memory")
 #define SET_SHARED_GLOBAL(g, v) asm volatile("stw %0, dp[" #g "]"::"r"(v):"memory")
 
-#endif 
+#endif
