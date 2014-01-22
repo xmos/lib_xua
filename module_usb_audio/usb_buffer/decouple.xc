@@ -11,7 +11,7 @@
 #define MAX(x,y) ((x)>(y) ? (x) : (y))
 
 #define CLASS_TWO_PACKET_SIZE ((((MAX_FREQ+7999)/8000))+3)     // Samples per channel
-#define CLASS_ONE_PACKET_SIZE  ((((MAX_FREQ_A1+999)/1000))+3)  // Samples per channel
+#define CLASS_ONE_PACKET_SIZE  ((((MAX_FREQ_FS+999)/1000))+3)  // Samples per channel
 
 /* TODO user SLOTSIZE to potentially save memory */
 #define BUFF_SIZE_OUT MAX(4 * CLASS_TWO_PACKET_SIZE * NUM_USB_CHAN_OUT, 4 * CLASS_ONE_PACKET_SIZE * NUM_USB_CHAN_OUT_FS)
@@ -38,7 +38,7 @@ unsigned g_numUsbChanOut = NUM_USB_CHAN_OUT;
 unsigned g_numUsbChanIn = NUM_USB_CHAN_IN;
 
 #define MAX_DEVICE_AUD_PACKET_SIZE_CLASS_TWO ((MAX_FREQ/8000+1)*NUM_USB_CHAN_IN*4)
-#define MAX_DEVICE_AUD_PACKET_SIZE_CLASS_ONE (((MAX_FREQ_A1/1000+1)*NUM_USB_CHAN_IN_FS*3)+4)
+#define MAX_DEVICE_AUD_PACKET_SIZE_CLASS_ONE (((MAX_FREQ_FS/1000+1)*NUM_USB_CHAN_IN_FS*3)+4)
 
 #define MAX_DEVICE_AUD_PACKET_SIZE (MAX(MAX_DEVICE_AUD_PACKET_SIZE_CLASS_ONE, MAX_DEVICE_AUD_PACKET_SIZE_CLASS_TWO))
 
@@ -508,7 +508,7 @@ __builtin_unreachable();
             }
             else
             {
-                if (totalSampsToWrite < 0 || totalSampsToWrite*3*NUM_USB_CHAN_IN_A1 > (MAX_DEVICE_AUD_PACKET_SIZE_CLASS_ONE))
+                if (totalSampsToWrite < 0 || totalSampsToWrite*3*NUM_USB_CHAN_IN_FS > (MAX_DEVICE_AUD_PACKET_SIZE_CLASS_ONE))
                 {
                     totalSampsToWrite = 0;
                 }
