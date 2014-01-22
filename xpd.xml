@@ -16,6 +16,8 @@
     <location>git://git/apps/sc_usb_audio</location>
     <name>USB Audio Shared Components</name>
     <maintainer>xross</maintainer>
+    <partnumber>XM-004719-DH</partnumber>
+    <subpartnumber>XM-004720-SM</subpartnumber>
     <vendor>XMOS</vendor>
     <version_defines>
         <version_define name = "BCD_DEVICE_J" format = "%MAJOR%"></version_define>
