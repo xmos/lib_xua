@@ -303,18 +303,20 @@ unsigned char hidReportDescriptor[] = {
 
 #define CFG_TOTAL_LENGTH_A2     (CONFIG_DESC_LENGTH + INTERFACE_ASS_LENGTH + AUD_CTRL_INT_LENGTH + (AUD_INT_EP_LEN) + (INPUT_INTERFACES * 55) + (OUTPUT_INTERFACES * 62) + (MIDI_LENGTH) + (DFU_INTERFACES * 18)  + TLEN_AC + (MIXER_LENGTH) + IAP_LENGTH + INPUT_ALT_LENGTH + OUTPUT_ALT_LENGTH + HID_LENGTH)
 
-/* We need to this for patching descriptor for audio class 1.0 mode changing */
-#define STREAMING_ALT1_OFFSET (CONFIG_DESC_LENGTH + INTERFACE_ASS_LENGTH + AUD_CTRL_INT_LENGTH + TLEN_AC + AUD_INT_EP_LEN + 9 + 9 + 0x10)
+/* We need to this for patching descriptors for FS/HS switching */
+#define STREAMING_OUTPUT_ALT1_OFFSET (CONFIG_DESC_LENGTH + INTERFACE_ASS_LENGTH + AUD_CTRL_INT_LENGTH + TLEN_AC + AUD_INT_EP_LEN + 9 + 9)
+
+#define STREAMING_INPUT_ALT1_OFFSET (CONFIG_DESC_LENGTH + INTERFACE_ASS_LENGTH + AUD_CTRL_INT_LENGTH + TLEN_AC + AUD_INT_EP_LEN + (OUTPUT_INTERFACES *62)+OUTPUT_ALT_LENGTH + 9 + 9)
 
 /* Max packet sizes:
  * Samples per channel. e.g (192000+7999/8000) = 24
  * Must allow 1 sample extra per chan (24 + 1) = 25
  * Multiply by number of channels and bytes      25 * 2 * 4 = 200 bytes
 */
-#define MAX_PACKET_SIZE_OUT_HS  ((((MAX_FREQ+7999)/8000)+1) * NUM_USB_CHAN_OUT * 4)
-#define MAX_PACKET_SIZE_OUT_FS  ((((MAX_FREQ_A1+999)/1000)+1) * NUM_USB_CHAN_OUT_FS * 3)    // Samples per channel
-#define MAX_PACKET_SIZE_IN_HS   ((((MAX_FREQ+7999)/8000)+1) * NUM_USB_CHAN_IN * 4)
-#define MAX_PACKET_SIZE_IN_FS   ((((MAX_FREQ_A1+999)/1000)+1) * NUM_USB_CHAN_IN_FS * 3)     // Samples per channel
+#define MAX_PACKET_SIZE_OUT_HS  ((((MAX_FREQ+7999)/8000)+1) * NUM_USB_CHAN_OUT * SAMPLE_SUBSLOT_SIZE_HS)
+#define MAX_PACKET_SIZE_OUT_FS  ((((MAX_FREQ_FS+999)/1000)+1) * NUM_USB_CHAN_OUT_FS * SAMPLE_SUBSLOT_SIZE_FS)    // Samples per channel
+#define MAX_PACKET_SIZE_IN_HS   ((((MAX_FREQ+7999)/8000)+1) * NUM_USB_CHAN_IN * SAMPLE_SUBSLOT_SIZE_HS)
+#define MAX_PACKET_SIZE_IN_FS   ((((MAX_FREQ_FS+999)/1000)+1) * NUM_USB_CHAN_IN_FS * SAMPLE_SUBSLOT_SIZE_FS)     // Samples per channel
 
 /* Configuration Descriptor for Audio 2.0 (HS) operation */
 unsigned char cfgDesc_Audio2[] =
