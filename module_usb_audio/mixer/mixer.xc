@@ -10,12 +10,12 @@
 #define FAST_MIXER 1
 #warning USING FAST MIXER
 
-#ifdef OUT_VOLUME_IN_MIXER
+//#ifdef OUT_VOLUME_IN_MIXER
 static unsigned int multOut_array[NUM_USB_CHAN_OUT + 1];
 static xc_ptr multOut;
-#endif
+//#endif
 #ifdef IN_VOLUME_IN_MIXER
-unsigned int multIn_array[NUM_USB_CHAN_IN + 1];
+static unsigned int multIn_array[NUM_USB_CHAN_IN + 1];
 static xc_ptr multIn;
 #endif
 
@@ -636,11 +636,9 @@ void mixer(chanend c_mix_in, chanend c_mix_out, chanend c_mix_ctl)
     multOut = array_to_xc_ptr((multOut_array,unsigned[]));
     multIn = array_to_xc_ptr((multIn_array,unsigned[]));
     samples = array_to_xc_ptr((samples_array,unsigned[]));
-    samples_to_host_map =
-      array_to_xc_ptr((samples_to_host_map_array,unsigned[]));
+    samples_to_host_map = array_to_xc_ptr((samples_to_host_map_array,unsigned[]));
 
-    samples_to_device_map =
-      array_to_xc_ptr((samples_to_device_map_array,unsigned[]));
+    samples_to_device_map = array_to_xc_ptr((samples_to_device_map_array,unsigned[]));
 
 #if MAX_MIX_COUNT >0
     mix_mult = array_to_xc_ptr((mix_mult_array,unsigned[]));
