@@ -138,7 +138,7 @@ unsigned char devQualDesc_Null[] =
 };
 
 
-#if defined(MIXER) && !defined(AUDIO_PATH_XUS)
+#if defined(MIXER) && !defined(AUDIO_PATH_XUS) && (MAX_MIX_COUNT > 0)
 #warning Extention units on the audio path are required for mixer.  Enabling them now.
 #define AUDIO_PATH_XUS
 #endif

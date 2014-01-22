@@ -821,7 +821,7 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
 
                                 if (usbSpeed == XUD_SPEED_FS)
                                 {
-                                    maxFreq = MAX_FREQ_A1;
+                                    maxFreq = MAX_FREQ_FS;
                                 }
 #endif
 
