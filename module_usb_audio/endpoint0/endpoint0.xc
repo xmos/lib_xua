@@ -589,6 +589,7 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
                 /* Unfortunately we need to munge the descriptors a bit between full and high-speed */
                 if(g_curUsbSpeed == XUD_SPEED_HS)
                 {
+#if (NUM_USB_CHAN_OUT > 0)
                     /* Output interface - Interface 1 */
                     /* Mod bSlotSize */
                     cfgDesc_Audio2[STREAMING_OUTPUT_ALT1_OFFSET+20] = SAMPLE_SUBSLOT_SIZE_HS;
@@ -602,7 +603,8 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
 
                     /* bNrChannels */
                     cfgDesc_Audio2[STREAMING_OUTPUT_ALT1_OFFSET+10] = NUM_USB_CHAN_OUT;
-
+#endif
+#if (NUM_USB_CHAN_IN > 0)
                     /* Input interface - Interface 2 */
                     /* Mod bSlotSize */
                     cfgDesc_Audio2[STREAMING_INPUT_ALT1_OFFSET+20] = SAMPLE_SUBSLOT_SIZE_HS;
@@ -616,10 +618,11 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
 
                     /* bNrChannels */
                     cfgDesc_Audio2[STREAMING_INPUT_ALT1_OFFSET+10] = NUM_USB_CHAN_IN;
-
+#endif                
                 }
                 else
                 {
+#if (NUM_USB_CHAN_OUT > 0)
                     /* Output interface - Interface 1 */
                     /* Mod bSlotSize */
                     cfgDesc_Audio2[STREAMING_OUTPUT_ALT1_OFFSET+20] = SAMPLE_SUBSLOT_SIZE_FS;
@@ -633,7 +636,8 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
 
                     /* bNrChannels */
                     cfgDesc_Audio2[STREAMING_OUTPUT_ALT1_OFFSET+10] = NUM_USB_CHAN_OUT_FS;
-
+#endif
+#if (NUM_USB_CHAN_IN > 0)
                     /* Input interface - Interface 2 */
                     /* Mod bSlotSize */
                     cfgDesc_Audio2[STREAMING_INPUT_ALT1_OFFSET+20] = SAMPLE_SUBSLOT_SIZE_FS;
@@ -647,7 +651,7 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
 
                     /* bNrChannels */
                     cfgDesc_Audio2[STREAMING_INPUT_ALT1_OFFSET+10] = NUM_USB_CHAN_IN_FS;
-
+#endif
                 }
 
                 retVal = USB_StandardRequests(ep0_out, ep0_in,
