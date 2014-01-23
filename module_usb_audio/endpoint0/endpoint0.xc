@@ -660,6 +660,14 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
                     null, 0,
                     null, 0,
                     strDescs, sizeof(strDescs)/sizeof(strDescs[0]), sp, c_usb_test, g_curUsbSpeed);
+#elif (AUDIO_CLASS == 1)
+                /* Return Audio 1.0 Descriptors in FS, should never be in HS! */
+                 retVal = USB_StandardRequests(ep0_out, ep0_in,
+                    null, 0,
+                    null, 0,
+                    devDesc_Audio1, sizeof(devDesc_Audio1),
+                    cfgDesc_Audio1, sizeof(cfgDesc_Audio1),
+                    strDescs, sizeof(strDescs)/sizeof(strDescs[0]), sp, c_usb_test, g_curUsbSpeed);
 #else
                 /* Return Audio 2.0 Descriptors with Null device as fallback */
                 retVal = USB_StandardRequests(ep0_out, ep0_in,
