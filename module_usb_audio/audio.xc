@@ -351,27 +351,26 @@ static inline void doI2SClocks(unsigned divide)
 #else /* ifndef CODEC_MASTER */
 
     /* Wait for LRCLK edge */
-    p_lrclk when pinseq(1) :> void;
     p_lrclk when pinseq(0) :> void;
     p_lrclk when pinseq(1) :> void;
     p_lrclk when pinseq(0) :> void;
-    p_lrclk when pinseq(1) :> void @ tmp;
-    tmp += 96;
-
-#if (I2S_CHANS_ADC != 0)
-#pragma loop unroll
-    for(int i = 0; i < I2S_WIRES_ADC; i++)
-    {
-        asm("setpt res[%0], %1"::"r"(p_i2s_adc[i]),"r"(tmp));
-    }
-#endif
-
+    p_lrclk when pinseq(1) :> void;
+    p_lrclk when pinseq(0) :> void @ tmp;
+    tmp+=95;
 #if (I2S_CHANS_DAC != 0)
-    tmp+=33;
 #pragma loop unroll
     for(int i = 0; i < I2S_WIRES_DAC; i++)
     {
         p_i2s_dac[i] @ tmp <: 0;
+    }
+#endif
+
+#if (I2S_CHANS_ADC != 0)
+    tmp += 33;
+#pragma loop unroll
+    for(int i = 0; i < I2S_WIRES_ADC; i++)
+    {
+        asm("setpt res[%0], %1"::"r"(p_i2s_adc[i]),"r"(tmp));
     }
 #endif
 
