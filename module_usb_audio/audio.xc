@@ -278,75 +278,68 @@ static inline void doI2SClocks(unsigned divide)
     }
 
 #ifndef CODEC_MASTER
-    /* b_clk must start high */
-    p_bclk <: 0x80000000;
-    sync(p_bclk);
-
 #if (DSD_CHANS_DAC > 0)
     if(dsdMode == DSD_MODE_OFF)
     {
 #endif
-    /* Clear I2S port buffers */
-    clearbuf(p_lrclk);
+        /* b_clk must start high */
+        p_bclk <: 0x80000000;
+        sync(p_bclk);
+        /* Clear I2S port buffers */
+        clearbuf(p_lrclk);
 
 #if (I2S_CHANS_DAC != 0)
-    for(int i = 0; i < I2S_WIRES_DAC; i++)
-    {
-        clearbuf(p_i2s_dac[i]);
-    }
-#endif
-
-#if (I2S_CHANS_ADC != 0)
-    for(int i = 0; i < I2S_WIRES_ADC; i++)
-    {
-        clearbuf(p_i2s_adc[i]);
-    }
-#endif
-
-    if(divide == 1)
-    {
-        p_lrclk <: 0 @ tmp;
-        tmp += 100;
-
-        /* Since BCLK is free-running, setup outputs/inputs at a know point in the future */
-#if (I2S_CHANS_DAC != 0)
-#pragma loop unroll
         for(int i = 0; i < I2S_WIRES_DAC; i++)
         {
-            p_i2s_dac[i] @ tmp <: 0;
+            clearbuf(p_i2s_dac[i]);
         }
 #endif
-
-        p_lrclk @ tmp <: 0x7FFFFFFF;
-
 
 #if (I2S_CHANS_ADC != 0)
         for(int i = 0; i < I2S_WIRES_ADC; i++)
         {
-            //p_i2s_adc[0]  @ (tmp - 1) :> void;
-            asm("setpt res[%0], %1"::"r"(p_i2s_adc[i]),"r"(tmp-1));
             clearbuf(p_i2s_adc[i]);
         }
 #endif
-
-    }
-    else
-    {
-        clearbuf(p_bclk);
-
-#if (I2S_CHANS_DAC != 0)
-        /* Prefill the ports so data is input in advance */
-        for(int i = 0; i < I2S_WIRES_DAC; i++)
+        if(divide == 1)
         {
-            p_i2s_dac[i] <: 0;
-        }
+            p_lrclk <: 0 @ tmp;
+            tmp += 100;
+
+            /* Since BCLK is free-running, setup outputs/inputs at a known point in the future */
+#if (I2S_CHANS_DAC != 0)
+#pragma loop unroll
+            for(int i = 0; i < I2S_WIRES_DAC; i++)
+            {
+                p_i2s_dac[i] @ tmp <: 0;
+            }
 #endif
 
+            p_lrclk @ tmp <: 0x7FFFFFFF;
 
-        p_lrclk <: 0x7FFFFFFF;
-        doI2SClocks(divide);
 
-    }
+#if (I2S_CHANS_ADC != 0)
+            for(int i = 0; i < I2S_WIRES_ADC; i++)
+            {
+                asm("setpt res[%0], %1"::"r"(p_i2s_adc[i]),"r"(tmp-1));
+            }
+#endif
+        }
+        else
+        {
+            clearbuf(p_bclk);
+
+#if (I2S_CHANS_DAC != 0)
+            /* Prefill the ports so data is input in advance */
+            for(int i = 0; i < I2S_WIRES_DAC; i++)
+            {
+                p_i2s_dac[i] <: 0;
+            }
+#endif
+            p_lrclk <: 0x7FFFFFFF;
+            doI2SClocks(divide);
+
+        }
 #if (DSD_CHANS_DAC > 0)
     } /* if (!dsdMode) */
     else
@@ -363,22 +356,24 @@ static inline void doI2SClocks(unsigned divide)
     p_lrclk when pinseq(1) :> void;
     p_lrclk when pinseq(0) :> void;
     p_lrclk when pinseq(1) :> void @ tmp;
-    tmp += 97;
+    tmp += 96;
+
+#if (I2S_CHANS_ADC != 0)
+#pragma loop unroll
+    for(int i = 0; i < I2S_WIRES_ADC; i++)
+    {
+        asm("setpt res[%0], %1"::"r"(p_i2s_adc[i]),"r"(tmp));
+    }
+#endif
 
 #if (I2S_CHANS_DAC != 0)
+    tmp+=33;
 #pragma loop unroll
     for(int i = 0; i < I2S_WIRES_DAC; i++)
     {
         p_i2s_dac[i] @ tmp <: 0;
     }
 #endif
-
-#pragma loop unroll
-    for(int i = 0; i < I2S_WIRES_ADC; i++)
-    {
-        asm("setpt res[%0], %1"::"r"(p_i2s_adc[i]),"r"(tmp-1));
-        clearbuf(p_i2s_adc[i]);
-    }
 
     /* TODO In master mode, the i/o loop assumes L/RCLK = 32bit clocks.  We should check this every interation
      * and resync if we got a bclk glitch */
