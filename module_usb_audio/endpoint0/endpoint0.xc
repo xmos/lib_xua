@@ -618,7 +618,7 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
 
                     /* bNrChannels */
                     cfgDesc_Audio2[STREAMING_INPUT_ALT1_OFFSET+10] = NUM_USB_CHAN_IN;
-#endif                
+#endif
                 }
                 else
                 {
