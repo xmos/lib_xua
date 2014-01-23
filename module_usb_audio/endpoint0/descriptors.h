@@ -1662,7 +1662,7 @@ unsigned char oSpeedCfgDesc[] =
 
 
 #define CFG_TOTAL_LENGTH_A1            (18 + AC_TOTAL_LENGTH + (INPUT_INTERFACES * 61) + (OUTPUT_INTERFACES * 70))
-#ifdef AUDIO_CLASS_FALLBACK
+#if defined (AUDIO_CLASS_FALLBACK) || (AUDIO_CLASS == 1)
 unsigned char cfgDesc_Audio1[] =
 {
     /* Configuration descriptor */
