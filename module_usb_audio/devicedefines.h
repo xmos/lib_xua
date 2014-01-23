@@ -162,6 +162,14 @@
 #undef FULL_SPEED_AUDIO_2
 #endif
 
+#if defined(FULL_SPEED_AUDIO_2) && defined(AUDIO_CLASS_FALLBACK)
+#error FULL_SPEED_AUDIO_2 and AUDIO_CLASS_FALLBACK enablaed!
+#endif
+
+#if (AUDIO_CLASS == 1) && defined(FULL_SPEED_AUDIO_2)
+#error AUDIO_CLASS set to 1 and FULL_SPEED_AUDIO_2 enabled!
+#endif
+
 /* Number of IS2 chans to DAC */
 #ifndef I2S_CHANS_DAC
 #error I2S_CHANS_DAC not defined
