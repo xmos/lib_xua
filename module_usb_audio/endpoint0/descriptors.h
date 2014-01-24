@@ -1834,11 +1834,8 @@ unsigned char cfgDesc_Audio1[] =
     0x05,                           /* ENDPOINT */
     0x01,                           /* endpointAddress - D7, direction (0 OUT, 1 IN). D6..4 reserved (0). D3..0 endpoint no. */
     0x05,                           /* attributes - isochronous async */
-#if defined(OUTPUT) && defined(INPUT)
-    0x26, 0x01,                     /* maxPacketSize 294  */
-#else
-    0x46, 0x02,                     /* maxPacketSize 582 */
-#endif
+    MAX_PACKET_SIZE_OUT_FS&0xff,        /* 4  wMaxPacketSize (Typically 294 bytes)*/
+    (MAX_PACKET_SIZE_OUT_FS&0xff00)>>8, /* 5  wMaxPacketSize */
     0x01,                           /* bInterval */
     0x00,                           /* bRefresh */
     0x81,                           /* bSynchAdddress - address of EP used to communicate sync info */
@@ -1917,11 +1914,8 @@ unsigned char cfgDesc_Audio1[] =
     0x05,                           /* ENDPOINT */
     0x82,                           /* EndpointAddress */
     0x05,                           /* Attributes - isochronous async */
-#if defined(OUTPUT) && defined(INPUT)
-    0x26, 0x01,                     /* maxPacketSize 294  */
-#else
-    0x46, 0x02,                     /* maxPacketSize 582 */
-#endif
+    MAX_PACKET_SIZE_IN_FS&0xff,        /* 4  wMaxPacketSize (Typically 294 bytes)*/
+    (MAX_PACKET_SIZE_IN_FS&0xff00)>>8, /* 5  wMaxPacketSize */
     0x01,                           /* bInterval */
     0x00,                           /* bRefresh */
     0x00,                           /* bSynchAddress */
