@@ -293,7 +293,9 @@ static int mixer1_mix2_flag = (DEFAULT_FREQ > 96000);
 #pragma unsafe arrays
 static void mixer1(chanend c_host, chanend c_mix_ctl, chanend c_mixer2)
 {
+#if (MAX_MIX_COUNT > 0)
     int mixed;
+#endif
     unsigned cmd;
 
     while (1)
@@ -632,7 +634,9 @@ static void mixer2(chanend c_mixer1, chanend c_audio)
 
 void mixer(chanend c_mix_in, chanend c_mix_out, chanend c_mix_ctl)
 {
+#if (MAX_MIX_COUNT > 0)
     chan c;
+#endif
     multOut = array_to_xc_ptr((multOut_array,unsigned[]));
     multIn = array_to_xc_ptr((multIn_array,unsigned[]));
     samples = array_to_xc_ptr((samples_array,unsigned[]));
