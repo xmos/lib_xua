@@ -275,7 +275,7 @@
 /* Device release number in BCD: 0xJJMN */
 #define BCD_DEVICE_J             6
 #define BCD_DEVICE_M             4
-#define BCD_DEVICE_N             3
+#define BCD_DEVICE_N             0
 
 #ifndef BCD_DEVICE
 #define BCD_DEVICE               ((BCD_DEVICE_J << 8) | ((BCD_DEVICE_M & 0xF) << 4) | (BCD_DEVICE_N & 0xF))
