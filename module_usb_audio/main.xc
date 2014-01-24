@@ -352,13 +352,15 @@ void usb_audio_io(chanend c_aud_in, chanend ?c_adc
 #endif
         }
 
+#if defined(MIDI) || defined(IAP)
         /* MIDI/iAP Core */
-#if defined  (MIDI) || defined IAP
         {
             thread_speed();
-#ifdef MIDI
+#if defined(MIDI) && defined (IAP)
+            usb_midi(p_midi_rx, p_midi_tx, clk_midi, c_midi, 0, c_iap, null, null, null);
+#elif defined(MIDI)
             usb_midi(p_midi_rx, p_midi_tx, clk_midi, c_midi, 0, null, null, null, null);
-#else
+#elif defines(IAP)
             iAP(c_iap, null, null, null);
 #endif
         }
@@ -381,13 +383,10 @@ int main()
     chan c_mix_out;
 #ifdef MIDI
     chan c_midi;
-#else
-#define c_midi null
 #endif
 #ifdef IAP
     chan c_iap;
 #endif
-
 #ifdef SU1_ADC_ENABLE
     chan c_adc;
 #else
