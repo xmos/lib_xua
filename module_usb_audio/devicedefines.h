@@ -317,19 +317,6 @@
 #error SAMPLE_BIT_RESOLUTION_FS is too big for SAMPLE_SUBSLOT_SIZE_FS
 #endif
 
-/* By default base the iAP version number on USB BCD_DEVICE */
-#if defined(IAP)
-#ifndef ACCESSORY_FIRMWARE_MAJOR
-#define ACCESSORY_FIRMWARE_MAJOR BCD_DEVICE_J
-#endif
-#ifndef ACCESSORY_FIRMWARE_MINOR
-#define ACCESSORY_FIRMWARE_MINOR BCD_DEVICE_M
-#endif
-#ifndef ACCESSORY_FIRMWARE_POINT
-#define ACCESSORY_FIRMWARE_POINT BCD_DEVICE_N
-#endif
-#endif
-
 /* Addition interfaces based on defines */
 #if defined(DFU) && DFU != 0
 #define DFU_INTERFACES           (1)               /* DFU interface count */
