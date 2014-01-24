@@ -360,7 +360,7 @@ void usb_audio_io(chanend c_aud_in, chanend ?c_adc
             usb_midi(p_midi_rx, p_midi_tx, clk_midi, c_midi, 0, c_iap, null, null, null);
 #elif defined(MIDI)
             usb_midi(p_midi_rx, p_midi_tx, clk_midi, c_midi, 0, null, null, null, null);
-#elif defines(IAP)
+#elif defined(IAP)
             iAP(c_iap, null, null, null);
 #endif
         }
