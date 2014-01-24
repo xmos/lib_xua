@@ -49,7 +49,7 @@
     <version_defines>
         <version_define name = "BCD_DEVICE_J" format = "%MAJOR%"></version_define>
         <version_define name = "BCD_DEVICE_M" format = "%MINOR%"></version_define>
-        <version_define name = "BDC_DEVICE_N" format = "%POINT%"></version_define>
+        <version_define name = "BCD_DEVICE_N" format = "%POINT%"></version_define>
     </version_defines>
     <xpd_version>1.0</xpd_version>
 </xpd>
