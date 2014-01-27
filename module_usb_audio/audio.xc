@@ -146,7 +146,9 @@ static inline void doI2SClocks(unsigned divide)
 #pragma unsafe arrays
 {unsigned, unsigned} static deliver(chanend c_out, chanend ?c_spd_out, unsigned divide, unsigned curSamFreq, chanend ?c_dig_rx, chanend ?c_adc)
 {
+#if (I2S_CHANS_ADC != 0)
 	unsigned sample;
+#endif
     unsigned underflow = 0;
 #if NUM_USB_CHAN_OUT > 0
     unsigned samplesOut[NUM_USB_CHAN_OUT];

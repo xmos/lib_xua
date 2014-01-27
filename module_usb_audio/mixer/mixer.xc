@@ -63,8 +63,9 @@ int samples_to_host_inputs[NUM_USB_CHAN_IN];             /* Audio transmitted to
 int samples_to_host_inputs_buff[NUM_USB_CHAN_IN];        /* Audio transmitted to host i.e. dev inputs */
 #endif
 static int samples_to_host_streams[NUM_USB_CHAN_OUT];    /* Audio stream to host from host */
+#if (MAX_MIX_COUNT > 0)
 static int samples_to_host_outputs[NUM_USB_CHAN_OUT];    /* Device outputs */
-
+#endif
 #if 0
 #pragma xta command "add exclusion mixer1_rate_change"
 #pragma xta command "analyse path mixer1_req mixer1_req"
@@ -522,9 +523,9 @@ static void mixer1(chanend c_host, chanend c_mix_ctl, chanend c_mixer2)
     }
 }
 
+#if (MAX_MIX_COUNT > 0)
 static int mixer2_mix2_flag = (DEFAULT_FREQ > 96000);
 
-#if (MAX_MIX_COUNT > 0)
 #pragma unsafe arrays
 static void mixer2(chanend c_mixer1, chanend c_audio)
 {

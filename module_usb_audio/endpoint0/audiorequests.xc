@@ -15,7 +15,6 @@
 #ifdef MIXER
 #include "mixer.h"
 #endif
-#include <print.h>
 
 #define CS_XU_MIXSEL (0x06)
 
@@ -1098,7 +1097,6 @@ int AudioClassRequests_1(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
     unsigned char buffer[1024];
     int unitID;
     int loop = 1;
-    int i_tmp;
 
     /* Inspect request */
     /* Note we could check sp.bmRequestType.Direction if we wanted to be really careful */
