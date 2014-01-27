@@ -330,8 +330,9 @@ void usb_audio_io(chanend c_aud_in, chanend ?c_adc
 #endif
 )
 {
+#ifdef MIXER
     chan c_mix_out;
-
+#endif
     par
     {
 

@@ -14,7 +14,7 @@
 #define portout(a,b) {__asm__  __volatile__("out res[%0], %1": : "r" (a) , "r" (b));}
 
 #ifdef DFU_FLASH_DEVICE
-#warning Using custom flash spec
+/* Using specified flash device rather than all supported in tools */
 fl_DeviceSpec flash_devices[] = {DFU_FLASH_DEVICE};
 #endif
 
