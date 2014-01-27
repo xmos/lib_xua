@@ -38,6 +38,8 @@ static int clockValid[NUM_CLOCKS];                          /* Store current val
 static int clockInt[NUM_CLOCKS];                            /* Interupt flag for clocks */
 static int clockId[NUM_CLOCKS];
 
+
+#if defined(SPDIF_RX) || defined(ADAT_RX)
 static int abs(int x)
 {
     if (x < 0) return -x;
@@ -67,6 +69,7 @@ static void outInterrupt(chanend c_interruptControl, int value)
         outct(c_interruptControl, XS1_CT_END);
     }
 }
+#endif
 
 #ifdef CLOCK_VALIDITY_CALL
 void VendorClockValidity(int valid);
