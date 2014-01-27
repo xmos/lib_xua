@@ -457,7 +457,7 @@ unsigned char cfgDesc_Audio2[] =
     CS_INTERFACE,                   /* 1  bDescriptorType: 0x24 */
     INPUT_TERMINAL,                 /* 2  bDescriptorSubType: INPUT_TERMINAL */
     ID_IT_USB,                      /* 3  bTerminalID */
-    USB_TERMTYPE_USB_STREAMING&0xff, 
+    USB_TERMTYPE_USB_STREAMING&0xff,
     USB_TERMTYPE_USB_STREAMING>>8,  /* 5  wTerminalType: USB Streaming */
     0x00,                           /* 6  bAssocTerminal */
     ID_CLKSEL,                      /* 7  bCSourceID: ID of Clock Entity */
