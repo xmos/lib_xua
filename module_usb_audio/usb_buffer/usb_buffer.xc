@@ -557,6 +557,9 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
                 XUD_ResetEndpoint(ep_iap_from_host, null);
                 iap_send_reset(c_iap); // What if this happen in the middle of a send/ack?
                 iap_data_collected_from_device = 0;
+                iap_data_remaining_to_device = -1;
+                iap_expected_data_length = 0;
+                iap_from_host_rdptr = 0;
             }
             break;
 
