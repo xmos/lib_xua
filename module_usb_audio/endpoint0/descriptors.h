@@ -457,7 +457,8 @@ unsigned char cfgDesc_Audio2[] =
     CS_INTERFACE,                   /* 1  bDescriptorType: 0x24 */
     INPUT_TERMINAL,                 /* 2  bDescriptorSubType: INPUT_TERMINAL */
     ID_IT_USB,                      /* 3  bTerminalID */
-    (USB_STREAMING&0xff),USB_STREAMING>>8, /* 4  wTerminalType: USB Streaming */
+    USB_TERMTYPE_USB_STREAMING&0xff, 
+    USB_TERMTYPE_USB_STREAMING>>8,  /* 5  wTerminalType: USB Streaming */
     0x00,                           /* 6  bAssocTerminal */
     ID_CLKSEL,                      /* 7  bCSourceID: ID of Clock Entity */
     NUM_USB_CHAN_OUT,               /* 8  bNrChannels */
@@ -680,7 +681,8 @@ unsigned char cfgDesc_Audio2[] =
     CS_INTERFACE,                   /* 1  bDescriptorType: 0x24 */
     OUTPUT_TERMINAL,                /* 2  bDescriptorSubType: OUTPUT_TERMINAL */
     ID_OT_USB,                      /* 3  bTerminalID */
-    (USB_STREAMING&0xff),USB_STREAMING>>8, /* 4  wTerminalType */
+    (USB_TERMTYPE_USB_STREAMING&0xff),
+    (USB_TERMTYPE_USB_STREAMING>>8),/* 5  wTerminalType */
     0x00,                           /* 6  bAssocTerminal */
     FU_USBIN,                       /* 7  bSourceID Connect to analog input feature unit*/
     ID_CLKSEL,                      /* 8  bCSourceUD */
