@@ -326,7 +326,7 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
                             asm("stw %0, %1[0]"::"r"(mid),"r"(p_inZeroBuff));
 
                             /* Reset FB */
-                            /* Note, Endpoint 0 will hold off host for a sufficient period to allow out feedback
+                            /* Note, Endpoint 0 will hold off host for a sufficient period to allow our feedback
                              * to stabilise (i.e. sofCount == 128 to fire) */
                             sofCount = 0;
                             clocks = 0;

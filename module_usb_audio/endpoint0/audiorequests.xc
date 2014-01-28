@@ -82,7 +82,6 @@ static void storeFreq(unsigned char buffer[], int &i, int freq)
 /* Delay based on USB speed. Feedback takes longer to stabilise at FS */
 void FeedbackStabilityDelay()
 {
-
     unsigned usbSpeed;
     timer t;
     unsigned time;
