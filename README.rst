@@ -1,7 +1,7 @@
 USB Audio Shared
 ................
 
-:Latest release: 6.4.0beta3
+:Latest release: 6.4.0beta4
 :Maintainer: xross
 :Description: USB Audio Shared Components. For use in the XMOS USB Audio Refererence Designs.
 
