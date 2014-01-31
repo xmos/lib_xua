@@ -88,9 +88,6 @@
     #endif
 #endif
 
-
-
-
 #if defined(IO_EXPANSION) && (IO_EXPANSION == 0)
 #undef IO_EXPANSION
 #endif
@@ -569,6 +566,13 @@
 #define DFU_BCD_DEVICE              BCD_DEVICE
 #define DFU_MANUFACTURER_STR_INDEX  MANUFACTURER_STR_INDEX
 #define DFU_PRODUCT_STR_INDEX       PRODUCT_STR_INDEX_A2
+#endif
+
+/* USB test mode support enabled by default (Required for compliance testing) */
+#if defined(TEST_MODE_SUPPORT) && (TEST_MODE_SUPPORT == 0)
+#undef TEST_MODE_SUPPORT
+#else
+#define TEST_MODE_SUPPORT  1
 #endif
 
 #if defined(FAST_MODE) && (FAST_MODE == 0)
