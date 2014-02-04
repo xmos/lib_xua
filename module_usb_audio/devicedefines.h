@@ -147,7 +147,7 @@
 
 /* Whether or not to fall back to Audio Class 1.0 in USB Full-speed */
 #ifndef AUDIO_CLASS_FALLBACK
-#define AUDIO_CLASS_FALLBACK 0
+#define AUDIO_CLASS_FALLBACK  0     /* Default to not falling back to UAC 1 */
 #endif
 
 #if defined(AUDIO_CLASS_FALLBACK) && (AUDIO_CLASS_FALLBACK==0)
@@ -155,12 +155,17 @@
 #endif
 
 /* Whether to run in Audio Class 2.0 mode in USB Full-speed */
-#if defined(FULL_SPEED_AUDIO_2) && (FULL_SPEED_AUDIO_2==0)
+#ifndef FULL_SPEED_AUDIO_2
+#define FULL_SPEED_AUDIO_2    1     /* Default to falling back to UAC2 */
+#endif
+
+#if defined(FULL_SPEED_AUDIO_2) && (FULL_SPEED_AUDIO_2 == 0)
 #undef FULL_SPEED_AUDIO_2
 #endif
 
+/* Some checks on full-speed functionality */
 #if defined(FULL_SPEED_AUDIO_2) && defined(AUDIO_CLASS_FALLBACK)
-#error FULL_SPEED_AUDIO_2 and AUDIO_CLASS_FALLBACK enablaed!
+#error FULL_SPEED_AUDIO_2 and AUDIO_CLASS_FALLBACK enabled!
 #endif
 
 #if (AUDIO_CLASS == 1) && defined(FULL_SPEED_AUDIO_2)
