@@ -25,6 +25,7 @@
 #include "audio.h"
 
 #ifdef IAP
+#include "i2c_shared.h"
 #include "iap.h"
 #endif
 
@@ -38,6 +39,10 @@
 
 #ifndef XUD_TILE
 #define XUD_TILE        0
+#endif
+
+#ifndef IAP_TILE
+#define IAP_TILE  AUDIO_IO_TILE
 #endif
 
 /* Audio I/O - Port declarations */
@@ -322,9 +327,6 @@ void usb_audio_io(chanend c_aud_in, chanend ?c_adc
 #ifdef MIDI
 , chanend c_midi
 #endif
-#ifdef IAP
-, chanend c_iap
-#endif
 #ifdef MIXER
 , chanend c_mix_ctl
 #endif
@@ -352,21 +354,6 @@ void usb_audio_io(chanend c_aud_in, chanend ?c_adc
             audio(c_aud_in, null, null, c_adc);
 #endif
         }
-
-#if defined(MIDI) || defined(IAP)
-        /* MIDI/iAP Core */
-        {
-            thread_speed();
-#if defined(MIDI) && defined (IAP)
-            usb_midi(p_midi_rx, p_midi_tx, clk_midi, c_midi, 0, c_iap, null, null, null);
-#elif defined(MIDI)
-            usb_midi(p_midi_rx, p_midi_tx, clk_midi, c_midi, 0, null, null, null, null);
-#elif defined(IAP)
-            iAP(c_iap, null, null, null);
-#endif
-        }
-#endif
-
     }
 }
 
@@ -418,14 +405,25 @@ int main()
 #ifdef MIDI
             , c_midi
 #endif
-#ifdef IAP
-            , c_iap
-#endif
 #ifdef MIXER
             , c_mix_ctl
 #endif
-
         );
+
+#if defined(MIDI) || defined(IAP)
+        on tile[IAP_TILE]:
+        /* MIDI/iAP Core */
+        {
+            thread_speed();
+#if defined(MIDI) && defined (IAP)
+            usb_midi(p_midi_rx, p_midi_tx, clk_midi, c_midi, 0, c_iap, null, null, null);
+#elif defined(MIDI)
+            usb_midi(p_midi_rx, p_midi_tx, clk_midi, c_midi, 0, null, null, null, null);
+#elif defined(IAP)
+            iAP(c_iap, null, null, null);
+#endif
+        }
+#endif
 
         USER_MAIN_CORES
     }
