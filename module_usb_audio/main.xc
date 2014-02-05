@@ -160,7 +160,7 @@ on tile[XUD_TILE] : clock clk                               = XS1_CLKBLK_4;
 
 #ifdef IAP
 /* I2C ports - in a struct for use with module_i2s_simple */
-on tile [IAP_TILE] : struct r_i2c i2cPorts = {PORT_I2C_SCL, PORT_I2C_SDA};
+on tile [IAP_TILE] : struct r_i2c r_i2c = {PORT_I2C_SCL, PORT_I2C_SDA};
 #endif
 
 
