@@ -114,32 +114,23 @@ on tile[AUDIO_IO_TILE] :  buffered port:1 p_midi_rx         = PORT_MIDI_IN;
 #endif
 
 /* Clock blocks */
-#ifdef MIDI 
-#if (XUD_SERIES_SUPPORT == XUD_L_SERIES) && (AUDIO_IO_TILE == XUD_TILE)
-/* Note: L series ref clocked clocked from USB clock when USB enabled - use another clockblock for MIDI
- * if MIDI and XUD on same tile. See XUD documentation. 
- *
- * This is a clash with S/PDIF Tx but simultaneous S/PDIF and MIDI not currently supported on single tile device  
- *     
- */
-on tile[AUDIO_IO_TILE] : clock    clk_midi                  = XS1_CLKBLK_1;
-#else
-on tile[AUDIO_IO_TILE] : clock    clk_midi                  = XS1_CLKBLK_REF;
-#endif
+#ifdef MIDI
+on tile[AUDIO_IO_TILE] : clock    clk_midi                  = CLKBLK_MIDI;
 #endif
 
-on tile[AUDIO_IO_TILE] : clock    clk_audio_mclk            = XS1_CLKBLK_2;     /* Master clock */
+#ifdef SPDIF
+on tile[AUDIO_IO_TILE] : clock    clk_mst_spd               = CLKBLK_SPDIF_TX;
+#endif
+
+on tile[AUDIO_IO_TILE] : clock    clk_audio_mclk            = CLKBLK_MCLK;       /* Master clock */
 
 #if(AUDIO_IO_TILE != XUD_TILE)
-on tile[XUD_TILE] : clock    clk_audio_mclk2                = XS1_CLKBLK_2;     /* Master clock */
+on tile[XUD_TILE] : clock    clk_audio_mclk2                = CLKBLK_MCLK;       /* Master clock */
 on tile[XUD_TILE] : in port  p_mclk_in2                     = PORT_MCLK_IN2;
 #endif
 
+on tile[AUDIO_IO_TILE] : clock    clk_audio_bclk            = CLKBLK_I2S_BIT;    /* Bit clock */
 
-on tile[AUDIO_IO_TILE] : clock    clk_audio_bclk            = XS1_CLKBLK_3;     /* Bit clock */
-#ifdef SPDIF
-on tile[AUDIO_IO_TILE] : clock    clk_mst_spd               = XS1_CLKBLK_1;
-#endif
 
 /* L/G Series needs a port to use for USB reset */
 #if (XUD_SERIES_SUPPORT != XUD_U_SERIES) && defined(PORT_USB_RESET)
@@ -151,8 +142,8 @@ on tile[XUD_TILE] : out port p_usb_rst                      = PORT_USB_RESET;
 #endif
 
 #if (XUD_SERIES_SUPPORT != XUD_U_SERIES)
-/* L Series also needs a clock for this port */
-on tile[XUD_TILE] : clock clk                               = XS1_CLKBLK_4;
+/* L Series also needs a clock block for this port */
+on tile[XUD_TILE] : clock clk                               = CLKBLK_XUD;
 #else
 #define clk         null
 #endif
@@ -323,9 +314,6 @@ void usb_audio_core(chanend c_mix_out
 }
 
 void usb_audio_io(chanend c_aud_in, chanend ?c_adc
-#ifdef MIDI
-, chanend c_midi
-#endif
 #ifdef MIXER
 , chanend c_mix_ctl
 #endif
@@ -401,27 +389,33 @@ int main()
 );
 
         on tile[AUDIO_IO_TILE]: usb_audio_io(c_mix_out, c_adc
-#ifdef MIDI
-            , c_midi
-#endif
 #ifdef MIXER
             , c_mix_ctl
 #endif
         );
 
-#if defined(MIDI) || defined(IAP)
+#if defined(MIDI) && defined(IAP) && (IAP_TILE == MIDI_TILE)
         on tile[IAP_TILE]:
-        /* MIDI/iAP Core */
+        {
+            /* MIDI and IAP share a core */
+            thread_speed();
+            usb_midi(p_midi_rx, p_midi_tx, clk_midi, c_midi, 0, c_iap, null, null, null);
+        }
+#else
+#if defined(MIDI)
+        on tile[MIDI_TILE]:
         {
             thread_speed();
-#if defined(MIDI) && defined (IAP)
-            usb_midi(p_midi_rx, p_midi_tx, clk_midi, c_midi, 0, c_iap, null, null, null);
-#elif defined(MIDI)
             usb_midi(p_midi_rx, p_midi_tx, clk_midi, c_midi, 0, null, null, null, null);
-#elif defined(IAP)
-            iAP(c_iap, null, null, null);
-#endif
         }
+#endif
+#if defined(IAP)
+        on tile[IAP_TILE]:
+        {
+            thread_speed();
+            iAP(c_iap, null, null, null);
+        }
+#endif
 #endif
 
         USER_MAIN_CORES
