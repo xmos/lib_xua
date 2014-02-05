@@ -121,9 +121,20 @@ on tile[AUDIO_IO_TILE] :  buffered port:1 p_midi_rx         = PORT_MIDI_IN;
 #endif
 
 /* Clock blocks */
-#ifdef MIDI
+#ifdef MIDI 
+#if defined (ARCH_L) && (AUDIO_IO_TILE == XUD_TILE)
+/* Note: L series ref clocked clocked from USB clock when USB enabled - use another clockblock for MIDI
+ * if MIDI and XUD on same tile. See XUD documentation. 
+ *
+ * This is a clash with S/PDIF Tx but simultaneous S/PDIF and MIDI not currently supported on single tile device  
+ *     
+ */
+on tile[AUDIO_IO_TILE] : clock    clk_midi                  = XS1_CLKBLK_1;
+#else
 on tile[AUDIO_IO_TILE] : clock    clk_midi                  = XS1_CLKBLK_REF;
 #endif
+#endif
+
 on tile[AUDIO_IO_TILE] : clock    clk_audio_mclk            = XS1_CLKBLK_2;     /* Master clock */
 
 #if(AUDIO_IO_TILE != XUD_TILE)
