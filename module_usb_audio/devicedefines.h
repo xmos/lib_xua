@@ -8,6 +8,22 @@
 
 #include "customdefines.h"
 
+#ifndef AUDIO_IO_TILE
+#define AUDIO_IO_TILE   0
+#endif
+
+#ifndef XUD_TILE
+#define XUD_TILE        0
+#endif
+
+#ifndef IAP_TILE
+#define IAP_TILE        AUDIO_IO_TILE
+#endif
+
+#ifndef MIDI_TILE
+#define MIDI_TILE       AUDIO_IO_TILE
+#endif
+
 /* Tidy up historical INPUT/OUTPUT defines. INPUT/OUTPUT now enabled based on channel count defines */
 #if !defined(NUM_USB_CHAN_IN)
     #error NUM_USB_CHAN_IN must be defined!
