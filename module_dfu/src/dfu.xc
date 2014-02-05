@@ -458,20 +458,11 @@ int DFUDeviceRequests(XUD_ep ep0_out, XUD_ep &?ep0_in, USB_SetupPacket_t &sp, ch
 
     if (sp.bmRequestType.Direction == USB_BM_REQTYPE_DIRECTION_D2H && sp.wLength != 0)
     {
-        // Device to host
-#ifdef ARCH_G
-        XUD_DoGetRequest(ep0_out, 0, (data_buffer, unsigned char[]), return_data_len, return_data_len);
-#else
         XUD_DoGetRequest(ep0_out, ep0_in, (data_buffer, unsigned char[]), return_data_len, return_data_len);
-#endif
     }
     else
     {
-#ifdef ARCH_G
-        XUD_DoSetRequestStatus(ep0_out);
-#else
         XUD_DoSetRequestStatus(ep0_in);
-#endif
     }
 
   	// If device reset requested, handle after command acknowledgement

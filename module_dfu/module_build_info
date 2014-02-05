@@ -23,14 +23,8 @@ INCLUDE_DIRS += $(MODULE_DIRS)
 #
 # $(call SET_XCC_C_FLAGS, mydir1 mydir2, $(XCC_FLAGS) -g -O3)
 
-ifeq ($(ARCH_G),)
-ARCH_FLAG = -D ARCH_L
-else
-ARCH_FLAG = -D ARCH_G
-endif
-
-$(call SET_XCC_C_FLAGS, $(MODULE_DIRS) $(XCC_FLAGS) $(ARCH_FLAG) -g -O3)
-$(call SET_XCC_XC_FLAGS, $(MODULE_DIRS), $(XCC_FLAGS) $(ARCH_FLAG) -fsubword-select -g -O3)
+$(call SET_XCC_C_FLAGS, $(MODULE_DIRS) $(XCC_FLAGS) -g -O3)
+$(call SET_XCC_XC_FLAGS, $(MODULE_DIRS), $(XCC_FLAGS) -fsubword-select -g -O3)
 
 # You can change the flags of an individual file by setting the 
 # XCC_FLAGS_[filename] variable. e.g.

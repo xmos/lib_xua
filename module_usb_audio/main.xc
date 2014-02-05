@@ -127,7 +127,7 @@ on tile[AUDIO_IO_TILE] :  buffered port:1 p_midi_rx         = PORT_MIDI_IN;
 
 /* Clock blocks */
 #ifdef MIDI 
-#if defined (ARCH_L) && (AUDIO_IO_TILE == XUD_TILE)
+#if (XUD_SERIES_SUPPORT == XUD_L_SERIES) && (AUDIO_IO_TILE == XUD_TILE)
 /* Note: L series ref clocked clocked from USB clock when USB enabled - use another clockblock for MIDI
  * if MIDI and XUD on same tile. See XUD documentation. 
  *
@@ -153,8 +153,8 @@ on tile[AUDIO_IO_TILE] : clock    clk_audio_bclk            = XS1_CLKBLK_3;     
 on tile[AUDIO_IO_TILE] : clock    clk_mst_spd               = XS1_CLKBLK_1;
 #endif
 
-/* L Series needs a port to use for USB reset */
-#if (defined(ARCH_L) || defined(ARCH_G)) && defined(PORT_USB_RESET)
+/* L/G Series needs a port to use for USB reset */
+#if (XUD_SERIES_SUPPORT != XUD_U_SERIES) && defined(PORT_USB_RESET)
 /* This define is checked since it could be on a shift reg or similar */
 on tile[XUD_TILE] : out port p_usb_rst                      = PORT_USB_RESET;
 #else
@@ -162,7 +162,7 @@ on tile[XUD_TILE] : out port p_usb_rst                      = PORT_USB_RESET;
 #define p_usb_rst   null
 #endif
 
-#if defined (ARCH_L) || defined(ARCH_G)
+#if (XUD_SERIES_SUPPORT != XUD_U_SERIES)
 /* L Series also needs a clock for this port */
 on tile[XUD_TILE] : clock clk                               = XS1_CLKBLK_4;
 #else
