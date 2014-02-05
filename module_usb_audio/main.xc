@@ -33,18 +33,6 @@
 #include "mixer.h"
 #endif
 
-#ifndef AUDIO_IO_TILE
-#define AUDIO_IO_TILE   0
-#endif
-
-#ifndef XUD_TILE
-#define XUD_TILE        0
-#endif
-
-#ifndef IAP_TILE
-#define IAP_TILE  AUDIO_IO_TILE
-#endif
-
 /* Audio I/O - Port declarations */
 #if I2S_WIRES_DAC > 0
 on tile[AUDIO_IO_TILE] : buffered out port:32 p_i2s_dac[I2S_WIRES_DAC] =
