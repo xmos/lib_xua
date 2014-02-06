@@ -170,6 +170,7 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
     int iap_data_remaining_to_device = 0;
     int iap_data_collected_from_device = 0;
     int iap_expected_data_length = 0;
+    int iap_draining_chan = 0;
 #endif
 
 
@@ -555,7 +556,8 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
             else if(tmp==-1)
             {
                 XUD_ResetEndpoint(ep_iap_from_host, null);
-                iap_send_reset(c_iap); // What if this happen in the middle of a send/ack?
+                iap_send_reset(c_iap);
+                iap_draining_chan = 1; // Drain c_iap until a reset is sent back
                 iap_data_collected_from_device = 0;
                 iap_data_remaining_to_device = -1;
                 iap_expected_data_length = 0;
@@ -644,58 +646,70 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
             /* Received word from iap thread - Check for ACK or Data */
             case iap_get_ack_or_reset_or_data(c_iap, is_ack_iap, is_reset, datum_iap):
 
-                if (is_ack_iap)
+                if (iap_draining_chan)
                 {
-                    /* An ack from the iap/uart thread means it has accepted some data we sent it
-                     * we are okay to send another word */
-                    if (iap_data_remaining_to_device == 0)
+                    /* As we're draining the iAP channel now, ignore ACKs and data */
+                    if (is_reset)
                     {
-                        /* We have read an entire packet - Mark ready to receive another */
-                        XUD_SetReady_Out(ep_iap_from_host, iap_from_host_buffer);
-                    }
-                    else
-                    {
-                        /* Read another byte from the fifo and output it to iap thread */
-                        datum_iap = iap_from_host_buffer[iap_from_host_rdptr];
-                        outuint(c_iap, datum_iap);
-                        iap_from_host_rdptr += 1;
-                        iap_data_remaining_to_device -= 1;
+                        // The iAP core has returned a reset token, so we can stop draining the iAP channel now
+                        iap_draining_chan = 0;
                     }
                 }
                 else
                 {
-                    if (iap_expected_data_length == 0)
+                    if (is_ack_iap)
                     {
-                        /* Expect a length from iAP core */
-                        iap_send_ack(c_iap);
-                        iap_expected_data_length = datum_iap;
+                        /* An ack from the iap/uart thread means it has accepted some data we sent it
+                         * we are okay to send another word */
+                        if (iap_data_remaining_to_device == 0)
+                        {
+                            /* We have read an entire packet - Mark ready to receive another */
+                            XUD_SetReady_Out(ep_iap_from_host, iap_from_host_buffer);
+                        }
+                        else
+                        {
+                            /* Read another byte from the fifo and output it to iap thread */
+                            datum_iap = iap_from_host_buffer[iap_from_host_rdptr];
+                            outuint(c_iap, datum_iap);
+                            iap_from_host_rdptr += 1;
+                            iap_data_remaining_to_device -= 1;
+                        }
                     }
-                    else
+                    else if (!is_reset)
                     {
-                        if (iap_data_collected_from_device < IAP_USB_BUFFER_TO_HOST_SIZE)
+                        if (iap_expected_data_length == 0)
                         {
-                            /* There is room in the collecting buffer for the data..  */
-                            iap_to_host_buffer[iap_data_collected_from_device] = datum_iap;
-                            iap_data_collected_from_device += 1;
-                        }
-                        else
-                        {
-                           // Too many events from device - drop
-                        }
-
-                        /* Once we have the whole message, sent it to host */
-                        /* Note we don't ack the last byte yet... */
-                        if (iap_data_collected_from_device == iap_expected_data_length)
-                        {
-                            XUD_SetReady_In(ep_iap_to_host_int, gc_zero_buffer, 0);
-                            XUD_SetReady_In(ep_iap_to_host, iap_to_host_buffer, iap_data_collected_from_device);
-                            iap_data_collected_from_device = 0;
-                            iap_expected_data_length = 0;
-                        }
-                        else
-                        {
-                            /* The iap/uart thread has sent us some data - handshake back */
+                            /* Expect a length from iAP core */
                             iap_send_ack(c_iap);
+                            iap_expected_data_length = datum_iap;
+                        }
+                        else
+                        {
+                            if (iap_data_collected_from_device < IAP_USB_BUFFER_TO_HOST_SIZE)
+                            {
+                                /* There is room in the collecting buffer for the data..  */
+                                iap_to_host_buffer[iap_data_collected_from_device] = datum_iap;
+                                iap_data_collected_from_device += 1;
+                            }
+                            else
+                            {
+                               // Too many events from device - drop
+                            }
+
+                            /* Once we have the whole message, sent it to host */
+                            /* Note we don't ack the last byte yet... */
+                            if (iap_data_collected_from_device == iap_expected_data_length)
+                            {
+                                XUD_SetReady_In(ep_iap_to_host_int, gc_zero_buffer, 0);
+                                XUD_SetReady_In(ep_iap_to_host, iap_to_host_buffer, iap_data_collected_from_device);
+                                iap_data_collected_from_device = 0;
+                                iap_expected_data_length = 0;
+                            }
+                            else
+                            {
+                                /* The iap/uart thread has sent us some data - handshake back */
+                                iap_send_ack(c_iap);
+                            }
                         }
                     }
                 }
