@@ -106,8 +106,7 @@ on tile[AUDIO_IO_TILE] : buffered in port:32 p_i2s_adc[I2S_WIRES_ADC] =
 #define CLKBLK_SPDIF_TX    XS1_CLKBLK_1
 #define CLKBLK_MCLK        XS1_CLKBLK_2
 #define CLKBLK_I2S_BIT     XS1_CLKBLK_3
-#define CLKBLK_XUD         XS1_CLKBLK_4
-// Currently XUD_U uses 5 also.
+#define CLKBLK_XUD         XS1_CLKBLK_4 /* Note XUD for U-series uses CLKBLK_5 also (see XUD_Ports.xc) */
 
 #ifndef CODEC_MASTER
 on tile[AUDIO_IO_TILE] : buffered out port:32 p_lrclk       = PORT_I2S_LRCLK;
