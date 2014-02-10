@@ -702,6 +702,7 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
                             {
                                 XUD_SetReady_In(ep_iap_to_host_int, gc_zero_buffer, 0);
                                 XUD_SetReady_In(ep_iap_to_host, iap_to_host_buffer, iap_data_collected_from_device);
+                                printintln(iap_data_collected_from_device);
                                 iap_data_collected_from_device = 0;
                                 iap_expected_data_length = 0;
                             }
