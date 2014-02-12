@@ -294,29 +294,12 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
                         /* Don't update things for DFU command.. */
                         if(sampleFreq != AUDIO_STOP_FOR_DFU)
                         {
-
                             /* Tidy up double buffer, note we can do better than this for 44.1 etc but better
                              * than sending two packets at old speed! */
-                            if (usb_speed == XUD_SPEED_HS)
-                                frameTime = 8000;
-                            else
-                                frameTime = 1000;
-
-                            min = sampleFreq / frameTime;
-
-                            max = min + 1;
-
-                            mid = min;
-
-                            /* Check for INT(SampFreq/8000) == SampFreq/8000 */
-                            if((sampleFreq % frameTime) == 0)
-                            {
-                                min -= 1;
-                            }
+                            GetADCCounts(sampleFreq, min, mid, max);
    #ifdef FB_TOLERANCE_TEST
                             expected_fb = ((sampleFreq * 0x2000) / frameTime);
    #endif
-
                             asm("stw %0, dp[g_speed]"::"r"(mid << 16));
 
                             if (usb_speed == XUD_SPEED_HS)
