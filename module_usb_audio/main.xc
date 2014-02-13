@@ -176,7 +176,7 @@ XUD_EpType epTypeTableOut[EP_CNT_OUT] = { XUD_EPTYPE_CTL | XUD_STATUS_ENABLE,
                                             XUD_EPTYPE_BUL,    /* MIDI */
 #endif
 #ifdef IAP
-                                            XUD_EPTYPE_BUL | XUD_STATUS_ENABLE /* iAP */
+                                            XUD_EPTYPE_BUL /* iAP */
 #endif
                                         };
 
@@ -193,8 +193,8 @@ XUD_EpType epTypeTableIn[EP_CNT_IN] = { XUD_EPTYPE_CTL | XUD_STATUS_ENABLE,
                                             XUD_EPTYPE_INT,
 #endif
 #ifdef IAP
-                                            XUD_EPTYPE_BUL,
-                                            XUD_EPTYPE_BUL,
+                                            XUD_EPTYPE_BUL | XUD_STATUS_ENABLE,
+                                            XUD_EPTYPE_BUL | XUD_STATUS_ENABLE,
 #endif
                                         };
 
