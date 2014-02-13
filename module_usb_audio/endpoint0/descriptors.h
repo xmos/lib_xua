@@ -268,7 +268,11 @@ enum {
 #endif
 #endif
 #ifdef IAP
+    #ifdef MIXER
     IAP_INTERFACE_STRING_INDEX = INPUT_INTERFACE_LAST_STRING_INDEX + MAX_MIX_COUNT + 1,
+    #else
+    IAP_INTERFACE_STRING_INDEX = INPUT_INTERFACE_LAST_STRING_INDEX,
+    #endif
 #endif
 };
 

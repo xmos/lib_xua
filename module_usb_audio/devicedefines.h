@@ -488,8 +488,12 @@
 #define MIX_INPUTS                  18
 #endif
 
-#ifndef MAX_MIX_COUNT
-#define MAX_MIX_COUNT               8
+#ifdef MIXER
+    #ifndef MAX_MIX_COUNT
+    #define MAX_MIX_COUNT        8
+    #endif
+#else
+    #define MAX_MIX_COUNT        0
 #endif
 
 
