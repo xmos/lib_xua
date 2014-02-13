@@ -177,7 +177,7 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
     xc_ptr p_inZeroBuff = array_to_xc_ptr(inZeroBuff);
 
 #ifdef IAP
-    XUD_ResetEndpoint(ep_iap_from_host, null);
+    //XUD_ResetEndpoint(ep_iap_from_host, null);
     iap_send_reset(c_iap);
 #endif
 
@@ -227,13 +227,17 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
     {
         int usb_speed;
         int x;
+        int reset;
 
         asm("ldaw %0, dp[fb_clocks]":"=r"(x));
         GET_SHARED_GLOBAL(usb_speed, g_curUsbSpeed);
 
         if (usb_speed == XUD_SPEED_HS)
         {
-            XUD_SetReady_In(ep_aud_fb, fb_clocks, 4);
+            reset = XUD_SetReady_In(ep_aud_fb, fb_clocks, 4);
+        
+            if(reset)
+                printstr("SetReady_In Reset\n");
         }
         else
         {
@@ -536,9 +540,16 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
                     iap_data_remaining_to_device -= 1;
                 }
             }
-            else if(tmp==-1)
+            break;
+
+        /* IAP IN to host */
+        case XUD_SetData_Select(c_iap_to_host, ep_iap_to_host, tmp):
+            asm("#iap d->h");
+
+            if(tmp == -1)
             {
-                XUD_ResetEndpoint(ep_iap_from_host, null);
+                 XUD_ResetEndpoint(ep_iap_to_host, null);
+                 XUD_ResetEndpoint(ep_iap_to_host_int, null);
                 iap_send_reset(c_iap);
                 iap_draining_chan = 1; // Drain c_iap until a reset is sent back
                 iap_data_collected_from_device = 0;
@@ -546,19 +557,18 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
                 iap_expected_data_length = 0;
                 iap_from_host_rdptr = 0;
             }
-            break;
-
-        /* IAP IN to host */
-        case XUD_SetData_Select(c_iap_to_host, ep_iap_to_host, tmp):
-            asm("#iap d->h");
-
-            /* Send out an iAP packet to host, ACK last msg from iAP to let it know we can move on..*/
-            iap_send_ack(c_iap);
+            else
+            {
+                /* Send out an iAP packet to host, ACK last msg from iAP to let it know we can move on..*/
+                iap_send_ack(c_iap);
+            }
             break;  /* IAP IN to host */
 
         case XUD_SetData_Select(c_iap_to_host_int, ep_iap_to_host_int, tmp):
             asm("#iap int d->h");
+                
             /* Do nothing.. */
+            /* Note, could get a reset notification here, but deal with it in the case above */
             break;
 #endif
 
@@ -583,7 +593,8 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
                     if (midi_data_remaining_to_device <= 0)
                     {
                         /* We have read an entire packet - Mark ready to receive another */
-                        XUD_SetReady_OutPtr(ep_midi_from_host, midi_from_host_buffer);
+                        int reset = XUD_SetReady_OutPtr(ep_midi_from_host, midi_from_host_buffer);
+
                     }
                     else
                     {
@@ -647,7 +658,11 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
                         if (iap_data_remaining_to_device == 0)
                         {
                             /* We have read an entire packet - Mark ready to receive another */
-                            XUD_SetReady_Out(ep_iap_from_host, iap_from_host_buffer);
+                            while(XUD_SetReady_Out(ep_iap_from_host, iap_from_host_buffer) == -1)
+                            { 
+                                /* Ignore resets */
+                                printintln(8000000);
+                            }
                         }
                         else
                         {
@@ -683,9 +698,21 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
                             /* Note we don't ack the last byte yet... */
                             if (iap_data_collected_from_device == iap_expected_data_length)
                             {
-                                XUD_SetReady_In(ep_iap_to_host_int, gc_zero_buffer, 0);
-                                XUD_SetReady_In(ep_iap_to_host, iap_to_host_buffer, iap_data_collected_from_device);
-                                printintln(iap_data_collected_from_device);
+                                int reset1, reset2;
+                                reset1 = XUD_SetReady_In(ep_iap_to_host_int, gc_zero_buffer, 0);
+                                reset2 = XUD_SetReady_In(ep_iap_to_host, iap_to_host_buffer, iap_data_collected_from_device);
+                           
+                                if((reset1 == -1) || (reset2 == -1))
+                                {
+                                    printstr("rst 2"); 
+                                    XUD_ResetEndpoint(ep_iap_to_host_int, null);
+                                    XUD_ResetEndpoint(ep_iap_to_host, null);
+                                    iap_send_reset(c_iap);
+                                    iap_draining_chan = 1; // Drain c_iap until a reset is sent back
+                                    iap_data_remaining_to_device = -1;
+                                    iap_from_host_rdptr = 0;  
+                                }
+                                
                                 iap_data_collected_from_device = 0;
                                 iap_expected_data_length = 0;
                             }
