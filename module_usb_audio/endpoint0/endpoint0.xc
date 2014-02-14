@@ -232,7 +232,7 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
     while(1)
     {
         /* Returns 0 for success, -1 for bus reset */
-        int retVal = USB_GetSetupPacket(ep0_out, ep0_in, sp);
+        XUD_Result_t retVal = USB_GetSetupPacket(ep0_out, ep0_in, sp);
 
         if (!retVal)
         {
