@@ -396,7 +396,7 @@ int DFUDeviceRequests(XUD_ep ep0_out, XUD_ep &?ep0_in, USB_SetupPacket_t &sp, ch
     {
         // Host to device
         if (sp.wLength)
-            data_buffer_len = XUD_GetBuffer(ep0_out, (data_buffer, unsigned char[]));
+            XUD_GetBuffer(ep0_out, (data_buffer, unsigned char[]), data_buffer_len);
     }
 
     // Map Standard DFU commands onto device level firmware upgrade mechanism
