@@ -269,7 +269,8 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
     int i_tmp;
     int unitID;
     int loop = 1;
-    int datalength;
+    XUD_Result_t result;
+    unsigned datalength;
 
     /* Inspect request, NOTE: these are class specific requests */
     switch( sp.bRequest )
@@ -298,12 +299,9 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
                             if(sp.bmRequestType.Direction == USB_BM_REQTYPE_DIRECTION_H2D)
                             {
                                 /* Get OUT data with Sample Rate into buffer*/
-                                datalength = XUD_GetBuffer(ep0_out, buffer);
-
-                                /* Check for reset/suspend */
-                                if(datalength < 0)
+                                if((result = XUD_GetBuffer(ep0_out, buffer, datalength)) != XUD_RES_OKAY)
                                 {
-                                    return datalength;
+                                    return result;
                                 }
 
                                 if(datalength == 4)
@@ -447,10 +445,10 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
                         /* Direction: Host-to-device */
                         if(sp.bmRequestType.Direction == USB_BM_REQTYPE_DIRECTION_H2D )
                         {
-                            datalength = XUD_GetBuffer(ep0_out, buffer);
-
-                            if(datalength < 0)
-                                return datalength;
+                            if((result = XUD_GetBuffer(ep0_out, buffer, datalength)) != XUD_RES_OKAY)
+                            {
+                                return result;
+                            }
 
                             /* Check for correct datalength for clock sel */
                             if(datalength == 1)
@@ -496,11 +494,10 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
                             if(sp.bmRequestType.Direction == USB_BM_REQTYPE_DIRECTION_H2D)
                             {
                                 /* Expect OUT here (with volume) */
-                                loop = XUD_GetBuffer(ep0_out, buffer);
-
-                                /* Check for reset */
-                                if(loop < 0)
-                                    return loop;
+                                if((result = XUD_GetBuffer(ep0_out, buffer, datalength)) != XUD_RES_OKAY)
+                                {
+                                    return result;
+                                }
 
                                 if(unitID == FU_USBOUT)
                                 {
@@ -549,10 +546,10 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
                             if(sp.bmRequestType.Direction == USB_BM_REQTYPE_DIRECTION_H2D)
                             {
                                 /* Expect OUT here with mute */
-                                loop = XUD_GetBuffer(ep0_out, buffer);
-
-                                if(loop < 0)
-                                    return loop;
+                                if((result = XUD_GetBuffer(ep0_out, buffer, datalength)) != XUD_RES_OKAY)
+                                {
+                                    return result;
+                                }
 
                                 if (unitID == FU_USBOUT)
                                 {
@@ -1003,6 +1000,7 @@ int AudioEndpointRequests_1(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp
 
     int retVal = 1;
     unsigned char buffer[1024];
+    unsigned length;
 
     /* Host to Device */
     if(sp.bmRequestType.Direction == USB_BM_REQTYPE_DIRECTION_H2D)
@@ -1015,7 +1013,7 @@ int AudioEndpointRequests_1(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp
                 /* Check Control Selector */
                 unsigned short controlSelector = sp.wValue>>8;
 
-                retVal = XUD_GetBuffer(ep0_out, buffer);
+                retVal = XUD_GetBuffer(ep0_out, buffer, length);
 
                 /* Inspect for reset */
                 if(retVal < 0)
