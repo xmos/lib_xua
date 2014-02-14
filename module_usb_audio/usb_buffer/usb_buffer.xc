@@ -658,11 +658,11 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
                         if (iap_data_remaining_to_device == 0)
                         {
                             /* We have read an entire packet - Mark ready to receive another */
-                            while(XUD_SetReady_Out(ep_iap_from_host, iap_from_host_buffer) == -1)
-                            { 
+                            XUD_SetReady_Out(ep_iap_from_host, iap_from_host_buffer);
+                            //{ 
                                 /* Ignore resets */
-                                printintln(8000000);
-                            }
+                              //  printintln(8000000);
+                            //}
                         }
                         else
                         {
@@ -704,7 +704,6 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
                            
                                 if((reset1 == -1) || (reset2 == -1))
                                 {
-                                    printstr("rst 2"); 
                                     XUD_ResetEndpoint(ep_iap_to_host_int, null);
                                     XUD_ResetEndpoint(ep_iap_to_host, null);
                                     iap_send_reset(c_iap);
