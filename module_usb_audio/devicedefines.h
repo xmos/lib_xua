@@ -112,6 +112,10 @@
 #undef IAP
 #endif
 
+#if defined(IAP_INT_EP) && (IAP_INT_EP == 0)
+#undef IAP_INT_EP
+#endif
+
 #if defined(SU1_ADC_ENABLE) && (SU1_ADC_ENABLE == 0)
 #undef SU1_ADC_ENABLE
 #endif
@@ -380,7 +384,11 @@
 #endif
 
 #define EP_CNT_OUT_IAP          (IAP_INTERFACES)
+#ifdef IAP_INT_EP
 #define EP_CNT_IN_IAP           (IAP_INTERFACES * 2)
+#else
+#define EP_CNT_IN_IAP           (IAP_INTERFACES)
+#endif
 
 #define EP_CNT_OUT_HID          (0)
 #define EP_CNT_IN_HID           (HID_INTERFACES)
@@ -405,7 +413,9 @@
 #define EP_NUM_IN_MIDI           (EP_NUM_IN_AUD_INT + 1)
 #define EP_NUM_IN_HID            (EP_NUM_IN_AUD_INT + EP_CNT_IN_MIDI + 1)
 #define EP_NUM_IN_IAP            (EP_NUM_IN_AUD_INT + EP_CNT_IN_MIDI + EP_CNT_IN_HID + 1) /* iAP Bulk */
+#ifdef IAP_INT_EP
 #define EP_NUM_IN_IAP_INT        (EP_NUM_IN_AUD_INT + EP_CNT_IN_MIDI + EP_CNT_IN_HID + 2) /* iAP interrupt */
+#endif
 
 #define EP_NUM_OUT_AUD           (1)     /* Always 1 */
 #define EP_NUM_OUT_MIDI          (2)     /* Always 2 */
@@ -418,7 +428,9 @@
 #define EP_ADR_IN_MIDI           (EP_NUM_IN_MIDI | 0x80)
 #define EP_ADR_IN_HID            (EP_NUM_IN_HID | 0x80)
 #define EP_ADR_IN_IAP            (EP_NUM_IN_IAP | 0x80)
+#ifdef IAP_INT_EP
 #define EP_ADR_IN_IAP_INT        (EP_NUM_IN_IAP_INT | 0x80)
+#endif
 
 #define EP_ADR_OUT_AUD           EP_NUM_OUT_AUD
 #define EP_ADR_OUT_MIDI          EP_NUM_OUT_MIDI
