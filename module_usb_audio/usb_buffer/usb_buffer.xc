@@ -702,13 +702,13 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
                             /* Note we don't ack the last byte yet... */
                             if (iap_data_collected_from_device == iap_expected_data_length)
                             {
-                                int reset1 = 0, reset2;
+                                XUD_Result_t result1 = XUD_RES_OKAY, result2;
 #ifdef IAP_INT_EP
-                                reset1 = XUD_SetReady_In(ep_iap_to_host_int, gc_zero_buffer, 0);
+                                result1 = XUD_SetReady_In(ep_iap_to_host_int, gc_zero_buffer, 0);
 #endif
-                                reset2 = XUD_SetReady_In(ep_iap_to_host, iap_to_host_buffer, iap_data_collected_from_device);
+                                result2 = XUD_SetReady_In(ep_iap_to_host, iap_to_host_buffer, iap_data_collected_from_device);
                            
-                                if((reset1 == -1) || (reset2 == -1))
+                                if((result1 == XUD_RES_RST) || (result2 == XUD_RES_RST))
                                 {
 #ifdef IAP_INT_EP
                                     XUD_ResetEndpoint(ep_iap_to_host_int, null);
