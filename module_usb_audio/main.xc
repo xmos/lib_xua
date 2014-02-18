@@ -194,7 +194,9 @@ XUD_EpType epTypeTableIn[EP_CNT_IN] = { XUD_EPTYPE_CTL | XUD_STATUS_ENABLE,
 #endif
 #ifdef IAP
                                             XUD_EPTYPE_BUL | XUD_STATUS_ENABLE,
+#ifdef IAP_INT_EP
                                             XUD_EPTYPE_BUL | XUD_STATUS_ENABLE,
+#endif
 #endif
                                         };
 
