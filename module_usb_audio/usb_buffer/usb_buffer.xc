@@ -667,10 +667,6 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
                         {
                             /* We have read an entire packet - Mark ready to receive another */
                             XUD_SetReady_Out(ep_iap_from_host, iap_from_host_buffer);
-                            //{ 
-                                /* Ignore resets */
-                              //  printintln(8000000);
-                            //}
                         }
                         else
                         {
