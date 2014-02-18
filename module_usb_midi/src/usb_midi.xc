@@ -352,7 +352,10 @@ void usb_midi(buffered in port:1 ?p_midi_in, port ?p_midi_out,
 
                 /* Slow timer looking for IDevice plug/unplug event */
                 case iAPTimer when timerafter(polltime) :> void:
-                    iap_handle_poll_dev_det(iAPTimer);
+                    if (!iap_handle_poll_dev_det(iAPTimer))
+                    {
+                        check_iAP_timeout(iap_outgoing_buffer, c_iap);
+                    }
                     break;
 #endif
             }
