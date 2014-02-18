@@ -1093,7 +1093,7 @@ int AudioClassRequests_1(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
 {
     unsigned char buffer[1024];
     int unitID;
-    int loop = 1;
+    XUD_Result_t result;
 
     /* Inspect request */
     /* Note we could check sp.bmRequestType.Direction if we wanted to be really careful */
@@ -1101,43 +1101,47 @@ int AudioClassRequests_1(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
     {
         case UAC_B_REQ_SET_CUR:
         {
-            loop = XUD_GetBuffer(ep0_out, buffer);
+            unsigned datalength;
 
-            /* Inspect for reset */
-            if(loop < 0)
-                return loop;
-
-            unitID = sp.wIndex >> 8;
-
-            if (unitID == FU_USBOUT)
+            if((result = XUD_GetBuffer(ep0_out, buffer,  datalength)) != XUD_RES_OKAY)
             {
-                switch ((sp.wValue>>8) & 0xff)
+                return result;
+            }
+
+            if(datalength == 2)
+            {
+                unitID = sp.wIndex >> 8;
+
+                if (unitID == FU_USBOUT)
                 {
-                    case FU_VOLUME_CONTROL:
-                        volsOut[ sp.wValue & 0xff ] = buffer[0] | (((int) (signed char) buffer[1]) << 8);
-                        updateVol( unitID, ( sp.wValue & 0xff ), c_mix_ctl );
-                        return XUD_DoSetRequestStatus(ep0_in);
-                    case FU_MUTE_CONTROL:
-                        mutesOut[ sp.wValue & 0xff ] = buffer[0];
-                        updateVol( unitID, ( sp.wValue & 0xff ), c_mix_ctl );
-                        return XUD_DoSetRequestStatus(ep0_in);
+                    switch ((sp.wValue>>8) & 0xff)
+                    {
+                        case FU_VOLUME_CONTROL:
+                            volsOut[ sp.wValue & 0xff ] = buffer[0] | (((int) (signed char) buffer[1]) << 8);
+                            updateVol( unitID, ( sp.wValue & 0xff ), c_mix_ctl );
+                            return XUD_DoSetRequestStatus(ep0_in);
+                        case FU_MUTE_CONTROL:
+                            mutesOut[ sp.wValue & 0xff ] = buffer[0];
+                            updateVol( unitID, ( sp.wValue & 0xff ), c_mix_ctl );
+                            return XUD_DoSetRequestStatus(ep0_in);
+                    }
+                }
+                else if (unitID == FU_USBIN)
+                {
+                    switch ((sp.wValue>>8) & 0xff)
+                    {
+                        case FU_VOLUME_CONTROL:
+                            volsIn[ sp.wValue & 0xff ] = buffer[0] | (((int) (signed char) buffer[1]) << 8);
+                            updateVol( unitID, ( sp.wValue & 0xff ), c_mix_ctl );
+                            return XUD_DoSetRequestStatus(ep0_in);
+                        case FU_MUTE_CONTROL:
+                            mutesIn[ sp.wValue & 0xff ] = buffer[0];
+                            updateVol( unitID, ( sp.wValue & 0xff ), c_mix_ctl );
+                            return XUD_DoSetRequestStatus(ep0_in);
+                    }
                 }
             }
-            else if (unitID == FU_USBIN)
-            {
-                switch ((sp.wValue>>8) & 0xff)
-                {
-                    case FU_VOLUME_CONTROL:
-                        volsIn[ sp.wValue & 0xff ] = buffer[0] | (((int) (signed char) buffer[1]) << 8);
-                        updateVol( unitID, ( sp.wValue & 0xff ), c_mix_ctl );
-                        return XUD_DoSetRequestStatus(ep0_in);
-                    case FU_MUTE_CONTROL:
-                        mutesIn[ sp.wValue & 0xff ] = buffer[0];
-                        updateVol( unitID, ( sp.wValue & 0xff ), c_mix_ctl );
-                        return XUD_DoSetRequestStatus(ep0_in);
-                }
-            }
-            break;
+             break;
         }
         case UAC_B_REQ_GET_CUR:
         {
