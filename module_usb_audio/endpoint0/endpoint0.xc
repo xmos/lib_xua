@@ -130,8 +130,9 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
 
 #ifdef MIXER
     /* Set up mixer default state */
-    for (int i = 0; i < 18*8; i++) {
-      mixer1Weights[i] = 0x8001; //-inf
+    for (int i = 0; i < 18*8; i++) 
+    {
+        mixer1Weights[i] = 0x8001; //-inf
     }
 
     /* Configure default connections */
@@ -232,11 +233,11 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
     while(1)
     {
         /* Returns 0 for success, -1 for bus reset */
-        XUD_Result_t retVal = USB_GetSetupPacket(ep0_out, ep0_in, sp);
+        XUD_Result_t result = USB_GetSetupPacket(ep0_out, ep0_in, sp);
 
-        if (!retVal)
+        if (result == XUD_RES_OKAY)
         {
-            retVal = 1;
+            result = XUD_RES_ERR;
 
             /* Inspect Request type and Receipient and direction */
             switch( (sp.bmRequestType.Direction << 7) | (sp.bmRequestType.Recipient ) | (sp.bmRequestType.Type << 5) )
@@ -389,7 +390,7 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
                             g_interfaceAlt[sp.wIndex] = sp.wValue;
 
                         /* No data stage for this request, just do data stage */
-                        retVal = XUD_DoSetRequestStatus(ep0_in);
+                        result = XUD_DoSetRequestStatus(ep0_in);
 
                     } /* if(sp.bRequest == SET_INTERFACE) */
 
@@ -412,9 +413,8 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
                                 {
                                     case HID_REPORT:
                                         /* Return HID report descriptor */
-                                        retVal = XUD_DoGetRequest(ep0_out, ep0_in, hidReportDescriptor,
+                                        result = XUD_DoGetRequest(ep0_out, ep0_in, hidReportDescriptor,
                                             sizeof(hidReportDescriptor), sp.wLength);
-
                                     break;
                                 }
                             }
@@ -448,11 +448,11 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
                             }
 #endif
                             ///* No data stage for this request, just do status stage */
-                            //retVal = XUD_DoSetRequestStatus(ep0_in);
+                            //result = XUD_DoSetRequestStatus(ep0_in);
 
                            // /* We want to run USB_StandardsRequests() implementation also */
-                            //if(retVal == 0)
-                              //  retVal = 1;
+                            //if(result == 0)
+                              //  result = 1;
                             break;
 
                         default:
@@ -472,10 +472,10 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
 #if (AUDIO_CLASS == 2) && defined(AUDIO_CLASS_FALLBACK)
                             if(g_curUsbSpeed == XUD_SPEED_FS)
                             {
-                                retVal = AudioEndpointRequests_1(ep0_out, ep0_in, sp, c_audioControl, c_mix_ctl, c_clk_ctl);
+                                result = AudioEndpointRequests_1(ep0_out, ep0_in, sp, c_audioControl, c_mix_ctl, c_clk_ctl);
                             }
 #elif (AUDIO_CLASS==1)
-                            retVal = AudioEndpointRequests_1(ep0_out, ep0_in, sp, c_audioControl, c_mix_ctl, c_clk_ctl);
+                            result = AudioEndpointRequests_1(ep0_out, ep0_in, sp, c_audioControl, c_mix_ctl, c_clk_ctl);
 #endif
                         }
 
@@ -523,7 +523,7 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
                             }
 
                             /* TODO we should not make the assumption that all DFU requests are handled */
-                            retVal = 0;
+                            result = 0;
                         }
 #endif
                         /* Check for:   - Audio CONTROL interface request - always 0, note we check for DFU first
@@ -535,24 +535,24 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
 #if (AUDIO_CLASS == 2) && defined(AUDIO_CLASS_FALLBACK)
                             if(g_curUsbSpeed == XUD_SPEED_HS)
                             {
-                                retVal = AudioClassRequests_2(ep0_out, ep0_in, sp, c_audioControl, c_mix_ctl, c_clk_ctl);
+                                result = AudioClassRequests_2(ep0_out, ep0_in, sp, c_audioControl, c_mix_ctl, c_clk_ctl);
                             }
                             else
                             {
-                                retVal = AudioClassRequests_1(ep0_out, ep0_in, sp, c_audioControl, c_mix_ctl, c_clk_ctl);
+                                result = AudioClassRequests_1(ep0_out, ep0_in, sp, c_audioControl, c_mix_ctl, c_clk_ctl);
                             }
 #elif (AUDIO_CLASS==2)
-                            retVal = AudioClassRequests_2(ep0_out, ep0_in, sp, c_audioControl, c_mix_ctl, c_clk_ctl);
+                            result = AudioClassRequests_2(ep0_out, ep0_in, sp, c_audioControl, c_mix_ctl, c_clk_ctl);
 #else
-                            retVal = AudioClassRequests_1(ep0_out, ep0_in, sp, c_audioControl, c_mix_ctl, c_clk_ctl);
+                            result = AudioClassRequests_1(ep0_out, ep0_in, sp, c_audioControl, c_mix_ctl, c_clk_ctl);
 #endif
 
 #ifdef VENDOR_AUDIO_REQS
 #error
-                            /* If retVal is 1 at this point, then request to audio interface not handled - handle vendor audio reqs */
-                            if(retVal == 1)
+                            /* If result is ERR at this point, then request to audio interface not handled - handle vendor audio reqs */
+                            if(result == XUD_RES_ERR)
                             {
-                                retVal = VendorAudioRequests(ep0_out, ep0_in, sp.bRequest,
+                                result = VendorAudioRequests(ep0_out, ep0_in, sp.bRequest,
                             	    sp.wValue >> 8, sp.wValue & 0xff,
                             	    sp.wIndex >> 8, sp.bmRequestType.Direction,
                             	    c_audioControl, c_mix_ctl, c_clk_ctl);
@@ -566,9 +566,9 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
                     break;
             }
 
-        } /* if(retVal == 0) */
+        } /* if(result == XUD_RES_OKAY) */
 
-        if(retVal > 0)
+        if(result == XUD_RES_ERR)
         {
 #ifdef DFU
             if (!DFU_mode_active)
@@ -576,7 +576,7 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
 #endif
 #ifdef AUDIO_CLASS_FALLBACK
                 /* Return Audio 2.0 Descriptors with Audio 1.0 as fallback */
-                retVal = USB_StandardRequests(ep0_out, ep0_in,
+                result = USB_StandardRequests(ep0_out, ep0_in,
                     devDesc_Audio2, sizeof(devDesc_Audio2),
                     cfgDesc_Audio2, sizeof(cfgDesc_Audio2),
                     devDesc_Audio1, sizeof(devDesc_Audio1),
@@ -654,7 +654,7 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
 #endif
                 }
 
-                retVal = USB_StandardRequests(ep0_out, ep0_in,
+                result = USB_StandardRequests(ep0_out, ep0_in,
                     devDesc_Audio2, sizeof(devDesc_Audio2),
                     cfgDesc_Audio2, sizeof(cfgDesc_Audio2),
                     null, 0,
@@ -662,7 +662,7 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
                     strDescs, sizeof(strDescs)/sizeof(strDescs[0]), sp, c_usb_test, g_curUsbSpeed);
 #elif (AUDIO_CLASS == 1)
                 /* Return Audio 1.0 Descriptors in FS, should never be in HS! */
-                 retVal = USB_StandardRequests(ep0_out, ep0_in,
+                 result = USB_StandardRequests(ep0_out, ep0_in,
                     null, 0,
                     null, 0,
                     devDesc_Audio1, sizeof(devDesc_Audio1),
@@ -670,7 +670,7 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
                     strDescs, sizeof(strDescs)/sizeof(strDescs[0]), sp, c_usb_test, g_curUsbSpeed);
 #else
                 /* Return Audio 2.0 Descriptors with Null device as fallback */
-                retVal = USB_StandardRequests(ep0_out, ep0_in,
+                result = USB_StandardRequests(ep0_out, ep0_in,
                     devDesc_Audio2, sizeof(devDesc_Audio2),
                     cfgDesc_Audio2, sizeof(cfgDesc_Audio2),
                     devDesc_Null, sizeof(devDesc_Null),
@@ -682,7 +682,7 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
             else
             {
                 /* Running in DFU mode - always return same descs for DFU whether HS or FS */
-                retVal = USB_StandardRequests(ep0_out, ep0_in,
+                result = USB_StandardRequests(ep0_out, ep0_in,
                     DFUdevDesc, sizeof(DFUdevDesc),
                     DFUcfgDesc, sizeof(DFUcfgDesc),
                     null, 0, /* Used same descriptors for full and high-speed */
@@ -692,7 +692,7 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
 #endif
         }
 
-        if (retVal < 0)
+        if (result == XUD_RES_RST)
         {
             g_curUsbSpeed = XUD_ResetEndpoint(ep0_out, ep0_in);
 
