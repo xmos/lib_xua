@@ -181,7 +181,7 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
     xc_ptr p_inZeroBuff = array_to_xc_ptr(inZeroBuff);
 
 #ifdef IAP
-    //XUD_ResetEndpoint(ep_iap_from_host, null);
+    XUD_ResetEndpoint(ep_iap_to_host, null);
     iap_send_reset(c_iap);
 #endif
 
