@@ -172,7 +172,11 @@ unsigned char devQualDesc_Null[] =
 #endif
 
 #ifdef IAP
+#ifdef IAP_INT_EP
 #define IAP_LENGTH                  (30)
+#else
+#define IAP_LENGTH                  (23)
+#endif
 #else
 #define IAP_LENGTH                  (0)
 #endif
@@ -1350,6 +1354,7 @@ unsigned char cfgDesc_Audio2[] =
     0x02,                            /* 5 wMaxPacketSize */
     0x00,                            /* 6 bInterval : Ignored for Bulk. Set to zero. (field size 1 bytes) */
 
+#ifdef IAP_INT_EP
     /* iAP Interrupt IN Endpoint Descriptor */
     0x07,                            /* 0 bLength : Size of this descriptor, in bytes. (field size 1 bytes) */
     0x05,                            /* 1 bDescriptorType : ENDPOINT descriptor. (field size 1 bytes) */
@@ -1358,6 +1363,7 @@ unsigned char cfgDesc_Audio2[] =
     0x40,                            /* 4 wMaxPacketSize : 64 bytes per packet. (field size 2 bytes) - has to be 0x40 for compliance*/
     0x00,                            /* 5 wMaxPacketSize */
     0x08,                            /* 6 bInterval : (2^(bInterval-1))/8 ms. Must be between 4 and 32ms (field size 1 bytes) */
+#endif
 
 #endif
 

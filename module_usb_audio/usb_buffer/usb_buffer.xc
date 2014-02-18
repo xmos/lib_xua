@@ -86,7 +86,9 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
 #ifdef IAP
             chanend c_iap_from_host,
             chanend c_iap_to_host,
+#ifdef IAP_INT_EP
             chanend c_iap_to_host_int,
+#endif
             chanend c_iap,
 #endif
 #if defined(SPDIF_RX) || defined(ADAT_RX)
@@ -113,7 +115,9 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
 #ifdef IAP
     XUD_ep ep_iap_from_host   = XUD_InitEp(c_iap_from_host);
     XUD_ep ep_iap_to_host     = XUD_InitEp(c_iap_to_host);
+#ifdef IAP_INT_EP
     XUD_ep ep_iap_to_host_int = XUD_InitEp(c_iap_to_host_int);
+#endif
 #endif
 #if defined(SPDIF_RX) || defined(ADAT_RX)
     XUD_ep ep_int = XUD_InitEp(c_int);
@@ -548,8 +552,10 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
 
             if(tmp == -1)
             {
-                 XUD_ResetEndpoint(ep_iap_to_host, null);
-                 XUD_ResetEndpoint(ep_iap_to_host_int, null);
+                XUD_ResetEndpoint(ep_iap_to_host, null);
+#ifdef IAP_INT_EP
+                XUD_ResetEndpoint(ep_iap_to_host_int, null);
+#endif
                 iap_send_reset(c_iap);
                 iap_draining_chan = 1; // Drain c_iap until a reset is sent back
                 iap_data_collected_from_device = 0;
@@ -564,12 +570,14 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
             }
             break;  /* IAP IN to host */
 
+#ifdef IAP_INT_EP
         case XUD_SetData_Select(c_iap_to_host_int, ep_iap_to_host_int, tmp):
             asm("#iap int d->h");
                 
             /* Do nothing.. */
             /* Note, could get a reset notification here, but deal with it in the case above */
             break;
+#endif
 #endif
 
 #ifdef HID_CONTROLS
@@ -698,13 +706,17 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
                             /* Note we don't ack the last byte yet... */
                             if (iap_data_collected_from_device == iap_expected_data_length)
                             {
-                                int reset1, reset2;
+                                int reset1 = 0, reset2;
+#ifdef IAP_INT_EP
                                 reset1 = XUD_SetReady_In(ep_iap_to_host_int, gc_zero_buffer, 0);
+#endif
                                 reset2 = XUD_SetReady_In(ep_iap_to_host, iap_to_host_buffer, iap_data_collected_from_device);
                            
                                 if((reset1 == -1) || (reset2 == -1))
                                 {
+#ifdef IAP_INT_EP
                                     XUD_ResetEndpoint(ep_iap_to_host_int, null);
+#endif
                                     XUD_ResetEndpoint(ep_iap_to_host, null);
                                     iap_send_reset(c_iap);
                                     iap_draining_chan = 1; // Drain c_iap until a reset is sent back

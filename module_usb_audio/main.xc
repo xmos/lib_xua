@@ -294,7 +294,12 @@ void usb_audio_core(chanend c_mix_out
                 c_midi,
 #endif
 #ifdef IAP
-                c_xud_out[EP_NUM_OUT_IAP], c_xud_in[EP_NUM_IN_IAP], c_xud_in[EP_NUM_IN_IAP_INT], c_iap,
+                c_xud_out[EP_NUM_OUT_IAP],   /* iAP Out */
+                c_xud_in[EP_NUM_IN_IAP],     /* iAP In */
+#ifdef IAP_INT_EP
+                c_xud_in[EP_NUM_IN_IAP_INT], /* iAP Interrupt In */
+#endif
+                c_iap,
 #endif
 #if defined(SPDIF_RX) || defined(ADAT_RX)
                 /* Audio Interrupt - only used for interrupts on external clock change */

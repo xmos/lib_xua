@@ -129,6 +129,7 @@ void usb_midi(buffered in port:1 ?p_midi_in, port ?p_midi_out,
 #ifdef IAP
         iAPTimer :> polltime;
         polltime += XS1_TIMER_HZ / 2;
+        SelectUSBPc(); // Select the PC connector to begin with, as we cannot actively detect connections to the USB B
 #endif
         while (1)
         {
