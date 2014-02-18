@@ -180,14 +180,6 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
 
     xc_ptr p_inZeroBuff = array_to_xc_ptr(inZeroBuff);
 
-#ifdef IAP
-    XUD_ResetEndpoint(ep_iap_to_host, null);
-#ifdef IAP_INT_EP
-    XUD_ResetEndpoint(ep_iap_to_host_int, null);
-#endif
-    iap_send_reset(c_iap);
-#endif
-
 #if defined(SPDIF_RX) || defined(ADAT_RX)
     asm("stw %0, dp[int_usb_ep]"::"r"(ep_int));
 #endif
