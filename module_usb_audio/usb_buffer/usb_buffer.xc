@@ -176,13 +176,15 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
     int iap_expected_data_length = 0;
     int iap_draining_chan = 0;
 #endif
-
-
+    
     xc_ptr p_inZeroBuff = array_to_xc_ptr(inZeroBuff);
 
 #ifdef IAP
-    XUD_ResetEndpoint(ep_iap_to_host, null);
-    iap_send_reset(c_iap);
+    //XUD_ResetEndpoint(ep_iap_to_host, null);
+#ifdef IAP_INT_EP
+    //XUD_ResetEndpoint(ep_iap_to_host_int, null);
+#endif
+    //iap_send_reset(c_iap);
 #endif
 
 #if defined(SPDIF_RX) || defined(ADAT_RX)
