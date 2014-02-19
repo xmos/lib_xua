@@ -61,7 +61,6 @@ static unsigned int g_midi_from_host_buffer[MAX_USB_MIDI_PACKET_SIZE/4];
 
 #ifdef IAP
 unsigned char  gc_zero_buffer[4];
-unsigned g_iap_reset = 1;
 #endif
 
 unsigned char fb_clocks[16];
