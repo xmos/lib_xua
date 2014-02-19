@@ -94,12 +94,6 @@ extern unsigned char g_interfaceAlt[];
 /* Global variable for current USB bus speed (i.e. FS/HS) */
 unsigned g_curUsbSpeed = 0;
 
-
-/* Global used for signalling reset to decouple */
-#ifdef IAP
-extern unsigned g_iap_reset;
-#endif
-
 #ifdef NATIVE_DSD
 /* We remember if we are in DSD mode to avoid Configuring the DAC too often - thus avoiding pops and clicks */
 unsigned g_dsdMode = 0;
@@ -441,18 +435,11 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
                                 /* Consider host active with valid driver at this point */
                                 UserHostActive(1);
                             }
-#ifdef IAP
-                            {
-                               int iap_reset = 1;
-                               SET_SHARED_GLOBAL(g_iap_reset, iap_reset);
-                            }
-#endif
+                            
                             ///* No data stage for this request, just do status stage */
                             //result = XUD_DoSetRequestStatus(ep0_in);
 
-                           // /* We want to run USB_StandardsRequests() implementation also */
-                            //if(result == 0)
-                              //  result = 1;
+                            /* We want to run USB_StandardsRequests() implementation also. Don't modify result */
                             break;
 
                         default:
