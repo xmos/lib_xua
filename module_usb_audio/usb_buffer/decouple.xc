@@ -736,21 +736,6 @@ void decouple(chanend c_mix_out,
     }
 #endif
 
-     {
-        int usb_speed = 0;
-
-        while(usb_speed == 0)
-        {
-           GET_SHARED_GLOBAL(usb_speed, g_curUsbSpeed);
-        }
-
-        if(usb_speed == XUD_SPEED_FS)
-        {
-            g_numUsbChanOut = NUM_USB_CHAN_OUT_FS;
-            g_numUsbChanIn = NUM_USB_CHAN_IN_FS;
-        }
-    }
-
     while(1)
     {
         int tmp;
@@ -864,6 +849,8 @@ void decouple(chanend c_mix_out,
                 SET_SHARED_GLOBAL(sampsToWrite, 0);
                 SET_SHARED_GLOBAL(totalSampsToWrite, 0);
                 SET_SHARED_GLOBAL(g_aud_to_host_buffer, g_aud_to_host_zeros);
+
+                // TODO Set size of zero buffer here
 
                 SET_SHARED_GLOBAL(g_freqChange, 0);
                 ENABLE_INTERRUPTS();
