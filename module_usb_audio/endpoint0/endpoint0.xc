@@ -263,8 +263,10 @@ void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
                                     break;
                                 case 1:
                                     /* Stream active + 0 chans */
-                                    /* NOTE there could be a difference between HS/UAC1 and FS/UAC1 channel count */
-                                    /* Also note, currently we assume with won't be doing ADAT in FS/UAC1...*/
+                                    /* NOTE there could be a difference between HS/UAC1 and FS/UAC1 channel count
+                                     * Also note, currently we assume with won't be doing ADAT in FS/UAC1...
+                                     * Note: This is is important. Decouple uses this to setup the size of the initial IN packet size
+                                     */
                                     if(g_curUsbSpeed == XUD_SPEED_HS)
                                     {
                                         outuint(c_audioControl, SET_CHAN_COUNT_OUT);
