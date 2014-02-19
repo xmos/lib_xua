@@ -68,7 +68,7 @@ unsigned char fb_clocks[16];
 //#define FB_TOLERANCE_TEST
 #define FB_TOLERANCE 0x100
 
-extern unsigned inZeroBuff[];
+//extern unsigned inZeroBuff[];
 
 /**
  * Buffers data from audio endpoints
@@ -175,7 +175,7 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
     int iap_draining_chan = 0;
 #endif
     
-    xc_ptr p_inZeroBuff = array_to_xc_ptr(inZeroBuff);
+    //xc_ptr p_inZeroBuff = array_to_xc_ptr(inZeroBuff);
 
 #if defined(SPDIF_RX) || defined(ADAT_RX)
     asm("stw %0, dp[int_usb_ep]"::"r"(ep_int));
@@ -184,27 +184,6 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
     asm("stw %0, dp[aud_to_host_usb_ep]"::"r"(ep_aud_in));
     asm("stw %0, dp[buffer_aud_ctl_chan]"::"r"(c_aud_ctl));
 
-    /* Wait for USB connect then setup our first packet */
-    {
-        int min, mid, max;
-        int usb_speed = 0;
-        int frameTime;
-
-        while(usb_speed == 0)
-        {
-           GET_SHARED_GLOBAL(usb_speed, g_curUsbSpeed);
-        }
-
-        GetADCCounts(DEFAULT_FREQ, min, mid, max);
-        asm("stw %0, dp[g_speed]"::"r"(mid << 16));
-        if (usb_speed == XUD_SPEED_HS)
-          mid*=NUM_USB_CHAN_IN*SAMPLE_SUBSLOT_SIZE_HS;
-        else
-          mid*=NUM_USB_CHAN_IN_FS*SAMPLE_SUBSLOT_SIZE_FS;
-
-        asm("stw %0, %1[0]"::"r"(mid),"r"(p_inZeroBuff));
-    }
-    
 #ifdef FB_TOLERANCE_TEST
     expected_fb = ((DEFAULT_FREQ * 0x2000) / 1000);
 #endif
