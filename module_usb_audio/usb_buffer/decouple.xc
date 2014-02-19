@@ -640,7 +640,6 @@ void decouple(chanend c_mix_out,
 #endif
 
     int t = array_to_xc_ptr(outAudioBuff);
-    int aud_in_ready = 0;
 
 #ifndef OUT_VOLUME_IN_MIXER
     p_multOut = array_to_xc_ptr(multOut);
@@ -731,8 +730,6 @@ void decouple(chanend c_mix_out,
         GET_SHARED_GLOBAL(p, g_aud_to_host_buffer);
         read_via_xc_ptr(len, p)
         XUD_SetReady_InPtr(aud_to_host_usb_ep, g_aud_to_host_buffer, len);
-        aud_in_ready = 1;
-
     }
 #endif
 
@@ -784,7 +781,7 @@ void decouple(chanend c_mix_out,
 
                 /* Update size of zeros buffer */
                 {
-                    int min, mid, max, usb_speed;
+                    int min, mid, max, usb_speed, p;
                     GET_SHARED_GLOBAL(usb_speed, g_curUsbSpeed);
                     GetADCCounts(sampFreq, min, mid, max);
                     if (usb_speed == XUD_SPEED_HS)
@@ -793,20 +790,11 @@ void decouple(chanend c_mix_out,
                         mid*=NUM_USB_CHAN_IN_FS*SAMPLE_SUBSLOT_SIZE_FS;
 
                     asm("stw %0, %1[0]"::"r"(mid),"r"(g_aud_to_host_zeros));
-                }
-
-
-                /* Check if we have an IN packet ready to go */
-                if (aud_in_ready)
-                {
-                    xc_ptr p;
-                    int len;
-
+                     
+                    /* Mark EP ready with the zero buffer. Note this will simply update the packet size
+                     * if it is already ready */
                     GET_SHARED_GLOBAL(p, g_aud_to_host_buffer);
-                    read_via_xc_ptr(len, p);
-
-                    /* Update packet size */
-                    XUD_SetReady_InPtr(aud_to_host_usb_ep, p+4, len);
+                    XUD_SetReady_InPtr(aud_to_host_usb_ep, p+4, mid);
                 }
 
                 /* Reset OUT buffer state */
@@ -821,7 +809,6 @@ void decouple(chanend c_mix_out,
                     XUD_SetReady_OutPtr(aud_from_host_usb_ep, aud_from_host_fifo_start+4);
                     outOverflow = 0;
                 }
-
 
                 /* Wait for handshake back and pass back up */
                 chkct(c_mix_out, XS1_CT_END);
@@ -1010,7 +997,6 @@ void decouple(chanend c_mix_out,
                 /* Signals that the IN endpoint has sent data from the passed buffer */
                 /* Reset flag */
                 SET_SHARED_GLOBAL(g_aud_to_host_flag, 0);
-                aud_in_ready = 0;
 
                 if (inUnderflow)
                 {
@@ -1074,7 +1060,6 @@ void decouple(chanend c_mix_out,
                     GET_SHARED_GLOBAL(p, g_aud_to_host_buffer);
                     asm("ldw %0, %1[0]":"=r"(len):"r"(p));
                     XUD_SetReady_InPtr(aud_to_host_usb_ep, p+4, len);
-                    aud_in_ready = 1;
                 }
                 continue;
             }
