@@ -69,6 +69,7 @@ unsigned char fb_clocks[16];
 #define FB_TOLERANCE 0x100
 
 extern unsigned inZeroBuff[];
+
 /**
  * Buffers data from audio endpoints
  * @param   c_aud_out     chanend for audio from xud
@@ -125,8 +126,6 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
 #ifdef HID_CONTROLS
     XUD_ep ep_hid = XUD_InitEp(c_hid);
 #endif
-
-
     int tmp;
     unsigned u_tmp;
     unsigned sampleFreq = 0;
@@ -204,12 +203,11 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
           mid*=NUM_USB_CHAN_IN_FS*SAMPLE_SUBSLOT_SIZE_FS;
 
         asm("stw %0, %1[0]"::"r"(mid),"r"(p_inZeroBuff));
-
-#ifdef FB_TOLERANCE_TEST
-        expected_fb = ((DEFAULT_FREQ * 0x2000) / 1000);
-#endif
-
     }
+    
+#ifdef FB_TOLERANCE_TEST
+    expected_fb = ((DEFAULT_FREQ * 0x2000) / 1000);
+#endif
 
 #ifdef OUTPUT
     SET_SHARED_GLOBAL(g_aud_from_host_flag, 1);
@@ -295,21 +293,9 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
                         /* Don't update things for DFU command.. */
                         if(sampleFreq != AUDIO_STOP_FOR_DFU)
                         {
-                            /* Tidy up double buffer, note we can do better than this for 44.1 etc but better
-                             * than sending two packets at old speed! */
-                            GetADCCounts(sampleFreq, min, mid, max);
    #ifdef FB_TOLERANCE_TEST
                             expected_fb = ((sampleFreq * 0x2000) / frameTime);
    #endif
-                            asm("stw %0, dp[g_speed]"::"r"(mid << 16));
-
-                            if (usb_speed == XUD_SPEED_HS)
-                                mid *= NUM_USB_CHAN_IN*SAMPLE_SUBSLOT_SIZE_HS;
-                            else
-                                mid *= NUM_USB_CHAN_IN_FS*SAMPLE_SUBSLOT_SIZE_FS;
-
-                            asm("stw %0, %1[0]"::"r"(mid),"r"(p_inZeroBuff));
-
                             /* Reset FB */
                             /* Note, Endpoint 0 will hold off host for a sufficient period to allow our feedback
                              * to stabilise (i.e. sofCount == 128 to fire) */
