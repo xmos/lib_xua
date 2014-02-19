@@ -620,6 +620,31 @@ static void check_for_interrupt(chanend ?c_clk_int) {
     }
 }
 
+/* Mark Endpoint (IN) ready with an appropriately sized zero buffer */
+static inline void SetupZerosSendBuffer(XUD_ep aud_to_host_usb_ep, unsigned sampFreq)
+{
+    int min, mid, max, usb_speed, p;
+    GET_SHARED_GLOBAL(usb_speed, g_curUsbSpeed);
+    GetADCCounts(sampFreq, min, mid, max);
+    if (usb_speed == XUD_SPEED_HS)
+    {
+        mid*=NUM_USB_CHAN_IN*SAMPLE_SUBSLOT_SIZE_HS;
+    }
+    else
+    {
+        mid*=NUM_USB_CHAN_IN_FS*SAMPLE_SUBSLOT_SIZE_FS;
+    }
+    
+    asm("stw %0, %1[0]"::"r"(mid),"r"(g_aud_to_host_zeros));
+                     
+    /* Mark EP ready with the zero buffer. Note this will simply update the packet size
+    * if it is already ready */
+    GET_SHARED_GLOBAL(p, g_aud_to_host_buffer);
+    XUD_SetReady_InPtr(aud_to_host_usb_ep, p+4, mid);
+}
+                
+
+
 unsigned char tmpBuffer[1026];
 
 #pragma unsafe arrays
@@ -660,6 +685,10 @@ void decouple(chanend c_mix_out,
     g_aud_to_host_wrptr = aud_to_host_fifo_start;
     g_aud_to_host_rdptr = aud_to_host_fifo_start;
 
+    /* Setup pointer to In stream 0 buffer. Note, length will be innited to 0
+     * However, this should be over-written on first stream start (assuming host
+       properly sends a SetInterface() before streaming. In any case we will send 
+       0 length packets, which is reasonable behaviour */
     t = array_to_xc_ptr(inZeroBuff);
     g_aud_to_host_zeros = t;
 
@@ -721,6 +750,10 @@ void decouple(chanend c_mix_out,
     aud_to_host_flag = 0;
     SET_SHARED_GLOBAL(g_aud_to_host_flag, aud_to_host_flag);
 
+    /* NOTE: IN EP not marked ready at this point - Intial size of zero buffer not set
+     * The host will send a SetAltInterface before streaming which will lead to this core
+     * getting a SET_CHANNEL_COUNT_IN. This will setup the EP for the first packet */
+#if 0
     // send the current host -> device buffer out of the fifo
     SET_SHARED_GLOBAL(g_aud_to_host_buffer, g_aud_to_host_zeros);
     {
@@ -731,6 +764,7 @@ void decouple(chanend c_mix_out,
         read_via_xc_ptr(len, p)
         XUD_SetReady_InPtr(aud_to_host_usb_ep, g_aud_to_host_buffer, len);
     }
+#endif
 #endif
 
     while(1)
@@ -769,10 +803,8 @@ void decouple(chanend c_mix_out,
 
                 inOverflow = 0;
                 inUnderflow = 1;
-                SET_SHARED_GLOBAL(g_aud_to_host_rdptr,
-                                  aud_to_host_fifo_start);
-                SET_SHARED_GLOBAL(g_aud_to_host_wrptr,
-                                  aud_to_host_fifo_start);
+                SET_SHARED_GLOBAL(g_aud_to_host_rdptr, aud_to_host_fifo_start);
+                SET_SHARED_GLOBAL(g_aud_to_host_wrptr, aud_to_host_fifo_start);
                 SET_SHARED_GLOBAL(sampsToWrite, 0);
                 SET_SHARED_GLOBAL(totalSampsToWrite, 0);
 
@@ -780,22 +812,7 @@ void decouple(chanend c_mix_out,
                 SET_SHARED_GLOBAL(g_aud_to_host_buffer,g_aud_to_host_zeros);
 
                 /* Update size of zeros buffer */
-                {
-                    int min, mid, max, usb_speed, p;
-                    GET_SHARED_GLOBAL(usb_speed, g_curUsbSpeed);
-                    GetADCCounts(sampFreq, min, mid, max);
-                    if (usb_speed == XUD_SPEED_HS)
-                        mid*=NUM_USB_CHAN_IN*SAMPLE_SUBSLOT_SIZE_HS;
-                    else
-                        mid*=NUM_USB_CHAN_IN_FS*SAMPLE_SUBSLOT_SIZE_FS;
-
-                    asm("stw %0, %1[0]"::"r"(mid),"r"(g_aud_to_host_zeros));
-                     
-                    /* Mark EP ready with the zero buffer. Note this will simply update the packet size
-                     * if it is already ready */
-                    GET_SHARED_GLOBAL(p, g_aud_to_host_buffer);
-                    XUD_SetReady_InPtr(aud_to_host_usb_ep, p+4, mid);
-                }
+                SetupZerosSendBuffer(aud_to_host_usb_ep, sampFreq);             
 
                 /* Reset OUT buffer state */
                 outUnderflow = 1;
@@ -835,9 +852,12 @@ void decouple(chanend c_mix_out,
                 SET_SHARED_GLOBAL(g_aud_to_host_wrptr,aud_to_host_fifo_start);
                 SET_SHARED_GLOBAL(sampsToWrite, 0);
                 SET_SHARED_GLOBAL(totalSampsToWrite, 0);
+
+                /* Set buffer back to zeros buffer */
                 SET_SHARED_GLOBAL(g_aud_to_host_buffer, g_aud_to_host_zeros);
 
-                // TODO Set size of zero buffer here
+                /* Update size of zeros buffer */
+                SetupZerosSendBuffer(aud_to_host_usb_ep, sampFreq); 
 
                 SET_SHARED_GLOBAL(g_freqChange, 0);
                 ENABLE_INTERRUPTS();
@@ -1050,7 +1070,6 @@ void decouple(chanend c_mix_out,
                     {
                         inUnderflow = 1;
                         SET_SHARED_GLOBAL(g_aud_to_host_buffer, g_aud_to_host_zeros);
-
                     }
                 }
 
