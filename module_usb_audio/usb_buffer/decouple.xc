@@ -47,15 +47,11 @@ unsigned outAudioBuff[BUFF_SIZE_OUT + (MAX_USB_AUD_PACKET_SIZE>>2) + 4];
 unsigned audioBuffIn[BUFF_SIZE_IN + (MAX_DEVICE_AUD_PACKET_SIZE>>2) + 4];
 
 unsigned inZeroBuff[(MAX_DEVICE_AUD_PACKET_SIZE>>2)+4];
-//
-unsigned ledVal = 1;
-unsigned dir = 0;
 
 void GetADCCounts(unsigned samFreq, int &min, int &mid, int &max);
 
 /* Globals for EP types */
 XUD_ep aud_from_host_usb_ep = 0;
-XUD_ep aud_fb_usb_ep = 0;
 XUD_ep aud_to_host_usb_ep = 0;
 XUD_ep int_usb_ep = 0;
 
