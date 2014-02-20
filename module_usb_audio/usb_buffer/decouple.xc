@@ -122,9 +122,10 @@ void handle_audio_request(chanend c_mix_out)
     /* Reply with underflow */
     outuint(c_mix_out, outUnderflow);
 
-    asm("ldw   %0, dp[g_curUsbSpeed]" : "=r" (usb_speed) :);
+    GET_SHARED_GLOBAL(usb_speed, g_curUsbSpeed);
 
     /* slotSize different for Audio Class 1.0/2.0. */
+    /* TODO It is quite wasteful to run this check every interrupt. Perhaps on stream start is good enough */
 #if defined(AUDIO_CLASS_FALLBACK) || defined (FULL_SPEED_AUDIO_2)
     if (usb_speed == XUD_SPEED_HS)
     {
