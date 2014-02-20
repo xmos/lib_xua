@@ -180,6 +180,7 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
 #if defined(SPDIF_RX) || defined(ADAT_RX)
     asm("stw %0, dp[int_usb_ep]"::"r"(ep_int));
 #endif
+    /* Store EP's to globals so that decouple() can access them */
     asm("stw %0, dp[aud_from_host_usb_ep]"::"r"(ep_aud_out));
     asm("stw %0, dp[aud_to_host_usb_ep]"::"r"(ep_aud_in));
     asm("stw %0, dp[buffer_aud_ctl_chan]"::"r"(c_aud_ctl));
@@ -198,27 +199,7 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
 
     (fb_clocks, unsigned[])[0] = 0;
 
-    {
-        int usb_speed;
-        int x;
-        int reset;
-
-        asm("ldaw %0, dp[fb_clocks]":"=r"(x));
-        GET_SHARED_GLOBAL(usb_speed, g_curUsbSpeed);
-
-        if (usb_speed == XUD_SPEED_HS)
-        {
-            reset = XUD_SetReady_In(ep_aud_fb, fb_clocks, 4);
-        
-            if(reset)
-                printstr("SetReady_In Reset\n");
-        }
-        else
-        {
-            XUD_SetReady_In(ep_aud_fb, fb_clocks, 3);
-        }
-    }
-
+    /* Mark OUT endpoints ready to receive data from host */
 #ifdef MIDI
     XUD_SetReady_OutPtr(ep_midi_from_host, midi_from_host_buffer);
 #endif
@@ -247,7 +228,7 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
               }
 #endif
 
-            /* Sample Freq or chan count update from ep 0 */
+            /* Sample Freq or chan count update from Endpoint 0 core */
             case testct_byref(c_aud_ctl, u_tmp):
             {
                 if (u_tmp)
@@ -259,16 +240,11 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
                 }
                 else
                 {
-                    int min, mid, max;
-                    int usb_speed;
-                    int frameTime;
-                    tmp = inuint(c_aud_ctl);
-                    GET_SHARED_GLOBAL(usb_speed, g_curUsbSpeed);
-
-                    if(tmp == SET_SAMPLE_FREQ)
+                    unsigned cmd = inuint(c_aud_ctl);
+                    sampleFreq = inuint(c_aud_ctl);
+                   
+                    if(cmd == SET_SAMPLE_FREQ)
                     {
-                        sampleFreq = inuint(c_aud_ctl);
-
                         /* Don't update things for DFU command.. */
                         if(sampleFreq != AUDIO_STOP_FOR_DFU)
                         {
@@ -284,21 +260,32 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
 
                         }
                         /* Ideally we want to wait for handshake (and pass back up) here.  But we cannot keep this
-                        * thread locked, it must stay responsive to packets/SOFs.  So, set a flag and check for
+                        * core locked, it must stay responsive to packets (MIDI etc) and SOFs.  So, set a flag and check for
                         * handshake elsewhere */
-                        /* Pass on sample freq change to decouple */
-                        SET_SHARED_GLOBAL0(g_freqChange, SET_SAMPLE_FREQ);
-                        SET_SHARED_GLOBAL(g_freqChange_sampFreq, sampleFreq);
-                        SET_SHARED_GLOBAL(g_freqChange_flag, SET_SAMPLE_FREQ);
                     }
-                    else
+                    else if (cmd == SET_CHAN_COUNT_OUT)
                     {
-                        sampleFreq = inuint(c_aud_ctl);
+                        /* Host is starting up the output stream. Setup (or potentially resize) feedback packet based on bus-speed 
+                         * This is only really important on inital start up (when bus-speed 
+                           was unknown) and when changing bus-speeds */
+                        XUD_BusSpeed_t busSpeed;
+                        GET_SHARED_GLOBAL(busSpeed, g_curUsbSpeed);
 
-                        SET_SHARED_GLOBAL0(g_freqChange, tmp);                /* Set command */
-                        SET_SHARED_GLOBAL(g_freqChange_sampFreq, sampleFreq); /* Set flag */
-                        SET_SHARED_GLOBAL(g_freqChange_flag, tmp);
+                        if (busSpeed == XUD_SPEED_HS)
+                        {
+                            XUD_SetReady_In(ep_aud_fb, fb_clocks, 4);
+                        }
+                        else
+                        {
+                            XUD_SetReady_In(ep_aud_fb, fb_clocks, 3);
+                        }
+
                     }
+                    /* Pass on sample freq change to decouple() via global flag (saves a chanend) */
+                    /* Note: freqChange flags now used to communicate other commands also */
+                    SET_SHARED_GLOBAL0(g_freqChange, cmd);                /* Set command */
+                    SET_SHARED_GLOBAL(g_freqChange_sampFreq, sampleFreq); /* Set flag */
+                    SET_SHARED_GLOBAL(g_freqChange_flag, cmd);
                 }
                 break;
             }
@@ -307,6 +294,7 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
             #define MASK_16_10            (127) /* For Audio 1.0 we use a mask 1 bit longer than expected to avoid Windows LSB issues */
                                                 /* (previously used 63 instead of 127) */
 
+            /* SOF notifcation from XUD_Manager() */
             case inuint_byref(c_sof, u_tmp):
 
                 /* NOTE our feedback will be wrong for a couple of SOF's after a SF change due to
@@ -387,7 +375,7 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
 
 
 #ifdef INPUT
-            /* DEVICE -> HOST */
+            /* Sent audio packet DEVICE -> HOST */
             case XUD_SetData_Select(c_aud_in, ep_aud_in, tmp):
             {
                 /* Inform stream that buffer sent */
@@ -400,16 +388,12 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
             /* Feedback Pipe */
             case XUD_SetData_Select(c_aud_fb, ep_aud_fb, tmp):
             {
-
-                int usb_speed;
-                int x;
-
                 asm("#aud fb");
+                XUD_BusSpeed_t busSpeed;
+                
+                GET_SHARED_GLOBAL(busSpeed, g_curUsbSpeed);
 
-                asm("ldaw %0, dp[fb_clocks]":"=r"(x));
-                GET_SHARED_GLOBAL(usb_speed, g_curUsbSpeed);
-
-                if (usb_speed == XUD_SPEED_HS)
+                if (busSpeed == XUD_SPEED_HS)
                 {
                     XUD_SetReady_In(ep_aud_fb, fb_clocks, 4);
                 }
@@ -420,7 +404,7 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
             }
             break;
 
-            /* Audio HOST -> DEVICE */
+            /* Recieved Audio packet HOST -> DEVICE */
             case XUD_GetData_Select(c_aud_out, ep_aud_out, tmp):
             {
                 asm("#h->d aud data");
