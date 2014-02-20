@@ -845,7 +845,7 @@ void decouple(chanend c_mix_out,
             }
             else if(tmp == SET_CHAN_COUNT_OUT)
             {
-                /* Change in OUT channel count */
+                /* Change in OUT channel count - note we expect this on every stream start event */
                 DISABLE_INTERRUPTS();
                 SET_SHARED_GLOBAL(g_freqChange_flag, 0);
                 GET_SHARED_GLOBAL(g_numUsbChanOut, g_freqChange_sampFreq);  /* Misuse of g_freqChange_sampFreq */
