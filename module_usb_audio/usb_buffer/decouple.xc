@@ -53,9 +53,11 @@ unsigned dir = 0;
 
 void GetADCCounts(unsigned samFreq, int &min, int &mid, int &max);
 
-int aud_from_host_usb_ep = 0;
-int aud_to_host_usb_ep = 0;
-int int_usb_ep = 0;
+/* Globals for EP types */
+XUD_ep aud_from_host_usb_ep = 0;
+XUD_ep aud_fb_usb_ep = 0;
+XUD_ep aud_to_host_usb_ep = 0;
+XUD_ep int_usb_ep = 0;
 
 /* Shared global audio buffering variables */
 unsigned g_aud_from_host_buffer;
