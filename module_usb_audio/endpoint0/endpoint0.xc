@@ -92,7 +92,7 @@ extern unsigned char g_currentConfig;
 extern unsigned char g_interfaceAlt[];
 
 /* Global variable for current USB bus speed (i.e. FS/HS) */
-unsigned g_curUsbSpeed = 0;
+XUD_BusSpeed_t g_curUsbSpeed = 0;
 
 #ifdef NATIVE_DSD
 /* We remember if we are in DSD mode to avoid Configuring the DAC too often - thus avoiding pops and clicks */
