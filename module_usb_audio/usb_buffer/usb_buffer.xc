@@ -165,7 +165,6 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
     unsigned char iap_from_host_buffer[MAX_IAP_PACKET_SIZE+4];
     unsigned char iap_to_host_buffer[MAX_IAP_PACKET_SIZE+4];
 
-
     int is_ack_iap;
     int is_reset;
     unsigned int datum_iap;
@@ -174,8 +173,6 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
     int iap_expected_data_length = 0;
     int iap_draining_chan = 0;
 #endif
-    
-    //xc_ptr p_inZeroBuff = array_to_xc_ptr(inZeroBuff);
 
 #if defined(SPDIF_RX) || defined(ADAT_RX)
     asm("stw %0, dp[int_usb_ep]"::"r"(ep_int));
@@ -214,6 +211,9 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
 
     while(1)
     {
+        XUD_Result_t result;
+        unsigned length;
+
         /* Wait for response from XUD and service relevant EP */
         select
         {
@@ -376,7 +376,7 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
 
 #ifdef INPUT
             /* Sent audio packet DEVICE -> HOST */
-            case XUD_SetData_Select(c_aud_in, ep_aud_in, tmp):
+            case XUD_SetData_Select(c_aud_in, ep_aud_in, result):
             {
                 /* Inform stream that buffer sent */
                 SET_SHARED_GLOBAL0(g_aud_to_host_flag, bufferIn+1);
@@ -386,7 +386,7 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
 
 #ifdef OUTPUT
             /* Feedback Pipe */
-            case XUD_SetData_Select(c_aud_fb, ep_aud_fb, tmp):
+            case XUD_SetData_Select(c_aud_fb, ep_aud_fb, result):
             {
                 asm("#aud fb");
                 XUD_BusSpeed_t busSpeed;
@@ -404,14 +404,14 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
             }
             break;
 
-            /* Recieved Audio packet HOST -> DEVICE */
-            case XUD_GetData_Select(c_aud_out, ep_aud_out, tmp):
+            /* Received Audio packet HOST -> DEVICE. Datalength written to length */
+            case XUD_GetData_Select(c_aud_out, ep_aud_out, length, result):
             {
                 asm("#h->d aud data");
 
                 GET_SHARED_GLOBAL(aud_from_host_buffer, g_aud_from_host_buffer);
 
-                write_via_xc_ptr(aud_from_host_buffer, tmp);
+                write_via_xc_ptr(aud_from_host_buffer, length);
 
                 /* Sync with decouple thread */
                 SET_SHARED_GLOBAL0(g_aud_from_host_flag, 1);
@@ -420,26 +420,29 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
 #endif
 
 #ifdef MIDI
-        case XUD_GetData_Select(c_midi_from_host, ep_midi_from_host, tmp):
+        case XUD_GetData_Select(c_midi_from_host, ep_midi_from_host, length, result):
             asm("#midi h->d");
 
-            /* Get buffer data from host - MIDI OUT from host always into a single buffer */
-            /* Write datalength (tmp) into buffer[0], data stored in buffer[4] onwards */
-            midi_data_remaining_to_device = tmp;
-
-            midi_from_host_rdptr = midi_from_host_buffer;
-
-            if (midi_data_remaining_to_device)
+            if((result == XUD_RES_OKAY) && (length > 0))
             {
-                read_via_xc_ptr(datum, midi_from_host_rdptr);
-                outuint(c_midi, datum);
-                midi_from_host_rdptr += 4;
-                midi_data_remaining_to_device -= 4;
+                /* Get buffer data from host - MIDI OUT from host always into a single buffer */
+                /* Write datalength (tmp) into buffer[0], data stored in buffer[4] onwards */
+                midi_data_remaining_to_device = length;
+
+                midi_from_host_rdptr = midi_from_host_buffer;
+
+                if (midi_data_remaining_to_device)
+                {
+                    read_via_xc_ptr(datum, midi_from_host_rdptr);
+                    outuint(c_midi, datum);
+                    midi_from_host_rdptr += 4;
+                    midi_data_remaining_to_device -= 4;
+                }
             }
             break;
 
         /* MIDI IN to host */
-        case XUD_SetData_Select(c_midi_to_host, ep_midi_to_host, tmp):
+        case XUD_SetData_Select(c_midi_to_host, ep_midi_to_host, result):
             asm("#midi d->h");
 
             /* The buffer has been sent to the host, so we can ack the midi thread */
@@ -464,12 +467,12 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
 #endif
 
 #ifdef IAP
-        /* IAP OUT from host */
-        case XUD_GetData_Select(c_iap_from_host, ep_iap_from_host, tmp):
+        /* IAP OUT from host. Datalength writen to tmp */
+        case XUD_GetData_Select(c_iap_from_host, ep_iap_from_host, length, result):
             asm("#iap h->d");
-            if(tmp >= 0)
+            if((result == XUD_RES_OKAY) && (length > 0))
             {
-                iap_data_remaining_to_device = tmp;
+                iap_data_remaining_to_device = length;
 
                 if(iap_data_remaining_to_device)
                 {
@@ -489,10 +492,10 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
             break;
 
         /* IAP IN to host */
-        case XUD_SetData_Select(c_iap_to_host, ep_iap_to_host, tmp):
+        case XUD_SetData_Select(c_iap_to_host, ep_iap_to_host, result):
             asm("#iap d->h");
 
-            if(tmp == -1)
+            if(result == XUD_RES_RST)
             {
                 XUD_ResetEndpoint(ep_iap_to_host, null);
 #ifdef IAP_INT_EP
@@ -513,7 +516,7 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
             break;  /* IAP IN to host */
 
 #ifdef IAP_INT_EP
-        case XUD_SetData_Select(c_iap_to_host_int, ep_iap_to_host_int, tmp):
+        case XUD_SetData_Select(c_iap_to_host_int, ep_iap_to_host_int, result):
             asm("#iap int d->h");
                 
             /* Do nothing.. */
@@ -524,7 +527,7 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
 
 #ifdef HID_CONTROLS
             /* HID Report Data */
-            case XUD_SetData_Select(c_hid, ep_hid, tmp):
+            case XUD_SetData_Select(c_hid, ep_hid, result):
             {
                 g_hidData[0]=0;
                 UserReadHIDButtons(g_hidData);
