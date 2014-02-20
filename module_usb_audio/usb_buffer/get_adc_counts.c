@@ -1,5 +1,6 @@
-extern unsigned int g_curUsbSpeed;
-#define XUD_SPEED_HS 2
+#include "xud.h"
+
+extern XUD_BusSpeed_t g_curUsbSpeed;
 
 /* Returns the max and min packet sizes to send back to host for a given sample frequency
  * See page 13 of USB Audio Device Class Definitions for Audio Data Formats Spec (v2.0)
@@ -28,7 +29,7 @@ extern unsigned int g_curUsbSpeed;
 void GetADCCounts(unsigned samFreq, int *min, int *mid, int *max)
 {
     unsigned frameTime;
-    int usb_speed;
+    XUD_BusSpeed_t usb_speed;
     usb_speed = g_curUsbSpeed;
     if (usb_speed == XUD_SPEED_HS)
       frameTime = 8000;
