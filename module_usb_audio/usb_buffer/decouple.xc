@@ -707,32 +707,25 @@ void decouple(chanend c_mix_out,
 #ifndef OUT_VOLUME_IN_MIXER
     for (int i = 0; i < NUM_USB_CHAN_OUT + 1; i++)
     {
-      asm("stw %0, %1[%2]"::"r"(MAX_VOL),"r"(p_multOut),"r"(i));
+        asm("stw %0, %1[%2]"::"r"(MAX_VOL),"r"(p_multOut),"r"(i));
     }
 #endif
 
 #ifndef IN_VOLUME_IN_MIXER
     for (int i = 0; i < NUM_USB_CHAN_IN + 1; i++)
     {
-      asm("stw %0, %1[%2]"::"r"(MAX_VOL),"r"(p_multIn),"r"(i));
+        asm("stw %0, %1[%2]"::"r"(MAX_VOL),"r"(p_multIn),"r"(i));
     }
 #endif
-
-
-    { int c=0;
-      while(!c) {
-        asm("ldw %0, dp[buffer_aud_ctl_chan]":"=r"(c));
-      }
-    }
-
-
+    
     set_interrupt_handler(handle_audio_request, 200, 1, c_mix_out, 0);
 
+    /* Wait for usb_buffer() to set up globals for us to use
+     * Note: assumed that buffer_aud_ctl_chan is also setup before these globals are !0 */
 #ifdef OUTPUT
-    // wait for usb_buffer to set up
     while(!aud_from_host_flag)
     {
-      GET_SHARED_GLOBAL(aud_from_host_flag, g_aud_from_host_flag);
+        GET_SHARED_GLOBAL(aud_from_host_flag, g_aud_from_host_flag);
     }
 
     aud_from_host_flag = 0;
@@ -744,30 +737,19 @@ void decouple(chanend c_mix_out,
 #endif
 
 #ifdef INPUT
-    // Wait for usb_buffer to set up
+    /* Wait for usb_buffer to set up */
     while(!aud_to_host_flag)
     {
-      GET_SHARED_GLOBAL(aud_to_host_flag, g_aud_to_host_flag);
+        GET_SHARED_GLOBAL(aud_to_host_flag, g_aud_to_host_flag);
     }
 
     aud_to_host_flag = 0;
     SET_SHARED_GLOBAL(g_aud_to_host_flag, aud_to_host_flag);
 
-    /* NOTE: IN EP not marked ready at this point - Intial size of zero buffer not set
+    /* NOTE: IN EP not marked ready at this point - Initial size of zero buffer not known
+     * since we don't know the USB bus-speed yet.
      * The host will send a SetAltInterface before streaming which will lead to this core
      * getting a SET_CHANNEL_COUNT_IN. This will setup the EP for the first packet */
-#if 0
-    // send the current host -> device buffer out of the fifo
-    SET_SHARED_GLOBAL(g_aud_to_host_buffer, g_aud_to_host_zeros);
-    {
-        xc_ptr p;
-        int len;
-
-        GET_SHARED_GLOBAL(p, g_aud_to_host_buffer);
-        read_via_xc_ptr(len, p)
-        XUD_SetReady_InPtr(aud_to_host_usb_ep, g_aud_to_host_buffer, len);
-    }
-#endif
 #endif
 
     while(1)
