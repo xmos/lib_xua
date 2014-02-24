@@ -162,8 +162,8 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
 
 #ifdef IAP
     xc_ptr iap_from_host_rdptr;
-    unsigned char iap_from_host_buffer[MAX_IAP_PACKET_SIZE+4];
-    unsigned char iap_to_host_buffer[MAX_IAP_PACKET_SIZE];
+    unsigned char iap_from_host_buffer[IAP_MAX_PACKET_SIZE+4];
+    unsigned char iap_to_host_buffer[IAP_MAX_PACKET_SIZE];
 
     int is_ack_iap;
     int is_reset;
@@ -632,7 +632,7 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
                         }
                         else
                         {
-                            if (iap_data_collected_from_device < IAP_USB_BUFFER_TO_HOST_SIZE)
+                            if (iap_data_collected_from_device < IAP_MAX_PACKET_SIZE)
                             {
                                 /* There is room in the collecting buffer for the data..  */
                                 iap_to_host_buffer[iap_data_collected_from_device] = datum_iap;
