@@ -163,7 +163,7 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
 #ifdef IAP
     xc_ptr iap_from_host_rdptr;
     unsigned char iap_from_host_buffer[MAX_IAP_PACKET_SIZE+4];
-    unsigned char iap_to_host_buffer[MAX_IAP_PACKET_SIZE+4];
+    unsigned char iap_to_host_buffer[MAX_IAP_PACKET_SIZE];
 
     int is_ack_iap;
     int is_reset;
