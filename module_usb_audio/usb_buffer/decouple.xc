@@ -159,14 +159,13 @@ void handle_audio_request(chanend c_mix_out)
     }
     else
     {
-
         /* Not in overflow, store samples from mixer into sample buffer */
-        switch(g_slotSize)
+        switch(g_curSubSlot_in)
         {
             case 4:
             {
-#if (SAMPLE_SUBSLOT_SIZE_HS != 4) && (SAMPLE_SUBSLOT_SIZE_FS != 4)
-__builtin_unreachable();
+#if (STREAM_FORMAT_INPUT_SUBSLOT_4_USED == 1)
+//__builtin_unreachable();
 #endif
                 unsigned ptr = g_aud_to_host_dptr;
 
@@ -182,6 +181,7 @@ __builtin_unreachable();
                     asm("ldw %0, %1[%2]":"=r"(mult):"r"(p_multIn),"r"(i));
                     {h, l} = macs(mult, sample, 0, 0);
                     sample = h << 3;
+#warning FIXME
                     sample |= (l >> 29) & 0x7; // Note, this step is not required if we assume sample depth is 24 (rather than 32)
 #elif defined(IN_VOLUME_IN_MIXER) && defined(IN_VOLUME_AFTER_MIX)
                     sample = sample << 3;
@@ -197,8 +197,8 @@ __builtin_unreachable();
             }
 
             case 3:
-#if (SAMPLE_SUBSLOT_SIZE_HS != 3) && (SAMPLE_SUBSLOT_SIZE_FS != 3)
-__builtin_unreachable();
+#if (STREAM_FORMAT_INPUT_SUBSLOT_3_USED == 1)
+//__builtin_unreachable();
 #endif
                 for(int i = 0; i < g_numUsbChanIn; i++)
                 {
@@ -243,9 +243,8 @@ __builtin_unreachable();
                 break;
 
             case 2:
-
-#if (SAMPLE_SUBSLOT_SIZE_HS != 2) && (SAMPLE_SUBSLOT_SIZE_FS != 2)
-__builtin_unreachable();
+#if (STREAM_FORMAT_INPUT_SUBSLOT_2_USED == 1)
+//__builtin_unreachable();
 #endif
                 for(int i = 0; i < g_numUsbChanIn; i++)
                 {
@@ -259,24 +258,13 @@ __builtin_unreachable();
                     asm("ldw %0, %1[%2]":"=r"(mult):"r"(p_multIn),"r"(i));
                     {h, l} = macs(mult, sample, 0, 0);
                     sample = h << 3;
-#if (SAMPLE_BIT_RESOLUTION_HS > 24) || (SAMPLE_BIT_RESOLUTION_FS > 24)
-                    sample |= (l >> 29) & 0x7; // Note, this step is not required if we assume sample depth is 24 (rather than 32)
-#endif
+
+                    /* Note, in 2 byte sub slot - ignore lower bits of macs */
 #elif defined(IN_VOLUME_IN_MIXER) && defined(IN_VOLUME_AFTER_MIX)
                     sample = sample << 3;
 #endif
-                    /* Write into fifo */
-                    switch (packState&0x1)
-                    {
-                        case 0:
-                            packData = sample;
-                            break;
-                        case 1:
-                            packData = (packData>>16) | (sample & 0xffff0000);
-                            write_via_xc_ptr(g_aud_to_host_dptr, packData);
-                            g_aud_to_host_dptr+=4;
-                            break;
-                    }
+                    write_short_via_xc_ptr(g_aud_to_host_dptr, sample>>16);
+                    g_aud_to_host_dptr+=2;
                 }
                 break;
 
@@ -329,11 +317,41 @@ __builtin_unreachable();
     }
     else
     {
-        switch(g_slotSize)
+        switch(g_curSubSlot_out)
         {
+            
+            case 2:
+#if (SAMPLE_SUBSLOT_SIZE_HS != 3) && (SAMPLE_SUBSLOT_SIZE_FS != 3)
+//__builtin_unreachable();
+#endif
+/* Buffering not underflow condition send out some samples...*/
+                for(int i = 0; i < g_numUsbChanOut; i++)
+                {
+#pragma xta endpoint "mixer_request"
+                    int sample;
+                    int mult;
+                    int h;
+                    unsigned l;
+
+                    read_short_via_xc_ptr(sample, g_aud_from_host_rdptr);
+                    g_aud_from_host_rdptr+=2;
+                    sample <<= 16;
+
+#ifndef OUT_VOLUME_IN_MIXER
+                    asm("ldw %0, %1[%2]":"=r"(mult):"r"(p_multOut),"r"(i));
+                    {h, l} = macs(mult, sample, 0, 0);
+                    /* Note, in 2 byte subslot mode - ignore lower result of macs */
+                    h <<= 3;
+                    outuint(c_mix_out, h);
+#else
+                    outuint(c_mix_out, sample);
+#endif
+                }
+                break;
+
             case 4:
 #if (SAMPLE_SUBSLOT_SIZE_HS != 4) && (SAMPLE_SUBSLOT_SIZE_FS != 4)
-__builtin_unreachable();
+//__builtin_unreachable();
 #endif
                 /* Buffering not underflow condition send out some samples...*/
                 for(int i = 0; i < g_numUsbChanOut; i++)
@@ -351,10 +369,11 @@ __builtin_unreachable();
                     asm("ldw %0, %1[%2]":"=r"(mult):"r"(p_multOut),"r"(i));
                     {h, l} = macs(mult, sample, 0, 0);
                     h <<= 3;
-#if (SAMPLE_BIT_RESOLUTION_HS > 24) || (SAMPLE_BIT_RESOLUTION_FS > 24) || defined(NATIVE_DSD)
+//#if (SAMPLE_BIT_RESOLUTION_HS > 24) || (SAMPLE_BIT_RESOLUTION_FS > 24) || defined(NATIVE_DSD)
+#warning FIXME
                     h |= (l >>29)& 0x7; // Note: This step is not required if we assume sample depth is 24bit (rather than 32bit)
                                         // Note: We need all 32bits for Native DSD
-#endif
+//#endif
                     outuint(c_mix_out, h);
 #else
                     outuint(c_mix_out, sample);
@@ -365,7 +384,7 @@ __builtin_unreachable();
 
             case 3:
 #if (SAMPLE_SUBSLOT_SIZE_HS != 3) && (SAMPLE_SUBSLOT_SIZE_FS != 3)
-__builtin_unreachable();
+//__builtin_unreachable();
 #endif
                 /* Buffering not underflow condition send out some samples...*/
                 for(int i = 0; i < g_numUsbChanOut; i++)
@@ -414,48 +433,12 @@ __builtin_unreachable();
                 }
                 break;
 
-            case 2:
-#if (SAMPLE_SUBSLOT_SIZE_HS != 3) && (SAMPLE_SUBSLOT_SIZE_FS != 3)
-__builtin_unreachable();
-#endif
-/* Buffering not underflow condition send out some samples...*/
-                for(int i = 0; i < g_numUsbChanOut; i++)
-                {
-#pragma xta endpoint "mixer_request"
-                    int sample;
-                    int mult;
-                    int h;
-                    unsigned l;
-
-                    switch (unpackState&0x1)
-                    {
-                        case 0:
-                            read_via_xc_ptr(unpackData, g_aud_from_host_rdptr);
-                            sample = unpackData << 16;
-                            break;
-                        case 1:
-                            g_aud_from_host_rdptr+=4;
-                            sample = unpackData & 0xffff0000;
-                            break;
-                    }
-                    unpackState++;
-
-#ifndef OUT_VOLUME_IN_MIXER
-                    asm("ldw %0, %1[%2]":"=r"(mult):"r"(p_multOut),"r"(i));
-                    {h, l} = macs(mult, sample, 0, 0);
-                    h <<= 3;
-                    outuint(c_mix_out, h);
-#else
-                    outuint(c_mix_out, sample);
-#endif
-                }
-                break;
-
+            
             default:
-                __builtin_unreachable();
+                //__builtin_unreachable();
                 break;
 
-        } /* switch(g_slotsize) */
+        } /* switch(g_curSubSlot_out) */
 
         /* Output remaining channels. Past this point we always operate on MAX chan count */
         for(int i = 0; i < NUM_USB_CHAN_OUT - g_numUsbChanOut; i++)
@@ -464,7 +447,7 @@ __builtin_unreachable();
         }
 
         /* 3/4 bytes per sample */
-        aud_data_remaining_to_device -= (g_numUsbChanOut*g_slotSize);
+        aud_data_remaining_to_device -= (g_numUsbChanOut * g_curSubSlot_out);
     }
 
     if (!inOverflow)
@@ -475,7 +458,7 @@ __builtin_unreachable();
 
             if (totalSampsToWrite)
             {
-                unsigned datasize = totalSampsToWrite * g_slotSize * g_numUsbChanIn;
+                unsigned datasize = totalSampsToWrite * g_curSubSlot_in * g_numUsbChanIn;
 
                 /* Round up to nearest word - note, not needed for slotsize == 4! */
                 datasize = (datasize+3) & (~0x3);
@@ -512,7 +495,7 @@ __builtin_unreachable();
                 }
             }
 #else
-            if (totalSampsToWrite < 0 || totalSampsToWrite * g_slotSize * g_numUsbChanIn > g_maxPacketSize)
+            if (totalSampsToWrite < 0 || totalSampsToWrite * g_curSubSlot_in * g_numUsbChanIn > g_maxPacketSize)
             {
                     totalSampsToWrite = 0;
             }
@@ -527,12 +510,12 @@ __builtin_unreachable();
                 space_left = aud_to_host_fifo_end - g_aud_to_host_wrptr;
             }
 
-            if ((space_left <= 0) || (space_left > totalSampsToWrite*g_numUsbChanIn * 4 + 4))
+            if ((space_left <= 0) || (space_left > totalSampsToWrite*g_numUsbChanIn * g_curSubSlot_in + 4))
             {
                 /* Packet okay, write to fifo */
                 if (totalSampsToWrite)
                 {
-                    write_via_xc_ptr(g_aud_to_host_wrptr, totalSampsToWrite*g_slotSize*g_numUsbChanIn);
+                    write_via_xc_ptr(g_aud_to_host_wrptr, totalSampsToWrite * g_curSubSlot_in * g_numUsbChanIn);
                     packState = 0;
                     g_aud_to_host_dptr = g_aud_to_host_wrptr + 4;
                 }
@@ -546,7 +529,7 @@ __builtin_unreachable();
         }
     }
 
-    if (!outUnderflow && (aud_data_remaining_to_device<(g_slotSize*g_numUsbChanOut)))
+    if (!outUnderflow && (aud_data_remaining_to_device<(g_curSubSlot_out * g_numUsbChanOut)))
     {
         /* Handle any tail - incase a bad driver sent us a datalength not a multiple of chan count */
         if (aud_data_remaining_to_device)
@@ -619,18 +602,20 @@ static void check_for_interrupt(chanend ?c_clk_int) {
 }
 
 /* Mark Endpoint (IN) ready with an appropriately sized zero buffer */
-static inline void SetupZerosSendBuffer(XUD_ep aud_to_host_usb_ep, unsigned sampFreq)
+static inline void SetupZerosSendBuffer(XUD_ep aud_to_host_usb_ep, unsigned sampFreq, unsigned slotSize)
 {
     int min, mid, max, usb_speed, p;
     GET_SHARED_GLOBAL(usb_speed, g_curUsbSpeed);
     GetADCCounts(sampFreq, min, mid, max);
+
+    // TODO, don't need to use speed.
     if (usb_speed == XUD_SPEED_HS)
     {
-        mid*=NUM_USB_CHAN_IN*SAMPLE_SUBSLOT_SIZE_HS;
+        mid *= NUM_USB_CHAN_IN * slotSize;
     }
     else
     {
-        mid*=NUM_USB_CHAN_IN_FS*SAMPLE_SUBSLOT_SIZE_FS;
+        mid *= NUM_USB_CHAN_IN_FS * slotSize;
     }
     
     asm("stw %0, %1[0]"::"r"(mid),"r"(g_aud_to_host_zeros));
@@ -792,7 +777,7 @@ void decouple(chanend c_mix_out,
                 SET_SHARED_GLOBAL(g_aud_to_host_buffer,g_aud_to_host_zeros);
 
                 /* Update size of zeros buffer */
-                SetupZerosSendBuffer(aud_to_host_usb_ep, sampFreq);             
+                SetupZerosSendBuffer(aud_to_host_usb_ep, sampFreq, g_curSubSlot_in);             
 
                 /* Reset OUT buffer state */
                 outUnderflow = 1;
@@ -818,13 +803,18 @@ void decouple(chanend c_mix_out,
                 speedRem = 0;
                 continue;
             }
-            else if(tmp == SET_CHAN_COUNT_IN)
+            else if(tmp == SET_STREAM_FORMAT_IN)
             {
+                unsigned dataFormat, usbSpeed;
+
                 /* Change in IN channel count */
                 DISABLE_INTERRUPTS();
                 SET_SHARED_GLOBAL(g_freqChange_flag, 0);
-                GET_SHARED_GLOBAL(g_numUsbChanIn, g_freqChange_sampFreq);  /* Misuse of g_freqChange_sampFreq */
-
+                
+                GET_SHARED_GLOBAL(g_numUsbChanIn, g_formatChange_NumChans); 
+                GET_SHARED_GLOBAL(g_curSubSlot_in, g_formatChange_SubSlot);
+                GET_SHARED_GLOBAL(dataFormat, g_formatChange_DataFormat); /* Not currently used for input stream */
+ 
                 /* Reset IN buffer state */
                 inOverflow = 0;
                 inUnderflow = 1;
@@ -837,21 +827,40 @@ void decouple(chanend c_mix_out,
                 SET_SHARED_GLOBAL(g_aud_to_host_buffer, g_aud_to_host_zeros);
 
                 /* Update size of zeros buffer */
-                SetupZerosSendBuffer(aud_to_host_usb_ep, sampFreq); 
+                SetupZerosSendBuffer(aud_to_host_usb_ep, sampFreq, g_curSubSlot_in); 
+
+                GET_SHARED_GLOBAL(usbSpeed, g_curUsbSpeed);
+                if (usbSpeed == XUD_SPEED_HS)
+                {
+                    g_maxPacketSize = (MAX_DEVICE_AUD_PACKET_SIZE_MULT_HS * g_numUsbChanIn);
+                }
+                else
+                {
+                    g_maxPacketSize = (MAX_DEVICE_AUD_PACKET_SIZE_MULT_FS * g_numUsbChanIn);
+                }
 
                 SET_SHARED_GLOBAL(g_freqChange, 0);
+                asm("outct res[%0],%1"::"r"(buffer_aud_ctl_chan),"r"(XS1_CT_END));
+                
                 ENABLE_INTERRUPTS();
             }
-            else if(tmp == SET_CHAN_COUNT_OUT)
+            else if(tmp == SET_STREAM_FORMAT_OUT)
             {
+                unsigned dataFormat;
+                unsigned dsdMode = DSD_MODE_OFF;
+
                 /* Change in OUT channel count - note we expect this on every stream start event */
                 DISABLE_INTERRUPTS();
                 SET_SHARED_GLOBAL(g_freqChange_flag, 0);
-                GET_SHARED_GLOBAL(g_numUsbChanOut, g_freqChange_sampFreq);  /* Misuse of g_freqChange_sampFreq */
+                GET_SHARED_GLOBAL(g_numUsbChanOut, g_formatChange_NumChans); 
+                GET_SHARED_GLOBAL(g_curSubSlot_out, g_formatChange_SubSlot);
+                GET_SHARED_GLOBAL(dataFormat, g_formatChange_DataFormat);
 
                 /* Reset OUT buffer state */
                 SET_SHARED_GLOBAL(g_aud_from_host_rdptr, aud_from_host_fifo_start);
                 SET_SHARED_GLOBAL(g_aud_from_host_wrptr, aud_from_host_fifo_start);
+
+                unpackState = 0;
 
                 outUnderflow = 1;
                 if(outOverflow)
@@ -860,11 +869,29 @@ void decouple(chanend c_mix_out,
                     XUD_SetReady_OutPtr(aud_from_host_usb_ep, aud_from_host_fifo_start+4);
                     outOverflow = 0;
                 }
+ 
+#ifdef NATIVE_DSD               
+                /* TODO only send when there is a change */
+                if(dataFormat == UAC_FORMAT_TYPEI_RAW_DATA)
+                {
+                    dsdMode = DSD_MODE_NATIVE;
+                }
+    
+                /* Wait for the audio code to request samples and respond with command */
+                inuint(c_mix_out);
+                outct(c_mix_out, SET_DSD_MODE);
+                outuint(c_mix_out, dsdMode);
+
+                /* Wait for handshake back */
+                chkct(c_mix_out, XS1_CT_END);
+#endif
+                asm("outct res[%0],%1"::"r"(buffer_aud_ctl_chan),"r"(XS1_CT_END));
 
                 SET_SHARED_GLOBAL(g_freqChange, 0);
                 ENABLE_INTERRUPTS();
             }
-#ifdef NATIVE_DSD
+#if 0
+//#ifdef NATIVE_DSD
             else if(tmp == SET_DSD_MODE)
             {
                 unsigned dsdMode;
@@ -921,7 +948,7 @@ void decouple(chanend c_mix_out,
             read_via_xc_ptr(datalength, released_buffer);
 
             /* Ignore bad small packets */
-            if ((datalength >= (g_numUsbChanOut * g_slotSize)) && (released_buffer == aud_from_host_wrptr))
+            if ((datalength >= (g_numUsbChanOut * g_curSubSlot_out)) && (released_buffer == aud_from_host_wrptr))
             {
 
                 /* Move the write pointer of the fifo on - round up to nearest word */
