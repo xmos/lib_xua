@@ -13,7 +13,6 @@
 #endif
 
 #include "xud.h"                 /* XMOS USB Device Layer defines and functions */
-#include "usb.h"                 /* Defines from the USB 2.0 Specification */
 
 #include "devicedefines.h"       /* Device specific defines */
 #include "endpoint0.h"
