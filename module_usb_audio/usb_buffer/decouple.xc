@@ -72,6 +72,11 @@ unsigned g_aud_from_host_flag = 0;
 unsigned g_aud_from_host_info;
 unsigned g_freqChange_flag = 0;
 unsigned g_freqChange_sampFreq;
+
+unsigned g_formatChange_SubSlot;
+unsigned g_formatChange_DataFormat;
+unsigned g_formatChange_NumChans;
+
 int speedRem = 0;
 
 xc_ptr aud_from_host_fifo_start;
@@ -104,12 +109,15 @@ unsigned unpackData = 0;
 unsigned packState = 0;
 unsigned packData = 0;
 
+/* Default to something sensible but the following are setup at stream start: */
+unsigned g_curSubSlot_out = HS_STREAM_FORMAT_OUTPUT_1_SUBSLOT_BYTES;
+unsigned g_curSubSlot_in  = HS_STREAM_FORMAT_INPUT_1_SUBSLOT_BYTES;
+
+/* Init to something sensible, but expect to be re-set before stream start */
 #if (AUDIO_CLASS==2)
-int g_slotSize = SAMPLE_SUBSLOT_SIZE_HS;    /* 4 bytes per ssample for Audio Class 2.0 */
-int g_maxPacketSize = MAX_DEVICE_AUD_PACKET_SIZE_CLASS_TWO;
+int g_maxPacketSize = MAX_DEVICE_AUD_PACKET_SIZE_HS;
 #else
-int g_slotSize = SAMPLE_SUBSLOT_SIZE_FS;    /* 3 bytes per sample for Audio Class 1.0 */
-int g_maxPacketSize = MAX_DEVICE_AUD_PACKET_SIZE_CLASS_ONE;
+int g_maxPacketSize = MAX_DEVICE_AUD_PACKET_SIZE_FS;
 #endif
 
 #pragma select handler
