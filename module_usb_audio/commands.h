@@ -22,10 +22,11 @@
 #define SET_SMUX                7
 
 /* c_audioControl */
+//TODO should be an enum
 #define SET_SAMPLE_FREQ         4
-#define SET_CHAN_COUNT_IN       5
-#define SET_CHAN_COUNT_OUT      6
 #define SET_DSD_MODE            7
+#define SET_STREAM_FORMAT_OUT   8
+#define SET_STREAM_FORMAT_IN    9 
 
 #include "dsd_support.h"
 

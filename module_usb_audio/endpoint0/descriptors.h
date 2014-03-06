@@ -9,18 +9,22 @@
 #ifndef _DEVICE_DESCRIPTORS_
 #define _DEVICE_DESCRIPTORS_
 
-#include "usb.h"
-#include "usbaudio20.h"             /* Defines from the USB Audio 2.0 Specifications */
 #include "devicedefines.h"          /* Device specific define */
+#include "usbaudio20.h"             /* Defines from the USB Audio 2.0 Specifications */
+#include "usbaudiocommon.h"
+#include "usb_std_descriptors.h"
 
 /***** Device Descriptors *****/
+
+// TODO Enum for unit ids?
+// TODO structure for string table
 
 #if defined(AUDIO_CLASS_FALLBACK) || (AUDIO_CLASS==1)
 /* Device Descriptor for Audio Class 1.0 (Assumes Full-Speed) */
 unsigned char devDesc_Audio1[] =
 {
     18,                             /* 0  bLength : Size of descriptor in Bytes (18 Bytes) */
-    USB_DEVICE,                     /* 1  bdescriptorType */
+    USB_DESCTYPE_DEVICE,                     /* 1  bdescriptorType */
     0x0,                            /* 2  bcd USB */
     0x2,                            /* 3  bcdUSB */
     0,                              /* 4  bDeviceClass */
@@ -41,34 +45,33 @@ unsigned char devDesc_Audio1[] =
 #endif
 
 /* Device Descriptor for Audio Class 2.0 (Assumes High-Speed ) */
-unsigned char devDesc_Audio2[] =
+USB_Descriptor_Device_t devDesc_Audio2 =
 {
-    18,                             /* 0  bLength : Size of descriptor in Bytes (18 Bytes) */
-    USB_DEVICE,                     /* 1  bdescriptorType */
-    0,                              /* 2  bcdUSB */
-    2,                              /* 3  bcdUSB */
-    0xEF,                           /* 4  bDeviceClass (See Audio Class Spec page 45) */
-    0x02,                           /* 5  bDeviceSubClass */
-    0x01,                           /* 6  bDeviceProtocol */
-    64,                             /* 7  bMaxPacketSize */
-    (VENDOR_ID & 0xFF),             /* 8  idVendor */
-    (VENDOR_ID >> 8),               /* 9  idVendor */
-    (PID_AUDIO_2 & 0xFF),           /* 10 idProduct */
-    (PID_AUDIO_2 >> 8),             /* 11 idProduct */
-    (BCD_DEVICE & 0xFF),            /* 12 bcdDevice : Device release number */
-    (BCD_DEVICE >> 8),              /* 13 bcdDevice : Device release number */
-    MANUFACTURER_STR_INDEX,         /* 14 iManufacturer : Index of manufacturer string */
-    PRODUCT_STR_INDEX_A2,           /* 15 iProduct : Index of product string descriptor */
-    0,//    SERIAL_STR_INDEX,       /* 16 iSerialNumber : Index of serial number decriptor */
-    0x02                            /* 17 bNumConfigurations : Number of possible configs.
-                                       Set to 2 so that Windows does not load Composite driver. */
+    .bLength            = sizeof(USB_Descriptor_Device_t),
+    .bDescriptorType    = USB_DESCTYPE_DEVICE,
+    .bcdUSB             = 0x0200,
+    .bDeviceClass       = 0xEF,
+    .bDeviceSubClass    = 0x02,
+    .bDeviceProtocol    = 0x01,
+
+    .bMaxPacketSize0    = 64,
+
+    .idVendor           = VENDOR_ID,
+    .idProduct          = PID_AUDIO_2,
+    .bcdDevice          = BCD_DEVICE,
+
+    .iManufacturer      = MANUFACTURER_STR_INDEX,
+    .iProduct           = PRODUCT_STR_INDEX_A2,
+    .iSerialNumber      = 0,
+
+    .bNumConfigurations = 0x02  /* Set to 2 such that windows does not load composite driver */
 };
 
 /* Device Descriptor for Null Device */
 unsigned char devDesc_Null[] =
 {
     18,                             /* 0  bLength : Size of descriptor in Bytes (18 Bytes) */
-    USB_DEVICE,                     /* 1  bdescriptorType */
+    USB_DESCTYPE_DEVICE,            /* 1  bdescriptorType */
     0,                              /* 2  bcdUSB */
     2,                              /* 3  bcdUSB */
     0x0,                            /* 4  bDeviceClass */
@@ -94,7 +97,7 @@ unsigned char devDesc_Null[] =
 unsigned char devQualDesc_Audio2[] =
 {
     10,                             /* 0  bLength (10 Bytes) */
-    USB_DEVICE_QUALIFIER,           /* 1  bDescriptorType */
+    USB_DESCTYPE_DEVICE_QUALIFIER,           /* 1  bDescriptorType */
     0x00,                           /* 2  bcdUSB (Binary Coded Decimal of usb version) */
     0x02,                           /* 3  bcdUSB */
     0xEF,                           /* 4  bDeviceClass */
@@ -110,7 +113,7 @@ unsigned char devQualDesc_Audio2[] =
 unsigned char devQualDesc_Audio1[] =
 {
     10,                             /* 0  bLength (10 Bytes) */
-    USB_DEVICE_QUALIFIER,           /* 1  bDescriptorType */
+    USB_DESCTYPE_DEVICE_QUALIFIER,           /* 1  bDescriptorType */
     0x00,                           /* 2  bcdUSB (Binary Coded Decimal of usb version) */
     0x02,                           /* 3  bcdUSB */
     0x00,                           /* 4  bDeviceClass */
@@ -126,7 +129,7 @@ unsigned char devQualDesc_Audio1[] =
 unsigned char devQualDesc_Null[] =
 {
     10,                             /* 0  bLength (10 Bytes) */
-    USB_DEVICE_QUALIFIER,           /* 1  bDescriptorType */
+    USB_DESCTYPE_DEVICE_QUALIFIER,           /* 1  bDescriptorType */
     0x00,                           /* 2  bcdUSB (Binary Coded Decimal of usb version) */
     0x02,                           /* 3  bcdUSB */
     0x00,                           /* 4  bDeviceClass */
@@ -144,25 +147,25 @@ unsigned char devQualDesc_Null[] =
 #endif
 
 /* Lenths of input/output term descriptors - from spec */
-#define LEN_OUTPUT_TERMINAL         (0x0C)
-#define LEN_INPUT_TERMINAL          (0x11)
+//#define LEN_OUTPUT_TERMINAL         (0x0C)
+//#define LEN_INPUT_TERMINAL          (0x11)
 
 /* Lengh of out terminal descriptors in total */
-#define LEN_TERMS_OUT               ((LEN_OUTPUT_TERMINAL + LEN_INPUT_TERMINAL) * OUTPUT_INTERFACES)
-#define LEN_TERMS_IN                ((LEN_OUTPUT_TERMINAL + LEN_INPUT_TERMINAL) * INPUT_INTERFACES)
+//#define LEN_TERMS_OUT               ((LEN_OUTPUT_TERMINAL + LEN_INPUT_TERMINAL) * OUTPUT_INTERFACES)
+//#define LEN_TERMS_IN                ((LEN_OUTPUT_TERMINAL + LEN_INPUT_TERMINAL) * INPUT_INTERFACES)
 
 /* Calc total length of configuration desc based on defines */
-#ifdef OUTPUT
-#define LEN_FU_OUT                  (6 + (NUM_USB_CHAN_OUT + 1) * 4)
-#else
-#define LEN_FU_OUT                  0
-#endif
+//#ifdef OUTPUT
+//#define LEN_FU_OUT                  (6 + (NUM_USB_CHAN_OUT + 1) * 4)
+//#else
+//#define LEN_FU_OUT                  0
+//#endif
 
-#ifdef INPUT
-#define LEN_FU_IN                   (6 + (NUM_USB_CHAN_IN + 1) * 4)
-#else
-#define LEN_FU_IN                   0
-#endif
+//#ifdef INPUT
+//#define LEN_FU_IN                   (6 + (NUM_USB_CHAN_IN + 1) * 4)
+//#else
+//#define LEN_FU_IN                   0
+//#endif
 
 
 #ifdef MIDI
@@ -171,65 +174,71 @@ unsigned char devQualDesc_Null[] =
 #define MIDI_LENGTH                 (0)
 #endif
 
-#ifdef IAP
-#ifdef IAP_INT_EP
-#define IAP_LENGTH                  (30)
+#ifdef DFU
+#define DFU_LENGTH                  (18)
 #else
-#define IAP_LENGTH                  (23)
-#endif
-#else
-#define IAP_LENGTH                  (0)
+#define DFU_LENGTH                  (0)
 #endif
 
-#if defined(SPDIF_RX) || defined(ADAT_RX)
-#define AUD_INT_EP_LEN              (7)
-#else
-#define AUD_INT_EP_LEN              (0)
-#endif
+//#ifdef IAP
+//#ifdef IAP_INT_EP
+//#define IAP_LENGTH                  (30)
+//#else
+//#define IAP_LENGTH                  (23)
+//#endif
+//#else
+//#define IAP_LENGTH                  (0)
+//#endif
 
-#ifdef AUDIO_PATH_XUS
-#define LEN_XU_OUT                  (16 * OUTPUT_INTERFACES)
-#define LEN_XU_IN                   (16 * INPUT_INTERFACES)
-#else
-#define LEN_XU_OUT                  (0)
-#define LEN_XU_IN                   (0)
-#endif
+//#if defined(SPDIF_RX) || defined(ADAT_RX)
+//#define AUD_INT_EP_LEN              (7)
+//#else
+//#define AUD_INT_EP_LEN              (0)
+//#endif
 
-#if defined (MIXER) && (MAX_MIX_COUNT > 0)
-    #define LEN_XU_MIX                  (17)
-    #define MIX_BMCONTROLS_LEN_TMP      ((MAX_MIX_COUNT * MIX_INPUTS) / 8)
+//#ifdef AUDIO_PATH_XUS
+//#define LEN_XU_OUT                  (16 * OUTPUT_INTERFACES)
+//#define LEN_XU_IN                   (16 * INPUT_INTERFACES)
+//#else
+//#define LEN_XU_OUT                  (0)
+//#define LEN_XU_IN                   (0)
+//#endif
 
-    #if ((MAX_MIX_COUNT * MIX_INPUTS)%8)==0
-        #define MIX_BMCONTROLS_LEN          (MIX_BMCONTROLS_LEN_TMP)
-    #else
-        #define MIX_BMCONTROLS_LEN          (MIX_BMCONTROLS_LEN_TMP+1)
-    #endif
-    #define MIXER_LENGTH                (13+1+MIX_BMCONTROLS_LEN)
-#else
-    #define LEN_XU_MIX                  (0)
-    #define MIXER_LENGTH                (0)
-#endif
+//#if defined (MIXER) && (MAX_MIX_COUNT > 0)
+ //   #define LEN_XU_MIX                  (17)
+  //  #define MIX_BMCONTROLS_LEN_TMP      ((MAX_MIX_COUNT * MIX_INPUTS) / 8)
 
-#define LEN_CLK                     (8)
-#define LEN_CLK_SEL                 (7 + NUM_CLOCKS)
-#define LEN_CLOCKING                (LEN_CLK_SEL + (NUM_CLOCKS * LEN_CLK))
+    //#if ((MAX_MIX_COUNT * MIX_INPUTS)%8)==0
+      //  #define MIX_BMCONTROLS_LEN          (MIX_BMCONTROLS_LEN_TMP)
+    //#else
+       // #define MIX_BMCONTROLS_LEN          (MIX_BMCONTROLS_LEN_TMP+1)
+    //#endif
+    //#define MIXER_LENGTH                (13+1+MIX_BMCONTROLS_LEN)
+//#else
+  //  #define LEN_XU_MIX                  (0)
+   // #define MIXER_LENGTH                (0)
+//#endif
+
+//#define LEN_CLK                     (8)
+//#define LEN_CLK_SEL                 (7 + NUM_CLOCKS)
+//#define LEN_CLOCKING                (LEN_CLK_SEL + (NUM_CLOCKS * LEN_CLK))
 
 /* Total length of the Class-Specific AC Interface Descriptor - Clock Entities, Units and Terminals */
-#define LEN_AC                      (9)
-#define TLEN_AC                     (LEN_AC + LEN_FU_OUT + LEN_FU_IN + LEN_CLOCKING + LEN_TERMS_OUT + LEN_TERMS_IN + LEN_XU_OUT + LEN_XU_IN + LEN_XU_MIX)
+//#define LEN_AC                      (9)
+//#define TLEN_AC                     (LEN_AC + LEN_FU_OUT + LEN_FU_IN + LEN_CLOCKING + LEN_TERMS_OUT + LEN_TERMS_IN + LEN_XU_OUT + LEN_XU_IN + LEN_XU_MIX)
 
 
-#ifdef ADAT_RX
-#define INPUT_ALT_LENGTH            (46)
-#else
-#define INPUT_ALT_LENGTH            (0)
-#endif
+//#ifdef ADAT_RX
+//#define INPUT_ALT_LENGTH            (46)
+//#else
+//#define INPUT_ALT_LENGTH            (0)
+//#endif
 
-#ifdef ADAT_TX
-#define OUTPUT_ALT_LENGTH_ADAT      (46)
-#else
-#define OUTPUT_ALT_LENGTH_ADAT      (0)
-#endif
+//#ifdef ADAT_TX
+//#define OUTPUT_ALT_LENGTH_ADAT      (46)
+//#else
+//#define OUTPUT_ALT_LENGTH_ADAT      (0)
+//#endif
 
 #ifdef NATIVE_DSD
 #define ALT_SETTING_DSD             (2)
@@ -237,13 +246,13 @@ unsigned char devQualDesc_Null[] =
 
 #ifdef ALT_SETTING_DSD
 #define ALT_SETTING_ADAT_TX         (3)
-#define OUTPUT_ALT_LENGTH_DSD       (53)
+//#define OUTPUT_ALT_LENGTH_DSD       (53)
 #else
 #define ALT_SETTING_ADAT_TX         (2)
-#define OUTPUT_ALT_LENGTH_DSD       (0)
+//#define OUTPUT_ALT_LENGTH_DSD       (0)
 #endif
 
-#define OUTPUT_ALT_LENGTH           (OUTPUT_ALT_LENGTH_ADAT + OUTPUT_ALT_LENGTH_DSD)
+//#define OUTPUT_ALT_LENGTH           (OUTPUT_ALT_LENGTH_ADAT + OUTPUT_ALT_LENGTH_DSD)
 
 
 // Positions in strDescs
@@ -281,894 +290,796 @@ enum {
 };
 
 #ifdef HID_CONTROLS
-unsigned char hidReportDescriptor[] = {
-0x05, 0x0c,     /* Usage Page (Consumer Device) */
-0x09, 0x01,     /* Usage (Consumer Control) */
-0xa1, 0x01,     /* Collection (Application) */
-0x15, 0x00,     /* Logical Minimum (0) */
-0x25, 0x01,     /* Logical Maximum (1) */
-0x09, 0xb0,     /* Usage (Play) */
-0x09, 0xb5,     /* Usage (Scan Next Track) */
-0x09, 0xb6,     /* Usage (Scan Previous Track) */
-0x09, 0xe9,     /* Usage (Volume Up) */
-0x09, 0xea,     /* Usage (Volume Down) */
-0x09, 0xe2,     /* Usage (Mute) */
-0x75, 0x01,     /* Report Size (1) */
-0x95, 0x06,     /* Report Count (6) */
-0x81, 0x02,     /* Input (Data, Var, Abs) */
-0x95, 0x02,     /* Report Count (2) */
-0x81, 0x01,     /* Input (Cnst, Ary, Abs) */
-0xc0            /* End collection */
+unsigned char hidReportDescriptor[] = 
+{
+    0x05, 0x0c,     /* Usage Page (Consumer Device) */
+    0x09, 0x01,     /* Usage (Consumer Control) */
+    0xa1, 0x01,     /* Collection (Application) */
+    0x15, 0x00,     /* Logical Minimum (0) */
+    0x25, 0x01,     /* Logical Maximum (1) */
+    0x09, 0xb0,     /* Usage (Play) */
+    0x09, 0xb5,     /* Usage (Scan Next Track) */
+    0x09, 0xb6,     /* Usage (Scan Previous Track) */
+    0x09, 0xe9,     /* Usage (Volume Up) */
+    0x09, 0xea,     /* Usage (Volume Down) */
+    0x09, 0xe2,     /* Usage (Mute) */
+    0x75, 0x01,     /* Report Size (1) */
+    0x95, 0x06,     /* Report Count (6) */
+    0x81, 0x02,     /* Input (Data, Var, Abs) */
+    0x95, 0x02,     /* Report Count (2) */
+    0x81, 0x01,     /* Input (Cnst, Ary, Abs) */
+    0xc0            /* End collection */
 };
-
 #endif
-#define HID_LENGTH (25 * HID_INTERFACES)
+//#define HID_LENGTH (25 * HID_INTERFACES)
 
 /* Total length of config descriptor */
-#define CONFIG_DESC_LENGTH      (9)
-#define INTERFACE_ASS_LENGTH    (8)
-#define AUD_CTRL_INT_LENGTH     (9)
-#define AUD_CS_INT_LENGTH       (9)
+//#define CONFIG_DESC_LENGTH      (9)
+//#define INTERFACE_ASS_LENGTH    (8)
+//#define AUD_CTRL_INT_LENGTH     (9)
+//#define AUD_CS_INT_LENGTH       (9)
 
 
-#define CFG_TOTAL_LENGTH_A2     (CONFIG_DESC_LENGTH + INTERFACE_ASS_LENGTH + AUD_CTRL_INT_LENGTH + (AUD_INT_EP_LEN) + (INPUT_INTERFACES * 55) + (OUTPUT_INTERFACES * 62) + (MIDI_LENGTH) + (DFU_INTERFACES * 18)  + TLEN_AC + (MIXER_LENGTH) + IAP_LENGTH + INPUT_ALT_LENGTH + OUTPUT_ALT_LENGTH + HID_LENGTH)
+//#define CFG_TOTAL_LENGTH_A2     (CONFIG_DESC_LENGTH + INTERFACE_ASS_LENGTH + AUD_CTRL_INT_LENGTH + (AUD_INT_EP_LEN) + (INPUT_INTERFACES * 55) + (OUTPUT_INTERFACES * 62) + (MIDI_LENGTH) + (DFU_INTERFACES * 18)  + TLEN_AC + (MIXER_LENGTH) + IAP_LENGTH + INPUT_ALT_LENGTH + OUTPUT_ALT_LENGTH + HID_LENGTH)
 
 /* We need to this for patching descriptors for FS/HS switching */
-#define STREAMING_OUTPUT_ALT1_OFFSET (CONFIG_DESC_LENGTH + INTERFACE_ASS_LENGTH + AUD_CTRL_INT_LENGTH + TLEN_AC + AUD_INT_EP_LEN + 9 + 9)
+//#define STREAMING_OUTPUT_ALT1_OFFSET (CONFIG_DESC_LENGTH + INTERFACE_ASS_LENGTH + AUD_CTRL_INT_LENGTH + TLEN_AC + AUD_INT_EP_LEN + 9 + 9)
 
-#define STREAMING_INPUT_ALT1_OFFSET (CONFIG_DESC_LENGTH + INTERFACE_ASS_LENGTH + AUD_CTRL_INT_LENGTH + TLEN_AC + AUD_INT_EP_LEN + (OUTPUT_INTERFACES *62)+OUTPUT_ALT_LENGTH + 9 + 9)
+//#define STREAMING_INPUT_ALT1_OFFSET (CONFIG_DESC_LENGTH + INTERFACE_ASS_LENGTH + AUD_CTRL_INT_LENGTH + TLEN_AC + AUD_INT_EP_LEN + (OUTPUT_INTERFACES *62)+OUTPUT_ALT_LENGTH + 9 + 9)
 
 /* Max packet sizes:
  * Samples per channel. e.g (192000+7999/8000) = 24
  * Must allow 1 sample extra per chan (24 + 1) = 25
  * Multiply by number of channels and bytes      25 * 2 * 4 = 200 bytes
 */
-#define MAX_PACKET_SIZE_OUT_HS  ((((MAX_FREQ+7999)/8000)+1) * NUM_USB_CHAN_OUT * SAMPLE_SUBSLOT_SIZE_HS)
-#define MAX_PACKET_SIZE_OUT_FS  ((((MAX_FREQ_FS+999)/1000)+1) * NUM_USB_CHAN_OUT_FS * SAMPLE_SUBSLOT_SIZE_FS)    // Samples per channel
-#define MAX_PACKET_SIZE_IN_HS   ((((MAX_FREQ+7999)/8000)+1) * NUM_USB_CHAN_IN * SAMPLE_SUBSLOT_SIZE_HS)
-#define MAX_PACKET_SIZE_IN_FS   ((((MAX_FREQ_FS+999)/1000)+1) * NUM_USB_CHAN_IN_FS * SAMPLE_SUBSLOT_SIZE_FS)     // Samples per channel
+#define MAX_PACKET_SIZE_MULT_OUT_HS ((((MAX_FREQ+7999)/8000)+1) * NUM_USB_CHAN_OUT)
+#define MAX_PACKET_SIZE_MULT_OUT_FS ((((MAX_FREQ_FS+999)/1000)+1) * NUM_USB_CHAN_OUT_FS)
+#define MAX_PACKET_SIZE_MULT_IN_HS  ((((MAX_FREQ+7999)/8000)+1) * NUM_USB_CHAN_IN)
+#define MAX_PACKET_SIZE_MULT_IN_FS  ((((MAX_FREQ_FS+999)/1000)+1) * NUM_USB_CHAN_IN_FS) 
 
-/* Configuration Descriptor for Audio 2.0 (HS) operation */
-unsigned char cfgDesc_Audio2[] =
+#define HS_STREAM_FORMAT_OUTPUT_1_MAXPACKETSIZE (MAX_PACKET_SIZE_MULT_OUT_HS * HS_STREAM_FORMAT_OUTPUT_1_SUBSLOT_BYTES)
+#define HS_STREAM_FORMAT_OUTPUT_2_MAXPACKETSIZE (MAX_PACKET_SIZE_MULT_OUT_HS * HS_STREAM_FORMAT_OUTPUT_2_SUBSLOT_BYTES)
+#define HS_STREAM_FORMAT_OUTPUT_3_MAXPACKETSIZE (MAX_PACKET_SIZE_MULT_OUT_HS * HS_STREAM_FORMAT_OUTPUT_3_SUBSLOT_BYTES)
+
+#define FS_STREAM_FORMAT_OUTPUT_1_MAXPACKETSIZE (MAX_PACKET_SIZE_MULT_OUT_FS * FS_STREAM_FORMAT_OUTPUT_1_SUBSLOT_BYTES)
+#define FS_STREAM_FORMAT_OUTPUT_2_MAXPACKETSIZE (MAX_PACKET_SIZE_MULT_OUT_FS * FS_STREAM_FORMAT_OUTPUT_2_SUBSLOT_BYTES)
+#define FS_STREAM_FORMAT_OUTPUT_3_MAXPACKETSIZE (MAX_PACKET_SIZE_MULT_OUT_FS * FS_STREAM_FORMAT_OUTPUT_3_SUBSLOT_BYTES)
+
+#define HS_STREAM_FORMAT_INPUT_1_MAXPACKETSIZE (MAX_PACKET_SIZE_MULT_IN_HS * HS_STREAM_FORMAT_INPUT_1_SUBSLOT_BYTES) 
+#define FS_STREAM_FORMAT_INPUT_1_MAXPACKETSIZE (MAX_PACKET_SIZE_MULT_IN_FS * FS_STREAM_FORMAT_INPUT_1_SUBSLOT_BYTES) 
+
+typedef struct 
 {
-    0x09,                           /* 0  bLength */
-    USB_CONFIGURATION,              /* 1  bDescriptorType */
-    (CFG_TOTAL_LENGTH_A2 & 0xFF),   /* 2  wTotalLength */
-    (CFG_TOTAL_LENGTH_A2 >> 8),     /* 3  wTotalLength */
-    NUM_INTERFACES,                 /* 4  bNumInterface: Number of interfaces*/
-    0x01,                           /* 5  bConfigurationValue */
-    0x00,                           /* 6  iConfiguration */
+    /* Class Specific Audio Control Interface Header Descriptor */
+    UAC_Descriptor_Interface_AC_t               Audio_ClassControlInterface;        
+    USB_Descriptor_Audio_ClockSource_t          Audio_ClockSource;
+    USB_Descriptor_Audio_ClockSelector_t        Audio_ClockSelector;
+#ifdef OUTPUT
+    /* Output path */
+    USB_Descriptor_Audio_InputTerminal_t        Audio_Out_InputTerminal;
+    USB_Descriptor_Audio_FeatureUnit_Out_t      Audio_Out_FeatureUnit;     
+    USB_Descriptor_Audio_OutputTerminal_t       Audio_Out_OutputTerminal;
+#endif
+#ifdef INPUT
+    /* Input path */
+    USB_Descriptor_Audio_InputTerminal_t        Audio_In_InputTerminal;
+    USB_Descriptor_Audio_FeatureUnit_In_t       Audio_In_FeatureUnit;
+    USB_Descriptor_Audio_OutputTerminal_t       Audio_In_OutputTerminal;
+#endif
+} __attribute__((packed)) USB_CfgDesc_Audio2_CS_Control_Int;
+
+typedef struct
+{ 
+    /* Configuration header */
+    USB_Descriptor_Configuration_Header_t       Config;
+
+    /* Audio Control */
+    USB_Descriptor_Interface_Association_t      Audio_InterfaceAssociation;
+    USB_Descriptor_Interface_t                  Audio_StdControlInterface;       /* Standard Audio Control Interface Header Descriptor */
+   
+    USB_CfgDesc_Audio2_CS_Control_Int           Audio_CS_Control_Int;
+#ifdef OUTPUT   
+    /* Audio streaming: Output stream */
+    USB_Descriptor_Interface_t                  Audio_Out_StreamInterface_Alt0;  /* Zero bandwith alternative */
+    USB_Descriptor_Interface_t                  Audio_Out_StreamInterface_Alt1;
+    USB_Descriptor_Audio_Interface_AS_t         Audio_Out_ClassStreamInterface;
+    USB_Descriptor_Audio_Format_Type1_t         Audio_Out_Format;
+    USB_Descriptor_Endpoint_t                   Audio_Out_Endpoint;
+    USB_Descriptor_Audio_Class_AS_Endpoint_t    Audio_Out_ClassEndpoint;
+    USB_Descriptor_Endpoint_t                   Audio_Out_Fb_Endpoint;
+#if (OUTPUT_FORMAT_COUNT > 1)
+    USB_Descriptor_Interface_t                  Audio_Out_StreamInterface_Alt2;
+    USB_Descriptor_Audio_Interface_AS_t         Audio_Out_ClassStreamInterface_2;
+    USB_Descriptor_Audio_Format_Type1_t         Audio_Out_Format_2;
+    USB_Descriptor_Endpoint_t                   Audio_Out_Endpoint_2;
+    USB_Descriptor_Audio_Class_AS_Endpoint_t    Audio_Out_ClassEndpoint_2;
+    USB_Descriptor_Endpoint_t                   Audio_Out_Fb_Endpoint_2;
+#endif
+#if (OUTPUT_FORMAT_COUNT > 2)
+    USB_Descriptor_Interface_t                  Audio_Out_StreamInterface_Alt3;
+    USB_Descriptor_Audio_Interface_AS_t         Audio_Out_ClassStreamInterface_3;
+    USB_Descriptor_Audio_Format_Type1_t         Audio_Out_Format_3;
+    USB_Descriptor_Endpoint_t                   Audio_Out_Endpoint_3;
+    USB_Descriptor_Audio_Class_AS_Endpoint_t    Audio_Out_ClassEndpoint_3;
+    USB_Descriptor_Endpoint_t                   Audio_Out_Fb_Endpoint_3;
+#endif
+#endif
+#ifdef INPUT
+    /* Audio Streaming: Input stream */
+    USB_Descriptor_Interface_t                  Audio_In_StreamInterface_Alt0;  /* Zero bandwith alternative */
+    USB_Descriptor_Interface_t                  Audio_In_StreamInterface_Alt1;
+    USB_Descriptor_Audio_Interface_AS_t         Audio_In_ClassStreamInterface;
+    USB_Descriptor_Audio_Format_Type1_t         Audio_In_Format;
+    USB_Descriptor_Endpoint_t                   Audio_In_Endpoint;
+    USB_Descriptor_Audio_Class_AS_Endpoint_t    Audio_In_ClassEndpoint;
+#endif
+
+#ifdef MIDI
+    /* MIDI descriptors currently handled as a single block */
+    unsigned char configDesc_Midi[MIDI_LENGTH];
+#endif
+
+#ifdef DFU
+    /* DFU descriptors currently handled as a single block */
+    unsigned char configDesc_DFU[DFU_LENGTH];
+#endif
+
+#ifdef IAP
+    USB_Descriptor_Interface_t                  iAP_Interface;
+    USB_Descriptor_Endpoint_t                   iAP_Out_Endpoint;
+    USB_Descriptor_Endpoint_t                   iAP_In_Endpoint;
+#ifdef IAP_INT_EP
+    USB_Descriptor_Endpoint_t                   iAP_Interrupt_Endpoint;
+#endif
+#endif  
+
+#ifdef HID_CONTROLS
+    USB_Descriptor_Interface_t                  HID_Interface;
+    unsigned char hidDesc[9];                   //TODO ideally we would have a struct for this.
+    USB_Descriptor_Endpoint_t                   HID_In_Endpoint;
+#endif
+
+}__attribute__((packed)) USB_Config_Descriptor_Audio2_t;
+
+#if 1
+USB_Config_Descriptor_Audio2_t cfgDesc_Audio2= 
+{
+    .Config = 
+    {
+        .bLength                    = sizeof(USB_Descriptor_Configuration_Header_t),   
+        .bDescriptorType            = USB_DESCTYPE_CONFIGURATION,              
+        .wTotalLength               = sizeof(USB_Config_Descriptor_Audio2_t),        
+        .bNumInterfaces             = NUM_INTERFACES,
+        .bConfigurationValue        = 0x01,
+        .iConfiguration             = 0x00,
 #ifdef SELF_POWERED
-    192,                            /* 7  bmAttributes */
+        .bmAttributes               = 192,
 #else
-    128,                            /* 7  bmAttributes */
-#endif
-    BMAX_POWER,                     /* 8  bMaxPower */
+        .bmAttributes               = 128,   
+#endif 
+        .bMaxPower                  = BMAX_POWER,  
+    },   
 
-    /* Interface Association Descriptor */
-    0x08,                           /* 0  bLength */
-    0x0b,                           /* 1  bDescriptorType */
-    0x00,                           /* 2  bFirstInterface */
-    AUDIO_INTERFACES,               /* 3  bInterfaceCount */
-    AUDIO_FUNCTION,                 /* 4  bFunctionClass: AUDIO_FUNCTION */
-    FUNCTION_SUBCLASS_UNDEFINED,    /* 5  bFunctionSubClass: FUNCTION_SUBCLASS_UNDEFINED */
-    AF_VERSION_02_00,               /* 6  bFunctionProtocol: AF_VERSION_02_00 */
-    0x00,                           /* 7  iFunction (String Index) */
-
+    .Audio_InterfaceAssociation = 
+    {
+        .bLength                    = sizeof(USB_Descriptor_Interface_Association_t),
+        .bDescriptorType            = USB_DESCTYPE_INTERFACE_ASSOCIATION,
+        .bFirstInterface            = 0x00,                           
+        .bInterfaceCount            = AUDIO_INTERFACES,
+        .bFunctionClass             = AUDIO_FUNCTION,
+        .bFunctionSubClass          = FUNCTION_SUBCLASS_UNDEFINED,
+        .bFunctionProtocol          = UAC_FUNC_PROTOCOL_AF_VERSION_02_00,
+        .iFunction                  = 0x00,
+    },
+  
     /* Standard Audio Control Interface Descriptor (Note: Must be first with lowest interface number)r */
-    0x09,                           /* 0  bLength: 9 */
-    USB_INTERFACE,                  /* 1  bDescriptorType: INTERFACE */
-    0x00,                           /* 2  bInterfaceNumber */
-    0x00,                           /* 3  bAlternateSetting: Must be 0 */
+    .Audio_StdControlInterface = 
+    {
+        .bLength                    = sizeof(USB_Descriptor_Interface_t),
+        .bDescriptorType            = USB_DESCTYPE_INTERFACE,
+        .bInterfaceNumber           = 0x00,
+        .bAlternateSetting          = 0x00,                     /* Must be 0 */
 #if defined(SPDIF_RX) || defined(ADAT_RX)
-    0x01,                           /* 4  bNumEndpoints (0 or 1 if optional interrupt endpoint is present */
+        .bNumEndpoints               = 0x01,                    /* 0 or 1 if optional interrupt endpoint is present */
 #else
-    0x00,
+        .bNumEndpoints               = 0x00,
 #endif
-    AUDIO,                          /* 5  bInterfaceClass: AUDIO */
-    AUDIOCONTROL,                   /* 6  bInterfaceSubClass: AUDIOCONTROL*/
-    IP_VERSION_02_00,               /* 7  bInterfaceProtocol: IP_VERSION_02_00 */
-    PRODUCT_STR_INDEX_A2,           /* 8  iInterface (re-use iProduct) */
+        .bInterfaceClass            = USB_CLASS_AUDIO,                     
+        .bInterfaceSubClass         = UAC_INT_SUBCLASS_AUDIOCONTROL,                  
+        .bInterfaceProtocol         = UAC_INT_PROTOCOL_IP_VERSION_02_00,       
+        .iInterface                 = PRODUCT_STR_INDEX_A2,
+    },  
 
-    /* Class Specific Audio Control Interface Header Descriptor: */
-    LEN_AC,                         /* 0   bLength */
-    CS_INTERFACE,                   /* 1   bDescriptorType: 0x24 */
-    HEADER,                         /* 2   bDescriptorSubtype: HEADER */
-    0x00, 0x02,                     /* 3:4 bcdUSB */
-    IO_BOX,                         /* 5   bCatagory (Primary use of audio function) */
-    (TLEN_AC & 0xFF),               /* 6   wTotalLength */
-    (TLEN_AC >> 8),                 /* 7   wTotalLength */
-    0x00,                           /* 8   bmControls (0:1 Latency Control, 2:7 must be 0 */
+    .Audio_CS_Control_Int = 
+    {
+         /* Class Specific Audio Control Interface Header Descriptor: */
+        .Audio_ClassControlInterface =
+        {
+            .bLength                   = sizeof(UAC_Descriptor_Interface_AC_t),          
+            .bDescriptorType           = UAC_CS_DESCTYPE_INTERFACE,                   
+            .bDescriptorSubtype        = UAC_CS_AC_INTERFACE_SUBTYPE_HEADER, 
+            .bcdADC                    = 0x0200,
+            .bCatagory                 = UAC_FUNCTION_IO_BOX,  /*(Primary use of audio function) */
+            .wTotalLength              = sizeof(USB_CfgDesc_Audio2_CS_Control_Int),
+            .bmControls                = 0x00,                 /* 0:1 Latency Control, 2:7 must be 0 */
+        },
 
-    /* Clock Source Descriptor (4.7.2.1) */
-    LEN_CLK,                        /* 0   bLength: 8 */
-    CS_INTERFACE,                   /* 1   bDescriptorType */
-    CLOCK_SOURCE,                   /* 2   bDescriptorSubtype */
-    ID_CLKSRC_INT,                  /* 3   bClockID */
-    0x03,                           /* 4   bmAttributes:
-                                            D[1:0] :
-                                                00: External Clock
-                                                01: Internal Fixed Clock
-                                                10: Internal Variable Clock
-                                                11: Internal Progamable Clock
-                                            D[2]   : Clock synced to SOF
-                                            D[7:3] : Reserved (0) */
-    0x07,                           /* 5   bmControls
-                                            D[1:0] : Clock Freq Control
-                                            D[3:2] : Clock Validity Control
-                                            D[7:4] : Reserved (0) */
-    0x00,                           /* 6   bAssocTerminal */
-    INTERNAL_CLOCK_STRING_INDEX,    /* 7   iClockSource (String Index) */
+        /* Clock Source Descriptor (4.7.2.1) */
+        .Audio_ClockSource =
+        {
+            .bLength                   = sizeof(USB_Descriptor_Audio_ClockSource_t),
+            .bDescriptorType           = UAC_CS_DESCTYPE_INTERFACE,                   
+            .bDescriptorSubType        = UAC_CS_AC_INTERFACE_SUBTYPE_CLOCK_SOURCE,                   
+            .bClockID                  = ID_CLKSRC_INT,                  
+            .bmAttributes              =  0x03,                   /* D[1:0] :
+                                                                        00: External Clock
+                                                                        01: Internal Fixed Clock
+                                                                        10: Internal Variable Clock
+                                                                        11: Internal Progamable Clock
+                                                                     D[2]   : Clock synced to SOF
+                                                                     D[7:3] : Reserved (0) */
+            .bmControls                = 0x07,                    /*
+                                                                    D[1:0] : Clock Freq Control
+                                                                    D[3:2] : Clock Validity Control
+                                                                    D[7:4] : Reserved (0) */
+            .bAssocTerminal            = 0x00,                          
+            .iClockSource              = INTERNAL_CLOCK_STRING_INDEX,
+        },
 
+        /* Clock Selector Descriptor (4.7.2.2) */
+        .Audio_ClockSelector =
+        {
+            .bLength                   = sizeof(USB_Descriptor_Audio_ClockSelector_t),
+            .bDescriptorType            = UAC_CS_DESCTYPE_INTERFACE,                 
+            .bDescriptorSubType        = UAC_CS_AC_INTERFACE_SUBTYPE_CLOCK_SELECTOR,               
+            .bClockID                  = ID_CLKSEL,                      
+            .bNrPins                   = NUM_CLOCKS,                     
+            .baCSourceId[0]            = ID_CLKSRC_INT,
 #ifdef SPDIF_RX
-    /* Clock Source Descriptor (4.7.2.1) */
-    LEN_CLK,                        /* 0   bLength: 8 */
-    CS_INTERFACE,                   /* 1   bDescriptorType */
-    CLOCK_SOURCE,                   /* 2   bDescriptorSubtype */
-    ID_CLKSRC_EXT,                  /* 3   bClockID */
-    0x00,                           /* 4   bmAttributes:
-                                            D[1:0] :
-                                                00: External Clock
-                                                01: Internal Fixed Clock
-                                                10: Internal Variable Clock
-                                                11: Internal Progamable Clock
-                                            D[2]   : Clock synced to SOF
-                                            D[7:3] : Reserved (0) */
-    0x07,                           /* 5   bmControls
-                                            D[1:0] : Clock Freq Control
-                                            D[3:2] : Clock Validity Control
-                                            D[7:4] : Reserved (0) */
-    0x00,                           /* 6   bAssocTerminal */
-    SPDIF_CLOCK_STRING_INDEX,       /* 7   iClockSource (String Index) */
+            ID_CLKSRC_EXT,
 #endif
 #ifdef ADAT_RX
-    /* Clock Source Descriptor (4.7.2.1) */
-    LEN_CLK,                        /* 0   bLength: 8 */
-    CS_INTERFACE,                   /* 1   bDescriptorType */
-    CLOCK_SOURCE,                   /* 2   bDescriptorSubtype */
-    ID_CLKSRC_ADAT,                 /* 3   bClockID */
-    0x00,                           /* 4   bmAttributes:
-                                            D[1:0] :
-                                                00: External Clock
-                                                01: Internal Fixed Clock
-                                                10: Internal Variable Clock
-                                                11: Internal Progamable Clock
-                                            D[2]   : Clock synced to SOF
-                                            D[7:3] : Reserved (0) */
-    0x07,                           /* 5   bmControls
-                                            D[1:0] : Clock Freq Control
-                                            D[3:2] : Clock Validity Control
-                                            D[7:4] : Reserved (0) */
-    0x00,                           /* 6   bAssocTerminal */
-    ADAT_CLOCK_STRING_INDEX,        /* 7   iClockSource (String Index) */
+            ID_CLKSRC_ADAT,
 #endif
-    /* Clock Selector Descriptor (4.7.2.2) */
-    LEN_CLK_SEL,                    /* 0    bLength */
-    CS_INTERFACE,                   /* 1    bDescriptorType */
-    CLOCK_SELECTOR,                 /* 2    bDescriptorSubtype */
-    ID_CLKSEL,                      /* 3    bClockID */
-    NUM_CLOCKS,                     /* 4    Number of input pins*/
-    ID_CLKSRC_INT,
-#ifdef SPDIF_RX
-    ID_CLKSRC_EXT,
-#endif
-#ifdef ADAT_RX
-   ID_CLKSRC_ADAT,
-#endif
-    0x03,                           /* 5   bmControls
-                                            D[1:0] : Clock Selector Control
-                                            D[7:4] : Reserved (0) */
-    13,                             /* 7   iClockSel (String Index) */
+            .bmControl                 = 0x03,                         
+            .iClockSelector            = 13, /* TODO Shoudn't be hard-coded */
+        },
 
 #ifdef OUTPUT
-    /* OUTPUT PATH FROM HOST TO DEVICE */
-    /* Input Terminal Descriptor (USB Input Terminal) */
-    0x11,                           /* 0  bLength in bytes: 17 */
-    CS_INTERFACE,                   /* 1  bDescriptorType: 0x24 */
-    INPUT_TERMINAL,                 /* 2  bDescriptorSubType: INPUT_TERMINAL */
-    ID_IT_USB,                      /* 3  bTerminalID */
-    USB_TERMTYPE_USB_STREAMING&0xff,
-    USB_TERMTYPE_USB_STREAMING>>8,  /* 5  wTerminalType: USB Streaming */
-    0x00,                           /* 6  bAssocTerminal */
-    ID_CLKSEL,                      /* 7  bCSourceID: ID of Clock Entity */
-    NUM_USB_CHAN_OUT,               /* 8  bNrChannels */
-    0,0,0,0,                        /* 9  bmChannelConfig */
-    OUTPUT_INTERFACE_STRING_INDEX,  /* 13 iChannelNames */
-    0x00, 0x00,                     /* 14 bmControls */
-    6,                              /* 16 iTerminal */
+        /* Input Terminal Descriptor (USB Input Terminal) */
+        .Audio_Out_InputTerminal = 
+        {
+            .bLength                   = sizeof(USB_Descriptor_Audio_InputTerminal_t),
+            UAC_CS_DESCTYPE_INTERFACE,                /* 1    bDescriptorType */
+            UAC_CS_AC_INTERFACE_SUBTYPE_INPUT_TERMINAL,  /* 2  bDescriptorSubType: INPUT_TERMINAL */
+            ID_IT_USB,                                /* 3  bTerminalID */
+            USB_TERMTYPE_USB_STREAMING,               /* 5  wTerminalType: USB Streaming */
+            0x00,                                     /* 6  bAssocTerminal */
+            ID_CLKSEL,                                /* 7  bCSourceID: ID of Clock Entity */
+            NUM_USB_CHAN_OUT,                         /* 8  bNrChannels */
+            0x00000000,                               /* 9  bmChannelConfig TODO. Set me! */
+            OUTPUT_INTERFACE_STRING_INDEX,            /* 13 iChannelNames */
+            0x0000,                                   /* 14 bmControls */
+            6,                                        /* 16 iTerminal */
+        },
 
+        /* Feature Unit Descriptor */
+        .Audio_Out_FeatureUnit = 
+        {           
+            .bLength                    = sizeof(USB_Descriptor_Audio_FeatureUnit_Out_t),               /* 0  bLength: 6+(ch + 1)*4 */
+            0x24,                           /* 1  bDescriptorType: CS_INTERFACE */
+            0x06,                           /* 2  bDescriptorSubType: FEATURE_UNIT */
+            FU_USBOUT,                      /* 3  bUnitID */
 #ifdef AUDIO_PATH_XUS
-    /* Extension Unit Descriptor (4.7.2.12) */
-    LEN_XU_OUT,                     /* 0    bLength (15 + p, when p is number of sources) */
-    CS_INTERFACE,                   /* 1    bDescriptorType */
-    EXTENSION_UNIT,                 /* 2    bDescriptorSubtype */
-    ID_XU_OUT,                      /* 3    bUnitID */
-    0,                              /* 4    wExtensionCode */
-    0,                              /* 5    wExtensionCode */
-    1,                              /* 6    bNrPins */
-    ID_IT_USB,                      /* 7    baSourceId(1) */
-    NUM_USB_CHAN_OUT,               /* 8+p  bNrChannels */
-    0,                              /* 9+p  bmChannelConfig */
-    0,                              /* 10+p bmChannelConfig */
-    0,                              /* 11+p bmChannelConfig */
-    0,                              /* 12+p bmChannelConfig */
-    0,                              /* 13+p iChannelNames */
-    3,                              /* 14+p bmControls */
-    0,                              /* 15+p iExtension */
-#endif
-
-    /* Feature Unit Descriptor */
-    LEN_FU_OUT,                     /* 0  bLength: 6+(ch + 1)*4 */
-    0x24,                           /* 1  bDescriptorType: CS_INTERFACE */
-    0x06,                           /* 2  bDescriptorSubType: FEATURE_UNIT */
-    FU_USBOUT,                      /* 3  bUnitID */
-#ifdef AUDIO_PATH_XUS
-    ID_XU_OUT,                      /* 4  bSourceID */
+            ID_XU_OUT,                      /* 4  bSourceID */
 #else
-    ID_IT_USB,                      /* 4  bSourceID */
+            ID_IT_USB,                      /* 4  bSourceID */
 #endif
+            {
 #if (NUM_USB_CHAN_OUT > 0)
-    0x0F, 0x00, 0x00, 0x00,         /* bmaControls(0) : Mute and Volume host read and writable */
-    0x0F, 0x00, 0x00, 0x00,         /* bmaControls(1) */
+                0x0000000F,         /* bmaControls(0) : Mute and Volume host read and writable */
+                0x0000000F,         /* bmaControls(1) */
 #endif
 #if (NUM_USB_CHAN_OUT > 1)
-    0x0F, 0x00, 0x00, 0x00,         /* bmaControls(2) */
+                0x0000000F,         /* bmaControls(2) */
 #endif
 #if (NUM_USB_CHAN_OUT > 2)
-    0x0F, 0x00, 0x00, 0x00,         /* bmaControls(3) */
+                0x0000000F,         /* bmaControls(3) */
 #endif
 #if (NUM_USB_CHAN_OUT > 3)
-    0x0F, 0x00, 0x00, 0x00,         /* bmaControls(4) */
+                0x0000000F,         /* bmaControls(4) */
 #endif
 #if (NUM_USB_CHAN_OUT > 4)
-    0x0F, 0x00, 0x00, 0x00,         /* bmaControls(5) */
+                0x0000000F,         /* bmaControls(5) */
 #endif
 #if (NUM_USB_CHAN_OUT > 5)
-    0x0F, 0x00, 0x00, 0x00,         /* bmaControls(6) */
+                0x0000000F,         /* bmaControls(6) */
 #endif
 #if (NUM_USB_CHAN_OUT > 6)
-    0x0F, 0x00, 0x00, 0x00,         /* bmaControls(7) */
+                0x0000000F,         /* bmaControls(7) */
 #endif
 #if (NUM_USB_CHAN_OUT > 7)
-    0x0F, 0x00, 0x00, 0x00,         /* bmaControls(8) */
+                0x0000000F,         /* bmaControls(8) */
 #endif
 #if (NUM_USB_CHAN_OUT > 8)
-    0x0F, 0x00, 0x00, 0x00,         /* bmaControls(9) */
+                0x0000000F,         /* bmaControls(9) */
 #endif
 #if (NUM_USB_CHAN_OUT > 9)
-    0x0F, 0x00, 0x00, 0x00,         /* bmaControls(10) */
+                0x0000000F,         /* bmaControls(10) */
 #endif
 #if (NUM_USB_CHAN_OUT > 10)
-    0x0F, 0x00, 0x00, 0x00,         /* bmaControls(11) */
+                0x0000000F,         /* bmaControls(11) */
 #endif
 #if (NUM_USB_CHAN_OUT > 11)
-    0x0F, 0x00, 0x00, 0x00,         /* bmaControls(12) */
+                0x0000000F,         /* bmaControls(12) */
 #endif
 #if (NUM_USB_CHAN_OUT > 12)
-    0x0F, 0x00, 0x00, 0x00,         /* bmaControls(13) */
+                0x0000000F,         /* bmaControls(13) */
 #endif
 #if (NUM_USB_CHAN_OUT > 13)
-    0x0F, 0x00, 0x00, 0x00,         /* bmaControls(14) */
+                0x0000000F,         /* bmaControls(14) */
 #endif
 #if (NUM_USB_CHAN_OUT > 14)
-    0x0F, 0x00, 0x00, 0x00,         /* bmaControls(15) */
+                0x0000000F,         /* bmaControls(15) */
 #endif
 #if (NUM_USB_CHAN_OUT > 15)
-    0x0F, 0x00, 0x00, 0x00,         /* bmaControls(16) */
+                0x0000000F,         /* bmaControls(16) */
 #endif
 #if (NUM_USB_CHAN_OUT > 16)
-    0x0F, 0x00, 0x00, 0x00,         /* bmaControls(17) */
+                0x0000000F,         /* bmaControls(17) */
 #endif
 #if (NUM_USB_CHAN_OUT > 17)
-    0x0F, 0x00, 0x00, 0x00,         /* bmaControls(18) */
+                0x0000000F,         /* bmaControls(18) */
 #endif
 #if (NUM_USB_CHAN_OUT > 18)
 #error NUM_USB_CHAN_OUT > 18
 #endif
-    0,                              /* 60 iFeature */
+            },
+            0,                              /* 60 iFeature */
+        }, 
 
-    /* Output Terminal Descriptor (Audio) */
-    0x0C,                           /* 0  bLength */
-    CS_INTERFACE,                   /* 1  bDescriptorType: 0x24 */
-    OUTPUT_TERMINAL,                /* 2  bDescriptorSubType: OUTPUT_TERMINAL */
-    ID_OT_AUD,                      /* 3  bTerminalID */
-    (SPEAKER&0xff),SPEAKER>>8,              /* 4  wTerminalType */
-    0x00,                           /* 6  bAssocTerminal */
-    FU_USBOUT,                      /* 7  bSourceID Connect to analog input feature unit*/
-    ID_CLKSEL,                      /* 8  bCSourceUD */
-    0x00, 0x00,                     /* 9  bmControls */
-    0,                              /* 11 iTerminal */
+        /* Output Terminal Descriptor (Audio) */
+        .Audio_Out_OutputTerminal = 
+        { 
+            0x0C,                                        /* 0  bLength */
+            UAC_CS_DESCTYPE_INTERFACE,                   /* 1  bDescriptorType: 0x24 */
+            UAC_CS_AC_INTERFACE_SUBTYPE_OUTPUT_TERMINAL, /* 2  bDescriptorSubType: OUTPUT_TERMINAL */
+            ID_OT_AUD,                                   /* 3  bTerminalID */
+            SPEAKER,                                     /* 4  wTerminalType */
+            0x00,                                        /* 6  bAssocTerminal */
+            FU_USBOUT,                                   /* 7  bSourceID Connect to analog input feature unit*/
+            ID_CLKSEL,                                   /* 8  bCSourceUD */
+            0x0000,                                      /* 9  bmControls */
+            0,                                           /* 11 iTerminal */
+        },
 #endif
-
 #ifdef INPUT
-    /* INPUT FROM DEVICE TO HOST PATH */
     /* Input Terminal Descriptor (Analogue Input Terminal) */
-    0x11,                           /* 0  bLength in bytes: 17 */
-    CS_INTERFACE,                   /* 1  bDescriptorType: 0x24 */
-    INPUT_TERMINAL,                 /* 2  bDescriptorSubType: INPUT_TERMINAL */
-    ID_IT_AUD,                      /* 3  bTerminalID */
-    (MICROPHONE_&0xff),MICROPHONE_>>8,     /* 4  wTerminalType: USB Streaming */
-    0x00,                           /* 6  bAssocTerminal */
-    ID_CLKSEL,                      /* 7  bCSourceID: ID of Clock Entity */
-    NUM_USB_CHAN_IN,                /* 8  bNrChannels */
-    0,0,0,0,                        /* 9  bmChannelConfig */
-    INPUT_INTERFACE_STRING_INDEX,                               /* 13 iChannelNames */
-    0x00, 0x00,                     /* 14 bmControls */
-    0,                              /* 16 iTerminal */
+        .Audio_In_InputTerminal = 
+        {
+            .bLength                   = sizeof(USB_Descriptor_Audio_InputTerminal_t),
+            .bDescriptorType           = UAC_CS_DESCTYPE_INTERFACE,  
+            .bDescriptorSubtype        = UAC_CS_AC_INTERFACE_SUBTYPE_INPUT_TERMINAL,                 
+            .bTerminalID               = ID_IT_AUD,
+            .wTerminalType             = UAC_TT_INPUT_TERMTYPE_MICROPHONE, 
+            .bAssocTerminal            = 0x00,
+            .bCSourceID                = ID_CLKSEL,
+            .bNrChannels               = NUM_USB_CHAN_IN,               
+            .bmChannelConfig           = 0x00000000,
+            .iChannelNames             = INPUT_INTERFACE_STRING_INDEX,       
+            .bmControls                = 0x0000,
+            .iTerminal                 = 0,  
+        },
 
+        .Audio_In_FeatureUnit = 
+        {
+            .bLength                    = sizeof(USB_Descriptor_Audio_FeatureUnit_In_t),               /* 0  bLength: 6+(ch + 1)*4 */
+            UAC_CS_DESCTYPE_INTERFACE,                   /* 1  bDescriptorType: CS_INTERFACE */
+            UAC_CS_AC_INTERFACE_SUBTYPE_FEATURE_UNIT,                   /* 2  bDescriptorSubType: FEATURE_UNIT */
+            FU_USBIN,                       /* 3  bUnitID */
 #ifdef AUDIO_PATH_XUS
-    /* Extension Unit Descriptor (4.7.2.12) */
-    LEN_XU_IN,                      /* 0    bLength (15 + p, when p is number of sources) */
-    CS_INTERFACE,                   /* 1    bDescriptorType */
-    EXTENSION_UNIT,                 /* 2    bDescriptorSubtype */
-    ID_XU_IN,                       /* 3    bUnitID */
-    0,                              /* 4    wExtensionCode */
-    0,                              /* 5    wExtensionCode */
-    1,                              /* 6    bNrPins */
-    ID_IT_AUD,                      /* 7    baSourceId(1) */
-    NUM_USB_CHAN_OUT,               /* 8+p  bNrChannels */
-    0,                              /* 9+p  bmChannelConfig */
-    0,                              /* 10+p bmChannelConfig */
-    0,                              /* 11+p bmChannelConfig */
-    0,                              /* 12+p bmChannelConfig */
-    0,                              /* 13+p iChannelNames */
-    3,                              /* 14+p bmControls */
-    0,                              /* 15+p iExtension */
-#endif
-
-    /* Feature Unit Descriptor */
-    LEN_FU_IN,                  /* 0  bLength: 6+(ch+1)*4 */
-    CS_INTERFACE,                   /* 1  bDescriptorType: CS_INTERFACE */
-    FEATURE_UNIT,                   /* 2  bDescriptorSubType: FEATURE_UNIT */
-    FU_USBIN,                       /* 3  bUnitID */
-#ifdef AUDIO_PATH_XUS
-    ID_XU_IN,                       /* 4  bSourceID */
+            ID_XU_IN,                       /* 4  bSourceID */
 #else
-    ID_IT_AUD,                      /* 4  bSourceID */
+            ID_IT_AUD,                      /* 4  bSourceID */
 #endif
+            {
 #if (NUM_USB_CHAN_IN > 0)
-    0x0F, 0x00, 0x00, 0x00,         /* bmaControls(0) : Mute and Volume host read and writable */
-    0x0F, 0x00, 0x00, 0x00,         /* bmaControls(1) */
+                0x0000000F,         /* bmaControls(0) : Mute and Volume host read and writable */
+                0x0000000F,         /* bmaControls(1) */
 #endif
 #if (NUM_USB_CHAN_IN > 1)
-    0x0F, 0x00, 0x00, 0x00,         /* bmaControls(2) */
+                0x0000000F,         /* bmaControls(2) */
 #endif
 #if (NUM_USB_CHAN_IN > 2)
-    0x0F, 0x00, 0x00, 0x00,         /* bmaControls(3) */
+                0x0000000F,         /* bmaControls(3) */
 #endif
 #if (NUM_USB_CHAN_IN > 3)
-    0x0F, 0x00, 0x00, 0x00,         /* bmaControls(4) */
+                0x0000000F,         /* bmaControls(4) */
 #endif
 #if (NUM_USB_CHAN_IN > 4)
-    0x0F, 0x00, 0x00, 0x00,         /* bmaControls(5) */
+                0x0000000F,         /* bmaControls(5) */
 #endif
 #if (NUM_USB_CHAN_IN > 5)
-    0x0F, 0x00, 0x00, 0x00,         /* bmaControls(6) */
+                0x0000000F,         /* bmaControls(6) */
 #endif
 #if (NUM_USB_CHAN_IN > 6)
-    0x0F, 0x00, 0x00, 0x00,         /* bmaControls(7) */
+                0x0000000F,         /* bmaControls(7) */
 #endif
 #if (NUM_USB_CHAN_IN > 7)
-    0x0F, 0x00, 0x00, 0x00,         /* bmaControls(8) */
+                0x0000000F,         /* bmaControls(8) */
 #endif
 #if (NUM_USB_CHAN_IN > 8)
-    0x0F, 0x00, 0x00, 0x00,         /* bmaControls(9) */
+                0x0000000F,         /* bmaControls(9) */
 #endif
 #if (NUM_USB_CHAN_IN > 9)
-    0x0F, 0x00, 0x00, 0x00,         /* bmaControls(10) */
+                0x0000000F,         /* bmaControls(10) */
 #endif
 #if (NUM_USB_CHAN_IN > 10)
-    0x0F, 0x00, 0x00, 0x00,         /* bmaControls(11) */
+                0x0000000F,         /* bmaControls(11) */
 #endif
 #if (NUM_USB_CHAN_IN > 11)
-    0x0F, 0x00, 0x00, 0x00,         /* bmaControls(12) */
+                0x0000000F,         /* bmaControls(12) */
 #endif
 #if (NUM_USB_CHAN_IN > 12)
-    0x0F, 0x00, 0x00, 0x00,         /* bmaControls(13) */
+                0x0000000F,         /* bmaControls(13) */
 #endif
 #if (NUM_USB_CHAN_IN > 13)
-    0x0F, 0x00, 0x00, 0x00,         /* bmaControls(14) */
+                0x0000000F,         /* bmaControls(14) */
 #endif
 #if (NUM_USB_CHAN_IN > 14)
-    0x0F, 0x00, 0x00, 0x00,         /* bmaControls(15) */
+                0x0000000F,         /* bmaControls(15) */
 #endif
 #if (NUM_USB_CHAN_IN > 15)
-    0x0F, 0x00, 0x00, 0x00,         /* bmaControls(16) */
+                0x0000000F,         /* bmaControls(16) */
 #endif
 #if (NUM_USB_CHAN_IN > 16)
-    0x0F, 0x00, 0x00, 0x00,         /* bmaControls(17) */
+                0x0000000F,         /* bmaControls(17) */
 #endif
 #if (NUM_USB_CHAN_IN > 17)
-    0x0F, 0x00, 0x00, 0x00,         /* bmaControls(18) */
+                0x0000000F,         /* bmaControls(18) */
 #endif
 #if (NUM_USB_CHAN_IN > 18)
-#error NUM_USB_CHAN > 18
+#error NUM_USB_CHAN_IN > 18
 #endif
-    0,                             /* 60 iFeature */
-
-    /* Output Terminal Descriptor (USB Streaming) */
-    0x0C,                           /* 0  bLength */
-    CS_INTERFACE,                   /* 1  bDescriptorType: 0x24 */
-    OUTPUT_TERMINAL,                /* 2  bDescriptorSubType: OUTPUT_TERMINAL */
-    ID_OT_USB,                      /* 3  bTerminalID */
-    (USB_TERMTYPE_USB_STREAMING&0xff),
-    (USB_TERMTYPE_USB_STREAMING>>8),/* 5  wTerminalType */
-    0x00,                           /* 6  bAssocTerminal */
-    FU_USBIN,                       /* 7  bSourceID Connect to analog input feature unit*/
-    ID_CLKSEL,                      /* 8  bCSourceUD */
-    0x00, 0x00,                     /* 9  bmControls */
-    7,                              /* 11 iTerminal */
+            },
+            0,                             /* 60 iFeature */
+        }, 
+        
+        .Audio_In_OutputTerminal = 
+        {
+            /* Output Terminal Descriptor (USB Streaming) */
+            0x0C,                           /* 0  bLength */
+            UAC_CS_DESCTYPE_INTERFACE,                   /* 1  bDescriptorType: 0x24 */
+            UAC_CS_AC_INTERFACE_SUBTYPE_OUTPUT_TERMINAL,                /* 2  bDescriptorSubType: OUTPUT_TERMINAL */
+            ID_OT_USB,                      /* 3  bTerminalID */
+            USB_TERMTYPE_USB_STREAMING,     /* 5  wTerminalType */
+            0x00,                           /* 6  bAssocTerminal */
+            FU_USBIN,                       /* 7  bSourceID Connect to analog input feature unit*/
+            ID_CLKSEL,                      /* 8  bCSourceUD */
+            0x0000,                         /* 9  bmControls */
+            7,                              /* 11 iTerminal */
+        },
 #endif
-
-
-
-#if defined (MIXER) && (MAX_MIX_COUNT > 0)
-    /* Extension Unit Descriptor (4.7.2.12) */
-    LEN_XU_MIX,                     /* 0    bLength (15 + p, when p is number of sources) */
-    CS_INTERFACE,                   /* 1    bDescriptorType */
-    EXTENSION_UNIT,                 /* 2    bDescriptorSubtype */
-    ID_XU_MIXSEL,                   /* 3    bUnitID */
-    0,                              /* 4    wExtensionCode */
-    0,                              /* 5    wExtensionCode */
-    2,                              /* 6    bNrPins */
-    ID_IT_USB,                      /* 7    baSourceId(1) */
-    ID_IT_AUD,                      /* 7    baSourceId(2) */
-    MIX_INPUTS,                     /* 8+p  bNrChannels */
-    0,                              /* 9+p  bmChannelConfig */
-    0,                              /* 10+p bmChannelConfig */
-    0,                              /* 11+p bmChannelConfig */
-    0,                              /* 12+p bmChannelConfig */
-    0,                              /* 13+p iChannelNames */
-    3,                              /* 14+p bmControls */
-    0,                              /* 15+p iExtension */
-
-
-
-
-/* Mixer Unit Descriptors */
-
-
-/* N = 144 (18 * 8) */
-/* Mixer Unit Bitmap - 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-                       0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff */
-    MIXER_LENGTH,                  /* 0 bLength : 13 + num inputs + bit map (inputs * outputs) */
-    CS_INTERFACE,                    /* 1  bDescriptorType: 0x24 */
-    0x04,                            /* bDescriptorSubtype: MIXER_UNIT */
-    ID_MIXER_1,                      /* Mixer unit id */
-    0x01,                            /* Number of input pins */
-    ID_XU_MIXSEL,                    /* Connected terminal or unit id for input pin */
-    MAX_MIX_COUNT,                   /* Number of mixer output channels */
-    0x00, 0x00, 0x00, 0x00,          /* Spacial location ???? */
-    MIXER_STRING_INDEX,              /* Channel name index */
-#if MIX_BMCONTROLS_LEN > 0           /* Mixer programmable control bitmap */
-    0xff,
-#endif
-#if MIX_BMCONTROLS_LEN > 1
-    0xff,
-#endif
-#if MIX_BMCONTROLS_LEN > 2
-    0xff,
-#endif
-#if MIX_BMCONTROLS_LEN > 3
-    0xff,
-#endif
-#if MIX_BMCONTROLS_LEN > 4
-    0xff,
-#endif
-#if MIX_BMCONTROLS_LEN > 5
-    0xff,
-#endif
-#if MIX_BMCONTROLS_LEN > 6
-    0xff,
-#endif
-#if MIX_BMCONTROLS_LEN > 7
-    0xff,
-#endif
-#if MIX_BMCONTROLS_LEN > 8
-    0xff,
-#endif
-#if MIX_BMCONTROLS_LEN > 9
-    0xff,
-#endif
-#if MIX_BMCONTROLS_LEN > 10
-    0xff,
-#endif
-#if MIX_BMCONTROLS_LEN > 11
-    0xff,
-#endif
-#if MIX_BMCONTROLS_LEN > 12
-    0xff,
-#endif
-#if MIX_BMCONTROLS_LEN > 13
-    0xff,
-#endif
-#if MIX_BMCONTROLS_LEN > 14
-    0xff,
-#endif
-#if MIX_BMCONTROLS_LEN > 15
-    0xff,
-#endif
-#if MIX_BMCONTROLS_LEN > 16
-    0xff,
-#endif
-#if MIX_BMCONTROLS_LEN > 17
-    0xff,
-#endif
-#if MIX_BMCONTROLS_LEN > 18
-#error unxpected BMCONTROLS_LEN
-#endif
-    0x00,                           /* bmControls */
-    0,                              /* Mixer unit string descriptor index */
-#endif
-
-#if defined(SPDIF_RX) || defined (ADAT_RX)
-    /* Standard AS Interrupt Endpoint Descriptor (4.8.2.1): */
-    0x07,                           /* 0  bLength: 7 */
-    0x05,                           /* 1  bDescriptorType: ENDPOINT */
-    EP_ADR_IN_AUD_INT,              /* 2  bEndpointAddress (D7: 0:out, 1:in) */
-    3,                              /* 3  bmAttributes (bitmap)  */
-    6,0,                            /* 4  wMaxPacketSize */
-    8,                              /* 6  bInterval */
-#endif
+    }, /* End of .Audio_CS_Control_Int */
 
 #ifdef OUTPUT
     /* Zero bandwith alternative 0 */
     /* Standard AS Interface Descriptor (4.9.1) */
-    0x09,                           /* 0  bLength: (in bytes, 9) */
-    USB_INTERFACE,                  /* 1  bDescriptorType: INTERFACE */
-    1,                              /* 2  bInterfaceNumber: Number of interface */
-    0,                              /* 3  bAlternateSetting */
-    0,                              /* 4  bNumEndpoints */
-    AUDIO,                          /* 5  bInterfaceClass: AUDIO */
-    AUDIOSTREAMING,                 /* 6  bInterfaceSubClass: AUDIO_STREAMING */
-    IP_VERSION_02_00,               /* 7  bInterfaceProtocol: IP_VERSION_02_00 */
-    4,                              /* 8  iInterface: (Sting index) */
+    .Audio_Out_StreamInterface_Alt0 = 
+    {
+        0x09,                             /* 0  bLength: (in bytes, 9) */
+        USB_DESCTYPE_INTERFACE,                    /* 1  bDescriptorType: INTERFACE */
+        1,                                /* 2  bInterfaceNumber: Number of interface */
+        0,                                /* 3  bAlternateSetting */
+        0,                                /* 4  bNumEndpoints */
+        USB_CLASS_AUDIO,                  /* 5  bInterfaceClass: AUDIO */
+        UAC_INT_SUBCLASS_AUDIOSTREAMING,  /* 6  bInterfaceSubClass: AUDIO_STREAMING */
+        UAC_INT_PROTOCOL_IP_VERSION_02_00,/* 7  bInterfaceProtocol: IP_VERSION_02_00 */
+        4,                                /* 8  iInterface: (Sting index) */
+    },
 
     /* Alternative 1 */
     /* Standard AS Interface Descriptor (4.9.1) (Alt) */
-    0x09,                           /* 0  bLength: (in bytes, 9) */
-    USB_INTERFACE,                  /* 1  bDescriptorType: INTERFACE */
-    1,                              /* 2  bInterfaceNumber: Number of interface */
-    1,                              /* 3  bAlternateSetting */
-    2,                              /* 4  bNumEndpoints */
-    AUDIO,                          /* 5  bInterfaceClass: AUDIO */
-    AUDIOSTREAMING,                 /* 6  bInterfaceSubClass: AUDIO_STREAMING */
-    IP_VERSION_02_00,               /* 7  bInterfaceProtocol: IP_VERSION_02_00 */
-    4,                              /* 8  iInterface: (Sting index) */
-
+    .Audio_Out_StreamInterface_Alt1 = 
+    {
+        0x09,                           /* 0  bLength: (in bytes, 9) */
+        USB_DESCTYPE_INTERFACE,                  /* 1  bDescriptorType: INTERFACE */
+        1,                              /* 2  bInterfaceNumber: Number of interface */
+        1,                              /* 3  bAlternateSetting */
+        2,                              /* 4  bNumEndpoints */
+        USB_CLASS_AUDIO,                          /* 5  bInterfaceClass: AUDIO */
+        UAC_INT_SUBCLASS_AUDIOSTREAMING,                 /* 6  bInterfaceSubClass: AUDIO_STREAMING */
+        UAC_INT_PROTOCOL_IP_VERSION_02_00,               /* 7  bInterfaceProtocol: IP_VERSION_02_00 */
+        4,                              /* 8  iInterface: (Sting index) */
+     },
     /* STREAMING_OUTPUT_ALT1_OFFSET: */
     /* Class Specific AS Interface Descriptor */
-    0x10,                           /* 0  bLength: 16 */
-    CS_INTERFACE,                   /* 1  bDescriptorType: 0x24 */
-    AS_GENERAL,                     /* 2  bDescriptorSubType */
-    ID_IT_USB,                      /* 3  bTerminalLink (Linked to USB input terminal) */
-    0x00,                           /* 4  bmControls */
-    0x01,                           /* 5  bFormatType */
-    PCM, 0x00, 0x00, 0x00,          /* 6:10  bmFormats (note this is a bitmap) */
-    NUM_USB_CHAN_OUT,               /* 11 bNrChannels */
-    0,0,0,0,                        /* 12:14: bmChannelConfig */
-    OUTPUT_INTERFACE_STRING_INDEX,  /* 15 iChannelNames */
+    .Audio_Out_ClassStreamInterface = 
+    {
+        0x10,                             /* 0  bLength: 16 */
+        UAC_CS_DESCTYPE_INTERFACE,                     /* 1  bDescriptorType: 0x24 */
+        UAC_CS_AS_INTERFACE_SUBTYPE_AS_GENERAL,                       /* 2  bDescriptorSubType */
+        ID_IT_USB,                        /* 3  bTerminalLink (Linked to USB input terminal) */
+        0x00,                             /* 4  bmControls */
+        UAC_FORMAT_TYPE_I,                /* 5  bFormatType */
+        STREAM_FORMAT_OUTPUT_1_DATAFORMAT,/* 6:10  bmFormats (note this is a bitmap) */
+        NUM_USB_CHAN_OUT,                 /* 11 bNrChannels */
+        0x00000000,                       /* 12:14: bmChannelConfig */
+        OUTPUT_INTERFACE_STRING_INDEX,    /* 15 iChannelNames */
+    },
 
     /* Type 1 Format Type Descriptor */
-    0x06,                           /* 0  bLength (in bytes): 6 */
-    CS_INTERFACE,                   /* 1  bDescriptorType: 0x24 */
-    FORMAT_TYPE,                    /* 2  bDescriptorSubtype: FORMAT_TYPE */
-    FORMAT_TYPE_I,                  /* 3  bFormatType: FORMAT_TYPE_1 */
-    SAMPLE_SUBSLOT_SIZE_HS,         /* 4  bSubslotSize (Number of bytes per subslot) */
-    SAMPLE_BIT_RESOLUTION_HS,       /* 5  bBitResolution (Number of bits used per subslot) */
-
+    .Audio_Out_Format = 
+    {
+        0x06,                           /* 0  bLength (in bytes): 6 */
+        UAC_CS_DESCTYPE_INTERFACE,                   /* 1  bDescriptorType: 0x24 */
+        UAC_CS_AS_INTERFACE_SUBTYPE_FORMAT_TYPE,                    /* 2  bDescriptorSubtype: FORMAT_TYPE */
+        UAC_FORMAT_TYPE_I,                  /* 3  bFormatType: FORMAT_TYPE_1 */
+        .bSubslotSize                  = HS_STREAM_FORMAT_OUTPUT_1_SUBSLOT_BYTES,  
+        .bBitResolution                = HS_STREAM_FORMAT_OUTPUT_1_RESOLUTION_BITS,
+    }, 
+    
     /* Standard AS Isochronous Audio Data Endpoint Descriptor (4.10.1.1) */
-    0x07,                           /* 0  bLength: 7 */
-    USB_ENDPOINT,                   /* 1  bDescriptorType: ENDPOINT */
-    0x01,                           /* 2  bEndpointAddress (D7: 0:out, 1:in) */
-    0x05,                           /* 3  bmAttributes (bitmap)  */
-    MAX_PACKET_SIZE_OUT_HS&0xff,        /* 4  wMaxPacketSize */
-    (MAX_PACKET_SIZE_OUT_HS&0xff00)>>8, /* 5  wMaxPacketSize */
-    1,                              /* 6  bInterval */
+    .Audio_Out_Endpoint = 
+    {
+        .bLength                        = sizeof(USB_Descriptor_Endpoint_t),
+        .bDescriptorType                = USB_DESCTYPE_ENDPOINT,
+        .bEndpointAddress               = 0x01,     /* (D7: 0:out, 1:in) */
+        .bmAttributes                   = 0x05,     /* (bitmap)  */
+        .wMaxPacketSize                 = HS_STREAM_FORMAT_OUTPUT_1_MAXPACKETSIZE,
+        .bInterval                      = 1, 
+    },
 
     /* Class-Specific AS Isochronous Audio Data Endpoint Descriptor (4.10.1.2) */
-    0x08,                           /* 0   bLength */
-    CS_ENDPOINT,                    /* 1   bDescriptorType */
-    0x01,                           /* 2   bDescriptorSubtype */
-    0x00,                           /* 3   bmAttributes */
-    0x00,                           /* 4   bmControls (Bitmap: Pitch control, over/underun etc) */
-    0x02,                           /* 5   bLockDelayUnits: Decoded PCM samples */
-    8,0,                            /* 6:7 bLockDelay */
+    .Audio_Out_ClassEndpoint = 
+    {
+        0x08,                             /* 0   bLength */
+        UAC_CS_DESCTYPE_ENDPOINT,         /* 1   bDescriptorType */
+        0x01,                             /* 2   bDescriptorSubtype */
+        0x00,                             /* 3   bmAttributes */
+        0x00,                             /* 4   bmControls (Bitmap: Pitch control, over/underun etc) */
+        0x02,                             /* 5   bLockDelayUnits: Decoded PCM samples */
+        0x0008,                           /* 6:7 bLockDelay */
+    },
 
-    /* Feedback EP */
-    0x07,                           /* 0  bLength: 7 */
-    USB_ENDPOINT,                   /* 1  bDescriptorType: ENDPOINT */
-    0x81,                           /* 2  bEndpointAddress (D7: 0:out, 1:in) */
-    17,                             /* 3  bmAttributes (bitmap)  */
-    4,0,                            /* 4  wMaxPacketSize */
-    4,                              /* 6  bInterval. Only values <= 1 frame (4) supported by MS */
-
-#ifdef NATIVE_DSD
+    .Audio_Out_Fb_Endpoint = 
+    {
+        0x07,                             /* 0  bLength: 7 */
+        USB_DESCTYPE_ENDPOINT,            /* 1  bDescriptorType: ENDPOINT */
+        0x81,                             /* 2  bEndpointAddress (D7: 0:out, 1:in) */
+        17,                               /* 3  bmAttributes (bitmap)  */
+        0x0004,                           /* 4  wMaxPacketSize */
+        4,                                /* 6  bInterval. Only values <= 1 frame (4) supported by MS */
+    },
+#if (OUTPUT_FORMAT_COUNT > 1)
     /* Standard AS Interface Descriptor (4.9.1) (Alt) */
-    0x09,                           /* 0  bLength: (in bytes, 9) */
-    USB_INTERFACE,                  /* 1  bDescriptorType: INTERFACE */
-    1,                              /* 2  bInterfaceNumber: Number of interface */
-    ALT_SETTING_DSD,                /* 3  bAlternateSetting */
-    2,                              /* 4  bNumEndpoints */
-    AUDIO,                          /* 5  bInterfaceClass: AUDIO */
-    AUDIOSTREAMING,                 /* 6  bInterfaceSubClass: AUDIO_STREAMING */
-    IP_VERSION_02_00,               /* 7  bInterfaceProtocol: IP_VERSION_02_00 */
-    4,                              /* 8  iInterface: (Sting index) */
+    .Audio_Out_StreamInterface_Alt2 = 
+    {
+        0x09,                             /* 0  bLength: (in bytes, 9) */
+        USB_DESCTYPE_INTERFACE,           /* 1  bDescriptorType: INTERFACE */
+        1,                                /* 2  bInterfaceNumber: Number of interface */
+        2,                                /* 3  bAlternateSetting */
+        2,                                /* 4  bNumEndpoints */
+        USB_CLASS_AUDIO,                  /* 5  bInterfaceClass: AUDIO */
+        UAC_INT_SUBCLASS_AUDIOSTREAMING,  /* 6  bInterfaceSubClass: AUDIO_STREAMING */
+        UAC_INT_PROTOCOL_IP_VERSION_02_00,/* 7  bInterfaceProtocol: IP_VERSION_02_00 */
+        4,                                /* 8  iInterface: (Sting index) */
+     },
 
     /* Class Specific AS Interface Descriptor */
-    0x10,                           /* 0  bLength: 16 */
-    CS_INTERFACE,                   /* 1  bDescriptorType: 0x24 */
-    AS_GENERAL,                     /* 2  bDescriptorSubType */
-    ID_IT_USB,                      /* 3  bTerminalLink (Linked to USB input terminal) */
-    0x00,                           /* 4  bmControls */
-    0x01,                           /* 5  bFormatType */
-    0x00, 0x00, 0x00, TYPE_1_RAW_DATA, /* 6:10  bmFormats (note this is a bitmap) */
-    NUM_USB_CHAN_OUT,               /* 11 bNrChannels */
-    0,0,0,0,                        /* 12:14: bmChannelConfig */
-    OUTPUT_INTERFACE_STRING_INDEX,  /* 15 iChannelNames */
+    .Audio_Out_ClassStreamInterface_2 = 
+    {
+        0x10,                             /* 0  bLength: 16 */
+        UAC_CS_DESCTYPE_INTERFACE,        /* 1  bDescriptorType: 0x24 */
+        UAC_CS_AS_INTERFACE_SUBTYPE_AS_GENERAL, /* 2  bDescriptorSubType */
+        ID_IT_USB,                        /* 3  bTerminalLink (Linked to USB input terminal) */
+        0x00,                             /* 4  bmControls */
+        UAC_FORMAT_TYPE_I,                /* 5  bFormatType */
+        STREAM_FORMAT_OUTPUT_2_DATAFORMAT,/* 6:10  bmFormats (note this is a bitmap) */
+        NUM_USB_CHAN_OUT,                 /* 11 bNrChannels */
+        0x00000000,                       /* 12:14: bmChannelConfig */
+        OUTPUT_INTERFACE_STRING_INDEX,    /* 15 iChannelNames */
+    },
 
     /* Type 1 Format Type Descriptor */
-    0x06,                           /* 0  bLength (in bytes): 6 */
-    CS_INTERFACE,                   /* 1  bDescriptorType: 0x24 */
-    FORMAT_TYPE,                    /* 2  bDescriptorSubtype: FORMAT_TYPE */
-    FORMAT_TYPE_I,                  /* 3  bFormatType: FORMAT_TYPE_1 */
-    SAMPLE_SUBSLOT_SIZE_HS,         /* 4  bSubslotSize (Number of bytes per subslot) */
-    32,                             /* 5  bBitResolution (Number of bits used per subslot) */
-
+    .Audio_Out_Format_2 = 
+    {
+        0x06,                             /* 0  bLength (in bytes): 6 */
+        UAC_CS_DESCTYPE_INTERFACE,        /* 1  bDescriptorType: 0x24 */
+        UAC_CS_AS_INTERFACE_SUBTYPE_FORMAT_TYPE,/* 2  bDescriptorSubtype: FORMAT_TYPE */
+        UAC_FORMAT_TYPE_I,                /* 3  bFormatType: FORMAT_TYPE_1 */
+        .bSubslotSize                  = HS_STREAM_FORMAT_OUTPUT_2_SUBSLOT_BYTES,         
+        .bBitResolution                = HS_STREAM_FORMAT_OUTPUT_2_RESOLUTION_BITS,
+    }, 
     /* Standard AS Isochronous Audio Data Endpoint Descriptor (4.10.1.1) */
-    0x07,                           /* 0  bLength: 7 */
-    USB_ENDPOINT,                   /* 1  bDescriptorType: ENDPOINT */
-    0x01,                           /* 2  bEndpointAddress (D7: 0:out, 1:in) */
-    0x05,                           /* 3  bmAttributes (bitmap)  */
-    MAX_PACKET_SIZE_OUT_HS&0xff,        /* 4  wMaxPacketSize */
-    (MAX_PACKET_SIZE_OUT_HS&0xff00)>>8, /* 5  wMaxPacketSize */
-    1,                              /* 6  bInterval */
+    .Audio_Out_Endpoint_2 = 
+    {
+        .bLength                        = sizeof(USB_Descriptor_Endpoint_t),
+        .bDescriptorType                = USB_DESCTYPE_ENDPOINT, 
+        .bEndpointAddress               = 0x01,                            
+        .bmAttributes                   = 0x05,                             
+        .wMaxPacketSize                 = HS_STREAM_FORMAT_OUTPUT_2_MAXPACKETSIZE,           
+        .bInterval                      = 1,                                
+    },
 
     /* Class-Specific AS Isochronous Audio Data Endpoint Descriptor (4.10.1.2) */
-    0x08,                           /* 0   bLength */
-    CS_ENDPOINT,                    /* 1   bDescriptorType */
-    0x01,                           /* 2   bDescriptorSubtype */
-    0x00,                           /* 3   bmAttributes */
-    0x00,                           /* 4   bmControls (Bitmap: Pitch control, over/underun etc) */
-    0x02,                           /* 5   bLockDelayUnits: Decoded PCM samples */
-    8,0,                            /* 6:7 bLockDelay */
+    .Audio_Out_ClassEndpoint_2 = 
+    {
+        0x08,                             /* 0   bLength */
+        UAC_CS_DESCTYPE_ENDPOINT,         /* 1   bDescriptorType */
+        0x01,                             /* 2   bDescriptorSubtype */
+        0x00,                             /* 3   bmAttributes */
+        0x00,                             /* 4   bmControls (Bitmap: Pitch control, over/underun etc) */
+        0x02,                             /* 5   bLockDelayUnits: Decoded PCM samples */
+        0x0008,                           /* 6:7 bLockDelay */
+    },
 
-    /* Feedback EP */
-    0x07,                           /* 0  bLength: 7 */
-    USB_ENDPOINT,                   /* 1  bDescriptorType: ENDPOINT */
-    0x81,                           /* 2  bEndpointAddress (D7: 0:out, 1:in) */
-    17,                             /* 3  bmAttributes (bitmap)  */
-    4,0,                            /* 4  wMaxPacketSize */
-    4,                              /* 6  bInterval */
-
-#endif /* NATIVE_DSD */
-
-#ifdef ADAT_TX
+    .Audio_Out_Fb_Endpoint_2 = 
+    {
+        0x07,                           /* 0  bLength: 7 */
+        USB_DESCTYPE_ENDPOINT,          /* 1  bDescriptorType: ENDPOINT */
+        0x81,                           /* 2  bEndpointAddress (D7: 0:out, 1:in) */
+        17,                             /* 3  bmAttributes (bitmap)  */
+        0x0004,                         /* 4  wMaxPacketSize */
+        4,                              /* 6  bInterval. Only values <= 1 frame (4) supported by MS */
+    },
+#endif
+#if (OUTPUT_FORMAT_COUNT > 2)
     /* Standard AS Interface Descriptor (4.9.1) (Alt) */
-    0x09,                           /* 0  bLength: (in bytes, 9) */
-    USB_INTERFACE,                  /* 1  bDescriptorType: INTERFACE */
-    1,                              /* 2  bInterfaceNumber: Number of interface */
-    ALT_SETTING_ADAT_TX,            /* 3  bAlternateSetting */
-    2,                              /* 4  bNumEndpoints */
-    AUDIO,                          /* 5  bInterfaceClass: AUDIO */
-    AUDIOSTREAMING,                 /* 6  bInterfaceSubClass: AUDIO_STREAMING */
-    IP_VERSION_02_00,               /* 7  bInterfaceProtocol: IP_VERSION_02_00 */
-    4,                              /* 8  iInterface: (Sting index) */
+    .Audio_Out_StreamInterface_Alt3 = 
+    {
+        0x09,                             /* 0  bLength: (in bytes, 9) */
+        USB_DESCTYPE_INTERFACE,           /* 1  bDescriptorType: INTERFACE */
+        1,                                /* 2  bInterfaceNumber: Number of interface */
+        3,                                /* 3  bAlternateSetting */
+        2,                                /* 4  bNumEndpoints */
+        USB_CLASS_AUDIO,                  /* 5  bInterfaceClass: AUDIO */
+        UAC_INT_SUBCLASS_AUDIOSTREAMING,  /* 6  bInterfaceSubClass: AUDIO_STREAMING */
+        UAC_INT_PROTOCOL_IP_VERSION_02_00,/* 7  bInterfaceProtocol: IP_VERSION_02_00 */
+        4,                                /* 8  iInterface: (Sting index) */
+     },
 
     /* Class Specific AS Interface Descriptor */
-    0x10,                           /* 0  bLength: 16 */
-    CS_INTERFACE,                   /* 1  bDescriptorType: 0x24 */
-    AS_GENERAL,                     /* 2  bDescriptorSubType */
-    ID_IT_USB,                      /* 3  bTerminalLink (Linked to USB input terminal) */
-    0x00,                           /* 4  bmControls */
-    0x01,                           /* 5  bFormatType */
-    PCM, 0x00, 0x00, 0x00,          /* 6:10  bmFormats (note this is a bitmap) */
-    NUM_USB_CHAN_OUT,               /* 11 bNrChannels */
-    0,0,0,0,                        /* 12:14: bmChannelConfig */
-    INPUT_INTERFACE_STRING_INDEX,                           /* 15 iChannelNames */
+    .Audio_Out_ClassStreamInterface_3 = 
+    {
+        0x10,                             /* 0  bLength: 16 */
+        UAC_CS_DESCTYPE_INTERFACE,        /* 1  bDescriptorType: 0x24 */
+        UAC_CS_AS_INTERFACE_SUBTYPE_AS_GENERAL, /* 2  bDescriptorSubType */
+        ID_IT_USB,                        /* 3  bTerminalLink (Linked to USB input terminal) */
+        0x00,                             /* 4  bmControls */
+        UAC_FORMAT_TYPE_I,                /* 5  bFormatType */
+        STREAM_FORMAT_OUTPUT_3_DATAFORMAT,/* 6:10  bmFormats (note this is a bitmap) */
+        NUM_USB_CHAN_OUT,                 /* 11 bNrChannels */
+        0x00000000,                       /* 12:14: bmChannelConfig */
+        OUTPUT_INTERFACE_STRING_INDEX,    /* 15 iChannelNames */
+    },
 
     /* Type 1 Format Type Descriptor */
-    0x06,                           /* 0  bLength (in bytes): 6 */
-    CS_INTERFACE,                   /* 1  bDescriptorType: 0x24 */
-    FORMAT_TYPE,                    /* 2  bDescriptorSubtype: FORMAT_TYPE */
-    FORMAT_TYPE_I,                  /* 3  bFormatType: FORMAT_TYPE_1 */
-    SAMPLE_SUBSLOT_SIZE_HS,         /* 4  bSubslotSize (Number of bytes per subslot) */
-    SAMPLE_BIT_RESOLUTION_HS,       /* 5  bBitResolution (Number of bits used per subslot) */
-
+    .Audio_Out_Format_3 = 
+    {
+        0x06,                             /* 0  bLength (in bytes): 6 */
+        UAC_CS_DESCTYPE_INTERFACE,        /* 1  bDescriptorType: 0x24 */
+        UAC_CS_AS_INTERFACE_SUBTYPE_FORMAT_TYPE, /* 2  bDescriptorSubtype: FORMAT_TYPE */
+        UAC_FORMAT_TYPE_I,                  /* 3  bFormatType: FORMAT_TYPE_1 */
+        .bSubslotSize                  = HS_STREAM_FORMAT_OUTPUT_3_SUBSLOT_BYTES,
+        .bBitResolution                = HS_STREAM_FORMAT_OUTPUT_3_RESOLUTION_BITS,
+    }, 
+    
     /* Standard AS Isochronous Audio Data Endpoint Descriptor (4.10.1.1) */
-    0x07,                           /* 0  bLength: 7 */
-    USB_ENDPOINT,                   /* 1  bDescriptorType: ENDPOINT */
-    0x01,                           /* 2  bEndpointAddress (D7: 0:out, 1:in) */
-    0x05,                           /* 3  bmAttributes (bitmap)  */
-    MAX_PACKET_SIZE_OUT_HS&0xff,        /* 4  wMaxPacketSize */
-    (MAX_PACKET_SIZE_OUT_HS&0xff00)>>8, /* 5  wMaxPacketSize */
-    1,                              /* 6  bInterval */
+    .Audio_Out_Endpoint_3 = 
+    {
+        0x07,                           /* 0  bLength: 7 */
+        USB_DESCTYPE_ENDPOINT,                   /* 1  bDescriptorType: ENDPOINT */
+        0x01,                           /* 2  bEndpointAddress (D7: 0:out, 1:in) */
+        0x05,                           /* 3  bmAttributes (bitmap)  */
+        .wMaxPacketSize                 = HS_STREAM_FORMAT_OUTPUT_3_MAXPACKETSIZE,
+        1,                              /* 6  bInterval */
+    },
 
     /* Class-Specific AS Isochronous Audio Data Endpoint Descriptor (4.10.1.2) */
-    0x08,                           /* 0   bLength */
-    CS_ENDPOINT,                    /* 1   bDescriptorType */
-    0x01,                           /* 2   bDescriptorSubtype */
-    0x00,                           /* 3   bmAttributes */
-    0x00,                           /* 4   bmControls (Bitmap: Pitch control, over/underun etc) */
-    0x02,                           /* 5   bLockDelayUnits: Decoded PCM samples */
-    8,0,                            /* 6:7 bLockDelay */
+    .Audio_Out_ClassEndpoint_3 = 
+    {
+        0x08,                           /* 0   bLength */
+        UAC_CS_DESCTYPE_ENDPOINT,                    /* 1   bDescriptorType */
+        0x01,                           /* 2   bDescriptorSubtype */
+        0x00,                           /* 3   bmAttributes */
+        0x00,                           /* 4   bmControls (Bitmap: Pitch control, over/underun etc) */
+        0x02,                           /* 5   bLockDelayUnits: Decoded PCM samples */
+        0x0008,                         /* 6:7 bLockDelay */
+    },
 
-    /* Feedback EP */
-    0x07,                           /* 0  bLength: 7 */
-    USB_ENDPOINT,                   /* 1  bDescriptorType: ENDPOINT */
-    0x81,                           /* 2  bEndpointAddress (D7: 0:out, 1:in) */
-    17,                             /* 3  bmAttributes (bitmap)  */
-    4,0,                            /* 4  wMaxPacketSize */
-    4,                              /* 6  bInterval */
-
-#endif /* ADAT_TX */
+    .Audio_Out_Fb_Endpoint_3 = 
+    {
+        0x07,                           /* 0  bLength: 7 */
+        USB_DESCTYPE_ENDPOINT,                   /* 1  bDescriptorType: ENDPOINT */
+        0x81,                           /* 2  bEndpointAddress (D7: 0:out, 1:in) */
+        17,                             /* 3  bmAttributes (bitmap)  */
+        0x0004,                         /* 4  wMaxPacketSize */
+        4,                              /* 6  bInterval. Only values <= 1 frame (4) supported by MS */
+    },
+#endif /* OUTPUT_FORMAT_COUNT > 2 */
 #endif /* OUTPUT */
-
 #ifdef INPUT
+   
+    /* Zero bandwith alternative 0 */
     /* Standard AS Interface Descriptor (4.9.1) */
-    0x09,                           /* 0  bLength: (in bytes, 9) */
-    USB_INTERFACE,                  /* 1  bDescriptorType: INTERFACE */
-    (OUTPUT_INTERFACES + 1),        /* 2  bInterfaceNumber: Number of interface */
-    0,                              /* 3  bAlternateSetting */
-    0,                              /* 4  bNumEndpoints */
-    AUDIO,                          /* 5  bInterfaceClass: AUDIO */
-    AUDIOSTREAMING,                 /* 6  bInterfaceSubClass: AUDIO_STREAMING */
-    0x20,                           /* 7  bInterfaceProtocol: IP_VERSION_02_00 */
-    5,                              /* 8  iInterface: (Sting index) */
+    .Audio_In_StreamInterface_Alt0 =
+    {
+        0x09,                           /* 0  bLength: (in bytes, 9) */
+        USB_DESCTYPE_INTERFACE,                  /* 1  bDescriptorType: INTERFACE */
+        (OUTPUT_INTERFACES + 1),        /* 2  bInterfaceNumber: Number of interface */
+        0,                              /* 3  bAlternateSetting */
+        0,                              /* 4  bNumEndpoints */
+        USB_CLASS_AUDIO,                          /* 5  bInterfaceClass: AUDIO */
+        UAC_INT_SUBCLASS_AUDIOSTREAMING,                 /* 6  bInterfaceSubClass: AUDIO_STREAMING */
+        0x20,                           /* 7  bInterfaceProtocol: IP_VERSION_02_00 */
+        5,                              /* 8  iInterface: (Sting index) */
+    },
 
+    /* Alternative 1 */
     /* Standard AS Interface Descriptor (4.9.1) (Alt) */
-    0x09,                           /* 0  bLength: (in bytes, 9) */
-    USB_INTERFACE,                  /* 1  bDescriptorType: INTERFACE */
-    (OUTPUT_INTERFACES + 1),        /* 2  bInterfaceNumber: Number of interface */
-    1,                              /* 3  bAlternateSetting */
-    1,                              /* 4  bNumEndpoints */
-    AUDIO,                          /* 5  bInterfaceClass: AUDIO */
-    AUDIOSTREAMING,                 /* 6  bInterfaceSubClass: AUDIO_STREAMING */
-    IP_VERSION_02_00,               /* 7  bInterfaceProtocol: IP_VERSION_02_00 */
-    5,                              /* 8  iInterface: (Sting index) */
+    .Audio_In_StreamInterface_Alt1 = 
+    {
+        0x09,                           /* 0  bLength: (in bytes, 9) */
+        USB_DESCTYPE_INTERFACE,                  /* 1  bDescriptorType: INTERFACE */
+        (OUTPUT_INTERFACES + 1),        /* 2  bInterfaceNumber: Number of interface */
+        1,                              /* 3  bAlternateSetting */
+        1,                              /* 4  bNumEndpoints */
+        USB_CLASS_AUDIO,                          /* 5  bInterfaceClass: AUDIO */
+        UAC_INT_SUBCLASS_AUDIOSTREAMING,                 /* 6  bInterfaceSubClass: AUDIO_STREAMING */
+        UAC_INT_PROTOCOL_IP_VERSION_02_00,               /* 7  bInterfaceProtocol: IP_VERSION_02_00 */
+        5,                              /* 8  iInterface: (Sting index) */
+    },
 
     /* Class Specific AS Interface Descriptor */
-    0x10,                           /* 0  bLength: 16 */
-    CS_INTERFACE,                   /* 1  bDescriptorType: 0x24 */
-    AS_GENERAL,                     /* 2  bDescriptorSubType */
-    ID_OT_USB,                      /* 3  bTerminalLink */
-    0x00,                           /* 4  bmControls */
-    0x01,                           /* 5  bFormatType */
-    PCM, 0x00, 0x00, 0x00,          /* 6:10  bmFormats (note this is a bitmap) */
-    NUM_USB_CHAN_IN,                /* 11 bNrChannels */
-    0,0,0,0,                        /* 12:14: bmChannelConfig */
-    INPUT_INTERFACE_STRING_INDEX,                               /* 15 iChannelNames */
+    .Audio_In_ClassStreamInterface = 
+    {
+        0x10,                           /* 0  bLength: 16 */
+        UAC_CS_DESCTYPE_INTERFACE,                   /* 1  bDescriptorType: 0x24 */
+        UAC_CS_AS_INTERFACE_SUBTYPE_AS_GENERAL,                     /* 2  bDescriptorSubType */
+        ID_OT_USB,                      /* 3  bTerminalLink */
+        0x00,                           /* 4  bmControls */
+        0x01,                           /* 5  bFormatType */
+        UAC_FORMAT_TYPEI_PCM,/* 6:10  bmFormats (note this is a bitmap) */
+        NUM_USB_CHAN_IN,                /* 11 bNrChannels */
+        0x00000000,                        /* 12:14: bmChannelConfig */
+        INPUT_INTERFACE_STRING_INDEX,                               /* 15 iChannelNames */
+    }, 
 
     /* Type 1 Format Type Descriptor */
-    0x06,                           /* 0  bLength (in bytes): 6 */
-    CS_INTERFACE,                   /* 1  bDescriptorType: 0x24 */
-    FORMAT_TYPE,                    /* 2  bDescriptorSubtype: FORMAT_TYPE */
-    FORMAT_TYPE_I,                  /* 3  bFormatType: FORMAT_TYPE_1 */
-    SAMPLE_SUBSLOT_SIZE_HS,         /* 4  bSubslotSize (Number of bytes per subslot) */
-    SAMPLE_BIT_RESOLUTION_HS,       /* 5  bBitResolution (Number of bits used per subslot) */
-
+    .Audio_In_Format = 
+    {
+        0x06,                                   /* 0  bLength (in bytes): 6 */
+        UAC_CS_DESCTYPE_INTERFACE,              /* 1  bDescriptorType: 0x24 */
+        UAC_CS_AS_INTERFACE_SUBTYPE_FORMAT_TYPE,/* 2  bDescriptorSubtype: FORMAT_TYPE */
+        UAC_FORMAT_TYPE_I,                      /* 3  bFormatType: FORMAT_TYPE_1 */
+        .bSubslotSize                   = HS_STREAM_FORMAT_INPUT_1_SUBSLOT_BYTES,                /* 4  bSubslotSize (Number of bytes per subslot) */
+        .bBitResolution                 = HS_STREAM_FORMAT_INPUT_1_RESOLUTION_BITS,
+    }, 
+    
     /* Standard AS Isochronous Audio Data Endpoint Descriptor (4.10.1.1) */
-    0x07,                           /* 0  bLength: 7 */
-    USB_ENDPOINT,                   /* 1  bDescriptorType: ENDPOINT */
-    0x82,                           /* 2  bEndpointAddress (D7: 0:out, 1:in) */
-    5,                              /* 3  bmAttributes (bitmap)  */
-    MAX_PACKET_SIZE_IN_HS&0xff,        /* 4  wMaxPacketSize */
-    (MAX_PACKET_SIZE_IN_HS&0xff00)>>8, /* 5  wMaxPacketSize */
-    1,                              /* 6  bInterval */
+    .Audio_In_Endpoint = 
+    {   
+        0x07,                                   /* 0  bLength: 7 */
+        USB_DESCTYPE_ENDPOINT,                  /* 1  bDescriptorType: ENDPOINT */
+        0x82,                                   /* 2  bEndpointAddress (D7: 0:out, 1:in) */
+        5,                                      /* 3  bmAttributes (bitmap)  */
+        .wMaxPacketSize                     = HS_STREAM_FORMAT_INPUT_1_MAXPACKETSIZE,
+        .bInterval                          = 0x01,                                    
+    },
 
     /* Class-Specific AS Isochronous Audio Data Endpoint Descriptor (4.10.1.2) */
-    0x08,                           /* 0   bLength */
-    CS_ENDPOINT,                    /* 1   bDescriptorType */
-    0x01,                           /* 2   bDescriptorSubtype */
-    0x00,                           /* 3   bmAttributes */
-    0x00,                           /* 4   bmControls (Bitmap: Pitch control, over/underun etc) */
-    0x02,                           /* 5   bLockDelayUnits: Decoded PCM samples */
-    8,0,                            /* 6:7 bLockDelay */
-
-#ifdef ADAT_RX
- /* Standard AS Interface Descriptor (4.9.1) (Alt) */
-    0x09,                           /* 0  bLength: (in bytes, 9) */
-    USB_INTERFACE,                  /* 1  bDescriptorType: INTERFACE */
-    (OUTPUT_INTERFACES + 1),        /* 2  bInterfaceNumber: Number of interface */
-    2,                              /* 3  bAlternateSetting */
-    1,                              /* 4  bNumEndpoints */
-    AUDIO,                          /* 5  bInterfaceClass: AUDIO */
-    AUDIOSTREAMING,                 /* 6  bInterfaceSubClass: AUDIO_STREAMING */
-    IP_VERSION_02_00,               /* 7  bInterfaceProtocol: IP_VERSION_02_00 */
-    5,                              /* 8  iInterface: (Sting index) */
-
-    /* Class Specific AS Interface Descriptor */
-    0x10,                           /* 0  bLength: 16 */
-    CS_INTERFACE,                   /* 1  bDescriptorType: 0x24 */
-    AS_GENERAL,                     /* 2  bDescriptorSubType */
-    ID_OT_USB,                      /* 3  bTerminalLink */
-    0x00,                           /* 4  bmControls */
-    0x01,                           /* 5  bFormatType */
-    PCM, 0x00, 0x00, 0x00,          /* 6:10  bmFormats (note this is a bitmap) */
-    NUM_USB_CHAN_IN - 4,            /* 11 bNrChannels */
-    0,0,0,0,                        /* 12:14: bmChannelConfig */
-    INPUT_INTERFACE_STRING_INDEX,                               /* 15 iChannelNames */
-
-    /* Type 1 Format Type Descriptor */
-    0x06,                           /* 0  bLength (in bytes): 6 */
-    CS_INTERFACE,                   /* 1  bDescriptorType: 0x24 */
-    FORMAT_TYPE,                    /* 2  bDescriptorSubtype: FORMAT_TYPE */
-    FORMAT_TYPE_I,                  /* 3  bFormatType: FORMAT_TYPE_1 */
-    SAMPLE_SUBSLOT_SIZE_HS,         /* 4  bSubslotSize (Number of bytes per subslot) */
-    SAMPLE_BIT_RESOLUTION_HS,       /* 5  bBitResolution (Number of bits used per subslot) */
-
-    /* Standard AS Isochronous Audio Data Endpoint Descriptor (4.10.1.1) */
-    0x07,                           /* 0  bLength: 7 */
-    USB_ENDPOINT,                   /* 1  bDescriptorType: ENDPOINT */
-    0x82,                           /* 2  bEndpointAddress (D7: 0:out, 1:in) */
-    5,                              /* 3  bmAttributes (bitmap)  */
-    MAX_PACKET_SIZE_IN_HS&0xff,        /* 4  wMaxPacketSize */
-    (MAX_PACKET_SIZE_IN_HS&0xff00)>>8, /* 5  wMaxPacketSize */
-    1,                              /* 6  bInterval */
-
-    /* Class-Specific AS Isochronous Audio Data Endpoint Descriptor (4.10.1.2) */
-    0x08,                           /* 0   bLength */
-    CS_ENDPOINT,                    /* 1   bDescriptorType */
-    0x01,                           /* 2   bDescriptorSubtype */
-    0x00,                           /* 3   bmAttributes */
-    0x00,                           /* 4   bmControls (Bitmap: Pitch control, over/underun etc) */
-    0x02,                           /* 5   bLockDelayUnits: Decoded PCM samples */
-    8,0,                            /* 6:7 bLockDelay */
-
-#if 0
-    /* Standard AS Interface Descriptor (4.9.1) (Alt) */
-    0x09,                           /* 0  bLength: (in bytes, 9) */
-    INTERFACE,                      /* 1  bDescriptorType: INTERFACE */
-    (OUTPUT_INTERFACES + 1),        /* 2  bInterfaceNumber: Number of interface */
-    3,                              /* 3  bAlternateSetting */
-    1,                              /* 4  bNumEndpoints */
-    AUDIO,                          /* 5  bInterfaceClass: AUDIO */
-    AUDIOSTREAMING,                 /* 6  bInterfaceSubClass: AUDIO_STREAMING */
-    IP_VERSION_02_00,               /* 7  bInterfaceProtocol: IP_VERSION_02_00 */
-    11,                             /* 8  iInterface: (Sting index) */
-
-    /* Class Specific AS Interface Descriptor */
-    0x10,                           /* 0  bLength: 16 */
-    CS_INTERFACE,                   /* 1  bDescriptorType: 0x24 */
-    AS_GENERAL,                     /* 2  bDescriptorSubType */
-    ID_OT_USB,                      /* 3  bTerminalLink */
-    0x00,                           /* 4  bmControls */
-    0x01,                           /* 5  bFormatType */
-    PCM, 0x00, 0x00, 0x00,          /* 6:10  bmFormats (note this is a bitmap) */
-    NUM_USB_CHAN_IN-6,                /* 11 bNrChannels */
-    0,0,0,0,                        /* 12:14: bmChannelConfig */
-    29,                             /* 15 iChannelNames */
-
-    /* Type 1 Format Type Descriptor */
-    0x06,                           /* 0  bLength (in bytes): 6 */
-    CS_INTERFACE,                   /* 1  bDescriptorType: 0x24 */
-    FORMAT_TYPE,                    /* 2  bDescriptorSubtype: FORMAT_TYPE */
-    FORMAT_TYPE_I,                  /* 3  bFormatType: FORMAT_TYPE_1 */
-    0x04,                           /* 4  bSubslotSize (Number of bytes per subslot) */
-    24,                             /* 5  bBitResolution (Number of bits used per subslot) */
-
-    /* Standard AS Isochronous Audio Data Endpoint Descriptor (4.10.1.1) */
-    0x07,                           /* 0  bLength: 7 */
-    ENDPOINT,                       /* 1  bDescriptorType: ENDPOINT */
-    0x82,                           /* 2  bEndpointAddress (D7: 0:out, 1:in) */
-    5,                              /* 3  bmAttributes (bitmap)  */
-    0,4,                            /* 4  wMaxPacketSize */
-    1,                              /* 6  bInterval */
-
-    /* Class-Specific AS Isochronous Audio Data Endpoint Descriptor (4.10.1.2) */
-    0x08,                           /* 0   bLength */
-    CS_ENDPOINT,                    /* 1   bDescriptorType */
-    0x01,                           /* 2   bDescriptorSubtype */
-    0x00,                           /* 3   bmAttributes */
-    0x00,                           /* 4   bmControls (Bitmap: Pitch control, over/underun etc) */
-    0x02,                           /* 5   bLockDelayUnits: Decoded PCM samples */
-    8,0,                            /* 6:7 bLockDelay */
+    .Audio_In_ClassEndpoint = 
+    {
+        .bLength                            = sizeof(USB_Descriptor_Audio_Class_AS_Endpoint_t),
+        .bDescriptorType                    = UAC_CS_DESCTYPE_ENDPOINT,               
+        .bDescriptorSubtype                 = UAC_CS_ENDPOINT_SUBTYPE_EP_GENERAL,
+        .bmAttributes                       = 0x00,
+        .bmControls                         = 0x00,        
+        .bLockDelayUnits                    = 0x02,  
+        .wLockDelay                         = 0x0008,
+    },
 #endif
-#endif
-
-
-#endif
-
 #ifdef MIDI
 /* MIDI Descriptors */
 /* Table B-3: MIDI Adapter Standard AC Interface Descriptor */
@@ -1320,52 +1231,63 @@ unsigned char cfgDesc_Audio2[] =
     0x00,                           /* 6    wTransferSize */
     0x10,                           /* 7    bcdDFUVersion */
     0x01,                           /* 7    bcdDFUVersion */
-
 #endif
 #endif
 
 #ifdef IAP
     /* Interface descriptor */
-    0x09,                           /* 0 bLength : Size of this descriptor, in bytes. (field size 1 bytes) */
-    0x04,                           /* 1 bDescriptorType : INTERFACE descriptor. (field size 1 bytes) */
-    (INPUT_INTERFACES+OUTPUT_INTERFACES+MIDI_INTERFACES+DFU_INTERFACES+1),                           /* 2 bInterfaceNumber : Index of this interface. (field size 1 bytes) */
-    0x00,                           /* 3 bAlternateSetting : Index of this setting. (field size 1 bytes) */
-    0x03,                           /* 4 bNumEndpoints : 0 endpoints. (field size 1 bytes) */
-    0xFF,                           /* 5 bInterfaceClass : DFU. (field size 1 bytes) */
-    0xF0,                           /* 6 bInterfaceSubclass : (field size 1 bytes) */
-    0x00,                           /* 7 bInterfaceProtocol : Unused. (field size 1 bytes) */
-    IAP_INTERFACE_STRING_INDEX,           /* 8 iInterface : Used. (field size 1 bytes) */
+    .iAP_Interface = 
+    {
+        .bLength                       = sizeof(USB_Descriptor_Interface_t),
+        .bDescriptorType               = USB_DESCTYPE_INTERFACE,                          
+        .bInterfaceNumber              = (INPUT_INTERFACES+OUTPUT_INTERFACES+MIDI_INTERFACES+DFU_INTERFACES+1),                          
+        .bAlternateSetting             = 0x00,                           
+#ifdef IAP_INT_EP
+        .bNumEndpoints                 = 0x03,           
+#else
+        .bNumEndpoints                 = 0x02,
+#endif
+        .bInterfaceClass               = USB_CLASS_VENDOR_SPECIFIC,                      
+        .bInterfaceSubClass            = 0xF0,                       /* MFI Accessory (Table 38-1) */                          
+        .bInterfaceProtocol            = 0x00,
+        .iInterface =                  IAP_INTERFACE_STRING_INDEX,   /* Note, string is important! */
+    }, 
 
     /* iAP Bulk OUT Endpoint Descriptor */
-    0x07,                            /* 0 bLength : Size of this descriptor, in bytes. (field size 1 bytes) */
-    0x05,                            /* 1 bDescriptorType : ENDPOINT descriptor. (field size 1 bytes) */
-    EP_ADR_OUT_IAP,                  /* 2 bEndpointAddress : OUT Endpoint 3. High bit isIn (field size 1 bytes) */
-    0x02,                            /* 3 bmAttributes : Bulk, not shared. (field size 1 bytes) */
-    0x00,                            /* 4 wMaxPacketSize : 64 bytes per packet. (field size 2 bytes) - has to be 0x200 for compliance*/
-    0x02,                            /* 5 wMaxPacketSize */
-    0x00,                            /* 6 bInterval : Ignored for Bulk. Set to zero. (field size 1 bytes) */
+    .iAP_Out_Endpoint = 
+    {
+        0x07,                            /* 0 bLength : Size of this descriptor, in bytes. (field size 1 bytes) */
+        0x05,                            /* 1 bDescriptorType : ENDPOINT descriptor. (field size 1 bytes) */
+        EP_ADR_OUT_IAP,                  /* 2 bEndpointAddress : OUT Endpoint 3. High bit isIn (field size 1 bytes) */
+        0x02,                            /* 3 bmAttributes : Bulk, not shared. (field size 1 bytes) */
+        0x0200,                          /* 4 wMaxPacketSize : Has to be 0x200 for compliance*/
+        0x00,                            /* 6 bInterval : Ignored for Bulk. Set to zero. (field size 1 bytes) */
+    }, 
 
     /* iAP Bulk IN Endpoint Descriptor */
-    0x07,                            /* 0 bLength : Size of this descriptor, in bytes. (field size 1 bytes) */
-    0x05,                            /* 1 bDescriptorType : ENDPOINT descriptor. (field size 1 bytes) */
-    EP_ADR_IN_IAP,                            /* 2 bEndpointAddress : IN Endpoint 5. (field size 1 bytes) */
-    0x02,                            /* 3 bmAttributes : Bulk, not shared. (field size 1 bytes) */
-    0x00,                            /* 4 wMaxPacketSize : 64 bytes per packet. (field size 2 bytes) - has to be 0x200 for compliance*/
-    0x02,                            /* 5 wMaxPacketSize */
-    0x00,                            /* 6 bInterval : Ignored for Bulk. Set to zero. (field size 1 bytes) */
+    .iAP_In_Endpoint = 
+    {
+        0x07,                            /* 0 bLength : Size of this descriptor, in bytes. (field size 1 bytes) */
+        0x05,                            /* 1 bDescriptorType : ENDPOINT descriptor. (field size 1 bytes) */
+        EP_ADR_IN_IAP,                   /* 2 bEndpointAddress : IN Endpoint 5. (field size 1 bytes) */
+        0x02,                            /* 3 bmAttributes : Bulk, not shared. (field size 1 bytes) */
+        0x0200,                          /* 4 wMaxPacketSize : Has to be 0x200 for compliance*/
+        0x00,                            /* 6 bInterval : Ignored for Bulk. Set to zero. (field size 1 bytes) */
+    }, 
 
 #ifdef IAP_INT_EP
-    /* iAP Interrupt IN Endpoint Descriptor */
-    0x07,                            /* 0 bLength : Size of this descriptor, in bytes. (field size 1 bytes) */
-    0x05,                            /* 1 bDescriptorType : ENDPOINT descriptor. (field size 1 bytes) */
-    EP_ADR_IN_IAP_INT,               /* 2 bEndpointAddress : IN Endpoint 6. (field size 1 bytes) */
-    0x03,                            /* 3 bmAttributes : Interrupt, not shared. (field size 1 bytes) */
-    0x40,                            /* 4 wMaxPacketSize : 64 bytes per packet. (field size 2 bytes) - has to be 0x40 for compliance*/
-    0x00,                            /* 5 wMaxPacketSize */
-    0x08,                            /* 6 bInterval : (2^(bInterval-1))/8 ms. Must be between 4 and 32ms (field size 1 bytes) */
+    /* iAP Interrupt IN Endpoint Descriptor. Note, its usage is now deprecated */
+    .iAP_Interrupt_Endpoint = 
+    {
+        0x07,                            /* 0 bLength : Size of this descriptor, in bytes. (field size 1 bytes) */
+        0x05,                            /* 1 bDescriptorType : ENDPOINT descriptor. (field size 1 bytes) */
+        EP_ADR_IN_IAP_INT,               /* 2 bEndpointAddress : IN Endpoint 6. (field size 1 bytes) */
+        0x03,                            /* 3 bmAttributes : Interrupt, not shared. (field size 1 bytes) */
+        0x0040,                            /* 4 wMaxPacketSize : 64 bytes per packet. (field size 2 bytes) - has to be 0x40 for compliance*/
+        0x08,                            /* 6 bInterval : (2^(bInterval-1))/8 ms. Must be between 4 and 32ms (field size 1 bytes) */
+    }
 #endif
-
-#endif
+#endif /* IAP */
 
 #ifdef HID_CONTROLS
     /* HID */
@@ -1379,8 +1301,6 @@ unsigned char cfgDesc_Audio2[] =
     0,                                /* 6: bInterfaceSubClass - no boot device */
     0,                                /* 7: bInterfaceProtocol*/
     0,                                /* 8  iInterface */
-
-
 
     /* The device implements HID Descriptor: */
     9,                                /* 0  bLength : Size of descriptor in Bytes */
@@ -1399,12 +1319,13 @@ unsigned char cfgDesc_Audio2[] =
     EP_ADR_IN_HID,                    /* 2  bEndpointAddress  */
     3,                                /* 3  bmAttributes (INTERRUPT) */
     64,                               /* 4  wMaxPacketSize */
-    0,                                /* 5  wMaxPacketSize */
     8,                                /* 6  bInterval */
 
 #endif
 
+
 };
+#endif
 
 #define APPEND_VENDOR_STR(x) VENDOR_STR" "#x
 
@@ -1617,7 +1538,7 @@ static unsigned char strDescs[][40] =
 unsigned char cfgDesc_Null[] =
 {
     0x09,                           /* 0  bLength */
-    USB_CONFIGURATION,              /* 1  bDescriptorType */
+    USB_DESCTYPE_CONFIGURATION,              /* 1  bDescriptorType */
     0x12,                           /* 2  wTotalLength */
     0x00,                           /* 3  wTotalLength */
     0x01,                           /* 4  bNumInterface: Number of interfaces*/
@@ -1681,7 +1602,7 @@ unsigned char cfgDesc_Audio1[] =
 {
     /* Configuration descriptor */
     0x09,
-    USB_CONFIGURATION,
+    USB_DESCTYPE_CONFIGURATION,
     (CFG_TOTAL_LENGTH_A1 & 0xFF),   /* wTotalLength */
     (CFG_TOTAL_LENGTH_A1 >> 8),     /* wTotalLength */
     NUM_INTERFACES_A1,              /* numInterfaces - we dont support MIDI in audio 1.0 mode*/
@@ -1696,18 +1617,18 @@ unsigned char cfgDesc_Audio1[] =
 
     /* Standard AC interface descriptor */
     0x09,
-    USB_INTERFACE,
+    USB_DESCTYPE_INTERFACE,
     0x00,                           /* Interface No */
     0x00,                           /* Alternate setting*/
     0x00,                           /* Num endpoints */
-    AUDIO,
-    AUDIOCONTROL,
+    USB_CLASS_AUDIO,
+    UAC_INT_SUBCLASS_AUDIOCONTROL,
     0x00,                           /* Unused */
     8,                              /* iInterface - re-use iProduct */
 
     /* CS (Class Specific) AudioControl interface header descriptor (4.3.2) */
     AC_LENGTH,
-    CS_INTERFACE,
+    UAC_CS_DESCTYPE_INTERFACE,
     0x01,                           /* HEADER */
     0x00, 0x01,                     /* Class spec revision - 1.0 */
     (AC_TOTAL_LENGTH & 0xFF),       /* wTotallength (Combined length of this descriptor and all Unit and Terminal Descriptors) */
@@ -1723,7 +1644,7 @@ unsigned char cfgDesc_Audio1[] =
 #ifdef OUTPUT
     /* CS_Interface Input Terminal 1 Descriptor - USB streaming Host to Device */
     0x0C,
-    CS_INTERFACE,                   /* CS_INTERFACE */
+    UAC_CS_DESCTYPE_INTERFACE,                   /* UAC_CS_DESCTYPE_INTERFACE */
     0x02,                           /* INPUT_TERMINAL */
     0x01,                           /* Terminal ID */
     0x01, 0x01,                     /* Type - streaming */
@@ -1735,8 +1656,8 @@ unsigned char cfgDesc_Audio1[] =
 
     /* CS_Interface class specific AC interface feature unit descriptor - mute & volume for dac */
     0x0A,
-    CS_INTERFACE,
-    FEATURE_UNIT,
+    UAC_CS_DESCTYPE_INTERFACE,
+    UAC_CS_AC_INTERFACE_SUBTYPE_FEATURE_UNIT,                   /* 2  bDescriptorSubType: FEATURE_UNIT */
     0x0A,                           /* unitID */
     0x01,                           /* sourceID - ID of the unit/terminal to which this feature unit is connected */
     0x01,                           /* controlSize - 1 */
@@ -1747,7 +1668,7 @@ unsigned char cfgDesc_Audio1[] =
 
     /* CS_Interface Output Terminal Descriptor - Analogue out to speaker */
     0x09,
-    CS_INTERFACE,
+    UAC_CS_DESCTYPE_INTERFACE,
     0x03,                           /* OUTPUT_TERMINAL */
     0x06,                           /* Terminal ID */
     0x01, 0x03,                     /* Type - streaming out, speaker */
@@ -1760,7 +1681,7 @@ unsigned char cfgDesc_Audio1[] =
 #ifdef INPUT
     /* CS_Interface Input Terminal 2 Descriptor - Analog in from line in */
     0x0C,
-    CS_INTERFACE,
+    UAC_CS_DESCTYPE_INTERFACE,
     0x02,                           /* INPUT_TERMINAL */
     0x02,                           /* Terminal ID */
     0x01, 0x02,                     /* Type - streaming in, mic */
@@ -1772,7 +1693,7 @@ unsigned char cfgDesc_Audio1[] =
 
     /* CS_Interface Output Terminal Descriptor - USB Streaming Device to Host*/
     0x09,
-    CS_INTERFACE,
+    UAC_CS_DESCTYPE_INTERFACE,
     0x03,                           /* OUTPUT_TERMINAL */
     0x07,                           /* Terminal ID */
     0x01, 0x01,                     /* Type - streaming */
@@ -1782,8 +1703,8 @@ unsigned char cfgDesc_Audio1[] =
 
     /* CS_Interface class specific AC interface feature unit descriptor - mute & volume for adc */
     0x0A,
-    CS_INTERFACE,
-    FEATURE_UNIT,
+    UAC_CS_DESCTYPE_INTERFACE,
+    UAC_CS_AC_INTERFACE_SUBTYPE_FEATURE_UNIT,                   /* 2  bDescriptorSubType: FEATURE_UNIT */
     0x0B,                           /* unitID */
     0x02,                           /* sourceID - ID of the unit/terminal to which this feature unit is connected */
     0x01,                           /* controlSize - 1 */
@@ -1818,7 +1739,7 @@ unsigned char cfgDesc_Audio1[] =
 
     /* Class-Specific AS Interface Descriptor (4.5.2) */
     0x07,
-    CS_INTERFACE,                   /* bDescriptorType */
+    UAC_CS_DESCTYPE_INTERFACE,                   /* bDescriptorType */
     0x01,                           /* bDescriptorSubtype - GENERAL */
     0x01,                           /* iTerminalLink - linked to Streaming IN terminal */
     0x01,                           /* bDelay */
@@ -1826,12 +1747,12 @@ unsigned char cfgDesc_Audio1[] =
 
     /* CS_Interface Format Type Descriptor */
     0x14,
-    CS_INTERFACE,
+    UAC_CS_DESCTYPE_INTERFACE,
     0x02,                           /* Subtype - FORMAT_TYPE */
     0x01,                           /* Format type - FORMAT_TYPE_1 */
     NUM_USB_CHAN_OUT_FS,            /* nrChannels */
-    SAMPLE_SUBSLOT_SIZE_FS,         /* subFrameSize */
-    SAMPLE_BIT_RESOLUTION_FS,       /* bitResolution */
+    FS_STREAM_FORMAT_OUTPUT_1_SUBSLOT_BYTES,         /* subFrameSize */
+    FS_STREAM_FORMAT_OUTPUT_1_RESOLUTION_BITS,       /* bitResolution */
     0x04,                           /* SamFreqType - 4 sample freq */
     0x44, 0xAC, 0x00,               /* sampleFreq - 44.1Khz */
     0x80, 0xBB, 0x00,               /* sampleFreq - 48KHz */
@@ -1848,8 +1769,8 @@ unsigned char cfgDesc_Audio1[] =
     0x05,                           /* ENDPOINT */
     0x01,                           /* endpointAddress - D7, direction (0 OUT, 1 IN). D6..4 reserved (0). D3..0 endpoint no. */
     0x05,                           /* attributes - isochronous async */
-    MAX_PACKET_SIZE_OUT_FS&0xff,        /* 4  wMaxPacketSize (Typically 294 bytes)*/
-    (MAX_PACKET_SIZE_OUT_FS&0xff00)>>8, /* 5  wMaxPacketSize */
+    (FS_STREAM_FORMAT_OUTPUT_1_MAXPACKETSIZE&0xff),        /* 4  wMaxPacketSize (Typically 294 bytes)*/
+    (FS_STREAM_FORMAT_OUTPUT_1_MAXPACKETSIZE&0xff00)>>8, /* 5  wMaxPacketSize */
     0x01,                           /* bInterval */
     0x00,                           /* bRefresh */
     0x81,                           /* bSynchAdddress - address of EP used to communicate sync info */
@@ -1898,7 +1819,7 @@ unsigned char cfgDesc_Audio1[] =
 
     /* CS_Interface AC interface header descriptor */
     0x07,
-    CS_INTERFACE,
+    UAC_CS_DESCTYPE_INTERFACE,
     0x01,                           /* subtype - GENERAL */
     0x07,                           /* TerminalLink - linked to Streaming OUT terminal */
     0x01,                           /* Interface delay */
@@ -1906,12 +1827,12 @@ unsigned char cfgDesc_Audio1[] =
 
     /* CS_Interface Terminal Descriptor */
     0x14,
-    CS_INTERFACE,
+    UAC_CS_DESCTYPE_INTERFACE,
     0x02,                           /* Subtype - FORMAT_TYPE */
     0x01,                           /* Format type - FORMAT_TYPE_1 */
     NUM_USB_CHAN_IN_FS,             /* bNrChannels - Typically 2 */
-    SAMPLE_SUBSLOT_SIZE_FS,         /* subFrameSize - Typically 4 bytes per slot */
-    SAMPLE_BIT_RESOLUTION_FS,       /* bitResolution - Typically 24bit */
+    FS_STREAM_FORMAT_INPUT_1_SUBSLOT_BYTES,         /* subFrameSize - Typically 4 bytes per slot */
+    FS_STREAM_FORMAT_INPUT_1_RESOLUTION_BITS,       /* bitResolution - Typically 24bit */
     0x04,                           /* SamFreqType - 4 sample freq */
     0x44, 0xAC, 0x00,               /* sampleFreq - 44.1Khz */
     0x80, 0xBB, 0x00,               /* sampleFreq - 48KHz */
@@ -1923,13 +1844,14 @@ unsigned char cfgDesc_Audio1[] =
     0x00, 0x77, 0x01,               /* sampleFreq - 96KHz */
 #endif
 
+
     /* Standard Endpoint Descriptor */
     0x09,
     0x05,                           /* ENDPOINT */
     0x82,                           /* EndpointAddress */
     0x05,                           /* Attributes - isochronous async */
-    MAX_PACKET_SIZE_IN_FS&0xff,        /* 4  wMaxPacketSize (Typically 294 bytes)*/
-    (MAX_PACKET_SIZE_IN_FS&0xff00)>>8, /* 5  wMaxPacketSize */
+    FS_STREAM_FORMAT_INPUT_1_MAXPACKETSIZE&0xff,        /* 4  wMaxPacketSize (Typically 294 bytes)*/
+    (FS_STREAM_FORMAT_INPUT_1_MAXPACKETSIZE&0xff00)>>8, /* 5  wMaxPacketSize */
     0x01,                           /* bInterval */
     0x00,                           /* bRefresh */
     0x00,                           /* bSynchAddress */

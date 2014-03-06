@@ -3,7 +3,7 @@
 #include "devicedefines.h"
 
 #include "xud.h"
-#include "usb.h"
+#include "usb_std_requests.h"
 
 #include "dfu_types.h"
 #include "flash_interface.h"
@@ -21,6 +21,15 @@ extern int DFU_reset_override;
 
 extern void DFUCustomFlashEnable();
 extern void DFUCustomFlashDisable();
+
+void DFUDelay(unsigned d)
+{
+    timer tmr;
+    unsigned s;
+    tmr :> s;
+    tmr when timerafter(s + d) :> void;
+}
+
 
 void temp()
 {
