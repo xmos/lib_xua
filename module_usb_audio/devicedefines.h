@@ -516,7 +516,7 @@
     #endif
 
     #ifndef STREAM_FORMAT_INPUT_1_RESOLUTION_BITS
-            #define STREAM_FORMAT_INPUT_1_RESOLUTION_BITS       16
+        #define STREAM_FORMAT_INPUT_1_RESOLUTION_BITS       24
     #endif
 
     /* Default resolutions for HS */
