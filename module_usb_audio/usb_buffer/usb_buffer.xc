@@ -320,7 +320,6 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
 
                 /* NOTE our feedback will be wrong for a couple of SOF's after a SF change due to
                  * lastClock being incorrect */
-                asm("#sof");
 
                 /* Get MCLK count */
                 asm (" getts %0, res[%1]" : "=r" (u_tmp) : "r" (p_off_mclk));
@@ -410,7 +409,6 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
             case XUD_SetData_Select(c_aud_fb, ep_aud_fb, result):
             {
                 XUD_BusSpeed_t busSpeed;
-                asm("#aud fb");
                 
                 GET_SHARED_GLOBAL(busSpeed, g_curUsbSpeed);
 
@@ -428,8 +426,6 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
             /* Received Audio packet HOST -> DEVICE. Datalength written to length */
             case XUD_GetData_Select(c_aud_out, ep_aud_out, length, result):
             {
-                asm("#h->d aud data");
-
                 GET_SHARED_GLOBAL(aud_from_host_buffer, g_aud_from_host_buffer);
 
                 write_via_xc_ptr(aud_from_host_buffer, length);
@@ -442,7 +438,6 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
 
 #ifdef MIDI
         case XUD_GetData_Select(c_midi_from_host, ep_midi_from_host, length, result):
-            asm("#midi h->d");
     
             if((result == XUD_RES_OKAY) && (length > 0))
             {
@@ -463,7 +458,6 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
 
         /* MIDI IN to host */
         case XUD_SetData_Select(c_midi_to_host, ep_midi_to_host, result):
-            asm("#midi d->h");
 
             /* The buffer has been sent to the host, so we can ack the midi thread */
             if (midi_data_collected_from_device != 0)
@@ -489,7 +483,7 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
 #ifdef IAP
         /* IAP OUT from host. Datalength writen to tmp */
         case XUD_GetData_Select(c_iap_from_host, ep_iap_from_host, length, result):
-            asm("#iap h->d");
+            
             if((result == XUD_RES_OKAY) && (length > 0))
             {
                 iap_data_remaining_to_device = length;
@@ -513,7 +507,6 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
 
         /* IAP IN to host */
         case XUD_SetData_Select(c_iap_to_host, ep_iap_to_host, result):
-            asm("#iap d->h");
 
             if(result == XUD_RES_RST)
             {
@@ -537,7 +530,6 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
 
 #ifdef IAP_INT_EP
         case XUD_SetData_Select(c_iap_to_host_int, ep_iap_to_host_int, result):
-            asm("#iap int d->h");
                 
             /* Do nothing.. */
             /* Note, could get a reset notification here, but deal with it in the case above */
