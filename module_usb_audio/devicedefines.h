@@ -382,25 +382,25 @@
  * Typically do not care about this extra bus overhead at High-speed */
 #ifndef HS_STREAM_FORMAT_OUTPUT_1_SUBSLOT_BYTES
     #if (HS_STREAM_FORMAT_OUTPUT_1_RESOLUTION_BITS == 24)
-        #define HS_STREAM_FORMAT_OUTPUT_1_SUBSLOT_BYTES         4 /* 4 byte subslot is nicer for our 32 bit machine to unpack.. */
+        #define HS_STREAM_FORMAT_OUTPUT_1_SUBSLOT_BYTES        4 /* 4 byte subslot is nicer for our 32 bit machine to unpack.. */
     #else
-        #define HS_STREAM_FORMAT_OUTPUT_1_SUBSLOT_BYTES         (HS_STREAM_FORMAT_OUTPUT_1_RESOLUTION_BITS/8)
+        #define HS_STREAM_FORMAT_OUTPUT_1_SUBSLOT_BYTES        (HS_STREAM_FORMAT_OUTPUT_1_RESOLUTION_BITS/8)
     #endif
 #endif  
 
 #ifndef HS_STREAM_FORMAT_OUTPUT_2_SUBSLOT_BYTES
     #if (HS_STREAM_FORMAT_OUTPUT_2_RESOLUTION_BITS == 24)
-        #define HS_STREAM_FORMAT_OUTPUT_2_SUBSLOT_BYTES         4 /* 4 byte subslot is nicer for our 32 bit machine to unpack.. */
+        #define HS_STREAM_FORMAT_OUTPUT_2_SUBSLOT_BYTES        4 /* 4 byte subslot is nicer for our 32 bit machine to unpack.. */
     #else
-        #define HS_STREAM_FORMAT_OUTPUT_2_SUBSLOT_BYTES         (HS_STREAM_FORMAT_OUTPUT_2_RESOLUTION_BITS/8)
+        #define HS_STREAM_FORMAT_OUTPUT_2_SUBSLOT_BYTES        (HS_STREAM_FORMAT_OUTPUT_2_RESOLUTION_BITS/8)
     #endif
 #endif 
 
 #ifndef HS_STREAM_FORMAT_OUTPUT_3_SUBSLOT_BYTES
     #if (HS_STREAM_FORMAT_OUTPUT_3_RESOLUTION_BITS == 24)
-        #define HS_STREAM_FORMAT_OUTPUT_3_SUBSLOT_BYTES         4 /* 4 byte subslot is nicer for our 32 bit machine to unpack.. */
+        #define HS_STREAM_FORMAT_OUTPUT_3_SUBSLOT_BYTES        4 /* 4 byte subslot is nicer for our 32 bit machine to unpack.. */
     #else
-        #define HS_STREAM_FORMAT_OUTPUT_3_SUBSLOT_BYTES         (HS_STREAM_FORMAT_OUTPUT_3_RESOLUTION_BITS/8)
+        #define HS_STREAM_FORMAT_OUTPUT_3_SUBSLOT_BYTES        (HS_STREAM_FORMAT_OUTPUT_3_RESOLUTION_BITS/8)
     #endif
 #endif 
 
