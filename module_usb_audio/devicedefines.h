@@ -104,10 +104,6 @@
     #endif
 #endif
 
-#if defined(IO_EXPANSION) && (IO_EXPANSION == 0)
-#undef IO_EXPANSION
-#endif
-
 #if defined(IAP) && (IAP == 0)
 #undef IAP
 #endif
