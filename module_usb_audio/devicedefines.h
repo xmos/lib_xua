@@ -302,40 +302,241 @@
 #define BCD_DEVICE               ((BCD_DEVICE_J << 8) | ((BCD_DEVICE_M & 0xF) << 4) | (BCD_DEVICE_N & 0xF))
 #endif
 
-/* Sample Sub-slot size (bytes) for High Speed. Default is 4 bytes */
-#ifndef SAMPLE_SUBSLOT_SIZE_HS
-#define SAMPLE_SUBSLOT_SIZE_HS   4
+#define OUTPUT_FORMAT_COUNT 3
+
+#ifndef OUTPUT_FORMAT_COUNT
+    #ifndef NATIVE_DSD
+        /* Default format count is 2 (16bit, 24bit) */
+        #define OUTPUT_FORMAT_COUNT 2
+    #else
+        /* Default format count is 3 (16bit, 24bit, DSD) */
+        #define OUTPUT_FORMAT_COUNT 3
+    #endif
 #endif
 
-#if (SAMPLE_SUBSLOT_SIZE_HS != 2) && (SAMPLE_SUBSLOT_SIZE_HS != 3) && (SAMPLE_SUBSLOT_SIZE_HS != 4)
-#error Only SAMPLE_SUBSLOT_SIZE_HS 2, 3 or 4 supported #SAMPLE_SUBSLOT_SIZE_HS
+
+
+#if(OUTPUT_FORMAT_COUNT > 3)
+    #error only OUTPUT_FORMAT_COUNT of 3 or less supported
 #endif
 
-/* Sample Sub-slot size (bytes) for Full Speed. Default is 3 bytes */
-#ifndef SAMPLE_SUBSLOT_SIZE_FS
-#define SAMPLE_SUBSLOT_SIZE_FS   3
+#if defined(NATIVE_DSD) && (OUTPUT_FORMAT_COUNT == 1) 
+    #error OUTPUT_FORMAT_COUNT should be >= 2 when NATIVE_DSD enabled
 #endif
 
-#if (SAMPLE_SUBSLOT_SIZE_FS != 2) && (SAMPLE_SUBSLOT_SIZE_FS != 3) && (SAMPLE_SUBSLOT_SIZE_FS != 4)
-#error Only SAMPLE_SUBSLOT_SIZE_FS 2, 3 or 4 supported
+#ifdef NATIVE_DSD
+    /* DSD always the last format */
+    #define NATIVE_DSD_FORMAT_NUM   (OUTPUT_FORMAT_COUNT)
 #endif
 
-/* Sample bit resolution for High Speed. Default 24bit*/
-#ifndef SAMPLE_BIT_RESOLUTION_HS
-#define SAMPLE_BIT_RESOLUTION_HS   24
+/* Default resolutions */
+/* Note, 24 on the lowests in case OUTPUT_FORMAT_COUNT = 1 */
+#ifndef STREAM_FORMAT_OUTPUT_1_RESOLUTION_BITS
+    #if (NATIVE_DSD_FORMAT_NUM == 1)
+        #define STREAM_FORMAT_OUTPUT_1_RESOLUTION_BITS      32  /* DSD requires 32bits */
+    #else
+        #define STREAM_FORMAT_OUTPUT_1_RESOLUTION_BITS      24
+    #endif
 #endif
 
-#if (SAMPLE_BIT_RESOLUTION_HS/8) > SAMPLE_SUBSLOT_SIZE_HS
-#error SAMPLE_BIT_RESOLUTION_HS is too big for SAMPLE_SUBSLOT_SIZE_HS
+#ifndef STREAM_FORMAT_OUTPUT_2_RESOLUTION_BITS
+#if (NATIVE_DSD_FORMAT_NUM == 2)
+        #define STREAM_FORMAT_OUTPUT_2_RESOLUTION_BITS      32  /* DSD requires 32bits */
+    #else
+        #define STREAM_FORMAT_OUTPUT_2_RESOLUTION_BITS      16
+    #endif
 #endif
 
-/* Sample bit resolution for Full Speed. Default 24bit*/
-#ifndef SAMPLE_BIT_RESOLUTION_FS
-#define SAMPLE_BIT_RESOLUTION_FS   24
+#ifndef STREAM_FORMAT_OUTPUT_3_RESOLUTION_BITS
+    #if (NATIVE_DSD_FORMAT_NUM == 3)
+        #define STREAM_FORMAT_OUTPUT_3_RESOLUTION_BITS      32  /* DSD requires 32bits */
+    #else
+        #define STREAM_FORMAT_OUTPUT_3_RESOLUTION_BITS      32
+    #endif
 #endif
 
-#if (SAMPLE_BIT_RESOLUTION_FS/8) > SAMPLE_SUBSLOT_SIZE_FS
-#error SAMPLE_BIT_RESOLUTION_FS is too big for SAMPLE_SUBSLOT_SIZE_FS
+/* Default resolutions for HS */
+#ifndef HS_STREAM_FORMAT_OUTPUT_1_RESOLUTION_BITS
+    #define HS_STREAM_FORMAT_OUTPUT_1_RESOLUTION_BITS   STREAM_FORMAT_OUTPUT_1_RESOLUTION_BITS 
+#endif
+
+#ifndef HS_STREAM_FORMAT_OUTPUT_2_RESOLUTION_BITS
+    #define HS_STREAM_FORMAT_OUTPUT_2_RESOLUTION_BITS   STREAM_FORMAT_OUTPUT_2_RESOLUTION_BITS 
+#endif
+
+#ifndef  HS_STREAM_FORMAT_OUTPUT_3_RESOLUTION_BITS
+    #define HS_STREAM_FORMAT_OUTPUT_3_RESOLUTION_BITS   STREAM_FORMAT_OUTPUT_3_RESOLUTION_BITS 
+#endif
+
+/* Default resolutions for FS (same as HS) */
+#ifndef FS_STREAM_FORMAT_OUTPUT_1_RESOLUTION_BITS
+    #define FS_STREAM_FORMAT_OUTPUT_1_RESOLUTION_BITS   STREAM_FORMAT_OUTPUT_1_RESOLUTION_BITS               
+#endif
+
+#ifndef FS_STREAM_FORMAT_OUTPUT_2_RESOLUTION_BITS
+    #define FS_STREAM_FORMAT_OUTPUT_2_RESOLUTION_BITS   STREAM_FORMAT_OUTPUT_2_RESOLUTION_BITS               
+#endif
+
+#ifndef FS_STREAM_FORMAT_OUTPUT_3_RESOLUTION_BITS
+    #define FS_STREAM_FORMAT_OUTPUT_3_RESOLUTION_BITS   STREAM_FORMAT_OUTPUT_3_RESOLUTION_BITS               
+#endif
+
+/* Setup default subslot size based on resolution 
+ * Catch special 24bit case where 4 byte subslot is nicer for our 32-bit machine.
+ * Typically do not care about this extra bus overhead at High-speed */
+#ifndef HS_STREAM_FORMAT_OUTPUT_1_SUBSLOT_BYTES
+    #if (HS_STREAM_FORMAT_OUTPUT_1_RESOLUTION_BITS == 24)
+        #define HS_STREAM_FORMAT_OUTPUT_1_SUBSLOT_BYTES         4 /* 4 byte subslot is nicer for our 32 bit machine to unpack.. */
+    #else
+        #define HS_STREAM_FORMAT_OUTPUT_1_SUBSLOT_BYTES         (HS_STREAM_FORMAT_OUTPUT_1_RESOLUTION_BITS/8)
+    #endif
+#endif  
+
+#ifndef HS_STREAM_FORMAT_OUTPUT_2_SUBSLOT_BYTES
+    #if (HS_STREAM_FORMAT_OUTPUT_2_RESOLUTION_BITS == 24)
+        #define HS_STREAM_FORMAT_OUTPUT_2_SUBSLOT_BYTES         4 /* 4 byte subslot is nicer for our 32 bit machine to unpack.. */
+    #else
+        #define HS_STREAM_FORMAT_OUTPUT_2_SUBSLOT_BYTES         (HS_STREAM_FORMAT_OUTPUT_2_RESOLUTION_BITS/8)
+    #endif
+#endif 
+
+#ifndef HS_STREAM_FORMAT_OUTPUT_3_SUBSLOT_BYTES
+    #if (HS_STREAM_FORMAT_OUTPUT_3_RESOLUTION_BITS == 24)
+        #define HS_STREAM_FORMAT_OUTPUT_3_SUBSLOT_BYTES         4 /* 4 byte subslot is nicer for our 32 bit machine to unpack.. */
+    #else
+        #define HS_STREAM_FORMAT_OUTPUT_3_SUBSLOT_BYTES         (HS_STREAM_FORMAT_OUTPUT_3_RESOLUTION_BITS/8)
+    #endif
+#endif 
+
+/* Setup default FS subslot sizes - make as small as possible */
+#ifndef FS_STREAM_FORMAT_OUTPUT_1_SUBSLOT_BYTES 
+    #define FS_STREAM_FORMAT_OUTPUT_1_SUBSLOT_BYTES            (FS_STREAM_FORMAT_OUTPUT_1_RESOLUTION_BITS/8)
+#endif
+
+#ifndef FS_STREAM_FORMAT_OUTPUT_2_SUBSLOT_BYTES 
+    #define FS_STREAM_FORMAT_OUTPUT_2_SUBSLOT_BYTES            (FS_STREAM_FORMAT_OUTPUT_2_RESOLUTION_BITS/8)
+#endif
+
+#ifndef FS_STREAM_FORMAT_OUTPUT_3_SUBSLOT_BYTES 
+    #define FS_STREAM_FORMAT_OUTPUT_3_SUBSLOT_BYTES            (FS_STREAM_FORMAT_OUTPUT_3_RESOLUTION_BITS/8)
+#endif
+
+/* Setup default formats */
+#ifndef STREAM_FORMAT_OUTPUT_1_DATAFORMAT
+    #if (NATIVE_DSD_FORMAT_NUM == 1)
+        #define STREAM_FORMAT_OUTPUT_1_DATAFORMAT               UAC_FORMAT_TYPEI_RAW_DATA
+    #else
+        #define STREAM_FORMAT_OUTPUT_1_DATAFORMAT               UAC_FORMAT_TYPEI_PCM
+    #endif
+#endif
+
+#ifndef STREAM_FORMAT_OUTPUT_2_DATAFORMAT
+    #if (NATIVE_DSD_FORMAT_NUM == 2)
+        #define STREAM_FORMAT_OUTPUT_2_DATAFORMAT               UAC_FORMAT_TYPEI_RAW_DATA
+    #else
+        #define STREAM_FORMAT_OUTPUT_2_DATAFORMAT               UAC_FORMAT_TYPEI_PCM
+    #endif
+#endif
+
+#ifndef STREAM_FORMAT_OUTPUT_3_DATAFORMAT
+    #if (NATIVE_DSD_FORMAT_NUM == 3)
+        #define STREAM_FORMAT_OUTPUT_3_DATAFORMAT               UAC_FORMAT_TYPEI_RAW_DATA
+    #else
+        #define STREAM_FORMAT_OUTPUT_3_DATAFORMAT               UAC_FORMAT_TYPEI_PCM
+    #endif
+#endif
+
+/* Some stream format checks */
+#if (OUTPUT_FORMAT_COUNT > 0) 
+    #if !defined(HS_STREAM_FORMAT_OUTPUT_1_RESOLUTION_BITS) || \
+                                        !defined(HS_STREAM_FORMAT_OUTPUT_1_SUBSLOT_BYTES) || \
+                                        !defined(STREAM_FORMAT_OUTPUT_1_DATAFORMAT)
+        #error HS_OUTPUT_STREAM_1 not properly defined
+    #endif   
+#endif 
+    
+#if (OUTPUT_FORMAT_COUNT > 1) 
+    #if !defined(HS_STREAM_FORMAT_OUTPUT_2_RESOLUTION_BITS) || \
+                                        !defined(HS_STREAM_FORMAT_OUTPUT_2_SUBSLOT_BYTES) || \
+                                        !defined(STREAM_FORMAT_OUTPUT_2_DATAFORMAT)
+        #error HS_OUTPUT_STREAM_2 not properly defined
+    #endif   
+#endif   
+    
+#if (OUTPUT_FORMAT_COUNT > 2) 
+    #if !defined(HS_STREAM_FORMAT_OUTPUT_3_RESOLUTION_BITS) || \
+                                        !defined(HS_STREAM_FORMAT_OUTPUT_3_SUBSLOT_BYTES) || \
+                                        !defined(STREAM_FORMAT_OUTPUT_3_DATAFORMAT)
+        #error HS_OUTPUT_STREAM_3 not properly defined
+    #endif
+#endif
+
+
+
+//#ifdef INPUT
+#if 1
+
+    /* Only one Input stream format currently supported */
+    #ifndef INPUT_FORMAT_COUNT
+        #define INPUT_FORMAT_COUNT 1
+    #endif
+
+    #if (INPUT_FORMAT_COUNT > 1)
+        #error
+    #endif
+
+    #ifndef STREAM_FORMAT_INPUT_1_RESOLUTION_BITS
+            #define STREAM_FORMAT_INPUT_1_RESOLUTION_BITS       16
+    #endif
+
+    /* Default resolutions for HS */
+    #ifndef HS_STREAM_FORMAT_INPUT_1_RESOLUTION_BITS
+        #define HS_STREAM_FORMAT_INPUT_1_RESOLUTION_BITS        STREAM_FORMAT_INPUT_1_RESOLUTION_BITS 
+    #endif
+
+    /* Default resolutions for FS (same as HS) */
+    #ifndef FS_STREAM_FORMAT_INPUT_1_RESOLUTION_BITS
+        #define FS_STREAM_FORMAT_INPUT_1_RESOLUTION_BITS        STREAM_FORMAT_INPUT_1_RESOLUTION_BITS               
+    #endif
+
+    /* Setup default subslot sized based on resolution */
+    #ifndef HS_STREAM_FORMAT_INPUT_1_SUBSLOT_BYTES
+      //  #if (HS_STREAM_FORMAT_INPUT_1_RESOLUTION_BITS == 24)
+        //    #define HS_STREAM_FORMAT_INPUT_1_SUBSLOT_BYTES      4 /* 4 byte subslot is nicer for our 32 bit machine to unpack.. */
+        //#else
+            #define HS_STREAM_FORMAT_INPUT_1_SUBSLOT_BYTES      (HS_STREAM_FORMAT_INPUT_1_RESOLUTION_BITS/8)
+        //#endif
+    #endif  
+
+    /* Setup default FS subslot sizes */
+    #ifndef FS_STREAM_FORMAT_INPUT_1_SUBSLOT_BYTES 
+        #define FS_STREAM_FORMAT_INPUT_1_SUBSLOT_BYTES         (FS_STREAM_FORMAT_INPUT_1_RESOLUTION_BITS/8)
+    #endif
+
+    /* Setup default formats */
+    #ifndef STREAM_FORMAT_INPUT_1_DATAFORMAT
+        #define STREAM_FORMAT_INPUT_1_DATAFORMAT               UAC_FORMAT_TYPEI_PCM
+    #endif
+
+#if 0
+    #if((FS_STREAM_FORMAT_INPUT_1_SUBSLOT_BYTES == 4) || HS_STREAM_FORMAT_INPUT_1_SUBSLOT_BYTES == 4)
+        #define STREAM_FORMAT_INPUT_SUBSLOT_4_USED 1
+    #else
+        #define STREAM_FORMAT_INPUT_SUBSLOT_4_USED 0
+    #endif
+
+    #if((FS_STREAM_FORMAT_INPUT_1_SUBSLOT_BYTES == 3) || HS_STREAM_FORMAT_INPUT_1_SUBSLOT_BYTES == 3)
+        #define STREAM_FORMAT_INPUT_SUBSLOT_3_USED 1
+    #else
+        #define STREAM_FORMAT_INPUT_SUBSLOT_3_USED 0
+    #endif
+
+    #if((FS_STREAM_FORMAT_INPUT_1_SUBSLOT_BYTES == 2) || HS_STREAM_FORMAT_INPUT_1_SUBSLOT_BYTES == 2)
+        #define STREAM_FORMAT_INPUT_SUBSLOT_2_USED 1
+    #else
+        #define STREAM_FORMAT_INPUT_SUBSLOT_2_USED 0
+    #endif
+#endif
 #endif
 
 /* Addition interfaces based on defines */
