@@ -162,10 +162,36 @@ void handle_audio_request(chanend c_mix_out)
         /* Not in overflow, store samples from mixer into sample buffer */
         switch(g_curSubSlot_in)
         {
+            case 2:
+#if (STREAM_FORMAT_INPUT_SUBSLOT_2_USED == 1)
+__builtin_unreachable();
+#endif
+                for(int i = 0; i < g_numUsbChanIn; i++)
+                {
+                    /* Receive sample */
+                    int sample = inuint(c_mix_out);
+#if !defined(IN_VOLUME_IN_MIXER)
+                    /* Apply volume */
+                    int mult;
+                    int h;
+                    unsigned l;
+                    asm("ldw %0, %1[%2]":"=r"(mult):"r"(p_multIn),"r"(i));
+                    {h, l} = macs(mult, sample, 0, 0);
+                    sample = h << 3;
+
+                    /* Note, in 2 byte sub slot - ignore lower bits of macs */
+#elif defined(IN_VOLUME_IN_MIXER) && defined(IN_VOLUME_AFTER_MIX)
+                    sample = sample << 3;
+#endif
+                    write_short_via_xc_ptr(g_aud_to_host_dptr, sample>>16);
+                    g_aud_to_host_dptr+=2;
+                }
+                break;
+            
             case 4:
             {
 #if (STREAM_FORMAT_INPUT_SUBSLOT_4_USED == 1)
-//__builtin_unreachable();
+__builtin_unreachable();
 #endif
                 unsigned ptr = g_aud_to_host_dptr;
 
@@ -181,8 +207,9 @@ void handle_audio_request(chanend c_mix_out)
                     asm("ldw %0, %1[%2]":"=r"(mult):"r"(p_multIn),"r"(i));
                     {h, l} = macs(mult, sample, 0, 0);
                     sample = h << 3;
-#warning FIXME
+#if (STREAM_FORMAT_INPUT_RESOLUTION_32BIT_USED == 1)
                     sample |= (l >> 29) & 0x7; // Note, this step is not required if we assume sample depth is 24 (rather than 32)
+#endif
 #elif defined(IN_VOLUME_IN_MIXER) && defined(IN_VOLUME_AFTER_MIX)
                     sample = sample << 3;
 #endif
@@ -198,7 +225,7 @@ void handle_audio_request(chanend c_mix_out)
 
             case 3:
 #if (STREAM_FORMAT_INPUT_SUBSLOT_3_USED == 1)
-//__builtin_unreachable();
+__builtin_unreachable();
 #endif
                 for(int i = 0; i < g_numUsbChanIn; i++)
                 {
@@ -239,32 +266,6 @@ void handle_audio_request(chanend c_mix_out)
                             break;
                     }
                     packState++;
-                }
-                break;
-
-            case 2:
-#if (STREAM_FORMAT_INPUT_SUBSLOT_2_USED == 1)
-//__builtin_unreachable();
-#endif
-                for(int i = 0; i < g_numUsbChanIn; i++)
-                {
-                    /* Receive sample */
-                    int sample = inuint(c_mix_out);
-#if !defined(IN_VOLUME_IN_MIXER)
-                    /* Apply volume */
-                    int mult;
-                    int h;
-                    unsigned l;
-                    asm("ldw %0, %1[%2]":"=r"(mult):"r"(p_multIn),"r"(i));
-                    {h, l} = macs(mult, sample, 0, 0);
-                    sample = h << 3;
-
-                    /* Note, in 2 byte sub slot - ignore lower bits of macs */
-#elif defined(IN_VOLUME_IN_MIXER) && defined(IN_VOLUME_AFTER_MIX)
-                    sample = sample << 3;
-#endif
-                    write_short_via_xc_ptr(g_aud_to_host_dptr, sample>>16);
-                    g_aud_to_host_dptr+=2;
                 }
                 break;
 
@@ -321,10 +322,10 @@ void handle_audio_request(chanend c_mix_out)
         {
             
             case 2:
-#if (SAMPLE_SUBSLOT_SIZE_HS != 3) && (SAMPLE_SUBSLOT_SIZE_FS != 3)
-//__builtin_unreachable();
+#if (STREAM_FORMAT_OUTPUT_SUBSLOT_2_USED == 0)
+__builtin_unreachable();
 #endif
-/* Buffering not underflow condition send out some samples...*/
+                /* Buffering not underflow condition send out some samples...*/
                 for(int i = 0; i < g_numUsbChanOut; i++)
                 {
 #pragma xta endpoint "mixer_request"
@@ -350,8 +351,8 @@ void handle_audio_request(chanend c_mix_out)
                 break;
 
             case 4:
-#if (SAMPLE_SUBSLOT_SIZE_HS != 4) && (SAMPLE_SUBSLOT_SIZE_FS != 4)
-//__builtin_unreachable();
+#if (STREAM_FORMAT_OUTPUT_SUBSLOT_4_USED == 0)
+__builtin_unreachable();
 #endif
                 /* Buffering not underflow condition send out some samples...*/
                 for(int i = 0; i < g_numUsbChanOut; i++)
@@ -369,11 +370,10 @@ void handle_audio_request(chanend c_mix_out)
                     asm("ldw %0, %1[%2]":"=r"(mult):"r"(p_multOut),"r"(i));
                     {h, l} = macs(mult, sample, 0, 0);
                     h <<= 3;
-//#if (SAMPLE_BIT_RESOLUTION_HS > 24) || (SAMPLE_BIT_RESOLUTION_FS > 24) || defined(NATIVE_DSD)
-#warning FIXME
+#if (STREAM_FORMAT_OUTPUT_RESOLUTION_32BIT_USED == 1)
                     h |= (l >>29)& 0x7; // Note: This step is not required if we assume sample depth is 24bit (rather than 32bit)
                                         // Note: We need all 32bits for Native DSD
-//#endif
+#endif
                     outuint(c_mix_out, h);
 #else
                     outuint(c_mix_out, sample);
@@ -383,8 +383,8 @@ void handle_audio_request(chanend c_mix_out)
                 break;
 
             case 3:
-#if (SAMPLE_SUBSLOT_SIZE_HS != 3) && (SAMPLE_SUBSLOT_SIZE_FS != 3)
-//__builtin_unreachable();
+#if (STREAM_FORMAT_OUTPUT_SUBSLOT_3_USED == 0)
+__builtin_unreachable();
 #endif
                 /* Buffering not underflow condition send out some samples...*/
                 for(int i = 0; i < g_numUsbChanOut; i++)
@@ -435,7 +435,7 @@ void handle_audio_request(chanend c_mix_out)
 
             
             default:
-                //__builtin_unreachable();
+                __builtin_unreachable();
                 break;
 
         } /* switch(g_curSubSlot_out) */
