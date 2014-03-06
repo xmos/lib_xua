@@ -9,7 +9,7 @@
 #if (XCC_MAJOR_VERSION >= 1300)
 #include <hwtimer.h>
 #else
-#define hwtimer timer
+#define hwtimer_t timer
 #endif
 
 #ifndef VOLTAGE_REDUCTION_mV
