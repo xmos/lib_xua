@@ -16,9 +16,6 @@
 
 /***** Device Descriptors *****/
 
-// TODO Enum for unit ids?
-// TODO structure for string table
-
 #if defined(AUDIO_CLASS_FALLBACK) || (AUDIO_CLASS==1)
 /* Device Descriptor for Audio Class 1.0 (Assumes Full-Speed) */
 unsigned char devDesc_Audio1[] =
@@ -146,28 +143,6 @@ unsigned char devQualDesc_Null[] =
 #define AUDIO_PATH_XUS
 #endif
 
-/* Lenths of input/output term descriptors - from spec */
-//#define LEN_OUTPUT_TERMINAL         (0x0C)
-//#define LEN_INPUT_TERMINAL          (0x11)
-
-/* Lengh of out terminal descriptors in total */
-//#define LEN_TERMS_OUT               ((LEN_OUTPUT_TERMINAL + LEN_INPUT_TERMINAL) * OUTPUT_INTERFACES)
-//#define LEN_TERMS_IN                ((LEN_OUTPUT_TERMINAL + LEN_INPUT_TERMINAL) * INPUT_INTERFACES)
-
-/* Calc total length of configuration desc based on defines */
-//#ifdef OUTPUT
-//#define LEN_FU_OUT                  (6 + (NUM_USB_CHAN_OUT + 1) * 4)
-//#else
-//#define LEN_FU_OUT                  0
-//#endif
-
-//#ifdef INPUT
-//#define LEN_FU_IN                   (6 + (NUM_USB_CHAN_IN + 1) * 4)
-//#else
-//#define LEN_FU_IN                   0
-//#endif
-
-
 #ifdef MIDI
 #define MIDI_LENGTH                 (92)
 #else
@@ -180,82 +155,17 @@ unsigned char devQualDesc_Null[] =
 #define DFU_LENGTH                  (0)
 #endif
 
-//#ifdef IAP
-//#ifdef IAP_INT_EP
-//#define IAP_LENGTH                  (30)
-//#else
-//#define IAP_LENGTH                  (23)
-//#endif
-//#else
-//#define IAP_LENGTH                  (0)
-//#endif
-
-//#if defined(SPDIF_RX) || defined(ADAT_RX)
-//#define AUD_INT_EP_LEN              (7)
-//#else
-//#define AUD_INT_EP_LEN              (0)
-//#endif
-
-//#ifdef AUDIO_PATH_XUS
-//#define LEN_XU_OUT                  (16 * OUTPUT_INTERFACES)
-//#define LEN_XU_IN                   (16 * INPUT_INTERFACES)
-//#else
-//#define LEN_XU_OUT                  (0)
-//#define LEN_XU_IN                   (0)
-//#endif
-
-//#if defined (MIXER) && (MAX_MIX_COUNT > 0)
- //   #define LEN_XU_MIX                  (17)
-  //  #define MIX_BMCONTROLS_LEN_TMP      ((MAX_MIX_COUNT * MIX_INPUTS) / 8)
-
-    //#if ((MAX_MIX_COUNT * MIX_INPUTS)%8)==0
-      //  #define MIX_BMCONTROLS_LEN          (MIX_BMCONTROLS_LEN_TMP)
-    //#else
-       // #define MIX_BMCONTROLS_LEN          (MIX_BMCONTROLS_LEN_TMP+1)
-    //#endif
-    //#define MIXER_LENGTH                (13+1+MIX_BMCONTROLS_LEN)
-//#else
-  //  #define LEN_XU_MIX                  (0)
-   // #define MIXER_LENGTH                (0)
-//#endif
-
-//#define LEN_CLK                     (8)
-//#define LEN_CLK_SEL                 (7 + NUM_CLOCKS)
-//#define LEN_CLOCKING                (LEN_CLK_SEL + (NUM_CLOCKS * LEN_CLK))
-
-/* Total length of the Class-Specific AC Interface Descriptor - Clock Entities, Units and Terminals */
-//#define LEN_AC                      (9)
-//#define TLEN_AC                     (LEN_AC + LEN_FU_OUT + LEN_FU_IN + LEN_CLOCKING + LEN_TERMS_OUT + LEN_TERMS_IN + LEN_XU_OUT + LEN_XU_IN + LEN_XU_MIX)
-
-
-//#ifdef ADAT_RX
-//#define INPUT_ALT_LENGTH            (46)
-//#else
-//#define INPUT_ALT_LENGTH            (0)
-//#endif
-
-//#ifdef ADAT_TX
-//#define OUTPUT_ALT_LENGTH_ADAT      (46)
-//#else
-//#define OUTPUT_ALT_LENGTH_ADAT      (0)
-//#endif
-
 #ifdef NATIVE_DSD
 #define ALT_SETTING_DSD             (2)
 #endif
 
 #ifdef ALT_SETTING_DSD
 #define ALT_SETTING_ADAT_TX         (3)
-//#define OUTPUT_ALT_LENGTH_DSD       (53)
 #else
 #define ALT_SETTING_ADAT_TX         (2)
-//#define OUTPUT_ALT_LENGTH_DSD       (0)
 #endif
 
-//#define OUTPUT_ALT_LENGTH           (OUTPUT_ALT_LENGTH_ADAT + OUTPUT_ALT_LENGTH_DSD)
-
-
-// Positions in strDescs
+/* Positions in strDescs */
 enum {
     INTERNAL_CLOCK_STRING_INDEX = 14,
 #ifdef SPDIF_RX
@@ -311,21 +221,6 @@ unsigned char hidReportDescriptor[] =
     0xc0            /* End collection */
 };
 #endif
-//#define HID_LENGTH (25 * HID_INTERFACES)
-
-/* Total length of config descriptor */
-//#define CONFIG_DESC_LENGTH      (9)
-//#define INTERFACE_ASS_LENGTH    (8)
-//#define AUD_CTRL_INT_LENGTH     (9)
-//#define AUD_CS_INT_LENGTH       (9)
-
-
-//#define CFG_TOTAL_LENGTH_A2     (CONFIG_DESC_LENGTH + INTERFACE_ASS_LENGTH + AUD_CTRL_INT_LENGTH + (AUD_INT_EP_LEN) + (INPUT_INTERFACES * 55) + (OUTPUT_INTERFACES * 62) + (MIDI_LENGTH) + (DFU_INTERFACES * 18)  + TLEN_AC + (MIXER_LENGTH) + IAP_LENGTH + INPUT_ALT_LENGTH + OUTPUT_ALT_LENGTH + HID_LENGTH)
-
-/* We need to this for patching descriptors for FS/HS switching */
-//#define STREAMING_OUTPUT_ALT1_OFFSET (CONFIG_DESC_LENGTH + INTERFACE_ASS_LENGTH + AUD_CTRL_INT_LENGTH + TLEN_AC + AUD_INT_EP_LEN + 9 + 9)
-
-//#define STREAMING_INPUT_ALT1_OFFSET (CONFIG_DESC_LENGTH + INTERFACE_ASS_LENGTH + AUD_CTRL_INT_LENGTH + TLEN_AC + AUD_INT_EP_LEN + (OUTPUT_INTERFACES *62)+OUTPUT_ALT_LENGTH + 9 + 9)
 
 /* Max packet sizes:
  * Samples per channel. e.g (192000+7999/8000) = 24
@@ -673,14 +568,14 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
 
         .Audio_In_FeatureUnit = 
         {
-            .bLength                    = sizeof(USB_Descriptor_Audio_FeatureUnit_In_t),               /* 0  bLength: 6+(ch + 1)*4 */
-            UAC_CS_DESCTYPE_INTERFACE,                   /* 1  bDescriptorType: CS_INTERFACE */
-            UAC_CS_AC_INTERFACE_SUBTYPE_FEATURE_UNIT,                   /* 2  bDescriptorSubType: FEATURE_UNIT */
-            FU_USBIN,                       /* 3  bUnitID */
+            .bLength                    = sizeof(USB_Descriptor_Audio_FeatureUnit_In_t),
+            UAC_CS_DESCTYPE_INTERFACE,                      /* 1  bDescriptorType: CS_INTERFACE */
+            UAC_CS_AC_INTERFACE_SUBTYPE_FEATURE_UNIT,       /* 2  bDescriptorSubType: FEATURE_UNIT */
+            FU_USBIN,                                       /* 3  bUnitID */
 #ifdef AUDIO_PATH_XUS
-            ID_XU_IN,                       /* 4  bSourceID */
+            ID_XU_IN,                                       /* 4  bSourceID */
 #else
-            ID_IT_AUD,                      /* 4  bSourceID */
+            ID_IT_AUD,                                      /* 4  bSourceID */
 #endif
             {
 #if (NUM_USB_CHAN_IN > 0)
@@ -1563,40 +1458,15 @@ unsigned char cfgDesc_Null[] =
     0x09,                           /* 0  bLength */
 };
 
-#if 0
-/* OtherSpeed Configuration Descriptor */
-unsigned char oSpeedCfgDesc[] =
-{
-    0x09,                           /* 0  bLength */
-    OTHER_SPEED_CONFIGURATION,      /* 1  bDescriptorType */
-    0x12,                           /* 2  wTotalLength */
-    0x00,                           /* 3  wTotalLength */
-    0x01,                           /* 4  bNumInterface: Number of interfaces*/
-    0x00,                           /* 5  bConfigurationValue */
-    0x00,                           /* 6  iConfiguration */
-    128,                            /* 7  bmAttributes */
-    250,                            /* 8  bMaxPower */
 
-    0x09,                           /* 0 bLength : Size of this descriptor, in bytes. (field size 1 bytes) */
-    0x04,                           /* 1 bDescriptorType : INTERFACE descriptor. (field size 1 bytes) */
-    0x00,                           /* 2 bInterfaceNumber : Index of this interface. (field size 1 bytes) */
-    0x00,                           /* 3 bAlternateSetting : Index of this setting. (field size 1 bytes) */
-    0x00,                           /* 4 bNumEndpoints : 0 endpoints. (field size 1 bytes) */
-    0x00,                           /* 5 bInterfaceClass :  */
-    0x00,                           /* 6 bInterfaceSubclass */
-    0x00,                           /* 7 bInterfaceProtocol : Unused. (field size 1 bytes) */
-    0x00,                           /* 8 iInterface : Unused. (field size 1 bytes) */
-
-};
-#endif
-
-/* Configuration descriptor for Audio v1.0 */
+/* Configuration descriptor for Audio v1.0 - note stil lone lag */
 #define AC_LENGTH                   (8 + INPUT_INTERFACES + OUTPUT_INTERFACES)
 #define AC_TOTAL_LENGTH             (AC_LENGTH + (INPUT_INTERFACES * 31) + (OUTPUT_INTERFACES * 31))
 #define STREAMING_INTERFACES        (INPUT_INTERFACES + OUTPUT_INTERFACES)
 
 
-#define CFG_TOTAL_LENGTH_A1            (18 + AC_TOTAL_LENGTH + (INPUT_INTERFACES * 61) + (OUTPUT_INTERFACES * 70))
+#define CFG_TOTAL_LENGTH_A1         (18 + AC_TOTAL_LENGTH + (INPUT_INTERFACES * 61) + (OUTPUT_INTERFACES * 70))
+
 #if defined (AUDIO_CLASS_FALLBACK) || (AUDIO_CLASS == 1)
 unsigned char cfgDesc_Audio1[] =
 {
