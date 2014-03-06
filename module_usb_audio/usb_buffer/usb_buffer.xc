@@ -240,10 +240,11 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
                 else
                 {
                     unsigned cmd = inuint(c_aud_ctl);
-                    sampleFreq = inuint(c_aud_ctl);
                    
                     if(cmd == SET_SAMPLE_FREQ)
                     {
+                        sampleFreq = inuint(c_aud_ctl);
+                        
                         /* Don't update things for DFU command.. */
                         if(sampleFreq != AUDIO_STOP_FOR_DFU)
                         {
@@ -261,9 +262,31 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
                         /* Ideally we want to wait for handshake (and pass back up) here.  But we cannot keep this
                         * core locked, it must stay responsive to packets (MIDI etc) and SOFs.  So, set a flag and check for
                         * handshake elsewhere */
+                        SET_SHARED_GLOBAL(g_freqChange_sampFreq, sampleFreq); 
                     }
-                    else if (cmd == SET_CHAN_COUNT_OUT)
+                    else if(cmd == SET_STREAM_FORMAT_IN)
                     {
+                        unsigned formatChange_SubSlot, formatChange_NumChans, formatChange_DataFormat;
+                        
+                        formatChange_DataFormat = inuint(c_aud_ctl);
+                        formatChange_NumChans = inuint(c_aud_ctl);  
+                        formatChange_SubSlot = inuint(c_aud_ctl);
+
+                        SET_SHARED_GLOBAL(g_formatChange_NumChans, formatChange_NumChans); 
+                        SET_SHARED_GLOBAL(g_formatChange_SubSlot, formatChange_SubSlot);
+                        SET_SHARED_GLOBAL(g_formatChange_DataFormat, formatChange_DataFormat);
+                    }
+                    else if (cmd == SET_STREAM_FORMAT_OUT)
+                    {
+                        unsigned formatChange_SubSlot, formatChange_NumChans, formatChange_DataFormat;
+                        formatChange_DataFormat = inuint(c_aud_ctl);
+                        formatChange_NumChans = inuint(c_aud_ctl);  
+                        formatChange_SubSlot = inuint(c_aud_ctl);
+
+                        SET_SHARED_GLOBAL(g_formatChange_NumChans, formatChange_NumChans); 
+                        SET_SHARED_GLOBAL(g_formatChange_SubSlot, formatChange_SubSlot);
+                        SET_SHARED_GLOBAL(g_formatChange_DataFormat, formatChange_DataFormat);
+                        
                         /* Host is starting up the output stream. Setup (or potentially resize) feedback packet based on bus-speed 
                          * This is only really important on inital start up (when bus-speed 
                            was unknown) and when changing bus-speeds */
@@ -283,8 +306,7 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
                     /* Pass on sample freq change to decouple() via global flag (saves a chanend) */
                     /* Note: freqChange flags now used to communicate other commands also */
                     SET_SHARED_GLOBAL0(g_freqChange, cmd);                /* Set command */
-                    SET_SHARED_GLOBAL(g_freqChange_sampFreq, sampleFreq); /* Set flag */
-                    SET_SHARED_GLOBAL(g_freqChange_flag, cmd);
+                    SET_SHARED_GLOBAL(g_freqChange_flag, cmd);  /* Set Flag */
                 }
                 break;
             }
@@ -421,11 +443,10 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
 #ifdef MIDI
         case XUD_GetData_Select(c_midi_from_host, ep_midi_from_host, length, result):
             asm("#midi h->d");
-
+    
             if((result == XUD_RES_OKAY) && (length > 0))
             {
                 /* Get buffer data from host - MIDI OUT from host always into a single buffer */
-                /* Write datalength (tmp) into buffer[0], data stored in buffer[4] onwards */
                 midi_data_remaining_to_device = length;
 
                 midi_from_host_rdptr = midi_from_host_buffer;
