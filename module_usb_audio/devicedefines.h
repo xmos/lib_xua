@@ -295,7 +295,7 @@
 
 /* Device release number in BCD: 0xJJMN */
 #define BCD_DEVICE_J             6
-#define BCD_DEVICE_M             4
+#define BCD_DEVICE_M             5
 #define BCD_DEVICE_N             0
 
 #ifndef BCD_DEVICE
@@ -316,7 +316,7 @@
     #error only OUTPUT_FORMAT_COUNT of 3 or less supported
 #endif
 
-#if defined(NATIVE_DSD) && (OUTPUT_FORMAT_COUNT == 1) 
+#if defined(NATIVE_DSD) && (OUTPUT_FORMAT_COUNT == 1)
     #error OUTPUT_FORMAT_COUNT should be >= 2 when NATIVE_DSD enabled
 #endif
 
@@ -353,31 +353,31 @@
 
 /* Default resolutions for HS */
 #ifndef HS_STREAM_FORMAT_OUTPUT_1_RESOLUTION_BITS
-    #define HS_STREAM_FORMAT_OUTPUT_1_RESOLUTION_BITS   STREAM_FORMAT_OUTPUT_1_RESOLUTION_BITS 
+    #define HS_STREAM_FORMAT_OUTPUT_1_RESOLUTION_BITS   STREAM_FORMAT_OUTPUT_1_RESOLUTION_BITS
 #endif
 
 #ifndef HS_STREAM_FORMAT_OUTPUT_2_RESOLUTION_BITS
-    #define HS_STREAM_FORMAT_OUTPUT_2_RESOLUTION_BITS   STREAM_FORMAT_OUTPUT_2_RESOLUTION_BITS 
+    #define HS_STREAM_FORMAT_OUTPUT_2_RESOLUTION_BITS   STREAM_FORMAT_OUTPUT_2_RESOLUTION_BITS
 #endif
 
 #ifndef  HS_STREAM_FORMAT_OUTPUT_3_RESOLUTION_BITS
-    #define HS_STREAM_FORMAT_OUTPUT_3_RESOLUTION_BITS   STREAM_FORMAT_OUTPUT_3_RESOLUTION_BITS 
+    #define HS_STREAM_FORMAT_OUTPUT_3_RESOLUTION_BITS   STREAM_FORMAT_OUTPUT_3_RESOLUTION_BITS
 #endif
 
 /* Default resolutions for FS (same as HS) */
 #ifndef FS_STREAM_FORMAT_OUTPUT_1_RESOLUTION_BITS
-    #define FS_STREAM_FORMAT_OUTPUT_1_RESOLUTION_BITS   STREAM_FORMAT_OUTPUT_1_RESOLUTION_BITS               
+    #define FS_STREAM_FORMAT_OUTPUT_1_RESOLUTION_BITS   STREAM_FORMAT_OUTPUT_1_RESOLUTION_BITS
 #endif
 
 #ifndef FS_STREAM_FORMAT_OUTPUT_2_RESOLUTION_BITS
-    #define FS_STREAM_FORMAT_OUTPUT_2_RESOLUTION_BITS   STREAM_FORMAT_OUTPUT_2_RESOLUTION_BITS               
+    #define FS_STREAM_FORMAT_OUTPUT_2_RESOLUTION_BITS   STREAM_FORMAT_OUTPUT_2_RESOLUTION_BITS
 #endif
 
 #ifndef FS_STREAM_FORMAT_OUTPUT_3_RESOLUTION_BITS
-    #define FS_STREAM_FORMAT_OUTPUT_3_RESOLUTION_BITS   STREAM_FORMAT_OUTPUT_3_RESOLUTION_BITS               
+    #define FS_STREAM_FORMAT_OUTPUT_3_RESOLUTION_BITS   STREAM_FORMAT_OUTPUT_3_RESOLUTION_BITS
 #endif
 
-/* Setup default subslot size based on resolution 
+/* Setup default subslot size based on resolution
  * Catch special 24bit case where 4 byte subslot is nicer for our 32-bit machine.
  * Typically do not care about this extra bus overhead at High-speed */
 #ifndef HS_STREAM_FORMAT_OUTPUT_1_SUBSLOT_BYTES
@@ -386,7 +386,7 @@
     #else
         #define HS_STREAM_FORMAT_OUTPUT_1_SUBSLOT_BYTES        (HS_STREAM_FORMAT_OUTPUT_1_RESOLUTION_BITS/8)
     #endif
-#endif  
+#endif
 
 #ifndef HS_STREAM_FORMAT_OUTPUT_2_SUBSLOT_BYTES
     #if (HS_STREAM_FORMAT_OUTPUT_2_RESOLUTION_BITS == 24)
@@ -394,7 +394,7 @@
     #else
         #define HS_STREAM_FORMAT_OUTPUT_2_SUBSLOT_BYTES        (HS_STREAM_FORMAT_OUTPUT_2_RESOLUTION_BITS/8)
     #endif
-#endif 
+#endif
 
 #ifndef HS_STREAM_FORMAT_OUTPUT_3_SUBSLOT_BYTES
     #if (HS_STREAM_FORMAT_OUTPUT_3_RESOLUTION_BITS == 24)
@@ -402,18 +402,18 @@
     #else
         #define HS_STREAM_FORMAT_OUTPUT_3_SUBSLOT_BYTES        (HS_STREAM_FORMAT_OUTPUT_3_RESOLUTION_BITS/8)
     #endif
-#endif 
+#endif
 
 /* Setup default FS subslot sizes - make as small as possible */
-#ifndef FS_STREAM_FORMAT_OUTPUT_1_SUBSLOT_BYTES 
+#ifndef FS_STREAM_FORMAT_OUTPUT_1_SUBSLOT_BYTES
     #define FS_STREAM_FORMAT_OUTPUT_1_SUBSLOT_BYTES            (FS_STREAM_FORMAT_OUTPUT_1_RESOLUTION_BITS/8)
 #endif
 
-#ifndef FS_STREAM_FORMAT_OUTPUT_2_SUBSLOT_BYTES 
+#ifndef FS_STREAM_FORMAT_OUTPUT_2_SUBSLOT_BYTES
     #define FS_STREAM_FORMAT_OUTPUT_2_SUBSLOT_BYTES            (FS_STREAM_FORMAT_OUTPUT_2_RESOLUTION_BITS/8)
 #endif
 
-#ifndef FS_STREAM_FORMAT_OUTPUT_3_SUBSLOT_BYTES 
+#ifndef FS_STREAM_FORMAT_OUTPUT_3_SUBSLOT_BYTES
     #define FS_STREAM_FORMAT_OUTPUT_3_SUBSLOT_BYTES            (FS_STREAM_FORMAT_OUTPUT_3_RESOLUTION_BITS/8)
 #endif
 
@@ -443,23 +443,23 @@
 #endif
 
 /* Some stream format checks */
-#if (OUTPUT_FORMAT_COUNT > 0) 
+#if (OUTPUT_FORMAT_COUNT > 0)
     #if !defined(HS_STREAM_FORMAT_OUTPUT_1_RESOLUTION_BITS) || \
                                         !defined(HS_STREAM_FORMAT_OUTPUT_1_SUBSLOT_BYTES) || \
                                         !defined(STREAM_FORMAT_OUTPUT_1_DATAFORMAT)
         #error HS_OUTPUT_STREAM_1 not properly defined
-    #endif   
-#endif 
-    
-#if (OUTPUT_FORMAT_COUNT > 1) 
+    #endif
+#endif
+
+#if (OUTPUT_FORMAT_COUNT > 1)
     #if !defined(HS_STREAM_FORMAT_OUTPUT_2_RESOLUTION_BITS) || \
                                         !defined(HS_STREAM_FORMAT_OUTPUT_2_SUBSLOT_BYTES) || \
                                         !defined(STREAM_FORMAT_OUTPUT_2_DATAFORMAT)
         #error HS_OUTPUT_STREAM_2 not properly defined
-    #endif   
-#endif   
-    
-#if (OUTPUT_FORMAT_COUNT > 2) 
+    #endif
+#endif
+
+#if (OUTPUT_FORMAT_COUNT > 2)
     #if !defined(HS_STREAM_FORMAT_OUTPUT_3_RESOLUTION_BITS) || \
                                         !defined(HS_STREAM_FORMAT_OUTPUT_3_SUBSLOT_BYTES) || \
                                         !defined(STREAM_FORMAT_OUTPUT_3_DATAFORMAT)
@@ -521,12 +521,12 @@
 
     /* Default resolutions for HS */
     #ifndef HS_STREAM_FORMAT_INPUT_1_RESOLUTION_BITS
-        #define HS_STREAM_FORMAT_INPUT_1_RESOLUTION_BITS        STREAM_FORMAT_INPUT_1_RESOLUTION_BITS 
+        #define HS_STREAM_FORMAT_INPUT_1_RESOLUTION_BITS        STREAM_FORMAT_INPUT_1_RESOLUTION_BITS
     #endif
 
     /* Default resolutions for FS (same as HS) */
     #ifndef FS_STREAM_FORMAT_INPUT_1_RESOLUTION_BITS
-        #define FS_STREAM_FORMAT_INPUT_1_RESOLUTION_BITS        STREAM_FORMAT_INPUT_1_RESOLUTION_BITS               
+        #define FS_STREAM_FORMAT_INPUT_1_RESOLUTION_BITS        STREAM_FORMAT_INPUT_1_RESOLUTION_BITS
     #endif
 
     /* Setup default subslot sized based on resolution */
@@ -536,10 +536,10 @@
         #else
             #define HS_STREAM_FORMAT_INPUT_1_SUBSLOT_BYTES      (HS_STREAM_FORMAT_INPUT_1_RESOLUTION_BITS/8)
         #endif
-    #endif  
+    #endif
 
     /* Setup default FS subslot sizes */
-    #ifndef FS_STREAM_FORMAT_INPUT_1_SUBSLOT_BYTES 
+    #ifndef FS_STREAM_FORMAT_INPUT_1_SUBSLOT_BYTES
         #define FS_STREAM_FORMAT_INPUT_1_SUBSLOT_BYTES         (FS_STREAM_FORMAT_INPUT_1_RESOLUTION_BITS/8)
     #endif
 
@@ -549,7 +549,7 @@
     #endif
 
     /* Useful for dropping lower part of macs in volume processing... */
-    #if (FS_STREAM_FORMAT_INPUT_1_RESOLUTION_BITS > 24) || (FS_STREAM_FORMAT_INPUT_2_RESOLUTION_BITS > 24) 
+    #if (FS_STREAM_FORMAT_INPUT_1_RESOLUTION_BITS > 24) || (FS_STREAM_FORMAT_INPUT_2_RESOLUTION_BITS > 24)
         #define STREAM_FORMAT_INPUT_RESOLUTION_32BIT_USED 1
     #else
         #define STREAM_FORMAT_INPUT_RESOLUTION_32BIT_USED 0

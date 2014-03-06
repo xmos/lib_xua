@@ -187,7 +187,7 @@ __builtin_unreachable();
                     g_aud_to_host_dptr+=2;
                 }
                 break;
-            
+
             case 4:
             {
 #if (STREAM_FORMAT_INPUT_SUBSLOT_4_USED == 1)
@@ -320,7 +320,7 @@ __builtin_unreachable();
     {
         switch(g_curSubSlot_out)
         {
-            
+
             case 2:
 #if (STREAM_FORMAT_OUTPUT_SUBSLOT_2_USED == 0)
 __builtin_unreachable();
@@ -433,7 +433,7 @@ __builtin_unreachable();
                 }
                 break;
 
-            
+
             default:
                 __builtin_unreachable();
                 break;
@@ -617,15 +617,15 @@ static inline void SetupZerosSendBuffer(XUD_ep aud_to_host_usb_ep, unsigned samp
     {
         mid *= NUM_USB_CHAN_IN_FS * slotSize;
     }
-    
+
     asm("stw %0, %1[0]"::"r"(mid),"r"(g_aud_to_host_zeros));
-                     
+
     /* Mark EP ready with the zero buffer. Note this will simply update the packet size
     * if it is already ready */
     GET_SHARED_GLOBAL(p, g_aud_to_host_buffer);
     XUD_SetReady_InPtr(aud_to_host_usb_ep, p+4, mid);
 }
-                
+
 
 
 unsigned char tmpBuffer[1026];
@@ -670,7 +670,7 @@ void decouple(chanend c_mix_out,
 
     /* Setup pointer to In stream 0 buffer. Note, length will be innited to 0
      * However, this should be over-written on first stream start (assuming host
-       properly sends a SetInterface() before streaming. In any case we will send 
+       properly sends a SetInterface() before streaming. In any case we will send
        0 length packets, which is reasonable behaviour */
     t = array_to_xc_ptr(inZeroBuff);
     g_aud_to_host_zeros = t;
@@ -697,7 +697,7 @@ void decouple(chanend c_mix_out,
         asm("stw %0, %1[%2]"::"r"(MAX_VOL),"r"(p_multIn),"r"(i));
     }
 #endif
-    
+
     set_interrupt_handler(handle_audio_request, 200, 1, c_mix_out, 0);
 
     /* Wait for usb_buffer() to set up globals for us to use
@@ -777,7 +777,7 @@ void decouple(chanend c_mix_out,
                 SET_SHARED_GLOBAL(g_aud_to_host_buffer,g_aud_to_host_zeros);
 
                 /* Update size of zeros buffer */
-                SetupZerosSendBuffer(aud_to_host_usb_ep, sampFreq, g_curSubSlot_in);             
+                SetupZerosSendBuffer(aud_to_host_usb_ep, sampFreq, g_curSubSlot_in);
 
                 /* Reset OUT buffer state */
                 outUnderflow = 1;
@@ -810,11 +810,11 @@ void decouple(chanend c_mix_out,
                 /* Change in IN channel count */
                 DISABLE_INTERRUPTS();
                 SET_SHARED_GLOBAL(g_freqChange_flag, 0);
-                
-                GET_SHARED_GLOBAL(g_numUsbChanIn, g_formatChange_NumChans); 
+
+                GET_SHARED_GLOBAL(g_numUsbChanIn, g_formatChange_NumChans);
                 GET_SHARED_GLOBAL(g_curSubSlot_in, g_formatChange_SubSlot);
                 GET_SHARED_GLOBAL(dataFormat, g_formatChange_DataFormat); /* Not currently used for input stream */
- 
+
                 /* Reset IN buffer state */
                 inOverflow = 0;
                 inUnderflow = 1;
@@ -827,7 +827,7 @@ void decouple(chanend c_mix_out,
                 SET_SHARED_GLOBAL(g_aud_to_host_buffer, g_aud_to_host_zeros);
 
                 /* Update size of zeros buffer */
-                SetupZerosSendBuffer(aud_to_host_usb_ep, sampFreq, g_curSubSlot_in); 
+                SetupZerosSendBuffer(aud_to_host_usb_ep, sampFreq, g_curSubSlot_in);
 
                 GET_SHARED_GLOBAL(usbSpeed, g_curUsbSpeed);
                 if (usbSpeed == XUD_SPEED_HS)
@@ -841,7 +841,7 @@ void decouple(chanend c_mix_out,
 
                 SET_SHARED_GLOBAL(g_freqChange, 0);
                 asm("outct res[%0],%1"::"r"(buffer_aud_ctl_chan),"r"(XS1_CT_END));
-                
+
                 ENABLE_INTERRUPTS();
             }
             else if(tmp == SET_STREAM_FORMAT_OUT)
@@ -852,7 +852,7 @@ void decouple(chanend c_mix_out,
                 /* Change in OUT channel count - note we expect this on every stream start event */
                 DISABLE_INTERRUPTS();
                 SET_SHARED_GLOBAL(g_freqChange_flag, 0);
-                GET_SHARED_GLOBAL(g_numUsbChanOut, g_formatChange_NumChans); 
+                GET_SHARED_GLOBAL(g_numUsbChanOut, g_formatChange_NumChans);
                 GET_SHARED_GLOBAL(g_curSubSlot_out, g_formatChange_SubSlot);
                 GET_SHARED_GLOBAL(dataFormat, g_formatChange_DataFormat);
 
@@ -869,14 +869,14 @@ void decouple(chanend c_mix_out,
                     XUD_SetReady_OutPtr(aud_from_host_usb_ep, aud_from_host_fifo_start+4);
                     outOverflow = 0;
                 }
- 
-#ifdef NATIVE_DSD               
+
+#ifdef NATIVE_DSD
                 /* TODO only send when there is a change */
                 if(dataFormat == UAC_FORMAT_TYPEI_RAW_DATA)
                 {
                     dsdMode = DSD_MODE_NATIVE;
                 }
-    
+
                 /* Wait for the audio code to request samples and respond with command */
                 inuint(c_mix_out);
                 outct(c_mix_out, SET_DSD_MODE);

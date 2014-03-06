@@ -12,8 +12,8 @@
  * */
 
 int VendorAudioRequests(XUD_ep ep0_out, XUD_ep ep0_in, unsigned char bRequest, unsigned char cs, unsigned char cn,
-    unsigned short unitId, unsigned char direction, chanend c_audioControl, 
-    NULLABLE_RESOURCE(chanend, c_mix_ctl), 
+    unsigned short unitId, unsigned char direction, chanend c_audioControl,
+    NULLABLE_RESOURCE(chanend, c_mix_ctl),
     NULLABLE_RESOURCE(chanend, c_clk_ctL));
 
 #endif

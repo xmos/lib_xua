@@ -100,15 +100,15 @@ XUD_BusSpeed_t g_curUsbSpeed = 0;
 unsigned g_dsdMode = 0;
 #endif
 
-const unsigned g_subSlot_Out_HS[OUTPUT_FORMAT_COUNT] = {HS_STREAM_FORMAT_OUTPUT_1_SUBSLOT_BYTES, 
+const unsigned g_subSlot_Out_HS[OUTPUT_FORMAT_COUNT] = {HS_STREAM_FORMAT_OUTPUT_1_SUBSLOT_BYTES,
                                                     HS_STREAM_FORMAT_OUTPUT_2_SUBSLOT_BYTES,
                                                     HS_STREAM_FORMAT_OUTPUT_3_SUBSLOT_BYTES};
 
-const unsigned g_subSlot_Out_FS[OUTPUT_FORMAT_COUNT] = {FS_STREAM_FORMAT_OUTPUT_1_SUBSLOT_BYTES, 
+const unsigned g_subSlot_Out_FS[OUTPUT_FORMAT_COUNT] = {FS_STREAM_FORMAT_OUTPUT_1_SUBSLOT_BYTES,
                                                     FS_STREAM_FORMAT_OUTPUT_2_SUBSLOT_BYTES,
                                                     FS_STREAM_FORMAT_OUTPUT_3_SUBSLOT_BYTES};
 
-const unsigned g_dataFormat_Out[OUTPUT_FORMAT_COUNT] = {STREAM_FORMAT_OUTPUT_1_DATAFORMAT, 
+const unsigned g_dataFormat_Out[OUTPUT_FORMAT_COUNT] = {STREAM_FORMAT_OUTPUT_1_DATAFORMAT,
                                                     STREAM_FORMAT_OUTPUT_2_DATAFORMAT,
                                                     STREAM_FORMAT_OUTPUT_3_DATAFORMAT};
 
@@ -116,12 +116,12 @@ const unsigned g_subSlot_In_HS[INPUT_FORMAT_COUNT] = {HS_STREAM_FORMAT_INPUT_1_S
 
 const unsigned g_subSlot_In_FS[INPUT_FORMAT_COUNT] = {FS_STREAM_FORMAT_INPUT_1_SUBSLOT_BYTES};
 
-const unsigned g_dataFormat_In[INPUT_FORMAT_COUNT] = {STREAM_FORMAT_INPUT_1_DATAFORMAT}; 
+const unsigned g_dataFormat_In[INPUT_FORMAT_COUNT] = {STREAM_FORMAT_INPUT_1_DATAFORMAT};
 
 /* Endpoint 0 function.  Handles all requests to the device */
 void Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
-    NULLABLE_RESOURCE(chanend, c_mix_ctl), 
-    NULLABLE_RESOURCE(chanend, c_clk_ctl), 
+    NULLABLE_RESOURCE(chanend, c_mix_ctl),
+    NULLABLE_RESOURCE(chanend, c_clk_ctl),
     NULLABLE_RESOURCE(chanend, c_usb_test))
 {
     USB_SetupPacket_t sp;
@@ -143,7 +143,7 @@ void Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
 
 #ifdef MIXER
     /* Set up mixer default state */
-    for (int i = 0; i < 18*8; i++) 
+    for (int i = 0; i < 18*8; i++)
     {
         mixer1Weights[i] = 0x8001; //-inf
     }
@@ -276,7 +276,7 @@ void Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
                                     /* Send format of data onto buffering */
                                     outuint(c_audioControl, SET_STREAM_FORMAT_OUT);
                                     outuint(c_audioControl, g_dataFormat_Out[sp.wValue-1]);        /* Data format (PCM/DSD) */
-                                    
+
                                     if(g_curUsbSpeed == XUD_SPEED_HS)
                                     {
                                         outuint(c_audioControl, NUM_USB_CHAN_OUT);                 /* Channel count */
@@ -287,7 +287,7 @@ void Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
                                         outuint(c_audioControl, NUM_USB_CHAN_OUT_FS);
                                         outuint(c_audioControl, g_subSlot_Out_FS[sp.wValue-1]);
                                     }
-                                  
+
                                     /* Handshake */
 							        chkct(c_audioControl, XS1_CT_END);
                                 }
@@ -304,7 +304,7 @@ void Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
                                     /* Send format of data onto buffering */
                                     outuint(c_audioControl, SET_STREAM_FORMAT_IN);
                                     outuint(c_audioControl, g_dataFormat_In[sp.wValue-1]);        /* Data format (PCM/DSD) */
-                                    
+
                                     if(g_curUsbSpeed == XUD_SPEED_HS)
                                     {
                                         outuint(c_audioControl, NUM_USB_CHAN_IN);                 /* Channel count */
@@ -315,7 +315,7 @@ void Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
                                         outuint(c_audioControl, NUM_USB_CHAN_IN_FS);
                                         outuint(c_audioControl, g_subSlot_In_FS[sp.wValue-1]);
                                     }
-                                  
+
                                     /* Handshake */
 							        chkct(c_audioControl, XS1_CT_END);
                                 }
@@ -356,7 +356,7 @@ void Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
 
                         //TODO - we should stall out of range requests
 
-                       
+
                     } /* if(sp.bRequest == SET_INTERFACE) */
 
                     break; /* BMREQ_H2D_STANDARD_INT */
@@ -406,7 +406,7 @@ void Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
                                 /* Consider host active with valid driver at this point */
                                 UserHostActive(1);
                             }
-                            
+
                             ///* No data stage for this request, just do status stage */
                             //result = XUD_DoSetRequestStatus(ep0_in);
 
@@ -472,12 +472,12 @@ void Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
 #ifdef __XC__
                             /* This will return 1 if reset requested */
                             if (DFUDeviceRequests(ep0_out, ep0_in, sp, null, g_interfaceAlt[sp.wIndex], 1))
-#else            
+#else
                             /* This will return 1 if reset requested */
                             if (DFUDeviceRequests(ep0_out, &ep0_in, &sp, null, g_interfaceAlt[sp.wIndex], 1))
-#endif        
-                            {  
-                                DFUDelay(50000000); 
+#endif
+                            {
+                                DFUDelay(50000000);
                                 device_reboot(c_audioControl);
                             }
 
@@ -580,7 +580,7 @@ void Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
 #endif
                 }
                 else
-                {   
+                {
                     /* Modify Audio Class 2.0 Config descriptor for Full-speed operation */
 #if (NUM_USB_CHAN_OUT > 0)
                     cfgDesc_Audio2.Audio_CS_Control_Int.Audio_Out_InputTerminal.bNrChannels = NUM_USB_CHAN_OUT_FS;
@@ -620,7 +620,7 @@ void Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
                     null, 0,
 #ifdef __XC__
                     strDescs, sizeof(strDescs)/sizeof(strDescs[0]), sp, c_usb_test, g_curUsbSpeed);
-#else                    
+#else
                     strDescs, sizeof(strDescs)/sizeof(strDescs[0]), &sp, c_usb_test, g_curUsbSpeed);
 #endif
 #elif (AUDIO_CLASS == 1)
@@ -654,7 +654,7 @@ void Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
                     strDescs, sizeof(strDescs)/sizeof(strDescs[0]), sp, c_usb_test, g_curUsbSpeed);
 #else
                     strDescs, sizeof(strDescs)/sizeof(strDescs[0]), &sp, c_usb_test, g_curUsbSpeed);
-#endif            
+#endif
             }
 #endif
         }
@@ -663,7 +663,7 @@ void Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
         {
 #ifdef __XC__
             g_curUsbSpeed = XUD_ResetEndpoint(ep0_out, ep0_in);
-#else            
+#else
             g_curUsbSpeed = XUD_ResetEndpoint(ep0_out, &ep0_in);
 #endif
             g_currentConfig = 0;

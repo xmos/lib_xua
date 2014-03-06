@@ -240,11 +240,11 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
                 else
                 {
                     unsigned cmd = inuint(c_aud_ctl);
-                   
+
                     if(cmd == SET_SAMPLE_FREQ)
                     {
                         sampleFreq = inuint(c_aud_ctl);
-                        
+
                         /* Don't update things for DFU command.. */
                         if(sampleFreq != AUDIO_STOP_FOR_DFU)
                         {
@@ -262,17 +262,17 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
                         /* Ideally we want to wait for handshake (and pass back up) here.  But we cannot keep this
                         * core locked, it must stay responsive to packets (MIDI etc) and SOFs.  So, set a flag and check for
                         * handshake elsewhere */
-                        SET_SHARED_GLOBAL(g_freqChange_sampFreq, sampleFreq); 
+                        SET_SHARED_GLOBAL(g_freqChange_sampFreq, sampleFreq);
                     }
                     else if(cmd == SET_STREAM_FORMAT_IN)
                     {
                         unsigned formatChange_SubSlot, formatChange_NumChans, formatChange_DataFormat;
-                        
+
                         formatChange_DataFormat = inuint(c_aud_ctl);
-                        formatChange_NumChans = inuint(c_aud_ctl);  
+                        formatChange_NumChans = inuint(c_aud_ctl);
                         formatChange_SubSlot = inuint(c_aud_ctl);
 
-                        SET_SHARED_GLOBAL(g_formatChange_NumChans, formatChange_NumChans); 
+                        SET_SHARED_GLOBAL(g_formatChange_NumChans, formatChange_NumChans);
                         SET_SHARED_GLOBAL(g_formatChange_SubSlot, formatChange_SubSlot);
                         SET_SHARED_GLOBAL(g_formatChange_DataFormat, formatChange_DataFormat);
                     }
@@ -281,15 +281,15 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
                         XUD_BusSpeed_t busSpeed;
                         unsigned formatChange_SubSlot, formatChange_NumChans, formatChange_DataFormat;
                         formatChange_DataFormat = inuint(c_aud_ctl);
-                        formatChange_NumChans = inuint(c_aud_ctl);  
+                        formatChange_NumChans = inuint(c_aud_ctl);
                         formatChange_SubSlot = inuint(c_aud_ctl);
 
-                        SET_SHARED_GLOBAL(g_formatChange_NumChans, formatChange_NumChans); 
+                        SET_SHARED_GLOBAL(g_formatChange_NumChans, formatChange_NumChans);
                         SET_SHARED_GLOBAL(g_formatChange_SubSlot, formatChange_SubSlot);
                         SET_SHARED_GLOBAL(g_formatChange_DataFormat, formatChange_DataFormat);
-                        
-                        /* Host is starting up the output stream. Setup (or potentially resize) feedback packet based on bus-speed 
-                         * This is only really important on inital start up (when bus-speed 
+
+                        /* Host is starting up the output stream. Setup (or potentially resize) feedback packet based on bus-speed
+                         * This is only really important on inital start up (when bus-speed
                            was unknown) and when changing bus-speeds */
                         GET_SHARED_GLOBAL(busSpeed, g_curUsbSpeed);
 
@@ -409,7 +409,7 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
             case XUD_SetData_Select(c_aud_fb, ep_aud_fb, result):
             {
                 XUD_BusSpeed_t busSpeed;
-                
+
                 GET_SHARED_GLOBAL(busSpeed, g_curUsbSpeed);
 
                 if (busSpeed == XUD_SPEED_HS)
@@ -438,7 +438,7 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
 
 #ifdef MIDI
         case XUD_GetData_Select(c_midi_from_host, ep_midi_from_host, length, result):
-    
+
             if((result == XUD_RES_OKAY) && (length > 0))
             {
                 /* Get buffer data from host - MIDI OUT from host always into a single buffer */
@@ -483,7 +483,7 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
 #ifdef IAP
         /* IAP OUT from host. Datalength writen to tmp */
         case XUD_GetData_Select(c_iap_from_host, ep_iap_from_host, length, result):
-            
+
             if((result == XUD_RES_OKAY) && (length > 0))
             {
                 iap_data_remaining_to_device = length;
@@ -530,7 +530,7 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
 
 #ifdef IAP_INT_EP
         case XUD_SetData_Select(c_iap_to_host_int, ep_iap_to_host_int, result):
-                
+
             /* Do nothing.. */
             /* Note, could get a reset notification here, but deal with it in the case above */
             break;
@@ -664,7 +664,7 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
                                 result1 = XUD_SetReady_In(ep_iap_to_host_int, gc_zero_buffer, 0);
 #endif
                                 result2 = XUD_SetReady_In(ep_iap_to_host, iap_to_host_buffer, iap_data_collected_from_device);
-                           
+
                                 if((result1 == XUD_RES_RST) || (result2 == XUD_RES_RST))
                                 {
 #ifdef IAP_INT_EP
@@ -674,9 +674,9 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
                                     iap_send_reset(c_iap);
                                     iap_draining_chan = 1; // Drain c_iap until a reset is sent back
                                     iap_data_remaining_to_device = -1;
-                                    iap_from_host_rdptr = 0;  
+                                    iap_from_host_rdptr = 0;
                                 }
-                                
+
                                 iap_data_collected_from_device = 0;
                                 iap_expected_data_length = 0;
                             }

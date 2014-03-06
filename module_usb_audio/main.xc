@@ -93,10 +93,10 @@ on tile[AUDIO_IO_TILE] : buffered in port:32 p_i2s_adc[I2S_WIRES_ADC] =
 
 #if (XUD_SERIES_SUPPORT == XUD_L_SERIES) && (AUDIO_IO_TILE == XUD_TILE)
 /* Note: L series ref clocked clocked from USB clock when USB enabled - use another clockblock for MIDI
- * if MIDI and XUD on same tile. See XUD documentation. 
+ * if MIDI and XUD on same tile. See XUD documentation.
  *
- * This is a clash with S/PDIF Tx but simultaneous S/PDIF and MIDI not currently supported on single tile device  
- *     
+ * This is a clash with S/PDIF Tx but simultaneous S/PDIF and MIDI not currently supported on single tile device
+ *
  */
 #define CLKBLK_MIDI        XS1_CLKBLK_1;
 #else
