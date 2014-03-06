@@ -164,7 +164,7 @@ void handle_audio_request(chanend c_mix_out)
         switch(g_curSubSlot_in)
         {
             case 2:
-#if (STREAM_FORMAT_INPUT_SUBSLOT_2_USED == 1)
+#if (STREAM_FORMAT_INPUT_SUBSLOT_2_USED == 0)
 __builtin_unreachable();
 #endif
                 for(int i = 0; i < g_numUsbChanIn; i++)
@@ -191,7 +191,7 @@ __builtin_unreachable();
 
             case 4:
             {
-#if (STREAM_FORMAT_INPUT_SUBSLOT_4_USED == 1)
+#if (STREAM_FORMAT_INPUT_SUBSLOT_4_USED == 0)
 __builtin_unreachable();
 #endif
                 unsigned ptr = g_aud_to_host_dptr;
@@ -225,7 +225,7 @@ __builtin_unreachable();
             }
 
             case 3:
-#if (STREAM_FORMAT_INPUT_SUBSLOT_3_USED == 1)
+#if (STREAM_FORMAT_INPUT_SUBSLOT_3_USED == 0)
 __builtin_unreachable();
 #endif
                 for(int i = 0; i < g_numUsbChanIn; i++)
