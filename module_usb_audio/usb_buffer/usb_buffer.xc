@@ -278,6 +278,7 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
                     }
                     else if (cmd == SET_STREAM_FORMAT_OUT)
                     {
+                        XUD_BusSpeed_t busSpeed;
                         unsigned formatChange_SubSlot, formatChange_NumChans, formatChange_DataFormat;
                         formatChange_DataFormat = inuint(c_aud_ctl);
                         formatChange_NumChans = inuint(c_aud_ctl);  
@@ -290,7 +291,6 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
                         /* Host is starting up the output stream. Setup (or potentially resize) feedback packet based on bus-speed 
                          * This is only really important on inital start up (when bus-speed 
                            was unknown) and when changing bus-speeds */
-                        XUD_BusSpeed_t busSpeed;
                         GET_SHARED_GLOBAL(busSpeed, g_curUsbSpeed);
 
                         if (busSpeed == XUD_SPEED_HS)
@@ -409,8 +409,8 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
             /* Feedback Pipe */
             case XUD_SetData_Select(c_aud_fb, ep_aud_fb, result):
             {
-                asm("#aud fb");
                 XUD_BusSpeed_t busSpeed;
+                asm("#aud fb");
                 
                 GET_SHARED_GLOBAL(busSpeed, g_curUsbSpeed);
 
