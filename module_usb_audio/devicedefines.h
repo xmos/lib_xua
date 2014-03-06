@@ -548,7 +548,13 @@
         #define STREAM_FORMAT_INPUT_1_DATAFORMAT               UAC_FORMAT_TYPEI_PCM
     #endif
 
-#if 0
+    /* Useful for dropping lower part of macs in volume processing... */
+    #if (FS_STREAM_FORMAT_INPUT_1_RESOLUTION_BITS > 24) || (FS_STREAM_FORMAT_INPUT_2_RESOLUTION_BITS > 24) 
+        #define STREAM_FORMAT_INPUT_RESOLUTION_32BIT_USED 1
+    #else
+        #define STREAM_FORMAT_INPUT_RESOLUTION_32BIT_USED 0
+    #endif
+
     #if((FS_STREAM_FORMAT_INPUT_1_SUBSLOT_BYTES == 4) || HS_STREAM_FORMAT_INPUT_1_SUBSLOT_BYTES == 4)
         #define STREAM_FORMAT_INPUT_SUBSLOT_4_USED 1
     #else
@@ -566,7 +572,6 @@
     #else
         #define STREAM_FORMAT_INPUT_SUBSLOT_2_USED 0
     #endif
-#endif
 #endif
 
 /* Addition interfaces based on defines */
