@@ -5,7 +5,12 @@
 #include <xs1_l_registers.h>
 #include <xs1_su_registers.h>
 #include <platform.h>
+
+#if (XCC_MAJOR_VERSION >= 1300)
 #include <hwtimer.h>
+#else
+#define hwtimer timer
+#endif
 
 #ifndef VOLTAGE_REDUCTION_mV
 #define VOLTAGE_REDUCTION_mV 20
