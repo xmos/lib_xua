@@ -9,18 +9,22 @@
 #ifndef _DEVICE_DESCRIPTORS_
 #define _DEVICE_DESCRIPTORS_
 
-#include "usb.h"
-#include "usbaudio20.h"             /* Defines from the USB Audio 2.0 Specifications */
 #include "devicedefines.h"          /* Device specific define */
+#include "usbaudio20.h"             /* Defines from the USB Audio 2.0 Specifications */
+#include "usbaudiocommon.h"
+#include "usb_std_descriptors.h"
 
 /***** Device Descriptors *****/
+
+// TODO Enum for unit ids?
+// TODO structure for string table
 
 #if defined(AUDIO_CLASS_FALLBACK) || (AUDIO_CLASS==1)
 /* Device Descriptor for Audio Class 1.0 (Assumes Full-Speed) */
 unsigned char devDesc_Audio1[] =
 {
     18,                             /* 0  bLength : Size of descriptor in Bytes (18 Bytes) */
-    USB_DEVICE,                     /* 1  bdescriptorType */
+    USB_DESCTYPE_DEVICE,                     /* 1  bdescriptorType */
     0x0,                            /* 2  bcd USB */
     0x2,                            /* 3  bcdUSB */
     0,                              /* 4  bDeviceClass */
