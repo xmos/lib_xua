@@ -2,6 +2,9 @@
 #ifndef _DFU_H_
 #define _DFU_H_ 1
 
+#include <xccompat.h>
+#include "usb_std_descriptors.h"
+
 #ifndef DFU_VENDOR_ID
 #error DFU_VENDOR_ID not defined!
 #endif
@@ -51,7 +54,7 @@ unsigned char DFUdevDesc[] = {
 unsigned char DFUcfgDesc[] = {
     /* Standard USB device descriptor */
     0x09,                           /* 0  bLength */
-    USB_CONFIGURATION,              /* 1  bDescriptorType */
+    USB_DESCTYPE_CONFIGURATION,              /* 1  bDescriptorType */
     0x1b,                           /* 2  wTotalLength */
     0x00,                           /* 3  wTotalLength */
     1,                              /* 4  bNumInterface: Number of interfaces*/
@@ -83,8 +86,12 @@ unsigned char DFUcfgDesc[] = {
     0x01,                           /* 8    bcdDFUVersion */
 };
 
-int DFUReportResetState(chanend ?c_user_cmd);
-int DFUDeviceRequests(XUD_ep c_ep0_out, XUD_ep &?ep0_in, USB_SetupPacket_t &sp, chanend ?c_user_cmd, unsigned int altInterface, unsigned int user_reset);
+int DFUReportResetState(NULLABLE_RESOURCE(chanend , c_user_cmd));
+int DFUDeviceRequests(XUD_ep c_ep0_out, NULLABLE_REFERENCE_PARAM(XUD_ep, ep0_in), REFERENCE_PARAM(USB_SetupPacket_t, sp), 
+        NULLABLE_RESOURCE(chanend, c_user_cmd), unsigned int altInterface, unsigned int user_reset);
+
+/* Helper function for C */
+void DFUDelay(unsigned d);
 
 #endif /* _DFU_H_ */
 
