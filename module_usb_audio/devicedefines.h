@@ -144,7 +144,10 @@
 #undef ADAT_RX
 #endif
 
-#if defined(DFU) && (DFU == 0)
+#if !defined(DFU)
+/* Enable DFU by default */
+#define DFU          1
+#elif defined(DFU) && (DFU == 0)
 #undef DFU
 #endif
 
