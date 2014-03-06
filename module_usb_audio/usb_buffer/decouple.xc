@@ -7,6 +7,7 @@
 
 #ifdef NATIVE_DSD
 #include "usbaudio20.h"             /* Defines from the USB Audio 2.0 Specifications */
+unsigned g_curDsdMode = DSD_MODE_OFF;
 #endif
 
 #ifdef HID_CONTROLS
@@ -871,61 +872,30 @@ void decouple(chanend c_mix_out,
                 }
 
 #ifdef NATIVE_DSD
-                /* TODO only send when there is a change */
                 if(dataFormat == UAC_FORMAT_TYPEI_RAW_DATA)
                 {
                     dsdMode = DSD_MODE_NATIVE;
                 }
 
-                /* Wait for the audio code to request samples and respond with command */
-                inuint(c_mix_out);
-                outct(c_mix_out, SET_DSD_MODE);
-                outuint(c_mix_out, dsdMode);
-
-                /* Wait for handshake back */
-                chkct(c_mix_out, XS1_CT_END);
-#endif
-                asm("outct res[%0],%1"::"r"(buffer_aud_ctl_chan),"r"(XS1_CT_END));
-
-                SET_SHARED_GLOBAL(g_freqChange, 0);
-                ENABLE_INTERRUPTS();
-            }
-#if 0
-//#ifdef NATIVE_DSD
-            else if(tmp == SET_DSD_MODE)
-            {
-                unsigned dsdMode;
-                DISABLE_INTERRUPTS();
-
-                /* Clear the buffer as we dont want to send out old PCM samples.. */
-                SET_SHARED_GLOBAL(g_freqChange_flag, 0);
-                GET_SHARED_GLOBAL(dsdMode, g_freqChange_sampFreq);  /* Misuse of g_freqChange_sampFreq */
-
-                /* Reset OUT buffer state */
-                SET_SHARED_GLOBAL(g_aud_from_host_rdptr, aud_from_host_fifo_start);
-                SET_SHARED_GLOBAL(g_aud_from_host_wrptr, aud_from_host_fifo_start);
-
-                outUnderflow = 1;
-                if(outOverflow)
+                /* To avoid clicks and pops only change mode if we have to */
+                if(dsdMode != g_curDsdMode)
                 {
-                    /* If we were previously in overflow we wont have marked as ready */
-                    XUD_SetReady_OutPtr(aud_from_host_usb_ep, aud_from_host_fifo_start+4);
-                    outOverflow = 0;
+                    g_curDsdMode = dsdMode;
+
+                    /* Wait for the audio code to request samples and respond with command */
+                    inuint(c_mix_out);
+                    outct(c_mix_out, SET_DSD_MODE);
+                    outuint(c_mix_out, dsdMode);
+
+                    /* Wait for handshake back */
+                    chkct(c_mix_out, XS1_CT_END);
                 }
-
-                inuint(c_mix_out);
-                outct(c_mix_out, SET_DSD_MODE);
-                outuint(c_mix_out, dsdMode);
-
-                /* Wait for handshake back */
-                chkct(c_mix_out, XS1_CT_END);
-
-                SET_SHARED_GLOBAL(g_freqChange, 0);
+#endif
                 asm("outct res[%0],%1"::"r"(buffer_aud_ctl_chan),"r"(XS1_CT_END));
 
+                SET_SHARED_GLOBAL(g_freqChange, 0);
                 ENABLE_INTERRUPTS();
             }
-#endif
         }
 
 #ifdef OUTPUT
@@ -981,8 +951,6 @@ void decouple(chanend c_mix_out,
             {
                 /* Enter OUT over flow state */
                 outOverflow = 1;
-
-
 
 #ifdef DEBUG_LEDS
                 led(c_led);
