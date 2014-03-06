@@ -293,7 +293,6 @@ void Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
                                 }
                             }
                         }
-#warning FIXME
                         else if(sp.wIndex == 2) // Input interface
                         {
                             /* Check the alt is in range */
@@ -322,55 +321,6 @@ void Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
                                 }
                             }
                         }
-#if 0
-                            switch(sp.wValue)
-                            {
-                                case 0:
-                                    break;
-                                case 1:
-                                    /* Stream active + 0 chans */
-                                    /* NOTE there could be a difference between HS/UAC1 and FS/UAC1 channel count */
-                                    /* Also note, currently we assume with won't be doing ADAT in FS/UAC1...*/
-                                    if(g_curUsbSpeed == XUD_SPEED_HS)
-                                    {
-                                        outuint(c_audioControl, SET_CHAN_COUNT_IN);
-                                        outuint(c_audioControl, NUM_USB_CHAN_IN);
-                                    }
-                                    else
-                                    {
-                                        outuint(c_audioControl, SET_CHAN_COUNT_IN);
-                                        outuint(c_audioControl, NUM_USB_CHAN_IN_FS);
-                                    }
-#ifdef ADAT_RX
-                                    outuint(c_clk_ctl, SET_SMUX);
-                                    outuint(c_clk_ctl, 0);
-                                    outct(c_clk_ctl, XS1_CT_END);
-#endif
-                                    break;
-
-#ifdef ADAT_RX
-                                case 2:
-                                    /* Stream active + 8 chans */
-                                    outuint(c_audioControl, SET_CHAN_COUNT_IN);
-                                    outuint(c_audioControl, NUM_USB_CHAN_IN-4);
-                                    outuint(c_clk_ctl, SET_SMUX);
-                                    outuint(c_clk_ctl, 1);
-                                    outct(c_clk_ctl, XS1_CT_END);
-                                    break;
-
-                                case 3:
-                                    outuint(c_audioControl, SET_CHAN_COUNT_IN);
-                                    outuint(c_audioControl, NUM_USB_CHAN_IN-6);
-                                    outuint(c_clk_ctl, SET_SMUX);
-                                    outuint(c_clk_ctl, 1);
-                                    outct(c_clk_ctl, XS1_CT_END);
-                                    break;
-#endif
-                            }
-                        }
-#endif
-
-#if 1
 #if defined(OUTPUT) && defined(INPUT)
                         /* Check for stream start stop on output and input audio interfaces */
                         if(sp.wValue && !g_interfaceAlt[1] && !g_interfaceAlt[2])
@@ -399,7 +349,6 @@ void Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
                             /* if stop and currently running */
                             UserAudioStreamStop();
                         }
-#endif
 #endif
                         ///* Record interface change */
                         //if(sp.wIndex < NUM_INTERFACES)
