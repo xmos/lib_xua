@@ -4,7 +4,11 @@
 #include "interrupt.h"
 #include "commands.h"
 #include "xud.h"
-#include "usb.h"
+
+#ifdef NATIVE_DSD
+#include "usbaudio20.h"             /* Defines from the USB Audio 2.0 Specifications */
+#endif
+
 #ifdef HID_CONTROLS
 #include "user_hid.h"
 #endif
