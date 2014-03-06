@@ -134,23 +134,6 @@ void handle_audio_request(chanend c_mix_out)
     /* Reply with underflow */
     outuint(c_mix_out, outUnderflow);
 
-    GET_SHARED_GLOBAL(usb_speed, g_curUsbSpeed);
-
-    /* slotSize different for Audio Class 1.0/2.0. */
-    /* TODO It is quite wasteful to run this check every interrupt. Perhaps on stream start is good enough */
-#if defined(AUDIO_CLASS_FALLBACK) || defined (FULL_SPEED_AUDIO_2)
-    if (usb_speed == XUD_SPEED_HS)
-    {
-        g_slotSize = SAMPLE_SUBSLOT_SIZE_HS;   /* Typically 4 bytes per sample for HS */
-        g_maxPacketSize = MAX_DEVICE_AUD_PACKET_SIZE_CLASS_TWO;
-    }
-    else
-    {
-        g_slotSize = SAMPLE_SUBSLOT_SIZE_FS;   /* Typically 3 bytes per sample for FS */
-        g_maxPacketSize = MAX_DEVICE_AUD_PACKET_SIZE_CLASS_ONE;
-    }
-#endif
-
     /* If in overflow condition then receive samples and throw away */
     if(inOverflow || sampsToWrite == 0)
     {
