@@ -2,7 +2,6 @@
 #include <xs1.h>
 #include <print.h>
 
-#include "usb.h"
 #include "devicedefines.h"
 #ifdef MIDI
 #include "usb_midi.h"
