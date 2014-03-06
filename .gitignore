@@ -1,3 +1,4 @@
+*.log
 xmosdfu
 xmosdfu.*
 */.build_*/*
