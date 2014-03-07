@@ -998,7 +998,7 @@ int AudioEndpointRequests_1(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp
      * endpoint (wIndex & 0xff) is 0x01 or 0x82
      */
 
-    int retVal = 1;
+    XUD_Result_t result;
     unsigned char buffer[1024];
     unsigned length;
 
@@ -1013,18 +1013,16 @@ int AudioEndpointRequests_1(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp
                 /* Check Control Selector */
                 unsigned short controlSelector = sp.wValue>>8;
 
-                retVal = XUD_GetBuffer(ep0_out, buffer, length);
-
-                /* Inspect for reset */
-                if(retVal < 0)
-                    return retVal;
+                if((result != XUD_GetBuffer(ep0_out, buffer, length)) != XUD_RES_OKAY)
+                {
+                    return result;
+                }
 
                 if(controlSelector == SAMPLING_FREQ_CONTROL)
                 {
                     /* Expect length 3 for sample rate */
-                    if((sp.wLength == 3)&&(retVal == 3))
+                    if((sp.wLength == 3) && (length == 3))
                     {
-
                         /* Recontruct sample-freq */
                         int i_tmp = buffer[0] | (buffer [1] << 8) | (buffer[2] << 16);
 
