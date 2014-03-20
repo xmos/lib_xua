@@ -238,14 +238,13 @@ void Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
         outuint(c_audioControl, SET_SAMPLE_FREQ);
         outuint(c_audioControl, AUDIO_STOP_FOR_DFU);
         // No Handshake
-        //chkct(c_audioControl, XS1_CT_END);
         DFU_mode_active = 1;
     }
 #endif
 
     while(1)
     {
-        /* Returns 0 for success, -1 for bus reset */
+        /* Returns XUD_RES_OKAY for success, XUD_RES_RST for bus reset */
 #if defined(__XC__)
         XUD_Result_t result = USB_GetSetupPacket(ep0_out, ep0_in, sp);
 #else
@@ -350,13 +349,6 @@ void Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
                             UserAudioStreamStop();
                         }
 #endif
-                        ///* Record interface change */
-                        //if(sp.wIndex < NUM_INTERFACES)
-                          //  g_interfaceAlt[sp.wIndex] = sp.wValue;
-
-                        //TODO - we should stall out of range requests
-
-
                     } /* if(sp.bRequest == SET_INTERFACE) */
 
                     break; /* BMREQ_H2D_STANDARD_INT */
@@ -400,17 +392,14 @@ void Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
                         /* Overriding implementation in USB_StandardRequests */
                         case USB_SET_CONFIGURATION:
 
-                            //g_currentConfig = sp.wValue;
                             //if(g_current_config == 1)
                             {
                                 /* Consider host active with valid driver at this point */
                                 UserHostActive(1);
                             }
 
-                            ///* No data stage for this request, just do status stage */
-                            //result = XUD_DoSetRequestStatus(ep0_in);
-
-                            /* We want to run USB_StandardsRequests() implementation also. Don't modify result */
+                            /* We want to run USB_StandardsRequests() implementation also. Don't modify result 
+                             * and don't call XUD_DoSetRequestStatus() */
                             break;
 
                         default:
