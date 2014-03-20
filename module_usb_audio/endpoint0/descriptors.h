@@ -210,166 +210,321 @@ StringDescTable_t g_strTable =
 #endif
 #if (NUM_USB_CHAN_OUT > 0)
 #if SPDIF_TX_INDEX == 0
-    .outputChanStr_1            = "S/PDIF 1",
+    #if (SPDIF_TX_INDEX < I2S_CHANS_DAC)
+    /* I2S/SPDIF overlap */
+    .outputChanStr_1             = "Analogue 1/SPDIF 1",
+    #else
+    .outputChanStr_1             = "S/PDIF 1",
+    #endif
 #else
-    .outputChanStr_1            = "Analogue 1",
+    .outputChanStr_1             = "Analogue 1",
 #endif
 #endif
 
 #if (NUM_USB_CHAN_OUT > 1)
-    #if SPDIF_TX_INDEX == 1
-    .outputChanStr_2            = "S/PDIF 1",
-    #elif SPDIF_TX_INDEX == 0  
-    .outputChanStr_2            = "S/PDIF 2",
+#if SPDIF_TX_INDEX == 1
+    #if (SPDIF_TX_INDEX < I2S_CHANS_DAC)
+    .outputChanStr_2             = "Analogue 2/SPDIF 1",
     #else
-    .outputChanStr_2            = "Analogue 2",
+    .outputChanStr_2             = "S/PDIF 1",
     #endif
+#elif SPDIF_TX_INDEX == 0  
+    #if(SPDIF_TX_INDEX < I2S_CHANS_DAC)
+    .outputChanStr_2             = "Analogue 2/SPDIF 2",
+    #else
+    .outputChanStr_2             = "S/PDIF 2",
+    #endif
+#else
+    .outputChanStr_2             = "Analogue 2",
+#endif
 #endif
 #if (NUM_USB_CHAN_OUT > 2)
-    #if SPDIF_TX_INDEX == 2
-    .outputChanStr_3            = "S/PDIF 1",
-    #elif SPDIF_TX_INDEX == 1  
-    .outputChanStr_3            = "S/PDIF 2",
+#if SPDIF_TX_INDEX == 2
+    #if(SPDIF_TX_INDEX < I2S_CHANS_DAC)
+    .outputChanStr_3            = "Analogue 3/SPDIF 1",
     #else
+    .outputChanStr_3            = "S/PDIF 1",
+    #endif    
+#elif (SPDIF_TX_INDEX == 1) 
+    #if(SPDIF_TX_INDEX < I2S_CHANS_DAC)
+    .outputChanStr_3            = "Analogue 3/SPDIF 2",
+    #else
+    .outputChanStr_3            = "S/PDIF 2",
+    #endif
+#else
     .outputChanStr_3            = "Analogue 3",
     #endif
 #endif
 #if (NUM_USB_CHAN_OUT > 3)
-    #if SPDIF_TX_INDEX == 3
+#if SPDIF_TX_INDEX == 3
+    #if(SPDIF_TX_INDEX < I2S_CHANS_DAC)
+    .outputChanStr_4            = "Analogue 4/SPDIF 1",
+    #else
     .outputChanStr_4            = "S/PDIF 1",
-    #elif SPDIF_TX_INDEX == 2  
+    #endif    
+#elif SPDIF_TX_INDEX == 2  
+    #if(SPDIF_TX_INDEX < I2S_CHANS_DAC)
+    .outputChanStr_4            = "Analogue 4/SPDIF 2",
+    #else
     .outputChanStr_4            = "S/PDIF 2",
-    #else
+    #endif
+#else
     .outputChanStr_4            = "Analogue 4",
-    #endif
 #endif
-#if (NUM_USB_CHAN_OUT > 4)
-    #if SPDIF_TX_INDEX == 4
-    .outputChanStr_5            = "S/PDIF 1",
-    #elif SPDIF_TX_INDEX == 3  
-    .outputChanStr_5            = "S/PDIF 2",
-    #else
-    .outputChanStr_5            = "Analogue 5",
-    #endif
 #endif
-#if (NUM_USB_CHAN_OUT > 5)
-    #if SPDIF_TX_INDEX == 5
-    .outputChanStr_6            = "S/PDIF 1",
-    #elif SPDIF_TX_INDEX == 4  
-    .outputChanStr_6            = "S/PDIF 2",
-    #else
-    .outputChanStr_6            = "Analogue 6",
-    #endif
 
+#if (NUM_USB_CHAN_OUT > 4)
+#if SPDIF_TX_INDEX == 4
+    #if(SPDIF_TX_INDEX < I2S_CHANS_DAC)
+    .outputChanStr_5            = "Analogue 5/SPDIF 1",
+    #else
+    .outputChanStr_5            = "S/PDIF 1",
+    #endif    
+#elif SPDIF_TX_INDEX == 3 
+    #if(SPDIF_TX_INDEX < I2S_CHANS_DAC)
+    .outputChanStr_5            = "Analogue 5/SPDIF 2",
+    #else
+    .outputChanStr_5            = "S/PDIF 2",
+    #endif
+#else
+    .outputChanStr_5            = "Analogue 5",
 #endif
+#endif
+
+#if (NUM_USB_CHAN_OUT > 5)
+#if SPDIF_TX_INDEX == 5
+    #if(SPDIF_TX_INDEX < I2S_CHANS_DAC)
+    .outputChanStr_6            = "Analogue 6/SPDIF 1",
+    #else
+    .outputChanStr_6            = "S/PDIF 1",
+    #endif    
+#elif SPDIF_TX_INDEX == 4 
+    #if(SPDIF_TX_INDEX < I2S_CHANS_DAC)
+    .outputChanStr_6            = "Analogue 6/SPDIF 2",
+    #else
+    .outputChanStr_6            = "S/PDIF 2",
+    #endif
+#else
+    .outputChanStr_6            = "Analogue 6",
+#endif
+#endif
+
 #if (NUM_USB_CHAN_OUT > 6)
-    #if SPDIF_TX_INDEX == 6
+#if SPDIF_TX_INDEX == 6
+    #if(SPDIF_TX_INDEX < I2S_CHANS_DAC)
+    .outputChanStr_7            = "Analogue 7/SPDIF 1",
+    #else
     .outputChanStr_7            = "S/PDIF 1",
-    #elif SPDIF_TX_INDEX == 5  
+    #endif    
+#elif SPDIF_TX_INDEX == 5 
+    #if(SPDIF_TX_INDEX < I2S_CHANS_DAC)
+    .outputChanStr_7            = "Analogue 7/SPDIF 2",
+    #else
     .outputChanStr_7            = "S/PDIF 2",
-    #else
+    #endif
+#else
     .outputChanStr_7            = "Analogue 7",
-    #endif
 #endif
-#if (NUM_USB_CHAN_OUT > 7)   
-    #if SPDIF_TX_INDEX == 7
+#endif
+
+#if (NUM_USB_CHAN_OUT > 7)
+#if SPDIF_TX_INDEX == 7
+    #if(SPDIF_TX_INDEX < I2S_CHANS_DAC)
+    .outputChanStr_8            = "Analogue 8/SPDIF 1",
+    #else
     .outputChanStr_8            = "S/PDIF 1",
-    #elif SPDIF_TX_INDEX == 6  
+    #endif    
+#elif SPDIF_TX_INDEX == 6
+    #if(SPDIF_TX_INDEX < I2S_CHANS_DAC)
+    .outputChanStr_8            = "Analogue 8/SPDIF 2",
+    #else
     .outputChanStr_8            = "S/PDIF 2",
-    #else
+    #endif
+#else
     .outputChanStr_8            = "Analogue 8",
-    #endif
 #endif
+#endif
+
 #if (NUM_USB_CHAN_OUT > 8)
-    #if SPDIF_TX_INDEX == 8
+#if SPDIF_TX_INDEX == 8
+    #if(SPDIF_TX_INDEX < I2S_CHANS_DAC)
+    .outputChanStr_9            = "Analogue 9/SPDIF 1",
+    #else
     .outputChanStr_9            = "S/PDIF 1",
-    #elif SPDIF_TX_INDEX == 7  
+    #endif    
+#elif SPDIF_TX_INDEX == 7
+    #if(SPDIF_TX_INDEX < I2S_CHANS_DAC)
+    .outputChanStr_9            = "Analogue 9/SPDIF 2",
+    #else
     .outputChanStr_9            = "S/PDIF 2",
-    #else
+    #endif
+#else
     .outputChanStr_9            = "Analogue 9",
-    #endif
 #endif
+#endif
+
 #if (NUM_USB_CHAN_OUT > 9)
-    #if SPDIF_TX_INDEX == 9
-    .outputChanStr_10           = "S/PDIF 1",
-    #elif SPDIF_TX_INDEX == 8  
-    .outputChanStr_10           = "S/PDIF 2",
+#if SPDIF_TX_INDEX == 9
+    #if(SPDIF_TX_INDEX < I2S_CHANS_DAC)
+    .outputChanStr_10            = "Analogue 10/SPDIF 1",
     #else
-    .outputChanStr_10           = "Analogue 10",
+    .outputChanStr_10            = "S/PDIF 1",
+    #endif    
+#elif SPDIF_TX_INDEX == 8
+    #if(SPDIF_TX_INDEX < I2S_CHANS_DAC)
+    .outputChanStr_10            = "Analogue 10/SPDIF 2",
+    #else
+    .outputChanStr_10            = "S/PDIF 2",
     #endif
+#else
+    .outputChanStr_10            = "Analogue 10",
 #endif
+#endif
+
 #if (NUM_USB_CHAN_OUT > 10)
-    #if SPDIF_TX_INDEX == 10
-    .outputChanStr_11           = "S/PDIF 1",
-    #elif SPDIF_TX_INDEX == 9  
-    .outputChanStr_11           = "S/PDIF 2",
+#if SPDIF_TX_INDEX == 10
+    #if(SPDIF_TX_INDEX < I2S_CHANS_DAC)
+    .outputChanStr_11            = "Analogue 11/SPDIF 1",
     #else
-    .outputChanStr_11           = "Analogue 11",
+    .outputChanStr_11            = "S/PDIF 1",
+    #endif    
+#elif SPDIF_TX_INDEX == 9
+    #if(SPDIF_TX_INDEX < I2S_CHANS_DAC)
+    .outputChanStr_11            = "Analogue 11/SPDIF 2",
+    #else
+    .outputChanStr_11            = "S/PDIF 2",
     #endif
+#else
+    .outputChanStr_11            = "Analogue 11",
 #endif
+#endif
+
 #if (NUM_USB_CHAN_OUT > 11)
-    #if SPDIF_TX_INDEX == 11
-    .outputChanStr_12           = "S/PDIF 1",
-    #elif SPDIF_TX_INDEX == 10  
-    .outputChanStr_12           = "S/PDIF 2",
+#if SPDIF_TX_INDEX == 11
+    #if(SPDIF_TX_INDEX < I2S_CHANS_DAC)
+    .outputChanStr_12            = "Analogue 12/SPDIF 1",
     #else
-    .outputChanStr_12           = "Analogue 12",
+    .outputChanStr_12            = "S/PDIF 1",
+    #endif    
+#elif SPDIF_TX_INDEX == 10
+    #if(SPDIF_TX_INDEX < I2S_CHANS_DAC)
+    .outputChanStr_12            = "Analogue 12/SPDIF 2",
+    #else
+    .outputChanStr_12            = "S/PDIF 2",
     #endif
+#else
+    .outputChanStr_12            = "Analogue 12",
 #endif
+#endif
+
 #if (NUM_USB_CHAN_OUT > 12)
-    #if SPDIF_TX_INDEX == 12
-    .outputChanStr_13           = "S/PDIF 1",
-    #elif SPDIF_TX_INDEX == 11  
-    .outputChanStr_13           = "S/PDIF 2",
+#if SPDIF_TX_INDEX == 12
+    #if(SPDIF_TX_INDEX < I2S_CHANS_DAC)
+    .outputChanStr_13            = "Analogue 13/SPDIF 1",
     #else
-    .outputChanStr_13           = "Analogue 13",
+    .outputChanStr_13            = "S/PDIF 1",
+    #endif    
+#elif SPDIF_TX_INDEX == 11
+    #if(SPDIF_TX_INDEX < I2S_CHANS_DAC)
+    .outputChanStr_13            = "Analogue 13/SPDIF 2",
+    #else
+    .outputChanStr_13            = "S/PDIF 2",
     #endif
+#else
+    .outputChanStr_13            = "Analogue 13",
 #endif
+#endif
+
 #if (NUM_USB_CHAN_OUT > 13)
-    #if SPDIF_TX_INDEX == 13
-    .outputChanStr_14           = "S/PDIF 1",
-    #elif SPDIF_TX_INDEX == 12  
-    .outputChanStr_14           = "S/PDIF 2",
+#if SPDIF_TX_INDEX == 13
+    #if(SPDIF_TX_INDEX < I2S_CHANS_DAC)
+    .outputChanStr_14            = "Analogue 14/SPDIF 1",
     #else
-    .outputChanStr_14           = "Analogue 14",
+    .outputChanStr_14            = "S/PDIF 1",
+    #endif    
+#elif SPDIF_TX_INDEX == 12
+    #if(SPDIF_TX_INDEX < I2S_CHANS_DAC)
+    .outputChanStr_14            = "Analogue 14/SPDIF 2",
+    #else
+    .outputChanStr_14            = "S/PDIF 2",
     #endif
+#else
+    .outputChanStr_14            = "Analogue 14",
 #endif
+#endif
+
 #if (NUM_USB_CHAN_OUT > 14)
-    #if SPDIF_TX_INDEX == 14
-    .outputChanStr_15           = "S/PDIF 1",
-    #elif SPDIF_TX_INDEX == 13  
-    .outputChanStr_15           = "S/PDIF 2",
+#if SPDIF_TX_INDEX == 14
+    #if(SPDIF_TX_INDEX < I2S_CHANS_DAC)
+    .outputChanStr_15            = "Analogue 15/SPDIF 1",
     #else
-    .outputChanStr_15           = "Analogue 15",
+    .outputChanStr_15            = "S/PDIF 1",
+    #endif    
+#elif SPDIF_TX_INDEX == 13
+    #if(SPDIF_TX_INDEX < I2S_CHANS_DAC)
+    .outputChanStr_15            = "Analogue 15/SPDIF 2",
+    #else
+    .outputChanStr_15            = "S/PDIF 2",
     #endif
+#else
+    .outputChanStr_15            = "Analogue 15",
 #endif
+#endif
+
 #if (NUM_USB_CHAN_OUT > 15)
-    #if SPDIF_TX_INDEX == 15
-    .outputChanStr_16           = "S/PDIF 1",
-    #elif SPDIF_TX_INDEX == 14  
-    .outputChanStr_16           = "S/PDIF 2",
+#if SPDIF_TX_INDEX == 15
+    #if(SPDIF_TX_INDEX < I2S_CHANS_DAC)
+    .outputChanStr_16            = "Analogue 16/SPDIF 1",
     #else
-    .outputChanStr_16           = "Analogue 16",
+    .outputChanStr_16            = "S/PDIF 1",
+    #endif    
+#elif SPDIF_TX_INDEX == 14
+    #if(SPDIF_TX_INDEX < I2S_CHANS_DAC)
+    .outputChanStr_16            = "Analogue 16/SPDIF 2",
+    #else
+    .outputChanStr_16            = "S/PDIF 2",
     #endif
+#else
+    .outputChanStr_16            = "Analogue 16",
 #endif
+#endif
+
 #if (NUM_USB_CHAN_OUT > 16)
-    #if SPDIF_TX_INDEX == 16
-    .outputChanStr_17           = "S/PDIF 1",
-    #elif SPDIF_TX_INDEX == 15  
-    .outputChanStr_17           = "S/PDIF 2",
+#if SPDIF_TX_INDEX == 16
+    #if(SPDIF_TX_INDEX < I2S_CHANS_DAC)
+    .outputChanStr_17            = "Analogue 17/SPDIF 1",
     #else
-    .outputChanStr_17           = "Analogue 17",
+    .outputChanStr_17            = "S/PDIF 1",
+    #endif    
+#elif SPDIF_TX_INDEX == 15
+    #if(SPDIF_TX_INDEX < I2S_CHANS_DAC)
+    .outputChanStr_17            = "Analogue 17/SPDIF 2",
+    #else
+    .outputChanStr_17            = "S/PDIF 2",
     #endif
+#else
+    .outputChanStr_17            = "Analogue 17",
 #endif
+#endif
+
 #if (NUM_USB_CHAN_OUT > 17)
-    #if SPDIF_TX_INDEX == 17
-    .outputChanStr_18           = "S/PDIF 1",
-    #elif SPDIF_TX_INDEX == 16 
-    .outputChanStr_18           = "S/PDIF 2",
+#if SPDIF_TX_INDEX == 17
+    #if(SPDIF_TX_INDEX < I2S_CHANS_DAC)
+    .outputChanStr_18            = "Analogue 18/SPDIF 1",
     #else
-    .outputChanStr_18           = "Analogue 18",
+    .outputChanStr_18            = "S/PDIF 1",
+    #endif    
+#elif SPDIF_TX_INDEX == 16
+    #if(SPDIF_TX_INDEX < I2S_CHANS_DAC)
+    .outputChanStr_18            = "Analogue 18/SPDIF 2",
+    #else
+    .outputChanStr_18            = "S/PDIF 2",
     #endif
+#else
+    .outputChanStr_18            = "Analogue 18",
 #endif
+#endif
+
 #if (NUM_USB_CHAN_OUT > 18)
 #error NUM_USB_CHAN > 18
 #endif
