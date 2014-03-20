@@ -268,7 +268,6 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
     unsigned char buffer[128];
     int i_tmp;
     int unitID;
-    int loop = 1;
     XUD_Result_t result;
     unsigned datalength;
 
