@@ -325,6 +325,7 @@
     #define NATIVE_DSD_FORMAT_NUM   (OUTPUT_FORMAT_COUNT)
 #endif
 
+
 /* Default resolutions */
 /* Note, 24 on the lowests in case OUTPUT_FORMAT_COUNT = 1 */
 #ifndef STREAM_FORMAT_OUTPUT_1_RESOLUTION_BITS
@@ -726,9 +727,6 @@
 #define ID_XU_IN                 52
 
 #define ID_MIXER_1               60
-
-#define MANUFACTURER_STR_INDEX	 0x01
-#define PRODUCT_STR_INDEX_A2     0x03
 
 /* Mixer defines */
 #ifndef MIX_INPUTS
