@@ -258,9 +258,9 @@ static void updateVol(int unitID, int channel, chanend ?c_mix_ctl)
 }
 
 /* Handles the audio class specific requests
- * returns:     0   if request dealt with successfully without error,
- *              <0  for device reset
- *              else 1
+ * returns:     XUD_RES_OKAY if request dealt with successfully without error,
+ *              XUD_RES_RST for device reset
+ *              else XUD_RES_ERR
  */
 int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, chanend c_audioControl, chanend ?c_mix_ctl, chanend ?c_clk_ctl
 )
@@ -982,8 +982,8 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
 #endif
     }
 
-    /* Didn't deal with request, return 1 */
-    return 1;
+    /* Didn't deal with request, return XUD_RES_ERR */
+    return XUD_RES_ERR;
 
 }
 
