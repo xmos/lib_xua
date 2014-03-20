@@ -181,7 +181,7 @@ typedef struct
 
 StringDescTable_t g_strTable = 
 {
-    .langID                      = {STR_USENG & 0xff, STR_USENG >> 8, '\0'},
+    .langID                      = "\x09\x04", /* US English */
     .vendorStr                   = VENDOR_STR,
     .serialStr                   = "",
     .productStr_Audio2           = PRODUCT_STR_A2,
