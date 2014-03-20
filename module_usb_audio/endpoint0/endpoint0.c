@@ -498,7 +498,7 @@ void Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
                     (unsigned char*)&cfgDesc_Audio2, sizeof(cfgDesc_Audio2),
                     (unsigned char*)&devDesc_Audio1, sizeof(devDesc_Audio1),
                     cfgDesc_Audio1, sizeof(cfgDesc_Audio1),
-                    (char(*)[])g_strTable, sizeof(g_strTable)/sizeof(char *),
+                    (char(*)[])&g_strTable, sizeof(g_strTable)/sizeof(char *),
                     &sp, c_usb_test, g_curUsbSpeed);
 #elif FULL_SPEED_AUDIO_2
                 /* Return Audio 2.0 Descriptors for high_speed and full-speed */
