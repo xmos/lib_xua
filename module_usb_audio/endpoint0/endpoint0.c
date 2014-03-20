@@ -7,6 +7,7 @@
 
 #include <xs1.h>
 #include <safestring.h>
+#include <stddef.h>
 
 #include "xud.h"                 /* XUD user defines and functions */
 #include "usb_std_requests.h"
@@ -495,9 +496,9 @@ void Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
                 result = USB_StandardRequests(ep0_out, ep0_in,
                     (unsigned char*)&devDesc_Audio2, sizeof(devDesc_Audio2),
                     (unsigned char*)&cfgDesc_Audio2, sizeof(cfgDesc_Audio2),
-                    devDesc_Audio1, sizeof(devDesc_Audio1),
+                    (unsigned char*)&devDesc_Audio1, sizeof(devDesc_Audio1),
                     cfgDesc_Audio1, sizeof(cfgDesc_Audio1),
-                    strDescs, sizeof(strDescs)/sizeof(strDescs[0]),
+                    (char(*)[])g_strTable, sizeof(g_strTable)/sizeof(char *),
                     &sp, c_usb_test, g_curUsbSpeed);
 #elif FULL_SPEED_AUDIO_2
                 /* Return Audio 2.0 Descriptors for high_speed and full-speed */
@@ -576,18 +577,18 @@ void Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
                     null, 0,
                     null, 0,
 #ifdef __XC__
-                    strDescs, sizeof(strDescs)/sizeof(strDescs[0]), sp, c_usb_test, g_curUsbSpeed);
+                    g_strTable, sizeof(g_strTable), sp, c_usb_test, g_curUsbSpeed);
 #else
-                    strDescs, sizeof(strDescs)/sizeof(strDescs[0]), &sp, c_usb_test, g_curUsbSpeed);
+                    (char(*)[])&g_strTable, sizeof(g_strTable)/sizeof(char *), &sp, c_usb_test, g_curUsbSpeed);
 #endif
 #elif (AUDIO_CLASS == 1)
                 /* Return Audio 1.0 Descriptors in FS, should never be in HS! */
                  result = USB_StandardRequests(ep0_out, ep0_in,
                     null, 0,
                     null, 0,
-                    devDesc_Audio1, sizeof(devDesc_Audio1),
+                    (unsigned char*)&devDesc_Audio1, sizeof(devDesc_Audio1),
                     cfgDesc_Audio1, sizeof(cfgDesc_Audio1),
-                    strDescs, sizeof(strDescs)/sizeof(strDescs[0]), &sp, c_usb_test, g_curUsbSpeed);
+                    (char(*)[])&g_strTable, sizeof(g_strTable)/sizeof(char *), &sp, c_usb_test, g_curUsbSpeed);
 #else
                 /* Return Audio 2.0 Descriptors with Null device as fallback */
                 result = USB_StandardRequests(ep0_out, ep0_in,
@@ -595,7 +596,7 @@ void Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
                     (unsigned char*)&cfgDesc_Audio2, sizeof(cfgDesc_Audio2),
                     devDesc_Null, sizeof(devDesc_Null),
                     cfgDesc_Null, sizeof(cfgDesc_Null),
-                    strDescs, sizeof(strDescs)/sizeof(strDescs[0]), &sp, c_usb_test, g_curUsbSpeed);
+                    (char(*)[])&g_strTable, sizeof(g_strTable)/sizeof(char *), &sp, c_usb_test, g_curUsbSpeed);
 #endif
 #ifdef DFU
             }
@@ -607,11 +608,7 @@ void Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
                     DFUcfgDesc, sizeof(DFUcfgDesc),
                     null, 0, /* Used same descriptors for full and high-speed */
                     null, 0,
-#ifdef __XC__
-                    strDescs, sizeof(strDescs)/sizeof(strDescs[0]), sp, c_usb_test, g_curUsbSpeed);
-#else
-                    strDescs, sizeof(strDescs)/sizeof(strDescs[0]), &sp, c_usb_test, g_curUsbSpeed);
-#endif
+                    (char(*)[])&g_strTable, sizeof(g_strTable)/sizeof(char *), &sp, c_usb_test, g_curUsbSpeed);
             }
 #endif
         }
@@ -646,6 +643,5 @@ void Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
             }
 #endif
         }
-
     }
 }
