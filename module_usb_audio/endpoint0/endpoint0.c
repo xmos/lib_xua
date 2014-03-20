@@ -194,38 +194,6 @@ void Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
     }
 #endif
 
-    /* Build up channel string table - By default all channels are marked as analogue
-     * TODO We really want to do this an build time... */
-#if defined(SPDIF_RX) && (SPDIF_RX_INDEX != 0)
-    safestrcpy(strDescs[SPDIF_RX_INDEX + INPUT_INTERFACE_STRING_INDEX], "S/PDIF 1");
-    safestrcpy(strDescs[SPDIF_RX_INDEX + INPUT_INTERFACE_STRING_INDEX + 1], "S/PDIF 2");
-#endif
-#if defined(ADAT_RX) && (ADAT_RX_INDEX != 0)
-    safestrcpy(strDescs[ADAT_RX_INDEX + INPUT_INTERFACE_STRING_INDEX], "ADAT 1");
-    safestrcpy(strDescs[ADAT_RX_INDEX + INPUT_INTERFACE_STRING_INDEX + 1], "ADAT 2");
-    safestrcpy(strDescs[ADAT_RX_INDEX + INPUT_INTERFACE_STRING_INDEX + 2], "ADAT 3");
-    safestrcpy(strDescs[ADAT_RX_INDEX + INPUT_INTERFACE_STRING_INDEX + 3], "ADAT 4");
-    safestrcpy(strDescs[ADAT_RX_INDEX + INPUT_INTERFACE_STRING_INDEX + 4], "ADAT 5");
-    safestrcpy(strDescs[ADAT_RX_INDEX + INPUT_INTERFACE_STRING_INDEX + 5], "ADAT 6");
-    safestrcpy(strDescs[ADAT_RX_INDEX + INPUT_INTERFACE_STRING_INDEX + 6], "ADAT 7");
-    safestrcpy(strDescs[ADAT_RX_INDEX + INPUT_INTERFACE_STRING_INDEX + 7], "ADAT 8");
-#endif
-
-#if defined(SPDIF) && (SPDIF_TX_INDEX != 0)     /* "Analogue naming gets priority */
-    safestrcpy(strDescs[SPDIF_TX_INDEX + OUTPUT_INTERFACE_STRING_INDEX], "S/PDIF 1");
-    safestrcpy(strDescs[SPDIF_TX_INDEX + OUTPUT_INTERFACE_STRING_INDEX + 1], "S/PDIF 2");
-#endif
-#if defined(ADAT_TX) && (ADAT_TX_INDEX != 0)
-    safestrcpy(strDescs[ADAT_TX_INDEX + OUTPUT_INTERFACE_STRING_INDEX], "ADAT 1");
-    safestrcpy(strDescs[ADAT_TX_INDEX + OUTPUT_INTERFACE_STRING_INDEX + 1], "ADAT 2");
-    safestrcpy(strDescs[ADAT_TX_INDEX + OUTPUT_INTERFACE_STRING_INDEX + 2], "ADAT 3");
-    safestrcpy(strDescs[ADAT_TX_INDEX + OUTPUT_INTERFACE_STRING_INDEX + 3], "ADAT 4");
-    safestrcpy(strDescs[ADAT_TX_INDEX + OUTPUT_INTERFACE_STRING_INDEX + 4], "ADAT 5");
-    safestrcpy(strDescs[ADAT_TX_INDEX + OUTPUT_INTERFACE_STRING_INDEX + 5], "ADAT 6");
-    safestrcpy(strDescs[ADAT_TX_INDEX + OUTPUT_INTERFACE_STRING_INDEX + 6], "ADAT 7");
-    safestrcpy(strDescs[ADAT_TX_INDEX + OUTPUT_INTERFACE_STRING_INDEX + 7], "ADAT 8");
-#endif
-
 #ifdef VENDOR_AUDIO_REQS
     VendorAudioRequestsInit(c_audioControl, c_mix_ctl, c_clk_ctl);
 #endif
