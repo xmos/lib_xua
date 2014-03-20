@@ -1408,7 +1408,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
     0x02,                            /* 2 bDescriptorSubtype : MIDI_IN_JACK subtype. (field size 1 bytes) */
     0x02,                            /* 3 bJackType : EXTERNAL. (field size 1 bytes) */
     0x02,                            /* 4 bJackID : ID of this Jack. (field size 1 bytes) */
-    MIDI_IN_STRING_INDEX,            /* 5 iJack : Unused. (field size 1 bytes) */
+    offsetof(StringDescTable_t, midiInStr)/sizeof(char *),            /* 5 iJack : Unused. (field size 1 bytes) */
 
 /* Table B-9: MIDI Adapter MIDI OUT Jack Descriptor (Embedded) */
     0x09,                            /* 0 bLength : Size of this descriptor, in bytes. (field size 1 bytes) */
@@ -1430,7 +1430,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
     0x01,                            /* 5 bNrInputPins : Number of Input Pins of this Jack. (field size 1 bytes) */
     0x01,                            /* 6 BaSourceID(1) : ID of the Entity to which this Pin is connected. (field size 1 bytes) */
     0x01,                            /* 7 BaSourcePin(1) : Output Pin number of the Entity to which this Input Pin is connected. */
-    MIDI_OUT_STRING_INDEX,           /* 8 iJack : Unused. (field size 1 bytes) */
+    offsetof(StringDescTable_t, midiOutStr)/sizeof(char *),            /* 5 iJack : Unused. (field size 1 bytes) */
 
 /* Table B-11: MIDI Adapter Standard Bulk OUT Endpoint Descriptor */
     0x09,                            /* 0 bLength : Size of this descriptor, in bytes. (field size 1 bytes) */
