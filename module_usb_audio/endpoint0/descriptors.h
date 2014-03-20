@@ -22,8 +22,6 @@
 
 #define STR_TABLE_ENTRY(name) char *name
 
-#define STR_USENG 0x0409
-
 typedef struct
 {
     STR_TABLE_ENTRY(langID);                
