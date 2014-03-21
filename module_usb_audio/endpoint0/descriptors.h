@@ -209,8 +209,8 @@ StringDescTable_t g_strTable =
     .dfuStr                      = APPEND_VENDOR_STR(DFU),
 #endif
 #if (NUM_USB_CHAN_OUT > 0)
-#if SPDIF_TX_INDEX == 0
-    #if (SPDIF_TX_INDEX < I2S_CHANS_DAC)
+#if defined(SPDIF) && (SPDIF_TX_INDEX == 0)
+    #if defined(SPDIF) && (SPDIF_TX_INDEX < I2S_CHANS_DAC)
     /* I2S/SPDIF overlap */
     .outputChanStr_1             = "Analogue 1/SPDIF 1",
     #else
@@ -222,13 +222,13 @@ StringDescTable_t g_strTable =
 #endif
 
 #if (NUM_USB_CHAN_OUT > 1)
-#if SPDIF_TX_INDEX == 1
-    #if (SPDIF_TX_INDEX < I2S_CHANS_DAC)
+#if defined(SPDIF) && (SPDIF_TX_INDEX == 1)
+    #if(SPDIF_TX_INDEX < I2S_CHANS_DAC)
     .outputChanStr_2             = "Analogue 2/SPDIF 1",
     #else
     .outputChanStr_2             = "S/PDIF 1",
     #endif
-#elif SPDIF_TX_INDEX == 0  
+#elif defined(SPDIF) && (SPDIF_TX_INDEX == 0) 
     #if(SPDIF_TX_INDEX < I2S_CHANS_DAC)
     .outputChanStr_2             = "Analogue 2/SPDIF 2",
     #else
@@ -239,13 +239,13 @@ StringDescTable_t g_strTable =
 #endif
 #endif
 #if (NUM_USB_CHAN_OUT > 2)
-#if SPDIF_TX_INDEX == 2
+#if defined(SPDIF) && (SPDIF_TX_INDEX == 2)
     #if(SPDIF_TX_INDEX < I2S_CHANS_DAC)
     .outputChanStr_3            = "Analogue 3/SPDIF 1",
     #else
     .outputChanStr_3            = "S/PDIF 1",
     #endif    
-#elif (SPDIF_TX_INDEX == 1) 
+#elif defined(SPDIF) && (SPDIF_TX_INDEX == 1) 
     #if(SPDIF_TX_INDEX < I2S_CHANS_DAC)
     .outputChanStr_3            = "Analogue 3/SPDIF 2",
     #else
@@ -256,13 +256,13 @@ StringDescTable_t g_strTable =
     #endif
 #endif
 #if (NUM_USB_CHAN_OUT > 3)
-#if SPDIF_TX_INDEX == 3
+#if defined(SPDIF) && (SPDIF_TX_INDEX == 3)
     #if(SPDIF_TX_INDEX < I2S_CHANS_DAC)
     .outputChanStr_4            = "Analogue 4/SPDIF 1",
     #else
     .outputChanStr_4            = "S/PDIF 1",
     #endif    
-#elif SPDIF_TX_INDEX == 2  
+#elif defined(SPDIF) && (SPDIF_TX_INDEX == 2  
     #if(SPDIF_TX_INDEX < I2S_CHANS_DAC)
     .outputChanStr_4            = "Analogue 4/SPDIF 2",
     #else
@@ -274,13 +274,13 @@ StringDescTable_t g_strTable =
 #endif
 
 #if (NUM_USB_CHAN_OUT > 4)
-#if SPDIF_TX_INDEX == 4
+#if defined(SPDIF) && (SPDIF_TX_INDEX == 4)
     #if(SPDIF_TX_INDEX < I2S_CHANS_DAC)
     .outputChanStr_5            = "Analogue 5/SPDIF 1",
     #else
     .outputChanStr_5            = "S/PDIF 1",
     #endif    
-#elif SPDIF_TX_INDEX == 3 
+#elif defined(SPDIF) && (SPDIF_TX_INDEX == 3)
     #if(SPDIF_TX_INDEX < I2S_CHANS_DAC)
     .outputChanStr_5            = "Analogue 5/SPDIF 2",
     #else
@@ -292,13 +292,13 @@ StringDescTable_t g_strTable =
 #endif
 
 #if (NUM_USB_CHAN_OUT > 5)
-#if SPDIF_TX_INDEX == 5
+#if defined(SPDIF) && (SPDIF_TX_INDEX == 5)
     #if(SPDIF_TX_INDEX < I2S_CHANS_DAC)
     .outputChanStr_6            = "Analogue 6/SPDIF 1",
     #else
     .outputChanStr_6            = "S/PDIF 1",
     #endif    
-#elif SPDIF_TX_INDEX == 4 
+#elif defined(SPDIF) && (SPDIF_TX_INDEX == 4)
     #if(SPDIF_TX_INDEX < I2S_CHANS_DAC)
     .outputChanStr_6            = "Analogue 6/SPDIF 2",
     #else
@@ -310,13 +310,13 @@ StringDescTable_t g_strTable =
 #endif
 
 #if (NUM_USB_CHAN_OUT > 6)
-#if SPDIF_TX_INDEX == 6
+#if defined(SPDIF) && (SPDIF_TX_INDEX == 6)
     #if(SPDIF_TX_INDEX < I2S_CHANS_DAC)
     .outputChanStr_7            = "Analogue 7/SPDIF 1",
     #else
     .outputChanStr_7            = "S/PDIF 1",
     #endif    
-#elif SPDIF_TX_INDEX == 5 
+#elif defined(SPDIF) && (SPDIF_TX_INDEX == 5) 
     #if(SPDIF_TX_INDEX < I2S_CHANS_DAC)
     .outputChanStr_7            = "Analogue 7/SPDIF 2",
     #else
@@ -328,13 +328,13 @@ StringDescTable_t g_strTable =
 #endif
 
 #if (NUM_USB_CHAN_OUT > 7)
-#if SPDIF_TX_INDEX == 7
+#if defined(SPDIF) && (SPDIF_TX_INDEX == 7)
     #if(SPDIF_TX_INDEX < I2S_CHANS_DAC)
     .outputChanStr_8            = "Analogue 8/SPDIF 1",
     #else
     .outputChanStr_8            = "S/PDIF 1",
     #endif    
-#elif SPDIF_TX_INDEX == 6
+#elif defined(SPDIF) && (SPDIF_TX_INDEX == 6)
     #if(SPDIF_TX_INDEX < I2S_CHANS_DAC)
     .outputChanStr_8            = "Analogue 8/SPDIF 2",
     #else
@@ -346,13 +346,13 @@ StringDescTable_t g_strTable =
 #endif
 
 #if (NUM_USB_CHAN_OUT > 8)
-#if SPDIF_TX_INDEX == 8
+#if defined(SPDIF) && (SPDIF_TX_INDEX == 8)
     #if(SPDIF_TX_INDEX < I2S_CHANS_DAC)
     .outputChanStr_9            = "Analogue 9/SPDIF 1",
     #else
     .outputChanStr_9            = "S/PDIF 1",
     #endif    
-#elif SPDIF_TX_INDEX == 7
+#elif defined(SPDIF) && (SPDIF_TX_INDEX == 7)
     #if(SPDIF_TX_INDEX < I2S_CHANS_DAC)
     .outputChanStr_9            = "Analogue 9/SPDIF 2",
     #else
@@ -364,13 +364,13 @@ StringDescTable_t g_strTable =
 #endif
 
 #if (NUM_USB_CHAN_OUT > 9)
-#if SPDIF_TX_INDEX == 9
+#if defined(SPDIF) && (SPDIF_TX_INDEX == 9)
     #if(SPDIF_TX_INDEX < I2S_CHANS_DAC)
     .outputChanStr_10            = "Analogue 10/SPDIF 1",
     #else
     .outputChanStr_10            = "S/PDIF 1",
     #endif    
-#elif SPDIF_TX_INDEX == 8
+#elif defined(SPDIF) && (SPDIF_TX_INDEX == 8)
     #if(SPDIF_TX_INDEX < I2S_CHANS_DAC)
     .outputChanStr_10            = "Analogue 10/SPDIF 2",
     #else
@@ -382,13 +382,13 @@ StringDescTable_t g_strTable =
 #endif
 
 #if (NUM_USB_CHAN_OUT > 10)
-#if SPDIF_TX_INDEX == 10
+#if defined(SPDIF) && (SPDIF_TX_INDEX == 10)
     #if(SPDIF_TX_INDEX < I2S_CHANS_DAC)
     .outputChanStr_11            = "Analogue 11/SPDIF 1",
     #else
     .outputChanStr_11            = "S/PDIF 1",
     #endif    
-#elif SPDIF_TX_INDEX == 9
+#elif defined(SPDIF) && (SPDIF_TX_INDEX == 9)
     #if(SPDIF_TX_INDEX < I2S_CHANS_DAC)
     .outputChanStr_11            = "Analogue 11/SPDIF 2",
     #else
@@ -400,13 +400,13 @@ StringDescTable_t g_strTable =
 #endif
 
 #if (NUM_USB_CHAN_OUT > 11)
-#if SPDIF_TX_INDEX == 11
+#if defined(SPDIF) && (SPDIF_TX_INDEX == 11)
     #if(SPDIF_TX_INDEX < I2S_CHANS_DAC)
     .outputChanStr_12            = "Analogue 12/SPDIF 1",
     #else
     .outputChanStr_12            = "S/PDIF 1",
     #endif    
-#elif SPDIF_TX_INDEX == 10
+#elif defined(SPDIF) && (SPDIF_TX_INDEX == 10)
     #if(SPDIF_TX_INDEX < I2S_CHANS_DAC)
     .outputChanStr_12            = "Analogue 12/SPDIF 2",
     #else
@@ -418,13 +418,13 @@ StringDescTable_t g_strTable =
 #endif
 
 #if (NUM_USB_CHAN_OUT > 12)
-#if SPDIF_TX_INDEX == 12
+#if defined(SPDIF) && (SPDIF_TX_INDEX == 12)
     #if(SPDIF_TX_INDEX < I2S_CHANS_DAC)
     .outputChanStr_13            = "Analogue 13/SPDIF 1",
     #else
     .outputChanStr_13            = "S/PDIF 1",
     #endif    
-#elif SPDIF_TX_INDEX == 11
+#elif defined(SPDIF) && (SPDIF_TX_INDEX == 11)
     #if(SPDIF_TX_INDEX < I2S_CHANS_DAC)
     .outputChanStr_13            = "Analogue 13/SPDIF 2",
     #else
@@ -436,13 +436,13 @@ StringDescTable_t g_strTable =
 #endif
 
 #if (NUM_USB_CHAN_OUT > 13)
-#if SPDIF_TX_INDEX == 13
+#if defined(SPDIF) && (SPDIF_TX_INDEX == 13)
     #if(SPDIF_TX_INDEX < I2S_CHANS_DAC)
     .outputChanStr_14            = "Analogue 14/SPDIF 1",
     #else
     .outputChanStr_14            = "S/PDIF 1",
     #endif    
-#elif SPDIF_TX_INDEX == 12
+#elif defined(SPDIF) && (SPDIF_TX_INDEX == 12)
     #if(SPDIF_TX_INDEX < I2S_CHANS_DAC)
     .outputChanStr_14            = "Analogue 14/SPDIF 2",
     #else
@@ -454,13 +454,13 @@ StringDescTable_t g_strTable =
 #endif
 
 #if (NUM_USB_CHAN_OUT > 14)
-#if SPDIF_TX_INDEX == 14
+#if defined(SPDIF) && (SPDIF_TX_INDEX == 14)
     #if(SPDIF_TX_INDEX < I2S_CHANS_DAC)
     .outputChanStr_15            = "Analogue 15/SPDIF 1",
     #else
     .outputChanStr_15            = "S/PDIF 1",
     #endif    
-#elif SPDIF_TX_INDEX == 13
+#elif defined(SPDIF) && (SPDIF_TX_INDEX == 13)
     #if(SPDIF_TX_INDEX < I2S_CHANS_DAC)
     .outputChanStr_15            = "Analogue 15/SPDIF 2",
     #else
@@ -472,13 +472,13 @@ StringDescTable_t g_strTable =
 #endif
 
 #if (NUM_USB_CHAN_OUT > 15)
-#if SPDIF_TX_INDEX == 15
+#if defined(SPDIF) && (SPDIF_TX_INDEX == 15)
     #if(SPDIF_TX_INDEX < I2S_CHANS_DAC)
     .outputChanStr_16            = "Analogue 16/SPDIF 1",
     #else
     .outputChanStr_16            = "S/PDIF 1",
     #endif    
-#elif SPDIF_TX_INDEX == 14
+#elif defined(SPDIF) && (SPDIF_TX_INDEX == 14)
     #if(SPDIF_TX_INDEX < I2S_CHANS_DAC)
     .outputChanStr_16            = "Analogue 16/SPDIF 2",
     #else
@@ -490,13 +490,13 @@ StringDescTable_t g_strTable =
 #endif
 
 #if (NUM_USB_CHAN_OUT > 16)
-#if SPDIF_TX_INDEX == 16
+#if defined(SPDIF) && (SPDIF_TX_INDEX == 16)
     #if(SPDIF_TX_INDEX < I2S_CHANS_DAC)
     .outputChanStr_17            = "Analogue 17/SPDIF 1",
     #else
     .outputChanStr_17            = "S/PDIF 1",
     #endif    
-#elif SPDIF_TX_INDEX == 15
+#elif defined(SPDIF) && (SPDIF_TX_INDEX == 15)
     #if(SPDIF_TX_INDEX < I2S_CHANS_DAC)
     .outputChanStr_17            = "Analogue 17/SPDIF 2",
     #else
@@ -508,13 +508,13 @@ StringDescTable_t g_strTable =
 #endif
 
 #if (NUM_USB_CHAN_OUT > 17)
-#if SPDIF_TX_INDEX == 17
+#if defined(SPDIF) && (SPDIF_TX_INDEX == 17)
     #if(SPDIF_TX_INDEX < I2S_CHANS_DAC)
     .outputChanStr_18            = "Analogue 18/SPDIF 1",
     #else
     .outputChanStr_18            = "S/PDIF 1",
     #endif    
-#elif SPDIF_TX_INDEX == 16
+#elif defined(SPDIF) && (SPDIF_TX_INDEX == 16)
     #if(SPDIF_TX_INDEX < I2S_CHANS_DAC)
     .outputChanStr_18            = "Analogue 18/SPDIF 2",
     #else
