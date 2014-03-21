@@ -125,7 +125,6 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
 #ifdef HID_CONTROLS
     XUD_ep ep_hid = XUD_InitEp(c_hid);
 #endif
-    int tmp;
     unsigned u_tmp;
     unsigned sampleFreq = 0;
     unsigned lastClock;
@@ -367,7 +366,6 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
                         {
                             int usb_speed;
                             asm("stw %0, dp[g_speed]"::"r"(clocks));   // g_speed = clocks
-                            //fb_clocks = clocks;
 
                             GET_SHARED_GLOBAL(usb_speed, g_curUsbSpeed);
 
