@@ -1068,7 +1068,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
             UAC_CS_DESCTYPE_INTERFACE,                   /* 1  bDescriptorType: 0x24 */
             UAC_CS_AC_INTERFACE_SUBTYPE_OUTPUT_TERMINAL, /* 2  bDescriptorSubType: OUTPUT_TERMINAL */
             ID_OT_AUD,                                   /* 3  bTerminalID */
-            SPEAKER,                                     /* 4  wTerminalType */
+            .wTerminalType              = UAC_TT_OUTPUT_TERMTYPE_SPEAKER,
             0x00,                                        /* 6  bAssocTerminal */
             FU_USBOUT,                                   /* 7  bSourceID Connect to analog input feature unit*/
             ID_CLKSEL,                                   /* 8  bCSourceUD */
