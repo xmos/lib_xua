@@ -1623,6 +1623,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
 #endif
 
 #ifdef DFU
+    {
     /* Standard DFU class Interface descriptor */
     0x09,                           /* 0 bLength : Size of this descriptor, in bytes. (field size 1 bytes) */
     0x04,                           /* 1 bDescriptorType : INTERFACE descriptor. (field size 1 bytes) */
@@ -1654,6 +1655,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
     0x00,                           /* 6    wTransferSize */
     0x10,                           /* 7    bcdDFUVersion */
     0x01,                           /* 7    bcdDFUVersion */
+    }
 #endif
 #endif
 
