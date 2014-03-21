@@ -1750,16 +1750,6 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
 };
 #endif
 
-
-
-#if defined(SPDIF)
-#if ((NUM_USB_CHAN_OUT - 2) <= 0)
-#define SPDIF_TX_OVERLAP   1
-#else
-#define SPDIF_TX_OVERLAP   0
-#endif
-#endif
-
 /* Configuration Descriptor for Null device */
 unsigned char cfgDesc_Null[] =
 {
