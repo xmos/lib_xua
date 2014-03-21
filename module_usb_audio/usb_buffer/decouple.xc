@@ -127,7 +127,6 @@ void handle_audio_request(chanend c_mix_out)
 {
     int outSamps;
     int space_left;
-    int usb_speed;
 
     /* Input word that triggered interrupt and handshake back */
     (void) inuint(c_mix_out);
