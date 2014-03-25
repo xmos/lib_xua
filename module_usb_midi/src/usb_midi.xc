@@ -53,7 +53,13 @@ timer iAPTimer;
 
 #define ARRAY_SIZE(x) (sizeof(x) / sizeof(x[0]))
 
-void usb_midi(buffered in port:1 ?p_midi_in, port ?p_midi_out,
+void usb_midi(
+#if (MIDI_RX_PORT_WIDTH == 4)
+buffered in port:4 ?p_midi_in, 
+#else 
+buffered in port:1 ?p_midi_in, 
+#endif
+    port ?p_midi_out,
             clock ?clk_midi,
             chanend ?c_midi,
             unsigned cable_number,
