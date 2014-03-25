@@ -343,6 +343,7 @@ void usb_audio_io(chanend c_aud_in, chanend ?c_adc
 #ifdef MIXER
 , chanend c_mix_ctl
 #endif
+, chanend ?c_aud_cfg
 )
 {
 #ifdef MIXER
@@ -362,9 +363,9 @@ void usb_audio_io(chanend c_aud_in, chanend ?c_adc
         {
             thread_speed();
 #ifdef MIXER
-            audio(c_mix_out, null, null, c_adc);
+            audio(c_mix_out, null, c_aud_cfg, c_adc);
 #else
-            audio(c_aud_in, null, null, c_adc);
+            audio(c_aud_in, null, c_aud_cfg, c_adc);
 #endif
         }
     }
@@ -398,6 +399,12 @@ int main()
     chan c_mix_ctl;
 #endif
 
+#ifdef AUDIO_CFG_CHAN
+    chan c_aud_cfg;
+#else
+#define c_aud_cfg null
+#endif
+
     USER_MAIN_DECLARATIONS
 
     par
@@ -418,6 +425,7 @@ int main()
 #ifdef MIXER
             , c_mix_ctl
 #endif
+            , c_aud_cfg
         );
 
 #if defined(MIDI) && defined(IAP) && (IAP_TILE == MIDI_TILE)
