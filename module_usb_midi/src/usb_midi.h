@@ -17,9 +17,9 @@
  **/
 void usb_midi(
 #if (MIDI_RX_PORT_WIDTH == 4)
-buffered in port:4 ?p_midi_in, 
-#else 
-buffered in port:1 ?p_midi_in, 
+buffered in port:4 ?p_midi_in,
+#else
+buffered in port:1 ?p_midi_in,
 #endif
     port ?p_midi_out,
     clock ?clk_midi,

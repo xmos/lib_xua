@@ -296,7 +296,7 @@
 /* Device release number in BCD: 0xJJMN */
 #define BCD_DEVICE_J             6
 #define BCD_DEVICE_M             5
-#define BCD_DEVICE_N             0
+#define BCD_DEVICE_N             1
 
 #ifndef BCD_DEVICE
 #define BCD_DEVICE               ((BCD_DEVICE_J << 8) | ((BCD_DEVICE_M & 0xF) << 4) | (BCD_DEVICE_N & 0xF))
@@ -834,8 +834,8 @@
 #define DFU_PID                     PID_AUDIO_2
 #define DFU_VENDOR_ID               VENDOR_ID
 #define DFU_BCD_DEVICE              BCD_DEVICE
-#define DFU_MANUFACTURER_STR_INDEX  offsetof(StringDescTable_t, vendorStr)/sizeof(char *)  
-#define DFU_PRODUCT_STR_INDEX       offsetof(StringDescTable_t, productStr_Audio2)/sizeof(char *) 
+#define DFU_MANUFACTURER_STR_INDEX  offsetof(StringDescTable_t, vendorStr)/sizeof(char *)
+#define DFU_PRODUCT_STR_INDEX       offsetof(StringDescTable_t, productStr_Audio2)/sizeof(char *)
 #endif
 
 /* USB test mode support enabled by default (Required for compliance testing) */

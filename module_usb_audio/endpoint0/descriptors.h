@@ -24,22 +24,22 @@
 
 typedef struct
 {
-    STR_TABLE_ENTRY(langID);                
+    STR_TABLE_ENTRY(langID);
     STR_TABLE_ENTRY(vendorStr);
     STR_TABLE_ENTRY(serialStr);
-   
-    /* Audio 2.0 Strings */ 
+
+    /* Audio 2.0 Strings */
     STR_TABLE_ENTRY(productStr_Audio2);           /* Product string for Audio 2 */
-    STR_TABLE_ENTRY(outputInterfaceStr_Audio2);   /* iInterface for streaming intefaces */  
-    STR_TABLE_ENTRY(inputInterfaceStr_Audio2);    /* iInterface for streaming intefaces */  
+    STR_TABLE_ENTRY(outputInterfaceStr_Audio2);   /* iInterface for streaming intefaces */
+    STR_TABLE_ENTRY(inputInterfaceStr_Audio2);    /* iInterface for streaming intefaces */
     STR_TABLE_ENTRY(usbInputTermStr_Audio2);      /* Users sees as output from host */
     STR_TABLE_ENTRY(usbOutputTermStr_Audio2);     /* User sees as input to host */
 
 #if defined (AUDIO_CLASS_FALLBACK) || (AUDIO_CLASS == 1)
     /* Audio 1.0 Strings */
     STR_TABLE_ENTRY(productStr_Audio1);           /* Product string for Audio 1 */
-    STR_TABLE_ENTRY(outputInterfaceStr_Audio1);   /* iInterface for streaming intefaces */  
-    STR_TABLE_ENTRY(inputInterfaceStr_Audio1);    /* iInterface for streaming intefaces */  
+    STR_TABLE_ENTRY(outputInterfaceStr_Audio1);   /* iInterface for streaming intefaces */
+    STR_TABLE_ENTRY(inputInterfaceStr_Audio1);    /* iInterface for streaming intefaces */
     STR_TABLE_ENTRY(usbInputTermStr_Audio1);      /* Users sees as output from host */
     STR_TABLE_ENTRY(usbOutputTermStr_Audio1);     /* User sees as input to host */
 #endif
@@ -62,52 +62,52 @@ typedef struct
     STR_TABLE_ENTRY(outputChanStr_1);
 #endif
 #if (NUM_USB_CHAN_OUT > 1)
-    STR_TABLE_ENTRY(outputChanStr_2);              
+    STR_TABLE_ENTRY(outputChanStr_2);
 #endif
 #if (NUM_USB_CHAN_OUT > 2)
-    STR_TABLE_ENTRY(outputChanStr_3);  
+    STR_TABLE_ENTRY(outputChanStr_3);
 #endif
 #if (NUM_USB_CHAN_OUT > 3)
-    STR_TABLE_ENTRY(outputChanStr_4);           
+    STR_TABLE_ENTRY(outputChanStr_4);
 #endif
 #if (NUM_USB_CHAN_OUT > 4)
-    STR_TABLE_ENTRY(outputChanStr_5);              
+    STR_TABLE_ENTRY(outputChanStr_5);
 #endif
 #if (NUM_USB_CHAN_OUT > 5)
-    STR_TABLE_ENTRY(outputChanStr_6);              
+    STR_TABLE_ENTRY(outputChanStr_6);
 #endif
 #if (NUM_USB_CHAN_OUT > 6)
-    STR_TABLE_ENTRY(outputChanStr_7);              
+    STR_TABLE_ENTRY(outputChanStr_7);
 #endif
 #if (NUM_USB_CHAN_OUT > 7)
-    STR_TABLE_ENTRY(outputChanStr_8);           
+    STR_TABLE_ENTRY(outputChanStr_8);
 #endif
 #if (NUM_USB_CHAN_OUT > 8)
-    STR_TABLE_ENTRY(outputChanStr_9);           
+    STR_TABLE_ENTRY(outputChanStr_9);
 #endif
 #if (NUM_USB_CHAN_OUT > 9)
-    STR_TABLE_ENTRY(outputChanStr_10);             
+    STR_TABLE_ENTRY(outputChanStr_10);
 #endif
 #if (NUM_USB_CHAN_OUT > 10)
-    STR_TABLE_ENTRY(outputChanStr_11);          
+    STR_TABLE_ENTRY(outputChanStr_11);
 #endif
 #if (NUM_USB_CHAN_OUT > 11)
-    STR_TABLE_ENTRY(outputChanStr_12);             
+    STR_TABLE_ENTRY(outputChanStr_12);
 #endif
 #if (NUM_USB_CHAN_OUT > 12)
-    STR_TABLE_ENTRY(outputChanStr_13);             
+    STR_TABLE_ENTRY(outputChanStr_13);
 #endif
 #if (NUM_USB_CHAN_OUT > 13)
-    STR_TABLE_ENTRY(outputChanStr_14);             
+    STR_TABLE_ENTRY(outputChanStr_14);
 #endif
 #if (NUM_USB_CHAN_OUT > 14)
-    STR_TABLE_ENTRY(outputChanStr_15);             
+    STR_TABLE_ENTRY(outputChanStr_15);
 #endif
 #if (NUM_USB_CHAN_OUT > 15)
-    STR_TABLE_ENTRY(outputChanStr_16);             
+    STR_TABLE_ENTRY(outputChanStr_16);
 #endif
 #if (NUM_USB_CHAN_OUT > 16)
-    STR_TABLE_ENTRY(outputChanStr_17);          
+    STR_TABLE_ENTRY(outputChanStr_17);
 #endif
 #if (NUM_USB_CHAN_OUT > 17)
     STR_TABLE_ENTRY(outputChanStr_18);
@@ -120,52 +120,52 @@ typedef struct
     STR_TABLE_ENTRY(inputChanStr_1);
 #endif
 #if (NUM_USB_CHAN_IN > 1)
-    STR_TABLE_ENTRY(inputChanStr_2);              
+    STR_TABLE_ENTRY(inputChanStr_2);
 #endif
 #if (NUM_USB_CHAN_IN > 2)
-    STR_TABLE_ENTRY(inputChanStr_3);  
+    STR_TABLE_ENTRY(inputChanStr_3);
 #endif
 #if (NUM_USB_CHAN_IN > 3)
-    STR_TABLE_ENTRY(inputChanStr_4);           
+    STR_TABLE_ENTRY(inputChanStr_4);
 #endif
 #if (NUM_USB_CHAN_IN > 4)
-    STR_TABLE_ENTRY(inputChanStr_5);              
+    STR_TABLE_ENTRY(inputChanStr_5);
 #endif
 #if (NUM_USB_CHAN_IN > 5)
-    STR_TABLE_ENTRY(inputChanStr_6);              
+    STR_TABLE_ENTRY(inputChanStr_6);
 #endif
 #if (NUM_USB_CHAN_IN > 6)
-    STR_TABLE_ENTRY(inputChanStr_7);              
+    STR_TABLE_ENTRY(inputChanStr_7);
 #endif
 #if (NUM_USB_CHAN_IN > 7)
-    STR_TABLE_ENTRY(inputChanStr_8);           
+    STR_TABLE_ENTRY(inputChanStr_8);
 #endif
 #if (NUM_USB_CHAN_IN > 8)
-    STR_TABLE_ENTRY(inputChanStr_9);           
+    STR_TABLE_ENTRY(inputChanStr_9);
 #endif
 #if (NUM_USB_CHAN_IN > 9)
-    STR_TABLE_ENTRY(inputChanStr_10);             
+    STR_TABLE_ENTRY(inputChanStr_10);
 #endif
 #if (NUM_USB_CHAN_IN > 10)
-    STR_TABLE_ENTRY(inputChanStr_11);          
+    STR_TABLE_ENTRY(inputChanStr_11);
 #endif
 #if (NUM_USB_CHAN_IN > 11)
-    STR_TABLE_ENTRY(inputChanStr_12);             
+    STR_TABLE_ENTRY(inputChanStr_12);
 #endif
 #if (NUM_USB_CHAN_IN > 12)
-    STR_TABLE_ENTRY(inputChanStr_13);             
+    STR_TABLE_ENTRY(inputChanStr_13);
 #endif
 #if (NUM_USB_CHAN_IN > 13)
-    STR_TABLE_ENTRY(inputChanStr_14);             
+    STR_TABLE_ENTRY(inputChanStr_14);
 #endif
 #if (NUM_USB_CHAN_IN > 14)
-    STR_TABLE_ENTRY(inputChanStr_15);             
+    STR_TABLE_ENTRY(inputChanStr_15);
 #endif
 #if (NUM_USB_CHAN_IN > 15)
-    STR_TABLE_ENTRY(inputChanStr_16);             
+    STR_TABLE_ENTRY(inputChanStr_16);
 #endif
 #if (NUM_USB_CHAN_IN > 16)
-    STR_TABLE_ENTRY(inputChanStr_17);          
+    STR_TABLE_ENTRY(inputChanStr_17);
 #endif
 #if (NUM_USB_CHAN_IN > 17)
     STR_TABLE_ENTRY(inputChanStr_18);
@@ -179,7 +179,7 @@ typedef struct
 
 } StringDescTable_t;
 
-StringDescTable_t g_strTable = 
+StringDescTable_t g_strTable =
 {
     .langID                      = "\x09\x04", /* US English */
     .vendorStr                   = VENDOR_STR,
@@ -189,9 +189,9 @@ StringDescTable_t g_strTable =
     .inputInterfaceStr_Audio2    = APPEND_PRODUCT_STR_A2(Input),
     .usbInputTermStr_Audio2      = APPEND_PRODUCT_STR_A2(Output),
     .usbOutputTermStr_Audio2     = APPEND_PRODUCT_STR_A2(Input),
-        
+
 #if defined (AUDIO_CLASS_FALLBACK) || (AUDIO_CLASS == 1)
-    .productStr_Audio1           = PRODUCT_STR_A1, 
+    .productStr_Audio1           = PRODUCT_STR_A1,
     .outputInterfaceStr_Audio1   = APPEND_PRODUCT_STR_A1(Output),
     .inputInterfaceStr_Audio1    = APPEND_PRODUCT_STR_A1(Input),
     .usbInputTermStr_Audio1      = APPEND_PRODUCT_STR_A1(Output),
@@ -228,7 +228,7 @@ StringDescTable_t g_strTable =
     #else
     .outputChanStr_2             = "S/PDIF 1",
     #endif
-#elif defined(SPDIF) && (SPDIF_TX_INDEX == 0) 
+#elif defined(SPDIF) && (SPDIF_TX_INDEX == 0)
     #if(SPDIF_TX_INDEX < I2S_CHANS_DAC)
     .outputChanStr_2             = "Analogue 2/SPDIF 2",
     #else
@@ -244,8 +244,8 @@ StringDescTable_t g_strTable =
     .outputChanStr_3            = "Analogue 3/SPDIF 1",
     #else
     .outputChanStr_3            = "S/PDIF 1",
-    #endif    
-#elif defined(SPDIF) && (SPDIF_TX_INDEX == 1) 
+    #endif
+#elif defined(SPDIF) && (SPDIF_TX_INDEX == 1)
     #if(SPDIF_TX_INDEX < I2S_CHANS_DAC)
     .outputChanStr_3            = "Analogue 3/SPDIF 2",
     #else
@@ -261,8 +261,8 @@ StringDescTable_t g_strTable =
     .outputChanStr_4            = "Analogue 4/SPDIF 1",
     #else
     .outputChanStr_4            = "S/PDIF 1",
-    #endif    
-#elif defined(SPDIF) && (SPDIF_TX_INDEX == 2) 
+    #endif
+#elif defined(SPDIF) && (SPDIF_TX_INDEX == 2)
     #if(SPDIF_TX_INDEX < I2S_CHANS_DAC)
     .outputChanStr_4            = "Analogue 4/SPDIF 2",
     #else
@@ -279,7 +279,7 @@ StringDescTable_t g_strTable =
     .outputChanStr_5            = "Analogue 5/SPDIF 1",
     #else
     .outputChanStr_5            = "S/PDIF 1",
-    #endif    
+    #endif
 #elif defined(SPDIF) && (SPDIF_TX_INDEX == 3)
     #if(SPDIF_TX_INDEX < I2S_CHANS_DAC)
     .outputChanStr_5            = "Analogue 5/SPDIF 2",
@@ -297,7 +297,7 @@ StringDescTable_t g_strTable =
     .outputChanStr_6            = "Analogue 6/SPDIF 1",
     #else
     .outputChanStr_6            = "S/PDIF 1",
-    #endif    
+    #endif
 #elif defined(SPDIF) && (SPDIF_TX_INDEX == 4)
     #if(SPDIF_TX_INDEX < I2S_CHANS_DAC)
     .outputChanStr_6            = "Analogue 6/SPDIF 2",
@@ -315,8 +315,8 @@ StringDescTable_t g_strTable =
     .outputChanStr_7            = "Analogue 7/SPDIF 1",
     #else
     .outputChanStr_7            = "S/PDIF 1",
-    #endif    
-#elif defined(SPDIF) && (SPDIF_TX_INDEX == 5) 
+    #endif
+#elif defined(SPDIF) && (SPDIF_TX_INDEX == 5)
     #if(SPDIF_TX_INDEX < I2S_CHANS_DAC)
     .outputChanStr_7            = "Analogue 7/SPDIF 2",
     #else
@@ -333,7 +333,7 @@ StringDescTable_t g_strTable =
     .outputChanStr_8            = "Analogue 8/SPDIF 1",
     #else
     .outputChanStr_8            = "S/PDIF 1",
-    #endif    
+    #endif
 #elif defined(SPDIF) && (SPDIF_TX_INDEX == 6)
     #if(SPDIF_TX_INDEX < I2S_CHANS_DAC)
     .outputChanStr_8            = "Analogue 8/SPDIF 2",
@@ -351,7 +351,7 @@ StringDescTable_t g_strTable =
     .outputChanStr_9            = "Analogue 9/SPDIF 1",
     #else
     .outputChanStr_9            = "S/PDIF 1",
-    #endif    
+    #endif
 #elif defined(SPDIF) && (SPDIF_TX_INDEX == 7)
     #if(SPDIF_TX_INDEX < I2S_CHANS_DAC)
     .outputChanStr_9            = "Analogue 9/SPDIF 2",
@@ -369,7 +369,7 @@ StringDescTable_t g_strTable =
     .outputChanStr_10            = "Analogue 10/SPDIF 1",
     #else
     .outputChanStr_10            = "S/PDIF 1",
-    #endif    
+    #endif
 #elif defined(SPDIF) && (SPDIF_TX_INDEX == 8)
     #if(SPDIF_TX_INDEX < I2S_CHANS_DAC)
     .outputChanStr_10            = "Analogue 10/SPDIF 2",
@@ -387,7 +387,7 @@ StringDescTable_t g_strTable =
     .outputChanStr_11            = "Analogue 11/SPDIF 1",
     #else
     .outputChanStr_11            = "S/PDIF 1",
-    #endif    
+    #endif
 #elif defined(SPDIF) && (SPDIF_TX_INDEX == 9)
     #if(SPDIF_TX_INDEX < I2S_CHANS_DAC)
     .outputChanStr_11            = "Analogue 11/SPDIF 2",
@@ -405,7 +405,7 @@ StringDescTable_t g_strTable =
     .outputChanStr_12            = "Analogue 12/SPDIF 1",
     #else
     .outputChanStr_12            = "S/PDIF 1",
-    #endif    
+    #endif
 #elif defined(SPDIF) && (SPDIF_TX_INDEX == 10)
     #if(SPDIF_TX_INDEX < I2S_CHANS_DAC)
     .outputChanStr_12            = "Analogue 12/SPDIF 2",
@@ -423,7 +423,7 @@ StringDescTable_t g_strTable =
     .outputChanStr_13            = "Analogue 13/SPDIF 1",
     #else
     .outputChanStr_13            = "S/PDIF 1",
-    #endif    
+    #endif
 #elif defined(SPDIF) && (SPDIF_TX_INDEX == 11)
     #if(SPDIF_TX_INDEX < I2S_CHANS_DAC)
     .outputChanStr_13            = "Analogue 13/SPDIF 2",
@@ -441,7 +441,7 @@ StringDescTable_t g_strTable =
     .outputChanStr_14            = "Analogue 14/SPDIF 1",
     #else
     .outputChanStr_14            = "S/PDIF 1",
-    #endif    
+    #endif
 #elif defined(SPDIF) && (SPDIF_TX_INDEX == 12)
     #if(SPDIF_TX_INDEX < I2S_CHANS_DAC)
     .outputChanStr_14            = "Analogue 14/SPDIF 2",
@@ -459,7 +459,7 @@ StringDescTable_t g_strTable =
     .outputChanStr_15            = "Analogue 15/SPDIF 1",
     #else
     .outputChanStr_15            = "S/PDIF 1",
-    #endif    
+    #endif
 #elif defined(SPDIF) && (SPDIF_TX_INDEX == 13)
     #if(SPDIF_TX_INDEX < I2S_CHANS_DAC)
     .outputChanStr_15            = "Analogue 15/SPDIF 2",
@@ -477,7 +477,7 @@ StringDescTable_t g_strTable =
     .outputChanStr_16            = "Analogue 16/SPDIF 1",
     #else
     .outputChanStr_16            = "S/PDIF 1",
-    #endif    
+    #endif
 #elif defined(SPDIF) && (SPDIF_TX_INDEX == 14)
     #if(SPDIF_TX_INDEX < I2S_CHANS_DAC)
     .outputChanStr_16            = "Analogue 16/SPDIF 2",
@@ -495,7 +495,7 @@ StringDescTable_t g_strTable =
     .outputChanStr_17            = "Analogue 17/SPDIF 1",
     #else
     .outputChanStr_17            = "S/PDIF 1",
-    #endif    
+    #endif
 #elif defined(SPDIF) && (SPDIF_TX_INDEX == 15)
     #if(SPDIF_TX_INDEX < I2S_CHANS_DAC)
     .outputChanStr_17            = "Analogue 17/SPDIF 2",
@@ -513,7 +513,7 @@ StringDescTable_t g_strTable =
     .outputChanStr_18            = "Analogue 18/SPDIF 1",
     #else
     .outputChanStr_18            = "S/PDIF 1",
-    #endif    
+    #endif
 #elif defined(SPDIF) && (SPDIF_TX_INDEX == 16)
     #if(SPDIF_TX_INDEX < I2S_CHANS_DAC)
     .outputChanStr_18            = "Analogue 18/SPDIF 2",
@@ -551,7 +551,7 @@ StringDescTable_t g_strTable =
 #if (NUM_USB_CHAN_IN > 6)
     .inputChanStr_7            = "Analogue 7",
 #endif
-#if (NUM_USB_CHAN_IN > 7)   
+#if (NUM_USB_CHAN_IN > 7)
     .inputChanStr_8            = "Analogue 8",
 #endif
 #if (NUM_USB_CHAN_IN > 8)
@@ -589,7 +589,7 @@ StringDescTable_t g_strTable =
 #endif
     .iAPInterfaceStr          = "iAP Interface",
 
-}; 
+};
 
 
 /***** Device Descriptors *****/
@@ -598,20 +598,20 @@ StringDescTable_t g_strTable =
 /* Device Descriptor for Audio Class 1.0 (Assumes Full-Speed) */
 USB_Descriptor_Device_t devDesc_Audio1 =
 {
-    .bLength                        = sizeof(USB_Descriptor_Device_t),                          
-    .bDescriptorType                = USB_DESCTYPE_DEVICE,        
+    .bLength                        = sizeof(USB_Descriptor_Device_t),
+    .bDescriptorType                = USB_DESCTYPE_DEVICE,
     .bcdUSB                         = 0x0200,
-    .bDeviceClass                   = 0,                             
-    .bDeviceSubClass                = 0,                              
-    .bDeviceProtocol                = 0,                              
-    .bMaxPacketSize0                = 64,                             
+    .bDeviceClass                   = 0,
+    .bDeviceSubClass                = 0,
+    .bDeviceProtocol                = 0,
+    .bMaxPacketSize0                = 64,
     .idVendor                       = VENDOR_ID,
-    .idProduct                      = PID_AUDIO_1, 
-    .bcdDevice                      = BCD_DEVICE, 
-    .iManufacturer                  = offsetof(StringDescTable_t, vendorStr)/sizeof(char *),         
-    .iProduct                       = offsetof(StringDescTable_t, productStr_Audio2)/sizeof(char *),         
+    .idProduct                      = PID_AUDIO_1,
+    .bcdDevice                      = BCD_DEVICE,
+    .iManufacturer                  = offsetof(StringDescTable_t, vendorStr)/sizeof(char *),
+    .iProduct                       = offsetof(StringDescTable_t, productStr_Audio2)/sizeof(char *),
     .iSerialNumber                  = 0,
-    .bNumConfigurations             = 1                            
+    .bNumConfigurations             = 1
 };
 #endif
 
@@ -628,8 +628,8 @@ USB_Descriptor_Device_t devDesc_Audio2 =
     .idVendor                       = VENDOR_ID,
     .idProduct                      = PID_AUDIO_2,
     .bcdDevice                      = BCD_DEVICE,
-    .iManufacturer                  = offsetof(StringDescTable_t, vendorStr)/sizeof(char *),         
-    .iProduct                       = offsetof(StringDescTable_t, productStr_Audio2)/sizeof(char *),         
+    .iManufacturer                  = offsetof(StringDescTable_t, vendorStr)/sizeof(char *),
+    .iProduct                       = offsetof(StringDescTable_t, productStr_Audio2)/sizeof(char *),
     .iSerialNumber                  = 0,
     .bNumConfigurations             = 0x02  /* Set to 2 such that windows does not load composite driver */
 };
@@ -651,8 +651,8 @@ unsigned char devDesc_Null[] =
     (PID_AUDIO_2 >> 8),             /* 11 idProduct */
     (BCD_DEVICE & 0xFF),            /* 12 bcdDevice : Device release number */
     (BCD_DEVICE >> 8),              /* 13 bcdDevice : Device release number */
-    offsetof(StringDescTable_t, vendorStr)/sizeof(char *),         
-    offsetof(StringDescTable_t, productStr_Audio2)/sizeof(char *),         
+    offsetof(StringDescTable_t, vendorStr)/sizeof(char *),
+    offsetof(StringDescTable_t, productStr_Audio2)/sizeof(char *),
     0,                              /* 16 iSerialNumber : Index of serial number decriptor */
     0x01                            /* 17 bNumConfigurations : Number of possible configs */
 };
@@ -910,7 +910,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
         .bInterfaceClass               = USB_CLASS_AUDIO,
         .bInterfaceSubClass            = UAC_INT_SUBCLASS_AUDIOCONTROL,
         .bInterfaceProtocol            = UAC_INT_PROTOCOL_IP_VERSION_02_00,
-        .iInterface                    = offsetof(StringDescTable_t, productStr_Audio2)/sizeof(char *),         
+        .iInterface                    = offsetof(StringDescTable_t, productStr_Audio2)/sizeof(char *),
     },
 
     .Audio_CS_Control_Int =
@@ -946,7 +946,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
                                                                     D[3:2] : Clock Validity Control
                                                                     D[7:4] : Reserved (0) */
             .bAssocTerminal            = 0x00,
-            .iClockSource              = offsetof(StringDescTable_t, internalClockSourceStr)/sizeof(char *),         
+            .iClockSource              = offsetof(StringDescTable_t, internalClockSourceStr)/sizeof(char *),
         },
 
         /* Clock Selector Descriptor (4.7.2.2) */
@@ -981,7 +981,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
             ID_CLKSEL,                                /* 7  bCSourceID: ID of Clock Entity */
             NUM_USB_CHAN_OUT,                         /* 8  bNrChannels */
             0x00000000,                               /* 9  bmChannelConfig TODO. Set me! */
-            .iChannelNames             = offsetof(StringDescTable_t, outputChanStr_1)/sizeof(char *),         
+            .iChannelNames             = offsetof(StringDescTable_t, outputChanStr_1)/sizeof(char *),
             0x0000,                                   /* 14 bmControls */
             6,                                        /* 16 iTerminal */
         },
@@ -1089,7 +1089,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
             .bCSourceID                = ID_CLKSEL,
             .bNrChannels               = NUM_USB_CHAN_IN,
             .bmChannelConfig           = 0x00000000,
-            .iChannelNames             = offsetof(StringDescTable_t, inputChanStr_1)/sizeof(char *),         
+            .iChannelNames             = offsetof(StringDescTable_t, inputChanStr_1)/sizeof(char *),
             .bmControls                = 0x0000,
             .iTerminal                 = 0,
         },
@@ -1228,7 +1228,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
         STREAM_FORMAT_OUTPUT_1_DATAFORMAT,/* 6:10  bmFormats (note this is a bitmap) */
         NUM_USB_CHAN_OUT,                 /* 11 bNrChannels */
         0x00000000,                       /* 12:14: bmChannelConfig */
-        .iChannelNames                 = offsetof(StringDescTable_t, outputChanStr_1)/sizeof(char *),          
+        .iChannelNames                 = offsetof(StringDescTable_t, outputChanStr_1)/sizeof(char *),
     },
 
     /* Type 1 Format Type Descriptor */
@@ -1382,7 +1382,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
     {
         .bLength                       = 0x06,
         .bDescriptorType               = UAC_CS_DESCTYPE_INTERFACE,
-        .bDescriptorSubtype            = UAC_CS_AS_INTERFACE_SUBTYPE_FORMAT_TYPE, 
+        .bDescriptorSubtype            = UAC_CS_AS_INTERFACE_SUBTYPE_FORMAT_TYPE,
         .bFormatType                   = UAC_FORMAT_TYPE_I,
         .bSubslotSize                  = HS_STREAM_FORMAT_OUTPUT_3_SUBSLOT_BYTES,
         .bBitResolution                = HS_STREAM_FORMAT_OUTPUT_3_RESOLUTION_BITS,
@@ -1391,10 +1391,10 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
     /* Standard AS Isochronous Audio Data Endpoint Descriptor (4.10.1.1) */
     .Audio_Out_Endpoint_3 =
     {
-        .bLength                       = 0x07,                          
-        .bDescriptorType               = USB_DESCTYPE_ENDPOINT,      
-        .bEndpointAddress              = 0x01,        
-        .bmAttributes                  = 0x05,                           
+        .bLength                       = 0x07,
+        .bDescriptorType               = USB_DESCTYPE_ENDPOINT,
+        .bEndpointAddress              = 0x01,
+        .bmAttributes                  = 0x05,
         .wMaxPacketSize                = HS_STREAM_FORMAT_OUTPUT_3_MAXPACKETSIZE,
         .bInterval                     = 1,
     },
@@ -1402,10 +1402,10 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
     /* Class-Specific AS Isochronous Audio Data Endpoint Descriptor (4.10.1.2) */
     .Audio_Out_ClassEndpoint_3 =
     {
-        .bLength                       = 0x08,                          
-        .bDescriptorType               = UAC_CS_DESCTYPE_ENDPOINT,                    
-        .bDescriptorSubtype            = 0x01,                          
-        .bmAttributes                  = 0x00,                           
+        .bLength                       = 0x08,
+        .bDescriptorType               = UAC_CS_DESCTYPE_ENDPOINT,
+        .bDescriptorSubtype            = 0x01,
+        .bmAttributes                  = 0x00,
         .bmControls                    = 0x00,                       /* (Bitmap: Pitch control, over/underun etc) */
         .bLockDelayUnits               = 0x02,                       /* Decoded PCM samples */
         .wLockDelay                    = 0x0008,
@@ -1413,11 +1413,11 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
 
     .Audio_Out_Fb_Endpoint_3 =
     {
-        .bLength                       = 0x07,                           
-        .bDescriptorType               = USB_DESCTYPE_ENDPOINT,                   
-        .bEndpointAddress              = 0x81,                           
+        .bLength                       = 0x07,
+        .bDescriptorType               = USB_DESCTYPE_ENDPOINT,
+        .bEndpointAddress              = 0x81,
         .bmAttributes                  = 17,                      /* (bitmap)  */
-        .wMaxPacketSize                = 0x0004,                         
+        .wMaxPacketSize                = 0x0004,
         .bInterval                     = 4,                       /* Only values <= 1 frame (4) supported by MS */
     },
 #endif /* OUTPUT_FORMAT_COUNT > 2 */
@@ -1466,7 +1466,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
         UAC_FORMAT_TYPEI_PCM,/* 6:10  bmFormats (note this is a bitmap) */
         NUM_USB_CHAN_IN,                /* 11 bNrChannels */
         0x00000000,                        /* 12:14: bmChannelConfig */
-        .iChannelNames                 = offsetof(StringDescTable_t, inputChanStr_1)/sizeof(char *),         
+        .iChannelNames                 = offsetof(StringDescTable_t, inputChanStr_1)/sizeof(char *),
     },
 
     /* Type 1 Format Type Descriptor */
@@ -1632,7 +1632,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
     0xFE,                           /* 5 bInterfaceClass : DFU. (field size 1 bytes) */
     0x01,                           /* 6 bInterfaceSubclass : (field size 1 bytes) */
     0x01,                           /* 7 bInterfaceProtocol : Unused. (field size 1 bytes) */
-    offsetof(StringDescTable_t, dfuStr)/sizeof(char *), /* 8 iInterface */        
+    offsetof(StringDescTable_t, dfuStr)/sizeof(char *), /* 8 iInterface */
 
 #if 0
     /* DFU 1.0 Run-Time DFU Functional Descriptor */
@@ -1901,7 +1901,7 @@ unsigned char cfgDesc_Audio1[] =
     0x01,                           /* controlSize - 1 */
     0x00,                           /* bmaControls(0) */
     0x03,                           /* bmaControls(1) */
-    0x03,                           /* bmaControls(2) */                                                         
+    0x03,                           /* bmaControls(2) */
     0x00,                           /* String table index */
 #endif
 

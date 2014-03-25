@@ -7,7 +7,7 @@
         </component>
         <component description = "queue" type = "demoCode" scope = "General Use" path = "module_queue" local = "false" id = "module_queue" name = "Queing Module For USB Audio Framwwork">
             <board></board>
-            <componentDependency repo = "git://github.com/xcore/sc_util" version = "1.0.3">module_xassert</componentDependency>
+            <componentDependency repo = "git://github.com/xcore/sc_util" version = "1.0.4">module_xassert</componentDependency>
             <keyword>UAC2</keyword>
         </component>
         <component description = "Core USB Audio Module" type = "demoCode" scope = "General Use" path = "module_usb_audio" local = "false" id = "module_usb_audio" name = "USB AUDIO MODULE">
@@ -20,8 +20,8 @@
         </component>
         <component description = "MIDI" type = "demoCode" scope = "General Use" path = "module_usb_midi" local = "false" id = "module_usb_midi" name = "MIDI Module for USB Audio Framework">
             <board></board>
-            <componentDependency repo = "git://github.com/xcore/sc_util" version = "1.0.3">module_xassert</componentDependency>
             <componentDependency version = "6.5.0">module_queue</componentDependency>
+            <componentDependency repo = "git://github.com/xcore/sc_util" version = "1.0.4">module_xassert</componentDependency>
             <keyword>MIDI</keyword>
         </component>
     </components>
@@ -51,6 +51,7 @@
     <release parenthash = "bee14703105874475756abeaefe2fbfc42f6b035" version = "6.5.0beta0" githash = "9c5e0a1dd8b18cad1b7394260d67bcfc5b290834"></release>
     <release parenthash = "0e120103c1b48d237420a462b68207fbd146acfa" version = "6.5.0beta1" githash = "1e31c9e51847fad9950d03d80dba86a9a8505bee"></release>
     <release parenthash = "acd4fb35da412a9fbba8776d32a6a7d6fe57d9b4" version = "6.5.0beta2" githash = "8a6be40889401c5fc5815f3075185819a21cf871"></release>
+    <release parenthash = "64f42250848119c3ffddf41021a1a8edf6ab30f3" version = "6.5.1beta0"></release>
     <subpartnumber>XM-004720-SM</subpartnumber>
     <vendor>XMOS</vendor>
     <version_defines>

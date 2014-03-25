@@ -367,7 +367,7 @@ void Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
                                 UserHostActive(1);
                             }
 
-                            /* We want to run USB_StandardsRequests() implementation also. Don't modify result 
+                            /* We want to run USB_StandardsRequests() implementation also. Don't modify result
                              * and don't call XUD_DoSetRequestStatus() */
                             break;
 
