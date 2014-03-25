@@ -848,3 +848,7 @@
 #if defined(FAST_MODE) && (FAST_MODE == 0)
 #undef FAST_MODE
 #endif
+
+#ifndef MIDI_RX_PORT_WIDTH
+#define MIDI_RX_PORT_WIDTH 1
+#endif

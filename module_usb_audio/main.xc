@@ -124,7 +124,12 @@ on tile[AUDIO_IO_TILE] : buffered out port:32 p_spdif_tx    = PORT_SPDIF_OUT;
 
 #ifdef MIDI
 on tile[AUDIO_IO_TILE] :  port p_midi_tx                    = PORT_MIDI_OUT;
-on tile[AUDIO_IO_TILE] :  buffered port:1 p_midi_rx         = PORT_MIDI_IN;
+
+#if(MIDI_RX_PORT_WIDTH == 4)
+on tile[AUDIO_IO_TILE] :  buffered in port:4 p_midi_rx         = PORT_MIDI_IN;
+#elif(MIDI_RX_PORT_WIDTH == 1)
+on tile[AUDIO_IO_TILE] :  buffered in port:1 p_midi_rx         = PORT_MIDI_IN;
+#endif
 #endif
 
 /* Clock blocks */
