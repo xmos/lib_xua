@@ -15,12 +15,18 @@
  *  \param cable_number the cable number of the MIDI implementation.
  *                      This should be set to 0.
  **/
-void usb_midi(buffered in port:1 ?p_midi_in, port ?p_midi_out,
-              clock ?clk_midi,
-              chanend ?c_midi,
-              unsigned cable_number,
-chanend ?c_iap, chanend ?c_i2c, // iOS stuff
-port ?p_scl, port ?p_sda
+void usb_midi(
+#if (MIDI_RX_PORT_WIDTH == 4)
+buffered in port:4 ?p_midi_in, 
+#else 
+buffered in port:1 ?p_midi_in, 
+#endif
+    port ?p_midi_out,
+    clock ?clk_midi,
+    chanend ?c_midi,
+    unsigned cable_number,
+    chanend ?c_iap, chanend ?c_i2c, // iOS stuff
+    port ?p_scl, port ?p_sda
 );
 
 #define MAX_USB_MIDI_PACKET_SIZE 1024
