@@ -575,7 +575,6 @@
     #endif
 #endif
 
-/* Addition interfaces based on defines */
 #if defined(DFU) && DFU != 0
 #define DFU_INTERFACES           (1)               /* DFU interface count */
 #else
@@ -634,13 +633,6 @@
 #else
 #define EP_CNT_IN_AUD_INT        (0)
 #endif
-
-/* Define for number of audio interfaces (+1 for mandatory control interface) */
-#define AUDIO_INTERFACES		 (INPUT_INTERFACES + OUTPUT_INTERFACES + 1)
-
-/* Interface number defines */
-#define INTERFACE_NUM_IAP (INPUT_INTERFACES+OUTPUT_INTERFACES+MIDI_INTERFACES+DFU_INTERFACES+1)
-#define INTERFACE_NUM_HID (INPUT_INTERFACES+OUTPUT_INTERFACES+MIDI_INTERFACES+DFU_INTERFACES+IAP_INTERFACES+1)
 
 /* Endpoint Number Defines */
 #define EP_NUM_IN_FB             (1)     /* Always 1 */
@@ -703,7 +695,7 @@
 
 
 /* Total number of USB interfaces this device implements (+1 for required control interface) */
-#define NUM_INTERFACES          INPUT_INTERFACES + OUTPUT_INTERFACES + DFU_INTERFACES + MIDI_INTERFACES + IAP_INTERFACES + 1 + HID_INTERFACES
+//#define NUM_INTERFACES          INPUT_INTERFACES + OUTPUT_INTERFACES + DFU_INTERFACES + MIDI_INTERFACES + IAP_INTERFACES + 1 + HID_INTERFACES
 
 /* Number of interfaces for Audio 1.0 */
 #define NUM_INTERFACES_A1        (1+INPUT_INTERFACES+OUTPUT_INTERFACES)
