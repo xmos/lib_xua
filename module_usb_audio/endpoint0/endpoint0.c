@@ -406,7 +406,7 @@ void Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
 
                         /* TODO Check on return value retval =  */
 #ifdef DFU
-                        unsigned DFU_IF = DFU_IF_NUM;
+                        unsigned DFU_IF = INTERFACE_NUMBER_DFU;
 
                         /* DFU interface number changes based on which mode we are currently running in */
                         if (DFU_mode_active)
@@ -418,7 +418,7 @@ void Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
                         {
                             /* If running in application mode stop audio */
                             /* Don't interupt audio for save and restore cmds */
-                            if ((DFU_IF == DFU_IF_NUM) && (sp.bRequest != XMOS_DFU_SAVESTATE) &&
+                            if ((DFU_IF == INTERFACE_NUMBER_DFU) && (sp.bRequest != XMOS_DFU_SAVESTATE) &&
                                 (sp.bRequest != XMOS_DFU_RESTORESTATE))
                             {
                                 // Stop audio
