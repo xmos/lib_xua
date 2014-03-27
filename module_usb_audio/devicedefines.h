@@ -8,6 +8,7 @@
 
 #include "customdefines.h"
 
+/* Default tile arrangement */
 #ifndef AUDIO_IO_TILE
 #define AUDIO_IO_TILE   0
 #endif
@@ -573,44 +574,6 @@
     #else
         #define STREAM_FORMAT_INPUT_SUBSLOT_2_USED 0
     #endif
-#endif
-
-/* Audio input USB interface count */
-#if defined(INPUT) && (INTPUT != 0)
-#define INPUT_INTERFACES         (1)
-#else
-#define INPUT_INTERFACES         (0)
-#endif
-
-/* Audio output USB interface count */
-#if defined(OUTPUT) && (OUTPUT != 0)
-#define OUTPUT_INTERFACES        (1)
-#else
-#define OUTPUT_INTERFACES        (0)
-#endif
-
-/* Total audio USB interface count (+1 for mandatory control interface) */
-#define AUDIO_INTERFACE_COUNT	 (1 + OUTPUT_INTERFACES + INPUT_INTERFACES)
-
-/* MIDI USB interface count */
-#if defined(MIDI)
-#define MIDI_INTERFACES          (2)
-#else
-#define MIDI_INTERFACES          (0)
-#endif
-
-/* iAP USB interface count */
-#if defined(IAP)
-#define IAP_INTERFACES           (1)
-#else
-#define IAP_INTERFACES           (0)
-#endif
-
-/* HID USB interface count */
-#if defined(HID_CONTROLS)
-#define HID_INTERFACES           (1)
-#else
-#define HID_INTERFACES           (0)
 #endif
 
 /* Endpoint addresses enums */
