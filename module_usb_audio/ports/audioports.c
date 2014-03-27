@@ -53,7 +53,13 @@ void ConfigAudioPortsWrapper(
 #endif
 unsigned int divide, unsigned int dsdMode)
 {
-
+    /* Ensure dsd clock is on in all modes since I2S mode sets it low on exit
+     * to avoid stop_clock() potentially pausing forever. If this is not done
+     * an exception will be raised with audio() attempts to set this port low 
+     */
+    /* TODO Do we really need to do this on every SF change? Once is probably enough */
+    EnableBufferedPort(p_dsd_clk, 32);
+   
     if(dsdMode)
     {
         /* Make sure the ports are on and buffered - just in case they are not shared with I2S */
@@ -61,7 +67,6 @@ unsigned int divide, unsigned int dsdMode)
         {
             EnableBufferedPort(p_dsd_dac[i], 32);
         }
-        EnableBufferedPort(p_dsd_clk, 32);
 
         ConfigAudioPorts(
 #if (DSD_CHANS_DAC != 0)

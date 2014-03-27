@@ -619,12 +619,17 @@ enum USBEndpointNumber_Out
 
 #define MAX_VOL                  (0x20000000)
 
+
 #ifdef SELF_POWERED
-#define BMAX_POWER 0
+    /* Default to taking no power from the bus in self-powered mode */
+    #ifndef BMAX_POWER
+        #define BMAX_POWER 0
+    #endif
 #else
-#ifndef BMAX_POWER
-#define BMAX_POWER 250
-#endif
+    /* Default to taking 500mA from the bus in bus-powered mode */
+    #ifndef BMAX_POWER
+        #define BMAX_POWER 250
+    #endif
 #endif
 
 
