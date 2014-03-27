@@ -1824,13 +1824,31 @@ unsigned char cfgDesc_Null[] =
 };
 
 
-/* Configuration descriptor for Audio v1.0 - note stil lone lag */
-#define AC_LENGTH                   (8 + INPUT_INTERFACES + OUTPUT_INTERFACES)
-#define AC_TOTAL_LENGTH             (AC_LENGTH + (INPUT_INTERFACES * 31) + (OUTPUT_INTERFACES * 31))
-#define STREAMING_INTERFACES        (INPUT_INTERFACES + OUTPUT_INTERFACES)
+/* Configuration descriptor for Audio v1.0 */
+/* Note Audio 1.0 descriptors still a simple array so we need some extra defines regarding lengths.. */
 
+#ifdef INPUT
+#define INPUT_INTERFACES_A1         (1)
+#else
+#define INPUT_INTERFACES_A1         (0)
+#endif
 
-#define CFG_TOTAL_LENGTH_A1         (18 + AC_TOTAL_LENGTH + (INPUT_INTERFACES * 61) + (OUTPUT_INTERFACES * 70))
+#ifdef OUTPUT
+#define OUTPUT_INTERFACES_A1         (1)
+#else
+#define OUTPUT_INTERFACES_A1         (0)
+#endif
+
+#define AC_LENGTH                   (8 + INPUT_INTERFACES_A1 + OUTPUT_INTERFACES_A1)
+
+#define AC_TOTAL_LENGTH             (AC_LENGTH + (INPUT_INTERFACES_A1 * 31) + (OUTPUT_INTERFACES_A1 * 31))
+#define STREAMING_INTERFACES        (INPUT_INTERFACES_A1 + OUTPUT_INTERFACES_A1)
+
+/* Number of interfaces for Audio  1.0 (+1 for control ) */
+/* Note, this is different that INTERFACE_COUNT since we dont support items such as MIDI, iAP etc in UAC1 mode */
+#define NUM_INTERFACES_A1           (1+INPUT_INTERFACES_A1 + OUTPUT_INTERFACES_A1)
+
+#define CFG_TOTAL_LENGTH_A1         (18 + AC_TOTAL_LENGTH + (INPUT_INTERFACES_A1 * 61) + (OUTPUT_INTERFACES_A1 * 70))
 
 #if defined (AUDIO_CLASS_FALLBACK) || (AUDIO_CLASS == 1)
 unsigned char cfgDesc_Audio1[] =
@@ -1873,7 +1891,7 @@ unsigned char cfgDesc_Audio1[] =
     0x01,                           /* AudioStreaming interface 1 belongs to AC interface */
 #endif
 #ifdef INPUT
-    (OUTPUT_INTERFACES + 1),        /* AudioStreaming interface 2 belongs to AC interface */
+    (OUTPUT_INTERFACES_A1 + 1),     /* AudioStreaming interface 2 belongs to AC interface */
 #endif
 
 #ifdef OUTPUT
@@ -2034,7 +2052,7 @@ unsigned char cfgDesc_Audio1[] =
     /* Standard Interface Descriptor - Audio streaming IN */
     0x09,
     0x04,                           /* INTERFACE */
-    (OUTPUT_INTERFACES + 1),        /* bInterfaceNumber*/
+    (OUTPUT_INTERFACES_A1 + 1),     /* bInterfaceNumber*/
     0x00,                           /* AlternateSetting */
     0x00,                           /* num endpoints */
     0x01,                           /* Interface class - AUDIO */
@@ -2045,7 +2063,7 @@ unsigned char cfgDesc_Audio1[] =
     /* Standard Interface Descriptor - Audio streaming IN */
     0x09,
     0x04,                           /* INTERFACE */
-    (OUTPUT_INTERFACES + 1),        /* bInterfaceNumber */
+    (OUTPUT_INTERFACES_A1 + 1),     /* bInterfaceNumber */
     0x01,                           /* AlternateSetting */
     0x01,                           /* num endpoints */
     0x01,                           /* Interface class - AUDIO */
