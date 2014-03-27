@@ -615,6 +615,14 @@ enum USBInterfaceNumber
     INTERFACE_COUNT          /* End marker */
 }; 
 
+#if defined(INPUT) && defined(OUTPUT)
+#define AUDIO_INTERFACE_COUNT 3
+#elif defined(INPUT) || defined(OUTPUT)
+#define AUDIO_INTERFACE_COUNT 2
+#else
+#define AUDIO_INTERFACE_COUNT 1
+#endif
+
 /* Endpoint address defines */
 #define ENDPOINT_ADDRESS_IN_CONTROL     (ENDPOINT_NUMBER_IN_CONTROL | 0x80)
 #define ENDPOINT_ADDRESS_IN_FEEDBACK    (ENDPOINT_NUMBER_IN_FEEDBACK | 0x80)
