@@ -4,8 +4,6 @@
  * @author  Ross Owen, XMOS Limited
 */
 
-
-
 #ifndef _DEVICE_DESCRIPTORS_
 #define _DEVICE_DESCRIPTORS_
 
@@ -617,13 +615,35 @@ enum USBInterfaceNumber
     INTERFACE_COUNT          /* End marker */
 }; 
 
-/* Define for number of audio interfaces (+1 for mandatory control interface) */
-#if defined(OUTPUT) && defined(INPUT)
-    #define AUDIO_INTERFACE_COUNT		   3
-#elif #defined(OUTPUT) || defined(INPUT)
-    #define AUDIO_INTERFACE_COUNT          2
-#else 
-    #define AUDIO_INTERFACE_COUNT          1
+/* Endpoint address defines */
+#define ENDPOINT_ADDRESS_IN_CONTROL     (ENDPOINT_NUMBER_IN_CONTROL | 0x80)
+#define ENDPOINT_ADDRESS_IN_FEEDBACK    (ENDPOINT_NUMBER_IN_FEEDBACK | 0x80)
+#define ENDPOINT_ADDRESS_IN_AUDIO       (ENDPOINT_NUMBER_IN_AUDIO | 0x80)
+#define ENDPOINT_ADDRESS_IN_INTERRUPT   (ENDPOINT_NUMBER_IN_INTERRUPT | 0x80)
+#define ENDPOINT_ADDRESS_IN_MIDI        (ENDPOINT_NUMBER_IN_MIDI | 0x80)
+#define ENDPOINT_ADDRESS_IN_HID         (ENDPOINT_NUMBER_IN_HID | 0x80)
+#define ENDPOINT_ADDRESS_IN_IAP_INT     (ENDPOINT_NUMBER_IN_IAP_INT | 0x80)
+#define ENDPOINT_ADDRESS_IN_IAP         (ENDPOINT_NUMBER_IN_IAP | 0x80)
+
+#define ENDPOINT_ADDRESS_OUT_CONTROL    (ENDPOINT_NUMBER_OUT_CONTROL)
+#define ENDPOINT_ADDRESS_OUT_AUDIO      (ENDPOINT_NUMBER_OUT_AUDIO)
+#define ENDPOINT_ADDRESS_OUT_MIDI       (ENDPOINT_NUMBER_OUT_MIDI)
+#define ENDPOINT_ADDRESS_OUT_IAP        (ENDPOINT_NUMBER_OUT_IAP)
+
+#if 0
+#define EP_NUM_IN_FB             (1)     /* Always 1 */
+#define EP_NUM_IN_AUD            (2)     /* Always 2 */
+#define EP_NUM_IN_AUD_INT        (EP_NUM_IN_AUD + EP_CNT_IN_AUD_INT)     /* Audio interrupt/status EP */
+#define EP_NUM_IN_MIDI           (EP_NUM_IN_AUD_INT + 1)
+#define EP_NUM_IN_HID            (EP_NUM_IN_AUD_INT + EP_CNT_IN_MIDI + 1)
+#define EP_NUM_IN_IAP            (EP_NUM_IN_AUD_INT + EP_CNT_IN_MIDI + EP_CNT_IN_HID + 1) /* iAP Bulk */
+#ifdef IAP_INT_EP
+#define EP_NUM_IN_IAP_INT        (EP_NUM_IN_AUD_INT + EP_CNT_IN_MIDI + EP_CNT_IN_HID + 2) /* iAP interrupt */
+#endif
+
+#define EP_NUM_OUT_AUD           (1)     /* Always 1 */
+#define EP_NUM_OUT_MIDI          (2)     /* Always 2 */
+#define EP_NUM_OUT_IAP           (EP_NUM_OUT_AUD + EP_CNT_OUT_MIDI + 1)
 #endif
 
 /***** Device Descriptors *****/
@@ -1622,7 +1642,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
 /* Table B-11: MIDI Adapter Standard Bulk OUT Endpoint Descriptor */
     0x09,                            /* 0 bLength : Size of this descriptor, in bytes. (field size 1 bytes) */
     0x05,                            /* 1 bDescriptorType : ENDPOINT descriptor. (field size 1 bytes) */
-    EP_ADR_OUT_MIDI,                 /* 2 bEndpointAddress : OUT Endpoint 3. (field size 1 bytes) */
+    ENDPOINT_ADDRESS_OUT_MIDI,       /* 2 bEndpointAddress : OUT Endpoint 3. (field size 1 bytes) */
     0x02,                            /* 3 bmAttributes : Bulk, not shared. (field size 1 bytes) */
     0x00,                            /* 4 wMaxPacketSize : 512 bytes per packet. (field size 2 bytes) - has to be 0x200 for compliance*/
     0x02,                            /* 5 wMaxPacketSize */
@@ -1640,7 +1660,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
 /* Table B-13: MIDI Adapter Standard Bulk IN Endpoint Descriptor */
     0x09,                              /* 0 bLength : Size of this descriptor, in bytes. (field size 1 bytes) */
     0x05,                              /* 1 bDescriptorType : ENDPOINT descriptor. (field size 1 bytes) */
-    EP_ADR_IN_MIDI,                    /* 2 bEndpointAddress : IN Endpoint 3. (field size 1 bytes) */
+    ENDPOINT_ADDRESS_IN_MIDI,          /* 2 bEndpointAddress : IN Endpoint 3. (field size 1 bytes) */
     0x02,                              /* 3 bmAttributes : Bulk, not shared. (field size 1 bytes) */
     0x00,                              /* 4 wMaxPacketSize : 512 bytes per packet. (field size 2 bytes) - has to be 0x200 for compliance*/
     0x02,                              /* 5 wMaxPacketSize */
@@ -1715,7 +1735,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
     {
         0x07,                            /* 0 bLength : Size of this descriptor, in bytes. (field size 1 bytes) */
         0x05,                            /* 1 bDescriptorType : ENDPOINT descriptor. (field size 1 bytes) */
-        EP_ADR_OUT_IAP,                  /* 2 bEndpointAddress : OUT Endpoint 3. High bit isIn (field size 1 bytes) */
+        ENDPOINT_ADDRESS_OUT_IAP,        /* 2 bEndpointAddress : OUT Endpoint 3. High bit isIn (field size 1 bytes) */
         0x02,                            /* 3 bmAttributes : Bulk, not shared. (field size 1 bytes) */
         0x0200,                          /* 4 wMaxPacketSize : Has to be 0x200 for compliance*/
         0x00,                            /* 6 bInterval : Ignored for Bulk. Set to zero. (field size 1 bytes) */
@@ -1726,7 +1746,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
     {
         0x07,                            /* 0 bLength : Size of this descriptor, in bytes. (field size 1 bytes) */
         0x05,                            /* 1 bDescriptorType : ENDPOINT descriptor. (field size 1 bytes) */
-        EP_ADR_IN_IAP,                   /* 2 bEndpointAddress : IN Endpoint 5. (field size 1 bytes) */
+        ENDPOINT_ADDRESS_IN_IAP,         /* 2 bEndpointAddress : IN Endpoint 5. (field size 1 bytes) */
         0x02,                            /* 3 bmAttributes : Bulk, not shared. (field size 1 bytes) */
         0x0200,                          /* 4 wMaxPacketSize : Has to be 0x200 for compliance*/
         0x00,                            /* 6 bInterval : Ignored for Bulk. Set to zero. (field size 1 bytes) */
@@ -1738,9 +1758,9 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
     {
         0x07,                            /* 0 bLength : Size of this descriptor, in bytes. (field size 1 bytes) */
         0x05,                            /* 1 bDescriptorType : ENDPOINT descriptor. (field size 1 bytes) */
-        EP_ADR_IN_IAP_INT,               /* 2 bEndpointAddress : IN Endpoint 6. (field size 1 bytes) */
+        ENDPOINT_ADDRESS_IN_IAP_INT,     /* 2 bEndpointAddress : IN Endpoint 6. (field size 1 bytes) */
         0x03,                            /* 3 bmAttributes : Interrupt, not shared. (field size 1 bytes) */
-        0x0040,                            /* 4 wMaxPacketSize : 64 bytes per packet. (field size 2 bytes) - has to be 0x40 for compliance*/
+        0x0040,                          /* 4 wMaxPacketSize : 64 bytes per packet. (field size 2 bytes) - has to be 0x40 for compliance*/
         0x08,                            /* 6 bInterval : (2^(bInterval-1))/8 ms. Must be between 4 and 32ms (field size 1 bytes) */
     }
 #endif
@@ -1773,14 +1793,11 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
     /* Endpoint descriptor (IN) */
     0x7,                               /* 0  bLength */
     5,                                 /* 1  bDescriptorType */
-    EP_ADR_IN_HID,                     /* 2  bEndpointAddress  */
+    ENDPOINT_ADDRESS_IN_HID,           /* 2  bEndpointAddress  */
     3,                                 /* 3  bmAttributes (INTERRUPT) */
     64,                                /* 4  wMaxPacketSize */
     8,                                 /* 6  bInterval */
-
 #endif
-
-
 };
 #endif
 

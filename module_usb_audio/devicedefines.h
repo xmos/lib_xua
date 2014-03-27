@@ -575,99 +575,80 @@
     #endif
 #endif
 
-#if defined(DFU) && DFU != 0
-#define DFU_INTERFACES           (1)               /* DFU interface count */
-#else
-#define DFU_INTERFACES           (0)
-#endif
-
-#ifdef INPUT
+/* Audio input USB interface count */
+#if defined(INPUT) && (INTPUT != 0)
 #define INPUT_INTERFACES         (1)
 #else
 #define INPUT_INTERFACES         (0)
 #endif
 
-#if defined(OUTPUT) && OUTPUT != 0
-#define OUTPUT_INTERFACES       (1)
+/* Audio output USB interface count */
+#if defined(OUTPUT) && (OUTPUT != 0)
+#define OUTPUT_INTERFACES        (1)
 #else
-#define OUTPUT_INTERFACES       (0)
+#define OUTPUT_INTERFACES        (0)
 #endif
 
-#define EP_CNT_OUT_AUD          (OUTPUT_INTERFACES)
-#define EP_CNT_IN_AUD           (OUTPUT_INTERFACES + INPUT_INTERFACES)
+/* Total audio USB interface count (+1 for mandatory control interface) */
+#define AUDIO_INTERFACE_COUNT	 (1 + OUTPUT_INTERFACES + INPUT_INTERFACES)
 
+/* MIDI USB interface count */
 #if defined(MIDI)
-#define MIDI_INTERFACES         (2)
-#define EP_CNT_OUT_MIDI         (1)
-#define EP_CNT_IN_MIDI          (1)
+#define MIDI_INTERFACES          (2)
 #else
-#define MIDI_INTERFACES         (0)
-#define EP_CNT_OUT_MIDI         (0)
-#define EP_CNT_IN_MIDI          (0)
+#define MIDI_INTERFACES          (0)
 #endif
 
+/* iAP USB interface count */
 #if defined(IAP)
-#define IAP_INTERFACES         (1)
+#define IAP_INTERFACES           (1)
 #else
-#define IAP_INTERFACES         (0)
+#define IAP_INTERFACES           (0)
 #endif
 
+/* HID USB interface count */
 #if defined(HID_CONTROLS)
-#define HID_INTERFACES          (1)
+#define HID_INTERFACES           (1)
 #else
-#define HID_INTERFACES          (0)
+#define HID_INTERFACES           (0)
 #endif
 
-#define EP_CNT_OUT_IAP          (IAP_INTERFACES)
-#ifdef IAP_INT_EP
-#define EP_CNT_IN_IAP           (IAP_INTERFACES * 2)
-#else
-#define EP_CNT_IN_IAP           (IAP_INTERFACES)
-#endif
-
-#define EP_CNT_OUT_HID          (0)
-#define EP_CNT_IN_HID           (HID_INTERFACES)
-
+/* Endpoint addresses enums */
+enum USBEndpointNumber_In
+{
+    ENDPOINT_NUMBER_IN_CONTROL,     /* Endpoint 0 */
+    ENDPOINT_NUMBER_IN_FEEDBACK,  
+    ENDPOINT_NUMBER_IN_AUDIO,
 #if defined(SPDIF_RX) || defined(ADAT_RX)
-#define EP_CNT_IN_AUD_INT        (1)
-#else
-#define EP_CNT_IN_AUD_INT        (0)
+    ENDPOINT_NUMBER_IN_INTERRUPT,   /* Audio interrupt/status EP */
 #endif
-
-/* Endpoint Number Defines */
-#define EP_NUM_IN_FB             (1)     /* Always 1 */
-#define EP_NUM_IN_AUD            (2)     /* Always 2 */
-#define EP_NUM_IN_AUD_INT        (EP_NUM_IN_AUD + EP_CNT_IN_AUD_INT)     /* Audio interrupt/status EP */
-#define EP_NUM_IN_MIDI           (EP_NUM_IN_AUD_INT + 1)
-#define EP_NUM_IN_HID            (EP_NUM_IN_AUD_INT + EP_CNT_IN_MIDI + 1)
-#define EP_NUM_IN_IAP            (EP_NUM_IN_AUD_INT + EP_CNT_IN_MIDI + EP_CNT_IN_HID + 1) /* iAP Bulk */
+#ifdef MIDI    
+    ENDPOINT_NUMBER_IN_MIDI,
+#endif
+#ifdef HID_CONTROLS
+    ENDPOINT_NUMBER_IN_HID,
+#endif
+#ifdef IAP 
 #ifdef IAP_INT_EP
-#define EP_NUM_IN_IAP_INT        (EP_NUM_IN_AUD_INT + EP_CNT_IN_MIDI + EP_CNT_IN_HID + 2) /* iAP interrupt */
+    ENDPOINT_NUMBER_IN_IAP_INT, 
 #endif
-
-#define EP_NUM_OUT_AUD           (1)     /* Always 1 */
-#define EP_NUM_OUT_MIDI          (2)     /* Always 2 */
-#define EP_NUM_OUT_IAP           (EP_NUM_OUT_AUD + EP_CNT_OUT_MIDI + 1)
-
-/* Endpoint Address Defines */
-#define EP_ADR_IN_FB             (EP_NUM_IN_FB | 0x80)
-#define EP_ADR_IN_AUD            (EP_NUM_IN_AUD | 0x80)
-#define EP_ADR_IN_AUD_INT        (EP_NUM_IN_AUD_INT | 0x80)
-#define EP_ADR_IN_MIDI           (EP_NUM_IN_MIDI | 0x80)
-#define EP_ADR_IN_HID            (EP_NUM_IN_HID | 0x80)
-#define EP_ADR_IN_IAP            (EP_NUM_IN_IAP | 0x80)
-#ifdef IAP_INT_EP
-#define EP_ADR_IN_IAP_INT        (EP_NUM_IN_IAP_INT | 0x80)
+    ENDPOINT_NUMBER_IN_IAP, 
 #endif
+    ENDPOINT_COUNT_IN               /* End marker */ 
+};
 
-#define EP_ADR_OUT_AUD           EP_NUM_OUT_AUD
-#define EP_ADR_OUT_MIDI          EP_NUM_OUT_MIDI
-#define EP_ADR_OUT_IAP           EP_NUM_OUT_IAP
-
-
-/* Endpoint count totals */
-#define EP_CNT_OUT               (1 + 1 /*NUM_EP_OUT_AUD*/ + EP_CNT_OUT_MIDI + EP_CNT_OUT_IAP) /* +1 due to EP0 */
-#define EP_CNT_IN                (1 + 2 /*NUM_EP_IN_AUD*/ + EP_CNT_IN_AUD_INT + EP_CNT_IN_MIDI + EP_CNT_IN_IAP + EP_CNT_IN_HID)    /* +1 due to EP0 */
+enum USBEndpointNumber_Out
+{
+    ENDPOINT_NUMBER_OUT_CONTROL,    /* Endpoint 0 */
+    ENDPOINT_NUMBER_OUT_AUDIO, 
+#ifdef MIDI
+    ENDPOINT_NUMBER_OUT_MIDI,
+#endif 
+#ifdef IAP 
+    ENDPOINT_NUMBER_OUT_IAP,
+#endif    
+    ENDPOINT_COUNT_OUT              /* End marker */
+};
 
 #define AUDIO_STOP_FOR_DFU       (0x12345678)
 #define AUDIO_START_FROM_DFU     (0x87654321)
@@ -694,12 +675,8 @@
 #endif
 
 
-/* Total number of USB interfaces this device implements (+1 for required control interface) */
-//#define NUM_INTERFACES          INPUT_INTERFACES + OUTPUT_INTERFACES + DFU_INTERFACES + MIDI_INTERFACES + IAP_INTERFACES + 1 + HID_INTERFACES
-
 /* Number of interfaces for Audio 1.0 */
 #define NUM_INTERFACES_A1        (1+INPUT_INTERFACES+OUTPUT_INTERFACES)
-
 
 /* Audio Unit ID defines */
 #define FU_USBIN                 11              /* Feature Unit: USB Audio device -> host */
@@ -754,7 +731,6 @@
 /* Default volume resolution 1db */
 #define VOLUME_RES (0x100)
 #endif
-
 
 #ifndef MIN_MIXER_VOLUME
 /* The minimum volume setting for the mixer unit above -inf.

@@ -174,7 +174,7 @@ on tile [IAP_TILE] : struct r_i2c r_i2c = {PORT_I2C_SCL, PORT_I2C_SDA};
 
 
 /* Endpoint type tables for XUD */
-XUD_EpType epTypeTableOut[EP_CNT_OUT] = { XUD_EPTYPE_CTL | XUD_STATUS_ENABLE,
+XUD_EpType epTypeTableOut[ENDPOINT_COUNT_OUT] = { XUD_EPTYPE_CTL | XUD_STATUS_ENABLE,
                                             XUD_EPTYPE_ISO,    /* Audio */
 #ifdef MIDI
                                             XUD_EPTYPE_BUL,    /* MIDI */
@@ -184,7 +184,7 @@ XUD_EpType epTypeTableOut[EP_CNT_OUT] = { XUD_EPTYPE_CTL | XUD_STATUS_ENABLE,
 #endif
                                         };
 
-XUD_EpType epTypeTableIn[EP_CNT_IN] = { XUD_EPTYPE_CTL | XUD_STATUS_ENABLE,
+XUD_EpType epTypeTableIn[ENDPOINT_COUNT_IN] = { XUD_EPTYPE_CTL | XUD_STATUS_ENABLE,
                                             XUD_EPTYPE_ISO,
                                             XUD_EPTYPE_ISO,
 #if defined (SPDIF_RX) || defined (ADAT_RX)
@@ -244,8 +244,8 @@ void usb_audio_core(chanend c_mix_out
 )
 {
     chan c_sof;
-    chan c_xud_out[EP_CNT_OUT];              /* Endpoint channels for XUD */
-    chan c_xud_in[EP_CNT_IN];
+    chan c_xud_out[ENDPOINT_COUNT_OUT];              /* Endpoint channels for XUD */
+    chan c_xud_in[ENDPOINT_COUNT_IN];
     chan c_aud_ctl;
 #ifdef TEST_MODE_SUPPORT
 #warning Building with test mode support
@@ -266,11 +266,11 @@ void usb_audio_core(chanend c_mix_out
     {
         /* USB Interface Core */
 #if (AUDIO_CLASS==2)
-        XUD_Manager(c_xud_out, EP_CNT_OUT, c_xud_in, EP_CNT_IN,
+        XUD_Manager(c_xud_out, ENDPOINT_COUNT_OUT, c_xud_in, ENDPOINT_COUNT_IN,
             c_sof, epTypeTableOut, epTypeTableIn, p_usb_rst,
             clk, 1, XUD_SPEED_HS, c_usb_test, pwrConfig);
 #else
-        XUD_Manager(c_xud_out, EP_CNT_OUT, c_xud_in, EP_CNT_IN,
+        XUD_Manager(c_xud_out, ENDPOINT_COUNT_OUT, c_xud_in, ENDPOINT_COUNT_IN,
             c_sof, epTypeTableOut, epTypeTableIn, p_usb_rst,
             clk, 1, XUD_SPEED_FS, c_usb_test, pwrConfig);
 #endif
@@ -291,29 +291,29 @@ void usb_audio_core(chanend c_mix_out
             asm("ldw %0, dp[clk_audio_mclk]":"=r"(x));
             asm("setclk res[%0], %1"::"r"(p_for_mclk_count), "r"(x));
 #endif
-            buffer(c_xud_out[EP_NUM_OUT_AUD],/* Audio Out*/
-                c_xud_in[EP_NUM_IN_AUD],     /* Audio In */
-                c_xud_in[EP_NUM_IN_FB],      /* Audio FB */
+            buffer(c_xud_out[ENDPOINT_NUMBER_OUT_AUDIO],/* Audio Out*/
+                c_xud_in[ENDPOINT_NUMBER_IN_AUDIO],     /* Audio In */
+                c_xud_in[ENDPOINT_NUMBER_IN_FEEDBACK],      /* Audio FB */
 #ifdef MIDI
-                c_xud_out[EP_NUM_OUT_MIDI],  /* MIDI Out */ // 2
-                c_xud_in[EP_NUM_IN_MIDI],    /* MIDI In */  // 4
+                c_xud_out[ENDPOINT_NUMBER_OUT_MIDI],  /* MIDI Out */ // 2
+                c_xud_in[ENDPOINT_NUMBER_IN_MIDI],    /* MIDI In */  // 4
                 c_midi,
 #endif
 #ifdef IAP
-                c_xud_out[EP_NUM_OUT_IAP],   /* iAP Out */
-                c_xud_in[EP_NUM_IN_IAP],     /* iAP In */
+                c_xud_out[ENDPOINT_NUMBER_OUT_IAP],   /* iAP Out */
+                c_xud_in[ENDPOINT_NUMBER_IN_IAP],     /* iAP In */
 #ifdef IAP_INT_EP
-                c_xud_in[EP_NUM_IN_IAP_INT], /* iAP Interrupt In */
+                c_xud_in[ENDPOINT_NUMBER_IN_IAP_INT], /* iAP Interrupt In */
 #endif
                 c_iap,
 #endif
 #if defined(SPDIF_RX) || defined(ADAT_RX)
                 /* Audio Interrupt - only used for interrupts on external clock change */
-                c_xud_in[EP_NUM_IN_AUD_INT],
+                c_xud_in[ENDPOINT_NUMBER_IN_INTERUUPT],
 #endif
                 c_sof, c_aud_ctl, p_for_mclk_count
 #ifdef HID_CONTROLS
-                , c_xud_in[EP_NUM_IN_HID]
+                , c_xud_in[ENDPOINT_NUMBER_IN_HID]
 #endif
 #ifdef CHAN_BUFF_CTRL
                 , c_buff_ctrl
