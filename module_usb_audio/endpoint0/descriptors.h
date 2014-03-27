@@ -1824,9 +1824,9 @@ unsigned char cfgDesc_Null[] =
 };
 
 
+#if defined (AUDIO_CLASS_FALLBACK) || (AUDIO_CLASS == 1)
 /* Configuration descriptor for Audio v1.0 */
 /* Note Audio 1.0 descriptors still a simple array so we need some extra defines regarding lengths.. */
-
 #ifdef INPUT
 #define INPUT_INTERFACES_A1         (1)
 #else
@@ -1850,7 +1850,6 @@ unsigned char cfgDesc_Null[] =
 
 #define CFG_TOTAL_LENGTH_A1         (18 + AC_TOTAL_LENGTH + (INPUT_INTERFACES_A1 * 61) + (OUTPUT_INTERFACES_A1 * 70))
 
-#if defined (AUDIO_CLASS_FALLBACK) || (AUDIO_CLASS == 1)
 unsigned char cfgDesc_Audio1[] =
 {
     /* Configuration descriptor */
