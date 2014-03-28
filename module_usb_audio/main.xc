@@ -309,7 +309,7 @@ void usb_audio_core(chanend c_mix_out
 #endif
 #if defined(SPDIF_RX) || defined(ADAT_RX)
                 /* Audio Interrupt - only used for interrupts on external clock change */
-                c_xud_in[ENDPOINT_NUMBER_IN_INTERUUPT],
+                c_xud_in[ENDPOINT_NUMBER_IN_INTERRUPT],
 #endif
                 c_sof, c_aud_ctl, p_for_mclk_count
 #ifdef HID_CONTROLS
