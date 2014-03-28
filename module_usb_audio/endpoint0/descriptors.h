@@ -817,11 +817,25 @@ unsigned char hidReportDescriptor[] =
 #define HS_STREAM_FORMAT_INPUT_1_MAXPACKETSIZE (MAX_PACKET_SIZE_MULT_IN_HS * HS_STREAM_FORMAT_INPUT_1_SUBSLOT_BYTES)
 #define FS_STREAM_FORMAT_INPUT_1_MAXPACKETSIZE (MAX_PACKET_SIZE_MULT_IN_FS * FS_STREAM_FORMAT_INPUT_1_SUBSLOT_BYTES)
 
+#if (NUM_CLOCKS == 1)
+#define USB_Descriptor_Audio_ClockSelector_t USB_Descriptor_Audio_ClockSelector_1_t 
+#elif (NUM_CLOCKS == 2)
+#define USB_Descriptor_Audio_ClockSelector_t USB_Descriptor_Audio_ClockSelector_2_t 
+#elif (NUM_CLOCKS == 3)
+#define USB_Descriptor_Audio_ClockSelector_t USB_Descriptor_Audio_ClockSelector_3_t 
+#endif
+
 typedef struct
 {
     /* Class Specific Audio Control Interface Header Descriptor */
     UAC_Descriptor_Interface_AC_t               Audio_ClassControlInterface;
     USB_Descriptor_Audio_ClockSource_t          Audio_ClockSource;
+#ifdef SPDIF_RX
+    USB_Descriptor_Audio_ClockSource_t          Audio_ClockSource_SPDIF;
+#endif
+#ifdef ADAT_RX
+    USB_Descriptor_Audio_ClockSource_t          Audio_ClockSource_ADAT;
+#endif
     USB_Descriptor_Audio_ClockSelector_t        Audio_ClockSelector;
 #ifdef OUTPUT
     /* Output path */
@@ -994,6 +1008,55 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
             .bAssocTerminal            = 0x00,
             .iClockSource              = offsetof(StringDescTable_t, internalClockSourceStr)/sizeof(char *),
         },
+      
+#ifdef SPDIF_RX
+         /* Clock Source Descriptor (4.7.2.1) */
+        .Audio_ClockSource_SPDIF =
+        {
+            .bLength                   = sizeof(USB_Descriptor_Audio_ClockSource_t),
+            .bDescriptorType           = UAC_CS_DESCTYPE_INTERFACE,
+            .bDescriptorSubType        = UAC_CS_AC_INTERFACE_SUBTYPE_CLOCK_SOURCE,
+            .bClockID                  = ID_CLKSRC_SPDIF,
+            .bmAttributes              =  0x00,                   /* D[1:0] :
+                                                                        00: External Clock
+                                                                        01: Internal Fixed Clock
+                                                                        10: Internal Variable Clock
+                                                                        11: Internal Progamable Clock
+                                                                     D[2]   : Clock synced to SOF
+                                                                     D[7:3] : Reserved (0) */
+            .bmControls                = 0x07,                    /*
+                                                                    D[1:0] : Clock Freq Control
+                                                                    D[3:2] : Clock Validity Control
+                                                                    D[7:4] : Reserved (0) */
+            .bAssocTerminal            = 0x00,
+            .iClockSource              = offsetof(StringDescTable_t, spdifClockSourceStr)/sizeof(char *),
+        },
+#endif
+
+#ifdef ADAT_RX
+         /* Clock Source Descriptor (4.7.2.1) */
+        .Audio_ClockSource_ADAT =
+        {
+            .bLength                   = sizeof(USB_Descriptor_Audio_ClockSource_t),
+            .bDescriptorType           = UAC_CS_DESCTYPE_INTERFACE,
+            .bDescriptorSubType        = UAC_CS_AC_INTERFACE_SUBTYPE_CLOCK_SOURCE,
+            .bClockID                  = ID_CLKSRC_ADAT,
+            .bmAttributes              =  0x00,                   /* D[1:0] :
+                                                                        00: External Clock
+                                                                        01: Internal Fixed Clock
+                                                                        10: Internal Variable Clock
+                                                                        11: Internal Progamable Clock
+                                                                     D[2]   : Clock synced to SOF
+                                                                     D[7:3] : Reserved (0) */
+            .bmControls                = 0x07,                    /*
+                                                                    D[1:0] : Clock Freq Control
+                                                                    D[3:2] : Clock Validity Control
+                                                                    D[7:4] : Reserved (0) */
+            .bAssocTerminal            = 0x00,
+            .iClockSource              = offsetof(StringDescTable_t, adatClockSourceStr)/sizeof(char *),
+        },
+#endif
+
 
         /* Clock Selector Descriptor (4.7.2.2) */
         .Audio_ClockSelector =
@@ -1003,12 +1066,13 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
             .bDescriptorSubType        = UAC_CS_AC_INTERFACE_SUBTYPE_CLOCK_SELECTOR,
             .bClockID                  = ID_CLKSEL,
             .bNrPins                   = NUM_CLOCKS,
-            .baCSourceId[0]            = ID_CLKSRC_INT,
+            ID_CLKSRC_INT,             /* baCSourceID */
 #ifdef SPDIF_RX
-            ID_CLKSRC_EXT,
+            ID_CLKSRC_SPDIF,           /* baCSourceID */
+
 #endif
 #ifdef ADAT_RX
-            ID_CLKSRC_ADAT,
+            ID_CLKSRC_ADAT,            /* baCSourceID */
 #endif
             .bmControl                 = 0x03,
             .iClockSelector            = 13, /* TODO Shoudn't be hard-coded */
@@ -1699,7 +1763,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
     0x40,                           /* 5    wTransferSize */
     0x00,                           /* 6    wTransferSize */
     0x10,                           /* 7    bcdDFUVersion */
-    0x01},                           /* 7    bcdDFUVersion */
+    0x01},                          /* 7    bcdDFUVersion */
 #endif
 #endif
 
