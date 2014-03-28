@@ -580,36 +580,36 @@
 enum USBEndpointNumber_In
 {
     ENDPOINT_NUMBER_IN_CONTROL,     /* Endpoint 0 */
-    ENDPOINT_NUMBER_IN_FEEDBACK,  
+    ENDPOINT_NUMBER_IN_FEEDBACK,
     ENDPOINT_NUMBER_IN_AUDIO,
 #if defined(SPDIF_RX) || defined(ADAT_RX)
     ENDPOINT_NUMBER_IN_INTERRUPT,   /* Audio interrupt/status EP */
 #endif
-#ifdef MIDI    
+#ifdef MIDI
     ENDPOINT_NUMBER_IN_MIDI,
 #endif
 #ifdef HID_CONTROLS
     ENDPOINT_NUMBER_IN_HID,
 #endif
-#ifdef IAP 
+#ifdef IAP
 #ifdef IAP_INT_EP
-    ENDPOINT_NUMBER_IN_IAP_INT, 
+    ENDPOINT_NUMBER_IN_IAP_INT,
 #endif
-    ENDPOINT_NUMBER_IN_IAP, 
+    ENDPOINT_NUMBER_IN_IAP,
 #endif
-    ENDPOINT_COUNT_IN               /* End marker */ 
+    ENDPOINT_COUNT_IN               /* End marker */
 };
 
 enum USBEndpointNumber_Out
 {
     ENDPOINT_NUMBER_OUT_CONTROL,    /* Endpoint 0 */
-    ENDPOINT_NUMBER_OUT_AUDIO, 
+    ENDPOINT_NUMBER_OUT_AUDIO,
 #ifdef MIDI
     ENDPOINT_NUMBER_OUT_MIDI,
-#endif 
-#ifdef IAP 
+#endif
+#ifdef IAP
     ENDPOINT_NUMBER_OUT_IAP,
-#endif    
+#endif
     ENDPOINT_COUNT_OUT              /* End marker */
 };
 
