@@ -285,7 +285,7 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
             {
                 /* Clock Unit(s) */
                 case ID_CLKSRC_INT:
-                case ID_CLKSRC_EXT:
+                case ID_CLKSRC_SPDIF:
                 case ID_CLKSRC_ADAT:
                 {
                     /* Check Control selector (CS) */
@@ -345,7 +345,7 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
                             {
                                 switch(unitID)
                                 {
-                                    case ID_CLKSRC_EXT:
+                                    case ID_CLKSRC_SPDIF:
                                     case ID_CLKSRC_ADAT:
 #ifdef REPORT_SPDIF_FREQ
                                         /* Interogate clockgen thread for SPDIF freq */
@@ -393,7 +393,7 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
                                     return XUD_DoGetRequest(ep0_out, ep0_in, buffer, 1, sp.wLength);
                                     break;
 
-                                case ID_CLKSRC_EXT:
+                                case ID_CLKSRC_SPDIF:
 
                                     /* Interogate clockgen thread for validity */
                                     if (!isnull(c_clk_ctl))
@@ -791,7 +791,7 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
             switch( unitID )
             {
                 /* Clock Source Units */
-                case ID_CLKSRC_EXT:
+                case ID_CLKSRC_SPDIF:
                 case ID_CLKSRC_ADAT:
                 case ID_CLKSRC_INT:
 

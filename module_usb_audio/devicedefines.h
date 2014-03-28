@@ -627,7 +627,6 @@ enum USBEndpointNumber_Out
 #endif
 #endif
 
-
 /* Length of clock unit/clock-selector units */
 #if defined(SPDIF_RX) && defined(ADAT_RX)
 #define NUM_CLOCKS               (3)
@@ -647,7 +646,7 @@ enum USBEndpointNumber_Out
 
 #define ID_CLKSEL                40              /* Clock selector ID */
 #define ID_CLKSRC_INT            41              /* Clock source ID (internal) */
-#define ID_CLKSRC_EXT            42              /* Clock source ID (external) */
+#define ID_CLKSRC_SPDIF          42              /* Clock source ID (external) */
 #define ID_CLKSRC_ADAT           43              /* Clock source ID (external) */
 
 #define ID_XU_MIXSEL             50

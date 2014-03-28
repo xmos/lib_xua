@@ -262,7 +262,7 @@ void clockGen (streaming chanend c_spdif_rx, chanend c_adat_rx, out port p, chan
     clockFreq[CLOCK_SPDIF_INDEX] = 0;
     clockValid[CLOCK_SPDIF_INDEX] = 0;
     clockInt[CLOCK_SPDIF_INDEX] = 0;
-    clockId[CLOCK_SPDIF_INDEX] = ID_CLKSRC_EXT;
+    clockId[CLOCK_SPDIF_INDEX] = ID_CLKSRC_SPDIF;
 #endif
     clockFreq[CLOCK_INTERNAL_INDEX] = 0;
     clockId[CLOCK_INTERNAL_INDEX] = ID_CLKSRC_INT;
