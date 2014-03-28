@@ -349,6 +349,13 @@ void usb_audio_io(chanend c_aud_in, chanend ?c_adc
 #ifdef MIXER
     chan c_mix_out;
 #endif
+
+#if defined (SPDIF_RX) || (defined ADAT_RX)
+    chan c_dig_rx;
+#else
+#define c_dig_rx null
+#endif
+
     par
     {
 
@@ -363,9 +370,9 @@ void usb_audio_io(chanend c_aud_in, chanend ?c_adc
         {
             thread_speed();
 #ifdef MIXER
-            audio(c_mix_out, null, c_aud_cfg, c_adc);
+            audio(c_mix_out, c_dig_rx, c_aud_cfg, c_adc);
 #else
-            audio(c_aud_in, null, c_aud_cfg, c_adc);
+            audio(c_aud_in, c_dig_rx, c_aud_cfg, c_adc);
 #endif
         }
     }
