@@ -592,28 +592,28 @@ StringDescTable_t g_strTable =
 /* Interface numbers enum */
 enum USBInterfaceNumber
 {
-    INTERFACE_NUMBER_AUDIO_CONTROL = 0, 
+    INTERFACE_NUMBER_AUDIO_CONTROL = 0,
 #if defined(OUTPUT) && (OUTPUT != 0)
-    INTERFACE_NUMBER_AUDIO_OUTPUT, 
+    INTERFACE_NUMBER_AUDIO_OUTPUT,
 #endif
-#if defined(INPUT) && (INPUT != 0)   
-    INTERFACE_NUMBER_AUDIO_INPUT, 
+#if defined(INPUT) && (INPUT != 0)
+    INTERFACE_NUMBER_AUDIO_INPUT,
 #endif
-#if defined(MIDI) && (MIDI != 0)    
+#if defined(MIDI) && (MIDI != 0)
     INTERFACE_NUMBER_MIDI_CONTROL,
-    INTERFACE_NUMBER_MIDI_STREAM, 
+    INTERFACE_NUMBER_MIDI_STREAM,
 #endif
-#if defined(DFU) && (DFU != 0)    
+#if defined(DFU) && (DFU != 0)
     INTERFACE_NUMBER_DFU,
 #endif
-#if defined(IAP) && (IAP != 0)   
+#if defined(IAP) && (IAP != 0)
     INTERFACE_NUMBER_IAP,
 #endif
-#if defined(HID_CONTROLS) && (HID_CONTROLS != 0)    
-    INTERFACE_NUMBER_HID,  
+#if defined(HID_CONTROLS) && (HID_CONTROLS != 0)
+    INTERFACE_NUMBER_HID,
 #endif
     INTERFACE_COUNT          /* End marker */
-}; 
+};
 
 #if defined(INPUT) && defined(OUTPUT)
 #define AUDIO_INTERFACE_COUNT 3
@@ -818,11 +818,11 @@ unsigned char hidReportDescriptor[] =
 #define FS_STREAM_FORMAT_INPUT_1_MAXPACKETSIZE (MAX_PACKET_SIZE_MULT_IN_FS * FS_STREAM_FORMAT_INPUT_1_SUBSLOT_BYTES)
 
 #if (NUM_CLOCKS == 1)
-#define USB_Descriptor_Audio_ClockSelector_t USB_Descriptor_Audio_ClockSelector_1_t 
+#define USB_Descriptor_Audio_ClockSelector_t USB_Descriptor_Audio_ClockSelector_1_t
 #elif (NUM_CLOCKS == 2)
-#define USB_Descriptor_Audio_ClockSelector_t USB_Descriptor_Audio_ClockSelector_2_t 
+#define USB_Descriptor_Audio_ClockSelector_t USB_Descriptor_Audio_ClockSelector_2_t
 #elif (NUM_CLOCKS == 3)
-#define USB_Descriptor_Audio_ClockSelector_t USB_Descriptor_Audio_ClockSelector_3_t 
+#define USB_Descriptor_Audio_ClockSelector_t USB_Descriptor_Audio_ClockSelector_3_t
 #endif
 
 typedef struct
@@ -1008,7 +1008,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
             .bAssocTerminal            = 0x00,
             .iClockSource              = offsetof(StringDescTable_t, internalClockSourceStr)/sizeof(char *),
         },
-      
+
 #ifdef SPDIF_RX
          /* Clock Source Descriptor (4.7.2.1) */
         .Audio_ClockSource_SPDIF =
