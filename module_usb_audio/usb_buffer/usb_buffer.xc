@@ -217,15 +217,13 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
         {
 #if defined(SPDIF_RX) || defined(ADAT_RX)
             /* Interrupt EP, send back interrupt data.  Note, request made from decouple */
-            case inuint_byref(c_int, tmp):
+            case XUD_SetData_Select(c_int, ep_int, result):
             {
                 int sent_ok = 0;
-                XUD_SetData_Inline(ep_int, c_int);
                 asm("stw   %0, dp[g_intFlag]" :: "r" (0)  );
                 break;
-              }
+            }
 #endif
-
             /* Sample Freq or chan count update from Endpoint 0 core */
             case testct_byref(c_aud_ctl, u_tmp):
             {
