@@ -1,5 +1,5 @@
 
-#ifdef XUD_ON_U_SERIES
+#if (XUD_SERIES_SUPPORT==1)
 #include "archU_powerSaving.h"
 #include <xs1.h>
 #include <xs1_l_registers.h>
