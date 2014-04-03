@@ -1905,7 +1905,7 @@ unsigned char cfgDesc_Null[] =
 
 #define AC_LENGTH                   (8 + INPUT_INTERFACES_A1 + OUTPUT_INTERFACES_A1)
 
-#define AC_TOTAL_LENGTH             (AC_LENGTH + (INPUT_INTERFACES_A1 * 31) + (OUTPUT_INTERFACES_A1 * 31))
+#define AC_TOTAL_LENGTH             (AC_LENGTH + (INPUT_INTERFACES_A1 * (19 + NUM_FREQS_A1 * 3)) + (OUTPUT_INTERFACES_A1 * (19 + (NUM_FREQS_A1 *3))))
 #define STREAMING_INTERFACES        (INPUT_INTERFACES_A1 + OUTPUT_INTERFACES_A1)
 
 /* Number of interfaces for Audio  1.0 (+1 for control ) */
@@ -1913,6 +1913,20 @@ unsigned char cfgDesc_Null[] =
 #define NUM_INTERFACES_A1           (1+INPUT_INTERFACES_A1 + OUTPUT_INTERFACES_A1)
 
 #define CFG_TOTAL_LENGTH_A1         (18 + AC_TOTAL_LENGTH + (INPUT_INTERFACES_A1 * 61) + (OUTPUT_INTERFACES_A1 * 70))
+
+/* In UAC1 supported sample rates are listed in descriptor */
+#if (MAX_FREQ_FS == 96000)
+#error
+#define NUM_FREQS_A1                (4)
+#elif (MAX_FREQ_FS == 88200)
+#define NUM_FREQS_A1                (3)
+#elif (MAX_FREQ_FS == 48000)
+#define NUM_FREQS_A1                (2)
+#elif (MAX_FREQ_FS == 44100)
+#define NUM_FREQS_A1                (1)
+#else
+#error
+#endif
 
 unsigned char cfgDesc_Audio1[] =
 {
@@ -2063,21 +2077,23 @@ unsigned char cfgDesc_Audio1[] =
     0x01, 0x00,                     /* wFormatTag - PCM */
 
     /* CS_Interface Format Type Descriptor */
-    0x14,
+    (8 + (NUM_FREQS_A1 * 3)),
     UAC_CS_DESCTYPE_INTERFACE,
     0x02,                           /* Subtype - FORMAT_TYPE */
     0x01,                           /* Format type - FORMAT_TYPE_1 */
     NUM_USB_CHAN_OUT_FS,            /* nrChannels */
     FS_STREAM_FORMAT_OUTPUT_1_SUBSLOT_BYTES,         /* subFrameSize */
     FS_STREAM_FORMAT_OUTPUT_1_RESOLUTION_BITS,       /* bitResolution */
-    0x04,                           /* SamFreqType - 4 sample freq */
+
+    NUM_FREQS_A1,                   /* SamFreqType - sample freq count */
     0x44, 0xAC, 0x00,               /* sampleFreq - 44.1Khz */
+#if (MAX_FREQ_FS > 44100)
     0x80, 0xBB, 0x00,               /* sampleFreq - 48KHz */
-#if defined(OUTPUT) && defined(INPUT)
-    0x80, 0xBB, 0x00,               /* sampleFreq - 48KHz */
-    0x80, 0xBB, 0x00,               /* sampleFreq - 48KHz */
-#else
+#endif
+#if (MAX_FREQ_FS > 48000)
     0x88, 0x58, 0x01,               /* sampleFreq - 88.2KHz */
+#endif
+#if (MAX_FREQ_FS > 88200)
     0x00, 0x77, 0x01,               /* sampleFreq - 96KHz */
 #endif
 
@@ -2143,21 +2159,22 @@ unsigned char cfgDesc_Audio1[] =
     0x01,0x00,                      /* Format - PCM */
 
     /* CS_Interface Terminal Descriptor */
-    0x14,
+    (8 + (NUM_FREQS_A1 * 3)),
     UAC_CS_DESCTYPE_INTERFACE,
     0x02,                           /* Subtype - FORMAT_TYPE */
     0x01,                           /* Format type - FORMAT_TYPE_1 */
     NUM_USB_CHAN_IN_FS,             /* bNrChannels - Typically 2 */
     FS_STREAM_FORMAT_INPUT_1_SUBSLOT_BYTES,         /* subFrameSize - Typically 4 bytes per slot */
     FS_STREAM_FORMAT_INPUT_1_RESOLUTION_BITS,       /* bitResolution - Typically 24bit */
-    0x04,                           /* SamFreqType - 4 sample freq */
+    NUM_FREQS_A1,                   /* SamFreqType - sample freq count */
     0x44, 0xAC, 0x00,               /* sampleFreq - 44.1Khz */
+#if (MAX_FREQ_FS > 44100)
     0x80, 0xBB, 0x00,               /* sampleFreq - 48KHz */
-#if defined(OUTPUT) && defined(INPUT)
-    0x80, 0xBB, 0x00,               /* sampleFreq - 48KHz */
-    0x80, 0xBB, 0x00,               /* sampleFreq - 48KHz */
-#else
+#endif
+#if (MAX_FREQ_FS > 48000)
     0x88, 0x58, 0x01,               /* sampleFreq - 88.2KHz */
+#endif
+#if (MAX_FREQ_FS > 88200)
     0x00, 0x77, 0x01,               /* sampleFreq - 96KHz */
 #endif
     /* Standard Endpoint Descriptor */
