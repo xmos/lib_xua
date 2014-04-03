@@ -1916,7 +1916,6 @@ unsigned char cfgDesc_Null[] =
 
 /* In UAC1 supported sample rates are listed in descriptor */
 #if (MAX_FREQ_FS == 96000)
-#error
 #define NUM_FREQS_A1                (4)
 #elif (MAX_FREQ_FS == 88200)
 #define NUM_FREQS_A1                (3)
