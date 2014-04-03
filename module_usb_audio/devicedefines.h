@@ -661,6 +661,11 @@ enum USBEndpointNumber_Out
 #define ID_MIXER_1               60
 
 /* Mixer defines */
+
+#if defined(MIXER) && (MIXER == 0)
+#undef MIXER
+#endif
+
 #ifndef MIX_INPUTS
 #define MIX_INPUTS                  18
 #endif
@@ -672,7 +677,6 @@ enum USBEndpointNumber_Out
 #else
     #define MAX_MIX_COUNT        0
 #endif
-
 
 /* Volume defines */
 
@@ -780,6 +784,7 @@ enum USBEndpointNumber_Out
 #undef FAST_MODE
 #endif
 
+/* Default MIDI Rx port width */
 #ifndef MIDI_RX_PORT_WIDTH
 #define MIDI_RX_PORT_WIDTH 1
 #endif
