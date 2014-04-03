@@ -1973,14 +1973,14 @@ unsigned char cfgDesc_Audio1[] =
 #ifdef OUTPUT
     /* CS_Interface Input Terminal 1 Descriptor - USB streaming Host to Device */
     0x0C,
-    UAC_CS_DESCTYPE_INTERFACE,                   /* UAC_CS_DESCTYPE_INTERFACE */
+    UAC_CS_DESCTYPE_INTERFACE,      /* UAC_CS_DESCTYPE_INTERFACE */
     0x02,                           /* INPUT_TERMINAL */
     0x01,                           /* Terminal ID */
     0x01, 0x01,                     /* Type - streaming */
     0x00,                           /* Associated terminal - unused  */
     NUM_USB_CHAN_OUT_FS,            /* bNrChannels */
     0x03, 0x00,                     /* wChannelConfig */
-    0x00,                           /* iChannelNames - Unused */
+    offsetof(StringDescTable_t, outputChanStr_1)/sizeof(char *), /* iChannelNames */
     11,                             /* iTerminal */
 
     /* CS_Interface class specific AC interface feature unit descriptor - mute & volume for dac */
@@ -2017,7 +2017,7 @@ unsigned char cfgDesc_Audio1[] =
     0x00,                           /* Associated terminal - unused  */
     NUM_USB_CHAN_IN_FS,             /* bNrChannels */
     0x03, 0x00,                     /* wChannelConfigs */
-    0x00,                           /* iChannelNames */
+    offsetof(StringDescTable_t, inputChanStr_1)/sizeof(char *), /* iChannelNames */
     12,                             /* iTerminal */
 
     /* CS_Interface Output Terminal Descriptor - USB Streaming Device to Host*/
@@ -2042,7 +2042,6 @@ unsigned char cfgDesc_Audio1[] =
     0x03,                           /* bmaControls(2) */
     0x00,                           /* String table index */
 #endif
-
 
 #ifdef OUTPUT
     /* Standard AS Interface Descriptor (4.5.1) */
