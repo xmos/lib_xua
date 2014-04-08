@@ -93,6 +93,11 @@ extern unsigned char g_currentConfig;
 /* Global endpoint status arrays - declared in usb_device.xc */
 extern unsigned char g_interfaceAlt[];
 
+/* We remember which streaming alt we were last using to avoid interrupting the I2S as best we can */
+/* Note, we cannot simply use g_interfaceAlt[] since this also records using the zero bandwidth alt */
+unsigned g_curStreamAlt_Out = 0;
+unsigned g_curStreamAlt_In = 0;
+
 /* Global variable for current USB bus speed (i.e. FS/HS) */
 XUD_BusSpeed_t g_curUsbSpeed = 0;
 
@@ -228,14 +233,17 @@ void Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
                     if(sp.bRequest == USB_SET_INTERFACE)
                     {
                         /* Check for audio stream from host start/stop */
-                        if(sp.wIndex == 1)  // Ouput interface
+                        if(sp.wIndex == 1)  /* Output interface */
                         {
                             /* Check the alt is in range */
                             if(sp.wValue <= OUTPUT_FORMAT_COUNT)
                             {
                                 /* Alt 0 is stream stop */
-                                if(sp.wValue > 0)
+                                /* Only send change if we need to */
+                                if((sp.wValue > 0) && (g_curStreamAlt_Out != sp.wValue))
                                 {
+                                    g_curStreamAlt_Out = sp.wValue;
+                                    
                                     /* Send format of data onto buffering */
                                     outuint(c_audioControl, SET_STREAM_FORMAT_OUT);
                                     outuint(c_audioControl, g_dataFormat_Out[sp.wValue-1]);        /* Data format (PCM/DSD) */
@@ -256,14 +264,17 @@ void Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
                                 }
                             }
                         }
-                        else if(sp.wIndex == 2) // Input interface
+                        else if(sp.wIndex == 2) /* Input interface */
                         {
                             /* Check the alt is in range */
                             if(sp.wValue <= INPUT_FORMAT_COUNT)
                             {
                                 /* Alt 0 is stream stop */
-                                if(sp.wValue > 0)
+                                /* Only send change if we need to */
+                                if((sp.wValue > 0) && (g_curStreamAlt_In != sp.wValue))
                                 {
+                                    g_curStreamAlt_In = sp.wValue;
+                                    
                                     /* Send format of data onto buffering */
                                     outuint(c_audioControl, SET_STREAM_FORMAT_IN);
                                     outuint(c_audioControl, g_dataFormat_In[sp.wValue-1]);        /* Data format (PCM/DSD) */
