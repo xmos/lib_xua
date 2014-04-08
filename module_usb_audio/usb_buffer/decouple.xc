@@ -7,7 +7,6 @@
 
 #ifdef NATIVE_DSD
 #include "usbaudio20.h"             /* Defines from the USB Audio 2.0 Specifications */
-unsigned g_curDsdMode = DSD_MODE_OFF;
 #endif
 
 #ifdef HID_CONTROLS
@@ -876,19 +875,13 @@ void decouple(chanend c_mix_out,
                     dsdMode = DSD_MODE_NATIVE;
                 }
 
-                /* To avoid clicks and pops only change mode if we have to */
-                if(dsdMode != g_curDsdMode)
-                {
-                    g_curDsdMode = dsdMode;
+                /* Wait for the audio code to request samples and respond with command */
+                inuint(c_mix_out);
+                outct(c_mix_out, SET_DSD_MODE);
+                outuint(c_mix_out, dsdMode);
 
-                    /* Wait for the audio code to request samples and respond with command */
-                    inuint(c_mix_out);
-                    outct(c_mix_out, SET_DSD_MODE);
-                    outuint(c_mix_out, dsdMode);
-
-                    /* Wait for handshake back */
-                    chkct(c_mix_out, XS1_CT_END);
-                }
+                /* Wait for handshake back */
+                chkct(c_mix_out, XS1_CT_END);
 #endif
                 asm("outct res[%0],%1"::"r"(buffer_aud_ctl_chan),"r"(XS1_CT_END));
 
