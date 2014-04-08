@@ -324,8 +324,10 @@
 #endif
 
 #ifdef NATIVE_DSD
-    /* DSD always the last format */
-    #define NATIVE_DSD_FORMAT_NUM   (OUTPUT_FORMAT_COUNT)
+    /* DSD always the last format by default */
+    #ifndef NATIVE_DSD_FORMAT_NUM
+        #define NATIVE_DSD_FORMAT_NUM   (OUTPUT_FORMAT_COUNT)
+    #endif
 #endif
 
 
