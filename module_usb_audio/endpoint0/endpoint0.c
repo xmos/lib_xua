@@ -101,21 +101,33 @@ unsigned g_curStreamAlt_In = 0;
 /* Global variable for current USB bus speed (i.e. FS/HS) */
 XUD_BusSpeed_t g_curUsbSpeed = 0;
 
-const unsigned g_subSlot_Out_HS[OUTPUT_FORMAT_COUNT] = {HS_STREAM_FORMAT_OUTPUT_1_SUBSLOT_BYTES,
-                                                    HS_STREAM_FORMAT_OUTPUT_2_SUBSLOT_BYTES,
-                                                    HS_STREAM_FORMAT_OUTPUT_3_SUBSLOT_BYTES};
+const unsigned g_subSlot_Out_HS[OUTPUT_FORMAT_COUNT]    = {HS_STREAM_FORMAT_OUTPUT_1_SUBSLOT_BYTES,
+                                                            HS_STREAM_FORMAT_OUTPUT_2_SUBSLOT_BYTES,
+                                                            HS_STREAM_FORMAT_OUTPUT_3_SUBSLOT_BYTES};
 
-const unsigned g_subSlot_Out_FS[OUTPUT_FORMAT_COUNT] = {FS_STREAM_FORMAT_OUTPUT_1_SUBSLOT_BYTES,
-                                                    FS_STREAM_FORMAT_OUTPUT_2_SUBSLOT_BYTES,
-                                                    FS_STREAM_FORMAT_OUTPUT_3_SUBSLOT_BYTES};
+const unsigned g_subSlot_Out_FS[OUTPUT_FORMAT_COUNT]    = {FS_STREAM_FORMAT_OUTPUT_1_SUBSLOT_BYTES,
+                                                            FS_STREAM_FORMAT_OUTPUT_2_SUBSLOT_BYTES,
+                                                            FS_STREAM_FORMAT_OUTPUT_3_SUBSLOT_BYTES};
 
-const unsigned g_dataFormat_Out[OUTPUT_FORMAT_COUNT] = {STREAM_FORMAT_OUTPUT_1_DATAFORMAT,
-                                                    STREAM_FORMAT_OUTPUT_2_DATAFORMAT,
-                                                    STREAM_FORMAT_OUTPUT_3_DATAFORMAT};
+const unsigned g_subSlot_In_HS[INPUT_FORMAT_COUNT]      = {HS_STREAM_FORMAT_INPUT_1_SUBSLOT_BYTES};
 
-const unsigned g_subSlot_In_HS[INPUT_FORMAT_COUNT] = {HS_STREAM_FORMAT_INPUT_1_SUBSLOT_BYTES};
+const unsigned g_subSlot_In_FS[INPUT_FORMAT_COUNT]      = {FS_STREAM_FORMAT_INPUT_1_SUBSLOT_BYTES};
 
-const unsigned g_subSlot_In_FS[INPUT_FORMAT_COUNT] = {FS_STREAM_FORMAT_INPUT_1_SUBSLOT_BYTES};
+const unsigned g_sampRes_Out_HS[OUTPUT_FORMAT_COUNT]    = {HS_STREAM_FORMAT_OUTPUT_1_RESOLUTION_BITS,
+                                                            HS_STREAM_FORMAT_OUTPUT_2_RESOLUTION_BITS,
+                                                            HS_STREAM_FORMAT_OUTPUT_3_RESOLUTION_BITS};
+
+const unsigned g_sampRes_Out_FS[OUTPUT_FORMAT_COUNT]    = {FS_STREAM_FORMAT_OUTPUT_1_RESOLUTION_BITS,
+                                                            FS_STREAM_FORMAT_OUTPUT_2_RESOLUTION_BITS,
+                                                            FS_STREAM_FORMAT_OUTPUT_3_RESOLUTION_BITS};
+
+const unsigned g_sampRes_In_HS[OUTPUT_FORMAT_COUNT]     = {HS_STREAM_FORMAT_INPUT_1_RESOLUTION_BITS};
+
+const unsigned g_sampRes_In_FS[OUTPUT_FORMAT_COUNT]     = {FS_STREAM_FORMAT_INPUT_1_RESOLUTION_BITS};
+
+const unsigned g_dataFormat_Out[OUTPUT_FORMAT_COUNT]    = {STREAM_FORMAT_OUTPUT_1_DATAFORMAT,
+                                                            STREAM_FORMAT_OUTPUT_2_DATAFORMAT,
+                                                            STREAM_FORMAT_OUTPUT_3_DATAFORMAT};
 
 const unsigned g_dataFormat_In[INPUT_FORMAT_COUNT] = {STREAM_FORMAT_INPUT_1_DATAFORMAT};
 
@@ -252,11 +264,13 @@ void Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
                                     {
                                         outuint(c_audioControl, NUM_USB_CHAN_OUT);                 /* Channel count */
                                         outuint(c_audioControl, g_subSlot_Out_HS[sp.wValue-1]);    /* Subslot */
+                                        outuint(c_audioControl, g_sampRes_Out_HS[sp.wValue-1]);    /* Resolution */
                                     }
                                     else
                                     {
-                                        outuint(c_audioControl, NUM_USB_CHAN_OUT_FS);
-                                        outuint(c_audioControl, g_subSlot_Out_FS[sp.wValue-1]);
+                                        outuint(c_audioControl, NUM_USB_CHAN_OUT_FS);              /* Channel count */
+                                        outuint(c_audioControl, g_subSlot_Out_FS[sp.wValue-1]);    /* Subslot */
+                                        outuint(c_audioControl, g_sampRes_Out_FS[sp.wValue-1]);    /* Resolution */
                                     }
 
                                     /* Handshake */
@@ -283,11 +297,13 @@ void Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
                                     {
                                         outuint(c_audioControl, NUM_USB_CHAN_IN);                 /* Channel count */
                                         outuint(c_audioControl, g_subSlot_In_HS[sp.wValue-1]);    /* Subslot */
+                                        outuint(c_audioControl, g_sampRes_In_HS[sp.wValue-1]);    /* Resolution */
                                     }
                                     else
                                     {
-                                        outuint(c_audioControl, NUM_USB_CHAN_IN_FS);
-                                        outuint(c_audioControl, g_subSlot_In_FS[sp.wValue-1]);
+                                        outuint(c_audioControl, NUM_USB_CHAN_IN_FS);               /* Channel count */
+                                        outuint(c_audioControl, g_subSlot_In_FS[sp.wValue-1]);     /* Subslot */
+                                        outuint(c_audioControl, g_sampRes_In_FS[sp.wValue-1]);     /* Resolution */
                                     }
 
                                     /* Handshake */
