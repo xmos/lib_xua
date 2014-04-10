@@ -144,7 +144,7 @@ static inline void doI2SClocks(unsigned divide)
 
 /* I2S delivery thread */
 #pragma unsafe arrays
-{unsigned, unsigned} static deliver(chanend c_out, chanend ?c_spd_out, unsigned divide, unsigned curSamFreq, chanend ?c_dig_rx, chanend ?c_adc)
+unsigned static deliver(chanend c_out, chanend ?c_spd_out, unsigned divide, unsigned curSamFreq, chanend ?c_dig_rx, chanend ?c_adc)
 {
 #if (I2S_CHANS_ADC != 0) || defined(SPDIF)
 	unsigned sample;
@@ -211,7 +211,7 @@ static inline void doI2SClocks(unsigned divide)
         if(dsdMode == DSD_MODE_DOP)
             dsdMode = DSD_MODE_OFF;
 #endif
-        return {command, inuint(c_out)};
+        return command;
     }
     else
     {
@@ -389,7 +389,7 @@ static inline void doI2SClocks(unsigned divide)
         /* Check for sample freq change (or other command) or new samples from mixer*/
         if(testct(c_out))
         {
-            unsigned command;
+            unsigned command = inct(c_out);
 #ifndef CODEC_MASTER
             // Set clocks low
             p_lrclk <: 0;
@@ -399,13 +399,11 @@ static inline void doI2SClocks(unsigned divide)
             p_dsd_clk <: 0;
 #endif
 #endif
-            command = inct(c_out);
-
 #if (DSD_CHANS_DAC > 0)
             if(dsdMode == DSD_MODE_DOP)
                 dsdMode = DSD_MODE_OFF;
 #endif
-            return {command, inuint(c_out)};
+            return command;
 
         }
         else
@@ -707,7 +705,7 @@ static inline void doI2SClocks(unsigned divide)
                     p_lrclk <: 0;
                     p_bclk <: 0;
                     p_dsd_clk <: 0;
-                    return {0,0};
+                    return 0;
                 }
             }
             else
@@ -728,18 +726,18 @@ static inline void doI2SClocks(unsigned divide)
                     p_lrclk <: 0;
                     p_bclk <: 0;
                     p_dsd_clk <: 0;
-                    return {0,0};
+                    return 0;
                 }
             }
         }
 #endif
     }
-    return {0,0};
+    return 0;
 }
 
 /* This function is a dummy version of the deliver thread that does not
    connect to the codec ports. It is used during DFU reset. */
-{unsigned,unsigned} static dummy_deliver(chanend c_out)
+unsigned static dummy_deliver(chanend c_out)
 {
     while (1)
     {
@@ -749,8 +747,7 @@ static inline void doI2SClocks(unsigned divide)
         if(testct(c_out))
         {
             unsigned command = inct(c_out);
-             return {command, inuint(c_out)};
-
+            return command;
         }
         else
         {
@@ -782,7 +779,7 @@ static inline void doI2SClocks(unsigned divide)
 #endif
         }
     }
-    return {0,0};
+    return 0;
 }
 #define SAMPLE_RATE      200000
 #define NUMBER_CHANNELS  1
@@ -797,7 +794,9 @@ void audio(chanend c_mix_out, chanend ?c_dig_rx, chanend ?c_config, chanend ?c)
     chan c_spdif_out;
 #endif
     unsigned curSamFreq = DEFAULT_FREQ;
-    unsigned retVal1, retVal2;
+    unsigned curSamRes_DAC = STREAM_FORMAT_OUTPUT_1_RESOLUTION_BITS; /* Default to something reasonable */  
+    unsigned curSamRes_ADC = STREAM_FORMAT_INPUT_1_RESOLUTION_BITS; /* Default to something reasonable - note, currently this never changes*/  
+    unsigned command;
     unsigned mClk;
     unsigned divide;
     unsigned firstRun = 1;
@@ -937,14 +936,14 @@ void audio(chanend c_mix_out, chanend ?c_dig_rx, chanend ?c_config, chanend ?c)
             }
 #endif
             /* Configure Clocking/CODEC/DAC/ADC for SampleFreq/MClk */
-            AudioHwConfig(curFreq, mClk, c_config, dsdMode);
+            AudioHwConfig(curFreq, mClk, c_config, dsdMode, curSamRes_DAC, curSamRes_ADC);
         }
 
         if(!firstRun)
         {
             /* TODO wait for good mclk instead of delay */
             /* No delay for DFU modes */
-            if ((curSamFreq != AUDIO_REBOOT_FROM_DFU) && (curSamFreq != AUDIO_STOP_FOR_DFU) && retVal1)
+            if ((curSamFreq != AUDIO_REBOOT_FROM_DFU) && (curSamFreq != AUDIO_STOP_FOR_DFU) && command)
             {
 #if 0
                 /* User should ensure MCLK is stable in AudioHwConfig */
@@ -981,7 +980,7 @@ void audio(chanend c_mix_out, chanend ?c_dig_rx, chanend ?c_config, chanend ?c)
                 outuint(c_spdif_out, mClk);
 #endif
 
-                {retVal1, retVal2} = deliver(c_mix_out,
+                command = deliver(c_mix_out,
 #ifdef SPDIF
                    c_spdif_out,
 #else
@@ -989,24 +988,21 @@ void audio(chanend c_mix_out, chanend ?c_dig_rx, chanend ?c_config, chanend ?c)
 #endif
                    divide, curSamFreq, c_dig_rx, c);
 
-#if (DSD_CHANS_DAC != 0)
-                if(retVal1 == SET_SAMPLE_FREQ)
+                if(command == SET_SAMPLE_FREQ)
                 {
-                    curSamFreq = retVal2;
+                    curSamFreq = inuint(c_mix_out);
                 }
-                else if(retVal1 == SET_DSD_MODE)
+                else if(command == SET_STREAM_FORMAT_OUT)
                 {
                     /* Off = 0
                      * DOP = 1
                      * Native = 2
                      */
-                    dsdMode = retVal2;
+                    dsdMode = inuint(c_mix_out);
+                    curSamRes_DAC = inuint(c_mix_out); 
                 }
-#else
-                curSamFreq = retVal2;
-#endif
 
-                // Currently no more audio will happen after this point
+                /* Currently no more audio will happen after this point */
                 if (curSamFreq == AUDIO_STOP_FOR_DFU)
 				{
                   	outct(c_mix_out, XS1_CT_END);
@@ -1014,7 +1010,8 @@ void audio(chanend c_mix_out, chanend ?c_dig_rx, chanend ?c_config, chanend ?c)
                   	while (1)
 					{
 
-                    	{retVal1, curSamFreq} = dummy_deliver(c_mix_out);
+                    	command = dummy_deliver(c_mix_out);
+                        curSamFreq = inuint(c_mix_out);
 
                     	if (curSamFreq == AUDIO_START_FROM_DFU)
 						{
