@@ -38,8 +38,8 @@ static xc_ptr p_multIn;
 #endif
 
 /* Number of channels to/from the USB bus - initialised to HS Audio 2.0 */
-unsigned g_numUsbChanOut = NUM_USB_CHAN_OUT;
-unsigned g_numUsbChanIn = NUM_USB_CHAN_IN;
+unsigned g_numUsbChan_Out = NUM_USB_CHAN_OUT;
+unsigned g_numUsbChan_In = NUM_USB_CHAN_IN;
 
 /* Note we could improve on this, for one subslot is set to 4 */
 #define MAX_DEVICE_AUD_PACKET_SIZE_MULT_HS  ((MAX_FREQ/8000+1)*4)
@@ -110,8 +110,8 @@ unsigned packState = 0;
 unsigned packData = 0;
 
 /* Default to something sensible but the following are setup at stream start: */
-unsigned g_curSubSlot_out = HS_STREAM_FORMAT_OUTPUT_1_SUBSLOT_BYTES;
-unsigned g_curSubSlot_in  = HS_STREAM_FORMAT_INPUT_1_SUBSLOT_BYTES;
+unsigned g_curSubSlot_Out = HS_STREAM_FORMAT_OUTPUT_1_SUBSLOT_BYTES;
+unsigned g_curSubSlot_In  = HS_STREAM_FORMAT_INPUT_1_SUBSLOT_BYTES;
 
 /* Init to something sensible, but expect to be re-set before stream start */
 #if (AUDIO_CLASS==2)
@@ -159,13 +159,13 @@ void handle_audio_request(chanend c_mix_out)
     else
     {
         /* Not in overflow, store samples from mixer into sample buffer */
-        switch(g_curSubSlot_in)
+        switch(g_curSubSlot_In)
         {
             case 2:
 #if (STREAM_FORMAT_INPUT_SUBSLOT_2_USED == 0)
 __builtin_unreachable();
 #endif
-                for(int i = 0; i < g_numUsbChanIn; i++)
+                for(int i = 0; i < g_numUsbChan_In; i++)
                 {
                     /* Receive sample */
                     int sample = inuint(c_mix_out);
@@ -194,7 +194,7 @@ __builtin_unreachable();
 #endif
                 unsigned ptr = g_aud_to_host_dptr;
 
-                for(int i = 0; i < g_numUsbChanIn; i++)
+                for(int i = 0; i < g_numUsbChan_In; i++)
                 {
                     /* Receive sample */
                     int sample = inuint(c_mix_out);
@@ -226,7 +226,7 @@ __builtin_unreachable();
 #if (STREAM_FORMAT_INPUT_SUBSLOT_3_USED == 0)
 __builtin_unreachable();
 #endif
-                for(int i = 0; i < g_numUsbChanIn; i++)
+                for(int i = 0; i < g_numUsbChan_In; i++)
                 {
                     /* Receive sample */
                     int sample = inuint(c_mix_out);
@@ -274,7 +274,7 @@ __builtin_unreachable();
         }
 
         /* Input any remaining channels - past this thread we always operate on max channel count */
-        for(int i = 0; i < NUM_USB_CHAN_IN - g_numUsbChanIn; i++)
+        for(int i = 0; i < NUM_USB_CHAN_IN - g_numUsbChan_In; i++)
         {
             inuint(c_mix_out);
         }
@@ -317,7 +317,7 @@ __builtin_unreachable();
     }
     else
     {
-        switch(g_curSubSlot_out)
+        switch(g_curSubSlot_Out)
         {
 
             case 2:
@@ -325,7 +325,7 @@ __builtin_unreachable();
 __builtin_unreachable();
 #endif
                 /* Buffering not underflow condition send out some samples...*/
-                for(int i = 0; i < g_numUsbChanOut; i++)
+                for(int i = 0; i < g_numUsbChan_Out; i++)
                 {
 #pragma xta endpoint "mixer_request"
                     int sample;
@@ -354,7 +354,7 @@ __builtin_unreachable();
 __builtin_unreachable();
 #endif
                 /* Buffering not underflow condition send out some samples...*/
-                for(int i = 0; i < g_numUsbChanOut; i++)
+                for(int i = 0; i < g_numUsbChan_Out; i++)
                 {
 #pragma xta endpoint "mixer_request"
                     int sample;
@@ -386,7 +386,7 @@ __builtin_unreachable();
 __builtin_unreachable();
 #endif
                 /* Buffering not underflow condition send out some samples...*/
-                for(int i = 0; i < g_numUsbChanOut; i++)
+                for(int i = 0; i < g_numUsbChan_Out; i++)
                 {
 #pragma xta endpoint "mixer_request"
                     int sample;
@@ -437,16 +437,16 @@ __builtin_unreachable();
                 __builtin_unreachable();
                 break;
 
-        } /* switch(g_curSubSlot_out) */
+        } /* switch(g_curSubSlot_Out) */
 
         /* Output remaining channels. Past this point we always operate on MAX chan count */
-        for(int i = 0; i < NUM_USB_CHAN_OUT - g_numUsbChanOut; i++)
+        for(int i = 0; i < NUM_USB_CHAN_OUT - g_numUsbChan_Out; i++)
         {
             outuint(c_mix_out, 0);
         }
 
         /* 3/4 bytes per sample */
-        aud_data_remaining_to_device -= (g_numUsbChanOut * g_curSubSlot_out);
+        aud_data_remaining_to_device -= (g_numUsbChan_Out * g_curSubSlot_Out);
     }
 
     if (!inOverflow)
@@ -457,7 +457,7 @@ __builtin_unreachable();
 
             if (totalSampsToWrite)
             {
-                unsigned datasize = totalSampsToWrite * g_curSubSlot_in * g_numUsbChanIn;
+                unsigned datasize = totalSampsToWrite * g_curSubSlot_In * g_numUsbChan_In;
 
                 /* Round up to nearest word - note, not needed for slotsize == 4! */
                 datasize = (datasize+3) & (~0x3);
@@ -481,7 +481,7 @@ __builtin_unreachable();
 #if 0
             if (usb_speed == XUD_SPEED_HS)
             {
-                if (totalSampsToWrite < 0 || totalSampsToWrite*4*g_numUsbChanIn > (MAX_DEVICE_AUD_PACKET_SIZE_CLASS_TWO))
+                if (totalSampsToWrite < 0 || totalSampsToWrite*4*g_numUsbChan_In > (MAX_DEVICE_AUD_PACKET_SIZE_CLASS_TWO))
                 {
                     totalSampsToWrite = 0;
                 }
@@ -494,7 +494,7 @@ __builtin_unreachable();
                 }
             }
 #else
-            if (totalSampsToWrite < 0 || totalSampsToWrite * g_curSubSlot_in * g_numUsbChanIn > g_maxPacketSize)
+            if (totalSampsToWrite < 0 || totalSampsToWrite * g_curSubSlot_In * g_numUsbChan_In > g_maxPacketSize)
             {
                     totalSampsToWrite = 0;
             }
@@ -509,12 +509,12 @@ __builtin_unreachable();
                 space_left = aud_to_host_fifo_end - g_aud_to_host_wrptr;
             }
 
-            if ((space_left <= 0) || (space_left > totalSampsToWrite*g_numUsbChanIn * g_curSubSlot_in + 4))
+            if ((space_left <= 0) || (space_left > totalSampsToWrite*g_numUsbChan_In * g_curSubSlot_In + 4))
             {
                 /* Packet okay, write to fifo */
                 if (totalSampsToWrite)
                 {
-                    write_via_xc_ptr(g_aud_to_host_wrptr, totalSampsToWrite * g_curSubSlot_in * g_numUsbChanIn);
+                    write_via_xc_ptr(g_aud_to_host_wrptr, totalSampsToWrite * g_curSubSlot_In * g_numUsbChan_In);
                     packState = 0;
                     g_aud_to_host_dptr = g_aud_to_host_wrptr + 4;
                 }
@@ -528,7 +528,7 @@ __builtin_unreachable();
         }
     }
 
-    if (!outUnderflow && (aud_data_remaining_to_device<(g_curSubSlot_out * g_numUsbChanOut)))
+    if (!outUnderflow && (aud_data_remaining_to_device<(g_curSubSlot_Out * g_numUsbChan_Out)))
     {
         /* Handle any tail - incase a bad driver sent us a datalength not a multiple of chan count */
         if (aud_data_remaining_to_device)
@@ -776,7 +776,7 @@ void decouple(chanend c_mix_out,
                 SET_SHARED_GLOBAL(g_aud_to_host_buffer,g_aud_to_host_zeros);
 
                 /* Update size of zeros buffer */
-                SetupZerosSendBuffer(aud_to_host_usb_ep, sampFreq, g_curSubSlot_in);
+                SetupZerosSendBuffer(aud_to_host_usb_ep, sampFreq, g_curSubSlot_In);
 
                 /* Reset OUT buffer state */
                 outUnderflow = 1;
@@ -810,8 +810,8 @@ void decouple(chanend c_mix_out,
                 DISABLE_INTERRUPTS();
                 SET_SHARED_GLOBAL(g_freqChange_flag, 0);
 
-                GET_SHARED_GLOBAL(g_numUsbChanIn, g_formatChange_NumChans);
-                GET_SHARED_GLOBAL(g_curSubSlot_in, g_formatChange_SubSlot);
+                GET_SHARED_GLOBAL(g_numUsbChan_In, g_formatChange_NumChans);
+                GET_SHARED_GLOBAL(g_curSubSlot_In, g_formatChange_SubSlot);
                 GET_SHARED_GLOBAL(dataFormat, g_formatChange_DataFormat); /* Not currently used for input stream */
 
                 /* Reset IN buffer state */
@@ -826,16 +826,16 @@ void decouple(chanend c_mix_out,
                 SET_SHARED_GLOBAL(g_aud_to_host_buffer, g_aud_to_host_zeros);
 
                 /* Update size of zeros buffer */
-                SetupZerosSendBuffer(aud_to_host_usb_ep, sampFreq, g_curSubSlot_in);
+                SetupZerosSendBuffer(aud_to_host_usb_ep, sampFreq, g_curSubSlot_In);
 
                 GET_SHARED_GLOBAL(usbSpeed, g_curUsbSpeed);
                 if (usbSpeed == XUD_SPEED_HS)
                 {
-                    g_maxPacketSize = (MAX_DEVICE_AUD_PACKET_SIZE_MULT_HS * g_numUsbChanIn);
+                    g_maxPacketSize = (MAX_DEVICE_AUD_PACKET_SIZE_MULT_HS * g_numUsbChan_In);
                 }
                 else
                 {
-                    g_maxPacketSize = (MAX_DEVICE_AUD_PACKET_SIZE_MULT_FS * g_numUsbChanIn);
+                    g_maxPacketSize = (MAX_DEVICE_AUD_PACKET_SIZE_MULT_FS * g_numUsbChan_In);
                 }
 
                 SET_SHARED_GLOBAL(g_freqChange, 0);
@@ -845,15 +845,16 @@ void decouple(chanend c_mix_out,
             }
             else if(tmp == SET_STREAM_FORMAT_OUT)
             {
-                unsigned dataFormat;
+                unsigned dataFormat, sampRes;
                 unsigned dsdMode = DSD_MODE_OFF;
 
                 /* Change in OUT channel count - note we expect this on every stream start event */
                 DISABLE_INTERRUPTS();
                 SET_SHARED_GLOBAL(g_freqChange_flag, 0);
-                GET_SHARED_GLOBAL(g_numUsbChanOut, g_formatChange_NumChans);
-                GET_SHARED_GLOBAL(g_curSubSlot_out, g_formatChange_SubSlot);
+                GET_SHARED_GLOBAL(g_numUsbChan_Out, g_formatChange_NumChans);
+                GET_SHARED_GLOBAL(g_curSubSlot_Out, g_formatChange_SubSlot);
                 GET_SHARED_GLOBAL(dataFormat, g_formatChange_DataFormat);
+                GET_SHARED_GLOBAL(sampRes, g_formatChange_SampRes);
 
                 /* Reset OUT buffer state */
                 SET_SHARED_GLOBAL(g_aud_from_host_rdptr, aud_from_host_fifo_start);
@@ -910,7 +911,7 @@ void decouple(chanend c_mix_out,
             read_via_xc_ptr(datalength, released_buffer);
 
             /* Ignore bad small packets */
-            if ((datalength >= (g_numUsbChanOut * g_curSubSlot_out)) && (released_buffer == aud_from_host_wrptr))
+            if((datalength >= (g_numUsbChan_Out * g_curSubSlot_Out)) && (released_buffer == aud_from_host_wrptr))
             {
 
                 /* Move the write pointer of the fifo on - round up to nearest word */
