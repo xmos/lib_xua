@@ -263,27 +263,28 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
                     }
                     else if(cmd == SET_STREAM_FORMAT_IN)
                     {
-                        unsigned formatChange_SubSlot, formatChange_NumChans, formatChange_DataFormat;
-
-                        formatChange_DataFormat = inuint(c_aud_ctl);
-                        formatChange_NumChans = inuint(c_aud_ctl);
-                        formatChange_SubSlot = inuint(c_aud_ctl);
+                        unsigned formatChange_DataFormat = inuint(c_aud_ctl);
+                        unsigned formatChange_NumChans = inuint(c_aud_ctl);
+                        unsigned formatChange_SubSlot = inuint(c_aud_ctl);
+                        unsigned formatChange_SampRes = inuint(c_aud_ctl);
 
                         SET_SHARED_GLOBAL(g_formatChange_NumChans, formatChange_NumChans);
                         SET_SHARED_GLOBAL(g_formatChange_SubSlot, formatChange_SubSlot);
                         SET_SHARED_GLOBAL(g_formatChange_DataFormat, formatChange_DataFormat);
+                        SET_SHARED_GLOBAL(g_formatChange_SampRes, formatChange_SampRes);
                     }
                     else if (cmd == SET_STREAM_FORMAT_OUT)
                     {
                         XUD_BusSpeed_t busSpeed;
-                        unsigned formatChange_SubSlot, formatChange_NumChans, formatChange_DataFormat;
-                        formatChange_DataFormat = inuint(c_aud_ctl);
-                        formatChange_NumChans = inuint(c_aud_ctl);
-                        formatChange_SubSlot = inuint(c_aud_ctl);
+                        unsigned formatChange_DataFormat = inuint(c_aud_ctl);
+                        unsigned formatChange_NumChans = inuint(c_aud_ctl);
+                        unsigned formatChange_SubSlot = inuint(c_aud_ctl);
+                        unsigned formatChange_SampRes = inuint(c_aud_ctl);
 
                         SET_SHARED_GLOBAL(g_formatChange_NumChans, formatChange_NumChans);
                         SET_SHARED_GLOBAL(g_formatChange_SubSlot, formatChange_SubSlot);
                         SET_SHARED_GLOBAL(g_formatChange_DataFormat, formatChange_DataFormat);
+                        SET_SHARED_GLOBAL(g_formatChange_SampRes, formatChange_SampRes);
 
                         /* Host is starting up the output stream. Setup (or potentially resize) feedback packet based on bus-speed
                          * This is only really important on inital start up (when bus-speed
