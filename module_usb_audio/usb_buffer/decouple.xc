@@ -73,9 +73,11 @@ unsigned g_aud_from_host_info;
 unsigned g_freqChange_flag = 0;
 unsigned g_freqChange_sampFreq;
 
+/* Global vars for sharing stream format change between buffer and decouple (save a channel) */
 unsigned g_formatChange_SubSlot;
 unsigned g_formatChange_DataFormat;
 unsigned g_formatChange_NumChans;
+unsigned g_formatChange_SampRes;
 
 int speedRem = 0;
 
@@ -878,8 +880,9 @@ void decouple(chanend c_mix_out,
 
                 /* Wait for the audio code to request samples and respond with command */
                 inuint(c_mix_out);
-                outct(c_mix_out, SET_DSD_MODE);
+                outct(c_mix_out, SET_STREAM_FORMAT_OUT);
                 outuint(c_mix_out, dsdMode);
+                outuint(c_mix_out, sampRes);
 
                 /* Wait for handshake back */
                 chkct(c_mix_out, XS1_CT_END);
