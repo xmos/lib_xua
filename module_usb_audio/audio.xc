@@ -794,8 +794,8 @@ void audio(chanend c_mix_out, chanend ?c_dig_rx, chanend ?c_config, chanend ?c)
     chan c_spdif_out;
 #endif
     unsigned curSamFreq = DEFAULT_FREQ;
-    unsigned curSamRes_DAC = STREAM_FORMAT_OUTPUT_1_RESOLUTION_BITS; /* Default to something reasonable */  
-    unsigned curSamRes_ADC = STREAM_FORMAT_INPUT_1_RESOLUTION_BITS; /* Default to something reasonable - note, currently this never changes*/  
+    unsigned curSamRes_DAC = STREAM_FORMAT_OUTPUT_1_RESOLUTION_BITS; /* Default to something reasonable */
+    unsigned curSamRes_ADC = STREAM_FORMAT_INPUT_1_RESOLUTION_BITS; /* Default to something reasonable - note, currently this never changes*/
     unsigned command;
     unsigned mClk;
     unsigned divide;
@@ -999,7 +999,7 @@ void audio(chanend c_mix_out, chanend ?c_dig_rx, chanend ?c_config, chanend ?c)
                      * Native = 2
                      */
                     dsdMode = inuint(c_mix_out);
-                    curSamRes_DAC = inuint(c_mix_out); 
+                    curSamRes_DAC = inuint(c_mix_out);
                 }
 
                 /* Currently no more audio will happen after this point */

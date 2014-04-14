@@ -34,7 +34,7 @@ unsigned int divide)
 #ifndef CODEC_MASTER
     /* Note this call to stop_clock() will pause forever if the port clocking the clock-block is not low.
      * deliver() should return with this being the case */
-     
+
     stop_clock(clk_audio_bclk);
 
     if(!isnull(p_lrclk))

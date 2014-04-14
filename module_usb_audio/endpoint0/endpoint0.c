@@ -255,7 +255,7 @@ void Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
                                 if((sp.wValue > 0) && (g_curStreamAlt_Out != sp.wValue))
                                 {
                                     g_curStreamAlt_Out = sp.wValue;
-                                    
+
                                     /* Send format of data onto buffering */
                                     outuint(c_audioControl, SET_STREAM_FORMAT_OUT);
                                     outuint(c_audioControl, g_dataFormat_Out[sp.wValue-1]);        /* Data format (PCM/DSD) */
@@ -288,7 +288,7 @@ void Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
                                 if((sp.wValue > 0) && (g_curStreamAlt_In != sp.wValue))
                                 {
                                     g_curStreamAlt_In = sp.wValue;
-                                    
+
                                     /* Send format of data onto buffering */
                                     outuint(c_audioControl, SET_STREAM_FORMAT_IN);
                                     outuint(c_audioControl, g_dataFormat_In[sp.wValue-1]);        /* Data format (PCM/DSD) */
