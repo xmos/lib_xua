@@ -881,7 +881,7 @@ void decouple(chanend c_mix_out,
                 {
                     dsdMode = DSD_MODE_NATIVE;
                 }
-
+#endif
                 /* Wait for the audio code to request samples and respond with command */
                 inuint(c_mix_out);
                 outct(c_mix_out, SET_STREAM_FORMAT_OUT);
@@ -890,7 +890,6 @@ void decouple(chanend c_mix_out,
 
                 /* Wait for handshake back */
                 chkct(c_mix_out, XS1_CT_END);
-#endif
                 asm("outct res[%0],%1"::"r"(buffer_aud_ctl_chan),"r"(XS1_CT_END));
 
                 SET_SHARED_GLOBAL(g_freqChange, 0);
