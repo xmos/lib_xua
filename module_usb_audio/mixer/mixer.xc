@@ -1,9 +1,11 @@
 
 
 #include <xs1.h>
+#include <print.h>
 #include "mixer.h"
 #include "devicedefines.h"
 #include "xc_ptr.h"
+#include "commands.h"
 
 #ifdef MIXER
 
@@ -291,6 +293,7 @@ static void getSamplesFromDevice(chanend c, xc_ptr samples, int base)
 
 static int mixer1_mix2_flag = (DEFAULT_FREQ > 96000);
 
+
 #pragma unsafe arrays
 static void mixer1(chanend c_host, chanend c_mix_ctl, chanend c_mixer2)
 {
@@ -426,20 +429,36 @@ static void mixer1(chanend c_host, chanend c_mix_ctl, chanend c_mixer2)
         {
             int sampFreq;
 #pragma xta endpoint "mixer1_rate_change"
-            inct(c_host);
-            sampFreq = inuint(c_host);
+            unsigned command = inct(c_host);
 
-            mixer1_mix2_flag = sampFreq > 96000;
+            switch(command)
+            {
+                case SET_SAMPLE_FREQ:
+                    sampFreq = inuint(c_host);
+                    mixer1_mix2_flag = sampFreq > 96000;
+                    
+                    /* Inform mixer2 (or audio()) about freq change */
+                    outct(c_mixer2, command);
+                    outuint(c_mixer2, sampFreq);
+                    break;
+           
+                case SET_STREAM_FORMAT_OUT: 
+                case SET_STREAM_FORMAT_IN: 
+                     /* Inform mixer2 (or audio()) about format change */
+                    outct(c_mixer2, command);
+                    outuint(c_mixer2, inuint(c_host));
+                    outuint(c_mixer2, inuint(c_host));
+                    break;
+
+                default:
+                    break;
+            }
 
 #pragma loop unroll
             for (int i=0;i<MAX_MIX_COUNT;i++)
             {
               write_via_xc_ptr_indexed(samples, (NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + i), 0);
             }
-
-            /* Inform mixer2 (or audio())about freq change */
-            outct(c_mixer2, XS1_CT_END);
-            outuint(c_mixer2, sampFreq);
 
             /* Wait for handshake and pass on */
             chkct(c_mixer2, XS1_CT_END);
