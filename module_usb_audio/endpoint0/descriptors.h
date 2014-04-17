@@ -840,7 +840,7 @@ typedef struct
 #ifdef OUTPUT
     /* Output path */
     USB_Descriptor_Audio_InputTerminal_t        Audio_Out_InputTerminal;
-#if(OUTPUT_VOLUME_CONTROL==1)
+#if(OUTPUT_VOLUME_CONTROL == 1)
     USB_Descriptor_Audio_FeatureUnit_Out_t      Audio_Out_FeatureUnit;
 #endif
     USB_Descriptor_Audio_OutputTerminal_t       Audio_Out_OutputTerminal;
@@ -848,7 +848,9 @@ typedef struct
 #ifdef INPUT
     /* Input path */
     USB_Descriptor_Audio_InputTerminal_t        Audio_In_InputTerminal;
+#if(INPUT_VOLUME_CONTROL == 1)
     USB_Descriptor_Audio_FeatureUnit_In_t       Audio_In_FeatureUnit;
+#endif
     USB_Descriptor_Audio_OutputTerminal_t       Audio_In_OutputTerminal;
 #endif
 } __attribute__((packed)) USB_CfgDesc_Audio2_CS_Control_Int;
@@ -1212,6 +1214,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
             .iTerminal                 = 0,
         },
 
+#if (INPUT_VOLUME_CONTROL == 1)
         .Audio_In_FeatureUnit =
         {
             .bLength                    = sizeof(USB_Descriptor_Audio_FeatureUnit_In_t),
@@ -1285,20 +1288,26 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
             },
             0,                             /* 60 iFeature */
         },
+#endif
 
         .Audio_In_OutputTerminal =
         {
             /* Output Terminal Descriptor (USB Streaming) */
-            0x0C,                           /* 0  bLength */
-            UAC_CS_DESCTYPE_INTERFACE,                   /* 1  bDescriptorType: 0x24 */
-            UAC_CS_AC_INTERFACE_SUBTYPE_OUTPUT_TERMINAL,                /* 2  bDescriptorSubType: OUTPUT_TERMINAL */
-            ID_OT_USB,                      /* 3  bTerminalID */
-            USB_TERMTYPE_USB_STREAMING,     /* 5  wTerminalType */
-            0x00,                           /* 6  bAssocTerminal */
-            FU_USBIN,                       /* 7  bSourceID Connect to analog input feature unit*/
-            ID_CLKSEL,                      /* 8  bCSourceUD */
-            0x0000,                         /* 9  bmControls */
-            7,                              /* 11 iTerminal */
+            .bLength                   = 0x0C,                           
+            .bDescriptorType           = UAC_CS_DESCTYPE_INTERFACE,                   
+            .bDescriptorSubtype        =  UAC_CS_AC_INTERFACE_SUBTYPE_OUTPUT_TERMINAL,
+            .bTerminalID               = ID_OT_USB,                      
+            .wTerminalType             = USB_TERMTYPE_USB_STREAMING,
+            .bAssocTerminal            = 0x00,                           
+#if (INPUT_VOLUME_CONTROL == 1)
+            .bSourceID                 = FU_USBIN,                   /* 7  bSourceID Connect to analog input feature unit*/
+#else
+
+            .bSourceID                 = ID_IT_USB,                  /* 7  bSourceID Connect to analog input term */
+#endif
+            .bCSourceID                = ID_CLKSEL,                     
+            .bmControls                = 0x0000,               
+            .iTerminal                 = offsetof(StringDescTable_t, usbOutputTermStr_Audio2)/sizeof(char *)
         },
 #endif
     }, /* End of .Audio_CS_Control_Int */

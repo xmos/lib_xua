@@ -171,6 +171,7 @@ __builtin_unreachable();
                 {
                     /* Receive sample */
                     int sample = inuint(c_mix_out);
+#if (INPUT_VOLUME_CONTROL == 1)
 #if !defined(IN_VOLUME_IN_MIXER)
                     /* Apply volume */
                     int mult;
@@ -183,6 +184,7 @@ __builtin_unreachable();
                     /* Note, in 2 byte sub slot - ignore lower bits of macs */
 #elif defined(IN_VOLUME_IN_MIXER) && defined(IN_VOLUME_AFTER_MIX)
                     sample = sample << 3;
+#endif
 #endif
                     write_short_via_xc_ptr(g_aud_to_host_dptr, sample>>16);
                     g_aud_to_host_dptr+=2;
@@ -200,6 +202,7 @@ __builtin_unreachable();
                 {
                     /* Receive sample */
                     int sample = inuint(c_mix_out);
+#if(INPUT_VOLUME_CONTROL == 1)
 #if !defined(IN_VOLUME_IN_MIXER)
                     /* Apply volume */
                     int mult;
@@ -213,6 +216,7 @@ __builtin_unreachable();
 #endif
 #elif defined(IN_VOLUME_IN_MIXER) && defined(IN_VOLUME_AFTER_MIX)
                     sample = sample << 3;
+#endif
 #endif
                     /* Write into fifo */
                     write_via_xc_ptr(ptr, sample);
@@ -232,7 +236,7 @@ __builtin_unreachable();
                 {
                     /* Receive sample */
                     int sample = inuint(c_mix_out);
-#ifndef IN_VOLUME_IN_MIXER
+#if (INPUT_VOLUME_CONTROL) && !defined(IN_VOLUME_IN_MIXER)
                     /* Apply volume */
                     int mult;
                     int h;
