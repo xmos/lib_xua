@@ -102,12 +102,22 @@ unsigned g_curStreamAlt_In = 0;
 XUD_BusSpeed_t g_curUsbSpeed = 0;
 
 const unsigned g_subSlot_Out_HS[OUTPUT_FORMAT_COUNT]    = {HS_STREAM_FORMAT_OUTPUT_1_SUBSLOT_BYTES,
+#if(OUTPUT_FORMAT_COUNT > 1)
                                                             HS_STREAM_FORMAT_OUTPUT_2_SUBSLOT_BYTES,
-                                                            HS_STREAM_FORMAT_OUTPUT_3_SUBSLOT_BYTES};
+#endif
+#if(OUTPUT_FORMAT_COUNT > 2)
+                                                            HS_STREAM_FORMAT_OUTPUT_3_SUBSLOT_BYTES
+#endif
+};
 
 const unsigned g_subSlot_Out_FS[OUTPUT_FORMAT_COUNT]    = {FS_STREAM_FORMAT_OUTPUT_1_SUBSLOT_BYTES,
+#if(OUTPUT_FORMAT_COUNT > 1)
                                                             FS_STREAM_FORMAT_OUTPUT_2_SUBSLOT_BYTES,
-                                                            FS_STREAM_FORMAT_OUTPUT_3_SUBSLOT_BYTES};
+#endif
+#if(OUTPUT_FORMAT_COUNT > 2)
+                                                            FS_STREAM_FORMAT_OUTPUT_3_SUBSLOT_BYTES
+#endif
+};
 
 const unsigned g_subSlot_In_HS[INPUT_FORMAT_COUNT]      = {HS_STREAM_FORMAT_INPUT_1_SUBSLOT_BYTES};
 
