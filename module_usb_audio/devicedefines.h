@@ -617,6 +617,17 @@ enum USBEndpointNumber_Out
     ENDPOINT_COUNT_OUT              /* End marker */
 };
 
+/* Enable output volume control by default */
+#ifndef OUTPUT_VOLUME_CONTROL 
+#define OUTPUT_VOLUME_CONTROL 	1
+#endif
+
+/* Enable input volume control by default */
+#ifndef INPUT_VOLUME_CONTROL 
+#define INPUT_VOLUME_CONTROL 	1
+#endif
+
+
 #define AUDIO_STOP_FOR_DFU       (0x12345678)
 #define AUDIO_START_FROM_DFU     (0x87654321)
 #define AUDIO_REBOOT_FROM_DFU    (0xa5a5a5a5)
@@ -676,7 +687,7 @@ enum USBEndpointNumber_Out
 
 #ifdef MIXER
     #ifndef MAX_MIX_COUNT
-    #define MAX_MIX_COUNT        8
+    	#define MAX_MIX_COUNT        8
     #endif
 #else
     #define MAX_MIX_COUNT        0

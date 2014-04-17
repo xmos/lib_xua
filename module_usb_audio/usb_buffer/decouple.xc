@@ -339,7 +339,7 @@ __builtin_unreachable();
                     g_aud_from_host_rdptr+=2;
                     sample <<= 16;
 
-#ifndef OUT_VOLUME_IN_MIXER
+#if (OUTPUT_VOLUME_CONTROL == 1) && !defined(OUT_VOLUME_IN_MIXER)
                     asm("ldw %0, %1[%2]":"=r"(mult):"r"(p_multOut),"r"(i));
                     {h, l} = macs(mult, sample, 0, 0);
                     /* Note, in 2 byte subslot mode - ignore lower result of macs */
@@ -367,7 +367,7 @@ __builtin_unreachable();
                     read_via_xc_ptr(sample, g_aud_from_host_rdptr);
                     g_aud_from_host_rdptr+=4;
 
-#ifndef OUT_VOLUME_IN_MIXER
+#if (OUTPUT_VOLUME_CONTROL == 1) && !defined(OUT_VOLUME_IN_MIXER)
                     asm("ldw %0, %1[%2]":"=r"(mult):"r"(p_multOut),"r"(i));
                     {h, l} = macs(mult, sample, 0, 0);
                     h <<= 3;
@@ -422,7 +422,7 @@ __builtin_unreachable();
                     }
                     unpackState++;
 
-#ifndef OUT_VOLUME_IN_MIXER
+#if (OUTPUT_VOLUME_CONTROL == 1) && !defined(OUT_VOLUME_IN_MIXER)
                     asm("ldw %0, %1[%2]":"=r"(mult):"r"(p_multOut),"r"(i));
                     {h, l} = macs(mult, sample, 0, 0);
                     h <<= 3;

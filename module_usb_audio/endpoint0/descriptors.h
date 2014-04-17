@@ -840,7 +840,9 @@ typedef struct
 #ifdef OUTPUT
     /* Output path */
     USB_Descriptor_Audio_InputTerminal_t        Audio_Out_InputTerminal;
+#if(OUTPUT_VOLUME_CONTROL==1)
     USB_Descriptor_Audio_FeatureUnit_Out_t      Audio_Out_FeatureUnit;
+#endif
     USB_Descriptor_Audio_OutputTerminal_t       Audio_Out_OutputTerminal;
 #endif
 #ifdef INPUT
@@ -1066,7 +1068,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
             .bDescriptorSubType        = UAC_CS_AC_INTERFACE_SUBTYPE_CLOCK_SELECTOR,
             .bClockID                  = ID_CLKSEL,
             .bNrPins                   = NUM_CLOCKS,
-            ID_CLKSRC_INT,             /* baCSourceID */
+            .baCSourceId[0]            = ID_CLKSRC_INT,             /* baCSourceID */
 #ifdef SPDIF_RX
             ID_CLKSRC_SPDIF,           /* baCSourceID */
 
@@ -1083,19 +1085,20 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
         .Audio_Out_InputTerminal =
         {
             .bLength                   = sizeof(USB_Descriptor_Audio_InputTerminal_t),
-            UAC_CS_DESCTYPE_INTERFACE,                /* 1    bDescriptorType */
-            UAC_CS_AC_INTERFACE_SUBTYPE_INPUT_TERMINAL,  /* 2  bDescriptorSubType: INPUT_TERMINAL */
-            ID_IT_USB,                                /* 3  bTerminalID */
-            USB_TERMTYPE_USB_STREAMING,               /* 5  wTerminalType: USB Streaming */
-            0x00,                                     /* 6  bAssocTerminal */
-            ID_CLKSEL,                                /* 7  bCSourceID: ID of Clock Entity */
-            NUM_USB_CHAN_OUT,                         /* 8  bNrChannels */
-            0x00000000,                               /* 9  bmChannelConfig TODO. Set me! */
+            .bDescriptorType           = UAC_CS_DESCTYPE_INTERFACE,                
+            .bDescriptorSubtype        = UAC_CS_AC_INTERFACE_SUBTYPE_INPUT_TERMINAL,  
+            .bTerminalID               = ID_IT_USB,                                
+            .wTerminalType             = USB_TERMTYPE_USB_STREAMING,               
+            .bAssocTerminal            = 0x00,                                     
+            .bCSourceID                = ID_CLKSEL,                                
+            .bNrChannels               = NUM_USB_CHAN_OUT,                         
+            .bmChannelConfig           = 0x00000000,                               /* TODO. Set me! */
             .iChannelNames             = offsetof(StringDescTable_t, outputChanStr_1)/sizeof(char *),
-            0x0000,                                   /* 14 bmControls */
-            6,                                        /* 16 iTerminal */
+            .bmControls                =  0x0000,                                   
+            .iTerminal                 = offsetof(StringDescTable_t, usbInputTermStr_Audio2)/sizeof(char *) 
         },
 
+#if(OUTPUT_VOLUME_CONTROL == 1)
         /* Feature Unit Descriptor */
         .Audio_Out_FeatureUnit =
         {
@@ -1170,6 +1173,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
             },
             0,                              /* 60 iFeature */
         },
+#endif
 
         /* Output Terminal Descriptor (Audio) */
         .Audio_Out_OutputTerminal =
@@ -1180,7 +1184,11 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
             ID_OT_AUD,                                   /* 3  bTerminalID */
             .wTerminalType              = UAC_TT_OUTPUT_TERMTYPE_SPEAKER,
             0x00,                                        /* 6  bAssocTerminal */
+#if (OUTPUT_VOLUME_CONTROL == 1)
             FU_USBOUT,                                   /* 7  bSourceID Connect to analog input feature unit*/
+#else
+            ID_IT_USB,                                   /* 7  bSourceID Connect to analog input feature unit*/
+#endif
             ID_CLKSEL,                                   /* 8  bCSourceUD */
             0x0000,                                      /* 9  bmControls */
             0,                                           /* 11 iTerminal */
