@@ -653,6 +653,7 @@ void Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
             g_curUsbSpeed = XUD_ResetEndpoint(ep0_out, &ep0_in);
 #endif
             g_currentConfig = 0;
+            g_curStreamAlt_Out = 0;
 
 #ifdef DFU
             if (DFUReportResetState(null))
