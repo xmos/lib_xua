@@ -654,6 +654,7 @@ void Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
 #endif
             g_currentConfig = 0;
             g_curStreamAlt_Out = 0;
+            g_curStreamAlt_In = 0;
 
 #ifdef DFU
             if (DFUReportResetState(null))
