@@ -618,12 +618,12 @@ enum USBEndpointNumber_Out
 };
 
 /* Enable output volume control by default */
-#ifndef OUTPUT_VOLUME_CONTROL 
+#ifndef OUTPUT_VOLUME_CONTROL
 #define OUTPUT_VOLUME_CONTROL 	1
 #endif
 
 /* Enable input volume control by default */
-#ifndef INPUT_VOLUME_CONTROL 
+#ifndef INPUT_VOLUME_CONTROL
 #define INPUT_VOLUME_CONTROL 	1
 #endif
 
