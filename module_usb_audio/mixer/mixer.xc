@@ -436,14 +436,14 @@ static void mixer1(chanend c_host, chanend c_mix_ctl, chanend c_mixer2)
                 case SET_SAMPLE_FREQ:
                     sampFreq = inuint(c_host);
                     mixer1_mix2_flag = sampFreq > 96000;
-                    
+
                     /* Inform mixer2 (or audio()) about freq change */
                     outct(c_mixer2, command);
                     outuint(c_mixer2, sampFreq);
                     break;
-           
-                case SET_STREAM_FORMAT_OUT: 
-                case SET_STREAM_FORMAT_IN: 
+
+                case SET_STREAM_FORMAT_OUT:
+                case SET_STREAM_FORMAT_IN:
                      /* Inform mixer2 (or audio()) about format change */
                     outct(c_mixer2, command);
                     outuint(c_mixer2, inuint(c_host));

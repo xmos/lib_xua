@@ -65,7 +65,7 @@ unsigned int divide)
     if (divide == 1) /* e.g. 176.4KHz from 11.2896 */
     {
         configure_port_clock_output(p_bclk, clk_audio_mclk);
-        
+
         /* Generate bit clock block straight from mclk */
         configure_clock_src(clk_audio_bclk, p_mclk_in);
     }
@@ -73,11 +73,11 @@ unsigned int divide)
     {
         /* bit clock port from master clock clock-clock block */
         configure_out_port_no_ready(p_bclk, clk_audio_mclk, 0);
-    
+
         /* Generate bit clock block from pin */
         configure_clock_src(clk_audio_bclk, p_bclk);
     }
-   
+
     if(!isnull(p_lrclk))
     {
         /* Clock LR clock from bit clock-block */
