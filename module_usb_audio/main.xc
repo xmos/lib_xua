@@ -291,6 +291,7 @@ void usb_audio_core(chanend c_mix_out
             asm("ldw %0, dp[clk_audio_mclk]":"=r"(x));
             asm("setclk res[%0], %1"::"r"(p_for_mclk_count), "r"(x));
 #endif
+            //:buffer
             buffer(c_xud_out[ENDPOINT_NUMBER_OUT_AUDIO],/* Audio Out*/
                 c_xud_in[ENDPOINT_NUMBER_IN_AUDIO],     /* Audio In */
                 c_xud_in[ENDPOINT_NUMBER_IN_FEEDBACK],      /* Audio FB */
@@ -319,6 +320,7 @@ void usb_audio_core(chanend c_mix_out
                 , c_buff_ctrl
 #endif
             );
+            //:
         }
 
         /* Endpoint 0 Core */
@@ -336,6 +338,7 @@ void usb_audio_core(chanend c_mix_out
 #endif
             );
         }
+        //:
     }
 }
 
@@ -375,6 +378,7 @@ void usb_audio_io(chanend c_aud_in, chanend ?c_adc
             audio(c_aud_in, c_dig_rx, c_aud_cfg, c_adc);
 #endif
         }
+        //:
     }
 }
 
@@ -436,14 +440,15 @@ int main()
         );
 
 #if defined(MIDI) && defined(IAP) && (IAP_TILE == MIDI_TILE)
+        /* MIDI and IAP share a core */
         on tile[IAP_TILE]:
         {
-            /* MIDI and IAP share a core */
             thread_speed();
             usb_midi(p_midi_rx, p_midi_tx, clk_midi, c_midi, 0, c_iap, null, null, null);
         }
 #else
 #if defined(MIDI)
+        /* MIDI core */
         on tile[MIDI_TILE]:
         {
             thread_speed();
