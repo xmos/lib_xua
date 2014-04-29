@@ -644,11 +644,11 @@ void decouple(chanend c_mix_out,
 )
 {
     unsigned sampFreq = DEFAULT_FREQ;
-#ifdef OUTPUT
+#if (NUM_USB_CHAN_OUT > 0)
     int aud_from_host_flag=0;
     xc_ptr released_buffer;
 #endif
-#ifdef INPUT
+#if (NUM_USB_CHAN_OUT > 0)
     int aud_to_host_flag = 0;
 #endif
 
@@ -707,7 +707,7 @@ void decouple(chanend c_mix_out,
 
     /* Wait for usb_buffer() to set up globals for us to use
      * Note: assumed that buffer_aud_ctl_chan is also setup before these globals are !0 */
-#ifdef OUTPUT
+#if (NUM_USB_CHAN_OUT > 0)
     while(!aud_from_host_flag)
     {
         GET_SHARED_GLOBAL(aud_from_host_flag, g_aud_from_host_flag);
@@ -721,7 +721,7 @@ void decouple(chanend c_mix_out,
     XUD_SetReady_OutPtr(aud_from_host_usb_ep, g_aud_from_host_wrptr+4);
 #endif
 
-#ifdef INPUT
+#if (NUM_USB_CHAN_OUT > 0)
     /* Wait for usb_buffer to set up */
     while(!aud_to_host_flag)
     {
@@ -897,7 +897,7 @@ void decouple(chanend c_mix_out,
             }
         }
 
-#ifdef OUTPUT
+#if (NUM_USB_CHAN_OUT > 0)
         /* Check for OUT data flag from host - set by buffer() */
         GET_SHARED_GLOBAL(aud_from_host_flag, g_aud_from_host_flag);
         if (aud_from_host_flag)
@@ -980,7 +980,7 @@ void decouple(chanend c_mix_out,
         }
 #endif
 
-#ifdef INPUT
+#if (NUM_USB_CHAN_IN > 0)
         {
             /* Check if buffer() has sent a packet to host - uses shared mem flag to save chanends */
             int tmp;
@@ -1057,7 +1057,7 @@ void decouple(chanend c_mix_out,
                 continue;
             }
         }
-#endif // INPUT
+#endif /* NUM_USB_CHAN_IN > 0 */
     }
 }
 
