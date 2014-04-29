@@ -1,5 +1,5 @@
 /**
- * @file    DeviceDescriptors.h
+ * @file    descriptors.h
  * @brief   Device Descriptors
  * @author  Ross Owen, XMOS Limited
 */
@@ -593,10 +593,10 @@ StringDescTable_t g_strTable =
 enum USBInterfaceNumber
 {
     INTERFACE_NUMBER_AUDIO_CONTROL = 0,
-#if defined(OUTPUT) && (OUTPUT != 0)
+#if (NUM_USB_CHAN_OUT > 0)
     INTERFACE_NUMBER_AUDIO_OUTPUT,
 #endif
-#if defined(INPUT) && (INPUT != 0)
+#if  (NUM_USB_CHAN_IN > 0)
     INTERFACE_NUMBER_AUDIO_INPUT,
 #endif
 #if defined(MIDI) && (MIDI != 0)
@@ -615,9 +615,9 @@ enum USBInterfaceNumber
     INTERFACE_COUNT          /* End marker */
 };
 
-#if defined(INPUT) && defined(OUTPUT)
+#if (NUM_USB_CHAN_IN > 0) && (NUM_USB_CHAN_OUT > 0)
 #define AUDIO_INTERFACE_COUNT 3
-#elif defined(INPUT) || defined(OUTPUT)
+#elif (NUM_USB_CHAN_IN > 0) || (NUM_USB_CHAN_OUT > 0)
 #define AUDIO_INTERFACE_COUNT 2
 #else
 #define AUDIO_INTERFACE_COUNT 1
@@ -837,7 +837,7 @@ typedef struct
     USB_Descriptor_Audio_ClockSource_t          Audio_ClockSource_ADAT;
 #endif
     USB_Descriptor_Audio_ClockSelector_t        Audio_ClockSelector;
-#ifdef OUTPUT
+#if (NUM_USB_CHAN_OUT > 0)
     /* Output path */
     USB_Descriptor_Audio_InputTerminal_t        Audio_Out_InputTerminal;
 #if(OUTPUT_VOLUME_CONTROL == 1)
@@ -845,7 +845,7 @@ typedef struct
 #endif
     USB_Descriptor_Audio_OutputTerminal_t       Audio_Out_OutputTerminal;
 #endif
-#ifdef INPUT
+#if (NUM_USB_CHAN_IN > 0)
     /* Input path */
     USB_Descriptor_Audio_InputTerminal_t        Audio_In_InputTerminal;
 #if(INPUT_VOLUME_CONTROL == 1)
@@ -865,7 +865,7 @@ typedef struct
     USB_Descriptor_Interface_t                  Audio_StdControlInterface;       /* Standard Audio Control Interface Header Descriptor */
 
     USB_CfgDesc_Audio2_CS_Control_Int           Audio_CS_Control_Int;
-#ifdef OUTPUT
+#if (NUM_USB_CHAN_OUT > 0)
     /* Audio streaming: Output stream */
     USB_Descriptor_Interface_t                  Audio_Out_StreamInterface_Alt0;  /* Zero bandwith alternative */
     USB_Descriptor_Interface_t                  Audio_Out_StreamInterface_Alt1;
@@ -891,7 +891,7 @@ typedef struct
     USB_Descriptor_Endpoint_t                   Audio_Out_Fb_Endpoint_3;
 #endif
 #endif
-#ifdef INPUT
+#if (NUM_USB_CHAN_IN > 0)
     /* Audio Streaming: Input stream */
     USB_Descriptor_Interface_t                  Audio_In_StreamInterface_Alt0;  /* Zero bandwith alternative */
     USB_Descriptor_Interface_t                  Audio_In_StreamInterface_Alt1;
@@ -1082,7 +1082,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
             .iClockSelector            = 13, /* TODO Shoudn't be hard-coded */
         },
 
-#ifdef OUTPUT
+#if (NUM_USB_CHAN_OUT > 0)
         /* Input Terminal Descriptor (USB Input Terminal) */
         .Audio_Out_InputTerminal =
         {
@@ -1196,7 +1196,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
             0,                                           /* 11 iTerminal */
         },
 #endif
-#ifdef INPUT
+#if (NUM_USB_CHAN_IN > 0)
     /* Input Terminal Descriptor (Analogue Input Terminal) */
         .Audio_In_InputTerminal =
         {
@@ -1312,7 +1312,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
 #endif
     }, /* End of .Audio_CS_Control_Int */
 
-#ifdef OUTPUT
+#if (NUM_USB_CHAN_OUT > 0)
     /* Zero bandwith alternative 0 */
     /* Standard AS Interface Descriptor (4.9.1) */
     .Audio_Out_StreamInterface_Alt0 =
@@ -1549,7 +1549,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
     },
 #endif /* OUTPUT_FORMAT_COUNT > 2 */
 #endif /* OUTPUT */
-#ifdef INPUT
+#if (NUM_USB_CHAN_IN > 0)
 
     /* Zero bandwith alternative 0 */
     /* Standard AS Interface Descriptor (4.9.1) */
@@ -1908,13 +1908,13 @@ unsigned char cfgDesc_Null[] =
 #if defined (AUDIO_CLASS_FALLBACK) || (AUDIO_CLASS == 1)
 /* Configuration descriptor for Audio v1.0 */
 /* Note Audio 1.0 descriptors still a simple array so we need some extra defines regarding lengths.. */
-#ifdef INPUT
+#if (NUM_USB_CHAN_IN > 0)
 #define INPUT_INTERFACES_A1         (1)
 #else
 #define INPUT_INTERFACES_A1         (0)
 #endif
 
-#ifdef OUTPUT
+#if (NUM_USB_CHAN_OUT > 0)
 #define OUTPUT_INTERFACES_A1         (1)
 #else
 #define OUTPUT_INTERFACES_A1         (0)
@@ -1980,14 +1980,14 @@ unsigned char cfgDesc_Audio1[] =
     (AC_TOTAL_LENGTH & 0xFF),       /* wTotallength (Combined length of this descriptor and all Unit and Terminal Descriptors) */
     (AC_TOTAL_LENGTH >> 8),         /* wTotalLength */
     STREAMING_INTERFACES,           /* Num streaming interfaces */
-#ifdef OUTPUT
+#if (NUM_USB_CHAN_OUT > 0)
     0x01,                           /* AudioStreaming interface 1 belongs to AC interface */
 #endif
-#ifdef INPUT
+#if (NUM_USB_CHAN_IN > 0)
     (OUTPUT_INTERFACES_A1 + 1),     /* AudioStreaming interface 2 belongs to AC interface */
 #endif
 
-#ifdef OUTPUT
+#if (NUM_USB_CHAN_OUT > 0)
     /* CS_Interface Input Terminal 1 Descriptor - USB streaming Host to Device */
     0x0C,
     UAC_CS_DESCTYPE_INTERFACE,      /* UAC_CS_DESCTYPE_INTERFACE */
@@ -2021,10 +2021,9 @@ unsigned char cfgDesc_Audio1[] =
     0x00,                           /* Associated terminal - unused */
     0x0A,                           /* sourceID  */
     0x00,                           /* Unused */
-
 #endif
 
-#ifdef INPUT
+#if (NUM_USB_CHAN_IN > 0)
     /* CS_Interface Input Terminal 2 Descriptor - Analog in from line in */
     0x0C,
     UAC_CS_DESCTYPE_INTERFACE,
@@ -2060,7 +2059,7 @@ unsigned char cfgDesc_Audio1[] =
     0x00,                           /* String table index */
 #endif
 
-#ifdef OUTPUT
+#if (NUM_USB_CHAN_OUT > 0)
     /* Standard AS Interface Descriptor (4.5.1) */
     0x09,                           /* bLength */
     0x04,                           /* INTERFACE */
@@ -2142,7 +2141,7 @@ unsigned char cfgDesc_Audio1[] =
     0x0,                            /* bSynchAddress */
 #endif
 
-#ifdef INPUT
+#if (NUM_USB_CHAN_IN > 0)
     /* Standard Interface Descriptor - Audio streaming IN */
     0x09,
     0x04,                           /* INTERFACE */
