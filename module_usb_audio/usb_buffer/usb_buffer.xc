@@ -131,7 +131,7 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
 
     unsigned clocks = 0;
 
-#ifdef INPUT
+#if (NUM_USB_CHAN_IN > 0)
     unsigned bufferIn = 1;
 #endif
     unsigned remnant = 0, cycles;
@@ -184,11 +184,11 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
     expected_fb = ((DEFAULT_FREQ * 0x2000) / 1000);
 #endif
 
-#ifdef OUTPUT
+#if (NUM_USB_CHAN_OUT > 0)
     SET_SHARED_GLOBAL(g_aud_from_host_flag, 1);
 #endif
 
-#ifdef INPUT
+#if (NUM_USB_CHAN_IN > 0)
     SET_SHARED_GLOBAL(g_aud_to_host_flag, 1);
 #endif
 
@@ -391,7 +391,7 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
 
 
 
-#ifdef INPUT
+#if (NUM_USB_CHAN_IN > 0)
             /* Sent audio packet DEVICE -> HOST */
             case XUD_SetData_Select(c_aud_in, ep_aud_in, result):
             {
@@ -401,7 +401,7 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
             break;
 #endif
 
-#ifdef OUTPUT
+#if (NUM_USB_CHAN_OUT > 0)
             /* Feedback Pipe */
             case XUD_SetData_Select(c_aud_fb, ep_aud_fb, result):
             {
