@@ -124,20 +124,36 @@ const unsigned g_subSlot_In_HS[INPUT_FORMAT_COUNT]      = {HS_STREAM_FORMAT_INPU
 const unsigned g_subSlot_In_FS[INPUT_FORMAT_COUNT]      = {FS_STREAM_FORMAT_INPUT_1_SUBSLOT_BYTES};
 
 const unsigned g_sampRes_Out_HS[OUTPUT_FORMAT_COUNT]    = {HS_STREAM_FORMAT_OUTPUT_1_RESOLUTION_BITS,
+#if(OUTPUT_FORMAT_COUNT > 1)
                                                             HS_STREAM_FORMAT_OUTPUT_2_RESOLUTION_BITS,
-                                                            HS_STREAM_FORMAT_OUTPUT_3_RESOLUTION_BITS};
+#endif
+#if(OUTPUT_FORMAT_COUNT > 2)
+                                                            HS_STREAM_FORMAT_OUTPUT_3_RESOLUTION_BITS
+#endif
+};
 
 const unsigned g_sampRes_Out_FS[OUTPUT_FORMAT_COUNT]    = {FS_STREAM_FORMAT_OUTPUT_1_RESOLUTION_BITS,
+#if(OUTPUT_FORMAT_COUNT > 1)
                                                             FS_STREAM_FORMAT_OUTPUT_2_RESOLUTION_BITS,
-                                                            FS_STREAM_FORMAT_OUTPUT_3_RESOLUTION_BITS};
+#endif
+#if(OUTPUT_FORMAT_COUNT > 2)
+                                                            FS_STREAM_FORMAT_OUTPUT_3_RESOLUTION_BITS
+#endif
+};
 
 const unsigned g_sampRes_In_HS[OUTPUT_FORMAT_COUNT]     = {HS_STREAM_FORMAT_INPUT_1_RESOLUTION_BITS};
 
 const unsigned g_sampRes_In_FS[OUTPUT_FORMAT_COUNT]     = {FS_STREAM_FORMAT_INPUT_1_RESOLUTION_BITS};
 
 const unsigned g_dataFormat_Out[OUTPUT_FORMAT_COUNT]    = {STREAM_FORMAT_OUTPUT_1_DATAFORMAT,
+
+#if(OUTPUT_FORMAT_COUNT > 1)
                                                             STREAM_FORMAT_OUTPUT_2_DATAFORMAT,
-                                                            STREAM_FORMAT_OUTPUT_3_DATAFORMAT};
+#endif
+#if(OUTPUT_FORMAT_COUNT > 2)
+                                                            STREAM_FORMAT_OUTPUT_3_DATAFORMAT
+#endif
+};
 
 const unsigned g_dataFormat_In[INPUT_FORMAT_COUNT] = {STREAM_FORMAT_INPUT_1_DATAFORMAT};
 
