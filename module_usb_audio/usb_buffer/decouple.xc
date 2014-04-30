@@ -648,7 +648,7 @@ void decouple(chanend c_mix_out,
     int aud_from_host_flag=0;
     xc_ptr released_buffer;
 #endif
-#if (NUM_USB_CHAN_OUT > 0)
+#if (NUM_USB_CHAN_IN > 0)
     int aud_to_host_flag = 0;
 #endif
 
@@ -721,7 +721,7 @@ void decouple(chanend c_mix_out,
     XUD_SetReady_OutPtr(aud_from_host_usb_ep, g_aud_from_host_wrptr+4);
 #endif
 
-#if (NUM_USB_CHAN_OUT > 0)
+#if (NUM_USB_CHAN_IN > 0)
     /* Wait for usb_buffer to set up */
     while(!aud_to_host_flag)
     {
