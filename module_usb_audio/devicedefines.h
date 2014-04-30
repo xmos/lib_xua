@@ -245,12 +245,11 @@
  *
  * Default: NONE (Must be defined by app when SPDIF_RX enabled)
  */ 
-#ifdef SPDIF_RX
+#if defined (SPDIF_RX) || defined (__DOXYGEN__)
 #ifndef SPDIF_RX_INDEX
     #error SPDIF_RX_INDEX not defined and SPDIF_RX defined
-#endif
-#else    
     #define SPDIF_RX_INDEX 0 /* Default define for doxygen */
+#endif
 #endif
 
 /**
@@ -259,12 +258,11 @@
  *
  * Default: NONE (Must be defined by app when ADAT_RX enabled)
  */ 
-#ifdef ADAT_RX
+#if defined(ADAT_RX) || defined(__DOXYGEN__) 
 #ifndef ADAT_RX_INDEX
     #error ADAT_RX_INDEX not defined and ADAT_RX defined
+    #define ADAT_RX_INDEX (0) /* Default define for doxygen */ 
 #endif
-#else
-    #define ADAT_RX_INDEX 0 /* Default define for doxygen */
 #endif
 
 /**
