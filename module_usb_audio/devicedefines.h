@@ -10,28 +10,28 @@
 
 /* Default tile arrangement */
 
-/** 
- * @brief Location (tile) of audio I/O. Default: 0 
+/**
+ * @brief Location (tile) of audio I/O. Default: 0
  */
 #ifndef AUDIO_IO_TILE
 #define AUDIO_IO_TILE   0
 #endif
 
-/** 
- * @brief Location (tile) of audio I/O. Default: 0 
+/**
+ * @brief Location (tile) of audio I/O. Default: 0
  */
 #ifndef XUD_TILE
 #define XUD_TILE        0
 #endif
 
-/** 
+/**
  * @brief Location (tile) of IAP. Default: AUDIO_IO_TILE
  */
 #ifndef IAP_TILE
 #define IAP_TILE        AUDIO_IO_TILE
 #endif
 
-/** 
+/**
  * @brief Location (tile) of MIDI I/O. Default: AUDIO_IO_TILE
  */
 #ifndef MIDI_TILE
@@ -39,7 +39,7 @@
 #endif
 
 /**
- * @brief Number of input channels (device to host). Default: NONE (Must be defined by app) 
+ * @brief Number of input channels (device to host). Default: NONE (Must be defined by app)
  */
 #if !defined(NUM_USB_CHAN_IN)
     #error NUM_USB_CHAN_IN must be defined!
@@ -54,7 +54,7 @@
     #define NUM_USB_CHAN_OUT 2 /* Define anyway for doxygen */
 #endif
 
-/** 
+/**
  * @brief Number of DSD output channels. Default: 0
  */
 #if defined(DSD_CHANS_DAC)
@@ -98,7 +98,7 @@
 #define MAX_FREQ                 (192000)
 #endif
 
-/** 
+/**
  * @brief Min supported sample frequency for device (Hz). Default 44100Hz
  */
 #ifndef MIN_FREQ
@@ -106,7 +106,7 @@
 #endif
 
 /**
- * @brief Master clock defines for 44100 rates (in Hz). Default: NOTE (Must be defined by app) 
+ * @brief Master clock defines for 44100 rates (in Hz). Default: NOTE (Must be defined by app)
  */
 #ifndef MCLK_441
     #error MCLK_441 not defined
@@ -121,7 +121,7 @@
     #define MCLK_48              (256 * 48000) /* Define anyway for doygen */
 #endif
 
-/** 
+/**
  * @brief Default device sample frequency. A safe default should be used. Default: MIN_FREQ
  */
 #ifndef DEFAULT_FREQ
@@ -131,14 +131,14 @@
 /* Audio Class Defines */
 
 /**
- * @brief USB Audio Class Version. Default: 2 (Audio Class version 2.0)   
+ * @brief USB Audio Class Version. Default: 2 (Audio Class version 2.0)
  */
 #ifndef AUDIO_CLASS
 #define AUDIO_CLASS 2
 #endif
 
-/** 
- * @brief Whether or not to fall back to Audio Class 1.0 in USB Full-speed. Default: 0 (Disabled) 
+/**
+ * @brief Whether or not to fall back to Audio Class 1.0 in USB Full-speed. Default: 0 (Disabled)
  */
 #ifndef AUDIO_CLASS_FALLBACK
 #define AUDIO_CLASS_FALLBACK  0     /* Default to not falling back to UAC 1 */
@@ -149,11 +149,11 @@
 #endif
 
 /**
- * @brief Whether or not to run UAC2 in full-speed. When disabled device can either operate in 
- *        UAC1 mode in full-speed (if AUDIO_CLASS_FALLBACK enabled) or return "null" descriptors. 
+ * @brief Whether or not to run UAC2 in full-speed. When disabled device can either operate in
+ *        UAC1 mode in full-speed (if AUDIO_CLASS_FALLBACK enabled) or return "null" descriptors.
  *
  * Default: 1 (Enabled) when AUDIO_CLASS_FALLBACK disabled.
- */ 
+ */
 #if (AUDIO_CLASS == 2)
     /* Whether to run in Audio Class 2.0 mode in USB Full-speed */
     #if !defined(FULL_SPEED_AUDIO_2) && !defined(AUDIO_CLASS_FALLBACK)
@@ -189,7 +189,7 @@
 #endif
 
 /**
- * @brief MIDI Rx port width (1 or 4bit). Default: 1 
+ * @brief MIDI Rx port width (1 or 4bit). Default: 1
  */
 #ifndef MIDI_RX_PORT_WIDTH
 #define MIDI_RX_PORT_WIDTH       (1)
@@ -210,14 +210,14 @@
 /**
  * @brief Defines which output channels (stereo) should be output on S/PDIF. Note, Output channels indexed from 0.
  *
- * Default: 0 (i.e. channels 0 & 1) 
+ * Default: 0 (i.e. channels 0 & 1)
  * */
 #ifndef SPDIF_TX_INDEX
 #define SPDIF_TX_INDEX                  (0)
 #endif
 
 /**
- * @brief Enables SPDIF Rx. Default: 0 (Disabled) 
+ * @brief Enables SPDIF Rx. Default: 0 (Disabled)
  */
 #ifndef SPDIF_RX
 #define SPDIF_RX              (0)
@@ -229,7 +229,7 @@
 #endif
 
 /**
- * @brief Enables ADAT Rx. Default: 0 (Disabled) 
+ * @brief Enables ADAT Rx. Default: 0 (Disabled)
  */
 #ifndef ADAT_RX
 #define ADAT_RX               (0)
@@ -240,11 +240,11 @@
 #endif
 
 /**
- * @brief S/PDIF Rx first channel index, defines which channels S/PDIF will be input on. 
+ * @brief S/PDIF Rx first channel index, defines which channels S/PDIF will be input on.
  * Note, indexed from 0.
  *
  * Default: NONE (Must be defined by app when SPDIF_RX enabled)
- */ 
+ */
 #if defined (SPDIF_RX) || defined (__DOXYGEN__)
 #ifndef SPDIF_RX_INDEX
     #error SPDIF_RX_INDEX not defined and SPDIF_RX defined
@@ -257,11 +257,11 @@
  * Note, indexed from 0.
  *
  * Default: NONE (Must be defined by app when ADAT_RX enabled)
- */ 
-#if defined(ADAT_RX) || defined(__DOXYGEN__) 
+ */
+#if defined(ADAT_RX) || defined(__DOXYGEN__)
 #ifndef ADAT_RX_INDEX
     #error ADAT_RX_INDEX not defined and ADAT_RX defined
-    #define ADAT_RX_INDEX (0) /* Default define for doxygen */ 
+    #define ADAT_RX_INDEX (0) /* Default define for doxygen */
 #endif
 #endif
 
@@ -316,7 +316,7 @@
 
 /**
  * @brief USB Vendor ID (or VID) as assigned by the USB-IF
- * 
+ *
  * Default: 0x20B1 (XMOS)
  */
 #ifndef VENDOR_ID
@@ -340,14 +340,14 @@
 /**
  * @brief Product string for Audio Class 2.0 mode.
  *
- * Default: "xCore USB Audio 2.0" 
+ * Default: "xCore USB Audio 2.0"
  */
 #ifndef PRODUCT_STR_A2
 #define PRODUCT_STR_A2           "xCORE USB Audio 2.0"
 #endif
 
-/** 
- * @brief Product string for Audio Class 1.0 mode 
+/**
+ * @brief Product string for Audio Class 1.0 mode
  *
  * Default: "xCore USB Audio 1.0"
  */
@@ -367,7 +367,7 @@
 #endif
 
 /**
- * @brief USB Product ID (PID) for Audio Class 2.0 mode 
+ * @brief USB Product ID (PID) for Audio Class 2.0 mode
  *
  * Default: 0x0002
  */
@@ -381,7 +381,7 @@
 #define BCD_DEVICE_N             1
 
 /**
- * @brief Device firmware version number in Binary Coded Decimal format: 0xJJMN where JJ: major, M: minor, N: sub-minor version number. 
+ * @brief Device firmware version number in Binary Coded Decimal format: 0xJJMN where JJ: major, M: minor, N: sub-minor version number.
  *
  * Default: XMOS USB Audio Release version (e.g. 0x0651 for 6.5.1)
  */
@@ -430,7 +430,7 @@
  *
  * Default: 24 if Alternate 1 is PCM, else 32 if DSD/RAW
  *
- * Note, 24 on the lowests alt in case of OUTPUT_FORMAT_COUNT = 1 leaving 24bit as the designs default 
+ * Note, 24 on the lowests alt in case of OUTPUT_FORMAT_COUNT = 1 leaving 24bit as the designs default
  * resolution.
  */
 #ifndef STREAM_FORMAT_OUTPUT_1_RESOLUTION_BITS
@@ -503,7 +503,7 @@
  * Default: 4 if resolution for Alternate 1 is 24bits, else resolution / 8
  *
  * Note, the default catchs the 24bit special case where 4-byte subslot is nicer for our 32-bit machine.
- * Typically do not care about this extra bus overhead at High-speed 
+ * Typically do not care about this extra bus overhead at High-speed
  *
  */
 #ifndef HS_STREAM_FORMAT_OUTPUT_1_SUBSLOT_BYTES
@@ -520,7 +520,7 @@
  * Default: 4 if resolution for Alternate 2 is 24bits, else resolution / 8
  *
  * Note, the default catchs the 24bit special case where 4-byte subslot is nicer for our 32-bit machine.
- * Typically do not care about this extra bus overhead at High-speed 
+ * Typically do not care about this extra bus overhead at High-speed
  *
  */
 #ifndef HS_STREAM_FORMAT_OUTPUT_2_SUBSLOT_BYTES
@@ -537,7 +537,7 @@
  * Default: 4 if resolution for Alternate 3 is 24bits, else resolution / 8
  *
  * Note, the default catchs the 24bit special case where 4-byte subslot is nicer for our 32-bit machine.
- * Typically do not care about this extra bus overhead at High-speed 
+ * Typically do not care about this extra bus overhead at High-speed
  *
  */
 #ifndef HS_STREAM_FORMAT_OUTPUT_3_SUBSLOT_BYTES
@@ -555,7 +555,7 @@
  *
  * Note, in full-speed mode bus bandwidth is at a premium, therefore pack samples into smallest
  * possible sub-slot.
- * 
+ *
  * Default: STREAM_FORMAT_OUTPUT_1_RESOLUTION_BITS / 8
  */
 #ifndef FS_STREAM_FORMAT_OUTPUT_1_SUBSLOT_BYTES
@@ -647,7 +647,7 @@
 /**
  * @brief Sample resolution (bits) of input stream Alternate 1.
  *
- * Default: 24 
+ * Default: 24
  */
 #ifndef STREAM_FORMAT_INPUT_1_RESOLUTION_BITS
     #define STREAM_FORMAT_INPUT_1_RESOLUTION_BITS           24
@@ -669,7 +669,7 @@
  * Default: 4 if resolution for Alternate 1 is 24bits, else resolution / 8
  *
  * Note, the default catchs the 24bit special case where 4-byte subslot is nicer for our 32-bit machine.
- * Typically do not care about this extra bus overhead at High-speed 
+ * Typically do not care about this extra bus overhead at High-speed
  *
  */
 #ifndef HS_STREAM_FORMAT_INPUT_1_SUBSLOT_BYTES
@@ -685,7 +685,7 @@
  *
  * Note, in full-speed mode bus bandwidth is at a premium, therefore pack samples into smallest
  * possible sub-slot.
- * 
+ *
  * Default: STREAM_FORMAT_INPUT_1_RESOLUTION_BITS / 8
  */
 #ifndef FS_STREAM_FORMAT_INPUT_1_SUBSLOT_BYTES
@@ -718,7 +718,7 @@
 #ifndef INPUT_VOLUME_CONTROL
 #define INPUT_VOLUME_CONTROL 	    (1)
 #endif
-    
+
 /* Power */
 
 /**
@@ -755,10 +755,10 @@
 
 /* Mixer defines */
 
-/** 
+/**
  * @brief Enable "mixer" core
  *
- * Default: 0 (Disabled) 
+ * Default: 0 (Disabled)
  */
 #ifndef MIXER
 #define MIXER              (0)
@@ -770,7 +770,7 @@
 #endif
 
 /**
- * @brief Number of seperate mixes to perform 
+ * @brief Number of seperate mixes to perform
  *
  * Default: 8 if MIXER enabled, else 0
  */
@@ -797,18 +797,18 @@
 
 /**
  * @brief The minimum volume setting above -inf. This is a signed 8.8 fixed point
- *        number that must be strictly greater than -128 (0x8000) 
- * Default: 0x8100 (-127db) 
+ *        number that must be strictly greater than -128 (0x8000)
+ * Default: 0x8100 (-127db)
  */
 #ifndef MIN_VOLUME
 #define MIN_VOLUME                     (0x8100)
 #endif
 
 
-/** 
- * @brief The maximum volume setting. This is a signed 8.8 fixed point number. 
+/**
+ * @brief The maximum volume setting. This is a signed 8.8 fixed point number.
  *
- * Default: 0x0000 (0db) 
+ * Default: 0x0000 (0db)
  */
 #ifndef MAX_VOLUME
 #define MAX_VOLUME                     (0x0000)
@@ -817,35 +817,35 @@
 /**
  * @brief The resolution of the volume control in db as a 8.8 fixed point number
  *
- * Default: 0x100 (1db) 
+ * Default: 0x100 (1db)
  */
 #ifndef VOLUME_RES
 #define VOLUME_RES                     (0x100)
 #endif
 
-/** 
+/**
  * @brief The minimum volume setting for the mixer unit above -inf.
  * This is a signed 8.8 fixed point number that must be strictly greater than -128 (0x8000)
- * 
- * Default: 0x8100 (-127db) 
+ *
+ * Default: 0x8100 (-127db)
  */
 #ifndef MIN_MIXER_VOLUME
 #define MIN_MIXER_VOLUME             (0x8100)
 #endif
 
 /**
- * @brief The maximum volume setting for the mixer. This is a signed 8.8 fixed point number. 
- * 
+ * @brief The maximum volume setting for the mixer. This is a signed 8.8 fixed point number.
+ *
  * Default: 0x0000 (0db)
  */
 #ifndef MAX_MIXER_VOLUME
 #define MAX_MIXER_VOLUME            (0x0000)
 #endif
 
-/** 
- * @brief The resolution of the volume control in db as a 8.8 fixed point number 
+/**
+ * @brief The resolution of the volume control in db as a 8.8 fixed point number
  *
-* Default: 0x100 (1db) 
+* Default: 0x100 (1db)
 */
 #ifndef VOLUME_RES_MIXER
 #define VOLUME_RES_MIXER            (0x100)
