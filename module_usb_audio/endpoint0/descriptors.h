@@ -1843,6 +1843,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
 #ifdef HID_CONTROLS
     /* HID */
     /* Interface descriptor details */
+    {
     9,                                 /* 0  bLength : Size of descriptor in Bytes */
     4,                                 /* 1  bDescriptorType (Interface: 0x04)*/
     INTERFACE_NUMBER_HID,              /* 2  bInterfaceNumber : Number of interface */
@@ -1871,6 +1872,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
     3,                                 /* 3  bmAttributes (INTERRUPT) */
     64,                                /* 4  wMaxPacketSize */
     8,                                 /* 6  bInterval */
+    },
 #endif
 
 };
