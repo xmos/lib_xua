@@ -1633,7 +1633,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
 #ifdef MIDI
 /* MIDI Descriptors */
 /* Table B-3: MIDI Adapter Standard AC Interface Descriptor */
-    0x09,                              /* 0 bLength : Size of this descriptor, in bytes. (field size 1 bytes) */
+    {0x09,                              /* 0 bLength : Size of this descriptor, in bytes. (field size 1 bytes) */
     0x04,                              /* 1 bDescriptorType : INTERFACE descriptor. (field size 1 bytes) */
     INTERFACE_NUMBER_MIDI_CONTROL,     /* 2 bInterfaceNumber : Index of this interface. (field size 1 bytes) */
     0x00,                              /* 3 bAlternateSetting : Index of this setting. (field size 1 bytes) */
@@ -1747,6 +1747,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
     0x01,                              /* 2 bDescriptorSubtype : MS_GENERAL subtype. (field size 1 bytes) */
     0x01,                              /* 3 bNumEmbMIDIJack : Number of embedded MIDI OUT Jacks. (field size 1 bytes) */
     0x03,                              /* 4 BaAssocJackID(1) : ID of the Embedded MIDI OUT Jack. (field size 1 bytes) */
+    },
 #endif
 
 #ifdef DFU
