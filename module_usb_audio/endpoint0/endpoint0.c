@@ -143,9 +143,9 @@ const unsigned g_dataFormat_In[INPUT_FORMAT_COUNT] = {STREAM_FORMAT_INPUT_1_DATA
 
 /* Endpoint 0 function.  Handles all requests to the device */
 void Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
-    NULLABLE_RESOURCE(chanend, c_mix_ctl),
-    NULLABLE_RESOURCE(chanend, c_clk_ctl),
-    NULLABLE_RESOURCE(chanend, c_usb_test))
+    chanend c_mix_ctl,
+    chanend c_clk_ctl,
+    chanend c_usb_test)
 {
     USB_SetupPacket_t sp;
     XUD_ep ep0_out = XUD_InitEp(c_ep0_out);
