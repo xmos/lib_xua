@@ -9,6 +9,7 @@
 #ifdef IAP
 #include "iap.h"
 #include "iap_user.h"
+#include "coprocessor_user.h"
 #endif
 //#define MIDI_LOOPBACK 1
 int icount = 0;
