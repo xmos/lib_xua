@@ -211,7 +211,7 @@ static int DFU_Upload(unsigned int request_len, unsigned int block_num, unsigned
     {
         cmd_data[0] = !firstRead;
 
-        // Read page
+        // Read whole (256bytes) page from the image on the flash
         flash_cmd_read_page((cmd_data, unsigned char[64]));
         subPagesLeft = 4;
 
@@ -225,8 +225,8 @@ static int DFU_Upload(unsigned int request_len, unsigned int block_num, unsigned
         }
     }
 
-    // Read page data
-    flash_cmd_write_page_data((request_data, unsigned char[64]));
+    // Get 64 bytes of page data from memory
+    flash_cmd_read_page_data((request_data, unsigned char[64]));
 
     subPagesLeft--;
 
