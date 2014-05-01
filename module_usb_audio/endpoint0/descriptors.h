@@ -172,9 +172,6 @@ typedef struct
 #error NUM_USB_CHAN > 18
 #endif
     STR_TABLE_ENTRY(iAPInterfaceStr);
-
-
-
 } StringDescTable_t;
 
 StringDescTable_t g_strTable =
@@ -205,6 +202,10 @@ StringDescTable_t g_strTable =
 #endif
 #ifdef DFU
     .dfuStr                      = APPEND_VENDOR_STR(DFU),
+#endif
+#ifdef MIDI
+    .midiOutStr                   = APPEND_VENDOR_STR(MIDI Out),
+    .midiInStr                    = APPEND_VENDOR_STR(MIDI In),
 #endif
 #if (NUM_USB_CHAN_OUT > 0)
 #if defined(SPDIF) && (SPDIF_TX_INDEX == 0)
