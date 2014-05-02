@@ -798,7 +798,7 @@
 /**
  * @brief The minimum volume setting above -inf. This is a signed 8.8 fixed point
  *        number that must be strictly greater than -128 (0x8000)
- * 
+ *
  * Default: 0x8100 (-127db)
  */
 #ifndef MIN_VOLUME
