@@ -55,7 +55,7 @@
 #endif
 
 /**
- * @brief Number of DSD output channels. Default: 0
+ * @brief Number of DSD output channels. Default: 0 (disabled)
  */
 #if defined(DSD_CHANS_DAC)
     #if defined(NATIVE_DSD) && (NATIVE_DSD == 0)
@@ -92,21 +92,21 @@
 #endif
 
 /**
- * @brief Max supported sample frequency for device (Hz). Default: 192000Hz
+ * @brief Max supported sample frequency for device (Hz). Default: 192000
  */
 #ifndef MAX_FREQ
 #define MAX_FREQ                 (192000)
 #endif
 
 /**
- * @brief Min supported sample frequency for device (Hz). Default 44100Hz
+ * @brief Min supported sample frequency for device (Hz). Default 44100
  */
 #ifndef MIN_FREQ
 #define MIN_FREQ                 (44100)
 #endif
 
 /**
- * @brief Master clock defines for 44100 rates (in Hz). Default: NOTE (Must be defined by app)
+ * @brief Master clock defines for 44100 rates (in Hz). Default: NONE (Must be defined by app)
  */
 #ifndef MCLK_441
     #error MCLK_441 not defined
@@ -114,7 +114,7 @@
 #endif
 
 /**
- * @brief Master clock defines for 48000 rates (in Hz). Default: NOTE (Must be defined by app)
+ * @brief Master clock defines for 48000 rates (in Hz). Default: NONE (Must be defined by app)
  */
 #ifndef MCLK_48
     #error MCLK_48 not defined
@@ -798,6 +798,7 @@
 /**
  * @brief The minimum volume setting above -inf. This is a signed 8.8 fixed point
  *        number that must be strictly greater than -128 (0x8000)
+ * 
  * Default: 0x8100 (-127db)
  */
 #ifndef MIN_VOLUME
