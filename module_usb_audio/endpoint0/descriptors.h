@@ -1837,43 +1837,46 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
         0x03,                            /* 3 bmAttributes : Interrupt, not shared. (field size 1 bytes) */
         0x0040,                          /* 4 wMaxPacketSize : 64 bytes per packet. (field size 2 bytes) - has to be 0x40 for compliance*/
         0x08,                            /* 6 bInterval : (2^(bInterval-1))/8 ms. Must be between 4 and 32ms (field size 1 bytes) */
-    }
+    },
 #endif
 #endif /* IAP */
 
 #ifdef HID_CONTROLS
-    /* HID */
-    /* Interface descriptor details */
+    .HID_Interface = 
     {
-    9,                                 /* 0  bLength : Size of descriptor in Bytes */
-    4,                                 /* 1  bDescriptorType (Interface: 0x04)*/
-    INTERFACE_NUMBER_HID,              /* 2  bInterfaceNumber : Number of interface */
-    0,                                 /* 3  bAlternateSetting : Value used  alternate interfaces using SetInterface Request */
-    1,                                 /* 4: bNumEndpoints : Number of endpoitns for this interface (excluding 0) */
-    3,                                 /* 5: bInterfaceClass */
-    0,                                 /* 6: bInterfaceSubClass - no boot device */
-    0,                                 /* 7: bInterfaceProtocol*/
-    0,                                 /* 8  iInterface */
-
-    /* The device implements HID Descriptor: */
-    9,                                 /* 0  bLength : Size of descriptor in Bytes */
-    0x21,                              /* 1  bDescriptorType (HID) */
-    0x10,                              /* 2  bcdHID */
-    0x01,                              /* 3  bcdHID */
-    0,                                 /* 4  bCountryCode */
-    1,                                 /* 5  bNumDescriptors */
-    0x22,                              /* 6  bDescriptorType[0] (Report) */
-    sizeof(hidReportDescriptor) & 0xff,/* 7  wDescriptorLength[0] */
-    sizeof(hidReportDescriptor) >> 8,  /* 8  wDescriptorLength[0] */
-
-    /* Endpoint descriptor (IN) */
-    0x7,                               /* 0  bLength */
-    5,                                 /* 1  bDescriptorType */
-    ENDPOINT_ADDRESS_IN_HID,           /* 2  bEndpointAddress  */
-    3,                                 /* 3  bmAttributes (INTERRUPT) */
-    64,                                /* 4  wMaxPacketSize */
-    8,                                 /* 6  bInterval */
+        9,                             /* 0  bLength : Size of descriptor in Bytes */
+        4,                             /* 1  bDescriptorType (Interface: 0x04)*/
+        INTERFACE_NUMBER_HID,          /* 2  bInterfaceNumber : Number of interface */
+        0,                             /* 3  bAlternateSetting : Value used  alternate interfaces using SetInterface Request */
+        1,                             /* 4: bNumEndpoints : Number of endpoitns for this interface (excluding 0) */
+        3,                             /* 5: bInterfaceClass */
+        0,                             /* 6: bInterfaceSubClass - no boot device */
+        0,                             /* 7: bInterfaceProtocol*/
+        0,                             /* 8  iInterface */
     },
+
+    { 
+        9,                             /* 0  bLength : Size of descriptor in Bytes */
+        0x21,                          /* 1  bDescriptorType (HID) */
+        0x10,                          /* 2  bcdHID */
+        0x01,                          /* 3  bcdHID */
+        0,                             /* 4  bCountryCode */
+        1,                             /* 5  bNumDescriptors */
+        0x22,                          /* 6  bDescriptorType[0] (Report) */
+        sizeof(hidReportDescriptor) & 0xff,/* 7  wDescriptorLength[0] */
+        sizeof(hidReportDescriptor) >> 8,  /* 8  wDescriptorLength[0] */
+    }, 
+
+    .HID_In_Endpoint = 
+    {
+        /* Endpoint descriptor (IN) */
+        0x7,                           /* 0  bLength */
+        5,                             /* 1  bDescriptorType */
+        ENDPOINT_ADDRESS_IN_HID,       /* 2  bEndpointAddress  */
+        3,                             /* 3  bmAttributes (INTERRUPT) */
+        64,                            /* 4  wMaxPacketSize */
+        8,                             /* 6  bInterval */
+    }
 #endif
 
 };
