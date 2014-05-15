@@ -268,11 +268,11 @@ void usb_audio_core(chanend c_mix_out
 #if (AUDIO_CLASS==2)
         XUD_Manager(c_xud_out, ENDPOINT_COUNT_OUT, c_xud_in, ENDPOINT_COUNT_IN,
             c_sof, epTypeTableOut, epTypeTableIn, p_usb_rst,
-            clk, 1, XUD_SPEED_HS, c_usb_test, pwrConfig);
+            clk, 1, XUD_SPEED_HS, pwrConfig);
 #else
         XUD_Manager(c_xud_out, ENDPOINT_COUNT_OUT, c_xud_in, ENDPOINT_COUNT_IN,
             c_sof, epTypeTableOut, epTypeTableIn, p_usb_rst,
-            clk, 1, XUD_SPEED_FS, c_usb_test, pwrConfig);
+            clk, 1, XUD_SPEED_FS, pwrConfig);
 #endif
 
         /* USB Packet buffering Core */
@@ -326,7 +326,7 @@ void usb_audio_core(chanend c_mix_out
         /* Endpoint 0 Core */
         {
             thread_speed();
-            Endpoint0( c_xud_out[0], c_xud_in[0], c_aud_ctl, c_mix_ctl, null, c_usb_test);
+            Endpoint0( c_xud_out[0], c_xud_in[0], c_aud_ctl, c_mix_ctl, null);
         }
 
         /* Decoupling core */
