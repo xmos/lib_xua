@@ -159,9 +159,7 @@ const unsigned g_dataFormat_In[INPUT_FORMAT_COUNT] = {STREAM_FORMAT_INPUT_1_DATA
 
 /* Endpoint 0 function.  Handles all requests to the device */
 void Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
-    chanend c_mix_ctl,
-    chanend c_clk_ctl,
-    chanend c_usb_test)
+    chanend c_mix_ctl, chanend c_clk_ctl)
 {
     USB_SetupPacket_t sp;
     XUD_ep ep0_out = XUD_InitEp(c_ep0_out);
@@ -547,7 +545,7 @@ void Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
                     (unsigned char*)&devDesc_Audio1, sizeof(devDesc_Audio1),
                     cfgDesc_Audio1, sizeof(cfgDesc_Audio1),
                     (char**)&g_strTable, sizeof(g_strTable)/sizeof(char *),
-                    &sp, c_usb_test, g_curUsbSpeed);
+                    &sp, null, g_curUsbSpeed);
 #elif FULL_SPEED_AUDIO_2
                 /* Return Audio 2.0 Descriptors for high_speed and full-speed */
 
@@ -625,9 +623,9 @@ void Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
                     null, 0,
                     null, 0,
 #ifdef __XC__
-                    g_strTable, sizeof(g_strTable), sp, c_usb_test, g_curUsbSpeed);
+                    g_strTable, sizeof(g_strTable), sp, null, g_curUsbSpeed);
 #else
-                    (char**)&g_strTable, sizeof(g_strTable)/sizeof(char *), &sp, c_usb_test, g_curUsbSpeed);
+                    (char**)&g_strTable, sizeof(g_strTable)/sizeof(char *), &sp, g_curUsbSpeed);
 #endif
 #elif (AUDIO_CLASS == 1)
                 /* Return Audio 1.0 Descriptors in FS, should never be in HS! */
@@ -636,7 +634,7 @@ void Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
                     null, 0,
                     (unsigned char*)&devDesc_Audio1, sizeof(devDesc_Audio1),
                     cfgDesc_Audio1, sizeof(cfgDesc_Audio1),
-                    (char**)&g_strTable, sizeof(g_strTable)/sizeof(char *), &sp, c_usb_test, g_curUsbSpeed);
+                    (char**)&g_strTable, sizeof(g_strTable)/sizeof(char *), &sp, g_curUsbSpeed);
 #else
                 /* Return Audio 2.0 Descriptors with Null device as fallback */
                 result = USB_StandardRequests(ep0_out, ep0_in,
@@ -644,7 +642,7 @@ void Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
                     (unsigned char*)&cfgDesc_Audio2, sizeof(cfgDesc_Audio2),
                     devDesc_Null, sizeof(devDesc_Null),
                     cfgDesc_Null, sizeof(cfgDesc_Null),
-                    (char**)&g_strTable, sizeof(g_strTable)/sizeof(char *), &sp, c_usb_test, g_curUsbSpeed);
+                    (char**)&g_strTable, sizeof(g_strTable)/sizeof(char *), &sp, g_curUsbSpeed);
 #endif
 #ifdef DFU
             }
@@ -656,7 +654,7 @@ void Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
                     DFUcfgDesc, sizeof(DFUcfgDesc),
                     null, 0, /* Used same descriptors for full and high-speed */
                     null, 0,
-                    (char**)&g_strTable, sizeof(g_strTable)/sizeof(char *), &sp, c_usb_test, g_curUsbSpeed);
+                    (char**)&g_strTable, sizeof(g_strTable)/sizeof(char *), &sp, g_curUsbSpeed);
             }
 #endif
         }
