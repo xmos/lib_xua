@@ -380,7 +380,7 @@ void Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
                             {
                                 /* High byte of wValue is descriptor type */
                                 unsigned descriptorType = sp.wValue & 0xff00;
-                    
+
                                 switch (descriptorType)
                                 {
                                     case HID_HID:

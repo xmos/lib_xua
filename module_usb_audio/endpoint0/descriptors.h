@@ -1842,7 +1842,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
 #endif /* IAP */
 
 #ifdef HID_CONTROLS
-    .HID_Interface = 
+    .HID_Interface =
     {
         9,                             /* 0  bLength : Size of descriptor in Bytes */
         4,                             /* 1  bDescriptorType (Interface: 0x04)*/
@@ -1855,7 +1855,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
         0,                             /* 8  iInterface */
     },
 
-    { 
+    {
         9,                             /* 0  bLength : Size of descriptor in Bytes */
         0x21,                          /* 1  bDescriptorType (HID) */
         0x10,                          /* 2  bcdHID */
@@ -1865,9 +1865,9 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
         0x22,                          /* 6  bDescriptorType[0] (Report) */
         sizeof(hidReportDescriptor) & 0xff,/* 7  wDescriptorLength[0] */
         sizeof(hidReportDescriptor) >> 8,  /* 8  wDescriptorLength[0] */
-    }, 
+    },
 
-    .HID_In_Endpoint = 
+    .HID_In_Endpoint =
     {
         /* Endpoint descriptor (IN) */
         0x7,                           /* 0  bLength */
@@ -1884,7 +1884,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
 
 #ifdef HID_CONTROLS
 unsigned char hidDescriptor[] =
-{ 
+{
     9,                             /* 0  bLength : Size of descriptor in Bytes */
     0x21,                          /* 1  bDescriptorType (HID) */
     0x10,                          /* 2  bcdHID */
@@ -1894,7 +1894,7 @@ unsigned char hidDescriptor[] =
     0x22,                          /* 6  bDescriptorType[0] (Report) */
     sizeof(hidReportDescriptor) & 0xff,/* 7  wDescriptorLength[0] */
     sizeof(hidReportDescriptor) >> 8,  /* 8  wDescriptorLength[0] */
-}; 
+};
 #endif
 
 
