@@ -247,12 +247,6 @@ void usb_audio_core(chanend c_mix_out
     chan c_xud_out[ENDPOINT_COUNT_OUT];              /* Endpoint channels for XUD */
     chan c_xud_in[ENDPOINT_COUNT_IN];
     chan c_aud_ctl;
-#ifdef TEST_MODE_SUPPORT
-#warning Building with test mode support
-    chan c_usb_test;
-#else
-#define c_usb_test null
-#endif
 #ifdef CHAN_BUFF_CTRL
 #warning Using channel to control buffering - this may reduce performance but improve power consumption
     chan c_buff_ctrl;
