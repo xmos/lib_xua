@@ -372,7 +372,6 @@ void Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
 
                     switch(sp.bRequest)
                     {
-
 #ifdef HID_CONTROLS
                         case USB_GET_DESCRIPTOR:
 
@@ -381,8 +380,14 @@ void Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
                             {
                                 /* High byte of wValue is descriptor type */
                                 unsigned descriptorType = sp.wValue & 0xff00;
+                    
                                 switch (descriptorType)
                                 {
+                                    case HID_HID:
+                                        /* Return HID Descriptor */
+                                         result = XUD_DoGetRequest(ep0_out, ep0_in, hidDescriptor,
+                                            sizeof(hidDescriptor), sp.wLength);
+                                        break;
                                     case HID_REPORT:
                                         /* Return HID report descriptor */
                                         result = XUD_DoGetRequest(ep0_out, ep0_in, hidReportDescriptor,
