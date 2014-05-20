@@ -214,7 +214,10 @@ static void getSamplesFromHost(chanend c, xc_ptr samples, int base, unsigned und
         read_via_xc_ptr_indexed(mult, multOut, i);
         {h, l} = macs(mult, sample, 0, 0);
         h<<=3;
-
+#if (STREAM_FORMAT_OUTPUT_RESOLUTION_32BIT_USED == 1)
+        h |= (l >>29)& 0x7; // Note: This step is not required if we assume sample depth is 24bit (rather than 32bit)
+                            // Note: We need all 32bits for Native DSD
+#endif
         write_via_xc_ptr_indexed(multOut, index, val);
         write_via_xc_ptr_indexed(samples,base+i,h);
 #else
@@ -248,7 +251,11 @@ static void giveSamplesToDevice(chanend c, xc_ptr samples, xc_ptr ptr, xc_ptr mu
 #warning OUT Vols in mixer, AFTER mix & map
         read_via_xc_ptr_indexed(mult, multOut, i);
         {h, l} = macs(mult, sample, 0, 0);
-        //h <<= 3 done in audio thread
+        h<<=3;              // Shift used to be done in audio thread but now done here incase of 32bit support
+#if (STREAM_FORMAT_OUTPUT_RESOLUTION_32BIT_USED == 1)
+        h |= (l >>29)& 0x7; // Note: This step is not required if we assume sample depth is 24bit (rather than 32bit)
+                            // Note: We need all 32bits for Native DSD
+#endif
         outuint(c, h);
 #else
         outuint(c, sample);

@@ -261,9 +261,6 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out, unsigned divide, unsi
         for(int i = 0; i < NUM_USB_CHAN_OUT; i++)
         {
             int tmp = inuint(c_out);
-#if defined(OUT_VOLUME_IN_MIXER) && defined(OUT_VOLUME_AFTER_MIX)
-            tmp<<=3;
-#endif
             samplesOut[i] = tmp;
         }
         }
@@ -451,9 +448,6 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out, unsigned divide, unsi
                 for(int i = 0; i < NUM_USB_CHAN_OUT; i++)
                 {
                     int tmp = inuint(c_out);
-#if defined(OUT_VOLUME_IN_MIXER) && defined(OUT_VOLUME_AFTER_MIX)
-                    tmp<<=3;
-#endif
                     samplesOut[i] = tmp;
                 }
             }
@@ -542,7 +536,7 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out, unsigned divide, unsi
         }
         else if(dsdMode == DSD_MODE_DOP)
         {
-            if(!everyOther)
+        if(!everyOther)
             {
                 dsdSample_l = ((samplesOut[0] & 0xffff00) << 8);
                 dsdSample_r = ((samplesOut[1] & 0xffff00) << 8);
