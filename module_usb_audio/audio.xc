@@ -355,7 +355,7 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out, unsigned divide, unsi
     p_lrclk when pinseq(0) :> void;
     p_lrclk when pinseq(1) :> void;
     p_lrclk when pinseq(0) :> void @ tmp;
-    tmp+=95;
+    tmp+=97;
 #if (I2S_CHANS_DAC != 0)
 #pragma loop unroll
     for(int i = 0; i < I2S_WIRES_DAC; i++)
@@ -365,11 +365,10 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out, unsigned divide, unsi
 #endif
 
 #if (I2S_CHANS_ADC != 0)
-    tmp += 33;
 #pragma loop unroll
     for(int i = 0; i < I2S_WIRES_ADC; i++)
     {
-        asm("setpt res[%0], %1"::"r"(p_i2s_adc[i]),"r"(tmp));
+        asm("setpt res[%0], %1"::"r"(p_i2s_adc[i]),"r"(tmp-1));
     }
 #endif
 
