@@ -368,7 +368,7 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out, unsigned divide, unsi
 #pragma loop unroll
     for(int i = 0; i < I2S_WIRES_ADC; i++)
     {
-        asm("setpt res[%0], %1"::"r"(p_i2s_adc[i]),"r"(tmp-1));
+        asm("setpt res[%0], %1"::"r"(p_i2s_adc[i]),"r"(tmp+31));
     }
 #endif
 
