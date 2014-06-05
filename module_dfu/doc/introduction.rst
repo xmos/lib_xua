@@ -6,7 +6,7 @@ your development board must contain the latest DFU enabled firmware.
 
 The firmware upgrade for XMOS USB devices implementation uses the USB standard
 DFU device class mechanism and is based on the following specification:
-http://www.usb.org/developers/devclass_docs/usbdfu10.pdf
+http://www.usb.org/developers/devclass_docs/DFU_1.1.pdf
 
 Supported functionality:
 
