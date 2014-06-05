@@ -1,5 +1,5 @@
-Introduction
-============
+Overview
+========
 
 The DFU loader is a flash device firmware upgrade mechanism. To work correctly
 your development board must contain the latest DFU enabled firmware.
