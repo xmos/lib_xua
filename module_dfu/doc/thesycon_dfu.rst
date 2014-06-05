@@ -20,11 +20,11 @@ Download new firmware
 
 To program the new firmware run the command:
 
-  ``dfucons download usb_audio_class1.bin``
+  ``dfucons download new_firmware.bin``
 
-Note that once this is done the device restarts as an XMOS audio 1.0 device. The
-original factory default audio 2 application is still present but the device is
-now running the upgraded application firmware.
+Note that once this is done the device restarts. The original factory default
+application is still present but the device is now running the upgraded
+application firmware.
 
 You can check the device has been updated by running the command:
 
@@ -53,5 +53,5 @@ new firmware, run the command:
 
   ``dfucons revertfactory``
 
-The device will now only contain the factory firmware and will be running as an
-audio 2 device again.
+The device will now be running, and only contain the factory firmware, which can
+be seen by checking the device version once more.

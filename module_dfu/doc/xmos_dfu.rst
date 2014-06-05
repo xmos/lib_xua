@@ -13,11 +13,11 @@ Download new firmware
 
 To program the new firmware run the command:
 
-   ``./xmosdfu --download usb_audio_class1.bin``
+   ``./xmosdfu --download new_firmware.bin``
 
-Note that once this is done the device restarts as an XMOS audio 1.0 device. The
-original factory default audio 2 application is still present but the device is
-now running the upgraded application firmware.
+Note that once this is done the device restarts. The original factory default
+application is still present but the device is now running the upgraded
+application firmware.
 
 Uploading existing firmware from the device
 -------------------------------------------
@@ -43,3 +43,5 @@ new firmware, run the command:
 
 The device will now only contain the factory firmware and will be running as an
 audio 2 device again.
+
+The device will now be running, and only contain the factory firmware.
