@@ -44,6 +44,13 @@ To generate the firmware upgrade image run the following command:
 You should now have the file ``new_firmware.bin`` which contains the
 firmware with the newly specified Device Version Number.
 
+Related documents
+-----------------
+
+For further details of the DFU features included in the XMOS USB Audio framework
+and their configuration please see :ref:`usb_audio_sec_dfu` and
+:ref:`sec_custom_defines_api`.
+
 For further details on the use of XFLASH to create factory and upgrade firmware
 images please see the XFLASH Command-Line Manual section of the
 `xTIMEcomposer User Guide <https://www.xmos.com/published/xtimecomposer-user-guide>`_.
