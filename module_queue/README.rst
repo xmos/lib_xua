@@ -1,5 +1,5 @@
-Queing Module For USB Audio Framwwork
-=====================================
+Queuing Module For USB Audio Framework
+======================================
 
 :scope: General Use
 :description: queue
