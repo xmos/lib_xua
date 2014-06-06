@@ -55,3 +55,12 @@ new firmware, run the command:
 
 The device will now be running, and only contain the factory firmware, which can
 be seen by checking the device version once more.
+
+Related documents
+-----------------
+
+For further details on DFU loader use on Windows please see the
+`XMOS USB Audio Windows DFU Wizard document <https://www.xmos.com/published/usb-audio-driver-dfu-utility-customisation-guide>`_.
+
+For further details on the use of the Thesycon DFU tools please see
+`Thesycon USB Audio 2.0 Driver for Windows User Manual <https://www.xmos.com/licensed/thesycon-usb-audio-20-driver-windows-user-manual>`_.
