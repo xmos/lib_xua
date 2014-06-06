@@ -6,7 +6,7 @@ Set up the image loader
 
 #. Open the DFU Console Window from the Thesycon folder on the Start menu
    (Program Files>Thesycon>USB Audio 2.0 Class Driver EVAL>DFU console).
-#. change directory to where the files have been extracted.
+#. Change directory to where the files have been extracted.
 
 To check the device has been detected, run the following command in the DFU
 console:
