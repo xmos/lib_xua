@@ -2,9 +2,12 @@ Building the XMOS DFU loader - OS X
 ===================================
 
 The loader is compiled using libusb, the code for the loader is contained in the
-file xmosdfu.cpp
+file ``xmosdfu.cpp``
 
-To build the loader
--------------------
+To build the loader a Makefile is provided, which can be run as follows:
 
-  ``g++ -m32 -o xmosdfu -I. xmosdfu.cpp libusb-1.0.0.dylib``
+  ``make -f Makefile.OSX all``
+
+This Makefile contains the following:
+
+.. literalinclude:: Makefile.OSX
