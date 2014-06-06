@@ -1,5 +1,5 @@
-Using the DFU loader–Windows
-============================
+Using the DFU loader - Windows (via the Thesycon driver)
+========================================================
 
 Set up the image loader
 -----------------------

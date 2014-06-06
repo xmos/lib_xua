@@ -1,5 +1,5 @@
-Using the DFU loader–OSX
-========================
+Using the DFU loader - OS X (via the XMOS DFU loader)
+=====================================================
 
 Set up the image loader
 -----------------------
