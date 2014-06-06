@@ -32,6 +32,7 @@
         <version>1.0.4rc0</version>
     </dependency>
     <description>USB Audio Shared Components. For use in the XMOS USB Audio Refererence Designs.</description>
+    <docdir>module_dfu/doc</docdir>
     <git_export>False</git_export>
     <location>git://git/apps/sc_usb_audio</location>
     <name>USB Audio Shared Components</name>
