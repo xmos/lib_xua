@@ -1,12 +1,19 @@
 Using the DFU loader - Windows (via the Thesycon driver)
 ========================================================
 
+Thesycon provide both GUI and CLI DFU tools, TUSBAudioDfu.exe and dfucons.exe
+respectively. The use of the GUI tool is not covered by this document.
+
+The correct installation of the Thesycon driver and DFU tools is out of
+the scope of this document.
+
 Set up the image loader
 -----------------------
 
-#. Open the DFU Console Window from the Thesycon folder on the Start menu
-   (Program Files>Thesycon>USB Audio 2.0 Class Driver EVAL>DFU console).
-#. Change directory to where the files have been extracted.
+Run the DFU console tool (``dfucons.exe``) from the Thesycon install folder,
+in a Command Prompt by navigating to:
+
+  ``C:\Program Files\Thesycon\TUSBAudio_Driver\``
 
 To check the device has been detected, run the following command in the DFU
 console:
@@ -59,8 +66,5 @@ be seen by checking the device version once more.
 Related documents
 -----------------
 
-For further details on DFU loader use on Windows please see the
-`XMOS USB Audio Windows DFU Wizard document <https://www.xmos.com/published/usb-audio-driver-dfu-utility-customisation-guide>`_.
-
 For further details on the use of the Thesycon DFU tools please see
-`Thesycon USB Audio 2.0 Driver for Windows User Manual <https://www.xmos.com/licensed/thesycon-usb-audio-20-driver-windows-user-manual>`_.
+`Thesycon USB Audio 2.0 Driver for Windows User Manual <https://www.xmos.com/published/usb-audio-class-20-evaluation-driver-windows>`_.
