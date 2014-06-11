@@ -4,7 +4,7 @@ Using the DFU loader - Windows (via the Thesycon driver)
 Thesycon provide both GUI and CLI DFU tools, TUSBAudioDfu.exe and dfucons.exe
 respectively. The use of the GUI tool is not covered by this document.
 
-The correct installation of the Thesycon driver and DFU tools is out of
+The correct installation of the Thesycon driver and DFU tools exceeds
 the scope of this document.
 
 Set up the image loader

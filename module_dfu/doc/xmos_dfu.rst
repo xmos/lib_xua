@@ -46,7 +46,4 @@ new firmware, run the command:
 
   ``./xmosdfu --revertfactory``
 
-The device will now only contain the factory firmware and will be running as an
-audio 2 device again.
-
 The device will now be running, and only contain the factory firmware.

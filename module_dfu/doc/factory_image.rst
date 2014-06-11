@@ -25,11 +25,11 @@ Use the XMOS Development Tools to run the command:
   Where:
 
   - loader size = 0x1000 bytes, or 0x4000 bytes if secure boot functionality is
-    used
+    used (for tools version 13.1.0 and older)
   - maximum size of factory image = number of xCORE tiles *
     xCORE SRAM size
   - maximum size of upgrade images = (number of xCORE tiles *
-    xCORE SRAM size) * number of concurrent images to be held in flash
+    xCORE SRAM size) * number of images to be held in flash concurrently
 
   The above example sets the boot partition to a size appropriate for designs
   based on a single xCORE tile, where a single upgrade image is required
