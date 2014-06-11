@@ -5,8 +5,10 @@ Set up the image loader
 -----------------------
 
 #. Open a terminal
-#. Change directory to where the files have been extracted
-#. Source the ``setup.sh`` script
+#. Change directory to where the loader has been built
+#. Run the command:
+
+    ``source setup.sh``
 
 Download new firmware
 ---------------------

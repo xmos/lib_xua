@@ -15,8 +15,7 @@ Supported functionality:
 - Revert device back to factory image
 - Automatic reboot of device on firmware upgrade
 
-You must use XMOS Development Tools version 10.4.1 (or later) with firmware
-interface.
+You must use XMOS Development Tools version 10.4.1 (or later).
 
 The DFU device on Windows requires the Theyscon USB Audio 2.0 Windows driver
-version 1.13.3.0 or later.
+version 1.13.3 or later.

@@ -2,7 +2,7 @@ Installing the factory image to the device
 ==========================================
 
 The DFU device interface is enabled by default in the XMOS USB Audio framework
-(see ``devicedefines.h``), and the explicitly enabled in each reference design
+(see ``devicedefines.h``), and explicitly enabled in each reference design
 by the following line included in the ``customdefines.h`` file of each
 application::
 
