@@ -10,7 +10,7 @@ application::
 
 Use the XMOS Development Tools to run the command:
 
-  ``xflash --boot-partition-size 0x20000 usb_audio.xe``
+  ``xflash --boot-partition-size 0x30000 --factory usb_audio.xe``
 
   Where the size passed using the ``--boot-partition-size n`` argument specifies
   in bytes the minimum size required to store the boot loader, factory image and
@@ -30,7 +30,7 @@ image:
 
 To generate the firmware upgrade image run the following command:
 
-  ``xflash --factory-version 13 --upgrade 1 usb_audio.xe 0x20000 -o new_firmware.bin``
+  ``xflash --factory-version 13 --upgrade 1 usb_audio.xe -o new_firmware.bin``
 
   Where the tools version passed using the ``--factory-version version``
   argument specifies the version of the tools used to create the factory image.
