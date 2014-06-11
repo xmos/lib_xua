@@ -1,5 +1,8 @@
+Creating factory and upgrade images with XFLASH
+===============================================
+
 Installing the factory image to the device
-==========================================
+------------------------------------------
 
 The DFU device interface is enabled by default in the XMOS USB Audio framework
 (see ``devicedefines.h``), and explicitly enabled in each reference design
@@ -39,6 +42,9 @@ This programs the factory default firmware image into the flash device.
 The device will now support the DFU mechanism, and can use it to safely receive
 firmware updates, as well as revert to the factory firmware image when required,
 such as in the event of a failed upgrade attempt.
+
+Creating the upgrade image
+--------------------------
 
 To use the firmware upgrade mechanism you need to build a firmware upgrade
 image:
