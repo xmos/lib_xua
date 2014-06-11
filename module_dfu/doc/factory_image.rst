@@ -16,6 +16,25 @@ Use the XMOS Development Tools to run the command:
   in bytes the minimum size required to store the boot loader, factory image and
   any upgrade images.
 
+  The following can be used as a guide to help calculate the required boot
+  partition size for a design:
+
+  - boot partition size = loader size + maximum size of factory image +
+    maximum size of upgrade images + padding to sector boundaries
+
+  Where:
+
+  - loader size = 0x1000 bytes, or 0x4000 bytes if secure boot functionality is
+    used
+  - maximum size of factory image = number of xCORE tiles *
+    xCORE SRAM size
+  - maximum size of upgrade images = (number of xCORE tiles *
+    xCORE SRAM size) * number of concurrent images to be held in flash
+
+  The above example sets the boot partition to a size appropriate for designs
+  based on a single xCORE tile, where a single upgrade image is required
+  in flash at any one time.
+
 This programs the factory default firmware image into the flash device.
 The device will now support the DFU mechanism, and can use it to safely receive
 firmware updates, as well as revert to the factory firmware image when required,
