@@ -73,8 +73,9 @@ Related documents
 -----------------
 
 For further details of the DFU features included in the XMOS USB Audio framework
-and their configuration please see :ref:`usb_audio_sec_dfu` and
-:ref:`sec_custom_defines_api`.
+and their configuration please see the DFU section of the Features & Options
+chapter and the Configuration Defines section of the API chapter of the
+`USB Audio Design Guide <https://www.xmos.com/published/usb-audio-software-design-guide>`_.
 
 For further details on the use of XFLASH to create factory and upgrade firmware
 images please see the XFLASH Command-Line Manual section of the
