@@ -942,7 +942,7 @@ typedef struct
 #ifdef IAP_EA_NATIVE
     USB_Descriptor_Interface_t                  iAP_EANativeTransport_Interface_Alt0;
     USB_Descriptor_Interface_t                  iAP_EANativeTransport_Interface_Alt1;
-    USB_Descriptor_Endpoint_t                   iAP_EANatvieTransport_Out_Endpoint;
+    USB_Descriptor_Endpoint_t                   iAP_EANativeTransport_Out_Endpoint;
     USB_Descriptor_Endpoint_t                   iAP_EANativeTransport_In_Endpoint;
 #endif
 #endif
@@ -1897,7 +1897,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
     },
 
     /* iAP EA Native Transport Bulk OUT Endpoint Descriptor */
-    .iAP_Out_Endpoint =
+    .iAP_EANativeTransport_Out_Endpoint =
     {
         0x07,                               /* 0 bLength : Size of this descriptor, in bytes. (field size 1 bytes) */
         0x05,                               /* 1 bDescriptorType : ENDPOINT descriptor. (field size 1 bytes) */
@@ -1908,7 +1908,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
     },
 
     /* iAP EA Native Transport Bulk IN Endpoint Descriptor */
-    .iAP_In_Endpoint =
+    .iAP_EANativeTransport_In_Endpoint =
     {
         0x07,                               /* 0 bLength : Size of this descriptor, in bytes. (field size 1 bytes) */
         0x05,                               /* 1 bDescriptorType : ENDPOINT descriptor. (field size 1 bytes) */
