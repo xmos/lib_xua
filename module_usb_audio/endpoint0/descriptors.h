@@ -185,7 +185,7 @@ typedef struct
 #error NUM_USB_CHAN > 18
 #endif
     STR_TABLE_ENTRY(iAPInterfaceStr);
-    STR_TABLE_ENTRY(iAP_EANative_InterfaceStr);
+    STR_TABLE_ENTRY(iAP_EANativeTransport_InterfaceStr);
 } StringDescTable_t;
 
 StringDescTable_t g_strTable =
@@ -601,7 +601,7 @@ StringDescTable_t g_strTable =
 #error NUM_USB_CHAN > 18
 #endif
     .iAPInterfaceStr             = "iAP Interface",
-    .iAP_EANative_InterfaceStr   = IAP_EA_NATIVE_PROTOCOL_NAME,
+    .iAP_EANativeTransport_InterfaceStr   = IAP_EA_NATIVE_PROTOCOL_NAME,
 
 };
 
@@ -1878,7 +1878,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
         .bInterfaceClass            = USB_CLASS_VENDOR_SPECIFIC,
         .bInterfaceSubClass         = 0xF0,                     /* MFI Accessory (Table 21-2) */
         .bInterfaceProtocol         = 0x01,
-        .iInterface                 = offsetof(StringDescTable_t, iAP_EANative_InterfaceStr)/sizeof(char *),
+        .iInterface                 = offsetof(StringDescTable_t, iAP_EANativeTransport_InterfaceStr)/sizeof(char *),
     },
 
     /* Alternative 1 */
@@ -1893,7 +1893,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
         .bInterfaceClass            = USB_CLASS_VENDOR_SPECIFIC,
         .bInterfaceSubClass         = 0xF0,                     /* MFI Accessory (Table 21-1) */
         .bInterfaceProtocol         = 0x01,
-        .iInterface                 = offsetof(StringDescTable_t, iAP_EANative_InterfaceStr)/sizeof(char *),
+        .iInterface                 = offsetof(StringDescTable_t, iAP_EANativeTransport_InterfaceStr)/sizeof(char *),
     },
 
     /* iAP EA Native Transport Bulk OUT Endpoint Descriptor */
