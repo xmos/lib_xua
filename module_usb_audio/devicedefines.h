@@ -902,6 +902,11 @@
 #undef IAP_INT_EP
 #endif
 
+/* IAP EA Native Transport */
+#if defined(IAP_EA_NATIVE) && (IAP_EA_NATIVE == 0)
+#undef IAP_EA_NATIVE
+#endif
+
 /* Endpoint addresses enums */
 enum USBEndpointNumber_In
 {
