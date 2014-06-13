@@ -927,6 +927,9 @@ enum USBEndpointNumber_In
     ENDPOINT_NUMBER_IN_IAP_INT,
 #endif
     ENDPOINT_NUMBER_IN_IAP,
+#ifdef IAP_EA_NATIVE
+    ENDPOINT_NUMBER_IN_IAP_EA_NATIVE,
+#endif
 #endif
     ENDPOINT_COUNT_IN               /* End marker */
 };
@@ -940,6 +943,9 @@ enum USBEndpointNumber_Out
 #endif
 #ifdef IAP
     ENDPOINT_NUMBER_OUT_IAP,
+#ifdef IAP_EA_NATIVE
+    ENDPOINT_NUMBER_OUT_IAP_EA_NATIVE,
+#endif
 #endif
     ENDPOINT_COUNT_OUT              /* End marker */
 };
