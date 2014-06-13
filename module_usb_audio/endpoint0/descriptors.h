@@ -12,9 +12,9 @@
 #include "usbaudiocommon.h"
 #include "usb_std_descriptors.h"
 
-#ifdef IAP_EA_NATIVE
+#ifdef IAP_EA_NATIVE_TRANS
 /*
- * FIXME currently this will not build if IAP_EA_NATIVE_PROTOCOL_NAME is not defined in iap_conf.h,
+ * FIXME currently this will not build if IAP_EA_NATIVE_TRANS_PROTOCOL_NAME is not defined in iap_conf.h,
  * would be nice if a default string was used instead, and a warning issued.
  *
  * Could get a default define by including the following line, but iap2.h cannot currently be included from C
@@ -600,8 +600,8 @@ StringDescTable_t g_strTable =
 #if (NUM_USB_CHAN_IN > 18)
 #error NUM_USB_CHAN > 18
 #endif
-    .iAPInterfaceStr             = "iAP Interface",
-    .iAP_EANativeTransport_InterfaceStr   = IAP_EA_NATIVE_PROTOCOL_NAME,
+    .iAPInterfaceStr                    = "iAP Interface",
+    .iAP_EANativeTransport_InterfaceStr = IAP_EA_NATIVE_TRANS_PROTOCOL_NAME,
 
 };
 
@@ -624,8 +624,8 @@ enum USBInterfaceNumber
 #endif
 #if defined(IAP) && (IAP != 0)
     INTERFACE_NUMBER_IAP,
-#if defined(IAP_EA_NATIVE) && (IAP_EA_NATIVE != 0)
-    INTERFACE_NUMBER_IAP_EA_NATIVE,
+#if defined(IAP_EA_NATIVE_TRANS) && (IAP_EA_NATIVE_TRANS != 0)
+    INTERFACE_NUMBER_IAP_EA_NATIVE_TRANS,
 #endif
 #endif
 #if defined(HID_CONTROLS) && (HID_CONTROLS != 0)
@@ -643,21 +643,21 @@ enum USBInterfaceNumber
 #endif
 
 /* Endpoint address defines */
-#define ENDPOINT_ADDRESS_IN_CONTROL         (ENDPOINT_NUMBER_IN_CONTROL | 0x80)
-#define ENDPOINT_ADDRESS_IN_FEEDBACK        (ENDPOINT_NUMBER_IN_FEEDBACK | 0x80)
-#define ENDPOINT_ADDRESS_IN_AUDIO           (ENDPOINT_NUMBER_IN_AUDIO | 0x80)
-#define ENDPOINT_ADDRESS_IN_INTERRUPT       (ENDPOINT_NUMBER_IN_INTERRUPT | 0x80)
-#define ENDPOINT_ADDRESS_IN_MIDI            (ENDPOINT_NUMBER_IN_MIDI | 0x80)
-#define ENDPOINT_ADDRESS_IN_HID             (ENDPOINT_NUMBER_IN_HID | 0x80)
-#define ENDPOINT_ADDRESS_IN_IAP_INT         (ENDPOINT_NUMBER_IN_IAP_INT | 0x80)
-#define ENDPOINT_ADDRESS_IN_IAP             (ENDPOINT_NUMBER_IN_IAP | 0x80)
-#define ENDPOINT_ADDRESS_IN_IAP_EA_NATIVE   (ENDPOINT_NUMBER_IN_IAP_EA_NATIVE | 0x80)
+#define ENDPOINT_ADDRESS_IN_CONTROL               (ENDPOINT_NUMBER_IN_CONTROL | 0x80)
+#define ENDPOINT_ADDRESS_IN_FEEDBACK              (ENDPOINT_NUMBER_IN_FEEDBACK | 0x80)
+#define ENDPOINT_ADDRESS_IN_AUDIO                 (ENDPOINT_NUMBER_IN_AUDIO | 0x80)
+#define ENDPOINT_ADDRESS_IN_INTERRUPT             (ENDPOINT_NUMBER_IN_INTERRUPT | 0x80)
+#define ENDPOINT_ADDRESS_IN_MIDI                  (ENDPOINT_NUMBER_IN_MIDI | 0x80)
+#define ENDPOINT_ADDRESS_IN_HID                   (ENDPOINT_NUMBER_IN_HID | 0x80)
+#define ENDPOINT_ADDRESS_IN_IAP_INT               (ENDPOINT_NUMBER_IN_IAP_INT | 0x80)
+#define ENDPOINT_ADDRESS_IN_IAP                   (ENDPOINT_NUMBER_IN_IAP | 0x80)
+#define ENDPOINT_ADDRESS_IN_IAP_EA_NATIVE_TRANS   (ENDPOINT_NUMBER_IN_IAP_EA_NATIVE_TRANS | 0x80)
 
-#define ENDPOINT_ADDRESS_OUT_CONTROL        (ENDPOINT_NUMBER_OUT_CONTROL)
-#define ENDPOINT_ADDRESS_OUT_AUDIO          (ENDPOINT_NUMBER_OUT_AUDIO)
-#define ENDPOINT_ADDRESS_OUT_MIDI           (ENDPOINT_NUMBER_OUT_MIDI)
-#define ENDPOINT_ADDRESS_OUT_IAP            (ENDPOINT_NUMBER_OUT_IAP)
-#define ENDPOINT_ADDRESS_OUT_IAP_EA_NATIVE  (ENDPOINT_NUMBER_OUT_IAP_EA_NATIVE)
+#define ENDPOINT_ADDRESS_OUT_CONTROL              (ENDPOINT_NUMBER_OUT_CONTROL)
+#define ENDPOINT_ADDRESS_OUT_AUDIO                (ENDPOINT_NUMBER_OUT_AUDIO)
+#define ENDPOINT_ADDRESS_OUT_MIDI                 (ENDPOINT_NUMBER_OUT_MIDI)
+#define ENDPOINT_ADDRESS_OUT_IAP                  (ENDPOINT_NUMBER_OUT_IAP)
+#define ENDPOINT_ADDRESS_OUT_IAP_EA_NATIVE_TRANS  (ENDPOINT_NUMBER_OUT_IAP_EA_NATIVE_TRANS)
 
 /***** Device Descriptors *****/
 
@@ -939,7 +939,7 @@ typedef struct
 #ifdef IAP_INT_EP
     USB_Descriptor_Endpoint_t                   iAP_Interrupt_Endpoint;
 #endif
-#ifdef IAP_EA_NATIVE
+#ifdef IAP_EA_NATIVE_TRANS
     USB_Descriptor_Interface_t                  iAP_EANativeTransport_Interface_Alt0;
     USB_Descriptor_Interface_t                  iAP_EANativeTransport_Interface_Alt1;
     USB_Descriptor_Endpoint_t                   iAP_EANativeTransport_Out_Endpoint;
@@ -1865,14 +1865,14 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
         0x08,                            /* 6 bInterval : (2^(bInterval-1))/8 ms. Must be between 4 and 32ms (field size 1 bytes) */
     },
 #endif
-#ifdef IAP_EA_NATIVE
+#ifdef IAP_EA_NATIVE_TRANS
     /* Zero bandwidth alternative 0 */
     /* iAP EA Native Transport Interface descriptor */
     .iAP_EANativeTransport_Interface_Alt0 =
     {
         .bLength                    = sizeof(USB_Descriptor_Interface_t),
         .bDescriptorType            = USB_DESCTYPE_INTERFACE,
-        .bInterfaceNumber           = INTERFACE_NUMBER_IAP_EA_NATIVE,
+        .bInterfaceNumber           = INTERFACE_NUMBER_IAP_EA_NATIVE_TRANS,
         .bAlternateSetting          = 0x00,
         .bNumEndpoints              = 0x00,
         .bInterfaceClass            = USB_CLASS_VENDOR_SPECIFIC,
@@ -1887,7 +1887,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
     {
         .bLength                    = sizeof(USB_Descriptor_Interface_t),
         .bDescriptorType            = USB_DESCTYPE_INTERFACE,
-        .bInterfaceNumber           = INTERFACE_NUMBER_IAP_EA_NATIVE,
+        .bInterfaceNumber           = INTERFACE_NUMBER_IAP_EA_NATIVE_TRANS,
         .bAlternateSetting          = 0x01,
         .bNumEndpoints              = 0x02,
         .bInterfaceClass            = USB_CLASS_VENDOR_SPECIFIC,
@@ -1899,23 +1899,23 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
     /* iAP EA Native Transport Bulk OUT Endpoint Descriptor */
     .iAP_EANativeTransport_Out_Endpoint =
     {
-        0x07,                               /* 0 bLength : Size of this descriptor, in bytes. (field size 1 bytes) */
-        0x05,                               /* 1 bDescriptorType : ENDPOINT descriptor. (field size 1 bytes) */
-        ENDPOINT_ADDRESS_OUT_IAP_EA_NATIVE, /* 2 bEndpointAddress : OUT Endpoint 3. High bit isIn (field size 1 bytes) */
-        0x02,                               /* 3 bmAttributes : Bulk, not shared. (field size 1 bytes) */
-        0x0200, //TODO check this                            /* 4 wMaxPacketSize : Has to be 0x200 for compliance*/
-        0x00,                               /* 6 bInterval : Ignored for Bulk. Set to zero. (field size 1 bytes) */
+        0x07,                                     /* 0 bLength : Size of this descriptor, in bytes. (field size 1 bytes) */
+        0x05,                                     /* 1 bDescriptorType : ENDPOINT descriptor. (field size 1 bytes) */
+        ENDPOINT_ADDRESS_OUT_IAP_EA_NATIVE_TRANS, /* 2 bEndpointAddress : OUT Endpoint 3. High bit isIn (field size 1 bytes) */
+        0x02,                                     /* 3 bmAttributes : Bulk, not shared. (field size 1 bytes) */
+        0x0200, //TODO check this                                  /* 4 wMaxPacketSize : Has to be 0x200 for compliance*/
+        0x00,                                     /* 6 bInterval : Ignored for Bulk. Set to zero. (field size 1 bytes) */
     },
 
     /* iAP EA Native Transport Bulk IN Endpoint Descriptor */
     .iAP_EANativeTransport_In_Endpoint =
     {
-        0x07,                               /* 0 bLength : Size of this descriptor, in bytes. (field size 1 bytes) */
-        0x05,                               /* 1 bDescriptorType : ENDPOINT descriptor. (field size 1 bytes) */
-        ENDPOINT_ADDRESS_IN_IAP_EA_NATIVE,  /* 2 bEndpointAddress : OUT Endpoint 3. High bit isIn (field size 1 bytes) */
-        0x02,                               /* 3 bmAttributes : Bulk, not shared. (field size 1 bytes) */
-        0x0200, //TODO check this                            /* 4 wMaxPacketSize : Has to be 0x200 for compliance*/
-        0x00,                               /* 6 bInterval : Ignored for Bulk. Set to zero. (field size 1 bytes) */
+        0x07,                                     /* 0 bLength : Size of this descriptor, in bytes. (field size 1 bytes) */
+        0x05,                                     /* 1 bDescriptorType : ENDPOINT descriptor. (field size 1 bytes) */
+        ENDPOINT_ADDRESS_IN_IAP_EA_NATIVE_TRANS,  /* 2 bEndpointAddress : OUT Endpoint 3. High bit isIn (field size 1 bytes) */
+        0x02,                                     /* 3 bmAttributes : Bulk, not shared. (field size 1 bytes) */
+        0x0200, //TODO check this                                  /* 4 wMaxPacketSize : Has to be 0x200 for compliance*/
+        0x00,                                     /* 6 bInterval : Ignored for Bulk. Set to zero. (field size 1 bytes) */
     },
 #endif
 #endif /* IAP */

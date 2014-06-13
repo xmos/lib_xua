@@ -903,8 +903,8 @@
 #endif
 
 /* IAP EA Native Transport */
-#if defined(IAP_EA_NATIVE) && (IAP_EA_NATIVE == 0)
-#undef IAP_EA_NATIVE
+#if defined(IAP_EA_NATIVE_TRANS) && (IAP_EA_NATIVE_TRANS == 0)
+#undef IAP_EA_NATIVE_TRANS
 #endif
 
 /* Endpoint addresses enums */
@@ -927,8 +927,8 @@ enum USBEndpointNumber_In
     ENDPOINT_NUMBER_IN_IAP_INT,
 #endif
     ENDPOINT_NUMBER_IN_IAP,
-#ifdef IAP_EA_NATIVE
-    ENDPOINT_NUMBER_IN_IAP_EA_NATIVE,
+#ifdef IAP_EA_NATIVE_TRANS
+    ENDPOINT_NUMBER_IN_IAP_EA_NATIVE_TRANS,
 #endif
 #endif
     ENDPOINT_COUNT_IN               /* End marker */
@@ -943,8 +943,8 @@ enum USBEndpointNumber_Out
 #endif
 #ifdef IAP
     ENDPOINT_NUMBER_OUT_IAP,
-#ifdef IAP_EA_NATIVE
-    ENDPOINT_NUMBER_OUT_IAP_EA_NATIVE,
+#ifdef IAP_EA_NATIVE_TRANS
+    ENDPOINT_NUMBER_OUT_IAP_EA_NATIVE_TRANS,
 #endif
 #endif
     ENDPOINT_COUNT_OUT              /* End marker */
