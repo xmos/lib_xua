@@ -601,8 +601,9 @@ StringDescTable_t g_strTable =
 #error NUM_USB_CHAN > 18
 #endif
     .iAPInterfaceStr                    = "iAP Interface",
+#ifdef IAP_EA_NATIVE_TRANS
     .iAP_EANativeTransport_InterfaceStr = IAP_EA_NATIVE_TRANS_PROTOCOL_NAME,
-
+#endif
 };
 
 /* Interface numbers enum */
