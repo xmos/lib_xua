@@ -375,19 +375,35 @@
 #define PID_AUDIO_2              (0x0002)
 #endif
 
-/* Auto-generated version number defines */
+/**
+ * @brief Device firmware version number in Binary Coded Decimal format: 0xJJMN where JJ: major, M: minor, N: sub-minor version number.
+ */
+#ifndef BCD_DEVICE_J
 #define BCD_DEVICE_J             6
+#endif
+
+/**
+ * @brief Device firmware version number in Binary Coded Decimal format: 0xJJMN where JJ: major, M: minor, N: sub-minor version number.
+ */
+#ifndef BCD_DEVICE_M
 #define BCD_DEVICE_M             6
+#endif
+
+/**
+ * @brief Device firmware version number in Binary Coded Decimal format: 0xJJMN where JJ: major, M: minor, N: sub-minor version number.
+ */
+#ifndef BCD_DEVICE_N
 #define BCD_DEVICE_N             0
+#endif
 
 /**
  * @brief Device firmware version number in Binary Coded Decimal format: 0xJJMN where JJ: major, M: minor, N: sub-minor version number.
  *
- * Default: XMOS USB Audio Release version (e.g. 0x0651 for 6.5.1)
+ * NOTE: User code not modify this but should modify BCD_DEVICE_J, BCD_DEVICE_M, BCD_DEVICE_N
+ *
+ * Default: XMOS USB Audio Release version (e.g. 0x0651 for 6.5.1).
  */
-#ifndef BCD_DEVICE
 #define BCD_DEVICE               ((BCD_DEVICE_J << 8) | ((BCD_DEVICE_M & 0xF) << 4) | (BCD_DEVICE_N & 0xF))
-#endif
 
 
 /**
