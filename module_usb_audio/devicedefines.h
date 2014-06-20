@@ -399,7 +399,7 @@
 /**
  * @brief Device firmware version number in Binary Coded Decimal format: 0xJJMN where JJ: major, M: minor, N: sub-minor version number.
  *
- * NOTE: User code not modify this but should modify BCD_DEVICE_J, BCD_DEVICE_M, BCD_DEVICE_N
+ * NOTE: User code should not modify this but should modify BCD_DEVICE_J, BCD_DEVICE_M, BCD_DEVICE_N instead
  *
  * Default: XMOS USB Audio Release version (e.g. 0x0651 for 6.5.1).
  */
