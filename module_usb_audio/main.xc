@@ -32,6 +32,11 @@
 #include "mixer.h"
 #endif
 
+#ifdef SPDIF_RX
+#include "SpdifReceive.h"
+#endif
+
+
 /* Audio I/O - Port declarations */
 #if I2S_WIRES_DAC > 0
 on tile[AUDIO_IO_TILE] : buffered out port:32 p_i2s_dac[I2S_WIRES_DAC] =
@@ -98,11 +103,13 @@ on tile[AUDIO_IO_TILE] : buffered in port:32 p_i2s_adc[I2S_WIRES_ADC] =
  * This is a clash with S/PDIF Tx but simultaneous S/PDIF and MIDI not currently supported on single tile device
  *
  */
+/* TODO should include tile here */
 #define CLKBLK_MIDI        XS1_CLKBLK_1;
 #else
 #define CLKBLK_MIDI        XS1_CLKBLK_REF;
 #endif
 #define CLKBLK_SPDIF_TX    XS1_CLKBLK_1
+#define CLKBLK_SPDIF_RX    XS1_CLKBLK_1
 #define CLKBLK_MCLK        XS1_CLKBLK_2
 #define CLKBLK_I2S_BIT     XS1_CLKBLK_3
 #define CLKBLK_XUD         XS1_CLKBLK_4 /* Note XUD for U-series uses CLKBLK_5 also (see XUD_Ports.xc) */
@@ -122,6 +129,10 @@ on tile[XUD_TILE] : in port p_for_mclk_count                = PORT_MCLK_COUNT;
 on tile[AUDIO_IO_TILE] : buffered out port:32 p_spdif_tx    = PORT_SPDIF_OUT;
 #endif
 
+#ifdef SPDIF_RX
+on tile[XUD_TILE] : buffered in port:4 p_spdif_rx           = PORT_SPDIF_IN; /* K: coax, J: optical */
+#endif
+
 #ifdef MIDI
 on tile[AUDIO_IO_TILE] :  port p_midi_tx                    = PORT_MIDI_OUT;
 
@@ -139,6 +150,10 @@ on tile[AUDIO_IO_TILE] : clock    clk_midi                  = CLKBLK_MIDI;
 
 #ifdef SPDIF
 on tile[AUDIO_IO_TILE] : clock    clk_mst_spd               = CLKBLK_SPDIF_TX;
+#endif
+
+#ifdef SPDIF_RX
+on tile[XUD_TILE] : clock    clk_spd_rx                     = CLKBLK_SPDIF_RX;
 #endif
 
 on tile[AUDIO_IO_TILE] : clock    clk_audio_mclk            = CLKBLK_MCLK;       /* Master clock */
@@ -225,7 +240,7 @@ void xscope_user_init()
 #endif
 
 #ifdef SELF_POWERED
-#define pwrConfig XUD_PWR_SELF
+#define pwrConfig XUD_PWR_BUS
 #else
 #define pwrConfig XUD_PWR_BUS
 #endif
@@ -341,20 +356,22 @@ void usb_audio_io(chanend c_aud_in, chanend ?c_adc
 , chanend c_mix_ctl
 #endif
 , chanend ?c_aud_cfg
+
+#ifdef SPDIF_RX
+, chanend ?c_dig_rx
+#endif
 )
 {
 #ifdef MIXER
     chan c_mix_out;
 #endif
 
-#if defined (SPDIF_RX) || (defined ADAT_RX)
-    chan c_dig_rx;
-#else
-#define c_dig_rx null
-#endif
-
     par
     {
+
+#ifdef SPDIF_RX
+        
+#endif
 
 #ifdef MIXER
         /* Mixer cores(s) */
@@ -410,6 +427,14 @@ int main()
 #define c_aud_cfg null
 #endif
 
+#ifdef SPDIF_RX
+    chan c_dig_rx;
+    streaming chan c_spdif_rx;
+#else
+#define c_dig_rx null
+#endif
+
+
     USER_MAIN_DECLARATIONS
 
     par
@@ -431,6 +456,8 @@ int main()
             , c_mix_ctl
 #endif
             , c_aud_cfg
+        
+            , c_dig_rx
         );
 
 #if defined(MIDI) && defined(IAP) && (IAP_TILE == MIDI_TILE)
@@ -458,6 +485,13 @@ int main()
 #endif
 #endif
 
+#ifdef SPDIF_RX
+        on tile[0]:
+        {
+            thread_speed();
+            SpdifReceive(p_spdif_rx, c_spdif_rx, 1, clk_spd_rx);
+        }
+#endif
         USER_MAIN_CORES
     }
 
