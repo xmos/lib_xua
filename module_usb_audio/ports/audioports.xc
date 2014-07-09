@@ -35,6 +35,18 @@ unsigned int divide)
     /* Note this call to stop_clock() will pause forever if the port clocking the clock-block is not low.
      * deliver() should return with this being the case */
 
+    /* get the port id of the clock block source and set it to zero */
+    {
+    unsigned clockResId;
+    unsigned portResId;
+    asm("add %0, %1, %2": "=r"(clockResId):"r"(clk_audio_bclk), "r"(0));
+    portResId = getps(clockResId | (XS1_RES_PS_CLKSRC << 4) );
+    if(portResId != 1)
+        asm("out res[%0], %1":: "r"(portResId), "r"(0));
+    }
+
+
+
     stop_clock(clk_audio_bclk);
 
     if(!isnull(p_lrclk))
