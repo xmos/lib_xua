@@ -26,8 +26,8 @@ unsigned testsamples[100];
 int p = 0;
 unsigned lastSample = 0;
 #if (DSD_CHANS_DAC != 0)
-extern unsigned p_dsd_dac[DSD_CHANS_DAC];
-extern port p_dsd_clk;
+extern buffered out port:32 p_dsd_dac[DSD_CHANS_DAC];
+extern buffered out port:32 p_dsd_clk;
 #endif
 
 unsigned g_adcVal = 0;
@@ -832,6 +832,15 @@ void audio(chanend c_mix_out, chanend ?c_dig_rx, chanend ?c_config, chanend ?c)
 
     start_clock(clk_audio_mclk);
 
+#if (DSD_CHANS_DAC > 0)
+    /* Make sure the DSD ports are on and buffered - just in case they are not shared with I2S */
+    EnableBufferedPort(p_dsd_clk, 32);
+    for(int i = 0; i< DSD_CHANS_DAC; i++)
+    {
+        EnableBufferedPort(p_dsd_dac[i], 32);
+    }
+#endif
+
 #ifdef SPDIF
     SpdifTransmitPortConfig(p_spdif_tx, clk_mst_spd, p_mclk_in);
 #endif
@@ -872,28 +881,31 @@ void audio(chanend c_mix_out, chanend ?c_dig_rx, chanend ?c_config, chanend ?c)
             divide = mClk / ( curSamFreq * numBits );
        }
 
-#if (DSD_CHANS_DAC != 0)
+        
+#if (DSD_CHANS_DAC > 0)
+        if(dsdMode)
+        {
         /* Configure audio ports */
         ConfigAudioPortsWrapper(
 #if (I2S_CHANS_DAC != 0)
-                p_i2s_dac,
+                p_dsd_dac,
+                DSD_CHANS_DAC,
 #endif
 #if (I2S_CHANS_ADC != 0)
                 p_i2s_adc,
+                I2S_WIRES_ADC,
 #endif
 #if (I2S_CHANS_DAC != 0) || (I2S_CHANS_ADC != 0)
-#ifndef CODEC_MASTER
-                p_lrclk,
-                p_bclk,
-#else
-                p_lrclk,
-                p_bclk,
+                null,
+                p_dsd_clk,
 #endif
+                divide, dsdMode);
+        }
+        else
 #endif
-            divide, dsdMode);
-#else
- /* Configure audio ports */
-        ConfigAudioPorts(
+        {
+
+            ConfigAudioPortsWrapper(
 #if (I2S_CHANS_DAC != 0)
                 p_i2s_dac,
                 I2S_WIRES_DAC,
@@ -911,9 +923,9 @@ void audio(chanend c_mix_out, chanend ?c_dig_rx, chanend ?c_config, chanend ?c)
                 p_bclk,
 #endif
 #endif
-            divide);
+            divide, dsdMode);
+}
 
-#endif
 
         {
             unsigned curFreq = curSamFreq;
