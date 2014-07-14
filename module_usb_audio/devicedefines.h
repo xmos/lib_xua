@@ -769,6 +769,14 @@
     #endif
 #endif
 
+#ifndef XUD_PWR_CFG
+    #ifdef SELF_POWERED
+        #define XUD_PWR_CFG XUD_PWR_SELF
+    #else
+        #define XUD_PWR_CFG XUD_PWR_BUS
+    #endif
+#endif
+
 /* Mixer defines */
 
 /**
