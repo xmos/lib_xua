@@ -32,7 +32,7 @@ void EnableBufferedPort(port p, unsigned transferWidth)
 /* C wrapper for ConfigAudioPorts() to handle DSD ports */
 void ConfigAudioPortsWrapper(
 #if (I2S_CHANS_DAC != 0)
-                port p_dac[], int numPortsDac, 
+                port p_dac[], int numPortsDac,
 #endif
 
 #if (I2S_CHANS_ADC != 0)

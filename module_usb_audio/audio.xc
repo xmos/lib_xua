@@ -881,7 +881,7 @@ void audio(chanend c_mix_out, chanend ?c_dig_rx, chanend ?c_config, chanend ?c)
             divide = mClk / ( curSamFreq * numBits );
        }
 
-        
+
 #if (DSD_CHANS_DAC > 0)
         if(dsdMode)
         {

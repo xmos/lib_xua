@@ -58,7 +58,7 @@ void ConfigAudioPorts(
 #ifdef __XC__
 void ConfigAudioPortsWrapper(
 #if (I2S_CHANS_DAC != 0)
-                buffered out port:32 p_i2s_dac[], int numPortsDAC, 
+                buffered out port:32 p_i2s_dac[], int numPortsDAC,
 #endif
 
 #if (I2S_CHANS_ADC != 0)
@@ -79,11 +79,11 @@ void ConfigAudioPortsWrapper(
 
 void ConfigAudioPortsWrapper(
 #if (I2S_CHANS_DAC != 0)
-                port p_i2s_dac[], int numPortsDAC, 
+                port p_i2s_dac[], int numPortsDAC,
 #endif
 
 #if (I2S_CHANS_ADC != 0)
-                port p_i2s_adc[], int numPortsADC, 
+                port p_i2s_adc[], int numPortsADC,
 #endif
 
 #if (I2S_CHANS_DAC != 0) || (I2S_CHANS_ADC != 0)
