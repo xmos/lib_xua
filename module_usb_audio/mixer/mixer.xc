@@ -117,7 +117,7 @@ int doMix8(xc_ptr samples, xc_ptr mult);
 /* DO NOT inline, causes 10.4.2 tools to add extra loads in loop */
 /* At 18 x 12dB we could get 64 x bigger */
 #pragma unsafe arrays
-static int doMix(xc_ptr samples, xc_ptr ptr, xc_ptr mult)
+static inline int doMix(xc_ptr samples, xc_ptr ptr, xc_ptr mult)
 {
     int h=0;
     int l=0;
@@ -153,7 +153,7 @@ static int doMix(xc_ptr samples, xc_ptr ptr, xc_ptr mult)
 #endif
 
 #pragma unsafe arrays
-static void giveSamplesToHost(chanend c, xc_ptr samples, xc_ptr ptr, xc_ptr multIn)
+static inline void giveSamplesToHost(chanend c, xc_ptr samples, xc_ptr ptr, xc_ptr multIn)
 {
 #if defined(IN_VOLUME_IN_MIXER) && defined(IN_VOLUME_AFTER_MIX)
     int mult;
@@ -186,7 +186,7 @@ static void giveSamplesToHost(chanend c, xc_ptr samples, xc_ptr ptr, xc_ptr mult
 }
 
 #pragma unsafe arrays
-static void getSamplesFromHost(chanend c, xc_ptr samples, int base, unsigned underflow)
+static inline void getSamplesFromHost(chanend c, xc_ptr samples, int base, unsigned underflow)
 {
     if(!underflow)
     {
@@ -227,7 +227,7 @@ static void getSamplesFromHost(chanend c, xc_ptr samples, int base, unsigned und
 }
 
 #pragma unsafe arrays
-static void giveSamplesToDevice(chanend c, xc_ptr samples, xc_ptr ptr, xc_ptr multOut, unsigned underflow)
+static inline void giveSamplesToDevice(chanend c, xc_ptr samples, xc_ptr ptr, xc_ptr multOut, unsigned underflow)
 {
 
     outuint(c, underflow);
@@ -265,7 +265,7 @@ static void giveSamplesToDevice(chanend c, xc_ptr samples, xc_ptr ptr, xc_ptr mu
 }
 
 #pragma unsafe arrays
-static void getSamplesFromDevice(chanend c, xc_ptr samples, int base)
+static inline void getSamplesFromDevice(chanend c, xc_ptr samples, int base)
 {
 #if defined(IN_VOLUME_IN_MIXER) && !defined(IN_VOLUME_AFTER_MIX)
     int mult;
@@ -475,12 +475,12 @@ static void mixer1(chanend c_host, chanend c_mix_ctl, chanend c_mixer2)
         {
             unsigned underflow = inuint(c_host);
 #if MAX_MIX_COUNT > 0
-            outuint(c_mixer2, 0);
+            outuint(c_mixer2, underflow);
             giveSamplesToHost(c_host, samples, samples_to_host_map, multIn);
 
             outuint(c_mixer2, 0);
             inuint(c_mixer2);
-            getSamplesFromHost(c_host, samples, 0);
+            getSamplesFromHost(c_host, samples, 0, underflow);
             outuint(c_mixer2, 0);
             inuint(c_mixer2);
 #ifdef FAST_MIXER
@@ -555,44 +555,65 @@ static int mixer2_mix2_flag = (DEFAULT_FREQ > 96000);
 #pragma unsafe arrays
 static void mixer2(chanend c_mixer1, chanend c_audio)
 {
-  int mixed;
+    int mixed;
+    unsigned underflow = 0;
 
-  while (1) {
-    outuint(c_mixer1, 0);
-#pragma xta endpoint "mixer2_req"
-    inuint(c_audio);
-    if(testct(c_mixer1))
+    while (1) 
     {
-        int sampFreq;
-#pragma xta endpoint "mixer2_rate_change"
-        inct(c_mixer1);
-        sampFreq = inuint(c_mixer1);
-
-
-        mixer2_mix2_flag = sampFreq > 96000;
-
-        for (int i=0;i<MAX_MIX_COUNT;i++)
+        outuint(c_mixer1, 0);
+#pragma xta endpoint "mixer2_req"
+        inuint(c_audio);
+        if(testct(c_mixer1))
         {
-          write_via_xc_ptr_indexed(samples, (NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + i), 0);
+            int sampFreq;
+#pragma xta endpoint "mixer2_rate_change"
+            unsigned command = inct(c_mixer1);
+
+            switch(command)
+            {
+                case SET_SAMPLE_FREQ:
+                    sampFreq = inuint(c_mixer1);
+                    mixer2_mix2_flag = sampFreq > 96000;
+
+                    /* Inform mixer2 (or audio()) about freq change */
+                    outct(c_audio, command);
+                    outuint(c_audio, sampFreq);
+                    break;
+
+                case SET_STREAM_FORMAT_OUT:
+                case SET_STREAM_FORMAT_IN:
+                     /* Inform mixer2 (or audio()) about format change */
+                    outct(c_audio, command);
+                    outuint(c_audio, inuint(c_mixer1));
+                    outuint(c_audio, inuint(c_mixer1));
+                    break;
+
+                default:
+                    break;
+            }
+
+            for (int i=0;i<MAX_MIX_COUNT;i++)
+            {
+                write_via_xc_ptr_indexed(samples, (NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + i), 0);
+            }
+
+            /* Inform audio thread about freq change */
+            //outct(c_audio, XS1_CT_END);
+            //outuint(c_audio, sampFreq);
+
+            /* Wait for handshake and pass on */
+            chkct(c_audio, XS1_CT_END);
+            outct(c_mixer1, XS1_CT_END);
         }
-
-        /* Inform audio thread about freq change */
-        outct(c_audio, XS1_CT_END);
-        outuint(c_audio, sampFreq);
-
-        /* Wait for handshake and pass on */
-        chkct(c_audio, XS1_CT_END);
-        outct(c_mixer1, XS1_CT_END);
-      }
-    else {
-      (void) inuint(c_mixer1);
-      giveSamplesToDevice(c_audio, samples, samples_to_device_map, multOut);
-      inuint(c_mixer1);
-      outuint(c_mixer1, 0);
-      getSamplesFromDevice(c_audio, samples, NUM_USB_CHAN_OUT);
-      inuint(c_mixer1);
-      outuint(c_mixer1, 0);
-
+        else 
+        {
+            underflow = inuint(c_mixer1);
+            giveSamplesToDevice(c_audio, samples, samples_to_device_map, multOut, underflow);
+            inuint(c_mixer1);
+            outuint(c_mixer1, 0);
+            getSamplesFromDevice(c_audio, samples, NUM_USB_CHAN_OUT);
+            inuint(c_mixer1);
+            outuint(c_mixer1, 0);
 #if MAX_MIX_COUNT > 1
 #ifdef FAST_MIXER
       mixed = doMix1(samples, mix_mult_slice(1));
