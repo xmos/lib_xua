@@ -529,7 +529,7 @@ StringDescTable_t g_strTable =
 #endif
 
 /*** INPUT CHANNEL STRINGS ***/
-    
+
 #if (NUM_USB_CHAN_IN > 0)
 #if defined(SPDIF_RX) && (SPDIF_RX_INDEX == 0)
     #if defined(SPDIF_RX) && (SPDIF_RX_INDEX < I2S_CHANS_ADC)
@@ -849,8 +849,8 @@ StringDescTable_t g_strTable =
 
 #if (NUM_USB_CHAN_IN > 18)
 #error NUM_USB_CHAN_IN > 18
-#endif   
-    
+#endif
+
     .iAPInterfaceStr             = "iAP Interface",
 
 };
