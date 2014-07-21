@@ -239,12 +239,6 @@ void xscope_user_init()
 }
 #endif
 
-#ifdef SELF_POWERED
-#define pwrConfig XUD_PWR_BUS
-#else
-#define pwrConfig XUD_PWR_BUS
-#endif
-
 /* Core USB Audio functions - must be called on the Tile connected to the USB Phy */
 void usb_audio_core(chanend c_mix_out
 #ifdef MIDI
@@ -277,11 +271,11 @@ void usb_audio_core(chanend c_mix_out
 #if (AUDIO_CLASS==2)
         XUD_Manager(c_xud_out, ENDPOINT_COUNT_OUT, c_xud_in, ENDPOINT_COUNT_IN,
             c_sof, epTypeTableOut, epTypeTableIn, p_usb_rst,
-            clk, 1, XUD_SPEED_HS, pwrConfig);
+            clk, 1, XUD_SPEED_HS, XUD_PWR_CFG);
 #else
         XUD_Manager(c_xud_out, ENDPOINT_COUNT_OUT, c_xud_in, ENDPOINT_COUNT_IN,
             c_sof, epTypeTableOut, epTypeTableIn, p_usb_rst,
-            clk, 1, XUD_SPEED_FS, pwrConfig);
+            clk, 1, XUD_SPEED_FS, XUD_PWR_CFG);
 #endif
 
         /* USB Packet buffering Core */
