@@ -352,9 +352,9 @@ void usb_audio_core(chanend c_mix_out
 
 void usb_audio_io(chanend c_aud_in, chanend ?c_adc,
 #ifdef MIXER
-chanend c_mix_ctl, 
+chanend c_mix_ctl,
 #endif
-chanend ?c_aud_cfg, 
+chanend ?c_aud_cfg,
 streaming chanend ?c_spdif_rx,
 chanend ?c_clk_ctl,
 chanend ?c_clk_int
@@ -390,7 +390,7 @@ chanend ?c_clk_int
             thread_speed();
 
             clockGen(c_spdif_rx, null, p_pll_clk, c_dig_rx, c_clk_ctl, c_clk_int);
-        
+
         }
 #endif
         //:

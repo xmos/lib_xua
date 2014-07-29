@@ -1581,7 +1581,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
 #endif
 
 #if defined(SPDIF_RX) || defined(ADAT_RX)
-        /* Standard AS Interrupt Endpoint Descriptor (4.8.2.1): */ 
+        /* Standard AS Interrupt Endpoint Descriptor (4.8.2.1): */
         .Audio_Int_Endpoint =
         {
             .bLength                        = sizeof(USB_Descriptor_Endpoint_t),

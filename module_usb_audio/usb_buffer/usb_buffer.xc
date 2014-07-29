@@ -41,7 +41,7 @@ unsigned g_freqChange = 0;
 #if defined (SPDIF_RX) || defined (ADAT_RX)
 /* When digital Rx enabled we enable an interrupt EP to inform host about changes in clock validity */
 /* Interrupt EP report data */
-unsigned char g_intData[8] = 
+unsigned char g_intData[8] =
 {
     0,    // Class-specific, caused by interface
     1,    // attribute: CUR
@@ -106,8 +106,8 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
             chanend c_iap,
 #endif
 #if defined(SPDIF_RX) || defined(ADAT_RX)
-            chanend ?c_ep_int,  
-            chanend ?c_clk_int, 
+            chanend ?c_ep_int,
+            chanend ?c_clk_int,
 #endif
             chanend c_sof,
             chanend c_aud_ctl,
@@ -187,7 +187,7 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
     int iap_expected_data_length = 0;
     int iap_draining_chan = 0;
 #endif
-    
+
     /* Store EP's to globals so that decouple() can access them */
     asm("stw %0, dp[aud_from_host_usb_ep]"::"r"(ep_aud_out));
     asm("stw %0, dp[aud_to_host_usb_ep]"::"r"(ep_aud_in));
@@ -233,7 +233,7 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
             case inuint_byref(c_clk_int, u_tmp):
                 chkct(c_clk_int, XS1_CT_END);
 
-                /* Check if we have interrupt pending. 
+                /* Check if we have interrupt pending.
                  * Note, this his means we can loose interrupts... */
                 if(!g_intFlag)
                 {
@@ -245,7 +245,7 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
                     XUD_SetReady_In(ep_int, g_intData, 6);
                 }
                 break;
-            
+
             /* Interrupt EP data sent, clear flag */
             case XUD_SetData_Select(c_ep_int, ep_int, result):
             {
