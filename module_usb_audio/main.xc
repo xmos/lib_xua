@@ -243,6 +243,9 @@ void usb_audio_core(chanend c_mix_out
 #endif
 #ifdef IAP
 , chanend c_iap
+#ifdef IAP_EA_NATIVE_TRANS
+, chanend c_ea_data
+#endif
 #endif
 #ifdef MIXER
 , chanend c_mix_ctl
@@ -344,6 +347,17 @@ void usb_audio_core(chanend c_mix_out
 #endif
             );
         }
+
+#if defined(IAP_EA_NATIVE_TRANS)
+        /* EA Native Transport Endpoint manager */
+        {
+            thread_speed();
+            iAP2_EANativeTransport_EPManager(
+                c_xud_out[ENDPOINT_NUMBER_OUT_IAP_EA_NATIVE_TRANS],
+                c_xud_in[ENDPOINT_NUMBER_IN_IAP_EA_NATIVE_TRANS],
+                c_EANativeTransport_ctrl, c_ea_data);
+        }
+#endif
         //:
     }
 }
@@ -405,6 +419,9 @@ int main()
 #endif
 #ifdef IAP
     chan c_iap;
+#ifdef IAP_EA_NATIVE_TRANS
+    chan c_ea_data;
+#endif
 #endif
 #ifdef SU1_ADC_ENABLE
     chan c_adc;
@@ -432,6 +449,9 @@ int main()
 #endif
 #ifdef IAP
             , c_iap
+#ifdef IAP_EA_NATIVE_TRANS
+            , c_ea_data
+#endif
 #endif
 #ifdef MIXER
             , c_mix_ctl
