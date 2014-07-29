@@ -461,9 +461,8 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out, unsigned divide, unsi
 #endif
         }
 
-#if 0
-        /* TODO - requires clock gen */
 #if defined(SPDIF_RX) || defined(ADAT_RX)
+        /* Sync with clockgen */
         inuint(c_dig_rx);
 #endif
 #ifdef SPDIF_RX
@@ -485,7 +484,6 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out, unsigned divide, unsi
 #if defined(SPDIF_RX) || defined(ADAT_RX)
         /* Request digital data (with prefill) */
         outuint(c_dig_rx, 0);
-#endif
 #endif
 
         tmp = 0;
