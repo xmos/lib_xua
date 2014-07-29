@@ -229,13 +229,12 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
         select
         {
 #if defined(SPDIF_RX) || defined(ADAT_RX)
-            
             /* Clocking thread wants to produce an interrupt... */
             case inuint_byref(c_clk_int, u_tmp):
                 chkct(c_clk_int, XS1_CT_END);
 
                 /* Check if we have interrupt pending. 
-                 * Note, this his means we can loose interrupts */
+                 * Note, this his means we can loose interrupts... */
                 if(!g_intFlag)
                 {
                     g_intFlag = 1;
