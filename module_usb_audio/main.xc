@@ -262,6 +262,12 @@ void usb_audio_core(chanend c_mix_out
 #define c_mix_ctl null
 #endif
 
+#ifdef IAP_EA_NATIVE_TRANS
+    chan c_EANativeTransport_ctrl;
+#else
+#define c_EANativeTransport_ctrl null
+#endif
+
     par
     {
         /* USB Interface Core */
@@ -326,7 +332,7 @@ void usb_audio_core(chanend c_mix_out
         /* Endpoint 0 Core */
         {
             thread_speed();
-            Endpoint0( c_xud_out[0], c_xud_in[0], c_aud_ctl, c_mix_ctl, null);
+            Endpoint0( c_xud_out[0], c_xud_in[0], c_aud_ctl, c_mix_ctl, null, c_EANativeTransport_ctrl);
         }
 
         /* Decoupling core */
