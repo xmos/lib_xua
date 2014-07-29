@@ -568,46 +568,6 @@ __builtin_unreachable();
     }
 }
 
-
-#if 0
-extern unsigned char g_intData[8];
-
-static void check_for_interrupt(chanend ?c_clk_int) {
-    unsigned tmp;
-
-    select
-    {
-        /* Clocking thread wants to produce an interrupt... */
-        case inuint_byref(c_clk_int, tmp):
-            chkct(c_clk_int, XS1_CT_END);
-
-            /* Check if we have interrupt pending */
-            /* TODO This means we can loose interrupts */
-            if(!g_intFlag)
-            {
-                int x;
-
-                g_intFlag = 1;
-
-                g_intData[5] = tmp;
-
-                /* Make request to send to XUD endpoint - response handled in usb_buffer */
-                //XUD_SetReady(int_usb_ep, 0);
-    
-            //    printstrln("interrupt");
-
-                asm("ldaw %0, dp[g_intData]":"=r"(x));
-                XUD_SetReady_In(int_usb_ep, g_intData, 6);
-            }
-
-            break;
-        default:
-            break;
-    }
-}
-#endif
-
-
 /* Mark Endpoint (IN) ready with an appropriately sized zero buffer */
 static inline void SetupZerosSendBuffer(XUD_ep aud_to_host_usb_ep, unsigned sampFreq, unsigned slotSize)
 {
@@ -741,12 +701,6 @@ void decouple(chanend c_mix_out
             inuchar(c_buf_ctrl);
         }
 #endif
-
-        //if (!isnull(c_clk_int))
-       // {
-        //    check_for_interrupt(c_clk_int);
-       // }
-
         {
             asm("#decouple-default");
 
