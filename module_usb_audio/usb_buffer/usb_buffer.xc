@@ -38,8 +38,23 @@ extern unsigned int g_curSamFreqMultiplier;
 unsigned g_speed;
 unsigned g_freqChange = 0;
 
-/* Interrupt EP data */
-unsigned char g_intData[8];
+#if defined (SPDIF_RX) || defined (ADAT_RX)
+/* When digital Rx enabled we enable an interrupt EP to inform host about changes in clock validity */
+/* Interrupt EP report data */
+unsigned char g_intData[8] = 
+{
+    0,    // Class-specific, caused by interface
+    1,    // attribute: CUR
+    0,    // CN/ MCN
+    0,    // CS
+    0,    // interface
+    0,    // ID of entity causing interrupt - this will get modified;
+    0,    // Spare
+    0,    // Spare
+};
+
+unsigned g_intFlag = 0;
+#endif
 
 #if defined (MIDI) || defined(IAP)
 static inline void swap(xc_ptr &a, xc_ptr &b)
@@ -91,7 +106,8 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
             chanend c_iap,
 #endif
 #if defined(SPDIF_RX) || defined(ADAT_RX)
-            chanend ?c_int,
+            chanend ?c_ep_int,  
+            chanend ?c_clk_int, 
 #endif
             chanend c_sof,
             chanend c_aud_ctl,
@@ -119,7 +135,7 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
 #endif
 #endif
 #if defined(SPDIF_RX) || defined(ADAT_RX)
-    XUD_ep ep_int = XUD_InitEp(c_int);
+    XUD_ep ep_int = XUD_InitEp(c_ep_int);
 #endif
 
 #ifdef HID_CONTROLS
@@ -171,10 +187,7 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
     int iap_expected_data_length = 0;
     int iap_draining_chan = 0;
 #endif
-
-#if defined(SPDIF_RX) || defined(ADAT_RX)
-    asm("stw %0, dp[int_usb_ep]"::"r"(ep_int));
-#endif
+    
     /* Store EP's to globals so that decouple() can access them */
     asm("stw %0, dp[aud_from_host_usb_ep]"::"r"(ep_aud_out));
     asm("stw %0, dp[aud_to_host_usb_ep]"::"r"(ep_aud_in));
@@ -216,11 +229,28 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
         select
         {
 #if defined(SPDIF_RX) || defined(ADAT_RX)
-            /* Interrupt EP, send back interrupt data.  Note, request made from decouple */
-            case XUD_SetData_Select(c_int, ep_int, result):
+            
+            /* Clocking thread wants to produce an interrupt... */
+            case inuint_byref(c_clk_int, u_tmp):
+                chkct(c_clk_int, XS1_CT_END);
+
+                /* Check if we have interrupt pending. 
+                 * Note, this his means we can loose interrupts */
+                if(!g_intFlag)
+                {
+                    g_intFlag = 1;
+
+                    /* Append Unit ID onto packet */
+                    g_intData[5] = u_tmp;
+
+                    XUD_SetReady_In(ep_int, g_intData, 6);
+                }
+                break;
+            
+            /* Interrupt EP data sent, clear flag */
+            case XUD_SetData_Select(c_ep_int, ep_int, result):
             {
-                int sent_ok = 0;
-                asm("stw   %0, dp[g_intFlag]" :: "r" (0)  );
+                g_intFlag = 0;
                 break;
             }
 #endif
