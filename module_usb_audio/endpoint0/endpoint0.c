@@ -335,8 +335,24 @@ void Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
                                     }
                                 }
                                 break;
+#ifdef IAP_EA_NATIVE_TRANS
+                            case INTERFACE_NUMBER_IAP_EA_NATIVE_TRANS:
+                                /* Check the alt is in range */
+                                if (sp.wValue <= IAP_EA_NATIVE_TRANS_ALT_COUNT) //FIXME is this check required?
+                                    /* Alt 0 is EA Protocol stop */
+                                    /* Only send change if we need to */
+                                    //TODO if ((sp.wValue > 0) && g_eaNativeTransportAlt != sp.wValue))?
                                     {
+                                        //TODO g_eaNativeTransportAlt  = sp.wValue;?
 
+                                        /* Send selected Alt interface number onto EA Native EP manager */
+                                        outuint(c_EANativeTransport_ctrl, sp.wValue);
+
+                                        /* Handshake */
+                                        chkct(c_EANativeTransport_ctrl, XS1_CT_END);
+                                    }
+                                break;
+#endif
                             default:
                                 /* Unhandled interface */
                                 break;
