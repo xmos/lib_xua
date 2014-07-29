@@ -200,7 +200,7 @@ extern int samples_to_host_inputs_buff[NUM_USB_CHAN_IN];        /* Audio transmi
 int VendorAudCoreReqs(unsigned cmd, chanend c);
 
 #pragma unsafe arrays
-void clockGen (streaming chanend c_spdif_rx, chanend c_adat_rx, out port p, chanend c_dig_rx, chanend c_clk_ctl, chanend c_clk_int)
+void clockGen (streaming chanend c_spdif_rx, chanend ?c_adat_rx, out port p, chanend c_dig_rx, chanend c_clk_ctl, chanend c_clk_int)
 {
     timer t_local;
     unsigned timeNextEdge, timeLastEdge, timeNextClockDetection;
@@ -255,7 +255,6 @@ void clockGen (streaming chanend c_spdif_rx, chanend c_adat_rx, out port p, chan
     {
        g_digData[i] = 0;
     }
-
 
     /* Init clock unit state */
 #ifdef SPDIF_RX
