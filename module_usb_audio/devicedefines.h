@@ -907,6 +907,22 @@
 #undef IAP_EA_NATIVE_TRANS
 #endif
 
+#if defined(IAP_EA_NATIVE_TRANS) || defined(__DOXYGEN__)
+/**
+ * @brief Number of supported EA Native Interface Alternative settings.
+ *
+ * Only 1 supported
+ */
+#ifndef IAP_EA_NATIVE_TRANS_ALT_COUNT
+    #define IAP_EA_NATIVE_TRANS_ALT_COUNT 1
+#endif
+
+#if (IAP_EA_NATIVE_TRANS_ALT_COUNT > 1)
+    /* Only 1 supported */
+    #error
+#endif
+#endif
+
 /* Endpoint addresses enums */
 enum USBEndpointNumber_In
 {
