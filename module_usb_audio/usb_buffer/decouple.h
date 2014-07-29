@@ -6,12 +6,10 @@
  *  Audio I/O driver.
  *
  * \param c_audio_out Channel connected to the audio() or mixer() threads
- * \param c_clk_int Optional chanend connected to the clockGen() thread if present
  */
-void decouple(chanend c_audio_out,
-              chanend ?c_clk_int
+void decouple(chanend c_audio_out
 #ifdef CHAN_BUFF_CTRL
-                , chanend c_buff_ctrl
+     , chanend c_buff_ctrl
 #endif
 );
 

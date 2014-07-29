@@ -61,7 +61,6 @@ void GetADCCounts(unsigned samFreq, int &min, int &mid, int &max);
 /* Globals for EP types */
 XUD_ep aud_from_host_usb_ep = 0;
 XUD_ep aud_to_host_usb_ep = 0;
-XUD_ep int_usb_ep = 0;
 
 /* Shared global audio buffering variables */
 unsigned g_aud_from_host_buffer;
@@ -570,8 +569,7 @@ __builtin_unreachable();
 }
 
 
-unsigned g_intFlag = 0;
-
+#if 0
 extern unsigned char g_intData[8];
 
 static void check_for_interrupt(chanend ?c_clk_int) {
@@ -595,9 +593,11 @@ static void check_for_interrupt(chanend ?c_clk_int) {
 
                 /* Make request to send to XUD endpoint - response handled in usb_buffer */
                 //XUD_SetReady(int_usb_ep, 0);
+    
+            //    printstrln("interrupt");
 
-                //asm("ldaw %0, dp[g_intData]":"=r"(x));
-                //XUD_SetReady_In(int_usb_ep, g_intData, 6);
+                asm("ldaw %0, dp[g_intData]":"=r"(x));
+                XUD_SetReady_In(int_usb_ep, g_intData, 6);
             }
 
             break;
@@ -605,6 +605,8 @@ static void check_for_interrupt(chanend ?c_clk_int) {
             break;
     }
 }
+#endif
+
 
 /* Mark Endpoint (IN) ready with an appropriately sized zero buffer */
 static inline void SetupZerosSendBuffer(XUD_ep aud_to_host_usb_ep, unsigned sampFreq, unsigned slotSize)
@@ -636,10 +638,9 @@ static inline void SetupZerosSendBuffer(XUD_ep aud_to_host_usb_ep, unsigned samp
 unsigned char tmpBuffer[1026];
 
 #pragma unsafe arrays
-void decouple(chanend c_mix_out,
-              chanend ?c_clk_int
+void decouple(chanend c_mix_out
 #ifdef CHAN_BUFF_CTRL
-              , chanend c_buf_ctrl
+    , chanend c_buf_ctrl
 #endif
 )
 {
@@ -679,14 +680,6 @@ void decouple(chanend c_mix_out,
        0 length packets, which is reasonable behaviour */
     t = array_to_xc_ptr(inZeroBuff);
     g_aud_to_host_zeros = t;
-
-    /* Init interrupt report */
-    g_intData[0] = 0;    // Class-specific, caused by interface
-    g_intData[1] = 1;    // attribute: CUR
-    g_intData[2] = 0;    // CN/ MCN
-    g_intData[3] = 0;    // CS
-    g_intData[4] = 0;    // interface
-    g_intData[5] = 0;    // ID of entity causing interrupt - this will get modified
 
     /* Init vol mult tables */
 #ifndef OUT_VOLUME_IN_MIXER
@@ -749,10 +742,10 @@ void decouple(chanend c_mix_out,
         }
 #endif
 
-        if (!isnull(c_clk_int))
-        {
-            check_for_interrupt(c_clk_int);
-        }
+        //if (!isnull(c_clk_int))
+       // {
+        //    check_for_interrupt(c_clk_int);
+       // }
 
         {
             asm("#decouple-default");
