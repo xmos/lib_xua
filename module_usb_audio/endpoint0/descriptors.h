@@ -602,7 +602,7 @@ StringDescTable_t g_strTable =
 #endif
     .iAPInterfaceStr                    = "iAP Interface",
 #ifdef IAP_EA_NATIVE_TRANS
-    .iAP_EANativeTransport_InterfaceStr = IAP_EA_NATIVE_TRANS_PROTOCOL_NAME,
+    .iAP_EANativeTransport_InterfaceStr = IAP2_EA_NATIVE_TRANS_PROTOCOL_NAME,
 #endif
 };
 
