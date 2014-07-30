@@ -346,7 +346,8 @@ void Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
                                         //TODO g_eaNativeTransportAlt  = sp.wValue;?
 
                                         /* Send selected Alt interface number onto EA Native EP manager */
-                                        outuint(c_EANativeTransport_ctrl, sp.wValue);
+                                        unsigned int altSetting = (0x0000FFFF & sp.wValue); // sp.wValue is an unsigned short
+                                        outuint(c_EANativeTransport_ctrl, altSetting);
 
                                         /* Handshake */
                                         chkct(c_EANativeTransport_ctrl, XS1_CT_END);
