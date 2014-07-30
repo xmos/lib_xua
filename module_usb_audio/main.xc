@@ -32,6 +32,12 @@
 #include "mixer.h"
 #endif
 
+#ifdef SPDIF_RX
+#include "SpdifReceive.h"
+#include "clocking.h"
+#endif
+
+
 /* Audio I/O - Port declarations */
 #if I2S_WIRES_DAC > 0
 on tile[AUDIO_IO_TILE] : buffered out port:32 p_i2s_dac[I2S_WIRES_DAC] =
@@ -98,11 +104,13 @@ on tile[AUDIO_IO_TILE] : buffered in port:32 p_i2s_adc[I2S_WIRES_ADC] =
  * This is a clash with S/PDIF Tx but simultaneous S/PDIF and MIDI not currently supported on single tile device
  *
  */
+/* TODO should include tile here */
 #define CLKBLK_MIDI        XS1_CLKBLK_1;
 #else
 #define CLKBLK_MIDI        XS1_CLKBLK_REF;
 #endif
 #define CLKBLK_SPDIF_TX    XS1_CLKBLK_1
+#define CLKBLK_SPDIF_RX    XS1_CLKBLK_1
 #define CLKBLK_MCLK        XS1_CLKBLK_2
 #define CLKBLK_I2S_BIT     XS1_CLKBLK_3
 #define CLKBLK_XUD         XS1_CLKBLK_4 /* Note XUD for U-series uses CLKBLK_5 also (see XUD_Ports.xc) */
@@ -122,13 +130,18 @@ on tile[XUD_TILE] : in port p_for_mclk_count                = PORT_MCLK_COUNT;
 on tile[AUDIO_IO_TILE] : buffered out port:32 p_spdif_tx    = PORT_SPDIF_OUT;
 #endif
 
+#ifdef SPDIF_RX
+on tile[XUD_TILE] : buffered in port:4 p_spdif_rx           = PORT_SPDIF_IN; /* K: coax, J: optical */
+on tile[AUDIO_IO_TILE] : out port p_pll_clk                 = PORT_PLL_REF;
+#endif
+
 #ifdef MIDI
 on tile[AUDIO_IO_TILE] :  port p_midi_tx                    = PORT_MIDI_OUT;
 
 #if(MIDI_RX_PORT_WIDTH == 4)
-on tile[AUDIO_IO_TILE] :  buffered in port:4 p_midi_rx         = PORT_MIDI_IN;
+on tile[AUDIO_IO_TILE] :  buffered in port:4 p_midi_rx      = PORT_MIDI_IN;
 #elif(MIDI_RX_PORT_WIDTH == 1)
-on tile[AUDIO_IO_TILE] :  buffered in port:1 p_midi_rx         = PORT_MIDI_IN;
+on tile[AUDIO_IO_TILE] :  buffered in port:1 p_midi_rx      = PORT_MIDI_IN;
 #endif
 #endif
 
@@ -139,6 +152,10 @@ on tile[AUDIO_IO_TILE] : clock    clk_midi                  = CLKBLK_MIDI;
 
 #ifdef SPDIF
 on tile[AUDIO_IO_TILE] : clock    clk_mst_spd               = CLKBLK_SPDIF_TX;
+#endif
+
+#ifdef SPDIF_RX
+on tile[XUD_TILE] : clock    clk_spd_rx                     = CLKBLK_SPDIF_RX;
 #endif
 
 on tile[AUDIO_IO_TILE] : clock    clk_audio_mclk            = CLKBLK_MCLK;       /* Master clock */
@@ -235,6 +252,8 @@ void usb_audio_core(chanend c_mix_out
 #ifdef MIXER
 , chanend c_mix_ctl
 #endif
+, chanend ?c_clk_int
+, chanend ?c_clk_ctl
 )
 {
     chan c_sof;
@@ -299,6 +318,7 @@ void usb_audio_core(chanend c_mix_out
 #if defined(SPDIF_RX) || defined(ADAT_RX)
                 /* Audio Interrupt - only used for interrupts on external clock change */
                 c_xud_in[ENDPOINT_NUMBER_IN_INTERRUPT],
+                c_clk_int,
 #endif
                 c_sof, c_aud_ctl, p_for_mclk_count
 #ifdef HID_CONTROLS
@@ -314,13 +334,13 @@ void usb_audio_core(chanend c_mix_out
         /* Endpoint 0 Core */
         {
             thread_speed();
-            Endpoint0( c_xud_out[0], c_xud_in[0], c_aud_ctl, c_mix_ctl, null);
+            Endpoint0( c_xud_out[0], c_xud_in[0], c_aud_ctl, c_mix_ctl, c_clk_ctl);
         }
 
         /* Decoupling core */
         {
             thread_speed();
-            decouple(c_mix_out, null
+            decouple(c_mix_out
 #ifdef CHAN_BUFF_CTRL
                 , c_buff_ctrl
 #endif
@@ -330,26 +350,24 @@ void usb_audio_core(chanend c_mix_out
     }
 }
 
-void usb_audio_io(chanend c_aud_in, chanend ?c_adc
+void usb_audio_io(chanend c_aud_in, chanend ?c_adc,
 #ifdef MIXER
-, chanend c_mix_ctl
+chanend c_mix_ctl,
 #endif
-, chanend ?c_aud_cfg
+chanend ?c_aud_cfg,
+streaming chanend ?c_spdif_rx,
+chanend ?c_clk_ctl,
+chanend ?c_clk_int
 )
 {
 #ifdef MIXER
     chan c_mix_out;
 #endif
 
-#if defined (SPDIF_RX) || (defined ADAT_RX)
     chan c_dig_rx;
-#else
-#define c_dig_rx null
-#endif
 
     par
     {
-
 #ifdef MIXER
         /* Mixer cores(s) */
         {
@@ -366,6 +384,15 @@ void usb_audio_io(chanend c_aud_in, chanend ?c_adc
             audio(c_aud_in, c_dig_rx, c_aud_cfg, c_adc);
 #endif
         }
+
+#ifdef SPDIF_RX
+        {
+            thread_speed();
+
+            clockGen(c_spdif_rx, null, p_pll_clk, c_dig_rx, c_clk_ctl, c_clk_int);
+
+        }
+#endif
         //:
     }
 }
@@ -404,6 +431,17 @@ int main()
 #define c_aud_cfg null
 #endif
 
+#ifdef SPDIF_RX
+    streaming chan c_spdif_rx;
+    chan c_clk_ctl;
+    chan c_clk_int;
+#else
+#define c_dig_rx null
+#define c_clk_int null
+#define c_clk_ctl null
+#define c_spdif_rx null
+#endif
+
     USER_MAIN_DECLARATIONS
 
     par
@@ -418,13 +456,14 @@ int main()
 #ifdef MIXER
             , c_mix_ctl
 #endif
+            , c_clk_int, c_clk_ctl
 );
 
         on tile[AUDIO_IO_TILE]: usb_audio_io(c_mix_out, c_adc
 #ifdef MIXER
             , c_mix_ctl
 #endif
-            , c_aud_cfg
+            ,c_aud_cfg, c_spdif_rx, c_clk_ctl, c_clk_int
         );
 
 #if defined(MIDI) && defined(IAP) && (IAP_TILE == MIDI_TILE)
@@ -452,6 +491,13 @@ int main()
 #endif
 #endif
 
+#ifdef SPDIF_RX
+        on tile[0]:
+        {
+            thread_speed();
+            SpdifReceive(p_spdif_rx, c_spdif_rx, 1, clk_spd_rx);
+        }
+#endif
         USER_MAIN_CORES
     }
 

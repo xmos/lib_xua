@@ -529,7 +529,7 @@ StringDescTable_t g_strTable =
 #endif
 
 /*** INPUT CHANNEL STRINGS ***/
-    
+
 #if (NUM_USB_CHAN_IN > 0)
 #if defined(SPDIF_RX) && (SPDIF_RX_INDEX == 0)
     #if defined(SPDIF_RX) && (SPDIF_RX_INDEX < I2S_CHANS_ADC)
@@ -849,8 +849,8 @@ StringDescTable_t g_strTable =
 
 #if (NUM_USB_CHAN_IN > 18)
 #error NUM_USB_CHAN_IN > 18
-#endif   
-    
+#endif
+
     .iAPInterfaceStr             = "iAP Interface",
 
 };
@@ -1118,6 +1118,9 @@ typedef struct
     USB_Descriptor_Audio_FeatureUnit_In_t       Audio_In_FeatureUnit;
 #endif
     USB_Descriptor_Audio_OutputTerminal_t       Audio_In_OutputTerminal;
+#endif
+#if defined (SPDIF_RX) || defined (ADAT_RX)
+    USB_Descriptor_Endpoint_t                   Audio_Int_Endpoint;
 #endif
 } __attribute__((packed)) USB_CfgDesc_Audio2_CS_Control_Int;
 
@@ -1574,6 +1577,19 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
             .bCSourceID                = ID_CLKSEL,
             .bmControls                = 0x0000,
             .iTerminal                 = offsetof(StringDescTable_t, usbOutputTermStr_Audio2)/sizeof(char *)
+        },
+#endif
+
+#if defined(SPDIF_RX) || defined(ADAT_RX)
+        /* Standard AS Interrupt Endpoint Descriptor (4.8.2.1): */
+        .Audio_Int_Endpoint =
+        {
+            .bLength                        = sizeof(USB_Descriptor_Endpoint_t),
+            .bDescriptorType                = USB_DESCTYPE_ENDPOINT,
+            .bEndpointAddress               = ENDPOINT_ADDRESS_IN_INTERRUPT,     /* (D7: 0:out, 1:in) */
+            .bmAttributes                   = 0x03,     /* (bitmap)  */
+            .wMaxPacketSize                 = 6,
+            .bInterval                      = 8,
         },
 #endif
     }, /* End of .Audio_CS_Control_Int */
