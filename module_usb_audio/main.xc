@@ -34,9 +34,13 @@
 
 #ifdef SPDIF_RX
 #include "SpdifReceive.h"
-#include "clocking.h"
 #endif
 
+#ifdef ADAT_RX
+#include "adatreceiver.h"
+#endif
+
+#include "clocking.h"
 
 /* Audio I/O - Port declarations */
 #if I2S_WIRES_DAC > 0
@@ -130,8 +134,16 @@ on tile[XUD_TILE] : in port p_for_mclk_count                = PORT_MCLK_COUNT;
 on tile[AUDIO_IO_TILE] : buffered out port:32 p_spdif_tx    = PORT_SPDIF_OUT;
 #endif
 
+#ifdef ADAT_RX
+on stdcore[XUD_TILE] : buffered in port:32 p_adat_rx        = PORT_ADAT_IN;
+#endif
+
 #ifdef SPDIF_RX
-on tile[XUD_TILE] : buffered in port:4 p_spdif_rx           = PORT_SPDIF_IN; /* K: coax, J: optical */
+on tile[XUD_TILE] : buffered in port:4 p_spdif_rx           = PORT_SPDIF_IN;
+#endif
+
+#if defined (SPDIF_RX) || defined (ADAT_RX)
+/* Reference to external clock multiplier */
 on tile[AUDIO_IO_TILE] : out port p_pll_clk                 = PORT_PLL_REF;
 #endif
 
@@ -157,6 +169,11 @@ on tile[AUDIO_IO_TILE] : clock    clk_mst_spd               = CLKBLK_SPDIF_TX;
 #ifdef SPDIF_RX
 on tile[XUD_TILE] : clock    clk_spd_rx                     = CLKBLK_SPDIF_RX;
 #endif
+
+#ifdef ADAT_RX
+on tile[XUD_TILE] : clock    clk_adat_rx                    = CLKBLK_ADAT_RX;
+#endif
+
 
 on tile[AUDIO_IO_TILE] : clock    clk_audio_mclk            = CLKBLK_MCLK;       /* Master clock */
 
@@ -496,6 +513,20 @@ int main()
         {
             thread_speed();
             SpdifReceive(p_spdif_rx, c_spdif_rx, 1, clk_spd_rx);
+        }
+#endif
+
+#ifdef ADAT_RX
+        on stdcore[0] : 
+        {
+            set_thread_fast_mode_on();                         
+            set_port_clock(p_adat_rx, clk_adat_rx);
+            start_clock(clk_adat_rx);
+            while (1)
+            {
+				adatReceiver48000(p_adat_rx, c_adat_rx);
+				adatReceiver44100(p_adat_rx, c_adat_rx);
+			}
         }
 #endif
         USER_MAIN_CORES
