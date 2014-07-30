@@ -263,6 +263,10 @@
     #error ADAT_RX_INDEX not defined and ADAT_RX defined
     #define ADAT_RX_INDEX (0) /* Default define for doxygen */
 #endif
+
+#if (ADAT_RX_INDEX + 8 > NUM_USB_CHAN_IN)
+    #error Not enough channels for ADAT
+#endif
 #endif
 
 /**
