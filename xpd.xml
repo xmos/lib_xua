@@ -20,7 +20,7 @@
         </component>
         <component description = "MIDI" type = "demoCode" scope = "General Use" path = "module_usb_midi" local = "false" id = "module_usb_midi" name = "MIDI Module for USB Audio Framework">
             <board></board>
-            <componentDependency version = "6.6.1">module_queue</componentDependency>
+            <componentDependency version = "6.7.0">module_queue</componentDependency>
             <componentDependency repo = "git://github.com/xcore/sc_util" version = "1.0.4">module_xassert</componentDependency>
             <keyword>MIDI</keyword>
         </component>
@@ -70,8 +70,8 @@
     <release parenthash = "192b263d764650b2b498157b192dbda8882aba99" version = "6.6.0rc2" githash = "74d448097f79524c97fc2967bb227264a39be016"></release>
     <release parenthash = "9be1ef8d706be7027c3712a2fef15144767dfe55" version = "6.6.1rc0" githash = "6456645f423546b708db53aa5979967b3c8019aa"></release>
     <release parenthash = "7c17932c58c8e1d32a9002fe635672b95fff259d" version = "6.6.1rc1" githash = "9ce2f74146e6be516ed19cc767a03e52a6eb31a2"></release>
-    <release parenthash = "1677eb49b0fec05c231727d6938643e0e7f07a10" version = "6.7.0alpha0" githash = "eea9122373f95302c67ce82749cb10ae8167ef83"></release>
     <release parenthash = "f2b688b4cb1ff723c322ddea30ee4608bd1edb4e" version = "6.6.2rc0"></release>
+    <release parenthash = "1677eb49b0fec05c231727d6938643e0e7f07a10" version = "6.7.0alpha0" githash = "eea9122373f95302c67ce82749cb10ae8167ef83"></release>
     <subpartnumber>XM-004720-SM</subpartnumber>
     <vendor>XMOS</vendor>
     <version_defines>
