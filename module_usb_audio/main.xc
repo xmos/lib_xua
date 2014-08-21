@@ -364,7 +364,11 @@ chanend ?c_clk_int
     chan c_mix_out;
 #endif
 
+#if defined(SPDIF_RX) || defined(ADAT_RX)
     chan c_dig_rx;
+#else
+    #define c_dig_rx null
+#endif
 
     par
     {
