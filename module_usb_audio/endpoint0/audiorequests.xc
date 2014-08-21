@@ -36,12 +36,8 @@ extern unsigned char mixer1Crossbar[];
 extern short mixer1Weights[];
 
 /* Device channel mapping */
-#if NUM_USB_CHAN_OUT > 0
 extern unsigned char channelMapAud[NUM_USB_CHAN_OUT];
-#endif
-#if NUM_USB_CHAN_IN > 0
 extern unsigned char channelMapUsb[NUM_USB_CHAN_IN];
-#endif
 
 /* Mixer input mapping */
 extern unsigned char mixSel[MIX_INPUTS];
@@ -605,10 +601,11 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
                         unsigned volume = 0;
                         int c = sp.wValue & 0xff;
 
-                        loop = XUD_GetBuffer(ep0_out, buffer);
 
-                        if(loop < 0)
-                            return loop;
+                        if((result = XUD_GetBuffer(ep0_out, buffer, datalength)) != XUD_RES_OKAY)
+                        {
+                            return result;
+                        }
 
                         channelMapAud[c] = buffer[0] | buffer[1] << 8;
 
@@ -643,10 +640,10 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
                         unsigned volume = 0;
                         int c = sp.wValue & 0xff;
 
-                        loop = XUD_GetBuffer(ep0_out, buffer);
-
-                        if(loop < 0)
-                            return loop;
+                        if((result = XUD_GetBuffer(ep0_out, buffer, datalength)) != XUD_RES_OKAY)
+                        {
+                            return result;
+                        }
 
                         channelMapUsb[c] = buffer[0] | buffer[1] << 8;
 
@@ -677,14 +674,13 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
                     int cn = sp.wValue & 0xff;  /* Channel number */
 
                     /* Check for Get or Set */
-                    if(sp.bmRequestType.Direction == USB_BM_REQTYPE_DIRECTION_OUT)
+                    if(sp.bmRequestType.Direction == USB_BM_REQTYPE_DIRECTION_H2D)
                     {
                         /* Direction: Host-to-device */ /* Host-to-device */
-                        datalength = XUD_GetBuffer(ep0_out, buffer);
-
-                        /* Check for reset */
-                        if(datalength < 0)
-                            return datalength;
+                        if((result = XUD_GetBuffer(ep0_out, buffer, datalength)) != XUD_RES_OKAY)
+                        {
+                            return result;
+                        }
 
                         if(datalength > 0)
                         {
@@ -734,14 +730,15 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
 
                 case ID_MIXER_1:
 
-                    if(sp.bmRequestType.Direction == USB_BM_REQTYPE_DIRECTION_OUT) /* Direction: Host-to-device */
+                    if(sp.bmRequestType.Direction == USB_BM_REQTYPE_DIRECTION_H2D) /* Direction: Host-to-device */
                     {
                         unsigned volume = 0;
 
-                        /* Expect OUT here with mute */
-                        loop = XUD_GetBuffer(ep0_out, buffer);
-                        if(loop < 0)
-                            return loop;
+                        /* Expect OUT here with mute */ 
+                        if((result = XUD_GetBuffer(ep0_out, buffer, datalength)) != XUD_RES_OKAY)
+                        {
+                            return result;
+                        }
 
                         mixer1Weights[sp.wValue & 0xff] = buffer[0] | buffer[1] << 8;
 
@@ -906,7 +903,7 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
             {
                 case ID_MIXER_1:
 
-                    if(sp.bmRequestType.Direction == USB_BM_REQTYPE_DIRECTION_IN)
+                    if(sp.bmRequestType.Direction == USB_BM_REQTYPE_DIRECTION_D2H)
                     {
                         int length = 0;
 
@@ -924,9 +921,9 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
                                         if (!isnull(c_mix_ctl))
                                         {
                                             outuint(c_mix_ctl, GET_INPUT_LEVELS);
-                                            outuint(c_mix_ctl, (i - NUM_USB_CHAN_IN));
+                                            outuint(c_mix_ctl, i);
                                             outct(c_mix_ctl, XS1_CT_END);
-                                            storeShort(buffer, i*2, (inuint(c_mix_ctl)>>15));
+                                            storeShort(buffer, i*2, (inuint(c_mix_ctl) >> 15));
                                             chkct(c_mix_ctl, XS1_CT_END);
 										}
                                         else
@@ -955,7 +952,7 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
 
                             case 1: /* Mixer Output levels */
                                 length = MAX_MIX_COUNT * 2; /* 2 bytes per chan */
-
+                                
                                 for(int i = 0; i < MAX_MIX_COUNT; i++)
                                 {
                                     if (!isnull(c_mix_ctl))

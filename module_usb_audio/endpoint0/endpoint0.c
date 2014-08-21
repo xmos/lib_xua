@@ -76,12 +76,8 @@ unsigned char mixer1Crossbar[18];
 short mixer1Weights[18*8];
 
 unsigned char channelMap[NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + MAX_MIX_COUNT];
-#if (NUM_USB_CHAN_OUT > 0)
 unsigned char channelMapAud[NUM_USB_CHAN_OUT];
-#endif
-#if (NUM_USB_CHAN_IN > 0)
 unsigned char channelMapUsb[NUM_USB_CHAN_IN];
-#endif
 unsigned char mixSel[MIX_INPUTS];
 #endif
 
