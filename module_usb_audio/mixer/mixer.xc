@@ -6,6 +6,7 @@
 #include "devicedefines.h"
 #include "xc_ptr.h"
 #include "commands.h"
+#include "dbcalc.h"
 
 #ifdef MIXER
 
@@ -759,7 +760,7 @@ void mixer(chanend c_mix_in, chanend c_mix_out, chanend c_mix_ctl)
 #ifndef FAST_MIXER
           write_word_to_mix_map(i,j, j < 16 ? j : j + 2);
 #endif
-          write_word_to_mix_mult(i,j, i==j ? MAX_VOL >> 3 : 0);
+          write_word_to_mix_mult(i,j, i==j ? db_to_mult(0, 8, 25) : 0);
         }
 #endif
 
