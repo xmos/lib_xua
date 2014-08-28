@@ -926,6 +926,27 @@
 #undef IAP_INT_EP
 #endif
 
+/* IAP EA Native Transport */
+#if defined(IAP_EA_NATIVE_TRANS) && (IAP_EA_NATIVE_TRANS == 0)
+#undef IAP_EA_NATIVE_TRANS
+#endif
+
+#if defined(IAP_EA_NATIVE_TRANS) || defined(__DOXYGEN__)
+/**
+ * @brief Number of supported EA Native Interface Alternative settings.
+ *
+ * Only 1 supported
+ */
+#ifndef IAP_EA_NATIVE_TRANS_ALT_COUNT
+    #define IAP_EA_NATIVE_TRANS_ALT_COUNT 1
+#endif
+
+#if (IAP_EA_NATIVE_TRANS_ALT_COUNT > 1)
+    /* Only 1 supported */
+    #error
+#endif
+#endif
+
 /* Endpoint addresses enums */
 enum USBEndpointNumber_In
 {
@@ -946,6 +967,9 @@ enum USBEndpointNumber_In
     ENDPOINT_NUMBER_IN_IAP_INT,
 #endif
     ENDPOINT_NUMBER_IN_IAP,
+#ifdef IAP_EA_NATIVE_TRANS
+    ENDPOINT_NUMBER_IN_IAP_EA_NATIVE_TRANS,
+#endif
 #endif
     ENDPOINT_COUNT_IN               /* End marker */
 };
@@ -959,6 +983,9 @@ enum USBEndpointNumber_Out
 #endif
 #ifdef IAP
     ENDPOINT_NUMBER_OUT_IAP,
+#ifdef IAP_EA_NATIVE_TRANS
+    ENDPOINT_NUMBER_OUT_IAP_EA_NATIVE_TRANS,
+#endif
 #endif
     ENDPOINT_COUNT_OUT              /* End marker */
 };

@@ -14,8 +14,11 @@
  *  \param c_clk_ctl Optional chanend to be connected to the clockgen thread if
  *                   present.
  *  \param c_usb_test Optional chanend to be connected to XUD if test modes required.
+ *
+ *  \param c_EANativeTransport_ctrl Optional chanend to be connected to EA Native
+ *                                  endpoint manager if present
  */
 void Endpoint0( chanend c_ep0_out, chanend c_ep0_in, chanend c_audioCtrl,
-        chanend ?c_mix_ctl,chanend ?c_clk_ctl);
+        chanend ?c_mix_ctl,chanend ?c_clk_ctl, chanend ?c_EANativeTransport_ctrl);
 
 #endif

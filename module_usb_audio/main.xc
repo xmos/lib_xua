@@ -197,7 +197,10 @@ XUD_EpType epTypeTableOut[ENDPOINT_COUNT_OUT] = { XUD_EPTYPE_CTL | XUD_STATUS_EN
                                             XUD_EPTYPE_BUL,    /* MIDI */
 #endif
 #ifdef IAP
-                                            XUD_EPTYPE_BUL /* iAP */
+                                            XUD_EPTYPE_BUL, /* iAP */
+#ifdef IAP_EA_NATIVE_TRANS
+                                            XUD_EPTYPE_BUL, /* EA Native Transport */
+#endif
 #endif
                                         };
 
@@ -216,6 +219,9 @@ XUD_EpType epTypeTableIn[ENDPOINT_COUNT_IN] = { XUD_EPTYPE_CTL | XUD_STATUS_ENAB
 #ifdef IAP
                                             XUD_EPTYPE_BUL | XUD_STATUS_ENABLE,
 #ifdef IAP_INT_EP
+                                            XUD_EPTYPE_BUL | XUD_STATUS_ENABLE,
+#endif
+#ifdef IAP_EA_NATIVE_TRANS
                                             XUD_EPTYPE_BUL | XUD_STATUS_ENABLE,
 #endif
 #endif
@@ -248,6 +254,9 @@ void usb_audio_core(chanend c_mix_out
 #endif
 #ifdef IAP
 , chanend c_iap
+#ifdef IAP_EA_NATIVE_TRANS
+, chanend c_ea_data
+#endif
 #endif
 #ifdef MIXER
 , chanend c_mix_ctl
@@ -267,6 +276,12 @@ void usb_audio_core(chanend c_mix_out
 
 #ifndef MIXER
 #define c_mix_ctl null
+#endif
+
+#ifdef IAP_EA_NATIVE_TRANS
+    chan c_EANativeTransport_ctrl;
+#else
+#define c_EANativeTransport_ctrl null
 #endif
 
     par
@@ -334,7 +349,7 @@ void usb_audio_core(chanend c_mix_out
         /* Endpoint 0 Core */
         {
             thread_speed();
-            Endpoint0( c_xud_out[0], c_xud_in[0], c_aud_ctl, c_mix_ctl, c_clk_ctl);
+            Endpoint0( c_xud_out[0], c_xud_in[0], c_aud_ctl, c_mix_ctl, null, c_EANativeTransport_ctrl);
         }
 
         /* Decoupling core */
@@ -346,6 +361,18 @@ void usb_audio_core(chanend c_mix_out
 #endif
             );
         }
+
+#if defined(IAP_EA_NATIVE_TRANS)
+        /* EA Native Transport Endpoint manager */
+        /* TODO This core can be merged with buffer() */
+        {
+            thread_speed();
+            iAP2_EANativeTransport_EPManager(
+                c_xud_out[ENDPOINT_NUMBER_OUT_IAP_EA_NATIVE_TRANS],
+                c_xud_in[ENDPOINT_NUMBER_IN_IAP_EA_NATIVE_TRANS],
+                c_EANativeTransport_ctrl, c_ea_data);
+        }
+#endif
         //:
     }
 }
@@ -418,6 +445,9 @@ int main()
 #endif
 #ifdef IAP
     chan c_iap;
+#ifdef IAP_EA_NATIVE_TRANS
+    chan c_ea_data;
+#endif
 #endif
 #ifdef SU1_ADC_ENABLE
     chan c_adc;
@@ -455,6 +485,9 @@ int main()
 #endif
 #ifdef IAP
             , c_iap
+#ifdef IAP_EA_NATIVE_TRANS
+            , c_ea_data
+#endif
 #endif
 #ifdef MIXER
             , c_mix_ctl
