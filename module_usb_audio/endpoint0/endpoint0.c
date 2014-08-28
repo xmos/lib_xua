@@ -355,38 +355,55 @@ void Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
                                 break;
                         }
 
+#if (NUM_USB_CHAN_OUT > 0) && (NUM_USB_CHAN_IN > 0)
                         if ((sp.wIndex == INTERFACE_NUMBER_AUDIO_OUTPUT) || (sp.wIndex == INTERFACE_NUMBER_AUDIO_INPUT))
                         {
-#if (NUM_USB_CHAN_OUT > 0) && (NUM_USB_CHAN_IN > 0)
                             /* Check for stream start stop on output and input audio interfaces */
-                            if(sp.wValue && !g_interfaceAlt[1] && !g_interfaceAlt[2])
+                            if(sp.wValue && !g_interfaceAlt[INTERFACE_NUMBER_AUDIO_OUTPUT] && !g_interfaceAlt[INTERFACE_NUMBER_AUDIO_INPUT])
                             {
                                 /* If start and input AND output not currently running */
                                 UserAudioStreamStart();
                             }
-                            else if(((sp.wIndex == 1) && (!sp.wValue)) && g_interfaceAlt[1] && (!g_interfaceAlt[2]))
+                            else if(((sp.wIndex == 1) && (!sp.wValue)) && g_interfaceAlt[INTERFACE_NUMBER_AUDIO_OUTPUT] && (!g_interfaceAlt[INTERFACE_NUMBER_AUDIO_INPUT]))
                             {
                                 /* if output stop and output running and input not running */
                                 UserAudioStreamStop();
                             }
-                            else if(((sp.wIndex == 2) && (!sp.wValue)) && g_interfaceAlt[2] && (!g_interfaceAlt[1]))
+                            else if(((sp.wIndex == 2) && (!sp.wValue)) && g_interfaceAlt[INTERFACE_NUMBER_AUDIO_INPUT] && (!g_interfaceAlt[INTERFACE_NUMBER_AUDIO_OUTPUT]))
                             {
                                 /* if input stop and input running and output not running */
                                 UserAudioStreamStop();
                             }
-#elif (NUM_USB_CHAN_OUT > 0) || (NUM_USB_CHAN_IN > 0)
-                            if(sp.wValue && (!g_interfaceAlt[1]))
+                        }
+#elif (NUM_USB_CHAN_OUT > 0)
+                        if(sp.wIndex == INTERFACE_NUMBER_AUDIO_OUTPUT)
+                        {
+                            if(sp.wValue && (!g_interfaceAlt[INTERFACE_NUMBER_AUDIO_OUTPUT]))
                             {
                                 /* if start and not currently running */
                                 UserAudioStreamStart();
                             }
-                            else if (!sp.wValue && g_interfaceAlt[1])
+                            else if (!sp.wValue && g_interfaceAlt[INTERFACE_NUMBER_AUDIO_OUTPUT])
                             {
                                 /* if stop and currently running */
                                 UserAudioStreamStop();
                             }
-#endif
                         }
+#elif (NUM_USB_CHAN_IN > 0)
+                        if(sp.wIndex == INTERFACE_NUMBER_AUDIO_INPUT)
+                        {
+                            if(sp.wValue && (!g_interfaceAlt[INTERFACE_NUMBER_AUDIO_INPUT]))
+                            {
+                                /* if start and not currently running */
+                                UserAudioStreamStart();
+                            }
+                            else if (!sp.wValue && g_interfaceAlt[INTERFACE_NUMBER_AUDIO_INPUT])
+                            {
+                                /* if stop and currently running */
+                                UserAudioStreamStop();
+                            }
+                        }
+#endif
                     } /* if(sp.bRequest == SET_INTERFACE) */
 
                     break; /* BMREQ_H2D_STANDARD_INT */
