@@ -2523,17 +2523,8 @@ unsigned char cfgDesc_Null[] =
 #define CFG_TOTAL_LENGTH_A1         (18 + AC_TOTAL_LENGTH + (INPUT_INTERFACES_A1 * 61) + (OUTPUT_INTERFACES_A1 * 70))
 
 /* In UAC1 supported sample rates are listed in descriptor */
-#if (MAX_FREQ_FS == 96000)
+/* Note, we always report 4 freqs, doing otherwise seems to cause an enumeration issue on Windows */
 #define NUM_FREQS_A1                (4)
-#elif (MAX_FREQ_FS == 88200)
-#define NUM_FREQS_A1                (3)
-#elif (MAX_FREQ_FS == 48000)
-#define NUM_FREQS_A1                (2)
-#elif (MAX_FREQ_FS == 44100)
-#define NUM_FREQS_A1                (1)
-#else
-#error
-#endif
 
 unsigned char cfgDesc_Audio1[] =
 {
@@ -2694,12 +2685,18 @@ unsigned char cfgDesc_Audio1[] =
     0x44, 0xAC, 0x00,               /* sampleFreq - 44.1Khz */
 #if (MAX_FREQ_FS > 44100)
     0x80, 0xBB, 0x00,               /* sampleFreq - 48KHz */
+#else
+    0x44, 0xAC, 0x00,               /* sampleFreq - 44.1Khz */
 #endif
 #if (MAX_FREQ_FS > 48000)
     0x88, 0x58, 0x01,               /* sampleFreq - 88.2KHz */
+#else
+    0x44, 0xAC, 0x00,               /* sampleFreq - 44.1Khz */
 #endif
 #if (MAX_FREQ_FS > 88200)
     0x00, 0x77, 0x01,               /* sampleFreq - 96KHz */
+#else
+    0x44, 0xAC, 0x00,               /* sampleFreq - 44.1Khz */
 #endif
 
     /* Standard AS Isochronous Audio Data Endpoint Descriptor 4.6.1.1 */
@@ -2775,12 +2772,18 @@ unsigned char cfgDesc_Audio1[] =
     0x44, 0xAC, 0x00,               /* sampleFreq - 44.1Khz */
 #if (MAX_FREQ_FS > 44100)
     0x80, 0xBB, 0x00,               /* sampleFreq - 48KHz */
+#else
+    0x44, 0xAC, 0x00,               /* sampleFreq - 44.1Khz */
 #endif
 #if (MAX_FREQ_FS > 48000)
     0x88, 0x58, 0x01,               /* sampleFreq - 88.2KHz */
+#else
+    0x44, 0xAC, 0x00,               /* sampleFreq - 44.1Khz */
 #endif
 #if (MAX_FREQ_FS > 88200)
     0x00, 0x77, 0x01,               /* sampleFreq - 96KHz */
+#else
+    0x44, 0xAC, 0x00,               /* sampleFreq - 44.1Khz */
 #endif
     /* Standard Endpoint Descriptor */
     0x09,
