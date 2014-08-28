@@ -267,6 +267,7 @@ void Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
                         switch (sp.wIndex)
                         {
                             /* Check for audio stream from host start/stop */
+#if (NUM_USB_CHAN_OUT > 0)
                             case INTERFACE_NUMBER_AUDIO_OUTPUT:
                                 /* Check the alt is in range */
                                 if(sp.wValue <= OUTPUT_FORMAT_COUNT)
@@ -299,7 +300,9 @@ void Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
                                     }
                                 }
                                 break;
+#endif
 
+#if (NUM_USB_CHAN_IN > 0)
                             case INTERFACE_NUMBER_AUDIO_INPUT:
                                 /* Check the alt is in range */
                                 if(sp.wValue <= INPUT_FORMAT_COUNT)
@@ -332,6 +335,8 @@ void Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
                                     }
                                 }
                                 break;
+#endif
+
 #ifdef IAP_EA_NATIVE_TRANS
                             case INTERFACE_NUMBER_IAP_EA_NATIVE_TRANS:
                                 /* Check the alt is in range */

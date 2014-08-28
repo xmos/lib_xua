@@ -930,7 +930,7 @@ enum USBInterfaceNumber
 #if (NUM_USB_CHAN_OUT > 0)
     INTERFACE_NUMBER_AUDIO_OUTPUT,
 #endif
-#if  (NUM_USB_CHAN_IN > 0)
+#if (NUM_USB_CHAN_IN > 0)
     INTERFACE_NUMBER_AUDIO_INPUT,
 #endif
 #if defined(MIDI) && (MIDI != 0)
