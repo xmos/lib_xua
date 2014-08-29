@@ -892,28 +892,28 @@ StringDescTable_t g_strTable =
 #error NUM_USB_CHAN_IN > 18
 #endif
 
-#if defined(MIXER) && (MAX_MIX_COUNT > 0) 
+#if defined(MIXER) && (MAX_MIX_COUNT > 0)
     .mixOutStr_1                 = "Mix 1",
 #endif
-#if defined(MIXER) && (MAX_MIX_COUNT > 0) 
+#if defined(MIXER) && (MAX_MIX_COUNT > 0)
     .mixOutStr_2                 = "Mix 2",
 #endif
-#if defined(MIXER) && (MAX_MIX_COUNT > 0) 
+#if defined(MIXER) && (MAX_MIX_COUNT > 0)
     .mixOutStr_3                 = "Mix 3",
 #endif
-#if defined(MIXER) && (MAX_MIX_COUNT > 0) 
+#if defined(MIXER) && (MAX_MIX_COUNT > 0)
     .mixOutStr_4                 = "Mix 4",
 #endif
-#if defined(MIXER) && (MAX_MIX_COUNT > 0) 
+#if defined(MIXER) && (MAX_MIX_COUNT > 0)
     .mixOutStr_5                 = "Mix 5",
 #endif
-#if defined(MIXER) && (MAX_MIX_COUNT > 0) 
+#if defined(MIXER) && (MAX_MIX_COUNT > 0)
     .mixOutStr_6                 = "Mix 6",
 #endif
-#if defined(MIXER) && (MAX_MIX_COUNT > 0) 
+#if defined(MIXER) && (MAX_MIX_COUNT > 0)
     .mixOutStr_7                 = "Mix 7",
 #endif
-#if defined(MIXER) && (MAX_MIX_COUNT > 0) 
+#if defined(MIXER) && (MAX_MIX_COUNT > 0)
     .mixOutStr_8                 = "Mix 8",
 #endif
 #if defined(MIXER) && (MAX_MIX_COUNT > 8)
@@ -1476,7 +1476,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
         },
 
 #if defined (MIXER) && (MAX_MIX_COUNT > 0)
-        .Audio_Out_ExtensionUnit =     
+        .Audio_Out_ExtensionUnit =
         {
             .bLength                   = sizeof(USB_Descriptor_Audio_ExtensionUnit_t),
             .bDescriptorType           = UAC_CS_DESCTYPE_INTERFACE,
@@ -1485,7 +1485,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
             .wExtensionCode            = 0x00,
             .bNrInPins                 = 1,
             .baSourceID[0]             = ID_IT_USB,
-            .bNrChannels               = NUM_USB_CHAN_OUT, 
+            .bNrChannels               = NUM_USB_CHAN_OUT,
             .bmChannelConfig           = 0x00000000,
             .bmControls                = 0x03,
             .iExtension                = 0
@@ -1610,7 +1610,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
         },
 
 #if defined (MIXER) && (MAX_MIX_COUNT > 0)
-        .Audio_In_ExtensionUnit =     
+        .Audio_In_ExtensionUnit =
         {
             .bLength                   = sizeof(USB_Descriptor_Audio_ExtensionUnit_t),
             .bDescriptorType           = UAC_CS_DESCTYPE_INTERFACE,
@@ -1619,7 +1619,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
             .wExtensionCode            = 0x00,
             .bNrInPins                 = 1,
             .baSourceID[0]             = ID_IT_AUD,
-            .bNrChannels               = NUM_USB_CHAN_IN, 
+            .bNrChannels               = NUM_USB_CHAN_IN,
             .bmChannelConfig           = 0x00000000,
             .bmControls                = 0x03,
             .iExtension                = 0
@@ -1725,7 +1725,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
 
 #if defined(MIXER) && (MAX_MIX_COUNT > 0)
         /* Extension Unit Descriptor (4.7.2.12) */
-        .Audio_Mix_ExtensionUnit =     
+        .Audio_Mix_ExtensionUnit =
         {
             .bLength                   = sizeof(USB_Descriptor_Audio_ExtensionUnit2_t),
             .bDescriptorType           = UAC_CS_DESCTYPE_INTERFACE,
@@ -1735,18 +1735,18 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
             .bNrInPins                 = 2,
             .baSourceID[0]             = ID_IT_USB,
             .baSourceID[1]             = ID_IT_AUD,
-            .bNrChannels               = MIX_INPUTS, 
+            .bNrChannels               = MIX_INPUTS,
             .bmChannelConfig           = 0x00000000,
             .bmControls                = 0x03,
             .iExtension                = 0
         },
-    
+
         /* Mixer Unit Descriptors */
         /* N = 144 (18 * 8) */
         /* Mixer Unit Bitmap - 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
                        0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff */
         {
-            MIXER_LENGTH,                 /* 0 bLength : 13 + num inputs + bit map (inputs * outputs) */ 
+            MIXER_LENGTH,                 /* 0 bLength : 13 + num inputs + bit map (inputs * outputs) */
             UAC_CS_DESCTYPE_INTERFACE,    /* bDescriptorType */
             0x04,                         /* bDescriptorSubtype: MIXER_UNIT */
             ID_MIXER_1,                   /* Mixer unit id */
@@ -1756,67 +1756,67 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
             0x00, 0x00, 0x00, 0x00,       /* Spacial location ???? */
             offsetof(StringDescTable_t, mixOutStr_1)/sizeof(char *), /* iChannelNames */
 #if MIX_BMCONTROLS_LEN > 0                /* Mixer programmable control bitmap */
-            0xff, 
-#endif    
+            0xff,
+#endif
 #if MIX_BMCONTROLS_LEN > 1
-            0xff, 
-#endif   
+            0xff,
+#endif
 #if MIX_BMCONTROLS_LEN > 2
-            0xff, 
-#endif      
+            0xff,
+#endif
 #if MIX_BMCONTROLS_LEN > 3
-            0xff, 
-#endif   
+            0xff,
+#endif
 #if MIX_BMCONTROLS_LEN > 4
-            0xff, 
-#endif   
+            0xff,
+#endif
 #if MIX_BMCONTROLS_LEN > 5
-            0xff, 
-#endif   
+            0xff,
+#endif
 #if MIX_BMCONTROLS_LEN > 6
-            0xff, 
-#endif   
+            0xff,
+#endif
 #if MIX_BMCONTROLS_LEN > 7
-            0xff, 
-#endif   
+            0xff,
+#endif
 #if MIX_BMCONTROLS_LEN > 8
-            0xff, 
-#endif 
+            0xff,
+#endif
 #if MIX_BMCONTROLS_LEN > 9
-            0xff, 
-#endif   
+            0xff,
+#endif
 #if MIX_BMCONTROLS_LEN > 10
-            0xff, 
-#endif   
+            0xff,
+#endif
 #if MIX_BMCONTROLS_LEN > 11
-            0xff, 
-#endif   
+            0xff,
+#endif
 #if MIX_BMCONTROLS_LEN > 12
-            0xff, 
-#endif   
+            0xff,
+#endif
 #if MIX_BMCONTROLS_LEN > 13
-            0xff, 
-#endif   
+            0xff,
+#endif
 #if MIX_BMCONTROLS_LEN > 14
-            0xff, 
-#endif   
+            0xff,
+#endif
 #if MIX_BMCONTROLS_LEN > 15
-            0xff, 
-#endif   
+            0xff,
+#endif
 #if MIX_BMCONTROLS_LEN > 16
-            0xff, 
-#endif   
+            0xff,
+#endif
 #if MIX_BMCONTROLS_LEN > 17
-            0xff, 
-#endif   
+            0xff,
+#endif
 #if MIX_BMCONTROLS_LEN > 18
 #error unxpected BMCONTROLS_LEN
-#endif   
+#endif
             0x00,                      /* bmControls */
             0                          /* Mixer unit string descriptor index */
         },
 #endif
-    
+
 #if defined(SPDIF_RX) || defined(ADAT_RX)
         /* Standard AS Interrupt Endpoint Descriptor (4.8.2.1): */
         .Audio_Int_Endpoint =

@@ -578,7 +578,7 @@ static void mixer2(chanend c_mixer1, chanend c_audio)
     int mixed;
     unsigned underflow = 0;
 
-    while (1) 
+    while (1)
     {
         outuint(c_mixer1, 0);
 #pragma xta endpoint "mixer2_req"
@@ -625,7 +625,7 @@ static void mixer2(chanend c_mixer1, chanend c_audio)
             chkct(c_audio, XS1_CT_END);
             outct(c_mixer1, XS1_CT_END);
         }
-        else 
+        else
         {
             underflow = inuint(c_mixer1);
             giveSamplesToDevice(c_audio, samples, samples_to_device_map, multOut, underflow);

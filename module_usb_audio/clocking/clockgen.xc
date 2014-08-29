@@ -326,8 +326,8 @@ void clockGen (streaming chanend c_spdif_rx, chanend ?c_adat_rx, out port p, cha
                 for(int i = 0; i< NUM_USB_CHAN_IN; i++)
                 {
                     int tmp;
-                   
-                    /* Read level data */ 
+
+                    /* Read level data */
                     //g_inputLevelData[i] = samples_to_host_inputs[i];
                     asm volatile("ldw %0, %1[%2]":"=r"(tmp):"r"((const int *)samples_to_host_inputs),"r"(i));
                     g_inputLevelData[i] = tmp;
@@ -338,7 +338,7 @@ void clockGen (streaming chanend c_spdif_rx, chanend ?c_adat_rx, out port p, cha
 
                     /* Guard against host polling slower than timer and missing peaks */
                     asm volatile("ldw %0, %1[%2]":"=r"(tmp):"r"((const int *)samples_to_host_inputs_buff),"r"(i));
-                    
+
                     if (g_inputLevelData[i] > tmp)
                     //if(g_inputLevelData[i] > samples_to_host_inputs_buff[i])
                     {

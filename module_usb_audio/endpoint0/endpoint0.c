@@ -340,7 +340,7 @@ void Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
 #ifdef IAP_EA_NATIVE_TRANS
                             case INTERFACE_NUMBER_IAP_EA_NATIVE_TRANS:
                                 /* Check the alt is in range */
-                                if (sp.wValue <= IAP_EA_NATIVE_TRANS_ALT_COUNT) 
+                                if (sp.wValue <= IAP_EA_NATIVE_TRANS_ALT_COUNT)
                                 {
                                     /* Send selected Alt interface number onto EA Native EP manager */
                                     outuint(c_EANativeTransport_ctrl, (unsigned)sp.wValue);

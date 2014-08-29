@@ -734,7 +734,7 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
                     {
                         unsigned volume = 0;
 
-                        /* Expect OUT here with mute */ 
+                        /* Expect OUT here with mute */
                         if((result = XUD_GetBuffer(ep0_out, buffer, datalength)) != XUD_RES_OKAY)
                         {
                             return result;
@@ -952,7 +952,7 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
 
                             case 1: /* Mixer Output levels */
                                 length = MAX_MIX_COUNT * 2; /* 2 bytes per chan */
-                                
+
                                 for(int i = 0; i < MAX_MIX_COUNT; i++)
                                 {
                                     if (!isnull(c_mix_ctl))
