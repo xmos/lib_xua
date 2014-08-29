@@ -13,6 +13,7 @@ sc_usb_audio Change Log
     - RESOLVED:   (Major) Endpoint 0 was requesting an out of bounds channel whilst requesting level data
     - RESOLVED:   (Major) Fast mix code not operates correctly in 13 tools, assembler inserting long jmp
                   instructions
+    - RESOLVED:   (Minor) LED level meter code now compatible with 13 tools (shared mem access)
     - CHANGE:     Level meter buffer naming now resemble functionality
 
                   
