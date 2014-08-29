@@ -14,6 +14,8 @@ sc_usb_audio Change Log
     - RESOLVED:   (Major) Fast mix code not operates correctly in 13 tools, assembler inserting long jmp
                   instructions
     - RESOLVED:   (Minor) LED level meter code now compatible with 13 tools (shared mem access)
+    - RESOLVED    (Minor) Ordering of level data from the device now matches channel ordering into
+                  mixer (previously the device input data and the stream from host were swapped) 
     - CHANGE:     Level meter buffer naming now resemble functionality
 
                   
