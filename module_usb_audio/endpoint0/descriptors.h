@@ -210,7 +210,9 @@ typedef struct
     STR_TABLE_ENTRY(mixOutStr_8);
 #endif
     STR_TABLE_ENTRY(iAPInterfaceStr);
+#ifdef IAP_EA_NATIVE_TRANS
     STR_TABLE_ENTRY(iAP_EANativeTransport_InterfaceStr);
+#endif
 } StringDescTable_t;
 
 StringDescTable_t g_strTable =
