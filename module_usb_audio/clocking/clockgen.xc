@@ -194,7 +194,7 @@ static inline int badParity(unsigned x)
 void VendorLedRefresh(unsigned levelData[]);
 unsigned g_inputLevelData[NUM_USB_CHAN_IN];
 extern int samples_to_host_inputs[NUM_USB_CHAN_IN];
-extern int samples_to_host_inputs_buff[NUM_USB_CHAN_IN];        /* Audio transmitted to host i.e. dev inputs */
+extern int samples_to_host_inputs_buff[NUM_USB_CHAN_IN];
 #endif
 
 int VendorAudCoreReqs(unsigned cmd, chanend c);
@@ -326,17 +326,24 @@ void clockGen (streaming chanend c_spdif_rx, chanend ?c_adat_rx, out port p, cha
                 for(int i = 0; i< NUM_USB_CHAN_IN; i++)
                 {
                     int tmp;
+                   
+                    /* Read level data */ 
                     //g_inputLevelData[i] = samples_to_host_inputs[i];
-                    asm("ldw %0, %1[%2]":"=r"(tmp):"r"(samples_to_host_inputs),"r"(i));
+                    asm volatile("ldw %0, %1[%2]":"=r"(tmp):"r"((const int *)samples_to_host_inputs),"r"(i));
                     g_inputLevelData[i] = tmp;
 
+                    /* Reset level data */
                     //samples_to_host_inputs[i] = 0;
-                    asm("stw %0, %1[%2]"::"r"(0),"r"(samples_to_host_inputs),"r"(i));
+                    asm volatile("stw %0, %1[%2]"::"r"(0),"r"((const int *)samples_to_host_inputs),"r"(i));
 
                     /* Guard against host polling slower than timer and missing peaks */
-                    if(g_inputLevelData[i] > samples_to_host_inputs_buff[i])
+                    asm volatile("ldw %0, %1[%2]":"=r"(tmp):"r"((const int *)samples_to_host_inputs_buff),"r"(i));
+                    
+                    if (g_inputLevelData[i] > tmp)
+                    //if(g_inputLevelData[i] > samples_to_host_inputs_buff[i])
                     {
-                        samples_to_host_inputs_buff[i] = g_inputLevelData[i];
+                        //samples_to_host_inputs_buff[i] = g_inputLevelData[i];
+                        asm volatile("stw %0, %1[%2]"::"r"(tmp),"r"((const int *)samples_to_host_inputs),"r"(i));
                     }
                 }
 

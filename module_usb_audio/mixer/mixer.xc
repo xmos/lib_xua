@@ -66,6 +66,7 @@ xc_ptr samples_to_host_inputs_ptr;
 
 #ifdef LEVEL_METER_LEDS
 int samples_to_host_inputs_buff[NUM_USB_CHAN_IN];       /* Audio transmitted to host i.e. dev inputs */
+xc_ptr samples_to_host_inputs_buff_ptr;
 #endif
 static int samples_from_host_streams[NUM_USB_CHAN_OUT]; /* Peak samples for audio stream from host */
 
@@ -414,8 +415,8 @@ static void mixer1(chanend c_host, chanend c_mix_ctl, chanend c_mixer2)
                         //val = samples_to_host_inputs_buff[index];
                         //samples_to_host_inputs_buff[index] = 0;
                         /* Access funcs used to avoid disjointness check */
-                        read_via_xc_ptr_indexed(val, samples_to_host_inputs_buff, index);
-                        write_via_xc_ptr_indexed(samples_to_host_inputs_buff, index, 0);
+                        read_via_xc_ptr_indexed(val, samples_to_host_inputs_buff_ptr, index);
+                        write_via_xc_ptr_indexed(samples_to_host_inputs_buff_ptr, index, 0);
 #else
                         /* We dont have a level LEDs process, so reset ourselves */
                         //val = samples_to_host_inputs[index];
@@ -711,6 +712,9 @@ void mixer(chanend c_mix_in, chanend c_mix_out, chanend c_mix_ctl)
     samples_to_device_map = array_to_xc_ptr((samples_to_device_map_array,unsigned[]));
 
     samples_to_host_inputs_ptr = array_to_xc_ptr((samples_to_host_inputs, unsigned[]));
+#ifdef LEVEL_METER_LEDS
+    samples_to_host_inputs_buff_ptr = array_to_xc_ptr((samples_to_host_inputs, unsigned[]));
+#endif
     samples_mixer_outputs_ptr = array_to_xc_ptr((samples_mixer_outputs, unsigned[]));
 
 #if MAX_MIX_COUNT >0
