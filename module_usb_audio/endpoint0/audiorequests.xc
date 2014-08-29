@@ -916,11 +916,11 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
                                 for(int i = 0; i < (NUM_USB_CHAN_IN + NUM_USB_CHAN_OUT); i++)
                                 {
                                 	/* Get the level and truncate to 16-bit */
-                                	if(i < NUM_USB_CHAN_IN)
+                                	if(i < NUM_USB_CHAN_OUT)
                                     {
                                         if (!isnull(c_mix_ctl))
                                         {
-                                            outuint(c_mix_ctl, GET_INPUT_LEVELS);
+                                            outuint(c_mix_ctl, GET_STREAM_LEVELS);
                                             outuint(c_mix_ctl, i);
                                             outct(c_mix_ctl, XS1_CT_END);
                                             storeShort(buffer, i*2, (inuint(c_mix_ctl) >> 15));
@@ -935,8 +935,8 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
                                     {
                                         if (!isnull(c_mix_ctl))
                                         {
-                                            outuint(c_mix_ctl, GET_STREAM_LEVELS);
-                                            outuint(c_mix_ctl, (i - NUM_USB_CHAN_IN));
+                                            outuint(c_mix_ctl, GET_INPUT_LEVELS);
+                                            outuint(c_mix_ctl, (i - NUM_USB_CHAN_OUT));
                                             outct(c_mix_ctl, XS1_CT_END);
                                             storeShort(buffer, i*2, (inuint(c_mix_ctl) >> 15));
                                             chkct(c_mix_ctl, XS1_CT_END);
