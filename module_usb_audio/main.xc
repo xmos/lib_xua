@@ -222,7 +222,7 @@ XUD_EpType epTypeTableIn[ENDPOINT_COUNT_IN] = { XUD_EPTYPE_CTL | XUD_STATUS_ENAB
                                             XUD_EPTYPE_BUL | XUD_STATUS_ENABLE,
 #endif
 #ifdef IAP_EA_NATIVE_TRANS
-                                            XUD_EPTYPE_BUL /*| XUD_STATUS_ENABLE*/,
+                                            XUD_EPTYPE_BUL | XUD_STATUS_ENABLE,
 #endif
 #endif
                                         };
