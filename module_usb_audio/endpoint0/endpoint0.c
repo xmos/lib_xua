@@ -78,7 +78,7 @@ short mixer1Weights[18*8];
 unsigned char channelMap[NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + MAX_MIX_COUNT];
 unsigned char channelMapAud[NUM_USB_CHAN_OUT];
 unsigned char channelMapUsb[NUM_USB_CHAN_IN];
-unsigned char mixSel[MIX_INPUTS];
+unsigned char mixSel[MAX_MIX_COUNT][MIX_INPUTS];
 #endif
 
 int min(int x, int y);
@@ -221,9 +221,10 @@ void Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
 #endif
 
     /* Init mixer inputs */
+    for(int j = 0; j < MAX_MIX_COUNT; j++)
     for(int i = 0; i < MIX_INPUTS; i++)
     {
-        mixSel[i] = i;
+        mixSel[j][i] = i;
     }
 #endif
 

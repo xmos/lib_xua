@@ -1,6 +1,12 @@
 sc_usb_audio Change Log
 =======================
 
+HEAD
+----
+    - CHANGE:     Modifying mix map now only affects specified mix, previous was applied to all
+                  mixes. CS_XU_MIXSEL control selector now takes values 0 to MAX_MIX_COUNT + 1 
+                  (with 0 affecting all mixes).
+
 6.8.0
 -----
     - ADDED:      Evaluation support for iAP EA Native Transport endpoints  
