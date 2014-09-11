@@ -76,13 +76,9 @@ unsigned char mixer1Crossbar[18];
 short mixer1Weights[18*8];
 
 unsigned char channelMap[NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + MAX_MIX_COUNT];
-#if (NUM_USB_CHAN_OUT > 0)
 unsigned char channelMapAud[NUM_USB_CHAN_OUT];
-#endif
-#if (NUM_USB_CHAN_IN > 0)
 unsigned char channelMapUsb[NUM_USB_CHAN_IN];
-#endif
-unsigned char mixSel[MIX_INPUTS];
+unsigned char mixSel[MAX_MIX_COUNT][MIX_INPUTS];
 #endif
 
 int min(int x, int y);
@@ -159,7 +155,7 @@ const unsigned g_dataFormat_In[INPUT_FORMAT_COUNT] = {STREAM_FORMAT_INPUT_1_DATA
 
 /* Endpoint 0 function.  Handles all requests to the device */
 void Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
-    chanend c_mix_ctl, chanend c_clk_ctl)
+    chanend c_mix_ctl, chanend c_clk_ctl, chanend c_EANativeTransport_ctrl)
 {
     USB_SetupPacket_t sp;
     XUD_ep ep0_out = XUD_InitEp(c_ep0_out);
@@ -225,9 +221,10 @@ void Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
 #endif
 
     /* Init mixer inputs */
+    for(int j = 0; j < MAX_MIX_COUNT; j++)
     for(int i = 0; i < MIX_INPUTS; i++)
     {
-        mixSel[i] = i;
+        mixSel[j][i] = i;
     }
 #endif
 
@@ -268,100 +265,149 @@ void Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
                     /* Over-riding USB_StandardRequests implementation */
                     if(sp.bRequest == USB_SET_INTERFACE)
                     {
-                        /* Check for audio stream from host start/stop */
-                        if(sp.wIndex == 1)  /* Output interface */
+                        switch (sp.wIndex)
                         {
-                            /* Check the alt is in range */
-                            if(sp.wValue <= OUTPUT_FORMAT_COUNT)
-                            {
-                                /* Alt 0 is stream stop */
-                                /* Only send change if we need to */
-                                if((sp.wValue > 0) && (g_curStreamAlt_Out != sp.wValue))
+                            /* Check for audio stream from host start/stop */
+#if (NUM_USB_CHAN_OUT > 0)
+                            case INTERFACE_NUMBER_AUDIO_OUTPUT:
+                                /* Check the alt is in range */
+                                if(sp.wValue <= OUTPUT_FORMAT_COUNT)
                                 {
-                                    g_curStreamAlt_Out = sp.wValue;
-
-                                    /* Send format of data onto buffering */
-                                    outuint(c_audioControl, SET_STREAM_FORMAT_OUT);
-                                    outuint(c_audioControl, g_dataFormat_Out[sp.wValue-1]);        /* Data format (PCM/DSD) */
-
-                                    if(g_curUsbSpeed == XUD_SPEED_HS)
+                                    /* Alt 0 is stream stop */
+                                    /* Only send change if we need to */
+                                    if((sp.wValue > 0) && (g_curStreamAlt_Out != sp.wValue))
                                     {
-                                        outuint(c_audioControl, NUM_USB_CHAN_OUT);                 /* Channel count */
-                                        outuint(c_audioControl, g_subSlot_Out_HS[sp.wValue-1]);    /* Subslot */
-                                        outuint(c_audioControl, g_sampRes_Out_HS[sp.wValue-1]);    /* Resolution */
-                                    }
-                                    else
-                                    {
-                                        outuint(c_audioControl, NUM_USB_CHAN_OUT_FS);              /* Channel count */
-                                        outuint(c_audioControl, g_subSlot_Out_FS[sp.wValue-1]);    /* Subslot */
-                                        outuint(c_audioControl, g_sampRes_Out_FS[sp.wValue-1]);    /* Resolution */
-                                    }
+                                        g_curStreamAlt_Out = sp.wValue;
 
-                                    /* Handshake */
-							        chkct(c_audioControl, XS1_CT_END);
+                                        /* Send format of data onto buffering */
+                                        outuint(c_audioControl, SET_STREAM_FORMAT_OUT);
+                                        outuint(c_audioControl, g_dataFormat_Out[sp.wValue-1]);        /* Data format (PCM/DSD) */
+
+                                        if(g_curUsbSpeed == XUD_SPEED_HS)
+                                        {
+                                            outuint(c_audioControl, NUM_USB_CHAN_OUT);                 /* Channel count */
+                                            outuint(c_audioControl, g_subSlot_Out_HS[sp.wValue-1]);    /* Subslot */
+                                            outuint(c_audioControl, g_sampRes_Out_HS[sp.wValue-1]);    /* Resolution */
+                                        }
+                                        else
+                                        {
+                                            outuint(c_audioControl, NUM_USB_CHAN_OUT_FS);              /* Channel count */
+                                            outuint(c_audioControl, g_subSlot_Out_FS[sp.wValue-1]);    /* Subslot */
+                                            outuint(c_audioControl, g_sampRes_Out_FS[sp.wValue-1]);    /* Resolution */
+                                        }
+
+                                        /* Handshake */
+                                        chkct(c_audioControl, XS1_CT_END);
+                                    }
                                 }
-                            }
-                        }
-                        else if(sp.wIndex == 2) /* Input interface */
-                        {
-                            /* Check the alt is in range */
-                            if(sp.wValue <= INPUT_FORMAT_COUNT)
-                            {
-                                /* Alt 0 is stream stop */
-                                /* Only send change if we need to */
-                                if((sp.wValue > 0) && (g_curStreamAlt_In != sp.wValue))
+                                break;
+#endif
+
+#if (NUM_USB_CHAN_IN > 0)
+                            case INTERFACE_NUMBER_AUDIO_INPUT:
+                                /* Check the alt is in range */
+                                if(sp.wValue <= INPUT_FORMAT_COUNT)
                                 {
-                                    g_curStreamAlt_In = sp.wValue;
-
-                                    /* Send format of data onto buffering */
-                                    outuint(c_audioControl, SET_STREAM_FORMAT_IN);
-                                    outuint(c_audioControl, g_dataFormat_In[sp.wValue-1]);        /* Data format (PCM/DSD) */
-
-                                    if(g_curUsbSpeed == XUD_SPEED_HS)
+                                    /* Alt 0 is stream stop */
+                                    /* Only send change if we need to */
+                                    if((sp.wValue > 0) && (g_curStreamAlt_In != sp.wValue))
                                     {
-                                        outuint(c_audioControl, NUM_USB_CHAN_IN);                 /* Channel count */
-                                        outuint(c_audioControl, g_subSlot_In_HS[sp.wValue-1]);    /* Subslot */
-                                        outuint(c_audioControl, g_sampRes_In_HS[sp.wValue-1]);    /* Resolution */
-                                    }
-                                    else
-                                    {
-                                        outuint(c_audioControl, NUM_USB_CHAN_IN_FS);               /* Channel count */
-                                        outuint(c_audioControl, g_subSlot_In_FS[sp.wValue-1]);     /* Subslot */
-                                        outuint(c_audioControl, g_sampRes_In_FS[sp.wValue-1]);     /* Resolution */
-                                    }
+                                        g_curStreamAlt_In = sp.wValue;
 
-                                    /* Handshake */
-							        chkct(c_audioControl, XS1_CT_END);
+                                        /* Send format of data onto buffering */
+                                        outuint(c_audioControl, SET_STREAM_FORMAT_IN);
+                                        outuint(c_audioControl, g_dataFormat_In[sp.wValue-1]);        /* Data format (PCM/DSD) */
+
+                                        if(g_curUsbSpeed == XUD_SPEED_HS)
+                                        {
+                                            outuint(c_audioControl, NUM_USB_CHAN_IN);                 /* Channel count */
+                                            outuint(c_audioControl, g_subSlot_In_HS[sp.wValue-1]);    /* Subslot */
+                                            outuint(c_audioControl, g_sampRes_In_HS[sp.wValue-1]);    /* Resolution */
+                                        }
+                                        else
+                                        {
+                                            outuint(c_audioControl, NUM_USB_CHAN_IN_FS);               /* Channel count */
+                                            outuint(c_audioControl, g_subSlot_In_FS[sp.wValue-1]);     /* Subslot */
+                                            outuint(c_audioControl, g_sampRes_In_FS[sp.wValue-1]);     /* Resolution */
+                                        }
+
+                                        /* Wait for handshake */
+                                        chkct(c_audioControl, XS1_CT_END);
+                                    }
                                 }
-                            }
+                                break;
+#endif
+
+#ifdef IAP_EA_NATIVE_TRANS
+                            case INTERFACE_NUMBER_IAP_EA_NATIVE_TRANS:
+                                /* Check the alt is in range */
+                                if (sp.wValue <= IAP_EA_NATIVE_TRANS_ALT_COUNT)
+                                {
+                                    /* Reset all state of endpoints associated with this interface
+                                     * when changing an alternative setting. See USB 2.0 Spec 9.1.1.5 */
+                                    XUD_ResetEpStateByAddr(ENDPOINT_ADDRESS_IN_IAP_EA_NATIVE_TRANS);
+                                    XUD_ResetEpStateByAddr(ENDPOINT_ADDRESS_OUT_IAP_EA_NATIVE_TRANS);
+
+                                    /* Send selected Alt interface number onto EA Native EP manager */
+                                    outuint(c_EANativeTransport_ctrl, (unsigned)sp.wValue);
+
+                                    /* Wait for handshake */
+                                    chkct(c_EANativeTransport_ctrl, XS1_CT_END);
+                                }
+                                break;
+#endif
+                            default:
+                                /* Unhandled interface */
+                                break;
                         }
+
 #if (NUM_USB_CHAN_OUT > 0) && (NUM_USB_CHAN_IN > 0)
-                        /* Check for stream start stop on output and input audio interfaces */
-                        if(sp.wValue && !g_interfaceAlt[1] && !g_interfaceAlt[2])
+                        if ((sp.wIndex == INTERFACE_NUMBER_AUDIO_OUTPUT) || (sp.wIndex == INTERFACE_NUMBER_AUDIO_INPUT))
                         {
-                            /* If start and input AND output not currently running */
-                            UserAudioStreamStart();
+                            /* Check for stream start stop on output and input audio interfaces */
+                            if(sp.wValue && !g_interfaceAlt[INTERFACE_NUMBER_AUDIO_OUTPUT] && !g_interfaceAlt[INTERFACE_NUMBER_AUDIO_INPUT])
+                            {
+                                /* If start and input AND output not currently running */
+                                UserAudioStreamStart();
+                            }
+                            else if(((sp.wIndex == 1) && (!sp.wValue)) && g_interfaceAlt[INTERFACE_NUMBER_AUDIO_OUTPUT] && (!g_interfaceAlt[INTERFACE_NUMBER_AUDIO_INPUT]))
+                            {
+                                /* if output stop and output running and input not running */
+                                UserAudioStreamStop();
+                            }
+                            else if(((sp.wIndex == 2) && (!sp.wValue)) && g_interfaceAlt[INTERFACE_NUMBER_AUDIO_INPUT] && (!g_interfaceAlt[INTERFACE_NUMBER_AUDIO_OUTPUT]))
+                            {
+                                /* if input stop and input running and output not running */
+                                UserAudioStreamStop();
+                            }
                         }
-                        else if(((sp.wIndex == 1) && (!sp.wValue)) && g_interfaceAlt[1] && (!g_interfaceAlt[2]))
+#elif (NUM_USB_CHAN_OUT > 0)
+                        if(sp.wIndex == INTERFACE_NUMBER_AUDIO_OUTPUT)
                         {
-                            /* if output stop and output running and input not running */
-                            UserAudioStreamStop();
+                            if(sp.wValue && (!g_interfaceAlt[INTERFACE_NUMBER_AUDIO_OUTPUT]))
+                            {
+                                /* if start and not currently running */
+                                UserAudioStreamStart();
+                            }
+                            else if (!sp.wValue && g_interfaceAlt[INTERFACE_NUMBER_AUDIO_OUTPUT])
+                            {
+                                /* if stop and currently running */
+                                UserAudioStreamStop();
+                            }
                         }
-                        else if(((sp.wIndex == 2) && (!sp.wValue)) && g_interfaceAlt[2] && (!g_interfaceAlt[1]))
+#elif (NUM_USB_CHAN_IN > 0)
+                        if(sp.wIndex == INTERFACE_NUMBER_AUDIO_INPUT)
                         {
-                            /* if input stop and input running and output not running */
-                            UserAudioStreamStop();
-                        }
-#elif (NUM_USB_CHAN_OUT > 0) || (NUM_USB_CHAN_IN > 0)
-                        if(sp.wValue && (!g_interfaceAlt[1]))
-                        {
-                            /* if start and not currently running */
-                            UserAudioStreamStart();
-                        }
-                        else if (!sp.wValue && g_interfaceAlt[1])
-                        {
-                            /* if stop and currently running */
-                            UserAudioStreamStop();
+                            if(sp.wValue && (!g_interfaceAlt[INTERFACE_NUMBER_AUDIO_INPUT]))
+                            {
+                                /* if start and not currently running */
+                                UserAudioStreamStart();
+                            }
+                            else if (!sp.wValue && g_interfaceAlt[INTERFACE_NUMBER_AUDIO_INPUT])
+                            {
+                                /* if stop and currently running */
+                                UserAudioStreamStop();
+                            }
                         }
 #endif
                     } /* if(sp.bRequest == SET_INTERFACE) */

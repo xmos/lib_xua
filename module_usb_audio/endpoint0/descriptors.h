@@ -12,6 +12,19 @@
 #include "usbaudiocommon.h"
 #include "usb_std_descriptors.h"
 
+#ifdef IAP_EA_NATIVE_TRANS
+/*
+ * FIXME currently this will not build if IAP_EA_NATIVE_TRANS_PROTOCOL_NAME is not defined in iap_conf.h,
+ * would be nice if a default string was used instead, and a warning issued.
+ *
+ * Could get a default define by including the following line, but iap2.h cannot currently be included from C
+ */
+//#include "iap2.h"                   /* Defines iAP EA Native Transport protocol name */
+#ifdef __iap_conf_h_exists__
+#include "iap_conf.h"
+#endif
+#endif
+
 #define APPEND_VENDOR_STR(x) VENDOR_STR" "#x
 
 #define APPEND_PRODUCT_STR_A2(x) PRODUCT_STR_A2 " "#x
@@ -171,7 +184,35 @@ typedef struct
 #if (NUM_USB_CHAN_IN > 18)
 #error NUM_USB_CHAN > 18
 #endif
+
+#if defined(MIXER) && (MAX_MIX_COUNT > 0)
+    STR_TABLE_ENTRY(mixOutStr_1);
+#endif
+#if defined(MIXER) && (MAX_MIX_COUNT > 1)
+    STR_TABLE_ENTRY(mixOutStr_2);
+#endif
+#if defined(MIXER) && (MAX_MIX_COUNT > 2)
+    STR_TABLE_ENTRY(mixOutStr_3);
+#endif
+#if defined(MIXER) && (MAX_MIX_COUNT > 3)
+    STR_TABLE_ENTRY(mixOutStr_4);
+#endif
+#if defined(MIXER) && (MAX_MIX_COUNT > 4)
+    STR_TABLE_ENTRY(mixOutStr_5);
+#endif
+#if defined(MIXER) && (MAX_MIX_COUNT > 5)
+    STR_TABLE_ENTRY(mixOutStr_6);
+#endif
+#if defined(MIXER) && (MAX_MIX_COUNT > 6)
+    STR_TABLE_ENTRY(mixOutStr_7);
+#endif
+#if defined(MIXER) && (MAX_MIX_COUNT > 7)
+    STR_TABLE_ENTRY(mixOutStr_8);
+#endif
     STR_TABLE_ENTRY(iAPInterfaceStr);
+#ifdef IAP_EA_NATIVE_TRANS
+    STR_TABLE_ENTRY(iAP_EANativeTransport_InterfaceStr);
+#endif
 } StringDescTable_t;
 
 StringDescTable_t g_strTable =
@@ -180,17 +221,17 @@ StringDescTable_t g_strTable =
     .vendorStr                   = VENDOR_STR,
     .serialStr                   = "",
     .productStr_Audio2           = PRODUCT_STR_A2,
-    .outputInterfaceStr_Audio2   = APPEND_PRODUCT_STR_A2(Output),
-    .inputInterfaceStr_Audio2    = APPEND_PRODUCT_STR_A2(Input),
-    .usbInputTermStr_Audio2      = APPEND_PRODUCT_STR_A2(Output),
-    .usbOutputTermStr_Audio2     = APPEND_PRODUCT_STR_A2(Input),
+    .outputInterfaceStr_Audio2   = APPEND_PRODUCT_STR_A2(),
+    .inputInterfaceStr_Audio2    = APPEND_PRODUCT_STR_A2(),
+    .usbInputTermStr_Audio2      = APPEND_PRODUCT_STR_A2(),
+    .usbOutputTermStr_Audio2     = APPEND_PRODUCT_STR_A2(),
 
 #if defined (AUDIO_CLASS_FALLBACK) || (AUDIO_CLASS == 1)
     .productStr_Audio1           = PRODUCT_STR_A1,
-    .outputInterfaceStr_Audio1   = APPEND_PRODUCT_STR_A1(Output),
-    .inputInterfaceStr_Audio1    = APPEND_PRODUCT_STR_A1(Input),
-    .usbInputTermStr_Audio1      = APPEND_PRODUCT_STR_A1(Output),
-    .usbOutputTermStr_Audio1     = APPEND_PRODUCT_STR_A1(Input),
+    .outputInterfaceStr_Audio1   = APPEND_PRODUCT_STR_A1(),
+    .inputInterfaceStr_Audio1    = APPEND_PRODUCT_STR_A1(),
+    .usbInputTermStr_Audio1      = APPEND_PRODUCT_STR_A1(),
+    .usbOutputTermStr_Audio1     = APPEND_PRODUCT_STR_A1(),
 #endif
     .clockSelectorStr            = APPEND_VENDOR_STR(Clock Selector),
     .internalClockSourceStr      = APPEND_VENDOR_STR(Internal Clock),
@@ -851,8 +892,37 @@ StringDescTable_t g_strTable =
 #error NUM_USB_CHAN_IN > 18
 #endif
 
+#if defined(MIXER) && (MAX_MIX_COUNT > 0)
+    .mixOutStr_1                 = "Mix 1",
+#endif
+#if defined(MIXER) && (MAX_MIX_COUNT > 0)
+    .mixOutStr_2                 = "Mix 2",
+#endif
+#if defined(MIXER) && (MAX_MIX_COUNT > 0)
+    .mixOutStr_3                 = "Mix 3",
+#endif
+#if defined(MIXER) && (MAX_MIX_COUNT > 0)
+    .mixOutStr_4                 = "Mix 4",
+#endif
+#if defined(MIXER) && (MAX_MIX_COUNT > 0)
+    .mixOutStr_5                 = "Mix 5",
+#endif
+#if defined(MIXER) && (MAX_MIX_COUNT > 0)
+    .mixOutStr_6                 = "Mix 6",
+#endif
+#if defined(MIXER) && (MAX_MIX_COUNT > 0)
+    .mixOutStr_7                 = "Mix 7",
+#endif
+#if defined(MIXER) && (MAX_MIX_COUNT > 0)
+    .mixOutStr_8                 = "Mix 8",
+#endif
+#if defined(MIXER) && (MAX_MIX_COUNT > 8)
+#error
+#endif
     .iAPInterfaceStr             = "iAP Interface",
-
+#ifdef IAP_EA_NATIVE_TRANS
+    .iAP_EANativeTransport_InterfaceStr = IAP2_EA_NATIVE_TRANS_PROTOCOL_NAME,
+#endif
 };
 
 /* Interface numbers enum */
@@ -862,7 +932,7 @@ enum USBInterfaceNumber
 #if (NUM_USB_CHAN_OUT > 0)
     INTERFACE_NUMBER_AUDIO_OUTPUT,
 #endif
-#if  (NUM_USB_CHAN_IN > 0)
+#if (NUM_USB_CHAN_IN > 0)
     INTERFACE_NUMBER_AUDIO_INPUT,
 #endif
 #if defined(MIDI) && (MIDI != 0)
@@ -874,6 +944,9 @@ enum USBInterfaceNumber
 #endif
 #if defined(IAP) && (IAP != 0)
     INTERFACE_NUMBER_IAP,
+#if defined(IAP_EA_NATIVE_TRANS) && (IAP_EA_NATIVE_TRANS != 0)
+    INTERFACE_NUMBER_IAP_EA_NATIVE_TRANS,
+#endif
 #endif
 #if defined(HID_CONTROLS) && (HID_CONTROLS != 0)
     INTERFACE_NUMBER_HID,
@@ -890,19 +963,21 @@ enum USBInterfaceNumber
 #endif
 
 /* Endpoint address defines */
-#define ENDPOINT_ADDRESS_IN_CONTROL     (ENDPOINT_NUMBER_IN_CONTROL | 0x80)
-#define ENDPOINT_ADDRESS_IN_FEEDBACK    (ENDPOINT_NUMBER_IN_FEEDBACK | 0x80)
-#define ENDPOINT_ADDRESS_IN_AUDIO       (ENDPOINT_NUMBER_IN_AUDIO | 0x80)
-#define ENDPOINT_ADDRESS_IN_INTERRUPT   (ENDPOINT_NUMBER_IN_INTERRUPT | 0x80)
-#define ENDPOINT_ADDRESS_IN_MIDI        (ENDPOINT_NUMBER_IN_MIDI | 0x80)
-#define ENDPOINT_ADDRESS_IN_HID         (ENDPOINT_NUMBER_IN_HID | 0x80)
-#define ENDPOINT_ADDRESS_IN_IAP_INT     (ENDPOINT_NUMBER_IN_IAP_INT | 0x80)
-#define ENDPOINT_ADDRESS_IN_IAP         (ENDPOINT_NUMBER_IN_IAP | 0x80)
+#define ENDPOINT_ADDRESS_IN_CONTROL               (ENDPOINT_NUMBER_IN_CONTROL | 0x80)
+#define ENDPOINT_ADDRESS_IN_FEEDBACK              (ENDPOINT_NUMBER_IN_FEEDBACK | 0x80)
+#define ENDPOINT_ADDRESS_IN_AUDIO                 (ENDPOINT_NUMBER_IN_AUDIO | 0x80)
+#define ENDPOINT_ADDRESS_IN_INTERRUPT             (ENDPOINT_NUMBER_IN_INTERRUPT | 0x80)
+#define ENDPOINT_ADDRESS_IN_MIDI                  (ENDPOINT_NUMBER_IN_MIDI | 0x80)
+#define ENDPOINT_ADDRESS_IN_HID                   (ENDPOINT_NUMBER_IN_HID | 0x80)
+#define ENDPOINT_ADDRESS_IN_IAP_INT               (ENDPOINT_NUMBER_IN_IAP_INT | 0x80)
+#define ENDPOINT_ADDRESS_IN_IAP                   (ENDPOINT_NUMBER_IN_IAP | 0x80)
+#define ENDPOINT_ADDRESS_IN_IAP_EA_NATIVE_TRANS   (ENDPOINT_NUMBER_IN_IAP_EA_NATIVE_TRANS | 0x80)
 
-#define ENDPOINT_ADDRESS_OUT_CONTROL    (ENDPOINT_NUMBER_OUT_CONTROL)
-#define ENDPOINT_ADDRESS_OUT_AUDIO      (ENDPOINT_NUMBER_OUT_AUDIO)
-#define ENDPOINT_ADDRESS_OUT_MIDI       (ENDPOINT_NUMBER_OUT_MIDI)
-#define ENDPOINT_ADDRESS_OUT_IAP        (ENDPOINT_NUMBER_OUT_IAP)
+#define ENDPOINT_ADDRESS_OUT_CONTROL              (ENDPOINT_NUMBER_OUT_CONTROL)
+#define ENDPOINT_ADDRESS_OUT_AUDIO                (ENDPOINT_NUMBER_OUT_AUDIO)
+#define ENDPOINT_ADDRESS_OUT_MIDI                 (ENDPOINT_NUMBER_OUT_MIDI)
+#define ENDPOINT_ADDRESS_OUT_IAP                  (ENDPOINT_NUMBER_OUT_IAP)
+#define ENDPOINT_ADDRESS_OUT_IAP_EA_NATIVE_TRANS  (ENDPOINT_NUMBER_OUT_IAP_EA_NATIVE_TRANS)
 
 /***** Device Descriptors *****/
 
@@ -1021,7 +1096,7 @@ unsigned char devQualDesc_Null[] =
 
 
 #if defined(MIXER) && !defined(AUDIO_PATH_XUS) && (MAX_MIX_COUNT > 0)
-#warning Extention units on the audio path are required for mixer.  Enabling them now.
+//#warning Extension units on the audio path are required for mixer.  Enabling them now.
 #define AUDIO_PATH_XUS
 #endif
 
@@ -1037,6 +1112,18 @@ unsigned char devQualDesc_Null[] =
 #define DFU_LENGTH                  (0)
 #endif
 
+#ifdef MIXER
+    #define MIX_BMCONTROLS_LEN_TMP      ((MAX_MIX_COUNT * MIX_INPUTS) / 8)
+
+    #if ((MAX_MIX_COUNT * MIX_INPUTS)%8)==0
+        #define MIX_BMCONTROLS_LEN          (MIX_BMCONTROLS_LEN_TMP)
+    #else
+        #define MIX_BMCONTROLS_LEN          (MIX_BMCONTROLS_LEN_TMP+1)
+    #endif
+    #define MIXER_LENGTH                (13+1+MIX_BMCONTROLS_LEN)
+#else
+    #define MIXER_LENGTH                (0)
+#endif
 
 
 #ifdef HID_CONTROLS
@@ -1106,6 +1193,9 @@ typedef struct
 #if (NUM_USB_CHAN_OUT > 0)
     /* Output path */
     USB_Descriptor_Audio_InputTerminal_t        Audio_Out_InputTerminal;
+#if defined(MIXER) && (MAX_MIX_COUNT > 0)
+    USB_Descriptor_Audio_ExtensionUnit_t        Audio_Out_ExtensionUnit;
+#endif
 #if(OUTPUT_VOLUME_CONTROL == 1)
     USB_Descriptor_Audio_FeatureUnit_Out_t      Audio_Out_FeatureUnit;
 #endif
@@ -1114,12 +1204,22 @@ typedef struct
 #if (NUM_USB_CHAN_IN > 0)
     /* Input path */
     USB_Descriptor_Audio_InputTerminal_t        Audio_In_InputTerminal;
+#if defined(MIXER) && (MAX_MIX_COUNT > 0)
+    USB_Descriptor_Audio_ExtensionUnit_t        Audio_In_ExtensionUnit;
+#endif
 #if(INPUT_VOLUME_CONTROL == 1)
     USB_Descriptor_Audio_FeatureUnit_In_t       Audio_In_FeatureUnit;
 #endif
     USB_Descriptor_Audio_OutputTerminal_t       Audio_In_OutputTerminal;
 #endif
+#if defined(MIXER) && (MAX_MIX_COUNT > 0)
+    USB_Descriptor_Audio_ExtensionUnit2_t       Audio_Mix_ExtensionUnit;
+    // Currently no struct for mixer unit
+    // USB_Descriptor_Audio_MixerUnit_t          Audio_MixerUnit;
+    unsigned char configDesc_MixerUnit[MIXER_LENGTH];
+#endif
 #if defined (SPDIF_RX) || defined (ADAT_RX)
+    /* Interrupt EP */
     USB_Descriptor_Endpoint_t                   Audio_Int_Endpoint;
 #endif
 } __attribute__((packed)) USB_CfgDesc_Audio2_CS_Control_Int;
@@ -1186,6 +1286,12 @@ typedef struct
     USB_Descriptor_Endpoint_t                   iAP_In_Endpoint;
 #ifdef IAP_INT_EP
     USB_Descriptor_Endpoint_t                   iAP_Interrupt_Endpoint;
+#endif
+#ifdef IAP_EA_NATIVE_TRANS
+    USB_Descriptor_Interface_t                  iAP_EANativeTransport_Interface_Alt0;
+    USB_Descriptor_Interface_t                  iAP_EANativeTransport_Interface_Alt1;
+    USB_Descriptor_Endpoint_t                   iAP_EANativeTransport_Out_Endpoint;
+    USB_Descriptor_Endpoint_t                   iAP_EANativeTransport_In_Endpoint;
 #endif
 #endif
 
@@ -1369,6 +1475,23 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
             .iTerminal                 = offsetof(StringDescTable_t, usbInputTermStr_Audio2)/sizeof(char *)
         },
 
+#if defined (MIXER) && (MAX_MIX_COUNT > 0)
+        .Audio_Out_ExtensionUnit =
+        {
+            .bLength                   = sizeof(USB_Descriptor_Audio_ExtensionUnit_t),
+            .bDescriptorType           = UAC_CS_DESCTYPE_INTERFACE,
+            .bDescriptorSubtype        = UAC_CS_AC_INTERFACE_SUBTYPE_EXTENSION_UNIT,
+            .bUnitID                   = ID_XU_OUT,
+            .wExtensionCode            = 0x00,
+            .bNrInPins                 = 1,
+            .baSourceID[0]             = ID_IT_USB,
+            .bNrChannels               = NUM_USB_CHAN_OUT,
+            .bmChannelConfig           = 0x00000000,
+            .bmControls                = 0x03,
+            .iExtension                = 0
+        },
+#endif
+
 #if(OUTPUT_VOLUME_CONTROL == 1)
         /* Feature Unit Descriptor */
         .Audio_Out_FeatureUnit =
@@ -1377,7 +1500,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
             0x24,                           /* 1  bDescriptorType: CS_INTERFACE */
             0x06,                           /* 2  bDescriptorSubType: FEATURE_UNIT */
             FU_USBOUT,                      /* 3  bUnitID */
-#ifdef AUDIO_PATH_XUS
+#if defined (MIXER) && (MAX_MIX_COUNT > 0)
             ID_XU_OUT,                      /* 4  bSourceID */
 #else
             ID_IT_USB,                      /* 4  bSourceID */
@@ -1465,6 +1588,9 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
             0,                                           /* 11 iTerminal */
         },
 #endif
+
+
+
 #if (NUM_USB_CHAN_IN > 0)
     /* Input Terminal Descriptor (Analogue Input Terminal) */
         .Audio_In_InputTerminal =
@@ -1483,6 +1609,23 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
             .iTerminal                 = 0,
         },
 
+#if defined (MIXER) && (MAX_MIX_COUNT > 0)
+        .Audio_In_ExtensionUnit =
+        {
+            .bLength                   = sizeof(USB_Descriptor_Audio_ExtensionUnit_t),
+            .bDescriptorType           = UAC_CS_DESCTYPE_INTERFACE,
+            .bDescriptorSubtype        = UAC_CS_AC_INTERFACE_SUBTYPE_EXTENSION_UNIT,
+            .bUnitID                   = ID_XU_IN,
+            .wExtensionCode            = 0x00,
+            .bNrInPins                 = 1,
+            .baSourceID[0]             = ID_IT_AUD,
+            .bNrChannels               = NUM_USB_CHAN_IN,
+            .bmChannelConfig           = 0x00000000,
+            .bmControls                = 0x03,
+            .iExtension                = 0
+        },
+#endif
+
 #if (INPUT_VOLUME_CONTROL == 1)
         .Audio_In_FeatureUnit =
         {
@@ -1490,7 +1633,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
             UAC_CS_DESCTYPE_INTERFACE,                      /* 1  bDescriptorType: CS_INTERFACE */
             UAC_CS_AC_INTERFACE_SUBTYPE_FEATURE_UNIT,       /* 2  bDescriptorSubType: FEATURE_UNIT */
             FU_USBIN,                                       /* 3  bUnitID */
-#ifdef AUDIO_PATH_XUS
+#if defined(MIXER) && (MAX_MIX_COUNT > 0)
             ID_XU_IN,                                       /* 4  bSourceID */
 #else
             ID_IT_AUD,                                      /* 4  bSourceID */
@@ -1577,6 +1720,100 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
             .bCSourceID                = ID_CLKSEL,
             .bmControls                = 0x0000,
             .iTerminal                 = offsetof(StringDescTable_t, usbOutputTermStr_Audio2)/sizeof(char *)
+        },
+#endif
+
+#if defined(MIXER) && (MAX_MIX_COUNT > 0)
+        /* Extension Unit Descriptor (4.7.2.12) */
+        .Audio_Mix_ExtensionUnit =
+        {
+            .bLength                   = sizeof(USB_Descriptor_Audio_ExtensionUnit2_t),
+            .bDescriptorType           = UAC_CS_DESCTYPE_INTERFACE,
+            .bDescriptorSubtype        = UAC_CS_AC_INTERFACE_SUBTYPE_EXTENSION_UNIT,
+            .bUnitID                   = ID_XU_MIXSEL,
+            .wExtensionCode            = 0x00,
+            .bNrInPins                 = 2,
+            .baSourceID[0]             = ID_IT_USB,
+            .baSourceID[1]             = ID_IT_AUD,
+            .bNrChannels               = MIX_INPUTS,
+            .bmChannelConfig           = 0x00000000,
+            .bmControls                = 0x03,
+            .iExtension                = 0
+        },
+
+        /* Mixer Unit Descriptors */
+        /* N = 144 (18 * 8) */
+        /* Mixer Unit Bitmap - 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+                       0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff */
+        {
+            MIXER_LENGTH,                 /* 0 bLength : 13 + num inputs + bit map (inputs * outputs) */
+            UAC_CS_DESCTYPE_INTERFACE,    /* bDescriptorType */
+            0x04,                         /* bDescriptorSubtype: MIXER_UNIT */
+            ID_MIXER_1,                   /* Mixer unit id */
+            0x01,                         /* Number of input pins */
+            ID_XU_MIXSEL,                 /* Connected terminal or unit id for input pin */
+            MAX_MIX_COUNT,                /* Number of mixer output channels */
+            0x00, 0x00, 0x00, 0x00,       /* Spacial location ???? */
+            offsetof(StringDescTable_t, mixOutStr_1)/sizeof(char *), /* iChannelNames */
+#if MIX_BMCONTROLS_LEN > 0                /* Mixer programmable control bitmap */
+            0xff,
+#endif
+#if MIX_BMCONTROLS_LEN > 1
+            0xff,
+#endif
+#if MIX_BMCONTROLS_LEN > 2
+            0xff,
+#endif
+#if MIX_BMCONTROLS_LEN > 3
+            0xff,
+#endif
+#if MIX_BMCONTROLS_LEN > 4
+            0xff,
+#endif
+#if MIX_BMCONTROLS_LEN > 5
+            0xff,
+#endif
+#if MIX_BMCONTROLS_LEN > 6
+            0xff,
+#endif
+#if MIX_BMCONTROLS_LEN > 7
+            0xff,
+#endif
+#if MIX_BMCONTROLS_LEN > 8
+            0xff,
+#endif
+#if MIX_BMCONTROLS_LEN > 9
+            0xff,
+#endif
+#if MIX_BMCONTROLS_LEN > 10
+            0xff,
+#endif
+#if MIX_BMCONTROLS_LEN > 11
+            0xff,
+#endif
+#if MIX_BMCONTROLS_LEN > 12
+            0xff,
+#endif
+#if MIX_BMCONTROLS_LEN > 13
+            0xff,
+#endif
+#if MIX_BMCONTROLS_LEN > 14
+            0xff,
+#endif
+#if MIX_BMCONTROLS_LEN > 15
+            0xff,
+#endif
+#if MIX_BMCONTROLS_LEN > 16
+            0xff,
+#endif
+#if MIX_BMCONTROLS_LEN > 17
+            0xff,
+#endif
+#if MIX_BMCONTROLS_LEN > 18
+#error unxpected BMCONTROLS_LEN
+#endif
+            0x00,                      /* bmControls */
+            0                          /* Mixer unit string descriptor index */
         },
 #endif
 
@@ -2120,6 +2357,58 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
         0x08,                            /* 6 bInterval : (2^(bInterval-1))/8 ms. Must be between 4 and 32ms (field size 1 bytes) */
     },
 #endif
+#ifdef IAP_EA_NATIVE_TRANS
+    /* iAP EA Native Transport Interface descriptor */
+    /* Zero bandwidth alternative 0 */
+    .iAP_EANativeTransport_Interface_Alt0 =
+    {
+        .bLength                    = sizeof(USB_Descriptor_Interface_t),
+        .bDescriptorType            = USB_DESCTYPE_INTERFACE,
+        .bInterfaceNumber           = INTERFACE_NUMBER_IAP_EA_NATIVE_TRANS,
+        .bAlternateSetting          = 0x00,
+        .bNumEndpoints              = 0x00,
+        .bInterfaceClass            = USB_CLASS_VENDOR_SPECIFIC,
+        .bInterfaceSubClass         = 0xF0,                     /* MFI Accessory (Table 21-2) */
+        .bInterfaceProtocol         = 0x01,
+        .iInterface                 = offsetof(StringDescTable_t, iAP_EANativeTransport_InterfaceStr)/sizeof(char *),
+    },
+
+    /* Alternative 1 */
+    .iAP_EANativeTransport_Interface_Alt1 =
+    {
+        .bLength                    = sizeof(USB_Descriptor_Interface_t),
+        .bDescriptorType            = USB_DESCTYPE_INTERFACE,
+        .bInterfaceNumber           = INTERFACE_NUMBER_IAP_EA_NATIVE_TRANS,
+        .bAlternateSetting          = 0x01,
+        .bNumEndpoints              = 0x02,
+        .bInterfaceClass            = USB_CLASS_VENDOR_SPECIFIC,
+        .bInterfaceSubClass         = 0xF0,                     /* MFI Accessory (Table 21-1) */
+        .bInterfaceProtocol         = 0x01,
+        .iInterface                 = offsetof(StringDescTable_t, iAP_EANativeTransport_InterfaceStr)/sizeof(char *),
+    },
+
+    /* iAP EA Native Transport Bulk OUT Endpoint Descriptor */
+    .iAP_EANativeTransport_Out_Endpoint =
+    {
+        0x07,                                     /* 0 bLength : Size of this descriptor, in bytes. (field size 1 bytes) */
+        0x05,                                     /* 1 bDescriptorType : ENDPOINT descriptor. (field size 1 bytes) */
+        ENDPOINT_ADDRESS_OUT_IAP_EA_NATIVE_TRANS, /* 2 bEndpointAddress : OUT Endpoint 3. High bit isIn (field size 1 bytes) */
+        0x02,                                     /* 3 bmAttributes : Bulk, not shared. (field size 1 bytes) */
+        0x0200,                                   /* 4 wMaxPacketSize : Has to be 0x200 for compliance*/
+        0x00,                                     /* 6 bInterval : Ignored for Bulk. Set to zero. (field size 1 bytes) */
+    },
+
+    /* iAP EA Native Transport Bulk IN Endpoint Descriptor */
+    .iAP_EANativeTransport_In_Endpoint =
+    {
+        0x07,                                     /* 0 bLength : Size of this descriptor, in bytes. (field size 1 bytes) */
+        0x05,                                     /* 1 bDescriptorType : ENDPOINT descriptor. (field size 1 bytes) */
+        ENDPOINT_ADDRESS_IN_IAP_EA_NATIVE_TRANS,  /* 2 bEndpointAddress : OUT Endpoint 3. High bit isIn (field size 1 bytes) */
+        0x02,                                     /* 3 bmAttributes : Bulk, not shared. (field size 1 bytes) */
+        0x0200,                                   /* 4 wMaxPacketSize : Has to be 0x200 for compliance*/
+        0x00,                                     /* 6 bInterval : Ignored for Bulk. Set to zero. (field size 1 bytes) */
+    },
+#endif
 #endif /* IAP */
 
 #ifdef HID_CONTROLS
@@ -2236,17 +2525,8 @@ unsigned char cfgDesc_Null[] =
 #define CFG_TOTAL_LENGTH_A1         (18 + AC_TOTAL_LENGTH + (INPUT_INTERFACES_A1 * 61) + (OUTPUT_INTERFACES_A1 * 70))
 
 /* In UAC1 supported sample rates are listed in descriptor */
-#if (MAX_FREQ_FS == 96000)
+/* Note, we always report 4 freqs, doing otherwise seems to cause an enumeration issue on Windows */
 #define NUM_FREQS_A1                (4)
-#elif (MAX_FREQ_FS == 88200)
-#define NUM_FREQS_A1                (3)
-#elif (MAX_FREQ_FS == 48000)
-#define NUM_FREQS_A1                (2)
-#elif (MAX_FREQ_FS == 44100)
-#define NUM_FREQS_A1                (1)
-#else
-#error
-#endif
 
 unsigned char cfgDesc_Audio1[] =
 {
@@ -2407,12 +2687,18 @@ unsigned char cfgDesc_Audio1[] =
     0x44, 0xAC, 0x00,               /* sampleFreq - 44.1Khz */
 #if (MAX_FREQ_FS > 44100)
     0x80, 0xBB, 0x00,               /* sampleFreq - 48KHz */
+#else
+    0x44, 0xAC, 0x00,               /* sampleFreq - 44.1Khz */
 #endif
 #if (MAX_FREQ_FS > 48000)
     0x88, 0x58, 0x01,               /* sampleFreq - 88.2KHz */
+#else
+    0x44, 0xAC, 0x00,               /* sampleFreq - 44.1Khz */
 #endif
 #if (MAX_FREQ_FS > 88200)
     0x00, 0x77, 0x01,               /* sampleFreq - 96KHz */
+#else
+    0x44, 0xAC, 0x00,               /* sampleFreq - 44.1Khz */
 #endif
 
     /* Standard AS Isochronous Audio Data Endpoint Descriptor 4.6.1.1 */
@@ -2488,12 +2774,18 @@ unsigned char cfgDesc_Audio1[] =
     0x44, 0xAC, 0x00,               /* sampleFreq - 44.1Khz */
 #if (MAX_FREQ_FS > 44100)
     0x80, 0xBB, 0x00,               /* sampleFreq - 48KHz */
+#else
+    0x44, 0xAC, 0x00,               /* sampleFreq - 44.1Khz */
 #endif
 #if (MAX_FREQ_FS > 48000)
     0x88, 0x58, 0x01,               /* sampleFreq - 88.2KHz */
+#else
+    0x44, 0xAC, 0x00,               /* sampleFreq - 44.1Khz */
 #endif
 #if (MAX_FREQ_FS > 88200)
     0x00, 0x77, 0x01,               /* sampleFreq - 96KHz */
+#else
+    0x44, 0xAC, 0x00,               /* sampleFreq - 44.1Khz */
 #endif
     /* Standard Endpoint Descriptor */
     0x09,

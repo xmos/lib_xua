@@ -144,10 +144,12 @@ setPtr:
   shl   r2, r2, 1
 .xtabranch  .label_0
   bru   r2
+.syntax architectural
 #define BODY(i) \
-  ldap  r11, .label_##i; \
-  bu    setPtr_go
+  LDAPF_u10  .label_##i; \
+  BRFU_u6 setPtr_go
 #include "repeat.h"
+.syntax default
 setPtr_go:
   shl   r0, r0, 3;
   ldc   r2, 0x80;
