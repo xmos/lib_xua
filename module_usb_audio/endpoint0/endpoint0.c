@@ -342,6 +342,11 @@ void Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
                                 /* Check the alt is in range */
                                 if (sp.wValue <= IAP_EA_NATIVE_TRANS_ALT_COUNT)
                                 {
+                                    /* Reset all state of endpoints associated with this interface
+                                     * when changing an alternative setting. See USB 2.0 Spec 9.1.1.5 */
+                                    XUD_ResetEpStateByAddr(ENDPOINT_ADDRESS_IN_IAP_EA_NATIVE_TRANS);
+                                    XUD_ResetEpStateByAddr(ENDPOINT_ADDRESS_OUT_IAP_EA_NATIVE_TRANS);
+
                                     /* Send selected Alt interface number onto EA Native EP manager */
                                     outuint(c_EANativeTransport_ctrl, (unsigned)sp.wValue);
 
