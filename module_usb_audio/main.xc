@@ -113,6 +113,7 @@ on tile[AUDIO_IO_TILE] : buffered in port:32 p_i2s_adc[I2S_WIRES_ADC] =
 #else
 #define CLKBLK_MIDI        XS1_CLKBLK_REF;
 #endif
+#define CLKBLK_ADAT_RX     XS1_CLKBLK_3
 #define CLKBLK_SPDIF_TX    XS1_CLKBLK_1
 #define CLKBLK_SPDIF_RX    XS1_CLKBLK_1
 #define CLKBLK_MCLK        XS1_CLKBLK_2
@@ -366,7 +367,7 @@ void usb_audio_core(chanend c_mix_out
         /* Endpoint 0 Core */
         {
             thread_speed();
-            Endpoint0( c_xud_out[0], c_xud_in[0], c_aud_ctl, c_mix_ctl, null, c_EANativeTransport_ctrl);
+            Endpoint0( c_xud_out[0], c_xud_in[0], c_aud_ctl, c_mix_ctl, c_clk_ctl, c_EANativeTransport_ctrl);
         }
 
         /* Decoupling core */
@@ -400,6 +401,7 @@ chanend c_mix_ctl,
 #endif
 chanend ?c_aud_cfg,
 streaming chanend ?c_spdif_rx,
+chanend ?c_adat_rx,
 chanend ?c_clk_ctl,
 chanend ?c_clk_int
 )
@@ -433,11 +435,11 @@ chanend ?c_clk_int
 #endif
         }
 
-#ifdef SPDIF_RX
+#if defined(SPDIF_RX) || defined(ADAT_RX)
         {
             thread_speed();
 
-            clockGen(c_spdif_rx, null, p_pll_clk, c_dig_rx, c_clk_ctl, c_clk_int);
+            clockGen(c_spdif_rx, c_adat_rx, p_pll_clk, c_dig_rx, c_clk_ctl, c_clk_int);
 
         }
 #endif
@@ -484,12 +486,22 @@ int main()
 
 #ifdef SPDIF_RX
     streaming chan c_spdif_rx;
+#else
+#define c_spdif_rx null
+#endif
+
+#ifdef ADAT_RX
+    chan c_adat_rx;
+#else
+#define c_adat_rx null
+#endif
+
+#if (defined (SPDIF_RX) || defined (ADAT_RX))
     chan c_clk_ctl;
     chan c_clk_int;
 #else
 #define c_clk_int null
 #define c_clk_ctl null
-#define c_spdif_rx null
 #endif
 
     USER_MAIN_DECLARATIONS
@@ -516,7 +528,7 @@ int main()
 #ifdef MIXER
             , c_mix_ctl
 #endif
-            ,c_aud_cfg, c_spdif_rx, c_clk_ctl, c_clk_int
+            ,c_aud_cfg, c_spdif_rx, c_adat_rx, c_clk_ctl, c_clk_int
         );
 
 #if defined(MIDI) && defined(IAP) && (IAP_TILE == MIDI_TILE)
