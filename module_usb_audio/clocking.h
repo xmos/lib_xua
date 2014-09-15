@@ -13,6 +13,6 @@
  *  \param c_clk_int channel connected to the decouple() thread for clock
                      interrupts
  */
-void clockGen (streaming chanend c_spdif_rx, chanend ?c_adat_rx, out port p, chanend c_audio, chanend c_clk_ctl, chanend c_clk_int);
+void clockGen (streaming chanend ?c_spdif_rx, chanend ?c_adat_rx, out port p, chanend c_audio, chanend c_clk_ctl, chanend c_clk_int);
 #endif
 
