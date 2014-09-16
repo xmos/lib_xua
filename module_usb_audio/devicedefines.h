@@ -269,6 +269,14 @@
 #endif
 #endif
 
+#ifdef ADAT_RX
+/* Setup input stream formats for ADAT */
+#define INPUT_FORMAT_COUNT 2
+#define HS_STREAM_FORMAT_INPUT_1_CHAN_COUNT NUM_USB_CHAN_IN
+#define HS_STREAM_FORMAT_INPUT_2_CHAN_COUNT (NUM_USB_CHAN_IN - 4)
+#define HS_STREAM_FORMAT_INPUT_3_CHAN_COUNT (NUM_USB_CHAN_IN - 6)
+#endif
+
 /**
  * @brief Enable DFU functionality. A driver required for Windows operation.
  *
@@ -648,20 +656,15 @@
     #endif
 #endif
 
+/***** INPUT STREAMS FORMAT ******/
+
 /**
  * @brief Number of supported input stream formats.
- *
- * Currenly only 1 supported
- *
  * Default: 1
  */
 #ifndef INPUT_FORMAT_COUNT
-    #define INPUT_FORMAT_COUNT 1
-#endif
-
-#if (INPUT_FORMAT_COUNT > 1)
-    /* Only 1 supported */
     #error
+    #define INPUT_FORMAT_COUNT 1
 #endif
 
 /**
@@ -682,6 +685,22 @@
 #ifndef FS_STREAM_FORMAT_INPUT_1_RESOLUTION_BITS
     #define FS_STREAM_FORMAT_INPUT_1_RESOLUTION_BITS        STREAM_FORMAT_INPUT_1_RESOLUTION_BITS
 #endif
+
+/* Channel count defines for input streams */
+#ifndef HS_STREAM_FORMAT_INPUT_1_CHAN_COUNT
+    #define HS_STREAM_FORMAT_INPUT_1_CHAN_COUNT             NUM_USB_CHANS_IN
+#endif
+
+#ifndef HS_STREAM_FORMAT_INPUT_2_CHAN_COUNT
+    #define HS_STREAM_FORMAT_INPUT_2_CHAN_COUNT             NUM_USB_CHANS_IN
+#endif
+
+#ifndef HS_STREAM_FORMAT_INPUT_3_CHAN_COUNT
+    #define HS_STREAM_FORMAT_INPUT_1_CHAN_COUNT             NUM_USB_CHANS_IN
+#endif
+
+/****** END INPUT STREAMS FORMAT *****/
+
 
 /**
  * @brief Sample sub-slot size (bytes) of input stream Alternate 1 when running in high-speed
