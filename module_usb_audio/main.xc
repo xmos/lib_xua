@@ -429,9 +429,17 @@ chanend ?c_clk_int
         {
             thread_speed();
 #ifdef MIXER
-            audio(c_mix_out, c_dig_rx, c_aud_cfg, c_adc);
+            audio(c_mix_out, 
+#if defined(SPDIF_RX) || defined(ADAT_RX)
+        c_dig_rx, 
+#endif
+        c_aud_cfg, c_adc);
 #else
-            audio(c_aud_in, c_dig_rx, c_aud_cfg, c_adc);
+            audio(c_aud_in, 
+#if defined(SPDIF_RX) || defined(ADAT_RX)
+            c_dig_rx, 
+#endif
+            c_aud_cfg, c_adc);
 #endif
         }
 

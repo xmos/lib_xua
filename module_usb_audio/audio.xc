@@ -144,7 +144,11 @@ static inline void doI2SClocks(unsigned divide)
 
 /* I2S delivery thread */
 #pragma unsafe arrays
-unsigned static deliver(chanend c_out, chanend ?c_spd_out, unsigned divide, unsigned curSamFreq, chanend ?c_dig_rx, chanend ?c_adc)
+unsigned static deliver(chanend c_out, chanend ?c_spd_out, unsigned divide, unsigned curSamFreq, 
+#if(defined(SPDIF_RX) || defined(ADAT_RX))
+chanend c_dig_rx, 
+#endif
+chanend ?c_adc)
 {
 #if (I2S_CHANS_ADC != 0) || defined(SPDIF)
 	unsigned sample;
@@ -779,7 +783,11 @@ unsigned static dummy_deliver(chanend c_out)
 #define SAMPLES_PER_PRINT 1
 
 
-void audio(chanend c_mix_out, chanend ?c_dig_rx, chanend ?c_config, chanend ?c)
+void audio(chanend c_mix_out, 
+#if (defined(ADAT_RX) || defined(SPDIF_RX))
+chanend c_dig_rx, 
+#endif
+chanend ?c_config, chanend ?c)
 {
 #ifdef SPDIF
     chan c_spdif_out;
