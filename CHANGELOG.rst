@@ -1,11 +1,25 @@
 sc_usb_audio Change Log
 =======================
 
-HEAD
-----
+6.9.0
+-----
+    
+    - ADDED:      ADAT S-MUX II functionality (i.e. 2 channels at 192kHz) - Previously only S-MUX
+                  supported (4 channels at 96kHz).
+    - ADDED:      Explicit build warnings if sample rate/depth & channel combination exceeds 
+                  available USB bus bandwidth. 
+    - RESOLVED:   (Major) Reinstated ADAT input functionality, including descriptors and clock
+                  generation/control and stream configuration defines/tables.
+    - RESOLVED:   (Major) S/PDIF/ADAT sample transfer code in audio() (from ClockGen()) moved to 
+                  aid timing.
     - CHANGE:     Modifying mix map now only affects specified mix, previous was applied to all
                   mixes. CS_XU_MIXSEL control selector now takes values 0 to MAX_MIX_COUNT + 1 
                   (with 0 affecting all mixes).
+    - CHANGE:     Channel c_dig_rx is no longer nullable, assists with timing due to removal of 
+                  null checks inserted by compiler.
+    - CHANGE:     ADAT SMUX selection now based on device sample frequency rather than selected
+                  stream format - Endpoint 0 now configures clockgen() on a sample-rate change 
+                  rather than stream start.
 
 6.8.0
 -----
