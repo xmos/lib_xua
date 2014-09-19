@@ -2259,6 +2259,72 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
         .wLockDelay                    = 0x0008,
     },
 #endif
+#if (INPUT_FORMAT_COUNT > 2)
+    /* Alternative 3 */
+    /* Standard AS Interface Descriptor (4.9.1) (Alt) */
+    .Audio_In_StreamInterface_Alt3 =
+    {
+        .bLength                       = 0x09,                             
+        .bDescriptorType               = USB_DESCTYPE_INTERFACE,           
+        .bInterfaceNumber              = INTERFACE_NUMBER_AUDIO_INPUT,     
+        .bAlternateSetting             = 3,                             
+        .bNumEndpoints                 = 1,                                
+        .bInterfaceClass               = USB_CLASS_AUDIO,                  
+        .bInterfaceSubClass            = UAC_INT_SUBCLASS_AUDIOSTREAMING,
+        .bInterfaceProtocol            = UAC_INT_PROTOCOL_IP_VERSION_02_00,
+        .iInterface                    = 5,     /* (String index) */
+    },
+
+    /* Class Specific AS Interface Descriptor */
+    .Audio_In_ClassStreamInterface_3 =
+    {
+        .bLength                       = 0x10,                                   
+        .bDescriptorType               = UAC_CS_DESCTYPE_INTERFACE,
+        .bDescriptorSubType            = UAC_CS_AS_INTERFACE_SUBTYPE_AS_GENERAL, 
+        .bTerminalLink                 = ID_OT_USB,  
+        .bmControls                    = 0x00,                                   
+        .bFormatType                   = 0x01,                                  
+        .bmFormats                     = UAC_FORMAT_TYPEI_PCM,                   
+        .bNrChannels                   = HS_STREAM_FORMAT_INPUT_3_CHAN_COUNT,    
+        .bmChannelConfig               = 0x00000000,                             
+        .iChannelNames                 = offsetof(StringDescTable_t, inputChanStr_1)/sizeof(char *),
+    },
+
+    /* Type 1 Format Type Descriptor */
+    .Audio_In_Format_3 =
+    {
+        .bLength                       = 6,                               
+        .bDescriptorType               = UAC_CS_DESCTYPE_INTERFACE, 
+        .bDescriptorSubtype            = UAC_CS_AS_INTERFACE_SUBTYPE_FORMAT_TYPE,
+        .bFormatType                   = UAC_FORMAT_TYPE_I,                   
+        .bSubslotSize                  = HS_STREAM_FORMAT_INPUT_1_SUBSLOT_BYTES,    /* TODO SUBSLOT_BYTES currently shared */
+        .bBitResolution                = HS_STREAM_FORMAT_INPUT_1_RESOLUTION_BITS,  /* TODO RESOLUTION_BITS currently shared */
+    },
+
+    /* Standard AS Isochronous Audio Data Endpoint Descriptor (4.10.1.1) */
+    .Audio_In_Endpoint_3 =
+    {
+        .bLength                       = 0x07,                                
+        .bDescriptorType               = USB_DESCTYPE_ENDPOINT,                  
+        .bEndpointAddress              = 0x82,                                   
+        .bmAttributes                  = 5,     
+        .wMaxPacketSize                = HS_STREAM_FORMAT_INPUT_3_MAXPACKETSIZE,
+        .bInterval                     = 0x01,
+    },
+
+    /* Class-Specific AS Isochronous Audio Data Endpoint Descriptor (4.10.1.2) */
+    .Audio_In_ClassEndpoint_3 =
+    {
+        .bLength                       = sizeof(USB_Descriptor_Audio_Class_AS_Endpoint_t),
+        .bDescriptorType               = UAC_CS_DESCTYPE_ENDPOINT,
+        .bDescriptorSubtype            = UAC_CS_ENDPOINT_SUBTYPE_EP_GENERAL,
+        .bmAttributes                  = 0x00,
+        .bmControls                    = 0x00,
+        .bLockDelayUnits               = 0x02,
+        .wLockDelay                    = 0x0008,
+    },
+#endif
+
 #endif /* #if(NUM_USB_CHAN_IN > 0) */
 #ifdef MIDI
 /* MIDI Descriptors */
