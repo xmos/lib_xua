@@ -3,7 +3,6 @@ sc_usb_audio Change Log
 
 6.9.0
 -----
-    
     - ADDED:      ADAT S-MUX II functionality (i.e. 2 channels at 192kHz) - Previously only S-MUX
                   supported (4 channels at 96kHz).
     - ADDED:      Explicit build warnings if sample rate/depth & channel combination exceeds 
