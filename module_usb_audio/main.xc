@@ -429,15 +429,15 @@ chanend ?c_clk_int
         {
             thread_speed();
 #ifdef MIXER
-            audio(c_mix_out, 
+            audio(c_mix_out,
 #if defined(SPDIF_RX) || defined(ADAT_RX)
-        c_dig_rx, 
+        c_dig_rx,
 #endif
         c_aud_cfg, c_adc);
 #else
-            audio(c_aud_in, 
+            audio(c_aud_in,
 #if defined(SPDIF_RX) || defined(ADAT_RX)
-            c_dig_rx, 
+            c_dig_rx,
 #endif
             c_aud_cfg, c_adc);
 #endif
@@ -573,9 +573,9 @@ int main()
 #endif
 
 #ifdef ADAT_RX
-        on stdcore[0] : 
+        on stdcore[0] :
         {
-            set_thread_fast_mode_on();                         
+            set_thread_fast_mode_on();
             set_port_clock(p_adat_rx, clk_adat_rx);
             start_clock(clk_adat_rx);
             while (1)

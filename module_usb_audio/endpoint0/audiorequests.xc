@@ -329,7 +329,7 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
                                             outuint(c_clk_ctl, 0);
                                         }
                                         else if(g_curSamFreq < 176400)
-                                        { 
+                                        {
                                             /* SMUX */
                                             outuint(c_clk_ctl, 1);
                                         }

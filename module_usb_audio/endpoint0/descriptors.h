@@ -1153,7 +1153,7 @@ unsigned char hidReportDescriptor[] =
  * Samples per channel. e.g (192000+7999/8000) = 24
  * Must allow 1 sample extra per chan (24 + 1) = 25
  * Multiply by number of channels and bytes      25 * 2 * 4 = 200 bytes
- * TODO Output doesn't get modified by channel count 
+ * TODO Output doesn't get modified by channel count
 */
 #define MAX_PACKET_SIZE_MULT_OUT_HS ((((MAX_FREQ+7999)/8000)+1) * NUM_USB_CHAN_OUT)
 #define MAX_PACKET_SIZE_MULT_OUT_FS ((((MAX_FREQ_FS+999)/1000)+1) * NUM_USB_CHAN_OUT_FS)
@@ -1163,8 +1163,8 @@ unsigned char hidReportDescriptor[] =
 #define HS_STREAM_FORMAT_OUTPUT_3_MAXPACKETSIZE (MAX_PACKET_SIZE_MULT_OUT_HS * HS_STREAM_FORMAT_OUTPUT_3_SUBSLOT_BYTES)
 
 #if (HS_STEAM_FORMAT_OUPUT_1_MAXPACKETSIZE > 1024) || (HS_STEAM_FORMAT_OUPUT_2_MAXPACKETSIZE > 1024) \
-    || (HS_STEAM_FORMAT_OUPUT_3_MAXPACKETSIZE > 1024) 
-#error 
+    || (HS_STEAM_FORMAT_OUPUT_3_MAXPACKETSIZE > 1024)
+#error
 #endif
 
 #define FS_STREAM_FORMAT_OUTPUT_1_MAXPACKETSIZE (MAX_PACKET_SIZE_MULT_OUT_FS * FS_STREAM_FORMAT_OUTPUT_1_SUBSLOT_BYTES)
@@ -2120,14 +2120,14 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
     /* Standard AS Interface Descriptor (4.9.1) */
     .Audio_In_StreamInterface_Alt0 =
     {
-        .bLength                       = 0x09,                             
-        .bDescriptorType               = USB_DESCTYPE_INTERFACE,       
-        .bInterfaceNumber              = INTERFACE_NUMBER_AUDIO_INPUT,  
-        .bAlternateSetting             = 0,                             
-        .bNumEndpoints                 = 0,                                
-        .bInterfaceClass               = USB_CLASS_AUDIO,                  
+        .bLength                       = 0x09,
+        .bDescriptorType               = USB_DESCTYPE_INTERFACE,
+        .bInterfaceNumber              = INTERFACE_NUMBER_AUDIO_INPUT,
+        .bAlternateSetting             = 0,
+        .bNumEndpoints                 = 0,
+        .bInterfaceClass               = USB_CLASS_AUDIO,
         .bInterfaceSubClass            = UAC_INT_SUBCLASS_AUDIOSTREAMING,
-        .bInterfaceProtocol            = 0x20,                             
+        .bInterfaceProtocol            = 0x20,
         .iInterface                    = 5, /* (String index) */
     },
 
@@ -2135,12 +2135,12 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
     /* Standard AS Interface Descriptor (4.9.1) (Alt) */
     .Audio_In_StreamInterface_Alt1 =
     {
-        .bLength                       = 0x09,                             
-        .bDescriptorType               = USB_DESCTYPE_INTERFACE,           
-        .bInterfaceNumber              = INTERFACE_NUMBER_AUDIO_INPUT,     
-        .bAlternateSetting             = 1,                             
-        .bNumEndpoints                 = 1,                                
-        .bInterfaceClass               = USB_CLASS_AUDIO,                  
+        .bLength                       = 0x09,
+        .bDescriptorType               = USB_DESCTYPE_INTERFACE,
+        .bInterfaceNumber              = INTERFACE_NUMBER_AUDIO_INPUT,
+        .bAlternateSetting             = 1,
+        .bNumEndpoints                 = 1,
+        .bInterfaceClass               = USB_CLASS_AUDIO,
         .bInterfaceSubClass            = UAC_INT_SUBCLASS_AUDIOSTREAMING,
         .bInterfaceProtocol            = UAC_INT_PROTOCOL_IP_VERSION_02_00,
         .iInterface                    = 5,     /* (String index) */
@@ -2149,25 +2149,25 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
     /* Class Specific AS Interface Descriptor */
     .Audio_In_ClassStreamInterface =
     {
-        .bLength                       = 0x10,                                   
+        .bLength                       = 0x10,
         .bDescriptorType               = UAC_CS_DESCTYPE_INTERFACE,
-        .bDescriptorSubType            = UAC_CS_AS_INTERFACE_SUBTYPE_AS_GENERAL, 
-        .bTerminalLink                 = ID_OT_USB,  
-        .bmControls                    = 0x00,                                   
-        .bFormatType                   = 0x01,                                  
-        .bmFormats                     = UAC_FORMAT_TYPEI_PCM,                   
-        .bNrChannels                   = HS_STREAM_FORMAT_INPUT_1_CHAN_COUNT,    
-        .bmChannelConfig               = 0x00000000,                             
+        .bDescriptorSubType            = UAC_CS_AS_INTERFACE_SUBTYPE_AS_GENERAL,
+        .bTerminalLink                 = ID_OT_USB,
+        .bmControls                    = 0x00,
+        .bFormatType                   = 0x01,
+        .bmFormats                     = UAC_FORMAT_TYPEI_PCM,
+        .bNrChannels                   = HS_STREAM_FORMAT_INPUT_1_CHAN_COUNT,
+        .bmChannelConfig               = 0x00000000,
         .iChannelNames                 = offsetof(StringDescTable_t, inputChanStr_1)/sizeof(char *),
     },
 
     /* Type 1 Format Type Descriptor */
     .Audio_In_Format =
     {
-        .bLength                       = 6,                               
-        .bDescriptorType               = UAC_CS_DESCTYPE_INTERFACE, 
+        .bLength                       = 6,
+        .bDescriptorType               = UAC_CS_DESCTYPE_INTERFACE,
         .bDescriptorSubtype            = UAC_CS_AS_INTERFACE_SUBTYPE_FORMAT_TYPE,
-        .bFormatType                   = UAC_FORMAT_TYPE_I,                   
+        .bFormatType                   = UAC_FORMAT_TYPE_I,
         .bSubslotSize                  = HS_STREAM_FORMAT_INPUT_1_SUBSLOT_BYTES,    /* Number of bytes per subslot */
         .bBitResolution                = HS_STREAM_FORMAT_INPUT_1_RESOLUTION_BITS,
     },
@@ -2175,10 +2175,10 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
     /* Standard AS Isochronous Audio Data Endpoint Descriptor (4.10.1.1) */
     .Audio_In_Endpoint =
     {
-        .bLength                       = 0x07,                                
-        .bDescriptorType               = USB_DESCTYPE_ENDPOINT,                  
-        .bEndpointAddress              = 0x82,                                   
-        .bmAttributes                  = 5,     
+        .bLength                       = 0x07,
+        .bDescriptorType               = USB_DESCTYPE_ENDPOINT,
+        .bEndpointAddress              = 0x82,
+        .bmAttributes                  = 5,
         .wMaxPacketSize                = HS_STREAM_FORMAT_INPUT_1_MAXPACKETSIZE,
         .bInterval                     = 0x01,
     },
@@ -2199,12 +2199,12 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
     /* Standard AS Interface Descriptor (4.9.1) (Alt) */
     .Audio_In_StreamInterface_Alt2 =
     {
-        .bLength                       = 0x09,                             
-        .bDescriptorType               = USB_DESCTYPE_INTERFACE,           
-        .bInterfaceNumber              = INTERFACE_NUMBER_AUDIO_INPUT,     
-        .bAlternateSetting             = 2,                             
-        .bNumEndpoints                 = 1,                                
-        .bInterfaceClass               = USB_CLASS_AUDIO,                  
+        .bLength                       = 0x09,
+        .bDescriptorType               = USB_DESCTYPE_INTERFACE,
+        .bInterfaceNumber              = INTERFACE_NUMBER_AUDIO_INPUT,
+        .bAlternateSetting             = 2,
+        .bNumEndpoints                 = 1,
+        .bInterfaceClass               = USB_CLASS_AUDIO,
         .bInterfaceSubClass            = UAC_INT_SUBCLASS_AUDIOSTREAMING,
         .bInterfaceProtocol            = UAC_INT_PROTOCOL_IP_VERSION_02_00,
         .iInterface                    = 5,     /* (String index) */
@@ -2213,25 +2213,25 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
     /* Class Specific AS Interface Descriptor */
     .Audio_In_ClassStreamInterface_2 =
     {
-        .bLength                       = 0x10,                                   
+        .bLength                       = 0x10,
         .bDescriptorType               = UAC_CS_DESCTYPE_INTERFACE,
-        .bDescriptorSubType            = UAC_CS_AS_INTERFACE_SUBTYPE_AS_GENERAL, 
-        .bTerminalLink                 = ID_OT_USB,  
-        .bmControls                    = 0x00,                                   
-        .bFormatType                   = 0x01,                                  
-        .bmFormats                     = UAC_FORMAT_TYPEI_PCM,                   
-        .bNrChannels                   = HS_STREAM_FORMAT_INPUT_2_CHAN_COUNT,    
-        .bmChannelConfig               = 0x00000000,                             
+        .bDescriptorSubType            = UAC_CS_AS_INTERFACE_SUBTYPE_AS_GENERAL,
+        .bTerminalLink                 = ID_OT_USB,
+        .bmControls                    = 0x00,
+        .bFormatType                   = 0x01,
+        .bmFormats                     = UAC_FORMAT_TYPEI_PCM,
+        .bNrChannels                   = HS_STREAM_FORMAT_INPUT_2_CHAN_COUNT,
+        .bmChannelConfig               = 0x00000000,
         .iChannelNames                 = offsetof(StringDescTable_t, inputChanStr_1)/sizeof(char *),
     },
 
     /* Type 1 Format Type Descriptor */
     .Audio_In_Format_2 =
     {
-        .bLength                       = 6,                               
-        .bDescriptorType               = UAC_CS_DESCTYPE_INTERFACE, 
+        .bLength                       = 6,
+        .bDescriptorType               = UAC_CS_DESCTYPE_INTERFACE,
         .bDescriptorSubtype            = UAC_CS_AS_INTERFACE_SUBTYPE_FORMAT_TYPE,
-        .bFormatType                   = UAC_FORMAT_TYPE_I,                   
+        .bFormatType                   = UAC_FORMAT_TYPE_I,
         .bSubslotSize                  = HS_STREAM_FORMAT_INPUT_1_SUBSLOT_BYTES,    /* TODO SUBSLOT_BYTES currently shared */
         .bBitResolution                = HS_STREAM_FORMAT_INPUT_1_RESOLUTION_BITS,  /* TODO RESOLUTION_BITS currently shared */
     },
@@ -2239,10 +2239,10 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
     /* Standard AS Isochronous Audio Data Endpoint Descriptor (4.10.1.1) */
     .Audio_In_Endpoint_2 =
     {
-        .bLength                       = 0x07,                                
-        .bDescriptorType               = USB_DESCTYPE_ENDPOINT,                  
-        .bEndpointAddress              = 0x82,                                   
-        .bmAttributes                  = 5,     
+        .bLength                       = 0x07,
+        .bDescriptorType               = USB_DESCTYPE_ENDPOINT,
+        .bEndpointAddress              = 0x82,
+        .bmAttributes                  = 5,
         .wMaxPacketSize                = HS_STREAM_FORMAT_INPUT_2_MAXPACKETSIZE,
         .bInterval                     = 0x01,
     },
@@ -2264,12 +2264,12 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
     /* Standard AS Interface Descriptor (4.9.1) (Alt) */
     .Audio_In_StreamInterface_Alt3 =
     {
-        .bLength                       = 0x09,                             
-        .bDescriptorType               = USB_DESCTYPE_INTERFACE,           
-        .bInterfaceNumber              = INTERFACE_NUMBER_AUDIO_INPUT,     
-        .bAlternateSetting             = 3,                             
-        .bNumEndpoints                 = 1,                                
-        .bInterfaceClass               = USB_CLASS_AUDIO,                  
+        .bLength                       = 0x09,
+        .bDescriptorType               = USB_DESCTYPE_INTERFACE,
+        .bInterfaceNumber              = INTERFACE_NUMBER_AUDIO_INPUT,
+        .bAlternateSetting             = 3,
+        .bNumEndpoints                 = 1,
+        .bInterfaceClass               = USB_CLASS_AUDIO,
         .bInterfaceSubClass            = UAC_INT_SUBCLASS_AUDIOSTREAMING,
         .bInterfaceProtocol            = UAC_INT_PROTOCOL_IP_VERSION_02_00,
         .iInterface                    = 5,     /* (String index) */
@@ -2278,25 +2278,25 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
     /* Class Specific AS Interface Descriptor */
     .Audio_In_ClassStreamInterface_3 =
     {
-        .bLength                       = 0x10,                                   
+        .bLength                       = 0x10,
         .bDescriptorType               = UAC_CS_DESCTYPE_INTERFACE,
-        .bDescriptorSubType            = UAC_CS_AS_INTERFACE_SUBTYPE_AS_GENERAL, 
-        .bTerminalLink                 = ID_OT_USB,  
-        .bmControls                    = 0x00,                                   
-        .bFormatType                   = 0x01,                                  
-        .bmFormats                     = UAC_FORMAT_TYPEI_PCM,                   
-        .bNrChannels                   = HS_STREAM_FORMAT_INPUT_3_CHAN_COUNT,    
-        .bmChannelConfig               = 0x00000000,                             
+        .bDescriptorSubType            = UAC_CS_AS_INTERFACE_SUBTYPE_AS_GENERAL,
+        .bTerminalLink                 = ID_OT_USB,
+        .bmControls                    = 0x00,
+        .bFormatType                   = 0x01,
+        .bmFormats                     = UAC_FORMAT_TYPEI_PCM,
+        .bNrChannels                   = HS_STREAM_FORMAT_INPUT_3_CHAN_COUNT,
+        .bmChannelConfig               = 0x00000000,
         .iChannelNames                 = offsetof(StringDescTable_t, inputChanStr_1)/sizeof(char *),
     },
 
     /* Type 1 Format Type Descriptor */
     .Audio_In_Format_3 =
     {
-        .bLength                       = 6,                               
-        .bDescriptorType               = UAC_CS_DESCTYPE_INTERFACE, 
+        .bLength                       = 6,
+        .bDescriptorType               = UAC_CS_DESCTYPE_INTERFACE,
         .bDescriptorSubtype            = UAC_CS_AS_INTERFACE_SUBTYPE_FORMAT_TYPE,
-        .bFormatType                   = UAC_FORMAT_TYPE_I,                   
+        .bFormatType                   = UAC_FORMAT_TYPE_I,
         .bSubslotSize                  = HS_STREAM_FORMAT_INPUT_1_SUBSLOT_BYTES,    /* TODO SUBSLOT_BYTES currently shared */
         .bBitResolution                = HS_STREAM_FORMAT_INPUT_1_RESOLUTION_BITS,  /* TODO RESOLUTION_BITS currently shared */
     },
@@ -2304,10 +2304,10 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
     /* Standard AS Isochronous Audio Data Endpoint Descriptor (4.10.1.1) */
     .Audio_In_Endpoint_3 =
     {
-        .bLength                       = 0x07,                                
-        .bDescriptorType               = USB_DESCTYPE_ENDPOINT,                  
-        .bEndpointAddress              = 0x82,                                   
-        .bmAttributes                  = 5,     
+        .bLength                       = 0x07,
+        .bDescriptorType               = USB_DESCTYPE_ENDPOINT,
+        .bEndpointAddress              = 0x82,
+        .bmAttributes                  = 5,
         .wMaxPacketSize                = HS_STREAM_FORMAT_INPUT_3_MAXPACKETSIZE,
         .bInterval                     = 0x01,
     },

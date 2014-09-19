@@ -14,9 +14,9 @@
  *  \param c_config An optional channel that will be passed on to the
  *                  CODEC configuration functions.
  */
-void audio(chanend c_in, 
-#if (defined(SPDIF_RX) || defined(ADAT_RX))    
-    chanend c_dig, 
+void audio(chanend c_in,
+#if (defined(SPDIF_RX) || defined(ADAT_RX))
+    chanend c_dig,
 #endif
     chanend ?c_config, chanend ?c_adc);
 

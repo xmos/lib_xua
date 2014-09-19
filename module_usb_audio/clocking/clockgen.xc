@@ -761,7 +761,7 @@ void clockGen (streaming chanend ?c_spdif_rx, chanend ?c_adat_rx, out port p, ch
                         /* SMUX2 mode - 2 samples from fifo and 4 zero samples */
                         g_digData[2] = adatSamples[adatRd + 0];
                         g_digData[3] = adatSamples[adatRd + 1];
-                        
+
                         g_digData[4] = 0;
                         g_digData[5] = 0;
                         g_digData[6] = 0;

@@ -117,7 +117,7 @@ const unsigned g_subSlot_Out_FS[OUTPUT_FORMAT_COUNT]    = {FS_STREAM_FORMAT_OUTP
 #endif
 };
 
-const unsigned g_subSlot_In_HS[INPUT_FORMAT_COUNT]      = {HS_STREAM_FORMAT_INPUT_1_SUBSLOT_BYTES, 
+const unsigned g_subSlot_In_HS[INPUT_FORMAT_COUNT]      = {HS_STREAM_FORMAT_INPUT_1_SUBSLOT_BYTES,
 #if(INPUT_FORMAT_COUNT > 1)
                                                             HS_STREAM_FORMAT_INPUT_2_SUBSLOT_BYTES,
 #endif
@@ -193,9 +193,9 @@ const unsigned g_dataFormat_In[INPUT_FORMAT_COUNT]      = {STREAM_FORMAT_INPUT_1
 
 /* Channel count */
 /* Note, currently only input changes.. */
-const unsigned g_chanCount_In_HS[INPUT_FORMAT_COUNT]       = {HS_STREAM_FORMAT_INPUT_1_CHAN_COUNT, 
+const unsigned g_chanCount_In_HS[INPUT_FORMAT_COUNT]       = {HS_STREAM_FORMAT_INPUT_1_CHAN_COUNT,
 #if(INPUT_FORMAT_COUNT > 1)
-                                                            HS_STREAM_FORMAT_INPUT_2_CHAN_COUNT, 
+                                                            HS_STREAM_FORMAT_INPUT_2_CHAN_COUNT,
 #endif
 #if(INPUT_FORMAT_COUNT > 2)
                                                             HS_STREAM_FORMAT_INPUT_3_CHAN_COUNT
