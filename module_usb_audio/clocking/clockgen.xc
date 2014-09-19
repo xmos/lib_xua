@@ -604,16 +604,28 @@ void clockGen (streaming chanend ?c_spdif_rx, chanend ?c_adat_rx, out port p, ch
                             /* only store left samples if not in overflow and stream is reasonably valid */
                             if (!adatOverflow && clockValid[CLOCK_ADAT_INDEX])
                             {
-                                if(smux)
+                                /* Unpick the SMUX.. */
+                                if(smux == 2)
+                                {
+                                    adatSamples[adatWr + 0] = adatFrame[0];
+                                    adatSamples[adatWr + 1] = adatFrame[4];
+                                    adatSamples[adatWr + 2] = adatFrame[1];
+                                    adatSamples[adatWr + 3] = adatFrame[5];
+                                    adatSamples[adatWr + 4] = adatFrame[2];
+                                    adatSamples[adatWr + 5] = adatFrame[6];
+                                    adatSamples[adatWr + 6] = adatFrame[3];
+                                    adatSamples[adatWr + 7] = adatFrame[7];
+                                }
+                                else if(smux)
                                 {
 
                                     adatSamples[adatWr + 0] = adatFrame[0];
-                                    adatSamples[adatWr + 4] = adatFrame[1];
                                     adatSamples[adatWr + 1] = adatFrame[2];
-                                    adatSamples[adatWr + 5] = adatFrame[3];
                                     adatSamples[adatWr + 2] = adatFrame[4];
-                                    adatSamples[adatWr + 6] = adatFrame[5];
                                     adatSamples[adatWr + 3] = adatFrame[6];
+                                    adatSamples[adatWr + 4] = adatFrame[1];
+                                    adatSamples[adatWr + 5] = adatFrame[3];
+                                    adatSamples[adatWr + 6] = adatFrame[5];
                                     adatSamples[adatWr + 7] = adatFrame[7];
                                 }
                                 else
@@ -741,10 +753,25 @@ void clockGen (streaming chanend ?c_spdif_rx, chanend ?c_adat_rx, out port p, ch
                 }
                 else
                 {
-                    /* TODO SMUX II mode */
                     /* read out samples from the ADAT buffer and send */
                     /* always return 8 samples */
-                    if (smux)
+                    /* SMUX II mode */
+                    if (smux == 2)
+                    {
+                        /* SMUX2 mode - 2 samples from fifo and 4 zero samples */
+                        g_digData[2] = adatSamples[adatRd + 0];
+                        g_digData[3] = adatSamples[adatRd + 1];
+                        
+                        g_digData[4] = 0;
+                        g_digData[5] = 0;
+                        g_digData[6] = 0;
+                        g_digData[7] = 0;
+                        g_digData[8] = 0;
+                        g_digData[9] = 0;
+                        adatRd = (adatRd + 2) & (MAX_ADAT_SAMPLES - 1);
+                        adatSamps -= 2;
+                    }
+                    else if(smux)
                     {
                         /* SMUX mode - 4 samples from fifo and 4 zero samples */
                         g_digData[2] = adatSamples[adatRd + 0];
