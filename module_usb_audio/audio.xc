@@ -465,30 +465,7 @@ chanend ?c_adc)
 #endif
         }
 
-#if defined(SPDIF_RX) || defined(ADAT_RX)
-        /* Sync with clockgen */
-        inuint(c_dig_rx);
-#endif
-#ifdef SPDIF_RX
-        asm("ldw %0, dp[g_digData]":"=r"(samplesIn[SPDIF_RX_INDEX + 0]));
-        asm("ldw %0, dp[g_digData+4]":"=r"(samplesIn[SPDIF_RX_INDEX + 1]));
 
-#endif
-#ifdef ADAT_RX
-        asm("ldw %0, dp[g_digData+8]":"=r"(samplesIn[ADAT_RX_INDEX + 0]));
-        asm("ldw %0, dp[g_digData+12]":"=r"(samplesIn[ADAT_RX_INDEX+ 1]));
-        asm("ldw %0, dp[g_digData+16]":"=r"(samplesIn[ADAT_RX_INDEX + 2]));
-        asm("ldw %0, dp[g_digData+20]":"=r"(samplesIn[ADAT_RX_INDEX + 3]));
-        asm("ldw %0, dp[g_digData+24]":"=r"(samplesIn[ADAT_RX_INDEX + 4]));
-        asm("ldw %0, dp[g_digData+28]":"=r"(samplesIn[ADAT_RX_INDEX + 5]));
-        asm("ldw %0, dp[g_digData+32]":"=r"(samplesIn[ADAT_RX_INDEX + 6]));
-        asm("ldw %0, dp[g_digData+36]":"=r"(samplesIn[ADAT_RX_INDEX + 7]));
-#endif
-
-#if defined(SPDIF_RX) || defined(ADAT_RX)
-        /* Request digital data (with prefill) */
-        outuint(c_dig_rx, 0);
-#endif
 
         tmp = 0;
 #if (DSD_CHANS_DAC != 0) && (NUM_USB_CHAN_OUT > 0)
@@ -633,7 +610,30 @@ chanend ?c_adc)
 #endif
             }
 #endif
+#if defined(SPDIF_RX) || defined(ADAT_RX)
+        /* Sync with clockgen */
+        inuint(c_dig_rx);
+#endif
+#ifdef SPDIF_RX
+        asm("ldw %0, dp[g_digData]":"=r"(samplesIn[SPDIF_RX_INDEX + 0]));
+        asm("ldw %0, dp[g_digData+4]":"=r"(samplesIn[SPDIF_RX_INDEX + 1]));
 
+#endif
+#ifdef ADAT_RX
+        asm("ldw %0, dp[g_digData+8]":"=r"(samplesIn[ADAT_RX_INDEX]));
+        asm("ldw %0, dp[g_digData+12]":"=r"(samplesIn[ADAT_RX_INDEX + 1]));
+        asm("ldw %0, dp[g_digData+16]":"=r"(samplesIn[ADAT_RX_INDEX + 2]));
+        asm("ldw %0, dp[g_digData+20]":"=r"(samplesIn[ADAT_RX_INDEX + 3]));
+        asm("ldw %0, dp[g_digData+24]":"=r"(samplesIn[ADAT_RX_INDEX + 4]));
+        asm("ldw %0, dp[g_digData+28]":"=r"(samplesIn[ADAT_RX_INDEX + 5]));
+        asm("ldw %0, dp[g_digData+32]":"=r"(samplesIn[ADAT_RX_INDEX + 6]));
+        asm("ldw %0, dp[g_digData+36]":"=r"(samplesIn[ADAT_RX_INDEX + 7]));
+#endif
+
+#if defined(SPDIF_RX) || defined(ADAT_RX)
+        /* Request digital data (with prefill) */
+        outuint(c_dig_rx, 0);
+#endif
 #if defined(SPDIF) && (NUM_USB_CHAN_OUT > 0)
             outuint(c_spd_out, samplesOut[SPDIF_TX_INDEX]);  /* Forward sample to S/PDIF Tx thread */
             sample = samplesOut[SPDIF_TX_INDEX + 1];
