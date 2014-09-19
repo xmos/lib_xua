@@ -997,7 +997,11 @@ chanend ?c_config, chanend ?c)
 #else
                    null,
 #endif
-                   divide, curSamFreq, c_dig_rx, c);
+                   divide, curSamFreq, 
+#if defined (ADAT_RX) || defined (SPDIF_RX)
+                   c_dig_rx, 
+#endif
+                   c);
 
                 if(command == SET_SAMPLE_FREQ)
                 {
