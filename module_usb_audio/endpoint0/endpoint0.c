@@ -369,7 +369,7 @@ void Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
 
                                         if(g_curUsbSpeed == XUD_SPEED_HS)
                                         {
-                                            outuint(c_audioControl, NUM_USB_CHAN_IN);                 /* Channel count */
+                                            outuint(c_audioControl, g_chanCount_In_HS[sp.wValue-1]);  /* Channel count */
                                             outuint(c_audioControl, g_subSlot_In_HS[sp.wValue-1]);    /* Subslot */
                                             outuint(c_audioControl, g_sampRes_In_HS[sp.wValue-1]);    /* Resolution */
                                         }
