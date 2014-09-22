@@ -8,6 +8,9 @@
 #endif
 #ifdef IAP
 #include "iap.h"
+#ifdef IAP_EA_NATIVE_TRANS
+#include "iap2_ea_nativetransport.h"
+#endif
 #endif
 #include "xc_ptr.h"
 #include "commands.h"
@@ -104,6 +107,12 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
             chanend c_iap_to_host_int,
 #endif
             chanend c_iap,
+#ifdef IAP_EA_NATIVE_TRANS
+            chanend c_iap_ea_native_out,
+            chanend c_iap_ea_native_in,
+            chanend c_iap_ea_native_ctrl,
+            chanend c_iap_ea_native_data,
+#endif
 #endif
 #if defined(SPDIF_RX) || defined(ADAT_RX)
             chanend ?c_ep_int,
@@ -132,6 +141,10 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
     XUD_ep ep_iap_to_host     = XUD_InitEp(c_iap_to_host);
 #ifdef IAP_INT_EP
     XUD_ep ep_iap_to_host_int = XUD_InitEp(c_iap_to_host_int);
+#endif
+#ifdef IAP_EA_NATIVE_TRANS
+    XUD_ep ep_iap_ea_native_out = XUD_InitEp(c_iap_ea_native_out);
+    XUD_ep ep_iap_ea_native_in = XUD_InitEp(c_iap_ea_native_in);
 #endif
 #endif
 #if defined(SPDIF_RX) || defined(ADAT_RX)
@@ -186,6 +199,18 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
     int iap_data_collected_from_device = 0;
     int iap_expected_data_length = 0;
     int iap_draining_chan = 0;
+
+#ifdef IAP_EA_NATIVE_TRANS
+    unsigned char iap_ea_native_control_flag;
+    unsigned char iap_ea_native_rx_buffer[IAP2_EA_NATIVE_TRANS_MAX_PACKET_SIZE];
+    unsigned char iap_ea_native_tx_buffer[IAP2_EA_NATIVE_TRANS_MAX_PACKET_SIZE];
+    unsigned iap_ea_native_rx_length = 0;
+    unsigned iap_ea_native_tx_length = 0;
+    unsigned iap_ea_native_interface_alt_setting = 0;
+    unsigned iap_ea_native_control_to_send = 0;
+    unsigned iap_ea_native_incoming = 0;
+
+#endif
 #endif
 
     /* Store EP's to globals so that decouple() can access them */
@@ -214,6 +239,10 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
 
 #ifdef IAP
     XUD_SetReady_Out(ep_iap_from_host, iap_from_host_buffer);
+
+#ifdef IAP_EA_NATIVE_TRANS
+    XUD_SetReady_Out(ep_iap_ea_native_out, iap_ea_native_rx_buffer);
+#endif
 #endif
 
 #ifdef HID_CONTROLS
@@ -561,6 +590,40 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
             /* Note, could get a reset notification here, but deal with it in the case above */
             break;
 #endif
+
+#ifdef IAP_EA_NATIVE_TRANS
+        /* iAP EA Native Transport OUT from host */
+        case XUD_GetData_Select(c_iap_ea_native_out, ep_iap_ea_native_out, iap_ea_native_rx_length, result):
+            if ((result == XUD_RES_OKAY) && iap_ea_native_rx_length > 0)
+            {
+                // Notify EA Protocol user code we have iOS app data from XUD
+                iAP2_EANativeTransport_writeToChan_start(c_iap_ea_native_data, EA_NATIVE_SEND_DATA);
+            }
+            break;
+
+        /* iAP EA Native Transport IN to host */
+        case XUD_SetData_Select(c_iap_ea_native_in, ep_iap_ea_native_in, result):
+            switch (result)
+            {
+                case XUD_RES_RST:
+                    XUD_ResetEndpoint(ep_iap_ea_native_in, null);
+                    // Notify user code of USB reset to allow any state to be cleared
+                    iAP2_EANativeTransport_writeToChan_start(c_iap_ea_native_data, EA_NATIVE_SEND_CONTROL);
+                    // Set up the control flag to send to EA Protocol user code when it responds
+                    iap_ea_native_control_flag = EA_NATIVE_RESET;
+                    iap_ea_native_control_to_send = 1;
+                    break;
+
+                case XUD_RES_OKAY: // EA Protocol user data successfully passed to XUD
+                    // Notify user code
+                    iAP2_EANativeTransport_writeToChan_start(c_iap_ea_native_data, EA_NATIVE_SEND_CONTROL);
+                    // Set up the control flag to send to EA Protocol user code when it responds
+                    iap_ea_native_control_flag = EA_NATIVE_DATA_SENT;
+                    iap_ea_native_control_to_send = 1;
+                    break;
+            }
+            break;
+#endif
 #endif
 
 #ifdef HID_CONTROLS
@@ -715,6 +778,67 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
                     }
                 }
                 break;
+
+# if IAP_EA_NATIVE_TRANS
+            /* Change of EA Native Transport interface setting */
+            case inuint_byref(c_iap_ea_native_ctrl, iap_ea_native_interface_alt_setting):
+                /* Handshake */
+                outct(c_iap_ea_native_ctrl, XS1_CT_END);
+
+                if (iap_ea_native_interface_alt_setting == 0) // EA Protocol session closed by Apple device
+                {
+                    // Notify user code of USB reset to allow any state to be cleared
+                    iAP2_EANativeTransport_writeToChan_start(c_iap_ea_native_data, EA_NATIVE_SEND_CONTROL);
+                    // Set up the control flag to send to EA Protocol user code when it responds
+                    iap_ea_native_control_flag = EA_NATIVE_DISCONNECTED;
+                    iap_ea_native_control_to_send = 1;
+                }
+                else if (iap_ea_native_interface_alt_setting == 1) // EA Protocol session opened by Apple device
+                {
+                    // Notify user code of USB reset to allow any state to be cleared
+                    iAP2_EANativeTransport_writeToChan_start(c_iap_ea_native_data, EA_NATIVE_SEND_CONTROL);
+                    // Set up the control flag to send to EA Protocol user code when it responds
+                    iap_ea_native_control_flag = EA_NATIVE_CONNECTED;
+                    iap_ea_native_control_to_send = 1;
+                }
+                break;
+
+            /* Receive data from the EA Protocol user core */
+            case c_iap_ea_native_data :> iap_ea_native_incoming:
+                // Check if this is a ready flag or unsolicited data
+                switch (iap_ea_native_incoming)
+                {
+                    case EA_NATIVE_RECEIVER_READY: // EA Protocol user core ready to receive data
+                        // Check if we are sending a control flag, or OUT data
+                        if (iap_ea_native_control_to_send)
+                        {
+                            unsigned char ea_control[] = {iap_ea_native_control_flag};
+                            iAP2_EANativeTransport_writeToChan_data(c_iap_ea_native_data,
+                                                                    ea_control,
+                                                                    1);
+                            iap_ea_native_control_to_send = 0;
+                        }
+                        else
+                        {
+                            iAP2_EANativeTransport_writeToChan_data(c_iap_ea_native_data,
+                                                                    iap_ea_native_rx_buffer,
+                                                                    iap_ea_native_rx_length);
+                            // Mark the OUT EP as ready again now we have sent all the data
+                            XUD_SetReady_Out(ep_iap_ea_native_out, iap_ea_native_rx_buffer);
+                        }
+                        break;
+
+                    case EA_NATIVE_SEND_DATA: // Unsolicited data from user core for IN ep
+                        iAP2_EANativeTransport_readFromChan_data(c_iap_ea_native_data,
+                                                                 iap_ea_native_tx_buffer,
+                                                                 iap_ea_native_tx_length);
+                        // Mark the IN EP as ready now we have all the data
+                        XUD_SetReady_In(ep_iap_ea_native_in, iap_ea_native_tx_buffer, iap_ea_native_tx_length);
+                        break;
+                }
+                break;
+#endif
+
 #endif
 
 

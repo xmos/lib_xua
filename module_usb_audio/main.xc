@@ -329,6 +329,12 @@ void usb_audio_core(chanend c_mix_out
                 c_xud_in[ENDPOINT_NUMBER_IN_IAP_INT], /* iAP Interrupt In */
 #endif
                 c_iap,
+#ifdef IAP_EA_NATIVE_TRANS
+                c_xud_out[ENDPOINT_NUMBER_OUT_IAP_EA_NATIVE_TRANS],
+                c_xud_in[ENDPOINT_NUMBER_IN_IAP_EA_NATIVE_TRANS],
+                c_EANativeTransport_ctrl,
+                c_ea_data,
+#endif
 #endif
 #if defined(SPDIF_RX) || defined(ADAT_RX)
                 /* Audio Interrupt - only used for interrupts on external clock change */
@@ -361,18 +367,6 @@ void usb_audio_core(chanend c_mix_out
 #endif
             );
         }
-
-#if defined(IAP_EA_NATIVE_TRANS)
-        /* EA Native Transport Endpoint manager */
-        /* TODO This core can be merged with buffer() */
-        {
-            thread_speed();
-            iAP2_EANativeTransport_EPManager(
-                c_xud_out[ENDPOINT_NUMBER_OUT_IAP_EA_NATIVE_TRANS],
-                c_xud_in[ENDPOINT_NUMBER_IN_IAP_EA_NATIVE_TRANS],
-                c_EANativeTransport_ctrl, c_ea_data);
-        }
-#endif
         //:
     }
 }
@@ -435,6 +429,7 @@ chanend ?c_clk_int
 #ifndef USER_MAIN_CORES
 #define USER_MAIN_CORES
 #endif
+//::
 
 /* Main for USB Audio Applications */
 int main()

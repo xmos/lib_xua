@@ -32,6 +32,12 @@ void buffer(chanend c_aud_out,
             chanend c_iap_to_host_int,
 #endif
             chanend c_iap,
+#ifdef IAP_EA_NATIVE_TRANS
+            chanend c_iap_ea_native_out,
+            chanend c_iap_ea_native_in,
+            chanend c_iap_ea_native_ctrl,
+            chanend c_iap_ea_native_data,
+#endif
 #endif
 #if defined(SPDIF_RX) || defined(ADAT_RX)
             chanend ?c_int,
