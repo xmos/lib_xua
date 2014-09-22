@@ -263,6 +263,26 @@
     #error ADAT_RX_INDEX not defined and ADAT_RX defined
     #define ADAT_RX_INDEX (0) /* Default define for doxygen */
 #endif
+
+#if (ADAT_RX_INDEX + 8 > NUM_USB_CHAN_IN)
+    #error Not enough channels for ADAT
+#endif
+#endif
+
+#ifdef ADAT_RX
+
+/* Setup input stream formats for ADAT */
+#if(MAX_FREQ > 96000)
+#define INPUT_FORMAT_COUNT 3
+#elif(MAX_FREQ > 48000)
+#define INPUT_FORMAT_COUNT 2
+#else
+#define INPUT_FORMAT_COUNT 1
+#endif
+
+#define HS_STREAM_FORMAT_INPUT_1_CHAN_COUNT NUM_USB_CHAN_IN
+#define HS_STREAM_FORMAT_INPUT_2_CHAN_COUNT (NUM_USB_CHAN_IN - 4)
+#define HS_STREAM_FORMAT_INPUT_3_CHAN_COUNT (NUM_USB_CHAN_IN - 6)
 #endif
 
 /**
@@ -386,7 +406,7 @@
  * @brief Device firmware version number in Binary Coded Decimal format: 0xJJMN where JJ: major, M: minor, N: sub-minor version number.
  */
 #ifndef BCD_DEVICE_M
-#define BCD_DEVICE_M             8
+#define BCD_DEVICE_M             9
 #endif
 
 /**
@@ -644,20 +664,14 @@
     #endif
 #endif
 
+/***** INPUT STREAMS FORMAT ******/
+
 /**
  * @brief Number of supported input stream formats.
- *
- * Currenly only 1 supported
- *
  * Default: 1
  */
 #ifndef INPUT_FORMAT_COUNT
     #define INPUT_FORMAT_COUNT 1
-#endif
-
-#if (INPUT_FORMAT_COUNT > 1)
-    /* Only 1 supported */
-    #error
 #endif
 
 /**
@@ -669,15 +683,58 @@
     #define STREAM_FORMAT_INPUT_1_RESOLUTION_BITS           24
 #endif
 
+#ifndef STREAM_FORMAT_INPUT_2_RESOLUTION_BITS
+    #define STREAM_FORMAT_INPUT_2_RESOLUTION_BITS           24
+#endif
+
+#ifndef STREAM_FORMAT_INPUT_3_RESOLUTION_BITS
+    #define STREAM_FORMAT_INPUT_3_RESOLUTION_BITS           24
+#endif
+
+
+
 /* Default resolutions for HS */
 #ifndef HS_STREAM_FORMAT_INPUT_1_RESOLUTION_BITS
     #define HS_STREAM_FORMAT_INPUT_1_RESOLUTION_BITS        STREAM_FORMAT_INPUT_1_RESOLUTION_BITS
 #endif
 
+#ifndef HS_STREAM_FORMAT_INPUT_2_RESOLUTION_BITS
+    #define HS_STREAM_FORMAT_INPUT_2_RESOLUTION_BITS        STREAM_FORMAT_INPUT_2_RESOLUTION_BITS
+#endif
+
+#ifndef HS_STREAM_FORMAT_INPUT_3_RESOLUTION_BITS
+    #define HS_STREAM_FORMAT_INPUT_3_RESOLUTION_BITS        STREAM_FORMAT_INPUT_3_RESOLUTION_BITS
+#endif
+
+
 /* Default resolutions for FS (same as HS) */
 #ifndef FS_STREAM_FORMAT_INPUT_1_RESOLUTION_BITS
     #define FS_STREAM_FORMAT_INPUT_1_RESOLUTION_BITS        STREAM_FORMAT_INPUT_1_RESOLUTION_BITS
 #endif
+
+#ifndef FS_STREAM_FORMAT_INPUT_2_RESOLUTION_BITS
+    #define FS_STREAM_FORMAT_INPUT_2_RESOLUTION_BITS        STREAM_FORMAT_INPUT_2_RESOLUTION_BITS
+#endif
+
+#ifndef FS_STREAM_FORMAT_INPUT_3_RESOLUTION_BITS
+    #define FS_STREAM_FORMAT_INPUT_3_RESOLUTION_BITS        STREAM_FORMAT_INPUT_3_RESOLUTION_BITS
+#endif
+
+
+/* Channel count defines for input streams */
+#ifndef HS_STREAM_FORMAT_INPUT_1_CHAN_COUNT
+    #define HS_STREAM_FORMAT_INPUT_1_CHAN_COUNT             NUM_USB_CHAN_IN
+#endif
+
+#ifndef HS_STREAM_FORMAT_INPUT_2_CHAN_COUNT
+    #define HS_STREAM_FORMAT_INPUT_2_CHAN_COUNT             NUM_USB_CHAN_IN
+#endif
+
+#ifndef HS_STREAM_FORMAT_INPUT_3_CHAN_COUNT
+    #define HS_STREAM_FORMAT_INPUT_3_CHAN_COUNT             NUM_USB_CHAN_IN
+#endif
+
+
 
 /**
  * @brief Sample sub-slot size (bytes) of input stream Alternate 1 when running in high-speed
@@ -696,6 +753,22 @@
     #endif
 #endif
 
+#ifndef HS_STREAM_FORMAT_INPUT_2_SUBSLOT_BYTES
+     #if (HS_STREAM_FORMAT_INPUT_2_RESOLUTION_BITS == 24)
+        #define HS_STREAM_FORMAT_INPUT_2_SUBSLOT_BYTES      4 /* 4 byte subslot is nicer for our 32 bit machine to unpack.. */
+    #else
+        #define HS_STREAM_FORMAT_INPUT_2_SUBSLOT_BYTES      (HS_STREAM_FORMAT_INPUT_2_RESOLUTION_BITS/8)
+    #endif
+#endif
+
+#ifndef HS_STREAM_FORMAT_INPUT_3_SUBSLOT_BYTES
+     #if (HS_STREAM_FORMAT_INPUT_3_RESOLUTION_BITS == 24)
+        #define HS_STREAM_FORMAT_INPUT_3_SUBSLOT_BYTES      4 /* 4 byte subslot is nicer for our 32 bit machine to unpack.. */
+    #else
+        #define HS_STREAM_FORMAT_INPUT_3_SUBSLOT_BYTES      (HS_STREAM_FORMAT_INPUT_3_RESOLUTION_BITS/8)
+    #endif
+#endif
+
 /**
  * @brief Sample sub-slot size (bytes) of input stream Alternate 1 when running in full-speed
  *
@@ -705,7 +778,15 @@
  * Default: STREAM_FORMAT_INPUT_1_RESOLUTION_BITS / 8
  */
 #ifndef FS_STREAM_FORMAT_INPUT_1_SUBSLOT_BYTES
-    #define FS_STREAM_FORMAT_INPUT_1_SUBSLOT_BYTES         (FS_STREAM_FORMAT_INPUT_1_RESOLUTION_BITS/8)
+    #define FS_STREAM_FORMAT_INPUT_1_SUBSLOT_BYTES         (FS_STREAM_FORMAT_INPUT_2_RESOLUTION_BITS/8)
+#endif
+
+#ifndef FS_STREAM_FORMAT_INPUT_2_SUBSLOT_BYTES
+    #define FS_STREAM_FORMAT_INPUT_2_SUBSLOT_BYTES         (FS_STREAM_FORMAT_INPUT_2_RESOLUTION_BITS/8)
+#endif
+
+#ifndef FS_STREAM_FORMAT_INPUT_3_SUBSLOT_BYTES
+    #define FS_STREAM_FORMAT_INPUT_3_SUBSLOT_BYTES         (FS_STREAM_FORMAT_INPUT_3_RESOLUTION_BITS/8)
 #endif
 
 /**
@@ -716,6 +797,18 @@
 #ifndef STREAM_FORMAT_INPUT_1_DATAFORMAT
     #define STREAM_FORMAT_INPUT_1_DATAFORMAT               UAC_FORMAT_TYPEI_PCM
 #endif
+
+#ifndef STREAM_FORMAT_INPUT_2_DATAFORMAT
+    #define STREAM_FORMAT_INPUT_2_DATAFORMAT               UAC_FORMAT_TYPEI_PCM
+#endif
+
+#ifndef STREAM_FORMAT_INPUT_3_DATAFORMAT
+    #define STREAM_FORMAT_INPUT_3_DATAFORMAT               UAC_FORMAT_TYPEI_PCM
+#endif
+
+
+/****** END INPUT STREAMS FORMAT *****/
+
 
 /**
  * @brief Enable/disable output volume control including all processing and descriptor support

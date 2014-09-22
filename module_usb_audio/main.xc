@@ -34,9 +34,13 @@
 
 #ifdef SPDIF_RX
 #include "SpdifReceive.h"
-#include "clocking.h"
 #endif
 
+#ifdef ADAT_RX
+#include "adatreceiver.h"
+#endif
+
+#include "clocking.h"
 
 /* Audio I/O - Port declarations */
 #if I2S_WIRES_DAC > 0
@@ -109,6 +113,7 @@ on tile[AUDIO_IO_TILE] : buffered in port:32 p_i2s_adc[I2S_WIRES_ADC] =
 #else
 #define CLKBLK_MIDI        XS1_CLKBLK_REF;
 #endif
+#define CLKBLK_ADAT_RX     XS1_CLKBLK_3
 #define CLKBLK_SPDIF_TX    XS1_CLKBLK_1
 #define CLKBLK_SPDIF_RX    XS1_CLKBLK_1
 #define CLKBLK_MCLK        XS1_CLKBLK_2
@@ -130,8 +135,16 @@ on tile[XUD_TILE] : in port p_for_mclk_count                = PORT_MCLK_COUNT;
 on tile[AUDIO_IO_TILE] : buffered out port:32 p_spdif_tx    = PORT_SPDIF_OUT;
 #endif
 
+#ifdef ADAT_RX
+on stdcore[XUD_TILE] : buffered in port:32 p_adat_rx        = PORT_ADAT_IN;
+#endif
+
 #ifdef SPDIF_RX
-on tile[XUD_TILE] : buffered in port:4 p_spdif_rx           = PORT_SPDIF_IN; /* K: coax, J: optical */
+on tile[XUD_TILE] : buffered in port:4 p_spdif_rx           = PORT_SPDIF_IN;
+#endif
+
+#if defined (SPDIF_RX) || defined (ADAT_RX)
+/* Reference to external clock multiplier */
 on tile[AUDIO_IO_TILE] : out port p_pll_clk                 = PORT_PLL_REF;
 #endif
 
@@ -157,6 +170,11 @@ on tile[AUDIO_IO_TILE] : clock    clk_mst_spd               = CLKBLK_SPDIF_TX;
 #ifdef SPDIF_RX
 on tile[XUD_TILE] : clock    clk_spd_rx                     = CLKBLK_SPDIF_RX;
 #endif
+
+#ifdef ADAT_RX
+on tile[XUD_TILE] : clock    clk_adat_rx                    = CLKBLK_ADAT_RX;
+#endif
+
 
 on tile[AUDIO_IO_TILE] : clock    clk_audio_mclk            = CLKBLK_MCLK;       /* Master clock */
 
@@ -355,7 +373,7 @@ void usb_audio_core(chanend c_mix_out
         /* Endpoint 0 Core */
         {
             thread_speed();
-            Endpoint0( c_xud_out[0], c_xud_in[0], c_aud_ctl, c_mix_ctl, null, c_EANativeTransport_ctrl);
+            Endpoint0( c_xud_out[0], c_xud_in[0], c_aud_ctl, c_mix_ctl, c_clk_ctl, c_EANativeTransport_ctrl);
         }
 
         /* Decoupling core */
@@ -377,6 +395,7 @@ chanend c_mix_ctl,
 #endif
 chanend ?c_aud_cfg,
 streaming chanend ?c_spdif_rx,
+chanend ?c_adat_rx,
 chanend ?c_clk_ctl,
 chanend ?c_clk_int
 )
@@ -404,17 +423,25 @@ chanend ?c_clk_int
         {
             thread_speed();
 #ifdef MIXER
-            audio(c_mix_out, c_dig_rx, c_aud_cfg, c_adc);
+            audio(c_mix_out,
+#if defined(SPDIF_RX) || defined(ADAT_RX)
+        c_dig_rx,
+#endif
+        c_aud_cfg, c_adc);
 #else
-            audio(c_aud_in, c_dig_rx, c_aud_cfg, c_adc);
+            audio(c_aud_in,
+#if defined(SPDIF_RX) || defined(ADAT_RX)
+            c_dig_rx,
+#endif
+            c_aud_cfg, c_adc);
 #endif
         }
 
-#ifdef SPDIF_RX
+#if defined(SPDIF_RX) || defined(ADAT_RX)
         {
             thread_speed();
 
-            clockGen(c_spdif_rx, null, p_pll_clk, c_dig_rx, c_clk_ctl, c_clk_int);
+            clockGen(c_spdif_rx, c_adat_rx, p_pll_clk, c_dig_rx, c_clk_ctl, c_clk_int);
 
         }
 #endif
@@ -462,12 +489,22 @@ int main()
 
 #ifdef SPDIF_RX
     streaming chan c_spdif_rx;
+#else
+#define c_spdif_rx null
+#endif
+
+#ifdef ADAT_RX
+    chan c_adat_rx;
+#else
+#define c_adat_rx null
+#endif
+
+#if (defined (SPDIF_RX) || defined (ADAT_RX))
     chan c_clk_ctl;
     chan c_clk_int;
 #else
 #define c_clk_int null
 #define c_clk_ctl null
-#define c_spdif_rx null
 #endif
 
     USER_MAIN_DECLARATIONS
@@ -494,7 +531,7 @@ int main()
 #ifdef MIXER
             , c_mix_ctl
 #endif
-            ,c_aud_cfg, c_spdif_rx, c_clk_ctl, c_clk_int
+            ,c_aud_cfg, c_spdif_rx, c_adat_rx, c_clk_ctl, c_clk_int
         );
 
 #if defined(MIDI) && defined(IAP) && (IAP_TILE == MIDI_TILE)
@@ -527,6 +564,20 @@ int main()
         {
             thread_speed();
             SpdifReceive(p_spdif_rx, c_spdif_rx, 1, clk_spd_rx);
+        }
+#endif
+
+#ifdef ADAT_RX
+        on stdcore[0] :
+        {
+            set_thread_fast_mode_on();
+            set_port_clock(p_adat_rx, clk_adat_rx);
+            start_clock(clk_adat_rx);
+            while (1)
+            {
+				adatReceiver48000(p_adat_rx, c_adat_rx);
+				adatReceiver44100(p_adat_rx, c_adat_rx);
+			}
         }
 #endif
         USER_MAIN_CORES

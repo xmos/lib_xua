@@ -40,7 +40,7 @@ extern unsigned char channelMapAud[NUM_USB_CHAN_OUT];
 extern unsigned char channelMapUsb[NUM_USB_CHAN_IN];
 
 /* Mixer input mapping */
-extern unsigned char mixSel[MIX_INPUTS];
+extern unsigned char mixSel[MAX_MIX_COUNT][MIX_INPUTS];
 #endif
 
 /* Global var for current frequency, set to default freq */
@@ -320,7 +320,26 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
                                         }
 
                                         setG_curSamFreqMultiplier(g_curSamFreq/(i_tmp/512));
-
+#ifdef ADAT_RX
+                                        /* Configure ADAT SMUX based on sample rate */
+                                        outuint(c_clk_ctl, SET_SMUX);
+                                        if(g_curSamFreq < 88200)
+                                        {
+                                            /* No SMUX */
+                                            outuint(c_clk_ctl, 0);
+                                        }
+                                        else if(g_curSamFreq < 176400)
+                                        {
+                                            /* SMUX */
+                                            outuint(c_clk_ctl, 1);
+                                        }
+                                        else
+                                        {
+                                            /* SMUX II */
+                                            outuint(c_clk_ctl, 2);
+                                        }
+                                        outct(c_clk_ctl, XS1_CT_END);
+#endif
                                         outuint(c_audioControl, SET_SAMPLE_FREQ);
                                         outuint(c_audioControl, g_curSamFreq);
 
@@ -687,23 +706,42 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
                             /* cn bounds check for safety..*/
                             if(cn < MIX_INPUTS)
                             {
-                                if(cs == CS_XU_MIXSEL)
+                                //if(cs == CS_XU_MIXSEL)
+                                /* cs now contains mix number */
+                                if(cs < (MAX_MIX_COUNT + 1))
                                 {
                                     /* Check for "off" - update local state */
                                     if(buffer[0] == 0xFF)
-                                        mixSel[cn] = (NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + MAX_MIX_COUNT);
-                                    else
-                                        mixSel[cn] = buffer[0];
-
-                                    /* Update all mix maps */
-                                    for (int i = 0; i < MAX_MIX_COUNT; i++)
                                     {
-                                        outuint(c_mix_ctl, SET_MIX_MAP);
-                                        outuint(c_mix_ctl, i);                  /* Mix bus */
-                                        outuint(c_mix_ctl, cn);                 /* Mixer input */
-                                        outuint(c_mix_ctl, (int) mixSel[cn]);   /* Source */
-                                        outct(c_mix_ctl, XS1_CT_END);
+                                        mixSel[cs][cn] = (NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + MAX_MIX_COUNT);
                                     }
+                                    else
+                                    {
+                                        mixSel[cs][cn] = buffer[0];
+                                    }
+
+                                    if(cs == 0)
+                                    {
+                                        /* Update all mix maps */
+                                        for (int i = 0; i < MAX_MIX_COUNT; i++)
+                                        {
+                                            outuint(c_mix_ctl, SET_MIX_MAP);
+                                            outuint(c_mix_ctl, i);                  /* Mix bus */
+                                            outuint(c_mix_ctl, cn);                 /* Mixer input */
+                                            outuint(c_mix_ctl, (int) mixSel[cn]);   /* Source */
+                                            outct(c_mix_ctl, XS1_CT_END);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        /* Update relevant mix map */
+                                        outuint(c_mix_ctl, SET_MIX_MAP);          /* Command */
+                                        outuint(c_mix_ctl, (cs-1));               /* Mix bus */
+                                        outuint(c_mix_ctl, cn);                   /* Mixer input */
+                                        outuint(c_mix_ctl, (int) mixSel[cs][cn]); /* Source */
+                                        outct(c_mix_ctl, XS1_CT_END);             /* Wait for handshake back */
+                                    }
+
                                     return XUD_DoSetRequestStatus(ep0_in);
                                 }
                             }
@@ -718,9 +756,10 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
                         if(cn < MIX_INPUTS)
                         {
                             /* Inspect control selector */
-                            if(cs == CS_XU_MIXSEL)
+                            /* TODO ideally have a return for cs = 0. I.e all mix maps */
+                            if((cs > 0) && (cs < (MAX_MIX_COUNT+1)))
                             {
-                                buffer[0] = mixSel[cn];
+                                buffer[0] = mixSel[cs-1][cn];
                                 return XUD_DoGetRequest(ep0_out, ep0_in, buffer, 1, 1 );
                             }
                         }

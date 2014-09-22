@@ -78,7 +78,7 @@ short mixer1Weights[18*8];
 unsigned char channelMap[NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + MAX_MIX_COUNT];
 unsigned char channelMapAud[NUM_USB_CHAN_OUT];
 unsigned char channelMapUsb[NUM_USB_CHAN_IN];
-unsigned char mixSel[MIX_INPUTS];
+unsigned char mixSel[MAX_MIX_COUNT][MIX_INPUTS];
 #endif
 
 int min(int x, int y);
@@ -97,6 +97,8 @@ unsigned g_curStreamAlt_In = 0;
 /* Global variable for current USB bus speed (i.e. FS/HS) */
 XUD_BusSpeed_t g_curUsbSpeed = 0;
 
+
+/* Subslot */
 const unsigned g_subSlot_Out_HS[OUTPUT_FORMAT_COUNT]    = {HS_STREAM_FORMAT_OUTPUT_1_SUBSLOT_BYTES,
 #if(OUTPUT_FORMAT_COUNT > 1)
                                                             HS_STREAM_FORMAT_OUTPUT_2_SUBSLOT_BYTES,
@@ -115,10 +117,25 @@ const unsigned g_subSlot_Out_FS[OUTPUT_FORMAT_COUNT]    = {FS_STREAM_FORMAT_OUTP
 #endif
 };
 
-const unsigned g_subSlot_In_HS[INPUT_FORMAT_COUNT]      = {HS_STREAM_FORMAT_INPUT_1_SUBSLOT_BYTES};
+const unsigned g_subSlot_In_HS[INPUT_FORMAT_COUNT]      = {HS_STREAM_FORMAT_INPUT_1_SUBSLOT_BYTES,
+#if(INPUT_FORMAT_COUNT > 1)
+                                                            HS_STREAM_FORMAT_INPUT_2_SUBSLOT_BYTES,
+#endif
+#if(INPUT_FORMAT_COUNT > 2)
+                                                            HS_STREAM_FORMAT_INPUT_3_SUBSLOT_BYTES
+#endif
+};
 
-const unsigned g_subSlot_In_FS[INPUT_FORMAT_COUNT]      = {FS_STREAM_FORMAT_INPUT_1_SUBSLOT_BYTES};
+const unsigned g_subSlot_In_FS[INPUT_FORMAT_COUNT]      = {FS_STREAM_FORMAT_INPUT_1_SUBSLOT_BYTES,
+#if(INPUT_FORMAT_COUNT > 1)
+                                                            FS_STREAM_FORMAT_INPUT_2_SUBSLOT_BYTES,
+#endif
+#if(INPUT_FORMAT_COUNT > 2)
+                                                            FS_STREAM_FORMAT_INPUT_3_SUBSLOT_BYTES
+#endif
+};
 
+/* Sample Resolution */
 const unsigned g_sampRes_Out_HS[OUTPUT_FORMAT_COUNT]    = {HS_STREAM_FORMAT_OUTPUT_1_RESOLUTION_BITS,
 #if(OUTPUT_FORMAT_COUNT > 1)
                                                             HS_STREAM_FORMAT_OUTPUT_2_RESOLUTION_BITS,
@@ -137,12 +154,26 @@ const unsigned g_sampRes_Out_FS[OUTPUT_FORMAT_COUNT]    = {FS_STREAM_FORMAT_OUTP
 #endif
 };
 
-const unsigned g_sampRes_In_HS[OUTPUT_FORMAT_COUNT]     = {HS_STREAM_FORMAT_INPUT_1_RESOLUTION_BITS};
+const unsigned g_sampRes_In_HS[INPUT_FORMAT_COUNT]     = {HS_STREAM_FORMAT_INPUT_1_RESOLUTION_BITS,
+#if(INPUT_FORMAT_COUNT > 1)
+                                                            HS_STREAM_FORMAT_OUTPUT_2_RESOLUTION_BITS,
+#endif
+#if(INPUT_FORMAT_COUNT > 2)
+                                                            HS_STREAM_FORMAT_OUTPUT_3_RESOLUTION_BITS
+#endif
+};
 
-const unsigned g_sampRes_In_FS[OUTPUT_FORMAT_COUNT]     = {FS_STREAM_FORMAT_INPUT_1_RESOLUTION_BITS};
+const unsigned g_sampRes_In_FS[INPUT_FORMAT_COUNT]     = {FS_STREAM_FORMAT_INPUT_1_RESOLUTION_BITS,
+#if(INPUT_FORMAT_COUNT > 1)
+                                                            FS_STREAM_FORMAT_INPUT_2_RESOLUTION_BITS,
+#endif
+#if(INPUT_FORMAT_COUNT > 2)
+                                                            FS_STREAM_FORMAT_INPUT_3_RESOLUTION_BITS
+#endif
+};
 
+/* Data Format (Note, this is shared over HS and FS */
 const unsigned g_dataFormat_Out[OUTPUT_FORMAT_COUNT]    = {STREAM_FORMAT_OUTPUT_1_DATAFORMAT,
-
 #if(OUTPUT_FORMAT_COUNT > 1)
                                                             STREAM_FORMAT_OUTPUT_2_DATAFORMAT,
 #endif
@@ -151,7 +182,25 @@ const unsigned g_dataFormat_Out[OUTPUT_FORMAT_COUNT]    = {STREAM_FORMAT_OUTPUT_
 #endif
 };
 
-const unsigned g_dataFormat_In[INPUT_FORMAT_COUNT] = {STREAM_FORMAT_INPUT_1_DATAFORMAT};
+const unsigned g_dataFormat_In[INPUT_FORMAT_COUNT]      = {STREAM_FORMAT_INPUT_1_DATAFORMAT,
+#if(INPUT_FORMAT_COUNT > 1)
+                                                            STREAM_FORMAT_INPUT_2_DATAFORMAT,
+#endif
+#if(INPUT_FORMAT_COUNT > 2)
+                                                            STREAM_FORMAT_INPUT_3_DATAFORMAT
+#endif
+};
+
+/* Channel count */
+/* Note, currently only input changes.. */
+const unsigned g_chanCount_In_HS[INPUT_FORMAT_COUNT]       = {HS_STREAM_FORMAT_INPUT_1_CHAN_COUNT,
+#if(INPUT_FORMAT_COUNT > 1)
+                                                            HS_STREAM_FORMAT_INPUT_2_CHAN_COUNT,
+#endif
+#if(INPUT_FORMAT_COUNT > 2)
+                                                            HS_STREAM_FORMAT_INPUT_3_CHAN_COUNT
+#endif
+};
 
 /* Endpoint 0 function.  Handles all requests to the device */
 void Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
@@ -221,9 +270,10 @@ void Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
 #endif
 
     /* Init mixer inputs */
+    for(int j = 0; j < MAX_MIX_COUNT; j++)
     for(int i = 0; i < MIX_INPUTS; i++)
     {
-        mixSel[i] = i;
+        mixSel[j][i] = i;
     }
 #endif
 
@@ -319,7 +369,7 @@ void Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
 
                                         if(g_curUsbSpeed == XUD_SPEED_HS)
                                         {
-                                            outuint(c_audioControl, NUM_USB_CHAN_IN);                 /* Channel count */
+                                            outuint(c_audioControl, g_chanCount_In_HS[sp.wValue-1]);  /* Channel count */
                                             outuint(c_audioControl, g_subSlot_In_HS[sp.wValue-1]);    /* Subslot */
                                             outuint(c_audioControl, g_sampRes_In_HS[sp.wValue-1]);    /* Resolution */
                                         }

@@ -144,7 +144,11 @@ static inline void doI2SClocks(unsigned divide)
 
 /* I2S delivery thread */
 #pragma unsafe arrays
-unsigned static deliver(chanend c_out, chanend ?c_spd_out, unsigned divide, unsigned curSamFreq, chanend ?c_dig_rx, chanend ?c_adc)
+unsigned static deliver(chanend c_out, chanend ?c_spd_out, unsigned divide, unsigned curSamFreq,
+#if(defined(SPDIF_RX) || defined(ADAT_RX))
+chanend c_dig_rx,
+#endif
+chanend ?c_adc)
 {
 #if (I2S_CHANS_ADC != 0) || defined(SPDIF)
 	unsigned sample;
@@ -461,30 +465,7 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out, unsigned divide, unsi
 #endif
         }
 
-#if defined(SPDIF_RX) || defined(ADAT_RX)
-        /* Sync with clockgen */
-        inuint(c_dig_rx);
-#endif
-#ifdef SPDIF_RX
-        asm("ldw %0, dp[g_digData]":"=r"(samplesIn[SPDIF_RX_INDEX + 0]));
-        asm("ldw %0, dp[g_digData+4]":"=r"(samplesIn[SPDIF_RX_INDEX + 1]));
 
-#endif
-#ifdef ADAT_RX
-        asm("ldw %0, dp[g_digData+8]":"=r"(samplesIn[ADAT_RX_INDEX + 0]));
-        asm("ldw %0, dp[g_digData+12]":"=r"(samplesIn[ADAT_RX_INDEX+ 1]));
-        asm("ldw %0, dp[g_digData+16]":"=r"(samplesIn[ADAT_RX_INDEX + 2]));
-        asm("ldw %0, dp[g_digData+20]":"=r"(samplesIn[ADAT_RX_INDEX + 3]));
-        asm("ldw %0, dp[g_digData+24]":"=r"(samplesIn[ADAT_RX_INDEX + 4]));
-        asm("ldw %0, dp[g_digData+28]":"=r"(samplesIn[ADAT_RX_INDEX + 5]));
-        asm("ldw %0, dp[g_digData+32]":"=r"(samplesIn[ADAT_RX_INDEX + 6]));
-        asm("ldw %0, dp[g_digData+36]":"=r"(samplesIn[ADAT_RX_INDEX + 7]));
-#endif
-
-#if defined(SPDIF_RX) || defined(ADAT_RX)
-        /* Request digital data (with prefill) */
-        outuint(c_dig_rx, 0);
-#endif
 
         tmp = 0;
 #if (DSD_CHANS_DAC != 0) && (NUM_USB_CHAN_OUT > 0)
@@ -629,7 +610,30 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out, unsigned divide, unsi
 #endif
             }
 #endif
+#if defined(SPDIF_RX) || defined(ADAT_RX)
+        /* Sync with clockgen */
+        inuint(c_dig_rx);
+#endif
+#ifdef SPDIF_RX
+        asm("ldw %0, dp[g_digData]":"=r"(samplesIn[SPDIF_RX_INDEX + 0]));
+        asm("ldw %0, dp[g_digData+4]":"=r"(samplesIn[SPDIF_RX_INDEX + 1]));
 
+#endif
+#ifdef ADAT_RX
+        asm("ldw %0, dp[g_digData+8]":"=r"(samplesIn[ADAT_RX_INDEX]));
+        asm("ldw %0, dp[g_digData+12]":"=r"(samplesIn[ADAT_RX_INDEX + 1]));
+        asm("ldw %0, dp[g_digData+16]":"=r"(samplesIn[ADAT_RX_INDEX + 2]));
+        asm("ldw %0, dp[g_digData+20]":"=r"(samplesIn[ADAT_RX_INDEX + 3]));
+        asm("ldw %0, dp[g_digData+24]":"=r"(samplesIn[ADAT_RX_INDEX + 4]));
+        asm("ldw %0, dp[g_digData+28]":"=r"(samplesIn[ADAT_RX_INDEX + 5]));
+        asm("ldw %0, dp[g_digData+32]":"=r"(samplesIn[ADAT_RX_INDEX + 6]));
+        asm("ldw %0, dp[g_digData+36]":"=r"(samplesIn[ADAT_RX_INDEX + 7]));
+#endif
+
+#if defined(SPDIF_RX) || defined(ADAT_RX)
+        /* Request digital data (with prefill) */
+        outuint(c_dig_rx, 0);
+#endif
 #if defined(SPDIF) && (NUM_USB_CHAN_OUT > 0)
             outuint(c_spd_out, samplesOut[SPDIF_TX_INDEX]);  /* Forward sample to S/PDIF Tx thread */
             sample = samplesOut[SPDIF_TX_INDEX + 1];
@@ -779,7 +783,11 @@ unsigned static dummy_deliver(chanend c_out)
 #define SAMPLES_PER_PRINT 1
 
 
-void audio(chanend c_mix_out, chanend ?c_dig_rx, chanend ?c_config, chanend ?c)
+void audio(chanend c_mix_out,
+#if (defined(ADAT_RX) || defined(SPDIF_RX))
+chanend c_dig_rx,
+#endif
+chanend ?c_config, chanend ?c)
 {
 #ifdef SPDIF
     chan c_spdif_out;
@@ -989,7 +997,11 @@ void audio(chanend c_mix_out, chanend ?c_dig_rx, chanend ?c_config, chanend ?c)
 #else
                    null,
 #endif
-                   divide, curSamFreq, c_dig_rx, c);
+                   divide, curSamFreq,
+#if defined (ADAT_RX) || defined (SPDIF_RX)
+                   c_dig_rx,
+#endif
+                   c);
 
                 if(command == SET_SAMPLE_FREQ)
                 {

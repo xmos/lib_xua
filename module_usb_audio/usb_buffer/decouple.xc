@@ -576,20 +576,23 @@ static inline void SetupZerosSendBuffer(XUD_ep aud_to_host_usb_ep, unsigned samp
     GetADCCounts(sampFreq, min, mid, max);
 
     // TODO, don't need to use speed.
-    if (usb_speed == XUD_SPEED_HS)
-    {
-        mid *= NUM_USB_CHAN_IN * slotSize;
-    }
-    else
-    {
-        mid *= NUM_USB_CHAN_IN_FS * slotSize;
-    }
+    //if (usb_speed == XUD_SPEED_HS)
+    //{
+      //  mid *= NUM_USB_CHAN_IN * slotSize;
+   // }
+    //else
+    //{
+       // mid *= NUM_USB_CHAN_IN_FS * slotSize;
+    //}
+
+    mid *= g_numUsbChan_In * slotSize;
 
     asm("stw %0, %1[0]"::"r"(mid),"r"(g_aud_to_host_zeros));
 
     /* Mark EP ready with the zero buffer. Note this will simply update the packet size
     * if it is already ready */
     GET_SHARED_GLOBAL(p, g_aud_to_host_buffer);
+
     XUD_SetReady_InPtr(aud_to_host_usb_ep, p+4, mid);
 }
 
@@ -962,7 +965,6 @@ void decouple(chanend c_mix_out
                     {
                         SET_SHARED_GLOBAL(g_aud_to_host_buffer, g_aud_to_host_zeros);
                     }
-
                 }
                 else
                 {
