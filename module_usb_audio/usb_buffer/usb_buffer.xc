@@ -623,6 +623,7 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
                     break;
             }
             break;
+            //::
 #endif
 #endif
 
