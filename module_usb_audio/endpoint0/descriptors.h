@@ -13,16 +13,7 @@
 #include "usb_std_descriptors.h"
 
 #ifdef IAP_EA_NATIVE_TRANS
-/*
- * NOTE, currently this will not build if IAP_EA_NATIVE_TRANS_PROTOCOL_NAME is not defined in iap_conf.h,
- * would be nice if a default string was used instead, and a warning issued.
- *
- * Could get a default define by including the following line, but iap2.h cannot currently be included from C
- */
-//#include "iap2.h"                   /* Defines iAP EA Native Transport protocol name */
-#ifdef __iap_conf_h_exists__
-#include "iap_conf.h"
-#endif
+#include "iap2.h"                   /* Defines iAP EA Native Transport protocol name */
 #endif
 
 #define APPEND_VENDOR_STR(x) VENDOR_STR" "#x
