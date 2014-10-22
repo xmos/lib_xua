@@ -1,6 +1,11 @@
 sc_usb_audio Change Log
 =======================
 
+6.10.0
+------
+    - ADDED:      iAP EA Native Transport endpoint management in buffer()
+    - CHANGE:     iAP EA Native Transport endpoint manager core no longer included in main()
+
 6.9.0
 -----
     - ADDED:      ADAT S-MUX II functionality (i.e. 2 channels at 192kHz) - Previously only S-MUX
