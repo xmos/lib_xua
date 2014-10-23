@@ -3,8 +3,8 @@ sc_usb_audio Change Log
 
 6.10.0
 ------
-    - ADDED:      iAP EA Native Transport endpoint management in buffer()
-    - CHANGE:     iAP EA Native Transport endpoint manager core no longer included in main()
+    - CHANGE:     Endpoint management for iAP EA Native Transport now merged into buffer() core.
+                  Previously was separate core (as added in 6.8.0). 
 
 6.9.0
 -----
@@ -42,6 +42,5 @@ sc_usb_audio Change Log
                   mixer (previously the device input data and the stream from host were swapped) 
     - CHANGE:     Level meter buffer naming now resemble functionality
 
-                  
 
 Please see changelog in sw_usb_audio for changes prior to 6.8.0 release.
