@@ -601,7 +601,9 @@ chanend ?c_adc)
 #pragma loop unroll
             for(int i = 1; i < I2S_CHANS_ADC; i += 2)
             {
-                p_i2s_adc[index++] :> sample;
+                // p_i2s_adc[index++] :> sample;
+                // Manual IN instruction since compiler generates an extra setc per IN (bug #15256)
+                asm("in %0, res[%1]" : "=r"(sample)  : "r"(p_i2s_adc[index++]));
 #if NUM_USB_CHAN_IN > 0
                 samplesIn[i] = bitrev(sample);
 
@@ -662,7 +664,9 @@ chanend ?c_adc)
 #pragma loop unroll
             for(int i = 1; i < I2S_CHANS_ADC; i += 2)
             {
-                p_i2s_adc[index++] :> sample;
+                // p_i2s_adc[index++] :> sample;
+                // Manual IN instruction since compiler generates an extra setc per IN (bug #15256)
+                asm("in %0, res[%1]" : "=r"(sample)  : "r"(p_i2s_adc[index++]));
 
 #if NUM_USB_CHAN_IN > 0
                 samplesInPrev[i] = bitrev(sample);
