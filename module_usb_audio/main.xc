@@ -66,7 +66,7 @@ on tile[AUDIO_IO_TILE] : buffered out port:32 p_i2s_dac[I2S_WIRES_DAC] =
                 PORT_I2S_DAC6,
 #endif
 #if I2S_WIRES_DAC > 7
-#error Not supported
+#error I2S_WIRES_DAC value is too large!
 #endif
 #if I2S_WIRES_DAC > 0
                 };
@@ -95,7 +95,7 @@ on tile[AUDIO_IO_TILE] : buffered in port:32 p_i2s_adc[I2S_WIRES_ADC] =
                 PORT_I2S_ADC6,
 #endif
 #if I2S_WIRES_ADC > 7
-#error Not supported
+#error I2S_WIRES_ADC value is too large!
 #endif
 #if I2S_WIRES_ADC > 0
                 };
