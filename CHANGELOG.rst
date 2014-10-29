@@ -5,7 +5,7 @@ sc_usb_audio Change Log
 ------
     - CHANGE:     Endpoint management for iAP EA Native Transport now merged into buffer() core.
                   Previously was separate core (as added in 6.8.0). 
-    - CHANGE:     Slight optimisation to I2S port code for inputs from ADC
+    - CHANGE:     Minor optimisation to I2S port code for inputs from ADC
 
 6.9.0
 -----
