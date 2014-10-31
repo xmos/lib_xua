@@ -603,7 +603,7 @@ chanend ?c_adc)
             {
                 // p_i2s_adc[index++] :> sample;
                 // Manual IN instruction since compiler generates an extra setc per IN (bug #15256)
-                asm("in %0, res[%1]" : "=r"(sample)  : "r"(p_i2s_adc[index++]));
+                asm volatile("in %0, res[%1]" : "=r"(sample)  : "r"(p_i2s_adc[index++]));
 #if NUM_USB_CHAN_IN > 0
                 samplesIn[i] = bitrev(sample);
 
@@ -666,7 +666,7 @@ chanend ?c_adc)
             {
                 // p_i2s_adc[index++] :> sample;
                 // Manual IN instruction since compiler generates an extra setc per IN (bug #15256)
-                asm("in %0, res[%1]" : "=r"(sample)  : "r"(p_i2s_adc[index++]));
+                asm volatile("in %0, res[%1]" : "=r"(sample)  : "r"(p_i2s_adc[index++]));
 
 #if NUM_USB_CHAN_IN > 0
                 samplesInPrev[i] = bitrev(sample);
@@ -679,7 +679,7 @@ chanend ?c_adc)
 
                 x = inuint(c_adc);
                 inct(c_adc);
-                asm("stw %0, dp[g_adcVal]"::"r"(x));
+                asm volatile("stw %0, dp[g_adcVal]"::"r"(x));
             }
 #endif
 #endif
