@@ -32,11 +32,19 @@ extern buffered out port:32 p_dsd_clk;
 
 unsigned g_adcVal = 0;
 
-//#pragma xta command "analyse path i2s_output_l i2s_output_r"
-//#pragma xta command "set required - 2000 ns"
 
-//#pragma xta command "analyse path i2s_output_r i2s_output_l"
-//#pragma xta command "set required - 2000 ns"
+#ifdef XTA_TIMING_AUDIO
+#pragma xta command "add exclusion received_command"
+#pragma xta command "analyse path i2s_output_l i2s_output_r"
+#pragma xta command "set required - 2000 ns"
+
+#pragma xta command "add exclusion received_command"
+#pragma xta command "add exclusion received_underflow"
+#pragma xta command "add exclusion divide_1"
+#pragma xta command "add exclusion deliver_return"
+#pragma xta command "analyse path i2s_output_r i2s_output_l"
+#pragma xta command "set required - 2000 ns"
+#endif
 
 /* I2S Data I/O*/
 #if (I2S_CHANS_DAC != 0)
@@ -233,6 +241,7 @@ chanend ?c_adc)
 #if NUM_USB_CHAN_OUT > 0
         if(underflow)
         {
+#pragma xta endpoint "received_underflow"
 #pragma loop unroll
             for(int i = 0; i < NUM_USB_CHAN_OUT; i++)
             {
@@ -306,6 +315,7 @@ chanend ?c_adc)
 #endif
         if(divide == 1)
         {
+#pragma xta endpoint "divide_1"
             p_lrclk <: 0 @ tmp;
             tmp += 100;
 
@@ -331,7 +341,12 @@ chanend ?c_adc)
         else
         {
             clearbuf(p_bclk);
-
+        //for(int i = 0; i < I2S_WIRES_ADC; i++)
+          //  {
+            //    clearbuf(p_i2s_adc[i]);
+             //   asm("setpt res[%0], %1"::"r"(p_i2s_adc[i]),"r"(32));
+            //}
+            //doI2SClocks(divide);
 #if (I2S_CHANS_DAC != 0)
             /* Prefill the ports so data is input in advance */
             for(int i = 0; i < I2S_WIRES_DAC; i++)
@@ -340,6 +355,7 @@ chanend ?c_adc)
             }
 #endif
             p_lrclk <: 0x7FFFFFFF;
+            
             doI2SClocks(divide);
 
         }
@@ -403,6 +419,7 @@ chanend ?c_adc)
             if(dsdMode == DSD_MODE_DOP)
                 dsdMode = DSD_MODE_OFF;
 #endif
+#pragma xta endpoint "received_command"
             return command;
 
         }
@@ -590,7 +607,9 @@ chanend ?c_adc)
             /* LR clock delayed by one clock, This is so MSB is output on the falling edge of BCLK
              * after the falling edge on which LRCLK was toggled. (see I2S spec) */
             /* Generate clocks LR Clock low - LEFT */
-            p_lrclk <: 0x80000000;
+            //p_lrclk <: 0x80000000;
+            p_lrclk <: 0x7FFFFFFF;
+        
             doI2SClocks(divide);
 #endif
 
@@ -608,7 +627,7 @@ chanend ?c_adc)
                 samplesIn[i] = bitrev(sample);
 
                 /* Store the previous left in left */
-                samplesIn[i-1] = samplesInPrev[i];
+                //samplesIn[i-1] = samplesInPrev[i];
 #endif
             }
 #endif
@@ -653,7 +672,8 @@ chanend ?c_adc)
 
 #ifndef CODEC_MASTER
             /* Clock out data (and LR clock) */
-            p_lrclk <: 0x7FFFFFFF;
+            //p_lrclk <: 0x7FFFFFFF;
+            p_lrclk <: 0x80000000;
             doI2SClocks(divide);
 #endif
 
@@ -662,14 +682,16 @@ chanend ?c_adc)
             /* Input previous L ADC sample */
             index = 0;
 #pragma loop unroll
-            for(int i = 1; i < I2S_CHANS_ADC; i += 2)
+            for(int i = 0; i < I2S_CHANS_ADC; i += 2)
             {
                 // p_i2s_adc[index++] :> sample;
                 // Manual IN instruction since compiler generates an extra setc per IN (bug #15256)
                 asm("in %0, res[%1]" : "=r"(sample)  : "r"(p_i2s_adc[index++]));
 
 #if NUM_USB_CHAN_IN > 0
-                samplesInPrev[i] = bitrev(sample);
+                //samplesInPrev[i] = bitrev(sample);
+                samplesIn[i] = bitrev(sample);
+                
 #endif
             }
 
@@ -731,6 +753,8 @@ chanend ?c_adc)
         }
 #endif
     }
+
+#pragma xta endpoint "deliver_return"
     return 0;
 }
 
