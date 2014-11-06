@@ -150,284 +150,13 @@ static inline void doI2SClocks(unsigned divide)
 }
 #endif
 
-/* I2S delivery thread */
-#pragma unsafe arrays
-unsigned static deliver(chanend c_out, chanend ?c_spd_out, unsigned divide, unsigned curSamFreq,
-#if(defined(SPDIF_RX) || defined(ADAT_RX))
-chanend c_dig_rx,
-#endif
-chanend ?c_adc)
+
+static inline unsigned DoSampleTransfer(chanend c_out, unsigned samplesOut[], unsigned samplesIn[], unsigned underflowWord)
 {
-#if (I2S_CHANS_ADC != 0) || defined(SPDIF)
-	unsigned sample;
-#endif
-    unsigned underflow = 0;
-#if NUM_USB_CHAN_OUT > 0
-    unsigned samplesOut[NUM_USB_CHAN_OUT];
-#endif
-#if NUM_USB_CHAN_IN > 0
-    unsigned samplesIn[NUM_USB_CHAN_IN];
-    unsigned samplesInPrev[NUM_USB_CHAN_IN];
-#endif
-    unsigned tmp;
-#if (I2S_CHANS_ADC != 0)
-    unsigned index;
-#endif
-#ifdef RAMP_CHECK
-    unsigned prev=0;
-    int started = 0;
-#endif
+    unsigned command;
+    unsigned underflow;
 
-#if (DSD_CHANS_DAC != 0)
-    unsigned dsdMarker = DSD_MARKER_2;    /* This alternates between DSD_MARKER_1 and DSD_MARKER_2 */
-    int dsdCount = 0;
-    int everyOther = 1;
-    unsigned dsdSample_l = 0x96960000;
-    unsigned dsdSample_r = 0x96960000;
-#endif
-    unsigned underflowWord = 0;
-
-#if NUM_USB_CHAN_IN > 0
-    for (int i=0;i<NUM_USB_CHAN_IN;i++)
-    {
-        samplesIn[i] = 0;
-        samplesInPrev[i] = 0;
-    }
-#endif
-
-#if(DSD_CHANS_DAC != 0)
-    if(dsdMode == DSD_MODE_DOP)
-        underflowWord = 0xFA969600;
-    else if(dsdMode == DSD_MODE_NATIVE)
-    {
-        underflowWord = 0x96969696;
-    }
-#endif
-
-    outuint(c_out, 0);
-
-    /* Check for sample freq change or new samples from mixer*/
-    if(testct(c_out))
-    {
-        unsigned command = inct(c_out);
-#ifndef CODEC_MASTER
-            // Set clocks low
-            p_lrclk <: 0;
-            p_bclk <: 0;
-#if(DSD_CHANS_DAC != 0)
-            /* DSD Clock might not be shared with lrclk or bclk... */
-            p_dsd_clk <: 0;
-#endif
-#endif
-#if (DSD_CHANS_DAC > 0)
-        if(dsdMode == DSD_MODE_DOP)
-            dsdMode = DSD_MODE_OFF;
-#endif
-        return command;
-    }
-    else
-    {
-        underflow = inuint(c_out);
-#ifndef MIXER // Interfaces straight to decouple()
-
-#if NUM_USB_CHAN_IN > 0
-#pragma loop unroll
-        for(int i = 0; i < NUM_USB_CHAN_IN; i++)
-        {
-            outuint(c_out, samplesIn[i]);
-        }
-#endif
-
-#if NUM_USB_CHAN_OUT > 0
-        if(underflow)
-        {
-#pragma xta endpoint "received_underflow"
-#pragma loop unroll
-            for(int i = 0; i < NUM_USB_CHAN_OUT; i++)
-            {
-                samplesOut[i] = underflowWord;
-            }
-        }
-        else
-        {
-#pragma loop unroll
-            for(int i = 0; i < NUM_USB_CHAN_OUT; i++)
-            {
-                samplesOut[i] = inuint(c_out);
-            }
-        }
-#endif
-#else /* ifndef MIXER */
-
-#if NUM_USB_CHAN_OUT > 0
-        if(underflow)
-        {
-            #pragma loop unroll
-            for(int i = 0; i < NUM_USB_CHAN_OUT; i++)
-            {
-                samplesOut[i] = underflowWord;
-            }
-        }
-        else
-        {
-#pragma loop unroll
-        for(int i = 0; i < NUM_USB_CHAN_OUT; i++)
-        {
-            int tmp = inuint(c_out);
-            samplesOut[i] = tmp;
-        }
-        }
-#endif
-
-#if NUM_USB_CHAN_IN > 0
-#pragma loop unroll
-        for(int i = 0; i < NUM_USB_CHAN_IN; i++)
-        {
-            outuint(c_out, samplesIn[i]);
-        }
-#endif
-#endif
-    }
-
-#ifndef CODEC_MASTER
-#if (DSD_CHANS_DAC > 0)
-    if(dsdMode == DSD_MODE_OFF)
-    {
-#endif
-        /* b_clk must start high */
-        p_bclk <: 0x80000000;
-        sync(p_bclk);
-        /* Clear I2S port buffers */
-        clearbuf(p_lrclk);
-
-#if (I2S_CHANS_DAC != 0)
-        for(int i = 0; i < I2S_WIRES_DAC; i++)
-        {
-            clearbuf(p_i2s_dac[i]);
-        }
-#endif
-
-#if (I2S_CHANS_ADC != 0)
-        for(int i = 0; i < I2S_WIRES_ADC; i++)
-        {
-            clearbuf(p_i2s_adc[i]);
-        }
-#endif
-        if(divide == 1)
-        {
-#pragma xta endpoint "divide_1"
-            p_lrclk <: 0 @ tmp;
-            tmp += 100;
-
-            /* Since BCLK is free-running, setup outputs/inputs at a known point in the future */
-#if (I2S_CHANS_DAC != 0)
-#pragma loop unroll
-            for(int i = 0; i < I2S_WIRES_DAC; i++)
-            {
-                p_i2s_dac[i] @ tmp <: 0;
-            }
-#endif
-
-            p_lrclk @ tmp <: 0x7FFFFFFF;
-
-
-#if (I2S_CHANS_ADC != 0)
-            for(int i = 0; i < I2S_WIRES_ADC; i++)
-            {
-                asm("setpt res[%0], %1"::"r"(p_i2s_adc[i]),"r"(tmp-1));
-            }
-#endif
-        }
-        else
-        {
-
-            clearbuf(p_bclk);
-               // asm("setpt res[%0], %1"::"r"(p_i2s_adc[0]),"r"(64));
-#if 1
-#if (I2S_CHANS_DAC != 0)
-            /* Prefill the ports so data is input in advance */
-            for(int i = 0; i < I2S_WIRES_DAC; i++)
-            {
-                p_i2s_dac[i] <: 0;
-            }
-#endif
-            p_lrclk <: 0xFFFFFFFF;
-            doI2SClocks(divide);
-
-            for(int i = 0; i < I2S_WIRES_DAC; i++)
-            {
-                p_i2s_dac[i] <: 0;
-            }
-            p_lrclk <: 0x7FFFFFFF;
-            doI2SClocks(divide);
-            
-#else
-
-
-    for (int i = 0; i < I2S_WIRES_DAC; i++)
-    {
-        p_i2s_dac[i] @ 64 <: 0;
-    }
-
-    for (int i = 0; i < I2S_WIRES_ADC; i++)
-    {
-        asm("setpt res[%0], %1" :: "r"(p_i2s_adc[i]), "r"(63));
-    }
-
-    p_lrclk @ 31 <: 0;
-
-    // clocks for previous outputs / inputs
-            doI2SClocks(divide);
-    p_lrclk <: 0;
-            doI2SClocks(divide);
-    p_lrclk <: 0;
-            doI2SClocks(divide);
-            
-
-#endif
-        }
-#if (DSD_CHANS_DAC > 0)
-    } /* if (!dsdMode) */
-    else
-    {
-        /* p_dsd_clk must start high */
-        p_dsd_clk <: 0x80000000;
-    }
-#endif
-#else /* ifndef CODEC_MASTER */
-
-    /* Wait for LRCLK edge */
-    p_lrclk when pinseq(0) :> void;
-    p_lrclk when pinseq(1) :> void;
-    p_lrclk when pinseq(0) :> void;
-    p_lrclk when pinseq(1) :> void;
-    p_lrclk when pinseq(0) :> void @ tmp;
-    tmp+=97;
-#if (I2S_CHANS_DAC != 0)
-#pragma loop unroll
-    for(int i = 0; i < I2S_WIRES_DAC; i++)
-    {
-        p_i2s_dac[i] @ tmp <: 0;
-    }
-#endif
-
-#if (I2S_CHANS_ADC != 0)
-#pragma loop unroll
-    for(int i = 0; i < I2S_WIRES_ADC; i++)
-    {
-        asm("setpt res[%0], %1"::"r"(p_i2s_adc[i]),"r"(tmp+31));
-    }
-#endif
-
-    /* TODO In master mode, the i/o loop assumes L/RCLK = 32bit clocks.  We should check this every interation
-     * and resync if we got a bclk glitch */
-
-#endif
-
-    /* Main Audio I/O loop */
-    while (1)
-    {
-        outuint(c_out, 0);
+     outuint(c_out, 0);
 
         /* Check for sample freq change (or other command) or new samples from mixer*/
         if(testct(c_out))
@@ -509,9 +238,189 @@ chanend ?c_adc)
 #endif
         }
 
+        return 0;
+
+}
 
 
-        tmp = 0;
+
+/* I2S delivery thread */
+#pragma unsafe arrays
+unsigned static deliver(chanend c_out, chanend ?c_spd_out, unsigned divide, unsigned curSamFreq,
+#if(defined(SPDIF_RX) || defined(ADAT_RX))
+chanend c_dig_rx,
+#endif
+chanend ?c_adc)
+{
+#if (I2S_CHANS_ADC != 0) || defined(SPDIF)
+	unsigned sample;
+#endif
+    unsigned underflow = 0;
+#if NUM_USB_CHAN_OUT > 0
+    unsigned samplesOut[NUM_USB_CHAN_OUT];
+#endif
+#if NUM_USB_CHAN_IN > 0
+    unsigned samplesIn[NUM_USB_CHAN_IN];
+    unsigned samplesInPrev[NUM_USB_CHAN_IN];
+#endif
+    unsigned tmp;
+#if (I2S_CHANS_ADC != 0)
+    unsigned index;
+#endif
+#ifdef RAMP_CHECK
+    unsigned prev=0;
+    int started = 0;
+#endif
+
+#if (DSD_CHANS_DAC != 0)
+    unsigned dsdMarker = DSD_MARKER_2;    /* This alternates between DSD_MARKER_1 and DSD_MARKER_2 */
+    int dsdCount = 0;
+    int everyOther = 1;
+    unsigned dsdSample_l = 0x96960000;
+    unsigned dsdSample_r = 0x96960000;
+#endif
+    unsigned underflowWord = 0;
+
+#if NUM_USB_CHAN_IN > 0
+    for (int i=0;i<NUM_USB_CHAN_IN;i++)
+    {
+        samplesIn[i] = 0;
+        samplesInPrev[i] = 0;
+    }
+#endif
+
+#if(DSD_CHANS_DAC != 0)
+    if(dsdMode == DSD_MODE_DOP)
+        underflowWord = 0xFA969600;
+    else if(dsdMode == DSD_MODE_NATIVE)
+    {
+        underflowWord = 0x96969696;
+    }
+#endif
+
+    unsigned command = DoSampleTransfer(c_out, samplesOut, samplesIn, underflowWord);       
+
+    if(command)
+    {
+        return command;
+    }
+
+#ifndef CODEC_MASTER
+#if (DSD_CHANS_DAC > 0)
+    if(dsdMode == DSD_MODE_OFF)
+    {
+#endif
+        /* b_clk must start high */
+        p_bclk <: 0x80000000;
+        sync(p_bclk);
+        /* Clear I2S port buffers */
+        clearbuf(p_lrclk);
+
+#if (I2S_CHANS_DAC != 0)
+        for(int i = 0; i < I2S_WIRES_DAC; i++)
+        {
+            clearbuf(p_i2s_dac[i]);
+        }
+#endif
+
+#if (I2S_CHANS_ADC != 0)
+        for(int i = 0; i < I2S_WIRES_ADC; i++)
+        {
+            clearbuf(p_i2s_adc[i]);
+        }
+#endif
+        if(divide == 1)
+        {
+#pragma xta endpoint "divide_1"
+            p_lrclk <: 0 @ tmp;
+            tmp += 100;
+
+            /* Since BCLK is free-running, setup outputs/inputs at a known point in the future */
+#if (I2S_CHANS_DAC != 0)
+#pragma loop unroll
+            for(int i = 0; i < I2S_WIRES_DAC; i++)
+            {
+                p_i2s_dac[i] @ tmp <: 0;
+            }
+#endif
+
+            p_lrclk @ tmp <: 0x7FFFFFFF;
+
+
+#if (I2S_CHANS_ADC != 0)
+            for(int i = 0; i < I2S_WIRES_ADC; i++)
+            {
+                asm("setpt res[%0], %1"::"r"(p_i2s_adc[i]),"r"(tmp-1));
+            }
+#endif
+        }
+        else
+        {
+            /* Initialisation to get DAC buffered i2s ports inline with ADC ports */
+#if (I2S_CHANS_DAC != 0)
+            for(int i = 0; i < I2S_WIRES_DAC; i++)
+            {
+                p_i2s_dac[i] <: 0;
+            }
+#endif
+            p_lrclk <: 0xFFFFFFFF;
+            doI2SClocks(divide);
+
+#if (I2S_CHANS_DAC != 0)
+            for(int i = 0; i < I2S_WIRES_DAC; i++)
+            {
+                p_i2s_dac[i] <: 0;
+            }
+#endif
+            p_lrclk <: 0x7FFFFFFF;
+            doI2SClocks(divide);
+        }
+#if (DSD_CHANS_DAC > 0)
+    } /* if (!dsdMode) */
+    else
+    {
+        /* p_dsd_clk must start high */
+        p_dsd_clk <: 0x80000000;
+    }
+#endif
+#else /* ifndef CODEC_MASTER */
+
+    /* Wait for LRCLK edge */
+    p_lrclk when pinseq(0) :> void;
+    p_lrclk when pinseq(1) :> void;
+    p_lrclk when pinseq(0) :> void;
+    p_lrclk when pinseq(1) :> void;
+    p_lrclk when pinseq(0) :> void @ tmp;
+    tmp+=97;
+#if (I2S_CHANS_DAC != 0)
+#pragma loop unroll
+    for(int i = 0; i < I2S_WIRES_DAC; i++)
+    {
+        p_i2s_dac[i] @ tmp <: 0;
+    }
+#endif
+
+#if (I2S_CHANS_ADC != 0)
+#pragma loop unroll
+    for(int i = 0; i < I2S_WIRES_ADC; i++)
+    {
+        asm("setpt res[%0], %1"::"r"(p_i2s_adc[i]),"r"(tmp+31));
+    }
+#endif
+
+    /* TODO In master mode, the i/o loop assumes L/RCLK = 32bit clocks.  We should check this every interation
+     * and resync if we got a bclk glitch */
+
+#endif
+
+    /* Main Audio I/O loop */
+    while (1)
+    {
+        unsigned command = DoSampleTransfer(c_out, samplesOut, samplesIn, underflowWord);       
+
+        if(command)
+            return command;
+
 #if (DSD_CHANS_DAC != 0) && (NUM_USB_CHAN_OUT > 0)
         if(dsdMode == DSD_MODE_NATIVE)
         {
@@ -621,7 +530,7 @@ chanend ?c_adc)
         {
 
 #if (I2S_CHANS_ADC != 0)
-            /* Input prevous R sample into R in buffer */
+            /* Input previous L sample into L in buffer */
             index = 0;
 #pragma loop unroll
             for(int i = 0; i < I2S_CHANS_ADC; i += 2)
@@ -631,9 +540,6 @@ chanend ?c_adc)
                 asm("in %0, res[%1]" : "=r"(sample)  : "r"(p_i2s_adc[index++]));
 #if NUM_USB_CHAN_IN > 0
                 samplesIn[i] = bitrev(sample);
-
-                /* Store the previous left in left */
-                //samplesIn[i-1] = samplesInPrev[i];
 #endif
             }
 #endif
@@ -643,23 +549,21 @@ chanend ?c_adc)
              * after the falling edge on which LRCLK was toggled. (see I2S spec) */
             /* Generate clocks LR Clock low - LEFT */
             p_lrclk <: 0x80000000;
-           // p_lrclk <: 0x7FFFFFFF;
-        
 #endif
 
 #pragma xta endpoint "i2s_output_l"
 
 #if (I2S_CHANS_DAC != 0) && (NUM_USB_CHAN_OUT != 0)
-            tmp = 0;
+            index = 0;
 #pragma loop unroll
             for(int i = 0; i < I2S_CHANS_DAC; i+=2)
             {
-                p_i2s_dac[tmp++] <: bitrev(samplesOut[i]);            /* Output RIGHT sample to DAC */
+                p_i2s_dac[index++] <: bitrev(samplesOut[i]);            /* Output Left sample to DAC */
             }
 #endif
+
+            /* Clock out the LR Clock, the DAC data and Clock in the next sample into ADC */
             doI2SClocks(divide);
-
-
 
 #if defined(SPDIF_RX) || defined(ADAT_RX)
         /* Sync with clockgen */
@@ -692,7 +596,7 @@ chanend ?c_adc)
 #endif
 
 #if (I2S_CHANS_ADC != 0)
-            /* Input previous L ADC sample */
+            /* Input previous right ADC sample */
             index = 0;
 #pragma loop unroll
             for(int i = 1; i < I2S_CHANS_ADC; i += 2)
@@ -702,9 +606,7 @@ chanend ?c_adc)
                 asm("in %0, res[%1]" : "=r"(sample)  : "r"(p_i2s_adc[index++]));
 
 #if NUM_USB_CHAN_IN > 0
-                //samplesInPrev[i] = bitrev(sample);
                 samplesIn[i] = bitrev(sample);
-                
 #endif
             }
 
@@ -720,19 +622,16 @@ chanend ?c_adc)
 #endif
 
 #ifndef CODEC_MASTER
-            /* Clock out data (and LR clock) */
             p_lrclk <: 0x7FFFFFFF;
-            //p_lrclk <: 0x80000000;
 #endif
 
-
-            tmp = 0;
+            index = 0;
 #pragma xta endpoint "i2s_output_r"
 #if (I2S_CHANS_DAC != 0) && (NUM_USB_CHAN_OUT != 0)
 #pragma loop unroll
             for(int i = 1; i < I2S_CHANS_DAC; i+=2)
             {
-                p_i2s_dac[tmp++] <: bitrev(samplesOut[i]);            /* Output LEFT sample to DAC */
+                p_i2s_dac[index++] <: bitrev(samplesOut[i]);            /* Output Right sample to DAC */
             }
 #endif
             doI2SClocks(divide);
