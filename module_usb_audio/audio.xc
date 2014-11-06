@@ -340,13 +340,10 @@ chanend ?c_adc)
         }
         else
         {
+
             clearbuf(p_bclk);
-        //for(int i = 0; i < I2S_WIRES_ADC; i++)
-          //  {
-            //    clearbuf(p_i2s_adc[i]);
-             //   asm("setpt res[%0], %1"::"r"(p_i2s_adc[i]),"r"(32));
-            //}
-            //doI2SClocks(divide);
+               // asm("setpt res[%0], %1"::"r"(p_i2s_adc[0]),"r"(64));
+#if 1
 #if (I2S_CHANS_DAC != 0)
             /* Prefill the ports so data is input in advance */
             for(int i = 0; i < I2S_WIRES_DAC; i++)
@@ -354,10 +351,40 @@ chanend ?c_adc)
                 p_i2s_dac[i] <: 0;
             }
 #endif
-            p_lrclk <: 0x7FFFFFFF;
-            
+            p_lrclk <: 0xFFFFFFFF;
             doI2SClocks(divide);
 
+            for(int i = 0; i < I2S_WIRES_DAC; i++)
+            {
+                p_i2s_dac[i] <: 0;
+            }
+            p_lrclk <: 0x7FFFFFFF;
+            doI2SClocks(divide);
+            
+#else
+
+
+    for (int i = 0; i < I2S_WIRES_DAC; i++)
+    {
+        p_i2s_dac[i] @ 64 <: 0;
+    }
+
+    for (int i = 0; i < I2S_WIRES_ADC; i++)
+    {
+        asm("setpt res[%0], %1" :: "r"(p_i2s_adc[i]), "r"(63));
+    }
+
+    p_lrclk @ 31 <: 0;
+
+    // clocks for previous outputs / inputs
+            doI2SClocks(divide);
+    p_lrclk <: 0;
+            doI2SClocks(divide);
+    p_lrclk <: 0;
+            doI2SClocks(divide);
+            
+
+#endif
         }
 #if (DSD_CHANS_DAC > 0)
     } /* if (!dsdMode) */
@@ -593,32 +620,11 @@ chanend ?c_adc)
 #endif
         {
 
-#pragma xta endpoint "i2s_output_l"
-
-#if (I2S_CHANS_DAC != 0) && (NUM_USB_CHAN_OUT != 0)
-#pragma loop unroll
-            for(int i = 0; i < I2S_CHANS_DAC; i+=2)
-            {
-                p_i2s_dac[tmp++] <: bitrev(samplesOut[i]);            /* Output LEFT sample to DAC */
-            }
-#endif
-
-#ifndef CODEC_MASTER
-            /* LR clock delayed by one clock, This is so MSB is output on the falling edge of BCLK
-             * after the falling edge on which LRCLK was toggled. (see I2S spec) */
-            /* Generate clocks LR Clock low - LEFT */
-            //p_lrclk <: 0x80000000;
-            p_lrclk <: 0x7FFFFFFF;
-        
-            doI2SClocks(divide);
-#endif
-
-
 #if (I2S_CHANS_ADC != 0)
             /* Input prevous R sample into R in buffer */
             index = 0;
 #pragma loop unroll
-            for(int i = 1; i < I2S_CHANS_ADC; i += 2)
+            for(int i = 0; i < I2S_CHANS_ADC; i += 2)
             {
                 // p_i2s_adc[index++] :> sample;
                 // Manual IN instruction since compiler generates an extra setc per IN (bug #15256)
@@ -631,6 +637,30 @@ chanend ?c_adc)
 #endif
             }
 #endif
+
+#ifndef CODEC_MASTER
+            /* LR clock delayed by one clock, This is so MSB is output on the falling edge of BCLK
+             * after the falling edge on which LRCLK was toggled. (see I2S spec) */
+            /* Generate clocks LR Clock low - LEFT */
+            p_lrclk <: 0x80000000;
+           // p_lrclk <: 0x7FFFFFFF;
+        
+#endif
+
+#pragma xta endpoint "i2s_output_l"
+
+#if (I2S_CHANS_DAC != 0) && (NUM_USB_CHAN_OUT != 0)
+            tmp = 0;
+#pragma loop unroll
+            for(int i = 0; i < I2S_CHANS_DAC; i+=2)
+            {
+                p_i2s_dac[tmp++] <: bitrev(samplesOut[i]);            /* Output RIGHT sample to DAC */
+            }
+#endif
+            doI2SClocks(divide);
+
+
+
 #if defined(SPDIF_RX) || defined(ADAT_RX)
         /* Sync with clockgen */
         inuint(c_dig_rx);
@@ -660,29 +690,12 @@ chanend ?c_adc)
             sample = samplesOut[SPDIF_TX_INDEX + 1];
             outuint(c_spd_out, sample);                      /* Forward sample to S/PDIF Tx thread */
 #endif
-            tmp = 0;
-#pragma xta endpoint "i2s_output_r"
-#if (I2S_CHANS_DAC != 0) && (NUM_USB_CHAN_OUT != 0)
-#pragma loop unroll
-            for(int i = 1; i < I2S_CHANS_DAC; i+=2)
-            {
-                p_i2s_dac[tmp++] <: bitrev(samplesOut[i]);            /* Output RIGHT sample to DAC */
-            }
-#endif
-
-#ifndef CODEC_MASTER
-            /* Clock out data (and LR clock) */
-            //p_lrclk <: 0x7FFFFFFF;
-            p_lrclk <: 0x80000000;
-            doI2SClocks(divide);
-#endif
-
 
 #if (I2S_CHANS_ADC != 0)
             /* Input previous L ADC sample */
             index = 0;
 #pragma loop unroll
-            for(int i = 0; i < I2S_CHANS_ADC; i += 2)
+            for(int i = 1; i < I2S_CHANS_ADC; i += 2)
             {
                 // p_i2s_adc[index++] :> sample;
                 // Manual IN instruction since compiler generates an extra setc per IN (bug #15256)
@@ -705,6 +718,24 @@ chanend ?c_adc)
             }
 #endif
 #endif
+
+#ifndef CODEC_MASTER
+            /* Clock out data (and LR clock) */
+            p_lrclk <: 0x7FFFFFFF;
+            //p_lrclk <: 0x80000000;
+#endif
+
+
+            tmp = 0;
+#pragma xta endpoint "i2s_output_r"
+#if (I2S_CHANS_DAC != 0) && (NUM_USB_CHAN_OUT != 0)
+#pragma loop unroll
+            for(int i = 1; i < I2S_CHANS_DAC; i+=2)
+            {
+                p_i2s_dac[tmp++] <: bitrev(samplesOut[i]);            /* Output LEFT sample to DAC */
+            }
+#endif
+            doI2SClocks(divide);
 
         }  // !dsdMode
 #if (DSD_CHANS_DAC != 0) && (NUM_USB_CHAN_OUT > 0)
