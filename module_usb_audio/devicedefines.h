@@ -76,7 +76,12 @@
     #error I2S_CHANS_DAC not defined
     #define I2S_CHANS_DAC 2          /* Define anyway for doxygen */
 #else
+
+#ifdef I2S_MODE_TDM
+#define I2S_WIRES_DAC            (I2S_CHANS_DAC >> 3)
+#else
 #define I2S_WIRES_DAC            (I2S_CHANS_DAC >> 1)
+#endif
 #endif
 
 /**
@@ -88,7 +93,12 @@
     #error I2S_CHANS_ADC not defined
     #define I2S_CHANS_ADC 2      /* Define anyway for doxygen */
 #else
+
+#ifdef I2S_MODE_TDM
+#define I2S_WIRES_ADC            (I2S_CHANS_ADC >> 3)
+#else
 #define I2S_WIRES_ADC            (I2S_CHANS_ADC >> 1)
+#endif
 #endif
 
 /**

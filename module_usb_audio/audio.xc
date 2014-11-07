@@ -150,8 +150,12 @@ static inline void doI2SClocks(unsigned divide)
 }
 #endif
 
-
-static inline unsigned DoSampleTransfer(chanend c_out, unsigned samplesOut[], unsigned samplesIn[], unsigned underflowWord)
+#pragma unsafe arrays
+static inline unsigned DoSampleTransfer(chanend c_out, unsigned samplesOut[], 
+#if NUM_USB_CHAN_IN > 0
+    unsigned samplesIn[], 
+#endif
+unsigned underflowWord)
 {
     unsigned command;
     unsigned underflow;
@@ -373,9 +377,7 @@ chanend ?c_adc)
     unsigned samplesInPrev[NUM_USB_CHAN_IN];
 #endif
     unsigned tmp;
-#if (I2S_CHANS_ADC != 0)
     unsigned index;
-#endif
 #ifdef RAMP_CHECK
     unsigned prev=0;
     int started = 0;
@@ -389,6 +391,8 @@ chanend ?c_adc)
     unsigned dsdSample_r = 0x96960000;
 #endif
     unsigned underflowWord = 0;
+
+    unsigned tdmCount = 0;
 
 #if NUM_USB_CHAN_IN > 0
     for (int i=0;i<NUM_USB_CHAN_IN;i++)
@@ -407,7 +411,11 @@ chanend ?c_adc)
     }
 #endif
 
-    unsigned command = DoSampleTransfer(c_out, samplesOut, samplesIn, underflowWord);       
+    unsigned command = DoSampleTransfer(c_out, samplesOut, 
+#if NUM_USB_CHAN_IN > 0    
+        samplesIn, 
+#endif
+        underflowWord);       
 
     if(command)
     {
@@ -422,10 +430,17 @@ chanend ?c_adc)
     /* Main Audio I/O loop */
     while (1)
     {
-        unsigned command = DoSampleTransfer(c_out, samplesOut, samplesIn, underflowWord);       
+        if(tdmCount == 0)
+        {
+            unsigned command = DoSampleTransfer(c_out, samplesOut, 
+#if NUM_USB_CHAN_IN > 0 
+                samplesIn, 
+#endif
+                underflowWord);       
 
-        if(command)
-            return command;
+            if(command)
+                return command;
+        }
 
 #if (DSD_CHANS_DAC != 0) && (NUM_USB_CHAN_OUT > 0)
         if(dsdMode == DSD_MODE_NATIVE)
@@ -554,7 +569,12 @@ chanend ?c_adc)
             /* LR clock delayed by one clock, This is so MSB is output on the falling edge of BCLK
              * after the falling edge on which LRCLK was toggled. (see I2S spec) */
             /* Generate clocks LR Clock low - LEFT */
+#ifdef I2S_MODE_TDM
+            p_lrclk <: 0x00000000;
+#else
             p_lrclk <: 0x80000000;
+
+#endif
 #endif
 
 #pragma xta endpoint "i2s_output_l"
@@ -562,10 +582,17 @@ chanend ?c_adc)
 #if (I2S_CHANS_DAC != 0) && (NUM_USB_CHAN_OUT != 0)
             index = 0;
 #pragma loop unroll
+#ifdef I2S_MODE_TDM
+            for(int i = 0; i < I2S_CHANS_DAC; i+=8)
+            {
+                p_i2s_dac[index++] <: bitrev(samplesOut[(2*tdmCount)+i]);
+            }
+#else
             for(int i = 0; i < I2S_CHANS_DAC; i+=2)
             {
                 p_i2s_dac[index++] <: bitrev(samplesOut[i]);            /* Output Left sample to DAC */
             }
+#endif
 #endif
 
             /* Clock out the LR Clock, the DAC data and Clock in the next sample into ADC */
@@ -628,17 +655,31 @@ chanend ?c_adc)
 #endif
 
 #ifndef CODEC_MASTER
+#ifdef I2S_MODE_TDM
+            if(tdmCount == 3)
+                p_lrclk <: 0x80000000;
+            else
+                p_lrclk <: 0x00000000;
+#else
             p_lrclk <: 0x7FFFFFFF;
+#endif
 #endif
 
             index = 0;
 #pragma xta endpoint "i2s_output_r"
 #if (I2S_CHANS_DAC != 0) && (NUM_USB_CHAN_OUT != 0)
 #pragma loop unroll
+#ifdef I2S_MODE_TDM
+            for(int i = 0; i < I2S_CHANS_DAC; i+=8)
+            {
+                p_i2s_dac[index++] <: bitrev(samplesOut[(2*tdmCount)+1+i]);
+            }
+#else
             for(int i = 1; i < I2S_CHANS_DAC; i+=2)
             {
                 p_i2s_dac[index++] <: bitrev(samplesOut[i]);            /* Output Right sample to DAC */
             }
+#endif
 #endif
             doI2SClocks(divide);
 
@@ -687,6 +728,13 @@ chanend ?c_adc)
                 }
             }
         }
+#endif
+
+#ifdef I2S_MODE_TDM
+    tdmCount++;
+    //tdmCount &= 0b11; /* if(tdmCount == 4) tdmCount = 0) */
+    if(tdmCount == 4)
+        tdmCount = 0;
 #endif
     }
 
@@ -745,7 +793,6 @@ unsigned static dummy_deliver(chanend c_out)
 #define NUMBER_SAMPLES  100
 #define NUMBER_WORDS ((NUMBER_SAMPLES * NUMBER_CHANNELS+1)/2)
 #define SAMPLES_PER_PRINT 1
-
 
 void audio(chanend c_mix_out,
 #if (defined(ADAT_RX) || defined(SPDIF_RX))
@@ -848,7 +895,15 @@ chanend ?c_config, chanend ?c)
                 numBits = 32;
             }
 #endif
-            divide = mClk / ( curSamFreq * numBits );
+            unsigned tdmDiv = 1;
+#if I2S_MODE_TDM
+            if(dsdMode == DSD_MODE_OFF)
+            {
+                tdmDiv = 4;
+            }
+#endif
+
+            divide = mClk / ( curSamFreq * numBits * tdmDiv);
        }
 
 
