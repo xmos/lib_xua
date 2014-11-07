@@ -242,69 +242,9 @@ static inline unsigned DoSampleTransfer(chanend c_out, unsigned samplesOut[], un
 
 }
 
-
-
-/* I2S delivery thread */
-#pragma unsafe arrays
-unsigned static deliver(chanend c_out, chanend ?c_spd_out, unsigned divide, unsigned curSamFreq,
-#if(defined(SPDIF_RX) || defined(ADAT_RX))
-chanend c_dig_rx,
-#endif
-chanend ?c_adc)
+static inline void InitPorts(unsigned divide)
 {
-#if (I2S_CHANS_ADC != 0) || defined(SPDIF)
-	unsigned sample;
-#endif
-    unsigned underflow = 0;
-#if NUM_USB_CHAN_OUT > 0
-    unsigned samplesOut[NUM_USB_CHAN_OUT];
-#endif
-#if NUM_USB_CHAN_IN > 0
-    unsigned samplesIn[NUM_USB_CHAN_IN];
-    unsigned samplesInPrev[NUM_USB_CHAN_IN];
-#endif
     unsigned tmp;
-#if (I2S_CHANS_ADC != 0)
-    unsigned index;
-#endif
-#ifdef RAMP_CHECK
-    unsigned prev=0;
-    int started = 0;
-#endif
-
-#if (DSD_CHANS_DAC != 0)
-    unsigned dsdMarker = DSD_MARKER_2;    /* This alternates between DSD_MARKER_1 and DSD_MARKER_2 */
-    int dsdCount = 0;
-    int everyOther = 1;
-    unsigned dsdSample_l = 0x96960000;
-    unsigned dsdSample_r = 0x96960000;
-#endif
-    unsigned underflowWord = 0;
-
-#if NUM_USB_CHAN_IN > 0
-    for (int i=0;i<NUM_USB_CHAN_IN;i++)
-    {
-        samplesIn[i] = 0;
-        samplesInPrev[i] = 0;
-    }
-#endif
-
-#if(DSD_CHANS_DAC != 0)
-    if(dsdMode == DSD_MODE_DOP)
-        underflowWord = 0xFA969600;
-    else if(dsdMode == DSD_MODE_NATIVE)
-    {
-        underflowWord = 0x96969696;
-    }
-#endif
-
-    unsigned command = DoSampleTransfer(c_out, samplesOut, samplesIn, underflowWord);       
-
-    if(command)
-    {
-        return command;
-    }
-
 #ifndef CODEC_MASTER
 #if (DSD_CHANS_DAC > 0)
     if(dsdMode == DSD_MODE_OFF)
@@ -407,11 +347,77 @@ chanend ?c_adc)
         asm("setpt res[%0], %1"::"r"(p_i2s_adc[i]),"r"(tmp+31));
     }
 #endif
+#endif
+
+}
+
+
+
+/* I2S delivery thread */
+#pragma unsafe arrays
+unsigned static deliver(chanend c_out, chanend ?c_spd_out, unsigned divide, unsigned curSamFreq,
+#if(defined(SPDIF_RX) || defined(ADAT_RX))
+chanend c_dig_rx,
+#endif
+chanend ?c_adc)
+{
+#if (I2S_CHANS_ADC != 0) || defined(SPDIF)
+	unsigned sample;
+#endif
+    unsigned underflow = 0;
+#if NUM_USB_CHAN_OUT > 0
+    unsigned samplesOut[NUM_USB_CHAN_OUT];
+#endif
+#if NUM_USB_CHAN_IN > 0
+    unsigned samplesIn[NUM_USB_CHAN_IN];
+    unsigned samplesInPrev[NUM_USB_CHAN_IN];
+#endif
+    unsigned tmp;
+#if (I2S_CHANS_ADC != 0)
+    unsigned index;
+#endif
+#ifdef RAMP_CHECK
+    unsigned prev=0;
+    int started = 0;
+#endif
+
+#if (DSD_CHANS_DAC != 0)
+    unsigned dsdMarker = DSD_MARKER_2;    /* This alternates between DSD_MARKER_1 and DSD_MARKER_2 */
+    int dsdCount = 0;
+    int everyOther = 1;
+    unsigned dsdSample_l = 0x96960000;
+    unsigned dsdSample_r = 0x96960000;
+#endif
+    unsigned underflowWord = 0;
+
+#if NUM_USB_CHAN_IN > 0
+    for (int i=0;i<NUM_USB_CHAN_IN;i++)
+    {
+        samplesIn[i] = 0;
+        samplesInPrev[i] = 0;
+    }
+#endif
+
+#if(DSD_CHANS_DAC != 0)
+    if(dsdMode == DSD_MODE_DOP)
+        underflowWord = 0xFA969600;
+    else if(dsdMode == DSD_MODE_NATIVE)
+    {
+        underflowWord = 0x96969696;
+    }
+#endif
+
+    unsigned command = DoSampleTransfer(c_out, samplesOut, samplesIn, underflowWord);       
+
+    if(command)
+    {
+        return command;
+    }
+
+    InitPorts(divide);
 
     /* TODO In master mode, the i/o loop assumes L/RCLK = 32bit clocks.  We should check this every interation
      * and resync if we got a bclk glitch */
-
-#endif
 
     /* Main Audio I/O loop */
     while (1)
