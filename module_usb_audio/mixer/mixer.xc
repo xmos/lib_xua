@@ -17,10 +17,10 @@
 static unsigned int multOut_array[NUM_USB_CHAN_OUT + 1];
 static xc_ptr multOut;
 //#endif
-#ifdef IN_VOLUME_IN_MIXER
+//#ifdef IN_VOLUME_IN_MIXER
 static unsigned int multIn_array[NUM_USB_CHAN_IN + 1];
 static xc_ptr multIn;
-#endif
+//#endif
 
 #if defined (LEVEL_METER_LEDS) || defined (LEVEL_METER_HOST)
 static unsigned abs(int x)
