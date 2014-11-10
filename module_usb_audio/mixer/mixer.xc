@@ -248,7 +248,11 @@ static inline void giveSamplesToDevice(chanend c, xc_ptr samples, xc_ptr ptr, xc
         unsigned l;
 #endif
         int index;
+
+        /* Read pointer to sample from the map */
         read_via_xc_ptr_indexed(index, ptr, i);
+
+        /* Read the actual sample value */
         read_via_xc_ptr_indexed(sample, samples, index)
 
 #if defined(OUT_VOLUME_IN_MIXER) && defined(OUT_VOLUME_AFTER_MIX)
