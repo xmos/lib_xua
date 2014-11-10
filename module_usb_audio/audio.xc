@@ -895,15 +895,7 @@ chanend ?c_config, chanend ?c)
                 numBits = 32;
             }
 #endif
-            unsigned tdmDiv = 1;
-#if I2S_MODE_TDM
-            if(dsdMode == DSD_MODE_OFF)
-            {
-                tdmDiv = 4;
-            }
-#endif
-
-            divide = mClk / ( curSamFreq * numBits * tdmDiv);
+            divide = mClk / ( curSamFreq * numBits);
        }
 
 
