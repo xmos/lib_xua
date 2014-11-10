@@ -372,10 +372,10 @@ chanend ?c_adc)
 #if NUM_USB_CHAN_OUT > 0
     unsigned samplesOut[NUM_USB_CHAN_OUT];
 #endif
-#if NUM_USB_CHAN_IN > 0
+//#if NUM_USB_CHAN_IN > 0
     unsigned samplesIn[NUM_USB_CHAN_IN];
     unsigned samplesInPrev[NUM_USB_CHAN_IN];
-#endif
+//#endif
     unsigned tmp;
     unsigned index;
 #ifdef RAMP_CHECK
@@ -554,15 +554,21 @@ chanend ?c_adc)
             /* Input previous L sample into L in buffer */
             index = 0;
 #pragma loop unroll
+#ifdef I2S_MODE_TDM
+            for(int i = 0; i < I2S_CHANS_ADC; i += 8)
+            {
+                asm("in %0, res[%1]" : "=r"(sample)  : "r"(p_i2s_adc[index++]));
+                samplesIn[(2*tdmCount)+i] = bitrev(sample);
+            }
+#else
             for(int i = 0; i < I2S_CHANS_ADC; i += 2)
             {
                 // p_i2s_adc[index++] :> sample;
                 // Manual IN instruction since compiler generates an extra setc per IN (bug #15256)
                 asm("in %0, res[%1]" : "=r"(sample)  : "r"(p_i2s_adc[index++]));
-#if NUM_USB_CHAN_IN > 0
                 samplesIn[i] = bitrev(sample);
-#endif
             }
+#endif
 #endif
 
 #ifndef CODEC_MASTER
@@ -632,16 +638,21 @@ chanend ?c_adc)
             /* Input previous right ADC sample */
             index = 0;
 #pragma loop unroll
+#ifdef I2S_MODE_TDM
+            for(int i = 1; i < I2S_CHANS_ADC; i += 8)
+            {
+                asm("in %0, res[%1]" : "=r"(sample)  : "r"(p_i2s_adc[index++]));
+                samplesIn[(2*tdmCount)+i] = bitrev(sample);
+            }
+#else
             for(int i = 1; i < I2S_CHANS_ADC; i += 2)
             {
                 // p_i2s_adc[index++] :> sample;
                 // Manual IN instruction since compiler generates an extra setc per IN (bug #15256)
                 asm("in %0, res[%1]" : "=r"(sample)  : "r"(p_i2s_adc[index++]));
-
-#if NUM_USB_CHAN_IN > 0
                 samplesIn[i] = bitrev(sample);
-#endif
             }
+#endif
 
 #ifdef SU1_ADC_ENABLE
             {
