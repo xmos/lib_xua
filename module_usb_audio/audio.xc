@@ -880,8 +880,13 @@ chanend ?c_config, chanend ?c)
         /* Calculate master clock to bit clock (or DSD clock) divide for current sample freq
          * e.g. 11.289600 / (176400 * 64)  = 1 */
         {
+#if I2S_MODE_TDM
+            /* I2S has 32 bits per sample. *8 as 8 channels */
+            unsigned numBits = 256;
+#else
             /* I2S has 32 bits per sample. *2 as 2 channels */
             unsigned numBits = 64;
+#endif
 
 #if (DSD_CHANS_DAC > 0)
             if(dsdMode == DSD_MODE_DOP)
