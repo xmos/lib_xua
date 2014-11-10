@@ -985,7 +985,7 @@
 #else
 #if defined(MIXER)
 // Enabled by default
-#define OUT_VOLUME_IN_MIXER
+//#define OUT_VOLUME_IN_MIXER
 #endif
 #endif
 
@@ -1005,7 +1005,7 @@
 #else
 #if defined(MIXER)
 /* Enabled by default */
-#define IN_VOLUME_IN_MIXER
+//#define IN_VOLUME_IN_MIXER
 #endif
 #endif
 
