@@ -307,7 +307,7 @@ static inline void InitPorts(unsigned divide)
                 p_i2s_dac[i] <: 0;
             }
 #endif
-            p_lrclk <: 0xFFFFFFFF;
+            p_lrclk <: 0x0;
             doI2SClocks(divide);
 
 #if (I2S_CHANS_DAC != 0)
