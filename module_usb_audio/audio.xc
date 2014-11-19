@@ -585,14 +585,12 @@ chanend ?c_adc)
 #ifdef I2S_MODE_TDM
             if(tdmCount == 0)
             {
+                /* First time around we get channel 7 of TDM8 */
                 for(int i = 0; i < I2S_CHANS_ADC; i += 8)
                 {
                     asm volatile("in %0, res[%1]" : "=r"(sample)  : "r"(p_i2s_adc[index++]));
-                    samplesIn[7] = bitrev(sample);
-                }
-                for(int i = 0; i< 7; i++)
-                { 
-                    samplesIn[i] = samplesInPrev[i];
+                    samplesIn[7] = samplesInPrev[7];
+                    samplesInPrev[7] = bitrev(sample);
                 }
             }
             else
@@ -600,7 +598,7 @@ chanend ?c_adc)
                 for(int i = 0; i < I2S_CHANS_ADC; i += 8)
                 {
                     asm volatile("in %0, res[%1]" : "=r"(sample)  : "r"(p_i2s_adc[index++]));
-                    samplesInPrev[(2*tdmCount)+i-1] = bitrev(sample);
+                    samplesIn[(2*tdmCount)+i-1] = bitrev(sample); // channels 1, 3, 5.. on each line.
                 }
             }
 #else
@@ -686,7 +684,7 @@ chanend ?c_adc)
             {
                 asm volatile("in %0, res[%1]" : "=r"(sample)  : "r"(p_i2s_adc[index++]));
                 //samplesIn[(2*tdmCount)+i+1] = bitrev(sample);
-                samplesInPrev[2*tdmCount+i] = bitrev(sample);
+                samplesIn[2*tdmCount+i] = bitrev(sample); // Channels 0, 2, 4.. on each line.
             }
 #else
             for(int i = 0; i < I2S_CHANS_ADC; i += 2)
