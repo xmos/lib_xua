@@ -22,6 +22,8 @@
 #include "commands.h"
 #include "xc_ptr.h"
 
+
+
 unsigned testsamples[100];
 int p = 0;
 unsigned lastSample = 0;
@@ -300,23 +302,14 @@ static inline void InitPorts(unsigned divide)
         }
         else
         {
-            /* Initialisation to get DAC buffered i2s ports inline with ADC ports */
 #if (I2S_CHANS_DAC != 0)
+            /* Pre-fill the DAC ports */
             for(int i = 0; i < I2S_WIRES_DAC; i++)
             {
                 p_i2s_dac[i] <: 0;
             }
 #endif
             p_lrclk <: 0x0;
-            doI2SClocks(divide);
-
-#if (I2S_CHANS_DAC != 0)
-            for(int i = 0; i < I2S_WIRES_DAC; i++)
-            {
-                p_i2s_dac[i] <: 0;
-            }
-#endif
-            p_lrclk <: 0x7FFFFFFF;
             doI2SClocks(divide);
         }
 #if (DSD_CHANS_DAC > 0)
@@ -374,7 +367,7 @@ chanend ?c_adc)
 #endif
 //#if NUM_USB_CHAN_IN > 0
     unsigned samplesIn[NUM_USB_CHAN_IN];
-    unsigned samplesInPrev[NUM_USB_CHAN_IN];
+    unsigned samplesInPrev[NUM_USB_CHAN_IN]; /* Since DAC and ADC buffered ports off by one sample we buffer previous ADC frame */
 //#endif
     unsigned tmp;
     unsigned index;
@@ -395,6 +388,7 @@ chanend ?c_adc)
     unsigned tdmCount = 0;
 
 #if NUM_USB_CHAN_IN > 0
+    /* Initialise buffers to 0 */
     for (int i=0;i<NUM_USB_CHAN_IN;i++)
     {
         samplesIn[i] = 0;
@@ -404,7 +398,9 @@ chanend ?c_adc)
 
 #if(DSD_CHANS_DAC != 0)
     if(dsdMode == DSD_MODE_DOP)
+    {
         underflowWord = 0xFA969600;
+    }
     else if(dsdMode == DSD_MODE_NATIVE)
     {
         underflowWord = 0x96969696;
@@ -549,28 +545,7 @@ chanend ?c_adc)
         else
 #endif
         {
-
-#if (I2S_CHANS_ADC != 0)
-            /* Input previous L sample into L in buffer */
-            index = 0;
-#pragma loop unroll
-#ifdef I2S_MODE_TDM
-            for(int i = 0; i < I2S_CHANS_ADC; i += 8)
-            {
-                asm("in %0, res[%1]" : "=r"(sample)  : "r"(p_i2s_adc[index++]));
-                samplesIn[(2*tdmCount)+i] = bitrev(sample);
-            }
-#else
-            for(int i = 0; i < I2S_CHANS_ADC; i += 2)
-            {
-                // p_i2s_adc[index++] :> sample;
-                // Manual IN instruction since compiler generates an extra setc per IN (bug #15256)
-                asm("in %0, res[%1]" : "=r"(sample)  : "r"(p_i2s_adc[index++]));
-                samplesIn[i] = bitrev(sample);
-            }
-#endif
-#endif
-
+            
 #ifndef CODEC_MASTER
             /* LR clock delayed by one clock, This is so MSB is output on the falling edge of BCLK
              * after the falling edge on which LRCLK was toggled. (see I2S spec) */
@@ -600,10 +575,48 @@ chanend ?c_adc)
             }
 #endif
 #endif
-
             /* Clock out the LR Clock, the DAC data and Clock in the next sample into ADC */
             doI2SClocks(divide);
 
+#if (I2S_CHANS_ADC != 0)
+            /* Input previous L sample into L in buffer */
+            index = 0;
+#pragma loop unroll
+#ifdef I2S_MODE_TDM
+            if(tdmCount == 0)
+            {
+                for(int i = 0; i < I2S_CHANS_ADC; i += 8)
+                {
+                    asm volatile("in %0, res[%1]" : "=r"(sample)  : "r"(p_i2s_adc[index++]));
+                    samplesIn[7] = bitrev(sample);
+                }
+                for(int i = 0; i< 7; i++)
+                { 
+                    samplesIn[i] = samplesInPrev[i];
+                }
+            }
+            else
+            {
+                for(int i = 0; i < I2S_CHANS_ADC; i += 8)
+                {
+                    asm volatile("in %0, res[%1]" : "=r"(sample)  : "r"(p_i2s_adc[index++]));
+                    samplesInPrev[(2*tdmCount)+i-1] = bitrev(sample);
+                }
+            }
+#else
+            for(int i = 0; i < I2S_CHANS_ADC; i += 2)
+            {
+                // p_i2s_adc[index++] :> sample;
+                // Manual IN instruction since compiler generates an extra setc per IN (bug #15256)
+                asm volatile("in %0, res[%1]" : "=r"(sample)  : "r"(p_i2s_adc[index++]));
+               
+                samplesIn[i] = bitrev(sample);
+                samplesIn[i-1] = samplesInPrev[i];
+            }
+#endif
+#endif
+
+        
 #if defined(SPDIF_RX) || defined(ADAT_RX)
         /* Sync with clockgen */
         inuint(c_dig_rx);
@@ -634,43 +647,12 @@ chanend ?c_adc)
             outuint(c_spd_out, sample);                      /* Forward sample to S/PDIF Tx thread */
 #endif
 
-#if (I2S_CHANS_ADC != 0)
-            /* Input previous right ADC sample */
-            index = 0;
-#pragma loop unroll
-#ifdef I2S_MODE_TDM
-            for(int i = 1; i < I2S_CHANS_ADC; i += 8)
-            {
-                asm("in %0, res[%1]" : "=r"(sample)  : "r"(p_i2s_adc[index++]));
-                samplesIn[(2*tdmCount)+i] = bitrev(sample);
-            }
-#else
-            for(int i = 1; i < I2S_CHANS_ADC; i += 2)
-            {
-                // p_i2s_adc[index++] :> sample;
-                // Manual IN instruction since compiler generates an extra setc per IN (bug #15256)
-                asm("in %0, res[%1]" : "=r"(sample)  : "r"(p_i2s_adc[index++]));
-                samplesIn[i] = bitrev(sample);
-            }
-#endif
-
-#ifdef SU1_ADC_ENABLE
-            {
-                unsigned x;
-
-                x = inuint(c_adc);
-                inct(c_adc);
-                asm("stw %0, dp[g_adcVal]"::"r"(x));
-            }
-#endif
-#endif
-
 #ifndef CODEC_MASTER
 #ifdef I2S_MODE_TDM
             if(tdmCount == 3)
                 p_lrclk <: 0x80000000;
             else
-                p_lrclk <: 0x00000000;
+               p_lrclk <: 0x00000000;
 #else
             p_lrclk <: 0x7FFFFFFF;
 #endif
@@ -692,7 +674,42 @@ chanend ?c_adc)
             }
 #endif
 #endif
+
             doI2SClocks(divide);
+
+#if (I2S_CHANS_ADC != 0)
+            /* Input previous right ADC sample */
+            index = 0;
+#pragma loop unroll
+#ifdef I2S_MODE_TDM
+            for(int i = 0; i < I2S_CHANS_ADC; i += 8)
+            {
+                asm volatile("in %0, res[%1]" : "=r"(sample)  : "r"(p_i2s_adc[index++]));
+                //samplesIn[(2*tdmCount)+i+1] = bitrev(sample);
+                samplesInPrev[2*tdmCount+i] = bitrev(sample);
+            }
+#else
+            for(int i = 0; i < I2S_CHANS_ADC; i += 2)
+            {
+                // p_i2s_adc[index++] :> sample;
+                // Manual IN instruction since compiler generates an extra setc per IN (bug #15256)
+                asm volatile("in %0, res[%1]" : "=r"(sample)  : "r"(p_i2s_adc[index++]));
+                samplesInPrev[i] = bitrev(sample);
+            }
+#endif
+
+#ifdef SU1_ADC_ENABLE
+            {
+                unsigned x;
+
+                x = inuint(c_adc);
+                inct(c_adc);
+                asm("stw %0, dp[g_adcVal]"::"r"(x));
+            }
+#endif
+#endif
+
+
 
         }  // !dsdMode
 #if (DSD_CHANS_DAC != 0) && (NUM_USB_CHAN_OUT > 0)
@@ -745,7 +762,9 @@ chanend ?c_adc)
     tdmCount++;
     //tdmCount &= 0b11; /* if(tdmCount == 4) tdmCount = 0) */
     if(tdmCount == 4)
+    { //while(1);
         tdmCount = 0;
+    }
 #endif
     }
 
