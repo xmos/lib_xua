@@ -366,8 +366,10 @@ chanend ?c_adc)
     unsigned samplesOut[NUM_USB_CHAN_OUT];
 #endif
 //#if NUM_USB_CHAN_IN > 0
-    unsigned samplesIn[NUM_USB_CHAN_IN];
-    unsigned samplesInPrev[NUM_USB_CHAN_IN]; /* Since DAC and ADC buffered ports off by one sample we buffer previous ADC frame */
+    //unsigned samplesIn[NUM_USB_CHAN_IN];
+    unsigned samplesIn[2][NUM_USB_CHAN_IN];
+    unsigned readBuffNo = 0;
+    //unsigned samplesInPrev[NUM_USB_CHAN_IN]; /* Since DAC and ADC buffered ports off by one sample we buffer previous ADC frame */
 //#endif
     unsigned tmp;
     unsigned index;
@@ -391,8 +393,9 @@ chanend ?c_adc)
     /* Initialise buffers to 0 */
     for (int i=0;i<NUM_USB_CHAN_IN;i++)
     {
-        samplesIn[i] = 0;
-        samplesInPrev[i] = 0;
+        //samplesIn[i] = 0;
+        samplesIn[0][i] = 0;
+        samplesIn[1][i] = 0;
     }
 #endif
 
@@ -409,7 +412,7 @@ chanend ?c_adc)
 
     unsigned command = DoSampleTransfer(c_out, samplesOut, 
 #if NUM_USB_CHAN_IN > 0    
-        samplesIn, 
+        samplesIn[0], 
 #endif
         underflowWord);       
 
@@ -426,17 +429,7 @@ chanend ?c_adc)
     /* Main Audio I/O loop */
     while (1)
     {
-        if(tdmCount == 0)
-        {
-            unsigned command = DoSampleTransfer(c_out, samplesOut, 
-#if NUM_USB_CHAN_IN > 0 
-                samplesIn, 
-#endif
-                underflowWord);       
-
-            if(command)
-                return command;
-        }
+       
 
 #if (DSD_CHANS_DAC != 0) && (NUM_USB_CHAN_OUT > 0)
         if(dsdMode == DSD_MODE_NATIVE)
@@ -589,8 +582,7 @@ chanend ?c_adc)
                 for(int i = 0; i < I2S_CHANS_ADC; i += 8)
                 {
                     asm volatile("in %0, res[%1]" : "=r"(sample)  : "r"(p_i2s_adc[index++]));
-                    samplesIn[7] = samplesInPrev[7];
-                    samplesInPrev[7] = bitrev(sample);
+                    samplesIn[readBuffNo][7] = bitrev(sample);
                 }
             }
             else
@@ -598,13 +590,12 @@ chanend ?c_adc)
                 for(int i = 0; i < I2S_CHANS_ADC; i += 8)
                 {
                     asm volatile("in %0, res[%1]" : "=r"(sample)  : "r"(p_i2s_adc[index++]));
-                    samplesIn[(2*tdmCount)+i-1] = bitrev(sample); // channels 1, 3, 5.. on each line.
+                    samplesIn[!readBuffNo][(2*tdmCount)+i-1] = bitrev(sample); // channels 1, 3, 5.. on each line.
                 }
             }
 #else
             for(int i = 0; i < I2S_CHANS_ADC; i += 2)
             {
-                // p_i2s_adc[index++] :> sample;
                 // Manual IN instruction since compiler generates an extra setc per IN (bug #15256)
                 asm volatile("in %0, res[%1]" : "=r"(sample)  : "r"(p_i2s_adc[index++]));
                
@@ -684,7 +675,7 @@ chanend ?c_adc)
             {
                 asm volatile("in %0, res[%1]" : "=r"(sample)  : "r"(p_i2s_adc[index++]));
                 //samplesIn[(2*tdmCount)+i+1] = bitrev(sample);
-                samplesIn[2*tdmCount+i] = bitrev(sample); // Channels 0, 2, 4.. on each line.
+                samplesIn[!readBuffNo][2*tdmCount+i] = bitrev(sample); // Channels 0, 2, 4.. on each line.
             }
 #else
             for(int i = 0; i < I2S_CHANS_ADC; i += 2)
@@ -755,15 +746,24 @@ chanend ?c_adc)
             }
         }
 #endif
-
+        
 #ifdef I2S_MODE_TDM
-    tdmCount++;
-    //tdmCount &= 0b11; /* if(tdmCount == 4) tdmCount = 0) */
-    if(tdmCount == 4)
-    { //while(1);
-        tdmCount = 0;
-    }
+        tdmCount++;
+        if(tdmCount == 4)
 #endif
+        {
+            unsigned command = DoSampleTransfer(c_out, samplesOut, 
+#if NUM_USB_CHAN_IN > 0 
+                samplesIn[readBuffNo], 
+#endif
+                underflowWord);       
+
+            if(command)
+                return command;
+
+            tdmCount = 0;
+            readBuffNo = !readBuffNo;
+        }
     }
 
 #pragma xta endpoint "deliver_return"
