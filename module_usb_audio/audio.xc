@@ -23,6 +23,13 @@
 #include "xc_ptr.h"
 
 
+#ifdef I2S_MODE_TDM
+#define I2S_CHANS_PER_FRAME 8
+#else
+#error
+#define I2S_CHANS_PER_FRAME 2
+#endif
+
 
 unsigned testsamples[100];
 int p = 0;
@@ -300,7 +307,7 @@ static inline void InitPorts(unsigned divide)
             }
 #endif
         }
-        else
+        else /* Divide != 1  */
         {
 #if (I2S_CHANS_DAC != 0)
             /* Pre-fill the DAC ports */
@@ -309,8 +316,11 @@ static inline void InitPorts(unsigned divide)
                 p_i2s_dac[i] <: 0;
             }
 #endif
+            /* Pre-fill the LR clock output port */
             p_lrclk <: 0x0;
+            
             doI2SClocks(divide);
+
         }
 #if (DSD_CHANS_DAC > 0)
     } /* if (!dsdMode) */
@@ -345,7 +355,6 @@ static inline void InitPorts(unsigned divide)
     }
 #endif
 #endif
-
 }
 
 
@@ -366,13 +375,13 @@ chanend ?c_adc)
     unsigned samplesOut[NUM_USB_CHAN_OUT];
 #endif
 //#if NUM_USB_CHAN_IN > 0
-    //unsigned samplesIn[NUM_USB_CHAN_IN];
+    /* Since DAC and ADC buffered ports off by one sample we buffer previous ADC frame */
     unsigned samplesIn[2][NUM_USB_CHAN_IN];
     unsigned readBuffNo = 0;
-    //unsigned samplesInPrev[NUM_USB_CHAN_IN]; /* Since DAC and ADC buffered ports off by one sample we buffer previous ADC frame */
 //#endif
     unsigned tmp;
     unsigned index;
+
 #ifdef RAMP_CHECK
     unsigned prev=0;
     int started = 0;
@@ -387,13 +396,12 @@ chanend ?c_adc)
 #endif
     unsigned underflowWord = 0;
 
-    unsigned tdmCount = 0;
+    unsigned frameCount = 0;
 
 #if NUM_USB_CHAN_IN > 0
-    /* Initialise buffers to 0 */
+    /* Initialise input buffers. Note two buffers due to offset between ADC and DAC ports */
     for (int i=0;i<NUM_USB_CHAN_IN;i++)
     {
-        //samplesIn[i] = 0;
         samplesIn[0][i] = 0;
         samplesIn[1][i] = 0;
     }
@@ -429,7 +437,6 @@ chanend ?c_adc)
     /* Main Audio I/O loop */
     while (1)
     {
-       
 
 #if (DSD_CHANS_DAC != 0) && (NUM_USB_CHAN_OUT > 0)
         if(dsdMode == DSD_MODE_NATIVE)
@@ -559,7 +566,7 @@ chanend ?c_adc)
 #ifdef I2S_MODE_TDM
             for(int i = 0; i < I2S_CHANS_DAC; i+=8)
             {
-                p_i2s_dac[index++] <: bitrev(samplesOut[(2*tdmCount)+i]);
+                p_i2s_dac[index++] <: bitrev(samplesOut[(frameCount)+i]);
             }
 #else
             for(int i = 0; i < I2S_CHANS_DAC; i+=2)
@@ -576,29 +583,22 @@ chanend ?c_adc)
             index = 0;
 #pragma loop unroll
 #ifdef I2S_MODE_TDM
-            if(tdmCount == 0)
+            /* First input (i.e. frameCoint == 0) we read last ADC channel of previous frame.. */
+            unsigned buffIndex = frameCount ? !readBuffNo : readBuffNo;
+            
+            /* First time around we get channel 7 of TDM8 */
+            for(int i = 0; i < I2S_CHANS_ADC; i+=I2S_CHANS_PER_FRAME)
             {
-                /* First time around we get channel 7 of TDM8 */
-                for(int i = 0; i < I2S_CHANS_ADC; i += 8)
-                {
-                    asm volatile("in %0, res[%1]" : "=r"(sample)  : "r"(p_i2s_adc[index++]));
-                    samplesIn[readBuffNo][7] = bitrev(sample);
-                }
-            }
-            else
-            {
-                for(int i = 0; i < I2S_CHANS_ADC; i += 8)
-                {
-                    asm volatile("in %0, res[%1]" : "=r"(sample)  : "r"(p_i2s_adc[index++]));
-                    samplesIn[!readBuffNo][(2*tdmCount)+i-1] = bitrev(sample); // channels 1, 3, 5.. on each line.
-                }
+                asm volatile("in %0, res[%1]" : "=r"(sample)  : "r"(p_i2s_adc[index++]));
+
+                /* Note the use of readBuffNo changes based on frameCount */
+                samplesIn[buffIndex][((frameCount-1)&(I2S_CHANS_PER_FRAME-1))+i] = bitrev(sample); // channels 1, 3, 5.. on each line.
             }
 #else
             for(int i = 0; i < I2S_CHANS_ADC; i += 2)
             {
-                // Manual IN instruction since compiler generates an extra setc per IN (bug #15256)
+                /* Manual IN instruction since compiler generates an extra setc per IN (bug #15256) */
                 asm volatile("in %0, res[%1]" : "=r"(sample)  : "r"(p_i2s_adc[index++]));
-               
                 samplesIn[i] = bitrev(sample);
                 samplesIn[i-1] = samplesInPrev[i];
             }
@@ -638,7 +638,7 @@ chanend ?c_adc)
 
 #ifndef CODEC_MASTER
 #ifdef I2S_MODE_TDM
-            if(tdmCount == 3)
+            if(frameCount == (I2S_CHANS_PER_FRAME-2))
                 p_lrclk <: 0x80000000;
             else
                p_lrclk <: 0x00000000;
@@ -652,9 +652,9 @@ chanend ?c_adc)
 #if (I2S_CHANS_DAC != 0) && (NUM_USB_CHAN_OUT != 0)
 #pragma loop unroll
 #ifdef I2S_MODE_TDM
-            for(int i = 0; i < I2S_CHANS_DAC; i+=8)
+            for(int i = 0; i < I2S_CHANS_DAC; i+=I2S_CHANS_PER_FRAME)
             {
-                p_i2s_dac[index++] <: bitrev(samplesOut[(2*tdmCount)+1+i]);
+                p_i2s_dac[index++] <: bitrev(samplesOut[frameCount+1+i]);
             }
 #else
             for(int i = 1; i < I2S_CHANS_DAC; i+=2)
@@ -667,21 +667,20 @@ chanend ?c_adc)
             doI2SClocks(divide);
 
 #if (I2S_CHANS_ADC != 0)
-            /* Input previous right ADC sample */
             index = 0;
 #pragma loop unroll
 #ifdef I2S_MODE_TDM
-            for(int i = 0; i < I2S_CHANS_ADC; i += 8)
+            /* Channels 0, 2, 4.. on each line */
+            for(int i = 0; i < I2S_CHANS_ADC; i += I2S_CHANS_PER_FRAME)
             {
                 asm volatile("in %0, res[%1]" : "=r"(sample)  : "r"(p_i2s_adc[index++]));
-                //samplesIn[(2*tdmCount)+i+1] = bitrev(sample);
-                samplesIn[!readBuffNo][2*tdmCount+i] = bitrev(sample); // Channels 0, 2, 4.. on each line.
+                samplesIn[!readBuffNo][frameCount+i] = bitrev(sample);             
             }
 #else
+            /* Input previous right ADC sample */
             for(int i = 0; i < I2S_CHANS_ADC; i += 2)
             {
-                // p_i2s_adc[index++] :> sample;
-                // Manual IN instruction since compiler generates an extra setc per IN (bug #15256)
+                /* Manual IN instruction since compiler generates an extra setc per IN (bug #15256) */
                 asm volatile("in %0, res[%1]" : "=r"(sample)  : "r"(p_i2s_adc[index++]));
                 samplesInPrev[i] = bitrev(sample);
             }
@@ -690,7 +689,6 @@ chanend ?c_adc)
 #ifdef SU1_ADC_ENABLE
             {
                 unsigned x;
-
                 x = inuint(c_adc);
                 inct(c_adc);
                 asm("stw %0, dp[g_adcVal]"::"r"(x));
@@ -748,10 +746,12 @@ chanend ?c_adc)
 #endif
         
 #ifdef I2S_MODE_TDM
-        tdmCount++;
-        if(tdmCount == 4)
+        /* Increase frameCount by 2 since we have output two channels (per data line) */
+        frameCount+=2;
+        if(frameCount == I2S_CHANS_PER_FRAME)
 #endif
         {
+            /* Do samples transfer */
             unsigned command = DoSampleTransfer(c_out, samplesOut, 
 #if NUM_USB_CHAN_IN > 0 
                 samplesIn[readBuffNo], 
@@ -759,9 +759,12 @@ chanend ?c_adc)
                 underflowWord);       
 
             if(command)
+            {
                 return command;
-
-            tdmCount = 0;
+            }
+            
+            /* Reset frame counter and flip the ADC buffer */
+            frameCount = 0;
             readBuffNo = !readBuffNo;
         }
     }
