@@ -555,17 +555,11 @@ chanend ?c_adc)
 #if (I2S_CHANS_DAC != 0) && (NUM_USB_CHAN_OUT != 0)
             index = 0;
 #pragma loop unroll
-#ifdef I2S_MODE_TDM
-            for(int i = 0; i < I2S_CHANS_DAC; i+=8)
+            /* Output "even" channel to DAC (i.e. left) */
+            for(int i = 0; i < I2S_CHANS_DAC; i+=I2S_CHANS_PER_FRAME)
             {
                 p_i2s_dac[index++] <: bitrev(samplesOut[(frameCount)+i]);
             }
-#else
-            for(int i = 0; i < I2S_CHANS_DAC; i+=2)
-            {
-                p_i2s_dac[index++] <: bitrev(samplesOut[i]);            /* Output Left sample to DAC */
-            }
-#endif
 #endif
             
             /* Clock out the LR Clock, the DAC data and Clock in the next sample into ADC */
@@ -640,18 +634,12 @@ chanend ?c_adc)
             index = 0;
 #pragma xta endpoint "i2s_output_r"
 #if (I2S_CHANS_DAC != 0) && (NUM_USB_CHAN_OUT != 0)
+            /* Output "odd" channel to DAC (i.e. right) */
 #pragma loop unroll
-#ifdef I2S_MODE_TDM
-            for(int i = 0; i < I2S_CHANS_DAC; i+=I2S_CHANS_PER_FRAME)
+            for(int i = 1; i < I2S_CHANS_DAC; i+=I2S_CHANS_PER_FRAME)
             {
-                p_i2s_dac[index++] <: bitrev(samplesOut[frameCount+1+i]);
+                p_i2s_dac[index++] <: bitrev(samplesOut[frameCount+i]);
             }
-#else
-            for(int i = 1; i < I2S_CHANS_DAC; i+=2)
-            {
-                p_i2s_dac[index++] <: bitrev(samplesOut[i]);            /* Output Right sample to DAC */
-            }
-#endif
 #endif
 
             doI2SClocks(divide);
