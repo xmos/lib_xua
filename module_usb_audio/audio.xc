@@ -36,10 +36,6 @@ static unsigned samplesIn_1[NUM_USB_CHAN_IN];
 #define I2S_CHANS_PER_FRAME 2
 #endif
 
-
-unsigned testsamples[100];
-int p = 0;
-unsigned lastSample = 0;
 #if (DSD_CHANS_DAC != 0)
 extern buffered out port:32 p_dsd_dac[DSD_CHANS_DAC];
 extern buffered out port:32 p_dsd_clk;
