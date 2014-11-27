@@ -23,6 +23,12 @@
 #include "xc_ptr.h"
 
 
+static unsigned samplesOut[NUM_USB_CHAN_OUT];
+
+/* Two buffers for ADC data to allow for DAC and ADC ports being offset */
+static unsigned samplesIn_0[NUM_USB_CHAN_IN];
+static unsigned samplesIn_1[NUM_USB_CHAN_IN];
+
 #ifdef I2S_MODE_TDM
 #define I2S_CHANS_PER_FRAME 8
 #else
@@ -160,11 +166,7 @@ static inline void doI2SClocks(unsigned divide)
 #endif
 
 #pragma unsafe arrays
-static inline unsigned DoSampleTransfer(chanend c_out, unsigned samplesOut[], 
-#if NUM_USB_CHAN_IN > 0
-    unsigned samplesIn[], 
-#endif
-unsigned underflowWord)
+static inline unsigned DoSampleTransfer(chanend c_out, int readBuffNo, unsigned underflowWord)
 {
     unsigned command;
     unsigned underflow;
@@ -245,7 +247,10 @@ unsigned underflowWord)
 #pragma loop unroll
             for(int i = 0; i < NUM_USB_CHAN_IN; i++)
             {
-                outuint(c_out, samplesIn[i]);
+                if(readBuffNo)
+                    outuint(c_out, samplesIn_1[i]);
+                else
+                    outuint(c_out, samplesIn_0[i]);
             }
 #endif
 #endif
@@ -372,11 +377,9 @@ chanend ?c_adc)
 #endif
     unsigned underflow = 0;
 #if NUM_USB_CHAN_OUT > 0
-    unsigned samplesOut[NUM_USB_CHAN_OUT];
 #endif
 //#if NUM_USB_CHAN_IN > 0
     /* Since DAC and ADC buffered ports off by one sample we buffer previous ADC frame */
-    unsigned samplesIn[2][NUM_USB_CHAN_IN];
     unsigned readBuffNo = 0;
 //#endif
     unsigned tmp;
@@ -398,15 +401,6 @@ chanend ?c_adc)
 
     unsigned frameCount = 0;
 
-#if NUM_USB_CHAN_IN > 0
-    /* Initialise input buffers. Note two buffers due to offset between ADC and DAC ports */
-    for (int i=0;i<NUM_USB_CHAN_IN;i++)
-    {
-        samplesIn[0][i] = 0;
-        samplesIn[1][i] = 0;
-    }
-#endif
-
 #if(DSD_CHANS_DAC != 0)
     if(dsdMode == DSD_MODE_DOP)
     {
@@ -418,16 +412,14 @@ chanend ?c_adc)
     }
 #endif
 
-    unsigned command = DoSampleTransfer(c_out, samplesOut, 
-#if NUM_USB_CHAN_IN > 0    
-        samplesIn[0], 
-#endif
-        underflowWord);       
+#if 1
+    unsigned command = DoSampleTransfer(c_out, readBuffNo, underflowWord);       
 
     if(command)
     {
         return command;
     }
+#endif
 
     InitPorts(divide);
 
@@ -545,7 +537,6 @@ chanend ?c_adc)
         else
 #endif
         {
-            
 #ifndef CODEC_MASTER
             /* LR clock delayed by one clock, This is so MSB is output on the falling edge of BCLK
              * after the falling edge on which LRCLK was toggled. (see I2S spec) */
@@ -575,26 +566,30 @@ chanend ?c_adc)
             }
 #endif
 #endif
+            
             /* Clock out the LR Clock, the DAC data and Clock in the next sample into ADC */
             doI2SClocks(divide);
 
 #if (I2S_CHANS_ADC != 0)
             /* Input previous L sample into L in buffer */
             index = 0;
-#pragma loop unroll
 #ifdef I2S_MODE_TDM
             /* First input (i.e. frameCoint == 0) we read last ADC channel of previous frame.. */
             unsigned buffIndex = frameCount ? !readBuffNo : readBuffNo;
-            
+#pragma loop unroll           
             /* First time around we get channel 7 of TDM8 */
             for(int i = 0; i < I2S_CHANS_ADC; i+=I2S_CHANS_PER_FRAME)
             {
                 asm volatile("in %0, res[%1]" : "=r"(sample)  : "r"(p_i2s_adc[index++]));
 
                 /* Note the use of readBuffNo changes based on frameCount */
-                samplesIn[buffIndex][((frameCount-1)&(I2S_CHANS_PER_FRAME-1))+i] = bitrev(sample); // channels 1, 3, 5.. on each line.
+                if(buffIndex)
+                    samplesIn_1[((frameCount-1)&(I2S_CHANS_PER_FRAME-1))+i] = bitrev(sample); // channels 1, 3, 5.. on each line.
+                else
+                    samplesIn_0[((frameCount-1)&(I2S_CHANS_PER_FRAME-1))+i] = bitrev(sample); // channels 1, 3, 5.. on each line.
             }
 #else
+#pragma loop unroll           
             for(int i = 0; i < I2S_CHANS_ADC; i += 2)
             {
                 /* Manual IN instruction since compiler generates an extra setc per IN (bug #15256) */
@@ -635,6 +630,8 @@ chanend ?c_adc)
             sample = samplesOut[SPDIF_TX_INDEX + 1];
             outuint(c_spd_out, sample);                      /* Forward sample to S/PDIF Tx thread */
 #endif
+            
+           
 
 #ifndef CODEC_MASTER
 #ifdef I2S_MODE_TDM
@@ -668,13 +665,16 @@ chanend ?c_adc)
 
 #if (I2S_CHANS_ADC != 0)
             index = 0;
-#pragma loop unroll
 #ifdef I2S_MODE_TDM
             /* Channels 0, 2, 4.. on each line */
+            #pragma loop unroll
             for(int i = 0; i < I2S_CHANS_ADC; i += I2S_CHANS_PER_FRAME)
             {
                 asm volatile("in %0, res[%1]" : "=r"(sample)  : "r"(p_i2s_adc[index++]));
-                samplesIn[!readBuffNo][frameCount+i] = bitrev(sample);             
+                if(readBuffNo)
+                    samplesIn_0[frameCount+i] = bitrev(sample);             
+                else
+                    samplesIn_1[frameCount+i] = bitrev(sample);             
             }
 #else
             /* Input previous right ADC sample */
@@ -695,8 +695,6 @@ chanend ?c_adc)
             }
 #endif
 #endif
-
-
 
         }  // !dsdMode
 #if (DSD_CHANS_DAC != 0) && (NUM_USB_CHAN_OUT > 0)
@@ -752,11 +750,13 @@ chanend ?c_adc)
 #endif
         {
             /* Do samples transfer */
-            unsigned command = DoSampleTransfer(c_out, samplesOut, 
-#if NUM_USB_CHAN_IN > 0 
-                samplesIn[readBuffNo], 
-#endif
-                underflowWord);       
+            /* The below looks a bit odd but forces the compiler to inline twice */
+            unsigned command;
+            if(readBuffNo)
+                command = DoSampleTransfer(c_out, 1, underflowWord);       
+            else
+                command = DoSampleTransfer(c_out, 0, underflowWord);       
+
 
             if(command)
             {
