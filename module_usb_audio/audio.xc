@@ -241,12 +241,18 @@ static inline unsigned DoSampleTransfer(chanend c_out, int readBuffNo, unsigned 
 #endif
 #if NUM_USB_CHAN_IN > 0
 #pragma loop unroll
-            for(int i = 0; i < NUM_USB_CHAN_IN; i++)
+            for(int i = 0; i < I2S_CHANS_ADC; i++)
             {
                 if(readBuffNo)
                     outuint(c_out, samplesIn_1[i]);
                 else
                     outuint(c_out, samplesIn_0[i]);
+            }
+            /* Send over the digi channels - no odd buffering required */
+#pragma loop unroll
+            for(int i = I2S_CHANS_ADC; i < NUM_USB_CHAN_IN; i++)
+            {
+                outuint(c_out, samplesIn_0[i]);
             }
 #endif
 #endif
@@ -598,23 +604,25 @@ chanend ?c_adc)
 
         
 #if defined(SPDIF_RX) || defined(ADAT_RX)
-        /* Sync with clockgen */
-        inuint(c_dig_rx);
+            /* Sync with clockgen */
+            inuint(c_dig_rx);
+
+            /* Note, digi-data we just store in samplesIn_0 - we only double buffer the I2S input data */
 #endif
 #ifdef SPDIF_RX
-        asm("ldw %0, dp[g_digData]":"=r"(samplesIn[SPDIF_RX_INDEX + 0]));
-        asm("ldw %0, dp[g_digData+4]":"=r"(samplesIn[SPDIF_RX_INDEX + 1]));
+            asm("ldw %0, dp[g_digData]":"=r"(samplesIn_0[SPDIF_RX_INDEX + 0]));
+            asm("ldw %0, dp[g_digData+4]":"=r"(samplesIn_0[SPDIF_RX_INDEX + 1]));
 
 #endif
 #ifdef ADAT_RX
-        asm("ldw %0, dp[g_digData+8]":"=r"(samplesIn[ADAT_RX_INDEX]));
-        asm("ldw %0, dp[g_digData+12]":"=r"(samplesIn[ADAT_RX_INDEX + 1]));
-        asm("ldw %0, dp[g_digData+16]":"=r"(samplesIn[ADAT_RX_INDEX + 2]));
-        asm("ldw %0, dp[g_digData+20]":"=r"(samplesIn[ADAT_RX_INDEX + 3]));
-        asm("ldw %0, dp[g_digData+24]":"=r"(samplesIn[ADAT_RX_INDEX + 4]));
-        asm("ldw %0, dp[g_digData+28]":"=r"(samplesIn[ADAT_RX_INDEX + 5]));
-        asm("ldw %0, dp[g_digData+32]":"=r"(samplesIn[ADAT_RX_INDEX + 6]));
-        asm("ldw %0, dp[g_digData+36]":"=r"(samplesIn[ADAT_RX_INDEX + 7]));
+            asm("ldw %0, dp[g_digData+8]":"=r"(samplesIn_0[ADAT_RX_INDEX]));
+            asm("ldw %0, dp[g_digData+12]":"=r"(samplesIn_0[ADAT_RX_INDEX + 1]));
+            asm("ldw %0, dp[g_digData+16]":"=r"(samplesIn_0[ADAT_RX_INDEX + 2]));
+            asm("ldw %0, dp[g_digData+20]":"=r"(samplesIn_0[ADAT_RX_INDEX + 3]));
+            asm("ldw %0, dp[g_digData+24]":"=r"(samplesIn_0[ADAT_RX_INDEX + 4]));
+            asm("ldw %0, dp[g_digData+28]":"=r"(samplesIn_0[ADAT_RX_INDEX + 5]));
+            asm("ldw %0, dp[g_digData+32]":"=r"(samplesIn_0[ADAT_RX_INDEX + 6]));
+            asm("ldw %0, dp[g_digData+36]":"=r"(samplesIn_0[ADAT_RX_INDEX + 7]));
 #endif
 
 #if defined(SPDIF_RX) || defined(ADAT_RX)
