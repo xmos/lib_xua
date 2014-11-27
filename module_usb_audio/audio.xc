@@ -576,7 +576,7 @@ chanend ?c_adc)
             index = 0;
             /* First input (i.e. frameCoint == 0) we read last ADC channel of previous frame.. */
             unsigned buffIndex = frameCount ? !readBuffNo : readBuffNo;
-#ifdef I2S_MODE_TDM
+
 #pragma loop unroll           
             /* First time around we get channel 7 of TDM8 */
             for(int i = 0; i < I2S_CHANS_ADC; i+=I2S_CHANS_PER_FRAME)
@@ -589,21 +589,6 @@ chanend ?c_adc)
                 else
                     samplesIn_0[((frameCount-1)&(I2S_CHANS_PER_FRAME-1))+i] = bitrev(sample); // channels 1, 3, 5.. on each line.
             }
-#else
-#pragma loop unroll           
-            for(int i = 0; i < I2S_CHANS_ADC; i += 2) // TODO I2S_CHANS_PER_FRAME
-            {
-                /* Manual IN instruction since compiler generates an extra setc per IN (bug #15256) */
-                asm volatile("in %0, res[%1]" : "=r"(sample)  : "r"(p_i2s_adc[index++]));
-            
-                if(buffIndex)
-                    samplesIn_1[((frameCount-1)&(I2S_CHANS_PER_FRAME-1))+i] = bitrev(sample); // channels 1, 3, 5.. on each line.
-                else
-                    samplesIn_0[((frameCount-1)&(I2S_CHANS_PER_FRAME-1))+i] = bitrev(sample); // channels 1, 3, 5.. on each line.              
-               // samplesIn_1[i] = bitrev(sample);
-               // samplesIn[i-1] = samplesInPrev[i];
-            }
-#endif
 #endif
 
         
@@ -673,32 +658,17 @@ chanend ?c_adc)
 
 #if (I2S_CHANS_ADC != 0)
             index = 0;
-#ifdef I2S_MODE_TDM
             /* Channels 0, 2, 4.. on each line */
-            #pragma loop unroll
+#pragma loop unroll
             for(int i = 0; i < I2S_CHANS_ADC; i += I2S_CHANS_PER_FRAME)
             {
+                /* Manual IN instruction since compiler generates an extra setc per IN (bug #15256) */
                 asm volatile("in %0, res[%1]" : "=r"(sample)  : "r"(p_i2s_adc[index++]));
                 if(readBuffNo)
                     samplesIn_0[frameCount+i] = bitrev(sample);             
                 else
                     samplesIn_1[frameCount+i] = bitrev(sample);             
             }
-#else
-            /* Input previous right ADC sample */
-            for(int i = 0; i < I2S_CHANS_ADC; i += 2)
-            {
-                /* Manual IN instruction since compiler generates an extra setc per IN (bug #15256) */
-                asm volatile("in %0, res[%1]" : "=r"(sample)  : "r"(p_i2s_adc[index++]));
-                //samplesInPrev[i] = bitrev(sample);
-                
-                if(readBuffNo)
-                    samplesIn_0[frameCount+i] = bitrev(sample);             
-                else
-                    samplesIn_1[frameCount+i] = bitrev(sample); 
-                //samplesIn_1[i] = bitrev(sample);
-            }
-#endif
 
 #ifdef SU1_ADC_ENABLE
             {
