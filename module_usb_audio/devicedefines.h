@@ -102,6 +102,20 @@
 #endif
 
 /**
+ * @brief Channels per I2S frame. *
+ *
+ * Default: 2 i.e standard stereo I2S (8 if using TDM i.e. I2S_MODE_TDM). 
+ *
+ **/
+#ifndef I2S_CHANS_PER_FRAME
+#ifdef I2S_MODE_TDM
+#define I2S_CHANS_PER_FRAME 8
+#else
+#define I2S_CHANS_PER_FRAME 2
+#endif
+#endif
+
+/**
  * @brief Max supported sample frequency for device (Hz). Default: 192000
  */
 #ifndef MAX_FREQ

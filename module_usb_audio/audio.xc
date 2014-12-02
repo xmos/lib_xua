@@ -29,19 +29,12 @@ static unsigned samplesOut[NUM_USB_CHAN_OUT];
 static unsigned samplesIn_0[NUM_USB_CHAN_IN];
 static unsigned samplesIn_1[I2S_CHANS_ADC];
 
-#ifdef I2S_MODE_TDM
-#define I2S_CHANS_PER_FRAME 8
-#else
-#define I2S_CHANS_PER_FRAME 2
-#endif
-
 #if (DSD_CHANS_DAC != 0)
 extern buffered out port:32 p_dsd_dac[DSD_CHANS_DAC];
 extern buffered out port:32 p_dsd_clk;
 #endif
 
 unsigned g_adcVal = 0;
-
 
 #ifdef XTA_TIMING_AUDIO
 #pragma xta command "add exclusion received_command"
