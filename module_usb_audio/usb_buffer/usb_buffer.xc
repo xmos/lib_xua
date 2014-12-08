@@ -94,7 +94,10 @@ unsigned char fb_clocks[16];
  * @param   c_aud_fb      chanend for feeback to xud
  * @return  void
  */
-void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud_fb,
+void buffer(register chanend c_aud_out, register chanend c_aud_in, 
+#if (NUM_USB_CHAN_IN == 0) || defined (UAC_FORCE_FEEDBACK_ENDPOINT)
+    chanend c_aud_fb,
+#endif
 #ifdef MIDI
             chanend c_midi_from_host,
             chanend c_midi_to_host,
@@ -131,7 +134,9 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
 {
     XUD_ep ep_aud_out = XUD_InitEp(c_aud_out);
     XUD_ep ep_aud_in = XUD_InitEp(c_aud_in);
+#if (NUM_USB_CHAN_IN == 0) || defined (UAC_FORCE_FEEDBACK_ENDPOINT)
     XUD_ep ep_aud_fb = XUD_InitEp(c_aud_fb);
+#endif
 #ifdef MIDI
     XUD_ep ep_midi_from_host = XUD_InitEp(c_midi_from_host);
     XUD_ep ep_midi_to_host = XUD_InitEp(c_midi_to_host);
@@ -344,6 +349,7 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
                         SET_SHARED_GLOBAL(g_formatChange_DataFormat, formatChange_DataFormat);
                         SET_SHARED_GLOBAL(g_formatChange_SampRes, formatChange_SampRes);
 
+#if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP)
                         /* Host is starting up the output stream. Setup (or potentially resize) feedback packet based on bus-speed
                          * This is only really important on inital start up (when bus-speed
                            was unknown) and when changing bus-speeds */
@@ -357,7 +363,7 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
                         {
                             XUD_SetReady_In(ep_aud_fb, fb_clocks, 3);
                         }
-
+#endif
                     }
                     /* Pass on sample freq change to decouple() via global flag (saves a chanend) */
                     /* Note: freqChange flags now used to communicate other commands also */
@@ -460,6 +466,7 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
 #endif
 
 #if (NUM_USB_CHAN_OUT > 0)
+#if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP)
             /* Feedback Pipe */
             case XUD_SetData_Select(c_aud_fb, ep_aud_fb, result):
             {
@@ -477,7 +484,7 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
                 }
             }
             break;
-
+#endif
             /* Received Audio packet HOST -> DEVICE. Datalength written to length */
             case XUD_GetData_Select(c_aud_out, ep_aud_out, length, result):
             {

@@ -1928,12 +1928,12 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
     /* Type 1 Format Type Descriptor */
     .Audio_Out_Format =
     {
-        0x06,                           /* 0  bLength (in bytes): 6 */
-        UAC_CS_DESCTYPE_INTERFACE,                   /* 1  bDescriptorType: 0x24 */
-        UAC_CS_AS_INTERFACE_SUBTYPE_FORMAT_TYPE,                    /* 2  bDescriptorSubtype: FORMAT_TYPE */
-        UAC_FORMAT_TYPE_I,                  /* 3  bFormatType: FORMAT_TYPE_1 */
-        .bSubslotSize                  = HS_STREAM_FORMAT_OUTPUT_1_SUBSLOT_BYTES,
-        .bBitResolution                = HS_STREAM_FORMAT_OUTPUT_1_RESOLUTION_BITS,
+        .bLength                        = 0x06,                          
+        .bDescriptorType                = UAC_CS_DESCTYPE_INTERFACE,  
+        .bDescriptorSubtype             = UAC_CS_AS_INTERFACE_SUBTYPE_FORMAT_TYPE,                   
+        .bFormatType                    = UAC_FORMAT_TYPE_I,               
+        .bSubslotSize                   = HS_STREAM_FORMAT_OUTPUT_1_SUBSLOT_BYTES,
+        .bBitResolution                 = HS_STREAM_FORMAT_OUTPUT_1_RESOLUTION_BITS,
     },
 
     /* Standard AS Isochronous Audio Data Endpoint Descriptor (4.10.1.1) */
@@ -1941,7 +1941,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
     {
         .bLength                        = sizeof(USB_Descriptor_Endpoint_t),
         .bDescriptorType                = USB_DESCTYPE_ENDPOINT,
-        .bEndpointAddress               = 0x01,     /* (D7: 0:out, 1:in) */
+        .bEndpointAddress               = ENDPOINT_ADDRESS_OUT_AUDIO,    
         .bmAttributes                   = 0x05,     /* (bitmap)  */
         .wMaxPacketSize                 = HS_STREAM_FORMAT_OUTPUT_1_MAXPACKETSIZE,
         .bInterval                      = 1,
@@ -1962,12 +1962,12 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
 #if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP)
     .Audio_Out_Fb_Endpoint =
     {
-        0x07,                             /* 0  bLength: 7 */
-        USB_DESCTYPE_ENDPOINT,            /* 1  bDescriptorType: ENDPOINT */
-        0x81,                             /* 2  bEndpointAddress (D7: 0:out, 1:in) */
-        17,                               /* 3  bmAttributes (bitmap)  */
-        0x0004,                           /* 4  wMaxPacketSize */
-        4,                                /* 6  bInterval. Only values <= 1 frame (4) supported by MS */
+        .bLength            = 0x07,                             
+        .bDescriptorType    = USB_DESCTYPE_ENDPOINT,            
+        .bEndpointAddress   = ENDPOINT_ADDRESS_IN_FEEDBACK,      
+        .bmAttributes       = 17,                               /* (bitmap) */
+        .wMaxPacketSize     = 0x0004,                           
+        .bInterval          = 4,                                /* Only values <= 1 frame (4) supported by MS */
     },
 #endif
 #if (OUTPUT_FORMAT_COUNT > 1)
@@ -2019,7 +2019,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
     {
         .bLength                        = sizeof(USB_Descriptor_Endpoint_t),
         .bDescriptorType                = USB_DESCTYPE_ENDPOINT,
-        .bEndpointAddress               = 0x01,
+        .bEndpointAddress               = ENDPOINT_ADDRESS_OUT_AUDIO,
         .bmAttributes                   = 0x05,
         .wMaxPacketSize                 = HS_STREAM_FORMAT_OUTPUT_2_MAXPACKETSIZE,
         .bInterval                      = 1,
@@ -2042,7 +2042,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
     {
         0x07,                             /* 0  bLength: 7 */
         USB_DESCTYPE_ENDPOINT,            /* 1  bDescriptorType: ENDPOINT */
-        0x81,                             /* 2  bEndpointAddress (D7: 0:out, 1:in) */
+        ENDPOINT_ADDRESS_IN_FEEDBACK,     /* 2  bEndpointAddress (D7: 0:out, 1:in) */
         17,                               /* 3  bmAttributes (bitmap)  */
         0x0004,                           /* 4  wMaxPacketSize */
         4,                                /* 6  bInterval. Only values <= 1 frame (4) supported by MS */
@@ -2099,7 +2099,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
     {
         .bLength                       = 0x07,
         .bDescriptorType               = USB_DESCTYPE_ENDPOINT,
-        .bEndpointAddress              = 0x01,
+        .bEndpointAddress              = ENDPOINT_ADDRESS_OUT_AUDIO,
         .bmAttributes                  = 0x05,
         .wMaxPacketSize                = HS_STREAM_FORMAT_OUTPUT_3_MAXPACKETSIZE,
         .bInterval                     = 1,
@@ -2122,7 +2122,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
     {
         .bLength                       = 0x07,
         .bDescriptorType               = USB_DESCTYPE_ENDPOINT,
-        .bEndpointAddress              = 0x81,
+        .bEndpointAddress              = ENDPOINT_ADDRESS_IN_FEEDBACK,
         .bmAttributes                  = 17,                      /* (bitmap)  */
         .wMaxPacketSize                = 0x0004,
         .bInterval                     = 4,                       /* Only values <= 1 frame (4) supported by MS */
@@ -2192,7 +2192,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
     {
         .bLength                       = 0x07,
         .bDescriptorType               = USB_DESCTYPE_ENDPOINT,
-        .bEndpointAddress              = 0x82,
+        .bEndpointAddress              = ENDPOINT_ADDRESS_IN_AUDIO,
 #if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP)
         .bmAttributes                  = 0x05,  /* Iso, async, data endpoint */
 #else
@@ -2260,7 +2260,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
     {
         .bLength                       = 0x07,
         .bDescriptorType               = USB_DESCTYPE_ENDPOINT,
-        .bEndpointAddress              = 0x82,
+        .bEndpointAddress              = ENDPOINT_ADDRESS_IN_AUDIO,
 #if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP)
         .bmAttributes                  = 0x05,  /* Iso, async, data endpoint */
 #else
@@ -2329,7 +2329,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
     {
         .bLength                       = 0x07,
         .bDescriptorType               = USB_DESCTYPE_ENDPOINT,
-        .bEndpointAddress              = 0x82,
+        .bEndpointAddress              = ENDPOINT_ADDRESS_IN_AUDIO,
 #if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP)
         .bmAttributes                  = 0x05,  /* Iso, async, data endpoint */
 #else
@@ -2927,7 +2927,7 @@ unsigned char cfgDesc_Audio1[] =
     /* Feedback EP */
     0x09,
     0x05,                           /* bDescriptorType: ENDPOINT */
-    0x81,                           /* bEndpointAddress (D3:0 - EP no. D6:4 - reserved 0. D7 - 0:out, 1:in) */
+    ENDPOINT_ADDRESS_IN_FEEDBACK,   /* bEndpointAddress (D3:0 - EP no. D6:4 - reserved 0. D7 - 0:out, 1:in) */
     0x01,                           /* bmAttributes (bitmap)  */
     0x03,0x0,                       /* wMaxPacketSize */
     0x01,                           /* bInterval - Must be 1 for compliance */
@@ -2994,7 +2994,7 @@ unsigned char cfgDesc_Audio1[] =
     /* Standard Endpoint Descriptor */
     0x09,
     0x05,                           /* ENDPOINT */
-    0x82,                           /* EndpointAddress */
+    ENDPOINT_ADDRESS_IN_AUDIO,      /* EndpointAddress */
     0x05,                           /* Attributes - isochronous async */
     FS_STREAM_FORMAT_INPUT_1_MAXPACKETSIZE&0xff,        /* 4  wMaxPacketSize (Typically 294 bytes)*/
     (FS_STREAM_FORMAT_INPUT_1_MAXPACKETSIZE&0xff00)>>8, /* 5  wMaxPacketSize */

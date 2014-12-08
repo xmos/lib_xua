@@ -332,12 +332,14 @@ void usb_audio_core(chanend c_mix_out
             asm("setclk res[%0], %1"::"r"(p_for_mclk_count), "r"(x));
 #endif
             //:buffer
-            buffer(c_xud_out[ENDPOINT_NUMBER_OUT_AUDIO],/* Audio Out*/
-                c_xud_in[ENDPOINT_NUMBER_IN_AUDIO],     /* Audio In */
+            buffer(c_xud_out[ENDPOINT_NUMBER_OUT_AUDIO],    /* Audio Out*/
+                c_xud_in[ENDPOINT_NUMBER_IN_AUDIO],         /* Audio In */
+#if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP)
                 c_xud_in[ENDPOINT_NUMBER_IN_FEEDBACK],      /* Audio FB */
+#endif
 #ifdef MIDI
-                c_xud_out[ENDPOINT_NUMBER_OUT_MIDI],  /* MIDI Out */ // 2
-                c_xud_in[ENDPOINT_NUMBER_IN_MIDI],    /* MIDI In */  // 4
+                c_xud_out[ENDPOINT_NUMBER_OUT_MIDI],        /* MIDI Out */ // 2
+                c_xud_in[ENDPOINT_NUMBER_IN_MIDI],          /* MIDI In */  // 4
                 c_midi,
 #endif
 #ifdef IAP
