@@ -115,7 +115,50 @@ typedef struct
     STR_TABLE_ENTRY(outputChanStr_18);
 #endif
 #if (NUM_USB_CHAN_OUT > 18)
-#error NUM_USB_CHAN > 18
+    STR_TABLE_ENTRY(outputChanStr_19);
+#endif
+#if (NUM_USB_CHAN_OUT > 19)
+    STR_TABLE_ENTRY(outputChanStr_20);
+#endif
+#if (NUM_USB_CHAN_OUT > 20)
+    STR_TABLE_ENTRY(outputChanStr_21);
+#endif
+#if (NUM_USB_CHAN_OUT > 21)
+    STR_TABLE_ENTRY(outputChanStr_22);
+#endif
+#if (NUM_USB_CHAN_OUT > 22)
+    STR_TABLE_ENTRY(outputChanStr_23);
+#endif
+#if (NUM_USB_CHAN_OUT > 23)
+    STR_TABLE_ENTRY(outputChanStr_24);
+#endif
+#if (NUM_USB_CHAN_OUT > 24)
+    STR_TABLE_ENTRY(outputChanStr_25);
+#endif
+#if (NUM_USB_CHAN_OUT > 25)
+    STR_TABLE_ENTRY(outputChanStr_26);
+#endif
+#if (NUM_USB_CHAN_OUT > 26)
+    STR_TABLE_ENTRY(outputChanStr_27);
+#endif
+#if (NUM_USB_CHAN_OUT > 27)
+    STR_TABLE_ENTRY(outputChanStr_28);
+#endif
+#if (NUM_USB_CHAN_OUT > 28)
+    STR_TABLE_ENTRY(outputChanStr_29);
+#endif
+#if (NUM_USB_CHAN_OUT > 29)
+    STR_TABLE_ENTRY(outputChanStr_30);
+#endif
+#if (NUM_USB_CHAN_OUT > 30)
+    STR_TABLE_ENTRY(outputChanStr_31);
+#endif
+#if (NUM_USB_CHAN_OUT > 31)
+    STR_TABLE_ENTRY(outputChanStr_32);
+#endif
+
+#if (NUM_USB_CHAN_OUT > 32)
+#error NUM_USB_CHAN > 32
 #endif
 
 #if (NUM_USB_CHAN_IN > 0)
@@ -173,7 +216,50 @@ typedef struct
     STR_TABLE_ENTRY(inputChanStr_18);
 #endif
 #if (NUM_USB_CHAN_IN > 18)
-#error NUM_USB_CHAN > 18
+    STR_TABLE_ENTRY(inputChanStr_19);
+#endif
+#if (NUM_USB_CHAN_IN > 19)
+    STR_TABLE_ENTRY(inputChanStr_20);
+#endif
+#if (NUM_USB_CHAN_IN > 20)
+    STR_TABLE_ENTRY(inputChanStr_21);
+#endif
+#if (NUM_USB_CHAN_IN > 21)
+    STR_TABLE_ENTRY(inputChanStr_22);
+#endif
+#if (NUM_USB_CHAN_IN > 22)
+    STR_TABLE_ENTRY(inputChanStr_23);
+#endif
+#if (NUM_USB_CHAN_IN > 23)
+    STR_TABLE_ENTRY(inputChanStr_24);
+#endif
+#if (NUM_USB_CHAN_IN > 24)
+    STR_TABLE_ENTRY(inputChanStr_25);
+#endif
+#if (NUM_USB_CHAN_IN > 25)
+    STR_TABLE_ENTRY(inputChanStr_26);
+#endif
+#if (NUM_USB_CHAN_IN > 26)
+    STR_TABLE_ENTRY(inputChanStr_27);
+#endif
+#if (NUM_USB_CHAN_IN > 27)
+    STR_TABLE_ENTRY(inputChanStr_28);
+#endif
+#if (NUM_USB_CHAN_IN > 28)
+    STR_TABLE_ENTRY(inputChanStr_29);
+#endif
+#if (NUM_USB_CHAN_IN > 29)
+    STR_TABLE_ENTRY(inputChanStr_30);
+#endif
+#if (NUM_USB_CHAN_IN > 30)
+    STR_TABLE_ENTRY(inputChanStr_31);
+#endif
+#if (NUM_USB_CHAN_IN > 31)
+    STR_TABLE_ENTRY(inputChanStr_32);
+#endif
+
+#if (NUM_USB_CHAN_IN > 32)
+#error NUM_USB_CHAN > 32
 #endif
 
 #if defined(MIXER) && (MAX_MIX_COUNT > 0)
@@ -557,7 +643,259 @@ StringDescTable_t g_strTable =
 #endif
 
 #if (NUM_USB_CHAN_OUT > 18)
-#error NUM_USB_CHAN_OUT > 18
+#if defined(SPDIF) && (SPDIF_TX_INDEX == 18)
+    #if(SPDIF_TX_INDEX < I2S_CHANS_DAC)
+    .outputChanStr_19           = "Analogue 19/SPDIF 1",
+    #else
+    .outputChanStr_19            = "S/PDIF 1",
+    #endif
+#elif defined(SPDIF) && (SPDIF_TX_INDEX == 17)
+    #if(SPDIF_TX_INDEX < I2S_CHANS_DAC)
+    .outputChanStr_19            = "Analogue 19/SPDIF 2",
+    #else
+    .outputChanStr_19            = "S/PDIF 2",
+    #endif
+#else
+    .outputChanStr_19            = "Analogue 19",
+#endif
+#endif
+
+#if (NUM_USB_CHAN_OUT > 19)
+#if defined(SPDIF) && (SPDIF_TX_INDEX == 19)
+    #if(SPDIF_TX_INDEX < I2S_CHANS_DAC)
+    .outputChanStr_20           = "Analogue 20/SPDIF 1",
+    #else
+    .outputChanStr_20            = "S/PDIF 1",
+    #endif
+#elif defined(SPDIF) && (SPDIF_TX_INDEX == 18)
+    #if(SPDIF_TX_INDEX < I2S_CHANS_DAC)
+    .outputChanStr_20            = "Analogue 20/SPDIF 2",
+    #else
+    .outputChanStr_20            = "S/PDIF 2",
+    #endif
+#else
+    .outputChanStr_20            = "Analogue 20",
+#endif
+#endif
+
+#if (NUM_USB_CHAN_OUT > 20)
+#if defined(SPDIF) && (SPDIF_TX_INDEX == 20)
+    #if(SPDIF_TX_INDEX < I2S_CHANS_DAC)
+    .outputChanStr_21           = "Analogue 21/SPDIF 1",
+    #else
+    .outputChanStr_21            = "S/PDIF 1",
+    #endif
+#elif defined(SPDIF) && (SPDIF_TX_INDEX == 19)
+    #if(SPDIF_TX_INDEX < I2S_CHANS_DAC)
+    .outputChanStr_21            = "Analogue 21/SPDIF 2",
+    #else
+    .outputChanStr_21            = "S/PDIF 2",
+    #endif
+#else
+    .outputChanStr_21            = "Analogue 21",
+#endif
+#endif
+
+#if (NUM_USB_CHAN_OUT > 21)
+#if defined(SPDIF) && (SPDIF_TX_INDEX == 21)
+    #if(SPDIF_TX_INDEX < I2S_CHANS_DAC)
+    .outputChanStr_22           = "Analogue 22/SPDIF 1",
+    #else
+    .outputChanStr_22            = "S/PDIF 1",
+    #endif
+#elif defined(SPDIF) && (SPDIF_TX_INDEX == 20)
+    #if(SPDIF_TX_INDEX < I2S_CHANS_DAC)
+    .outputChanStr_22            = "Analogue 22/SPDIF 2",
+    #else
+    .outputChanStr_22            = "S/PDIF 2",
+    #endif
+#else
+    .outputChanStr_22            = "Analogue 22",
+#endif
+#endif
+
+#if (NUM_USB_CHAN_OUT > 22)
+#if defined(SPDIF) && (SPDIF_TX_INDEX == 22)
+    #if(SPDIF_TX_INDEX < I2S_CHANS_DAC)
+    .outputChanStr_23           = "Analogue 23/SPDIF 1",
+    #else
+    .outputChanStr_23            = "S/PDIF 1",
+    #endif
+#elif defined(SPDIF) && (SPDIF_TX_INDEX == 21)
+    #if(SPDIF_TX_INDEX < I2S_CHANS_DAC)
+    .outputChanStr_23            = "Analogue 23/SPDIF 2",
+    #else
+    .outputChanStr_23            = "S/PDIF 2",
+    #endif
+#else
+    .outputChanStr_23            = "Analogue 23",
+#endif
+#endif
+
+#if (NUM_USB_CHAN_OUT > 23)
+#if defined(SPDIF) && (SPDIF_TX_INDEX == 23)
+    #if(SPDIF_TX_INDEX < I2S_CHANS_DAC)
+    .outputChanStr_24           = "Analogue 24/SPDIF 1",
+    #else
+    .outputChanStr_24            = "S/PDIF 1",
+    #endif
+#elif defined(SPDIF) && (SPDIF_TX_INDEX == 22)
+    #if(SPDIF_TX_INDEX < I2S_CHANS_DAC)
+    .outputChanStr_24            = "Analogue 24/SPDIF 2",
+    #else
+    .outputChanStr_24            = "S/PDIF 2",
+    #endif
+#else
+    .outputChanStr_24            = "Analogue 24",
+#endif
+#endif
+
+#if (NUM_USB_CHAN_OUT > 24)
+#if defined(SPDIF) && (SPDIF_TX_INDEX == 24)
+    #if(SPDIF_TX_INDEX < I2S_CHANS_DAC)
+    .outputChanStr_25           = "Analogue 25/SPDIF 1",
+    #else
+    .outputChanStr_25            = "S/PDIF 1",
+    #endif
+#elif defined(SPDIF) && (SPDIF_TX_INDEX == 23)
+    #if(SPDIF_TX_INDEX < I2S_CHANS_DAC)
+    .outputChanStr_25            = "Analogue 25/SPDIF 2",
+    #else
+    .outputChanStr_25            = "S/PDIF 2",
+    #endif
+#else
+    .outputChanStr_25            = "Analogue 25",
+#endif
+#endif
+
+#if (NUM_USB_CHAN_OUT > 25)
+#if defined(SPDIF) && (SPDIF_TX_INDEX == 25)
+    #if(SPDIF_TX_INDEX < I2S_CHANS_DAC)
+    .outputChanStr_26           = "Analogue 26/SPDIF 1",
+    #else
+    .outputChanStr_26            = "S/PDIF 1",
+    #endif
+#elif defined(SPDIF) && (SPDIF_TX_INDEX == 24)
+    #if(SPDIF_TX_INDEX < I2S_CHANS_DAC)
+    .outputChanStr_26            = "Analogue 26/SPDIF 2",
+    #else
+    .outputChanStr_26            = "S/PDIF 2",
+    #endif
+#else
+    .outputChanStr_26            = "Analogue 26",
+#endif
+#endif
+
+#if (NUM_USB_CHAN_OUT > 26)
+#if defined(SPDIF) && (SPDIF_TX_INDEX == 26)
+    #if(SPDIF_TX_INDEX < I2S_CHANS_DAC)
+    .outputChanStr_27           = "Analogue 27/SPDIF 1",
+    #else
+    .outputChanStr_27            = "S/PDIF 1",
+    #endif
+#elif defined(SPDIF) && (SPDIF_TX_INDEX == 25)
+    #if(SPDIF_TX_INDEX < I2S_CHANS_DAC)
+    .outputChanStr_27            = "Analogue 27/SPDIF 2",
+    #else
+    .outputChanStr_27            = "S/PDIF 2",
+    #endif
+#else
+    .outputChanStr_27            = "Analogue 27",
+#endif
+#endif
+
+#if (NUM_USB_CHAN_OUT > 27)
+#if defined(SPDIF) && (SPDIF_TX_INDEX == 28)
+    #if(SPDIF_TX_INDEX < I2S_CHANS_DAC)
+    .outputChanStr_28           = "Analogue 28/SPDIF 1",
+    #else
+    .outputChanStr_28            = "S/PDIF 1",
+    #endif
+#elif defined(SPDIF) && (SPDIF_TX_INDEX == 27)
+    #if(SPDIF_TX_INDEX < I2S_CHANS_DAC)
+    .outputChanStr_28            = "Analogue 28/SPDIF 2",
+    #else
+    .outputChanStr_28            = "S/PDIF 2",
+    #endif
+#else
+    .outputChanStr_28            = "Analogue 28",
+#endif
+#endif
+
+#if (NUM_USB_CHAN_OUT > 28)
+#if defined(SPDIF) && (SPDIF_TX_INDEX == 29)
+    #if(SPDIF_TX_INDEX < I2S_CHANS_DAC)
+    .outputChanStr_29           = "Analogue 29/SPDIF 1",
+    #else
+    .outputChanStr_29            = "S/PDIF 1",
+    #endif
+#elif defined(SPDIF) && (SPDIF_TX_INDEX == 28)
+    #if(SPDIF_TX_INDEX < I2S_CHANS_DAC)
+    .outputChanStr_29            = "Analogue 29/SPDIF 2",
+    #else
+    .outputChanStr_29            = "S/PDIF 2",
+    #endif
+#else
+    .outputChanStr_29            = "Analogue 29",
+#endif
+#endif
+
+#if (NUM_USB_CHAN_OUT > 29)
+#if defined(SPDIF) && (SPDIF_TX_INDEX == 30)
+    #if(SPDIF_TX_INDEX < I2S_CHANS_DAC)
+    .outputChanStr_30           = "Analogue 30/SPDIF 1",
+    #else
+    .outputChanStr_30            = "S/PDIF 1",
+    #endif
+#elif defined(SPDIF) && (SPDIF_TX_INDEX == 29)
+    #if(SPDIF_TX_INDEX < I2S_CHANS_DAC)
+    .outputChanStr_30            = "Analogue 30/SPDIF 2",
+    #else
+    .outputChanStr_30            = "S/PDIF 2",
+    #endif
+#else
+    .outputChanStr_30            = "Analogue 30",
+#endif
+#endif
+
+#if (NUM_USB_CHAN_OUT > 30)
+#if defined(SPDIF) && (SPDIF_TX_INDEX == 31)
+    #if(SPDIF_TX_INDEX < I2S_CHANS_DAC)
+    .outputChanStr_31           = "Analogue 31/SPDIF 1",
+    #else
+    .outputChanStr_31            = "S/PDIF 1",
+    #endif
+#elif defined(SPDIF) && (SPDIF_TX_INDEX == 30)
+    #if(SPDIF_TX_INDEX < I2S_CHANS_DAC)
+    .outputChanStr_31            = "Analogue 31/SPDIF 2",
+    #else
+    .outputChanStr_31            = "S/PDIF 2",
+    #endif
+#else
+    .outputChanStr_31            = "Analogue 31",
+#endif
+#endif
+
+#if (NUM_USB_CHAN_OUT > 31)
+#if defined(SPDIF) && (SPDIF_TX_INDEX == 32)
+    #if(SPDIF_TX_INDEX < I2S_CHANS_DAC)
+    .outputChanStr_32            = "Analogue 32/SPDIF 1",
+    #else
+    .outputChanStr_32            = "S/PDIF 1",
+    #endif
+#elif defined(SPDIF) && (SPDIF_TX_INDEX == 32)
+    #if(SPDIF_TX_INDEX < I2S_CHANS_DAC)
+    .outputChanStr_32            = "Analogue 32/SPDIF 2",
+    #else
+    .outputChanStr_32            = "S/PDIF 2",
+    #endif
+#else
+    .outputChanStr_32            = "Analogue 32",
+#endif
+#endif
+
+#if (NUM_USB_CHAN_OUT > 32)
+#error NUM_USB_CHAN > 32
 #endif
 
 /*** INPUT CHANNEL STRINGS ***/
@@ -880,7 +1218,257 @@ StringDescTable_t g_strTable =
 #endif
 
 #if (NUM_USB_CHAN_IN > 18)
-#error NUM_USB_CHAN_IN > 18
+#if defined(SPDIF_RX) && (SPDIF_RX_INDEX == 18)
+    #if(SPDIF_RX_INDEX < I2S_CHANS_ADC)
+    .inputChanStr_19            = "Analogue 19/SPDIF 1",
+    #else
+    .inputChanStr_19            = "S/PDIF 1",
+    #endif
+#elif defined(SPDIF_RX) && (SPDIF_RX_INDEX == 17)
+    #if(SPDIF_RX_INDEX < I2S_CHANS_ADC)
+    .inputChanStr_19            = "Analogue 19/SPDIF 2",
+    #else
+    .inputChanStr_19            = "S/PDIF 2",
+    #endif
+#else
+    .inputChanStr_19            = "Analogue 19",
+#endif
+#endif
+
+#if (NUM_USB_CHAN_IN > 19)
+#if defined(SPDIF_RX) && (SPDIF_RX_INDEX == 19)
+    #if(SPDIF_RX_INDEX < I2S_CHANS_ADC)
+    .inputChanStr_20            = "Analogue 20/SPDIF 1",
+    #else
+    .inputChanStr_20            = "S/PDIF 1",
+    #endif
+#elif defined(SPDIF_RX) && (SPDIF_RX_INDEX == 18)
+    #if(SPDIF_RX_INDEX < I2S_CHANS_ADC)
+    .inputChanStr_20            = "Analogue 20/SPDIF 2",
+    #else
+    .inputChanStr_20            = "S/PDIF 2",
+    #endif
+#else
+    .inputChanStr_20            = "Analogue 20",
+#endif
+#endif
+
+#if (NUM_USB_CHAN_IN > 20)
+#if defined(SPDIF_RX) && (SPDIF_RX_INDEX == 20)
+    #if(SPDIF_RX_INDEX < I2S_CHANS_ADC)
+    .inputChanStr_21            = "Analogue 21/SPDIF 1",
+    #else
+    .inputChanStr_21            = "S/PDIF 1",
+    #endif
+#elif defined(SPDIF_RX) && (SPDIF_RX_INDEX == 19)
+    #if(SPDIF_RX_INDEX < I2S_CHANS_ADC)
+    .inputChanStr_21            = "Analogue 21/SPDIF 2",
+    #else
+    .inputChanStr_21            = "S/PDIF 2",
+    #endif
+#else
+    .inputChanStr_21            = "Analogue 21",
+#endif
+#endif
+
+#if (NUM_USB_CHAN_IN > 21)
+#if defined(SPDIF_RX) && (SPDIF_RX_INDEX == 21)
+    #if(SPDIF_RX_INDEX < I2S_CHANS_ADC)
+    .inputChanStr_22            = "Analogue 22/SPDIF 1",
+    #else
+    .inputChanStr_22            = "S/PDIF 1",
+    #endif
+#elif defined(SPDIF_RX) && (SPDIF_RX_INDEX == 20)
+    #if(SPDIF_RX_INDEX < I2S_CHANS_ADC)
+    .inputChanStr_22            = "Analogue 22/SPDIF 2",
+    #else
+    .inputChanStr_22            = "S/PDIF 2",
+    #endif
+#else
+    .inputChanStr_22            = "Analogue 22",
+#endif
+#endif
+
+#if (NUM_USB_CHAN_IN > 22)
+#if defined(SPDIF_RX) && (SPDIF_RX_INDEX == 22)
+    #if(SPDIF_RX_INDEX < I2S_CHANS_ADC)
+    .inputChanStr_23            = "Analogue 23/SPDIF 1",
+    #else
+    .inputChanStr_23            = "S/PDIF 1",
+    #endif
+#elif defined(SPDIF_RX) && (SPDIF_RX_INDEX == 21)
+    #if(SPDIF_RX_INDEX < I2S_CHANS_ADC)
+    .inputChanStr_23            = "Analogue 23/SPDIF 2",
+    #else
+    .inputChanStr_23            = "S/PDIF 2",
+    #endif
+#else
+    .inputChanStr_23            = "Analogue 23",
+#endif
+#endif
+
+#if (NUM_USB_CHAN_IN > 23)
+#if defined(SPDIF_RX) && (SPDIF_RX_INDEX == 23)
+    #if(SPDIF_RX_INDEX < I2S_CHANS_ADC)
+    .inputChanStr_24            = "Analogue 24/SPDIF 1",
+    #else
+    .inputChanStr_24            = "S/PDIF 1",
+    #endif
+#elif defined(SPDIF_RX) && (SPDIF_RX_INDEX == 22)
+    #if(SPDIF_RX_INDEX < I2S_CHANS_ADC)
+    .inputChanStr_24            = "Analogue 24/SPDIF 2",
+    #else
+    .inputChanStr_24            = "S/PDIF 2",
+    #endif
+#else
+    .inputChanStr_24            = "Analogue 24",
+#endif
+#endif
+#if (NUM_USB_CHAN_IN > 24)
+#if defined(SPDIF_RX) && (SPDIF_RX_INDEX == 24)
+    #if(SPDIF_RX_INDEX < I2S_CHANS_ADC)
+    .inputChanStr_25            = "Analogue 25/SPDIF 1",
+    #else
+    .inputChanStr_25            = "S/PDIF 1",
+    #endif
+#elif defined(SPDIF_RX) && (SPDIF_RX_INDEX == 23)
+    #if(SPDIF_RX_INDEX < I2S_CHANS_ADC)
+    .inputChanStr_25            = "Analogue 25/SPDIF 2",
+    #else
+    .inputChanStr_25            = "S/PDIF 2",
+    #endif
+#else
+    .inputChanStr_25            = "Analogue 25",
+#endif
+#endif
+
+#if (NUM_USB_CHAN_IN > 25)
+#if defined(SPDIF_RX) && (SPDIF_RX_INDEX == 25)
+    #if(SPDIF_RX_INDEX < I2S_CHANS_ADC)
+    .inputChanStr_26            = "Analogue 26/SPDIF 1",
+    #else
+    .inputChanStr_26            = "S/PDIF 1",
+    #endif
+#elif defined(SPDIF_RX) && (SPDIF_RX_INDEX == 24)
+    #if(SPDIF_RX_INDEX < I2S_CHANS_ADC)
+    .inputChanStr_26            = "Analogue 26/SPDIF 2",
+    #else
+    .inputChanStr_26            = "S/PDIF 2",
+    #endif
+#else
+    .inputChanStr_26            = "Analogue 26",
+#endif
+#endif
+#if (NUM_USB_CHAN_IN > 26)
+#if defined(SPDIF_RX) && (SPDIF_RX_INDEX == 26)
+    #if(SPDIF_RX_INDEX < I2S_CHANS_ADC)
+    .inputChanStr_27            = "Analogue 27/SPDIF 1",
+    #else
+    .inputChanStr_27            = "S/PDIF 1",
+    #endif
+#elif defined(SPDIF_RX) && (SPDIF_RX_INDEX == 25)
+    #if(SPDIF_RX_INDEX < I2S_CHANS_ADC)
+    .inputChanStr_27            = "Analogue 27/SPDIF 2",
+    #else
+    .inputChanStr_27            = "S/PDIF 2",
+    #endif
+#else
+    .inputChanStr_27            = "Analogue 27",
+#endif
+#endif
+
+#if (NUM_USB_CHAN_IN > 27)
+#if defined(SPDIF_RX) && (SPDIF_RX_INDEX == 27)
+    #if(SPDIF_RX_INDEX < I2S_CHANS_ADC)
+    .inputChanStr_28            = "Analogue 28/SPDIF 1",
+    #else
+    .inputChanStr_28            = "S/PDIF 1",
+    #endif
+#elif defined(SPDIF_RX) && (SPDIF_RX_INDEX == 26)
+    #if(SPDIF_RX_INDEX < I2S_CHANS_ADC)
+    .inputChanStr_28            = "Analogue 28/SPDIF 2",
+    #else
+    .inputChanStr_28            = "S/PDIF 2",
+    #endif
+#else
+    .inputChanStr_28            = "Analogue 28",
+#endif
+#endif
+
+#if (NUM_USB_CHAN_IN > 28)
+#if defined(SPDIF_RX) && (SPDIF_RX_INDEX == 28)
+    #if(SPDIF_RX_INDEX < I2S_CHANS_ADC)
+    .inputChanStr_29            = "Analogue 29/SPDIF 1",
+    #else
+    .inputChanStr_29            = "S/PDIF 1",
+    #endif
+#elif defined(SPDIF_RX) && (SPDIF_RX_INDEX == 27)
+    #if(SPDIF_RX_INDEX < I2S_CHANS_ADC)
+    .inputChanStr_29            = "Analogue 29/SPDIF 2",
+    #else
+    .inputChanStr_29            = "S/PDIF 2",
+    #endif
+#else
+    .inputChanStr_29            = "Analogue 29",
+#endif
+#endif
+
+#if (NUM_USB_CHAN_IN > 29)
+#if defined(SPDIF_RX) && (SPDIF_RX_INDEX == 29)
+    #if(SPDIF_RX_INDEX < I2S_CHANS_ADC)
+    .inputChanStr_30            = "Analogue 30/SPDIF 1",
+    #else
+    .inputChanStr_30            = "S/PDIF 1",
+    #endif
+#elif defined(SPDIF_RX) && (SPDIF_RX_INDEX == 28)
+    #if(SPDIF_RX_INDEX < I2S_CHANS_ADC)
+    .inputChanStr_30            = "Analogue 30/SPDIF 2",
+    #else
+    .inputChanStr_30            = "S/PDIF 2",
+    #endif
+#else
+    .inputChanStr_30            = "Analogue 30",
+#endif
+#endif
+
+#if (NUM_USB_CHAN_IN > 30)
+#if defined(SPDIF_RX) && (SPDIF_RX_INDEX == 30)
+    #if(SPDIF_RX_INDEX < I2S_CHANS_ADC)
+    .inputChanStr_31            = "Analogue 31/SPDIF 1",
+    #else
+    .inputChanStr_31            = "S/PDIF 1",
+    #endif
+#elif defined(SPDIF_RX) && (SPDIF_RX_INDEX == 29)
+    #if(SPDIF_RX_INDEX < I2S_CHANS_ADC)
+    .inputChanStr_31            = "Analogue 31/SPDIF 2",
+    #else
+    .inputChanStr_31            = "S/PDIF 2",
+    #endif
+#else
+    .inputChanStr_31            = "Analogue 31",
+#endif
+#endif
+
+#if (NUM_USB_CHAN_IN > 31)
+#if defined(SPDIF_RX) && (SPDIF_RX_INDEX == 31)
+    #if(SPDIF_RX_INDEX < I2S_CHANS_ADC)
+    .inputChanStr_32            = "Analogue 32/SPDIF 1",
+    #else
+    .inputChanStr_32            = "S/PDIF 1",
+    #endif
+#elif defined(SPDIF_RX) && (SPDIF_RX_INDEX == 30)
+    #if(SPDIF_RX_INDEX < I2S_CHANS_ADC)
+    .inputChanStr_32            = "Analogue 32/SPDIF 2",
+    #else
+    .inputChanStr_32            = "S/PDIF 2",
+    #endif
+#else
+    .inputChanStr_32            = "Analogue 32",
+#endif
+#endif
+
+#if (NUM_USB_CHAN_IN > 32)
+#error NUM_USB_CHAN_IN > 32
 #endif
 
 #if defined(MIXER) && (MAX_MIX_COUNT > 0)
@@ -1600,7 +2188,50 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
                 0x0000000F,         /* bmaControls(18) */
 #endif
 #if (NUM_USB_CHAN_OUT > 18)
-#error NUM_USB_CHAN_OUT > 18
+                0x0000000F,         /* bmaControls(19) */
+#endif
+#if (NUM_USB_CHAN_OUT > 19)
+                0x0000000F,         /* bmaControls(20) */
+#endif
+#if (NUM_USB_CHAN_OUT > 20)
+                0x0000000F,         /* bmaControls(21) */
+#endif
+#if (NUM_USB_CHAN_OUT > 21)
+                0x0000000F,         /* bmaControls(22) */
+#endif
+#if (NUM_USB_CHAN_OUT > 22)
+                0x0000000F,         /* bmaControls(23) */
+#endif
+#if (NUM_USB_CHAN_OUT > 23)
+                0x0000000F,         /* bmaControls(24) */
+#endif
+#if (NUM_USB_CHAN_OUT > 24)
+                0x0000000F,         /* bmaControls(25) */
+#endif
+#if (NUM_USB_CHAN_OUT > 25)
+                0x0000000F,         /* bmaControls(26) */
+#endif
+#if (NUM_USB_CHAN_OUT > 26)
+                0x0000000F,         /* bmaControls(27) */
+#endif
+#if (NUM_USB_CHAN_OUT > 27)
+                0x0000000F,         /* bmaControls(28) */
+#endif
+#if (NUM_USB_CHAN_OUT > 28)
+                0x0000000F,         /* bmaControls(29) */
+#endif
+#if (NUM_USB_CHAN_OUT > 29)
+                0x0000000F,         /* bmaControls(30) */
+#endif
+#if (NUM_USB_CHAN_OUT > 30)
+                0x0000000F,         /* bmaControls(31) */
+#endif
+#if (NUM_USB_CHAN_OUT > 31)
+                0x0000000F,         /* bmaControls(32) */
+#endif
+
+#if (NUM_USB_CHAN_OUT > 32)
+#error NUM_USB_CHAN_OUT > 32
 #endif
             },
             0,                              /* 60 iFeature */
@@ -1733,7 +2364,49 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
                 0x0000000F,         /* bmaControls(18) */
 #endif
 #if (NUM_USB_CHAN_IN > 18)
-#error NUM_USB_CHAN_IN > 18
+                0x0000000F,         /* bmaControls(19) */
+#endif
+#if (NUM_USB_CHAN_IN > 19)
+                0x0000000F,         /* bmaControls(20) */
+#endif
+#if (NUM_USB_CHAN_IN > 20)
+                0x0000000F,         /* bmaControls(21) */
+#endif
+#if (NUM_USB_CHAN_IN > 21)
+                0x0000000F,         /* bmaControls(22) */
+#endif
+#if (NUM_USB_CHAN_IN > 22)
+                0x0000000F,         /* bmaControls(23) */
+#endif
+#if (NUM_USB_CHAN_IN > 23)
+                0x0000000F,         /* bmaControls(24) */
+#endif
+#if (NUM_USB_CHAN_IN > 24)
+                0x0000000F,         /* bmaControls(25) */
+#endif
+#if (NUM_USB_CHAN_IN > 25)
+                0x0000000F,         /* bmaControls(26) */
+#endif
+#if (NUM_USB_CHAN_IN > 26)
+                0x0000000F,         /* bmaControls(27) */
+#endif
+#if (NUM_USB_CHAN_IN > 27)
+                0x0000000F,         /* bmaControls(28) */
+#endif
+#if (NUM_USB_CHAN_IN > 28)
+                0x0000000F,         /* bmaControls(29) */
+#endif
+#if (NUM_USB_CHAN_IN > 29)
+                0x0000000F,         /* bmaControls(30) */
+#endif
+#if (NUM_USB_CHAN_IN > 30)
+                0x0000000F,         /* bmaControls(31) */
+#endif
+#if (NUM_USB_CHAN_IN > 31)
+                0x0000000F,         /* bmaControls(32) */
+#endif
+#if (NUM_USB_CHAN_IN > 32)
+#error NUM_USB_CHAN_IN > 32
 #endif
             },
             0,                             /* 60 iFeature */

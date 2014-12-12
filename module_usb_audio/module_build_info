@@ -18,15 +18,15 @@
 #
 # $(call SET_XCC_C_FLAGS, mydir1 mydir2, $(XCC_FLAGS) -g -O3)
 
-
 # You can change the flags of an individual file by setting the 
 # XCC_FLAGS_[filename] variable. e.g.
 #
 # XCC_FLAGS_myfile.xc = $(XCC_FLAGS) -fsubword-select
-
 
 # You can exclude particular files from the build even if they occur
 # within SOURCE_DIRS by adding the file name (with no path) to the 
 # EXCLUDE_FILES variable e..g
 #
 EXCLUDE_FILES += descriptors_2.rst
+
+MODULE_XCC_FLAGS += $(XCC_FLAGS) -falways-inline
