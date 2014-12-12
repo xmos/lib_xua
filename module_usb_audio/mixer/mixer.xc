@@ -172,7 +172,7 @@ static inline void GiveSamplesToHost(chanend c, xc_ptr ptr, xc_ptr multIn)
     {
         int sample;
         int index;
-        
+
 #if MAX_MIX_COUNT > 0
         read_via_xc_ptr_indexed(index,ptr,i);
 #else
@@ -239,7 +239,7 @@ static inline void GetSamplesFromHost(chanend c, unsigned underflow)
 #else
             ptr_samples[i] = sample;
 #endif
-        }     
+        }
     }
 }
 
@@ -263,10 +263,10 @@ static inline void GiveSamplesToDevice(chanend c, xc_ptr ptr, xc_ptr multOut, un
 
 #if MAX_MIX_COUNT > 0
             /* If mixer turned on sort out the channel mapping */
-            
+
             /* Read pointer to sample from the map */
             read_via_xc_ptr_indexed(index, ptr, i);
-            
+
             /* Read the actual sample value */
             read_via_xc_ptr_indexed(sample, samples, index);
 #else
@@ -340,7 +340,7 @@ static inline void GetSamplesFromDevice(chanend c)
         {
             ptr_samples[NUM_USB_CHAN_OUT + i] = sample;
         }
-#endif       
+#endif
   }
 }
 
@@ -361,13 +361,13 @@ static void mixer1(chanend c_host, chanend c_mix_ctl, chanend c_mixer2)
 #pragma xta endpoint "mixer1_req"
         /* Request from audio() */
         inuint(c_mixer2);
-   
+
         GiveSamplesToDevice(c_mixer2, samples_to_device_map, multOut, underflow);
-        GetSamplesFromDevice(c_mixer2);       
-        
+        GetSamplesFromDevice(c_mixer2);
+
         /* Request data from decouple thread */
         outuint(c_host, 0);
-        
+
         /* Between request to decouple and respose ~ 400nS latency for interrupt to fire */
         select
         {
@@ -611,7 +611,7 @@ static void mixer1(chanend c_host, chanend c_mix_ctl, chanend c_mixer2)
             }
 #else       /* IF MAX_MIX_COUNT > 0 */
             /* No mixes, this thread runs on its own doing just volume */
-                            
+
             GiveSamplesToHost(c_host, samples_to_host_map, multIn);
             GetSamplesFromHost(c_host, underflow);
 #endif

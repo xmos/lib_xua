@@ -317,7 +317,7 @@ static inline void InitPorts(unsigned divide)
 #endif
             /* Pre-fill the LR clock output port */
             p_lrclk <: 0x0;
-            
+
             doI2SClocks(divide);
 
         }
@@ -407,7 +407,7 @@ chanend ?c_adc)
 #endif
 
 #if 1
-    unsigned command = DoSampleTransfer(c_out, readBuffNo, underflowWord);       
+    unsigned command = DoSampleTransfer(c_out, readBuffNo, underflowWord);
 
     if(command)
     {
@@ -554,7 +554,7 @@ chanend ?c_adc)
                 p_i2s_dac[index++] <: bitrev(samplesOut[(frameCount)+i]);
             }
 #endif
-            
+
             /* Clock out the LR Clock, the DAC data and Clock in the next sample into ADC */
             doI2SClocks(divide);
 
@@ -564,7 +564,7 @@ chanend ?c_adc)
             /* First input (i.e. frameCoint == 0) we read last ADC channel of previous frame.. */
             unsigned buffIndex = frameCount ? !readBuffNo : readBuffNo;
 
-#pragma loop unroll           
+#pragma loop unroll
             /* First time around we get channel 7 of TDM8 */
             for(int i = 0; i < I2S_CHANS_ADC; i+=I2S_CHANS_PER_FRAME)
             {
@@ -582,7 +582,7 @@ chanend ?c_adc)
 
         if(frameCount == 0)
         {
-        
+
 #if defined(SPDIF_RX) || defined(ADAT_RX)
             /* Sync with clockgen */
             inuint(c_dig_rx);
@@ -649,9 +649,9 @@ chanend ?c_adc)
                 /* Manual IN instruction since compiler generates an extra setc per IN (bug #15256) */
                 asm volatile("in %0, res[%1]" : "=r"(sample)  : "r"(p_i2s_adc[index++]));
                 if(readBuffNo)
-                    samplesIn_0[frameCount+i] = bitrev(sample);             
+                    samplesIn_0[frameCount+i] = bitrev(sample);
                 else
-                    samplesIn_1[frameCount+i] = bitrev(sample);             
+                    samplesIn_1[frameCount+i] = bitrev(sample);
             }
 
 #ifdef SU1_ADC_ENABLE
@@ -710,7 +710,7 @@ chanend ?c_adc)
             }
         }
 #endif
-        
+
 #ifdef I2S_MODE_TDM
         /* Increase frameCount by 2 since we have output two channels (per data line) */
         frameCount+=2;
@@ -721,16 +721,16 @@ chanend ?c_adc)
             /* The below looks a bit odd but forces the compiler to inline twice */
             unsigned command;
             if(readBuffNo)
-                command = DoSampleTransfer(c_out, 1, underflowWord);       
+                command = DoSampleTransfer(c_out, 1, underflowWord);
             else
-                command = DoSampleTransfer(c_out, 0, underflowWord);       
+                command = DoSampleTransfer(c_out, 0, underflowWord);
 
 
             if(command)
             {
                 return command;
             }
-            
+
             /* Reset frame counter and flip the ADC buffer */
             frameCount = 0;
             readBuffNo = !readBuffNo;
