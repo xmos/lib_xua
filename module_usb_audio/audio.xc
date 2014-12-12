@@ -188,9 +188,18 @@ static inline unsigned DoSampleTransfer(chanend c_out, int readBuffNo, unsigned 
 #ifndef MIXER // Interfaces straight to decouple()
 #if NUM_USB_CHAN_IN > 0
 #pragma loop unroll
-            for(int i = 0; i < NUM_USB_CHAN_IN; i++)
+            for(int i = 0; i < I2S_CHANS_ADC; i++)
             {
-                outuint(c_out, samplesIn[i]);
+                if(readBuffNo)
+                    outuint(c_out, samplesIn_1[i]);
+                else
+                    outuint(c_out, samplesIn_0[i]);
+            }
+            /* Send over the digi channels - no odd buffering required */
+#pragma loop unroll
+            for(int i = I2S_CHANS_ADC; i < NUM_USB_CHAN_IN; i++)
+            {
+                outuint(c_out, samplesIn_0[i]);
             }
 #endif
 
