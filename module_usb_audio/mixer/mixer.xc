@@ -235,7 +235,7 @@ static inline void GetSamplesFromHost(chanend c, unsigned underflow)
                             // Note: We need all 32bits for Native DSD
 #endif
             write_via_xc_ptr_indexed(multOut, index, val);
-            write_via_xc_ptr_indexed(samples, i, h);
+            write_via_xc_ptr_indexed(samples_array, i, h);
 #else
             ptr_samples[i] = sample;
 #endif
@@ -268,7 +268,7 @@ static inline void GiveSamplesToDevice(chanend c, xc_ptr ptr, xc_ptr multOut, un
             read_via_xc_ptr_indexed(index, ptr, i);
 
             /* Read the actual sample value */
-            read_via_xc_ptr_indexed(sample, samples, index);
+            read_via_xc_ptr_indexed(sample, samples_array, index);
 #else
             unsafe
             {
