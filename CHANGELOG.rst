@@ -1,6 +1,10 @@
 sc_usb_audio Change Log
 =======================
 
+HEAD
+----
+    - RESOLVED:   Build issue with CODEC_MASTER (XCore is I2S slave) enabled
+
 6.11.0
 ------
     - ADDED:      Basic TDM I2S functionality added. See I2S_CHANS_PER_FRAME and I2S_MODE_TDM

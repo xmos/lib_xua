@@ -40,13 +40,8 @@ void ConfigAudioPortsWrapper(
 #endif
 
 #if (I2S_CHANS_DAC != 0) || (I2S_CHANS_ADC != 0)
-#ifndef CODEC_MASTER
                 port p_lrclk,
                 port p_bclk,
-#else
-                in port p_lrclk,
-                in port p_bclk,
-#endif
 #endif
 unsigned int divide, unsigned int dsdMode)
 {
