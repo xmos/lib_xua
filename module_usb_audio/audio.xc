@@ -564,8 +564,10 @@ chanend ?c_adc)
             }
 #endif
 
+#ifndef CODEC_MASTER
             /* Clock out the LR Clock, the DAC data and Clock in the next sample into ADC */
             doI2SClocks(divide);
+#endif
 
 #if (I2S_CHANS_ADC != 0)
             /* Input previous L sample into L in buffer */
@@ -647,7 +649,9 @@ chanend ?c_adc)
             }
 #endif
 
+#ifndef CODEC_MASTER
             doI2SClocks(divide);
+#endif
 
 #if (I2S_CHANS_ADC != 0)
             index = 0;
