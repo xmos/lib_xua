@@ -340,13 +340,22 @@ static inline void InitPorts(unsigned divide)
 #endif
 #else /* ifndef CODEC_MASTER */
 
-    /* Wait for LRCLK edge */
+    /* Wait for LRCLK edge (in I2S LRCLK = 0 is left, TDM rising edge is start of frame) */
     p_lrclk when pinseq(0) :> void;
     p_lrclk when pinseq(1) :> void;
     p_lrclk when pinseq(0) :> void;
     p_lrclk when pinseq(1) :> void;
+#ifdef I2S_MODE_TDM
+    p_lrclk when pinseq(0) :> void;
+    p_lrclk when pinseq(1) :> void @ tmp;
+#else
     p_lrclk when pinseq(0) :> void @ tmp;
-    tmp+=97;
+#endif  
+   
+    tmp += (I2S_CHANS_PER_FRAME * 32) - 32 + 1 ;
+    /* E.g. 2 * 32 - 32 + 1 = 33 for stereo */
+    /* E..g 8 * 32 - 32 + 1 = 225 for 8 chan TDM */
+
 #if (I2S_CHANS_DAC != 0)
 #pragma loop unroll
     for(int i = 0; i < I2S_WIRES_DAC; i++)
@@ -359,7 +368,7 @@ static inline void InitPorts(unsigned divide)
 #pragma loop unroll
     for(int i = 0; i < I2S_WIRES_ADC; i++)
     {
-        asm("setpt res[%0], %1"::"r"(p_i2s_adc[i]),"r"(tmp+31));
+       asm("setpt res[%0], %1"::"r"(p_i2s_adc[i]),"r"(tmp+31));
     }
 #endif
 #endif
