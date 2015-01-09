@@ -922,6 +922,8 @@ chanend ?c_config, chanend ?c)
             }
 #endif
             divide = mClk / ( curSamFreq * numBits);
+
+            /* TODO; we should catch and handle the case when divide is 0. Currently design will lock up */
        }
 
 
