@@ -76,7 +76,12 @@
     #error I2S_CHANS_DAC not defined
     #define I2S_CHANS_DAC 2          /* Define anyway for doxygen */
 #else
+
+#ifdef I2S_MODE_TDM
+#define I2S_WIRES_DAC            (I2S_CHANS_DAC >> 3)
+#else
 #define I2S_WIRES_DAC            (I2S_CHANS_DAC >> 1)
+#endif
 #endif
 
 /**
@@ -88,7 +93,26 @@
     #error I2S_CHANS_ADC not defined
     #define I2S_CHANS_ADC 2      /* Define anyway for doxygen */
 #else
+
+#ifdef I2S_MODE_TDM
+#define I2S_WIRES_ADC            (I2S_CHANS_ADC >> 3)
+#else
 #define I2S_WIRES_ADC            (I2S_CHANS_ADC >> 1)
+#endif
+#endif
+
+/**
+ * @brief Channels per I2S frame. *
+ *
+ * Default: 2 i.e standard stereo I2S (8 if using TDM i.e. I2S_MODE_TDM).
+ *
+ **/
+#ifndef I2S_CHANS_PER_FRAME
+#ifdef I2S_MODE_TDM
+#define I2S_CHANS_PER_FRAME 8
+#else
+#define I2S_CHANS_PER_FRAME 2
+#endif
 #endif
 
 /**
@@ -406,7 +430,7 @@
  * @brief Device firmware version number in Binary Coded Decimal format: 0xJJMN where JJ: major, M: minor, N: sub-minor version number.
  */
 #ifndef BCD_DEVICE_M
-#define BCD_DEVICE_M             10
+#define BCD_DEVICE_M             11
 #endif
 
 /**
@@ -975,7 +999,7 @@
 #else
 #if defined(MIXER)
 // Enabled by default
-#define OUT_VOLUME_IN_MIXER
+//#define OUT_VOLUME_IN_MIXER
 #endif
 #endif
 
@@ -995,7 +1019,7 @@
 #else
 #if defined(MIXER)
 /* Enabled by default */
-#define IN_VOLUME_IN_MIXER
+//#define IN_VOLUME_IN_MIXER
 #endif
 #endif
 

@@ -9,11 +9,10 @@ typedef unsigned int xc_ptr;
 // the xc_ptr)
 inline xc_ptr array_to_xc_ptr(const unsigned a[])
 {
-  xc_ptr x;
-  asm("mov %0, %1":"=r"(x):"r"(a));
-  return x;
+    xc_ptr x;
+    asm("mov %0, %1":"=r"(x):"r"(a));
+    return x;
 }
-
 
 #define write_via_xc_ptr_indexed(p,i,x)         asm volatile("stw %0, %1[%2]"::"r"(x),"r"(p),"r"(i))
 #define write_byte_via_xc_ptr_indexed(p,i,x)    asm volatile("st8 %0, %1[%2]"::"r"(x),"r"(p),"r"(i))

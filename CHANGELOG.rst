@@ -1,6 +1,20 @@
 sc_usb_audio Change Log
 =======================
 
+HEAD
+----
+    - RESOLVED:   Build issue with CODEC_MASTER (xCore is I2S slave) enabled
+    - RESOLVED:   Channel ordering issue in when TDM and CODEC_MASTER mode enabled
+
+6.11.0
+------
+    - ADDED:      Basic TDM I2S functionality added. See I2S_CHANS_PER_FRAME and I2S_MODE_TDM
+    - CHANGE:     Various optimisations in 'mixer' core to improve performance for higher 
+                  channel counts including the use of XC unsafe pointers instead of inline ASM
+    - CHANGE:     Mixer mapping disabled when MAX_MIX_COUNT is 0 since this is wasted processing.
+    - CHANGE:     Descriptor changes to allow for channel input/output channel count up to 32 
+                  (previous limit was 18)
+
 6.10.0
 ------
     - CHANGE:     Endpoint management for iAP EA Native Transport now merged into buffer() core.
