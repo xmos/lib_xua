@@ -3,7 +3,8 @@ sc_usb_audio Change Log
 
 HEAD
 ----
-    - RESOLVED:   Build issue with CODEC_MASTER (XCore is I2S slave) enabled
+    - RESOLVED:   Build issue with CODEC_MASTER (xCore is I2S slave) enabled
+    - RESOLVED:   Channel ordering issue in when TDM and CODEC_MASTER mode enabled
 
 6.11.0
 ------
