@@ -95,7 +95,7 @@ unsigned char fb_clocks[16];
  * @return  void
  */
 void buffer(register chanend c_aud_out, register chanend c_aud_in, 
-#if (NUM_USB_CHAN_IN == 0) || defined (UAC_FORCE_FEEDBACK_ENDPOINT)
+#if (NUM_USB_CHAN_IN == 0) || defined (UAC_FORCE_FEEDBACK_EP)
     chanend c_aud_fb,
 #endif
 #ifdef MIDI
@@ -134,7 +134,7 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in,
 {
     XUD_ep ep_aud_out = XUD_InitEp(c_aud_out);
     XUD_ep ep_aud_in = XUD_InitEp(c_aud_in);
-#if (NUM_USB_CHAN_IN == 0) || defined (UAC_FORCE_FEEDBACK_ENDPOINT)
+#if (NUM_USB_CHAN_IN == 0) || defined (UAC_FORCE_FEEDBACK_EP)
     XUD_ep ep_aud_fb = XUD_InitEp(c_aud_fb);
 #endif
 #ifdef MIDI
