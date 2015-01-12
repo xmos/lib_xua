@@ -3399,7 +3399,11 @@ unsigned char cfgDesc_Null[] =
 /* Note, this is different that INTERFACE_COUNT since we dont support items such as MIDI, iAP etc in UAC1 mode */
 #define NUM_INTERFACES_A1           (1+INPUT_INTERFACES_A1 + OUTPUT_INTERFACES_A1)
 
+#if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP)
 #define CFG_TOTAL_LENGTH_A1         (18 + AC_TOTAL_LENGTH + (INPUT_INTERFACES_A1 * 61) + (OUTPUT_INTERFACES_A1 * 70))
+#else
+#define CFG_TOTAL_LENGTH_A1         (18 + AC_TOTAL_LENGTH + (INPUT_INTERFACES_A1 * 61) + (OUTPUT_INTERFACES_A1 * 61))
+#endif
 
 /* In UAC1 supported sample rates are listed in descriptor */
 /* Note, we always report 4 freqs, doing otherwise seems to cause an enumeration issue on Windows */
@@ -3537,7 +3541,11 @@ unsigned char cfgDesc_Audio1[] =
     0x04,                           /* INTERFACE */
     0x01,                           /* Interface no */
     0x01,                           /* AlternateSetting */
-    0x02,                           /* num endpoints 2: audio EP and feedback EP */
+#if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP)
+    0x02,                           /* bNumEndpoints 2: audio EP and feedback EP */
+#else
+    0x01,                           /* bNumEndpoints */
+#endif
     0x01,                           /* Interface class - AUDIO */
     0x02,                           /* subclass - AUDIO_STREAMING */
     0x00,                           /* Unused */
@@ -3587,7 +3595,11 @@ unsigned char cfgDesc_Audio1[] =
     (FS_STREAM_FORMAT_OUTPUT_1_MAXPACKETSIZE&0xff00)>>8, /* 5  wMaxPacketSize */
     0x01,                           /* bInterval */
     0x00,                           /* bRefresh */
-    0x81,                           /* bSynchAdddress - address of EP used to communicate sync info */
+#if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP)
+    ENDPOINT_ADDRESS_IN_FEEDBACK,                           /* bSynchAdddress - address of EP used to communicate sync info */
+#else
+    ENDPOINT_ADDRESS_IN_AUDIO,
+#endif
 
     /* CS_Endpoint Descriptor ?? */
     0x07,
@@ -3597,6 +3609,7 @@ unsigned char cfgDesc_Audio1[] =
     0x02,                           /* bLockDelayUnits */
     0x00, 0x00,                     /* bLockDelay */
 
+#if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP)
     /* Feedback EP */
     0x09,
     0x05,                           /* bDescriptorType: ENDPOINT */
@@ -3606,6 +3619,7 @@ unsigned char cfgDesc_Audio1[] =
     0x01,                           /* bInterval - Must be 1 for compliance */
     0x04,                           /* bRefresh 2^x */
     0x0,                            /* bSynchAddress */
+#endif
 #endif
 
 #if (NUM_USB_CHAN_IN > 0)
@@ -3668,7 +3682,11 @@ unsigned char cfgDesc_Audio1[] =
     0x09,
     0x05,                           /* ENDPOINT */
     ENDPOINT_ADDRESS_IN_AUDIO,      /* EndpointAddress */
-    0x05,                           /* Attributes - isochronous async */
+#if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP)
+    0x05,  /* Iso, async, data endpoint */
+#else
+    0x25,  /* Iso, async, implicit feedback data endpoint */
+#endif
     FS_STREAM_FORMAT_INPUT_1_MAXPACKETSIZE&0xff,        /* 4  wMaxPacketSize (Typically 294 bytes)*/
     (FS_STREAM_FORMAT_INPUT_1_MAXPACKETSIZE&0xff00)>>8, /* 5  wMaxPacketSize */
     0x01,                           /* bInterval */
