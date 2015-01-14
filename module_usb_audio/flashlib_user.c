@@ -1,4 +1,5 @@
 #include "devicedefines.h"
+#include "uac_hwresources.h"
 
 #ifdef DFU
 
@@ -18,13 +19,14 @@
 fl_DeviceSpec flash_devices[] = {DFU_FLASH_DEVICE};
 #endif
 
+
 fl_PortHolderStruct p_flash =
 {
     XS1_PORT_1A,
     XS1_PORT_1B,
     XS1_PORT_1C,
     XS1_PORT_1D,
-    XS1_CLKBLK_1
+    CLKBLK_FLASHLIB
 };
 
 int flash_cmd_enable_ports()

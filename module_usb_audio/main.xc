@@ -15,6 +15,7 @@
 #include "xud.h"                 /* XMOS USB Device Layer defines and functions */
 
 #include "devicedefines.h"       /* Device specific defines */
+#include "uac_hwresources.h"
 #include "endpoint0.h"
 #include "usb_buffer.h"
 #include "decouple.h"
@@ -101,24 +102,7 @@ on tile[AUDIO_IO_TILE] : buffered in port:32 p_i2s_adc[I2S_WIRES_ADC] =
                 };
 #endif
 
-#if (XUD_SERIES_SUPPORT == XUD_L_SERIES) && (AUDIO_IO_TILE == XUD_TILE)
-/* Note: L series ref clocked clocked from USB clock when USB enabled - use another clockblock for MIDI
- * if MIDI and XUD on same tile. See XUD documentation.
- *
- * This is a clash with S/PDIF Tx but simultaneous S/PDIF and MIDI not currently supported on single tile device
- *
- */
-/* TODO should include tile here */
-#define CLKBLK_MIDI        XS1_CLKBLK_1;
-#else
-#define CLKBLK_MIDI        XS1_CLKBLK_REF;
-#endif
-#define CLKBLK_ADAT_RX     XS1_CLKBLK_3
-#define CLKBLK_SPDIF_TX    XS1_CLKBLK_1
-#define CLKBLK_SPDIF_RX    XS1_CLKBLK_1
-#define CLKBLK_MCLK        XS1_CLKBLK_2
-#define CLKBLK_I2S_BIT     XS1_CLKBLK_3
-#define CLKBLK_XUD         XS1_CLKBLK_4 /* Note XUD for U-series uses CLKBLK_5 also (see XUD_Ports.xc) */
+
 
 #ifndef CODEC_MASTER
 on tile[AUDIO_IO_TILE] : buffered out port:32 p_lrclk       = PORT_I2S_LRCLK;
@@ -171,7 +155,8 @@ on tile[AUDIO_IO_TILE] : clock    clk_mst_spd               = CLKBLK_SPDIF_TX;
 on tile[XUD_TILE] : clock    clk_spd_rx                     = CLKBLK_SPDIF_RX;
 #endif
 
-#ifdef ADAT_RX
+#if(XUD_SERIES_SUPPORT != XUD_U_SERIES) && defined(ADAT_RX)
+/* Cannot used CLKBLK_REF for L/G-series as this is USB clock */
 on tile[XUD_TILE] : clock    clk_adat_rx                    = CLKBLK_ADAT_RX;
 #endif
 
@@ -197,7 +182,7 @@ on tile[XUD_TILE] : out port p_usb_rst                      = PORT_USB_RESET;
 
 #if (XUD_SERIES_SUPPORT != XUD_U_SERIES)
 /* L Series also needs a clock block for this port */
-on tile[XUD_TILE] : clock clk                               = CLKBLK_XUD;
+on tile[XUD_TILE] : clock clk                               = CLKBLK_USB_RST;
 #else
 #define clk         null
 #endif
@@ -571,8 +556,12 @@ int main()
         on stdcore[0] :
         {
             set_thread_fast_mode_on();
+
+#if(XUD_SERIES_SUPPORT != XUD_U_SERIES)
+            /* Can't use REF clock on L-series as this is usb clock */
             set_port_clock(p_adat_rx, clk_adat_rx);
             start_clock(clk_adat_rx);
+#endif
             while (1)
             {
 				adatReceiver48000(p_adat_rx, c_adat_rx);
