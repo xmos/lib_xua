@@ -5,6 +5,8 @@ HEAD
 ----
     - RESOLVED:   Build issue with CODEC_MASTER (xCore is I2S slave) enabled
     - RESOLVED:   Channel ordering issue in when TDM and CODEC_MASTER mode enabled
+    - RESOLVED:   DFU fails when SPDIF_RX enabled due to clock block being shared between SPDIF
+                  core and FlashLib
 
 6.11.0
 ------
