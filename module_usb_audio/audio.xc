@@ -19,6 +19,9 @@
 #ifdef SPDIF
 #include "SpdifTransmit.h"
 #endif
+#ifdef ADAT_TX
+#include "adat_tx.h"
+#endif
 #include "commands.h"
 #include "xc_ptr.h"
 
@@ -74,6 +77,10 @@ extern port p_mclk_in;
 
 #ifdef SPDIF
 extern buffered out port:32 p_spdif_tx;
+#endif
+
+#ifdef ADAT_TX
+extern buffered out port:32 p_adat_tx;
 #endif
 
 extern clock    clk_audio_mclk;
@@ -378,12 +385,17 @@ static inline void InitPorts(unsigned divide)
 
 /* I2S delivery thread */
 #pragma unsafe arrays
-unsigned static deliver(chanend c_out, chanend ?c_spd_out, unsigned divide, unsigned curSamFreq,
-#if(defined(SPDIF_RX) || defined(ADAT_RX))
-chanend c_dig_rx,
+unsigned static deliver(chanend c_out, chanend ?c_spd_out, 
+#ifdef ADAT_TX
+    chanend c_adat_out,
 #endif
-chanend ?c_adc)
+    unsigned divide, unsigned curSamFreq,
+#if(defined(SPDIF_RX) || defined(ADAT_RX))
+    chanend c_dig_rx,
+#endif
+    chanend ?c_adc)
 {
+
 #if (I2S_CHANS_ADC != 0) || defined(SPDIF)
 	unsigned sample;
 #endif
@@ -396,6 +408,11 @@ chanend ?c_adc)
 //#endif
     unsigned tmp;
     unsigned index;
+
+#ifdef ADAT_TX
+    unsigned adatSmuxMode = 0;
+#endif
+
 
 #ifdef RAMP_CHECK
     unsigned prev=0;
@@ -824,6 +841,11 @@ chanend ?c_config, chanend ?c)
 #ifdef SPDIF
     chan c_spdif_out;
 #endif
+#ifdef ADAT_TX
+    chan c_adat_out;
+    unsigned adatSmuxMode = 0;
+#endif
+
     unsigned curSamFreq = DEFAULT_FREQ;
     unsigned curSamRes_DAC = STREAM_FORMAT_OUTPUT_1_RESOLUTION_BITS; /* Default to something reasonable */
     unsigned curSamRes_ADC = STREAM_FORMAT_INPUT_1_RESOLUTION_BITS; /* Default to something reasonable - note, currently this never changes*/
@@ -879,8 +901,12 @@ chanend ?c_config, chanend ?c)
     }
 #endif
 
+    /* Configure ADAT/SPDIF tx ports */
 #ifdef SPDIF
     SpdifTransmitPortConfig(p_spdif_tx, clk_mst_spd, p_mclk_in);
+#endif
+#ifdef ADAT_TX
+    configure_out_port_no_ready(p_adat_tx, clk_audio_mclk, 0);
 #endif
 
     /* Perform required CODEC/ADC/DAC initialisation */
@@ -892,10 +918,18 @@ chanend ?c_config, chanend ?c)
         if ((MCLK_441 % curSamFreq) == 0)
         {
             mClk = MCLK_441;
+#ifdef ADAT_TX 
+            /* Calculate ADAT SMUX mode (1, 2, 4) */
+            adatSmuxMode = curSamFreq / 44100; 
+#endif
         }
         else if ((MCLK_48 % curSamFreq) == 0)
         {
             mClk = MCLK_48;
+#ifdef ADAT_TX 
+            /* Calculate ADAT SMUX mode (1, 2, 4) */
+            adatSmuxMode = curSamFreq / 48000; 
+#endif
         }
 
         /* Calculate master clock to bit clock (or DSD clock) divide for current sample freq
@@ -1011,8 +1045,6 @@ chanend ?c_config, chanend ?c)
         }
         firstRun = 0;
 
-
-
         par
         {
 
@@ -1023,6 +1055,11 @@ chanend ?c_config, chanend ?c)
             }
 #endif
 
+#ifdef ADAT_TX
+            {
+                adat_tx_port(c_adat_out, p_adat_tx);
+            }
+#endif
             {
 #ifdef SPDIF
                 /* Communicate master clock and sample freq to S/PDIF thread */
@@ -1030,11 +1067,27 @@ chanend ?c_config, chanend ?c)
                 outuint(c_spdif_out, mClk);
 #endif
 
+#ifdef ADAT_TX
+                // Configure ADAT parameters ...
+                //
+                // adat_oversampling =  256 for MCLK = 12M288 or 11M2896
+                //                   =  512 for MCLK = 24M576 or 22M5792
+                //                   = 1024 for MCLK = 49M152 or 45M1584
+                //
+                // adatSmuxMode   = 1 for FS =  44K1 or  48K0
+                //                = 2 for FS =  88K2 or  96K0
+                //                = 4 for FS = 176K4 or 192K0
+                outuint(c_adat_out, mClk/curSamFreq );
+                outuint(c_adat_out, adatSmuxMode);
+#endif
                 command = deliver(c_mix_out,
 #ifdef SPDIF
                    c_spdif_out,
 #else
                    null,
+#endif
+#ifdef ADAT_TX
+                   c_adat_out,
 #endif
                    divide, curSamFreq,
 #if defined (ADAT_RX) || defined (SPDIF_RX)

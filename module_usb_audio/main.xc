@@ -119,6 +119,10 @@ on tile[XUD_TILE] : in port p_for_mclk_count                = PORT_MCLK_COUNT;
 on tile[AUDIO_IO_TILE] : buffered out port:32 p_spdif_tx    = PORT_SPDIF_OUT;
 #endif
 
+#ifdef ADAT_TX
+on stdcore[AUDIO_IO_TILE] : buffered out port:32 p_adat_tx        = PORT_ADAT_OUT;
+#endif
+
 #ifdef ADAT_RX
 on stdcore[XUD_TILE] : buffered in port:32 p_adat_rx        = PORT_ADAT_IN;
 #endif
