@@ -160,6 +160,53 @@ static inline void doI2SClocks(unsigned divide)
 }
 #endif
 
+#define ADAT_NUM_CHANNELS 8
+
+#pragma unsafe arrays
+static inline void TransferAdatTxSamples(chanend c_adat_data, const unsigned samplesFromHost[], int smux)
+{
+    /* SMUX 1 : Send 8 channels at sample rate (i.e. 44.1/48kHz) 
+     * SMUX 2 : Send 4 channels at sample rate (i.e. 88.2/96kHz) 
+     * SMUX 4 : Send 2 channels at sample rate (i.e. 176.4/192kHz) 
+     *
+     * so..
+     *
+     * for (int i = 0; i < ADAT_NUM_CHANNEL/smux; i++)
+     * {
+     *     outuint(c_adat_data, samplesFromHost[ADAT_TX_INDEX + i]);  
+     * }
+     *
+     * Lets un-roll for performance..
+     */
+    switch (smux)
+    {
+        case 1:
+            #pragma loop unroll
+            for (int i = 0; i < ADAT_NUM_CHANNELS; i++)
+            {
+                outuint(c_adat_data, samplesFromHost[ADAT_TX_INDEX + i]);  
+            }
+            break;
+
+        case 2:
+            #pragma loop unroll
+            for (int i = 0; i < (ADAT_NUM_CHANNELS/2); i++)
+            {
+                outuint(c_adat_data, samplesFromHost[ADAT_TX_INDEX + i]);  
+            }
+            break;
+
+        case 4:
+            #pragma loop unroll
+            for (int i = 0; i < (ADAT_NUM_CHANNELS/4); i++)
+            {
+                outuint(c_adat_data, samplesFromHost[ADAT_TX_INDEX + i]);  
+            }
+            break; 
+    }
+}
+
+
 #pragma unsafe arrays
 static inline unsigned DoSampleTransfer(chanend c_out, int readBuffNo, unsigned underflowWord)
 {
@@ -388,6 +435,7 @@ static inline void InitPorts(unsigned divide)
 unsigned static deliver(chanend c_out, chanend ?c_spd_out, 
 #ifdef ADAT_TX
     chanend c_adat_out,
+    unsigned adatSmuxMode, 
 #endif
     unsigned divide, unsigned curSamFreq,
 #if(defined(SPDIF_RX) || defined(ADAT_RX))
@@ -408,11 +456,6 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
 //#endif
     unsigned tmp;
     unsigned index;
-
-#ifdef ADAT_TX
-    unsigned adatSmuxMode = 0;
-#endif
-
 
 #ifdef RAMP_CHECK
     unsigned prev=0;
@@ -652,6 +695,10 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
             outuint(c_spd_out, sample);                      /* Forward sample to S/PDIF Tx thread */
 #endif
         }
+
+#if defined ADAT_TX
+            TransferAdatTxSamples(c_adat_out, samplesOut, adatSmuxMode);
+#endif
 
 #ifndef CODEC_MASTER
 #ifdef I2S_MODE_TDM
@@ -1088,6 +1135,7 @@ chanend ?c_config, chanend ?c)
 #endif
 #ifdef ADAT_TX
                    c_adat_out,
+                   adatSmuxMode, 
 #endif
                    divide, curSamFreq,
 #if defined (ADAT_RX) || defined (SPDIF_RX)
@@ -1127,10 +1175,13 @@ chanend ?c_config, chanend ?c)
                     	}
                   	}
                 }
-
 #ifdef SPDIF
                 /* Notify S/PDIF thread of impending new freq... */
                 outct(c_spdif_out, XS1_CT_END);
+#endif
+#ifdef ADAT_TX
+                /* Notify ADAT Tx thread of impending new freq... */
+                outct(c_adat_out, XS1_CT_END);
 #endif
             }
         }
