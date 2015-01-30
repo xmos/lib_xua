@@ -232,10 +232,19 @@
 #endif
 
 /**
+ * @brief Defines which output channels (stereo) should be output on S/PDIF. Note, Output channels indexed from 0.
+ *
+ * Default: 0 (i.e. channels 0 & 1)
+ * */
+#ifndef SPDIF_TX_INDEX
+#define SPDIF_TX_INDEX        (0)
+#endif
+
+/**
  * @brief Enables ADAT Tx. Default: 0 (Disabled)
  */
 #ifndef ADAT_TX
-#define ADAT_TX                    (0)
+#define ADAT_TX               (0)
 #endif
 
 /* Tidy up old SPDIF usage */
@@ -243,16 +252,13 @@
 #undef ADAT_TX
 #endif
 
-
-
-
 /**
- * @brief Defines which output channels (stereo) should be output on S/PDIF. Note, Output channels indexed from 0.
+ * @brief Defines which output channels (8) should be output on ADAT. Note, Output channels indexed from 0.
  *
- * Default: 0 (i.e. channels 0 & 1)
+ * Default: 0 (i.e. channels [0:7])
  * */
-#ifndef SPDIF_TX_INDEX
-#define SPDIF_TX_INDEX                  (0)
+#ifndef ADAT_TX_INDEX
+#define ADAT_TX_INDEX         (0)
 #endif
 
 /**
