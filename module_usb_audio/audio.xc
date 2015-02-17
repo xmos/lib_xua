@@ -25,6 +25,7 @@
 #include "commands.h"
 #include "xc_ptr.h"
 
+#include "print.h"
 
 static unsigned samplesOut[NUM_USB_CHAN_OUT];
 
@@ -163,8 +164,20 @@ static inline void doI2SClocks(unsigned divide)
 #define ADAT_NUM_CHANNELS 8
 
 #pragma unsafe arrays
-static inline void TransferAdatTxSamples(chanend c_adat_data, const unsigned samplesFromHost[], int smux)
+static inline void TransferAdatTxSamples(chanend c_adat_data, unsigned samplesFromHost[], int smux)
 {
+
+
+ #pragma loop unroll
+            for (int i = 0; i < ADAT_NUM_CHANNELS; i++)
+            {
+                outuint(c_adat_data, samplesFromHost[ADAT_TX_INDEX + i]); 
+            }
+
+}
+
+#if 0
+
     /* SMUX 1 : Send 8 channels at sample rate (i.e. 44.1/48kHz) 
      * SMUX 2 : Send 4 channels at sample rate (i.e. 88.2/96kHz) 
      * SMUX 4 : Send 2 channels at sample rate (i.e. 176.4/192kHz) 
@@ -181,11 +194,7 @@ static inline void TransferAdatTxSamples(chanend c_adat_data, const unsigned sam
     switch (smux)
     {
         case 1:
-            #pragma loop unroll
-            for (int i = 0; i < ADAT_NUM_CHANNELS; i++)
-            {
-                outuint(c_adat_data, samplesFromHost[ADAT_TX_INDEX + i]);  
-            }
+           
             break;
 
         case 2:
@@ -205,7 +214,7 @@ static inline void TransferAdatTxSamples(chanend c_adat_data, const unsigned sam
             break; 
     }
 }
-
+#endif
 
 #pragma unsafe arrays
 static inline unsigned DoSampleTransfer(chanend c_out, int readBuffNo, unsigned underflowWord)
@@ -696,9 +705,7 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
 #endif
         }
 
-#if defined ADAT_TX
-            TransferAdatTxSamples(c_adat_out, samplesOut, adatSmuxMode);
-#endif
+
 
 #ifndef CODEC_MASTER
 #ifdef I2S_MODE_TDM
@@ -710,6 +717,10 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
             p_lrclk <: 0x7FFFFFFF;
 #endif
 #endif
+          for(int i = 0; i < 8; i++)
+                outuint(c_adat_out, 0);
+
+
 
             index = 0;
 #pragma xta endpoint "i2s_output_r"
@@ -724,6 +735,13 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
 
 #ifndef CODEC_MASTER
             doI2SClocks(divide);
+#endif
+            
+#ifdef ADAT_TX 
+           // TransferAdatTxSamples(c_adat_out, samplesOut, adatSmuxMode);
+            //for(int i = 0; i < 4; i++)
+              //  outuint(c_adat_out, 0);
+
 #endif
 
 #if (I2S_CHANS_ADC != 0)
@@ -953,7 +971,10 @@ chanend ?c_config, chanend ?c)
     SpdifTransmitPortConfig(p_spdif_tx, clk_mst_spd, p_mclk_in);
 #endif
 #ifdef ADAT_TX
-    configure_out_port_no_ready(p_adat_tx, clk_audio_mclk, 0);
+    configure_clock_src(clk_mst_spd, p_mclk_in);
+    configure_out_port_no_ready(p_adat_tx, clk_mst_spd, 0);
+    set_clock_fall_delay(clk_mst_spd, 7);
+    start_clock(clk_mst_spd);
 #endif
 
     /* Perform required CODEC/ADC/DAC initialisation */
@@ -1104,6 +1125,7 @@ chanend ?c_config, chanend ?c)
 
 #ifdef ADAT_TX
             {
+                set_thread_fast_mode_on();
                 adat_tx_port(c_adat_out, p_adat_tx);
             }
 #endif
@@ -1124,7 +1146,7 @@ chanend ?c_config, chanend ?c)
                 // adatSmuxMode   = 1 for FS =  44K1 or  48K0
                 //                = 2 for FS =  88K2 or  96K0
                 //                = 4 for FS = 176K4 or 192K0
-                outuint(c_adat_out, mClk/curSamFreq );
+                outuint(c_adat_out, mClk/curSamFreq);
                 outuint(c_adat_out, adatSmuxMode);
 #endif
                 command = deliver(c_mix_out,
@@ -1180,6 +1202,7 @@ chanend ?c_config, chanend ?c)
                 outct(c_spdif_out, XS1_CT_END);
 #endif
 #ifdef ADAT_TX
+
                 /* Notify ADAT Tx thread of impending new freq... */
                 outct(c_adat_out, XS1_CT_END);
 #endif

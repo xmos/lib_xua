@@ -151,9 +151,7 @@ on tile[AUDIO_IO_TILE] :  buffered in port:1 p_midi_rx      = PORT_MIDI_IN;
 on tile[AUDIO_IO_TILE] : clock    clk_midi                  = CLKBLK_MIDI;
 #endif
 
-#ifdef SPDIF
 on tile[AUDIO_IO_TILE] : clock    clk_mst_spd               = CLKBLK_SPDIF_TX;
-#endif
 
 #ifdef SPDIF_RX
 on tile[XUD_TILE] : clock    clk_spd_rx                     = CLKBLK_SPDIF_RX;
