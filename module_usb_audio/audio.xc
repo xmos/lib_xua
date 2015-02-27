@@ -161,60 +161,58 @@ static inline void doI2SClocks(unsigned divide)
 }
 #endif
 
-#define ADAT_NUM_CHANNELS 8
+unsigned adatCounter = 0;
+unsigned adatSamples[8];
 
 #pragma unsafe arrays
-static inline void TransferAdatTxSamples(chanend c_adat_data, unsigned samplesFromHost[], int smux)
+static inline void TransferAdatTxSamples(chanend c_adat_out, const unsigned samplesFromHost[], int smux, int handshake)
 {
 
-
- #pragma loop unroll
-            for (int i = 0; i < ADAT_NUM_CHANNELS; i++)
-            {
-                outuint(c_adat_data, samplesFromHost[ADAT_TX_INDEX + i]); 
-            }
-
-}
-
-#if 0
-
-    /* SMUX 1 : Send 8 channels at sample rate (i.e. 44.1/48kHz) 
-     * SMUX 2 : Send 4 channels at sample rate (i.e. 88.2/96kHz) 
-     * SMUX 4 : Send 2 channels at sample rate (i.e. 176.4/192kHz) 
-     *
-     * so..
-     *
-     * for (int i = 0; i < ADAT_NUM_CHANNEL/smux; i++)
-     * {
-     *     outuint(c_adat_data, samplesFromHost[ADAT_TX_INDEX + i]);  
-     * }
-     *
-     * Lets un-roll for performance..
-     */
-    switch (smux)
+    /* Do some re-arranging for SMUX.. */
+    unsafe
     {
-        case 1:
-           
-            break;
-
-        case 2:
-            #pragma loop unroll
-            for (int i = 0; i < (ADAT_NUM_CHANNELS/2); i++)
+        unsigned * unsafe samplesFromHostAdat = &samplesFromHost[ADAT_TX_INDEX];
+        
+        /* Note, when smux == 1 this loop just does a straight 1:1 copy */
+        //if(smux != 1)
+        {
+            int adatSampleIndex = adatCounter;
+            for(int i = 0; i < (8/smux); i++)
             {
-                outuint(c_adat_data, samplesFromHost[ADAT_TX_INDEX + i]);  
-            }
-            break;
-
-        case 4:
-            #pragma loop unroll
-            for (int i = 0; i < (ADAT_NUM_CHANNELS/4); i++)
-            {
-                outuint(c_adat_data, samplesFromHost[ADAT_TX_INDEX + i]);  
-            }
-            break; 
+                adatSamples[adatSampleIndex] = samplesFromHostAdat[i];
+                adatSampleIndex += smux;
+            }   
+        }
     }
-}
+    
+    adatCounter++;
+    
+    if(adatCounter == smux)
+    {
+
+#ifdef ADAT_TX_USE_SHARED_BUFF
+        unsafe
+        {       
+            /* Wait for ADAT core to be done with buffer */ 
+            /* Note, we are "running ahead" of the ADAT core */
+            inuint(c_adat_out);
+ 
+            /* Send buffer pointer over to ADAT core */
+            volatile unsigned * unsafe samplePtr = &adatSamples;
+            outuint(c_adat_out, (unsigned) samplePtr);                        
+        }
+#else            
+#pragma loop unroll
+        for (int i = 0; i < 8; i++)
+        {
+            outuint(c_adat_out, samplesFromHost[ADAT_TX_INDEX + i]); 
+        }
 #endif
+        adatCounter = 0;
+    }
+
+}
+
 
 #pragma unsafe arrays
 static inline unsigned DoSampleTransfer(chanend c_out, int readBuffNo, unsigned underflowWord)
@@ -482,6 +480,8 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
 
     unsigned frameCount = 0;
 
+    adatCounter = 0;
+
 #if(DSD_CHANS_DAC != 0)
     if(dsdMode == DSD_MODE_DOP)
     {
@@ -493,15 +493,19 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
     }
 #endif
 
-#if 1
     unsigned command = DoSampleTransfer(c_out, readBuffNo, underflowWord);
-
+#ifdef ADAT_TX
+    unsafe{ 
+    //TransferAdatTxSamples(c_adat_out, samplesOut, adatSmuxMode, 0);
+    volatile unsigned * unsafe samplePtr = &samplesOut[ADAT_TX_INDEX];
+    outuint(c_adat_out, (unsigned) samplePtr); 
+    }
+#endif 
     if(command)
     {
         return command;
     }
-#endif
-
+ 
     InitPorts(divide);
 
     /* TODO In master mode, the i/o loop assumes L/RCLK = 32bit clocks.  We should check this every interation
@@ -646,6 +650,9 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
             /* Clock out the LR Clock, the DAC data and Clock in the next sample into ADC */
             doI2SClocks(divide);
 #endif
+  
+          
+         
 
 #if (I2S_CHANS_ADC != 0)
             /* Input previous L sample into L in buffer */
@@ -668,6 +675,10 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
                     samplesIn_0[((frameCount-1)&(I2S_CHANS_PER_FRAME-1))+i] = bitrev(sample); // channels 1, 3, 5.. on each line.
             }
 #endif
+            
+#ifdef ADAT_TX 
+             TransferAdatTxSamples(c_adat_out, samplesOut, adatSmuxMode, 1);
+#endif 
 
         if(frameCount == 0)
         {
@@ -705,8 +716,6 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
 #endif
         }
 
-
-
 #ifndef CODEC_MASTER
 #ifdef I2S_MODE_TDM
             if(frameCount == (I2S_CHANS_PER_FRAME-2))
@@ -717,10 +726,6 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
             p_lrclk <: 0x7FFFFFFF;
 #endif
 #endif
-          for(int i = 0; i < 8; i++)
-                outuint(c_adat_out, 0);
-
-
 
             index = 0;
 #pragma xta endpoint "i2s_output_r"
@@ -737,13 +742,6 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
             doI2SClocks(divide);
 #endif
             
-#ifdef ADAT_TX 
-           // TransferAdatTxSamples(c_adat_out, samplesOut, adatSmuxMode);
-            //for(int i = 0; i < 4; i++)
-              //  outuint(c_adat_out, 0);
-
-#endif
-
 #if (I2S_CHANS_ADC != 0)
             index = 0;
             /* Channels 0, 2, 4.. on each line */
@@ -1202,7 +1200,10 @@ chanend ?c_config, chanend ?c)
                 outct(c_spdif_out, XS1_CT_END);
 #endif
 #ifdef ADAT_TX
-
+#ifdef ADAT_TX_USE_SHARED_BUFF
+                /* Take out-standing handshake from ADAT core */
+                inuint(c_adat_out);
+#endif
                 /* Notify ADAT Tx thread of impending new freq... */
                 outct(c_adat_out, XS1_CT_END);
 #endif
