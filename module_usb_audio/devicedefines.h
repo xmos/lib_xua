@@ -231,6 +231,10 @@
 #undef SPDIF
 #endif
 
+#ifdef SPDIF
+#define SPDIF_TX 1
+#endif
+
 /**
  * @brief Defines which output channels (stereo) should be output on S/PDIF. Note, Output channels indexed from 0.
  *
