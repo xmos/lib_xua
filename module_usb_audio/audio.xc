@@ -172,7 +172,7 @@ static inline void TransferAdatTxSamples(chanend c_adat_out, const unsigned samp
     unsafe
     {
         unsigned * unsafe samplesFromHostAdat = &samplesFromHost[ADAT_TX_INDEX];
-        
+
         /* Note, when smux == 1 this loop just does a straight 1:1 copy */
         //if(smux != 1)
         {
@@ -181,31 +181,31 @@ static inline void TransferAdatTxSamples(chanend c_adat_out, const unsigned samp
             {
                 adatSamples[adatSampleIndex] = samplesFromHostAdat[i];
                 adatSampleIndex += smux;
-            }   
+            }
         }
     }
-    
+
     adatCounter++;
-    
+
     if(adatCounter == smux)
     {
 
 #ifdef ADAT_TX_USE_SHARED_BUFF
         unsafe
-        {       
-            /* Wait for ADAT core to be done with buffer */ 
+        {
+            /* Wait for ADAT core to be done with buffer */
             /* Note, we are "running ahead" of the ADAT core */
             inuint(c_adat_out);
- 
+
             /* Send buffer pointer over to ADAT core */
             volatile unsigned * unsafe samplePtr = &adatSamples;
-            outuint(c_adat_out, (unsigned) samplePtr);                        
+            outuint(c_adat_out, (unsigned) samplePtr);
         }
-#else            
+#else
 #pragma loop unroll
         for (int i = 0; i < 8; i++)
         {
-            outuint(c_adat_out, samplesFromHost[ADAT_TX_INDEX + i]); 
+            outuint(c_adat_out, samplesFromHost[ADAT_TX_INDEX + i]);
         }
 #endif
         adatCounter = 0;
@@ -411,8 +411,8 @@ static inline void InitPorts(unsigned divide)
     p_lrclk when pinseq(1) :> void @ tmp;
 #else
     p_lrclk when pinseq(0) :> void @ tmp;
-#endif  
-   
+#endif
+
     tmp += (I2S_CHANS_PER_FRAME * 32) - 32 + 1 ;
     /* E.g. 2 * 32 - 32 + 1 = 33 for stereo */
     /* E..g 8 * 32 - 32 + 1 = 225 for 8 chan TDM */
@@ -439,10 +439,10 @@ static inline void InitPorts(unsigned divide)
 
 /* I2S delivery thread */
 #pragma unsafe arrays
-unsigned static deliver(chanend c_out, chanend ?c_spd_out, 
+unsigned static deliver(chanend c_out, chanend ?c_spd_out,
 #ifdef ADAT_TX
     chanend c_adat_out,
-    unsigned adatSmuxMode, 
+    unsigned adatSmuxMode,
 #endif
     unsigned divide, unsigned curSamFreq,
 #if(defined(SPDIF_RX) || defined(ADAT_RX))
@@ -495,17 +495,17 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
 
     unsigned command = DoSampleTransfer(c_out, readBuffNo, underflowWord);
 #ifdef ADAT_TX
-    unsafe{ 
+    unsafe{
     //TransferAdatTxSamples(c_adat_out, samplesOut, adatSmuxMode, 0);
     volatile unsigned * unsafe samplePtr = &samplesOut[ADAT_TX_INDEX];
-    outuint(c_adat_out, (unsigned) samplePtr); 
+    outuint(c_adat_out, (unsigned) samplePtr);
     }
-#endif 
+#endif
     if(command)
     {
         return command;
     }
- 
+
     InitPorts(divide);
 
     /* TODO In master mode, the i/o loop assumes L/RCLK = 32bit clocks.  We should check this every interation
@@ -650,9 +650,9 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
             /* Clock out the LR Clock, the DAC data and Clock in the next sample into ADC */
             doI2SClocks(divide);
 #endif
-  
-          
-         
+
+
+
 
 #if (I2S_CHANS_ADC != 0)
             /* Input previous L sample into L in buffer */
@@ -675,10 +675,10 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
                     samplesIn_0[((frameCount-1)&(I2S_CHANS_PER_FRAME-1))+i] = bitrev(sample); // channels 1, 3, 5.. on each line.
             }
 #endif
-            
-#ifdef ADAT_TX 
+
+#ifdef ADAT_TX
              TransferAdatTxSamples(c_adat_out, samplesOut, adatSmuxMode, 1);
-#endif 
+#endif
 
         if(frameCount == 0)
         {
@@ -741,7 +741,7 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
 #ifndef CODEC_MASTER
             doI2SClocks(divide);
 #endif
-            
+
 #if (I2S_CHANS_ADC != 0)
             index = 0;
             /* Channels 0, 2, 4.. on each line */
@@ -988,19 +988,19 @@ chanend ?c_config, chanend ?c)
         if ((MCLK_441 % curSamFreq) == 0)
         {
             mClk = MCLK_441;
-#ifdef ADAT_TX 
+#ifdef ADAT_TX
             /* Calculate ADAT SMUX mode (1, 2, 4) */
-            adatSmuxMode = curSamFreq / 44100; 
-            adatMultiple = mClk / 44100; 
+            adatSmuxMode = curSamFreq / 44100;
+            adatMultiple = mClk / 44100;
 #endif
         }
         else if ((MCLK_48 % curSamFreq) == 0)
         {
             mClk = MCLK_48;
-#ifdef ADAT_TX 
+#ifdef ADAT_TX
             /* Calculate ADAT SMUX mode (1, 2, 4) */
-            adatSmuxMode = curSamFreq / 48000; 
-            adatMultiple = mClk / 48000; 
+            adatSmuxMode = curSamFreq / 48000;
+            adatMultiple = mClk / 48000;
 #endif
         }
 
@@ -1161,7 +1161,7 @@ chanend ?c_config, chanend ?c)
 #endif
 #ifdef ADAT_TX
                    c_adat_out,
-                   adatSmuxMode, 
+                   adatSmuxMode,
 #endif
                    divide, curSamFreq,
 #if defined (ADAT_RX) || defined (SPDIF_RX)

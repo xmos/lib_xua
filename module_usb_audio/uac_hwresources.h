@@ -4,7 +4,7 @@
 
 #include "xud.h"                 /* XMOS USB Device Layer defines and functions */
 
-#if (XUD_SERIES_SUPPORT != XUD_U_SERIES) 
+#if (XUD_SERIES_SUPPORT != XUD_U_SERIES)
 
 /* XUD_L_SERIES and XUD_G_SERIES */
 
@@ -31,7 +31,7 @@
 /* #define CLKBLK_MCLK        XS1_CLKBLK_2 */
 #define CLKBLK_I2S_BIT     XS1_CLKBLK_3
 
-#else 
+#else
 
 /* XUD_U_SERIES */
 
