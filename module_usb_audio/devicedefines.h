@@ -39,6 +39,13 @@
 #endif
 
 /**
+ * @brief Location (tile) of SPDIF Tx. Default: AUDIO_IO_TILE
+ */
+#ifndef SPDIF_TX_TILE
+#define SPDIF_TX_TILE   AUDIO_IO_TILE
+#endif
+
+/**
  * @brief Number of input channels (device to host). Default: NONE (Must be defined by app)
  */
 #if !defined(NUM_USB_CHAN_IN)
