@@ -19,9 +19,13 @@
 #ifdef SPDIF
 #include "SpdifTransmit.h"
 #endif
+#ifdef ADAT_TX
+#include "adat_tx.h"
+#endif
 #include "commands.h"
 #include "xc_ptr.h"
 
+#include "print.h"
 
 static unsigned samplesOut[NUM_USB_CHAN_OUT];
 
@@ -74,6 +78,10 @@ extern port p_mclk_in;
 
 #ifdef SPDIF
 extern buffered out port:32 p_spdif_tx;
+#endif
+
+#ifdef ADAT_TX
+extern buffered out port:32 p_adat_tx;
 #endif
 
 extern clock    clk_audio_mclk;
@@ -152,6 +160,59 @@ static inline void doI2SClocks(unsigned divide)
    }
 }
 #endif
+
+unsigned adatCounter = 0;
+unsigned adatSamples[8];
+
+#pragma unsafe arrays
+static inline void TransferAdatTxSamples(chanend c_adat_out, const unsigned samplesFromHost[], int smux, int handshake)
+{
+
+    /* Do some re-arranging for SMUX.. */
+    unsafe
+    {
+        unsigned * unsafe samplesFromHostAdat = &samplesFromHost[ADAT_TX_INDEX];
+        
+        /* Note, when smux == 1 this loop just does a straight 1:1 copy */
+        //if(smux != 1)
+        {
+            int adatSampleIndex = adatCounter;
+            for(int i = 0; i < (8/smux); i++)
+            {
+                adatSamples[adatSampleIndex] = samplesFromHostAdat[i];
+                adatSampleIndex += smux;
+            }   
+        }
+    }
+    
+    adatCounter++;
+    
+    if(adatCounter == smux)
+    {
+
+#ifdef ADAT_TX_USE_SHARED_BUFF
+        unsafe
+        {       
+            /* Wait for ADAT core to be done with buffer */ 
+            /* Note, we are "running ahead" of the ADAT core */
+            inuint(c_adat_out);
+ 
+            /* Send buffer pointer over to ADAT core */
+            volatile unsigned * unsafe samplePtr = &adatSamples;
+            outuint(c_adat_out, (unsigned) samplePtr);                        
+        }
+#else            
+#pragma loop unroll
+        for (int i = 0; i < 8; i++)
+        {
+            outuint(c_adat_out, samplesFromHost[ADAT_TX_INDEX + i]); 
+        }
+#endif
+        adatCounter = 0;
+    }
+
+}
+
 
 #pragma unsafe arrays
 static inline unsigned DoSampleTransfer(chanend c_out, int readBuffNo, unsigned underflowWord)
@@ -378,12 +439,18 @@ static inline void InitPorts(unsigned divide)
 
 /* I2S delivery thread */
 #pragma unsafe arrays
-unsigned static deliver(chanend c_out, chanend ?c_spd_out, unsigned divide, unsigned curSamFreq,
-#if(defined(SPDIF_RX) || defined(ADAT_RX))
-chanend c_dig_rx,
+unsigned static deliver(chanend c_out, chanend ?c_spd_out, 
+#ifdef ADAT_TX
+    chanend c_adat_out,
+    unsigned adatSmuxMode, 
 #endif
-chanend ?c_adc)
+    unsigned divide, unsigned curSamFreq,
+#if(defined(SPDIF_RX) || defined(ADAT_RX))
+    chanend c_dig_rx,
+#endif
+    chanend ?c_adc)
 {
+
 #if (I2S_CHANS_ADC != 0) || defined(SPDIF)
 	unsigned sample;
 #endif
@@ -413,6 +480,8 @@ chanend ?c_adc)
 
     unsigned frameCount = 0;
 
+    adatCounter = 0;
+
 #if(DSD_CHANS_DAC != 0)
     if(dsdMode == DSD_MODE_DOP)
     {
@@ -424,15 +493,19 @@ chanend ?c_adc)
     }
 #endif
 
-#if 1
     unsigned command = DoSampleTransfer(c_out, readBuffNo, underflowWord);
-
+#ifdef ADAT_TX
+    unsafe{ 
+    //TransferAdatTxSamples(c_adat_out, samplesOut, adatSmuxMode, 0);
+    volatile unsigned * unsafe samplePtr = &samplesOut[ADAT_TX_INDEX];
+    outuint(c_adat_out, (unsigned) samplePtr); 
+    }
+#endif 
     if(command)
     {
         return command;
     }
-#endif
-
+ 
     InitPorts(divide);
 
     /* TODO In master mode, the i/o loop assumes L/RCLK = 32bit clocks.  We should check this every interation
@@ -577,6 +650,9 @@ chanend ?c_adc)
             /* Clock out the LR Clock, the DAC data and Clock in the next sample into ADC */
             doI2SClocks(divide);
 #endif
+  
+          
+         
 
 #if (I2S_CHANS_ADC != 0)
             /* Input previous L sample into L in buffer */
@@ -599,6 +675,10 @@ chanend ?c_adc)
                     samplesIn_0[((frameCount-1)&(I2S_CHANS_PER_FRAME-1))+i] = bitrev(sample); // channels 1, 3, 5.. on each line.
             }
 #endif
+            
+#ifdef ADAT_TX 
+             TransferAdatTxSamples(c_adat_out, samplesOut, adatSmuxMode, 1);
+#endif 
 
         if(frameCount == 0)
         {
@@ -661,7 +741,7 @@ chanend ?c_adc)
 #ifndef CODEC_MASTER
             doI2SClocks(divide);
 #endif
-
+            
 #if (I2S_CHANS_ADC != 0)
             index = 0;
             /* Channels 0, 2, 4.. on each line */
@@ -824,6 +904,12 @@ chanend ?c_config, chanend ?c)
 #ifdef SPDIF
     chan c_spdif_out;
 #endif
+#ifdef ADAT_TX
+    chan c_adat_out;
+    unsigned adatSmuxMode = 0;
+    unsigned adatMultiple = 0;
+#endif
+
     unsigned curSamFreq = DEFAULT_FREQ;
     unsigned curSamRes_DAC = STREAM_FORMAT_OUTPUT_1_RESOLUTION_BITS; /* Default to something reasonable */
     unsigned curSamRes_ADC = STREAM_FORMAT_INPUT_1_RESOLUTION_BITS; /* Default to something reasonable - note, currently this never changes*/
@@ -878,10 +964,20 @@ chanend ?c_config, chanend ?c)
         EnableBufferedPort(p_dsd_dac[i], 32);
     }
 #endif
-
+#ifdef ADAT_TX
+    /* Share SPDIF clk blk */
+    configure_clock_src(clk_mst_spd, p_mclk_in);
+    configure_out_port_no_ready(p_adat_tx, clk_mst_spd, 0);
+    set_clock_fall_delay(clk_mst_spd, 7);
+#ifndef SPDIF
+    start_clock(clk_mst_spd);
+#endif
+#endif
+    /* Configure ADAT/SPDIF tx ports */
 #ifdef SPDIF
     SpdifTransmitPortConfig(p_spdif_tx, clk_mst_spd, p_mclk_in);
 #endif
+
 
     /* Perform required CODEC/ADC/DAC initialisation */
     AudioHwInit(c_config);
@@ -892,10 +988,20 @@ chanend ?c_config, chanend ?c)
         if ((MCLK_441 % curSamFreq) == 0)
         {
             mClk = MCLK_441;
+#ifdef ADAT_TX 
+            /* Calculate ADAT SMUX mode (1, 2, 4) */
+            adatSmuxMode = curSamFreq / 44100; 
+            adatMultiple = mClk / 44100; 
+#endif
         }
         else if ((MCLK_48 % curSamFreq) == 0)
         {
             mClk = MCLK_48;
+#ifdef ADAT_TX 
+            /* Calculate ADAT SMUX mode (1, 2, 4) */
+            adatSmuxMode = curSamFreq / 48000; 
+            adatMultiple = mClk / 48000; 
+#endif
         }
 
         /* Calculate master clock to bit clock (or DSD clock) divide for current sample freq
@@ -1011,8 +1117,6 @@ chanend ?c_config, chanend ?c)
         }
         firstRun = 0;
 
-
-
         par
         {
 
@@ -1023,6 +1127,12 @@ chanend ?c_config, chanend ?c)
             }
 #endif
 
+#ifdef ADAT_TX
+            {
+                set_thread_fast_mode_on();
+                adat_tx_port(c_adat_out, p_adat_tx);
+            }
+#endif
             {
 #ifdef SPDIF
                 /* Communicate master clock and sample freq to S/PDIF thread */
@@ -1030,11 +1140,28 @@ chanend ?c_config, chanend ?c)
                 outuint(c_spdif_out, mClk);
 #endif
 
+#ifdef ADAT_TX
+                // Configure ADAT parameters ...
+                //
+                // adat_oversampling =  256 for MCLK = 12M288 or 11M2896
+                //                   =  512 for MCLK = 24M576 or 22M5792
+                //                   = 1024 for MCLK = 49M152 or 45M1584
+                //
+                // adatSmuxMode   = 1 for FS =  44K1 or  48K0
+                //                = 2 for FS =  88K2 or  96K0
+                //                = 4 for FS = 176K4 or 192K0
+                outuint(c_adat_out, adatMultiple);
+                outuint(c_adat_out, adatSmuxMode);
+#endif
                 command = deliver(c_mix_out,
 #ifdef SPDIF
                    c_spdif_out,
 #else
                    null,
+#endif
+#ifdef ADAT_TX
+                   c_adat_out,
+                   adatSmuxMode, 
 #endif
                    divide, curSamFreq,
 #if defined (ADAT_RX) || defined (SPDIF_RX)
@@ -1074,10 +1201,17 @@ chanend ?c_config, chanend ?c)
                     	}
                   	}
                 }
-
 #ifdef SPDIF
                 /* Notify S/PDIF thread of impending new freq... */
                 outct(c_spdif_out, XS1_CT_END);
+#endif
+#ifdef ADAT_TX
+#ifdef ADAT_TX_USE_SHARED_BUFF
+                /* Take out-standing handshake from ADAT core */
+                inuint(c_adat_out);
+#endif
+                /* Notify ADAT Tx thread of impending new freq... */
+                outct(c_adat_out, XS1_CT_END);
 #endif
             }
         }
