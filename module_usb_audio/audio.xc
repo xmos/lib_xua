@@ -963,17 +963,20 @@ chanend ?c_config, chanend ?c)
         EnableBufferedPort(p_dsd_dac[i], 32);
     }
 #endif
-
+#ifdef ADAT_TX
+    /* Share SPDIF clk blk */
+    configure_clock_src(clk_mst_spd, p_mclk_in);
+    configure_out_port_no_ready(p_adat_tx, clk_mst_spd, 0);
+    set_clock_fall_delay(clk_mst_spd, 7);
+#ifndef SPDIF
+    start_clock(clk_mst_spd);
+#endif
+#endif
     /* Configure ADAT/SPDIF tx ports */
 #ifdef SPDIF
     SpdifTransmitPortConfig(p_spdif_tx, clk_mst_spd, p_mclk_in);
 #endif
-#ifdef ADAT_TX
-    configure_clock_src(clk_mst_spd, p_mclk_in);
-    configure_out_port_no_ready(p_adat_tx, clk_mst_spd, 0);
-    set_clock_fall_delay(clk_mst_spd, 7);
-    start_clock(clk_mst_spd);
-#endif
+
 
     /* Perform required CODEC/ADC/DAC initialisation */
     AudioHwInit(c_config);
