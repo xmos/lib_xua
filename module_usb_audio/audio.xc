@@ -907,6 +907,7 @@ chanend ?c_config, chanend ?c)
 #ifdef ADAT_TX
     chan c_adat_out;
     unsigned adatSmuxMode = 0;
+    unsigned adatMultiple = 0;
 #endif
 
     unsigned curSamFreq = DEFAULT_FREQ;
@@ -990,6 +991,7 @@ chanend ?c_config, chanend ?c)
 #ifdef ADAT_TX 
             /* Calculate ADAT SMUX mode (1, 2, 4) */
             adatSmuxMode = curSamFreq / 44100; 
+            adatMultiple = mClk / 44100; 
 #endif
         }
         else if ((MCLK_48 % curSamFreq) == 0)
@@ -998,6 +1000,7 @@ chanend ?c_config, chanend ?c)
 #ifdef ADAT_TX 
             /* Calculate ADAT SMUX mode (1, 2, 4) */
             adatSmuxMode = curSamFreq / 48000; 
+            adatMultiple = mClk / 48000; 
 #endif
         }
 
@@ -1147,7 +1150,7 @@ chanend ?c_config, chanend ?c)
                 // adatSmuxMode   = 1 for FS =  44K1 or  48K0
                 //                = 2 for FS =  88K2 or  96K0
                 //                = 4 for FS = 176K4 or 192K0
-                outuint(c_adat_out, mClk/curSamFreq);
+                outuint(c_adat_out, adatMultiple);
                 outuint(c_adat_out, adatSmuxMode);
 #endif
                 command = deliver(c_mix_out,
