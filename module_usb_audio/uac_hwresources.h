@@ -4,7 +4,7 @@
 
 #include "xud.h"                 /* XMOS USB Device Layer defines and functions */
 
-#if (XUD_SERIES_SUPPORT != XUD_U_SERIES) 
+#if ((XUD_SERIES_SUPPORT != XUD_U_SERIES) && (XUD_SERIES_SUPPORT != XUD_X200_SERIES)) 
 
 /* XUD_L_SERIES and XUD_G_SERIES */
 
@@ -45,7 +45,7 @@
 /* #define CLKBLK_ADAT_RX     XS1_CLKBLK_3 */
 /* Note, U-series XUD uses clock blocks 4 and 5 - see XUD_Ports.xc */
 
-#define CLKBLK_FLASHLIB    XS1_CLKBLK_5 /* Clock block for use by flash lib */
+//#define CLKBLK_FLASHLIB    XS1_CLKBLK_5 /* Clock block for use by flash lib */
 
 /* #define CLKBLK_SPDIF_TX    XS1_CLKBLK_1 */
 /* #define CLKBLK_MCLK        XS1_CLKBLK_2 */

@@ -116,7 +116,7 @@ on tile[AUDIO_IO_TILE] : port p_mclk_in                     = PORT_MCLK_IN;
 on tile[XUD_TILE] : in port p_for_mclk_count                = PORT_MCLK_COUNT;
 
 #ifdef SPDIF
-on tile[AUDIO_IO_TILE] : buffered out port:32 p_spdif_tx    = PORT_SPDIF_OUT;
+on tile[SPDIF_TX_TILE] : buffered out port:32 p_spdif_tx    = PORT_SPDIF_OUT;
 #endif
 
 #ifdef ADAT_TX
@@ -182,7 +182,7 @@ on tile[XUD_TILE] : out port p_usb_rst                      = PORT_USB_RESET;
 #define p_usb_rst   null
 #endif
 
-#if (XUD_SERIES_SUPPORT != XUD_U_SERIES)
+#if (XUD_SERIES_SUPPORT != XUD_U_SERIES && XUD_SERIES_SUPPORT != XUD_X200_SERIES)
 /* L Series also needs a clock block for this port */
 on tile[XUD_TILE] : clock clk                               = CLKBLK_USB_RST;
 #else
@@ -309,7 +309,7 @@ void usb_audio_core(chanend c_mix_out
 
             /* Attach mclk count port to mclk clock-block (for feedback) */
             //set_port_clock(p_for_mclk_count, clk_audio_mclk);
-#if(AUDIO_IO_TILE != 0)
+#if(AUDIO_IO_TILE != XUD_TILE)
             set_clock_src(clk_audio_mclk2, p_mclk_in2);
             set_port_clock(p_for_mclk_count, clk_audio_mclk2);
             start_clock(clk_audio_mclk2);
