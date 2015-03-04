@@ -1,8 +1,9 @@
 sc_usb_audio Change Log
 =======================
 
-HEAD
-----
+6.11.1
+------
+    - ADDED:      ADAT transmit functionality, inclusing SMUX. See ADAT_TX and ADAT_TX_INDEX. 
     - RESOLVED:   Build issue with CODEC_MASTER (xCore is I2S slave) enabled
     - RESOLVED:   Channel ordering issue in when TDM and CODEC_MASTER mode enabled
     - RESOLVED:   DFU fails when SPDIF_RX enabled due to clock block being shared between SPDIF
