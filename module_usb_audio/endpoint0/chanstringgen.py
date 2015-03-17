@@ -49,8 +49,8 @@ print "/* Not very nice looking but the standard preprocessor is not very powerf
 
 print "/* Output Strings */\n\n"
 
-genstrings(32, "OUT", "TX", "output", "DAC");
+genstrings(33, "OUT", "TX", "output", "DAC");
 
 print "/* Input Strings */\n\n"
 
-genstrings(32, "IN", "RX", "input", "ADC");
+genstrings(33, "IN", "RX", "input", "ADC");

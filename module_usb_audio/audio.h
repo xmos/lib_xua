@@ -15,9 +15,14 @@
  *                  CODEC configuration functions.
  */
 void audio(chanend c_in,
-#if (defined(SPDIF_RX) || defined(ADAT_RX))
+#ifdef SPDIF_TX
+    chanend c_spdif_tx,
+#endif
+#if(defined(SPDIF_RX) || defined(ADAT_RX))
     chanend c_dig,
 #endif
     chanend ?c_config, chanend ?c_adc);
+
+void SpdifTxWrapper(chanend c_spdif_tx);
 
 #endif // __audio_h__

@@ -696,7 +696,7 @@ typedef struct
     // USB_Descriptor_Audio_MixerUnit_t          Audio_MixerUnit;
     unsigned char configDesc_MixerUnit[MIXER_LENGTH];
 #endif
-#if defined (SPDIF_RX) || defined (ADAT_RX)
+#if defined(SPDIF_RX) || defined(ADAT_RX)
     /* Interrupt EP */
     USB_Descriptor_Endpoint_t                   Audio_Int_Endpoint;
 #endif
