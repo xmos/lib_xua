@@ -378,7 +378,7 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
                  * lastClock being incorrect */
 
                 /* Get MCLK count */
-                asm (" getts %0, res[%1]" : "=r" (u_tmp) : "r" (p_off_mclk));
+                asm volatile(" getts %0, res[%1]" : "=r" (u_tmp) : "r" (p_off_mclk));
 
                 GET_SHARED_GLOBAL(freqChange, g_freqChange);
                 if(freqChange == SET_SAMPLE_FREQ)

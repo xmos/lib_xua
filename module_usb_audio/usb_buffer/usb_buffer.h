@@ -17,6 +17,8 @@
  *  \param c_aud_ctl Audio control channel connected to  Endpoint0()
  *  \param p_off_mclk A port that is clocked of the MCLK input (not the MCLK input itself)
  */
+#include "devicedefines.h"
+
 void buffer(chanend c_aud_out,
             chanend c_aud_in,
             chanend c_aud_fb,

@@ -31,7 +31,7 @@
 /* #define CLKBLK_MCLK        XS1_CLKBLK_2 */
 #define CLKBLK_I2S_BIT     XS1_CLKBLK_3
 
-#else 
+#else
 
 /* XUD_U_SERIES */
 
