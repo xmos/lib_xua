@@ -5,6 +5,8 @@ HEAD
 ----
     - RESOLVED:   Enumeration issue when MAX_MIX_COUNT > 0. Introduced in mixer optimisations
                   in 6.11.0
+    - RESOLVED:   Potential build issue due to duplicate labels in inline asm in
+                  set_interrupt_handler macro
     - CHANGE:     HID report descriptor defines added to shared user_hid.h
 
 6.11.1
