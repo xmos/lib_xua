@@ -5,6 +5,7 @@ HEAD
 ----
     - RESOLVED:   Enumeration issue when MAX_MIX_COUNT > 0. Introduced in mixer optimisations
                   in 6.11.0
+    - CHANGE:     HID report descriptor defines added to shared user_hid.h
 
 6.11.1
 ------
