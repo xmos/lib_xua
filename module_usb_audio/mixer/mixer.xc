@@ -363,9 +363,6 @@ static void mixer1(chanend c_host, chanend c_mix_ctl, chanend c_mixer2)
         /* Request from audio() */
         inuint(c_mixer2);
 
-        GiveSamplesToDevice(c_mixer2, samples_to_device_map, multOut, underflow);
-        GetSamplesFromDevice(c_mixer2);
-
         /* Request data from decouple thread */
         outuint(c_host, 0);
 
@@ -504,9 +501,6 @@ static void mixer1(chanend c_host, chanend c_mix_ctl, chanend c_mixer2)
                     sampFreq = inuint(c_host);
                     mixer1_mix2_flag = sampFreq > 96000;
 
-                    /* Wait for request */
-                    inuint(c_mixer2);
-
                     /* Inform mixer2 (or audio()) about freq change */
                     outct(c_mixer2, command);
                     outuint(c_mixer2, sampFreq);
@@ -514,9 +508,6 @@ static void mixer1(chanend c_host, chanend c_mix_ctl, chanend c_mixer2)
 
                 case SET_STREAM_FORMAT_OUT:
                 case SET_STREAM_FORMAT_IN:
-
-                     /* Wait for request */
-                    inuint(c_mixer2);
 
                     /* Inform mixer2 (or audio()) about format change */
                     outct(c_mixer2, command);
@@ -612,7 +603,8 @@ static void mixer1(chanend c_host, chanend c_mix_ctl, chanend c_mixer2)
             }
 #else       /* IF MAX_MIX_COUNT > 0 */
             /* No mixes, this thread runs on its own doing just volume */
-
+            GiveSamplesToDevice(c_mixer2, samples_to_device_map, multOut, underflow);
+            GetSamplesFromDevice(c_mixer2);
             GiveSamplesToHost(c_host, samples_to_host_map, multIn);
             GetSamplesFromHost(c_host, underflow);
 #endif

@@ -1,6 +1,11 @@
 sc_usb_audio Change Log
 =======================
 
+HEAD
+----
+    - RESOLVED:   Enumeration issue when MAX_MIX_COUNT > 0. Introduced in mixer optimisations
+                  in 6.11.0
+
 6.11.1
 ------
     - ADDED:      ADAT transmit functionality, including SMUX. See ADAT_TX and ADAT_TX_INDEX. 
