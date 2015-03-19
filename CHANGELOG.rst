@@ -8,6 +8,7 @@ HEAD
     - RESOLVED:   Potential build issue due to duplicate labels in inline asm in
                   set_interrupt_handler macro
     - CHANGE:     HID report descriptor defines added to shared user_hid.h
+    - CHANGE:     Now uses module_adat_rx from sc_adat (local module_usb_audio_adat removed)
 
 6.11.1
 ------
