@@ -129,10 +129,9 @@ void handle_audio_request(chanend c_mix_out)
     int space_left;
 
     /* Input word that triggered interrupt and handshake back */
-    (void) inuint(c_mix_out);
-
-    /* Reply with underflow */
-    outuint(c_mix_out, outUnderflow);
+    unsigned underflowSample = inuint(c_mix_out);
+    
+    outuint(c_mix_out, 0);
 
     /* If in overflow condition then receive samples and throw away */
     if(inOverflow || sampsToWrite == 0)
@@ -290,21 +289,11 @@ __builtin_unreachable();
     if(outUnderflow)
     {
 #pragma xta endpoint "out_underflow"
-#if 0
         /* We're still pre-buffering, send out 0 samps */
         for(int i = 0; i < NUM_USB_CHAN_OUT; i++)
         {
-            unsigned sample;
-            unsigned mode;
-            GET_SHARED_GLOBAL(sample, g_muteSample);
-            GET_SHARED_GLOBAL(mode, dsdMode);
-
-            if(mode == DSD_MODE_DOP)
-                outuint(c_mix_out, 0xFA969600);
-            else
-            outuint(c_mix_out, sample);
+            outuint(c_mix_out, underflowSample);
         }
-#endif
 
         /* Calc how many samples left in buffer */
         outSamps = g_aud_from_host_wrptr - g_aud_from_host_rdptr;
