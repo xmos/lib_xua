@@ -3,19 +3,20 @@ sc_usb_audio Change Log
 
 HEAD
 ----
-    - RESOLVED:   Enumeration issue when MAX_MIX_COUNT > 0. Introduced in mixer optimisations
-                  in 6.11.0
-    - RESOLVED:   Potential build issue due to duplicate labels in inline asm in
+    - RESOLVED:   (Major) Enumeration issue when MAX_MIX_COUNT > 0 only. Introduced in mixer 
+                  optimisations in 6.11.0. Does not effect designs without mixer enabled.
+    - RESOLVED:   (Minor) Potential build issue due to duplicate labels in inline asm in
                   set_interrupt_handler macro
+    - RESOLVED:   (Minor) String descriptor for Clock Selector unit incorrectly reported
     - CHANGE:     HID report descriptor defines added to shared user_hid.h
     - CHANGE:     Now uses module_adat_rx from sc_adat (local module_usb_audio_adat removed)
 
 6.11.1
 ------
     - ADDED:      ADAT transmit functionality, including SMUX. See ADAT_TX and ADAT_TX_INDEX. 
-    - RESOLVED:   Build issue with CODEC_MASTER (xCore is I2S slave) enabled
-    - RESOLVED:   Channel ordering issue in when TDM and CODEC_MASTER mode enabled
-    - RESOLVED:   DFU fails when SPDIF_RX enabled due to clock block being shared between SPDIF
+    - RESOLVED:   (Normal) Build issue with CODEC_MASTER (xCore is I2S slave) enabled
+    - RESOLVED:   (Minor) Channel ordering issue in when TDM and CODEC_MASTER mode enabled
+    - RESOLVED:   (Normal) DFU fails when SPDIF_RX enabled due to clock block being shared between SPDIF
                   core and FlashLib
 
 6.11.0
