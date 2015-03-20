@@ -945,7 +945,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
             ID_CLKSRC_ADAT,            /* baCSourceID */
 #endif
             .bmControl                 = 0x03,
-            .iClockSelector            = 13, /* TODO Shoudn't be hard-coded */
+            .iClockSelector            = offsetof(StringDescTable_t, clockSelectorStr)/sizeof(char *),
         },
 
 #if (NUM_USB_CHAN_OUT > 0)
