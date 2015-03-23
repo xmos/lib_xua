@@ -472,8 +472,9 @@
  *
  * Default: XMOS USB Audio Release version (e.g. 0x0651 for 6.5.1).
  */
+#ifndef BCD_DEVICE
 #define BCD_DEVICE               ((BCD_DEVICE_J << 8) | ((BCD_DEVICE_M & 0xF) << 4) | (BCD_DEVICE_N & 0xF))
-
+#endif
 
 /**
  * @brief Number of supported output stream formats.
