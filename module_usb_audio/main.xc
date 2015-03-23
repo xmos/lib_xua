@@ -38,7 +38,7 @@
 #endif
 
 #ifdef ADAT_RX
-#include "adatreceiver.h"
+#include "adat_rx.h"
 #endif
 
 #include "clocking.h"

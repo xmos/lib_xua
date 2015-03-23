@@ -129,10 +129,9 @@ void handle_audio_request(chanend c_mix_out)
     int space_left;
 
     /* Input word that triggered interrupt and handshake back */
-    (void) inuint(c_mix_out);
-
-    /* Reply with underflow */
-    outuint(c_mix_out, outUnderflow);
+    unsigned underflowSample = inuint(c_mix_out);
+    
+    outuint(c_mix_out, 0);
 
     /* If in overflow condition then receive samples and throw away */
     if(inOverflow || sampsToWrite == 0)
@@ -176,7 +175,7 @@ __builtin_unreachable();
                     int mult;
                     int h;
                     unsigned l;
-                    asm("ldw %0, %1[%2]":"=r"(mult):"r"(p_multIn),"r"(i));
+                    asm volatile("ldw %0, %1[%2]":"=r"(mult):"r"(p_multIn),"r"(i));
                     {h, l} = macs(mult, sample, 0, 0);
                     sample = h << 3;
 
@@ -207,7 +206,7 @@ __builtin_unreachable();
                     int mult;
                     int h;
                     unsigned l;
-                    asm("ldw %0, %1[%2]":"=r"(mult):"r"(p_multIn),"r"(i));
+                    asm volatile("ldw %0, %1[%2]":"=r"(mult):"r"(p_multIn),"r"(i));
                     {h, l} = macs(mult, sample, 0, 0);
                     sample = h << 3;
 #if (STREAM_FORMAT_INPUT_RESOLUTION_32BIT_USED == 1)
@@ -240,7 +239,7 @@ __builtin_unreachable();
                     int mult;
                     int h;
                     unsigned l;
-                    asm("ldw %0, %1[%2]":"=r"(mult):"r"(p_multIn),"r"(i));
+                    asm volatile("ldw %0, %1[%2]":"=r"(mult):"r"(p_multIn),"r"(i));
                     {h, l} = macs(mult, sample, 0, 0);
                     sample = h << 3;
 #endif
@@ -290,21 +289,11 @@ __builtin_unreachable();
     if(outUnderflow)
     {
 #pragma xta endpoint "out_underflow"
-#if 0
         /* We're still pre-buffering, send out 0 samps */
         for(int i = 0; i < NUM_USB_CHAN_OUT; i++)
         {
-            unsigned sample;
-            unsigned mode;
-            GET_SHARED_GLOBAL(sample, g_muteSample);
-            GET_SHARED_GLOBAL(mode, dsdMode);
-
-            if(mode == DSD_MODE_DOP)
-                outuint(c_mix_out, 0xFA969600);
-            else
-            outuint(c_mix_out, sample);
+            outuint(c_mix_out, underflowSample);
         }
-#endif
 
         /* Calc how many samples left in buffer */
         outSamps = g_aud_from_host_wrptr - g_aud_from_host_rdptr;
@@ -343,7 +332,7 @@ __builtin_unreachable();
                     sample <<= 16;
 
 #if (OUTPUT_VOLUME_CONTROL == 1) && !defined(OUT_VOLUME_IN_MIXER)
-                    asm("ldw %0, %1[%2]":"=r"(mult):"r"(p_multOut),"r"(i));
+                    asm volatile("ldw %0, %1[%2]":"=r"(mult):"r"(p_multOut),"r"(i));
                     {h, l} = macs(mult, sample, 0, 0);
                     /* Note, in 2 byte subslot mode - ignore lower result of macs */
                     h <<= 3;
@@ -371,7 +360,7 @@ __builtin_unreachable();
                     g_aud_from_host_rdptr+=4;
 
 #if (OUTPUT_VOLUME_CONTROL == 1) && !defined(OUT_VOLUME_IN_MIXER)
-                    asm("ldw %0, %1[%2]":"=r"(mult):"r"(p_multOut),"r"(i));
+                    asm volatile("ldw %0, %1[%2]":"=r"(mult):"r"(p_multOut),"r"(i));
                     {h, l} = macs(mult, sample, 0, 0);
                     h <<= 3;
 #if (STREAM_FORMAT_OUTPUT_RESOLUTION_32BIT_USED == 1)
@@ -426,7 +415,7 @@ __builtin_unreachable();
                     unpackState++;
 
 #if (OUTPUT_VOLUME_CONTROL == 1) && !defined(OUT_VOLUME_IN_MIXER)
-                    asm("ldw %0, %1[%2]":"=r"(mult):"r"(p_multOut),"r"(i));
+                    asm volatile("ldw %0, %1[%2]":"=r"(mult):"r"(p_multOut),"r"(i));
                     {h, l} = macs(mult, sample, 0, 0);
                     h <<= 3;
                     outuint(c_mix_out, h);
@@ -476,7 +465,7 @@ __builtin_unreachable();
             }
 
             /* Get feedback val - ideally this would be syncronised */
-            asm("ldw   %0, dp[g_speed]" : "=r" (speed) :);
+            asm volatile("ldw   %0, dp[g_speed]" : "=r" (speed) :);
 
             /* Calc packet size to send back based on our fb */
             speedRem += speed;
@@ -587,7 +576,7 @@ static inline void SetupZerosSendBuffer(XUD_ep aud_to_host_usb_ep, unsigned samp
 
     mid *= g_numUsbChan_In * slotSize;
 
-    asm("stw %0, %1[0]"::"r"(mid),"r"(g_aud_to_host_zeros));
+    asm volatile("stw %0, %1[0]"::"r"(mid),"r"(g_aud_to_host_zeros));
 
     /* Mark EP ready with the zero buffer. Note this will simply update the packet size
     * if it is already ready */
@@ -648,14 +637,14 @@ void decouple(chanend c_mix_out
 #ifndef OUT_VOLUME_IN_MIXER
     for (int i = 0; i < NUM_USB_CHAN_OUT + 1; i++)
     {
-        asm("stw %0, %1[%2]"::"r"(MAX_VOL),"r"(p_multOut),"r"(i));
+        asm volatile("stw %0, %1[%2]"::"r"(MAX_VOL),"r"(p_multOut),"r"(i));
     }
 #endif
 
 #ifndef IN_VOLUME_IN_MIXER
     for (int i = 0; i < NUM_USB_CHAN_IN + 1; i++)
     {
-        asm("stw %0, %1[%2]"::"r"(MAX_VOL),"r"(p_multIn),"r"(i));
+        asm volatile("stw %0, %1[%2]"::"r"(MAX_VOL),"r"(p_multIn),"r"(i));
     }
 #endif
 
@@ -751,7 +740,7 @@ void decouple(chanend c_mix_out
                 chkct(c_mix_out, XS1_CT_END);
 
                 SET_SHARED_GLOBAL(g_freqChange, 0);
-                asm("outct res[%0],%1"::"r"(buffer_aud_ctl_chan),"r"(XS1_CT_END));
+                asm volatile("outct res[%0],%1"::"r"(buffer_aud_ctl_chan),"r"(XS1_CT_END));
 
                 ENABLE_INTERRUPTS();
 
@@ -795,7 +784,7 @@ void decouple(chanend c_mix_out
                 }
 
                 SET_SHARED_GLOBAL(g_freqChange, 0);
-                asm("outct res[%0],%1"::"r"(buffer_aud_ctl_chan),"r"(XS1_CT_END));
+                asm volatile("outct res[%0],%1"::"r"(buffer_aud_ctl_chan),"r"(XS1_CT_END));
 
                 ENABLE_INTERRUPTS();
             }
@@ -840,7 +829,7 @@ void decouple(chanend c_mix_out
 
                 /* Wait for handshake back */
                 chkct(c_mix_out, XS1_CT_END);
-                asm("outct res[%0],%1"::"r"(buffer_aud_ctl_chan),"r"(XS1_CT_END));
+                asm volatile("outct res[%0],%1"::"r"(buffer_aud_ctl_chan),"r"(XS1_CT_END));
 
                 SET_SHARED_GLOBAL(g_freqChange, 0);
                 ENABLE_INTERRUPTS();
@@ -1000,7 +989,7 @@ void decouple(chanend c_mix_out
                 {
                     int p, len;
                     GET_SHARED_GLOBAL(p, g_aud_to_host_buffer);
-                    asm("ldw %0, %1[0]":"=r"(len):"r"(p));
+                    asm volatile("ldw %0, %1[0]":"=r"(len):"r"(p));
                     XUD_SetReady_InPtr(aud_to_host_usb_ep, p+4, len);
                 }
                 continue;

@@ -219,109 +219,85 @@ static inline void TransferAdatTxSamples(chanend c_adat_out, const unsigned samp
 static inline unsigned DoSampleTransfer(chanend c_out, int readBuffNo, unsigned underflowWord)
 {
     unsigned command;
-    unsigned underflow;
 
-     outuint(c_out, 0);
+    outuint(c_out, underflowWord);
 
-        /* Check for sample freq change (or other command) or new samples from mixer*/
-        if(testct(c_out))
-        {
-            unsigned command = inct(c_out);
+    /* Check for sample freq change (or other command) or new samples from mixer*/
+    if(testct(c_out))
+    {
+        unsigned command = inct(c_out);
 #ifndef CODEC_MASTER
-            // Set clocks low
-            p_lrclk <: 0;
-            p_bclk <: 0;
+        // Set clocks low
+        p_lrclk <: 0;
+        p_bclk <: 0;
 #if(DSD_CHANS_DAC != 0)
             /* DSD Clock might not be shared with lrclk or bclk... */
-            p_dsd_clk <: 0;
+        p_dsd_clk <: 0;
 #endif
 #endif
 #if (DSD_CHANS_DAC > 0)
-            if(dsdMode == DSD_MODE_DOP)
-                dsdMode = DSD_MODE_OFF;
+        if(dsdMode == DSD_MODE_DOP)
+            dsdMode = DSD_MODE_OFF;
 #endif
 #pragma xta endpoint "received_command"
             return command;
-
-        }
-        else
-        {
-            underflow = inuint(c_out);
+    }
+    else
+    {
 #ifndef MIXER // Interfaces straight to decouple()
 #if NUM_USB_CHAN_IN > 0
 #pragma loop unroll
-            for(int i = 0; i < I2S_CHANS_ADC; i++)
-            {
-                if(readBuffNo)
-                    outuint(c_out, samplesIn_1[i]);
-                else
-                    outuint(c_out, samplesIn_0[i]);
-            }
-            /* Send over the digi channels - no odd buffering required */
-#pragma loop unroll
-            for(int i = I2S_CHANS_ADC; i < NUM_USB_CHAN_IN; i++)
-            {
+        for(int i = 0; i < I2S_CHANS_ADC; i++)
+        {
+            if(readBuffNo)
+                outuint(c_out, samplesIn_1[i]);
+            else
                 outuint(c_out, samplesIn_0[i]);
-            }
+        }
+        /* Send over the digi channels - no odd buffering required */
+#pragma loop unroll
+        for(int i = I2S_CHANS_ADC; i < NUM_USB_CHAN_IN; i++)
+        {
+            outuint(c_out, samplesIn_0[i]);
+        }
 #endif
 
 #if NUM_USB_CHAN_OUT > 0
-            if(underflow)
-            {
 #pragma loop unroll
-                for(int i = 0; i < NUM_USB_CHAN_OUT; i++)
-                {
-                    samplesOut[i] = underflowWord;
-                }
-            }
-            else
-            {
-#pragma loop unroll
-                for(int i = 0; i < NUM_USB_CHAN_OUT; i++)
-                {
-                    samplesOut[i] = inuint(c_out);
-                }
-            }
+        for(int i = 0; i < NUM_USB_CHAN_OUT; i++)
+        {
+            samplesOut[i] = inuint(c_out);
+        }
 #endif
 #else /* ifndef MIXER */
 #if NUM_USB_CHAN_OUT > 0
-            if(underflow)
-            {
-                for(int i = 0; i < NUM_USB_CHAN_OUT; i++)
-                {
-                    samplesOut[i] = underflowWord;
-                }
-            }
-            else
-            {
 #pragma loop unroll
-                for(int i = 0; i < NUM_USB_CHAN_OUT; i++)
-                {
-                    int tmp = inuint(c_out);
-                    samplesOut[i] = tmp;
-                }
-            }
+        for(int i = 0; i < NUM_USB_CHAN_OUT; i++)
+        {
+            int tmp = inuint(c_out);
+            samplesOut[i] = tmp;
+        }
 #endif
 #if NUM_USB_CHAN_IN > 0
 #pragma loop unroll
-            for(int i = 0; i < I2S_CHANS_ADC; i++)
-            {
-                if(readBuffNo)
-                    outuint(c_out, samplesIn_1[i]);
-                else
-                    outuint(c_out, samplesIn_0[i]);
-            }
-            /* Send over the digi channels - no odd buffering required */
-#pragma loop unroll
-            for(int i = I2S_CHANS_ADC; i < NUM_USB_CHAN_IN; i++)
-            {
+        for(int i = 0; i < I2S_CHANS_ADC; i++)
+        {
+            if(readBuffNo)
+                outuint(c_out, samplesIn_1[i]);
+            else
                 outuint(c_out, samplesIn_0[i]);
-            }
-#endif
-#endif
         }
+        /* Send over the digi channels - no odd buffering required */
+#pragma loop unroll
+        for(int i = I2S_CHANS_ADC; i < NUM_USB_CHAN_IN; i++)
+        {
+            outuint(c_out, samplesIn_0[i]);
+        }
+#endif
+#endif
+    }
 
-        return 0;
+    return 0;
 
 }
 
@@ -453,9 +429,6 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
 
 #if (I2S_CHANS_ADC != 0) || defined(SPDIF)
 	unsigned sample;
-#endif
-    unsigned underflow = 0;
-#if NUM_USB_CHAN_OUT > 0
 #endif
 //#if NUM_USB_CHAN_IN > 0
     /* Since DAC and ADC buffered ports off by one sample we buffer previous ADC frame */

@@ -160,11 +160,11 @@
 #define set_interrupt_handler(f, nstackwords, args, c, ...) \
   asm (" .section .dp.data,       \"adw\", @progbits\n" \
        " .align 4\n" \
-       "__" #f "_kernel_stack:\n" \
+       "__" #f "_kernel_stack%=:\n" \
        " .space  " #nstackwords ", 0\n" \
-       " .text\n"); \
-  asm("mov r10, %0; ldaw r11, dp[__" #f "_kernel_stack];add r11, r11, r10;ldaw r10, sp[0]; "\
-      "set sp,r11;stw r10, sp[0]; krestsp 0"::"r"(nstackwords-8):"r10","r11"); \
+       " .text\n" \
+       "mov r10, %0; ldaw r11, dp[__" #f "_kernel_stack%=];add r11, r11, r10;ldaw r10, sp[0]; "\
+       "set sp,r11;stw r10, sp[0]; krestsp 0"::"r"(nstackwords-8):"r10","r11"); \
   store_args ## args(c, __VA_ARGS__) \
   do_interrupt_handler(f, args) \
   asm("ldap r11, __" #f "_handler; setv res[%0],r11"::"r"(c):"r11");    \
