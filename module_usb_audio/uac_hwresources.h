@@ -42,7 +42,6 @@
 /* use REF for ADAT_RX on U-series */
 /* #define CLKBLK_ADAT_RX     XS1_CLKBLK_3 */
 /* Note, U-series XUD uses clock blocks 4 and 5 - see XUD_Ports.xc */
-#define CLKBLK_FLASHLIB    XS1_CLKBLK_5 /* Clock block for use by flash lib */
 
 #define CLKBLK_I2S_BIT     XS1_CLKBLK_3
 #endif
