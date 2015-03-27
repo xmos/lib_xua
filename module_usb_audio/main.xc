@@ -192,8 +192,12 @@ on tile[XUD_TILE] : clock clk                               = CLKBLK_USB_RST;
 #endif
 
 #ifdef IAP
-/* I2C ports - in a struct for use with module_i2s_simple */
+/* I2C ports - in a struct for use with module_i2c_shared & module_i2c_simple/module_i2c_single_port */
+#ifdef PORT_I2C
+on tile [IAP_TILE] : struct r_i2c r_i2c = {PORT_I2C};
+#else
 on tile [IAP_TILE] : struct r_i2c r_i2c = {PORT_I2C_SCL, PORT_I2C_SDA};
+#endif
 #endif
 
 
