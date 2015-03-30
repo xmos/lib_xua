@@ -130,7 +130,7 @@ void handle_audio_request(chanend c_mix_out)
 
     /* Input word that triggered interrupt and handshake back */
     unsigned underflowSample = inuint(c_mix_out);
-    
+
     outuint(c_mix_out, 0);
 
     /* If in overflow condition then receive samples and throw away */
