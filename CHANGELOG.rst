@@ -1,10 +1,14 @@
 sc_usb_audio Change Log
 =======================
 
-HEAD
-----
+6.11.2
+------
     - RESOLVED:   (Major) Enumeration issue when MAX_MIX_COUNT > 0 only. Introduced in mixer 
-                  optimisations in 6.11.0. Does not effect designs without mixer enabled.
+                  optimisations in 6.11.0. Only affects designs using mixer functionality.
+    - RESOLVED:   (Normal) Audio buffering request system modified such that the mixer output is
+                  not silent when in underflow case (i.e. host output stream not active) This issue was 
+                  introduced with the addition of DSD functionality and only affects designs using
+                  mixer functionality.  
     - RESOLVED:   (Minor) Potential build issue due to duplicate labels in inline asm in
                   set_interrupt_handler macro
     - RESOLVED:   (Minor) String descriptor for Clock Selector unit incorrectly reported
