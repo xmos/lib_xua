@@ -11,6 +11,8 @@ sc_usb_audio Change Log
                   mixer functionality.  
     - RESOLVED:   (Minor) Potential build issue due to duplicate labels in inline asm in
                   set_interrupt_handler macro
+    - RESOLVED:   (Minor) BCD_DEVICE define in devicedefines.h now guarded by ifndef (caused issues
+                  with DFU test build configs.
     - RESOLVED:   (Minor) String descriptor for Clock Selector unit incorrectly reported
     - RESOLVED:   (Minor) BCD_DEVICE in devicedefines.h now guarded by #ifndef (Caused issues with 
                   default DFU test build configs.
