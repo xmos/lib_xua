@@ -145,6 +145,7 @@
 
 #define do_interrupt_handler(f,args)    \
   asm("bu .L__" #f "_handler_skip;\n" \
+      ".align 4\n" \
       "__" #f "_handler:\n"  \
       "kentsp " #args " + 19\n" \
       "__kent:" \
@@ -159,7 +160,7 @@
 
 #define set_interrupt_handler(f, nstackwords, args, c, ...) \
   asm (" .section .dp.data,       \"adw\", @progbits\n" \
-       " .align 4\n" \
+       " .align 8\n" \
        "__" #f "_kernel_stack%=:\n" \
        " .space  " #nstackwords ", 0\n" \
        " .text\n" \
