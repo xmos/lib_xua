@@ -620,7 +620,7 @@ static void mixer2(chanend c_mixer1, chanend c_audio)
     {
 #pragma xta endpoint "mixer2_req"
         request = inuint(c_audio);
-        
+
         /* Forward the request on */
         outuint(c_mixer1, request);
 

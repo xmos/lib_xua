@@ -120,7 +120,7 @@ on tile[SPDIF_TX_TILE] : buffered out port:32 p_spdif_tx    = PORT_SPDIF_OUT;
 #endif
 
 #ifdef ADAT_TX
-on stdcore[AUDIO_IO_TILE] : buffered out port:32 p_adat_tx        = PORT_ADAT_OUT;
+on stdcore[AUDIO_IO_TILE] : buffered out port:32 p_adat_tx  = PORT_ADAT_OUT;
 #endif
 
 #ifdef ADAT_RX

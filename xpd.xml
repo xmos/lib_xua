@@ -14,14 +14,10 @@
             <board>XR-USB-AUDIO-20-MC</board>
             <keyword>USB Audio UAC2</keyword>
         </component>
-        <component description = "ADAT" type = "demoCode" scope = "General Use" path = "module_usb_audio_adat" local = "false" id = "module_usb_audio_adat" name = "ADAT Module for UAC2 MC Reference Design">
-            <board>XR-USB-AUDIO-20-MC</board>
-            <keyword>ADAT</keyword>
-        </component>
         <component description = "MIDI" type = "demoCode" scope = "General Use" path = "module_usb_midi" local = "false" id = "module_usb_midi" name = "MIDI Module for USB Audio Framework">
             <board></board>
+            <componentDependency version = "6.11.2">module_queue</componentDependency>
             <componentDependency repo = "git://github.com/xcore/sc_util" version = "1.0.4">module_xassert</componentDependency>
-            <componentDependency version = "6.11.1">module_queue</componentDependency>
             <keyword>MIDI</keyword>
         </component>
     </components>
@@ -84,7 +80,10 @@
     <release parenthash = "66ce8f8a6e982c3de563205d12e0ed10725ef8c3" version = "6.11.0alpha2" githash = "7f8c3c687022e4664ba8f7d455ffcef8656911c0"></release>
     <release parenthash = "6eaa986eb9b385a4be9de719fd906daa8b36a6bf" version = "6.11.1beta0" githash = "fa12263ac6248aa95abcdb11eaa5d6b09cffff7f"></release>
     <release parenthash = "8335ef56cdc879e7e84a338534e10091b86b1e5a" version = "6.11.1beta1" githash = "3e61cee71c4aaa845908d5d9dfb9257a1000215d"></release>
-    <release parenthash = "214c5c4f4287b2e0f78a397d5ae9edeaceefa3b2" version = "6.11.1beta2"></release>
+    <release parenthash = "214c5c4f4287b2e0f78a397d5ae9edeaceefa3b2" version = "6.11.1beta2" githash = "1e963e8bc5e02fc4a03cc1b4059533a7734417e9"></release>
+    <release parenthash = "575ee95714761eef35b2b59db4d09fe0bb311827" version = "6.11.2rc0" githash = "5bf4f147b1442ab7c682bb39cf9a159fe3770bf2"></release>
+    <release parenthash = "67b217f48f3e37fc9c185f126d0ce78e1892203d" version = "6.11.2rc1" githash = "46faa608ccdc0b44eb00425d2eb381cc8920504b"></release>
+    <release parenthash = "5eec2dd557d7d6c7e76643ad083879a24791e832" version = "6.11.2rc2"></release>
     <subpartnumber>XM-004720-SM</subpartnumber>
     <vendor>XMOS</vendor>
     <version_defines>
