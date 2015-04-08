@@ -1,6 +1,10 @@
 sc_usb_audio Change Log
 =======================
 
+6.11.3
+------
+    - RESOLVED:  (Major) Streaming issue when mixer not enabled (introduced in 6.11.2)
+
 6.11.2
 ------
     - RESOLVED:   (Major) Enumeration issue when MAX_MIX_COUNT > 0 only. Introduced in mixer 
