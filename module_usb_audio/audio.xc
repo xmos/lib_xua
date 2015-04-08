@@ -244,6 +244,7 @@ static inline unsigned DoSampleTransfer(chanend c_out, int readBuffNo, unsigned 
     else
     {
 #ifndef MIXER // Interfaces straight to decouple()
+        inuint(c_out);
 #if NUM_USB_CHAN_IN > 0
 #pragma loop unroll
         for(int i = 0; i < I2S_CHANS_ADC; i++)
