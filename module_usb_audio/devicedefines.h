@@ -462,7 +462,7 @@
  * @brief Device firmware version number in Binary Coded Decimal format: 0xJJMN where JJ: major, M: minor, N: sub-minor version number.
  */
 #ifndef BCD_DEVICE_N
-#define BCD_DEVICE_N             2
+#define BCD_DEVICE_N             3
 #endif
 
 /**
