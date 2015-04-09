@@ -383,7 +383,7 @@ void usb_audio_core(chanend c_mix_out
 }
 
 void usb_audio_io(chanend c_aud_in, chanend ?c_adc,
-#ifdef SPDIF_TX
+#if defined(SPDIF_TX) && (SPDIF_TX_TILE != AUDIO_IO_TILE)
     chanend c_spdif_tx,
 #endif
 #ifdef MIXER
@@ -419,21 +419,18 @@ void usb_audio_io(chanend c_aud_in, chanend ?c_adc,
         {
             thread_speed();
 #ifdef MIXER
-            audio(c_mix_out,
-#ifdef SPDIF_TX
+#define AUDIO_CHANNEL c_mix_out
+#else
+#define AUDIO_CHANNEL c_aud_in
+#endif
+            audio(AUDIO_CHANNEL,
+#if defined(SPDIF_TX) && (SPDIF_TX_TILE != AUDIO_IO_TILE)
                 c_spdif_tx,
 #endif
 #if defined(SPDIF_RX) || defined(ADAT_RX)
                 c_dig_rx,
 #endif
                 c_aud_cfg, c_adc);
-#else
-            audio(c_aud_in,
-#if defined(SPDIF_RX) || defined(ADAT_RX)
-            c_dig_rx,
-#endif
-            c_aud_cfg, c_adc);
-#endif
         }
 
 #if defined(SPDIF_RX) || defined(ADAT_RX)
@@ -498,7 +495,7 @@ int main()
 #define c_adat_rx null
 #endif
 
-#ifdef SPDIF_TX
+#if defined(SPDIF_TX) && (SPDIF_TX_TILE != AUDIO_IO_TILE)
     chan c_spdif_tx;
 #endif
 
@@ -532,7 +529,7 @@ int main()
 );
 
         on tile[AUDIO_IO_TILE]: usb_audio_io(c_mix_out, c_adc
-#ifdef SPDIF_TX
+#if defined(SPDIF_TX) && (SPDIF_TX_TILE != AUDIO_IO_TILE)
             , c_spdif_tx
 #endif
 #ifdef MIXER
@@ -541,7 +538,7 @@ int main()
             ,c_aud_cfg, c_spdif_rx, c_adat_rx, c_clk_ctl, c_clk_int
         );
 
-#ifdef SPDIF_TX
+#if defined(SPDIF_TX) && (SPDIF_TX_TILE != AUDIO_IO_TILE)
         on tile[SPDIF_TX_TILE]:
         {
             thread_speed();

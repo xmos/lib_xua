@@ -817,32 +817,26 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
     return 0;
 }
 
-#ifdef SPDIF
+#if defined(SPDIF_TX) && (SPDIF_TX_TILE != AUDIO_IO_TILE)
 void SpdifTxWrapper(chanend c_spdif_tx)
 {
     unsigned portId;
-#if SPDIF_TX_TILE == AUDIO_IO_TILE 
-    SpdifTransmitPortConfig(p_spdif_tx, clk_mst_spd, p_mclk_in);
-#error
-#else
     //configure_clock_src(clk, p_mclk);
+    
     // TODO could share clock block here..
+    // NOTE, Assuming SPDIF tile == USB tile here..
     asm("ldw %0, dp[p_mclk_in2]":"=r"(portId));
     asm("setclk res[%0], %1"::"r"(clk_mst_spd), "r"(portId));
     configure_out_port_no_ready(p_spdif_tx, clk_mst_spd, 0);
     set_clock_fall_delay(clk_mst_spd, 7);
     start_clock(clk_mst_spd);
-#endif
-
+    
     while(1)
     {
         SpdifTransmit(p_spdif_tx, c_spdif_tx);
     }
-
 }
-
 #endif
-
 
 /* This function is a dummy version of the deliver thread that does not
    connect to the codec ports. It is used during DFU reset. */
@@ -897,7 +891,7 @@ unsigned static dummy_deliver(chanend c_out)
 #define SAMPLES_PER_PRINT 1
 
 void audio(chanend c_mix_out,
-#if SPDIF
+#if defined(SPDIF_TX) && (SPDIF_TX_TILE != AUDIO_IO_TILE)
 chanend c_spdif_out,
 #endif
 #if (defined(ADAT_RX) || defined(SPDIF_RX))
@@ -905,9 +899,9 @@ chanend c_dig_rx,
 #endif
 chanend ?c_config, chanend ?c)
 {
-//#ifdef SPDIF
-  //  chan c_spdif_out;
-//endif
+#if defined (SPDIF_TX) && (SPDIF_TX_TILE == AUDIO_IO_TILE)
+    chan c_spdif_out;
+#endif
 #ifdef ADAT_TX
     chan c_adat_out;
     unsigned adatSmuxMode = 0;
@@ -978,10 +972,9 @@ chanend ?c_config, chanend ?c)
 #endif
 #endif
     /* Configure ADAT/SPDIF tx ports */
-#ifdef SPDIF
-    //SpdifTransmitPortConfig(p_spdif_tx, clk_mst_spd, p_mclk_in);
+#if defined(SPDIF_TX) && (SPDIF_TX_TILE == AUDIO_IO_TILE)
+    SpdifTransmitPortConfig(p_spdif_tx, clk_mst_spd, p_mclk_in);
 #endif
-
 
     /* Perform required CODEC/ADC/DAC initialisation */
     AudioHwInit(c_config);
@@ -1124,8 +1117,7 @@ chanend ?c_config, chanend ?c)
         par
         {
 
-#if 0
-//#ifdef SPDIF
+#if defined(SPDIF_TX) && (SPDIF_TX_TILE == AUDIO_IO_TILE)
             {
                 set_thread_fast_mode_on();
                 SpdifTransmit(p_spdif_tx, c_spdif_out);
@@ -1206,7 +1198,7 @@ chanend ?c_config, chanend ?c)
                     	}
                   	}
                 }
-#ifdef SPDIF
+#ifdef SPDIF_TX
                 /* Notify S/PDIF thread of impending new freq... */
                 outct(c_spdif_out, XS1_CT_END);
 #endif
