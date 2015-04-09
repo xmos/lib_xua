@@ -16,16 +16,15 @@
         </component>
         <component description = "MIDI" type = "demoCode" scope = "General Use" path = "module_usb_midi" local = "false" id = "module_usb_midi" name = "MIDI Module for USB Audio Framework">
             <board></board>
-            <componentDependency version = "6.11.2">module_queue</componentDependency>
+            <componentDependency version = "6.11.3">module_queue</componentDependency>
             <componentDependency repo = "git://github.com/xcore/sc_util" version = "1.0.4">module_xassert</componentDependency>
             <keyword>MIDI</keyword>
         </component>
     </components>
     <dependency repo = "sc_util">
         <gitbranch>master</gitbranch>
-        <githash>f09fda14976cf969ae792e7c28b4e5a30e4c1eb9</githash>
+        <githash>ea3f119293590a416e4a7f9d34804b6ac4972156</githash>
         <uri>git://github.com/xcore/sc_util</uri>
-        <version>1.0.4rc0</version>
     </dependency>
     <description>USB Audio Shared Components. For use in the XMOS USB Audio Refererence Designs.</description>
     <docdir>module_dfu/doc</docdir>
@@ -84,7 +83,8 @@
     <release parenthash = "575ee95714761eef35b2b59db4d09fe0bb311827" version = "6.11.2rc0" githash = "5bf4f147b1442ab7c682bb39cf9a159fe3770bf2"></release>
     <release parenthash = "67b217f48f3e37fc9c185f126d0ce78e1892203d" version = "6.11.2rc1" githash = "46faa608ccdc0b44eb00425d2eb381cc8920504b"></release>
     <release parenthash = "5eec2dd557d7d6c7e76643ad083879a24791e832" version = "6.11.2rc2" githash = "e1726efd172f52fe17e87687a59beeb0cc5dbd50"></release>
-    <release parenthash = "2f528c3e59378b6c9dc95ff5dbd73a6944b417ca" version = "6.11.3rc0"></release>
+    <release parenthash = "2f528c3e59378b6c9dc95ff5dbd73a6944b417ca" version = "6.11.3rc0" githash = "f4d02b8fd8ced64c28977ba38175cc5d633e4ddf"></release>
+    <release parenthash = "0c8cdd64a03f75d2c050ccadbb1bd8983534c7f7" version = "6.12.0alpha0"></release>
     <subpartnumber>XM-004720-SM</subpartnumber>
     <vendor>XMOS</vendor>
     <version_defines>
