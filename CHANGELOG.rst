@@ -1,6 +1,14 @@
 sc_usb_audio Change Log
 =======================
 
+6.12.0
+------
+    - ADDED:      Checks for XUD_200_SERIES define where required
+    - RESOLVED:   Run-time exception due to decouple interrupt not entering correct issue mode
+                  (affects XCORE-200 only)   
+    - CHANGE:     SPDIF Tx Core may now reside on a different tile from I2S
+    - CHANGE:     I2C ports now in structure to match new module_i2c_singleport/shared API.
+
 6.11.3
 ------
     - RESOLVED:  (Major) Streaming issue when mixer not enabled (introduced in 6.11.2)
