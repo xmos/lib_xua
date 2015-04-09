@@ -4,7 +4,7 @@
 
 #include "xud.h"                 /* XMOS USB Device Layer defines and functions */
 
-#if ((XUD_SERIES_SUPPORT != XUD_U_SERIES) && (XUD_SERIES_SUPPORT != XUD_X200_SERIES)) 
+#if ((XUD_SERIES_SUPPORT != XUD_U_SERIES) && (XUD_SERIES_SUPPORT != XUD_X200_SERIES))
 
 /* XUD_L_SERIES and XUD_G_SERIES */
 

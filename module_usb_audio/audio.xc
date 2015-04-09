@@ -822,7 +822,7 @@ void SpdifTxWrapper(chanend c_spdif_tx)
 {
     unsigned portId;
     //configure_clock_src(clk, p_mclk);
-    
+
     // TODO could share clock block here..
     // NOTE, Assuming SPDIF tile == USB tile here..
     asm("ldw %0, dp[p_mclk_in2]":"=r"(portId));
@@ -830,7 +830,7 @@ void SpdifTxWrapper(chanend c_spdif_tx)
     configure_out_port_no_ready(p_spdif_tx, clk_mst_spd, 0);
     set_clock_fall_delay(clk_mst_spd, 7);
     start_clock(clk_mst_spd);
-    
+
     while(1)
     {
         SpdifTransmit(p_spdif_tx, c_spdif_tx);
