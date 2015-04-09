@@ -648,7 +648,7 @@ void decouple(chanend c_mix_out
     }
 #endif
 
-    set_interrupt_handler(handle_audio_request, 200, 1, c_mix_out, 0);
+    set_interrupt_handler(handle_audio_request, 1, c_mix_out, 0);
 
     /* Wait for usb_buffer() to set up globals for us to use
      * Note: assumed that buffer_aud_ctl_chan is also setup before these globals are !0 */
