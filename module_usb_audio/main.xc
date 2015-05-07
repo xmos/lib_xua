@@ -151,7 +151,7 @@ on tile[MIDI_TILE] :  buffered in port:1 p_midi_rx      = PORT_MIDI_IN;
 on tile[MIDI_TILE] : clock    clk_midi                  = CLKBLK_MIDI;
 #endif
 
-#if defined(SPDIF) || defined(ADAT_TX)
+#if defined(SPDIF_TX) || defined(ADAT_TX)
 on tile[SPDIF_TX_TILE] : clock    clk_mst_spd               = CLKBLK_SPDIF_TX;
 #endif
 

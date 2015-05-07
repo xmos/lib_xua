@@ -229,17 +229,13 @@
 /**
  * @brief Enables SPDIF Tx. Default: 0 (Disabled)
  */
-#ifndef SPDIF
-#define SPDIF                    (0)
+#ifndef SPDIF_TX
+#define SPDIF_TX                 (0)
 #endif
 
 /* Tidy up old SPDIF usage */
-#if defined(SPDIF) && (SPDIF == 0)
-#undef SPDIF
-#endif
-
-#ifdef SPDIF
-#define SPDIF_TX 1
+#if defined(SPDIF_TX) && (SPDIF_TX == 0)
+#undef SPDIF_TX
 #endif
 
 /**
