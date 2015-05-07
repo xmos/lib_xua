@@ -21,7 +21,12 @@
 #endif
 #ifdef ADAT_TX
 #include "adat_tx.h"
+
+#ifndef ADAT_TX_USE_SHARED_BUFF
+#error Designed for ADAT tx shared buffer mode ONLY
 #endif
+#endif
+
 #include "commands.h"
 #include "xc_ptr.h"
 
@@ -162,6 +167,7 @@ static inline void doI2SClocks(unsigned divide)
 }
 #endif
 
+#ifdef ADAT_TX
 unsigned adatCounter = 0;
 unsigned adatSamples[8];
 
@@ -211,15 +217,13 @@ static inline void TransferAdatTxSamples(chanend c_adat_out, const unsigned samp
 #endif
         adatCounter = 0;
     }
-
 }
+#endif
 
 
 #pragma unsafe arrays
 static inline unsigned DoSampleTransfer(chanend c_out, int readBuffNo, unsigned underflowWord)
 {
-    unsigned command;
-
     outuint(c_out, underflowWord);
 
     /* Check for sample freq change (or other command) or new samples from mixer*/
@@ -435,7 +439,6 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
     /* Since DAC and ADC buffered ports off by one sample we buffer previous ADC frame */
     unsigned readBuffNo = 0;
 //#endif
-    unsigned tmp;
     unsigned index;
 
 #ifdef RAMP_CHECK
@@ -453,8 +456,9 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
     unsigned underflowWord = 0;
 
     unsigned frameCount = 0;
-
+#ifdef ADAT_TX
     adatCounter = 0;
+#endif
 
 #if(DSD_CHANS_DAC != 0)
     if(dsdMode == DSD_MODE_DOP)
@@ -683,7 +687,7 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
         /* Request digital data (with prefill) */
             outuint(c_dig_rx, 0);
 #endif
-#if defined(SPDIF) && (NUM_USB_CHAN_OUT > 0)
+#if defined(SPDIF_TX) && (NUM_USB_CHAN_OUT > 0)
             outuint(c_spd_out, samplesOut[SPDIF_TX_INDEX]);  /* Forward sample to S/PDIF Tx thread */
             sample = samplesOut[SPDIF_TX_INDEX + 1];
             outuint(c_spd_out, sample);                      /* Forward sample to S/PDIF Tx thread */
