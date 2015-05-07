@@ -573,7 +573,7 @@ int main()
 #endif
 
 #ifdef SPDIF_RX
-        on tile[0]:
+        on tile[XUD_TILE]:
         {
             thread_speed();
             SpdifReceive(p_spdif_rx, c_spdif_rx, 1, clk_spd_rx);
