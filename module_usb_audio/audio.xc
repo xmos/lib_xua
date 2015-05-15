@@ -314,9 +314,14 @@ static inline void InitPorts(unsigned divide)
     if(dsdMode == DSD_MODE_OFF)
     {
 #endif
-        /* b_clk must start high */
+        
+        if(divide != 1)
+            {
+              /* b_clk must start high */
         p_bclk <: 0x80000000;
         sync(p_bclk);
+     }
+
         /* Clear I2S port buffers */
         clearbuf(p_lrclk);
 
@@ -353,12 +358,14 @@ static inline void InitPorts(unsigned divide)
 #if (I2S_CHANS_ADC != 0)
             for(int i = 0; i < I2S_WIRES_ADC; i++)
             {
-                asm("setpt res[%0], %1"::"r"(p_i2s_adc[i]),"r"(tmp+31));
+                asm("setpt res[%0], %1"::"r"(p_i2s_adc[i]),"r"(tmp-1));
             }
 #endif
         }
         else /* Divide != 1  */
         {
+            
+             
 #if (I2S_CHANS_DAC != 0)
             /* Pre-fill the DAC ports */
             for(int i = 0; i < I2S_WIRES_DAC; i++)
@@ -371,6 +378,17 @@ static inline void InitPorts(unsigned divide)
 
             doI2SClocks(divide);
 
+#if (I2S_CHANS_DAC != 0)
+            /* Pre-fill the DAC ports */
+            for(int i = 0; i < I2S_WIRES_DAC; i++)
+            {
+                p_i2s_dac[i] <: 0;
+            }
+#endif
+            /* Pre-fill the LR clock output port */
+            p_lrclk <: 0x0;
+
+            doI2SClocks(divide);
         }
 #if (DSD_CHANS_DAC > 0)
     } /* if (!dsdMode) */
@@ -600,6 +618,31 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
         else
 #endif
         {
+#if (I2S_CHANS_ADC != 0)
+            /* Input previous L sample into L in buffer */
+            index = 0;
+            /* First input (i.e. frameCount == 0) we read last ADC channel of previous frame.. */
+            unsigned buffIndex = frameCount ? !readBuffNo : readBuffNo;
+
+#pragma loop unroll
+            /* First time around we get channel 7 of TDM8 */
+            for(int i = 0; i < I2S_CHANS_ADC; i+=I2S_CHANS_PER_FRAME)
+            {
+                // p_i2s_adc[index++] :> sample;
+                // Manual IN instruction since compiler generates an extra setc per IN (bug #15256)
+                asm volatile("in %0, res[%1]" : "=r"(sample)  : "r"(p_i2s_adc[index++]));
+
+                /* Note the use of readBuffNo changes based on frameCount */
+                if(buffIndex)
+                    samplesIn_1[((frameCount-1)&(I2S_CHANS_PER_FRAME-1))+i] = bitrev(sample); // channels 1, 3, 5.. on each line.
+                else
+                    samplesIn_0[((frameCount-1)&(I2S_CHANS_PER_FRAME-1))+i] = bitrev(sample); // channels 1, 3, 5.. on each line.
+            }
+#endif
+
+
+
+
 #ifndef CODEC_MASTER
             /* LR clock delayed by one clock, This is so MSB is output on the falling edge of BCLK
              * after the falling edge on which LRCLK was toggled. (see I2S spec) */
@@ -632,27 +675,8 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
 
 
 
-#if (I2S_CHANS_ADC != 0)
-            /* Input previous L sample into L in buffer */
-            index = 0;
-            /* First input (i.e. frameCount == 0) we read last ADC channel of previous frame.. */
-            unsigned buffIndex = frameCount ? !readBuffNo : readBuffNo;
 
-#pragma loop unroll
-            /* First time around we get channel 7 of TDM8 */
-            for(int i = 0; i < I2S_CHANS_ADC; i+=I2S_CHANS_PER_FRAME)
-            {
-                // p_i2s_adc[index++] :> sample;
-                // Manual IN instruction since compiler generates an extra setc per IN (bug #15256)
-                asm volatile("in %0, res[%1]" : "=r"(sample)  : "r"(p_i2s_adc[index++]));
 
-                /* Note the use of readBuffNo changes based on frameCount */
-                if(buffIndex)
-                    samplesIn_1[((frameCount-1)&(I2S_CHANS_PER_FRAME-1))+i] = bitrev(sample); // channels 1, 3, 5.. on each line.
-                else
-                    samplesIn_0[((frameCount-1)&(I2S_CHANS_PER_FRAME-1))+i] = bitrev(sample); // channels 1, 3, 5.. on each line.
-            }
-#endif
 
 #ifdef ADAT_TX
              TransferAdatTxSamples(c_adat_out, samplesOut, adatSmuxMode, 1);
@@ -694,6 +718,34 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
 #endif
         }
 
+
+#if (I2S_CHANS_ADC != 0)
+            index = 0;
+            /* Channels 0, 2, 4.. on each line */
+#pragma loop unroll
+            for(int i = 0; i < I2S_CHANS_ADC; i += I2S_CHANS_PER_FRAME)
+            {
+                /* Manual IN instruction since compiler generates an extra setc per IN (bug #15256) */
+                asm volatile("in %0, res[%1]" : "=r"(sample)  : "r"(p_i2s_adc[index++]));
+                if(readBuffNo)
+                    samplesIn_0[frameCount+i] = bitrev(sample);
+                else
+                    samplesIn_1[frameCount+i] = bitrev(sample);
+            }
+
+#ifdef SU1_ADC_ENABLE
+            {
+                unsigned x;
+                x = inuint(c_adc);
+                inct(c_adc);
+                asm volatile("stw %0, dp[g_adcVal]"::"r"(x));
+            }
+#endif
+#endif
+
+
+
+
 #ifndef CODEC_MASTER
 #ifdef I2S_MODE_TDM
             if(frameCount == (I2S_CHANS_PER_FRAME-2))
@@ -720,29 +772,7 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
             doI2SClocks(divide);
 #endif
 
-#if (I2S_CHANS_ADC != 0)
-            index = 0;
-            /* Channels 0, 2, 4.. on each line */
-#pragma loop unroll
-            for(int i = 0; i < I2S_CHANS_ADC; i += I2S_CHANS_PER_FRAME)
-            {
-                /* Manual IN instruction since compiler generates an extra setc per IN (bug #15256) */
-                asm volatile("in %0, res[%1]" : "=r"(sample)  : "r"(p_i2s_adc[index++]));
-                if(readBuffNo)
-                    samplesIn_0[frameCount+i] = bitrev(sample);
-                else
-                    samplesIn_1[frameCount+i] = bitrev(sample);
-            }
 
-#ifdef SU1_ADC_ENABLE
-            {
-                unsigned x;
-                x = inuint(c_adc);
-                inct(c_adc);
-                asm volatile("stw %0, dp[g_adcVal]"::"r"(x));
-            }
-#endif
-#endif
 
         }  // !dsdMode
 #if (DSD_CHANS_DAC != 0) && (NUM_USB_CHAN_OUT > 0)
