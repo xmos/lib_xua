@@ -946,10 +946,12 @@
  */
 #ifdef MIXER
     #ifndef MAX_MIX_COUNT
-    	#define MAX_MIX_COUNT        (8)
+    	#define MAX_MIX_COUNT          (8)
     #endif
 #else
-    #define MAX_MIX_COUNT            (0)
+    #ifndef MAX_MIX_COUNT
+        #define MAX_MIX_COUNT          (0)
+    #endif
 #endif
 
 /**
@@ -960,7 +962,7 @@
  * Default: 18
  */
 #ifndef MIX_INPUTS
-    #define MIX_INPUTS                  (18)
+    #define MIX_INPUTS                 (18)
 #endif
 
 /* Volume processing defines */
