@@ -16,7 +16,7 @@
 #include "devicedefines.h"
 #include "audioports.h"
 #include "audiohw.h"
-#ifdef SPDIF
+#ifdef SPDIF_TX
 #include "SpdifTransmit.h"
 #endif
 #ifdef ADAT_TX
@@ -82,7 +82,7 @@ unsigned dsdMode = DSD_MODE_OFF;
 extern port p_mclk_in;
 extern in port p_mclk_in2;
 
-#ifdef SPDIF
+#ifdef SPDIF_TX
 extern buffered out port:32 p_spdif_tx;
 #endif
 
@@ -1165,7 +1165,7 @@ chanend ?c_config, chanend ?c)
             }
 #endif
             {
-#ifdef SPDIF
+#ifdef SPDIF_TX
                 /* Communicate master clock and sample freq to S/PDIF thread */
                 outuint(c_spdif_out, curSamFreq);
                 outuint(c_spdif_out, mClk);
@@ -1185,7 +1185,7 @@ chanend ?c_config, chanend ?c)
                 outuint(c_adat_out, adatSmuxMode);
 #endif
                 command = deliver(c_mix_out,
-#ifdef SPDIF
+#ifdef SPDIF_TX
                    c_spdif_out,
 #else
                    null,
