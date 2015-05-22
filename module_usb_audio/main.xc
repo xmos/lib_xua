@@ -115,7 +115,7 @@ on tile[AUDIO_IO_TILE] : in port p_bclk                     = PORT_I2S_BCLK;
 on tile[AUDIO_IO_TILE] : port p_mclk_in                     = PORT_MCLK_IN;
 on tile[XUD_TILE] : in port p_for_mclk_count                = PORT_MCLK_COUNT;
 
-#ifdef SPDIF
+#ifdef SPDIF_TX
 on tile[SPDIF_TX_TILE] : buffered out port:32 p_spdif_tx    = PORT_SPDIF_OUT;
 #endif
 
