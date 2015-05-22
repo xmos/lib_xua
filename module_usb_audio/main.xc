@@ -160,7 +160,7 @@ on tile[XUD_TILE] : clock    clk_spd_rx                     = CLKBLK_SPDIF_RX;
 #endif
 
 #if(XUD_SERIES_SUPPORT == XUD_L_SERIES) && defined(ADAT_RX)
-/* Cannot use default clock (CLKBLK_REF) for ADAT RX since it is tied to the 
+/* Cannot use default clock (CLKBLK_REF) for ADAT RX since it is tied to the
 60MHz USB clock on G/L series parts. */
 on tile[XUD_TILE] : clock    clk_adat_rx                    = CLKBLK_ADAT_RX;
 #endif

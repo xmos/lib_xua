@@ -314,7 +314,7 @@ static inline void InitPorts(unsigned divide)
     if(dsdMode == DSD_MODE_OFF)
     {
 #endif
-        
+
         if(divide != 1)
             {
               /* b_clk must start high */
@@ -364,8 +364,8 @@ static inline void InitPorts(unsigned divide)
         }
         else /* Divide != 1  */
         {
-            
-             
+
+
 #if (I2S_CHANS_DAC != 0)
             /* Pre-fill the DAC ports */
             for(int i = 0; i < I2S_WIRES_DAC; i++)
@@ -636,7 +636,7 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
                 if(buffIndex)
                     samplesIn_1[((frameCount-2)&(I2S_CHANS_PER_FRAME-1))+i] = bitrev(sample); // channels 0, 2, 4.. on each line.
                 else
-                    samplesIn_0[((frameCount-2)&(I2S_CHANS_PER_FRAME-1))+i] = bitrev(sample); 
+                    samplesIn_0[((frameCount-2)&(I2S_CHANS_PER_FRAME-1))+i] = bitrev(sample);
             }
 #endif
 
@@ -725,7 +725,7 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
                     samplesIn_1[((frameCount-1)&(I2S_CHANS_PER_FRAME-1))+i] = bitrev(sample); // channels 1, 3, 5.. on each line.
                 else
                     samplesIn_0[((frameCount-1)&(I2S_CHANS_PER_FRAME-1))+i] = bitrev(sample); // channels 1, 3, 5.. on each line.
-          
+
             }
 
 #ifdef SU1_ADC_ENABLE
@@ -737,7 +737,7 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
             }
 #endif
 #endif
- 
+
 #ifndef CODEC_MASTER
 #ifdef I2S_MODE_TDM
             if(frameCount == (I2S_CHANS_PER_FRAME-2))
