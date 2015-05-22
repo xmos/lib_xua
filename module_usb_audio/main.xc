@@ -159,7 +159,7 @@ on tile[SPDIF_TX_TILE] : clock    clk_mst_spd               = CLKBLK_SPDIF_TX;
 on tile[XUD_TILE] : clock    clk_spd_rx                     = CLKBLK_SPDIF_RX;
 #endif
 
-#if(XUD_SERIES_SUPPORT != XUD_U_SERIES) && defined(ADAT_RX)
+#if(XUD_SERIES_SUPPORT == XUD_L_SERIES) && defined(ADAT_RX)
 /* Cannot use default clock (CLKBLK_REF) for ADAT RX since it is tied to the 
 60MHz USB clock on G/L series parts. */
 on tile[XUD_TILE] : clock    clk_adat_rx                    = CLKBLK_ADAT_RX;
@@ -581,11 +581,11 @@ int main()
 #endif
 
 #ifdef ADAT_RX
-        on stdcore[0] :
+        on stdcore[XUD_TILE] :
         {
             set_thread_fast_mode_on();
 
-#if(XUD_SERIES_SUPPORT != XUD_U_SERIES)
+#if(XUD_SERIES_SUPPORT == XUD_L_SERIES)
             /* Can't use REF clock on L-series as this is usb clock */
             set_port_clock(p_adat_rx, clk_adat_rx);
             start_clock(clk_adat_rx);
