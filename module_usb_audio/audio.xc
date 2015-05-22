@@ -622,7 +622,7 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
             /* Input previous L sample into L in buffer */
             index = 0;
             /* First input (i.e. frameCount == 0) we read last ADC channel of previous frame.. */
-            unsigned buffIndex = frameCount ? !readBuffNo : readBuffNo;
+            unsigned buffIndex = (frameCount < 3) ? !readBuffNo : readBuffNo;
 
 #pragma loop unroll
             /* First time around we get channel 7 of TDM8 */
@@ -634,9 +634,9 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
 
                 /* Note the use of readBuffNo changes based on frameCount */
                 if(buffIndex)
-                    samplesIn_1[((frameCount-1)&(I2S_CHANS_PER_FRAME-1))+i] = bitrev(sample); // channels 1, 3, 5.. on each line.
+                    samplesIn_1[((frameCount-2)&(I2S_CHANS_PER_FRAME-1))+i] = bitrev(sample); // channels 0, 2, 4.. on each line.
                 else
-                    samplesIn_0[((frameCount-1)&(I2S_CHANS_PER_FRAME-1))+i] = bitrev(sample); // channels 1, 3, 5.. on each line.
+                    samplesIn_0[((frameCount-2)&(I2S_CHANS_PER_FRAME-1))+i] = bitrev(sample); 
             }
 #endif
 
@@ -671,12 +671,6 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
             /* Clock out the LR Clock, the DAC data and Clock in the next sample into ADC */
             doI2SClocks(divide);
 #endif
-
-
-
-
-
-
 
 #ifdef ADAT_TX
              TransferAdatTxSamples(c_adat_out, samplesOut, adatSmuxMode, 1);
@@ -727,10 +721,11 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
             {
                 /* Manual IN instruction since compiler generates an extra setc per IN (bug #15256) */
                 asm volatile("in %0, res[%1]" : "=r"(sample)  : "r"(p_i2s_adc[index++]));
-                if(readBuffNo)
-                    samplesIn_0[frameCount+i] = bitrev(sample);
+                if(buffIndex)
+                    samplesIn_1[((frameCount-1)&(I2S_CHANS_PER_FRAME-1))+i] = bitrev(sample); // channels 1, 3, 5.. on each line.
                 else
-                    samplesIn_1[frameCount+i] = bitrev(sample);
+                    samplesIn_0[((frameCount-1)&(I2S_CHANS_PER_FRAME-1))+i] = bitrev(sample); // channels 1, 3, 5.. on each line.
+          
             }
 
 #ifdef SU1_ADC_ENABLE
@@ -742,10 +737,7 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
             }
 #endif
 #endif
-
-
-
-
+ 
 #ifndef CODEC_MASTER
 #ifdef I2S_MODE_TDM
             if(frameCount == (I2S_CHANS_PER_FRAME-2))
