@@ -1,6 +1,12 @@
 sc_usb_audio Change Log
 =======================
 
+6.12.1
+------
+    - RESOLVED:   Fixes to TDM input timing/sample-alignment when BCLK=MCLK
+    - RESOLVED:   Various minor fixes to allow ADAT_RX to run on xCORE 200 MC AUDIO hardware
+    - CHANGE:     Moved from old SPDIF define to SPDIF_TX
+
 6.12.0
 ------
     - ADDED:      Checks for XUD_200_SERIES define where required
