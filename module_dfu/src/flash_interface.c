@@ -53,8 +53,10 @@ int flash_cmd_init(void)
     if (!flash_device_open)
         return 0;
 
+#ifndef QUAD_SPI_FLASH
     // Disable flash protection
     fl_setProtection(0);
+#endif
 
     if (fl_getFactoryImage(&image) != 0)
     {
