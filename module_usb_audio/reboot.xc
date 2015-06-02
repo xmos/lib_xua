@@ -51,7 +51,7 @@ void device_reboot_aux(void)
 }
 
 /* Reboots XMOS device by writing to the PLL config register */
-void device_reboot_implementation(chanend spare)
+void device_reboot(chanend spare)
 {
 #if (XUD_SERIES_SUPPORT != XUD_U_SERIES)
     outct(spare, XS1_CT_END);   // have to do this before freeing the chanend
