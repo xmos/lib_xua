@@ -5,7 +5,11 @@
 
 #include <xs1.h>
 #include <xclib.h>
+#ifdef QUAD_SPI_FLASH
+#include <quadflashlib.h>
+#else
 #include <flashlib.h>
+#endif
 #include <print.h>
 
 #define settw(a,b) {__asm__ __volatile__("settw res[%0], %1": : "r" (a) , "r" (b));}
@@ -19,7 +23,23 @@
 fl_DeviceSpec flash_devices[] = {DFU_FLASH_DEVICE};
 #endif
 
-
+#ifdef QUAD_SPI_FLASH
+/*
+typedef struct {
+      out port qspiCS;
+      out port qspiSCLK;
+      out buffered port:32 qspiSIO;
+      clock qspiClkblk;
+} fl_QSPIPorts;
+*/
+fl_QSPIPorts p_qflash = 
+{
+    XS1_PORT_1B,
+    XS1_PORT_1C,
+    XS1_PORT_4B,
+    CLKBLK_FLASHLIB
+};
+#else
 fl_PortHolderStruct p_flash =
 {
     XS1_PORT_1A,
@@ -28,16 +48,19 @@ fl_PortHolderStruct p_flash =
     XS1_PORT_1D,
     CLKBLK_FLASHLIB
 };
+#endif
 
 int flash_cmd_enable_ports()
 {
     int result = 0;
+#ifdef QUAD_SPI_FLASH
+    /* Ports not shared */
+#else
     setc(p_flash.spiMISO, XS1_SETC_INUSE_OFF);
     setc(p_flash.spiCLK, XS1_SETC_INUSE_OFF);
     setc(p_flash.spiMOSI, XS1_SETC_INUSE_OFF);
     setc(p_flash.spiSS, XS1_SETC_INUSE_OFF);
     setc(p_flash.spiClkblk, XS1_SETC_INUSE_OFF);
-
 
     setc(p_flash.spiMISO, XS1_SETC_INUSE_ON);
     setc(p_flash.spiCLK, XS1_SETC_INUSE_ON);
@@ -56,12 +79,17 @@ int flash_cmd_enable_ports()
 
     settw(p_flash.spiMISO, 8);
     settw(p_flash.spiMOSI, 8);
+#endif
 
 #ifdef DFU_FLASH_DEVICE
     result = fl_connectToDevice(&p_flash, flash_devices, 1);
 #else
     /* Use default flash list */
+#ifdef QUAD_SPI_FLASH
+    result = fl_connect(&p_qflash);
+#else
     result = fl_connect(&p_flash);
+#endif
 #endif
     if (!result)
     {
@@ -77,10 +105,12 @@ int flash_cmd_disable_ports()
 {
     fl_disconnect();
 
+#ifndef QUAD_SPI_FLASH
     setc(p_flash.spiMISO, XS1_SETC_INUSE_OFF);
     setc(p_flash.spiCLK, XS1_SETC_INUSE_OFF);
     setc(p_flash.spiMOSI, XS1_SETC_INUSE_OFF);
     setc(p_flash.spiSS, XS1_SETC_INUSE_OFF);
+#endif
 
     return 1;
 }
