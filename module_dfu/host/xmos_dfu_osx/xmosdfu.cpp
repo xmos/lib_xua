@@ -5,11 +5,20 @@
 
 /* the device's vendor and product id */
 #define XMOS_VID 0x20b1
+
+#define XMOS_XCORE_AUDIO_AUDIO2_PID 0x3066
 #define XMOS_L1_AUDIO2_PID 0x0002
 #define XMOS_L1_AUDIO1_PID 0x0003
 #define XMOS_L2_AUDIO2_PID 0x0004
 #define XMOS_SU1_AUDIO2_PID 0x0008
 #define XMOS_U8_MFA_AUDIO2_PID 0x000A
+
+unsigned short pidList[] = {XMOS_XCORE_AUDIO_AUDIO2_PID, 
+                            XMOS_L1_AUDIO2_PID,
+                            XMOS_L1_AUDIO1_PID,
+                            XMOS_L2_AUDIO2_PID,
+                            XMOS_SU1_AUDIO2_PID, 
+                            XMOS_U8_MFA_AUDIO2_PID}; 
 
 unsigned int XMOS_DFU_IF = 0;
 
@@ -46,51 +55,60 @@ static int find_xmos_device(unsigned int id)
 
     while ((dev = devs[i++]) != NULL) 
     {
+        int foundDev = 0;
         struct libusb_device_descriptor desc;
         libusb_get_device_descriptor(dev, &desc); 
-        printf("VID = 0x%x, PID = 0x%x\n", desc.idVendor, desc.idProduct);
-        if (desc.idVendor == XMOS_VID && 
-            ((desc.idProduct == XMOS_L1_AUDIO1_PID) || 
-            (desc.idProduct == XMOS_L1_AUDIO2_PID) ||
-            (desc.idProduct == XMOS_SU1_AUDIO2_PID) ||
-            (desc.idProduct == XMOS_L2_AUDIO2_PID) ||
-            (desc.idProduct == XMOS_U8_MFA_AUDIO2_PID)))
+        printf("VID = 0x%x, PID = 0x%x, BCDDevice: 0x%x\n", desc.idVendor, desc.idProduct, desc.bcdDevice);
+
+        if(desc.idVendor == XMOS_VID)
+        {
+            for(int j = 0; j < sizeof(pidList)/sizeof(unsigned short); j++)
+            {
+                if(desc.idProduct == pidList[j])
+                {
+                    foundDev = 1;
+                    break;
+                }
+            }
+        }
+
+        if (foundDev)
         {
             if (found == id) 
             {
                 if (libusb_open(dev, &devh) < 0) 
                 {
                     return -1;
-            } 
-            else 
-            {
-                libusb_config_descriptor *config_desc = NULL;
-                libusb_get_active_config_descriptor(dev, &config_desc); 
-                if (config_desc != NULL) 
-                {
-                    for (int j = 0; j < config_desc->bNumInterfaces; j++) 
-                    {
-                        const libusb_interface_descriptor *inter_desc = ((libusb_interface *)&config_desc->interface[j])->altsetting;
-                        if (inter_desc->bInterfaceClass == 0xFE && inter_desc->bInterfaceSubClass == 0x1) 
-                        {
-                            XMOS_DFU_IF = j;
-                        } 
-                    }
-                 } 
+                } 
                 else 
                 {
-                    XMOS_DFU_IF = 0;
+                    libusb_config_descriptor *config_desc = NULL;
+                    libusb_get_active_config_descriptor(dev, &config_desc); 
+                    if (config_desc != NULL) 
+                    {
+                        for (int j = 0; j < config_desc->bNumInterfaces; j++) 
+                        {
+                            const libusb_interface_descriptor *inter_desc = ((libusb_interface *)&config_desc->interface[j])->altsetting;
+                            if (inter_desc->bInterfaceClass == 0xFE && inter_desc->bInterfaceSubClass == 0x1) 
+                            {
+                                XMOS_DFU_IF = j;
+                            } 
+                        }
+                    } 
+                    else 
+                    {
+                        XMOS_DFU_IF = 0;
+                    }
                 }
+                break;
             }
-        break;
-      }
-      found++;
+            found++;
+        }
     }
-  }
 
-  libusb_free_device_list(devs, 1);
+    libusb_free_device_list(devs, 1);
 
-  return devh ? 0 : -1;
+    return devh ? 0 : -1;
 }
 
 int xmos_dfu_resetdevice(void) {
