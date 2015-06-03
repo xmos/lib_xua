@@ -75,6 +75,21 @@
 #endif
 
 /**
+ * @brief Channels per I2S frame. *
+ *
+ * Default: 2 i.e standard stereo I2S (8 if using TDM i.e. I2S_MODE_TDM).
+ *
+ **/
+#ifndef I2S_CHANS_PER_FRAME
+    #ifdef I2S_MODE_TDM
+        #define I2S_CHANS_PER_FRAME 8
+    #else
+        #define I2S_CHANS_PER_FRAME 2
+    #endif
+#endif
+
+
+/**
  * @brief Number of IS2 channesl to DAC/CODEC. Must be a multiple of 2.
  *
  * Default: NONE (Must be defined by app)
@@ -83,13 +98,9 @@
     #error I2S_CHANS_DAC not defined
     #define I2S_CHANS_DAC 2          /* Define anyway for doxygen */
 #else
+#define I2S_WIRES_DAC            (I2S_CHANS_DAC / I2S_CHANS_PER_FRAME)
+#endif
 
-#ifdef I2S_MODE_TDM
-#define I2S_WIRES_DAC            (I2S_CHANS_DAC >> 3)
-#else
-#define I2S_WIRES_DAC            (I2S_CHANS_DAC >> 1)
-#endif
-#endif
 
 /**
  * @brief Number of I2S channels from ADC/CODEC. Must be a multiple of 2.
@@ -100,27 +111,9 @@
     #error I2S_CHANS_ADC not defined
     #define I2S_CHANS_ADC 2      /* Define anyway for doxygen */
 #else
-
-#ifdef I2S_MODE_TDM
-#define I2S_WIRES_ADC            (I2S_CHANS_ADC >> 3)
-#else
-#define I2S_WIRES_ADC            (I2S_CHANS_ADC >> 1)
-#endif
+#define I2S_WIRES_ADC            (I2S_CHANS_ADC / I2S_CHANS_PER_FRAME)
 #endif
 
-/**
- * @brief Channels per I2S frame. *
- *
- * Default: 2 i.e standard stereo I2S (8 if using TDM i.e. I2S_MODE_TDM).
- *
- **/
-#ifndef I2S_CHANS_PER_FRAME
-#ifdef I2S_MODE_TDM
-#define I2S_CHANS_PER_FRAME 8
-#else
-#define I2S_CHANS_PER_FRAME 2
-#endif
-#endif
 
 /**
  * @brief Max supported sample frequency for device (Hz). Default: 192000
