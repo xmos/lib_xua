@@ -49,9 +49,9 @@
 #warning MIDI is currently not supported and will not be enabled in AUDIO 1.0 mode
 #endif
 
-/* If PID_DFU not defined, standard PID used.. this is probably what we want.. */
-#ifndef PID_DFU
-#warning PID_DFU not defined, Using PID_AUDIO_2. This is probably fine!
+/* If DFU_PID not defined, standard PID used.. this is probably what we want.. */
+#ifndef DFU_PID
+#warning DFU_PID not defined, Using PID_AUDIO_2. This is probably fine!
 #endif
 
 #ifdef DFU
