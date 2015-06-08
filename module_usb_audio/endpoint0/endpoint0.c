@@ -204,7 +204,7 @@ const unsigned g_chanCount_In_HS[INPUT_FORMAT_COUNT]       = {HS_STREAM_FORMAT_I
 
 /* Endpoint 0 function.  Handles all requests to the device */
 void Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
-    chanend c_mix_ctl, chanend c_clk_ctl, chanend c_EANativeTransport_ctrl)
+    chanend c_mix_ctl, chanend c_clk_ctl, chanend c_EANativeTransport_ctrl, CLIENT_INTERFACE(i_dfu, dfuInterface))
 {
     USB_SetupPacket_t sp;
     XUD_ep ep0_out = XUD_InitEp(c_ep0_out);
@@ -296,11 +296,7 @@ void Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
     while(1)
     {
         /* Returns XUD_RES_OKAY for success, XUD_RES_RST for bus reset */
-#if defined(__XC__)
-        XUD_Result_t result = USB_GetSetupPacket(ep0_out, ep0_in, sp);
-#else
         XUD_Result_t result = USB_GetSetupPacket(ep0_out, ep0_in, &sp);
-#endif
 
         if (result == XUD_RES_OKAY)
         {
@@ -573,13 +569,9 @@ void Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
                                 // Handshake
 							    chkct(c_audioControl, XS1_CT_END);
                             }
-#ifdef __XC__
+                            
                             /* This will return 1 if reset requested */
-                            if (DFUDeviceRequests(ep0_out, ep0_in, sp, null, g_interfaceAlt[sp.wIndex], 1))
-#else
-                            /* This will return 1 if reset requested */
-                            if (DFUDeviceRequests(ep0_out, &ep0_in, &sp, null, g_interfaceAlt[sp.wIndex], 1))
-#endif
+                            if (DFUDeviceRequests(ep0_out, &ep0_in, &sp, null, g_interfaceAlt[sp.wIndex], dfuInterface))
                             {
                                 DFUDelay(50000000);
                                 device_reboot(c_audioControl);

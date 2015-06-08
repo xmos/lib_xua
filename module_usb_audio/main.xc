@@ -43,6 +43,9 @@
 
 #include "clocking.h"
 
+[[distributable]]
+void DFUHandler(server interface i_dfu i, chanend ?c_user_cmd);
+
 /* Audio I/O - Port declarations */
 #if I2S_WIRES_DAC > 0
 on tile[AUDIO_IO_TILE] : buffered out port:32 p_i2s_dac[I2S_WIRES_DAC] =
@@ -296,6 +299,12 @@ void usb_audio_core(chanend c_mix_out
 #define c_EANativeTransport_ctrl null
 #endif
 
+#ifdef DFU
+    interface i_dfu dfuInterface; 
+#else
+    #define dfuInterface null  
+#endif
+
     par
     {
         /* USB Interface Core */
@@ -367,7 +376,12 @@ void usb_audio_core(chanend c_mix_out
         /* Endpoint 0 Core */
         {
             thread_speed();
-            Endpoint0( c_xud_out[0], c_xud_in[0], c_aud_ctl, c_mix_ctl, c_clk_ctl, c_EANativeTransport_ctrl);
+            par     
+            {
+                [[distribute]] 
+                DFUHandler(dfuInterface, null);  
+                Endpoint0( c_xud_out[0], c_xud_in[0], c_aud_ctl, c_mix_ctl, c_clk_ctl, c_EANativeTransport_ctrl, dfuInterface);
+            }
         }
 
         /* Decoupling core */

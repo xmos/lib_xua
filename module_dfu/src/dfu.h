@@ -88,7 +88,7 @@ unsigned char DFUcfgDesc[] = {
 
 int DFUReportResetState(NULLABLE_RESOURCE(chanend , c_user_cmd));
 int DFUDeviceRequests(XUD_ep c_ep0_out, NULLABLE_REFERENCE_PARAM(XUD_ep, ep0_in), REFERENCE_PARAM(USB_SetupPacket_t, sp),
-        NULLABLE_RESOURCE(chanend, c_user_cmd), unsigned int altInterface, unsigned int user_reset);
+        NULLABLE_RESOURCE(chanend, c_user_cmd), unsigned int altInterface, CLIENT_INTERFACE(i_dfu, dfuInterface));
 
 /* Helper function for C */
 void DFUDelay(unsigned d);
