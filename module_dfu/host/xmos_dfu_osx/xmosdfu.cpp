@@ -44,7 +44,7 @@ unsigned int XMOS_DFU_IF = 0;
 
 static libusb_device_handle *devh = NULL;
 
-static int find_xmos_device(unsigned int id) 
+static int find_xmos_device(unsigned int id, unsigned int list) 
 {
     libusb_device *dev;
     libusb_device **devs;
@@ -64,7 +64,7 @@ static int find_xmos_device(unsigned int id)
         {
             for(int j = 0; j < sizeof(pidList)/sizeof(unsigned short); j++)
             {
-                if(desc.idProduct == pidList[j])
+                if(desc.idProduct == pidList[j] && !list)
                 {
                     foundDev = 1;
                     break;
@@ -287,6 +287,7 @@ int main(int argc, char **argv) {
   unsigned int revert = 0;
   unsigned int save = 0;
   unsigned int restore = 0;
+  unsigned int listdev = 0;
 
   char *firmware_filename = NULL;
 
@@ -322,6 +323,10 @@ int main(int argc, char **argv) {
   {
     restore = 1;
   }
+  else if(strcmp(argv[1], "--listdevices") == 0)
+  {
+    listdev = 1;
+  }
   else {
     fprintf(stderr, "Invalid option passed to dfu application\n");
     return -1;
@@ -335,10 +340,15 @@ int main(int argc, char **argv) {
     return -1;
   }
 
-  r = find_xmos_device(0);
-  if (r < 0) {
-    fprintf(stderr, "Could not find/open device\n");
-    return -1;
+  r = find_xmos_device(0, listdev);
+  if (r < 0) 
+  {
+      if(!listdev)
+      {
+        fprintf(stderr, "Could not find/open device\n");
+        return -1;
+      }
+      return 0;
   }
 
   r = libusb_claim_interface(devh, XMOS_DFU_IF);
@@ -357,7 +367,7 @@ int main(int argc, char **argv) {
   {
     xmos_dfu_restore_state(XMOS_DFU_IF); 
   }
-  else
+  else if(!listdev)
   {
 
     printf("Detaching device from application mode.\n");
@@ -374,7 +384,7 @@ int main(int argc, char **argv) {
 
     // NOW IN DFU APPLICATION MODE
 
-    r = find_xmos_device(0);
+    r = find_xmos_device(0, 0);
     if (r < 0) {
       fprintf(stderr, "Could not find/open device\n");
       return -1;
