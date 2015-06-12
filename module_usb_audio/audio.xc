@@ -880,12 +880,11 @@ void testct_byref(chanend c, int &returnVal)
         returnVal = 1;
 }
     
-
-unsigned static dummy_deliver(chanend c_out)
+[[combinable]]
+static void dummy_deliver(chanend c_out, unsigned &command)
 {
     int ct; 
     
-    outuint(c_out, 0);
 
     while (1)
     {
@@ -895,9 +894,8 @@ unsigned static dummy_deliver(chanend c_out)
             case testct_byref(c_out, ct):
                 if(ct)
                 {
-          
                     unsigned command = inct(c_out);
-                    return command;
+                    return;
                 }
                 else
                 {
@@ -933,7 +931,6 @@ unsigned static dummy_deliver(chanend c_out)
             break;
         }
     }
-    return 0;
 }
 #define SAMPLE_RATE      200000
 #define NUMBER_CHANNELS  1
@@ -1240,14 +1237,20 @@ chanend ?c_config, chanend ?c
 				{
                   	outct(c_mix_out, XS1_CT_END);
 
+                    outuint(c_mix_out, 0);
+                  
                   	while (1)
 					{
-                        par{
 #if XUD_TILE != 0
+                       [[combine]]
+                        par
+                        {
                             DFUHandler(dfuInterface, null);
-#endif
-                            command = dummy_deliver(c_mix_out);
+                            dummy_deliver(c_mix_out, command);
                         }
+#else
+                        dummy_deliver(c_mix_out, command);
+#endif
                         curSamFreq = inuint(c_mix_out);
 
                     	if (curSamFreq == AUDIO_START_FROM_DFU)
