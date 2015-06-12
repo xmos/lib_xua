@@ -10,7 +10,7 @@
 
 #include <dfu_interface.h>
 
-static int DFU_state = STATE_APP_IDLE;
+static int g_DFU_state = STATE_APP_IDLE;
 static int DFU_status = DFU_OK;
 static timer DFUTimer;
 static unsigned int DFUTimerStart = 0;
@@ -39,13 +39,19 @@ void temp()
     asm(".globl DFU_reset_override");
 }
 
-static int DFU_OpenFlash(chanend ?c_user_cmd)
+/* Return non-zero on error */
+static int DFU_OpenFlash()
 {
 	if (!DFU_flash_connected)
 	{
     	unsigned int cmd_data[16];
         DFUCustomFlashEnable();
-        flash_cmd_init();
+        int error = flash_cmd_init();
+        if(error)
+        {
+            return error;
+        }
+
     	DFU_flash_connected = 1;
   	}
 
@@ -64,14 +70,13 @@ static int DFU_CloseFlash(chanend ?c_user_cmd)
     return 0;
 }
 
-static int DFU_Detach(unsigned int timeout, chanend ?c_user_cmd)
+static int DFU_Detach(unsigned int timeout, chanend ?c_user_cmd, unsigned &DFU_state)
 {
     if (DFU_state == STATE_APP_IDLE)
     {
-
         DFU_state = STATE_APP_DETACH;
 
-        DFU_OpenFlash(c_user_cmd);
+        DFU_OpenFlash();
 
         // Setup DFU timeout value
         DFUResetTimeout = timeout * 100000;
@@ -86,16 +91,20 @@ static int DFU_Detach(unsigned int timeout, chanend ?c_user_cmd)
     return 0;
 }
 
-static int DFU_Dnload(unsigned int request_len, unsigned int block_num, const unsigned request_data[16], chanend ?c_user_cmd)
+static int DFU_Dnload(unsigned int request_len, unsigned int block_num, const unsigned request_data[16], chanend ?c_user_cmd, int &return_data_len, unsigned &DFU_state)
 {
     unsigned int fromDfuIdle = 0;
-
+    return_data_len = 0;
+    int error;
     // Get DFU packets here, sequence is
     // DFU_DOWNLOAD -> DFU_DOWNLOAD_SYNC
     // GET_STATUS -> DFU_DOWNLOAD_SYNC (flash busy) || DFU_DOWNLOAD_IDLE
     // REPEAT UNTIL DFU_DOWNLOAD with 0 length -> DFU_MANIFEST_SYNC
 
-    DFU_OpenFlash(c_user_cmd);
+    if((error = DFU_OpenFlash()))
+    {
+        return error;
+    }
 
     switch (DFU_state)
     {
@@ -104,13 +113,13 @@ static int DFU_Dnload(unsigned int request_len, unsigned int block_num, const un
             break;
         default:
             DFU_state = STATE_DFU_ERROR;
-            return 0;
+            return 1;
     }
 
     if ((DFU_state == STATE_DFU_IDLE) && (request_len == 0))
     {
         DFU_state = STATE_DFU_ERROR;
-        return 0;
+        return 1;
     }
     else if (DFU_state == STATE_DFU_IDLE)
     {
@@ -178,7 +187,7 @@ static int DFU_Dnload(unsigned int request_len, unsigned int block_num, const un
 }
 
 
-static int DFU_Upload(unsigned int request_len, unsigned int block_num, unsigned data_out[16], chanend ?c_user_cmd)
+static int DFU_Upload(unsigned int request_len, unsigned int block_num, unsigned data_out[16], unsigned &DFU_state)
 {
     unsigned int cmd_data[16];
     unsigned int firstRead = 0;
@@ -186,7 +195,7 @@ static int DFU_Upload(unsigned int request_len, unsigned int block_num, unsigned
     // Start at flash address 0
     // Keep reading flash pages until read_page returns 1 (address out of range)
     // Return terminating upload packet at this point
-    DFU_OpenFlash(c_user_cmd);
+    DFU_OpenFlash();
 
     switch (DFU_state)
     {
@@ -237,7 +246,7 @@ static int DFU_Upload(unsigned int request_len, unsigned int block_num, unsigned
     return 64;
 }
 
-static int DFU_GetStatus(unsigned int request_len, unsigned data_buffer[16], chanend ?c_user_cmd)
+static int DFU_GetStatus(unsigned int request_len, unsigned data_buffer[16], chanend ?c_user_cmd, unsigned &DFU_state)
 {
     unsigned int timeout = 0;
 
@@ -270,7 +279,7 @@ static int DFU_GetStatus(unsigned int request_len, unsigned data_buffer[16], cha
     
 }
 
-static int DFU_ClrStatus(void)
+static int DFU_ClrStatus(unsigned &DFU_state)
 {
     if (DFU_state == STATE_DFU_ERROR)
     {
@@ -283,9 +292,8 @@ static int DFU_ClrStatus(void)
     return 0;
 }
 
-static int DFU_GetState(unsigned int request_len, unsigned int request_data[16], chanend ?c_user_cmd)
+static int DFU_GetState(unsigned int request_len, unsigned int request_data[16], chanend ?c_user_cmd, unsigned &DFU_state)
 {
-
     request_data[0] = DFU_state;
 
     switch (DFU_state)
@@ -302,7 +310,7 @@ static int DFU_GetState(unsigned int request_len, unsigned int request_data[16],
     return 1;
 }
 
-static int DFU_Abort(void)
+static int DFU_Abort(unsigned &DFU_state)
 {
     DFU_state = STATE_DFU_IDLE;
     return 0;
@@ -318,20 +326,20 @@ int DFUReportResetState(chanend ?c_user_cmd)
     {
         unsigned int cmd_data[16];
         inDFU = 1;
-        DFU_state = STATE_DFU_IDLE;
+        g_DFU_state = STATE_DFU_IDLE;
         return inDFU;
     }
 
-    switch(DFU_state)
+    switch(g_DFU_state)
     {
         case STATE_APP_DETACH:
         case STATE_DFU_IDLE:
-            DFU_state = STATE_DFU_IDLE;
+            g_DFU_state = STATE_DFU_IDLE;
 
             DFUTimer :> currentTime;
             if (currentTime - DFUTimerStart > DFUResetTimeout)
             {
-                DFU_state = STATE_APP_IDLE;
+                g_DFU_state = STATE_APP_IDLE;
                 inDFU = 0;
             }
             else
@@ -349,10 +357,10 @@ int DFUReportResetState(chanend ?c_user_cmd)
         case STATE_DFU_UPLOAD_IDLE:
         case STATE_DFU_ERROR:
             inDFU = 0;
-            DFU_state = STATE_APP_IDLE;
+            g_DFU_state = STATE_APP_IDLE;
             break;
         default:
-            DFU_state = STATE_DFU_ERROR;
+            g_DFU_state = STATE_DFU_ERROR;
             inDFU = 1;
         break;
     }
@@ -369,7 +377,7 @@ static int XMOS_DFU_RevertFactory(chanend ?c_user_cmd)
 {
     unsigned s = 0;
 
-    DFU_OpenFlash(c_user_cmd);
+    DFU_OpenFlash();
 
     flash_cmd_erase_all();
 
@@ -403,54 +411,71 @@ void DFUHandler(server interface i_dfu i, chanend ?c_user_cmd)
     {
         select
         {
-            case i.HandleDfuRequest(USB_SetupPacket_t &sp, unsigned data_buffer[], unsigned data_buffer_length) 
-                -> {unsigned reset_device_after_ack, int return_data_len, unsigned dfu_reset_override}:
+            case i.HandleDfuRequest(USB_SetupPacket_t &sp, unsigned data_buffer[], unsigned data_buffer_length, unsigned dfuState) 
+                -> {unsigned reset_device_after_ack, int return_data_len, unsigned dfu_reset_override, unsigned returnVal, unsigned newDfuState}:
             
                 reset_device_after_ack = 0;
                 return_data_len = 0;
                 dfu_reset_override = 0;
+                unsigned tmpDfuState;
+                returnVal = 0;
     
                 // Map Standard DFU commands onto device level firmware upgrade mechanism
                 switch (sp.bRequest)
                 {
                     case DFU_DETACH:
-                        return_data_len = DFU_Detach(sp.wValue, c_user_cmd);
+                        tmpDfuState = dfuState;
+                        return_data_len = DFU_Detach(sp.wValue, c_user_cmd, tmpDfuState);
+                        newDfuState = tmpDfuState;;
                         break;
                 
                     case DFU_DNLOAD:
                         unsigned data[16];
                         for(int i = 0; i < 16; i++)
                             data[i] = data_buffer[i];
-                        return_data_len = DFU_Dnload(sp.wLength, sp.wValue, data, c_user_cmd);
+                        tmpDfuState = dfuState;
+                        returnVal = DFU_Dnload(sp.wLength, sp.wValue, data, c_user_cmd, return_data_len, tmpDfuState);
+                        newDfuState = tmpDfuState;
+                        
                         break;
                 
                     case DFU_UPLOAD:
                         unsigned data_out[16];
-                        return_data_len = DFU_Upload(sp.wLength, sp.wValue, data_out, c_user_cmd);
+                        tmpDfuState = dfuState;
+                        return_data_len = DFU_Upload(sp.wLength, sp.wValue, data_out, tmpDfuState);
+                        newDfuState = tmpDfuState;
                         for(int i = 0; i < 16; i++)
                             data_buffer[i] = data_out[i];
                         break;
                 
                     case DFU_GETSTATUS:
                         unsigned data_out[16];
-                        return_data_len = DFU_GetStatus(sp.wLength, data_out, c_user_cmd);
+                        tmpDfuState = dfuState;
+                        return_data_len = DFU_GetStatus(sp.wLength, data_out, c_user_cmd, tmpDfuState);
+                        newDfuState = tmpDfuState;
                         for(int i = 0; i < 16; i++)
                             data_buffer[i] = data_out[i];
                         break;
                 
                     case DFU_CLRSTATUS:
-                        return_data_len = DFU_ClrStatus();
+                        tmpDfuState = dfuState;
+                        return_data_len = DFU_ClrStatus(tmpDfuState);
+                        newDfuState = tmpDfuState;
                         break;
                 
                     case DFU_GETSTATE:
                         unsigned data_out[16];
-                        return_data_len = DFU_GetState(sp.wLength, data_out, c_user_cmd);
+                        tmpDfuState = dfuState;
+                        return_data_len = DFU_GetState(sp.wLength, data_out, c_user_cmd, tmpDfuState);
+                        newDfuState = tmpDfuState;
                         for(int i = 0; i < 16; i++)
                             data_buffer[i] = data_out[i];
                         break;
                 
                     case DFU_ABORT:
-                        return_data_len = DFU_Abort();
+                        tmpDfuState = dfuState;
+                        return_data_len = DFU_Abort(tmpDfuState);
+                        newDfuState = tmpDfuState;
                         break;
                 
                     /* XMOS Custom DFU requests */
@@ -500,12 +525,14 @@ void DFUHandler(server interface i_dfu i, chanend ?c_user_cmd)
     }
 } 
 
-int DFUDeviceRequests_(client interface i_dfu i, XUD_ep ep0_out, XUD_ep &?ep0_in, USB_SetupPacket_t &sp, unsigned int altInterface)
+int DFUDeviceRequests(XUD_ep ep0_out, XUD_ep &?ep0_in, USB_SetupPacket_t &sp, chanend ?c_user_cmd, unsigned int altInterface, client interface i_dfu i,int &reset)
 {
     unsigned int return_data_len = 0;
     unsigned int data_buffer_len = 0;
     unsigned int data_buffer[17];
     unsigned int reset_device_after_ack = 0;
+    unsigned int returnVal = 0;
+    unsigned int dfuState = g_DFU_state;
     
     if(sp.bmRequestType.Direction == USB_BM_REQTYPE_DIRECTION_H2D)
     {
@@ -515,42 +542,29 @@ int DFUDeviceRequests_(client interface i_dfu i, XUD_ep ep0_out, XUD_ep &?ep0_in
     }
 
     /* Interface used here such that the handler can be on another tile */
-    {reset_device_after_ack, return_data_len, DFU_reset_override} = i.HandleDfuRequest(sp, data_buffer, data_buffer_len);
+    {reset_device_after_ack, return_data_len, DFU_reset_override, returnVal, dfuState} = i.HandleDfuRequest(sp, data_buffer, data_buffer_len, g_DFU_state);
 
-    if (sp.bmRequestType.Direction == USB_BM_REQTYPE_DIRECTION_D2H && sp.wLength != 0)
+    /* Update our version of dfuState */
+    g_DFU_state = dfuState;
+
+    /* Check if the request was handled */
+    if(!returnVal)
     {
-        XUD_DoGetRequest(ep0_out, ep0_in, (data_buffer, unsigned char[]), return_data_len, return_data_len);
-    }
-    else
-    {
-        XUD_DoSetRequestStatus(ep0_in);
-    }
+        if (sp.bmRequestType.Direction == USB_BM_REQTYPE_DIRECTION_D2H && sp.wLength != 0)
+        {
+            XUD_DoGetRequest(ep0_out, ep0_in, (data_buffer, unsigned char[]), return_data_len, return_data_len);
+        }
+        else
+        {
+            XUD_DoSetRequestStatus(ep0_in);
+        }
 
-  	// If device reset requested, handle after command acknowledgement
-  	if (reset_device_after_ack)
-  	{
-      	return 1;
-  	}
-
-  	return 0;
+  	    // If device reset requested, handle after command acknowledgement
+  	    if (reset_device_after_ack)
+  	    {
+  	        reset = 1;
+        }
+    }
+  	return returnVal;
 }
 
-int DFUDeviceRequests(XUD_ep ep0_out, XUD_ep &?ep0_in, USB_SetupPacket_t &sp, chanend ?c_user_cmd, unsigned int altInterface, client interface i_dfu i)
-{
-    //interface i_dfu i;   
-    int retVal;
-    
-   // par
-   // {
-//#if XUD_TILE == 0
- //       /* Flash is always on tile 0, USB may be used on a different tile */
-  //      [[distribute]] 
-  //      DFUHandler(i, c_user_cmd);  
-//#else
-//#error
-//#endif 
-        retVal = DFUDeviceRequests_(i, ep0_out, ep0_in, sp, altInterface);
-   // }
-
-   return retVal; 
-}

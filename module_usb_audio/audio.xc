@@ -14,6 +14,8 @@
 #include <xs1_su.h>
 
 #include "devicedefines.h"
+
+#include "dfu_interface.h"
 #include "audioports.h"
 #include "audiohw.h"
 #ifdef SPDIF_TX
@@ -866,46 +868,69 @@ void SpdifTxWrapper(chanend c_spdif_tx)
 
 /* This function is a dummy version of the deliver thread that does not
    connect to the codec ports. It is used during DFU reset. */
+
+[[distributable]]
+void DFUHandler(server interface i_dfu i, chanend ?c_user_cmd);
+
+#pragma select handler
+void testct_byref(chanend c, int &returnVal)
+{
+    returnVal = 0;
+    if(testct(c))
+        returnVal = 1;
+}
+    
+
 unsigned static dummy_deliver(chanend c_out)
 {
+    int ct; 
+    
+    outuint(c_out, 0);
+
     while (1)
     {
-        outuint(c_out, 0);
-
-        /* Check for sample freq change or new samples from mixer*/
-        if(testct(c_out))
+        select
         {
-            unsigned command = inct(c_out);
-            return command;
-        }
-        else
-        {
+            /* Check for sample freq change or new samples from mixer*/
+            case testct_byref(c_out, ct):
+                if(ct)
+                {
+          
+                    unsigned command = inct(c_out);
+                    return command;
+                }
+                else
+                {
 #ifndef MIXER // Interfaces straight to decouple()
-            (void) inuint(c_out);
+                    (void) inuint(c_out);
 #pragma loop unroll
-            for(int i = 0; i < NUM_USB_CHAN_IN; i++)
-            {
-                outuint(c_out, 0);
-            }
+                    for(int i = 0; i < NUM_USB_CHAN_IN; i++)
+                    {
+                        outuint(c_out, 0);
+                    }
 
 #pragma loop unroll
-            for(int i = 0; i < NUM_USB_CHAN_OUT; i++)
-            {
-                (void) inuint(c_out);
-            }
+                    for(int i = 0; i < NUM_USB_CHAN_OUT; i++)
+                    {
+                        (void) inuint(c_out);
+                    }
 #else
 #pragma loop unroll
-            for(int i = 0; i < NUM_USB_CHAN_OUT; i++)
-            {
-                (void) inuint(c_out);
-            }
+                    for(int i = 0; i < NUM_USB_CHAN_OUT; i++)
+                    {
+                        (void) inuint(c_out);
+                    }
 
 #pragma loop unroll
-            for(int i = 0; i < NUM_USB_CHAN_IN; i++)
-            {
-                outuint(c_out, 0);
-            }
+                for(int i = 0; i < NUM_USB_CHAN_IN; i++)
+                {
+                    outuint(c_out, 0);
+                }
 #endif
+            }
+
+            outuint(c_out, 0);
+            break;
         }
     }
     return 0;
@@ -923,7 +948,11 @@ chanend c_spdif_out,
 #if (defined(ADAT_RX) || defined(SPDIF_RX))
 chanend c_dig_rx,
 #endif
-chanend ?c_config, chanend ?c)
+chanend ?c_config, chanend ?c
+#if XUD_TILE != 0
+, server interface i_dfu dfuInterface
+#endif
+)
 {
 #if defined (SPDIF_TX) && (SPDIF_TX_TILE == AUDIO_IO_TILE)
     chan c_spdif_out;
@@ -1213,8 +1242,12 @@ chanend ?c_config, chanend ?c)
 
                   	while (1)
 					{
-
-                    	command = dummy_deliver(c_mix_out);
+                        par{
+#if XUD_TILE != 0
+                            DFUHandler(dfuInterface, null);
+#endif
+                            command = dummy_deliver(c_mix_out);
+                        }
                         curSamFreq = inuint(c_mix_out);
 
                     	if (curSamFreq == AUDIO_START_FROM_DFU)

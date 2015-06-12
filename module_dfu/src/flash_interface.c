@@ -40,6 +40,7 @@ void DFUCustomFlashDisable()
     return;
 }
 
+/* Returns non-zero for error */
 int flash_cmd_init(void)
 {
     fl_BootImageInfo image;
@@ -51,7 +52,9 @@ int flash_cmd_init(void)
     }
 
     if (!flash_device_open)
-        return 0;
+    {
+        return 1;
+    }
 
 #ifndef QUAD_SPI_FLASH
     // Disable flash protection
@@ -59,8 +62,8 @@ int flash_cmd_init(void)
 #endif
 
     if (fl_getFactoryImage(&image) != 0)
-    {
-        return 0;
+    {   
+        return 1;
     }
 
     factory_image = image;

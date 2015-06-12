@@ -2,6 +2,7 @@
 #define __audio_h__
 
 #include "devicedefines.h"
+#include "dfu_interface.h"
 /** The audio driver thread.
  *
  *  This function drives I2S ports and handles samples to/from other digital
@@ -21,7 +22,11 @@ void audio(chanend c_in,
 #if(defined(SPDIF_RX) || defined(ADAT_RX))
     chanend c_dig,
 #endif
-    chanend ?c_config, chanend ?c_adc);
+    chanend ?c_config, chanend ?c_adc
+#if (XUD_TILE != 0)
+   , server interface i_dfu dfuInterface
+#endif
+);
 
 void SpdifTxWrapper(chanend c_spdif_tx);
 

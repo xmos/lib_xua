@@ -278,6 +278,7 @@ void usb_audio_core(chanend c_mix_out
 #endif
 , chanend ?c_clk_int
 , chanend ?c_clk_ctl
+, client interface i_dfu dfuInterface
 )
 {
     chan c_sof;
@@ -298,13 +299,7 @@ void usb_audio_core(chanend c_mix_out
 #else
 #define c_EANativeTransport_ctrl null
 #endif
-
-#ifdef DFU
-    interface i_dfu dfuInterface; 
-#else
-    #define dfuInterface null  
-#endif
-
+    
     par
     {
         /* USB Interface Core */
@@ -376,12 +371,7 @@ void usb_audio_core(chanend c_mix_out
         /* Endpoint 0 Core */
         {
             thread_speed();
-            par     
-            {
-                [[distribute]] 
-                DFUHandler(dfuInterface, null);  
-                Endpoint0( c_xud_out[0], c_xud_in[0], c_aud_ctl, c_mix_ctl, c_clk_ctl, c_EANativeTransport_ctrl, dfuInterface);
-            }
+            Endpoint0( c_xud_out[0], c_xud_in[0], c_aud_ctl, c_mix_ctl, c_clk_ctl, c_EANativeTransport_ctrl, dfuInterface);
         }
 
         /* Decoupling core */
@@ -409,6 +399,9 @@ void usb_audio_io(chanend c_aud_in, chanend ?c_adc,
     chanend ?c_adat_rx,
     chanend ?c_clk_ctl,
     chanend ?c_clk_int
+#if (XUD_TILE != 0)
+    , server interface i_dfu dfuInterface
+#endif
 )
 {
 #ifdef MIXER
@@ -445,7 +438,11 @@ void usb_audio_io(chanend c_aud_in, chanend ?c_adc,
 #if defined(SPDIF_RX) || defined(ADAT_RX)
                 c_dig_rx,
 #endif
-                c_aud_cfg, c_adc);
+                c_aud_cfg, c_adc
+#if XUD_TILE != 0
+                ,dfuInterface
+#endif
+            );
         }
 
 #if defined(SPDIF_RX) || defined(ADAT_RX)
@@ -523,25 +520,41 @@ int main()
 #define c_clk_ctl null
 #endif
 
+#ifdef DFU
+    interface i_dfu dfuInterface; 
+#else
+    #define dfuInterface null  
+#endif
+
+
     USER_MAIN_DECLARATIONS
 
     par
-    {
-        on tile[XUD_TILE]: usb_audio_core(c_mix_out
+    {                
+        on tile[XUD_TILE]: 
+        par
+        {
+#if (XUD_TILE == 0)
+            /* Check if USB is on the flash tile (tile 0) */
+            [[distribute]] 
+            DFUHandler(dfuInterface, null);  
+#endif
+            usb_audio_core(c_mix_out
 #ifdef MIDI
-            , c_midi
+                , c_midi
 #endif
 #ifdef IAP
-            , c_iap
+                , c_iap
 #ifdef IAP_EA_NATIVE_TRANS
-            , c_ea_data
+                , c_ea_data
 #endif
 #endif
 #ifdef MIXER
-            , c_mix_ctl
+                , c_mix_ctl
 #endif
-            , c_clk_int, c_clk_ctl
-);
+                , c_clk_int, c_clk_ctl, dfuInterface
+            );
+        }
 
         on tile[AUDIO_IO_TILE]: usb_audio_io(c_mix_out, c_adc
 #if defined(SPDIF_TX) && (SPDIF_TX_TILE != AUDIO_IO_TILE)
@@ -551,6 +564,10 @@ int main()
             , c_mix_ctl
 #endif
             ,c_aud_cfg, c_spdif_rx, c_adat_rx, c_clk_ctl, c_clk_int
+#if XUD_TILE != 0
+            , dfuInterface
+#endif
+
         );
 
 #if defined(SPDIF_TX) && (SPDIF_TX_TILE != AUDIO_IO_TILE)

@@ -558,6 +558,8 @@ void Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
 
                         if (interfaceNum == DFU_IF)
                         {
+                            int reset = 0;
+
                             /* If running in application mode stop audio */
                             /* Don't interupt audio for save and restore cmds */
                             if ((DFU_IF == INTERFACE_NUMBER_DFU) && (sp.bRequest != XMOS_DFU_SAVESTATE) &&
@@ -571,14 +573,16 @@ void Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
                             }
                             
                             /* This will return 1 if reset requested */
-                            if (DFUDeviceRequests(ep0_out, &ep0_in, &sp, null, g_interfaceAlt[sp.wIndex], dfuInterface))
+                            result = DFUDeviceRequests(ep0_out, &ep0_in, &sp, null, g_interfaceAlt[sp.wIndex], dfuInterface, &reset);
+                            
+                            if(reset && result == XUD_RES_OKAY)
                             {
                                 DFUDelay(50000000);
                                 device_reboot(c_audioControl);
                             }
 
                             /* TODO we should not make the assumption that all DFU requests are handled */
-                            result = 0;
+                            //result = 0;
                         }
 #endif
                         /* Check for:   - Audio CONTROL interface request - always 0, note we check for DFU first

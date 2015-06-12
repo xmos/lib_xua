@@ -6,8 +6,8 @@
 
 interface i_dfu
 {
-    {unsigned, int, unsigned} HandleDfuRequest(USB_SetupPacket_t &sp, unsigned data_buffer[], unsigned data_buffer_length); 
-    void finish(); 
+    {unsigned, int, unsigned, unsigned, unsigned} HandleDfuRequest(USB_SetupPacket_t &sp, unsigned data_buffer[], unsigned data_buffer_length, unsigned dfuState); 
+    void finish();
 };
 #endif
 
