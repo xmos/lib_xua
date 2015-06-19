@@ -6,6 +6,12 @@
 
 #define XS1_SU_PERIPH_USB_ID 0x1
 
+#if (XUD_SERIES_SUPPORT == XUD_X200_SERIES)
+#define PLL_MASK 0x7FFFFFFF
+#else
+#define PLL_MASK 0xFFFFFFFF
+#endif
+
 /* Note, this function is prototyped in xs1.h only from 13 tools onwards */
 unsigned get_tile_id(tileref);
 
@@ -40,12 +46,14 @@ void device_reboot_aux(void)
         if(localTileId != tileId)
         {
             read_sswitch_reg(tileId, 6, pllVal);
+            pllVal &= PLL_MASK;
             write_sswitch_reg_no_ack(tileId, 6, pllVal);
         }
     }
 
     /* Finally reboot this tile! */
     read_sswitch_reg(localTileId, 6, pllVal);
+    pllVal &= PLL_MASK;
     write_sswitch_reg_no_ack(localTileId, 6, pllVal);
 #endif
 }
