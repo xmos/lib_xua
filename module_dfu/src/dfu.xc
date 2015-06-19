@@ -276,7 +276,7 @@ static int DFU_GetStatus(unsigned int request_len, unsigned data_buffer[16], cha
     data_buffer[1] = DFU_state;
 
     return 6;
-    
+
 }
 
 static int DFU_ClrStatus(unsigned &DFU_state)
@@ -407,19 +407,19 @@ static int XMOS_DFU_LoadState()
 [[distributable]]
 void DFUHandler(server interface i_dfu i, chanend ?c_user_cmd)
 {
-    while(1)   
+    while(1)
     {
         select
         {
-            case i.HandleDfuRequest(USB_SetupPacket_t &sp, unsigned data_buffer[], unsigned data_buffer_length, unsigned dfuState) 
+            case i.HandleDfuRequest(USB_SetupPacket_t &sp, unsigned data_buffer[], unsigned data_buffer_length, unsigned dfuState)
                 -> {unsigned reset_device_after_ack, int return_data_len, unsigned dfu_reset_override, unsigned returnVal, unsigned newDfuState}:
-            
+
                 reset_device_after_ack = 0;
                 return_data_len = 0;
                 dfu_reset_override = 0;
                 unsigned tmpDfuState;
                 returnVal = 0;
-    
+
                 // Map Standard DFU commands onto device level firmware upgrade mechanism
                 switch (sp.bRequest)
                 {
@@ -428,7 +428,7 @@ void DFUHandler(server interface i_dfu i, chanend ?c_user_cmd)
                         return_data_len = DFU_Detach(sp.wValue, c_user_cmd, tmpDfuState);
                         newDfuState = tmpDfuState;;
                         break;
-                
+
                     case DFU_DNLOAD:
                         unsigned data[16];
                         for(int i = 0; i < 16; i++)
@@ -436,9 +436,9 @@ void DFUHandler(server interface i_dfu i, chanend ?c_user_cmd)
                         tmpDfuState = dfuState;
                         returnVal = DFU_Dnload(sp.wLength, sp.wValue, data, c_user_cmd, return_data_len, tmpDfuState);
                         newDfuState = tmpDfuState;
-                        
+
                         break;
-                
+
                     case DFU_UPLOAD:
                         unsigned data_out[16];
                         tmpDfuState = dfuState;
@@ -447,7 +447,7 @@ void DFUHandler(server interface i_dfu i, chanend ?c_user_cmd)
                         for(int i = 0; i < 16; i++)
                             data_buffer[i] = data_out[i];
                         break;
-                
+
                     case DFU_GETSTATUS:
                         unsigned data_out[16];
                         tmpDfuState = dfuState;
@@ -456,13 +456,13 @@ void DFUHandler(server interface i_dfu i, chanend ?c_user_cmd)
                         for(int i = 0; i < 16; i++)
                             data_buffer[i] = data_out[i];
                         break;
-                
+
                     case DFU_CLRSTATUS:
                         tmpDfuState = dfuState;
                         return_data_len = DFU_ClrStatus(tmpDfuState);
                         newDfuState = tmpDfuState;
                         break;
-                
+
                     case DFU_GETSTATE:
                         unsigned data_out[16];
                         tmpDfuState = dfuState;
@@ -471,49 +471,49 @@ void DFUHandler(server interface i_dfu i, chanend ?c_user_cmd)
                         for(int i = 0; i < 16; i++)
                             data_buffer[i] = data_out[i];
                         break;
-                
+
                     case DFU_ABORT:
                         tmpDfuState = dfuState;
                         return_data_len = DFU_Abort(tmpDfuState);
                         newDfuState = tmpDfuState;
                         break;
-                
+
                     /* XMOS Custom DFU requests */
                     case XMOS_DFU_RESETDEVICE:
                         reset_device_after_ack = 1;
                         return_data_len = 0;
                         break;
-                    
+
                     case XMOS_DFU_REVERTFACTORY:
                         return_data_len = XMOS_DFU_RevertFactory(c_user_cmd);
                         break;
-                    
+
                     case XMOS_DFU_RESETINTODFU:
                         reset_device_after_ack = 1;
                         dfu_reset_override = 0x11042011;
                         return_data_len = 0;
                         break;
-                    
+
                     case XMOS_DFU_RESETFROMDFU:
                         reset_device_after_ack = 1;
                         dfu_reset_override = 0;
                         return_data_len = 0;
                         break;
-                    
+
                     case XMOS_DFU_SELECTIMAGE:
                         return_data_len = XMOS_DFU_SelectImage(sp.wValue, c_user_cmd);
                         break;
-                    
+
                     case XMOS_DFU_SAVESTATE:
                         /* Save passed state to flash */
                         return_data_len = XMOS_DFU_SaveState();
                         break;
-                    
+
                     case XMOS_DFU_RESTORESTATE:
                          /* Restore saved state from flash */
                         return_data_len = XMOS_DFU_LoadState();
                         break;
-                    
+
                     default:
                         break;
                 }
@@ -523,7 +523,7 @@ void DFUHandler(server interface i_dfu i, chanend ?c_user_cmd)
                 return;
         }
     }
-} 
+}
 
 int DFUDeviceRequests(XUD_ep ep0_out, XUD_ep &?ep0_in, USB_SetupPacket_t &sp, chanend ?c_user_cmd, unsigned int altInterface, client interface i_dfu i,int &reset)
 {
@@ -533,7 +533,7 @@ int DFUDeviceRequests(XUD_ep ep0_out, XUD_ep &?ep0_in, USB_SetupPacket_t &sp, ch
     unsigned int reset_device_after_ack = 0;
     unsigned int returnVal = 0;
     unsigned int dfuState = g_DFU_state;
-    
+
     if(sp.bmRequestType.Direction == USB_BM_REQTYPE_DIRECTION_H2D)
     {
         // Host to device

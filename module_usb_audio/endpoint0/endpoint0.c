@@ -571,10 +571,10 @@ void Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
                                 // Handshake
 							    chkct(c_audioControl, XS1_CT_END);
                             }
-                            
+
                             /* This will return 1 if reset requested */
                             result = DFUDeviceRequests(ep0_out, &ep0_in, &sp, null, g_interfaceAlt[sp.wIndex], dfuInterface, &reset);
-                            
+
                             if(reset && result == XUD_RES_OKAY)
                             {
                                 DFUDelay(50000000);

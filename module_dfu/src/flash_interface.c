@@ -62,7 +62,7 @@ int flash_cmd_init(void)
 #endif
 
     if (fl_getFactoryImage(&image) != 0)
-    {   
+    {
         return 1;
     }
 

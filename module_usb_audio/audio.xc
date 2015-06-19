@@ -879,12 +879,12 @@ void testct_byref(chanend c, int &returnVal)
     if(testct(c))
         returnVal = 1;
 }
-    
+
 [[combinable]]
 static void dummy_deliver(chanend c_out, unsigned &command)
 {
-    int ct; 
-    
+    int ct;
+
 
     while (1)
     {
@@ -1238,7 +1238,7 @@ chanend ?c_config, chanend ?c
                   	outct(c_mix_out, XS1_CT_END);
 
                     outuint(c_mix_out, 0);
-                  
+
                   	while (1)
 					{
 #if XUD_TILE != 0

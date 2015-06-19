@@ -32,7 +32,7 @@ typedef struct {
       clock qspiClkblk;
 } fl_QSPIPorts;
 */
-fl_QSPIPorts p_qflash = 
+fl_QSPIPorts p_qflash =
 {
     XS1_PORT_1B,
     XS1_PORT_1C,

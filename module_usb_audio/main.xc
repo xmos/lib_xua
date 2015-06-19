@@ -299,7 +299,7 @@ void usb_audio_core(chanend c_mix_out
 #else
 #define c_EANativeTransport_ctrl null
 #endif
-    
+
     par
     {
         /* USB Interface Core */
@@ -521,23 +521,23 @@ int main()
 #endif
 
 #ifdef DFU
-    interface i_dfu dfuInterface; 
+    interface i_dfu dfuInterface;
 #else
-    #define dfuInterface null  
+    #define dfuInterface null
 #endif
 
 
     USER_MAIN_DECLARATIONS
 
     par
-    {                
-        on tile[XUD_TILE]: 
+    {
+        on tile[XUD_TILE]:
         par
         {
 #if (XUD_TILE == 0)
             /* Check if USB is on the flash tile (tile 0) */
-            [[distribute]] 
-            DFUHandler(dfuInterface, null);  
+            [[distribute]]
+            DFUHandler(dfuInterface, null);
 #endif
             usb_audio_core(c_mix_out
 #ifdef MIDI
