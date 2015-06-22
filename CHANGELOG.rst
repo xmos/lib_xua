@@ -6,6 +6,7 @@ sc_usb_audio Change Log
     - RESOLVED:   Reboot code (used for DFU) failure in tools versions > 14.0.2 (xCORE-200 only)
     - RESOLVED:   Run-time exception in mixer when MAX_MIX_COUNT > 0 (xCORE-200 only)
     - RESOLVED:   DFU now operational on xCORE-200 MC Audio board
+    - RESOLVED:   MAX_MIX_COUNT checked properly for mix strings in string table
     - CHANGE:     DFU code re-written to use an XC interface. The flash-part may now be connected
                   to a separate tile to the tile running USB code
     - CHANGE:     DFU code can now used quad-SPI flash
