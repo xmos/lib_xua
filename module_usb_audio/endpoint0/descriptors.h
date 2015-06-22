@@ -344,25 +344,25 @@ StringDescTable_t g_strTable =
 #if defined(MIXER) && (MAX_MIX_COUNT > 0)
     .mixOutStr_1                 = "Mix 1",
 #endif
-#if defined(MIXER) && (MAX_MIX_COUNT > 0)
+#if defined(MIXER) && (MAX_MIX_COUNT > 1)
     .mixOutStr_2                 = "Mix 2",
 #endif
-#if defined(MIXER) && (MAX_MIX_COUNT > 0)
+#if defined(MIXER) && (MAX_MIX_COUNT > 2)
     .mixOutStr_3                 = "Mix 3",
 #endif
-#if defined(MIXER) && (MAX_MIX_COUNT > 0)
+#if defined(MIXER) && (MAX_MIX_COUNT > 3)
     .mixOutStr_4                 = "Mix 4",
 #endif
-#if defined(MIXER) && (MAX_MIX_COUNT > 0)
+#if defined(MIXER) && (MAX_MIX_COUNT > 4)
     .mixOutStr_5                 = "Mix 5",
 #endif
-#if defined(MIXER) && (MAX_MIX_COUNT > 0)
+#if defined(MIXER) && (MAX_MIX_COUNT > 5)
     .mixOutStr_6                 = "Mix 6",
 #endif
-#if defined(MIXER) && (MAX_MIX_COUNT > 0)
+#if defined(MIXER) && (MAX_MIX_COUNT > 6)
     .mixOutStr_7                 = "Mix 7",
 #endif
-#if defined(MIXER) && (MAX_MIX_COUNT > 0)
+#if defined(MIXER) && (MAX_MIX_COUNT > 7)
     .mixOutStr_8                 = "Mix 8",
 #endif
 #if defined(MIXER) && (MAX_MIX_COUNT > 8)
