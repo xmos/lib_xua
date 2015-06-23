@@ -94,7 +94,7 @@ int flash_cmd_enable_ports()
 #endif
     if (!result)
     {
-        /* All okay.. */  
+        /* All okay.. */
         return 1;
     }
     else
