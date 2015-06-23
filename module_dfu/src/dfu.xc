@@ -417,7 +417,7 @@ void DFUHandler(server interface i_dfu i, chanend ?c_user_cmd)
                 reset_device_after_ack = 0;
                 return_data_len = 0;
                 dfu_reset_override = 0;
-                unsigned tmpDfuState;
+                unsigned tmpDfuState = dfuState;
                 returnVal = 0;
 
                 // Map Standard DFU commands onto device level firmware upgrade mechanism
@@ -433,49 +433,36 @@ void DFUHandler(server interface i_dfu i, chanend ?c_user_cmd)
                         unsigned data[16];
                         for(int i = 0; i < 16; i++)
                             data[i] = data_buffer[i];
-                        tmpDfuState = dfuState;
                         returnVal = DFU_Dnload(sp.wLength, sp.wValue, data, c_user_cmd, return_data_len, tmpDfuState);
-                        newDfuState = tmpDfuState;
-
                         break;
 
                     case DFU_UPLOAD:
                         unsigned data_out[16];
-                        tmpDfuState = dfuState;
                         return_data_len = DFU_Upload(sp.wLength, sp.wValue, data_out, tmpDfuState);
-                        newDfuState = tmpDfuState;
                         for(int i = 0; i < 16; i++)
                             data_buffer[i] = data_out[i];
                         break;
 
                     case DFU_GETSTATUS:
                         unsigned data_out[16];
-                        tmpDfuState = dfuState;
                         return_data_len = DFU_GetStatus(sp.wLength, data_out, c_user_cmd, tmpDfuState);
-                        newDfuState = tmpDfuState;
                         for(int i = 0; i < 16; i++)
                             data_buffer[i] = data_out[i];
                         break;
 
                     case DFU_CLRSTATUS:
-                        tmpDfuState = dfuState;
                         return_data_len = DFU_ClrStatus(tmpDfuState);
-                        newDfuState = tmpDfuState;
                         break;
 
                     case DFU_GETSTATE:
                         unsigned data_out[16];
-                        tmpDfuState = dfuState;
                         return_data_len = DFU_GetState(sp.wLength, data_out, c_user_cmd, tmpDfuState);
-                        newDfuState = tmpDfuState;
                         for(int i = 0; i < 16; i++)
                             data_buffer[i] = data_out[i];
                         break;
 
                     case DFU_ABORT:
-                        tmpDfuState = dfuState;
                         return_data_len = DFU_Abort(tmpDfuState);
-                        newDfuState = tmpDfuState;
                         break;
 
                     /* XMOS Custom DFU requests */
@@ -517,6 +504,7 @@ void DFUHandler(server interface i_dfu i, chanend ?c_user_cmd)
                     default:
                         break;
                 }
+				newDfuState = tmpDfuState;
                 break;
 
            case i.finish():
