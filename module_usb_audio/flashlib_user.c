@@ -50,6 +50,7 @@ fl_PortHolderStruct p_flash =
 };
 #endif
 
+/* return 1 for opened ports successfully */
 int flash_cmd_enable_ports()
 {
     int result = 0;
@@ -93,6 +94,7 @@ int flash_cmd_enable_ports()
 #endif
     if (!result)
     {
+        /* All okay.. */  
         return 1;
     }
     else
