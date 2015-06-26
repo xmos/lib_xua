@@ -1,6 +1,10 @@
 sc_usb_audio Change Log
 =======================
 
+6.12.3
+------
+    - RESOLVED:   Method for storing persistent state over a DFU reboot modified                  to improve resilience against code-base and tools changed.  
+
 6.12.2
 ------
     - RESOLVED:   Reboot code (used for DFU) failure in tools versions > 14.0.2 (xCORE-200 only)
