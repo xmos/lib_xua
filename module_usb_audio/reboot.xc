@@ -69,4 +69,6 @@ void device_reboot(chanend spare)
     asm("freer res[%0]"::"r"(spare));
 #endif
     device_reboot_aux();
+
+    while(1);
 }

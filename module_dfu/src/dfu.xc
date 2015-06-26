@@ -10,6 +10,28 @@
 
 #include <dfu_interface.h>
 
+#if defined(ARCH_X200) && (ARCH_X200 == 1)
+/* Note range 0x7FFC8 - 0x7FFFF guarenteed to be untouched by tools */
+#define FLAG_ADDRESS 0x7ffc4
+#else
+/* Note range 0x1FFC8 - 0x1FFFF guarenteed to be untouched by tools */
+#define FLAG_ADDRESS 0x1ffc4
+#endif
+
+/* Store Flag to fixed address */
+static void SetDFUFlag(unsigned x)
+{
+    asm volatile("stw %0, %1[0]" :: "r"(x), "r"(FLAG_ADDRESS));
+}
+
+/* Load flag from fixed address */
+static unsigned GetDFUFlag()
+{
+    unsigned x;
+    asm volatile("ldw %0, %1[0]" : "=r"(x) : "r"(FLAG_ADDRESS));
+    return x;
+}
+
 static int g_DFU_state = STATE_APP_IDLE;
 static int DFU_status = DFU_OK;
 static timer DFUTimer;
@@ -18,8 +40,6 @@ static unsigned int DFUResetTimeout = 100000000; // 1 second default
 static int DFU_flash_connected = 0;
 
 static unsigned int subPagesLeft = 0;
-
-extern int DFU_reset_override;
 
 extern void DFUCustomFlashEnable();
 extern void DFUCustomFlashDisable();
@@ -30,13 +50,6 @@ void DFUDelay(unsigned d)
     unsigned s;
     tmr :> s;
     tmr when timerafter(s + d) :> void;
-}
-
-
-void temp()
-{
-    asm(".linkset DFU_reset_override, _edp.bss");
-    asm(".globl DFU_reset_override");
 }
 
 /* Return non-zero on error */
@@ -321,8 +334,12 @@ int DFUReportResetState(chanend ?c_user_cmd)
 {
     unsigned int inDFU = 0;
     unsigned int currentTime = 0;
+    
+    unsigned flag;
+    flag = GetDFUFlag();
 
-    if (DFU_reset_override == 0x11042011)
+    //if (DFU_reset_override == 0x11042011)
+    if (flag == 0x11042011)
     {
         unsigned int cmd_data[16];
         inDFU = 1;
@@ -412,7 +429,7 @@ void DFUHandler(server interface i_dfu i, chanend ?c_user_cmd)
         select
         {
             case i.HandleDfuRequest(USB_SetupPacket_t &sp, unsigned data_buffer[], unsigned data_buffer_length, unsigned dfuState)
-                -> {unsigned reset_device_after_ack, int return_data_len, unsigned dfu_reset_override, unsigned returnVal, unsigned newDfuState}:
+                -> {unsigned reset_device_after_ack, int return_data_len, int dfu_reset_override, int returnVal, unsigned newDfuState}:
 
                 reset_device_after_ack = 0;
                 return_data_len = 0;
@@ -519,8 +536,9 @@ int DFUDeviceRequests(XUD_ep ep0_out, XUD_ep &?ep0_in, USB_SetupPacket_t &sp, ch
     unsigned int data_buffer_len = 0;
     unsigned int data_buffer[17];
     unsigned int reset_device_after_ack = 0;
-    unsigned int returnVal = 0;
+    int returnVal = 0;
     unsigned int dfuState = g_DFU_state;
+    int dfuResetOverride;
 
     if(sp.bmRequestType.Direction == USB_BM_REQTYPE_DIRECTION_H2D)
     {
@@ -530,21 +548,23 @@ int DFUDeviceRequests(XUD_ep ep0_out, XUD_ep &?ep0_in, USB_SetupPacket_t &sp, ch
     }
 
     /* Interface used here such that the handler can be on another tile */
-    {reset_device_after_ack, return_data_len, DFU_reset_override, returnVal, dfuState} = i.HandleDfuRequest(sp, data_buffer, data_buffer_len, g_DFU_state);
+    {reset_device_after_ack, return_data_len, dfuResetOverride, returnVal, dfuState} = i.HandleDfuRequest(sp, data_buffer, data_buffer_len, g_DFU_state);
+
+    SetDFUFlag(dfuResetOverride);
 
     /* Update our version of dfuState */
     g_DFU_state = dfuState;
 
     /* Check if the request was handled */
-    if(!returnVal)
+    if(returnVal == 0)
     {
         if (sp.bmRequestType.Direction == USB_BM_REQTYPE_DIRECTION_D2H && sp.wLength != 0)
         {
-            XUD_DoGetRequest(ep0_out, ep0_in, (data_buffer, unsigned char[]), return_data_len, return_data_len);
+            returnVal = XUD_DoGetRequest(ep0_out, ep0_in, (data_buffer, unsigned char[]), return_data_len, return_data_len);
         }
         else
         {
-            XUD_DoSetRequestStatus(ep0_in);
+            returnVal = XUD_DoSetRequestStatus(ep0_in);
         }
 
   	    // If device reset requested, handle after command acknowledgement
