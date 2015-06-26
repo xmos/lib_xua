@@ -334,7 +334,7 @@ int DFUReportResetState(chanend ?c_user_cmd)
 {
     unsigned int inDFU = 0;
     unsigned int currentTime = 0;
-    
+
     unsigned flag;
     flag = GetDFUFlag();
 
