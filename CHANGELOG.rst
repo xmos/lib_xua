@@ -3,7 +3,8 @@ sc_usb_audio Change Log
 
 6.12.3
 ------
-    - RESOLVED:   Method for storing persistent state over a DFU reboot modified                  to improve resilience against code-base and tools changes  
+    - RESOLVED:   Method for storing persistent state over a DFU reboot modified to improve resilience 
+                  against code-base and tools changes  
 
 6.12.2
 ------
