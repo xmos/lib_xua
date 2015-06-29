@@ -452,7 +452,7 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
     chanend ?c_adc)
 {
 
-#if (I2S_CHANS_ADC != 0) || defined(SPDIF)
+#if (I2S_CHANS_ADC != 0) || defined(SPDIF_TX)
 	unsigned sample;
 #endif
 //#if NUM_USB_CHAN_IN > 0
