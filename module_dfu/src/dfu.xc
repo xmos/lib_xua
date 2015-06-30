@@ -10,7 +10,8 @@
 
 #include <dfu_interface.h>
 
-#if defined(ARCH_X200) && (ARCH_X200 == 1)
+#if (XUD_SERIES_SUPPORT==4)
+/* xCORE-200 */
 /* Note range 0x7FFC8 - 0x7FFFF guarenteed to be untouched by tools */
 #define FLAG_ADDRESS 0x7ffc4
 #else
