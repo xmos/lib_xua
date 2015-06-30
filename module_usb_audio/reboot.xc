@@ -62,11 +62,11 @@ void device_reboot_aux(void)
 void device_reboot(chanend spare)
 {
 #if (XUD_SERIES_SUPPORT != XUD_U_SERIES)
-    outct(spare, XS1_CT_END);   // have to do this before freeing the chanend
-    inct(spare);                // Receive end ct from usb_buffer to close down in both directions
+    //outct(spare, XS1_CT_END);   // have to do this before freeing the chanend
+    //inct(spare);                // Receive end ct from usb_buffer to close down in both directions
 
     /* Need a spare chanend so we can talk to the pll register */
-    asm("freer res[%0]"::"r"(spare));
+    //asm("freer res[%0]"::"r"(spare));
 #endif
     device_reboot_aux();
 
