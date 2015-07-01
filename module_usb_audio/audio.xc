@@ -233,12 +233,18 @@ static inline unsigned DoSampleTransfer(chanend c_out, int readBuffNo, unsigned 
     {
         unsigned command = inct(c_out);
 #ifndef CODEC_MASTER
-        // Set clocks low
-        p_lrclk <: 0;
-        p_bclk <: 0;
+        if(dsdMode == DSD_MODE_OFF)
+        {
+            // Set clocks low
+            p_lrclk <: 0;
+            p_bclk <: 0;
+        }
+        else
+        {
 #if(DSD_CHANS_DAC != 0)
             /* DSD Clock might not be shared with lrclk or bclk... */
-        p_dsd_clk <: 0;
+            p_dsd_clk <: 0;
+        }
 #endif
 #endif
 #if (DSD_CHANS_DAC > 0)
