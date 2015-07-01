@@ -1,6 +1,10 @@
 sc_usb_audio Change Log
 =======================
 
+6.12.4
+------   
+    - RESOLVED:   DFU fail when DSD enabled and USB library not running on tile[0]
+
 6.12.3
 ------
     - RESOLVED:   Method for storing persistent state over a DFU reboot modified to improve resilience 
