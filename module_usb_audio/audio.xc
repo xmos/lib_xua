@@ -244,8 +244,8 @@ static inline unsigned DoSampleTransfer(chanend c_out, int readBuffNo, unsigned 
 #if(DSD_CHANS_DAC != 0)
             /* DSD Clock might not be shared with lrclk or bclk... */
             p_dsd_clk <: 0;
-        }
 #endif
+        }
 #endif
 #if (DSD_CHANS_DAC > 0)
         if(dsdMode == DSD_MODE_DOP)
