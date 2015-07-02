@@ -574,7 +574,7 @@ static void mixer1(chanend c_host, chanend c_mix_ctl, chanend c_mixer2)
 #ifdef FAST_MIXER
                 mixed = doMix4(samples, mix_mult_slice(4));
 #else
-                mixed = doMix(samples_array,mix_map_slice(4),mix_mult_slice(4));
+                mixed = doMix(samples, mix_map_slice(4),mix_mult_slice(4));
 #endif
                 write_via_xc_ptr_indexed(samples_array, (NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + 4), mixed);
 
@@ -587,9 +587,9 @@ static void mixer1(chanend c_host, chanend c_mix_ctl, chanend c_mixer2)
 #ifdef FAST_MIXER
                 mixed = doMix6(samples, mix_mult_slice(6));
 #else
-                mixed = doMix(samples_array,mix_map_slice(6),mix_mult_slice(6));
+                mixed = doMix(samples, mix_map_slice(6),mix_mult_slice(6));
 #endif
-                write_via_xc_ptr_indexed(samples_array, (NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + 6), mixed);
+                write_via_xc_ptr_indexed(samples, (NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + 6), mixed);
 
 #if defined (LEVEL_METER_HOST) || defined(LEVEL_METER_LEDS)
                 ComputeMixerLevel(mixed, 6);
@@ -679,7 +679,7 @@ static void mixer2(chanend c_mixer1, chanend c_audio)
 #ifdef FAST_MIXER
       mixed = doMix1(samples, mix_mult_slice(1));
 #else
-      mixed = doMix(samples_array,mix_map_slice(1),mix_mult_slice(1));
+      mixed = doMix(samples, mix_map_slice(1),mix_mult_slice(1));
 #endif
 
       write_via_xc_ptr_indexed(samples, (NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + 1), mixed);
@@ -699,7 +699,7 @@ static void mixer2(chanend c_mixer1, chanend c_audio)
 #ifdef FAST_MIXER
         mixed = doMix3(samples, mix_mult_slice(3));
 #else
-        mixed = doMix(samples_array,mix_map_slice(3),mix_mult_slice(3));
+        mixed = doMix(samples, mix_map_slice(3),mix_mult_slice(3));
 #endif
 
         write_via_xc_ptr_indexed(samples, (NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + 3), mixed);
@@ -713,7 +713,7 @@ static void mixer2(chanend c_mixer1, chanend c_audio)
 #ifdef FAST_MIXER
     mixed = doMix5(samples, mix_mult_slice(5));
 #else
-    mixed = doMix(samples_array,mix_map_slice(5),mix_mult_slice(5));
+    mixed = doMix(samples, mix_map_slice(5),mix_mult_slice(5));
 #endif
     write_via_xc_ptr_indexed(samples, NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + 5, mixed);
 
@@ -726,7 +726,7 @@ static void mixer2(chanend c_mixer1, chanend c_audio)
 #ifdef FAST_MIXER
     mixed = doMix7(samples, mix_mult_slice(7));
 #else
-    mixed = doMix(samples_array,mix_map_slice(7),mix_mult_slice(7));
+    mixed = doMix(samples, mix_map_slice(7),mix_mult_slice(7));
 #endif
 
     write_via_xc_ptr_indexed(samples,  NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + 7, mixed);
