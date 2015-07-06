@@ -297,7 +297,7 @@ static inline unsigned DoSampleTransfer(chanend c_out, int readBuffNo, unsigned 
         for(int i = 0; i < NUM_USB_CHAN_IN; i++)
 #else
         for(int i = 0; i < I2S_CHANS_ADC; i++)
-#endif     
+#endif
         {
             if(readBuffNo)
                 outuint(c_out, samplesIn_1[i]);
