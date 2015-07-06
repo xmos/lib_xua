@@ -1,10 +1,13 @@
 sc_usb_audio Change Log
 =======================
 
+6.12.5
+------   
+    - RESOLVED:   Stream issue when NUM_USB_CHAN_IN < I2S_CHANS_ADC
+
 6.12.4
 ------   
     - RESOLVED:   DFU fail when DSD enabled and USB library not running on tile[0]
-    - RESOLVED:   Stream issue when NUM_USB_CHAN_IN < I2S_CHANS_ADC
 
 6.12.3
 ------
