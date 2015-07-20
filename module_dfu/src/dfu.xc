@@ -13,10 +13,10 @@
 #if (XUD_SERIES_SUPPORT==4)
 /* xCORE-200 */
 /* Note range 0x7FFC8 - 0x7FFFF guarenteed to be untouched by tools */
-#define FLAG_ADDRESS 0x7ffc4
+#define FLAG_ADDRESS 0x7ffcc
 #else
 /* Note range 0x1FFC8 - 0x1FFFF guarenteed to be untouched by tools */
-#define FLAG_ADDRESS 0x1ffc4
+#define FLAG_ADDRESS 0x1ffcc
 #endif
 
 /* Store Flag to fixed address */
