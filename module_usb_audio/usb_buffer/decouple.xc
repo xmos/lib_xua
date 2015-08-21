@@ -580,6 +580,9 @@ static inline void SetupZerosSendBuffer(XUD_ep aud_to_host_usb_ep, unsigned samp
 
     /* Mark EP ready with the zero buffer. Note this will simply update the packet size
     * if it is already ready */
+    
+    /* g_aud_to_host_buffer is already set to g_aud_to_host_zeros */
+
     GET_SHARED_GLOBAL(p, g_aud_to_host_buffer);
 
     XUD_SetReady_InPtr(aud_to_host_usb_ep, p+4, mid);
@@ -718,7 +721,7 @@ void decouple(chanend c_mix_out
                 SET_SHARED_GLOBAL(totalSampsToWrite, 0);
 
                 /* Set buffer to send back to zeros buffer */
-                SET_SHARED_GLOBAL(g_aud_to_host_buffer,g_aud_to_host_zeros);
+                SET_SHARED_GLOBAL(g_aud_to_host_buffer, g_aud_to_host_zeros);
 
                 /* Update size of zeros buffer */
                 SetupZerosSendBuffer(aud_to_host_usb_ep, sampFreq, g_curSubSlot_In);
