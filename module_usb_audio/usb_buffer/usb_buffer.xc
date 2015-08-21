@@ -312,6 +312,10 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
                             sofCount = 0;
                             clocks = 0;
                             remnant = 0;
+                            int min, mid, max;
+                            GetADCCounts(sampleFreq, min, mid, max);
+                            g_speed = mid<<16;
+                            
 
                         }
                         /* Ideally we want to wait for handshake (and pass back up) here.  But we cannot keep this
@@ -422,7 +426,7 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in, chanend c_aud
 #endif
                         {
                             int usb_speed;
-                            asm("stw %0, dp[g_speed]"::"r"(clocks));   // g_speed = clocks
+                            asm volatile("stw %0, dp[g_speed]"::"r"(clocks));   // g_speed = clocks
 
                             GET_SHARED_GLOBAL(usb_speed, g_curUsbSpeed);
 
