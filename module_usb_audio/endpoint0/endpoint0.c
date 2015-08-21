@@ -57,10 +57,10 @@
 #ifdef DFU
 #include "dfu.h"
 #define DFU_IF_NUM INPUT_INTERFACES + OUTPUT_INTERFACES + MIDI_INTERFACES + 1
-
-unsigned int DFU_mode_active = 0;         // 0 - App active, 1 - DFU active
 extern void device_reboot(chanend);
 #endif
+
+unsigned int DFU_mode_active = 0;         // 0 - App active, 1 - DFU active
 
 /* Global volume and mute tables */
 int volsOut[NUM_USB_CHAN_OUT + 1];
