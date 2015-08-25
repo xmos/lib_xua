@@ -6,6 +6,12 @@
 
 #define XS1_SU_PERIPH_USB_ID 0x1
 
+#if (XUD_SERIES_SUPPORT == XUD_X200_SERIES)
+#define PLL_MASK 0x7FFFFFFF
+#else
+#define PLL_MASK 0xFFFFFFFF
+#endif
+
 /* Note, this function is prototyped in xs1.h only from 13 tools onwards */
 unsigned get_tile_id(tileref);
 
@@ -40,25 +46,29 @@ void device_reboot_aux(void)
         if(localTileId != tileId)
         {
             read_sswitch_reg(tileId, 6, pllVal);
+            pllVal &= PLL_MASK;
             write_sswitch_reg_no_ack(tileId, 6, pllVal);
         }
     }
 
     /* Finally reboot this tile! */
     read_sswitch_reg(localTileId, 6, pllVal);
+    pllVal &= PLL_MASK;
     write_sswitch_reg_no_ack(localTileId, 6, pllVal);
 #endif
 }
 
 /* Reboots XMOS device by writing to the PLL config register */
-void device_reboot_implementation(chanend spare)
+void device_reboot(chanend spare)
 {
 #if (XUD_SERIES_SUPPORT != XUD_U_SERIES)
-    outct(spare, XS1_CT_END);   // have to do this before freeing the chanend
-    inct(spare);                // Receive end ct from usb_buffer to close down in both directions
+    //outct(spare, XS1_CT_END);   // have to do this before freeing the chanend
+    //inct(spare);                // Receive end ct from usb_buffer to close down in both directions
 
     /* Need a spare chanend so we can talk to the pll register */
-    asm("freer res[%0]"::"r"(spare));
+    //asm("freer res[%0]"::"r"(spare));
 #endif
     device_reboot_aux();
+
+    while(1);
 }

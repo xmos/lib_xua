@@ -49,18 +49,18 @@
 #warning MIDI is currently not supported and will not be enabled in AUDIO 1.0 mode
 #endif
 
-/* If PID_DFU not defined, standard PID used.. this is probably what we want.. */
-#ifndef PID_DFU
-#warning PID_DFU not defined, Using PID_AUDIO_2. This is probably fine!
+/* If DFU_PID not defined, standard PID used.. this is probably what we want.. */
+#ifndef DFU_PID
+#warning DFU_PID not defined, Using PID_AUDIO_2. This is probably fine!
 #endif
 
 #ifdef DFU
 #include "dfu.h"
 #define DFU_IF_NUM INPUT_INTERFACES + OUTPUT_INTERFACES + MIDI_INTERFACES + 1
-
-unsigned int DFU_mode_active = 0;         // 0 - App active, 1 - DFU active
 extern void device_reboot(chanend);
 #endif
+
+unsigned int DFU_mode_active = 0;         // 0 - App active, 1 - DFU active
 
 /* Global volume and mute tables */
 int volsOut[NUM_USB_CHAN_OUT + 1];
@@ -204,7 +204,7 @@ const unsigned g_chanCount_In_HS[INPUT_FORMAT_COUNT]       = {HS_STREAM_FORMAT_I
 
 /* Endpoint 0 function.  Handles all requests to the device */
 void Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
-    chanend c_mix_ctl, chanend c_clk_ctl, chanend c_EANativeTransport_ctrl)
+    chanend c_mix_ctl, chanend c_clk_ctl, chanend c_EANativeTransport_ctrl, CLIENT_INTERFACE(i_dfu, dfuInterface))
 {
     USB_SetupPacket_t sp;
     XUD_ep ep0_out = XUD_InitEp(c_ep0_out);
@@ -296,11 +296,7 @@ void Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
     while(1)
     {
         /* Returns XUD_RES_OKAY for success, XUD_RES_RST for bus reset */
-#if defined(__XC__)
-        XUD_Result_t result = USB_GetSetupPacket(ep0_out, ep0_in, sp);
-#else
         XUD_Result_t result = USB_GetSetupPacket(ep0_out, ep0_in, &sp);
-#endif
 
         if (result == XUD_RES_OKAY)
         {
@@ -562,6 +558,8 @@ void Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
 
                         if (interfaceNum == DFU_IF)
                         {
+                            int reset = 0;
+
                             /* If running in application mode stop audio */
                             /* Don't interupt audio for save and restore cmds */
                             if ((DFU_IF == INTERFACE_NUMBER_DFU) && (sp.bRequest != XMOS_DFU_SAVESTATE) &&
@@ -573,27 +571,22 @@ void Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
                                 // Handshake
 							    chkct(c_audioControl, XS1_CT_END);
                             }
-#ifdef __XC__
+
                             /* This will return 1 if reset requested */
-                            if (DFUDeviceRequests(ep0_out, ep0_in, sp, null, g_interfaceAlt[sp.wIndex], 1))
-#else
-                            /* This will return 1 if reset requested */
-                            if (DFUDeviceRequests(ep0_out, &ep0_in, &sp, null, g_interfaceAlt[sp.wIndex], 1))
-#endif
+                            result = DFUDeviceRequests(ep0_out, &ep0_in, &sp, null, g_interfaceAlt[sp.wIndex], dfuInterface, &reset);
+
+                            if(reset)
                             {
                                 DFUDelay(50000000);
                                 device_reboot(c_audioControl);
                             }
-
-                            /* TODO we should not make the assumption that all DFU requests are handled */
-                            result = 0;
                         }
 #endif
                         /* Check for:   - Audio CONTROL interface request - always 0, note we check for DFU first
                          *              - Audio STREAMING interface request  (In or Out)
                          *              - Audio endpoint request (Audio 1.0 Sampling freq requests are sent to the endpoint)
                          */
-                        if((interfaceNum == 0) || (interfaceNum == 1) || (interfaceNum == 2))
+                        if(((interfaceNum == 0) || (interfaceNum == 1) || (interfaceNum == 2)) && !DFU_mode_active)
 				        {
 #if (AUDIO_CLASS == 2) && defined(AUDIO_CLASS_FALLBACK)
                             if(g_curUsbSpeed == XUD_SPEED_HS)

@@ -201,9 +201,8 @@ static inline void GiveSamplesToHost(chanend c, xc_ptr ptr, xc_ptr multIn)
 }
 
 #pragma unsafe arrays
-static inline void GetSamplesFromHost(chanend c, unsigned underflow)
+static inline void GetSamplesFromHost(chanend c)
 {
-    if(!underflow)
     {
 #pragma loop unroll
         for (int i=0; i<NUM_USB_CHAN_OUT; i++)
@@ -245,11 +244,8 @@ static inline void GetSamplesFromHost(chanend c, unsigned underflow)
 }
 
 #pragma unsafe arrays
-static inline void GiveSamplesToDevice(chanend c, xc_ptr ptr, xc_ptr multOut, unsigned underflow)
+static inline void GiveSamplesToDevice(chanend c, xc_ptr ptr, xc_ptr multOut)
 {
-    outuint(c, underflow);
-
-    if(!underflow)
     {
 #pragma loop unroll
         for (int i=0; i<NUM_USB_CHAN_OUT; i++)
@@ -354,20 +350,16 @@ static void mixer1(chanend c_host, chanend c_mix_ctl, chanend c_mixer2)
     int mixed;
 #endif
     unsigned cmd;
-
-    unsigned underflow = 1;
+    unsigned request = 0;
 
     while (1)
     {
 #pragma xta endpoint "mixer1_req"
-        /* Request from audio() */
-        inuint(c_mixer2);
+        /* Request from audio()/mixer2() */
+        request = inuint(c_mixer2);
 
-        GiveSamplesToDevice(c_mixer2, samples_to_device_map, multOut, underflow);
-        GetSamplesFromDevice(c_mixer2);
-
-        /* Request data from decouple thread */
-        outuint(c_host, 0);
+        /* Forward on Request for data to decouple thread */
+        outuint(c_host, request);
 
         /* Between request to decouple and respose ~ 400nS latency for interrupt to fire */
         select
@@ -504,9 +496,6 @@ static void mixer1(chanend c_host, chanend c_mix_ctl, chanend c_mixer2)
                     sampFreq = inuint(c_host);
                     mixer1_mix2_flag = sampFreq > 96000;
 
-                    /* Wait for request */
-                    inuint(c_mixer2);
-
                     /* Inform mixer2 (or audio()) about freq change */
                     outct(c_mixer2, command);
                     outuint(c_mixer2, sampFreq);
@@ -514,9 +503,6 @@ static void mixer1(chanend c_host, chanend c_mix_ctl, chanend c_mixer2)
 
                 case SET_STREAM_FORMAT_OUT:
                 case SET_STREAM_FORMAT_IN:
-
-                     /* Wait for request */
-                    inuint(c_mixer2);
 
                     /* Inform mixer2 (or audio()) about format change */
                     outct(c_mixer2, command);
@@ -545,14 +531,14 @@ static void mixer1(chanend c_host, chanend c_mix_ctl, chanend c_mixer2)
         }
         else
         {
-            underflow = inuint(c_host);
+            inuint(c_host);
 #if MAX_MIX_COUNT > 0
-            outuint(c_mixer2, underflow);
+            outuint(c_mixer2, 0);
             GiveSamplesToHost(c_host, samples_to_host_map, multIn);
 
             outuint(c_mixer2, 0);
             inuint(c_mixer2);
-            GetSamplesFromHost(c_host, underflow);
+            GetSamplesFromHost(c_host);
             outuint(c_mixer2, 0);
             inuint(c_mixer2);
 #ifdef FAST_MIXER
@@ -588,7 +574,7 @@ static void mixer1(chanend c_host, chanend c_mix_ctl, chanend c_mixer2)
 #ifdef FAST_MIXER
                 mixed = doMix4(samples, mix_mult_slice(4));
 #else
-                mixed = doMix(samples_array,mix_map_slice(4),mix_mult_slice(4));
+                mixed = doMix(samples, mix_map_slice(4),mix_mult_slice(4));
 #endif
                 write_via_xc_ptr_indexed(samples_array, (NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + 4), mixed);
 
@@ -601,9 +587,9 @@ static void mixer1(chanend c_host, chanend c_mix_ctl, chanend c_mixer2)
 #ifdef FAST_MIXER
                 mixed = doMix6(samples, mix_mult_slice(6));
 #else
-                mixed = doMix(samples_array,mix_map_slice(6),mix_mult_slice(6));
+                mixed = doMix(samples, mix_map_slice(6),mix_mult_slice(6));
 #endif
-                write_via_xc_ptr_indexed(samples_array, (NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + 6), mixed);
+                write_via_xc_ptr_indexed(samples, (NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + 6), mixed);
 
 #if defined (LEVEL_METER_HOST) || defined(LEVEL_METER_LEDS)
                 ComputeMixerLevel(mixed, 6);
@@ -612,9 +598,10 @@ static void mixer1(chanend c_host, chanend c_mix_ctl, chanend c_mixer2)
             }
 #else       /* IF MAX_MIX_COUNT > 0 */
             /* No mixes, this thread runs on its own doing just volume */
-
+            GiveSamplesToDevice(c_mixer2, samples_to_device_map, multOut);
+            GetSamplesFromDevice(c_mixer2);
             GiveSamplesToHost(c_host, samples_to_host_map, multIn);
-            GetSamplesFromHost(c_host, underflow);
+            GetSamplesFromHost(c_host);
 #endif
         }
     }
@@ -627,13 +614,16 @@ static int mixer2_mix2_flag = (DEFAULT_FREQ > 96000);
 static void mixer2(chanend c_mixer1, chanend c_audio)
 {
     int mixed;
-    unsigned underflow = 0;
+    unsigned request;
 
     while (1)
     {
-        outuint(c_mixer1, 0);
 #pragma xta endpoint "mixer2_req"
-        inuint(c_audio);
+        request = inuint(c_audio);
+
+        /* Forward the request on */
+        outuint(c_mixer1, request);
+
         if(testct(c_mixer1))
         {
             int sampFreq;
@@ -678,8 +668,8 @@ static void mixer2(chanend c_mixer1, chanend c_audio)
         }
         else
         {
-            underflow = inuint(c_mixer1);
-            GiveSamplesToDevice(c_audio, samples_to_device_map, multOut, underflow);
+            (void) inuint(c_mixer1);
+            GiveSamplesToDevice(c_audio, samples_to_device_map, multOut);
             inuint(c_mixer1);
             outuint(c_mixer1, 0);
             GetSamplesFromDevice(c_audio);
@@ -689,7 +679,7 @@ static void mixer2(chanend c_mixer1, chanend c_audio)
 #ifdef FAST_MIXER
       mixed = doMix1(samples, mix_mult_slice(1));
 #else
-      mixed = doMix(samples_array,mix_map_slice(1),mix_mult_slice(1));
+      mixed = doMix(samples, mix_map_slice(1),mix_mult_slice(1));
 #endif
 
       write_via_xc_ptr_indexed(samples, (NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + 1), mixed);
@@ -709,7 +699,7 @@ static void mixer2(chanend c_mixer1, chanend c_audio)
 #ifdef FAST_MIXER
         mixed = doMix3(samples, mix_mult_slice(3));
 #else
-        mixed = doMix(samples_array,mix_map_slice(3),mix_mult_slice(3));
+        mixed = doMix(samples, mix_map_slice(3),mix_mult_slice(3));
 #endif
 
         write_via_xc_ptr_indexed(samples, (NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + 3), mixed);
@@ -723,7 +713,7 @@ static void mixer2(chanend c_mixer1, chanend c_audio)
 #ifdef FAST_MIXER
     mixed = doMix5(samples, mix_mult_slice(5));
 #else
-    mixed = doMix(samples_array,mix_map_slice(5),mix_mult_slice(5));
+    mixed = doMix(samples, mix_map_slice(5),mix_mult_slice(5));
 #endif
     write_via_xc_ptr_indexed(samples, NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + 5, mixed);
 
@@ -736,7 +726,7 @@ static void mixer2(chanend c_mixer1, chanend c_audio)
 #ifdef FAST_MIXER
     mixed = doMix7(samples, mix_mult_slice(7));
 #else
-    mixed = doMix(samples_array,mix_map_slice(7),mix_mult_slice(7));
+    mixed = doMix(samples, mix_map_slice(7),mix_mult_slice(7));
 #endif
 
     write_via_xc_ptr_indexed(samples,  NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + 7, mixed);

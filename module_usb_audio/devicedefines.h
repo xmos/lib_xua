@@ -39,6 +39,13 @@
 #endif
 
 /**
+ * @brief Location (tile) of SPDIF Tx. Default: AUDIO_IO_TILE
+ */
+#ifndef SPDIF_TX_TILE
+#define SPDIF_TX_TILE   AUDIO_IO_TILE
+#endif
+
+/**
  * @brief Number of input channels (device to host). Default: NONE (Must be defined by app)
  */
 #if !defined(NUM_USB_CHAN_IN)
@@ -68,6 +75,21 @@
 #endif
 
 /**
+ * @brief Channels per I2S frame. *
+ *
+ * Default: 2 i.e standard stereo I2S (8 if using TDM i.e. I2S_MODE_TDM).
+ *
+ **/
+#ifndef I2S_CHANS_PER_FRAME
+    #ifdef I2S_MODE_TDM
+        #define I2S_CHANS_PER_FRAME 8
+    #else
+        #define I2S_CHANS_PER_FRAME 2
+    #endif
+#endif
+
+
+/**
  * @brief Number of IS2 channesl to DAC/CODEC. Must be a multiple of 2.
  *
  * Default: NONE (Must be defined by app)
@@ -76,13 +98,9 @@
     #error I2S_CHANS_DAC not defined
     #define I2S_CHANS_DAC 2          /* Define anyway for doxygen */
 #else
+#define I2S_WIRES_DAC            (I2S_CHANS_DAC / I2S_CHANS_PER_FRAME)
+#endif
 
-#ifdef I2S_MODE_TDM
-#define I2S_WIRES_DAC            (I2S_CHANS_DAC >> 3)
-#else
-#define I2S_WIRES_DAC            (I2S_CHANS_DAC >> 1)
-#endif
-#endif
 
 /**
  * @brief Number of I2S channels from ADC/CODEC. Must be a multiple of 2.
@@ -93,27 +111,9 @@
     #error I2S_CHANS_ADC not defined
     #define I2S_CHANS_ADC 2      /* Define anyway for doxygen */
 #else
-
-#ifdef I2S_MODE_TDM
-#define I2S_WIRES_ADC            (I2S_CHANS_ADC >> 3)
-#else
-#define I2S_WIRES_ADC            (I2S_CHANS_ADC >> 1)
-#endif
+#define I2S_WIRES_ADC            (I2S_CHANS_ADC / I2S_CHANS_PER_FRAME)
 #endif
 
-/**
- * @brief Channels per I2S frame. *
- *
- * Default: 2 i.e standard stereo I2S (8 if using TDM i.e. I2S_MODE_TDM).
- *
- **/
-#ifndef I2S_CHANS_PER_FRAME
-#ifdef I2S_MODE_TDM
-#define I2S_CHANS_PER_FRAME 8
-#else
-#define I2S_CHANS_PER_FRAME 2
-#endif
-#endif
 
 /**
  * @brief Max supported sample frequency for device (Hz). Default: 192000
@@ -222,13 +222,13 @@
 /**
  * @brief Enables SPDIF Tx. Default: 0 (Disabled)
  */
-#ifndef SPDIF
-#define SPDIF                    (0)
+#ifndef SPDIF_TX
+#define SPDIF_TX                 (0)
 #endif
 
 /* Tidy up old SPDIF usage */
-#if defined(SPDIF) && (SPDIF == 0)
-#undef SPDIF
+#if defined(SPDIF_TX) && (SPDIF_TX == 0)
+#undef SPDIF_TX
 #endif
 
 /**
@@ -237,7 +237,28 @@
  * Default: 0 (i.e. channels 0 & 1)
  * */
 #ifndef SPDIF_TX_INDEX
-#define SPDIF_TX_INDEX                  (0)
+#define SPDIF_TX_INDEX        (0)
+#endif
+
+/**
+ * @brief Enables ADAT Tx. Default: 0 (Disabled)
+ */
+#ifndef ADAT_TX
+#define ADAT_TX               (0)
+#endif
+
+/* Tidy up old SPDIF usage */
+#if defined(ADAT_TX) && (ADAT_TX == 0)
+#undef ADAT_TX
+#endif
+
+/**
+ * @brief Defines which output channels (8) should be output on ADAT. Note, Output channels indexed from 0.
+ *
+ * Default: 0 (i.e. channels [0:7])
+ * */
+#ifndef ADAT_TX_INDEX
+#define ADAT_TX_INDEX         (0)
 #endif
 
 /**
@@ -430,14 +451,14 @@
  * @brief Device firmware version number in Binary Coded Decimal format: 0xJJMN where JJ: major, M: minor, N: sub-minor version number.
  */
 #ifndef BCD_DEVICE_M
-#define BCD_DEVICE_M             11
+#define BCD_DEVICE_M             12
 #endif
 
 /**
  * @brief Device firmware version number in Binary Coded Decimal format: 0xJJMN where JJ: major, M: minor, N: sub-minor version number.
  */
 #ifndef BCD_DEVICE_N
-#define BCD_DEVICE_N             0
+#define BCD_DEVICE_N             5
 #endif
 
 /**
@@ -447,8 +468,9 @@
  *
  * Default: XMOS USB Audio Release version (e.g. 0x0651 for 6.5.1).
  */
+#ifndef BCD_DEVICE
 #define BCD_DEVICE               ((BCD_DEVICE_J << 8) | ((BCD_DEVICE_M & 0xF) << 4) | (BCD_DEVICE_N & 0xF))
-
+#endif
 
 /**
  * @brief Number of supported output stream formats.
@@ -917,10 +939,12 @@
  */
 #ifdef MIXER
     #ifndef MAX_MIX_COUNT
-    	#define MAX_MIX_COUNT        (8)
+    	#define MAX_MIX_COUNT          (8)
     #endif
 #else
-    #define MAX_MIX_COUNT            (0)
+    #ifndef MAX_MIX_COUNT
+        #define MAX_MIX_COUNT          (0)
+    #endif
 #endif
 
 /**
@@ -931,7 +955,7 @@
  * Default: 18
  */
 #ifndef MIX_INPUTS
-    #define MIX_INPUTS                  (18)
+    #define MIX_INPUTS                 (18)
 #endif
 
 /* Volume processing defines */
