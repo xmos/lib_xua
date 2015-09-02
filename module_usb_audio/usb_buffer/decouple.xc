@@ -472,12 +472,7 @@ __builtin_unreachable();
 
     if (!inOverflow)
     {
-        if(sampsToWrite < 0)
-        {
-            printstr("sampsToWrite < 0");
-            while(1);
-        }
-        else if (sampsToWrite == 0)
+        if (sampsToWrite == 0)
         {
             int speed;
 
@@ -485,18 +480,9 @@ __builtin_unreachable();
             unsigned datasize = totalSampsToWrite * g_curSubSlot_In * g_numUsbChan_In;
             write_via_xc_ptr(g_aud_to_host_wrptr, datasize);
 
-            if((datasize > 1000) || (datasize <= 0))
-            {
-                printstr("BAD DATASIZE\n");
-                printintln(datasize);
-                while(1);
-            }
-
             // Move wr ptr on by old packet length
             //   if (totalSampsToWrite)
             {
-                //printintln(totalSampsToWrite);
-
                 /* Round up to nearest word - note, not needed for slotsize == 4! */
                 datasize = (datasize+3) & (~0x3);
 
@@ -506,10 +492,10 @@ __builtin_unreachable();
                 {
                     g_aud_to_host_wrptr = aud_to_host_fifo_start;
                 }
-                //printstr("Wr ptr: ");
-                //printhexln(g_aud_to_host_wrptr);
             }
 
+            g_aud_to_host_dptr = g_aud_to_host_wrptr + 4;
+            
             /* Now calculate new packet length... */
             /* Get feedback val - ideally this would be syncronised */
             asm volatile("ldw   %0, dp[g_speed]" : "=r" (speed) :);
@@ -519,37 +505,9 @@ __builtin_unreachable();
             totalSampsToWrite = speedRem >> 16;
             speedRem &= 0xffff;
 
-            if(totalSampsToWrite <= 0)
-            {
-                printstrln("poo");
-                printintln(speedRem);
-                while(1);
-            }
-
-#if 0
-            unsigned newdatasize = totalSampsToWrite * g_curSubSlot_In * g_numUsbChan_In;
-            /* Wrap wr ptr if next packet wont fit */
-             newdatasize = (newdatasize+3) & (~0x3);
-
-            if ((g_aud_to_host_wrptr+4+newdatasize) >= aud_to_host_fifo_end)
-            {
-                    g_aud_to_host_wrptr = aud_to_host_fifo_start;
-                    printstr("wrapped next wr ptr on pkt: ");
-                    printintln(pktCounter);
-             }
-#endif      
-            g_aud_to_host_dptr = g_aud_to_host_wrptr + 4;
-            
-            //printstr("DPTR: " );
-            //printintln(g_aud_to_host_dptr);
-                   
-            //printstr("WRPTR : ");
-            //printintln(g_aud_to_host_wrptr);
-
-
             if (totalSampsToWrite < 0 || totalSampsToWrite * g_curSubSlot_In * g_numUsbChan_In > g_maxPacketSize)
             {
-                    totalSampsToWrite = 0;
+                totalSampsToWrite = 0;
                     
                 printstrln("poo");
                 while(1);
@@ -647,37 +605,13 @@ __builtin_unreachable();
                 if (p >= aud_to_host_fifo_end)
                 {
                     p = aud_to_host_fifo_start;
-                    //printstr("FUCK UP");
-                    //while(1);
                 }             
                 asm volatile("ldw %0, %1[0]":"=r"(newdatalength):"r"(p));
-
-                //printstr("New datalength: ");
-                //printintln(newdatalength); 
             
-                if(newdatalength == 0)
-                { 
-                    printstr("DATALENGTH: ");
-                    printintln(datalength);
-                    printstr("shit");
-                    printintln(aud_to_host_fifo_start);
-                    printintln(p);
-                    printintln(aud_to_host_fifo_end);
-                    while(1);                  
-                }
                 SET_SHARED_GLOBAL(g_aud_to_host_rdptr, p);
 #endif 
                 }
-                //inOverflow = 1;
-                //totalSampsToWrite = 0;
             }
-
-            if(totalSampsToWrite == 0)
-            {
-                printstr("ZERO SAMPLES TO WRITE\n");
-                while(1);   
-            }         
-
 
             sampsToWrite = totalSampsToWrite;
         }
