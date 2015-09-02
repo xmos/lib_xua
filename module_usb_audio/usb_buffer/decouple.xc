@@ -99,7 +99,6 @@ int aud_data_remaining_to_device = 0;
 unsigned outUnderflow = 1;
 unsigned outOverflow = 0;
 unsigned inUnderflow = 1;
-unsigned inOverflow = 0;
 
 int aud_req_in_count = 0;
 int aud_req_out_count = 0;
@@ -134,30 +133,6 @@ void handle_audio_request(chanend c_mix_out)
     outuint(c_mix_out, 0);
 
     /* If in overflow condition then receive samples and throw away */
-    //if(inOverflow || sampsToWrite == 0)
-    if(0)
-    {
-#pragma loop unroll
-        for(int i = 0; i < NUM_USB_CHAN_IN; i++)
-        {
-            (void) inuint(c_mix_out);
-        }
-
-        /* Calculate how much space left in buffer */
-        space_left = g_aud_to_host_rdptr - g_aud_to_host_wrptr;
-
-        if (space_left <= 0)
-        {
-            space_left += BUFF_SIZE_IN*4;
-        }
-
-        /* Check if we can come out of overflow */
-        if (space_left > (BUFF_SIZE_IN*4/2))
-        {
-            inOverflow = 0;
-        }
-    }
-    else
     {
         /* Not in overflow, store samples from mixer into sample buffer */
         switch(g_curSubSlot_In)
@@ -435,7 +410,6 @@ __builtin_unreachable();
 
         } /* switch(g_curSubSlot_Out) */
 
-        /* Output remaining channels. Past this point we always operate on MAX chan count */
         for(int i = 0; i < NUM_USB_CHAN_OUT - g_numUsbChan_Out; i++)
         {
             outuint(c_mix_out, 0);
@@ -445,28 +419,27 @@ __builtin_unreachable();
         aud_data_remaining_to_device -= (g_numUsbChan_Out * g_curSubSlot_Out);
     }
 
-    if (!inOverflow)
     {
+        /* Finished creating packet - commit it to the FIFO */
         if (sampsToWrite == 0)
         {
             int speed;
+            packState = 0;
 
             /* Write last packet length into FIFO */
             unsigned datasize = totalSampsToWrite * g_curSubSlot_In * g_numUsbChan_In;
             write_via_xc_ptr(g_aud_to_host_wrptr, datasize);
 
-            // Move wr ptr on by old packet length
-            //   if (totalSampsToWrite)
+            /* Round up to nearest word - note, not needed for slotsize == 4! */
+            datasize = (datasize+3) & (~0x3);
+            
+            /* Move wr ptr on by old packet length */
+            g_aud_to_host_wrptr += 4+datasize;
+
+            /* Do wrap */
+            if (g_aud_to_host_wrptr >= aud_to_host_fifo_end)
             {
-                /* Round up to nearest word - note, not needed for slotsize == 4! */
-                datasize = (datasize+3) & (~0x3);
-
-                g_aud_to_host_wrptr += 4+datasize;
-
-                if (g_aud_to_host_wrptr >= aud_to_host_fifo_end)
-                {
                     g_aud_to_host_wrptr = aud_to_host_fifo_start;
-                }
             }
 
             g_aud_to_host_dptr = g_aud_to_host_wrptr + 4;
@@ -480,13 +453,12 @@ __builtin_unreachable();
             totalSampsToWrite = speedRem >> 16;
             speedRem &= 0xffff;
 
+# if 0
             if (totalSampsToWrite < 0 || totalSampsToWrite * g_curSubSlot_In * g_numUsbChan_In > g_maxPacketSize)
             {
                 totalSampsToWrite = 0;
-                    
-                printstrln("poo");
-                while(1);
             }
+#endif
 
             /* Calc slots left in fifo */
             space_left = g_aud_to_host_rdptr - g_aud_to_host_wrptr;
@@ -497,95 +469,36 @@ __builtin_unreachable();
                 space_left = aud_to_host_fifo_end - g_aud_to_host_wrptr;
             }
 
-            if ((space_left <= 0) || (space_left > totalSampsToWrite*g_numUsbChan_In * g_curSubSlot_In + 4))
+            if((space_left > 0) && (space_left < (totalSampsToWrite * g_numUsbChan_In * g_curSubSlot_In + 4))) 
             {
-                /* Packet okay, write to fifo */
-                if (totalSampsToWrite)
-                {
-                    /* Write length into FIFO */
-                    //int x = totalSampsToWrite * g_curSubSlot_In * g_numUsbChan_In;
-                    //write_via_xc_ptr(g_aud_to_host_wrptr, x);
-
-                    //if(x == 0)
-                    //{
-                     //   printstr("wank\n");
-                      //  printintln(g_curSubSlot_In);
-                      //  printintln(g_numUsbChan_In);
-                      //  while(1);
-                   // }
-                    packState = 0;
-                    //g_aud_to_host_dptr = g_aud_to_host_wrptr + 4;
-
-                   // if(g_aud_to_host_dptr >= aud_to_host_fifo_end-24)
-                    {
-                        //printstr("A");
-                     //   while(1);
-                    }
-                }
-            }
-            else
-            {
-                /* IN pipe has filled its buffer - we need to overflow 
+                /* In pipe has filled its buffer - we need to overflow 
                  * Accept the packet, and throw away the oldest in the buffer */
-                
-                /* Packet okay, write to fifo */
-                if (totalSampsToWrite)
-                {
-                    //int x = totalSampsToWrite * g_curSubSlot_In * g_numUsbChan_In;
-                    //write_via_xc_ptr(g_aud_to_host_wrptr, x);
-
-                    //if((x == 0))
-                    // {   printstr("writing 0 length");
-                     //   while(1);
-                   // }
-
- //if(g_aud_to_host_dptr >= aud_to_host_fifo_end-24)
-                    {
-                        //printstr("B");
-   //                     while(1);
-                    }
-
-                    packState = 0;
-                    //g_aud_to_host_dptr = g_aud_to_host_wrptr + 4;
-
-                /* Remove oldest packet */
-                /* Read Datasize */
-                unsigned datalength;
-                unsigned newdatalength;
-                unsigned p;
-                GET_SHARED_GLOBAL(p, g_aud_to_host_rdptr);
-                asm volatile("ldw %0, %1[0]":"=r"(datalength):"r"(p));
-#if 0
-                printstr("'\nOVERFLOW. RdPtr: ");
-                printintln(g_aud_to_host_rdptr);
-                printstr("DATALENGTH : ");
-                printintln(datalength);
-
-                    printstr("START: ");
-                    printintln(aud_to_host_fifo_start);
-                    printstr("DPTR: ");
-                    printintln(g_aud_to_host_dptr);
-                   
-                    printstr("WRPTR : ");
-                    printintln(g_aud_to_host_wrptr);
-                    printstr("END: ");
-                    printintln(aud_to_host_fifo_end);
-#endif
-#if 1
-                /* Move read pointer on by length*/ 
-                /* TODO Remeber to wrap! */
-                /* TODO might need to throw away multiple packets */
   
-                p = p + ((datalength+3)&~0x3) + 4;
-                if (p >= aud_to_host_fifo_end)
-                {
-                    p = aud_to_host_fifo_start;
-                }             
-                asm volatile("ldw %0, %1[0]":"=r"(newdatalength):"r"(p));
-            
-                SET_SHARED_GLOBAL(g_aud_to_host_rdptr, p);
-#endif 
-                }
+                /* Keep throwing away packets until buffer is at a nice level.. */
+                do
+                {                
+                    unsigned rdPtr;
+                    
+                    /* Read length of packet in buffer at read pointer */
+                    unsigned datalength;
+                
+                    GET_SHARED_GLOBAL(rdPtr, g_aud_to_host_rdptr);
+                    asm volatile("ldw %0, %1[0]":"=r"(datalength):"r"(rdPtr));
+              
+                    /* Round up datalength */
+                    datalength = ((datalength+3) & ~0x3) + 4; 
+                
+                    /* Move read pointer on by length */ 
+                    rdPtr += datalength;
+                    if (rdPtr >= aud_to_host_fifo_end)
+                    {
+                        rdPtr = aud_to_host_fifo_start;
+                    }             
+           
+                    space_left += datalength;
+                    SET_SHARED_GLOBAL(g_aud_to_host_rdptr, rdPtr);
+                 
+                } while(space_left < (BUFF_SIZE_IN*4/2));
             }
 
             sampsToWrite = totalSampsToWrite;
@@ -785,7 +698,6 @@ void decouple(chanend c_mix_out
                 outct(c_mix_out, SET_SAMPLE_FREQ);
                 outuint(c_mix_out, sampFreq);
 
-                inOverflow = 0;
                 inUnderflow = 1;
                 SET_SHARED_GLOBAL(g_aud_to_host_rdptr, aud_to_host_fifo_start);
                 SET_SHARED_GLOBAL(g_aud_to_host_wrptr, aud_to_host_fifo_start);
@@ -836,7 +748,6 @@ void decouple(chanend c_mix_out
                 GET_SHARED_GLOBAL(dataFormat, g_formatChange_DataFormat); /* Not currently used for input stream */
 
                 /* Reset IN buffer state */
-                inOverflow = 0;
                 inUnderflow = 1;
                 SET_SHARED_GLOBAL(g_aud_to_host_rdptr, aud_to_host_fifo_start);
                 SET_SHARED_GLOBAL(g_aud_to_host_wrptr,aud_to_host_fifo_start);
