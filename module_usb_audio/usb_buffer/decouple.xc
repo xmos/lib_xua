@@ -37,8 +37,6 @@ unsigned int multIn[NUM_USB_CHAN_IN + 1];
 static xc_ptr p_multIn;
 #endif
 
-unsigned pktCounter = 0;
-
 /* Number of channels to/from the USB bus - initialised to HS Audio 2.0 */
 unsigned g_numUsbChan_Out = NUM_USB_CHAN_OUT;
 unsigned g_numUsbChan_In = NUM_USB_CHAN_IN;
@@ -199,12 +197,10 @@ __builtin_unreachable();
 #endif
                 unsigned ptr = g_aud_to_host_dptr;
 
-                pktCounter++;
                 for(int i = 0; i < g_numUsbChan_In; i++)
                 {
                     /* Receive sample */
                     int sample = inuint(c_mix_out);
-                    sample = pktCounter;
 #if(INPUT_VOLUME_CONTROL == 1)
 #if !defined(IN_VOLUME_IN_MIXER)
                     /* Apply volume */
@@ -229,27 +225,6 @@ __builtin_unreachable();
                 /* Update global pointer */
                 g_aud_to_host_dptr = ptr;
 
-               // if(g_aud_to_host_dptr > aud_to_host_fifo_end)
-                if(0)
-                {
-                    printstr("END BUFF\n");
-                    printstr("START: ");
-                    printintln(aud_to_host_fifo_start);
-                    printstr("DPTR: ");
-                    printintln(g_aud_to_host_dptr);
-                   
-                    printstr("WRPTR : ");
-                    printintln(g_aud_to_host_wrptr);
-                    printstr("END: ");
-                    printintln(aud_to_host_fifo_end);
-                   
-                    printstr("totalSampsToWrite: ");
-                    printintln(totalSampsToWrite);
-                    
-                    printintln((g_aud_to_host_dptr - g_aud_to_host_wrptr)/4);
-                    printintln(g_aud_to_host_dptr - aud_to_host_fifo_end);
-                    while(1);
-                }
                 break;
             }
 
@@ -800,8 +775,6 @@ void decouple(chanend c_mix_out
             GET_SHARED_GLOBAL(tmp, g_freqChange_flag);
             if (tmp == SET_SAMPLE_FREQ)
             {
-                printstr("FREQ CHANGE *******************");
-                printintln(pktCounter);
                 SET_SHARED_GLOBAL(g_freqChange_flag, 0);
                 GET_SHARED_GLOBAL(sampFreq, g_freqChange_sampFreq);
 
