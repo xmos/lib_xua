@@ -91,8 +91,8 @@ xc_ptr g_aud_to_host_wrptr;
 xc_ptr g_aud_to_host_dptr;
 xc_ptr g_aud_to_host_rdptr;
 xc_ptr g_aud_to_host_zeros;
-int sampsToWrite = 24; // TODO
-int totalSampsToWrite = 24; // TODO
+int sampsToWrite = DEFAULT_FREQ/8000;  /* HS assumed here. Expect to be junked during a overflow before stream start */
+int totalSampsToWrite = DEFAULT_FREQ/8000; 
 int aud_data_remaining_to_device = 0;
 
 /* Audio over/under flow flags */
@@ -439,7 +439,7 @@ __builtin_unreachable();
             /* Do wrap */
             if (g_aud_to_host_wrptr >= aud_to_host_fifo_end)
             {
-                    g_aud_to_host_wrptr = aud_to_host_fifo_start;
+                g_aud_to_host_wrptr = aud_to_host_fifo_start;
             }
 
             g_aud_to_host_dptr = g_aud_to_host_wrptr + 4;
@@ -543,8 +543,7 @@ __builtin_unreachable();
 /* Mark Endpoint (IN) ready with an appropriately sized zero buffer */
 static inline void SetupZerosSendBuffer(XUD_ep aud_to_host_usb_ep, unsigned sampFreq, unsigned slotSize)
 {
-    int min, mid, max, usb_speed, p;
-    GET_SHARED_GLOBAL(usb_speed, g_curUsbSpeed);
+    int min, mid, max, p;
     GetADCCounts(sampFreq, min, mid, max);
 
     // TODO, don't need to use speed.
@@ -556,6 +555,11 @@ static inline void SetupZerosSendBuffer(XUD_ep aud_to_host_usb_ep, unsigned samp
     //{
        // mid *= NUM_USB_CHAN_IN_FS * slotSize;
     //}
+    
+    /* Set IN stream packet size to something sensible. We expect the buffer to
+     * over flow and this to be reset */
+    SET_SHARED_GLOBAL(sampsToWrite, mid);
+    SET_SHARED_GLOBAL(totalSampsToWrite, mid); 
 
     mid *= g_numUsbChan_In * slotSize;
 
@@ -702,13 +706,11 @@ void decouple(chanend c_mix_out
                 SET_SHARED_GLOBAL(g_aud_to_host_rdptr, aud_to_host_fifo_start);
                 SET_SHARED_GLOBAL(g_aud_to_host_wrptr, aud_to_host_fifo_start);
                 SET_SHARED_GLOBAL(g_aud_to_host_dptr,aud_to_host_fifo_start+4);
-                SET_SHARED_GLOBAL(sampsToWrite, 24);
-                SET_SHARED_GLOBAL(totalSampsToWrite, 24); // TODO
 
                 /* Set buffer to send back to zeros buffer */
                 SET_SHARED_GLOBAL(g_aud_to_host_buffer, g_aud_to_host_zeros);
 
-                /* Update size of zeros buffer */
+                /* Update size of zeros buffer (and sampsToWrite) */
                 SetupZerosSendBuffer(aud_to_host_usb_ep, sampFreq, g_curSubSlot_In);
 
                 /* Reset OUT buffer state */
@@ -752,13 +754,11 @@ void decouple(chanend c_mix_out
                 SET_SHARED_GLOBAL(g_aud_to_host_rdptr, aud_to_host_fifo_start);
                 SET_SHARED_GLOBAL(g_aud_to_host_wrptr,aud_to_host_fifo_start);
                 SET_SHARED_GLOBAL(g_aud_to_host_dptr,aud_to_host_fifo_start+4);
-                SET_SHARED_GLOBAL(sampsToWrite, 24); //TODO
-                SET_SHARED_GLOBAL(totalSampsToWrite, 24);//TODO
 
                 /* Set buffer back to zeros buffer */
                 SET_SHARED_GLOBAL(g_aud_to_host_buffer, g_aud_to_host_zeros);
 
-                /* Update size of zeros buffer */
+                /* Update size of zeros buffer (and sampsToWrite) */
                 SetupZerosSendBuffer(aud_to_host_usb_ep, sampFreq, g_curSubSlot_In);
 
                 GET_SHARED_GLOBAL(usbSpeed, g_curUsbSpeed);
