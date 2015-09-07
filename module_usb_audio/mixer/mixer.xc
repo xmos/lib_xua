@@ -598,6 +598,9 @@ static void mixer1(chanend c_host, chanend c_mix_ctl, chanend c_mixer2)
             }
 #else       /* IF MAX_MIX_COUNT > 0 */
             /* No mixes, this thread runs on its own doing just volume */
+#if(NUM_USB_CHAN_OUT == 0)
+            outuint(c_mixer2, 0);
+#endif
             GiveSamplesToDevice(c_mixer2, samples_to_device_map, multOut);
             GetSamplesFromDevice(c_mixer2);
             GiveSamplesToHost(c_host, samples_to_host_map, multIn);
