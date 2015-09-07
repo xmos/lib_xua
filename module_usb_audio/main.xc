@@ -278,7 +278,7 @@ void usb_audio_core(chanend c_mix_out
 #endif
 , chanend ?c_clk_int
 , chanend ?c_clk_ctl
-, client interface i_dfu dfuInterface
+, client interface i_dfu ?dfuInterface
 )
 {
     chan c_sof;
@@ -536,8 +536,10 @@ int main()
         {
 #if (XUD_TILE == 0)
             /* Check if USB is on the flash tile (tile 0) */
+#ifdef DFU
             [[distribute]]
             DFUHandler(dfuInterface, null);
+#endif
 #endif
             usb_audio_core(c_mix_out
 #ifdef MIDI
