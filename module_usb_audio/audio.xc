@@ -436,9 +436,6 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
     chanend ?c_adc)
 {
 
-#if (I2S_CHANS_ADC != 0) || defined(SPDIF_TX)
-	unsigned sample;
-#endif
     /* Since DAC and ADC buffered ports off by one sample we buffer previous ADC frame */
     unsigned readBuffNo = 0;
     unsigned index;
@@ -691,7 +688,7 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
 #endif
 #if defined(SPDIF_TX) && (NUM_USB_CHAN_OUT > 0)
             outuint(c_spd_out, samplesOut[SPDIF_TX_INDEX]);  /* Forward sample to S/PDIF Tx thread */
-            sample = samplesOut[SPDIF_TX_INDEX + 1];
+            unsigned sample = samplesOut[SPDIF_TX_INDEX + 1];
             outuint(c_spd_out, sample);                      /* Forward sample to S/PDIF Tx thread */
 #endif
         }
