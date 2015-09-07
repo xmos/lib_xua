@@ -131,161 +131,9 @@ void handle_audio_request(chanend c_mix_out)
     /* Input word that triggered interrupt and handshake back */
     unsigned underflowSample = inuint(c_mix_out);
 
+#if (NUM_USB_CHAN_OUT == 0)
     outuint(c_mix_out, 0);
-
-    /* If in overflow condition then receive samples and throw away */
-    if(inOverflow || sampsToWrite == 0)
-    {
-#pragma loop unroll
-        for(int i = 0; i < NUM_USB_CHAN_IN; i++)
-        {
-            (void) inuint(c_mix_out);
-        }
-
-        /* Calculate how much space left in buffer */
-        space_left = g_aud_to_host_rdptr - g_aud_to_host_wrptr;
-
-        if (space_left <= 0)
-        {
-            space_left += BUFF_SIZE_IN*4;
-        }
-
-        /* Check if we can come out of overflow */
-        if (space_left > (BUFF_SIZE_IN*4/2))
-        {
-            inOverflow = 0;
-        }
-    }
-    else
-    {
-        /* Not in overflow, store samples from mixer into sample buffer */
-        switch(g_curSubSlot_In)
-        {
-            case 2:
-#if (STREAM_FORMAT_INPUT_SUBSLOT_2_USED == 0)
-__builtin_unreachable();
-#endif
-                for(int i = 0; i < g_numUsbChan_In; i++)
-                {
-                    /* Receive sample */
-                    int sample = inuint(c_mix_out);
-#if (INPUT_VOLUME_CONTROL == 1)
-#if !defined(IN_VOLUME_IN_MIXER)
-                    /* Apply volume */
-                    int mult;
-                    int h;
-                    unsigned l;
-                    asm volatile("ldw %0, %1[%2]":"=r"(mult):"r"(p_multIn),"r"(i));
-                    {h, l} = macs(mult, sample, 0, 0);
-                    sample = h << 3;
-
-                    /* Note, in 2 byte sub slot - ignore lower bits of macs */
-#elif defined(IN_VOLUME_IN_MIXER) && defined(IN_VOLUME_AFTER_MIX)
-                    sample = sample << 3;
-#endif
-#endif
-                    write_short_via_xc_ptr(g_aud_to_host_dptr, sample>>16);
-                    g_aud_to_host_dptr+=2;
-                }
-                break;
-
-            case 4:
-            {
-#if (STREAM_FORMAT_INPUT_SUBSLOT_4_USED == 0)
-__builtin_unreachable();
-#endif
-                unsigned ptr = g_aud_to_host_dptr;
-
-                for(int i = 0; i < g_numUsbChan_In; i++)
-                {
-                    /* Receive sample */
-                    int sample = inuint(c_mix_out);
-#if(INPUT_VOLUME_CONTROL == 1)
-#if !defined(IN_VOLUME_IN_MIXER)
-                    /* Apply volume */
-                    int mult;
-                    int h;
-                    unsigned l;
-                    asm volatile("ldw %0, %1[%2]":"=r"(mult):"r"(p_multIn),"r"(i));
-                    {h, l} = macs(mult, sample, 0, 0);
-                    sample = h << 3;
-#if (STREAM_FORMAT_INPUT_RESOLUTION_32BIT_USED == 1)
-                    sample |= (l >> 29) & 0x7; // Note, this step is not required if we assume sample depth is 24 (rather than 32)
-#endif
-#elif defined(IN_VOLUME_IN_MIXER) && defined(IN_VOLUME_AFTER_MIX)
-                    sample = sample << 3;
-#endif
-#endif
-                    /* Write into fifo */
-                    write_via_xc_ptr(ptr, sample);
-                    ptr+=4;
-                }
-
-                /* Update global pointer */
-                g_aud_to_host_dptr = ptr;
-                break;
-            }
-
-            case 3:
-#if (STREAM_FORMAT_INPUT_SUBSLOT_3_USED == 0)
-__builtin_unreachable();
-#endif
-                for(int i = 0; i < g_numUsbChan_In; i++)
-                {
-                    /* Receive sample */
-                    int sample = inuint(c_mix_out);
-#if (INPUT_VOLUME_CONTROL) && !defined(IN_VOLUME_IN_MIXER)
-                    /* Apply volume */
-                    int mult;
-                    int h;
-                    unsigned l;
-                    asm volatile("ldw %0, %1[%2]":"=r"(mult):"r"(p_multIn),"r"(i));
-                    {h, l} = macs(mult, sample, 0, 0);
-                    sample = h << 3;
-#endif
-                    /* Pack 3 byte samples */
-                    switch (packState&0x3)
-                    {
-                        case 0:
-                            packData = sample;
-                            break;
-                        case 1:
-                            packData = (packData >> 8) | ((sample & 0xff00)<<16);
-                            write_via_xc_ptr(g_aud_to_host_dptr, packData);
-                            g_aud_to_host_dptr+=4;
-                            write_via_xc_ptr(g_aud_to_host_dptr, sample>>16);
-                            packData = sample;
-                            break;
-                        case 2:
-                            packData = (packData>>16) | ((sample & 0xffff00) << 8);
-                            write_via_xc_ptr(g_aud_to_host_dptr, packData);
-                            g_aud_to_host_dptr+=4;
-                            packData = sample;
-                            break;
-                        case 3:
-                            packData = (packData >> 24) | (sample & 0xffffff00);
-                            write_via_xc_ptr(g_aud_to_host_dptr, packData);
-                            g_aud_to_host_dptr+=4;
-                            break;
-                    }
-                    packState++;
-                }
-                break;
-
-            default:
-                __builtin_unreachable();
-               break;
-        }
-
-        /* Input any remaining channels - past this thread we always operate on max channel count */
-        for(int i = 0; i < NUM_USB_CHAN_IN - g_numUsbChan_In; i++)
-        {
-            inuint(c_mix_out);
-        }
-
-        sampsToWrite--;
-    }
-
+#else
     if(outUnderflow)
     {
 #pragma xta endpoint "out_underflow"
@@ -443,6 +291,164 @@ __builtin_unreachable();
         aud_data_remaining_to_device -= (g_numUsbChan_Out * g_curSubSlot_Out);
     }
 
+
+
+#endif
+
+    /* If in overflow condition then receive samples and throw away */
+    if(inOverflow || sampsToWrite == 0)
+    {
+#pragma loop unroll
+        for(int i = 0; i < NUM_USB_CHAN_IN; i++)
+        {
+            (void) inuint(c_mix_out);
+        }
+
+        /* Calculate how much space left in buffer */
+        space_left = g_aud_to_host_rdptr - g_aud_to_host_wrptr;
+
+        if (space_left <= 0)
+        {
+            space_left += BUFF_SIZE_IN*4;
+        }
+
+        /* Check if we can come out of overflow */
+        if (space_left > (BUFF_SIZE_IN*4/2))
+        {
+            inOverflow = 0;
+        }
+    }
+    else
+    {
+        /* Not in overflow, store samples from mixer into sample buffer */
+        switch(g_curSubSlot_In)
+        {
+            case 2:
+#if (STREAM_FORMAT_INPUT_SUBSLOT_2_USED == 0)
+__builtin_unreachable();
+#endif
+                for(int i = 0; i < g_numUsbChan_In; i++)
+                {
+                    /* Receive sample */
+                    int sample = inuint(c_mix_out);
+#if (INPUT_VOLUME_CONTROL == 1)
+#if !defined(IN_VOLUME_IN_MIXER)
+                    /* Apply volume */
+                    int mult;
+                    int h;
+                    unsigned l;
+                    asm volatile("ldw %0, %1[%2]":"=r"(mult):"r"(p_multIn),"r"(i));
+                    {h, l} = macs(mult, sample, 0, 0);
+                    sample = h << 3;
+
+                    /* Note, in 2 byte sub slot - ignore lower bits of macs */
+#elif defined(IN_VOLUME_IN_MIXER) && defined(IN_VOLUME_AFTER_MIX)
+                    sample = sample << 3;
+#endif
+#endif
+                    write_short_via_xc_ptr(g_aud_to_host_dptr, sample>>16);
+                    g_aud_to_host_dptr+=2;
+                }
+                break;
+
+            case 4:
+            {
+#if (STREAM_FORMAT_INPUT_SUBSLOT_4_USED == 0)
+__builtin_unreachable();
+#endif
+                unsigned ptr = g_aud_to_host_dptr;
+
+                for(int i = 0; i < g_numUsbChan_In; i++)
+                {
+                    /* Receive sample */
+                    int sample = inuint(c_mix_out);
+#if(INPUT_VOLUME_CONTROL == 1)
+#if !defined(IN_VOLUME_IN_MIXER)
+                    /* Apply volume */
+                    int mult;
+                    int h;
+                    unsigned l;
+                    asm volatile("ldw %0, %1[%2]":"=r"(mult):"r"(p_multIn),"r"(i));
+                    {h, l} = macs(mult, sample, 0, 0);
+                    sample = h << 3;
+#if (STREAM_FORMAT_INPUT_RESOLUTION_32BIT_USED == 1)
+                    sample |= (l >> 29) & 0x7; // Note, this step is not required if we assume sample depth is 24 (rather than 32)
+#endif
+#elif defined(IN_VOLUME_IN_MIXER) && defined(IN_VOLUME_AFTER_MIX)
+                    sample = sample << 3;
+#endif
+#endif
+                    /* Write into fifo */
+                    write_via_xc_ptr(ptr, sample);
+                    ptr+=4;
+                }
+
+                /* Update global pointer */
+                g_aud_to_host_dptr = ptr;
+                break;
+            }
+
+            case 3:
+#if (STREAM_FORMAT_INPUT_SUBSLOT_3_USED == 0)
+__builtin_unreachable();
+#endif
+                for(int i = 0; i < g_numUsbChan_In; i++)
+                {
+                    /* Receive sample */
+                    int sample = inuint(c_mix_out);
+#if (INPUT_VOLUME_CONTROL) && !defined(IN_VOLUME_IN_MIXER)
+                    /* Apply volume */
+                    int mult;
+                    int h;
+                    unsigned l;
+                    asm volatile("ldw %0, %1[%2]":"=r"(mult):"r"(p_multIn),"r"(i));
+                    {h, l} = macs(mult, sample, 0, 0);
+                    sample = h << 3;
+#endif
+                    /* Pack 3 byte samples */
+                    switch (packState&0x3)
+                    {
+                        case 0:
+                            packData = sample;
+                            break;
+                        case 1:
+                            packData = (packData >> 8) | ((sample & 0xff00)<<16);
+                            write_via_xc_ptr(g_aud_to_host_dptr, packData);
+                            g_aud_to_host_dptr+=4;
+                            write_via_xc_ptr(g_aud_to_host_dptr, sample>>16);
+                            packData = sample;
+                            break;
+                        case 2:
+                            packData = (packData>>16) | ((sample & 0xffff00) << 8);
+                            write_via_xc_ptr(g_aud_to_host_dptr, packData);
+                            g_aud_to_host_dptr+=4;
+                            packData = sample;
+                            break;
+                        case 3:
+                            packData = (packData >> 24) | (sample & 0xffffff00);
+                            write_via_xc_ptr(g_aud_to_host_dptr, packData);
+                            g_aud_to_host_dptr+=4;
+                            break;
+                    }
+                    packState++;
+                }
+                break;
+
+            default:
+                __builtin_unreachable();
+               break;
+        }
+
+        /* Input any remaining channels - past this thread we always operate on max channel count */
+        for(int i = 0; i < NUM_USB_CHAN_IN - g_numUsbChan_In; i++)
+        {
+            inuint(c_mix_out);
+        }
+
+        sampsToWrite--;
+    }
+
+ 
     if (!inOverflow)
     {
         if (sampsToWrite == 0)
