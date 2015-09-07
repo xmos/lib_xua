@@ -611,6 +611,7 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
             {
                 // p_i2s_adc[index++] :> sample;
                 // Manual IN instruction since compiler generates an extra setc per IN (bug #15256)
+                unsigned sample;
                 asm volatile("in %0, res[%1]" : "=r"(sample)  : "r"(p_i2s_adc[index++]));
 
                 /* Note the use of readBuffNo changes based on frameCount */
@@ -701,7 +702,9 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
             for(int i = 0; i < I2S_CHANS_ADC; i += I2S_CHANS_PER_FRAME)
             {
                 /* Manual IN instruction since compiler generates an extra setc per IN (bug #15256) */
+                unsigned sample;
                 asm volatile("in %0, res[%1]" : "=r"(sample)  : "r"(p_i2s_adc[index++]));
+                
                 if(buffIndex)
                     samplesIn_1[((frameCount-1)&(I2S_CHANS_PER_FRAME-1))+i] = bitrev(sample); // channels 1, 3, 5.. on each line.
                 else
