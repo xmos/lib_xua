@@ -256,33 +256,6 @@ static inline unsigned DoSampleTransfer(chanend c_out, int readBuffNo, unsigned 
     }
     else
     {
-#ifndef MIXER // Interfaces straight to decouple()
-        inuint(c_out);
-#if NUM_USB_CHAN_IN > 0
-#pragma loop unroll
-        for(int i = 0; i < I2S_CHANS_ADC; i++)
-        {
-            if(readBuffNo)
-                outuint(c_out, samplesIn_1[i]);
-            else
-                outuint(c_out, samplesIn_0[i]);
-        }
-        /* Send over the digi channels - no odd buffering required */
-#pragma loop unroll
-        for(int i = I2S_CHANS_ADC; i < NUM_USB_CHAN_IN; i++)
-        {
-            outuint(c_out, samplesIn_0[i]);
-        }
-#endif
-
-#if NUM_USB_CHAN_OUT > 0
-#pragma loop unroll
-        for(int i = 0; i < NUM_USB_CHAN_OUT; i++)
-        {
-            samplesOut[i] = inuint(c_out);
-        }
-#endif
-#else /* ifndef MIXER */
 #if NUM_USB_CHAN_OUT > 0
 #pragma loop unroll
         for(int i = 0; i < NUM_USB_CHAN_OUT; i++)
@@ -290,6 +263,8 @@ static inline unsigned DoSampleTransfer(chanend c_out, int readBuffNo, unsigned 
             int tmp = inuint(c_out);
             samplesOut[i] = tmp;
         }
+#else
+        inuint(c_out);
 #endif
 #if NUM_USB_CHAN_IN > 0
 #pragma loop unroll
@@ -310,7 +285,6 @@ static inline unsigned DoSampleTransfer(chanend c_out, int readBuffNo, unsigned 
         {
             outuint(c_out, samplesIn_0[i]);
         }
-#endif
 #endif
     }
 
@@ -465,10 +439,8 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
 #if (I2S_CHANS_ADC != 0) || defined(SPDIF_TX)
 	unsigned sample;
 #endif
-//#if NUM_USB_CHAN_IN > 0
     /* Since DAC and ADC buffered ports off by one sample we buffer previous ADC frame */
     unsigned readBuffNo = 0;
-//#endif
     unsigned index;
 
 #ifdef RAMP_CHECK
@@ -1097,7 +1069,7 @@ chanend ?c_config, chanend ?c
         {
         /* Configure audio ports */
         ConfigAudioPortsWrapper(
-#if (I2S_CHANS_DAC != 0)
+#if (I2S_CHANS_DAC != 0) || (DSD_CHANS_DAC != 0)
                 p_dsd_dac,
                 DSD_CHANS_DAC,
 #endif
