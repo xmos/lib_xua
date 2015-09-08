@@ -525,7 +525,7 @@ void Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
                     {
                         unsigned epNum = sp.wIndex & 0xff;
 
-                        if ((epNum == 0x82) || (epNum == 0x01))
+                        if ((epNum == ENDPOINT_ADDRESS_OUT_AUDIO) || (epNum == ENDPOINT_ADDRESS_IN_AUDIO))
 				        {
 #if (AUDIO_CLASS == 2) && defined(AUDIO_CLASS_FALLBACK)
                             if(g_curUsbSpeed == XUD_SPEED_FS)

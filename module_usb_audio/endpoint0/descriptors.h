@@ -671,14 +671,18 @@ typedef struct
     USB_Descriptor_Audio_Format_Type1_t         Audio_Out_Format;
     USB_Descriptor_Endpoint_t                   Audio_Out_Endpoint;
     USB_Descriptor_Audio_Class_AS_Endpoint_t    Audio_Out_ClassEndpoint;
+#if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP)
     USB_Descriptor_Endpoint_t                   Audio_Out_Fb_Endpoint;
+#endif
 #if (OUTPUT_FORMAT_COUNT > 1)
     USB_Descriptor_Interface_t                  Audio_Out_StreamInterface_Alt2;
     USB_Descriptor_Audio_Interface_AS_t         Audio_Out_ClassStreamInterface_2;
     USB_Descriptor_Audio_Format_Type1_t         Audio_Out_Format_2;
     USB_Descriptor_Endpoint_t                   Audio_Out_Endpoint_2;
     USB_Descriptor_Audio_Class_AS_Endpoint_t    Audio_Out_ClassEndpoint_2;
+#if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP)
     USB_Descriptor_Endpoint_t                   Audio_Out_Fb_Endpoint_2;
+#endif
 #endif
 #if (OUTPUT_FORMAT_COUNT > 2)
     USB_Descriptor_Interface_t                  Audio_Out_StreamInterface_Alt3;
@@ -686,7 +690,9 @@ typedef struct
     USB_Descriptor_Audio_Format_Type1_t         Audio_Out_Format_3;
     USB_Descriptor_Endpoint_t                   Audio_Out_Endpoint_3;
     USB_Descriptor_Audio_Class_AS_Endpoint_t    Audio_Out_ClassEndpoint_3;
+#if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP)
     USB_Descriptor_Endpoint_t                   Audio_Out_Fb_Endpoint_3;
+#endif
 #endif
 #endif
 #if (NUM_USB_CHAN_IN > 0)
@@ -1234,7 +1240,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
             /* Output Terminal Descriptor (USB Streaming) */
             .bLength                   = 0x0C,
             .bDescriptorType           = UAC_CS_DESCTYPE_INTERFACE,
-            .bDescriptorSubtype        =  UAC_CS_AC_INTERFACE_SUBTYPE_OUTPUT_TERMINAL,
+            .bDescriptorSubtype        = UAC_CS_AC_INTERFACE_SUBTYPE_OUTPUT_TERMINAL,
             .bTerminalID               = ID_OT_USB,
             .wTerminalType             = USB_TERMTYPE_USB_STREAMING,
             .bAssocTerminal            = 0x00,
@@ -1382,7 +1388,11 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
         USB_DESCTYPE_INTERFACE,           /* 1  bDescriptorType: INTERFACE */
         INTERFACE_NUMBER_AUDIO_OUTPUT,    /* 2  bInterfaceNumber: Number of interface */
         1,                                /* 3  bAlternateSetting */
+#if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP)
         2,                                /* 4  bNumEndpoints */
+#else
+        1,                                /* 4  bNumEndpoints */
+#endif
         USB_CLASS_AUDIO,                  /* 5  bInterfaceClass: AUDIO */
         UAC_INT_SUBCLASS_AUDIOSTREAMING,  /* 6  bInterfaceSubClass: AUDIO_STREAMING */
         UAC_INT_PROTOCOL_IP_VERSION_02_00,/* 7  bInterfaceProtocol: IP_VERSION_02_00 */
@@ -1407,12 +1417,12 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
     /* Type 1 Format Type Descriptor */
     .Audio_Out_Format =
     {
-        0x06,                           /* 0  bLength (in bytes): 6 */
-        UAC_CS_DESCTYPE_INTERFACE,                   /* 1  bDescriptorType: 0x24 */
-        UAC_CS_AS_INTERFACE_SUBTYPE_FORMAT_TYPE,                    /* 2  bDescriptorSubtype: FORMAT_TYPE */
-        UAC_FORMAT_TYPE_I,                  /* 3  bFormatType: FORMAT_TYPE_1 */
-        .bSubslotSize                  = HS_STREAM_FORMAT_OUTPUT_1_SUBSLOT_BYTES,
-        .bBitResolution                = HS_STREAM_FORMAT_OUTPUT_1_RESOLUTION_BITS,
+        .bLength                        = 0x06,                          
+        .bDescriptorType                = UAC_CS_DESCTYPE_INTERFACE,  
+        .bDescriptorSubtype             = UAC_CS_AS_INTERFACE_SUBTYPE_FORMAT_TYPE,                   
+        .bFormatType                    = UAC_FORMAT_TYPE_I,               
+        .bSubslotSize                   = HS_STREAM_FORMAT_OUTPUT_1_SUBSLOT_BYTES,
+        .bBitResolution                 = HS_STREAM_FORMAT_OUTPUT_1_RESOLUTION_BITS,
     },
 
     /* Standard AS Isochronous Audio Data Endpoint Descriptor (4.10.1.1) */
@@ -1420,7 +1430,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
     {
         .bLength                        = sizeof(USB_Descriptor_Endpoint_t),
         .bDescriptorType                = USB_DESCTYPE_ENDPOINT,
-        .bEndpointAddress               = 0x01,     /* (D7: 0:out, 1:in) */
+        .bEndpointAddress               = ENDPOINT_ADDRESS_OUT_AUDIO,    
         .bmAttributes                   = 0x05,     /* (bitmap)  */
         .wMaxPacketSize                 = HS_STREAM_FORMAT_OUTPUT_1_MAXPACKETSIZE,
         .bInterval                      = 1,
@@ -1438,15 +1448,17 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
         0x0008,                           /* 6:7 bLockDelay */
     },
 
+#if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP)
     .Audio_Out_Fb_Endpoint =
     {
-        0x07,                             /* 0  bLength: 7 */
-        USB_DESCTYPE_ENDPOINT,            /* 1  bDescriptorType: ENDPOINT */
-        0x81,                             /* 2  bEndpointAddress (D7: 0:out, 1:in) */
-        17,                               /* 3  bmAttributes (bitmap)  */
-        0x0004,                           /* 4  wMaxPacketSize */
-        4,                                /* 6  bInterval. Only values <= 1 frame (4) supported by MS */
+        .bLength            = 0x07,                             
+        .bDescriptorType    = USB_DESCTYPE_ENDPOINT,            
+        .bEndpointAddress   = ENDPOINT_ADDRESS_IN_FEEDBACK,      
+        .bmAttributes       = 17,                               /* (bitmap) */
+        .wMaxPacketSize     = 0x0004,                           
+        .bInterval          = 4,                                /* Only values <= 1 frame (4) supported by MS */
     },
+#endif
 #if (OUTPUT_FORMAT_COUNT > 1)
     /* Standard AS Interface Descriptor (4.9.1) (Alt) */
     .Audio_Out_StreamInterface_Alt2 =
@@ -1455,7 +1467,11 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
         USB_DESCTYPE_INTERFACE,           /* 1  bDescriptorType: INTERFACE */
         INTERFACE_NUMBER_AUDIO_OUTPUT,    /* 2  bInterfaceNumber: Number of interface */
         2,                                /* 3  bAlternateSetting */
+#if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP)
         2,                                /* 4  bNumEndpoints */
+#else
+        1,                                /* 4  bNumEndpoints */
+#endif
         USB_CLASS_AUDIO,                  /* 5  bInterfaceClass: AUDIO */
         UAC_INT_SUBCLASS_AUDIOSTREAMING,  /* 6  bInterfaceSubClass: AUDIO_STREAMING */
         UAC_INT_PROTOCOL_IP_VERSION_02_00,/* 7  bInterfaceProtocol: IP_VERSION_02_00 */
@@ -1492,7 +1508,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
     {
         .bLength                        = sizeof(USB_Descriptor_Endpoint_t),
         .bDescriptorType                = USB_DESCTYPE_ENDPOINT,
-        .bEndpointAddress               = 0x01,
+        .bEndpointAddress               = ENDPOINT_ADDRESS_OUT_AUDIO,
         .bmAttributes                   = 0x05,
         .wMaxPacketSize                 = HS_STREAM_FORMAT_OUTPUT_2_MAXPACKETSIZE,
         .bInterval                      = 1,
@@ -1510,15 +1526,17 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
         0x0008,                           /* 6:7 bLockDelay */
     },
 
+#if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP)
     .Audio_Out_Fb_Endpoint_2 =
     {
         0x07,                             /* 0  bLength: 7 */
         USB_DESCTYPE_ENDPOINT,            /* 1  bDescriptorType: ENDPOINT */
-        0x81,                             /* 2  bEndpointAddress (D7: 0:out, 1:in) */
+        ENDPOINT_ADDRESS_IN_FEEDBACK,     /* 2  bEndpointAddress (D7: 0:out, 1:in) */
         17,                               /* 3  bmAttributes (bitmap)  */
         0x0004,                           /* 4  wMaxPacketSize */
         4,                                /* 6  bInterval. Only values <= 1 frame (4) supported by MS */
     },
+#endif
 #endif
 #if (OUTPUT_FORMAT_COUNT > 2)
     /* Standard AS Interface Descriptor (4.9.1) (Alt) */
@@ -1528,7 +1546,11 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
         USB_DESCTYPE_INTERFACE,           /* 1  bDescriptorType: INTERFACE */
         INTERFACE_NUMBER_AUDIO_OUTPUT,    /* 2  bInterfaceNumber: Number of interface */
         3,                                /* 3  bAlternateSetting */
+#if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP)
         2,                                /* 4  bNumEndpoints */
+#else
+        1,                                /* 4  bNumEndpoints */
+#endif
         USB_CLASS_AUDIO,                  /* 5  bInterfaceClass: AUDIO */
         UAC_INT_SUBCLASS_AUDIOSTREAMING,  /* 6  bInterfaceSubClass: AUDIO_STREAMING */
         UAC_INT_PROTOCOL_IP_VERSION_02_00,/* 7  bInterfaceProtocol: IP_VERSION_02_00 */
@@ -1566,7 +1588,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
     {
         .bLength                       = 0x07,
         .bDescriptorType               = USB_DESCTYPE_ENDPOINT,
-        .bEndpointAddress              = 0x01,
+        .bEndpointAddress              = ENDPOINT_ADDRESS_OUT_AUDIO,
         .bmAttributes                  = 0x05,
         .wMaxPacketSize                = HS_STREAM_FORMAT_OUTPUT_3_MAXPACKETSIZE,
         .bInterval                     = 1,
@@ -1584,15 +1606,17 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
         .wLockDelay                    = 0x0008,
     },
 
+#if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP)
     .Audio_Out_Fb_Endpoint_3 =
     {
         .bLength                       = 0x07,
         .bDescriptorType               = USB_DESCTYPE_ENDPOINT,
-        .bEndpointAddress              = 0x81,
+        .bEndpointAddress              = ENDPOINT_ADDRESS_IN_FEEDBACK,
         .bmAttributes                  = 17,                      /* (bitmap)  */
         .wMaxPacketSize                = 0x0004,
         .bInterval                     = 4,                       /* Only values <= 1 frame (4) supported by MS */
     },
+#endif 
 #endif /* OUTPUT_FORMAT_COUNT > 2 */
 #endif /* OUTPUT */
 #if (NUM_USB_CHAN_IN > 0)
@@ -1657,8 +1681,12 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
     {
         .bLength                       = 0x07,
         .bDescriptorType               = USB_DESCTYPE_ENDPOINT,
-        .bEndpointAddress              = 0x82,
-        .bmAttributes                  = 5,
+        .bEndpointAddress              = ENDPOINT_ADDRESS_IN_AUDIO,
+#if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP)
+        .bmAttributes                  = 0x05,  /* Iso, async, data endpoint */
+#else
+        .bmAttributes                  = 0x25,  /* Iso, async, implicit feedback data endpoint */
+#endif
         .wMaxPacketSize                = HS_STREAM_FORMAT_INPUT_1_MAXPACKETSIZE,
         .bInterval                     = 0x01,
     },
@@ -1721,8 +1749,12 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
     {
         .bLength                       = 0x07,
         .bDescriptorType               = USB_DESCTYPE_ENDPOINT,
-        .bEndpointAddress              = 0x82,
-        .bmAttributes                  = 5,
+        .bEndpointAddress              = ENDPOINT_ADDRESS_IN_AUDIO,
+#if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP)
+        .bmAttributes                  = 0x05,  /* Iso, async, data endpoint */
+#else
+        .bmAttributes                  = 0x25,  /* Iso, async, implicit feedback data endpoint */
+#endif
         .wMaxPacketSize                = HS_STREAM_FORMAT_INPUT_2_MAXPACKETSIZE,
         .bInterval                     = 0x01,
     },
@@ -1786,8 +1818,12 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
     {
         .bLength                       = 0x07,
         .bDescriptorType               = USB_DESCTYPE_ENDPOINT,
-        .bEndpointAddress              = 0x82,
-        .bmAttributes                  = 5,
+        .bEndpointAddress              = ENDPOINT_ADDRESS_IN_AUDIO,
+#if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP)
+        .bmAttributes                  = 0x05,  /* Iso, async, data endpoint */
+#else
+        .bmAttributes                  = 0x25,  /* Iso, async, implicit feedback data endpoint */
+#endif
         .wMaxPacketSize                = HS_STREAM_FORMAT_INPUT_3_MAXPACKETSIZE,
         .bInterval                     = 0x01,
     },
@@ -2179,7 +2215,11 @@ unsigned char cfgDesc_Null[] =
 /* Note, this is different that INTERFACE_COUNT since we dont support items such as MIDI, iAP etc in UAC1 mode */
 #define NUM_INTERFACES_A1           (1+INPUT_INTERFACES_A1 + OUTPUT_INTERFACES_A1)
 
+#if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP)
 #define CFG_TOTAL_LENGTH_A1         (18 + AC_TOTAL_LENGTH + (INPUT_INTERFACES_A1 * 61) + (OUTPUT_INTERFACES_A1 * 70))
+#else
+#define CFG_TOTAL_LENGTH_A1         (18 + AC_TOTAL_LENGTH + (INPUT_INTERFACES_A1 * 61) + (OUTPUT_INTERFACES_A1 * 61))
+#endif
 
 /* In UAC1 supported sample rates are listed in descriptor */
 /* Note, we always report 4 freqs, doing otherwise seems to cause an enumeration issue on Windows */
@@ -2317,7 +2357,11 @@ unsigned char cfgDesc_Audio1[] =
     0x04,                           /* INTERFACE */
     0x01,                           /* Interface no */
     0x01,                           /* AlternateSetting */
-    0x02,                           /* num endpoints 2: audio EP and feedback EP */
+#if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP)
+    0x02,                           /* bNumEndpoints 2: audio EP and feedback EP */
+#else
+    0x01,                           /* bNumEndpoints */
+#endif
     0x01,                           /* Interface class - AUDIO */
     0x02,                           /* subclass - AUDIO_STREAMING */
     0x00,                           /* Unused */
@@ -2367,7 +2411,11 @@ unsigned char cfgDesc_Audio1[] =
     (FS_STREAM_FORMAT_OUTPUT_1_MAXPACKETSIZE&0xff00)>>8, /* 5  wMaxPacketSize */
     0x01,                           /* bInterval */
     0x00,                           /* bRefresh */
-    0x81,                           /* bSynchAdddress - address of EP used to communicate sync info */
+#if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP)
+    ENDPOINT_ADDRESS_IN_FEEDBACK,                           /* bSynchAdddress - address of EP used to communicate sync info */
+#else
+    ENDPOINT_ADDRESS_IN_AUDIO,
+#endif
 
     /* CS_Endpoint Descriptor ?? */
     0x07,
@@ -2377,15 +2425,17 @@ unsigned char cfgDesc_Audio1[] =
     0x02,                           /* bLockDelayUnits */
     0x00, 0x00,                     /* bLockDelay */
 
+#if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP)
     /* Feedback EP */
     0x09,
     0x05,                           /* bDescriptorType: ENDPOINT */
-    0x81,                           /* bEndpointAddress (D3:0 - EP no. D6:4 - reserved 0. D7 - 0:out, 1:in) */
+    ENDPOINT_ADDRESS_IN_FEEDBACK,   /* bEndpointAddress (D3:0 - EP no. D6:4 - reserved 0. D7 - 0:out, 1:in) */
     0x01,                           /* bmAttributes (bitmap)  */
     0x03,0x0,                       /* wMaxPacketSize */
     0x01,                           /* bInterval - Must be 1 for compliance */
     0x04,                           /* bRefresh 2^x */
     0x0,                            /* bSynchAddress */
+#endif
 #endif
 
 #if (NUM_USB_CHAN_IN > 0)
@@ -2447,8 +2497,12 @@ unsigned char cfgDesc_Audio1[] =
     /* Standard Endpoint Descriptor */
     0x09,
     0x05,                           /* ENDPOINT */
-    0x82,                           /* EndpointAddress */
-    0x05,                           /* Attributes - isochronous async */
+    ENDPOINT_ADDRESS_IN_AUDIO,      /* EndpointAddress */
+#if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP)
+    0x05,  /* Iso, async, data endpoint */
+#else
+    0x25,  /* Iso, async, implicit feedback data endpoint */
+#endif
     FS_STREAM_FORMAT_INPUT_1_MAXPACKETSIZE&0xff,        /* 4  wMaxPacketSize (Typically 294 bytes)*/
     (FS_STREAM_FORMAT_INPUT_1_MAXPACKETSIZE&0xff00)>>8, /* 5  wMaxPacketSize */
     0x01,                           /* bInterval */
