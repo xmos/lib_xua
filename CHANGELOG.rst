@@ -1,6 +1,11 @@
 sc_usb_audio Change Log
 =======================
 
+6.12.6
+------
+    - RESOLVED:   Build error when DFU is disabled
+    - RESOLVED:   Build error when I2S_CHANS_ADC or I2S_CHANS_DAC set to 0 and CODEC_MASTER enabled
+
 6.12.5
 ------   
     - RESOLVED:   Stream issue when NUM_USB_CHAN_IN < I2S_CHANS_ADC
