@@ -881,35 +881,28 @@ static void dummy_deliver(chanend c_out, unsigned &command)
                 }
                 else
                 {
-#ifndef MIXER // Interfaces straight to decouple()
-                    (void) inuint(c_out);
+
+#if NUM_USB_CHAN_OUT > 0
+#pragma loop unroll
+                    for(int i = 0; i < NUM_USB_CHAN_OUT; i++)
+                    {
+                        int tmp = inuint(c_out);
+                        samplesOut[i] = tmp;
+                    }
+#else
+                    inuint(c_out);
+#endif
+
+#if NUM_USB_CHAN_IN > 0
 #pragma loop unroll
                     for(int i = 0; i < NUM_USB_CHAN_IN; i++)
                     {
                         outuint(c_out, 0);
                     }
-
-#pragma loop unroll
-                    for(int i = 0; i < NUM_USB_CHAN_OUT; i++)
-                    {
-                        (void) inuint(c_out);
-                    }
-#else
-#pragma loop unroll
-                    for(int i = 0; i < NUM_USB_CHAN_OUT; i++)
-                    {
-                        (void) inuint(c_out);
-                    }
-
-#pragma loop unroll
-                for(int i = 0; i < NUM_USB_CHAN_IN; i++)
-                {
-                    outuint(c_out, 0);
-                }
 #endif
-            }
+                }
 
-            outuint(c_out, 0);
+                outuint(c_out, 0);
             break;
         }
     }
