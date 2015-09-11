@@ -548,7 +548,7 @@ static void mixer1(chanend c_host, chanend c_mix_ctl, chanend c_mixer2)
             inuint(c_mixer2);
 #ifdef FAST_MIXER
             mixed = doMix0(samples, mix_mult_slice(0));
-NN#else
+#else
             mixed = doMix(samples, mix_map_slice(0),mix_mult_slice(0));
 #endif
             write_via_xc_ptr_indexed(samples_array, (NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + 0), mixed);
