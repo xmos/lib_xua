@@ -433,6 +433,10 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
 #if(defined(SPDIF_RX) || defined(ADAT_RX))
     chanend c_dig_rx,
 #endif
+#ifdef PDM_PCM_IN
+    streaming chanend c_pdm_pcm,
+#endif
+
     chanend ?c_adc)
 {
 
@@ -924,6 +928,9 @@ chanend ?c_config, chanend ?c
 #if XUD_TILE != 0
 , server interface i_dfu dfuInterface
 #endif
+#ifdef PDM_PCM_IN
+, streaming chanend c_pdm_in
+#endif
 )
 {
 #if defined (SPDIF_TX) && (SPDIF_TX_TILE == AUDIO_IO_TILE)
@@ -1190,6 +1197,9 @@ chanend ?c_config, chanend ?c
                    divide, curSamFreq,
 #if defined (ADAT_RX) || defined (SPDIF_RX)
                    c_dig_rx,
+#endif
+#ifdef PDM_PCM_IN
+                   c_pdm_in,
 #endif
                    c);
 

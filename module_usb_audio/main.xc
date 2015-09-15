@@ -43,6 +43,8 @@
 
 #include "clocking.h"
 
+void genclock();
+
 [[distributable]]
 void DFUHandler(server interface i_dfu i, chanend ?c_user_cmd);
 
@@ -262,6 +264,14 @@ void xscope_user_init()
 }
 #endif
 
+#ifdef PDM_PCM_IN
+void dummy_pdm_code(streaming chanend c)
+{
+    while(1)
+        c <: 0xff00ff00;
+}
+#endif
+
 /* Core USB Audio functions - must be called on the Tile connected to the USB Phy */
 void usb_audio_core(chanend c_mix_out
 #ifdef MIDI
@@ -416,6 +426,10 @@ void usb_audio_io(chanend c_aud_in, chanend ?c_adc,
     #define c_dig_rx null
 #endif
 
+#ifdef PDM_PCM_IN
+    streaming chan c_pdm_pcm
+#endif
+
     par
     {
 #ifdef MIXER
@@ -442,7 +456,10 @@ void usb_audio_io(chanend c_aud_in, chanend ?c_adc,
 #endif
                 c_aud_cfg, c_adc
 #if XUD_TILE != 0
-                ,dfuInterface
+                , dfuInterface
+#endif
+#ifdef PDM_PCM_IN
+                , c_pdm_pcm
 #endif
             );
         }
@@ -455,6 +472,11 @@ void usb_audio_io(chanend c_aud_in, chanend ?c_adc,
 
         }
 #endif
+
+#ifdef PDM_PCM_IN
+        dummy_pdm_code(c_pdm_pcm);
+#endif
+
         //:
     }
 }
