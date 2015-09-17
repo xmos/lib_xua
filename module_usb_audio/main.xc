@@ -212,16 +212,19 @@ XUD_EpType epTypeTableOut[ENDPOINT_COUNT_OUT] = { XUD_EPTYPE_CTL | XUD_STATUS_EN
                                             XUD_EPTYPE_BUL,    /* MIDI */
 #endif
 #ifdef IAP
-                                            XUD_EPTYPE_BUL, /* iAP */
+                                            XUD_EPTYPE_BUL,    /* iAP */
 #ifdef IAP_EA_NATIVE_TRANS
-                                            XUD_EPTYPE_BUL, /* EA Native Transport */
+                                            XUD_EPTYPE_BUL,    /* EA Native Transport */
 #endif
 #endif
                                         };
 
 XUD_EpType epTypeTableIn[ENDPOINT_COUNT_IN] = { XUD_EPTYPE_CTL | XUD_STATUS_ENABLE,
                                             XUD_EPTYPE_ISO,
-                                            XUD_EPTYPE_ISO,
+
+#if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP)
+                                            XUD_EPTYPE_ISO,    /* Async feedback endpoint */
+#endif
 #if defined (SPDIF_RX) || defined (ADAT_RX)
                                             XUD_EPTYPE_BUL,
 #endif
@@ -278,7 +281,7 @@ void usb_audio_core(chanend c_mix_out
 #endif
 , chanend ?c_clk_int
 , chanend ?c_clk_ctl
-, client interface i_dfu dfuInterface
+, client interface i_dfu ?dfuInterface
 )
 {
     chan c_sof;
@@ -330,12 +333,14 @@ void usb_audio_core(chanend c_mix_out
             asm("setclk res[%0], %1"::"r"(p_for_mclk_count), "r"(x));
 #endif
             //:buffer
-            buffer(c_xud_out[ENDPOINT_NUMBER_OUT_AUDIO],/* Audio Out*/
-                c_xud_in[ENDPOINT_NUMBER_IN_AUDIO],     /* Audio In */
+            buffer(c_xud_out[ENDPOINT_NUMBER_OUT_AUDIO],    /* Audio Out*/
+                c_xud_in[ENDPOINT_NUMBER_IN_AUDIO],         /* Audio In */
+#if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP)
                 c_xud_in[ENDPOINT_NUMBER_IN_FEEDBACK],      /* Audio FB */
+#endif
 #ifdef MIDI
-                c_xud_out[ENDPOINT_NUMBER_OUT_MIDI],  /* MIDI Out */ // 2
-                c_xud_in[ENDPOINT_NUMBER_IN_MIDI],    /* MIDI In */  // 4
+                c_xud_out[ENDPOINT_NUMBER_OUT_MIDI],        /* MIDI Out */ // 2
+                c_xud_in[ENDPOINT_NUMBER_IN_MIDI],          /* MIDI In */  // 4
                 c_midi,
 #endif
 #ifdef IAP
@@ -536,8 +541,10 @@ int main()
         {
 #if (XUD_TILE == 0)
             /* Check if USB is on the flash tile (tile 0) */
+#ifdef DFU
             [[distribute]]
             DFUHandler(dfuInterface, null);
+#endif
 #endif
             usb_audio_core(c_mix_out
 #ifdef MIDI

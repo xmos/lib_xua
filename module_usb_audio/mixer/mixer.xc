@@ -203,6 +203,9 @@ static inline void GiveSamplesToHost(chanend c, xc_ptr ptr, xc_ptr multIn)
 #pragma unsafe arrays
 static inline void GetSamplesFromHost(chanend c)
 {
+#if (NUM_USB_CHAN_OUT == 0)
+    inuint(c);
+#else
     {
 #pragma loop unroll
         for (int i=0; i<NUM_USB_CHAN_OUT; i++)
@@ -238,6 +241,7 @@ static inline void GetSamplesFromHost(chanend c)
             write_via_xc_ptr_indexed(samples_array, i, h);
 #else
             ptr_samples[i] = sample;
+#endif
 #endif
         }
     }
@@ -358,9 +362,10 @@ static void mixer1(chanend c_host, chanend c_mix_ctl, chanend c_mixer2)
         /* Request from audio()/mixer2() */
         request = inuint(c_mixer2);
 
+        
         /* Forward on Request for data to decouple thread */
         outuint(c_host, request);
-
+        
         /* Between request to decouple and respose ~ 400nS latency for interrupt to fire */
         select
         {
@@ -531,7 +536,7 @@ static void mixer1(chanend c_host, chanend c_mix_ctl, chanend c_mixer2)
         }
         else
         {
-            inuint(c_host);
+
 #if MAX_MIX_COUNT > 0
             outuint(c_mixer2, 0);
             GiveSamplesToHost(c_host, samples_to_host_map, multIn);
@@ -559,11 +564,11 @@ static void mixer1(chanend c_host, chanend c_mix_ctl, chanend c_mixer2)
 
 #if MAX_MIX_COUNT > 2
 #ifdef FAST_MIXER
-              mixed = doMix2(samples, mix_mult_slice(2));
+                mixed = doMix2(samples, mix_mult_slice(2));
 #else
-              mixed = doMix(samples, mix_map_slice(2),mix_mult_slice(2));
+                mixed = doMix(samples, mix_map_slice(2),mix_mult_slice(2));
 #endif
-              write_via_xc_ptr_indexed(samples_array, (NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + 2), mixed);
+                write_via_xc_ptr_indexed(samples_array, (NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + 2), mixed);
 
 #if defined (LEVEL_METER_HOST) || defined(LEVEL_METER_LEDS)
                 ComputeMixerLevel(mixed, 2);
@@ -598,10 +603,13 @@ static void mixer1(chanend c_host, chanend c_mix_ctl, chanend c_mixer2)
             }
 #else       /* IF MAX_MIX_COUNT > 0 */
             /* No mixes, this thread runs on its own doing just volume */
+#if(NUM_USB_CHAN_OUT == 0)
+            outuint(c_mixer2, 0);
+#endif
             GiveSamplesToDevice(c_mixer2, samples_to_device_map, multOut);
             GetSamplesFromDevice(c_mixer2);
-            GiveSamplesToHost(c_host, samples_to_host_map, multIn);
             GetSamplesFromHost(c_host);
+            GiveSamplesToHost(c_host, samples_to_host_map, multIn);
 #endif
         }
     }

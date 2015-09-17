@@ -110,17 +110,21 @@ unsigned int divide)
     /* Clock bclk clock-block from bclk pin */
     configure_clock_src(clk_audio_bclk, p_bclk);
 
+#if (I2S_CHANS_DAC != 0)
      /* Clock I2S output data ports from b-clock clock block */
     for(int i = 0; i < I2S_WIRES_DAC; i++)
     {
         configure_out_port_no_ready(p_i2s_dac[i], clk_audio_bclk, 0);
     }
+#endif
 
+#if (I2S_CHANS_ADC != 0)
     /* Clock I2S input data ports from clock block */
     for(int i = 0; i < I2S_WIRES_ADC; i++)
     {
         configure_in_port_no_ready(p_i2s_adc[i], clk_audio_bclk);
     }
+#endif
 
     configure_in_port_no_ready(p_lrclk, clk_audio_bclk);
 

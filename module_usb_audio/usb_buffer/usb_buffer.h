@@ -21,7 +21,9 @@
 
 void buffer(chanend c_aud_out,
             chanend c_aud_in,
+#if (NUM_USB_CHAN_IN == 0) || defined (UAC_FORCE_FEEDBACK_EP)
             chanend c_aud_fb,
+#endif
 #ifdef MIDI
             chanend c_midi_from_host,
             chanend c_midi_to_host,

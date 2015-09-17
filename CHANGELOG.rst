@@ -1,6 +1,19 @@
 sc_usb_audio Change Log
 =======================
 
+6.12.7
+------
+    - ADDED:      Device now uses implicit feedback when input stream is available (previously explicit
+                  feedback pipe always used). This saves chanend/EP resources and means less processing 
+                  burden for the host. Previous behaviour available by enabling UAC_FORCE_FEEDBACK_EP
+    - CHANGE:     Mixer and non-mixer channel comms scheme (decouple <-> audio path) now the identical
+    
+
+6.12.6
+------
+    - RESOLVED:   Build error when DFU is disabled
+    - RESOLVED:   Build error when I2S_CHANS_ADC or I2S_CHANS_DAC set to 0 and CODEC_MASTER enabled
+
 6.12.5
 ------   
     - RESOLVED:   Stream issue when NUM_USB_CHAN_IN < I2S_CHANS_ADC

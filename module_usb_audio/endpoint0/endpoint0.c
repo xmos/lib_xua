@@ -525,7 +525,7 @@ void Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
                     {
                         unsigned epNum = sp.wIndex & 0xff;
 
-                        if ((epNum == 0x82) || (epNum == 0x01))
+                        if ((epNum == ENDPOINT_ADDRESS_OUT_AUDIO) || (epNum == ENDPOINT_ADDRESS_IN_AUDIO))
 				        {
 #if (AUDIO_CLASS == 2) && defined(AUDIO_CLASS_FALLBACK)
                             if(g_curUsbSpeed == XUD_SPEED_FS)
@@ -586,8 +586,12 @@ void Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
                          *              - Audio STREAMING interface request  (In or Out)
                          *              - Audio endpoint request (Audio 1.0 Sampling freq requests are sent to the endpoint)
                          */
-                        if(((interfaceNum == 0) || (interfaceNum == 1) || (interfaceNum == 2)) && !DFU_mode_active)
-				        {
+                        if(((interfaceNum == 0) || (interfaceNum == 1) || (interfaceNum == 2)) 
+#ifdef DFU
+                                && !DFU_mode_active
+#endif
+                            )
+                        {
 #if (AUDIO_CLASS == 2) && defined(AUDIO_CLASS_FALLBACK)
                             if(g_curUsbSpeed == XUD_SPEED_HS)
                             {

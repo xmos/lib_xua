@@ -1092,7 +1092,9 @@
 enum USBEndpointNumber_In
 {
     ENDPOINT_NUMBER_IN_CONTROL,     /* Endpoint 0 */
+#if (NUM_USB_CHAN_IN == 0) || (defined UAC_FORCE_FEEDBACK_EP)
     ENDPOINT_NUMBER_IN_FEEDBACK,
+#endif
     ENDPOINT_NUMBER_IN_AUDIO,
 #if defined(SPDIF_RX) || defined(ADAT_RX)
     ENDPOINT_NUMBER_IN_INTERRUPT,   /* Audio interrupt/status EP */
