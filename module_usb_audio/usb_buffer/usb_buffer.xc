@@ -317,6 +317,8 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in,
                             sofCount = 0;
                             clocks = 0;
                             remnant = 0;
+
+                            /* Set g_speed to something sensible. We expect it to get over-written before stream time */
                             int min, mid, max;
                             GetADCCounts(sampleFreq, min, mid, max);
                             g_speed = mid<<16;
