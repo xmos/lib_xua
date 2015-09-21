@@ -423,13 +423,15 @@ __builtin_unreachable();
 
     {
         /* Finished creating packet - commit it to the FIFO */
-        if (sampsToWrite == 0)
+        /* Total samps to write could start at 0 (i.e. no MCLK) so need to check for < 0) */
+        if (sampsToWrite <= 0)
         {
             int speed;
             packState = 0;
 
             /* Write last packet length into FIFO */
             unsigned datasize = totalSampsToWrite * g_curSubSlot_In * g_numUsbChan_In;
+
             write_via_xc_ptr(g_aud_to_host_wrptr, datasize);
 
             /* Round up to nearest word - note, not needed for slotsize == 4! */
@@ -446,8 +448,10 @@ __builtin_unreachable();
 
             g_aud_to_host_dptr = g_aud_to_host_wrptr + 4;
             
-            /* Now calculate new packet length... */
-            /* Get feedback val - ideally this would be syncronised */
+            /* Now calculate new packet length... 
+             * First get feedback val (ideally this would be syncronised)
+             * Note, if customer hasn't applied a valid MCLK this could go to 0 
+             * we need to handle this gracefully */
             asm volatile("ldw   %0, dp[g_speed]" : "=r" (speed) :);
 
             /* Calc packet size to send back based on our fb */
@@ -471,7 +475,8 @@ __builtin_unreachable();
                 space_left = aud_to_host_fifo_end - g_aud_to_host_wrptr;
             }
 
-            if((space_left > 0) && (space_left < (totalSampsToWrite * g_numUsbChan_In * g_curSubSlot_In + 4))) 
+            //if((space_left > 0) && (space_left < (totalSampsToWrite * g_numUsbChan_In * g_curSubSlot_In + 4))) 
+            if((space_left < (totalSampsToWrite * g_numUsbChan_In * g_curSubSlot_In + 4))) 
             {
                 /* In pipe has filled its buffer - we need to overflow 
                  * Accept the packet, and throw away the oldest in the buffer */
@@ -496,7 +501,7 @@ __builtin_unreachable();
                     {
                         rdPtr = aud_to_host_fifo_start;
                     }             
-           
+ 
                     space_left += datalength;
                     SET_SHARED_GLOBAL(g_aud_to_host_rdptr, rdPtr);
                  
@@ -548,20 +553,10 @@ static inline void SetupZerosSendBuffer(XUD_ep aud_to_host_usb_ep, unsigned samp
     int min, mid, max, p;
     GetADCCounts(sampFreq, min, mid, max);
 
-    // TODO, don't need to use speed.
-    //if (usb_speed == XUD_SPEED_HS)
-    //{
-      //  mid *= NUM_USB_CHAN_IN * slotSize;
-   // }
-    //else
-    //{
-       // mid *= NUM_USB_CHAN_IN_FS * slotSize;
-    //}
-    
     /* Set IN stream packet size to something sensible. We expect the buffer to
      * over flow and this to be reset */
-    SET_SHARED_GLOBAL(sampsToWrite, mid);
-    SET_SHARED_GLOBAL(totalSampsToWrite, mid); 
+    SET_SHARED_GLOBAL(sampsToWrite, 0);
+    SET_SHARED_GLOBAL(totalSampsToWrite, 0); 
 
     mid *= g_numUsbChan_In * slotSize;
 
