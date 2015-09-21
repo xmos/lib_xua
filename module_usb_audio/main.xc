@@ -214,16 +214,19 @@ XUD_EpType epTypeTableOut[ENDPOINT_COUNT_OUT] = { XUD_EPTYPE_CTL | XUD_STATUS_EN
                                             XUD_EPTYPE_BUL,    /* MIDI */
 #endif
 #ifdef IAP
-                                            XUD_EPTYPE_BUL, /* iAP */
+                                            XUD_EPTYPE_BUL,    /* iAP */
 #ifdef IAP_EA_NATIVE_TRANS
-                                            XUD_EPTYPE_BUL, /* EA Native Transport */
+                                            XUD_EPTYPE_BUL,    /* EA Native Transport */
 #endif
 #endif
                                         };
 
 XUD_EpType epTypeTableIn[ENDPOINT_COUNT_IN] = { XUD_EPTYPE_CTL | XUD_STATUS_ENABLE,
                                             XUD_EPTYPE_ISO,
-                                            XUD_EPTYPE_ISO,
+
+#if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP)
+                                            XUD_EPTYPE_ISO,    /* Async feedback endpoint */
+#endif
 #if defined (SPDIF_RX) || defined (ADAT_RX)
                                             XUD_EPTYPE_BUL,
 #endif
