@@ -1334,7 +1334,7 @@ enum USBEndpointNumber_Out
 #error Bad DEFAULT_MCLK_FREQ
 #endif
 
-#if ((MCLK_44 % MIN_FREQ) == 0)
+#if ((MCLK_441 % MIN_FREQ) == 0)
 #define MIN_FREQ_44 MIN_FREQ
 #define MIN_FREQ_48 ((48000 * 512)/((44100 * 512)/MIN_FREQ))
 #endif
