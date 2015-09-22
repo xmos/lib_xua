@@ -6,7 +6,7 @@
 #include <print.h>
 #include <stdio.h>
 #include <string.h>
-
+#include <xclib.h>
 #include "static_constants.h"
 #if 1
 on tile[0]: in port p_pdm_clk = XS1_PORT_1E;
@@ -45,6 +45,8 @@ void example(streaming chanend c_ds_output_0, streaming chanend c_ds_output_1, s
     int     prev_x[7] = {0};
     int     prev_y[7] = {0};
 
+    int max = 0;
+
     unsafe
     {
         c_ds_output_0 <: (synchronised_audio * unsafe)audio[0].data[0];
@@ -66,12 +68,21 @@ void example(streaming chanend c_ds_output_0, streaming chanend c_ds_output_1, s
             int a = dc_offset_removal( audio[buffer].data[1][0].ch_a, prev_x[0], prev_y[0]);
             int b = dc_offset_removal( audio[buffer].data[1][0].ch_b, prev_x[1], prev_y[1]);
 
-            xscope_int(0,a);
-            xscope_int(1,b);
+            //xscope_int(0,a);
+            //xscope_int(1,b);
+
+            if((-a) > max) max = (-a);
+            if(a > max) max = a;
+            if((-b) > max) max = (-b);
+            if(b > max) max = b;
+            int output_a = a<<(clz(max)-1);
+            int output_b = b<<(clz(max)-1);
+
+            max = max - (max>>17);
 
             c_pcm_out :> unsigned req;
-            c_pcm_out <: (a>>14);
-            c_pcm_out <: (b>>14);
+            c_pcm_out <: output_a;
+            c_pcm_out <: output_b;
         }
     }
 }
