@@ -698,9 +698,9 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
 #endif
 
 #ifdef PDM_PCM_IN
-                c_pdm_in <: 1;
-                    c_pdm_in :> samplesIn_0[0];
-                    c_pdm_in :> samplesIn_0[1];
+                    c_pdm_pcm <: 1;
+                    c_pdm_pcm :> samplesIn_0[0];
+                    c_pdm_pcm :> samplesIn_0[1];
 #endif      
 
 
