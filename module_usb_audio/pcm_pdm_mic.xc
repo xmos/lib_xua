@@ -27,6 +27,13 @@ typedef struct {
 } synchronised_audio;
 
 
+static int dc_offset_removal(int sample, int &prex_x, int &prev_y){
+    int r =  prev_y- (prev_y>>5) + (sample - prex_x);
+    prex_x = sample;
+    prev_y = r;
+    return r;
+}
+
 void example(streaming chanend c_ds_output_0, streaming chanend c_ds_output_1, streaming chanend c_pcm_out)
 {
 
@@ -35,6 +42,8 @@ void example(streaming chanend c_ds_output_0, streaming chanend c_ds_output_1, s
     synchronised_audio audio[2];    //double buffered
     memset(audio, sizeof(synchronised_audio), 2);
 
+    int     prev_x[7] = {0};
+    int     prev_y[7] = {0};
 
     unsafe
     {
@@ -52,15 +61,17 @@ void example(streaming chanend c_ds_output_0, streaming chanend c_ds_output_1, s
 
             buffer = 1 - buffer;
 
-            //The data has already been bit reversed in the downsampler
-
             // audio[buffer] is good to go
-            //xscope_int(0, audio[buffer].data[0][0].ch_a);
-            //xscope_int(1, audio[buffer].data[0][0].ch_b);
+
+            int a = dc_offset_removal( audio[buffer].data[1][0].ch_a, prev_x[0], prev_y[0]);
+            int b = dc_offset_removal( audio[buffer].data[1][0].ch_b, prev_x[1], prev_y[1]);
+
+            xscope_int(0,a);
+            xscope_int(1,b);
+
             c_pcm_out :> unsigned req;
-            c_pcm_out <: audio[buffer].data[0][0].ch_a;
-            c_pcm_out <: audio[buffer].data[0][0].ch_b;
-            //printintln(audio[buffer].data[0][0].ch_b);
+            c_pcm_out <: (a>>14);
+            c_pcm_out <: (b>>14);
         }
     }
 }
