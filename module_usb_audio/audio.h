@@ -26,6 +26,9 @@ void audio(chanend c_in,
 #if (XUD_TILE != 0)
    , server interface i_dfu dfuInterface
 #endif
+#ifdef PDM_PCM_IN
+, streaming chanend c_pdm_in
+#endif
 );
 
 void SpdifTxWrapper(chanend c_spdif_tx);

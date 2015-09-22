@@ -43,6 +43,10 @@
 
 #include "clocking.h"
 
+#ifdef PDM_PCM_IN
+void pcm_pdm_mic(streaming chanend c_pcm_out);
+#endif
+
 void genclock();
 
 [[distributable]]
@@ -267,14 +271,6 @@ void xscope_user_init()
 }
 #endif
 
-#ifdef PDM_PCM_IN
-void dummy_pdm_code(streaming chanend c)
-{
-    while(1)
-        c <: 0xff00ff00;
-}
-#endif
-
 /* Core USB Audio functions - must be called on the Tile connected to the USB Phy */
 void usb_audio_core(chanend c_mix_out
 #ifdef MIDI
@@ -417,6 +413,9 @@ void usb_audio_io(chanend c_aud_in, chanend ?c_adc,
 #if (XUD_TILE != 0)
     , server interface i_dfu dfuInterface
 #endif
+#ifdef PDM_PCM_IN
+    , streaming chanend c_pdm_pcm
+#endif
 )
 {
 #ifdef MIXER
@@ -427,10 +426,6 @@ void usb_audio_io(chanend c_aud_in, chanend ?c_adc,
     chan c_dig_rx;
 #else
     #define c_dig_rx null
-#endif
-
-#ifdef PDM_PCM_IN
-    streaming chan c_pdm_pcm
 #endif
 
     par
@@ -476,10 +471,6 @@ void usb_audio_io(chanend c_aud_in, chanend ?c_adc,
         }
 #endif
 
-#ifdef PDM_PCM_IN
-        dummy_pdm_code(c_pdm_pcm);
-#endif
-
         //:
     }
 }
@@ -491,7 +482,6 @@ void usb_audio_io(chanend c_aud_in, chanend ?c_adc,
 #ifndef USER_MAIN_CORES
 #define USER_MAIN_CORES
 #endif
-//::
 
 /* Main for USB Audio Applications */
 int main()
@@ -553,6 +543,9 @@ int main()
     #define dfuInterface null
 #endif
 
+#ifdef PDM_PCM_IN
+    streaming chan c_pdm_pcm;
+#endif
 
     USER_MAIN_DECLARATIONS
 
@@ -582,6 +575,7 @@ int main()
                 , c_mix_ctl
 #endif
                 , c_clk_int, c_clk_ctl, dfuInterface
+
             );
         }
 
@@ -595,6 +589,9 @@ int main()
             ,c_aud_cfg, c_spdif_rx, c_adat_rx, c_clk_ctl, c_clk_int
 #if XUD_TILE != 0
             , dfuInterface
+#endif
+#ifdef PDM_PCM_IN
+            , c_pdm_pcm
 #endif
 
         );
@@ -656,6 +653,11 @@ int main()
 				adatReceiver44100(p_adat_rx, c_adat_rx);
 			}
         }
+#endif
+
+#ifdef PDM_PCM_IN    
+        // TODO tile     
+        on stdcore[0]: pcm_pdm_mic(c_pdm_pcm);
 #endif
         USER_MAIN_CORES
     }

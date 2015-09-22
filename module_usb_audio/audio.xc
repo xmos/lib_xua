@@ -696,6 +696,15 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
             unsigned sample = samplesOut[SPDIF_TX_INDEX + 1];
             outuint(c_spd_out, sample);                      /* Forward sample to S/PDIF Tx thread */
 #endif
+
+#ifdef PDM_PCM_IN
+                c_pdm_in <: 1;
+                    c_pdm_in :> samplesIn_0[0];
+                    c_pdm_in :> samplesIn_0[1];
+#endif      
+
+
+
         }
 
 
@@ -1170,6 +1179,7 @@ chanend ?c_config, chanend ?c
                 outuint(c_spdif_out, curSamFreq);
                 outuint(c_spdif_out, mClk);
 #endif
+
 
 #ifdef ADAT_TX
                 // Configure ADAT parameters ...
