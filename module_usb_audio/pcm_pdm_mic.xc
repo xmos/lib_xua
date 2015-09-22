@@ -60,7 +60,7 @@ void example(streaming chanend c_ds_output_0, streaming chanend c_ds_output_1, s
             c_pcm_out :> unsigned req;
             c_pcm_out <: audio[buffer].data[0][0].ch_a;
             c_pcm_out <: audio[buffer].data[0][0].ch_b;
-            printintln(audio[buffer].data[0][0].ch_b);
+            //printintln(audio[buffer].data[0][0].ch_b);
         }
     }
 }
