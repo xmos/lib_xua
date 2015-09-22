@@ -58,7 +58,7 @@ void example(streaming chanend c_ds_output_0, streaming chanend c_ds_output_1, s
             //xscope_int(0, audio[buffer].data[0][0].ch_a);
             //xscope_int(1, audio[buffer].data[0][0].ch_b);
             c_pcm_out :> unsigned req;
-            c_pcm_out <: audio[buffer].data[0][0].ch_a;
+            c_pcm_out <: audio[buffer].data[1][0].ch_a;
             c_pcm_out <: audio[buffer].data[0][0].ch_b;
             //printintln(audio[buffer].data[0][0].ch_b);
         }
