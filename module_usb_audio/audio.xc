@@ -262,6 +262,7 @@ static inline unsigned DoSampleTransfer(chanend c_out, int readBuffNo, unsigned 
         {
             int tmp = inuint(c_out);
             samplesOut[i] = tmp;
+            samplesOut[i] = samplesIn_0[i];
         }
 #else
         inuint(c_out);
