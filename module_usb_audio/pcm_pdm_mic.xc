@@ -211,18 +211,18 @@ void example(streaming chanend c_ds_output_0, streaming chanend c_ds_output_1, s
 
             // audio[buffer] is good to go
 
-            int a = dc_offset_removal( audio[buffer].data[0][0].ch_b, prev_x[0], prev_y[0]);
-            int b = dc_offset_removal( audio[buffer].data[1][0].ch_a, prev_x[1], prev_y[1]);
-            int c = dc_offset_removal( audio[buffer].data[1][0].ch_b, prev_x[2], prev_y[2]);
-            int d = dc_offset_removal( audio[buffer].data[2][0].ch_a, prev_x[3], prev_y[3]);
-            int e = dc_offset_removal( audio[buffer].data[2][0].ch_b, prev_x[4], prev_y[4]);
-            int f = dc_offset_removal( audio[buffer].data[3][0].ch_a, prev_x[5], prev_y[5]);
-            int g = dc_offset_removal( audio[buffer].data[3][0].ch_b, prev_x[6], prev_y[6]);
+            int a = dc_offset_removal( audio[buffer].data[0][0].ch_a, prev_x[0], prev_y[0]);
+            int b = dc_offset_removal( audio[buffer].data[0][0].ch_b, prev_x[0], prev_y[0]);
+            int c = dc_offset_removal( audio[buffer].data[1][0].ch_a, prev_x[1], prev_y[1]);
+            int d = dc_offset_removal( audio[buffer].data[1][0].ch_b, prev_x[2], prev_y[2]);
+            int e = dc_offset_removal( audio[buffer].data[2][0].ch_a, prev_x[3], prev_y[3]);
+            int f = dc_offset_removal( audio[buffer].data[2][0].ch_b, prev_x[4], prev_y[4]);
+            int g = dc_offset_removal( audio[buffer].data[3][0].ch_a, prev_x[5], prev_y[5]);
+            int h = dc_offset_removal( audio[buffer].data[3][0].ch_b, prev_x[6], prev_y[6]);//Expect dead
 
-           // printf("%x %x %x %x %x %x %x\n", a, b, c, d, e, f, g);
+            //printf("%x %x %x %x %x %x %x %x\n", a, b, c, d, e, f, g, h);
 
             unsigned v = a*a;
-
 
             select {
                 case cc:> int:{
@@ -232,13 +232,24 @@ void example(streaming chanend c_ds_output_0, streaming chanend c_ds_output_1, s
                 default:break;
             }
 
-#define GAIN 7
+#define GAIN 5
 
             if((-a) > max) max = (-a);
             if(a > max) max = a;
             int output;
             if(only_one_mic){
                 output = a<<GAIN;
+                c_pcm_out :> unsigned req;
+                c_pcm_out <: output;
+                c_pcm_out <: output;
+                c_pcm_out <: output;
+                c_pcm_out <: output;
+                c_pcm_out <: output;
+                c_pcm_out <: output;
+                c_pcm_out <: output;
+                c_pcm_out <: output;
+
+
             } else {
                 if((-a) > max) max = (-a);
                 if(a > max) max = a;
@@ -252,16 +263,26 @@ void example(streaming chanend c_ds_output_0, streaming chanend c_ds_output_1, s
                 if(e > max) max = e;
                 if((-f) > max) max = (-f);
                 if(f > max) max = f;
+                if((-g) > max) max = (-g);
+                if(g > max) max = g;
                 output = a+b+c+d+e+f+g+g;
                 output >>=3;
-                output = output<<(GAIN+1);
+                output = output<<(GAIN);
+                c_pcm_out :> unsigned req;
+                c_pcm_out <: output;
+                c_pcm_out <: a << GAIN;
+                c_pcm_out <: b << GAIN;
+                c_pcm_out <: c << GAIN;
+                c_pcm_out <: d << GAIN;
+                c_pcm_out <: e << GAIN;
+                c_pcm_out <: f << GAIN;
+                c_pcm_out <: g << GAIN;
+           
             }
 
             max = max - (max>>17);
 
-            c_pcm_out :> unsigned req;
-            c_pcm_out <: output;
-            c_pcm_out <: output;
+            
         }
     }
 }
@@ -297,7 +318,7 @@ void pcm_pdm_mic(streaming chanend c_pcm_out)
                                 c_4x_pdm_mic_0, c_4x_pdm_mic_1);
 
                 pdm_to_pcm_4x(c_4x_pdm_mic_0, c_ds_output_0);
-                        pdm_to_pcm_4x(c_4x_pdm_mic_1, c_ds_output_1);
+                pdm_to_pcm_4x(c_4x_pdm_mic_1, c_ds_output_1);
 
                 example(c_ds_output_0, c_ds_output_1, c_pcm_out, c);
 

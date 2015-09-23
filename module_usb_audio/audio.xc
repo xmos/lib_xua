@@ -262,7 +262,7 @@ static inline unsigned DoSampleTransfer(chanend c_out, int readBuffNo, unsigned 
         {
             int tmp = inuint(c_out);
             samplesOut[i] = tmp;
-            samplesOut[i] = samplesIn_0[i];
+            samplesOut[i] = samplesIn_0[0];
         }
 #else
         inuint(c_out);
@@ -702,10 +702,13 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
                     c_pdm_pcm <: 1;
                     c_pdm_pcm :> samplesIn_0[0];
                     c_pdm_pcm :> samplesIn_0[1];
+                    c_pdm_pcm :> samplesIn_0[2];
+                    c_pdm_pcm :> samplesIn_0[3];
+                    c_pdm_pcm :> samplesIn_0[4];
+                    c_pdm_pcm :> samplesIn_0[5];
+                    c_pdm_pcm :> samplesIn_0[6];
+                    c_pdm_pcm :> samplesIn_0[7];
 #endif      
-
-
-
         }
 
 
