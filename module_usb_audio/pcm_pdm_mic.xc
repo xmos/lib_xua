@@ -35,6 +35,24 @@ enum buttons
   BUTTON_D=1<<3
 };
 
+void lightLeds(int only_one_mic)
+{
+    if(only_one_mic)
+    {
+        p_led10to12 <: 0x3;
+        p_led0to7 <: 0xff;
+        p_led8 <: 1;
+        p_led9 <: 1;
+    }
+    else
+    {
+        p_led0to7 <: 0;
+        p_led10to12 <: 0x4;
+        p_led8 <: 0;
+        p_led9 <: 0;
+    }
+}
+
 #define BUTTON_PRESSED(but_mask, old_val, new_val) (((old_val) & (but_mask)) == (but_mask) && ((new_val) & (but_mask)) == 0)
 #define BUTTON_DEBOUNCE_DELAY (20000000)
 #define LED_ON 0xFFFF
@@ -83,7 +101,9 @@ void buttons_and_leds(chanend c)
 //  p_leds_oen  <:~0;
 
 
-  p_led10to12 <: ~((only_one_mic&0x1)<<2);
+  lightLeds(only_one_mic);
+  only_one_mic? printstrln("one"):printstrln("all");
+     
   level[0] = 0xff;
   while (1) {
     select
@@ -95,7 +115,9 @@ void buttons_and_leds(chanend c)
           debug_printf("Button A\n");
           only_one_mic = 1-only_one_mic;
           only_one_mic? printstrln("one"):printstrln("all");
-          p_led10to12 <: ~((only_one_mic&0x1)<<2);
+
+          lightLeds(only_one_mic);
+          
           c <: 0;
           buttons_active = 0;
         }
@@ -103,7 +125,7 @@ void buttons_and_leds(chanend c)
           debug_printf("Button B\n");
           only_one_mic = 1-only_one_mic;
           only_one_mic? printstrln("one"):printstrln("all");
-          p_led10to12 <: ~((only_one_mic&0x1)<<2);
+          lightLeds(only_one_mic);
           c <: 0;
           buttons_active = 0;
         }
@@ -111,7 +133,6 @@ void buttons_and_leds(chanend c)
           debug_printf("Button C\n");
           only_one_mic = 1-only_one_mic;
           only_one_mic? printstrln("one"):printstrln("all");
-          p_led10to12 <: ~((only_one_mic&0x1)<<2);
           c <: 0;
           buttons_active = 0;
         }
@@ -119,7 +140,7 @@ void buttons_and_leds(chanend c)
           debug_printf("Button D\n");
           only_one_mic = 1-only_one_mic;
           only_one_mic? printstrln("one"):printstrln("all");
-          p_led10to12 <: ~((only_one_mic&0x1)<<2);
+          lightLeds(only_one_mic);
           c <: 0;
           buttons_active = 0;
         }
@@ -211,7 +232,7 @@ void example(streaming chanend c_ds_output_0, streaming chanend c_ds_output_1, s
                 default:break;
             }
 
-#define GAIN 0
+#define GAIN 7
 
             if((-a) > max) max = (-a);
             if(a > max) max = a;
@@ -233,7 +254,7 @@ void example(streaming chanend c_ds_output_0, streaming chanend c_ds_output_1, s
                 if(f > max) max = f;
                 output = a+b+c+d+e+f+g+g;
                 output >>=3;
-                output = output<<GAIN;
+                output = output<<(GAIN+1);
             }
 
             max = max - (max>>17);
