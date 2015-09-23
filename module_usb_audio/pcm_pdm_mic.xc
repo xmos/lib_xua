@@ -211,11 +211,13 @@ void example(streaming chanend c_ds_output_0, streaming chanend c_ds_output_1, s
                 default:break;
             }
 
+#define GAIN 0
+
             if((-a) > max) max = (-a);
             if(a > max) max = a;
             int output;
             if(only_one_mic){
-                output = a<<(clz(max)-1);
+                output = a<<GAIN;
             } else {
                 if((-a) > max) max = (-a);
                 if(a > max) max = a;
@@ -231,7 +233,7 @@ void example(streaming chanend c_ds_output_0, streaming chanend c_ds_output_1, s
                 if(f > max) max = f;
                 output = a+b+c+d+e+f+g+g;
                 output >>=3;
-                output = output<<(clz(max)-1);
+                output = output<<GAIN;
             }
 
             max = max - (max>>17);
