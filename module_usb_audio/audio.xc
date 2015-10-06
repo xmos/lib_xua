@@ -994,7 +994,7 @@ chanend ?c_config, chanend ?c
     configure_clock_src(clk_mst_spd, p_mclk_in);
     configure_out_port_no_ready(p_adat_tx, clk_mst_spd, 0);
     set_clock_fall_delay(clk_mst_spd, 7);
-#ifndef SPDIF
+#ifndef SPDIF_TX
     start_clock(clk_mst_spd);
 #endif
 #endif

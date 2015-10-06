@@ -1,13 +1,14 @@
 sc_usb_audio Change Log
 =======================
 
-6.12.7
+6.13.0
 ------
     - ADDED:      Device now uses implicit feedback when input stream is available (previously explicit
                   feedback pipe always used). This saves chanend/EP resources and means less processing 
                   burden for the host. Previous behaviour available by enabling UAC_FORCE_FEEDBACK_EP
+    - RESOLVED:   Exception when SPDIF_TX and ADAT_TX both enabled due to clock-block being configured
+                  after already started. Caused by SPDIF_TX define check typo
     - CHANGE:     Mixer and non-mixer channel comms scheme (decouple <-> audio path) now the identical
-    
 
 6.12.6
 ------
