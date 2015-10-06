@@ -27,7 +27,7 @@ void audio(chanend c_in,
    , server interface i_dfu dfuInterface
 #endif
 #ifdef PDM_PCM_IN
-, streaming chanend c_pdm_in
+    , chanend c_pdm_in
 #endif
 );
 

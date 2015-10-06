@@ -44,7 +44,7 @@
 #include "clocking.h"
 
 #ifdef PDM_PCM_IN
-void pcm_pdm_mic(streaming chanend c_pcm_out);
+void pcm_pdm_mic(chanend c_pcm_out);
 #endif
 
 void genclock();
@@ -414,7 +414,7 @@ void usb_audio_io(chanend c_aud_in, chanend ?c_adc,
     , server interface i_dfu dfuInterface
 #endif
 #ifdef PDM_PCM_IN
-    , streaming chanend c_pdm_pcm
+    , chanend c_pdm_pcm
 #endif
 )
 {
@@ -544,7 +544,7 @@ int main()
 #endif
 
 #ifdef PDM_PCM_IN
-    streaming chan c_pdm_pcm;
+    chan c_pdm_pcm;
 #endif
 
     USER_MAIN_DECLARATIONS

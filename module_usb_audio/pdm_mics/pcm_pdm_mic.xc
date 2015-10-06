@@ -1,29 +1,35 @@
-#include <xscope.h>
+/* This file includes an integration of lib_array_mic into USB Audio */
+
 #include <platform.h>
 #include <xs1.h>
 #include <stdlib.h>
-#include "beam.h"
 #include <print.h>
 #include <stdio.h>
 #include <string.h>
 #include <xclib.h>
-#include "static_constants.h"
-#include "debug_print.h"
+//#include "debug_print.h"
+#include "devicedefines.h"
+#include "mic_array.h"
+#include "mic_array_board_support.h"
 
 #if 1
-on tile[0]: in port p_pdm_clk = XS1_PORT_1E;
-on tile[0]: in buffered port:8 p_pdm_mics = XS1_PORT_8B;
-in port p_mclk                 = on tile[0]: XS1_PORT_1F;
-clock mclk                     = on tile[0]: XS1_CLKBLK_1;
-clock pdmclk                   = on tile[0]: XS1_CLKBLK_3;
+in port p_pdm_clk             = PORT_PDM_CLK;
+in port p_pdm_mics = PORT_PDM_DATA;
+
+in port p_mclk                 = PORT_PDM_MCLK;
+clock mclk                     = on tile[PDM_TILE]: XS1_CLKBLK_1;
+clock pdmclk                   = on tile[PDM_TILE]: XS1_CLKBLK_3;
+
+
+on tile[0]:p_leds leds = DEFAULT_INIT;
 
 
 // LEDs
-out port p_led0to7              = on tile[0]: XS1_PORT_8C;
-out port p_led8                 = on tile[0]: XS1_PORT_1K;
-out port p_led9                 = on tile[0]: XS1_PORT_1L;
-out port p_led10to12            = on tile[0]: XS1_PORT_8D;
-out port p_leds_oen             = on tile[0]: XS1_PORT_1P;
+//out port p_led0to7              = on tile[0]: XS1_PORT_8C;
+//out port p_led8                 = on tile[0]: XS1_PORT_1K;
+//out port p_led9                 = on tile[0]: XS1_PORT_1L;
+//out port p_led10to12            = on tile[0]: XS1_PORT_8D;
+//out port p_leds_oen             = on tile[0]: XS1_PORT_1P;
 // Buttons
 in port p_buttons               = on tile[0]: XS1_PORT_4A;
 
@@ -35,6 +41,7 @@ enum buttons
   BUTTON_D=1<<3
 };
 
+#if 0
 void lightLeds(int only_one_mic)
 {
     if(only_one_mic)
@@ -52,7 +59,9 @@ void lightLeds(int only_one_mic)
         p_led9 <: 0;
     }
 }
+#endif
 
+#if 0
 #define BUTTON_PRESSED(but_mask, old_val, new_val) (((old_val) & (but_mask)) == (but_mask) && ((new_val) & (but_mask)) == 0)
 #define BUTTON_DEBOUNCE_DELAY (20000000)
 #define LED_ON 0xFFFF
@@ -160,16 +169,7 @@ void buttons_and_leds(chanend c)
     }
   }
 }
-
-
-typedef struct {
-    unsigned ch_a;
-    unsigned ch_b;
-} double_packed_audio;
-
-typedef struct {
-    double_packed_audio data[4][1<<FRAME_SIZE_LOG2];
-} synchronised_audio;
+#endif
 
 
 static int dc_offset_removal(int sample, int &prex_x, int &prev_y){
@@ -179,6 +179,7 @@ static int dc_offset_removal(int sample, int &prex_x, int &prev_y){
     return r;
 }
 
+#if 0
 void example(streaming chanend c_ds_output_0, streaming chanend c_ds_output_1, streaming chanend c_pcm_out, chanend cc)
 {
 
@@ -286,15 +287,174 @@ void example(streaming chanend c_ds_output_0, streaming chanend c_ds_output_1, s
         }
     }
 }
+#endif
+
+static void set_dir(client interface led_button_if lb, unsigned dir){
+
+    for(unsigned i=0;i<13;i++)
+        lb.set_led_brightness(i, 0);
+    switch(dir){
+    case 0:{
+        lb.set_led_brightness(0, 255);
+        lb.set_led_brightness(1, 255);
+        break;
+    }
+    case 1:{
+        lb.set_led_brightness(2, 255);
+        lb.set_led_brightness(3, 255);
+        break;
+    }
+    case 2:{
+        lb.set_led_brightness(4, 255);
+        lb.set_led_brightness(5, 255);
+        break;
+    }
+    case 3:{
+        lb.set_led_brightness(6, 255);
+        lb.set_led_brightness(7, 255);
+        break;
+    }
+    case 4:{
+        lb.set_led_brightness(8, 255);
+        lb.set_led_brightness(9, 255);
+        break;
+    }
+    case 5:{
+        lb.set_led_brightness(10, 255);
+        lb.set_led_brightness(11, 255);
+        break;
+    }
+    }
+}
 
 
-void pcm_pdm_mic(streaming chanend c_pcm_out)
+
+void lores_DAS_fixed(streaming chanend c_ds_output_0, streaming chanend c_ds_output_1,
+        client interface led_button_if lb, chanend c_audio){
+
+    unsigned buffer = 1;     //buffer index
+    frame_audio audio[2];    //double buffered
+    memset(audio, sizeof(frame_audio), 0);
+
+#define MAX_DELAY 128
+
+    unsigned delay = 6;
+    int delay_buffer[MAX_DELAY][7];
+    memset(delay_buffer, sizeof(int)*8*8, 0);
+    unsigned delay_head = 0;
+    unsigned dir = 0;
+    set_dir(lb, dir);
+
+    unsafe{
+        c_ds_output_0 <: (frame_audio * unsafe)audio[0].data[0];
+        c_ds_output_1 <: (frame_audio * unsafe)audio[0].data[4];
+
+        while(1){
+
+            schkct(c_ds_output_0, 8);
+            schkct(c_ds_output_1, 8);
+
+            c_ds_output_0 <: (frame_audio * unsafe)audio[buffer].data[0];
+            c_ds_output_1 <: (frame_audio * unsafe)audio[buffer].data[4];
+
+            buffer = 1 - buffer;
+
+            //copy the current sample to the delay buffer
+            for(unsigned i=0;i<7;i++)
+                delay_buffer[delay_head][i] = audio[buffer].data[i][0];
+
+            //light the LED for the current direction
+
+            int t;
+
+            select {
+                case lb.button_event():{
+                    unsigned button;
+                    e_button_state pressed;
+                    lb.get_button_event(button, pressed);
+                    if(pressed == BUTTON_PRESSED){
+                        switch(button){
+                        case 0:{
+                            dir--;
+                            if(dir == -1)
+                                dir = 5;
+                            break;
+                        }
+                        case 1:{
+                            if(delay +1 < MAX_DELAY){
+                                delay++;
+                                printf("n: %d\n", delay);
+                            }
+                            break;
+                        }
+                        case 2:{
+                            if(delay > 0){
+                                delay--;
+                                printf("n: %d\n", delay);
+                            }
+                            break;
+                        }
+                        case 3:{
+                            dir++;
+                            if(dir == 6)
+                                dir = 0;
+                            break;
+                        }
+                        }
+                        set_dir(lb, dir);
+                    }
+                    break;
+                }
+                default:break;
+            }
+#if 1
+            int output = - 2*delay_buffer[(delay_head-delay)%MAX_DELAY][0];
+            switch(dir){
+            case 0:
+                output = delay_buffer[delay_head][1] + delay_buffer[(delay_head-2*delay)%MAX_DELAY][4];
+                break;
+            case 1:
+                output = delay_buffer[delay_head][2] + delay_buffer[(delay_head-2*delay)%MAX_DELAY][5];
+                break;
+            case 2:
+                output = delay_buffer[delay_head][3] + delay_buffer[(delay_head-2*delay)%MAX_DELAY][6];
+                break;
+            case 3:
+                output = delay_buffer[delay_head][4] + delay_buffer[(delay_head-2*delay)%MAX_DELAY][1];
+                break;
+            case 4:
+                output = delay_buffer[delay_head][5] + delay_buffer[(delay_head-2*delay)%MAX_DELAY][2];
+                break;
+            case 5:
+                output = delay_buffer[delay_head][6] + delay_buffer[(delay_head-2*delay)%MAX_DELAY][3];
+                break;
+            }
+            c_audio <: output<<2;
+            c_audio <: output<<2;
+#else
+            int output = 0;
+            for(unsigned i=1;i<6;i++){
+                output += audio[buffer].data[i][0];
+            }
+            c_audio <: output;
+            c_audio <: output;
+#endif
+            delay_head++;
+            delay_head%=MAX_DELAY;
+        }
+    }
+}
+
+
+
+void pcm_pdm_mic(chanend c_pcm_out)
 {
     streaming chan c_multi_channel_pdm, c_sync, c_4x_pdm_mic_0, c_4x_pdm_mic_1;
     streaming chan c_ds_output_0, c_ds_output_1;
     streaming chan c_buffer_mic0, c_buffer_mic1;
-    unsigned long long shared_memory[2] = {0};
-
+    
+    interface led_button_if lb;
+    
     configure_clock_src(mclk, p_mclk);
     configure_clock_src_divide(pdmclk, p_mclk, 2);
     configure_port_clock_output(p_pdm_clk, pdmclk);
@@ -302,27 +462,17 @@ void pcm_pdm_mic(streaming chanend c_pcm_out)
     start_clock(mclk);
     start_clock(pdmclk);
 
-    chan c;
-    par {
-        buttons_and_leds(c);
-
-        unsafe
+    decimator_config dc = {0, 1, 0, 0};
+    
+    unsafe
+    {
+        par 
         {
-            unsigned long long * unsafe p_shared_memory = shared_memory;
-            par
-            {
-
-                //Input stage
-                pdm_first_stage(p_pdm_mics, p_shared_memory,
-                                PDM_BUFFER_LENGTH_LOG2, c_sync,
-                                c_4x_pdm_mic_0, c_4x_pdm_mic_1);
-
-                pdm_to_pcm_4x(c_4x_pdm_mic_0, c_ds_output_0);
-                pdm_to_pcm_4x(c_4x_pdm_mic_1, c_ds_output_1);
-
-                example(c_ds_output_0, c_ds_output_1, c_pcm_out, c);
-
-            }
+                button_and_led_server(lb, leds, p_buttons);
+                pdm_rx(p_pdm_mics, c_4x_pdm_mic_0, c_4x_pdm_mic_1);
+                decimate_to_pcm_4ch_48KHz(c_4x_pdm_mic_0, c_ds_output_0, dc);
+                decimate_to_pcm_4ch_48KHz(c_4x_pdm_mic_1, c_ds_output_1, dc);
+                lores_DAS_fixed(c_ds_output_0, c_ds_output_1, lb, c_pcm_out);
         }
 
     }

@@ -224,7 +224,7 @@ static inline void TransferAdatTxSamples(chanend c_adat_out, const unsigned samp
 
 
 #pragma unsafe arrays
-static inline unsigned DoSampleTransfer(chanend c_out, int readBuffNo, unsigned underflowWord)
+static inline unsigned DoSampleTransfer(chanend c_out, const int readBuffNo, const unsigned underflowWord)
 {
     outuint(c_out, underflowWord);
 
@@ -262,7 +262,6 @@ static inline unsigned DoSampleTransfer(chanend c_out, int readBuffNo, unsigned 
         {
             int tmp = inuint(c_out);
             samplesOut[i] = tmp;
-            samplesOut[i] = samplesIn_0[0];
         }
 #else
         inuint(c_out);
@@ -435,7 +434,7 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
     chanend c_dig_rx,
 #endif
 #ifdef PDM_PCM_IN
-    streaming chanend c_pdm_pcm,
+    chanend c_pdm_pcm,
 #endif
 
     chanend ?c_adc)
@@ -689,7 +688,7 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
 #endif
 
 #if defined(SPDIF_RX) || defined(ADAT_RX)
-        /* Request digital data (with prefill) */
+            /* Request digital data (with prefill) */
             outuint(c_dig_rx, 0);
 #endif
 #if defined(SPDIF_TX) && (NUM_USB_CHAN_OUT > 0)
@@ -699,15 +698,14 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
 #endif
 
 #ifdef PDM_PCM_IN
-                    c_pdm_pcm <: 1;
-                    c_pdm_pcm :> samplesIn_0[0];
-                    c_pdm_pcm :> samplesIn_0[1];
-                    c_pdm_pcm :> samplesIn_0[2];
-                    c_pdm_pcm :> samplesIn_0[3];
-                    c_pdm_pcm :> samplesIn_0[4];
-                    c_pdm_pcm :> samplesIn_0[5];
-                    c_pdm_pcm :> samplesIn_0[6];
-                    c_pdm_pcm :> samplesIn_0[7];
+            /* Request samples from PDM->PCM comverter */                    
+            //c_pdm_pcm <: 1;
+            
+#pragma loop unroll
+            for(int i = 0; i < 2 /*NUM_PDM_MICS*/; i++)
+            {
+                c_pdm_pcm :> samplesIn_0[i];
+            }
 #endif      
         }
 
@@ -942,7 +940,7 @@ chanend ?c_config, chanend ?c
 , server interface i_dfu dfuInterface
 #endif
 #ifdef PDM_PCM_IN
-, streaming chanend c_pdm_in
+, chanend c_pdm_in
 #endif
 )
 {
