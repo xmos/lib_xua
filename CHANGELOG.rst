@@ -8,7 +8,15 @@ sc_usb_audio Change Log
                   burden for the host. Previous behaviour available by enabling UAC_FORCE_FEEDBACK_EP
     - RESOLVED:   Exception when SPDIF_TX and ADAT_TX both enabled due to clock-block being configured
                   after already started. Caused by SPDIF_TX define check typo
-    - CHANGE:     Mixer and non-mixer channel comms scheme (decouple <-> audio path) now the identical
+    - RESOLVED:   DFU flag address changed to properly conform to memory address range allocated to 
+                  apps by tools
+    - RESOLVED:   Build failure when DFU disabled
+    - RESOLVED:   Build issue when I2S_CHANS_ADC/DAC set to 0 and CODEC_MASTER enabled
+    - RESOLVED:   Typo in MCLK_441 checking for MIN_FREQ define
+    - CHANGE:     Mixer and non-mixer channel comms scheme (decouple <-> audio path) now identical
+    - CHANGE:     Input stream buffering modified such that during overflow older samples are removed 
+                  rather than ignoring most recent samples. Removes any chance of stale input packets
+                  being sent to host.
 
 6.12.6
 ------
