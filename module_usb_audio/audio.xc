@@ -262,6 +262,7 @@ static inline unsigned DoSampleTransfer(chanend c_out, const int readBuffNo, con
         {
             int tmp = inuint(c_out);
             samplesOut[i] = tmp;
+            samplesOut[i] = samplesIn_0[0];
         }
 #else
         inuint(c_out);
@@ -702,7 +703,7 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
             //c_pdm_pcm <: 1;
             
 #pragma loop unroll
-            for(int i = 0; i < 2 /*NUM_PDM_MICS*/; i++)
+            for(int i = 0; i < 8 /*NUM_PDM_MICS*/; i++)
             {
                 c_pdm_pcm :> samplesIn_0[i];
             }
