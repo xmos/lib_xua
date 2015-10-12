@@ -362,10 +362,10 @@ static void mixer1(chanend c_host, chanend c_mix_ctl, chanend c_mixer2)
         /* Request from audio()/mixer2() */
         request = inuint(c_mixer2);
 
-        
+
         /* Forward on Request for data to decouple thread */
         outuint(c_host, request);
-        
+
         /* Between request to decouple and respose ~ 400nS latency for interrupt to fire */
         select
         {

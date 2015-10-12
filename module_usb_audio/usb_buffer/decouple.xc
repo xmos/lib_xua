@@ -92,7 +92,7 @@ xc_ptr g_aud_to_host_dptr;
 xc_ptr g_aud_to_host_rdptr;
 xc_ptr g_aud_to_host_zeros;
 int sampsToWrite = DEFAULT_FREQ/8000;  /* HS assumed here. Expect to be junked during a overflow before stream start */
-int totalSampsToWrite = DEFAULT_FREQ/8000; 
+int totalSampsToWrite = DEFAULT_FREQ/8000;
 int aud_data_remaining_to_device = 0;
 
 /* Audio over/under flow flags */
@@ -436,7 +436,7 @@ __builtin_unreachable();
 
             /* Round up to nearest word - note, not needed for slotsize == 4! */
             datasize = (datasize+3) & (~0x3);
-            
+
             /* Move wr ptr on by old packet length */
             g_aud_to_host_wrptr += 4+datasize;
 
@@ -447,10 +447,10 @@ __builtin_unreachable();
             }
 
             g_aud_to_host_dptr = g_aud_to_host_wrptr + 4;
-            
-            /* Now calculate new packet length... 
+
+            /* Now calculate new packet length...
              * First get feedback val (ideally this would be syncronised)
-             * Note, if customer hasn't applied a valid MCLK this could go to 0 
+             * Note, if customer hasn't applied a valid MCLK this could go to 0
              * we need to handle this gracefully */
             asm volatile("ldw   %0, dp[g_speed]" : "=r" (speed) :);
 
@@ -475,36 +475,36 @@ __builtin_unreachable();
                 space_left = aud_to_host_fifo_end - g_aud_to_host_wrptr;
             }
 
-            //if((space_left > 0) && (space_left < (totalSampsToWrite * g_numUsbChan_In * g_curSubSlot_In + 4))) 
-            if((space_left < (totalSampsToWrite * g_numUsbChan_In * g_curSubSlot_In + 4))) 
+            //if((space_left > 0) && (space_left < (totalSampsToWrite * g_numUsbChan_In * g_curSubSlot_In + 4)))
+            if((space_left < (totalSampsToWrite * g_numUsbChan_In * g_curSubSlot_In + 4)))
             {
-                /* In pipe has filled its buffer - we need to overflow 
+                /* In pipe has filled its buffer - we need to overflow
                  * Accept the packet, and throw away the oldest in the buffer */
-  
+
                 /* Keep throwing away packets until buffer is at a nice level.. */
                 do
-                {                
+                {
                     unsigned rdPtr;
-                    
+
                     /* Read length of packet in buffer at read pointer */
                     unsigned datalength;
-                
+
                     GET_SHARED_GLOBAL(rdPtr, g_aud_to_host_rdptr);
                     asm volatile("ldw %0, %1[0]":"=r"(datalength):"r"(rdPtr));
-              
+
                     /* Round up datalength */
-                    datalength = ((datalength+3) & ~0x3) + 4; 
-                
-                    /* Move read pointer on by length */ 
+                    datalength = ((datalength+3) & ~0x3) + 4;
+
+                    /* Move read pointer on by length */
                     rdPtr += datalength;
                     if (rdPtr >= aud_to_host_fifo_end)
                     {
                         rdPtr = aud_to_host_fifo_start;
-                    }             
- 
+                    }
+
                     space_left += datalength;
                     SET_SHARED_GLOBAL(g_aud_to_host_rdptr, rdPtr);
-                 
+
                 } while(space_left < (BUFF_SIZE_IN*4/2));
             }
 
@@ -556,7 +556,7 @@ static inline void SetupZerosSendBuffer(XUD_ep aud_to_host_usb_ep, unsigned samp
     /* Set IN stream packet size to something sensible. We expect the buffer to
      * over flow and this to be reset */
     SET_SHARED_GLOBAL(sampsToWrite, 0);
-    SET_SHARED_GLOBAL(totalSampsToWrite, 0); 
+    SET_SHARED_GLOBAL(totalSampsToWrite, 0);
 
     mid *= g_numUsbChan_In * slotSize;
 
@@ -564,7 +564,7 @@ static inline void SetupZerosSendBuffer(XUD_ep aud_to_host_usb_ep, unsigned samp
 
     /* Mark EP ready with the zero buffer. Note this will simply update the packet size
     * if it is already ready */
-    
+
     /* g_aud_to_host_buffer is already set to g_aud_to_host_zeros */
 
     GET_SHARED_GLOBAL(p, g_aud_to_host_buffer);

@@ -704,7 +704,7 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
                 /* Manual IN instruction since compiler generates an extra setc per IN (bug #15256) */
                 unsigned sample;
                 asm volatile("in %0, res[%1]" : "=r"(sample)  : "r"(p_i2s_adc[index++]));
-                
+
                 if(buffIndex)
                     samplesIn_1[((frameCount-1)&(I2S_CHANS_PER_FRAME-1))+i] = bitrev(sample); // channels 1, 3, 5.. on each line.
                 else
