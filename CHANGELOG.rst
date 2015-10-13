@@ -16,7 +16,8 @@ sc_usb_audio Change Log
     - CHANGE:     Mixer and non-mixer channel comms scheme (decouple <-> audio path) now identical
     - CHANGE:     Input stream buffering modified such that during overflow older samples are removed 
                   rather than ignoring most recent samples. Removes any chance of stale input packets
-                  being sent to host.
+                  being sent to host
+    - CHANGE:     module_queue (in sc_usb_audio) now uses lib_xassert rather than module_xassert
 
 6.12.6
 ------
