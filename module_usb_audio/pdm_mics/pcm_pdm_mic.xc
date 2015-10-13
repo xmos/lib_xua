@@ -9,18 +9,20 @@
 #include <xclib.h>
 #include <stdint.h>
 #include "devicedefines.h"
+
+#include "fir_decimator.h"
 #include "mic_array.h"
 #include "mic_array_board_support.h"
 
 #define FORM_BEAM 1
 
 #if 1
-in port p_pdm_clk             = PORT_PDM_CLK;
-in port p_pdm_mics = PORT_PDM_DATA;
+in port p_pdm_clk                = PORT_PDM_CLK;
+in buffered port:32 p_pdm_mics   = PORT_PDM_DATA;
 
-in port p_mclk                 = PORT_PDM_MCLK;
-clock mclk                     = on tile[PDM_TILE]: XS1_CLKBLK_1;
-clock pdmclk                   = on tile[PDM_TILE]: XS1_CLKBLK_3;
+in port p_mclk                  = PORT_PDM_MCLK;
+clock mclk                      = on tile[PDM_TILE]: XS1_CLKBLK_1;
+clock pdmclk                    = on tile[PDM_TILE]: XS1_CLKBLK_3;
 
 
 on tile[0]:p_leds leds = DEFAULT_INIT;
@@ -96,16 +98,13 @@ void lores_DAS_fixed(streaming chanend c_ds_output_0, streaming chanend c_ds_out
 
 #define MAX_DELAY 128
 
-    unsigned gain = 128;
+    unsigned gain = 4096;
 #ifdef FORM_BEAM
     unsigned delay[7] = {0, 0, 0, 0, 0, 0, 0};
     int delay_buffer[MAX_DELAY][7];
     memset(delay_buffer, sizeof(int)*8*8, 0);
     unsigned delay_head = 0;
     unsigned dir = 0;
-#endif
-
-#ifdef FORM_BEAM
     set_dir(lb, dir, delay);
 #else
     int summed = 0;
@@ -117,9 +116,8 @@ void lores_DAS_fixed(streaming chanend c_ds_output_0, streaming chanend c_ds_out
     lb.set_led_brightness(12, 255);
 
 #endif
-
-
-    unsafe{
+    unsafe
+    {
         c_ds_output_0 <: (frame_audio * unsafe)audio[0].data[0];
         c_ds_output_1 <: (frame_audio * unsafe)audio[0].data[4];
 
@@ -302,6 +300,11 @@ void lores_DAS_fixed(streaming chanend c_ds_output_0, streaming chanend c_ds_out
     }
 }
 
+//TODO make these not global
+int data_0[8*COEFS_PER_PHASE] = {0};
+int data_1[8*COEFS_PER_PHASE] = {0};
+
+
 
 void pcm_pdm_mic(chanend c_pcm_out)
 {
@@ -318,17 +321,19 @@ void pcm_pdm_mic(chanend c_pcm_out)
     start_clock(mclk);
     start_clock(pdmclk);
 
-    decimator_config dc = {0, 1, 0, 0};
-    
     unsafe
     {
+        const int * unsafe p[1] = {fir_1_coefs[0]};
+        decimator_config dc0 = {0, 1, 0, 0, 1, p, data_0, 0, {0,0, 0, 0}};
+        decimator_config dc1 = {0, 1, 0, 0, 1, p, data_1, 0, {0,0, 0, 0}};
+
         par 
         {
-                button_and_led_server(lb, leds, p_buttons);
-                pdm_rx(p_pdm_mics, c_4x_pdm_mic_0, c_4x_pdm_mic_1);
-                decimate_to_pcm_4ch_48KHz(c_4x_pdm_mic_0, c_ds_output_0, dc);
-                decimate_to_pcm_4ch_48KHz(c_4x_pdm_mic_1, c_ds_output_1, dc);
-                lores_DAS_fixed(c_ds_output_0, c_ds_output_1, lb, c_pcm_out);
+            button_and_led_server(lb, leds, p_buttons);
+            pdm_rx(p_pdm_mics, c_4x_pdm_mic_0, c_4x_pdm_mic_1);
+            decimate_to_pcm_4ch(c_4x_pdm_mic_0, c_ds_output_0, dc0);
+            decimate_to_pcm_4ch(c_4x_pdm_mic_1, c_ds_output_1, dc1);
+            lores_DAS_fixed(c_ds_output_0, c_ds_output_1, lb, c_pcm_out);
         }
 
     }
