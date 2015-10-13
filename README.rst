@@ -1,7 +1,7 @@
 USB Audio Shared
 ................
 
-:Latest release: 6.13.0beta1
+:Latest release: 6.13.0beta2
 :Maintainer: xross
 :Description: USB Audio Shared Components. For use in the XMOS USB Audio Refererence Designs.
 
@@ -9,5 +9,5 @@ USB Audio Shared
 Required software (dependencies)
 ================================
 
-  * sc_util (git://github.com/xcore/sc_util)
+  * lib_xassert (git@github.com:xmos/lib_xassert.git)
 

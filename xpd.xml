@@ -7,7 +7,7 @@
         </component>
         <component description = "queue" type = "demoCode" scope = "General Use" path = "module_queue" local = "false" id = "module_queue" name = "Queuing Module For USB Audio Framework">
             <board></board>
-            <componentDependency repo = "git://github.com/xcore/sc_util" version = "1.0.5">module_xassert</componentDependency>
+            <componentDependency repo = "git://github.com/xmos/lib_xassert.git">lib_xassert</componentDependency>
             <keyword>UAC2</keyword>
         </component>
         <component description = "Core USB Audio Module" type = "demoCode" scope = "General Use" path = "module_usb_audio" local = "false" id = "module_usb_audio" name = "USB AUDIO MODULE">
@@ -16,16 +16,14 @@
         </component>
         <component description = "MIDI" type = "demoCode" scope = "General Use" path = "module_usb_midi" local = "false" id = "module_usb_midi" name = "MIDI Module for USB Audio Framework">
             <board></board>
-            <componentDependency repo = "git://github.com/xcore/sc_util" version = "1.0.5">module_xassert</componentDependency>
             <componentDependency version = "6.13.0">module_queue</componentDependency>
+            <componentDependency repo = "git://github.com/xmos/lib_xassert.git">lib_xassert</componentDependency>
             <keyword>MIDI</keyword>
         </component>
     </components>
-    <dependency repo = "sc_util">
-        <gitbranch>master</gitbranch>
-        <githash>7840b23c0f18f7701a13a6e030aefc0cdd62ade3</githash>
-        <uri>git://github.com/xcore/sc_util</uri>
-        <version>1.0.5rc0</version>
+    <dependency repo = "lib_xassert">
+        <githash>9c4955e3ab0604e6ba4b66ad46e01b5d96d5d6fb</githash>
+        <uri>git@github.com:xmos/lib_xassert.git</uri>
     </dependency>
     <description>USB Audio Shared Components. For use in the XMOS USB Audio Refererence Designs.</description>
     <docdir>module_dfu/doc</docdir>
@@ -100,7 +98,8 @@
     <release parenthash = "f7af9f6132d619d7858ab16c728309f013f8472c" version = "6.12.4rc1" githash = "7f644a433a6ad3a2e323e4ae42ad0bfe7487090f"></release>
     <release parenthash = "ace38607b0adc325167d1eddab8c425e721451f1" version = "6.12.5rc0" githash = "23758e74f2ce9970b113e05084453c9596450622"></release>
     <release parenthash = "9344178fcc4dc9da49e08ae049dd3a933b8202a8" version = "6.13.0beta0" githash = "c53447546e337a40da0bc64238d80666b35b7336"></release>
-    <release parenthash = "c53447546e337a40da0bc64238d80666b35b7336" version = "6.13.0beta1"></release>
+    <release parenthash = "c53447546e337a40da0bc64238d80666b35b7336" version = "6.13.0beta1" githash = "2ae88301eb9f57f0556fad66e5350ef6b5c9a18d"></release>
+    <release parenthash = "b279a2ec4c2c8f3dad6624e5c55e2d487be202a8" version = "6.13.0beta2"></release>
     <subpartnumber>XM-004720-SM</subpartnumber>
     <vendor>XMOS</vendor>
     <version_defines>

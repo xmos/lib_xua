@@ -156,10 +156,11 @@
 								<option id = "com.xmos.xc.compiler.option.include.paths.84748440" name="com.xmos.xc.compiler.option.include.paths" superClass="com.xmos.xc.compiler.option.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${XMOS_TOOL_PATH}/target/include&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${XMOS_TOOL_PATH}/target/include/gcc&quot;"/>
-                                    <listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_queue/src}&quot;' />
+                                    <listOptionValue builtIn="false" value='&quot;${workspace_loc:/lib_xassert/api}&quot;' />
+<listOptionValue builtIn="false" value='&quot;${workspace_loc:/lib_xassert/src}&quot;' />
+<listOptionValue builtIn="false" value='&quot;${workspace_loc:/lib_xassert}&quot;' />
+<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_queue/src}&quot;' />
 <listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_queue}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xassert/src}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xassert}&quot;' />
 
 								</option>
 								<inputType id = "com.xmos.cdt.xc.compiler.input.43433188" name="XC" superClass="com.xmos.cdt.xc.compiler.input"/>
@@ -271,10 +272,11 @@
 								<option id = "com.xmos.c.compiler.option.include.paths.1482631" name="com.xmos.c.compiler.option.include.paths" superClass="com.xmos.c.compiler.option.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${XMOS_TOOL_PATH}/target/include&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${XMOS_TOOL_PATH}/target/include/gcc&quot;"/>
-                                    <listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_queue/src}&quot;' />
+                                    <listOptionValue builtIn="false" value='&quot;${workspace_loc:/lib_xassert/api}&quot;' />
+<listOptionValue builtIn="false" value='&quot;${workspace_loc:/lib_xassert/src}&quot;' />
+<listOptionValue builtIn="false" value='&quot;${workspace_loc:/lib_xassert}&quot;' />
+<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_queue/src}&quot;' />
 <listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_queue}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xassert/src}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xassert}&quot;' />
 
 								</option>
 								<inputType id = "com.xmos.cdt.c.compiler.input.c.19039784" name="C" superClass="com.xmos.cdt.c.compiler.input.c"/>
@@ -392,10 +394,11 @@
 									<listOptionValue builtIn="false" value="&quot;${XMOS_TOOL_PATH}/target/include/gcc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${XMOS_TOOL_PATH}/target/include/c++/4.2.1&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${XMOS_TOOL_PATH}/target/include/c++/4.2.1/xcore-xmos-elf&quot;"/>
-                                    <listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_queue/src}&quot;' />
+                                    <listOptionValue builtIn="false" value='&quot;${workspace_loc:/lib_xassert/api}&quot;' />
+<listOptionValue builtIn="false" value='&quot;${workspace_loc:/lib_xassert/src}&quot;' />
+<listOptionValue builtIn="false" value='&quot;${workspace_loc:/lib_xassert}&quot;' />
+<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_queue/src}&quot;' />
 <listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_queue}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xassert/src}&quot;' />
-<listOptionValue builtIn="false" value='&quot;${workspace_loc:/module_xassert}&quot;' />
 
 								</option>
 								<inputType id = "com.xmos.cdt.cxx.compiler.input.cpp.50399056" name="C++" superClass="com.xmos.cdt.cxx.compiler.input.cpp"/>
