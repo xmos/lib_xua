@@ -720,7 +720,7 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
                 /* Manual IN instruction since compiler generates an extra setc per IN (bug #15256) */
                 unsigned sample;
                 asm volatile("in %0, res[%1]" : "=r"(sample)  : "r"(p_i2s_adc[index++]));
-                
+
                 if(buffIndex)
                     samplesIn_1[((frameCount-1)&(I2S_CHANS_PER_FRAME-1))+i] = bitrev(sample); // channels 1, 3, 5.. on each line.
                 else
@@ -1013,7 +1013,7 @@ chanend ?c_config, chanend ?c
     configure_clock_src(clk_mst_spd, p_mclk_in);
     configure_out_port_no_ready(p_adat_tx, clk_mst_spd, 0);
     set_clock_fall_delay(clk_mst_spd, 7);
-#ifndef SPDIF
+#ifndef SPDIF_TX
     start_clock(clk_mst_spd);
 #endif
 #endif

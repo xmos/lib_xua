@@ -11,4 +11,4 @@
 
 MODULE_XCC_XC_FLAGS = $(XCC_XC_FLAGS)
 
-DEPENDENT_MODULES = module_xassert
+DEPENDENT_MODULES = lib_xassert

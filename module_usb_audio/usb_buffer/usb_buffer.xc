@@ -94,7 +94,7 @@ unsigned char fb_clocks[16];
  * @param   c_aud_fb      chanend for feeback to xud
  * @return  void
  */
-void buffer(register chanend c_aud_out, register chanend c_aud_in, 
+void buffer(register chanend c_aud_out, register chanend c_aud_in,
 #if (NUM_USB_CHAN_IN == 0) || defined (UAC_FORCE_FEEDBACK_EP)
     chanend c_aud_fb,
 #endif
@@ -322,7 +322,7 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in,
                             int min, mid, max;
                             GetADCCounts(sampleFreq, min, mid, max);
                             g_speed = mid<<16;
-                            
+
 
                         }
                         /* Ideally we want to wait for handshake (and pass back up) here.  But we cannot keep this
