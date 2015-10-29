@@ -43,8 +43,8 @@
 
 #include "clocking.h"
 
-#ifdef PDM_PCM_IN
-void pcm_pdm_mic(chanend c_pcm_out);
+#if (NUM_PDM_MICS > 0)
+#include "pcm_pdm_mic.h"
 #endif
 
 void genclock();
@@ -413,7 +413,7 @@ void usb_audio_io(chanend c_aud_in, chanend ?c_adc,
 #if (XUD_TILE != 0)
     , server interface i_dfu dfuInterface
 #endif
-#ifdef PDM_PCM_IN
+#if (NUM_PDM_MICS > 0)
     , chanend c_pdm_pcm
 #endif
 )
@@ -456,7 +456,7 @@ void usb_audio_io(chanend c_aud_in, chanend ?c_adc,
 #if XUD_TILE != 0
                 , dfuInterface
 #endif
-#ifdef PDM_PCM_IN
+#if (NUM_PDM_MICS > 0) 
                 , c_pdm_pcm
 #endif
             );
@@ -543,7 +543,7 @@ int main()
     #define dfuInterface null
 #endif
 
-#ifdef PDM_PCM_IN
+#if (NUM_PDM_MICS > 0)
     chan c_pdm_pcm;
 #endif
 
@@ -590,7 +590,7 @@ int main()
 #if XUD_TILE != 0
             , dfuInterface
 #endif
-#ifdef PDM_PCM_IN
+#if (NUM_PDM_MICS > 0)
             , c_pdm_pcm
 #endif
 
@@ -655,9 +655,8 @@ int main()
         }
 #endif
 
-#ifdef PDM_PCM_IN    
-        // TODO tile     
-        on stdcore[0]: pcm_pdm_mic(c_pdm_pcm);
+#if (NUM_PDM_MICS > 0) 
+        on stdcore[PDM_TILE]: pcm_pdm_mic(c_pdm_pcm);
 #endif
         USER_MAIN_CORES
     }

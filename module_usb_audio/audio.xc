@@ -434,7 +434,7 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
 #if(defined(SPDIF_RX) || defined(ADAT_RX))
     chanend c_dig_rx,
 #endif
-#ifdef PDM_PCM_IN
+#if (NUM_PDM_MICS > 0)
     chanend c_pdm_pcm,
 #endif
 
@@ -940,7 +940,7 @@ chanend ?c_config, chanend ?c
 #if XUD_TILE != 0
 , server interface i_dfu dfuInterface
 #endif
-#ifdef PDM_PCM_IN
+#if (NUM_PDM_MICS > 0)
 , chanend c_pdm_in
 #endif
 )
@@ -1211,7 +1211,7 @@ chanend ?c_config, chanend ?c
 #if defined (ADAT_RX) || defined (SPDIF_RX)
                    c_dig_rx,
 #endif
-#ifdef PDM_PCM_IN
+#if (NUM_PDM_MICS > 0)
                    c_pdm_in,
 #endif
                    c);

@@ -26,7 +26,7 @@ void audio(chanend c_in,
 #if (XUD_TILE != 0)
    , server interface i_dfu dfuInterface
 #endif
-#ifdef PDM_PCM_IN
+#if (NUM_PDM_MICS > 0) 
     , chanend c_pdm_in
 #endif
 );
