@@ -224,7 +224,7 @@ static inline void TransferAdatTxSamples(chanend c_adat_out, const unsigned samp
 
 
 #pragma unsafe arrays
-static inline unsigned DoSampleTransfer(chanend c_out, int readBuffNo, unsigned underflowWord)
+static inline unsigned DoSampleTransfer(chanend c_out, const int readBuffNo, const unsigned underflowWord)
 {
     outuint(c_out, underflowWord);
 
@@ -433,6 +433,10 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
 #if(defined(SPDIF_RX) || defined(ADAT_RX))
     chanend c_dig_rx,
 #endif
+#if (NUM_PDM_MICS > 0)
+    chanend c_pdm_pcm,
+#endif
+
     chanend ?c_adc)
 {
 
@@ -684,7 +688,7 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
 #endif
 
 #if defined(SPDIF_RX) || defined(ADAT_RX)
-        /* Request digital data (with prefill) */
+            /* Request digital data (with prefill) */
             outuint(c_dig_rx, 0);
 #endif
 #if defined(SPDIF_TX) && (NUM_USB_CHAN_OUT > 0)
@@ -692,6 +696,15 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
             unsigned sample = samplesOut[SPDIF_TX_INDEX + 1];
             outuint(c_spd_out, sample);                      /* Forward sample to S/PDIF Tx thread */
 #endif
+
+#if (NUM_PDM_MICS > 0)
+            /* Get samples from PDM->PCM comverter */                    
+#pragma loop unroll
+            for(int i = 0; i < NUM_PDM_MICS; i++)
+            {
+                c_pdm_pcm :> samplesIn_0[i];
+            }
+#endif      
         }
 
 
@@ -923,6 +936,9 @@ chanend c_dig_rx,
 chanend ?c_config, chanend ?c
 #if XUD_TILE != 0
 , server interface i_dfu dfuInterface
+#endif
+#if (NUM_PDM_MICS > 0)
+, chanend c_pdm_in
 #endif
 )
 {
@@ -1164,6 +1180,7 @@ chanend ?c_config, chanend ?c
                 outuint(c_spdif_out, mClk);
 #endif
 
+
 #ifdef ADAT_TX
                 // Configure ADAT parameters ...
                 //
@@ -1190,6 +1207,9 @@ chanend ?c_config, chanend ?c
                    divide, curSamFreq,
 #if defined (ADAT_RX) || defined (SPDIF_RX)
                    c_dig_rx,
+#endif
+#if (NUM_PDM_MICS > 0)
+                   c_pdm_in,
 #endif
                    c);
 

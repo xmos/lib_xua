@@ -43,6 +43,12 @@
 
 #include "clocking.h"
 
+#if (NUM_PDM_MICS > 0)
+#include "pcm_pdm_mic.h"
+#endif
+
+void genclock();
+
 [[distributable]]
 void DFUHandler(server interface i_dfu i, chanend ?c_user_cmd);
 
@@ -407,6 +413,9 @@ void usb_audio_io(chanend c_aud_in, chanend ?c_adc,
 #if (XUD_TILE != 0)
     , server interface i_dfu dfuInterface
 #endif
+#if (NUM_PDM_MICS > 0)
+    , chanend c_pdm_pcm
+#endif
 )
 {
 #ifdef MIXER
@@ -445,7 +454,10 @@ void usb_audio_io(chanend c_aud_in, chanend ?c_adc,
 #endif
                 c_aud_cfg, c_adc
 #if XUD_TILE != 0
-                ,dfuInterface
+                , dfuInterface
+#endif
+#if (NUM_PDM_MICS > 0) 
+                , c_pdm_pcm
 #endif
             );
         }
@@ -458,6 +470,7 @@ void usb_audio_io(chanend c_aud_in, chanend ?c_adc,
 
         }
 #endif
+
         //:
     }
 }
@@ -469,7 +482,6 @@ void usb_audio_io(chanend c_aud_in, chanend ?c_adc,
 #ifndef USER_MAIN_CORES
 #define USER_MAIN_CORES
 #endif
-//::
 
 /* Main for USB Audio Applications */
 int main()
@@ -531,6 +543,9 @@ int main()
     #define dfuInterface null
 #endif
 
+#if (NUM_PDM_MICS > 0)
+    chan c_pdm_pcm;
+#endif
 
     USER_MAIN_DECLARATIONS
 
@@ -560,6 +575,7 @@ int main()
                 , c_mix_ctl
 #endif
                 , c_clk_int, c_clk_ctl, dfuInterface
+
             );
         }
 
@@ -573,6 +589,9 @@ int main()
             ,c_aud_cfg, c_spdif_rx, c_adat_rx, c_clk_ctl, c_clk_int
 #if XUD_TILE != 0
             , dfuInterface
+#endif
+#if (NUM_PDM_MICS > 0)
+            , c_pdm_pcm
 #endif
 
         );
@@ -634,6 +653,10 @@ int main()
 				adatReceiver44100(p_adat_rx, c_adat_rx);
 			}
         }
+#endif
+
+#if (NUM_PDM_MICS > 0) 
+        on stdcore[PDM_TILE]: pcm_pdm_mic(c_pdm_pcm);
 #endif
         USER_MAIN_CORES
     }

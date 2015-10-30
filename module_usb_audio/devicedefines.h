@@ -46,6 +46,13 @@
 #endif
 
 /**
+ * @brief Location (tile) of PDM Rx. Default: AUDIO_IO_TILE
+ */
+#ifndef PDM_TILE
+#define PDM_TILE        AUDIO_IO_TILE
+#endif
+
+/**
  * @brief Number of input channels (device to host). Default: NONE (Must be defined by app)
  */
 #if !defined(NUM_USB_CHAN_IN)
@@ -202,10 +209,17 @@
 /* Feature defines */
 
 /**
+ * @brief Number of PDM microphones in the design. Default: None
+ */
+#ifndef NUM_PDM_MICS
+#define NUM_PDM_MICS            (0)
+#endif
+
+/**
  * @brief Enable MIDI functionality including buffering, descriptors etc. Default: DISABLED
  */
 #ifndef MIDI
-#define MIDI                     (0)
+#define MIDI                    (0)
 #endif
 
 #if defined(MIDI) && (MIDI == 0)
@@ -1087,6 +1101,8 @@
     #error
 #endif
 #endif
+
+
 
 /* Endpoint addresses enums */
 enum USBEndpointNumber_In
