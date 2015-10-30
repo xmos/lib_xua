@@ -698,12 +698,10 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
             outuint(c_spd_out, sample);                      /* Forward sample to S/PDIF Tx thread */
 #endif
 
-#ifdef PDM_PCM_IN
-            /* Request samples from PDM->PCM comverter */                    
-            //c_pdm_pcm <: 1;
-            
+#if (NUM_PDM_MICS > 0)
+            /* Get samples from PDM->PCM comverter */                    
 #pragma loop unroll
-            for(int i = 0; i < 8 /*NUM_PDM_MICS*/; i++)
+            for(int i = 0; i < NUM_PDM_MICS; i++)
             {
                 c_pdm_pcm :> samplesIn_0[i];
             }
