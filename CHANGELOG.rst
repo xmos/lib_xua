@@ -1,6 +1,10 @@
 sc_usb_audio Change Log
 =======================
 
+6.14.0
+------
+    - ADDED:      Initial addition of PDM microphones (including PDM to PCM conversion) via lib_mic_array 
+
 6.13.0
 ------
     - ADDED:      Device now uses implicit feedback when input stream is available (previously explicit
