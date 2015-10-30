@@ -47,8 +47,6 @@
 #include "pcm_pdm_mic.h"
 #endif
 
-void genclock();
-
 [[distributable]]
 void DFUHandler(server interface i_dfu i, chanend ?c_user_cmd);
 
