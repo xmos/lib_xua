@@ -1,8 +1,7 @@
 
+#include "devicedefines.h"
 
 #if (NUM_PDM_MICS > 0)
-
-#include "devicedefines.h"
 
 /* This file includes an example integration of lib_array_mic into USB Audio */
 
