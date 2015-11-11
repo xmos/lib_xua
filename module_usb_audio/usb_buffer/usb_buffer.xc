@@ -410,6 +410,7 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in,
                     /* Number of MCLKS this SOF, approx 125 * 24 (3000), sample by sample rate */
                     GET_SHARED_GLOBAL(cycles, g_curSamFreqMultiplier);
                     cycles = ((int)((short)(u_tmp - lastClock))) * cycles;
+                    cycles >>= 2; /* /4 */ 
 
                     /* Any odd bits (lower than 16.23) have to be kept seperate */
                     remnant += cycles & mask;

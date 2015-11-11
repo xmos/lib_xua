@@ -319,7 +319,10 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
                                             i_tmp = MCLK_441;
                                         }
 
-                                        setG_curSamFreqMultiplier(g_curSamFreq/(i_tmp/512));
+                                        unsigned mult = (g_curSamFreq*512*4)/i_tmp;
+                                        setG_curSamFreqMultiplier(mult);
+
+                                        asm("ecallf %0"::"r"(mult));
 #ifdef ADAT_RX
                                         /* Configure ADAT SMUX based on sample rate */
                                         outuint(c_clk_ctl, SET_SMUX);
@@ -854,7 +857,6 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
                                     maxFreq = MAX_FREQ_FS;
                                 }
 #endif
-
                                 while(1)
                                 {
                                     if((currentFreq44 <= maxFreq) && (currentFreq44 >= MIN_FREQ))
@@ -1083,8 +1085,7 @@ int AudioEndpointRequests_1(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp
                                     i_tmp = MCLK_441;
                                 }
 
-                                //setG_curSamFreqMultiplier(g_curSamFreq/(i_tmp/512));
-                                setG_curSamFreqMultiplier((g_curSamFreq*512)/i_tmp);
+                                setG_curSamFreqMultiplier((g_curSamFreq*512*4)/i_tmp);
 
                                 /* Instruct audio thread to change sample freq */
                                 outuint(c_audioControl, SET_SAMPLE_FREQ);
