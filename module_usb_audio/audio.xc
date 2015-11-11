@@ -698,7 +698,8 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
 #endif
 
 #if (NUM_PDM_MICS > 0)
-            /* Get samples from PDM->PCM comverter */                    
+            /* Get samples from PDM->PCM comverter */ 
+            c_pdm_pcm <: 1;
 #pragma loop unroll
             for(int i = 0; i < NUM_PDM_MICS; i++)
             {
@@ -1180,6 +1181,10 @@ chanend ?c_config, chanend ?c
                 outuint(c_spdif_out, mClk);
 #endif
 
+#if NUM_PDM_MICS > 0
+                /* Send decimation factor to PDM task(s) */
+                c_pdm_in <: curSamFreq; 
+#endif
 
 #ifdef ADAT_TX
                 // Configure ADAT parameters ...
@@ -1256,9 +1261,14 @@ chanend ?c_config, chanend ?c
                   	}
                 }
 #ifdef SPDIF_TX
-                /* Notify S/PDIF thread of impending new freq... */
+                /* Notify S/PDIF task of impending new freq... */
                 outct(c_spdif_out, XS1_CT_END);
 #endif
+
+#if NUM_PDM_MICS > 0
+                c_pdm_in <: 0;
+#endif
+
 #ifdef ADAT_TX
 #ifdef ADAT_TX_USE_SHARED_BUFF
                 /* Take out-standing handshake from ADAT core */
