@@ -1311,17 +1311,21 @@ enum USBEndpointNumber_Out
 
 
 
-/* For Audio Class 1.0 and Full-speed Audio 2.0 we always have at most 2 channels */
-#if (NUM_USB_CHAN_OUT > 2)
-#define NUM_USB_CHAN_OUT_FS  (2)
-#else
-#define NUM_USB_CHAN_OUT_FS  (NUM_USB_CHAN_OUT)
+/* For Audio Class 1.0 and Full-speed Audio 2.0 we default having at most 2 channels */
+#ifndef NUM_USB_CHAN_OUT_FS
+    #if (NUM_USB_CHAN_OUT > 2)
+        #define NUM_USB_CHAN_OUT_FS  (2)
+    #else
+        #define NUM_USB_CHAN_OUT_FS  (NUM_USB_CHAN_OUT)
+    #endif
 #endif
 
-#if (NUM_USB_CHAN_IN > 2)
-#define NUM_USB_CHAN_IN_FS (2)
-#else
-#define NUM_USB_CHAN_IN_FS  (NUM_USB_CHAN_IN)
+#ifndef NUM_USB_CHAN_IN_FS
+    #if (NUM_USB_CHAN_IN > 2)
+        #define NUM_USB_CHAN_IN_FS (2)
+    #else
+        #define NUM_USB_CHAN_IN_FS  (NUM_USB_CHAN_IN)
+    #endif
 #endif
 
 /* Apply sample-rate restrictions to full-speed operation */
