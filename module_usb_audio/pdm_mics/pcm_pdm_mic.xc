@@ -29,11 +29,12 @@ void user_pdm_init();
 int data_0[4*COEFS_PER_PHASE*MAX_DECIMATION_FACTOR] = {0};
 int data_1[4*COEFS_PER_PHASE*MAX_DECIMATION_FACTOR] = {0};
 
+frame_audio mic_audio[2];         
+
 void pdm_process(streaming chanend c_ds_output_0, streaming chanend c_ds_output_1, chanend c_audio)
 {
     unsigned buffer = 1;     // Buffer index
-    frame_audio audio[2];    // Double buffered
-    memset(audio, sizeof(frame_audio), 0);
+    memset(mic_audio, sizeof(frame_audio), 0);
     int output[NUM_PDM_MICS];
 
     user_pdm_init();
@@ -54,11 +55,11 @@ void pdm_process(streaming chanend c_ds_output_0, streaming chanend c_ds_output_
             decimator_configure(c_ds_output_0, c_ds_output_1, dc0, dc1);
         }
 
-        decimator_init_audio_frame(c_ds_output_0, c_ds_output_1, buffer, audio);
+        decimator_init_audio_frame(c_ds_output_0, c_ds_output_1, buffer, mic_audio);
 
         while(1)
         {
-            frame_audio * unsafe current = decimator_get_next_audio_frame(c_ds_output_0, c_ds_output_1, buffer, audio);
+            frame_audio * unsafe current = decimator_get_next_audio_frame(c_ds_output_0, c_ds_output_1, buffer, mic_audio);
         
             unsafe
             {
