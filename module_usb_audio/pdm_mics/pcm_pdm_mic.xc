@@ -72,7 +72,7 @@ void pdm_process(streaming chanend c_ds_output_0, streaming chanend c_ds_output_
                 {     
                     for(int i = 0; i < NUM_PDM_MICS; i++)
                     {
-                        c_audio <: output[i];
+                        c_audio <: output[i]*decimationfactor;
                     }
                 }
                 else
