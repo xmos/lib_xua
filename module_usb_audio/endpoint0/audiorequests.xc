@@ -844,6 +844,7 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
                                 int num_freqs = 0;
                                 int i = 2;
 
+#ifndef SAMPLE_RATE_LIST
                                 int currentFreq44 = MIN_FREQ_44;
                                 int currentFreq48 = MIN_FREQ_48;
                                 unsigned maxFreq = MAX_FREQ;
@@ -878,6 +879,15 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
                                         break;
                                     }
                                 }
+#else
+                                unsigned srList[] = {SAMPLE_RATE_LIST};
+                                for(int j = 0; j < sizeof(srList)/(sizeof(srList[0])); j++)
+                                {
+                                    storeFreq(buffer, i, srList[j]);
+                                    num_freqs++;
+                                }
+#endif
+                                
                                 storeShort(buffer, 0, num_freqs);
 
                                 return XUD_DoGetRequest(ep0_out, ep0_in, buffer, i, sp.wLength);
