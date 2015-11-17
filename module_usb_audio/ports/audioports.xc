@@ -20,7 +20,7 @@ void ConfigAudioPorts(
 #endif
 
 #if (I2S_CHANS_DAC != 0) || (I2S_CHANS_ADC != 0)
-#ifndef CODEC_MASTER
+#if !defined(CODEC_MASTER)
             buffered out port:32 ?p_lrclk,
             buffered out port:32 p_bclk,
 #else
@@ -31,7 +31,8 @@ void ConfigAudioPorts(
 unsigned int divide)
 {
 
-#ifndef CODEC_MASTER
+    printintln(divide);
+#if !defined(CODEC_MASTER)
     /* Note this call to stop_clock() will pause forever if the port clocking the clock-block is not low.
      * deliver() should return with this being the case */
     stop_clock(clk_audio_bclk);
@@ -70,11 +71,19 @@ unsigned int divide)
     }
     else
     {
+//#if defined(__XS2A__)
+#if 0
+        /* Clock bitclock clock block from master clock pin (divided) */ 
+        configure_clock_src_divide(clk_audio_bclk, p_mclk_in, divide / 2);
+        configure_port_clock_output(p_bclk, clk_audio_bclk);
+#else
         /* bit clock port from master clock clock-clock block */
         configure_out_port_no_ready(p_bclk, clk_audio_mclk, 0);
 
         /* Generate bit clock block from pin */
         configure_clock_src(clk_audio_bclk, p_bclk);
+
+#endif
     }
 
     if(!isnull(p_lrclk))

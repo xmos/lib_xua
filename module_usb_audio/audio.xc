@@ -109,6 +109,8 @@ extern void device_reboot(void);
 #ifndef CODEC_MASTER
 static inline void doI2SClocks(unsigned divide)
 {
+//#ifndef __XS2A__
+#if 1
     switch (divide)
     {
 #if (MAX_DIVIDE > 16)
@@ -166,6 +168,7 @@ static inline void doI2SClocks(unsigned divide)
                 break;
 #endif
    }
+#endif
 }
 #endif
 
