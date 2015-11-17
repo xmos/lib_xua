@@ -10,28 +10,26 @@ extern clock    clk_audio_bclk;
 
 void ConfigAudioPorts(
 #if (I2S_CHANS_DAC != 0) || (DSD_CHANS_DAC != 0)
-                buffered out port:32 p_i2s_dac[],
-                int numPortsDac,
+        buffered out port:32 p_i2s_dac[],
+        int numPortsDac,
 #endif
 
 #if (I2S_CHANS_ADC != 0)
-                buffered in port:32  p_i2s_adc[],
-                int numPortsAdc,
+        buffered in port:32  p_i2s_adc[],
+        int numPortsAdc,
 #endif
 
 #if (I2S_CHANS_DAC != 0) || (I2S_CHANS_ADC != 0)
 #if !defined(CODEC_MASTER)
-            buffered out port:32 ?p_lrclk,
-            buffered out port:32 p_bclk,
+        buffered out port:32 ?p_lrclk,
+        buffered out port:32 p_bclk,
 #else
-            in port ?p_lrclk,
-            in port p_bclk,
+        in port ?p_lrclk,
+        in port p_bclk,
 #endif
 #endif
 unsigned int divide)
 {
-
-    printintln(divide);
 #if !defined(CODEC_MASTER)
     /* Note this call to stop_clock() will pause forever if the port clocking the clock-block is not low.
      * deliver() should return with this being the case */
@@ -56,6 +54,12 @@ unsigned int divide)
         clearbuf(p_i2s_dac[i]);
     }
 #endif
+
+#if defined(__XS2A__)
+    /* Clock bitclock clock block from master clock pin (divided) */ 
+    configure_clock_src_divide(clk_audio_bclk, p_mclk_in, (divide/2));
+    configure_port_clock_output(p_bclk, clk_audio_bclk);
+#else
     /* For a divide of one (i.e. bitclock == master-clock) BClk is set to clock_output mode.
      * In this mode it outputs an edge clock on every tick of itsassociated clock_block.
      *
@@ -71,20 +75,13 @@ unsigned int divide)
     }
     else
     {
-//#if defined(__XS2A__)
-#if 0
-        /* Clock bitclock clock block from master clock pin (divided) */ 
-        configure_clock_src_divide(clk_audio_bclk, p_mclk_in, divide / 2);
-        configure_port_clock_output(p_bclk, clk_audio_bclk);
-#else
         /* bit clock port from master clock clock-clock block */
         configure_out_port_no_ready(p_bclk, clk_audio_mclk, 0);
 
         /* Generate bit clock block from pin */
         configure_clock_src(clk_audio_bclk, p_bclk);
-
-#endif
     }
+#endif
 
     if(!isnull(p_lrclk))
     {

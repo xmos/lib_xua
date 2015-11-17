@@ -109,8 +109,7 @@ extern void device_reboot(void);
 #ifndef CODEC_MASTER
 static inline void doI2SClocks(unsigned divide)
 {
-//#ifndef __XS2A__
-#if 1
+#ifndef __XS2A__
     switch (divide)
     {
 #if (MAX_DIVIDE > 16)
@@ -304,12 +303,14 @@ static inline void InitPorts(unsigned divide)
     {
 #endif
 
+#if !defined(__XS2A__)
         if(divide != 1)
-            {
-              /* b_clk must start high */
-        p_bclk <: 0x80000000;
-        sync(p_bclk);
-     }
+        {
+            /* b_clk must start high */
+            p_bclk <: 0x80000000;
+            sync(p_bclk);
+         }
+#endif
 
         /* Clear I2S port buffers */
         clearbuf(p_lrclk);
@@ -327,7 +328,12 @@ static inline void InitPorts(unsigned divide)
             clearbuf(p_i2s_adc[i]);
         }
 #endif
+
+#if defined(__XS2A__)
+        if(1)
+#else
         if(divide == 1)
+#endif
         {
 #pragma xta endpoint "divide_1"
             p_lrclk <: 0 @ tmp;
@@ -353,8 +359,6 @@ static inline void InitPorts(unsigned divide)
         }
         else /* Divide != 1  */
         {
-
-
 #if (I2S_CHANS_DAC != 0)
             /* Pre-fill the DAC ports */
             for(int i = 0; i < I2S_WIRES_DAC; i++)
