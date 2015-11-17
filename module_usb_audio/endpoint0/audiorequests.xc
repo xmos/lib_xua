@@ -46,7 +46,7 @@ extern unsigned char mixSel[MAX_MIX_COUNT][MIX_INPUTS];
 /* Global var for current frequency, set to default freq */
 unsigned int g_curSamFreq = DEFAULT_FREQ;
 unsigned int g_curSamFreq48000Family = DEFAULT_FREQ % 48000 == 0;
-unsigned int g_curSamFreqMultiplier = DEFAULT_FREQ / (DEFAULT_MCLK_FREQ / 512);
+unsigned int g_curSamFreqMultiplier = (DEFAULT_FREQ * 512 * 4) / (DEFAULT_MCLK_FREQ);
 
 /* Store an int into a char array: Note this allows non-word aligned access unlike reinerpret cast */
 static void storeInt(unsigned char buffer[], int index, int val)
