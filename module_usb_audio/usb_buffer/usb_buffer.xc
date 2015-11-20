@@ -322,6 +322,7 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in,
                             clocks = 0;
                             remnant = 0;
                             clockcounter = 0;
+                            mod_from_last_time = 0;
 
                             /* Set g_speed to something sensible. We expect it to get over-written before stream time */
                             int min, mid, max;
@@ -488,7 +489,7 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in,
                     int count = (int) ((short)(u_tmp - lastClock));
                         
                     unsigned long long full_result = count * feedbackMul * sampleFreq; 
-                       
+ 
                     clockcounter += full_result; 
 
                     /* Store MCLK for next time around... */
