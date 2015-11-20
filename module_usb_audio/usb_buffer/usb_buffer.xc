@@ -482,7 +482,7 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in,
                     unsigned long long feedbackMul = 64ULL;
 
                     if(usb_speed != XUD_SPEED_HS)
-                        feedbackMul = 16ULL;
+                        feedbackMul = 8ULL;  /* Used 8 instead of 16 to avoid windows LSB issues */
 
                     /* Number of MCLK ticks in this SOF period (E.g = 125 * 24.576 = 3072) */
                     int count = (int) ((short)(u_tmp - lastClock));
@@ -503,8 +503,15 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in,
                         clockcounter += mod_from_last_time;
                         clocks = clockcounter / masterClockFreq;
                         mod_from_last_time = clockcounter % masterClockFreq;
-
-                        clocks <<=3;
+                        
+                        if(usb_speed == XUD_SPEED_HS)
+                        { 
+                            clocks <<= 3;
+                        }
+                        else
+                        {
+                            clocks <<= 6;
+                        }
                         
 #ifdef FB_TOLERANCE_TEST
                         if (clocks > (expected_fb - FB_TOLERANCE) &&
@@ -516,14 +523,13 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in,
 
                             GET_SHARED_GLOBAL(usb_speed, g_curUsbSpeed);
 
-                            //printhexln(clocks);
                             if (usb_speed == XUD_SPEED_HS)
                             {
                                 (fb_clocks, unsigned[])[0] = clocks;
                             }
                             else
                             {
-                                (fb_clocks, unsigned[])[0] = clocks>>1;
+                                (fb_clocks, unsigned[])[0] = clocks >> 2;
                             }
                         }
 #ifdef FB_TOLERANCE_TEST
