@@ -45,8 +45,12 @@ extern unsigned char mixSel[MAX_MIX_COUNT][MIX_INPUTS];
 
 /* Global var for current frequency, set to default freq */
 unsigned int g_curSamFreq = DEFAULT_FREQ;
-unsigned int g_curSamFreq48000Family = DEFAULT_FREQ % 48000 == 0;
-unsigned int g_curSamFreqMultiplier = (DEFAULT_FREQ * 512 * 4) / (DEFAULT_MCLK_FREQ);
+//unsigned int g_curSamFreq48000Family = DEFAULT_FREQ % 48000 == 0;
+
+#if 0
+/* Original feedback implementation */
+long long g_curSamFreqMultiplier = (DEFAULT_FREQ * 512 * 4) / (DEFAULT_MCLK_FREQ);
+#endif
 
 /* Store an int into a char array: Note this allows non-word aligned access unlike reinerpret cast */
 static void storeInt(unsigned char buffer[], int index, int val)
@@ -113,9 +117,19 @@ static unsigned longMul(unsigned a, unsigned b, int prec)
     return ret;
 }
 
-static void setG_curSamFreqMultiplier(int x) {
-    asm(" stw %0, dp[g_curSamFreqMultiplier]" :: "r"(x));
+#if 0
+/* Original feedback implementation */
+unsafe
+{
+    unsigned * unsafe curSamFreqMultiplier = &g_curSamFreqMultiplier;
+
+static void setG_curSamFreqMultiplier(unsigned x) 
+{
+   // asm(" stw %0, dp[g_curSamFreqMultiplier]" :: "r"(x));
+    *curSamFreqMultiplier = x;
 }
+}
+#endif
 
 /* Update master volume i.e. i.e update weights for all channels */
 static void updateMasterVol( int unitID, chanend ?c_mix_ctl)
@@ -261,8 +275,7 @@ static void updateVol(int unitID, int channel, chanend ?c_mix_ctl)
 int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, chanend c_audioControl, chanend ?c_mix_ctl, chanend ?c_clk_ctl
 )
 {
-    unsigned char buffer[128];
-    int i_tmp;
+    unsigned char buffer[512];
     int unitID;
     XUD_Result_t result;
     unsigned datalength;
@@ -302,27 +315,29 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
                                 if(datalength == 4)
                                 {
                                     /* Re-construct Sample Freq */
-                                    i_tmp = buffer[0] | (buffer[1] << 8) | buffer[2] << 16 | buffer[3] << 24;
+                                    int newSampleRate = buffer[0] | (buffer[1] << 8) | buffer[2] << 16 | buffer[3] << 24;
 
                                     /* Instruct audio thread to change sample freq (if change required) */
-                                    if(i_tmp != g_curSamFreq)
+                                    if(newSampleRate != g_curSamFreq)
                                     {
-                                        g_curSamFreq = i_tmp;
-                                        g_curSamFreq48000Family = g_curSamFreq % 48000 == 0;
+                                        int newMasterClock;
+
+                                        g_curSamFreq = newSampleRate;
+#if 0
+                                        /* Original feedback implementation */
+                                        g_curSamFreq48000Family = ((MCLK_48 % g_curSamFreq) == 0);
 
                                         if(g_curSamFreq48000Family)
                                         {
-                                            i_tmp = MCLK_48;
+                                            newMasterClock = MCLK_48;
                                         }
                                         else
                                         {
-                                            i_tmp = MCLK_441;
+                                            newMasterClock = MCLK_441;
                                         }
 
-                                        unsigned mult = (g_curSamFreq*512*4)/i_tmp;
-                                        setG_curSamFreqMultiplier(mult);
-
-                                        asm("ecallf %0"::"r"(mult));
+                                        setG_curSamFreqMultiplier(g_curSamFreq/(newMasterClock/512));
+#endif 
 #ifdef ADAT_RX
                                         /* Configure ADAT SMUX based on sample rate */
                                         outuint(c_clk_ctl, SET_SMUX);
@@ -845,8 +860,8 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
                                 int i = 2;
 
 #ifndef SAMPLE_RATE_LIST
-                                int currentFreq44 = MIN_FREQ_44;
-                                int currentFreq48 = MIN_FREQ_48;
+                                int currentFreq44 = 11025;  //MIN_FREQ_44;
+                                int currentFreq48 = 8000;   //MIN_FREQ_48;
                                 unsigned maxFreq = MAX_FREQ;
 
 #if defined (FULL_SPEED_AUDIO_2)
@@ -858,6 +873,21 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
                                     maxFreq = MAX_FREQ_FS;
                                 }
 #endif
+                                /* Special case for some low sample rates */
+                                unsigned lowSampleRateList[] = {8000, 11025, 12000, 16000, 22050, 32000};
+                                
+                                for (int k = 0; k < sizeof(lowSampleRateList)/sizeof(unsigned); k++)
+                                {
+                                    if((lowSampleRateList[k] >= MIN_FREQ) && (lowSampleRateList[k] <= MAX_FREQ))
+                                    {
+                                        storeFreq(buffer, i, lowSampleRateList[k]);
+                                        num_freqs++;
+                                    }
+                                }
+                                
+                                /* Just keep doubling for standard freqs >= 44.1/48kHz */
+                                currentFreq44 = 44100;
+                                currentFreq48 = 48000;
                                 while(1)
                                 {
                                     if((currentFreq44 <= maxFreq) && (currentFreq44 >= MIN_FREQ))
@@ -1071,31 +1101,37 @@ int AudioEndpointRequests_1(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp
                     if((sp.wLength == 3) && (length == 3))
                     {
                         /* Recontruct sample-freq */
-                        int i_tmp = buffer[0] | (buffer [1] << 8) | (buffer[2] << 16);
+                        int newSampleRate = buffer[0] | (buffer [1] << 8) | (buffer[2] << 16);
 
-                        if(i_tmp != g_curSamFreq)
+                        if(newSampleRate != g_curSamFreq)
                         {
                             int curSamFreq44100Family;
+                            int curSamFreq48000Family;
 
                             /* Windows Audio Class driver has a nice habbit of sending invalid SF's (e.g. 48001Hz)
                              * when under stress.  Lets double check it here and ignore if not valid. */
-                            g_curSamFreq48000Family = i_tmp % 48000 == 0;
-                            curSamFreq44100Family = i_tmp % 44100 == 0;
+                            curSamFreq48000Family = newSampleRate % 48000 == 0;
+                            curSamFreq44100Family = newSampleRate % 44100 == 0;
 
-                            if(g_curSamFreq48000Family || curSamFreq44100Family)
+                            (curSamFreq48000Family || curSamFreq44100Family)
                             {
-                                g_curSamFreq = i_tmp;
+#if 0
+                                /* Original feedback implementation */
+
+                                int newMasterClock;
+                                g_curSamFreq = newSamplerate;
 
                                 if(g_curSamFreq48000Family)
                                 {
-                                    i_tmp = MCLK_48;
+                                    newMasterClock = MCLK_48;
                                 }
                                 else
                                 {
-                                    i_tmp = MCLK_441;
+                                    newMasterClock = MCLK_441;
                                 }
 
-                                setG_curSamFreqMultiplier((g_curSamFreq*512*4)/i_tmp);
+                                setG_curSamFreqMultiplier((g_curSamFreq*512*4)/newMasterClock);
+#endif
 
                                 /* Instruct audio thread to change sample freq */
                                 outuint(c_audioControl, SET_SAMPLE_FREQ);

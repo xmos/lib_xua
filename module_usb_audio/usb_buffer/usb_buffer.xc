@@ -160,10 +160,13 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in,
     XUD_ep ep_hid = XUD_InitEp(c_hid);
 #endif
     unsigned u_tmp;
-    unsigned sampleFreq = 0;
+    unsigned sampleFreq = DEFAULT_FREQ;
+    unsigned masterClockFreq = DEFAULT_MCLK_FREQ;
     unsigned lastClock = 0;
 
     unsigned clocks = 0;
+    long long clockcounter = 0;
+
 
 #if (NUM_USB_CHAN_IN > 0)
     unsigned bufferIn = 1;
@@ -172,6 +175,7 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in,
     unsigned sofCount = 0;
     unsigned freqChange = 0;
 
+    unsigned mod_from_last_time = 0;
 #ifdef FB_TOLERANCE_TEST
     unsigned expected_fb = 0;
 #endif
@@ -317,13 +321,21 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in,
                             sofCount = 0;
                             clocks = 0;
                             remnant = 0;
+                            clockcounter = 0;
 
                             /* Set g_speed to something sensible. We expect it to get over-written before stream time */
                             int min, mid, max;
                             GetADCCounts(sampleFreq, min, mid, max);
                             g_speed = mid<<16;
 
-
+                            if((MCLK_48 % sampleFreq) == 0)
+                            {
+                                masterClockFreq = MCLK_48;
+                            }
+                            else
+                            {
+                                masterClockFreq = MCLK_441;
+                            }
                         }
                         /* Ideally we want to wait for handshake (and pass back up) here.  But we cannot keep this
                         * core locked, it must stay responsive to packets (MIDI etc) and SOFs.  So, set a flag and check for
@@ -400,17 +412,18 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in,
                 }
                 else
                 {
-                    unsigned mask = MASK_16_13, usb_speed;
-
+                    unsigned usb_speed;
                     GET_SHARED_GLOBAL(usb_speed, g_curUsbSpeed);
 
+#if 0
+                    unsigned mask = MASK_16_13;
+                    /* Original feedback implementation */
                     if(usb_speed != XUD_SPEED_HS)
                         mask = MASK_16_10;
 
                     /* Number of MCLKS this SOF, approx 125 * 24 (3000), sample by sample rate */
                     GET_SHARED_GLOBAL(cycles, g_curSamFreqMultiplier);
                     cycles = ((int)((short)(u_tmp - lastClock))) * cycles;
-                    cycles = (int) cycles >> 2; /* /4 */ 
 
                     /* Any odd bits (lower than 16.23) have to be kept seperate */
                     remnant += cycles & mask;
@@ -436,8 +449,10 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in,
                         {
                             int usb_speed;
                             asm volatile("stw %0, dp[g_speed]"::"r"(clocks));   // g_speed = clocks
-
                             GET_SHARED_GLOBAL(usb_speed, g_curUsbSpeed);
+
+
+                            printhexln(clocks);
 
                             if (usb_speed == XUD_SPEED_HS)
                             {
@@ -455,6 +470,63 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in,
 #endif
                         clocks = 0;
                     }
+#else
+                    /* Assuming 48kHz from a 24.576 master clock (0.0407uS period)
+                     * MCLK ticks per SOF = 125uS / 0.0407 = 3072 MCLK ticks per SOF.
+                     * expected Feedback is 48000/8000 = 6 samples. so 0x60000 in 16:16 format.
+                     * Average over 128 SOFs - 128 x 3072 = 0x60000.
+                     */
+
+                    /* Number of MCLK ticks in this SOF period (E.g = 125 * 24.576 = 3072) */
+                    int count = (int) ((short)(u_tmp - lastClock));
+                        
+                    unsigned long long full_result = count *64ULL * sampleFreq; 
+                       
+                    clockcounter += full_result; 
+
+                    /* Store MCLK for next time around... */
+                    lastClock = u_tmp;
+
+                    /* Reset counts based on SOF counting.  Expect 16ms (128 HS SOFs/16 FS SOFS) per feedback poll
+                     * We always count 128 SOFs, so 16ms @ HS, 128ms @ FS */
+                    if(sofCount == 128)
+                    {
+                        sofCount = 0;
+                        
+                        clockcounter += mod_from_last_time;
+                        clocks = clockcounter / masterClockFreq;
+                        mod_from_last_time = clockcounter % masterClockFreq;
+
+                        clocks <<=3;
+                        
+#ifdef FB_TOLERANCE_TEST
+                        if (clocks > (expected_fb - FB_TOLERANCE) &&
+                            clocks < (expected_fb + FB_TOLERANCE))
+#endif
+                        {
+                            int usb_speed;
+                            asm volatile("stw %0, dp[g_speed]"::"r"(clocks));   // g_speed = clocks
+
+                            GET_SHARED_GLOBAL(usb_speed, g_curUsbSpeed);
+
+                            //printhexln(clocks);
+                            if (usb_speed == XUD_SPEED_HS)
+                            {
+                                (fb_clocks, unsigned[])[0] = clocks;
+                            }
+                            else
+                            {
+                                (fb_clocks, unsigned[])[0] = clocks>>2;
+                            }
+                        }
+#ifdef FB_TOLERANCE_TEST
+                        else
+                        {
+                        }
+#endif
+                        clockcounter = 0;
+                    }
+#endif
 
                     sofCount++;
                 }
