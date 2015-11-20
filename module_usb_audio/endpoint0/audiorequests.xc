@@ -1113,7 +1113,7 @@ int AudioEndpointRequests_1(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp
                             curSamFreq48000Family = newSampleRate % 48000 == 0;
                             curSamFreq44100Family = newSampleRate % 44100 == 0;
 
-                            (curSamFreq48000Family || curSamFreq44100Family)
+                            if(curSamFreq48000Family || curSamFreq44100Family)
                             {
 #if 0
                                 /* Original feedback implementation */
