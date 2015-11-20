@@ -1110,8 +1110,8 @@ int AudioEndpointRequests_1(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp
 
                             /* Windows Audio Class driver has a nice habbit of sending invalid SF's (e.g. 48001Hz)
                              * when under stress.  Lets double check it here and ignore if not valid. */
-                            curSamFreq48000Family = newSampleRate % 48000 == 0;
-                            curSamFreq44100Family = newSampleRate % 44100 == 0;
+                            curSamFreq48000Family = MCLK_48 % newSampleRate  == 0;
+                            curSamFreq44100Family = MCLK_441 % newSampleRate == 0;
 
                             if(curSamFreq48000Family || curSamFreq44100Family)
                             {
