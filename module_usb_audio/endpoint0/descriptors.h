@@ -2212,7 +2212,7 @@ unsigned char cfgDesc_Null[] =
 /* Note, to make descriptors easier to produce we always report a fixed number freqs. 
  * Multiple of MAX_FREQ_FS is reported for freqs not required 
  * Mote, reducing freq coint seems to cause an enumeration issue on Windows */
-#define NUM_FREQS_A1                (8)
+#define NUM_FREQS_A1                (9)
 
 #define AC_TOTAL_LENGTH             (AC_LENGTH + (INPUT_INTERFACES_A1 * (19 + NUM_FREQS_A1 * 3)) + (OUTPUT_INTERFACES_A1 * (19 + (NUM_FREQS_A1 *3))))
 #define STREAMING_INTERFACES        (INPUT_INTERFACES_A1 + OUTPUT_INTERFACES_A1)
@@ -2390,6 +2390,12 @@ unsigned char cfgDesc_Audio1[] =
 
     NUM_FREQS_A1,                         /* SamFreqType - sample freq count */
 
+#if(MIN_FREQ <= 8000) && (MAX_FREQ_FS >= 8000) 
+    0x40, 0x1F, 0x00,                     /* sampleFreq - 8000KHz */
+#else
+    MAX_FREQ_A1_CHARS,                    /* sampleFreq - MAX_FREQ */
+#endif
+
 #if(MIN_FREQ <= 11025) && (MAX_FREQ_FS >= 11025) 
     0x11, 0x2B, 0x00,                     /* sampleFreq - 11025KHz */
 #else
@@ -2514,6 +2520,12 @@ unsigned char cfgDesc_Audio1[] =
     FS_STREAM_FORMAT_INPUT_1_SUBSLOT_BYTES,         /* subFrameSize - Typically 4 bytes per slot */
     FS_STREAM_FORMAT_INPUT_1_RESOLUTION_BITS,       /* bitResolution - Typically 24bit */
     NUM_FREQS_A1,                         /* SamFreqType - sample freq count */
+
+#if(MIN_FREQ <= 8000) && (MAX_FREQ_FS >= 8000) 
+    0x40, 0x1F, 0x00,                     /* sampleFreq - 8000KHz */
+#else
+    MAX_FREQ_A1_CHARS,                    /* sampleFreq - MAX_FREQ */
+#endif
 
 #if(MIN_FREQ <= 11025) && (MAX_FREQ_FS >= 11025) 
     0x11, 0x2B, 0x00,                     /* sampleFreq - 11025KHz */
