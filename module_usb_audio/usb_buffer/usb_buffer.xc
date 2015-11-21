@@ -171,7 +171,7 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in,
 #if (NUM_USB_CHAN_IN > 0)
     unsigned bufferIn = 1;
 #endif
-    unsigned remnant = 0, cycles;
+    unsigned remnant = 0;
     unsigned sofCount = 0;
     unsigned freqChange = 0;
 
@@ -318,7 +318,7 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in,
                             /* Reset FB */
                             /* Note, Endpoint 0 will hold off host for a sufficient period to allow our feedback
                              * to stabilise (i.e. sofCount == 128 to fire) */
-                            sofCount = 0;
+                            sofCount = 1;
                             clocks = 0;
                             remnant = 0;
                             clockcounter = 0;
@@ -415,9 +415,6 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in,
                 {
                     unsigned usb_speed;
                     GET_SHARED_GLOBAL(usb_speed, g_curUsbSpeed);
-
-                    
-
 #if 0
                     unsigned mask = MASK_16_13;
                     /* Original feedback implementation */
@@ -454,9 +451,6 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in,
                             asm volatile("stw %0, dp[g_speed]"::"r"(clocks));   // g_speed = clocks
                             GET_SHARED_GLOBAL(usb_speed, g_curUsbSpeed);
 
-
-                            printhexln(clocks);
-
                             if (usb_speed == XUD_SPEED_HS)
                             {
                                 (fb_clocks, unsigned[])[0] = clocks;
@@ -483,7 +477,7 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in,
                     unsigned long long feedbackMul = 64ULL;
 
                     if(usb_speed != XUD_SPEED_HS)
-                        feedbackMul = 8ULL;  /* Used 8 instead of 16 to avoid windows LSB issues */
+                        feedbackMul = 8ULL;  /* TODO Use 4 instead of 8 to avoid windows LSB issues? */
 
                     /* Number of MCLK ticks in this SOF period (E.g = 125 * 24.576 = 3072) */
                     int count = (int) ((short)(u_tmp - lastClock));
@@ -504,7 +498,7 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in,
                         clockcounter += mod_from_last_time;
                         clocks = clockcounter / masterClockFreq;
                         mod_from_last_time = clockcounter % masterClockFreq;
-                        
+ 
                         if(usb_speed == XUD_SPEED_HS)
                         { 
                             clocks <<= 3;
