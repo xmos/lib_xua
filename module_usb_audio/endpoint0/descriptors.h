@@ -2208,13 +2208,43 @@ unsigned char cfgDesc_Null[] =
 
 #define AC_LENGTH                   (8 + INPUT_INTERFACES_A1 + OUTPUT_INTERFACES_A1)
 
-/* In UAC1 supported sample rates are listed in descriptor */
-/* Note, to make descriptors easier to produce we always report a fixed number freqs. 
- * Multiple of MAX_FREQ_FS is reported for freqs not required 
- * Mote, using a value of 2 or > 7 for NUM_FREQS_A1 causes enumeration issues on Windows */
-#define NUM_FREQS_A1                (7)
+/* In UAC1 supported sample rates are listed in descriptor 
+ * Note, using a value of <=2 or > 7 for num_freqs_a1 causes enumeration issues on Windows.
+ * To work around this we repeat MAX_FREQ_FS multiple times in some cases */
 
-#define AC_TOTAL_LENGTH             (AC_LENGTH + (INPUT_INTERFACES_A1 * (19 + NUM_FREQS_A1 * 3)) + (OUTPUT_INTERFACES_A1 * (19 + (NUM_FREQS_A1 *3))))
+#define MAX(a,b) (((a)>(b))?(a):(b))
+const unsigned num_freqs_a1 = MAX(3, (0
+#if(MIN_FREQ <= 8000) && (MAX_FREQ_FS >= 8000) 
+    + 1
+#endif
+#if(MIN_FREQ <= 11025) && (MAX_FREQ_FS >= 11025) 
+    +1
+#endif
+
+#if(MIN_FREQ <= 12000) && (MAX_FREQ_FS >= 12000) 
+    +1
+#endif
+#if(MIN_FREQ <= 16000) && (MAX_FREQ_FS >= 16000) 
+    +1
+#endif
+#if(MIN_FREQ <= 32000) && (MAX_FREQ_FS >= 32000) 
+    +1
+#endif
+#if (MIN_FREQ <= 44100) && (MAX_FREQ_FS >= 44100) 
+    +1
+#endif
+#if (MIN_FREQ <= 48000) && (MAX_FREQ_FS >= 48000) 
+    +1
+#endif
+#if (MIN_FREQ <= 88200) && (MAX_FREQ_FS >= 88200) 
+    +1
+#endif
+#if (MIN_FREQ <= 96000) && (MAX_FREQ_FS >= 96000) 
+    +1
+#endif
+));
+
+#define AC_TOTAL_LENGTH             (AC_LENGTH + (INPUT_INTERFACES_A1 * (19 + num_freqs_a1 * 3)) + (OUTPUT_INTERFACES_A1 * (19 + (num_freqs_a1 *3))))
 #define STREAMING_INTERFACES        (INPUT_INTERFACES_A1 + OUTPUT_INTERFACES_A1)
 
 /* Number of interfaces for Audio  1.0 (+1 for control ) */
@@ -2384,7 +2414,7 @@ unsigned char cfgDesc_Audio1[] =
     0x01, 0x00,                           /* wFormatTag - PCM */
 
     /* CS_Interface Format Type Descriptor */
-    (8 + (NUM_FREQS_A1 * 3)),
+    (8 + (num_freqs_a1 * 3)),
     UAC_CS_DESCTYPE_INTERFACE,
     0x02,                                 /* Subtype - FORMAT_TYPE */
     0x01,                                 /* Format type - FORMAT_TYPE_1 */
@@ -2392,77 +2422,57 @@ unsigned char cfgDesc_Audio1[] =
     FS_STREAM_FORMAT_OUTPUT_1_SUBSLOT_BYTES,   /* subFrameSize */
     FS_STREAM_FORMAT_OUTPUT_1_RESOLUTION_BITS, /* bitResolution */
 
-    NUM_FREQS_A1,                         /* SamFreqType - sample freq count */
+    num_freqs_a1,                         /* SamFreqType - sample freq count */
 
-/* Attempting to keep this list to 7 */
-#if (MAX_FREQ_FS < 88200)
+/* Windows enum issue with <= two sample rates work around */
+#if ((MIN_FREQ == 8000) && (MAX_FREQ_FS == 11025)) \
+    || (MIN_FREQ == 11025) && (MAX_FREQ_FS == 12000) \
+    || (MIN_FREQ == 12000) && (MAX_FREQ_FS == 16000) \
+    || (MIN_FREQ == 16000) && (MAX_FREQ_FS == 32000) \
+    || (MIN_FREQ == 44100) && (MAX_FREQ_FS == 48000) \
+    || (MIN_FREQ == 48000) && (MAX_FREQ_FS == 88200) \
+    || (MIN_FREQ == 88200) && (MAX_FREQ_FS == 96000) 
+    CHARIFY_SR(MAX_FREQ_FS), 
+#endif
+#if (MIN_FREQ == MAX_FREQ_FS)
+    CHARIFY_SR(MAX_FREQ_FS), 
+    CHARIFY_SR(MAX_FREQ_FS), 
+#endif
+
 #if(MIN_FREQ <= 8000) && (MAX_FREQ_FS >= 8000) 
     0x40, 0x1F, 0x00,                     /* sampleFreq - 8KHz */
-#else
-    CHARIFY_SR(MAX_FREQ_FS),              /* sampleFreq - MAX_FREQ */
 #endif
 
 #if(MIN_FREQ <= 11025) && (MAX_FREQ_FS >= 11025) 
     0x11, 0x2B, 0x00,                     /* sampleFreq - 11.25KHz */
-#else
-    CHARIFY_SR(MAX_FREQ_FS),              /* sampleFreq - MAX_FREQ */
-#endif
 #endif
 
 #if(MIN_FREQ <= 12000) && (MAX_FREQ_FS >= 12000) 
     0xE0, 0x2E, 0x00,                     /* sampleFreq - 12KHz */
-#else
-    CHARIFY_SR(MAX_FREQ_FS),              /* sampleFreq - MAX_FREQ */
 #endif
 
 #if(MIN_FREQ <= 16000) && (MAX_FREQ_FS >= 16000) 
     CHARIFY_SR(16000),                    /* sampleFreq - 16KHz */
-#else
-    CHARIFY_SR(MAX_FREQ_FS),              /* sampleFreq - MAX_FREQ */
 #endif
 
 #if(MIN_FREQ <= 32000) && (MAX_FREQ_FS >= 32000) 
     CHARIFY_SR(32000),                    /* sampleFreq - 32KHz */
-#else
-    CHARIFY_SR(MAX_FREQ_FS),              /* sampleFreq - MAX_FREQ */
 #endif
-
-//#if(MIN_FREQ <= 22050) && (MAX_FREQ_FS >= 22050) 
-//    0x22, 0x56, 0x00,                     /* sampleFreq - 22.05KHz */
-//#else
-//    CHARIFY_SR(MAX_FREQ_FS),              /* sampleFreq - MAX_FREQ */
-//#endif
-
-//#if(MIN_FREQ <= 24000) && (MAX_FREQ_FS >= 24000) 
-//    0xC0, 0x5D, 0x00,                     /* sampleFreq - 24KHz */
-//#else
-//    CHARIFY_SR(MAX_FREQ_FS),              /* sampleFreq - MAX_FREQ */
-//#endif
 
 #if (MIN_FREQ <= 44100) && (MAX_FREQ_FS >= 44100) 
     0x44, 0xAC, 0x00,                     /* sampleFreq - 44.1Khz */
-#else
-    CHARIFY_SR(MAX_FREQ_FS),              /* sampleFreq - MAX_FREQ */
 #endif
 
 #if (MIN_FREQ <= 48000) && (MAX_FREQ_FS >= 48000) 
     0x80, 0xBB, 0x00,                     /* sampleFreq - 48KHz */
-#else
-    CHARIFY_SR(MAX_FREQ_FS),              /* sampleFreq - MAX_FREQ */
 #endif
 
-#if (MAX_FREQ_FS >= 88200)
 #if (MIN_FREQ <= 88200) && (MAX_FREQ_FS >= 88200) 
     0x88, 0x58, 0x01,                     /* sampleFreq - 88.2KHz */
-#else
-    CHARIFY_SR(MAX_FREQ_FS),              /* sampleFreq - MAX_FREQ */
 #endif
 
 #if (MIN_FREQ <= 96000) && (MAX_FREQ_FS >= 96000) 
     0x00, 0x77, 0x01,                     /* sampleFreq - 96KHz */
-#else
-    CHARIFY_SR(MAX_FREQ_FS),              /* sampleFreq - MAX_FREQ */
-#endif
 #endif
 
     /* Standard AS Isochronous Audio Data Endpoint Descriptor 4.6.1.1 */
@@ -2533,83 +2543,64 @@ unsigned char cfgDesc_Audio1[] =
     0x01,0x00,                            /* Format - PCM */
 
     /* CS_Interface Terminal Descriptor */
-    (8 + (NUM_FREQS_A1 * 3)),
+    (8 + (num_freqs_a1 * 3)),
     UAC_CS_DESCTYPE_INTERFACE,
     0x02,                                 /* Subtype - FORMAT_TYPE */
     0x01,                                 /* Format type - FORMAT_TYPE_1 */
     NUM_USB_CHAN_IN_FS,                   /* bNrChannels - Typically 2 */
     FS_STREAM_FORMAT_INPUT_1_SUBSLOT_BYTES,         /* subFrameSize - Typically 4 bytes per slot */
     FS_STREAM_FORMAT_INPUT_1_RESOLUTION_BITS,       /* bitResolution - Typically 24bit */
-    NUM_FREQS_A1,                         /* SamFreqType - sample freq count */
+    num_freqs_a1,                         /* SamFreqType - sample freq count */
 
-#if(MAX_FREQ_FS < 88200)
+/* Windows enum issue with <= two sample rates work around */
+#if ((MIN_FREQ == 8000) && (MAX_FREQ_FS == 11025)) \
+    || (MIN_FREQ == 11025) && (MAX_FREQ_FS == 12000) \
+    || (MIN_FREQ == 12000) && (MAX_FREQ_FS == 16000) \
+    || (MIN_FREQ == 16000) && (MAX_FREQ_FS == 32000) \
+    || (MIN_FREQ == 44100) && (MAX_FREQ_FS == 48000) \
+    || (MIN_FREQ == 48000) && (MAX_FREQ_FS == 88200) \
+    || (MIN_FREQ == 88200) && (MAX_FREQ_FS == 96000) 
+    CHARIFY_SR(MAX_FREQ_FS), 
+#endif
+#if (MIN_FREQ == MAX_FREQ_FS)
+    CHARIFY_SR(MAX_FREQ_FS), 
+    CHARIFY_SR(MAX_FREQ_FS), 
+#endif
+
 #if(MIN_FREQ <= 8000) && (MAX_FREQ_FS >= 8000) 
     0x40, 0x1F, 0x00,                     /* sampleFreq - 8000KHz */
-#else
-    CHARIFY_SR(MAX_FREQ_FS),              /* sampleFreq - MAX_FREQ */
 #endif
 
 #if(MIN_FREQ <= 11025) && (MAX_FREQ_FS >= 11025) 
     0x11, 0x2B, 0x00,                     /* sampleFreq - 11025KHz */
-#else
-    CHARIFY_SR(MAX_FREQ_FS),              /* sampleFreq - MAX_FREQ */
-#endif
 #endif
 
 #if(MIN_FREQ <= 12000) && (MAX_FREQ_FS >= 12000) 
     0xE0, 0x2E, 0x00,                     /* sampleFreq - 12000KHz */
-#else
-    CHARIFY_SR(MAX_FREQ_FS),              /* sampleFreq - MAX_FREQ */
 #endif
 
 #if(MIN_FREQ <= 16000) && (MAX_FREQ_FS >= 16000) 
     CHARIFY_SR(16000),                    /* sampleFreq - 32KHz */
-#else
-    CHARIFY_SR(MAX_FREQ_FS),              /* sampleFreq - MAX_FREQ */
 #endif
 
 #if(MIN_FREQ <= 32000) && (MAX_FREQ_FS >= 32000) 
     CHARIFY_SR(32000),                    /* sampleFreq - 32KHz */
-#else
-    CHARIFY_SR(MAX_FREQ_FS),              /* sampleFreq - MAX_FREQ */
 #endif
-
-//#if(MIN_FREQ <= 22050) && (MAX_FREQ_FS >= 22050) 
-//    0x22, 0x56, 0x00,                      /* sampleFreq - 22.05KHz */
-//#else
-//    CHARIFY_SR(MAX_FREQ_FS),              /* sampleFreq - MAX_FREQ */
-//#endif
-
-//#if(MIN_FREQ <= 24000) && (MAX_FREQ_FS >= 24000) 
-//    0xC0, 0x5D, 0x00,                     /* sampleFreq - 24KHz */
-//#else
-//    CHARIFY_SR(MAX_FREQ_FS),              /* sampleFreq - MAX_FREQ */
-///#endif
 
 #if (MIN_FREQ <= 44100) && (MAX_FREQ_FS >= 44100) 
     0x44, 0xAC, 0x00,                     /* sampleFreq - 44.1Khz */
-#else
-    CHARIFY_SR(MAX_FREQ_FS),              /* sampleFreq - MAX_FREQ */
 #endif
 
 #if (MIN_FREQ <= 48000) && (MAX_FREQ_FS >= 48000) 
     0x80, 0xBB, 0x00,                     /* sampleFreq - 48KHz */
-#else
-    CHARIFY_SR(MAX_FREQ_FS),              /* sampleFreq - MAX_FREQ */
 #endif
 
-#if(MAX_FREQ_FS >= 88200)
 #if (MIN_FREQ <= 88200) && (MAX_FREQ_FS >= 88200) 
     0x88, 0x58, 0x01,                     /* sampleFreq - 88.2KHz */
-#else
-    CHARIFY_SR(MAX_FREQ_FS),              /* sampleFreq - MAX_FREQ */
 #endif
 
 #if (MIN_FREQ <= 96000) && (MAX_FREQ_FS >= 96000) 
     0x00, 0x77, 0x01,                     /* sampleFreq - 96KHz */
-#else
-    CHARIFY_SR(MAX_FREQ_FS),              /* sampleFreq - MAX_FREQ */
-#endif
 #endif
     
     /* Standard Endpoint Descriptor */
