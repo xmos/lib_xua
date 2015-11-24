@@ -874,7 +874,7 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
                                 }
 #endif
                                 /* Special case for some low sample rates */
-                                unsigned lowSampleRateList[] = {8000, 11025, 12000, 16000, 22050, 32000};
+                                unsigned lowSampleRateList[] = {8000, 11025, 12000, 16000, 32000};
                                 
                                 for (int k = 0; k < sizeof(lowSampleRateList)/sizeof(unsigned); k++)
                                 {
