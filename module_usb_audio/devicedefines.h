@@ -1343,7 +1343,7 @@ enum USBEndpointNumber_Out
     #endif
 #endif
 
-
+#define MIN_FREQ_FS              MIN_FREQ
 
 /* Setup DEFAULT_MCLK_FREQ based on MCLK_ and DEFAULT_FREQ defines */
 #if ((MCLK_441 % DEFAULT_FREQ) == 0)
