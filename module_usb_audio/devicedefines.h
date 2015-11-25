@@ -1331,6 +1331,7 @@ enum USBEndpointNumber_Out
 #endif
 
 /* Apply sample-rate restrictions to full-speed operation */
+#ifndef MAX_FREQ_FS
 #if (NUM_USB_CHAN_OUT_FS > 0) && (NUM_USB_CHAN_IN_FS > 0)
     #if(MAX_FREQ > 48000)
         #define MAX_FREQ_FS              48000
@@ -1344,8 +1345,11 @@ enum USBEndpointNumber_Out
         #define MAX_FREQ_FS              MAX_FREQ
     #endif
 #endif
+#endif
 
 #define MIN_FREQ_FS              MIN_FREQ
+
+
 
 /* Setup DEFAULT_MCLK_FREQ based on MCLK_ and DEFAULT_FREQ defines */
 #if ((MCLK_441 % DEFAULT_FREQ) == 0)
