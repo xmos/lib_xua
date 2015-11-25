@@ -1309,7 +1309,9 @@ enum USBEndpointNumber_Out
         #define STREAM_FORMAT_INPUT_SUBSLOT_2_USED 0
     #endif
 
-
+#if MAX_FREQ < MIN_FREQ
+#error MAX_FREQ should be >= MIN_FREQ!!
+#endif
 
 /* For Audio Class 1.0 and Full-speed Audio 2.0 we default having at most 2 channels */
 #ifndef NUM_USB_CHAN_OUT_FS
