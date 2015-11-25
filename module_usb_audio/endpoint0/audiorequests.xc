@@ -1172,7 +1172,7 @@ int AudioClassRequests_1(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
 )
 {
     unsigned char buffer[1024];
-    int unitID;
+    unsigned unitID;
     XUD_Result_t result;
 
     /* Inspect request */
