@@ -189,6 +189,7 @@ DOMIX_BOT(7)
 .linkset setPtr.maxtimers, 0;
 .linkset setPtr.maxthreads, 1;
 setPtr:
+  ENTSP_lu6 0 
   shl   r2, r2, 1
 .xtabranch  .label_0
   bru   r2
