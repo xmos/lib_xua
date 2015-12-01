@@ -12,6 +12,8 @@ sc_usb_audio Change Log
     - ADDED:      Extended available sample-rate/master-clock ratios. Previous restriction was <= 
                   512x (i.e. could not support 1024x and above e.g. 49.152MHz MCLK for Sample Rates 
                   below 96kHz) (#13893)
+    - RESOLVED:   MIDI data not accepted after "sleep" in OSX 10.11 (El Capitan) - related to sc_xud
+                  bug #17092
     - CHANGE:     Asynchronous feedback system re-implemented to allow the previous two changelog 
                   items      
     - CHANGE:     Hardware divider used to generate bit-clock from master clock (xCORE-200 only). 
