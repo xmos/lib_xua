@@ -90,9 +90,8 @@ void pdm_process(streaming chanend c_ds_output_0, streaming chanend c_ds_output_
 
 void pcm_pdm_mic(chanend c_pcm_out)
 {
-    streaming chan c_multi_channel_pdm, c_sync, c_4x_pdm_mic_0, c_4x_pdm_mic_1;
+    streaming chan c_4x_pdm_mic_0, c_4x_pdm_mic_1;
     streaming chan c_ds_output_0, c_ds_output_1;
-    streaming chan c_buffer_mic0, c_buffer_mic1;
    
     /* TODO, always run mics at 3MHz */ 
     configure_clock_src_divide(pdmclk, p_mclk, 2);
