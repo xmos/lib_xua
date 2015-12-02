@@ -3,12 +3,12 @@ sc_usb_audio Change Log
 
 6.14.0
 ------
-    - ADDED:      Support for the use and integration of PDM microphones (including PDM to PCM 
-                  conversion) via lib_mic_array 
     - ADDED:      Support for various "low" sample rates (i.e. < 44100) into UAC2 sample rate list 
                   and UAC1 descriptors
     - ADDED:      Support for for master-clock/sample-rate divides that are not a power of 2 
                   (i.e. 32kHz from 24.567MHz) 
+    - ADDED:      Support for the use and integration of PDM microphones (including PDM to PCM 
+                  conversion) via lib_mic_array 
     - ADDED:      Extended available sample-rate/master-clock ratios. Previous restriction was <= 
                   512x (i.e. could not support 1024x and above e.g. 49.152MHz MCLK for Sample Rates 
                   below 96kHz) (#13893)
