@@ -85,7 +85,7 @@ void pdm_process(streaming chanend c_ds_output_0, streaming chanend c_ds_output_
 }
 
 #if MAX_FREQ > 48000
-#error NOT CURRENTLY SUPPORTED
+#error MAX_FREQ > 48000 NOT CURRENTLY SUPPORTED
 #endif
 
 void pcm_pdm_mic(chanend c_pcm_out)
