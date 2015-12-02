@@ -29,7 +29,7 @@ void user_pdm_init();
 int data_0[4*COEFS_PER_PHASE*MAX_DECIMATION_FACTOR] = {0};
 int data_1[4*COEFS_PER_PHASE*MAX_DECIMATION_FACTOR] = {0};
 
-frame_audio mic_audio[2];         
+frame_audio mic_audio[2];
 
 void pdm_process(streaming chanend c_ds_output_0, streaming chanend c_ds_output_1, chanend c_audio)
 {
@@ -38,13 +38,13 @@ void pdm_process(streaming chanend c_ds_output_0, streaming chanend c_ds_output_
     int output[NUM_PDM_MICS];
 
     user_pdm_init();
-    
+
     while(1)
-    { 
+    {
         unsigned samplerate;
 
         c_audio :> samplerate;
-        
+
         unsigned decimationfactor = 48000/samplerate;
 
         unsafe
@@ -60,16 +60,16 @@ void pdm_process(streaming chanend c_ds_output_0, streaming chanend c_ds_output_
         while(1)
         {
             frame_audio * unsafe current = decimator_get_next_audio_frame(c_ds_output_0, c_ds_output_1, buffer, mic_audio);
-        
+
             unsafe
             {
                 int req;
                 user_pdm_process(current, output);
-                
+
                 c_audio :> req;
-                
+
                 if(req)
-                {     
+                {
                     for(int i = 0; i < NUM_PDM_MICS; i++)
                     {
                         c_audio <: output[i]*decimationfactor;
@@ -80,7 +80,7 @@ void pdm_process(streaming chanend c_ds_output_0, streaming chanend c_ds_output_
                     break;
                 }
             }
-        }    
+        }
     }
 }
 
@@ -92,14 +92,14 @@ void pcm_pdm_mic(chanend c_pcm_out)
 {
     streaming chan c_4x_pdm_mic_0, c_4x_pdm_mic_1;
     streaming chan c_ds_output_0, c_ds_output_1;
-   
-    /* TODO, always run mics at 3MHz */ 
+
+    /* TODO, always run mics at 3MHz */
     configure_clock_src_divide(pdmclk, p_mclk, 2);
     configure_port_clock_output(p_pdm_clk, pdmclk);
     configure_in_port(p_pdm_mics, pdmclk);
     start_clock(pdmclk);
 
-    par 
+    par
     {
         pdm_rx(p_pdm_mics, c_4x_pdm_mic_0, c_4x_pdm_mic_1);
         decimate_to_pcm_4ch(c_4x_pdm_mic_0, c_ds_output_0);

@@ -123,7 +123,7 @@ unsafe
 {
     unsigned * unsafe curSamFreqMultiplier = &g_curSamFreqMultiplier;
 
-static void setG_curSamFreqMultiplier(unsigned x) 
+static void setG_curSamFreqMultiplier(unsigned x)
 {
    // asm(" stw %0, dp[g_curSamFreqMultiplier]" :: "r"(x));
     *curSamFreqMultiplier = x;
@@ -337,7 +337,7 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
                                         }
 
                                         setG_curSamFreqMultiplier(g_curSamFreq/(newMasterClock/512));
-#endif 
+#endif
 #ifdef ADAT_RX
                                         /* Configure ADAT SMUX based on sample rate */
                                         outuint(c_clk_ctl, SET_SMUX);
@@ -875,7 +875,7 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
 #endif
                                 /* Special case for some low sample rates */
                                 unsigned lowSampleRateList[] = {8000, 11025, 12000, 16000, 32000};
-                                
+
                                 for (int k = 0; k < sizeof(lowSampleRateList)/sizeof(unsigned); k++)
                                 {
                                     if((lowSampleRateList[k] >= MIN_FREQ) && (lowSampleRateList[k] <= MAX_FREQ))
@@ -884,7 +884,7 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
                                         num_freqs++;
                                     }
                                 }
-                                
+
                                 /* Just keep doubling for standard freqs >= 44.1/48kHz */
                                 currentFreq44 = 44100;
                                 currentFreq48 = 48000;
@@ -917,7 +917,7 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
                                     num_freqs++;
                                 }
 #endif
-                                
+
                                 storeShort(buffer, 0, num_freqs);
 
                                 return XUD_DoGetRequest(ep0_out, ep0_in, buffer, i, sp.wLength);

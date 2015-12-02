@@ -481,10 +481,10 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in,
 
                     /* Number of MCLK ticks in this SOF period (E.g = 125 * 24.576 = 3072) */
                     int count = (int) ((short)(u_tmp - lastClock));
-                        
-                    unsigned long long full_result = count * feedbackMul * sampleFreq; 
- 
-                    clockcounter += full_result; 
+
+                    unsigned long long full_result = count * feedbackMul * sampleFreq;
+
+                    clockcounter += full_result;
 
                     /* Store MCLK for next time around... */
                     lastClock = u_tmp;
@@ -494,20 +494,20 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in,
                     if(sofCount == 128)
                     {
                         sofCount = 0;
-                        
+
                         clockcounter += mod_from_last_time;
                         clocks = clockcounter / masterClockFreq;
                         mod_from_last_time = clockcounter % masterClockFreq;
- 
+
                         if(usb_speed == XUD_SPEED_HS)
-                        { 
+                        {
                             clocks <<= 3;
                         }
                         else
                         {
                             clocks <<= 6;
                         }
-                        
+
 #ifdef FB_TOLERANCE_TEST
                         if (clocks > (expected_fb - FB_TOLERANCE) &&
                             clocks < (expected_fb + FB_TOLERANCE))
