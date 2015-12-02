@@ -55,7 +55,7 @@ void pdm_process(streaming chanend c_ds_output_0, streaming chanend c_ds_output_
             decimator_configure(c_ds_output_0, c_ds_output_1, dc0, dc1);
         }
 
-        decimator_init_audio_frame(c_ds_output_0, c_ds_output_1, buffer, mic_audio);
+        decimator_init_audio_frame(c_ds_output_0, c_ds_output_1, buffer, mic_audio, DECIMATOR_NO_FRAME_OVERLAP);
 
         while(1)
         {
