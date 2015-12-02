@@ -22,6 +22,7 @@
         </component>
     </components>
     <dependency repo = "lib_xassert">
+        <gitbranch>master</gitbranch>
         <githash>9c4955e3ab0604e6ba4b66ad46e01b5d96d5d6fb</githash>
         <uri>git@github.com:xmos/lib_xassert.git</uri>
     </dependency>
@@ -99,7 +100,8 @@
     <release parenthash = "ace38607b0adc325167d1eddab8c425e721451f1" version = "6.12.5rc0" githash = "23758e74f2ce9970b113e05084453c9596450622"></release>
     <release parenthash = "9344178fcc4dc9da49e08ae049dd3a933b8202a8" version = "6.13.0beta0" githash = "c53447546e337a40da0bc64238d80666b35b7336"></release>
     <release parenthash = "c53447546e337a40da0bc64238d80666b35b7336" version = "6.13.0beta1" githash = "2ae88301eb9f57f0556fad66e5350ef6b5c9a18d"></release>
-    <release parenthash = "b279a2ec4c2c8f3dad6624e5c55e2d487be202a8" version = "6.13.0beta2"></release>
+    <release parenthash = "b279a2ec4c2c8f3dad6624e5c55e2d487be202a8" version = "6.13.0beta2" githash = "55f20f68aef5887daab829d3bea5eb6d5fadecab"></release>
+    <release parenthash = "176cbeae28523b682ccdd7d92246edea0346634f" version = "6.14.0beta0"></release>
     <subpartnumber>XM-004720-SM</subpartnumber>
     <vendor>XMOS</vendor>
     <version_defines>
