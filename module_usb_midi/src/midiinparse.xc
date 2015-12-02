@@ -2,11 +2,9 @@
  * @file midiinparse.xc
  * @brief Generates USB MIDI events from MIDI events
  * @author Russell Gallop, XMOS Semiconductor
- * @version 0.1
  */
 
 #include <print.h>
-//#include <assert.h>
 #include "midiinparse.h"
 
 /**
@@ -14,13 +12,13 @@
  *
  */
 void dump_midi_in_parse_state(struct midi_in_parse_state &s) {
-   printstr("expect_msg_len: 0x"); printhexln(s.expect_msg_len);
-   printstr("msg_type: 0x"); printhexln(s.msg_type);
-   printstr("receivebuffer: 0x"); printhex(s.receivebuffer[0]);
-      printstr(", 0x"); printhex(s.receivebuffer[1]);
-      printstr(", 0x"); printhexln(s.receivebuffer[2]);
-   printstr("received: 0x"); printhexln(s.received);
-   printstr("codeIndexNumber: 0x"); printhexln(s.codeIndexNumber);
+    printstr("expect_msg_len: 0x"); printhexln(s.expect_msg_len);
+    printstr("msg_type: 0x"); printhexln(s.msg_type);
+    printstr("receivebuffer: 0x"); printhex(s.receivebuffer[0]);
+    printstr(", 0x"); printhex(s.receivebuffer[1]);
+    printstr(", 0x"); printhexln(s.receivebuffer[2]);
+    printstr("received: 0x"); printhexln(s.received);
+    printstr("codeIndexNumber: 0x"); printhexln(s.codeIndexNumber);
 }
 
 /**

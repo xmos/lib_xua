@@ -1,7 +1,7 @@
 #ifndef QUEUE_H_
 #define QUEUE_H_
 
-#include <xassert.h>
+#define assert(x) asm("ecallf %0"::"r"(x));
 
 typedef struct queue_t {
     /// Read index.
