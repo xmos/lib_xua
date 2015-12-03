@@ -7,7 +7,6 @@
         </component>
         <component description = "queue" type = "demoCode" scope = "General Use" path = "module_queue" local = "false" id = "module_queue" name = "Queuing Module For USB Audio Framework">
             <board></board>
-            <componentDependency repo = "git://github.com/xmos/lib_xassert.git">lib_xassert</componentDependency>
             <keyword>UAC2</keyword>
         </component>
         <component description = "Core USB Audio Module" type = "demoCode" scope = "General Use" path = "module_usb_audio" local = "false" id = "module_usb_audio" name = "USB AUDIO MODULE">
@@ -16,16 +15,10 @@
         </component>
         <component description = "MIDI" type = "demoCode" scope = "General Use" path = "module_usb_midi" local = "false" id = "module_usb_midi" name = "MIDI Module for USB Audio Framework">
             <board></board>
-            <componentDependency version = "6.13.0">module_queue</componentDependency>
-            <componentDependency repo = "git://github.com/xmos/lib_xassert.git">lib_xassert</componentDependency>
+            <componentDependency version = "6.14.0">module_queue</componentDependency>
             <keyword>MIDI</keyword>
         </component>
     </components>
-    <dependency repo = "lib_xassert">
-        <gitbranch>master</gitbranch>
-        <githash>9c4955e3ab0604e6ba4b66ad46e01b5d96d5d6fb</githash>
-        <uri>git@github.com:xmos/lib_xassert.git</uri>
-    </dependency>
     <description>USB Audio Shared Components. For use in the XMOS USB Audio Refererence Designs.</description>
     <docdir>module_dfu/doc</docdir>
     <git_export>False</git_export>

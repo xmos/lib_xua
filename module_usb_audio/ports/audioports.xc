@@ -56,7 +56,7 @@ unsigned int divide)
 #endif
 
 #if defined(__XS2A__)
-    /* Clock bitclock clock block from master clock pin (divided) */ 
+    /* Clock bitclock clock block from master clock pin (divided) */
     configure_clock_src_divide(clk_audio_bclk, p_mclk_in, (divide/2));
     configure_port_clock_output(p_bclk, clk_audio_bclk);
 #else

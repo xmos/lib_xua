@@ -454,7 +454,7 @@ void usb_audio_io(chanend c_aud_in, chanend ?c_adc,
 #if XUD_TILE != 0
                 , dfuInterface
 #endif
-#if (NUM_PDM_MICS > 0) 
+#if (NUM_PDM_MICS > 0)
                 , c_pdm_pcm
 #endif
             );
@@ -653,7 +653,7 @@ int main()
         }
 #endif
 
-#if (NUM_PDM_MICS > 0) 
+#if (NUM_PDM_MICS > 0)
         on stdcore[PDM_TILE]: pcm_pdm_mic(c_pdm_pcm);
 #endif
         USER_MAIN_CORES
