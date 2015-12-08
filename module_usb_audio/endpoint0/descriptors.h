@@ -2227,10 +2227,8 @@ const unsigned num_freqs_a1 = MAX(3, (0
 #if(MIN_FREQ <= 16000) && (MAX_FREQ_FS >= 16000)
     +1
 #endif
-#if (NUM_PDM_MICS == 0)
 #if(MIN_FREQ <= 32000) && (MAX_FREQ_FS >= 32000)
     +1
-#endif
 #endif
 #if (MIN_FREQ <= 44100) && (MAX_FREQ_FS >= 44100)
     +1
@@ -2457,10 +2455,8 @@ unsigned char cfgDesc_Audio1[] =
     CHARIFY_SR(16000),                    /* sampleFreq - 16KHz */
 #endif
 
-#if (NUM_PDM_MICS == 0)
 #if(MIN_FREQ <= 32000) && (MAX_FREQ_FS >= 32000)
     CHARIFY_SR(32000),                    /* sampleFreq - 32KHz */
-#endif
 #endif
 
 #if (MIN_FREQ <= 44100) && (MAX_FREQ_FS >= 44100)
@@ -2587,10 +2583,8 @@ unsigned char cfgDesc_Audio1[] =
     CHARIFY_SR(16000),                    /* sampleFreq - 32KHz */
 #endif
 
-#if (NUM_PDM_MICS == 0)
 #if(MIN_FREQ <= 32000) && (MAX_FREQ_FS >= 32000)
     CHARIFY_SR(32000),                    /* sampleFreq - 32KHz */
-#endif
 #endif
 
 #if (MIN_FREQ <= 44100) && (MAX_FREQ_FS >= 44100)
