@@ -3,8 +3,7 @@ sc_usb_audio Change Log
 
 6.14.1
 ------
-    - CHANGE:     Removed 32kHz sample-rate support when PDM microphones enabled (lib_mic_array
-                  currently does not support non-integer decimation factors)
+
 
 6.14.0
 ------
