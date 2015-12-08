@@ -3,7 +3,7 @@ sc_usb_audio Change Log
 
 6.14.1
 ------
-
+    - RESOLVED:   UAC1
 
 6.14.0
 ------
