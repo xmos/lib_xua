@@ -3,7 +3,8 @@ sc_usb_audio Change Log
 
 6.14.1
 ------
-    - RESOLVED:   UAC1
+    - RESOLVED:   UAC 1.0 descriptors now support multi-channel volume control (previously were i
+                  hard-coded as stereo)
 
 6.14.0
 ------
