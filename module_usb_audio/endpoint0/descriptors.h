@@ -2331,25 +2331,25 @@ unsigned char cfgDesc_Audio1[] =
 #if (NUM_USB_CHAN_OUT_FS > 0)
     0x03,                                 /* bmaControls(1) */
 #endif
-#if (NUM_USB_CHAN_OUT_FS > 1)    
+#if (NUM_USB_CHAN_OUT_FS > 1)
     0x03,                                 /* bmaControls(2) */
 #endif
 #if (NUM_USB_CHAN_OUT_FS > 2)
     0x03,                                 /* bmaControls(3) */
 #endif
-#if (NUM_USB_CHAN_OUT_FS > 3)    
+#if (NUM_USB_CHAN_OUT_FS > 3)
     0x03,                                 /* bmaControls(4) */
 #endif
 #if (NUM_USB_CHAN_OUT_FS > 4)
     0x03,                                 /* bmaControls(5) */
 #endif
-#if (NUM_USB_CHAN_OUT_FS > 5)    
+#if (NUM_USB_CHAN_OUT_FS > 5)
     0x03,                                 /* bmaControls(6) */
 #endif
 #if (NUM_USB_CHAN_OUT_FS > 6)
     0x03,                                 /* bmaControls(7) */
 #endif
-#if (NUM_USB_CHAN_OUT_FS > 7)    
+#if (NUM_USB_CHAN_OUT_FS > 7)
     0x03,                                 /* bmaControls(8) */
 #endif
 #if (NUM_USB_CHAN_OUT_FS > 8)
@@ -2402,25 +2402,25 @@ unsigned char cfgDesc_Audio1[] =
 #if (NUM_USB_CHAN_IN_FS > 0)
     0x03,                                 /* bmaControls(1) */
 #endif
-#if (NUM_USB_CHAN_IN_FS > 1)    
+#if (NUM_USB_CHAN_IN_FS > 1)
     0x03,                                 /* bmaControls(2) */
 #endif
 #if (NUM_USB_CHAN_IN_FS > 2)
     0x03,                                 /* bmaControls(3) */
 #endif
-#if (NUM_USB_CHAN_IN_FS > 3)    
+#if (NUM_USB_CHAN_IN_FS > 3)
     0x03,                                 /* bmaControls(4) */
 #endif
 #if (NUM_USB_CHAN_IN_FS > 4)
     0x03,                                 /* bmaControls(5) */
 #endif
-#if (NUM_USB_CHAN_IN_FS > 5)    
+#if (NUM_USB_CHAN_IN_FS > 5)
     0x03,                                 /* bmaControls(6) */
 #endif
 #if (NUM_USB_CHAN_IN_FS > 6)
     0x03,                                 /* bmaControls(7) */
 #endif
-#if (NUM_USB_CHAN_IN_FS > 7)    
+#if (NUM_USB_CHAN_IN_FS > 7)
     0x03,                                 /* bmaControls(8) */
 #endif
 #if (NUM_USB_CHAN_IN_FS > 8)
