@@ -175,4 +175,7 @@ sc_usb_audio Change Log
     - CHANGE:     Level meter buffer naming now resemble functionality
 
 
+Legacy release history
+----------------------
+
 Please see changelog in sw_usb_audio for changes prior to 6.8.0 release.
