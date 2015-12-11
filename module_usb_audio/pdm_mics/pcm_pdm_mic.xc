@@ -59,7 +59,7 @@ void pdm_process(streaming chanend c_ds_output_0, streaming chanend c_ds_output_
 
         while(1)
         {
-            frame_audio * unsafe current = decimator_get_next_audio_frame(c_ds_output_0, c_ds_output_1, buffer, mic_audio);
+            frame_audio * unsafe current = decimator_get_next_audio_frame(c_ds_output_0, c_ds_output_1, buffer, mic_audio, 2);
 
             unsafe
             {
