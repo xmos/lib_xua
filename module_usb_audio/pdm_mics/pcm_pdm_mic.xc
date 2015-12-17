@@ -19,8 +19,12 @@
 /* Hardware resources */
 in port p_pdm_clk                = PORT_PDM_CLK;
 in buffered port:32 p_pdm_mics   = PORT_PDM_DATA;
+#if AUDIO_IO_TILE != PDM_TILE
 in port p_mclk                   = PORT_PDM_MCLK;
-clock pdmclk                     = on tile[PDM_TILE]: XS1_CLKBLK_3;
+#else
+// Use 'p_mclk_in' shared by I2S
+#endif
+clock pdmclk                     = on tile[PDM_TILE]: XS1_CLKBLK_4;
 
 /* User hooks */
 unsafe void user_pdm_process(frame_audio * unsafe audio, int output[]);
@@ -92,9 +96,18 @@ void pcm_pdm_mic(chanend c_pcm_out)
 {
     streaming chan c_4x_pdm_mic_0, c_4x_pdm_mic_1;
     streaming chan c_ds_output_0, c_ds_output_1;
+    
 
     /* TODO, always run mics at 3MHz */
-    configure_clock_src_divide(pdmclk, p_mclk, 2);
+    /* Assuming MCLK is 24.576 MHz */
+    #if AUDIO_IO_TILE != PDM_TILE
+    configure_clock_src_divide(pdmclk, p_mclk, 4);
+    #else
+    unsigned port_id, divide = 4;
+    asm("ldw %0, dp[p_mclk_in]":"=r"(port_id));
+    asm("setclk res[%0], %1"::"r"(pdmclk), "r"(port_id));
+    asm("setd res[%0], %1"::"r"(pdmclk), "r"(divide));
+    #endif
     configure_port_clock_output(p_pdm_clk, pdmclk);
     configure_in_port(p_pdm_mics, pdmclk);
     start_clock(pdmclk);
