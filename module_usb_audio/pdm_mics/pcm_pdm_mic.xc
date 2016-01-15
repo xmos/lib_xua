@@ -51,9 +51,9 @@ void pdm_process(streaming chanend c_ds_output[2], chanend c_audio)
 
         unsafe
         {
-            int * unsafe fir_coefs[7] = {0, g_third_48kHz_fir, g_third_24kHz_fir, g_third_16kHz_fir, g_third_12kHz_fir, 0, g_third_8kHz_fir};
+            int * unsafe fir_coefs[7] = {0, g_third_stage_div_2_fir, g_third_stage_div_4_fir, g_third_stage_div_6_fir, g_third_stage_div_8_fir, 0, g_third_stage_div_12_fir};
 
-            decimator_config_common dcc = {MAX_FRAME_SIZE_LOG2, 1, 0, 0, decimationfactor, fir_coefs[decimationfactor/2], 0, INT_MAX>>4};
+            decimator_config_common dcc = {MAX_FRAME_SIZE_LOG2, 1, 0, 0, decimationfactor, fir_coefs[decimationfactor/2], 0, 0};
             decimator_config dc[2] = {{&dcc, data_0, {0, 0, 0, 0}, 4}, {&dcc, data_1, {0, 0, 0, 0}, 4}};
             decimator_configure(c_ds_output, 2, dc);
         }
