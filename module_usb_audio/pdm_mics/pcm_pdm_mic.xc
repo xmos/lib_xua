@@ -53,16 +53,15 @@ void pdm_process(streaming chanend c_ds_output[2], chanend c_audio)
         {
             int * unsafe fir_coefs[7] = {0, g_third_stage_div_2_fir, g_third_stage_div_4_fir, g_third_stage_div_6_fir, g_third_stage_div_8_fir, 0, g_third_stage_div_12_fir};
 
-            decimator_config_common dcc = {MAX_FRAME_SIZE_LOG2, 1, 0, 0, decimationfactor, fir_coefs[decimationfactor/2], 0, 0};
+            decimator_config_common dcc = {MAX_FRAME_SIZE_LOG2, 1, 0, 0, decimationfactor, fir_coefs[decimationfactor/2], 0, 0, DECIMATOR_NO_FRAME_OVERLAP, 2};
             decimator_config dc[2] = {{&dcc, data_0, {0, 0, 0, 0}, 4}, {&dcc, data_1, {0, 0, 0, 0}, 4}};
             decimator_configure(c_ds_output, 2, dc);
-        }
 
-        decimator_init_audio_frame(c_ds_output, 2, buffer, mic_audio, DECIMATOR_NO_FRAME_OVERLAP);
+        decimator_init_audio_frame(c_ds_output, 2, buffer, mic_audio, dcc);
 
         while(1)
         {
-            frame_audio * unsafe current = decimator_get_next_audio_frame(c_ds_output, 2, buffer, mic_audio, 2);
+            frame_audio * unsafe current = decimator_get_next_audio_frame(c_ds_output, 2, buffer, mic_audio, dcc);
 
             unsafe
             {
@@ -82,6 +81,7 @@ void pdm_process(streaming chanend c_ds_output[2], chanend c_audio)
                 {
                     break;
                 }
+            }
             }
         }
     }
