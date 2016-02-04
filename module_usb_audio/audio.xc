@@ -421,7 +421,7 @@ static inline void InitPorts(unsigned divide)
 #pragma loop unroll
     for(int i = 0; i < I2S_WIRES_ADC; i++)
     {
-       asm("setpt res[%0], %1"::"r"(p_i2s_adc[i]),"r"(tmp+31));
+       asm("setpt res[%0], %1"::"r"(p_i2s_adc[i]),"r"(tmp-1));
     }
 #endif
 #endif
