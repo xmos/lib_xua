@@ -2227,8 +2227,10 @@ const unsigned num_freqs_a1 = MAX(3, (0
 #if(MIN_FREQ <= 16000) && (MAX_FREQ_FS >= 16000)
     +1
 #endif
+#if (NUM_PDM_MICS == 0)
 #if(MIN_FREQ <= 32000) && (MAX_FREQ_FS >= 32000)
     +1
+#endif
 #endif
 #if (MIN_FREQ <= 44100) && (MAX_FREQ_FS >= 44100)
     +1
@@ -2244,7 +2246,7 @@ const unsigned num_freqs_a1 = MAX(3, (0
 #endif
 ));
 
-#define AC_TOTAL_LENGTH             (AC_LENGTH + (INPUT_INTERFACES_A1 * (19 + num_freqs_a1 * 3)) + (OUTPUT_INTERFACES_A1 * (19 + (num_freqs_a1 *3))))
+#define AC_TOTAL_LENGTH             (AC_LENGTH + (INPUT_INTERFACES_A1 * (17 + NUM_USB_CHAN_IN_FS + num_freqs_a1 * 3)) + (OUTPUT_INTERFACES_A1 * (17 + NUM_USB_CHAN_OUT_FS + (num_freqs_a1 *3))))
 #define STREAMING_INTERFACES        (INPUT_INTERFACES_A1 + OUTPUT_INTERFACES_A1)
 
 /* Number of interfaces for Audio  1.0 (+1 for control ) */
@@ -2320,15 +2322,41 @@ unsigned char cfgDesc_Audio1[] =
     11,                                   /* iTerminal */
 
     /* CS_Interface class specific AC interface feature unit descriptor - mute & volume for dac */
-    0x0A,
+    (8 + NUM_USB_CHAN_OUT_FS),
     UAC_CS_DESCTYPE_INTERFACE,
     UAC_CS_AC_INTERFACE_SUBTYPE_FEATURE_UNIT, /* 2  bDescriptorSubType: FEATURE_UNIT */
     0x0A,                                 /* unitID */
     0x01,                                 /* sourceID - ID of the unit/terminal to which this feature unit is connected */
     0x01,                                 /* controlSize - 1 */
+
     0x00,                                 /* bmaControls(0) */
+#if (NUM_USB_CHAN_OUT_FS > 0)
     0x03,                                 /* bmaControls(1) */
+#endif
+#if (NUM_USB_CHAN_OUT_FS > 1)    
     0x03,                                 /* bmaControls(2) */
+#endif
+#if (NUM_USB_CHAN_OUT_FS > 2)
+    0x03,                                 /* bmaControls(3) */
+#endif
+#if (NUM_USB_CHAN_OUT_FS > 3)    
+    0x03,                                 /* bmaControls(4) */
+#endif
+#if (NUM_USB_CHAN_OUT_FS > 4)
+    0x03,                                 /* bmaControls(5) */
+#endif
+#if (NUM_USB_CHAN_OUT_FS > 5)    
+    0x03,                                 /* bmaControls(6) */
+#endif
+#if (NUM_USB_CHAN_OUT_FS > 6)
+    0x03,                                 /* bmaControls(7) */
+#endif
+#if (NUM_USB_CHAN_OUT_FS > 7)    
+    0x03,                                 /* bmaControls(8) */
+#endif
+#if (NUM_USB_CHAN_OUT_FS > 8)
+#error NUM_USB_CHAN_OUT_FS > 8 currently supported
+#endif
     0x00,                                 /* String table index */
 
     /* CS_Interface Output Terminal Descriptor - Analogue out to speaker */
@@ -2366,15 +2394,40 @@ unsigned char cfgDesc_Audio1[] =
     0x00,                                 /* Unused */
 
     /* CS_Interface class specific AC interface feature unit descriptor - mute & volume for adc */
-    0x0A,
+    (8 + NUM_USB_CHAN_IN_FS),
     UAC_CS_DESCTYPE_INTERFACE,
     UAC_CS_AC_INTERFACE_SUBTYPE_FEATURE_UNIT, /* 2  bDescriptorSubType: FEATURE_UNIT */
     0x0B,                                 /* unitID */
     0x02,                                 /* sourceID - ID of the unit/terminal to which this feature unit is connected */
     0x01,                                 /* controlSize - 1 */
     0x00,                                 /* bmaControls(0) */
+#if (NUM_USB_CHAN_IN_FS > 0)
     0x03,                                 /* bmaControls(1) */
+#endif
+#if (NUM_USB_CHAN_IN_FS > 1)    
     0x03,                                 /* bmaControls(2) */
+#endif
+#if (NUM_USB_CHAN_IN_FS > 2)
+    0x03,                                 /* bmaControls(3) */
+#endif
+#if (NUM_USB_CHAN_IN_FS > 3)    
+    0x03,                                 /* bmaControls(4) */
+#endif
+#if (NUM_USB_CHAN_IN_FS > 4)
+    0x03,                                 /* bmaControls(5) */
+#endif
+#if (NUM_USB_CHAN_IN_FS > 5)    
+    0x03,                                 /* bmaControls(6) */
+#endif
+#if (NUM_USB_CHAN_IN_FS > 6)
+    0x03,                                 /* bmaControls(7) */
+#endif
+#if (NUM_USB_CHAN_IN_FS > 7)    
+    0x03,                                 /* bmaControls(8) */
+#endif
+#if (NUM_USB_CHAN_IN_FS > 8)
+#error NUM_USB_CHAN_IN_FS > 8 currently supported
+#endif
     0x00,                                 /* String table index */
 #endif
 
@@ -2455,8 +2508,10 @@ unsigned char cfgDesc_Audio1[] =
     CHARIFY_SR(16000),                    /* sampleFreq - 16KHz */
 #endif
 
+#if (NUM_PDM_MICS == 0)
 #if(MIN_FREQ <= 32000) && (MAX_FREQ_FS >= 32000)
     CHARIFY_SR(32000),                    /* sampleFreq - 32KHz */
+#endif
 #endif
 
 #if (MIN_FREQ <= 44100) && (MAX_FREQ_FS >= 44100)
@@ -2583,8 +2638,10 @@ unsigned char cfgDesc_Audio1[] =
     CHARIFY_SR(16000),                    /* sampleFreq - 32KHz */
 #endif
 
+#if (NUM_PDM_MICS == 0)
 #if(MIN_FREQ <= 32000) && (MAX_FREQ_FS >= 32000)
     CHARIFY_SR(32000),                    /* sampleFreq - 32KHz */
+#endif
 #endif
 
 #if (MIN_FREQ <= 44100) && (MAX_FREQ_FS >= 44100)

@@ -1,6 +1,13 @@
 sc_usb_audio Change Log
 =======================
 
+6.15.0
+------
+    - CHANGE:     Removed 32kHz sample-rate support when PDM microphones enabled (lib_mic_array
+                  currently does not support non-integer decimation factors)
+    - RESOLVED:   UAC 1.0 descriptors now support multi-channel volume control (previously were 
+                  hard-coded as stereo)
+
 6.14.0
 ------
     - ADDED:      Support for for master-clock/sample-rate divides that are not a power of 2 
@@ -169,5 +176,8 @@ sc_usb_audio Change Log
                   mixer (previously the device input data and the stream from host were swapped)
     - CHANGE:     Level meter buffer naming now resemble functionality
 
+
+Legacy release history
+----------------------
 
 Please see changelog in sw_usb_audio for changes prior to 6.8.0 release.
