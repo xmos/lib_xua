@@ -1,6 +1,10 @@
 sc_usb_audio Change Log
 =======================
 
+6.14.2
+------
+    - RESOLVED:   DAC data mis-alignment issue in TDM slave mode
+
 6.14.1
 ------
     - RESOLVED:   UAC 1.0 descriptors now support multi-channel volume control (previously were
