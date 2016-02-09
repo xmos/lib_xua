@@ -106,12 +106,6 @@ extern void device_reboot(void);
 #define MAX_DIVIDE (MAX_DIVIDE_48)
 #endif
 
-/* Useful for correcting a difference in sample clock polarity between DAC and ADC */
-#ifndef I2S_ADC_TO_DAC_SAMP_OFFSET
-#define I2S_ADC_TO_DAC_SAMP_OFFSET 0
-#endif
-
-
 #ifndef CODEC_MASTER
 static inline void doI2SClocks(unsigned divide)
 {
@@ -662,7 +656,7 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
             /* Output "even" channel to DAC (i.e. left) */
             for(int i = 0; i < I2S_CHANS_DAC; i+=I2S_CHANS_PER_FRAME)
             {
-                p_i2s_dac[index++] <: bitrev(samplesOut[((frameCount+I2S_ADC_TO_DAC_SAMP_OFFSET)&(I2S_CHANS_PER_FRAME-1))+i]);
+                p_i2s_dac[index++] <: bitrev(samplesOut[frameCount +i]);
             }
 #endif
 
@@ -767,7 +761,7 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
 #pragma loop unroll
             for(int i = 1; i < I2S_CHANS_DAC; i+=I2S_CHANS_PER_FRAME)
             {
-                p_i2s_dac[index++] <: bitrev(samplesOut[(frameCount+i+I2S_ADC_TO_DAC_SAMP_OFFSET)&(I2S_CHANS_PER_FRAME-1)]);
+                p_i2s_dac[index++] <: bitrev(samplesOut[frameCount + i]);
             }
 #endif
 
