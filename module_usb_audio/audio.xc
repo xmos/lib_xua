@@ -662,7 +662,7 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
             /* Output "even" channel to DAC (i.e. left) */
             for(int i = 0; i < I2S_CHANS_DAC; i+=I2S_CHANS_PER_FRAME)
             {
-                p_i2s_dac[index++] <: bitrev(samplesOut[((frameCount+I2S_ADC_TO_DAC_SAMP_OFFSET)&(I2S_CHANS_PER_FRAME-1))+i]);
+                p_i2s_dac[index++] <: bitrev(samplesOut[frameCount+ (((I2S_ADC_TO_DAC_SAMP_OFFSET)&(I2S_CHANS_PER_FRAME-1)) +i)]);
             }
 #endif
 
@@ -767,7 +767,7 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
 #pragma loop unroll
             for(int i = 1; i < I2S_CHANS_DAC; i+=I2S_CHANS_PER_FRAME)
             {
-                p_i2s_dac[index++] <: bitrev(samplesOut[(frameCount+i+I2S_ADC_TO_DAC_SAMP_OFFSET)&(I2S_CHANS_PER_FRAME-1)]);
+                p_i2s_dac[index++] <: bitrev(samplesOut[frameCount+ (((I2S_ADC_TO_DAC_SAMP_OFFSET)&(I2S_CHANS_PER_FRAME-1)) +i)]);
             }
 #endif
 
