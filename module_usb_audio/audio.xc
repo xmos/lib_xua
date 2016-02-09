@@ -413,7 +413,7 @@ static inline void InitPorts(unsigned divide)
 
     tmp += (I2S_CHANS_PER_FRAME * 32) - 32 + 1 ;
     /* E.g. 2 * 32 - 32 + 1 = 33 for stereo */
-    /* E..g 8 * 32 - 32 + 1 = 225 for 8 chan TDM */
+    /* E.g. 8 * 32 - 32 + 1 = 225 for 8 chan TDM */
 
 #if (I2S_CHANS_DAC != 0)
 #pragma loop unroll
