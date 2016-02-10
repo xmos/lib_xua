@@ -3,8 +3,6 @@ sc_usb_audio Change Log
 
 6.15.1
 ------
-    - ADDED:      Ability to offset DAC data from ADC data. Useful if ADC and DAC do not agree 
-                  on TDM formats as on the xCORE-200-MC-AUDIO board. See I2S_ADC_TO_DAC_SAMP_OFFSET
     - RESOLVED:   DAC data mis-alignment issue in TDM slave mode
 
 
