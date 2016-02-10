@@ -106,12 +106,6 @@ extern void device_reboot(void);
 #define MAX_DIVIDE (MAX_DIVIDE_48)
 #endif
 
-/* Useful for correcting a difference in sample clock polarity between DAC and ADC */
-#ifndef I2S_ADC_TO_DAC_SAMP_OFFSET
-#define I2S_ADC_TO_DAC_SAMP_OFFSET 0
-#endif
-
-
 #ifndef CODEC_MASTER
 static inline void doI2SClocks(unsigned divide)
 {
