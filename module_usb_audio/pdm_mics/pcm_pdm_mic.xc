@@ -13,7 +13,6 @@
 #include <xclib.h>
 #include <stdint.h>
 
-#include "fir_decimator.h"
 #include "mic_array.h"
 
 #define MAX_DECIMATION_FACTOR 12
