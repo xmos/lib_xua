@@ -407,7 +407,7 @@ static inline void InitPorts(unsigned divide)
 
     tmp += (I2S_CHANS_PER_FRAME * 32) - 32 + 1 ;
     /* E.g. 2 * 32 - 32 + 1 = 33 for stereo */
-    /* E..g 8 * 32 - 32 + 1 = 225 for 8 chan TDM */
+    /* E.g. 8 * 32 - 32 + 1 = 225 for 8 chan TDM */
 
 #if (I2S_CHANS_DAC != 0)
 #pragma loop unroll
@@ -421,7 +421,7 @@ static inline void InitPorts(unsigned divide)
 #pragma loop unroll
     for(int i = 0; i < I2S_WIRES_ADC; i++)
     {
-       asm("setpt res[%0], %1"::"r"(p_i2s_adc[i]),"r"(tmp+31));
+       asm("setpt res[%0], %1"::"r"(p_i2s_adc[i]),"r"(tmp-1));
     }
 #endif
 #endif
@@ -656,7 +656,7 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
             /* Output "even" channel to DAC (i.e. left) */
             for(int i = 0; i < I2S_CHANS_DAC; i+=I2S_CHANS_PER_FRAME)
             {
-                p_i2s_dac[index++] <: bitrev(samplesOut[(frameCount)+i]);
+                p_i2s_dac[index++] <: bitrev(samplesOut[frameCount +i]);
             }
 #endif
 
@@ -761,7 +761,7 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
 #pragma loop unroll
             for(int i = 1; i < I2S_CHANS_DAC; i+=I2S_CHANS_PER_FRAME)
             {
-                p_i2s_dac[index++] <: bitrev(samplesOut[frameCount+i]);
+                p_i2s_dac[index++] <: bitrev(samplesOut[frameCount + i]);
             }
 #endif
 
