@@ -24,18 +24,17 @@ in port p_mclk                   = PORT_PDM_MCLK;
 clock pdmclk                     = on tile[PDM_TILE]: XS1_CLKBLK_3;
 
 /* User hooks */
-unsafe void user_pdm_process(frame_audio * unsafe audio, int output[]);
+unsafe void user_pdm_process(mic_array_frame_time_domain * unsafe audio, int output[]);
 void user_pdm_init();
 
 int data_0[4*THIRD_STAGE_COEFS_PER_STAGE * MAX_DECIMATION_FACTOR] = {0};
 int data_1[4*THIRD_STAGE_COEFS_PER_STAGE * MAX_DECIMATION_FACTOR] = {0};
 
-frame_audio mic_audio[2];
+ mic_array_frame_time_domain mic_audio[2];
 
 void pdm_process(streaming chanend c_ds_output[2], chanend c_audio)
 {
     unsigned buffer = 1;     // Buffer index
-    memset(mic_audio, sizeof(frame_audio), 0);
     int output[NUM_PDM_MICS];
 
     user_pdm_init();
@@ -52,15 +51,15 @@ void pdm_process(streaming chanend c_ds_output[2], chanend c_audio)
         {
             const int * unsafe fir_coefs[7] = {0, g_third_stage_div_2_fir, g_third_stage_div_4_fir, g_third_stage_div_6_fir, g_third_stage_div_8_fir, 0, g_third_stage_div_12_fir};
 
-            decimator_config_common dcc = {MAX_FRAME_SIZE_LOG2, 1, 0, 0, decimationfactor, fir_coefs[decimationfactor/2], 0, 0, DECIMATOR_NO_FRAME_OVERLAP, 2};
-            decimator_config dc[2] = {{&dcc, data_0, {0, 0, 0, 0}, 4}, {&dcc, data_1, {0, 0, 0, 0}, 4}};
-            decimator_configure(c_ds_output, 2, dc);
+            mic_array_decimator_config_common dcc = {MIC_ARRAY_MAX_FRAME_SIZE_LOG2, 1, 0, 0, decimationfactor, fir_coefs[decimationfactor/2], 0, 0, DECIMATOR_NO_FRAME_OVERLAP, 2};
+            mic_array_decimator_config dc[2] = {{&dcc, data_0, {0, 0, 0, 0}, 4}, {&dcc, data_1, {0, 0, 0, 0}, 4}};
+            mic_array_decimator_configure(c_ds_output, 2, dc);
 
-        decimator_init_audio_frame(c_ds_output, 2, buffer, mic_audio, dcc);
+        mic_array_init_time_domain_frame(c_ds_output, 2, buffer, mic_audio, dc);
 
         while(1)
         {
-            frame_audio * unsafe current = decimator_get_next_audio_frame(c_ds_output, 2, buffer, mic_audio, dcc);
+            mic_array_frame_time_domain * unsafe current = mic_array_get_next_time_domain_frame(c_ds_output, 2, buffer, mic_audio, dc);
 
             unsafe
             {
@@ -103,9 +102,9 @@ void pcm_pdm_mic(chanend c_pcm_out)
 
     par
     {
-        pdm_rx(p_pdm_mics, c_4x_pdm_mic_0, c_4x_pdm_mic_1);
-        decimate_to_pcm_4ch(c_4x_pdm_mic_0, c_ds_output[0]);
-        decimate_to_pcm_4ch(c_4x_pdm_mic_1, c_ds_output[1]);
+        mic_array_pdm_rx(p_pdm_mics, c_4x_pdm_mic_0, c_4x_pdm_mic_1);
+        mic_array_decimate_to_pcm_4ch(c_4x_pdm_mic_0, c_ds_output[0]);
+        mic_array_decimate_to_pcm_4ch(c_4x_pdm_mic_1, c_ds_output[1]);
         pdm_process(c_ds_output, c_pcm_out);
     }
 }
