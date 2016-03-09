@@ -4,13 +4,15 @@ sc_usb_audio Change Log
 6.15.1
 ------
     - RESOLVED:   DAC data mis-alignment issue in TDM slave mode
+    - CHANGE:     Updates to support API changes in lib_mic_array version 2.0
 
 6.15.0
 ------
-    - CHANGE:     Removed 32kHz sample-rate support when PDM microphones enabled (lib_mic_array
-                  currently does not support non-integer decimation factors)
+   
     - RESOLVED:   UAC 1.0 descriptors now support multi-channel volume control (previously were 
                   hard-coded as stereo)
+    - CHANGE:     Removed 32kHz sample-rate support when PDM microphones enabled (lib_mic_array
+                  currently does not support non-integer decimation factors)
 
 6.14.0
 ------
