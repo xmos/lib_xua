@@ -1,13 +1,16 @@
 sc_usb_audio Change Log
 =======================
 
-6.14.2
+6.15.1
 ------
     - RESOLVED:   DAC data mis-alignment issue in TDM slave mode
 
-6.14.1
+
+6.15.0
 ------
-    - RESOLVED:   UAC 1.0 descriptors now support multi-channel volume control (previously were
+    - CHANGE:     Removed 32kHz sample-rate support when PDM microphones enabled (lib_mic_array
+                  currently does not support non-integer decimation factors)
+    - RESOLVED:   UAC 1.0 descriptors now support multi-channel volume control (previously were 
                   hard-coded as stereo)
 
 6.14.0
