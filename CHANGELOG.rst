@@ -5,7 +5,6 @@ sc_usb_audio Change Log
 ------
     - RESOLVED:   DAC data mis-alignment issue in TDM slave mode
 
-
 6.15.0
 ------
     - CHANGE:     Removed 32kHz sample-rate support when PDM microphones enabled (lib_mic_array
