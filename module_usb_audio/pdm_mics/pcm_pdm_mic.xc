@@ -30,7 +30,7 @@ void user_pdm_init();
 int data_0[4*THIRD_STAGE_COEFS_PER_STAGE * MAX_DECIMATION_FACTOR] = {0};
 int data_1[4*THIRD_STAGE_COEFS_PER_STAGE * MAX_DECIMATION_FACTOR] = {0};
 
- mic_array_frame_time_domain mic_audio[2];
+mic_array_frame_time_domain mic_audio[2];
 
 void pdm_process(streaming chanend c_ds_output[2], chanend c_audio)
 {
@@ -51,8 +51,8 @@ void pdm_process(streaming chanend c_ds_output[2], chanend c_audio)
         {
             const int * unsafe fir_coefs[7] = {0, g_third_stage_div_2_fir, g_third_stage_div_4_fir, g_third_stage_div_6_fir, g_third_stage_div_8_fir, 0, g_third_stage_div_12_fir};
 
-            mic_array_decimator_config_common dcc = {MIC_ARRAY_MAX_FRAME_SIZE_LOG2, 1, 0, 0, decimationfactor, fir_coefs[decimationfactor/2], 0, 0, DECIMATOR_NO_FRAME_OVERLAP, 2};
-            mic_array_decimator_config dc[2] = {{&dcc, data_0, {0, 0, 0, 0}, 4}, {&dcc, data_1, {0, 0, 0, 0}, 4}};
+            mic_array_decimator_conf_common_t dcc = {MIC_ARRAY_MAX_FRAME_SIZE_LOG2, 1, 0, 0, decimationfactor, fir_coefs[decimationfactor/2], 0, 0, DECIMATOR_NO_FRAME_OVERLAP, 2};
+            mic_array_decimator_config_t dc[2] = {{&dcc, data_0, {0, 0, 0, 0}, 4}, {&dcc, data_1, {0, 0, 0, 0}, 4}};
             mic_array_decimator_configure(c_ds_output, 2, dc);
 
         mic_array_init_time_domain_frame(c_ds_output, 2, buffer, mic_audio, dc);
