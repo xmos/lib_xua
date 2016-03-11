@@ -94,7 +94,7 @@ void pcm_pdm_mic(chanend c_pcm_out)
     streaming chan c_4x_pdm_mic_0, c_4x_pdm_mic_1;
     streaming chan c_ds_output[2];
 
-    /* TODO, always run mics at 3MHz */
+    /* Note, this divide should be based on master clock freq */
     configure_clock_src_divide(pdmclk, p_mclk, 2);
     configure_port_clock_output(p_pdm_clk, pdmclk);
     configure_in_port(p_pdm_mics, pdmclk);
