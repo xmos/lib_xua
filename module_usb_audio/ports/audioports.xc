@@ -28,7 +28,7 @@ void ConfigAudioPorts(
         in port p_bclk,
 #endif
 #endif
-unsigned int divide)
+unsigned int divide, unsigned curSamFreq)
 {
 #if !defined(CODEC_MASTER)
     /* Note this call to stop_clock() will pause forever if the port clocking the clock-block is not low.
@@ -115,6 +115,18 @@ unsigned int divide)
 
     /* Clock bclk clock-block from bclk pin */
     configure_clock_src(clk_audio_bclk, p_bclk);
+
+
+    /* Do some clocking shifting to get data in the valid window */
+    /* E.g. Only shift when running at 88.2+ kHz TDM slave */
+    int bClkDelay_fall = 0;
+    if(curSamFreq * I2S_CHANS_PER_FRAME * 32 >= 20000000)
+    {
+        /* 18 * 2ns = 36ns. This results in a -4ns (36 - 40) shift at 96KHz and -8ns (36 - 44) at 88.4KHz */
+        bClkDelay_fall = 18;
+    }
+
+    set_clock_fall_delay(clk_audio_bclk, bClkDelay_fall);
 
 #if (I2S_CHANS_DAC != 0)
      /* Clock I2S output data ports from b-clock clock block */
