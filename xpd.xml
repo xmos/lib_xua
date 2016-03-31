@@ -84,6 +84,7 @@
     <release parenthash = "53f819e748d25fdfd698303a48a7bfc51da77842" version = "6.12.2rc1" githash = "27e68d821d55560ac9d7b8878f2d77636864be1c"></release>
     <release parenthash = "a09ba027a29767686091dfda3c390431cac8cdca" version = "6.12.2rc2" githash = "346f5a704f1130274b88cf742de73239e54b3c7d"></release>
     <release parenthash = "cb6b3d3df25f5ee04577b9163f5ff2b7521919b3" version = "6.12.2rc3" githash = "d43c17a5c81724f880a001701669c5a00808a4e0"></release>
+    <release parenthash = "3b7f63844d1ef9363d4ab23fc9b028eb7bd94f31" version = "6.12.2rc4" githash = "7bf28f0367a76070bffa1b45fd7420e3e10a0b0d"></release>
     <release parenthash = "c385fc2e1506b63b2a2440855a3b9d2503c76fa7" version = "6.12.3rc0" githash = "0b2696742e992a8031eeedb5226c1570705eedb1"></release>
     <release parenthash = "ee6fa86c6c20d12c1fac1db24c3c8136e69dd892" version = "6.12.3rc1" githash = "47db9e113163d14946cf7c6165687f1888f20806"></release>
     <release parenthash = "4d61773cf3919dd973d149c1ad2fa78d8f0502fe" version = "6.12.3rc2" githash = "c42d93f6a7975e7065a4edb5b86ac07baedf33c1"></release>
@@ -99,7 +100,8 @@
     <release parenthash = "cfeb352d625de3d9e4208f8a32ed7b6c8974b024" version = "6.14.0beta2" githash = "216e8e3eee733c93d288826745850efbb3ebc4aa"></release>
     <release parenthash = "929437e7df13732b917c4bedc8f74166840c08b7" version = "6.14.1beta0" githash = "977044168b6ad1c24c666c4cdc535967e2a74c71"></release>
     <release parenthash = "95f44bf396ad9db3a98ed44811ebb3eda567b66e" version = "6.15.1rc0" githash = "577d68a08b45d6ef32d07fedfdb0d030daa2278c"></release>
-    <release parenthash = "0ed22a04170f3b17dc5d471b6f5a2fb68ed71f4f" version = "6.15.1rc1"></release>
+    <release parenthash = "0ed22a04170f3b17dc5d471b6f5a2fb68ed71f4f" version = "6.15.1rc1" githash = "b24377ad993cec6ddfbccc867618fbb8812e466f"></release>
+    <release parenthash = "136edf6bf7393d30e1f85197b72585c22611d94f" version = "6.15.2rc0"></release>
     <subpartnumber>XM-004720-SM</subpartnumber>
     <vendor>XMOS</vendor>
     <version_defines>
