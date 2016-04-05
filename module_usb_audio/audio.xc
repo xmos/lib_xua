@@ -1098,7 +1098,7 @@ chanend ?c_config, chanend ?c
                 null,
                 p_dsd_clk,
 #endif
-                divide, dsdMode);
+                divide, curSamFreq, dsdMode);
         }
         else
 #endif
@@ -1122,7 +1122,7 @@ chanend ?c_config, chanend ?c
                 p_bclk,
 #endif
 #endif
-            divide, dsdMode);
+            divide, curSamFreq, dsdMode);
 }
 
 

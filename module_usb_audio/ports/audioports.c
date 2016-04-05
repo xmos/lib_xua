@@ -43,7 +43,7 @@ void ConfigAudioPortsWrapper(
                 port p_lrclk,
                 port p_bclk,
 #endif
-unsigned int divide, unsigned int dsdMode)
+unsigned int divide, unsigned curSamFreq, unsigned int dsdMode)
 {
         ConfigAudioPorts(
 #if (I2S_CHANS_DAC != 0) || (DSD_CHANS_DAC != 0)
@@ -56,5 +56,5 @@ unsigned int divide, unsigned int dsdMode)
 #endif
                 p_lrclk,
                 p_bclk,
-                divide);
+                divide, curSamFreq);
 }

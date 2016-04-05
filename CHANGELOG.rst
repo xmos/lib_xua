@@ -1,6 +1,10 @@
 sc_usb_audio Change Log
 =======================
 
+6.15.2
+------
+    - RESOLVED:  interrupt.h (used in audio buffering) now compatible with xCORE-200 ABI
+
 6.15.1
 ------
     - RESOLVED:   DAC data mis-alignment issue in TDM slave mode

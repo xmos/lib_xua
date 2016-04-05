@@ -26,7 +26,7 @@ void ConfigAudioPorts(
                 in port p_bclk,
 #endif
 #endif
-                unsigned int divide);
+                unsigned int divide, unsigned int curSamFreq);
 #else
 
 void ConfigAudioPorts(
@@ -49,7 +49,7 @@ void ConfigAudioPorts(
                 port p_bclk,
 #endif
 #endif
-                unsigned int divide);
+                unsigned int divide, unsigned int curSamFreq);
 
 
 #endif /* __XC__*/
@@ -74,7 +74,7 @@ void ConfigAudioPortsWrapper(
                 in port p_bclk,
 #endif
 #endif
-                unsigned int divide, unsigned int dsdMode);
+                unsigned int divide, unsigned curSamFreq, unsigned int dsdMode);
 #else
 
 void ConfigAudioPortsWrapper(
@@ -90,7 +90,7 @@ void ConfigAudioPortsWrapper(
                 port p_lrclk,
                 port p_bclk,
 #endif
-                unsigned int divide, unsigned int dsdMode);
+                unsigned int divide, unsigned curSamFreq, unsigned int dsdMode);
 
 
 #endif /* __XC__*/
