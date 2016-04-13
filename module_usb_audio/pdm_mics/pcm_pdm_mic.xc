@@ -97,14 +97,14 @@ void pdm_process(streaming chanend c_ds_output[2], chanend c_audio
 #error MAX_FREQ > 48000 NOT CURRENTLY SUPPORTED
 #endif
 
-void pcm_pdm_mic(chanend c_pcm_out)
+void pcm_pdm_mic(chanend c_pcm_out 
+#ifdef MIC_PROCESSING_USE_INTERFACE
+   , client mic_process_if i_mic_process
+#endif
+    )
 {
     streaming chan c_4x_pdm_mic_0, c_4x_pdm_mic_1;
     streaming chan c_ds_output[2];
-
-#ifdef MIC_PROCESSING_USE_INTERFACE
-    interface mic_process_if i_mic_process;
-#endif
 
     /* Note, this divide should be based on master clock freq */
     configure_clock_src_divide(pdmclk, p_mclk, 2);
@@ -119,9 +119,10 @@ void pcm_pdm_mic(chanend c_pcm_out)
         mic_array_decimate_to_pcm_4ch(c_4x_pdm_mic_1, c_ds_output[1]);
 #ifdef MIC_PROCESSING_USE_INTERFACE
         pdm_process(c_ds_output, c_pcm_out, i_mic_process);
-        unsafe{
-        user_pdm_process(i_mic_process);
-        }
+        //unsafe{
+        //user_pdm_process(i_mic_process);
+        //}
+        /* note user pdm process is included in main.xc to allow maximum flexibilty for customisation */
 #else
         pdm_process(c_ds_output, c_pcm_out);
 #endif

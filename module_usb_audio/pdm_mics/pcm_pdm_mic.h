@@ -1,8 +1,6 @@
 
 #include "mic_array.h"
 
-void pcm_pdm_mic(chanend c_pcm_out);
-
 #ifdef MIC_PROCESSING_USE_INTERFACE
 /* Interface based user processing */
 typedef interface mic_process_if
@@ -15,7 +13,9 @@ typedef interface mic_process_if
 } mic_process_if;
 
 [[distributable]]
-unsafe void user_pdm_process(server mic_process_if i_mic_data);
+void user_pdm_process(server mic_process_if i_mic_data);
+
+void pcm_pdm_mic(chanend c_pcm_out, client mic_process_if i_mic_process);
 
 #else
 
@@ -24,6 +24,7 @@ unsafe void user_pdm_process(mic_array_frame_time_domain * unsafe audio, int out
 
 void user_pdm_init();
 
-#endif
+void pcm_pdm_mic(chanend c_pcm_out);
 
+#endif
 
