@@ -543,6 +543,9 @@ int main()
 
 #if (NUM_PDM_MICS > 0)
     chan c_pdm_pcm;
+#ifdef MIC_PROCESSING_USE_INTERFACE
+    interface mic_process_if i_mic_process;
+#endif
 #endif
 
     USER_MAIN_DECLARATIONS
@@ -654,8 +657,13 @@ int main()
 #endif
 
 #if (NUM_PDM_MICS > 0)
-        on stdcore[PDM_TILE]: pcm_pdm_mic(c_pdm_pcm);
+        on stdcore[PDM_TILE]: pcm_pdm_mic(c_pdm_pcm
+#ifdef MIC_PROCESSING_USE_INTERFACE
+            , i_mic_process 
 #endif
+        );
+#endif
+
         USER_MAIN_CORES
     }
 
