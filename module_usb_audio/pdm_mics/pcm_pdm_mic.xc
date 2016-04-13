@@ -14,6 +14,7 @@
 #include <stdint.h>
 
 #include "mic_array.h"
+#include "pcm_pdm_mic.h"
 
 #define MAX_DECIMATION_FACTOR 12
 
@@ -23,22 +24,25 @@ in buffered port:32 p_pdm_mics   = PORT_PDM_DATA;
 in port p_mclk                   = PORT_PDM_MCLK;
 clock pdmclk                     = on tile[PDM_TILE]: XS1_CLKBLK_3;
 
-/* User hooks */
-unsafe void user_pdm_process(mic_array_frame_time_domain * unsafe audio, int output[]);
-void user_pdm_init();
-
 int data_0[4*THIRD_STAGE_COEFS_PER_STAGE * MAX_DECIMATION_FACTOR] = {0};
 int data_1[4*THIRD_STAGE_COEFS_PER_STAGE * MAX_DECIMATION_FACTOR] = {0};
 
 mic_array_frame_time_domain mic_audio[2];
 
-void pdm_process(streaming chanend c_ds_output[2], chanend c_audio)
+void pdm_process(streaming chanend c_ds_output[2], chanend c_audio
+#ifdef MIC_PROCESSING_USE_INTERFACE
+   , client mic_process_if i_mic_process
+#endif
+)
 {
     unsigned buffer = 1;     // Buffer index
     int output[NUM_PDM_MICS];
 
+#ifdef MIC_PROCESSING_USE_INTERFACE
+    i_mic_process.init();
+#else
     user_pdm_init();
-
+#endif
     while(1)
     {
         unsigned samplerate;
@@ -64,8 +68,12 @@ void pdm_process(streaming chanend c_ds_output[2], chanend c_audio)
             unsafe
             {
                 int req;
-                user_pdm_process(current, output);
 
+#ifdef MIC_PROCESSING_USE_INTERFACE
+                i_mic_process.transfer_buffers(current, output);
+#else
+                user_pdm_process(current, output);
+#endif
                 c_audio :> req;
 
                 if(req)
@@ -94,6 +102,10 @@ void pcm_pdm_mic(chanend c_pcm_out)
     streaming chan c_4x_pdm_mic_0, c_4x_pdm_mic_1;
     streaming chan c_ds_output[2];
 
+#ifdef MIC_PROCESSING_USE_INTERFACE
+    interface mic_process_if i_mic_process;
+#endif
+
     /* Note, this divide should be based on master clock freq */
     configure_clock_src_divide(pdmclk, p_mclk, 2);
     configure_port_clock_output(p_pdm_clk, pdmclk);
@@ -105,7 +117,14 @@ void pcm_pdm_mic(chanend c_pcm_out)
         mic_array_pdm_rx(p_pdm_mics, c_4x_pdm_mic_0, c_4x_pdm_mic_1);
         mic_array_decimate_to_pcm_4ch(c_4x_pdm_mic_0, c_ds_output[0]);
         mic_array_decimate_to_pcm_4ch(c_4x_pdm_mic_1, c_ds_output[1]);
+#ifdef MIC_PROCESSING_USE_INTERFACE
+        pdm_process(c_ds_output, c_pcm_out, i_mic_process);
+        unsafe{
+        user_pdm_process(i_mic_process);
+        }
+#else
         pdm_process(c_ds_output, c_pcm_out);
+#endif
     }
 }
 
