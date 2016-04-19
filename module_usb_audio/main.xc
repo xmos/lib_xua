@@ -47,6 +47,10 @@
 #include "pcm_pdm_mic.h"
 #endif
 
+#ifdef RUN_DSP_TASK
+#include "dsp.h"
+#endif
+
 [[distributable]]
 void DFUHandler(server interface i_dfu i, chanend ?c_user_cmd);
 
@@ -414,6 +418,7 @@ void usb_audio_io(chanend c_aud_in, chanend ?c_adc,
 #if (NUM_PDM_MICS > 0)
     , chanend c_pdm_pcm
 #endif
+    , client dsp_if i_dsp
 )
 {
 #ifdef MIXER
@@ -457,6 +462,7 @@ void usb_audio_io(chanend c_aud_in, chanend ?c_adc,
 #if (NUM_PDM_MICS > 0)
                 , c_pdm_pcm
 #endif
+                , i_dsp
             );
         }
 
@@ -548,8 +554,12 @@ int main()
 #endif
 #endif
 
-    USER_MAIN_DECLARATIONS
+#ifdef RUN_DSP_TASK
+    interface dsp_if i_dsp;
+    interface dsp_ctrl_if i_dsp_ctrl[1]; // TODO NUM_DSP_CTRL_INTERFACES
+#endif
 
+    USER_MAIN_DECLARATIONS
     par
     {
         on tile[XUD_TILE]:
@@ -594,7 +604,8 @@ int main()
 #if (NUM_PDM_MICS > 0)
             , c_pdm_pcm
 #endif
-
+            , i_dsp
+    
         );
 
 #if defined(SPDIF_TX) && (SPDIF_TX_TILE != AUDIO_IO_TILE)
@@ -663,6 +674,10 @@ int main()
 #endif
         );
 #endif
+        
+        // TODO move this to USER_MAIN_CORES or guard with RUN_DSP_TASK
+        // TODO NUM_DSP_CTRL_INTS
+        on stdcore[AUDIO_IO_TILE] : dsp_process(i_dsp, i_dsp_ctrl, 1);
 
         USER_MAIN_CORES
     }
