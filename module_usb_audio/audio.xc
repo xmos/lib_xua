@@ -928,11 +928,6 @@ static void dummy_deliver(chanend c_out, unsigned &command)
         }
     }
 }
-#define SAMPLE_RATE      200000
-#define NUMBER_CHANNELS  1
-#define NUMBER_SAMPLES  100
-#define NUMBER_WORDS ((NUMBER_SAMPLES * NUMBER_CHANNELS+1)/2)
-#define SAMPLES_PER_PRINT 1
 
 void audio(chanend c_mix_out,
 #if defined(SPDIF_TX) && (SPDIF_TX_TILE != AUDIO_IO_TILE)
@@ -966,39 +961,6 @@ chanend ?c_config, chanend ?c
     unsigned mClk;
     unsigned divide;
     unsigned firstRun = 1;
-
-#ifdef SU1_ADC_ENABLE
-    /* Setup galaxian ADC */
-    unsigned data[1],  channel;
-    int r;
-    unsigned int vals[NUMBER_WORDS];
-    int cnt = 0;
-    int div;
-    unsigned val = 0;
-    int val2 = 0;
-    int adcOk = 0;
-
-    /* Enable adc on channel */
-    enable_xs1_su_adc_input(0, c);
-
-    /* General ADC control (enabled, 1 samples per packet, 32 bits per sample) */
-    data[0] = 0x10201;
-    data[0] = 0x30101;
-    r = write_periph_32(xs1_su, 2, 0x20, 1, data);
-
-    /* ADC needs a few clocks before it starts pumping out samples */
-    for(int i = 0; i< 10; i++)
-    {
-        p_lrclk <: val;
-        val = ~val;
-        {
-            timer t;
-            unsigned time;
-            t :> time;
-            t when timerafter(time+1000):> void;
-        }
-    }
-#endif
 
     /* Clock master clock-block from master-clock port */
     configure_clock_src(clk_audio_mclk, p_mclk_in);
