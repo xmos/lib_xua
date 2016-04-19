@@ -32,6 +32,11 @@
 #include "commands.h"
 #include "xc_ptr.h"
 
+#ifdef RUN_DSP_TASK
+#include "dsp.h"
+#endif
+
+
 #include "print.h"
 
 static unsigned samplesOut[NUM_USB_CHAN_OUT];
@@ -224,10 +229,60 @@ static inline void TransferAdatTxSamples(chanend c_adat_out, const unsigned samp
 }
 #endif
 
+//TODO
+#define NUM_MIC_INPUTS 2
+#define DSP_BLOCK_SIZE 160
+
+/* DSP data double buffered */
+int dspBuffer_in_adc[2][DSP_BLOCK_SIZE * NUM_MIC_INPUTS]; // TODO
+int dspBuffer_in_usb[2][DSP_BLOCK_SIZE]; 
+int dspBuffer_out_usb[2][DSP_BLOCK_SIZE]; 
+int dspBuffer_out_dac[2][DSP_BLOCK_SIZE]; 
+
+
+/* TODO could this be a general channel management call? */
+/* usbSamples: the sample frame the device is going to play to the output audio interfaces */
+/* adcSamples: the sample frame the device is going to send to the host */
+#pragma unsafe arrays
+unsigned DspBufferManagement(int dspBuffer_in_adc[], int dspBuffer_in_usb[], 
+                               int dspBuffer_out_usb[], int dspBuffer_out_dac[],
+                               unsigned usbSamples[], unsigned adcSamples[],
+                               unsigned sampleCount)
+{
+    /* Add samples to DSP buffers */
+    dspBuffer_in_adc[(sampleCount * NUM_MIC_INPUTS)] = adcSamples[PDM_MIC_INDEX];
+    dspBuffer_in_adc[(sampleCount * NUM_MIC_INPUTS) + 1] = adcSamples[PDM_MIC_INDEX+1];
+    dspBuffer_in_usb[sampleCount] = 0; // TODO
+   
+    /* Read out of DSP buffer */
+    adcSamples[0] = dspBuffer_out_usb[sampleCount];
+    adcSamples[1] = dspBuffer_out_usb[sampleCount];
+    
+    return sampleCount+1; 
+} 
 
 #pragma unsafe arrays
-static inline unsigned DoSampleTransfer(chanend c_out, const int readBuffNo, const unsigned underflowWord)
+static inline unsigned DoSampleTransfer(chanend c_out, const int readBuffNo, const unsigned underflowWord, client dsp_if i_dsp)
 {
+    static unsigned dspSampleCount = 0;
+    static unsigned dspBufferNo = 0;
+
+#if 1
+    /* Add samples to DSP buffer */
+    /* TODO need to use samplesIn_1 and samplesIn_0 using readBuffNo */
+    dspSampleCount = DspBufferManagement(dspBuffer_in_adc[dspBufferNo], dspBuffer_in_usb[dspBufferNo], 
+                                         dspBuffer_out_usb[dspBufferNo], dspBuffer_out_dac[dspBufferNo],
+                                         samplesOut, samplesIn_0, dspSampleCount);
+
+    if(dspSampleCount >= DSP_BLOCK_SIZE)
+    unsafe{
+        i_dsp.transfer_buffers((int * unsafe) dspBuffer_in_adc[dspBufferNo], (int * unsafe) dspBuffer_in_usb[dspBufferNo], 
+                                    (int * unsafe) dspBuffer_out_usb[dspBufferNo], (int * unsafe) dspBuffer_out_dac[dspBufferNo]);
+        dspSampleCount = 0;
+        dspBufferNo = 1-dspBufferNo;
+    }
+#endif
+
     outuint(c_out, underflowWord);
 
     /* Check for sample freq change (or other command) or new samples from mixer*/
@@ -291,7 +346,6 @@ static inline unsigned DoSampleTransfer(chanend c_out, const int readBuffNo, con
     }
 
     return 0;
-
 }
 
 static inline void InitPorts(unsigned divide)
@@ -443,8 +497,8 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
 #if (NUM_PDM_MICS > 0)
     chanend c_pdm_pcm,
 #endif
-
-    chanend ?c_adc)
+    chanend ?unused, 
+    client dsp_if i_dsp)
 {
 
     /* Since DAC and ADC buffered ports off by one sample we buffer previous ADC frame */
@@ -481,7 +535,7 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
     }
 #endif
 
-    unsigned command = DoSampleTransfer(c_out, readBuffNo, underflowWord);
+    unsigned command = DoSampleTransfer(c_out, readBuffNo, underflowWord, i_dsp);
 #ifdef ADAT_TX
     unsafe{
     //TransferAdatTxSamples(c_adat_out, samplesOut, adatSmuxMode, 0);
@@ -732,15 +786,6 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
                     samplesIn_0[((frameCount-1)&(I2S_CHANS_PER_FRAME-1))+i] = bitrev(sample); // channels 1, 3, 5.. on each line.
 
             }
-
-#ifdef SU1_ADC_ENABLE
-            {
-                unsigned x;
-                x = inuint(c_adc);
-                inct(c_adc);
-                asm volatile("stw %0, dp[g_adcVal]"::"r"(x));
-            }
-#endif
 #endif
 
 #ifndef CODEC_MASTER
@@ -828,9 +873,9 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
             /* The below looks a bit odd but forces the compiler to inline twice */
             unsigned command;
             if(readBuffNo)
-                command = DoSampleTransfer(c_out, 1, underflowWord);
+                command = DoSampleTransfer(c_out, 1, underflowWord, i_dsp);
             else
-                command = DoSampleTransfer(c_out, 0, underflowWord);
+                command = DoSampleTransfer(c_out, 0, underflowWord, i_dsp);
 
 
             if(command)
@@ -943,6 +988,7 @@ chanend ?c_config, chanend ?c
 #if (NUM_PDM_MICS > 0)
 , chanend c_pdm_in
 #endif
+, client dsp_if i_dsp
 )
 {
 #if defined (SPDIF_TX) && (SPDIF_TX_TILE == AUDIO_IO_TILE)
@@ -1185,7 +1231,7 @@ chanend ?c_config, chanend ?c
 #if (NUM_PDM_MICS > 0)
                    c_pdm_in,
 #endif
-                   c);
+                   null, i_dsp);
 
                 if(command == SET_SAMPLE_FREQ)
                 {
