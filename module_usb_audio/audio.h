@@ -3,6 +3,8 @@
 
 #include "devicedefines.h"
 #include "dfu_interface.h"
+#include "dsp.h"
+
 /** The audio driver thread.
  *
  *  This function drives I2S ports and handles samples to/from other digital
@@ -29,6 +31,7 @@ void audio(chanend c_in,
 #if (NUM_PDM_MICS > 0)
     , chanend c_pdm_in
 #endif
+    , client dsp_if i_dsp
 );
 
 void SpdifTxWrapper(chanend c_spdif_tx);
