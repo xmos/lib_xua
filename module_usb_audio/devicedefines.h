@@ -216,6 +216,16 @@
 #endif
 
 /**
+ * @brief PDM Microphone first channel index, defines which channels microphones will be input on.
+ * Note, indexed from 0.
+ *
+ * Default: 0 (i.e. channels [0:NUM_PDM_MICS-1])
+ * */
+#ifndef PDM_MIC_INDEX
+#define PDM_MIC_INDEX           (0)
+#endif
+
+/**
  * @brief Enable MIDI functionality including buffering, descriptors etc. Default: DISABLED
  */
 #ifndef MIDI
@@ -230,14 +240,14 @@
  * @brief MIDI Rx port width (1 or 4bit). Default: 1
  */
 #ifndef MIDI_RX_PORT_WIDTH
-#define MIDI_RX_PORT_WIDTH       (1)
+#define MIDI_RX_PORT_WIDTH      (1)
 #endif
 
 /**
  * @brief Enables SPDIF Tx. Default: 0 (Disabled)
  */
 #ifndef SPDIF_TX
-#define SPDIF_TX                 (0)
+#define SPDIF_TX                (0)
 #endif
 
 /* Tidy up old SPDIF usage */
