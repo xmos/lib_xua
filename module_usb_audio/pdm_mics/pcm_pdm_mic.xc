@@ -119,10 +119,7 @@ void pcm_pdm_mic(chanend c_pcm_out
         mic_array_decimate_to_pcm_4ch(c_4x_pdm_mic_1, c_ds_output[1]);
 #ifdef MIC_PROCESSING_USE_INTERFACE
         pdm_process(c_ds_output, c_pcm_out, i_mic_process);
-        //unsafe{
-        //user_pdm_process(i_mic_process);
-        //}
-        /* note user pdm process is included in main.xc to allow maximum flexibilty for customisation */
+        /* Note: user_pdm process is included in main.xc to allow maximum flexibilty for customisation/distribution etc */
 #else
         pdm_process(c_ds_output, c_pcm_out);
 #endif
