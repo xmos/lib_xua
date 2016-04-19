@@ -51,6 +51,8 @@ void pdm_process(streaming chanend c_ds_output[2], chanend c_audio
 
         unsigned decimationfactor = 96000/samplerate;
 
+
+        /* Note, loops is unrolled once - allows for while(1) select {} and thus combinable */
         unsafe
         {
             const int * unsafe fir_coefs[7] = {0, g_third_stage_div_2_fir, g_third_stage_div_4_fir, g_third_stage_div_6_fir, g_third_stage_div_8_fir, 0, g_third_stage_div_12_fir};
@@ -59,35 +61,47 @@ void pdm_process(streaming chanend c_ds_output[2], chanend c_audio
             mic_array_decimator_config_t dc[2] = {{&dcc, data_0, {0, 0, 0, 0}, 4}, {&dcc, data_1, {0, 0, 0, 0}, 4}};
             mic_array_decimator_configure(c_ds_output, 2, dc);
 
-        mic_array_init_time_domain_frame(c_ds_output, 2, buffer, mic_audio, dc);
+            mic_array_init_time_domain_frame(c_ds_output, 2, buffer, mic_audio, dc);
 
-        while(1)
-        {
             mic_array_frame_time_domain * unsafe current = mic_array_get_next_time_domain_frame(c_ds_output, 2, buffer, mic_audio, dc);
 
-            unsafe
-            {
-                int req;
 
 #ifdef MIC_PROCESSING_USE_INTERFACE
-                i_mic_process.transfer_buffers(current, output);
+            i_mic_process.transfer_buffers(current, output);
 #else
-                user_pdm_process(current, output);
+            user_pdm_process(current, output);
 #endif
-                c_audio :> req;
 
-                if(req)
+            while(1)
+            {
+
+                unsafe
                 {
-                    for(int i = 0; i < NUM_PDM_MICS; i++)
+                    int req;
+
+                    c_audio :> req;
+                    if(req)
                     {
-                        c_audio <: output[i];
+                        for(int i = 0; i < NUM_PDM_MICS; i++)
+                        {
+                            c_audio <: output[i];
+                        }
                     }
+                    else
+                    {
+                        break;
+                    }
+
+                    mic_array_frame_time_domain * unsafe current = mic_array_get_next_time_domain_frame(c_ds_output, 2, buffer, mic_audio, dc);
+
+
+#ifdef MIC_PROCESSING_USE_INTERFACE
+                    i_mic_process.transfer_buffers(current, output);
+#else
+                    user_pdm_process(current, output);
+#endif
+
                 }
-                else
-                {
-                    break;
-                }
-            }
             }
         }
     }
