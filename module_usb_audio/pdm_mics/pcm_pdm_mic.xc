@@ -71,36 +71,40 @@ void pdm_process(streaming chanend c_ds_output[2], chanend c_audio
 #else
             user_pdm_process(current, output);
 #endif
-
-            while(1)
+            int loop =1;
+            while(loop)
             {
-
                 unsafe
                 {
                     int req;
 
-                    c_audio :> req;
-                    if(req)
+                    select
                     {
-                        for(int i = 0; i < NUM_PDM_MICS; i++)
-                        {
-                            c_audio <: output[i];
-                        }
-                    }
-                    else
-                    {
-                        break;
-                    }
+                        case c_audio :> req:
+                            if(req)
+                            {
+                                for(int i = 0; i < NUM_PDM_MICS; i++)
+                                {
+                                    c_audio <: output[i];
+                                }
 
-                    mic_array_frame_time_domain * unsafe current = mic_array_get_next_time_domain_frame(c_ds_output, 2, buffer, mic_audio, dc);
+                                mic_array_frame_time_domain * unsafe current = mic_array_get_next_time_domain_frame(c_ds_output, 2, buffer, mic_audio, dc);
 
 
 #ifdef MIC_PROCESSING_USE_INTERFACE
-                    i_mic_process.transfer_buffers(current, output);
+                                i_mic_process.transfer_buffers(current, output);
 #else
-                    user_pdm_process(current, output);
+                                user_pdm_process(current, output);
 #endif
-
+                            }
+                            else
+                            {
+                                loop = 0;
+                                continue;
+                                break;
+                            }
+                            break;
+                    }
                 }
             }
         }
