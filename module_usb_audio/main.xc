@@ -549,6 +549,7 @@ int main()
 
 #if (NUM_PDM_MICS > 0)
     chan c_pdm_pcm;
+    streaming chan c_ds_output[2];
 #ifdef MIC_PROCESSING_USE_INTERFACE
     interface mic_process_if i_mic_process;
 #endif
@@ -668,12 +669,9 @@ int main()
 #endif
 
 #if (NUM_PDM_MICS > 0)
-        on stdcore[PDM_TILE]: pcm_pdm_mic(c_pdm_pcm
-#ifdef MIC_PROCESSING_USE_INTERFACE
-            , i_mic_process 
+        on stdcore[PDM_TILE]: pcm_pdm_mic(c_ds_output);
 #endif
-        );
-#endif
+        on stdcore[PDM_TILE].core[0]: pdm_process(c_ds_output, c_pdm_pcm, i_mic_process);
         
         // TODO move this to USER_MAIN_CORES or guard with RUN_DSP_TASK
         // TODO NUM_DSP_CTRL_INTS
