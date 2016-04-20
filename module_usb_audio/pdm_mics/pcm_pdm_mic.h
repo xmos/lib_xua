@@ -12,10 +12,19 @@ typedef interface mic_process_if
     void init();
 } mic_process_if;
 
-[[distributable]]
+
+[[combinable]]
+void pdm_process(streaming chanend c_ds_output[2], chanend c_audio
+#ifdef MIC_PROCESSING_USE_INTERFACE
+   , client mic_process_if i_mic_process
+#endif
+);
+
+[[combinable]]
 void user_pdm_process(server mic_process_if i_mic_data);
 
-void pcm_pdm_mic(chanend c_pcm_out, client mic_process_if i_mic_process);
+
+void pcm_pdm_mic(streaming chanend c_ds_output[2]);
 
 #else
 
@@ -24,7 +33,7 @@ unsafe void user_pdm_process(mic_array_frame_time_domain * unsafe audio, int out
 
 void user_pdm_init();
 
-void pcm_pdm_mic(chanend c_pcm_out);
+void pcm_pdm_mic(streaming chanend c_ds_output[2]);
 
 #endif
 
