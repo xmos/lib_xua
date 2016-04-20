@@ -29,6 +29,7 @@ int data_1[4*THIRD_STAGE_COEFS_PER_STAGE * MAX_DECIMATION_FACTOR] = {0};
 
 mic_array_frame_time_domain mic_audio[2];
 
+[[combinable]]
 void pdm_process(streaming chanend c_ds_output[2], chanend c_audio
 #ifdef MIC_PROCESSING_USE_INTERFACE
    , client mic_process_if i_mic_process
@@ -43,70 +44,116 @@ void pdm_process(streaming chanend c_ds_output[2], chanend c_audio
 #else
     user_pdm_init();
 #endif
-    while(1)
+       
+    mic_array_decimator_conf_common_t dcc;
+    const int * unsafe fir_coefs[7];
+    mic_array_frame_time_domain * unsafe current; 
+    mic_array_decimator_config_t dc[2]; 
+        
+    unsigned samplerate;
+
+    c_audio :> samplerate;
+
+    unsigned decimationfactor = 96000/samplerate;
+
+
+    unsafe
     {
-        unsigned samplerate;
+        fir_coefs[0] = 0;
+        fir_coefs[1] = g_third_stage_div_2_fir;
+        fir_coefs[2] = g_third_stage_div_4_fir;
+        fir_coefs[3] = g_third_stage_div_6_fir;
+        fir_coefs[4] = g_third_stage_div_8_fir;
+        fir_coefs[5] = 0;
+        fir_coefs[6] = g_third_stage_div_12_fir;
 
-        c_audio :> samplerate;
+        //dcc = {MIC_ARRAY_MAX_FRAME_SIZE_LOG2, 1, 0, 0, decimationfactor, fir_coefs[decimationfactor/2], 0, 0, DECIMATOR_NO_FRAME_OVERLAP, 2};
+        dcc.frame_size_log2 = MIC_ARRAY_MAX_FRAME_SIZE_LOG2;
+        dcc.apply_dc_offset_removal = 1;
+        dcc.index_bit_reversal = 0;
+        dcc.windowing_function = null;
+        dcc.output_decimation_factor = decimationfactor;
+        dcc.coefs = fir_coefs[decimationfactor/2];
+        dcc.apply_mic_gain_compensation = 0;
+        dcc.fir_gain_compensation = 0;
+        dcc.buffering_type = DECIMATOR_NO_FRAME_OVERLAP;
+        dcc.number_of_frame_buffers = 2;
 
-        unsigned decimationfactor = 96000/samplerate;
+        //dc[2] = {{&dcc, data_0, {0, 0, 0, 0}, 4}, {&dcc, data_1, {0, 0, 0, 0}, 4}};
+        dc[0].dcc = &dcc;
+        dc[0].data = data_0;
+        dc[0].mic_gain_compensation[0]=0;
+        dc[0].mic_gain_compensation[1]=0;
+        dc[0].mic_gain_compensation[2]=0;
+        dc[0].mic_gain_compensation[3]=0;
+        dc[0].channel_count = 4;
+        dc[1].dcc = &dcc;
+        dc[1].data = data_1;
+        dc[1].mic_gain_compensation[0]=0;
+        dc[1].mic_gain_compensation[1]=0;
+        dc[1].mic_gain_compensation[2]=0;
+        dc[1].mic_gain_compensation[3]=0;
+        dc[1].channel_count = 4;
 
+        mic_array_decimator_configure(c_ds_output, 2, dc);
 
-        /* Note, loops is unrolled once - allows for while(1) select {} and thus combinable */
-        unsafe
+        mic_array_init_time_domain_frame(c_ds_output, 2, buffer, mic_audio, dc);
+
+        /* Grab a first frame of mic data */
+        /* Note, loop is unrolled once - allows for while(1) select {} and thus combinable */
+        current = mic_array_get_next_time_domain_frame(c_ds_output, 2, buffer, mic_audio, dc);
+    }
+
+        /* Run user code */
+#ifdef MIC_PROCESSING_USE_INTERFACE
+        i_mic_process.transfer_buffers(current, output);
+#else
+        user_pdm_process(current, output);
+#endif
+        int req;
+        while(1)
         {
-            const int * unsafe fir_coefs[7] = {0, g_third_stage_div_2_fir, g_third_stage_div_4_fir, g_third_stage_div_6_fir, g_third_stage_div_8_fir, 0, g_third_stage_div_12_fir};
-
-            mic_array_decimator_conf_common_t dcc = {MIC_ARRAY_MAX_FRAME_SIZE_LOG2, 1, 0, 0, decimationfactor, fir_coefs[decimationfactor/2], 0, 0, DECIMATOR_NO_FRAME_OVERLAP, 2};
-            mic_array_decimator_config_t dc[2] = {{&dcc, data_0, {0, 0, 0, 0}, 4}, {&dcc, data_1, {0, 0, 0, 0}, 4}};
-            mic_array_decimator_configure(c_ds_output, 2, dc);
-
-            mic_array_init_time_domain_frame(c_ds_output, 2, buffer, mic_audio, dc);
-
-            mic_array_frame_time_domain * unsafe current = mic_array_get_next_time_domain_frame(c_ds_output, 2, buffer, mic_audio, dc);
-
-
-#ifdef MIC_PROCESSING_USE_INTERFACE
-            i_mic_process.transfer_buffers(current, output);
-#else
-            user_pdm_process(current, output);
-#endif
-            int loop =1;
-            while(loop)
-            {
-                unsafe
+                select
                 {
-                    int req;
+                    case c_audio :> req:
+                    
+                    if(req)
+                    unsafe{
+                        for(int i = 0; i < NUM_PDM_MICS; i++)
+                        {
+                            c_audio <: output[i];
+                        }
 
-                    select
-                    {
-                        case c_audio :> req:
-                            if(req)
-                            {
-                                for(int i = 0; i < NUM_PDM_MICS; i++)
-                                {
-                                    c_audio <: output[i];
-                                }
-
-                                mic_array_frame_time_domain * unsafe current = mic_array_get_next_time_domain_frame(c_ds_output, 2, buffer, mic_audio, dc);
+                        
+                        mic_array_frame_time_domain * unsafe current = mic_array_get_next_time_domain_frame(c_ds_output, 2, buffer, mic_audio, dc);
 
 
 #ifdef MIC_PROCESSING_USE_INTERFACE
-                                i_mic_process.transfer_buffers(current, output);
+                        i_mic_process.transfer_buffers(current, output);
 #else
-                                user_pdm_process(current, output);
+                         user_pdm_process(current, output);
 #endif
-                            }
-                            else
-                            {
-                                loop = 0;
-                                continue;
-                                break;
-                            }
-                            break;
                     }
-                }
-            }
+                    else
+                    unsafe{
+                        /* Sample rate change */
+                        c_audio :> samplerate;
+                        decimationfactor = 96000/samplerate;
+                        dcc.output_decimation_factor = decimationfactor;
+                        dcc.coefs=fir_coefs[decimationfactor/2];
+                        mic_array_decimator_configure(c_ds_output, 2, dc);
+                                
+                        mic_array_init_time_domain_frame(c_ds_output, 2, buffer, mic_audio, dc);
+
+                        mic_array_frame_time_domain * unsafe current = mic_array_get_next_time_domain_frame(c_ds_output, 2, buffer, mic_audio, dc);
+
+#ifdef MIC_PROCESSING_USE_INTERFACE
+                        i_mic_process.transfer_buffers(current, output);
+#else
+                        user_pdm_process(current, output);
+#endif
+                    }
+                    break;
         }
     }
 }
@@ -115,14 +162,9 @@ void pdm_process(streaming chanend c_ds_output[2], chanend c_audio
 #error MAX_FREQ > 48000 NOT CURRENTLY SUPPORTED
 #endif
 
-void pcm_pdm_mic(chanend c_pcm_out 
-#ifdef MIC_PROCESSING_USE_INTERFACE
-   , client mic_process_if i_mic_process
-#endif
-    )
+void pcm_pdm_mic(streaming chanend c_ds_output[2])
 {
     streaming chan c_4x_pdm_mic_0, c_4x_pdm_mic_1;
-    streaming chan c_ds_output[2];
 
     /* Note, this divide should be based on master clock freq */
     configure_clock_src_divide(pdmclk, p_mclk, 2);
@@ -130,18 +172,20 @@ void pcm_pdm_mic(chanend c_pcm_out
     configure_in_port(p_pdm_mics, pdmclk);
     start_clock(pdmclk);
 
+    unsafe
+    {
     par
     {
         mic_array_pdm_rx(p_pdm_mics, c_4x_pdm_mic_0, c_4x_pdm_mic_1);
         mic_array_decimate_to_pcm_4ch(c_4x_pdm_mic_0, c_ds_output[0]);
         mic_array_decimate_to_pcm_4ch(c_4x_pdm_mic_1, c_ds_output[1]);
-#ifdef MIC_PROCESSING_USE_INTERFACE
-        pdm_process(c_ds_output, c_pcm_out, i_mic_process);
-        /* Note: user_pdm process is included in main.xc to allow maximum flexibilty for customisation/distribution etc */
-#else
-        pdm_process(c_ds_output, c_pcm_out);
-#endif
-    }
+//#ifdef MIC_PROCESSING_USE_INTERFACE
+//        pdm_process(c_ds_output, c_pcm_out, i_mic_process);
+///        /* Note: user_pdm process is included in main.xc to allow maximum flexibilty for customisation/distribution etc */
+//#else
+//        pdm_process(c_ds_output, c_pcm_out);
+//#endif
+    }}
 }
 
 #endif
