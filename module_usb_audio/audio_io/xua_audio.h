@@ -3,7 +3,7 @@
 
 #include "devicedefines.h"
 #include "dfu_interface.h"
-#include "dsp.h"
+#include "xua_dsp.h"
 
 /** The audio driver thread.
  *

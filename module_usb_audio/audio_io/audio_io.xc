@@ -33,17 +33,13 @@
 #include "xc_ptr.h"
 
 #ifdef RUN_DSP_TASK
-#include "dsp.h"
+#include "xua_dsp.h"
 #endif
-
-
-#include "print.h"
 
 static unsigned samplesOut[NUM_USB_CHAN_OUT];
 
 /* Two buffers for ADC data to allow for DAC and ADC ports being offset */
-static unsigned samplesIn_0[NUM_USB_CHAN_IN];
-static unsigned samplesIn_1[I2S_CHANS_ADC];
+static unsigned samplesIn[2][NUM_USB_CHAN_IN];
 
 #if (DSD_CHANS_DAC != 0)
 extern buffered out port:32 p_dsd_dac[DSD_CHANS_DAC];
@@ -229,60 +225,14 @@ static inline void TransferAdatTxSamples(chanend c_adat_out, const unsigned samp
 }
 #endif
 
-//TODO
-#define NUM_MIC_INPUTS 2
-#define DSP_BLOCK_SIZE 160
-
-/* DSP data double buffered */
-int dspBuffer_in_adc[2][DSP_BLOCK_SIZE * NUM_MIC_INPUTS]; // TODO
-int dspBuffer_in_usb[2][DSP_BLOCK_SIZE]; 
-int dspBuffer_out_usb[2][DSP_BLOCK_SIZE]; 
-int dspBuffer_out_dac[2][DSP_BLOCK_SIZE]; 
-
-
-/* TODO could this be a general channel management call? */
-/* usbSamples: the sample frame the device is going to play to the output audio interfaces */
-/* adcSamples: the sample frame the device is going to send to the host */
-#pragma unsafe arrays
-unsigned DspBufferManagement(int dspBuffer_in_adc[], int dspBuffer_in_usb[], 
-                               int dspBuffer_out_usb[], int dspBuffer_out_dac[],
-                               unsigned usbSamples[], unsigned adcSamples[],
-                               unsigned sampleCount)
-{
-    /* Add samples to DSP buffers */
-    dspBuffer_in_adc[(sampleCount * NUM_MIC_INPUTS)] = adcSamples[PDM_MIC_INDEX];
-    dspBuffer_in_adc[(sampleCount * NUM_MIC_INPUTS) + 1] = adcSamples[PDM_MIC_INDEX+1];
-    dspBuffer_in_usb[sampleCount] = 0; // TODO
-   
-    /* Read out of DSP buffer */
-    adcSamples[0] = dspBuffer_out_usb[sampleCount];
-    adcSamples[1] = dspBuffer_out_usb[sampleCount];
-    
-    return sampleCount+1; 
-} 
+/* sampsFromUsbToAudio: The sample frame the device has recived from the host and is going to play to the output audio interfaces */
+/* sampsFromAudioToUsb: The sample frame that was received from the audio interfaces and that the device is going to send to the host */
+void UserBufferManagement(unsigned sampsFromUsbToAudio[], unsigned sampsFromAudioToUsb[], client dsp_if i_dsp);
 
 #pragma unsafe arrays
 static inline unsigned DoSampleTransfer(chanend c_out, const int readBuffNo, const unsigned underflowWord, client dsp_if i_dsp)
 {
-    static unsigned dspSampleCount = 0;
-    static unsigned dspBufferNo = 0;
-
-#if 1
-    /* Add samples to DSP buffer */
-    /* TODO need to use samplesIn_1 and samplesIn_0 using readBuffNo */
-    dspSampleCount = DspBufferManagement(dspBuffer_in_adc[dspBufferNo], dspBuffer_in_usb[dspBufferNo], 
-                                         dspBuffer_out_usb[dspBufferNo], dspBuffer_out_dac[dspBufferNo],
-                                         samplesOut, samplesIn_0, dspSampleCount);
-
-    if(dspSampleCount >= DSP_BLOCK_SIZE)
-    unsafe{
-        i_dsp.transfer_buffers((int * unsafe) dspBuffer_in_adc[dspBufferNo], (int * unsafe) dspBuffer_in_usb[dspBufferNo], 
-                                    (int * unsafe) dspBuffer_out_usb[dspBufferNo], (int * unsafe) dspBuffer_out_dac[dspBufferNo]);
-        dspSampleCount = 0;
-        dspBufferNo = 1-dspBufferNo;
-    }
-#endif
-
+  
     outuint(c_out, underflowWord);
 
     /* Check for sample freq change (or other command) or new samples from mixer*/
@@ -323,27 +273,18 @@ static inline unsigned DoSampleTransfer(chanend c_out, const int readBuffNo, con
 #else
         inuint(c_out);
 #endif
+        
+        UserBufferManagement(samplesOut, samplesIn[readBuffNo], i_dsp);
+
 #if NUM_USB_CHAN_IN > 0
 #pragma loop unroll
-#if  NUM_USB_CHAN_IN < I2S_CHANS_ADC
         for(int i = 0; i < NUM_USB_CHAN_IN; i++)
-#else
-        for(int i = 0; i < I2S_CHANS_ADC; i++)
-#endif
         {
-            if(readBuffNo)
-                outuint(c_out, samplesIn_1[i]);
-            else
-                outuint(c_out, samplesIn_0[i]);
-        }
-        /* Send over the digi channels - no odd buffering required */
-#pragma loop unroll
-        for(int i = I2S_CHANS_ADC; i < NUM_USB_CHAN_IN; i++)
-        {
-            outuint(c_out, samplesIn_0[i]);
-        }
+                outuint(c_out, samplesIn[readBuffNo][i]);
+         }
 #endif
     }
+    
 
     return 0;
 }
@@ -481,8 +422,6 @@ static inline void InitPorts(unsigned divide)
 #endif
 }
 
-
-
 /* I2S delivery thread */
 #pragma unsafe arrays
 unsigned static deliver(chanend c_out, chanend ?c_spd_out,
@@ -556,7 +495,6 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
     /* Main Audio I/O loop */
     while (1)
     {
-
 #if (DSD_CHANS_DAC != 0) && (NUM_USB_CHAN_OUT > 0)
         if(dsdMode == DSD_MODE_NATIVE)
         {
@@ -680,10 +618,7 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
                 asm volatile("in %0, res[%1]" : "=r"(sample)  : "r"(p_i2s_adc[index++]));
 
                 /* Note the use of readBuffNo changes based on frameCount */
-                if(buffIndex)
-                    samplesIn_1[((frameCount-2)&(I2S_CHANS_PER_FRAME-1))+i] = bitrev(sample); // channels 0, 2, 4.. on each line.
-                else
-                    samplesIn_0[((frameCount-2)&(I2S_CHANS_PER_FRAME-1))+i] = bitrev(sample);
+                samplesIn[buffIndex][((frameCount-2)&(I2S_CHANS_PER_FRAME-1))+i] = bitrev(sample); // channels 0, 2, 4.. on each line.
             }
 #endif
 
@@ -730,22 +665,21 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
             /* Sync with clockgen */
             inuint(c_dig_rx);
 
-            /* Note, digi-data we just store in samplesIn_0 - we only double buffer the I2S input data */
+            /* Note, digi-data we just store in samplesIn[readBuffNo] - we only double buffer the I2S input data */
 #endif
 #ifdef SPDIF_RX
-            asm("ldw %0, dp[g_digData]":"=r"(samplesIn_0[SPDIF_RX_INDEX + 0]));
-            asm("ldw %0, dp[g_digData+4]":"=r"(samplesIn_0[SPDIF_RX_INDEX + 1]));
-
+            asm("ldw %0, dp[g_digData]"  :"=r"(samplesIn[readBuffNo][SPDIF_RX_INDEX + 0]));
+            asm("ldw %0, dp[g_digData+4]":"=r"(samplesIn[readBuffNo][SPDIF_RX_INDEX + 1]));
 #endif
 #ifdef ADAT_RX
-            asm("ldw %0, dp[g_digData+8]":"=r"(samplesIn_0[ADAT_RX_INDEX]));
-            asm("ldw %0, dp[g_digData+12]":"=r"(samplesIn_0[ADAT_RX_INDEX + 1]));
-            asm("ldw %0, dp[g_digData+16]":"=r"(samplesIn_0[ADAT_RX_INDEX + 2]));
-            asm("ldw %0, dp[g_digData+20]":"=r"(samplesIn_0[ADAT_RX_INDEX + 3]));
-            asm("ldw %0, dp[g_digData+24]":"=r"(samplesIn_0[ADAT_RX_INDEX + 4]));
-            asm("ldw %0, dp[g_digData+28]":"=r"(samplesIn_0[ADAT_RX_INDEX + 5]));
-            asm("ldw %0, dp[g_digData+32]":"=r"(samplesIn_0[ADAT_RX_INDEX + 6]));
-            asm("ldw %0, dp[g_digData+36]":"=r"(samplesIn_0[ADAT_RX_INDEX + 7]));
+            asm("ldw %0, dp[g_digData+8]" :"=r"(samplesIn[readBuffNo][ADAT_RX_INDEX]));
+            asm("ldw %0, dp[g_digData+12]":"=r"(samplesIn[readBuffNo][ADAT_RX_INDEX + 1]));
+            asm("ldw %0, dp[g_digData+16]":"=r"(samplesIn[readBuffNo][ADAT_RX_INDEX + 2]));
+            asm("ldw %0, dp[g_digData+20]":"=r"(samplesIn[readBuffNo][ADAT_RX_INDEX + 3]));
+            asm("ldw %0, dp[g_digData+24]":"=r"(samplesIn[readBuffNo][ADAT_RX_INDEX + 4]));
+            asm("ldw %0, dp[g_digData+28]":"=r"(samplesIn[readBuffNo][ADAT_RX_INDEX + 5]));
+            asm("ldw %0, dp[g_digData+32]":"=r"(samplesIn[readBuffNo][ADAT_RX_INDEX + 6]));
+            asm("ldw %0, dp[g_digData+36]":"=r"(samplesIn[readBuffNo][ADAT_RX_INDEX + 7]));
 #endif
 
 #if defined(SPDIF_RX) || defined(ADAT_RX)
@@ -764,7 +698,7 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
 #pragma loop unroll
             for(int i = 0; i < NUM_PDM_MICS; i++)
             {
-                c_pdm_pcm :> samplesIn_0[i];
+                c_pdm_pcm :> samplesIn[readBuffNo][i];
             }
 #endif
         }
@@ -780,10 +714,7 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
                 unsigned sample;
                 asm volatile("in %0, res[%1]" : "=r"(sample)  : "r"(p_i2s_adc[index++]));
 
-                if(buffIndex)
-                    samplesIn_1[((frameCount-1)&(I2S_CHANS_PER_FRAME-1))+i] = bitrev(sample); // channels 1, 3, 5.. on each line.
-                else
-                    samplesIn_0[((frameCount-1)&(I2S_CHANS_PER_FRAME-1))+i] = bitrev(sample); // channels 1, 3, 5.. on each line.
+                samplesIn[buffIndex][((frameCount-1)&(I2S_CHANS_PER_FRAME-1))+i] = bitrev(sample); // channels 1, 3, 5.. on each line.
 
             }
 #endif
