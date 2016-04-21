@@ -22,7 +22,8 @@
 #ifdef MIDI
 #include "usb_midi.h"
 #endif
-#include "audio.h"
+
+#include "xua_audio.h"
 
 #ifdef IAP
 #include "i2c_shared.h"
@@ -44,11 +45,11 @@
 #include "clocking.h"
 
 #if (NUM_PDM_MICS > 0)
-#include "pcm_pdm_mic.h"
+#include "xua_pdm_mic.h"
 #endif
 
 #ifdef RUN_DSP_TASK
-#include "dsp.h"
+#include "xua_dsp.h"
 #endif
 
 [[distributable]]
@@ -148,18 +149,18 @@ on tile[AUDIO_IO_TILE] : out port p_pll_clk                 = PORT_PLL_REF;
 #endif
 
 #ifdef MIDI
-on tile[MIDI_TILE] :  port p_midi_tx                    = PORT_MIDI_OUT;
+on tile[MIDI_TILE] :  port p_midi_tx                        = PORT_MIDI_OUT;
 
 #if(MIDI_RX_PORT_WIDTH == 4)
-on tile[MIDI_TILE] :  buffered in port:4 p_midi_rx      = PORT_MIDI_IN;
+on tile[MIDI_TILE] :  buffered in port:4 p_midi_rx          = PORT_MIDI_IN;
 #elif(MIDI_RX_PORT_WIDTH == 1)
-on tile[MIDI_TILE] :  buffered in port:1 p_midi_rx      = PORT_MIDI_IN;
+on tile[MIDI_TILE] :  buffered in port:1 p_midi_rx          = PORT_MIDI_IN;
 #endif
 #endif
 
 /* Clock blocks */
 #ifdef MIDI
-on tile[MIDI_TILE] : clock    clk_midi                  = CLKBLK_MIDI;
+on tile[MIDI_TILE] : clock    clk_midi                      = CLKBLK_MIDI;
 #endif
 
 #if defined(SPDIF_TX) || defined(ADAT_TX)
@@ -669,10 +670,9 @@ int main()
 #endif
 
 #if (NUM_PDM_MICS > 0)
-        on stdcore[PDM_TILE]: pcm_pdm_mic(c_ds_output);
+        on stdcore[PDM_TILE]: pdm_mic(c_ds_output);
+        on stdcore[PDM_TILE].core[0]: pdm_buffer(c_ds_output, c_pdm_pcm, i_mic_process);
 #endif
-        on stdcore[PDM_TILE].core[0]: pdm_process(c_ds_output, c_pdm_pcm, i_mic_process);
-        
         // TODO move this to USER_MAIN_CORES or guard with RUN_DSP_TASK
         // TODO NUM_DSP_CTRL_INTS
         on stdcore[AUDIO_IO_TILE] : dsp_process(i_dsp, i_dsp_ctrl, 1);
