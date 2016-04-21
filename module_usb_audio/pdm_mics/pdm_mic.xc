@@ -14,7 +14,7 @@
 #include <stdint.h>
 
 #include "mic_array.h"
-#include "pcm_pdm_mic.h"
+#include "xua_pdm_mic.h"
 
 #define MAX_DECIMATION_FACTOR 12
 
@@ -30,14 +30,15 @@ int data_1[4*THIRD_STAGE_COEFS_PER_STAGE * MAX_DECIMATION_FACTOR] = {0};
 mic_array_frame_time_domain mic_audio[2];
 
 [[combinable]]
-void pdm_process(streaming chanend c_ds_output[2], chanend c_audio
+void pdm_buffer(streaming chanend c_ds_output[2], chanend c_audio
 #ifdef MIC_PROCESSING_USE_INTERFACE
    , client mic_process_if i_mic_process
 #endif
 )
 {
-    unsigned buffer = 1;     // Buffer index
+    unsigned buffer;     
     int output[NUM_PDM_MICS];
+    unsigned samplerate;
 
 #ifdef MIC_PROCESSING_USE_INTERFACE
     i_mic_process.init();
@@ -49,13 +50,10 @@ void pdm_process(streaming chanend c_ds_output[2], chanend c_audio
     const int * unsafe fir_coefs[7];
     mic_array_frame_time_domain * unsafe current; 
     mic_array_decimator_config_t dc[2]; 
-        
-    unsigned samplerate;
 
+    /* Get initial sample-rate and compute decimation factor */ 
     c_audio :> samplerate;
-
     unsigned decimationfactor = 96000/samplerate;
-
 
     unsafe
     {
@@ -104,65 +102,70 @@ void pdm_process(streaming chanend c_ds_output[2], chanend c_audio
         current = mic_array_get_next_time_domain_frame(c_ds_output, 2, buffer, mic_audio, dc);
     }
 
-        /* Run user code */
+    /* Run user code */
 #ifdef MIC_PROCESSING_USE_INTERFACE
-        i_mic_process.transfer_buffers(current, output);
+    i_mic_process.transfer_buffers(current, output);
 #else
-        user_pdm_process(current, output);
+    user_pdm_process(current, output);
 #endif
-        int req;
-        while(1)
+    int req;
+    while(1)
+    {
+        select
         {
-                select
-                {
-                    case c_audio :> req:
+            case c_audio :> req:
                     
-                    if(req)
-                    unsafe{
-                        for(int i = 0; i < NUM_PDM_MICS; i++)
-                        {
-                            c_audio <: output[i];
-                        }
-
-                        
-                        mic_array_frame_time_domain * unsafe current = mic_array_get_next_time_domain_frame(c_ds_output, 2, buffer, mic_audio, dc);
-
-
-#ifdef MIC_PROCESSING_USE_INTERFACE
-                        i_mic_process.transfer_buffers(current, output);
-#else
-                         user_pdm_process(current, output);
-#endif
+                /* Audio IO core requests samples */
+                if(req)
+                unsafe{
+                    for(int i = 0; i < NUM_PDM_MICS; i++)
+                    {
+                        c_audio <: output[i];
                     }
-                    else
-                    unsafe{
-                        /* Sample rate change */
-                        c_audio :> samplerate;
-                        decimationfactor = 96000/samplerate;
-                        dcc.output_decimation_factor = decimationfactor;
-                        dcc.coefs=fir_coefs[decimationfactor/2];
-                        mic_array_decimator_configure(c_ds_output, 2, dc);
-                                
-                        mic_array_init_time_domain_frame(c_ds_output, 2, buffer, mic_audio, dc);
 
-                        mic_array_frame_time_domain * unsafe current = mic_array_get_next_time_domain_frame(c_ds_output, 2, buffer, mic_audio, dc);
+                    /* Get a new frame of mic data */    
+                    mic_array_frame_time_domain * unsafe current = mic_array_get_next_time_domain_frame(c_ds_output, 2, buffer, mic_audio, dc);
 
+                    /* Run user code */
 #ifdef MIC_PROCESSING_USE_INTERFACE
-                        i_mic_process.transfer_buffers(current, output);
+                    i_mic_process.transfer_buffers(current, output);
 #else
-                        user_pdm_process(current, output);
+                    user_pdm_process(current, output);
 #endif
-                    }
-                    break;
-        }
-    }
+                }
+                else
+                unsafe{
+                    /* Sample rate change */
+                    c_audio :> samplerate;
+                    
+                    /* Re-config the mic decimators for the new sample-rate */
+                    decimationfactor = 96000/samplerate;
+                    dcc.output_decimation_factor = decimationfactor;
+                    dcc.coefs=fir_coefs[decimationfactor/2];
+                    
+                    mic_array_decimator_configure(c_ds_output, 2, dc);
+                    mic_array_init_time_domain_frame(c_ds_output, 2, buffer, mic_audio, dc);
+
+                    /* Get a new mic data frame */
+                    mic_array_frame_time_domain * unsafe current = mic_array_get_next_time_domain_frame(c_ds_output, 2, buffer, mic_audio, dc);
+
+                    /* Run user code */
+#ifdef MIC_PROCESSING_USE_INTERFACE
+                    i_mic_process.transfer_buffers(current, output);
+#else
+                    user_pdm_process(current, output);
+#endif
+                }
+                break;
+        } /* select */
+    } /* while(1) */
 }
 
 #if MAX_FREQ > 48000
 #error MAX_FREQ > 48000 NOT CURRENTLY SUPPORTED
 #endif
 
-void pcm_pdm_mic(streaming chanend c_ds_output[2])
+void pdm_mic(streaming chanend c_ds_output[2])
 {
     streaming chan c_4x_pdm_mic_0, c_4x_pdm_mic_1;
 
@@ -172,20 +175,12 @@ void pcm_pdm_mic(streaming chanend c_ds_output[2])
     configure_in_port(p_pdm_mics, pdmclk);
     start_clock(pdmclk);
 
-    unsafe
-    {
     par
     {
         mic_array_pdm_rx(p_pdm_mics, c_4x_pdm_mic_0, c_4x_pdm_mic_1);
         mic_array_decimate_to_pcm_4ch(c_4x_pdm_mic_0, c_ds_output[0]);
         mic_array_decimate_to_pcm_4ch(c_4x_pdm_mic_1, c_ds_output[1]);
-//#ifdef MIC_PROCESSING_USE_INTERFACE
-//        pdm_process(c_ds_output, c_pcm_out, i_mic_process);
-///        /* Note: user_pdm process is included in main.xc to allow maximum flexibilty for customisation/distribution etc */
-//#else
-//        pdm_process(c_ds_output, c_pcm_out);
-//#endif
-    }}
+    }
 }
 
 #endif
