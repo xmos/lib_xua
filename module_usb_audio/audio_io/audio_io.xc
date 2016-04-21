@@ -36,17 +36,16 @@
 #include "xua_dsp.h"
 #endif
 
-static unsigned samplesOut[NUM_USB_CHAN_OUT];
+/* TODO 32 is max expected channels */
+static unsigned samplesOut[32];
 
 /* Two buffers for ADC data to allow for DAC and ADC ports being offset */
-static unsigned samplesIn[2][NUM_USB_CHAN_IN];
+static unsigned samplesIn[2][32];
 
 #if (DSD_CHANS_DAC != 0)
 extern buffered out port:32 p_dsd_dac[DSD_CHANS_DAC];
 extern buffered out port:32 p_dsd_clk;
 #endif
-
-unsigned g_adcVal = 0;
 
 #ifdef XTA_TIMING_AUDIO
 #pragma xta command "add exclusion received_command"
@@ -280,7 +279,7 @@ static inline unsigned DoSampleTransfer(chanend c_out, const int readBuffNo, con
 #pragma loop unroll
         for(int i = 0; i < NUM_USB_CHAN_IN; i++)
         {
-                outuint(c_out, samplesIn[readBuffNo][i]);
+            outuint(c_out, samplesIn[readBuffNo][i]);
          }
 #endif
     }
@@ -423,7 +422,7 @@ static inline void InitPorts(unsigned divide)
 }
 
 /* I2S delivery thread */
-#pragma unsafe arrays
+//#pragma unsafe arrays
 unsigned static deliver(chanend c_out, chanend ?c_spd_out,
 #ifdef ADAT_TX
     chanend c_adat_out,
