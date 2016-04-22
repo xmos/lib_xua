@@ -1,9 +1,18 @@
 sc_usb_audio Change Log
 =======================
 
+6.16.0
+------
+    - ADDED:      Call to UserBufferManagement()
+    - ADDED:      PDM_MIC_INDEX in devicedefines.h and usage
+    - CHANGE:     pdm_buffer() task now combinable 
+    - CHANGE:     Audio I/O task now takes i_dsp interface as a parameter
+    - CHANGE:     Removed built-in support for A/U series internal ADC
+    - CHANGE:     User PDM Microphone processing now uses an interface (previously function call)
+
 6.15.2
 ------
-    - RESOLVED:  interrupt.h (used in audio buffering) now compatible with xCORE-200 ABI
+    - RESOLVED:   interrupt.h (used in audio buffering) now compatible with xCORE-200 ABI
 
 6.15.1
 ------
