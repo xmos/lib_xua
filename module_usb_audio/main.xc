@@ -673,10 +673,7 @@ int main()
         on stdcore[PDM_TILE]: pdm_mic(c_ds_output);
         on stdcore[PDM_TILE].core[0]: pdm_buffer(c_ds_output, c_pdm_pcm, i_mic_process);
 #endif
-        // TODO move this to USER_MAIN_CORES or guard with RUN_DSP_TASK
-        // TODO NUM_DSP_CTRL_INTS
-        on stdcore[AUDIO_IO_TILE] : dsp_process(i_dsp, i_dsp_ctrl, 1);
-
+        
         USER_MAIN_CORES
     }
 
