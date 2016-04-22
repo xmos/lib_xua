@@ -16,7 +16,6 @@ typedef interface dsp_if
 typedef interface dsp_ctrl_if
 {
     int setControl(unsigned moduleId, unsigned control, unsigned setting);
-    //TODO add GetConttol
 } dsp_ctrl_if;
 
 
