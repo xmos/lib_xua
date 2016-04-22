@@ -419,7 +419,9 @@ void usb_audio_io(chanend c_aud_in, chanend ?c_adc,
 #if (NUM_PDM_MICS > 0)
     , chanend c_pdm_pcm
 #endif
+#ifdef RUN_DSP_TASK
     , client dsp_if i_dsp
+#endif
 )
 {
 #ifdef MIXER
@@ -463,7 +465,9 @@ void usb_audio_io(chanend c_aud_in, chanend ?c_adc,
 #if (NUM_PDM_MICS > 0)
                 , c_pdm_pcm
 #endif
+#ifdef RUN_DSP_TASK
                 , i_dsp
+#endif
             );
         }
 
@@ -606,8 +610,9 @@ int main()
 #if (NUM_PDM_MICS > 0)
             , c_pdm_pcm
 #endif
+#ifdef RUN_DSP_TASK
             , i_dsp
-    
+#endif
         );
 
 #if defined(SPDIF_TX) && (SPDIF_TX_TILE != AUDIO_IO_TILE)

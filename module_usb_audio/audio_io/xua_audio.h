@@ -31,7 +31,9 @@ void audio(chanend c_in,
 #if (NUM_PDM_MICS > 0)
     , chanend c_pdm_in
 #endif
+#ifdef RUN_DSP_TASK
     , client dsp_if i_dsp
+#endif
 );
 
 void SpdifTxWrapper(chanend c_spdif_tx);

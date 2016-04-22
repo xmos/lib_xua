@@ -226,12 +226,19 @@ static inline void TransferAdatTxSamples(chanend c_adat_out, const unsigned samp
 
 /* sampsFromUsbToAudio: The sample frame the device has recived from the host and is going to play to the output audio interfaces */
 /* sampsFromAudioToUsb: The sample frame that was received from the audio interfaces and that the device is going to send to the host */
-void UserBufferManagement(unsigned sampsFromUsbToAudio[], unsigned sampsFromAudioToUsb[], client dsp_if i_dsp);
+void UserBufferManagement(unsigned sampsFromUsbToAudio[], unsigned sampsFromAudioToUsb[]
+#ifdef RUN_DSP_TASK
+, client dsp_if i_dsp
+#endif
+);
 
 #pragma unsafe arrays
-static inline unsigned DoSampleTransfer(chanend c_out, const int readBuffNo, const unsigned underflowWord, client dsp_if i_dsp)
+static inline unsigned DoSampleTransfer(chanend c_out, const int readBuffNo, const unsigned underflowWord
+#ifdef RUN_DSP_TASK
+, client dsp_if i_dsp
+#endif
+)
 {
-  
     outuint(c_out, underflowWord);
 
     /* Check for sample freq change (or other command) or new samples from mixer*/
@@ -273,7 +280,11 @@ static inline unsigned DoSampleTransfer(chanend c_out, const int readBuffNo, con
         inuint(c_out);
 #endif
         
-        UserBufferManagement(samplesOut, samplesIn[readBuffNo], i_dsp);
+        UserBufferManagement(samplesOut, samplesIn[readBuffNo]
+#ifdef RUN_DSP_TASK
+        , i_dsp
+#endif
+        );
 
 #if NUM_USB_CHAN_IN > 0
 #pragma loop unroll
@@ -435,8 +446,11 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
 #if (NUM_PDM_MICS > 0)
     chanend c_pdm_pcm,
 #endif
-    chanend ?unused, 
-    client dsp_if i_dsp)
+    chanend ?unused
+#ifdef RUN_DSP_TASK
+    , client dsp_if i_dsp
+#endif
+    )
 {
 
     /* Since DAC and ADC buffered ports off by one sample we buffer previous ADC frame */
@@ -473,7 +487,12 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
     }
 #endif
 
-    unsigned command = DoSampleTransfer(c_out, readBuffNo, underflowWord, i_dsp);
+    unsigned command = DoSampleTransfer(c_out, readBuffNo, underflowWord 
+#ifdef RUN_DSP_TASK 
+    , i_dsp
+#endif
+    );
+
 #ifdef ADAT_TX
     unsafe{
     //TransferAdatTxSamples(c_adat_out, samplesOut, adatSmuxMode, 0);
@@ -803,9 +822,17 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
             /* The below looks a bit odd but forces the compiler to inline twice */
             unsigned command;
             if(readBuffNo)
-                command = DoSampleTransfer(c_out, 1, underflowWord, i_dsp);
+                command = DoSampleTransfer(c_out, 1, underflowWord 
+#ifdef RUN_DSP_TASK
+                , i_dsp
+#endif                
+                );
             else
-                command = DoSampleTransfer(c_out, 0, underflowWord, i_dsp);
+                command = DoSampleTransfer(c_out, 0, underflowWord
+#ifdef RUN_DSP_TASK
+                , i_dsp
+#endif
+                );
 
 
             if(command)
@@ -918,7 +945,9 @@ chanend ?c_config, chanend ?c
 #if (NUM_PDM_MICS > 0)
 , chanend c_pdm_in
 #endif
+#ifdef RUN_DSP_TASK
 , client dsp_if i_dsp
+#endif
 )
 {
 #if defined (SPDIF_TX) && (SPDIF_TX_TILE == AUDIO_IO_TILE)
@@ -1161,7 +1190,11 @@ chanend ?c_config, chanend ?c
 #if (NUM_PDM_MICS > 0)
                    c_pdm_in,
 #endif
-                   null, i_dsp);
+                   null 
+#ifdef RUN_DSP_TASK
+                   , i_dsp
+#endif
+                   );
 
                 if(command == SET_SAMPLE_FREQ)
                 {
