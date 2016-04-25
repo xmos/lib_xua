@@ -19,7 +19,7 @@ typedef interface dsp_ctrl_if
 } dsp_ctrl_if;
 
 
-void dsp_process(server dsp_if i_dsp, server dsp_ctrl_if ?i_dsp_ctrl[numDspCtrlInts], unsigned numDspCtrlInts);
+void dsp_process(server dsp_if i_dsp, server dsp_ctrl_if i_dsp_ctrl[numDspCtrlInts], unsigned numDspCtrlInts);
 
 
 #endif
