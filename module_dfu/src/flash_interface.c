@@ -102,7 +102,7 @@ int flash_cmd_read_page(unsigned char *data)
 
     current_flash_subpage_index = 0;
 
-    if (fl_readImageRead(current_flash_page_data) == 0)
+    if (fl_readImagePage(current_flash_page_data) == 0)
     {
         *(unsigned int *)data = 0;
      }
