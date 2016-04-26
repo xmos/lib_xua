@@ -279,7 +279,7 @@ static inline unsigned DoSampleTransfer(chanend c_out, const int readBuffNo, con
 #else
         inuint(c_out);
 #endif
-        
+
         UserBufferManagement(samplesOut, samplesIn[readBuffNo]
 #ifdef RUN_DSP_TASK
         , i_dsp
@@ -294,7 +294,7 @@ static inline unsigned DoSampleTransfer(chanend c_out, const int readBuffNo, con
          }
 #endif
     }
-    
+
 
     return 0;
 }
@@ -487,8 +487,8 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
     }
 #endif
 
-    unsigned command = DoSampleTransfer(c_out, readBuffNo, underflowWord 
-#ifdef RUN_DSP_TASK 
+    unsigned command = DoSampleTransfer(c_out, readBuffNo, underflowWord
+#ifdef RUN_DSP_TASK
     , i_dsp
 #endif
     );
@@ -822,10 +822,10 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
             /* The below looks a bit odd but forces the compiler to inline twice */
             unsigned command;
             if(readBuffNo)
-                command = DoSampleTransfer(c_out, 1, underflowWord 
+                command = DoSampleTransfer(c_out, 1, underflowWord
 #ifdef RUN_DSP_TASK
                 , i_dsp
-#endif                
+#endif
                 );
             else
                 command = DoSampleTransfer(c_out, 0, underflowWord
@@ -1190,7 +1190,7 @@ chanend ?c_config, chanend ?c
 #if (NUM_PDM_MICS > 0)
                    c_pdm_in,
 #endif
-                   null 
+                   null
 #ifdef RUN_DSP_TASK
                    , i_dsp
 #endif

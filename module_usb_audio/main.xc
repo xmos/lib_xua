@@ -678,7 +678,7 @@ int main()
         on stdcore[PDM_TILE]: pdm_mic(c_ds_output);
         on stdcore[PDM_TILE].core[0]: pdm_buffer(c_ds_output, c_pdm_pcm, i_mic_process);
 #endif
-        
+
         USER_MAIN_CORES
     }
 

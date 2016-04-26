@@ -36,7 +36,7 @@ void pdm_buffer(streaming chanend c_ds_output[2], chanend c_audio
 #endif
 )
 {
-    unsigned buffer;     
+    unsigned buffer;
     int output[NUM_PDM_MICS];
     unsigned samplerate;
 
@@ -45,13 +45,13 @@ void pdm_buffer(streaming chanend c_ds_output[2], chanend c_audio
 #else
     user_pdm_init();
 #endif
-       
+
     mic_array_decimator_conf_common_t dcc;
     const int * unsafe fir_coefs[7];
-    mic_array_frame_time_domain * unsafe current; 
-    mic_array_decimator_config_t dc[2]; 
+    mic_array_frame_time_domain * unsafe current;
+    mic_array_decimator_config_t dc[2];
 
-    /* Get initial sample-rate and compute decimation factor */ 
+    /* Get initial sample-rate and compute decimation factor */
     c_audio :> samplerate;
     unsigned decimationfactor = 96000/samplerate;
 
@@ -114,7 +114,7 @@ void pdm_buffer(streaming chanend c_ds_output[2], chanend c_audio
         select
         {
             case c_audio :> req:
-                    
+
                 /* Audio IO core requests samples */
                 if(req)
                 unsafe{
@@ -123,7 +123,7 @@ void pdm_buffer(streaming chanend c_ds_output[2], chanend c_audio
                         c_audio <: output[i];
                     }
 
-                    /* Get a new frame of mic data */    
+                    /* Get a new frame of mic data */
                     mic_array_frame_time_domain * unsafe current = mic_array_get_next_time_domain_frame(c_ds_output, 2, buffer, mic_audio, dc);
 
                     /* Run user code */
@@ -137,12 +137,12 @@ void pdm_buffer(streaming chanend c_ds_output[2], chanend c_audio
                 unsafe{
                     /* Sample rate change */
                     c_audio :> samplerate;
-                    
+
                     /* Re-config the mic decimators for the new sample-rate */
                     decimationfactor = 96000/samplerate;
                     dcc.output_decimation_factor = decimationfactor;
                     dcc.coefs=fir_coefs[decimationfactor/2];
-                    
+
                     mic_array_decimator_configure(c_ds_output, 2, dc);
                     mic_array_init_time_domain_frame(c_ds_output, 2, buffer, mic_audio, dc);
 
