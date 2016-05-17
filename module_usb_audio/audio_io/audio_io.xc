@@ -29,12 +29,16 @@
 #endif
 #endif
 
+#include "xua_audio.h"
+
 #include "commands.h"
 #include "xc_ptr.h"
 
-#ifdef RUN_DSP_TASK
-#include "xua_dsp.h"
-#endif
+//#ifdef RUN_DSP_TASK
+//#include "xua_dsp.h"
+//#endif
+
+
 
 /* TODO 32 is max expected channels */
 static unsigned samplesOut[32];
@@ -227,16 +231,16 @@ static inline void TransferAdatTxSamples(chanend c_adat_out, const unsigned samp
 /* sampsFromUsbToAudio: The sample frame the device has recived from the host and is going to play to the output audio interfaces */
 /* sampsFromAudioToUsb: The sample frame that was received from the audio interfaces and that the device is going to send to the host */
 void UserBufferManagement(unsigned sampsFromUsbToAudio[], unsigned sampsFromAudioToUsb[]
-#ifdef RUN_DSP_TASK
-, client dsp_if i_dsp
-#endif
+//#ifdef RUN_DSP_TASK
+, client audManage_if i_audMan
+//#endif
 );
 
 #pragma unsafe arrays
 static inline unsigned DoSampleTransfer(chanend c_out, const int readBuffNo, const unsigned underflowWord
-#ifdef RUN_DSP_TASK
-, client dsp_if i_dsp
-#endif
+//#ifdef RUN_DSP_TASK
+, client audManage_if i_audMan
+//#endif
 )
 {
     outuint(c_out, underflowWord);
@@ -281,9 +285,9 @@ static inline unsigned DoSampleTransfer(chanend c_out, const int readBuffNo, con
 #endif
 
         UserBufferManagement(samplesOut, samplesIn[readBuffNo]
-#ifdef RUN_DSP_TASK
-        , i_dsp
-#endif
+//#ifdef RUN_DSP_TASK
+        , i_audMan
+//#endif
         );
 
 #if NUM_USB_CHAN_IN > 0
@@ -447,9 +451,9 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
     chanend c_pdm_pcm,
 #endif
     chanend ?unused
-#ifdef RUN_DSP_TASK
-    , client dsp_if i_dsp
-#endif
+//#ifdef RUN_DSP_TASK
+    , client audManage_if i_audMan
+//#endif
     )
 {
 
@@ -488,9 +492,9 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
 #endif
 
     unsigned command = DoSampleTransfer(c_out, readBuffNo, underflowWord
-#ifdef RUN_DSP_TASK
-    , i_dsp
-#endif
+//#ifdef RUN_DSP_TASK
+    , i_audMan
+//#endif
     );
 
 #ifdef ADAT_TX
@@ -823,15 +827,15 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
             unsigned command;
             if(readBuffNo)
                 command = DoSampleTransfer(c_out, 1, underflowWord
-#ifdef RUN_DSP_TASK
-                , i_dsp
-#endif
+//#ifdef RUN_DSP_TASK
+                , i_audMan
+//#endif
                 );
             else
                 command = DoSampleTransfer(c_out, 0, underflowWord
-#ifdef RUN_DSP_TASK
-                , i_dsp
-#endif
+//#ifdef RUN_DSP_TASK
+                , i_audMan
+//#endif
                 );
 
 
@@ -945,9 +949,9 @@ chanend ?c_config, chanend ?c
 #if (NUM_PDM_MICS > 0)
 , chanend c_pdm_in
 #endif
-#ifdef RUN_DSP_TASK
-, client dsp_if i_dsp
-#endif
+//#ifdef RUN_DSP_TASK
+, client audManage_if i_audMan
+//#endif
 )
 {
 #if defined (SPDIF_TX) && (SPDIF_TX_TILE == AUDIO_IO_TILE)
@@ -1191,9 +1195,9 @@ chanend ?c_config, chanend ?c
                    c_pdm_in,
 #endif
                    null
-#ifdef RUN_DSP_TASK
-                   , i_dsp
-#endif
+//#ifdef RUN_DSP_TASK
+                   , i_audMan
+//#endif
                    );
 
                 if(command == SET_SAMPLE_FREQ)

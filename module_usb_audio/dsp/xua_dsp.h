@@ -9,6 +9,10 @@ typedef interface dsp_if
     [[guarded]]
     void transfer_buffers(int * unsafe in_aud_buf, int * unsafe in_usb_buf,
                             int * unsafe out_usb_buf, int * unsafe out_aud_buf);
+
+    [[guarded]]
+    void transfer_samples(int in_mic_buf[], int in_spk_buf[], int out_mic_buf[], int out_spk_buf[]);
+
 } dsp_if;
 
 
