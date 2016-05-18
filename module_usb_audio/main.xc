@@ -561,8 +561,9 @@ int main()
 #endif
 
 //#ifdef RUN_DSP_TASK
-    //interface dsp_if i_dsp;
-    //interface dsp_ctrl_if i_dsp_ctrl[1]; // TODO NUM_DSP_CTRL_INTERFACES
+    // TODO move to USER_MAIN_DECLARATIONS
+    interface dsp_if i_dsp;
+    interface dsp_ctrl_if i_dsp_ctrl[1]; // TODO NUM_DSP_CTRL_INTERFACES
     interface audManage_if i_audMan;
 //#endif
 
