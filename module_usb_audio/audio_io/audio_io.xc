@@ -230,18 +230,10 @@ static inline void TransferAdatTxSamples(chanend c_adat_out, const unsigned samp
 
 /* sampsFromUsbToAudio: The sample frame the device has recived from the host and is going to play to the output audio interfaces */
 /* sampsFromAudioToUsb: The sample frame that was received from the audio interfaces and that the device is going to send to the host */
-void UserBufferManagement(unsigned sampsFromUsbToAudio[], unsigned sampsFromAudioToUsb[]
-//#ifdef RUN_DSP_TASK
-, client audManage_if i_audMan
-//#endif
-);
+void UserBufferManagement(unsigned sampsFromUsbToAudio[], unsigned sampsFromAudioToUsb[], client audManage_if i_audMan);
 
 #pragma unsafe arrays
-static inline unsigned DoSampleTransfer(chanend c_out, const int readBuffNo, const unsigned underflowWord
-//#ifdef RUN_DSP_TASK
-, client audManage_if i_audMan
-//#endif
-)
+static inline unsigned DoSampleTransfer(chanend c_out, const int readBuffNo, const unsigned underflowWord, client audManage_if i_audMan)
 {
     outuint(c_out, underflowWord);
 
@@ -293,7 +285,6 @@ static inline unsigned DoSampleTransfer(chanend c_out, const int readBuffNo, con
          }
 #endif
     }
-
 
     return 0;
 }
@@ -432,7 +423,7 @@ static inline void InitPorts(unsigned divide)
 }
 
 /* I2S delivery thread */
-//#pragma unsafe arrays
+#pragma unsafe arrays
 unsigned static deliver(chanend c_out, chanend ?c_spd_out,
 #ifdef ADAT_TX
     chanend c_adat_out,
@@ -445,11 +436,8 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
 #if (NUM_PDM_MICS > 0)
     chanend c_pdm_pcm,
 #endif
-    chanend ?unused
-//#ifdef RUN_DSP_TASK
-    , client audManage_if i_audMan
-//#endif
-    )
+    chanend ?unused, 
+    client audManage_if i_audMan)
 {
 
     /* Since DAC and ADC buffered ports off by one sample we buffer previous ADC frame */
@@ -486,11 +474,7 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
     }
 #endif
 
-    unsigned command = DoSampleTransfer(c_out, readBuffNo, underflowWord
-//#ifdef RUN_DSP_TASK
-    , i_audMan
-//#endif
-    );
+    unsigned command = DoSampleTransfer(c_out, readBuffNo, underflowWord, i_audMan);
 
 #ifdef ADAT_TX
     unsafe{
@@ -650,7 +634,6 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
             p_lrclk <: 0x00000000;
 #else
             p_lrclk <: 0x80000000;
-
 #endif
 #endif
 
@@ -824,18 +807,9 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
             /* The below looks a bit odd but forces the compiler to inline twice */
             unsigned command;
             if(readBuffNo)
-                command = DoSampleTransfer(c_out, 1, underflowWord
-//#ifdef RUN_DSP_TASK
-                , i_audMan
-//#endif
-                );
+                command = DoSampleTransfer(c_out, 1, underflowWord, i_audMan);
             else
-                command = DoSampleTransfer(c_out, 0, underflowWord
-//#ifdef RUN_DSP_TASK
-                , i_audMan
-//#endif
-                );
-
+                command = DoSampleTransfer(c_out, 0, underflowWord, i_audMan);
 
             if(command)
             {
@@ -947,9 +921,7 @@ chanend ?c_config, chanend ?c
 #if (NUM_PDM_MICS > 0)
 , chanend c_pdm_in
 #endif
-//#ifdef RUN_DSP_TASK
 , client audManage_if i_audMan
-//#endif
 )
 {
 #if defined (SPDIF_TX) && (SPDIF_TX_TILE == AUDIO_IO_TILE)
