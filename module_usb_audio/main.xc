@@ -48,10 +48,6 @@
 #include "xua_pdm_mic.h"
 #endif
 
-#ifdef RUN_DSP_TASK
-#include "xua_dsp.h"
-#endif
-
 [[distributable]]
 void DFUHandler(server interface i_dfu i, chanend ?c_user_cmd);
 
@@ -419,9 +415,7 @@ void usb_audio_io(chanend c_aud_in, chanend ?c_adc,
 #if (NUM_PDM_MICS > 0)
     , chanend c_pdm_pcm
 #endif
-//#ifdef RUN_DSP_TASK
     , client audManage_if i_audMan
-//#endif
 )
 {
 #ifdef MIXER
@@ -465,9 +459,7 @@ void usb_audio_io(chanend c_aud_in, chanend ?c_adc,
 #if (NUM_PDM_MICS > 0)
                 , c_pdm_pcm
 #endif
-//#ifdef RUN_DSP_TASK
                 , i_audMan
-//#endif
             );
         }
 
@@ -560,12 +552,7 @@ int main()
 #endif
 #endif
 
-//#ifdef RUN_DSP_TASK
-    // TODO move to USER_MAIN_DECLARATIONS
-    interface dsp_if i_dsp;
-    interface dsp_ctrl_if i_dsp_ctrl[1]; // TODO NUM_DSP_CTRL_INTERFACES
     interface audManage_if i_audMan;
-//#endif
 
     USER_MAIN_DECLARATIONS
     par
@@ -612,9 +599,7 @@ int main()
 #if (NUM_PDM_MICS > 0)
             , c_pdm_pcm
 #endif
-//#ifdef RUN_DSP_TASK
             , i_audMan
-//#endif
         );
 
 #if defined(SPDIF_TX) && (SPDIF_TX_TILE != AUDIO_IO_TILE)
