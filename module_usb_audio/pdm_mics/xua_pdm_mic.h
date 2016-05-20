@@ -26,9 +26,12 @@ void pdm_mic(streaming chanend c_ds_output[2]);
 #else
 
 /* Simple user hooks/call-backs */
-unsafe void user_pdm_process(mic_array_frame_time_domain * unsafe audio, int output[]);
+void user_pdm_process(mic_array_frame_time_domain * unsafe audio, int output[]);
 
 void user_pdm_init();
+
+/* PDM interface and decimation cores */
+void pdm_buffer(streaming chanend c_ds_output[2], chanend c_audio);
 
 /* PDM interface and decimation cores */
 void pdm_mic(streaming chanend c_ds_output[2]);
