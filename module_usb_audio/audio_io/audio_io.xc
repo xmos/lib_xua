@@ -283,12 +283,7 @@ static inline unsigned DoSampleTransfer(chanend c_out, const int readBuffNo, con
 #else
         inuint(c_out);
 #endif
-
-        UserBufferManagement(samplesOut, samplesIn[readBuffNo]
-//#ifdef RUN_DSP_TASK
-        , i_audMan
-//#endif
-        );
+        UserBufferManagement(samplesOut, samplesIn[readBuffNo], i_audMan);
 
 #if NUM_USB_CHAN_IN > 0
 #pragma loop unroll
@@ -717,10 +712,13 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
 #if (NUM_PDM_MICS > 0)
             /* Get samples from PDM->PCM comverter */
             c_pdm_pcm <: 1;
+            master
+            {
 #pragma loop unroll
             for(int i = 0; i < NUM_PDM_MICS; i++)
             {
                 c_pdm_pcm :> samplesIn[readBuffNo][i];
+            }
             }
 #endif
         }

@@ -114,13 +114,17 @@ void pdm_buffer(streaming chanend c_ds_output[2], chanend c_audio
         select
         {
             case c_audio :> req:
-
+                
                 /* Audio IO core requests samples */
                 if(req)
                 unsafe{
-                    for(int i = 0; i < NUM_PDM_MICS; i++)
+                    slave
                     {
-                        c_audio <: output[i];
+#pragma loop unroll
+                        for(int i = 0; i < NUM_PDM_MICS; i++)
+                        {
+                            c_audio <: output[i];
+                        }
                     }
 
                     /* Get a new frame of mic data */
@@ -182,5 +186,4 @@ void pdm_mic(streaming chanend c_ds_output[2])
         mic_array_decimate_to_pcm_4ch(c_4x_pdm_mic_1, c_ds_output[1]);
     }
 }
-
 #endif
