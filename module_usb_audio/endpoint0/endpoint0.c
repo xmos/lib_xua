@@ -1,6 +1,4 @@
 /**
- * g
- * @file    endpoint0.xc
  * @brief   Implements endpoint zero for an USB Audio 1.0/2.0 device
  * @author  Ross Owen, XMOS Semiconductor
  */
@@ -15,7 +13,7 @@
 
 #include "devicedefines.h"
 #include "usb_device.h"          /* Standard descriptor requests */
-#include "descriptors.h"       /* This devices descriptors */
+#include "descriptors.h"         /* This devices descriptors */
 #include "commands.h"
 #include "audiostream.h"
 #include "hostactive.h"
@@ -31,7 +29,7 @@
 #endif
 
 #ifndef __XC__
-/* Support for C */
+/* Support for xCORE  channels in C */
 #define null 0
 #define outuint(c, x)   asm ("out res[%0], %1" :: "r" (c), "r" (x))
 #define chkct(c, x)     asm ("chkct res[%0], %1" :: "r" (c), "r" (x))
@@ -65,11 +63,9 @@ unsigned int DFU_mode_active = 0;         // 0 - App active, 1 - DFU active
 /* Global volume and mute tables */
 int volsOut[NUM_USB_CHAN_OUT + 1];
 unsigned int mutesOut[NUM_USB_CHAN_OUT + 1];
-//unsigned int multOut[NUM_USB_CHAN_OUT + 1];
 
 int volsIn[NUM_USB_CHAN_IN + 1];
 unsigned int mutesIn[NUM_USB_CHAN_IN + 1];
-//unsigned int multIn[NUM_USB_CHAN_IN + 1];
 
 #ifdef MIXER
 unsigned char mixer1Crossbar[18];
@@ -204,7 +200,7 @@ const unsigned g_chanCount_In_HS[INPUT_FORMAT_COUNT]       = {HS_STREAM_FORMAT_I
 
 /* Endpoint 0 function.  Handles all requests to the device */
 void Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
-    chanend c_mix_ctl, chanend c_clk_ctl, chanend c_EANativeTransport_ctrl, CLIENT_INTERFACE(i_dfu, dfuInterface))
+    chanend c_mix_ctl, chanend c_clk_ctl, chanend c_EANativeTransport_ctrl, CLIENT_INTERFACE(i_dfu, dfuInterface) VENDOR_REQUESTS_PARAMS_DEC_)
 {
     USB_SetupPacket_t sp;
     XUD_ep ep0_out = XUD_InitEp(c_ep0_out);
@@ -271,10 +267,10 @@ void Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
 
     /* Init mixer inputs */
     for(int j = 0; j < MAX_MIX_COUNT; j++)
-    for(int i = 0; i < MIX_INPUTS; i++)
-    {
-        mixSel[j][i] = i;
-    }
+        for(int i = 0; i < MIX_INPUTS; i++)
+        {
+            mixSel[j][i] = i;
+        }
 #endif
 
 #ifdef VENDOR_AUDIO_REQS
@@ -288,7 +284,7 @@ void Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
         /* Stop audio */
         outuint(c_audioControl, SET_SAMPLE_FREQ);
         outuint(c_audioControl, AUDIO_STOP_FOR_DFU);
-        // No Handshake
+        /* No Handshake */
         DFU_mode_active = 1;
     }
 #endif
@@ -627,6 +623,17 @@ void Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
             }
 
         } /* if(result == XUD_RES_OKAY) */
+
+        //if(i_vendorRequests != null)
+        {
+            if(result == XUD_RES_ERR)
+            {
+                /* Run vendor defined parsing/processing */
+                /* Note, an interface might seem ideal hear but this *must* be executed on the same
+                 * core sure to shared memory depandancy */
+                VendorRequests(ep0_out, ep0_in, &sp VENDOR_REQUESTS_PARAMS_);
+            }
+        }
 
         if(result == XUD_RES_ERR)
         {

@@ -287,6 +287,7 @@ void usb_audio_core(chanend c_mix_out
 , chanend ?c_clk_int
 , chanend ?c_clk_ctl
 , client interface i_dfu ?dfuInterface
+VENDOR_REQUESTS_PARAMS_DEC_
 )
 {
     chan c_sof;
@@ -381,7 +382,7 @@ void usb_audio_core(chanend c_mix_out
         /* Endpoint 0 Core */
         {
             thread_speed();
-            Endpoint0( c_xud_out[0], c_xud_in[0], c_aud_ctl, c_mix_ctl, c_clk_ctl, c_EANativeTransport_ctrl, dfuInterface);
+            Endpoint0( c_xud_out[0], c_xud_in[0], c_aud_ctl, c_mix_ctl, c_clk_ctl, c_EANativeTransport_ctrl, dfuInterface VENDOR_REQUESTS_PARAMS_);
         }
 
         /* Decoupling core */
@@ -581,6 +582,7 @@ int main()
                 , c_mix_ctl
 #endif
                 , c_clk_int, c_clk_ctl, dfuInterface
+                VENDOR_REQUESTS_PARAMS_
 
             );
         }
