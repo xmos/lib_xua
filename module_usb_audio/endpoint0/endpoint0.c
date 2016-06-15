@@ -198,6 +198,8 @@ const unsigned g_chanCount_In_HS[INPUT_FORMAT_COUNT]       = {HS_STREAM_FORMAT_I
 #endif
 };
 
+void VendorRequests_Init(VENDOR_REQUESTS_PARAMS_DEC);
+
 /* Endpoint 0 function.  Handles all requests to the device */
 void Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
     chanend c_mix_ctl, chanend c_clk_ctl, chanend c_EANativeTransport_ctrl, CLIENT_INTERFACE(i_dfu, dfuInterface) VENDOR_REQUESTS_PARAMS_DEC_)
@@ -218,6 +220,8 @@ void Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
         volsIn[i] = 0;
         mutesIn[i] = 0;
     }
+
+    VendorRequests_Init(VENDOR_REQUESTS_PARAMS);
 
 #ifdef MIXER
     /* Set up mixer default state */
@@ -604,7 +608,6 @@ void Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
 #endif
 
 #ifdef VENDOR_AUDIO_REQS
-#error
                             /* If result is ERR at this point, then request to audio interface not handled - handle vendor audio reqs */
                             if(result == XUD_RES_ERR)
                             {
@@ -624,14 +627,13 @@ void Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
 
         } /* if(result == XUD_RES_OKAY) */
 
-        //if(i_vendorRequests != null)
         {
             if(result == XUD_RES_ERR)
             {
                 /* Run vendor defined parsing/processing */
-                /* Note, an interface might seem ideal hear but this *must* be executed on the same
+                /* Note, an interface might seem ideal here but this *must* be executed on the same
                  * core sure to shared memory depandancy */
-                VendorRequests(ep0_out, ep0_in, &sp VENDOR_REQUESTS_PARAMS_);
+                result = VendorRequests(ep0_out, ep0_in, &sp VENDOR_REQUESTS_PARAMS_);
             }
         }
 
