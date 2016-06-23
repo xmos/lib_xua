@@ -34,12 +34,6 @@
 #include "commands.h"
 #include "xc_ptr.h"
 
-//#ifdef RUN_DSP_TASK
-//#include "xua_dsp.h"
-//#endif
-
-
-
 /* TODO 32 is max expected channels */
 static unsigned samplesOut[32];
 
