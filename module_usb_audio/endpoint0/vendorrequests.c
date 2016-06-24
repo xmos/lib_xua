@@ -24,3 +24,10 @@ int VendorRequests(XUD_ep ep0_out, XUD_ep ep0_in,  REFERENCE_PARAM(USB_SetupPack
     return XUD_RES_ERR;
 }
 
+void VendorRequests_Init(VENDOR_REQUESTS_PARAMS_DEC) __attribute__ ((weak));
+
+void VendorRequests_Init(VENDOR_REQUESTS_PARAMS_DEC)
+{
+    
+}
+
