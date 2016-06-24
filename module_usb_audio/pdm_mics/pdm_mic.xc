@@ -57,8 +57,18 @@ void pdm_buffer(streaming chanend c_ds_output[2], chanend c_audio)
     c_audio :> samplerate;
     unsigned decimationfactor = 96000/samplerate;
 
+    int fir_gain_compen[7];
+
     unsafe
     {
+        fir_gain_compen[0] = 0;
+        fir_gain_compen[1] = FIR_COMPENSATOR_DIV_2;
+        fir_gain_compen[2] = FIR_COMPENSATOR_DIV_4;
+        fir_gain_compen[3] = FIR_COMPENSATOR_DIV_6;
+        fir_gain_compen[4] = FIR_COMPENSATOR_DIV_6;
+        fir_gain_compen[5] = 0;
+        fir_gain_compen[6] = FIR_COMPENSATOR_DIV_12;
+
         fir_coefs[0] = 0;
         fir_coefs[1] = g_third_stage_div_2_fir;
         fir_coefs[2] = g_third_stage_div_4_fir;
@@ -75,7 +85,7 @@ void pdm_buffer(streaming chanend c_ds_output[2], chanend c_audio)
         dcc.output_decimation_factor = decimationfactor;
         dcc.coefs = fir_coefs[decimationfactor/2];
         dcc.apply_mic_gain_compensation = 0;
-        dcc.fir_gain_compensation = 0;
+        dcc.fir_gain_compensation = fir_gain_compen[decimationfactor/2];
         dcc.buffering_type = DECIMATOR_NO_FRAME_OVERLAP;
         dcc.number_of_frame_buffers = 2;
 
@@ -148,7 +158,7 @@ void pdm_buffer(streaming chanend c_ds_output[2], chanend c_audio)
                     decimationfactor = 96000/samplerate;
                     dcc.output_decimation_factor = decimationfactor;
                     dcc.coefs=fir_coefs[decimationfactor/2];
-
+                    dcc.fir_gain_compensation = fir_gain_compen[decimationfactor/2];
                     mic_array_decimator_configure(c_ds_output, 2, dc);
                     mic_array_init_time_domain_frame(c_ds_output, 2, buffer, mic_audio, dc);
 
