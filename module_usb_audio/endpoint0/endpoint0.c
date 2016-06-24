@@ -198,6 +198,13 @@ const unsigned g_chanCount_In_HS[INPUT_FORMAT_COUNT]       = {HS_STREAM_FORMAT_I
 #endif
 };
 
+#ifndef VENDOR_REQUESTS_PARAMS_DEC
+#define VENDOR_REQUESTS_PARAMS_DEC
+#endif
+#ifndef VENDOR_REQUESTS_PARAMS
+#define VENDOR_REQUESTS_PARAMS
+#endif
+
 void VendorRequests_Init(VENDOR_REQUESTS_PARAMS_DEC);
 
 /* Endpoint 0 function.  Handles all requests to the device */
