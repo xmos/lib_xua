@@ -1,6 +1,13 @@
 sc_usb_audio Change Log
 =======================
 
+6.18.0
+------
+    - ADDED:      Call to VendorRequests() and VendorRequests_Init() to Endpoint 0
+    - ADDED:      VENDOR_REQUESTS_PARAMS define to allow for custom parameters to VendorRequest calls
+    - RESOLVED:   FIR gain compensation set appropriately in lib_mic_array usage
+    - CHANGE:     i_dsp interface renamed i_audManage
+
 6.16.0
 ------
     - ADDED:      Call to UserBufferManagement()
