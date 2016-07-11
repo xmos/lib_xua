@@ -28,6 +28,6 @@ void VendorRequests_Init(VENDOR_REQUESTS_PARAMS_DEC) __attribute__ ((weak));
 
 void VendorRequests_Init(VENDOR_REQUESTS_PARAMS_DEC)
 {
-    
+
 }
 

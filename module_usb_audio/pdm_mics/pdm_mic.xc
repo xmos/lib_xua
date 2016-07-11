@@ -126,7 +126,7 @@ void pdm_buffer(streaming chanend c_ds_output[2], chanend c_audio)
         select
         {
             case c_audio :> req:
-                
+
                 /* Audio IO core requests samples */
                 if(req)
                 unsafe{

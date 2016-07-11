@@ -430,7 +430,7 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
 #if (NUM_PDM_MICS > 0)
     chanend c_pdm_pcm,
 #endif
-    chanend ?unused, 
+    chanend ?unused,
     client audManage_if i_audMan)
 {
 
