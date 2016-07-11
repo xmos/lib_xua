@@ -391,7 +391,7 @@ USB_Descriptor_Device_t devDesc_Audio1 =
     .idProduct                      = PID_AUDIO_1,
     .bcdDevice                      = BCD_DEVICE,
     .iManufacturer                  = offsetof(StringDescTable_t, vendorStr)/sizeof(char *),
-    .iProduct                       = offsetof(StringDescTable_t, productStr_Audio2)/sizeof(char *),
+    .iProduct                       = offsetof(StringDescTable_t, productStr_Audio1)/sizeof(char *),
     .iSerialNumber                  = 0,
     .bNumConfigurations             = 1
 };
@@ -2454,7 +2454,7 @@ unsigned char cfgDesc_Audio1[] =
     0x01,                                 /* Interface class - AUDIO */
     0x02,                                 /* subclass - AUDIO_STREAMING */
     0x00,                                 /* Unused */
-    0x04,                                 /* String table index  */
+    0x09,                                 /* String table index  */
 
     /* Class-Specific AS Interface Descriptor (4.5.2) */
     0x07,
@@ -2568,22 +2568,22 @@ unsigned char cfgDesc_Audio1[] =
     0x04,                                 /* INTERFACE */
     (OUTPUT_INTERFACES_A1 + 1),           /* bInterfaceNumber*/
     0x00,                                 /* AlternateSetting */
-    0x00,                                 /* num endpoints */
+    0x00,                                 /* bNumEndpoints */
     0x01,                                 /* Interface class - AUDIO */
     0x02,                                 /* subclass - AUDIO_STREAMING */
     0x00,                                 /* Unused */
-    0x05,                                 /* String table index */
+    0x0A,                                 /* iInterface */
 
     /* Standard Interface Descriptor - Audio streaming IN */
     0x09,
     0x04,                                 /* INTERFACE */
     (OUTPUT_INTERFACES_A1 + 1),           /* bInterfaceNumber */
     0x01,                                 /* AlternateSetting */
-    0x01,                                 /* num endpoints */
+    0x01,                                 /* bNumEndpoints */
     0x01,                                 /* Interface class - AUDIO */
     0x02,                                 /* Subclass - AUDIO_STREAMING */
     0x00,                                 /* Unused */
-    0x0A,                                 /* String table index */
+    0x0A,                                /* iInterface*/
 
     /* CS_Interface AC interface header descriptor */
     0x07,
