@@ -23,7 +23,7 @@ sc_usb_audio Change Log
 
 6.15.1
 ------
-    - RESOLVED:   DAC data mis-alignment issue in TDM slave mode
+    - RESOLVED:   DAC data mis-alignment issue in TDM/I2S slave mode
     - CHANGE:     Updates to support API changes in lib_mic_array version 2.0
 
 6.15.0
