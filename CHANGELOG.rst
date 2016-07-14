@@ -1,6 +1,11 @@
 sc_usb_audio Change Log
 =======================
 
+6.18.1
+------
+    - ADDED:      Vendor Specific control interface added to allow control of XVSM params from 
+                  Windows (via lib_usb)
+
 6.18.0
 ------
     - ADDED:      Call to VendorRequests() and VendorRequests_Init() to Endpoint 0
