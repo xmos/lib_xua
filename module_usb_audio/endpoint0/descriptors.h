@@ -2244,17 +2244,25 @@ const unsigned num_freqs_a1 = MAX(3, (0
 #endif
 ));
 
+#ifdef XVSM
+#define CONTROL_INTERFACE_BYTES 9
+#define NUM_CONTROL_INTERFACES 1
+#else
+#define CONTROL_INTERFACE_BYTES 0
+#define NUM_CONTROL_INTERFACES 0
+#endif
+
 #define AC_TOTAL_LENGTH             (AC_LENGTH + (INPUT_INTERFACES_A1 * (17 + NUM_USB_CHAN_IN_FS + num_freqs_a1 * 3)) + (OUTPUT_INTERFACES_A1 * (17 + NUM_USB_CHAN_OUT_FS + (num_freqs_a1 *3))))
 #define STREAMING_INTERFACES        (INPUT_INTERFACES_A1 + OUTPUT_INTERFACES_A1)
 
 /* Number of interfaces for Audio  1.0 (+1 for control ) */
 /* Note, this is different that INTERFACE_COUNT since we dont support items such as MIDI, iAP etc in UAC1 mode */
-#define NUM_INTERFACES_A1           (1+INPUT_INTERFACES_A1 + OUTPUT_INTERFACES_A1)
+#define NUM_INTERFACES_A1           (1+INPUT_INTERFACES_A1 + OUTPUT_INTERFACES_A1+NUM_CONTROL_INTERFACES)
 
 #if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP)
-#define CFG_TOTAL_LENGTH_A1         (18 + AC_TOTAL_LENGTH + (INPUT_INTERFACES_A1 * 61) + (OUTPUT_INTERFACES_A1 * 70))
+#define CFG_TOTAL_LENGTH_A1         (18 + AC_TOTAL_LENGTH + (INPUT_INTERFACES_A1 * 61) + (OUTPUT_INTERFACES_A1 * 70) + CONTROL_INTERFACE_BYTES)
 #else
-#define CFG_TOTAL_LENGTH_A1         (18 + AC_TOTAL_LENGTH + (INPUT_INTERFACES_A1 * 61) + (OUTPUT_INTERFACES_A1 * 61))
+#define CFG_TOTAL_LENGTH_A1         (18 + AC_TOTAL_LENGTH + (INPUT_INTERFACES_A1 * 61) + (OUTPUT_INTERFACES_A1 * 61) + CONTROL_INTERFACE_BYTES)
 #endif
 
 #define CHARIFY_SR(x) (x & 0xff),((x & 0xff00)>> 8),((x & 0xff0000)>> 16)
@@ -2677,6 +2685,20 @@ unsigned char cfgDesc_Audio1[] =
     0x00,                                 /* Unused */
     0x00, 0x00,                           /* Unused */
 #endif
+
+#ifdef XVSM
+    /* Standard DFU class Interface descriptor */
+    0x09,                                /* 0 bLength : Size of this descriptor, in bytes. (field size 1 bytes) */
+    0x04,                                 /* 1 bDescriptorType : INTERFACE descriptor. (field size 1 bytes) */
+    (OUTPUT_INTERFACES_A1 + 2),           /* bInterfaceNumber */
+    0x00,                                 /* 3 bAlternateSetting : Index of this setting. (field size 1 bytes) */
+    0x00,                                 /* 4 bNumEndpoints : 0 endpoints. (field size 1 bytes) */
+    0xFF,                                 /* 5 bInterfaceClass : DFU. (field size 1 bytes) */
+    0xFF,                                 /* 6 bInterfaceSubclass : (field size 1 bytes) */
+    0xFF,                                 /* 7 bInterfaceProtocol : Unused. (field size 1 bytes) */
+    0x00,                                 /* 8 iInterface */
+#endif
+
 };
 #endif
 #endif
