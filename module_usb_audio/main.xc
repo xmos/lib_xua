@@ -22,7 +22,8 @@
 #ifdef MIDI
 #include "usb_midi.h"
 #endif
-#include "audio.h"
+
+#include "xua_audio.h"
 
 #ifdef IAP
 #include "i2c_shared.h"
@@ -44,7 +45,7 @@
 #include "clocking.h"
 
 #if (NUM_PDM_MICS > 0)
-#include "pcm_pdm_mic.h"
+#include "xua_pdm_mic.h"
 #endif
 
 [[distributable]]
@@ -144,18 +145,18 @@ on tile[AUDIO_IO_TILE] : out port p_pll_clk                 = PORT_PLL_REF;
 #endif
 
 #ifdef MIDI
-on tile[MIDI_TILE] :  port p_midi_tx                    = PORT_MIDI_OUT;
+on tile[MIDI_TILE] :  port p_midi_tx                        = PORT_MIDI_OUT;
 
 #if(MIDI_RX_PORT_WIDTH == 4)
-on tile[MIDI_TILE] :  buffered in port:4 p_midi_rx      = PORT_MIDI_IN;
+on tile[MIDI_TILE] :  buffered in port:4 p_midi_rx          = PORT_MIDI_IN;
 #elif(MIDI_RX_PORT_WIDTH == 1)
-on tile[MIDI_TILE] :  buffered in port:1 p_midi_rx      = PORT_MIDI_IN;
+on tile[MIDI_TILE] :  buffered in port:1 p_midi_rx          = PORT_MIDI_IN;
 #endif
 #endif
 
 /* Clock blocks */
 #ifdef MIDI
-on tile[MIDI_TILE] : clock    clk_midi                  = CLKBLK_MIDI;
+on tile[MIDI_TILE] : clock    clk_midi                      = CLKBLK_MIDI;
 #endif
 
 #if defined(SPDIF_TX) || defined(ADAT_TX)
@@ -286,6 +287,7 @@ void usb_audio_core(chanend c_mix_out
 , chanend ?c_clk_int
 , chanend ?c_clk_ctl
 , client interface i_dfu ?dfuInterface
+VENDOR_REQUESTS_PARAMS_DEC_
 )
 {
     chan c_sof;
@@ -380,7 +382,7 @@ void usb_audio_core(chanend c_mix_out
         /* Endpoint 0 Core */
         {
             thread_speed();
-            Endpoint0( c_xud_out[0], c_xud_in[0], c_aud_ctl, c_mix_ctl, c_clk_ctl, c_EANativeTransport_ctrl, dfuInterface);
+            Endpoint0( c_xud_out[0], c_xud_in[0], c_aud_ctl, c_mix_ctl, c_clk_ctl, c_EANativeTransport_ctrl, dfuInterface VENDOR_REQUESTS_PARAMS_);
         }
 
         /* Decoupling core */
@@ -414,6 +416,7 @@ void usb_audio_io(chanend c_aud_in, chanend ?c_adc,
 #if (NUM_PDM_MICS > 0)
     , chanend c_pdm_pcm
 #endif
+    , client audManage_if i_audMan
 )
 {
 #ifdef MIXER
@@ -457,6 +460,7 @@ void usb_audio_io(chanend c_aud_in, chanend ?c_adc,
 #if (NUM_PDM_MICS > 0)
                 , c_pdm_pcm
 #endif
+                , i_audMan
             );
         }
 
@@ -543,10 +547,15 @@ int main()
 
 #if (NUM_PDM_MICS > 0)
     chan c_pdm_pcm;
+    streaming chan c_ds_output[2];
+#ifdef MIC_PROCESSING_USE_INTERFACE
+    interface mic_process_if i_mic_process;
+#endif
 #endif
 
-    USER_MAIN_DECLARATIONS
+    interface audManage_if i_audMan;
 
+    USER_MAIN_DECLARATIONS
     par
     {
         on tile[XUD_TILE]:
@@ -573,6 +582,7 @@ int main()
                 , c_mix_ctl
 #endif
                 , c_clk_int, c_clk_ctl, dfuInterface
+                VENDOR_REQUESTS_PARAMS_
 
             );
         }
@@ -591,7 +601,7 @@ int main()
 #if (NUM_PDM_MICS > 0)
             , c_pdm_pcm
 #endif
-
+            , i_audMan
         );
 
 #if defined(SPDIF_TX) && (SPDIF_TX_TILE != AUDIO_IO_TILE)
@@ -654,8 +664,14 @@ int main()
 #endif
 
 #if (NUM_PDM_MICS > 0)
-        on stdcore[PDM_TILE]: pcm_pdm_mic(c_pdm_pcm);
+        on stdcore[PDM_TILE]: pdm_mic(c_ds_output);
+#ifdef MIC_PROCESSING_USE_INTERFACE
+        on stdcore[PDM_TILE].core[0]: pdm_buffer(c_ds_output, c_pdm_pcm, i_mic_process);
+#else
+        on stdcore[PDM_TILE]: pdm_buffer(c_ds_output, c_pdm_pcm);
 #endif
+#endif
+
         USER_MAIN_CORES
     }
 

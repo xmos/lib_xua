@@ -1,8 +1,25 @@
 #ifndef __audio_h__
 #define __audio_h__
 
-#include "devicedefines.h"
+//#include "devicedefines.h"
 #include "dfu_interface.h"
+//#include "xua_dsp.h"
+
+
+typedef interface audManage_if
+{
+    [[guarded]]
+    void transfer_buffers(int * unsafe in_aud_buf, int * unsafe in_usb_buf,
+                            int * unsafe out_usb_buf, int * unsafe out_aud_buf);
+
+    [[guarded]]
+    void transfer_samples(int in_mic_buf[], int in_spk_buf[], int out_mic_buf[], int out_spk_buf[]);
+
+} audManage_if;
+
+
+
+
 /** The audio driver thread.
  *
  *  This function drives I2S ports and handles samples to/from other digital
@@ -29,6 +46,9 @@ void audio(chanend c_in,
 #if (NUM_PDM_MICS > 0)
     , chanend c_pdm_in
 #endif
+//#ifdef RUN_DSP_TASK
+    , client audManage_if i_audMan
+//#endif
 );
 
 void SpdifTxWrapper(chanend c_spdif_tx);

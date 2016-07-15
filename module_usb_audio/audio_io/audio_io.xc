@@ -29,23 +29,21 @@
 #endif
 #endif
 
+#include "xua_audio.h"
+
 #include "commands.h"
 #include "xc_ptr.h"
 
-#include "print.h"
-
-static unsigned samplesOut[NUM_USB_CHAN_OUT];
+/* TODO 32 is max expected channels */
+static unsigned samplesOut[32];
 
 /* Two buffers for ADC data to allow for DAC and ADC ports being offset */
-static unsigned samplesIn_0[NUM_USB_CHAN_IN];
-static unsigned samplesIn_1[I2S_CHANS_ADC];
+static unsigned samplesIn[2][32];
 
 #if (DSD_CHANS_DAC != 0)
 extern buffered out port:32 p_dsd_dac[DSD_CHANS_DAC];
 extern buffered out port:32 p_dsd_clk;
 #endif
-
-unsigned g_adcVal = 0;
 
 #ifdef XTA_TIMING_AUDIO
 #pragma xta command "add exclusion received_command"
@@ -224,9 +222,12 @@ static inline void TransferAdatTxSamples(chanend c_adat_out, const unsigned samp
 }
 #endif
 
+/* sampsFromUsbToAudio: The sample frame the device has recived from the host and is going to play to the output audio interfaces */
+/* sampsFromAudioToUsb: The sample frame that was received from the audio interfaces and that the device is going to send to the host */
+void UserBufferManagement(unsigned sampsFromUsbToAudio[], unsigned sampsFromAudioToUsb[], client audManage_if i_audMan);
 
 #pragma unsafe arrays
-static inline unsigned DoSampleTransfer(chanend c_out, const int readBuffNo, const unsigned underflowWord)
+static inline unsigned DoSampleTransfer(chanend c_out, const int readBuffNo, const unsigned underflowWord, client audManage_if i_audMan)
 {
     outuint(c_out, underflowWord);
 
@@ -268,30 +269,18 @@ static inline unsigned DoSampleTransfer(chanend c_out, const int readBuffNo, con
 #else
         inuint(c_out);
 #endif
+        UserBufferManagement(samplesOut, samplesIn[readBuffNo], i_audMan);
+
 #if NUM_USB_CHAN_IN > 0
 #pragma loop unroll
-#if  NUM_USB_CHAN_IN < I2S_CHANS_ADC
         for(int i = 0; i < NUM_USB_CHAN_IN; i++)
-#else
-        for(int i = 0; i < I2S_CHANS_ADC; i++)
-#endif
         {
-            if(readBuffNo)
-                outuint(c_out, samplesIn_1[i]);
-            else
-                outuint(c_out, samplesIn_0[i]);
-        }
-        /* Send over the digi channels - no odd buffering required */
-#pragma loop unroll
-        for(int i = I2S_CHANS_ADC; i < NUM_USB_CHAN_IN; i++)
-        {
-            outuint(c_out, samplesIn_0[i]);
-        }
+            outuint(c_out, samplesIn[readBuffNo][i]);
+         }
 #endif
     }
 
     return 0;
-
 }
 
 static inline void InitPorts(unsigned divide)
@@ -427,8 +416,6 @@ static inline void InitPorts(unsigned divide)
 #endif
 }
 
-
-
 /* I2S delivery thread */
 #pragma unsafe arrays
 unsigned static deliver(chanend c_out, chanend ?c_spd_out,
@@ -443,8 +430,8 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
 #if (NUM_PDM_MICS > 0)
     chanend c_pdm_pcm,
 #endif
-
-    chanend ?c_adc)
+    chanend ?unused,
+    client audManage_if i_audMan)
 {
 
     /* Since DAC and ADC buffered ports off by one sample we buffer previous ADC frame */
@@ -481,7 +468,8 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
     }
 #endif
 
-    unsigned command = DoSampleTransfer(c_out, readBuffNo, underflowWord);
+    unsigned command = DoSampleTransfer(c_out, readBuffNo, underflowWord, i_audMan);
+
 #ifdef ADAT_TX
     unsafe{
     //TransferAdatTxSamples(c_adat_out, samplesOut, adatSmuxMode, 0);
@@ -502,7 +490,6 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
     /* Main Audio I/O loop */
     while (1)
     {
-
 #if (DSD_CHANS_DAC != 0) && (NUM_USB_CHAN_OUT > 0)
         if(dsdMode == DSD_MODE_NATIVE)
         {
@@ -626,10 +613,7 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
                 asm volatile("in %0, res[%1]" : "=r"(sample)  : "r"(p_i2s_adc[index++]));
 
                 /* Note the use of readBuffNo changes based on frameCount */
-                if(buffIndex)
-                    samplesIn_1[((frameCount-2)&(I2S_CHANS_PER_FRAME-1))+i] = bitrev(sample); // channels 0, 2, 4.. on each line.
-                else
-                    samplesIn_0[((frameCount-2)&(I2S_CHANS_PER_FRAME-1))+i] = bitrev(sample);
+                samplesIn[buffIndex][((frameCount-2)&(I2S_CHANS_PER_FRAME-1))+i] = bitrev(sample); // channels 0, 2, 4.. on each line.
             }
 #endif
 
@@ -644,7 +628,6 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
             p_lrclk <: 0x00000000;
 #else
             p_lrclk <: 0x80000000;
-
 #endif
 #endif
 
@@ -676,22 +659,21 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
             /* Sync with clockgen */
             inuint(c_dig_rx);
 
-            /* Note, digi-data we just store in samplesIn_0 - we only double buffer the I2S input data */
+            /* Note, digi-data we just store in samplesIn[readBuffNo] - we only double buffer the I2S input data */
 #endif
 #ifdef SPDIF_RX
-            asm("ldw %0, dp[g_digData]":"=r"(samplesIn_0[SPDIF_RX_INDEX + 0]));
-            asm("ldw %0, dp[g_digData+4]":"=r"(samplesIn_0[SPDIF_RX_INDEX + 1]));
-
+            asm("ldw %0, dp[g_digData]"  :"=r"(samplesIn[readBuffNo][SPDIF_RX_INDEX + 0]));
+            asm("ldw %0, dp[g_digData+4]":"=r"(samplesIn[readBuffNo][SPDIF_RX_INDEX + 1]));
 #endif
 #ifdef ADAT_RX
-            asm("ldw %0, dp[g_digData+8]":"=r"(samplesIn_0[ADAT_RX_INDEX]));
-            asm("ldw %0, dp[g_digData+12]":"=r"(samplesIn_0[ADAT_RX_INDEX + 1]));
-            asm("ldw %0, dp[g_digData+16]":"=r"(samplesIn_0[ADAT_RX_INDEX + 2]));
-            asm("ldw %0, dp[g_digData+20]":"=r"(samplesIn_0[ADAT_RX_INDEX + 3]));
-            asm("ldw %0, dp[g_digData+24]":"=r"(samplesIn_0[ADAT_RX_INDEX + 4]));
-            asm("ldw %0, dp[g_digData+28]":"=r"(samplesIn_0[ADAT_RX_INDEX + 5]));
-            asm("ldw %0, dp[g_digData+32]":"=r"(samplesIn_0[ADAT_RX_INDEX + 6]));
-            asm("ldw %0, dp[g_digData+36]":"=r"(samplesIn_0[ADAT_RX_INDEX + 7]));
+            asm("ldw %0, dp[g_digData+8]" :"=r"(samplesIn[readBuffNo][ADAT_RX_INDEX]));
+            asm("ldw %0, dp[g_digData+12]":"=r"(samplesIn[readBuffNo][ADAT_RX_INDEX + 1]));
+            asm("ldw %0, dp[g_digData+16]":"=r"(samplesIn[readBuffNo][ADAT_RX_INDEX + 2]));
+            asm("ldw %0, dp[g_digData+20]":"=r"(samplesIn[readBuffNo][ADAT_RX_INDEX + 3]));
+            asm("ldw %0, dp[g_digData+24]":"=r"(samplesIn[readBuffNo][ADAT_RX_INDEX + 4]));
+            asm("ldw %0, dp[g_digData+28]":"=r"(samplesIn[readBuffNo][ADAT_RX_INDEX + 5]));
+            asm("ldw %0, dp[g_digData+32]":"=r"(samplesIn[readBuffNo][ADAT_RX_INDEX + 6]));
+            asm("ldw %0, dp[g_digData+36]":"=r"(samplesIn[readBuffNo][ADAT_RX_INDEX + 7]));
 #endif
 
 #if defined(SPDIF_RX) || defined(ADAT_RX)
@@ -707,10 +689,13 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
 #if (NUM_PDM_MICS > 0)
             /* Get samples from PDM->PCM comverter */
             c_pdm_pcm <: 1;
+            master
+            {
 #pragma loop unroll
             for(int i = 0; i < NUM_PDM_MICS; i++)
             {
-                c_pdm_pcm :> samplesIn_0[i];
+                c_pdm_pcm :> samplesIn[readBuffNo][i];
+            }
             }
 #endif
         }
@@ -726,21 +711,9 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
                 unsigned sample;
                 asm volatile("in %0, res[%1]" : "=r"(sample)  : "r"(p_i2s_adc[index++]));
 
-                if(buffIndex)
-                    samplesIn_1[((frameCount-1)&(I2S_CHANS_PER_FRAME-1))+i] = bitrev(sample); // channels 1, 3, 5.. on each line.
-                else
-                    samplesIn_0[((frameCount-1)&(I2S_CHANS_PER_FRAME-1))+i] = bitrev(sample); // channels 1, 3, 5.. on each line.
+                samplesIn[buffIndex][((frameCount-1)&(I2S_CHANS_PER_FRAME-1))+i] = bitrev(sample); // channels 1, 3, 5.. on each line.
 
             }
-
-#ifdef SU1_ADC_ENABLE
-            {
-                unsigned x;
-                x = inuint(c_adc);
-                inct(c_adc);
-                asm volatile("stw %0, dp[g_adcVal]"::"r"(x));
-            }
-#endif
 #endif
 
 #ifndef CODEC_MASTER
@@ -828,10 +801,9 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
             /* The below looks a bit odd but forces the compiler to inline twice */
             unsigned command;
             if(readBuffNo)
-                command = DoSampleTransfer(c_out, 1, underflowWord);
+                command = DoSampleTransfer(c_out, 1, underflowWord, i_audMan);
             else
-                command = DoSampleTransfer(c_out, 0, underflowWord);
-
+                command = DoSampleTransfer(c_out, 0, underflowWord, i_audMan);
 
             if(command)
             {
@@ -928,11 +900,6 @@ static void dummy_deliver(chanend c_out, unsigned &command)
         }
     }
 }
-#define SAMPLE_RATE      200000
-#define NUMBER_CHANNELS  1
-#define NUMBER_SAMPLES  100
-#define NUMBER_WORDS ((NUMBER_SAMPLES * NUMBER_CHANNELS+1)/2)
-#define SAMPLES_PER_PRINT 1
 
 void audio(chanend c_mix_out,
 #if defined(SPDIF_TX) && (SPDIF_TX_TILE != AUDIO_IO_TILE)
@@ -948,6 +915,7 @@ chanend ?c_config, chanend ?c
 #if (NUM_PDM_MICS > 0)
 , chanend c_pdm_in
 #endif
+, client audManage_if i_audMan
 )
 {
 #if defined (SPDIF_TX) && (SPDIF_TX_TILE == AUDIO_IO_TILE)
@@ -966,39 +934,6 @@ chanend ?c_config, chanend ?c
     unsigned mClk;
     unsigned divide;
     unsigned firstRun = 1;
-
-#ifdef SU1_ADC_ENABLE
-    /* Setup galaxian ADC */
-    unsigned data[1],  channel;
-    int r;
-    unsigned int vals[NUMBER_WORDS];
-    int cnt = 0;
-    int div;
-    unsigned val = 0;
-    int val2 = 0;
-    int adcOk = 0;
-
-    /* Enable adc on channel */
-    enable_xs1_su_adc_input(0, c);
-
-    /* General ADC control (enabled, 1 samples per packet, 32 bits per sample) */
-    data[0] = 0x10201;
-    data[0] = 0x30101;
-    r = write_periph_32(xs1_su, 2, 0x20, 1, data);
-
-    /* ADC needs a few clocks before it starts pumping out samples */
-    for(int i = 0; i< 10; i++)
-    {
-        p_lrclk <: val;
-        val = ~val;
-        {
-            timer t;
-            unsigned time;
-            t :> time;
-            t when timerafter(time+1000):> void;
-        }
-    }
-#endif
 
     /* Clock master clock-block from master-clock port */
     configure_clock_src(clk_audio_mclk, p_mclk_in);
@@ -1223,7 +1158,11 @@ chanend ?c_config, chanend ?c
 #if (NUM_PDM_MICS > 0)
                    c_pdm_in,
 #endif
-                   c);
+                   null
+//#ifdef RUN_DSP_TASK
+                   , i_audMan
+//#endif
+                   );
 
                 if(command == SET_SAMPLE_FREQ)
                 {

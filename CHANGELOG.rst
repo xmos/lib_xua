@@ -1,13 +1,34 @@
 sc_usb_audio Change Log
 =======================
 
+6.18.1
+------
+    - ADDED:      Vendor Specific control interface added to UAC1 descriptors to allow control of
+                  XVSM params from Windows (via lib_usb)
+
+6.18.0
+------
+    - ADDED:      Call to VendorRequests() and VendorRequests_Init() to Endpoint 0
+    - ADDED:      VENDOR_REQUESTS_PARAMS define to allow for custom parameters to VendorRequest calls
+    - RESOLVED:   FIR gain compensation set appropriately in lib_mic_array usage
+    - CHANGE:     i_dsp interface renamed i_audManage
+
+6.16.0
+------
+    - ADDED:      Call to UserBufferManagement()
+    - ADDED:      PDM_MIC_INDEX in devicedefines.h and usage
+    - CHANGE:     pdm_buffer() task now combinable 
+    - CHANGE:     Audio I/O task now takes i_dsp interface as a parameter
+    - CHANGE:     Removed built-in support for A/U series internal ADC
+    - CHANGE:     User PDM Microphone processing now uses an interface (previously function call)
+
 6.15.2
 ------
-    - RESOLVED:  interrupt.h (used in audio buffering) now compatible with xCORE-200 ABI
+    - RESOLVED:   interrupt.h (used in audio buffering) now compatible with xCORE-200 ABI
 
 6.15.1
 ------
-    - RESOLVED:   DAC data mis-alignment issue in TDM slave mode
+    - RESOLVED:   DAC data mis-alignment issue in TDM/I2S slave mode
     - CHANGE:     Updates to support API changes in lib_mic_array version 2.0
 
 6.15.0
