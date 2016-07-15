@@ -19,8 +19,10 @@ Warnings relating to configuration defines located in this XC source file rather
 #warning MAX_FREQ not defined. Using 192000
 #endif
 
+#ifdef SPDIF_TX
 #ifndef SPDIF_TX_INDEX
 #warning SPDIF_TX_INDEX not defined! Using 0
+#endif
 #endif
 
 #ifndef VENDOR_STR

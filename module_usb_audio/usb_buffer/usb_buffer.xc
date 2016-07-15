@@ -307,11 +307,12 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in,
 
                     if(cmd == SET_SAMPLE_FREQ)
                     {
-                        sampleFreq = inuint(c_aud_ctl);
+                        unsigned receivedSampleFreq = inuint(c_aud_ctl);
 
                         /* Don't update things for DFU command.. */
-                        if(sampleFreq != AUDIO_STOP_FOR_DFU)
+                        if(receivedSampleFreq != AUDIO_STOP_FOR_DFU)
                         {
+                            sampleFreq = receivedSampleFreq;
    #ifdef FB_TOLERANCE_TEST
                             expected_fb = ((sampleFreq * 0x2000) / frameTime);
    #endif
@@ -341,7 +342,7 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in,
                         /* Ideally we want to wait for handshake (and pass back up) here.  But we cannot keep this
                         * core locked, it must stay responsive to packets (MIDI etc) and SOFs.  So, set a flag and check for
                         * handshake elsewhere */
-                        SET_SHARED_GLOBAL(g_freqChange_sampFreq, sampleFreq);
+                        SET_SHARED_GLOBAL(g_freqChange_sampFreq, receivedSampleFreq);
                     }
                     else if(cmd == SET_STREAM_FORMAT_IN)
                     {
