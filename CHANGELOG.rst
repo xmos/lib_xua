@@ -3,6 +3,7 @@ sc_usb_audio Change Log
 
 6.19.0
 ------
+    - RESOLVED:  SPDIF_TX_INDEX not defined build warning only emitted when SPDIF_TX defined
 
 6.18.1
 ------
