@@ -886,8 +886,8 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
                                 }
 
                                 /* Just keep doubling for standard freqs >= 44.1/48kHz */
-                                currentFreq44 = MIN_FREQ_44;
-                                currentFreq48 = MIN_FREQ_48;
+                                currentFreq44 = 44100;
+                                currentFreq48 = 48000;
                                 while(1)
                                 {
                                     if((currentFreq44 <= maxFreq) && (currentFreq44 >= MIN_FREQ))
@@ -897,8 +897,7 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
                                         currentFreq44*=2;
                                     }
 
-                                    if((currentFreq48 <= maxFreq) && (currentFreq48 >= MIN_FREQ))
-
+                                    if((currentFreq48 <= maxFreq))
                                     {
                                         /* Note i passed byref here */
                                         storeFreq(buffer, i, currentFreq48);

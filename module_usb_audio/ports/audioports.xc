@@ -59,13 +59,6 @@ unsigned int divide, unsigned curSamFreq)
     /* Clock bitclock clock block from master clock pin (divided) */
     configure_clock_src_divide(clk_audio_bclk, p_mclk_in, (divide/2));
     configure_port_clock_output(p_bclk, clk_audio_bclk);
-
-    if(divide == 1)
-	{
-		
-	}	
-
-
 #else
     /* For a divide of one (i.e. bitclock == master-clock) BClk is set to clock_output mode.
      * In this mode it outputs an edge clock on every tick of itsassociated clock_block.
@@ -90,39 +83,7 @@ unsigned int divide, unsigned curSamFreq)
     }
 #endif
 
-    stop_clock(clk_audio_mclk);
-    set_clock_fall_delay(clk_audio_mclk, 0);
-    start_clock(clk_audio_mclk);
-if(divide == 1)
-{
-
-    stop_clock(clk_audio_mclk);
-    set_clock_fall_delay(clk_audio_mclk, 10);
     if(!isnull(p_lrclk))
-    {
-        /* Clock LR clock from bit clock-block */
-        configure_out_port_no_ready(p_lrclk, clk_audio_mclk, 0);
-    }
-
-#if (I2S_CHANS_DAC != 0)
-    /* Clock I2S output data ports from clock block */
-    for(int i = 0; i < numPortsDac; i++)
-    {
-        configure_out_port_no_ready(p_i2s_dac[i], clk_audio_mclk, 0);
-    }
-#endif
-
-#if (I2S_CHANS_ADC != 0)
-    /* Clock I2S input data ports from clock block */
-    for(int i = 0; i < numPortsAdc; i++)
-    {
-        configure_in_port_no_ready(p_i2s_adc[i], clk_audio_mclk);
-    }
-#endif
-    start_clock(clk_audio_mclk);
-}
-else
-{if(!isnull(p_lrclk))
     {
         /* Clock LR clock from bit clock-block */
         configure_out_port_no_ready(p_lrclk, clk_audio_bclk, 0);
@@ -143,8 +104,6 @@ else
         configure_in_port_no_ready(p_i2s_adc[i], clk_audio_bclk);
     }
 #endif
-}
-
 
     /* Start clock blocks ticking */
     start_clock(clk_audio_bclk);
@@ -167,7 +126,7 @@ else
         bClkDelay_fall = 18;
     }
 
-    //set_clock_fall_delay(clk_audio_bclk, bClkDelay_fall);
+    set_clock_fall_delay(clk_audio_bclk, bClkDelay_fall);
 
 #if (I2S_CHANS_DAC != 0)
      /* Clock I2S output data ports from b-clock clock block */
