@@ -394,7 +394,7 @@ static inline void InitPorts(unsigned divide)
     p_lrclk when pinseq(0) :> void @ tmp;
 #endif
 
-    tmp += (I2S_CHANS_PER_FRAME * 32) - 32 + 1 ;
+    tmp += (I2S_CHANS_PER_FRAME * 32) - 32 + 1 + (I2S_CHANS_PER_FRAME *32) - 2;
     /* E.g. 2 * 32 - 32 + 1 = 33 for stereo */
     /* E.g. 8 * 32 - 32 + 1 = 225 for 8 chan TDM */
 
@@ -410,7 +410,7 @@ static inline void InitPorts(unsigned divide)
 #pragma loop unroll
     for(int i = 0; i < I2S_WIRES_ADC; i++)
     {
-       asm("setpt res[%0], %1"::"r"(p_i2s_adc[i]),"r"(tmp-1));
+       asm("setpt res[%0], %1"::"r"(p_i2s_adc[i]),"r"(tmp));
     }
 #endif
 #endif
