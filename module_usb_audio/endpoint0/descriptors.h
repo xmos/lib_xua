@@ -2268,7 +2268,7 @@ const unsigned num_freqs_a1 = MAX(3, (0
 #define CHARIFY_SR(x) (x & 0xff),((x & 0xff00)>> 8),((x & 0xff0000)>> 16)
 
 #if (MIN_FREQ_FS < 12000) && (MAX_FREQ_FS > 48000)
-#error SAMPLE RATE RANGE TO GREAT FOR UAC1 ON WINDOWS
+#error SAMPLE RATE RANGE TOO GREAT FOR UAC1 ON WINDOWS
 #endif
 
 unsigned char cfgDesc_Audio1[] =
