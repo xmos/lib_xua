@@ -13,6 +13,8 @@
 #include <xclib.h>
 #include <xs1_su.h>
 
+#include "devicedefines.h"
+
 #include "xua_audio.h"
 #include "audioports.h"
 #include "audiohw.h"

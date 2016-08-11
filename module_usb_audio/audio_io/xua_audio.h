@@ -1,7 +1,6 @@
 #ifndef __audio_h__
 #define __audio_h__
 
-#include "devicedefines.h"
 #include "dfu_interface.h"
 
 typedef interface audManage_if
