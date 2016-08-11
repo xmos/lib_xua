@@ -1,10 +1,8 @@
 #ifndef __audio_h__
 #define __audio_h__
 
-//#include "devicedefines.h"
+#include "devicedefines.h"
 #include "dfu_interface.h"
-//#include "xua_dsp.h"
-
 
 typedef interface audManage_if
 {
@@ -46,9 +44,7 @@ void audio(chanend c_in,
 #if (NUM_PDM_MICS > 0)
     , chanend c_pdm_in
 #endif
-//#ifdef RUN_DSP_TASK
     , client audManage_if i_audMan
-//#endif
 );
 
 void SpdifTxWrapper(chanend c_spdif_tx);
