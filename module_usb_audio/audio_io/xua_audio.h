@@ -16,8 +16,6 @@ typedef interface audManage_if
 } audManage_if;
 
 
-
-
 /** The audio driver thread.
  *
  *  This function drives I2S ports and handles samples to/from other digital

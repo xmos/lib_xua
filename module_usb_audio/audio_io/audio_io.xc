@@ -13,9 +13,7 @@
 #include <xclib.h>
 #include <xs1_su.h>
 
-#include "devicedefines.h"
-
-#include "dfu_interface.h"
+#include "xua_audio.h"
 #include "audioports.h"
 #include "audiohw.h"
 #ifdef SPDIF_TX
@@ -23,13 +21,10 @@
 #endif
 #ifdef ADAT_TX
 #include "adat_tx.h"
-
 #ifndef ADAT_TX_USE_SHARED_BUFF
 #error Designed for ADAT tx shared buffer mode ONLY
 #endif
 #endif
-
-#include "xua_audio.h"
 
 #include "commands.h"
 #include "xc_ptr.h"
