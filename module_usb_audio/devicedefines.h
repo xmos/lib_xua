@@ -1046,7 +1046,7 @@
 #undef OUT_VOLUME_IN_MIXER
 #else
 #if defined(MIXER)
-// Enabled by default
+// Disabled by default
 //#define OUT_VOLUME_IN_MIXER
 #endif
 #endif
@@ -1066,8 +1066,8 @@
 #undef IN_VOLUME_IN_MIXER
 #else
 #if defined(MIXER)
-/* Enabled by default */
-#define IN_VOLUME_IN_MIXER
+/* Disabled by default */
+//#define IN_VOLUME_IN_MIXER
 #endif
 #endif
 
