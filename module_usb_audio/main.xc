@@ -485,6 +485,8 @@ void usb_audio_io(chanend c_aud_in, chanend ?c_adc,
 #define USER_MAIN_CORES
 #endif
 
+#ifndef EXCLUDE_USB_AUDIO_MAIN
+
 /* Main for USB Audio Applications */
 int main()
 {
@@ -682,3 +684,4 @@ int main()
     return 0;
 }
 
+#endif
