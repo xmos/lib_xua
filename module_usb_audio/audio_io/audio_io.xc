@@ -598,7 +598,7 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
             /* Input previous L sample into L in buffer */
             index = 0;
             /* First input (i.e. frameCount == 0) we read last ADC channel of previous frame.. */
-            unsigned buffIndex = (frameCount < 3) ? !readBuffNo : readBuffNo;
+            unsigned buffIndex = (frameCount > 1) ? !readBuffNo : readBuffNo;
 
 #pragma loop unroll
             /* First time around we get channel 7 of TDM8 */
