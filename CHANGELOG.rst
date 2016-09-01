@@ -6,7 +6,7 @@ sc_usb_audio Change Log
     - RESOLVED:   Intra-frame sample delays of 1/2 samples on input streaming in TDM mode 
     - RESOLVED:   Build issue with NUM_USB_CHAN_OUT set to 0 and MIXER enabled
     - RESOLVED:   SPDIF_TX_INDEX not defined build warning only emitted when SPDIF_TX defined
-    - RESOLVED:   Input volume disabled breaks going into DFU mode
+    - RESOLVED:  Failure to enter DFU mode when configured without input volume control
 
 6.19.0
 ------
