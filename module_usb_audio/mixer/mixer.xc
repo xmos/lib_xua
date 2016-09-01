@@ -242,9 +242,9 @@ static inline void GetSamplesFromHost(chanend c)
 #else
             ptr_samples[i] = sample;
 #endif
-#endif
         }
     }
+#endif
 }
 
 #pragma unsafe arrays
