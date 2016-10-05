@@ -1,12 +1,16 @@
 sc_usb_audio Change Log
 =======================
 
+6.21.0
+------
+    - RESOLVED:   PDM microphone clock divide now based MCLK defines (previously hard-coded)
+
 6.20.0
 ------
     - RESOLVED:   Intra-frame sample delays of 1/2 samples on input streaming in TDM mode 
     - RESOLVED:   Build issue with NUM_USB_CHAN_OUT set to 0 and MIXER enabled
     - RESOLVED:   SPDIF_TX_INDEX not defined build warning only emitted when SPDIF_TX defined
-    - RESOLVED:  Failure to enter DFU mode when configured without input volume control
+    - RESOLVED:   Failure to enter DFU mode when configured without input volume control
 
 6.19.0
 ------
