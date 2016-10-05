@@ -12,6 +12,7 @@
 #include <string.h>
 #include <xclib.h>
 #include <stdint.h>
+#include <assert.h>
 
 #include "mic_array.h"
 #include "xua_pdm_mic.h"
@@ -181,12 +182,22 @@ void pdm_buffer(streaming chanend c_ds_output[2], chanend c_audio)
 #error MAX_FREQ > 48000 NOT CURRENTLY SUPPORTED
 #endif
 
+#include "print.h"
+
 void pdm_mic(streaming chanend c_ds_output[2])
 {
     streaming chan c_4x_pdm_mic_0, c_4x_pdm_mic_1;
 
-    /* Note, this divide should be based on master clock freq */
-    configure_clock_src_divide(pdmclk, p_mclk, 2);
+    /* Mics expect a clock in the 3Mhz range, calculate the divide based on mclk */
+    /* e.g. For a 48kHz range mclk we expect a 3072000Hz mic clock */
+    /* e.g. For a 44.1kHz range mclk we expect a 2822400Hz mic clock */
+
+    /* Note, codebase currently does not handle a different divide for each clock */
+    assert((MCLK_48 % 3072000) == (MCLK_441 % 2822400));
+       
+    unsigned micDiv = MCLK_48/3072000;
+    
+    configure_clock_src_divide(pdmclk, p_mclk, micDiv/2);
     configure_port_clock_output(p_pdm_clk, pdmclk);
     configure_in_port(p_pdm_mics, pdmclk);
     start_clock(pdmclk);
