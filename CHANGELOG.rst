@@ -1,7 +1,7 @@
 sc_usb_audio Change Log
 =======================
 
-6.21.0
+6.30.0
 ------
     - RESOLVED:   PDM microphone clock divide now based MCLK defines (previously hard-coded)
 
