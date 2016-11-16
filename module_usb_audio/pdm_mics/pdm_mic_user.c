@@ -1,5 +1,8 @@
 
 #include "devicedefines.h"
+
+#if (NUM_PDM_MICS > 0)
+
 #include "mic_array_frame.h" 
 
 /* Deafult implementations of user_pdm_init() and user_pdm_process().  Both can be over-ridden */
@@ -22,3 +25,5 @@ void user_pdm_process(mic_array_frame_time_domain * audio, int output[])
 
     return;
 }
+
+#endif
