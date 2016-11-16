@@ -3,6 +3,8 @@ sc_usb_audio Change Log
 
 6.30.0
 ------
+    - RESOLVED:   Number of PDM microphone channels configured now based on
+    NUM_PDM_MICS define (previously hard-coded)
     - RESOLVED:   PDM microphone clock divide now based MCLK defines (previously hard-coded)
     - CHANGE:     Second microphone decimation core only run if NUM_PDM_MICS > 4
 
