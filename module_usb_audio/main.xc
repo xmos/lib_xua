@@ -560,6 +560,8 @@ int main()
     USER_MAIN_DECLARATIONS
     par
     {
+        USER_MAIN_CORES
+        
         on tile[XUD_TILE]:
         par
         {
@@ -674,12 +676,11 @@ int main()
 #endif
 #endif
 
-        USER_MAIN_CORES
-    }
 
 #ifdef SU1_ADC_ENABLE
         xs1_su_adc_service(c_adc);
 #endif
+    }
 
     return 0;
 }
