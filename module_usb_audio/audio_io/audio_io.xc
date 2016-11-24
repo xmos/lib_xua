@@ -219,7 +219,7 @@ static inline void TransferAdatTxSamples(chanend c_adat_out, const unsigned samp
 }
 #endif
 
-/* sampsFromUsbToAudio: The sample frame the device has recived from the host and is going to play to the output audio interfaces */
+/* sampsFromUsbToAudio: The sample frame the device has received from the host and is going to play to the output audio interfaces */
 /* sampsFromAudioToUsb: The sample frame that was received from the audio interfaces and that the device is going to send to the host */
 void UserBufferManagement(unsigned sampsFromUsbToAudio[], unsigned sampsFromAudioToUsb[], client audManage_if i_audMan);
 
