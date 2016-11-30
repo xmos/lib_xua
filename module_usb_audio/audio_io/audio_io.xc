@@ -40,13 +40,12 @@
 #error "Unsupported I2S rate scaling and downsampling configuration"
 #endif
 
-// I2S channels for stereo AEC reference input
-#define I2S_CHANS_DIGI_IN (2)
-// The PDM mic channels start after the I2S AEC reference channels
-#define PDM_RX_INDEX (I2S_CHANS_DIGI_IN)
-
-#if (NUM_USB_CHAN_IN < (I2S_CHANS_DIGI_IN + NUM_PDM_MICS))
+#if (NUM_USB_CHAN_IN && (NUM_USB_CHAN_IN < (I2S_CHANS_ADC + NUM_PDM_MICS)))
 #error "Not enough USB input channels to support number of I2S and PDM inputs"
+#endif
+
+#if (NUM_USB_CHAN_IN && (NUM_USB_CHAN_IN < (NUM_PDM_MICS + PDM_MIC_INDEX)))
+#error "PDM mic inputs mapping exceeds bounds of USB input channel"
 #endif
 
 /* TODO 32 is max expected channels */
@@ -287,19 +286,18 @@ static inline unsigned DoSampleTransfer(chanend c_out, const int readBuffNo, con
         inuint(c_out);
 #endif
     }
-    unsigned downsampledI2S[2];
     // TODO: run ds3 here
     // Pass samplesIn[readBuffNo][0,I2S_DOWNSAMPLE_FACTOR][i]) to ds3()
     UserBufferManagement(samplesOut, samplesIn[readBuffNo][downsamplingCounter], i_audMan);
 
 #if NUM_USB_CHAN_IN > 0
 #pragma loop unroll
-    for(int i = 0; i < I2S_CHANS_DIGI_IN; i++)
+    for(int i = 0; i < I2S_CHANS_ADC; i++)
     {
-        outuint(c_out, downsampledI2S[i]);
+        outuint(c_out, samplesIn[readBuffNo][downsamplingCounter][i]);
     }
 #pragma loop unroll
-    for (int i = PDM_RX_INDEX; i < (NUM_PDM_MICS + PDM_RX_INDEX); i++)
+    for (int i = PDM_MIC_INDEX; i < (NUM_PDM_MICS + PDM_MIC_INDEX); i++)
     {
         outuint(c_out, samplesIn[readBuffNo][downsamplingCounter][i]);
     }
@@ -640,7 +638,7 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
                 asm volatile("in %0, res[%1]" : "=r"(sample)  : "r"(p_i2s_adc[index++]));
 
                 /* Note the use of readBuffNo changes based on frameCount */
-                samplesIn[buffIndex][((frameCount-2)&(I2S_CHANS_PER_FRAME-1))+i] = bitrev(sample); // channels 0, 2, 4.. on each line.
+                samplesIn[buffIndex][downsamplingCounter][((frameCount-2)&(I2S_CHANS_PER_FRAME-1))+i] = bitrev(sample); // channels 0, 2, 4.. on each line.
             }
 #endif
 
@@ -721,7 +719,7 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
                 master
                 {
 #pragma loop unroll
-                    for(int i = PDM_RX_INDEX; i < (NUM_PDM_MICS + PDM_RX_INDEX); i++)
+                    for(int i = PDM_MIC_INDEX; i < (NUM_PDM_MICS + PDM_MIC_INDEX); i++)
                     {
                         c_pdm_pcm :> samplesIn[readBuffNo][downsamplingCounter][i];
                     }
@@ -740,7 +738,7 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
                 unsigned sample;
                 asm volatile("in %0, res[%1]" : "=r"(sample)  : "r"(p_i2s_adc[index++]));
 
-                samplesIn[buffIndex][((frameCount-1)&(I2S_CHANS_PER_FRAME-1))+i] = bitrev(sample); // channels 1, 3, 5.. on each line.
+                samplesIn[buffIndex][downsamplingCounter][((frameCount-1)&(I2S_CHANS_PER_FRAME-1))+i] = bitrev(sample); // channels 1, 3, 5.. on each line.
 
             }
 #endif
