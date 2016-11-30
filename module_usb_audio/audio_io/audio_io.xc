@@ -285,23 +285,23 @@ static inline unsigned DoSampleTransfer(chanend c_out, const int readBuffNo, con
 #else
         inuint(c_out);
 #endif
-    }
-    // TODO: run ds3 here
-    // Pass samplesIn[readBuffNo][0,I2S_DOWNSAMPLE_FACTOR][i]) to ds3()
-    UserBufferManagement(samplesOut, samplesIn[readBuffNo][downsamplingCounter], i_audMan);
+        // TODO: run ds3 here
+        // Pass samplesIn[readBuffNo][0,I2S_DOWNSAMPLE_FACTOR][i]) to ds3()
+        UserBufferManagement(samplesOut, samplesIn[readBuffNo][downsamplingCounter], i_audMan);
 
 #if NUM_USB_CHAN_IN > 0
 #pragma loop unroll
-    for(int i = 0; i < I2S_CHANS_ADC; i++)
-    {
-        outuint(c_out, samplesIn[readBuffNo][downsamplingCounter][i]);
-    }
+        for(int i = 0; i < I2S_CHANS_ADC; i++)
+        {
+            outuint(c_out, samplesIn[readBuffNo][downsamplingCounter][i]);
+        }
 #pragma loop unroll
-    for (int i = PDM_MIC_INDEX; i < (NUM_PDM_MICS + PDM_MIC_INDEX); i++)
-    {
-        outuint(c_out, samplesIn[readBuffNo][downsamplingCounter][i]);
-    }
+        for (int i = PDM_MIC_INDEX; i < (NUM_PDM_MICS + PDM_MIC_INDEX); i++)
+        {
+            outuint(c_out, samplesIn[readBuffNo][downsamplingCounter][i]);
+        }
 #endif
+    }
 
     return 0;
 }
