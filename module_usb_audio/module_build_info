@@ -29,4 +29,7 @@
 #
 EXCLUDE_FILES += descriptors_2.rst
 
-MODULE_XCC_FLAGS += $(XCC_FLAGS) -falways-inline
+#MODULE_XCC_FLAGS += $(XCC_FLAGS) -falways-inline
+
+XCC_FLAGS_endpoint0.c = -Os -mno-dual-issue $(XCC_FLAGS)
+XCC_FLAGS_dbcalc.xc = -Os -mno-dual-issue $(XCC_FLAGS)

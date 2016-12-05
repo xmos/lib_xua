@@ -81,6 +81,7 @@
 #define do_interrupt_handler(f,args)    \
   asm(ISSUE_MODE_SINGLE\
       ".align 4\n" \
+      ".cc_top __"#f"_handler.function,__"#f"_handler\n" \
       "__" #f "_handler:\n"  \
       "ENTSP_lu6 0\n" \
       "kentsp " #args "/2*2 + 20\n" \
@@ -91,7 +92,8 @@
       restore_state(f,args)       \
       "krestsp " #args "/2*2 + 20 \n" \
       "__kret:\n" \
-      "kret\n");
+      "kret\n" \
+      ".cc_bottom __"#f"_handler.function");
 
 #define register_interrupt_handler(f, args, nstackwords) \
   asm (" .section .dp.data,       \"adw\", @progbits\n"  \
@@ -99,7 +101,7 @@
        " .globl __" #f "_handler\n" \
        " .align 8\n"                                    \
        "__" #f "_kernel_stack:\n" \
-       " .space  " #nstackwords ", 0\n" \
+       " .space "  #nstackwords ", 0\n" \
        "__" #f "_kernel_stack_end:\n" \
        " .space 4\n"\
        " .text\n");                             \

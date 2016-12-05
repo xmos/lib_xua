@@ -19,8 +19,14 @@
 #define portout(a,b) {__asm__  __volatile__("out res[%0], %1": : "r" (a) , "r" (b));}
 
 #ifdef DFU_FLASH_DEVICE
+
+#ifdef QUAD_SPI_FLASH
+/* Using specified flash device rather than all supported in tools */
+fl_QuadDeviceSpec flash_devices[] = {DFU_FLASH_DEVICE};
+#else
 /* Using specified flash device rather than all supported in tools */
 fl_DeviceSpec flash_devices[] = {DFU_FLASH_DEVICE};
+#endif
 #endif
 
 #ifdef QUAD_SPI_FLASH
@@ -83,7 +89,11 @@ int flash_cmd_enable_ports()
 #endif
 
 #ifdef DFU_FLASH_DEVICE
+#ifdef QUAD_SPI_FLASH
+    result = fl_connectToDevice(&p_qflash, flash_devices, 1);
+#else
     result = fl_connectToDevice(&p_flash, flash_devices, 1);
+#endif
 #else
     /* Use default flash list */
 #ifdef QUAD_SPI_FLASH

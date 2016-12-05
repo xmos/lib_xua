@@ -14,15 +14,8 @@ void user_pdm_init()
 
 
 void user_pdm_process() __attribute__ ((weak));
-void user_pdm_process(mic_array_frame_time_domain * audio, int output[])
+void user_pdm_process(mic_array_frame_time_domain * audio)
 {
-
-    for(unsigned i=0; i<NUM_PDM_MICS; i++)
-    {
-        /* Simply copy input buffer to output buffer unmodified */
-        output[i] = audio->data[i][0];
-    }
-
     return;
 }
 

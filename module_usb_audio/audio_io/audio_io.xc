@@ -31,11 +31,30 @@
 #include "commands.h"
 #include "xc_ptr.h"
 
-/* TODO 32 is max expected channels */
-static unsigned samplesOut[32];
+#define MAX(x,y) ((x)>(y) ? (x) : (y))
 
-/* Two buffers for ADC data to allow for DAC and ADC ports being offset */
-static unsigned samplesIn[2][32];
+static unsigned samplesOut[MAX(NUM_USB_CHAN_OUT, I2S_CHANS_DAC)];
+
+#ifndef ADAT_RX
+#define ADAT_RX 0
+#endif
+
+#ifndef SPDIF_RX
+#define SPDIF_RX 0
+#endif
+
+/* Two buffers for ADC data to allow for DAC and ADC I2S ports being offset */
+#define IN_CHAN_COUNT (I2S_CHANS_ADC + NUM_PDM_MICS + (8*ADAT_RX) + (2*SPDIF_RX)) 
+
+static unsigned samplesIn[2][MAX(NUM_USB_CHAN_IN, IN_CHAN_COUNT)];
+
+#if defined(ADAT_RX) && (ADAT_RX ==0)
+#undef ADAT_RX
+#endif
+
+#if defined(SPDIF_RX) && (SPDIF_RX ==0)
+#undef SPDIF_RX
+#endif
 
 #if (DSD_CHANS_DAC != 0)
 extern buffered out port:32 p_dsd_dac[DSD_CHANS_DAC];
@@ -1155,10 +1174,7 @@ chanend ?c_config, chanend ?c
 #if (NUM_PDM_MICS > 0)
                    c_pdm_in,
 #endif
-                   null
-//#ifdef RUN_DSP_TASK
-                   , i_audMan
-//#endif
+                   null, i_audMan
                    );
 
                 if(command == SET_SAMPLE_FREQ)

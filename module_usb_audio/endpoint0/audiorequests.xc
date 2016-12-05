@@ -45,9 +45,9 @@ extern unsigned char mixSel[MAX_MIX_COUNT][MIX_INPUTS];
 
 /* Global var for current frequency, set to default freq */
 unsigned int g_curSamFreq = DEFAULT_FREQ;
-//unsigned int g_curSamFreq48000Family = DEFAULT_FREQ % 48000 == 0;
-
 #if 0
+unsigned int g_curSamFreq48000Family = DEFAULT_FREQ % 48000 == 0;
+
 /* Original feedback implementation */
 long long g_curSamFreqMultiplier = (DEFAULT_FREQ * 512 * 4) / (DEFAULT_MCLK_FREQ);
 #endif
@@ -131,6 +131,7 @@ static void setG_curSamFreqMultiplier(unsigned x)
 }
 #endif
 
+#if (OUTPUT_VOLUME_CONTROL == 1) || (INPUT_VOLUME_CONTROL == 1)
 /* Update master volume i.e. i.e update weights for all channels */
 static void updateMasterVol( int unitID, chanend ?c_mix_ctl)
 {
@@ -266,6 +267,7 @@ static void updateVol(int unitID, int channel, chanend ?c_mix_ctl)
         }
     }
 }
+#endif
 
 /* Handles the audio class specific requests
  * returns:     XUD_RES_OKAY if request dealt with successfully without error,
@@ -275,7 +277,7 @@ static void updateVol(int unitID, int channel, chanend ?c_mix_ctl)
 int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, chanend c_audioControl, chanend ?c_mix_ctl, chanend ?c_clk_ctl
 )
 {
-    unsigned char buffer[512];
+    unsigned char buffer[128];
     int unitID;
     XUD_Result_t result;
     unsigned datalength;
@@ -312,6 +314,7 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
                                     return result;
                                 }
 
+#if MAX_FREQ != MIN_FREQ
                                 if(datalength == 4)
                                 {
                                     /* Re-construct Sample Freq */
@@ -369,7 +372,7 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
                                     /* Allow time for our feedback to stabilise*/
                                     FeedbackStabilityDelay();
                                 }
-
+#endif /* MAX_FREQ != MIN_FREQ */
                                 /* Send 0 Length as status stage */
                                 XUD_DoSetRequestStatus(ep0_in);
                             }
@@ -514,6 +517,7 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
                     break;
                 }
 
+#if (OUTPUT_VOLUME_CONTROL == 1) || (INPUT_VOLUME_CONTROL == 1)
                 /* Feature Units */
                 case FU_USBOUT:
                 case FU_USBIN:
@@ -629,6 +633,7 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
                     }
 
                     break; /* FU_USBIN */
+#endif
 
 #if defined(MIXER) && (MAX_MIX_COUNT > 0)
                 case ID_XU_OUT:
@@ -1076,7 +1081,7 @@ int AudioEndpointRequests_1(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp
      */
 
     XUD_Result_t result;
-    unsigned char buffer[1024];
+    unsigned char buffer[128];
     unsigned length;
 
     /* Host to Device */
@@ -1094,7 +1099,7 @@ int AudioEndpointRequests_1(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp
                 {
                     return result;
                 }
-
+#if (MAX_FREQ != MIN_FREQ)
                 if(controlSelector == SAMPLING_FREQ_CONTROL)
                 {
                     /* Expect length 3 for sample rate */
@@ -1116,22 +1121,6 @@ int AudioEndpointRequests_1(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp
                             if(curSamFreq48000Family || curSamFreq44100Family)
                             {
                                 g_curSamFreq = newSampleRate;
-#if 0
-                                /* Original feedback implementation */
-
-                                int newMasterClock;
-
-                                if(g_curSamFreq48000Family)
-                                {
-                                    newMasterClock = MCLK_48;
-                                }
-                                else
-                                {
-                                    newMasterClock = MCLK_441;
-                                }
-
-                                setG_curSamFreqMultiplier((g_curSamFreq*512*4)/newMasterClock);
-#endif
 
                                 /* Instruct audio thread to change sample freq */
                                 outuint(c_audioControl, SET_SAMPLE_FREQ);
@@ -1147,6 +1136,9 @@ int AudioEndpointRequests_1(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp
                         return XUD_SetBuffer(ep0_in, buffer, 0);
                     }
                 }
+#else
+                return XUD_SetBuffer(ep0_in, buffer, 0);
+#endif     
             }
             break;
         }
@@ -1171,12 +1163,13 @@ int AudioEndpointRequests_1(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp
 int AudioClassRequests_1(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, chanend c_audioControl, chanend ?c_mix_ctl, chanend ?c_clk_ctl
 )
 {
-    unsigned char buffer[1024];
+    unsigned char buffer[128];
     unsigned unitID;
     XUD_Result_t result;
 
     /* Inspect request */
     /* Note we could check sp.bmRequestType.Direction if we wanted to be really careful */
+#if (OUTPUT_VOLUME_CONTROL == 1) || (INPUT_VOLUME_CONTROL == 1)
     switch(sp.bRequest)
     {
         case UAC_B_REQ_SET_CUR:
@@ -1288,7 +1281,7 @@ int AudioClassRequests_1(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
             buffer[1] = (VOLUME_RES_MIXER >> 8);
             return XUD_DoGetRequest(ep0_out, ep0_in, buffer, 2, sp.wLength);
     }
-
+#endif
     return 1;
 }
 #endif
