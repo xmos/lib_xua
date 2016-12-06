@@ -200,6 +200,7 @@ __builtin_unreachable();
                 {
 #pragma xta endpoint "mixer_request"
                     int sample;
+                    int mult;
                     int h;
                     unsigned l;
 
