@@ -643,8 +643,6 @@ void Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
             if (!DFU_mode_active)
             {
 #endif
-
-                printintln(2);
 #ifdef AUDIO_CLASS_FALLBACK
                 /* Return Audio 2.0 Descriptors with Audio 1.0 as fallback */
                 result = USB_StandardRequests(ep0_out, ep0_in,
