@@ -318,7 +318,7 @@ VENDOR_REQUESTS_PARAMS_DEC_
             clk, 1, XUD_SPEED_HS, XUD_PWR_CFG);
 #else
         {
-//set_core_high_priority_on();
+        set_core_high_priority_on();
         XUD_Manager(c_xud_out, ENDPOINT_COUNT_OUT, c_xud_in, ENDPOINT_COUNT_IN,
             c_sof, epTypeTableOut, epTypeTableIn, p_usb_rst,
             clk, 1, XUD_SPEED_FS, XUD_PWR_CFG);
