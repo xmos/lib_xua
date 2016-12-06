@@ -34,11 +34,6 @@
 #ifndef I2S_DOWNSAMPLE_FACTOR
 #define I2S_DOWNSAMPLE_FACTOR (1)
 #endif
-#define I2S_RATE_SCALING (I2S_DOWNSAMPLE_FACTOR)
-
-#if I2S_RATE_SCALING != I2S_DOWNSAMPLE_FACTOR
-#error "Unsupported I2S rate scaling and downsampling configuration"
-#endif
 
 #if (NUM_USB_CHAN_IN && (NUM_USB_CHAN_IN < (I2S_CHANS_ADC + NUM_PDM_MICS)))
 #error "Not enough USB input channels to support number of I2S and PDM inputs"
@@ -962,7 +957,7 @@ chanend ?c_config, chanend ?c
     unsigned adatMultiple = 0;
 #endif
 
-    unsigned curSamFreq = DEFAULT_FREQ * I2S_RATE_SCALING;
+    unsigned curSamFreq = DEFAULT_FREQ * I2S_DOWNSAMPLE_FACTOR;
     unsigned curSamRes_DAC = STREAM_FORMAT_OUTPUT_1_RESOLUTION_BITS; /* Default to something reasonable */
     unsigned curSamRes_ADC = STREAM_FORMAT_INPUT_1_RESOLUTION_BITS; /* Default to something reasonable - note, currently this never changes*/
     unsigned command;
@@ -1117,7 +1112,7 @@ chanend ?c_config, chanend ?c
         {
             /* TODO wait for good mclk instead of delay */
             /* No delay for DFU modes */
-            if (((curSamFreq / I2S_RATE_SCALING) != AUDIO_REBOOT_FROM_DFU) && ((curSamFreq / I2S_RATE_SCALING) != AUDIO_STOP_FOR_DFU) && command)
+            if (((curSamFreq / I2S_DOWNSAMPLE_FACTOR) != AUDIO_REBOOT_FROM_DFU) && ((curSamFreq / I2S_DOWNSAMPLE_FACTOR) != AUDIO_STOP_FOR_DFU) && command)
             {
 #if 0
                 /* User should ensure MCLK is stable in AudioHwConfig */
@@ -1201,7 +1196,7 @@ chanend ?c_config, chanend ?c
 
                 if(command == SET_SAMPLE_FREQ)
                 {
-                    curSamFreq = inuint(c_mix_out) * I2S_RATE_SCALING;
+                    curSamFreq = inuint(c_mix_out) * I2S_DOWNSAMPLE_FACTOR;
                 }
                 else if(command == SET_STREAM_FORMAT_OUT)
                 {
@@ -1214,7 +1209,7 @@ chanend ?c_config, chanend ?c
                 }
 
                 /* Currently no more audio will happen after this point */
-                if ((curSamFreq / I2S_RATE_SCALING) == AUDIO_STOP_FOR_DFU)
+                if ((curSamFreq / I2S_DOWNSAMPLE_FACTOR) == AUDIO_STOP_FOR_DFU)
 				{
                   	outct(c_mix_out, XS1_CT_END);
 
