@@ -771,9 +771,11 @@ void decouple(chanend c_mix_out
                 speedRem = 0;
                 continue;
             }
-            else 
 #endif
 #if (AUDIO_CLASS == 2)
+#if (MIN_FREQ != MAX_FREQ)
+            else
+#endif
             if(tmp == SET_STREAM_FORMAT_IN)
             {
                 unsigned dataFormat, usbSpeed;
