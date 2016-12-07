@@ -14,25 +14,52 @@
 #endif
 #define MAX(x,y) ((x)>(y) ? (x) : (y))
 
-#define HS_PACKET_SIZE ((((MAX_FREQ+7999)/8000))+3)     // Samples per channel
-#define FS_PACKET_SIZE  ((((MAX_FREQ_FS+999)/1000))+3)  // Samples per channel
-
 /* TODO use SLOTSIZE to potentially save memory */
-#define BUFF_SIZE_OUT MAX(4 * HS_PACKET_SIZE * NUM_USB_CHAN_OUT, 4 * FS_PACKET_SIZE * NUM_USB_CHAN_OUT_FS)
-#define BUFF_SIZE_IN  MAX(4 * HS_PACKET_SIZE * NUM_USB_CHAN_IN, 4 * FS_PACKET_SIZE * NUM_USB_CHAN_IN_FS)
+/* Note we could improve on this, for one subslot is set to 4 */
+/* The *4 is conversion to bytes, note we're assuming a slotsize of 4 here whic is potentially as waste */
+#define MAX_DEVICE_AUD_PACKET_SIZE_MULT_HS  ((MAX_FREQ/8000+1)*4)
+#define MAX_DEVICE_AUD_PACKET_SIZE_MULT_FS  ((MAX_FREQ_FS/1000+1)*4)
 
-/* Maximum USB buffer size (1024 bytes + 1 word to store length) */
-#define MAX_USB_AUD_PACKET_SIZE 1028
+/*** IN PACKET SIZES ***/
+/* Max packet sizes in bytes. Note the +4 is because we store packet lengths in the buffer */
+#define MAX_DEVICE_AUD_PACKET_SIZE_IN_HS  (MAX_DEVICE_AUD_PACKET_SIZE_MULT_HS * NUM_USB_CHAN_IN + 4)
+#define MAX_DEVICE_AUD_PACKET_SIZE_IN_FS  (MAX_DEVICE_AUD_PACKET_SIZE_MULT_FS * NUM_USB_CHAN_IN_FS + 4)
 
-#define OUT_BUFFER_PREFILL (MAX(NUM_USB_CHAN_OUT_FS*FS_PACKET_SIZE*3+4,NUM_USB_CHAN_OUT*HS_PACKET_SIZE*4+4)*1)
-#define IN_BUFFER_PREFILL (MAX(FS_PACKET_SIZE*2+4, HS_PACKET_SIZE*4+4)*2)
+#define MAX_DEVICE_AUD_PACKET_SIZE_IN (MAX(MAX_DEVICE_AUD_PACKET_SIZE_IN_FS, MAX_DEVICE_AUD_PACKET_SIZE_IN_HS))
+
+/*** OUT PACKET SIZES ***/
+#define MAX_DEVICE_AUD_PACKET_SIZE_OUT_HS  (MAX_DEVICE_AUD_PACKET_SIZE_MULT_HS * NUM_USB_CHAN_OUT + 4)
+#define MAX_DEVICE_AUD_PACKET_SIZE_OUT_FS  (MAX_DEVICE_AUD_PACKET_SIZE_MULT_FS * NUM_USB_CHAN_OUT_FS + 4)
+
+#define MAX_DEVICE_AUD_PACKET_SIZE_OUT (MAX(MAX_DEVICE_AUD_PACKET_SIZE_OUT_FS, MAX_DEVICE_AUD_PACKET_SIZE_OUT_HS))
+
+/*** BUFFER SIZES ***/
+
+#define BUFFER_PACKET_COUNT 3  /* How many packets too allow for in buffer - minimum is 3! */
+
+#define BUFF_SIZE_OUT_HS    MAX_DEVICE_AUD_PACKET_SIZE_OUT_HS * BUFFER_PACKET_COUNT
+#define BUFF_SIZE_OUT_FS    MAX_DEVICE_AUD_PACKET_SIZE_OUT_FS * BUFFER_PACKET_COUNT
+
+#define BUFF_SIZE_IN_HS     MAX_DEVICE_AUD_PACKET_SIZE_IN_HS * BUFFER_PACKET_COUNT
+#define BUFF_SIZE_IN_FS     MAX_DEVICE_AUD_PACKET_SIZE_IN_FS * BUFFER_PACKET_COUNT
+
+#define BUFF_SIZE_OUT       MAX(BUFF_SIZE_OUT_HS, BUFF_SIZE_OUT_FS)
+#define BUFF_SIZE_IN        MAX(BUFF_SIZE_IN_HS, BUFF_SIZE_IN_FS)
+
+//#define OUT_BUFFER_PREFILL  (MAX(NUM_USB_CHAN_OUT_FS*FS_PACKET_SIZE*3+4,NUM_USB_CHAN_OUT*HS_PACKET_SIZE*4+4)*1)
+//#define IN_BUFFER_PREFILL   (MAX(FS_PACKET_SIZE*2+4, HS_PACKET_SIZE*4+4)*2)
+#define OUT_BUFFER_PREFILL  (MAX(MAX_DEVICE_AUD_PACKET_SIZE_OUT_HS, MAX_DEVICE_AUD_PACKET_SIZE_OUT_FS))
+#define IN_BUFFER_PREFILL  (MAX(MAX_DEVICE_AUD_PACKET_SIZE_IN_HS, MAX_DEVICE_AUD_PACKET_SIZE_IN_FS)*2)
+
+
+
 
 /* Volume and mute tables */
-#ifndef OUT_VOLUME_IN_MIXER
+#if !defined(OUT_VOLUME_IN_MIXER) && (OUTPUT_VOLUME_CONTROL == 1)
 unsigned int multOut[NUM_USB_CHAN_OUT + 1];
 static xc_ptr p_multOut;
 #endif
-#ifndef IN_VOLUME_IN_MIXER
+#if !defined(IN_VOLUME_IN_MIXER) && (INPUT_VOLUME_CONTROL == 1)
 unsigned int multIn[NUM_USB_CHAN_IN + 1];
 static xc_ptr p_multIn;
 #endif
@@ -41,20 +68,12 @@ static xc_ptr p_multIn;
 unsigned g_numUsbChan_Out = NUM_USB_CHAN_OUT;
 unsigned g_numUsbChan_In = NUM_USB_CHAN_IN;
 
-/* Note we could improve on this, for one subslot is set to 4 */
-#define MAX_DEVICE_AUD_PACKET_SIZE_MULT_HS  ((MAX_FREQ/8000+1)*4)
-#define MAX_DEVICE_AUD_PACKET_SIZE_MULT_FS  ((MAX_FREQ_FS/1000+1)*4)
-
-#define MAX_DEVICE_AUD_PACKET_SIZE_HS ((MAX_FREQ/8000+1)*NUM_USB_CHAN_IN*4)
-#define MAX_DEVICE_AUD_PACKET_SIZE_FS ((MAX_FREQ_FS/1000+1)*NUM_USB_CHAN_IN_FS*4)
-
-#define MAX_DEVICE_AUD_PACKET_SIZE (MAX(MAX_DEVICE_AUD_PACKET_SIZE_FS, MAX_DEVICE_AUD_PACKET_SIZE_HS))
-
 /* Circular audio buffers */
-unsigned outAudioBuff[BUFF_SIZE_OUT + (MAX_USB_AUD_PACKET_SIZE>>2) + 4];
-unsigned audioBuffIn[BUFF_SIZE_IN + (MAX_DEVICE_AUD_PACKET_SIZE>>2) + 4];
+unsigned outAudioBuff[(BUFF_SIZE_OUT >> 2)+ (MAX_DEVICE_AUD_PACKET_SIZE_OUT >> 0)];
+unsigned audioBuffIn[(BUFF_SIZE_IN >> 2)+ (MAX_DEVICE_AUD_PACKET_SIZE_IN >> 0)];
 
-unsigned inZeroBuff[(MAX_DEVICE_AUD_PACKET_SIZE>>2)+4];
+/* Shift down accounts for bytes -> words */
+unsigned inZeroBuff[(MAX_DEVICE_AUD_PACKET_SIZE_IN >> 2)];
 
 void GetADCCounts(unsigned samFreq, int &min, int &mid, int &max);
 
@@ -91,8 +110,13 @@ xc_ptr g_aud_to_host_wrptr;
 xc_ptr g_aud_to_host_dptr;
 xc_ptr g_aud_to_host_rdptr;
 xc_ptr g_aud_to_host_zeros;
+#if (AUDIO_CLASS == 2)
 int sampsToWrite = DEFAULT_FREQ/8000;  /* HS assumed here. Expect to be junked during a overflow before stream start */
 int totalSampsToWrite = DEFAULT_FREQ/8000;
+#else
+int sampsToWrite = DEFAULT_FREQ/1000;  /* HS assumed here. Expect to be junked during a overflow before stream start */
+int totalSampsToWrite = DEFAULT_FREQ/1000;
+#endif
 int aud_data_remaining_to_device = 0;
 
 /* Audio over/under flow flags */
@@ -109,15 +133,21 @@ unsigned unpackData = 0;
 unsigned packState = 0;
 unsigned packData = 0;
 
-/* Default to something sensible but the following are setup at stream start: */
+/* Default to something sensible but the following are setup at stream start (unless UAC1 only..) */
+#if (AUDIO_CLASS == 2)
 unsigned g_curSubSlot_Out = HS_STREAM_FORMAT_OUTPUT_1_SUBSLOT_BYTES;
 unsigned g_curSubSlot_In  = HS_STREAM_FORMAT_INPUT_1_SUBSLOT_BYTES;
-
-/* Init to something sensible, but expect to be re-set before stream start */
-#if (AUDIO_CLASS==2)
-int g_maxPacketSize = MAX_DEVICE_AUD_PACKET_SIZE_HS;
 #else
-int g_maxPacketSize = MAX_DEVICE_AUD_PACKET_SIZE_FS;
+unsigned g_curSubSlot_Out = FS_STREAM_FORMAT_OUTPUT_1_SUBSLOT_BYTES;
+unsigned g_curSubSlot_In  = FS_STREAM_FORMAT_INPUT_1_SUBSLOT_BYTES;
+#endif
+
+
+/* IN packet size. Init to something sensible, but expect to be re-set before stream start */
+#if (AUDIO_CLASS==2)
+int g_maxPacketSize = MAX_DEVICE_AUD_PACKET_SIZE_IN_HS;
+#else
+int g_maxPacketSize = MAX_DEVICE_AUD_PACKET_SIZE_IN_FS;
 #endif
 
 #pragma select handler
@@ -146,7 +176,7 @@ void handle_audio_request(chanend c_mix_out)
         outSamps = g_aud_from_host_wrptr - g_aud_from_host_rdptr;
         if (outSamps < 0)
         {
-            outSamps += BUFF_SIZE_OUT*4;
+            outSamps += BUFF_SIZE_OUT;
         }
 
         /* If we have a decent number of samples, come out of underflow cond */
@@ -505,7 +535,7 @@ __builtin_unreachable();
                     space_left += datalength;
                     SET_SHARED_GLOBAL(g_aud_to_host_rdptr, rdPtr);
 
-                } while(space_left < (BUFF_SIZE_IN*4/2));
+                } while(space_left < (BUFF_SIZE_IN/2));
             }
 
             sampsToWrite = totalSampsToWrite;
@@ -594,22 +624,22 @@ void decouple(chanend c_mix_out
 
     int t = array_to_xc_ptr(outAudioBuff);
 
-#ifndef OUT_VOLUME_IN_MIXER
+#if !defined(OUT_VOLUME_IN_MIXER) && (OUTPUT_VOLUME_CONTROL == 1)
     p_multOut = array_to_xc_ptr(multOut);
 #endif
-#ifndef IN_VOLUME_IN_MIXER
+#if !defined(IN_VOLUME_IN_MIXER) && (INPUT_VOLUME_CONTROL == 1)
     p_multIn = array_to_xc_ptr(multIn);
 #endif
 
     aud_from_host_fifo_start = t;
-    aud_from_host_fifo_end = aud_from_host_fifo_start + BUFF_SIZE_OUT*4;
+    aud_from_host_fifo_end = aud_from_host_fifo_start + BUFF_SIZE_OUT;
     g_aud_from_host_wrptr = aud_from_host_fifo_start;
     g_aud_from_host_rdptr = aud_from_host_fifo_start;
 
     t = array_to_xc_ptr(audioBuffIn);
 
     aud_to_host_fifo_start = t;
-    aud_to_host_fifo_end = aud_to_host_fifo_start + BUFF_SIZE_IN*4;
+    aud_to_host_fifo_end = aud_to_host_fifo_start + BUFF_SIZE_IN;
     g_aud_to_host_wrptr = aud_to_host_fifo_start;
     g_aud_to_host_rdptr = aud_to_host_fifo_start;
     g_aud_to_host_dptr = aud_to_host_fifo_start + 4;
@@ -622,14 +652,14 @@ void decouple(chanend c_mix_out
     g_aud_to_host_zeros = t;
 
     /* Init vol mult tables */
-#ifndef OUT_VOLUME_IN_MIXER
+#if !defined(OUT_VOLUME_IN_MIXER) && (OUTPUT_VOLUME_CONTROL == 1)
     for (int i = 0; i < NUM_USB_CHAN_OUT + 1; i++)
     {
         asm volatile("stw %0, %1[%2]"::"r"(MAX_VOL),"r"(p_multOut),"r"(i));
     }
 #endif
 
-#ifndef IN_VOLUME_IN_MIXER
+#if !defined(IN_VOLUME_IN_MIXER) && (INPUT_VOLUME_CONTROL == 1)
     for (int i = 0; i < NUM_USB_CHAN_IN + 1; i++)
     {
         asm volatile("stw %0, %1[%2]"::"r"(MAX_VOL),"r"(p_multIn),"r"(i));
@@ -664,10 +694,16 @@ void decouple(chanend c_mix_out
     aud_to_host_flag = 0;
     SET_SHARED_GLOBAL(g_aud_to_host_flag, aud_to_host_flag);
 
-    /* NOTE: IN EP not marked ready at this point - Initial size of zero buffer not known
+    /* NOTE: For UAC2 IN EP not marked ready at this point - Initial size of zero buffer not known
      * since we don't know the USB bus-speed yet.
      * The host will send a SetAltInterface before streaming which will lead to this core
      * getting a SET_CHANNEL_COUNT_IN. This will setup the EP for the first packet */
+#if (AUDIO_CLASS == 1)
+    /* For UAC1 we know we only run at FS */
+    /* Set buffer back to zeros buffer */
+    SET_SHARED_GLOBAL(g_aud_to_host_buffer, g_aud_to_host_zeros);
+    SetupZerosSendBuffer(aud_to_host_usb_ep, sampFreq, g_curSubSlot_In);
+#endif
 #endif
 
     while(1)
@@ -687,6 +723,7 @@ void decouple(chanend c_mix_out
             /* Check for freq change or other update */
 
             GET_SHARED_GLOBAL(tmp, g_freqChange_flag);
+#if MIN_FREQ != MAX_FREQ
             if (tmp == SET_SAMPLE_FREQ)
             {
                 SET_SHARED_GLOBAL(g_freqChange_flag, 0);
@@ -734,7 +771,10 @@ void decouple(chanend c_mix_out
                 speedRem = 0;
                 continue;
             }
-            else if(tmp == SET_STREAM_FORMAT_IN)
+            else 
+#endif
+#if (AUDIO_CLASS == 2)
+            if(tmp == SET_STREAM_FORMAT_IN)
             {
                 unsigned dataFormat, usbSpeed;
 
@@ -790,6 +830,7 @@ void decouple(chanend c_mix_out
                 SET_SHARED_GLOBAL(g_aud_from_host_rdptr, aud_from_host_fifo_start);
                 SET_SHARED_GLOBAL(g_aud_from_host_wrptr, aud_from_host_fifo_start);
 
+                /* NOTE, this is potentially usefull for UAC1 */
                 unpackState = 0;
 
                 outUnderflow = 1;
@@ -819,6 +860,7 @@ void decouple(chanend c_mix_out
                 SET_SHARED_GLOBAL(g_freqChange, 0);
                 ENABLE_INTERRUPTS();
             }
+#endif
         }
 
 #if (NUM_USB_CHAN_OUT > 0)
@@ -865,7 +907,7 @@ void decouple(chanend c_mix_out
                 space_left = aud_from_host_fifo_end - g_aud_from_host_wrptr;
             }
 
-            if (space_left <= 0 || space_left >= MAX_USB_AUD_PACKET_SIZE)
+            if (space_left <= 0 || space_left >= MAX_DEVICE_AUD_PACKET_SIZE_OUT)
             {
                 SET_SHARED_GLOBAL(g_aud_from_host_buffer, aud_from_host_wrptr);
                 XUD_SetReady_OutPtr(aud_from_host_usb_ep, aud_from_host_wrptr+4);
@@ -890,8 +932,8 @@ void decouple(chanend c_mix_out
             GET_SHARED_GLOBAL(aud_from_host_rdptr, g_aud_from_host_rdptr);
             space_left = aud_from_host_rdptr - aud_from_host_wrptr;
             if (space_left <= 0)
-                space_left += BUFF_SIZE_OUT*4;
-            if (space_left >= (BUFF_SIZE_OUT*4/2))
+                space_left += BUFF_SIZE_OUT;
+            if (space_left >= (BUFF_SIZE_OUT/2))
             {
                 /* Come out of OUT overflow state */
                 outOverflow = 0;
@@ -907,10 +949,10 @@ void decouple(chanend c_mix_out
 #if (NUM_USB_CHAN_IN > 0)
         {
             /* Check if buffer() has sent a packet to host - uses shared mem flag to save chanends */
-            int tmp;
-            GET_SHARED_GLOBAL(tmp, g_aud_to_host_flag);
+            int sentPkt;
+            GET_SHARED_GLOBAL(sentPkt, g_aud_to_host_flag);
             //case inuint_byref(c_buf_in, tmp):
-            if (tmp)
+            if (sentPkt)
             {
                 /* Signals that the IN endpoint has sent data from the passed buffer */
                 /* Reset flag */
@@ -928,7 +970,7 @@ void decouple(chanend c_mix_out
                     fill_level = aud_to_host_wrptr - aud_to_host_rdptr;
 
                     if (fill_level < 0)
-                        fill_level += BUFF_SIZE_IN*4;
+                        fill_level += BUFF_SIZE_IN;
 
                     if (fill_level >= IN_BUFFER_PREFILL)
                     {

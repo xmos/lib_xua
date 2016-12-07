@@ -203,7 +203,7 @@ static int DFU_Dnload(unsigned int request_len, unsigned int block_num, const un
 
 static int DFU_Upload(unsigned int request_len, unsigned int block_num, unsigned data_out[16], unsigned &DFU_state)
 {
-    unsigned int cmd_data[16];
+    unsigned int cmd_data[1];
     unsigned int firstRead = 0;
 
     // Start at flash address 0
@@ -236,8 +236,8 @@ static int DFU_Upload(unsigned int request_len, unsigned int block_num, unsigned
     {
         cmd_data[0] = !firstRead;
 
-        // Read whole (256bytes) page from the image on the flash
-        flash_cmd_read_page((cmd_data, unsigned char[64]));
+        // Read whole (256bytes) page from the image on the flash into a memory buffer
+        flash_cmd_read_page((cmd_data, unsigned char[1]));
         subPagesLeft = 4;
 
         // If address out of range, terminate!

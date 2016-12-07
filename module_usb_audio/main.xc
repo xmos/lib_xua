@@ -317,9 +317,12 @@ VENDOR_REQUESTS_PARAMS_DEC_
             c_sof, epTypeTableOut, epTypeTableIn, p_usb_rst,
             clk, 1, XUD_SPEED_HS, XUD_PWR_CFG);
 #else
+        {
+        set_core_high_priority_on();
         XUD_Manager(c_xud_out, ENDPOINT_COUNT_OUT, c_xud_in, ENDPOINT_COUNT_IN,
             c_sof, epTypeTableOut, epTypeTableIn, p_usb_rst,
             clk, 1, XUD_SPEED_FS, XUD_PWR_CFG);
+        }
 #endif
 
         /* USB Packet buffering Core */
@@ -560,6 +563,8 @@ int main()
     USER_MAIN_DECLARATIONS
     par
     {
+        USER_MAIN_CORES
+        
         on tile[XUD_TILE]:
         par
         {
@@ -670,16 +675,15 @@ int main()
 #ifdef MIC_PROCESSING_USE_INTERFACE
         on stdcore[PDM_TILE].core[0]: pdm_buffer(c_ds_output, c_pdm_pcm, i_mic_process);
 #else
-        on stdcore[PDM_TILE]: pdm_buffer(c_ds_output, c_pdm_pcm);
+        on stdcore[PDM_TILE].core[0]: pdm_buffer(c_ds_output, c_pdm_pcm);
 #endif
 #endif
 
-        USER_MAIN_CORES
-    }
 
 #ifdef SU1_ADC_ENABLE
         xs1_su_adc_service(c_adc);
 #endif
+    }
 
     return 0;
 }

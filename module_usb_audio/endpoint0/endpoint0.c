@@ -206,6 +206,8 @@ void Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
     XUD_ep ep0_out = XUD_InitEp(c_ep0_out);
     XUD_ep ep0_in  = XUD_InitEp(c_ep0_in);
 
+#if 0
+    /* Dont need to init globals.. */
     /* Init tables for volumes (+ 1 for master) */
     for(int i = 0; i < NUM_USB_CHAN_OUT + 1; i++)
     {
@@ -218,7 +220,7 @@ void Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
         volsIn[i] = 0;
         mutesIn[i] = 0;
     }
-
+#endif
     VendorRequests_Init(VENDOR_REQUESTS_PARAMS);
 
 #ifdef MIXER
@@ -295,7 +297,7 @@ void Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
     {
         /* Returns XUD_RES_OKAY for success, XUD_RES_RST for bus reset */
         XUD_Result_t result = USB_GetSetupPacket(ep0_out, ep0_in, &sp);
-
+    
         if (result == XUD_RES_OKAY)
         {
             result = XUD_RES_ERR;
@@ -311,7 +313,7 @@ void Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
                         switch (sp.wIndex)
                         {
                             /* Check for audio stream from host start/stop */
-#if (NUM_USB_CHAN_OUT > 0)
+#if (NUM_USB_CHAN_OUT > 0) && (AUDIO_CLASS == 2)
                             case INTERFACE_NUMBER_AUDIO_OUTPUT:
                                 /* Check the alt is in range */
                                 if(sp.wValue <= OUTPUT_FORMAT_COUNT)
@@ -346,7 +348,7 @@ void Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
                                 break;
 #endif
 
-#if (NUM_USB_CHAN_IN > 0)
+#if (NUM_USB_CHAN_IN > 0) && (AUDIO_CLASS == 2)
                             case INTERFACE_NUMBER_AUDIO_INPUT:
                                 /* Check the alt is in range */
                                 if(sp.wValue <= INPUT_FORMAT_COUNT)

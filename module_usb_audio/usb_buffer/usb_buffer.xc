@@ -258,6 +258,11 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in,
     XUD_SetReady_In(ep_hid, g_hidData, 1);
 #endif
 
+#if (AUDIO_CLASS == 1)
+    /* In UAC1 we dont use a stream start event (and we are always FS) so mark FB EP ready now */
+    XUD_SetReady_In(ep_aud_fb, fb_clocks, 3);
+#endif
+
     while(1)
     {
         XUD_Result_t result;
@@ -305,6 +310,7 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in,
                 {
                     unsigned cmd = inuint(c_aud_ctl);
 
+#if MAX_FREQ != MIN_FREQ
                     if(cmd == SET_SAMPLE_FREQ)
                     {
                         unsigned receivedSampleFreq = inuint(c_aud_ctl);
@@ -344,7 +350,10 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in,
                         * handshake elsewhere */
                         SET_SHARED_GLOBAL(g_freqChange_sampFreq, receivedSampleFreq);
                     }
-                    else if(cmd == SET_STREAM_FORMAT_IN)
+                    else 
+#endif
+#if (AUDIO_CLASS == 2)
+                        if(cmd == SET_STREAM_FORMAT_IN)
                     {
                         unsigned formatChange_DataFormat = inuint(c_aud_ctl);
                         unsigned formatChange_NumChans = inuint(c_aud_ctl);
@@ -356,8 +365,10 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in,
                         SET_SHARED_GLOBAL(g_formatChange_DataFormat, formatChange_DataFormat);
                         SET_SHARED_GLOBAL(g_formatChange_SampRes, formatChange_SampRes);
                     }
+                    /* FIXME when FB EP is enabled there is no inital XUD_SetReady */
                     else if (cmd == SET_STREAM_FORMAT_OUT)
                     {
+                        
                         XUD_BusSpeed_t busSpeed;
                         unsigned formatChange_DataFormat = inuint(c_aud_ctl);
                         unsigned formatChange_NumChans = inuint(c_aud_ctl);
@@ -385,6 +396,7 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in,
                         }
 #endif
                     }
+#endif
                     /* Pass on sample freq change to decouple() via global flag (saves a chanend) */
                     /* Note: freqChange flags now used to communicate other commands also */
                     SET_SHARED_GLOBAL0(g_freqChange, cmd);                /* Set command */

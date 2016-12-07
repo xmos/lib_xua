@@ -17,7 +17,7 @@
 #include "mic_array.h"
 #include "xua_pdm_mic.h"
 
-#define MAX_DECIMATION_FACTOR 12
+#define MAX_DECIMATION_FACTOR (96000/MIN_FREQ)
 
 /* Hardware resources */
 in port p_pdm_clk                = PORT_PDM_CLK;
@@ -36,11 +36,11 @@ mic_array_frame_time_domain mic_audio[2];
 void pdm_buffer(streaming chanend c_ds_output[2], chanend c_audio, client mic_process_if i_mic_process)
 #else
 #pragma unsafe arrays
+[[combinable]]
 void pdm_buffer(streaming chanend c_ds_output[2], chanend c_audio)
 #endif
 {
     unsigned buffer;
-    int output[NUM_PDM_MICS];
     unsigned samplerate;
 
 #ifdef MIC_PROCESSING_USE_INTERFACE
@@ -126,7 +126,7 @@ void pdm_buffer(streaming chanend c_ds_output[2], chanend c_audio)
 #ifdef MIC_PROCESSING_USE_INTERFACE
     i_mic_process.transfer_buffers(current, output);
 #else
-    user_pdm_process(current, output);
+    user_pdm_process(current);
 #endif
     int req;
     while(1)
@@ -143,7 +143,7 @@ void pdm_buffer(streaming chanend c_ds_output[2], chanend c_audio)
 #pragma loop unroll
                         for(int i = 0; i < NUM_PDM_MICS; i++)
                         {
-                            c_audio <: output[i];
+                            c_audio <: current->data[i][0];
                         }
                     }
 
@@ -154,7 +154,7 @@ void pdm_buffer(streaming chanend c_ds_output[2], chanend c_audio)
 #ifdef MIC_PROCESSING_USE_INTERFACE
                     i_mic_process.transfer_buffers(current, output);
 #else
-                    user_pdm_process(current, output);
+                    user_pdm_process(current);
 #endif
                 }
                 else
@@ -177,7 +177,7 @@ void pdm_buffer(streaming chanend c_ds_output[2], chanend c_audio)
 #ifdef MIC_PROCESSING_USE_INTERFACE
                     i_mic_process.transfer_buffers(current, output);
 #else
-                    user_pdm_process(current, output);
+                    user_pdm_process(current);
 #endif
                 }
                 break;
@@ -188,8 +188,6 @@ void pdm_buffer(streaming chanend c_ds_output[2], chanend c_audio)
 #if MAX_FREQ > 48000
 #error MAX_FREQ > 48000 NOT CURRENTLY SUPPORTED
 #endif
-
-#include "print.h"
 
 void pdm_mic(streaming chanend c_ds_output[2])
 {
