@@ -32,32 +32,6 @@
 #include "commands.h"
 #include "xc_ptr.h"
 
-#ifndef I2S_DOWNSAMPLE_FACTOR
-#define I2S_DOWNSAMPLE_FACTOR (1)
-#endif
-
-#ifndef I2S_DOWNSAMPLE_MONO
-#define I2S_DOWNSAMPLE_MONO (0)
-#endif
-
-#if (I2S_DOWNSAMPLE_MONO == 1)
-#define I2S_DOWNSAMPLE_CHANS (I2S_CHANS_DAC/2)
-#else
-#define I2S_DOWNSAMPLE_CHANS I2S_CHANS_DAC
-#endif
-
-#if (I2S_DOWNSAMPLE_FACTOR != 1) && (I2S_DOWNSAMPLE_FACTOR != 3)
-#error "Unsupported I2S downsampling configuration"
-#endif
-
-#if (NUM_USB_CHAN_IN && (NUM_USB_CHAN_IN < (I2S_CHANS_ADC + NUM_PDM_MICS)))
-#error "Not enough USB input channels to support number of I2S and PDM inputs"
-#endif
-
-#if (NUM_USB_CHAN_IN && (NUM_USB_CHAN_IN < (NUM_PDM_MICS + PDM_MIC_INDEX)))
-#error "PDM mic inputs mapping exceeds bounds of USB input channel"
-#endif
-
 /* TODO 32 is max expected channels */
 static unsigned samplesOut[32];
 

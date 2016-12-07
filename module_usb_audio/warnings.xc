@@ -72,4 +72,10 @@ Warnings relating to configuration defines located in this XC source file rather
 #error NUM_USB_CHAN_IN_FS expected to be less than or equal to NUM_USB_CHAN_IN
 #endif
 
+#if (NUM_USB_CHAN_IN && (NUM_USB_CHAN_IN < (I2S_CHANS_ADC + NUM_PDM_MICS)))
+#error Not enough USB input channels to support number of I2S and PDM inputs
+#endif
 
+#if (NUM_USB_CHAN_IN && (NUM_USB_CHAN_IN < (NUM_PDM_MICS + PDM_MIC_INDEX)))
+#error PDM mic inputs mapping exceeds bounds of USB input channel
+#endif
