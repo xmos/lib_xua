@@ -129,7 +129,7 @@
 #ifndef I2S_DOWNSAMPLE_FACTOR
 #define I2S_DOWNSAMPLE_FACTOR (1)
 #else
-    #if (I2S_DOWNSAMPLE_FACTOR != 3)
+    #if (I2S_DOWNSAMPLE_FACTOR != 3) && (I2S_DOWNSAMPLE_FACTOR != 1)
         #error Unsupported I2S downsampling configuration
     #endif
 #endif
