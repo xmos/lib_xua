@@ -37,6 +37,16 @@
 #define I2S_DOWNSAMPLE_FACTOR (1)
 #endif
 
+#ifndef I2S_DOWNSAMPLE_MONO
+#define I2S_DOWNSAMPLE_MONO (0)
+#endif
+
+#if (I2S_DOWNSAMPLE_MONO == 1)
+#define I2S_DOWNSAMPLE_CHANS (I2S_CHANS_DAC/2)
+#else
+#define I2S_DOWNSAMPLE_CHANS I2S_CHANS_DAC
+#endif
+
 #if (I2S_DOWNSAMPLE_FACTOR != 1) && (I2S_DOWNSAMPLE_FACTOR != 3)
 #error "Unsupported I2S downsampling configuration"
 #endif
@@ -62,9 +72,9 @@ static union ds3Data
 {
     long long doubleWordAlignmentEnsured;
     /* [Number of I2S channels][Number of samples/phases][Taps per phase] */
-    int32_t delayLine[I2S_CHANS_DAC][I2S_DOWNSAMPLE_FACTOR][24];
+    int32_t delayLine[I2S_DOWNSAMPLE_CHANS][I2S_DOWNSAMPLE_FACTOR][24];
 } ds3Data;
-static int64_t ds3Sum[I2S_CHANS_DAC];
+static int64_t ds3Sum[I2S_DOWNSAMPLE_CHANS];
 #endif
 
 #if (DSD_CHANS_DAC != 0)
@@ -778,7 +788,7 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
                 asm volatile("in %0, res[%1]" : "=r"(sample)  : "r"(p_i2s_adc[index++]));
 
                 samplesIn[buffIndex][((frameCount-1)&(I2S_CHANS_PER_FRAME-1))+i] = bitrev(sample); // channels 1, 3, 5.. on each line.
-#if (I2S_DOWNSAMPLE_FACTOR > 1)
+#if ((I2S_DOWNSAMPLE_FACTOR > 1) && !I2S_DOWNSAMPLE_MONO)
                 if ((I2S_DOWNSAMPLE_FACTOR - 1) == downsamplingCounter)
                 {
                     samplesIn[buffIndex][((frameCount-1)&(I2S_CHANS_PER_FRAME-1))+i] =
@@ -797,7 +807,7 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
                         src_ds3_voice_coefs[downsamplingCounter],
                         samplesIn[readBuffNo][((frameCount-1)&(I2S_CHANS_PER_FRAME-1))+i]);
                 }
-#endif // (I2S_DOWNSAMPLE_FACTOR > 1)
+#endif // ((I2S_DOWNSAMPLE_FACTOR > 1) && !I2S_DOWNSAMPLE_MONO)
 
             }
 #endif
