@@ -13,7 +13,6 @@
 #include <xclib.h>
 #include <xs1_su.h>
 #include <string.h>
-#include "xassert.h"
 
 #include "devicedefines.h"
 
