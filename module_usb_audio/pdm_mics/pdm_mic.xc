@@ -189,8 +189,6 @@ void pdm_buffer(streaming chanend c_ds_output[2], chanend c_audio)
 #error MAX_FREQ > 48000 NOT CURRENTLY SUPPORTED
 #endif
 
-#include "print.h"
-
 void pdm_mic(streaming chanend c_ds_output[2])
 {
     streaming chan c_4x_pdm_mic_0;
