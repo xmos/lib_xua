@@ -302,12 +302,7 @@ static inline unsigned DoSampleTransfer(chanend c_out, const int readBuffNo, con
 
 #if NUM_USB_CHAN_IN > 0
 #pragma loop unroll
-        for(int i = 0; i < I2S_CHANS_ADC; i++)
-        {
-            outuint(c_out, samplesIn[readBuffNo][i]);
-        }
-#pragma loop unroll
-        for (int i = PDM_MIC_INDEX; i < (NUM_PDM_MICS + PDM_MIC_INDEX); i++)
+        for(int i = 0; i < NUM_USB_CHAN_IN; i++)
         {
             outuint(c_out, samplesIn[readBuffNo][i]);
         }
