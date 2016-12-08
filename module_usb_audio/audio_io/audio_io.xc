@@ -662,7 +662,7 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
                         src_ds3_voice_add_final_sample(
                             ds3Sum[((frameCount-2)&(I2S_CHANS_PER_FRAME-1))+i],
                             ds3Data.delayLine[((frameCount-2)&(I2S_CHANS_PER_FRAME-1))+i][downsamplingCounter],
-                            src_ds3_voice_coefs[downsamplingCounter],
+                            src_ff3v_ds3_voice_coefs[downsamplingCounter],
                             samplesIn[readBuffNo][((frameCount-2)&(I2S_CHANS_PER_FRAME-1))]);
                 }
                 else
@@ -671,7 +671,7 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
                         src_ds3_voice_add_sample(
                         ds3Sum[((frameCount-2)&(I2S_CHANS_PER_FRAME-1))+i],
                         ds3Data.delayLine[((frameCount-2)&(I2S_CHANS_PER_FRAME-1))+i][downsamplingCounter],
-                        src_ds3_voice_coefs[downsamplingCounter],
+                        src_ff3v_ds3_voice_coefs[downsamplingCounter],
                         samplesIn[readBuffNo][((frameCount-2)&(I2S_CHANS_PER_FRAME-1))]);
                 }
 #endif // (I2S_DOWNSAMPLE_FACTOR > 1)
@@ -782,7 +782,7 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
                         src_ds3_voice_add_final_sample(
                             ds3Sum[((frameCount-1)&(I2S_CHANS_PER_FRAME-1))+i],
                             ds3Data.delayLine[((frameCount-1)&(I2S_CHANS_PER_FRAME-1))+i][downsamplingCounter],
-                            src_ds3_voice_coefs[downsamplingCounter],
+                            src_ff3v_ds3_voice_coefs[downsamplingCounter],
                             samplesIn[readBuffNo][((frameCount-1)&(I2S_CHANS_PER_FRAME-1))+i]);
                 }
                 else
@@ -791,7 +791,7 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
                         src_ds3_voice_add_sample(
                         ds3Sum[((frameCount-1)&(I2S_CHANS_PER_FRAME-1))+i],
                         ds3Data.delayLine[((frameCount-1)&(I2S_CHANS_PER_FRAME-1))+i][downsamplingCounter],
-                        src_ds3_voice_coefs[downsamplingCounter],
+                        src_ff3v_ds3_voice_coefs[downsamplingCounter],
                         samplesIn[readBuffNo][((frameCount-1)&(I2S_CHANS_PER_FRAME-1))+i]);
                 }
 #endif // ((I2S_DOWNSAMPLE_FACTOR > 1) && !I2S_DOWNSAMPLE_MONO)
