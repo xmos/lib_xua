@@ -310,7 +310,7 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in,
                 {
                     unsigned cmd = inuint(c_aud_ctl);
 
-#if MAX_FREQ != MIN_FREQ
+#if (MAX_FREQ != MIN_FREQ)
                     if(cmd == SET_SAMPLE_FREQ)
                     {
                         unsigned receivedSampleFreq = inuint(c_aud_ctl);

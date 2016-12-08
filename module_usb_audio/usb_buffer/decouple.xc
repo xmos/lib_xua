@@ -723,12 +723,11 @@ void decouple(chanend c_mix_out
             /* Check for freq change or other update */
 
             GET_SHARED_GLOBAL(tmp, g_freqChange_flag);
-#if MIN_FREQ != MAX_FREQ
+#if (MIN_FREQ != MAX_FREQ)
             if (tmp == SET_SAMPLE_FREQ)
             {
                 SET_SHARED_GLOBAL(g_freqChange_flag, 0);
                 GET_SHARED_GLOBAL(sampFreq, g_freqChange_sampFreq);
-
 
                 /* Pass on to mixer */
                 DISABLE_INTERRUPTS();
