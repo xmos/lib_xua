@@ -5,7 +5,7 @@
 /* Interface based user processing */
 typedef interface mic_process_if
 {
-    void transfer_buffers(mic_array_frame_time_domain * unsafe audio, int output[]);
+    void transfer_buffers(mic_array_frame_time_domain * unsafe audio);
     void init();
 } mic_process_if;
 

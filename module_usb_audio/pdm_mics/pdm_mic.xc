@@ -124,7 +124,7 @@ void pdm_buffer(streaming chanend c_ds_output[2], chanend c_audio)
     /* Run user code */
     /* TODO ideally processing done inplace - it then doesn't matter if it is run or not */
 #ifdef MIC_PROCESSING_USE_INTERFACE
-    i_mic_process.transfer_buffers(current, output);
+    i_mic_process.transfer_buffers(current);
 #else
     user_pdm_process(current);
 #endif
@@ -152,7 +152,7 @@ void pdm_buffer(streaming chanend c_ds_output[2], chanend c_audio)
 
                     /* Run user code */
 #ifdef MIC_PROCESSING_USE_INTERFACE
-                    i_mic_process.transfer_buffers(current, output);
+                    i_mic_process.transfer_buffers(current);
 #else
                     user_pdm_process(current);
 #endif
@@ -175,7 +175,7 @@ void pdm_buffer(streaming chanend c_ds_output[2], chanend c_audio)
 
                     /* Run user code */
 #ifdef MIC_PROCESSING_USE_INTERFACE
-                    i_mic_process.transfer_buffers(current, output);
+                    i_mic_process.transfer_buffers(current);
 #else
                     user_pdm_process(current);
 #endif
