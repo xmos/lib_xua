@@ -69,8 +69,8 @@ unsigned g_numUsbChan_Out = NUM_USB_CHAN_OUT;
 unsigned g_numUsbChan_In = NUM_USB_CHAN_IN;
 
 /* Circular audio buffers */
-unsigned outAudioBuff[(BUFF_SIZE_OUT >> 2)+ (MAX_DEVICE_AUD_PACKET_SIZE_OUT >> 0)];
-unsigned audioBuffIn[(BUFF_SIZE_IN >> 2)+ (MAX_DEVICE_AUD_PACKET_SIZE_IN >> 0)];
+unsigned outAudioBuff[(BUFF_SIZE_OUT >> 2)+ (MAX_DEVICE_AUD_PACKET_SIZE_OUT >> 2)];
+unsigned audioBuffIn[(BUFF_SIZE_IN >> 2)+ (MAX_DEVICE_AUD_PACKET_SIZE_IN >> 2)];
 
 /* Shift down accounts for bytes -> words */
 unsigned inZeroBuff[(MAX_DEVICE_AUD_PACKET_SIZE_IN >> 2)];
