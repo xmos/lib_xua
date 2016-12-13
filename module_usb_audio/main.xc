@@ -311,17 +311,19 @@ VENDOR_REQUESTS_PARAMS_DEC_
 
     par
     {
-        /* USB Interface Core */
-#if (AUDIO_CLASS==2)
-        XUD_Manager(c_xud_out, ENDPOINT_COUNT_OUT, c_xud_in, ENDPOINT_COUNT_IN,
-            c_sof, epTypeTableOut, epTypeTableIn, p_usb_rst,
-            clk, 1, XUD_SPEED_HS, XUD_PWR_CFG);
-#else
         {
-        set_core_high_priority_on();
-        XUD_Manager(c_xud_out, ENDPOINT_COUNT_OUT, c_xud_in, ENDPOINT_COUNT_IN,
-            c_sof, epTypeTableOut, epTypeTableIn, p_usb_rst,
-            clk, 1, XUD_SPEED_FS, XUD_PWR_CFG);
+#ifdef XUD_PRIORITY_HIGH
+            set_core_high_priority_on();
+#endif
+            /* USB Interface Core */
+#if (AUDIO_CLASS==2)
+            XUD_Manager(c_xud_out, ENDPOINT_COUNT_OUT, c_xud_in, ENDPOINT_COUNT_IN,
+                c_sof, epTypeTableOut, epTypeTableIn, p_usb_rst,
+                clk, 1, XUD_SPEED_HS, XUD_PWR_CFG);
+#else
+            XUD_Manager(c_xud_out, ENDPOINT_COUNT_OUT, c_xud_in, ENDPOINT_COUNT_IN,
+                c_sof, epTypeTableOut, epTypeTableIn, p_usb_rst,
+                clk, 1, XUD_SPEED_FS, XUD_PWR_CFG);
         }
 #endif
 
