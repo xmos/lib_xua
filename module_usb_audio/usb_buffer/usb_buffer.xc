@@ -171,7 +171,7 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in,
 #if (NUM_USB_CHAN_IN > 0)
     unsigned bufferIn = 1;
 #endif
-    unsigned remnant = 0;
+    //unsigned remnant = 0;
     unsigned sofCount = 0;
     unsigned freqChange = 0;
 
@@ -327,7 +327,7 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in,
                              * to stabilise (i.e. sofCount == 128 to fire) */
                             sofCount = 1;
                             clocks = 0;
-                            remnant = 0;
+                            //remnant = 0;
                             clockcounter = 0;
                             mod_from_last_time = 0;
 

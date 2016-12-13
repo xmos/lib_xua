@@ -102,21 +102,6 @@ void FeedbackStabilityDelay()
     t when timerafter(time + delay):> void;
 }
 
-
-
-static unsigned longMul(unsigned a, unsigned b, int prec)
-{
-    unsigned x,y;
-    unsigned ret;
-
-    //    {x, y} = lmul(a, b, 0, 0);
-    asm("lmul %0, %1, %2, %3, %4, %5":"=r"(x),"=r"(y):"r"(a),"r"(b),"r"(0),"r"(0));
-
-
-    ret = (x << (32-prec) | (y >> prec));
-    return ret;
-}
-
 #if 0
 /* Original feedback implementation */
 unsafe
@@ -132,6 +117,18 @@ static void setG_curSamFreqMultiplier(unsigned x)
 #endif
 
 #if (OUTPUT_VOLUME_CONTROL == 1) || (INPUT_VOLUME_CONTROL == 1)
+static unsigned longMul(unsigned a, unsigned b, int prec)
+{
+    unsigned x,y;
+    unsigned ret;
+
+    //    {x, y} = lmul(a, b, 0, 0);
+    asm("lmul %0, %1, %2, %3, %4, %5":"=r"(x),"=r"(y):"r"(a),"r"(b),"r"(0),"r"(0));
+
+    ret = (x << (32-prec) | (y >> prec));
+    return ret;
+}
+
 /* Update master volume i.e. i.e update weights for all channels */
 static void updateMasterVol( int unitID, chanend ?c_mix_ctl)
 {
@@ -1160,16 +1157,16 @@ int AudioEndpointRequests_1(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp
 
 
 /* Handles the Audio Class 1.0 specific requests */
-int AudioClassRequests_1(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, chanend c_audioControl, chanend ?c_mix_ctl, chanend ?c_clk_ctl
+XUD_Result_t AudioClassRequests_1(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, chanend c_audioControl, chanend ?c_mix_ctl, chanend ?c_clk_ctl
 )
 {
-    unsigned char buffer[128];
+#if (OUTPUT_VOLUME_CONTROL == 1) || (INPUT_VOLUME_CONTROL == 1)
+    unsigned char buffer[68];
     unsigned unitID;
     XUD_Result_t result;
 
     /* Inspect request */
     /* Note we could check sp.bmRequestType.Direction if we wanted to be really careful */
-#if (OUTPUT_VOLUME_CONTROL == 1) || (INPUT_VOLUME_CONTROL == 1)
     switch(sp.bRequest)
     {
         case UAC_B_REQ_SET_CUR:
@@ -1282,7 +1279,7 @@ int AudioClassRequests_1(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
             return XUD_DoGetRequest(ep0_out, ep0_in, buffer, 2, sp.wLength);
     }
 #endif
-    return 1;
+    return XUD_RES_ERR;
 }
 #endif
 
