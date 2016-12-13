@@ -35,13 +35,14 @@ typedef struct
     STR_TABLE_ENTRY(vendorStr);
     STR_TABLE_ENTRY(serialStr);
 
+#if (AUDIO_CLASS == 2)
     /* Audio 2.0 Strings */
     STR_TABLE_ENTRY(productStr_Audio2);           /* Product string for Audio 2 */
     STR_TABLE_ENTRY(outputInterfaceStr_Audio2);   /* iInterface for streaming intefaces */
     STR_TABLE_ENTRY(inputInterfaceStr_Audio2);    /* iInterface for streaming intefaces */
     STR_TABLE_ENTRY(usbInputTermStr_Audio2);      /* Users sees as output from host */
     STR_TABLE_ENTRY(usbOutputTermStr_Audio2);     /* User sees as input to host */
-
+#endif
 #if defined (AUDIO_CLASS_FALLBACK) || (AUDIO_CLASS == 1)
     /* Audio 1.0 Strings */
     STR_TABLE_ENTRY(productStr_Audio1);           /* Product string for Audio 1 */
@@ -50,6 +51,7 @@ typedef struct
     STR_TABLE_ENTRY(usbInputTermStr_Audio1);      /* Users sees as output from host */
     STR_TABLE_ENTRY(usbOutputTermStr_Audio1);     /* User sees as input to host */
 #endif
+#if (AUDIO_CLASS == 2)
     STR_TABLE_ENTRY(clockSelectorStr);            /* iClockSel */
     STR_TABLE_ENTRY(internalClockSourceStr);      /* iClockSource for internal clock */
 #ifdef SPDIF_RX
@@ -57,6 +59,7 @@ typedef struct
 #endif
 #ifdef ADAT_RX
     STR_TABLE_ENTRY(adatClockSourceStr);          /* iClockSource for external S/PDIF clock */
+#endif
 #endif
 #ifdef DFU
     STR_TABLE_ENTRY(dfuStr);                      /* iInterface for DFU interface */
@@ -291,7 +294,9 @@ typedef struct
 #if defined(MIXER) && (MAX_MIX_COUNT > 7)
     STR_TABLE_ENTRY(mixOutStr_8);
 #endif
+#ifdef IAP
     STR_TABLE_ENTRY(iAPInterfaceStr);
+#endif
 #ifdef IAP_EA_NATIVE_TRANS
     STR_TABLE_ENTRY(iAP_EANativeTransport_InterfaceStr);
 #endif
@@ -302,12 +307,13 @@ StringDescTable_t g_strTable =
     .langID                      = "\x09\x04", /* US English */
     .vendorStr                   = VENDOR_STR,
     .serialStr                   = "",
+#if (AUDIO_CLASS == 2)
     .productStr_Audio2           = PRODUCT_STR_A2,
     .outputInterfaceStr_Audio2   = APPEND_PRODUCT_STR_A2(),
     .inputInterfaceStr_Audio2    = APPEND_PRODUCT_STR_A2(),
     .usbInputTermStr_Audio2      = APPEND_PRODUCT_STR_A2(),
     .usbOutputTermStr_Audio2     = APPEND_PRODUCT_STR_A2(),
-
+#endif
 #if defined (AUDIO_CLASS_FALLBACK) || (AUDIO_CLASS == 1)
     .productStr_Audio1           = PRODUCT_STR_A1,
     .outputInterfaceStr_Audio1   = APPEND_PRODUCT_STR_A1(),
@@ -315,6 +321,7 @@ StringDescTable_t g_strTable =
     .usbInputTermStr_Audio1      = APPEND_PRODUCT_STR_A1(),
     .usbOutputTermStr_Audio1     = APPEND_PRODUCT_STR_A1(),
 #endif
+#if (AUDIO_CLASS == 2)
     .clockSelectorStr            = APPEND_VENDOR_STR(Clock Selector),
     .internalClockSourceStr      = APPEND_VENDOR_STR(Internal Clock),
 #ifdef SPDIF_RX
@@ -322,6 +329,7 @@ StringDescTable_t g_strTable =
 #endif
 #ifdef ADAT_RX
     .adatClockSourceStr          = APPEND_VENDOR_STR(ADAT Clock),
+#endif
 #endif
 #ifdef DFU
     .dfuStr                      = APPEND_VENDOR_STR(DFU),
@@ -368,7 +376,9 @@ StringDescTable_t g_strTable =
 #if defined(MIXER) && (MAX_MIX_COUNT > 8)
 #error
 #endif
+#ifdef IAP
     .iAPInterfaceStr             = "iAP Interface",
+#endif
 #ifdef IAP_EA_NATIVE_TRANS
     .iAP_EANativeTransport_InterfaceStr = IAP2_EA_NATIVE_TRANS_PROTOCOL_NAME,
 #endif
@@ -397,6 +407,7 @@ USB_Descriptor_Device_t devDesc_Audio1 =
 };
 #endif
 
+#if (AUDIO_CLASS == 2)
 /* Device Descriptor for Audio Class 2.0 (Assumes High-Speed ) */
 USB_Descriptor_Device_t devDesc_Audio2 =
 {
@@ -438,7 +449,7 @@ unsigned char devDesc_Null[] =
     0,                              /* 16 iSerialNumber : Index of serial number decriptor */
     0x01                            /* 17 bNumConfigurations : Number of possible configs */
 };
-
+#endif
 
 /****** Device Qualifier Descriptors *****/
 
@@ -751,7 +762,7 @@ typedef struct
 
 }__attribute__((packed)) USB_Config_Descriptor_Audio2_t;
 
-#if 1
+#if (AUDIO_CLASS == 2)
 USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
 {
     .Config =
@@ -2252,7 +2263,10 @@ const unsigned num_freqs_a1 = MAX(3, (0
 #define NUM_CONTROL_INTERFACES 0
 #endif
 
-#define AC_TOTAL_LENGTH             (AC_LENGTH + (INPUT_INTERFACES_A1 * (17 + NUM_USB_CHAN_IN_FS + num_freqs_a1 * 3)) + (OUTPUT_INTERFACES_A1 * (17 + NUM_USB_CHAN_OUT_FS + (num_freqs_a1 *3))))
+#define AC_TOTAL_LENGTH             (AC_LENGTH + \
+                                    (INPUT_INTERFACES_A1 *  (9 + (7* INPUT_VOLUME_CONTROL) + (NUM_USB_CHAN_IN_FS * INPUT_VOLUME_CONTROL)  + num_freqs_a1 * 3)) +\
+                                    (OUTPUT_INTERFACES_A1 * (9 + (7 * OUTPUT_VOLUME_CONTROL) + (NUM_USB_CHAN_OUT_FS * OUTPUT_VOLUME_CONTROL) + (num_freqs_a1 *3))))
+
 #define STREAMING_INTERFACES        (INPUT_INTERFACES_A1 + OUTPUT_INTERFACES_A1)
 
 /* Number of interfaces for Audio  1.0 (+1 for control ) */
@@ -2268,7 +2282,7 @@ const unsigned num_freqs_a1 = MAX(3, (0
 #define CHARIFY_SR(x) (x & 0xff),((x & 0xff00)>> 8),((x & 0xff0000)>> 16)
 
 #if (MIN_FREQ_FS < 12000) && (MAX_FREQ_FS > 48000)
-#error SAMPLE RATE RANGE TO GREAT FOR UAC1 ON WINDOWS
+#error SAMPLE RATE RANGE TOO GREAT FOR UAC1 ON WINDOWS
 #endif
 
 unsigned char cfgDesc_Audio1[] =
@@ -2297,7 +2311,7 @@ unsigned char cfgDesc_Audio1[] =
     USB_CLASS_AUDIO,
     UAC_INT_SUBCLASS_AUDIOCONTROL,
     0x00,                                 /* Unused */
-    8,                                    /* iInterface - re-use iProduct */
+    offsetof(StringDescTable_t, productStr_Audio1)/sizeof(char *), /* iInterface - re-use iProduct */
 
     /* CS (Class Specific) AudioControl interface header descriptor (4.3.2) */
     AC_LENGTH,
@@ -2325,8 +2339,9 @@ unsigned char cfgDesc_Audio1[] =
     NUM_USB_CHAN_OUT_FS,                  /* bNrChannels */
     0x03, 0x00,                           /* wChannelConfig */
     offsetof(StringDescTable_t, outputChanStr_1)/sizeof(char *), /* iChannelNames */
-    11,                                   /* iTerminal */
+    offsetof(StringDescTable_t, usbInputTermStr_Audio1)/sizeof(char *), /* iTerminal */
 
+#if (OUTPUT_VOLUME_CONTROL == 1)
     /* CS_Interface class specific AC interface feature unit descriptor - mute & volume for dac */
     (8 + NUM_USB_CHAN_OUT_FS),
     UAC_CS_DESCTYPE_INTERFACE,
@@ -2364,6 +2379,7 @@ unsigned char cfgDesc_Audio1[] =
 #error NUM_USB_CHAN_OUT_FS > 8 currently supported
 #endif
     0x00,                                 /* String table index */
+#endif
 
     /* CS_Interface Output Terminal Descriptor - Analogue out to speaker */
     0x09,
@@ -2372,7 +2388,11 @@ unsigned char cfgDesc_Audio1[] =
     0x06,                                 /* Terminal ID */
     0x01, 0x03,                           /* Type - streaming out, speaker */
     0x00,                                 /* Associated terminal - unused */
-    0x0A,                                 /* sourceID  */
+#if (OUTPUT_VOLUME_CONTROL == 1)
+    0x0A,                                 /* sourceID  - FU */
+#else
+    0x01,                                 /* sourceID - IT */
+#endif
     0x00,                                 /* Unused */
 #endif
 
@@ -2387,7 +2407,7 @@ unsigned char cfgDesc_Audio1[] =
     NUM_USB_CHAN_IN_FS,                   /* bNrChannels */
     0x03, 0x00,                           /* wChannelConfigs */
     offsetof(StringDescTable_t, inputChanStr_1)/sizeof(char *), /* iChannelNames */
-    12,                                   /* iTerminal */
+    offsetof(StringDescTable_t, usbOutputTermStr_Audio1)/sizeof(char *), /* iTerminal */
 
     /* CS_Interface Output Terminal Descriptor - USB Streaming Device to Host*/
     0x09,
@@ -2396,9 +2416,14 @@ unsigned char cfgDesc_Audio1[] =
     0x07,                                 /* Terminal ID */
     0x01, 0x01,                           /* Type - streaming */
     0x01,                                 /* Associated terminal - unused */
-    0x0B,                                 /* sourceID - from selector unit ?? */
+#if INPUT_VOLUME_CONTROL
+    0x0B,                                 /* sourceID - FU */
+#else
+    0x02,                                 /* sourceID - IT */
+#endif
     0x00,                                 /* Unused */
 
+#if (INPUT_VOLUME_CONTROL == 1)
     /* CS_Interface class specific AC interface feature unit descriptor - mute & volume for adc */
     (8 + NUM_USB_CHAN_IN_FS),
     UAC_CS_DESCTYPE_INTERFACE,
@@ -2436,6 +2461,7 @@ unsigned char cfgDesc_Audio1[] =
 #endif
     0x00,                                 /* String table index */
 #endif
+#endif
 
 #if (NUM_USB_CHAN_OUT > 0)
     /* Standard AS Interface Descriptor (4.5.1) */
@@ -2447,7 +2473,7 @@ unsigned char cfgDesc_Audio1[] =
     0x01,                                 /* bInterfaceClass - AUDIO */
     0x02,                                 /* bInterfaceSubclass - AUDIO_STREAMING */
     0x00,                                 /* bInterfaceProtocol - Not used */
-    0x09,                                 /* iInterface */
+    offsetof(StringDescTable_t, outputInterfaceStr_Audio1)/sizeof(char *), /* iInterface */
 
     /* Standard As Interface Descriptor (4.5.1) */
     0x09,
@@ -2462,7 +2488,7 @@ unsigned char cfgDesc_Audio1[] =
     0x01,                                 /* Interface class - AUDIO */
     0x02,                                 /* subclass - AUDIO_STREAMING */
     0x00,                                 /* Unused */
-    0x09,                                 /* String table index  */
+    offsetof(StringDescTable_t, outputInterfaceStr_Audio1)/sizeof(char *), /* iInterface */ 
 
     /* Class-Specific AS Interface Descriptor (4.5.2) */
     0x07,
@@ -2580,7 +2606,7 @@ unsigned char cfgDesc_Audio1[] =
     0x01,                                 /* Interface class - AUDIO */
     0x02,                                 /* subclass - AUDIO_STREAMING */
     0x00,                                 /* Unused */
-    0x0A,                                 /* iInterface */
+    offsetof(StringDescTable_t, inputInterfaceStr_Audio1)/sizeof(char *), 
 
     /* Standard Interface Descriptor - Audio streaming IN */
     0x09,
@@ -2591,7 +2617,7 @@ unsigned char cfgDesc_Audio1[] =
     0x01,                                 /* Interface class - AUDIO */
     0x02,                                 /* Subclass - AUDIO_STREAMING */
     0x00,                                 /* Unused */
-    0x0A,                                /* iInterface*/
+    offsetof(StringDescTable_t, inputInterfaceStr_Audio1)/sizeof(char *), 
 
     /* CS_Interface AC interface header descriptor */
     0x07,
@@ -2688,7 +2714,7 @@ unsigned char cfgDesc_Audio1[] =
 
 #ifdef XVSM
     /* Standard DFU class Interface descriptor */
-    0x09,                                /* 0 bLength : Size of this descriptor, in bytes. (field size 1 bytes) */
+    0x09,                                 /* 0 bLength : Size of this descriptor, in bytes. (field size 1 bytes) */
     0x04,                                 /* 1 bDescriptorType : INTERFACE descriptor. (field size 1 bytes) */
     (OUTPUT_INTERFACES_A1 + 2),           /* bInterfaceNumber */
     0x00,                                 /* 3 bAlternateSetting : Index of this setting. (field size 1 bytes) */

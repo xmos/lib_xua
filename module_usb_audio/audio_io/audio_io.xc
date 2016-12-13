@@ -12,10 +12,11 @@
 #include <xs1.h>
 #include <xclib.h>
 #include <xs1_su.h>
+#include <string.h>
 
 #include "devicedefines.h"
 
-#include "dfu_interface.h"
+#include "xua_audio.h"
 #include "audioports.h"
 #include "audiohw.h"
 #ifdef SPDIF_TX
@@ -23,22 +24,50 @@
 #endif
 #ifdef ADAT_TX
 #include "adat_tx.h"
-
 #ifndef ADAT_TX_USE_SHARED_BUFF
 #error Designed for ADAT tx shared buffer mode ONLY
 #endif
 #endif
 
-#include "xua_audio.h"
-
 #include "commands.h"
 #include "xc_ptr.h"
 
-/* TODO 32 is max expected channels */
-static unsigned samplesOut[32];
+#define MAX(x,y) ((x)>(y) ? (x) : (y))
 
-/* Two buffers for ADC data to allow for DAC and ADC ports being offset */
-static unsigned samplesIn[2][32];
+static unsigned samplesOut[MAX(NUM_USB_CHAN_OUT, I2S_CHANS_DAC)];
+
+#ifndef ADAT_RX
+#define ADAT_RX 0
+#endif
+
+#ifndef SPDIF_RX
+#define SPDIF_RX 0
+#endif
+
+/* Two buffers for ADC data to allow for DAC and ADC I2S ports being offset */
+#define IN_CHAN_COUNT (I2S_CHANS_ADC + NUM_PDM_MICS + (8*ADAT_RX) + (2*SPDIF_RX)) 
+
+static unsigned samplesIn[2][MAX(NUM_USB_CHAN_IN, IN_CHAN_COUNT)];
+
+#if defined(ADAT_RX) && (ADAT_RX ==0)
+#undef ADAT_RX
+#endif
+
+#if defined(SPDIF_RX) && (SPDIF_RX ==0)
+#undef SPDIF_RX
+#endif
+
+static int downsamplingCounter = 0;
+#if (I2S_DOWNSAMPLE_FACTOR > 1)
+#include "src.h"
+static union ds3Data
+{
+    long long doubleWordAlignmentEnsured;
+    /* [Number of I2S channels][Number of samples/phases][Taps per phase] */
+    int32_t delayLine[I2S_DOWNSAMPLE_CHANS][I2S_DOWNSAMPLE_FACTOR][24];
+} ds3Data;
+static int64_t ds3Sum[I2S_DOWNSAMPLE_CHANS];
+#endif
 
 #if (DSD_CHANS_DAC != 0)
 extern buffered out port:32 p_dsd_dac[DSD_CHANS_DAC];
@@ -222,7 +251,7 @@ static inline void TransferAdatTxSamples(chanend c_adat_out, const unsigned samp
 }
 #endif
 
-/* sampsFromUsbToAudio: The sample frame the device has recived from the host and is going to play to the output audio interfaces */
+/* sampsFromUsbToAudio: The sample frame the device has received from the host and is going to play to the output audio interfaces */
 /* sampsFromAudioToUsb: The sample frame that was received from the audio interfaces and that the device is going to send to the host */
 void UserBufferManagement(unsigned sampsFromUsbToAudio[], unsigned sampsFromAudioToUsb[], client audManage_if i_audMan);
 
@@ -276,7 +305,7 @@ static inline unsigned DoSampleTransfer(chanend c_out, const int readBuffNo, con
         for(int i = 0; i < NUM_USB_CHAN_IN; i++)
         {
             outuint(c_out, samplesIn[readBuffNo][i]);
-         }
+        }
 #endif
     }
 
@@ -468,6 +497,10 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
     }
 #endif
 
+#if (I2S_DOWNSAMPLE_FACTOR > 1)
+    memset(&ds3Data.delayLine, 0, sizeof ds3Data);
+#endif
+
     unsigned command = DoSampleTransfer(c_out, readBuffNo, underflowWord, i_audMan);
 
 #ifdef ADAT_TX
@@ -481,6 +514,8 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
     {
         return command;
     }
+
+    downsamplingCounter = 0;
 
     InitPorts(divide);
 
@@ -597,11 +632,17 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
         else
 #endif
         {
+#if (I2S_DOWNSAMPLE_FACTOR > 1)
+            if (0 == downsamplingCounter)
+            {
+                memset(&ds3Sum, 0, sizeof ds3Sum);
+            }
+#endif
 #if (I2S_CHANS_ADC != 0)
             /* Input previous L sample into L in buffer */
             index = 0;
             /* First input (i.e. frameCount == 0) we read last ADC channel of previous frame.. */
-            unsigned buffIndex = (frameCount < 3) ? !readBuffNo : readBuffNo;
+            unsigned buffIndex = (frameCount > 1) ? !readBuffNo : readBuffNo;
 
 #pragma loop unroll
             /* First time around we get channel 7 of TDM8 */
@@ -614,6 +655,26 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
 
                 /* Note the use of readBuffNo changes based on frameCount */
                 samplesIn[buffIndex][((frameCount-2)&(I2S_CHANS_PER_FRAME-1))+i] = bitrev(sample); // channels 0, 2, 4.. on each line.
+#if (I2S_DOWNSAMPLE_FACTOR > 1)
+                if ((I2S_DOWNSAMPLE_FACTOR - 1) == downsamplingCounter)
+                {
+                    samplesIn[readBuffNo][((frameCount-2)&(I2S_CHANS_PER_FRAME-1))] =
+                        src_ds3_voice_add_final_sample(
+                            ds3Sum[((frameCount-2)&(I2S_CHANS_PER_FRAME-1))+i],
+                            ds3Data.delayLine[((frameCount-2)&(I2S_CHANS_PER_FRAME-1))+i][downsamplingCounter],
+                            src_ff3v_ds3_voice_coefs[downsamplingCounter],
+                            samplesIn[readBuffNo][((frameCount-2)&(I2S_CHANS_PER_FRAME-1))]);
+                }
+                else
+                {
+                    ds3Sum[((frameCount-2)&(I2S_CHANS_PER_FRAME-1))+i] =
+                        src_ds3_voice_add_sample(
+                        ds3Sum[((frameCount-2)&(I2S_CHANS_PER_FRAME-1))+i],
+                        ds3Data.delayLine[((frameCount-2)&(I2S_CHANS_PER_FRAME-1))+i][downsamplingCounter],
+                        src_ff3v_ds3_voice_coefs[downsamplingCounter],
+                        samplesIn[readBuffNo][((frameCount-2)&(I2S_CHANS_PER_FRAME-1))]);
+                }
+#endif // (I2S_DOWNSAMPLE_FACTOR > 1)
             }
 #endif
 
@@ -687,19 +748,21 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
 #endif
 
 #if (NUM_PDM_MICS > 0)
-            /* Get samples from PDM->PCM comverter */
-            c_pdm_pcm <: 1;
-            master
+            if ((I2S_DOWNSAMPLE_FACTOR - 1) == downsamplingCounter)
             {
+                /* Get samples from PDM->PCM comverter */
+                c_pdm_pcm <: 1;
+                master
+                {
 #pragma loop unroll
-            for(int i = 0; i < NUM_PDM_MICS; i++)
-            {
-                c_pdm_pcm :> samplesIn[readBuffNo][i];
-            }
+                    for(int i = PDM_MIC_INDEX; i < (NUM_PDM_MICS + PDM_MIC_INDEX); i++)
+                    {
+                        c_pdm_pcm :> samplesIn[readBuffNo][i];
+                    }
+                }
             }
 #endif
         }
-
 
 #if (I2S_CHANS_ADC != 0)
             index = 0;
@@ -712,6 +775,26 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
                 asm volatile("in %0, res[%1]" : "=r"(sample)  : "r"(p_i2s_adc[index++]));
 
                 samplesIn[buffIndex][((frameCount-1)&(I2S_CHANS_PER_FRAME-1))+i] = bitrev(sample); // channels 1, 3, 5.. on each line.
+#if ((I2S_DOWNSAMPLE_FACTOR > 1) && !I2S_DOWNSAMPLE_MONO)
+                if ((I2S_DOWNSAMPLE_FACTOR - 1) == downsamplingCounter)
+                {
+                    samplesIn[buffIndex][((frameCount-1)&(I2S_CHANS_PER_FRAME-1))+i] =
+                        src_ds3_voice_add_final_sample(
+                            ds3Sum[((frameCount-1)&(I2S_CHANS_PER_FRAME-1))+i],
+                            ds3Data.delayLine[((frameCount-1)&(I2S_CHANS_PER_FRAME-1))+i][downsamplingCounter],
+                            src_ff3v_ds3_voice_coefs[downsamplingCounter],
+                            samplesIn[readBuffNo][((frameCount-1)&(I2S_CHANS_PER_FRAME-1))+i]);
+                }
+                else
+                {
+                    ds3Sum[((frameCount-2)&(I2S_CHANS_PER_FRAME-1))+i] =
+                        src_ds3_voice_add_sample(
+                        ds3Sum[((frameCount-1)&(I2S_CHANS_PER_FRAME-1))+i],
+                        ds3Data.delayLine[((frameCount-1)&(I2S_CHANS_PER_FRAME-1))+i][downsamplingCounter],
+                        src_ff3v_ds3_voice_coefs[downsamplingCounter],
+                        samplesIn[readBuffNo][((frameCount-1)&(I2S_CHANS_PER_FRAME-1))+i]);
+                }
+#endif // ((I2S_DOWNSAMPLE_FACTOR > 1) && !I2S_DOWNSAMPLE_MONO)
 
             }
 #endif
@@ -797,22 +880,30 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
         if(frameCount == I2S_CHANS_PER_FRAME)
 #endif
         {
-            /* Do samples transfer */
-            /* The below looks a bit odd but forces the compiler to inline twice */
-            unsigned command;
-            if(readBuffNo)
-                command = DoSampleTransfer(c_out, 1, underflowWord, i_audMan);
-            else
-                command = DoSampleTransfer(c_out, 0, underflowWord, i_audMan);
-
-            if(command)
+            if ((I2S_DOWNSAMPLE_FACTOR - 1) == downsamplingCounter)
             {
-                return command;
-            }
+                /* Do samples transfer */
+                /* The below looks a bit odd but forces the compiler to inline twice */
+                unsigned command;
+                if(readBuffNo)
+                    command = DoSampleTransfer(c_out, 1, underflowWord, i_audMan);
+                else
+                    command = DoSampleTransfer(c_out, 0, underflowWord, i_audMan);
 
-            /* Reset frame counter and flip the ADC buffer */
-            frameCount = 0;
-            readBuffNo = !readBuffNo;
+                if(command)
+                {
+                    return command;
+                }
+
+                /* Reset frame counter and flip the ADC buffer */
+                downsamplingCounter = 0;
+                frameCount = 0;
+                readBuffNo = !readBuffNo;
+            }
+            else
+            {
+                ++downsamplingCounter;
+            }
         }
     }
 
@@ -927,7 +1018,7 @@ chanend ?c_config, chanend ?c
     unsigned adatMultiple = 0;
 #endif
 
-    unsigned curSamFreq = DEFAULT_FREQ;
+    unsigned curSamFreq = DEFAULT_FREQ * I2S_DOWNSAMPLE_FACTOR;
     unsigned curSamRes_DAC = STREAM_FORMAT_OUTPUT_1_RESOLUTION_BITS; /* Default to something reasonable */
     unsigned curSamRes_ADC = STREAM_FORMAT_INPUT_1_RESOLUTION_BITS; /* Default to something reasonable - note, currently this never changes*/
     unsigned command;
@@ -1082,7 +1173,7 @@ chanend ?c_config, chanend ?c
         {
             /* TODO wait for good mclk instead of delay */
             /* No delay for DFU modes */
-            if ((curSamFreq != AUDIO_REBOOT_FROM_DFU) && (curSamFreq != AUDIO_STOP_FOR_DFU) && command)
+            if (((curSamFreq / I2S_DOWNSAMPLE_FACTOR) != AUDIO_REBOOT_FROM_DFU) && ((curSamFreq / I2S_DOWNSAMPLE_FACTOR) != AUDIO_STOP_FOR_DFU) && command)
             {
 #if 0
                 /* User should ensure MCLK is stable in AudioHwConfig */
@@ -1125,7 +1216,7 @@ chanend ?c_config, chanend ?c
 
 #if NUM_PDM_MICS > 0
                 /* Send decimation factor to PDM task(s) */
-                c_pdm_in <: curSamFreq;
+                c_pdm_in <: curSamFreq / I2S_DOWNSAMPLE_FACTOR;
 #endif
 
 #ifdef ADAT_TX
@@ -1158,15 +1249,12 @@ chanend ?c_config, chanend ?c
 #if (NUM_PDM_MICS > 0)
                    c_pdm_in,
 #endif
-                   null
-//#ifdef RUN_DSP_TASK
-                   , i_audMan
-//#endif
+                   null, i_audMan
                    );
 
                 if(command == SET_SAMPLE_FREQ)
                 {
-                    curSamFreq = inuint(c_mix_out);
+                    curSamFreq = inuint(c_mix_out) * I2S_DOWNSAMPLE_FACTOR;
                 }
                 else if(command == SET_STREAM_FORMAT_OUT)
                 {
@@ -1179,7 +1267,7 @@ chanend ?c_config, chanend ?c
                 }
 
                 /* Currently no more audio will happen after this point */
-                if (curSamFreq == AUDIO_STOP_FOR_DFU)
+                if ((curSamFreq / I2S_DOWNSAMPLE_FACTOR) == AUDIO_STOP_FOR_DFU)
 				{
                   	outct(c_mix_out, XS1_CT_END);
 

@@ -1,10 +1,27 @@
 sc_usb_audio Change Log
 =======================
 
+7.0.0
+------
+
+6.30.0
+------
+    - RESOLVED:   Number of PDM microphone channels configured now based on
+    NUM_PDM_MICS define (previously hard-coded)
+    - RESOLVED:   PDM microphone clock divide now based MCLK defines (previously hard-coded)
+    - CHANGE:     Second microphone decimation core only run if NUM_PDM_MICS > 4
+
+6.20.0
+------
+    - RESOLVED:   Intra-frame sample delays of 1/2 samples on input streaming in TDM mode 
+    - RESOLVED:   Build issue with NUM_USB_CHAN_OUT set to 0 and MIXER enabled
+    - RESOLVED:   SPDIF_TX_INDEX not defined build warning only emitted when SPDIF_TX defined
+    - RESOLVED:   Failure to enter DFU mode when configured without input volume control
+
 6.19.0
 ------
-    - RESOLVED:  SPDIF_TX_INDEX not defined build warning only emitted when SPDIF_TX defined
-    - RESOLVED:  Failure to enter DFU mode when configured without input volume control
+    - RESOLVED:   SPDIF_TX_INDEX not defined build warning only emitted when SPDIF_TX defined
+    - RESOLVED:   Failure to enter DFU mode when configured without input volume control
 
 6.18.1
 ------

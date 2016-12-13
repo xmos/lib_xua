@@ -242,9 +242,9 @@ static inline void GetSamplesFromHost(chanend c)
 #else
             ptr_samples[i] = sample;
 #endif
-#endif
         }
     }
+#endif
 }
 
 #pragma unsafe arrays
@@ -366,7 +366,7 @@ static void mixer1(chanend c_host, chanend c_mix_ctl, chanend c_mixer2)
         /* Forward on Request for data to decouple thread */
         outuint(c_host, request);
 
-        /* Between request to decouple and respose ~ 400nS latency for interrupt to fire */
+        /* Between request to decouple and response ~ 400nS latency for interrupt to fire */
         select
         {
             case inuint_byref(c_mix_ctl, cmd):

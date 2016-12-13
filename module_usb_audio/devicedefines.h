@@ -121,6 +121,41 @@
 #define I2S_WIRES_ADC            (I2S_CHANS_ADC / I2S_CHANS_PER_FRAME)
 #endif
 
+/**
+ * @brief Incoming I2S (device to host) channels can be downsampled by a factor of 3.
+ *
+ * Default: 1 i.e. downsampling is disabled.
+ */
+#ifndef I2S_DOWNSAMPLE_FACTOR
+#define I2S_DOWNSAMPLE_FACTOR (1)
+#else
+    #if (I2S_DOWNSAMPLE_FACTOR != 3) && (I2S_DOWNSAMPLE_FACTOR != 1)
+        #error Unsupported I2S downsampling configuration
+    #endif
+#endif
+
+/**
+ * @brief Only downsample one channel per I2S frame.
+ *
+ * Default: 0 i.e. mono mode is disabled, all channels will be downsampled.
+ */
+#ifndef I2S_DOWNSAMPLE_MONO
+#define I2S_DOWNSAMPLE_MONO (0)
+#endif
+
+/**
+ * @brief Number of incoming (device to host) I2S channels to downsample.
+ *
+ * Default: The number of I2S incoming channels, or half this if mono downsampling is enabled.
+ */
+#if (I2S_DOWNSAMPLE_MONO == 1)
+    #define I2S_DOWNSAMPLE_CHANS (I2S_CHANS_ADC / 2)
+    #if ((I2S_DOWNSAMPLE_FACTOR > 1) && (I2S_MODE_TDM == 1))
+        #error Mono I2S downsampling is not avaliable in TDM mode
+    #endif
+#else
+#define I2S_DOWNSAMPLE_CHANS I2S_CHANS_ADC
+#endif
 
 /**
  * @brief Max supported sample frequency for device (Hz). Default: 192000
@@ -468,14 +503,14 @@
  * @brief Device firmware version number in Binary Coded Decimal format: 0xJJMN where JJ: major, M: minor, N: sub-minor version number.
  */
 #ifndef BCD_DEVICE_J
-#define BCD_DEVICE_J             6
+#define BCD_DEVICE_J             7
 #endif
 
 /**
  * @brief Device firmware version number in Binary Coded Decimal format: 0xJJMN where JJ: major, M: minor, N: sub-minor version number.
  */
 #ifndef BCD_DEVICE_M
-#define BCD_DEVICE_M             19
+#define BCD_DEVICE_M             0
 #endif
 
 /**
@@ -1046,7 +1081,7 @@
 #undef OUT_VOLUME_IN_MIXER
 #else
 #if defined(MIXER)
-// Enabled by default
+// Disabled by default
 //#define OUT_VOLUME_IN_MIXER
 #endif
 #endif
@@ -1066,7 +1101,7 @@
 #undef IN_VOLUME_IN_MIXER
 #else
 #if defined(MIXER)
-/* Enabled by default */
+/* Disabled by default */
 //#define IN_VOLUME_IN_MIXER
 #endif
 #endif
@@ -1218,7 +1253,11 @@ enum USBEndpointNumber_Out
 #define DFU_VENDOR_ID               VENDOR_ID
 #define DFU_BCD_DEVICE              BCD_DEVICE
 #define DFU_MANUFACTURER_STR_INDEX  offsetof(StringDescTable_t, vendorStr)/sizeof(char *)
+#if (AUDIO_CLASS == 2)
 #define DFU_PRODUCT_STR_INDEX       offsetof(StringDescTable_t, productStr_Audio2)/sizeof(char *)
+#else
+#define DFU_PRODUCT_STR_INDEX       offsetof(StringDescTable_t, productStr_Audio1)/sizeof(char *)
+#endif
 #endif
 
 /* USB test mode support enabled by default (Required for compliance testing) */

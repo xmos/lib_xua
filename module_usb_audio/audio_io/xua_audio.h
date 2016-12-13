@@ -1,10 +1,7 @@
 #ifndef __audio_h__
 #define __audio_h__
 
-//#include "devicedefines.h"
 #include "dfu_interface.h"
-//#include "xua_dsp.h"
-
 
 typedef interface audManage_if
 {
@@ -16,8 +13,6 @@ typedef interface audManage_if
     void transfer_samples(int in_mic_buf[], int in_spk_buf[], int out_mic_buf[], int out_spk_buf[]);
 
 } audManage_if;
-
-
 
 
 /** The audio driver thread.
@@ -46,9 +41,7 @@ void audio(chanend c_in,
 #if (NUM_PDM_MICS > 0)
     , chanend c_pdm_in
 #endif
-//#ifdef RUN_DSP_TASK
     , client audManage_if i_audMan
-//#endif
 );
 
 void SpdifTxWrapper(chanend c_spdif_tx);

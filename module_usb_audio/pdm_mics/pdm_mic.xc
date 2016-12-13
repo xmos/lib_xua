@@ -12,11 +12,12 @@
 #include <string.h>
 #include <xclib.h>
 #include <stdint.h>
+#include <assert.h>
 
 #include "mic_array.h"
 #include "xua_pdm_mic.h"
 
-#define MAX_DECIMATION_FACTOR 12
+#define MAX_DECIMATION_FACTOR (96000/MIN_FREQ)
 
 /* Hardware resources */
 in port p_pdm_clk                = PORT_PDM_CLK;
@@ -35,17 +36,23 @@ mic_array_frame_time_domain mic_audio[2];
 void pdm_buffer(streaming chanend c_ds_output[2], chanend c_audio, client mic_process_if i_mic_process)
 #else
 #pragma unsafe arrays
+[[combinable]]
 void pdm_buffer(streaming chanend c_ds_output[2], chanend c_audio)
 #endif
 {
     unsigned buffer;
-    int output[NUM_PDM_MICS];
     unsigned samplerate;
 
 #ifdef MIC_PROCESSING_USE_INTERFACE
     i_mic_process.init();
 #else
     user_pdm_init();
+#endif
+
+#if NUM_PDM_MICS > 4
+    unsigned decimatorCount = 2;
+#else
+    unsigned decimatorCount = 1;
 #endif
 
     mic_array_decimator_conf_common_t dcc;
@@ -105,20 +112,21 @@ void pdm_buffer(streaming chanend c_ds_output[2], chanend c_audio)
         dc[1].mic_gain_compensation[3]=0;
         dc[1].channel_count = 4;
 
-        mic_array_decimator_configure(c_ds_output, 2, dc);
+        mic_array_decimator_configure(c_ds_output, decimatorCount, dc);
 
-        mic_array_init_time_domain_frame(c_ds_output, 2, buffer, mic_audio, dc);
+        mic_array_init_time_domain_frame(c_ds_output, decimatorCount, buffer, mic_audio, dc);
 
         /* Grab a first frame of mic data */
         /* Note, loop is unrolled once - allows for while(1) select {} and thus combinable */
-        current = mic_array_get_next_time_domain_frame(c_ds_output, 2, buffer, mic_audio, dc);
+        current = mic_array_get_next_time_domain_frame(c_ds_output, decimatorCount, buffer, mic_audio, dc);
     }
 
     /* Run user code */
+    /* TODO ideally processing done inplace - it then doesn't matter if it is run or not */
 #ifdef MIC_PROCESSING_USE_INTERFACE
-    i_mic_process.transfer_buffers(current, output);
+    i_mic_process.transfer_buffers(current);
 #else
-    user_pdm_process(current, output);
+    user_pdm_process(current);
 #endif
     int req;
     while(1)
@@ -135,18 +143,18 @@ void pdm_buffer(streaming chanend c_ds_output[2], chanend c_audio)
 #pragma loop unroll
                         for(int i = 0; i < NUM_PDM_MICS; i++)
                         {
-                            c_audio <: output[i];
+                            c_audio <: current->data[i][0];
                         }
                     }
 
                     /* Get a new frame of mic data */
-                    mic_array_frame_time_domain * unsafe current = mic_array_get_next_time_domain_frame(c_ds_output, 2, buffer, mic_audio, dc);
+                    mic_array_frame_time_domain * unsafe current = mic_array_get_next_time_domain_frame(c_ds_output, decimatorCount, buffer, mic_audio, dc);
 
                     /* Run user code */
 #ifdef MIC_PROCESSING_USE_INTERFACE
-                    i_mic_process.transfer_buffers(current, output);
+                    i_mic_process.transfer_buffers(current);
 #else
-                    user_pdm_process(current, output);
+                    user_pdm_process(current);
 #endif
                 }
                 else
@@ -159,17 +167,17 @@ void pdm_buffer(streaming chanend c_ds_output[2], chanend c_audio)
                     dcc.output_decimation_factor = decimationfactor;
                     dcc.coefs=fir_coefs[decimationfactor/2];
                     dcc.fir_gain_compensation = fir_gain_compen[decimationfactor/2];
-                    mic_array_decimator_configure(c_ds_output, 2, dc);
-                    mic_array_init_time_domain_frame(c_ds_output, 2, buffer, mic_audio, dc);
+                    mic_array_decimator_configure(c_ds_output, decimatorCount, dc);
+                    mic_array_init_time_domain_frame(c_ds_output, decimatorCount, buffer, mic_audio, dc);
 
                     /* Get a new mic data frame */
-                    mic_array_frame_time_domain * unsafe current = mic_array_get_next_time_domain_frame(c_ds_output, 2, buffer, mic_audio, dc);
+                    mic_array_frame_time_domain * unsafe current = mic_array_get_next_time_domain_frame(c_ds_output, decimatorCount, buffer, mic_audio, dc);
 
                     /* Run user code */
 #ifdef MIC_PROCESSING_USE_INTERFACE
-                    i_mic_process.transfer_buffers(current, output);
+                    i_mic_process.transfer_buffers(current);
 #else
-                    user_pdm_process(current, output);
+                    user_pdm_process(current);
 #endif
                 }
                 break;
@@ -183,10 +191,23 @@ void pdm_buffer(streaming chanend c_ds_output[2], chanend c_audio)
 
 void pdm_mic(streaming chanend c_ds_output[2])
 {
-    streaming chan c_4x_pdm_mic_0, c_4x_pdm_mic_1;
+    streaming chan c_4x_pdm_mic_0;
+#if (NUM_PDM_MICS > 4)
+    streaming chan c_4x_pdm_mic_1;
+#else
+    #define c_4x_pdm_mic_1 null
+#endif
 
-    /* Note, this divide should be based on master clock freq */
-    configure_clock_src_divide(pdmclk, p_mclk, 2);
+    /* Mics expect a clock in the 3Mhz range, calculate the divide based on mclk */
+    /* e.g. For a 48kHz range mclk we expect a 3072000Hz mic clock */
+    /* e.g. For a 44.1kHz range mclk we expect a 2822400Hz mic clock */
+
+    /* Note, codebase currently does not handle a different divide for each clock */
+    assert((MCLK_48 / 3072000) == (MCLK_441 / 2822400));
+       
+    unsigned micDiv = MCLK_48/3072000;
+    
+    configure_clock_src_divide(pdmclk, p_mclk, micDiv/2);
     configure_port_clock_output(p_pdm_clk, pdmclk);
     configure_in_port(p_pdm_mics, pdmclk);
     start_clock(pdmclk);
@@ -195,7 +216,9 @@ void pdm_mic(streaming chanend c_ds_output[2])
     {
         mic_array_pdm_rx(p_pdm_mics, c_4x_pdm_mic_0, c_4x_pdm_mic_1);
         mic_array_decimate_to_pcm_4ch(c_4x_pdm_mic_0, c_ds_output[0], MIC_ARRAY_NO_INTERNAL_CHANS);
+#if (NUM_PDM_MICS > 4)
         mic_array_decimate_to_pcm_4ch(c_4x_pdm_mic_1, c_ds_output[1], MIC_ARRAY_NO_INTERNAL_CHANS);
+#endif
     }
 }
 #endif
