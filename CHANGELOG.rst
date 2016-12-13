@@ -3,6 +3,13 @@ sc_usb_audio Change Log
 
 7.0.0
 ------
+    - ADDED:      I2S down-sampling (I2S_DOWNSAMPLE_FACTOR)
+    - CHANGE:     Various memory optimisations when MAX_FREQ = MIN_FREQ
+    - CHANGE:     Memory optimisations in audio buffering
+    - CHANGE:     Various memory optimisations in UAC1 mode
+    - CHANGE:     user_pdm_process() API change
+    - CHANGE:     PDM Mic decimator table now related to MIN_FREQ (memory optimisation)
+    - RESOLVED:   Audio request interrupt handler properly elminated 
 
 6.30.0
 ------
