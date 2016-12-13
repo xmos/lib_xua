@@ -16,25 +16,7 @@ MODULE_DIRS = src
 
 SOURCE_DIRS += $(MODULE_DIRS) 
 INCLUDE_DIRS += $(MODULE_DIRS)
-
-# You can change the flags of a set of files using the SET_XCC_[lang]_FLAGS
-# functions. The first argument is a list of directories and the
-# second argument is the value to set the compile flags to. e.g.
-#
-# $(call SET_XCC_C_FLAGS, mydir1 mydir2, $(XCC_FLAGS) -g -O3)
-
-$(call SET_XCC_C_FLAGS, $(MODULE_DIRS) $(XCC_FLAGS) -g -O3)
-$(call SET_XCC_XC_FLAGS, $(MODULE_DIRS), $(XCC_FLAGS) -fsubword-select -g -O3)
-
-# You can change the flags of an individual file by setting the 
-# XCC_FLAGS_[filename] variable. e.g.
-#
-# XCC_FLAGS_myfile.xc = $(XCC_FLAGS) -fsubword-select
+MODULE_XCC_FLAGS = -Os -mno-dual-issue $(XCC_FLAGS)
+MODULE_C_FLAGS = -Os -mno-dual-issue $(XCC_FLAGS)
 
 
-# You can exclude particular files from the build even if they occur
-# within SOURCE_DIRS by adding the file name (with no path) to the 
-# EXCLUDE_FILES variable e..g
-#
-# EXCLUDE_FILES += myfile.xc
-#
