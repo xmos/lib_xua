@@ -2255,7 +2255,7 @@ const unsigned num_freqs_a1 = MAX(3, (0
 #endif
 ));
 
-#ifdef XVSM
+#ifdef USB_CONTROL_DESCS
 #define CONTROL_INTERFACE_BYTES 9
 #define NUM_CONTROL_INTERFACES 1
 #else
@@ -2712,7 +2712,7 @@ unsigned char cfgDesc_Audio1[] =
     0x00, 0x00,                           /* Unused */
 #endif
 
-#ifdef XVSM
+#ifdef USB_CONTROL_DESCS
     /* Standard DFU class Interface descriptor */
     0x09,                                 /* 0 bLength : Size of this descriptor, in bytes. (field size 1 bytes) */
     0x04,                                 /* 1 bDescriptorType : INTERFACE descriptor. (field size 1 bytes) */
