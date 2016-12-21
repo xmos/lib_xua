@@ -1383,21 +1383,22 @@ enum USBEndpointNumber_Out
 #ifndef MAX_FREQ_FS
 #if (NUM_USB_CHAN_OUT_FS > 0) && (NUM_USB_CHAN_IN_FS > 0)
     #if(MAX_FREQ > 48000)
-        #define MAX_FREQ_FS              48000
+        #define MAX_FREQ_FS             48000
     #else
-        #define MAX_FREQ_FS              MAX_FREQ
+        #define MAX_FREQ_FS             MAX_FREQ
     #endif
 #else
     #if (MAX_FREQ > 96000)
-        #define MAX_FREQ_FS              96000
+        #define MAX_FREQ_FS             96000
     #else
-        #define MAX_FREQ_FS              MAX_FREQ
+        #define MAX_FREQ_FS             MAX_FREQ
     #endif
 #endif
 #endif
 
-#define MIN_FREQ_FS              MIN_FREQ
-
+#ifndef MIN_FREQ_FS
+#define MIN_FREQ_FS                     MIN_FREQ
+#endif
 
 
 /* Setup DEFAULT_MCLK_FREQ based on MCLK_ and DEFAULT_FREQ defines */
