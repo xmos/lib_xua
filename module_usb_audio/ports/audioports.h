@@ -70,8 +70,8 @@ void ConfigAudioPortsWrapper(
                 buffered out port:32 ?p_lrclk,
                 buffered out port:32 p_bclk,
 #else
-                in port ?p_lrclk,
-                in port p_bclk,
+                buffered in port:32 ?p_lrclk,
+                buffered in port:32 p_bclk,
 #endif
 #endif
                 unsigned int divide, unsigned curSamFreq, unsigned int dsdMode);

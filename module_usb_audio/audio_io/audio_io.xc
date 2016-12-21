@@ -101,8 +101,8 @@ extern buffered in port:32  p_i2s_adc[I2S_WIRES_ADC];
 extern buffered out port:32 p_lrclk;
 extern buffered out port:32 p_bclk;
 #else
-extern in port p_lrclk;
-extern in port p_bclk;
+extern buffered in port:32 p_lrclk;
+extern buffered in port:32 p_bclk;
 #endif
 
 unsigned dsdMode = DSD_MODE_OFF;

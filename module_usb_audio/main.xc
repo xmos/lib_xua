@@ -116,8 +116,8 @@ on tile[AUDIO_IO_TILE] : buffered in port:32 p_i2s_adc[I2S_WIRES_ADC] =
 on tile[AUDIO_IO_TILE] : buffered out port:32 p_lrclk       = PORT_I2S_LRCLK;
 on tile[AUDIO_IO_TILE] : buffered out port:32 p_bclk        = PORT_I2S_BCLK;
 #else
-on tile[AUDIO_IO_TILE] : in port p_lrclk                    = PORT_I2S_LRCLK;
-on tile[AUDIO_IO_TILE] : in port p_bclk                     = PORT_I2S_BCLK;
+on tile[AUDIO_IO_TILE] : buffered in port:32 p_lrclk        = PORT_I2S_LRCLK;
+on tile[AUDIO_IO_TILE] : buffered in port:32 p_bclk         = PORT_I2S_BCLK;
 #endif
 
 on tile[AUDIO_IO_TILE] : port p_mclk_in                     = PORT_MCLK_IN;
