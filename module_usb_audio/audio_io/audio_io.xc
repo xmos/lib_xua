@@ -64,9 +64,9 @@ static union ds3Data
 {
     long long doubleWordAlignmentEnsured;
     /* [Number of I2S channels][Number of samples/phases][Taps per phase] */
-    int32_t delayLine[I2S_DOWNSAMPLE_CHANS][I2S_DOWNSAMPLE_FACTOR_IN][24];
+    int32_t delayLine[I2S_DOWNSAMPLE_CHANS_IN][I2S_DOWNSAMPLE_FACTOR_IN][24];
 } ds3Data;
-static int64_t ds3Sum[I2S_DOWNSAMPLE_CHANS];
+static int64_t ds3Sum[I2S_DOWNSAMPLE_CHANS_IN];
 #endif
 
 #if (DSD_CHANS_DAC != 0)
