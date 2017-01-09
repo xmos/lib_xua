@@ -64,7 +64,7 @@ static union ds3Data
 {
     long long doubleWordAlignmentEnsured;
     /* [Number of I2S channels][Number of samples/phases][Taps per phase] */
-    int32_t delayLine[I2S_DOWNSAMPLE_CHANS_IN][I2S_DOWNSAMPLE_FACTOR_IN][24];
+    int32_t inputDelayLine[I2S_DOWNSAMPLE_CHANS_IN][I2S_DOWNSAMPLE_FACTOR_IN][24];
 } ds3Data;
 static int64_t ds3Sum[I2S_DOWNSAMPLE_CHANS_IN];
 #endif
@@ -502,7 +502,7 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
 #endif
 
 #if (I2S_DOWNSAMPLE_FACTOR_IN > 1)
-    memset(&ds3Data.delayLine, 0, sizeof ds3Data);
+    memset(&ds3Data.inputDelayLine, 0, sizeof ds3Data);
 #endif
 
     unsigned command = DoSampleTransfer(c_out, readBuffNo, underflowWord, i_audMan);
@@ -689,7 +689,7 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
                         samplesIn[readBuffNo][((frameCount-2)&(I2S_CHANS_PER_FRAME-1))] =
                             src_ds3_voice_add_final_sample(
                                 ds3Sum[((frameCount-2)&(I2S_CHANS_PER_FRAME-1))+i],
-                                ds3Data.delayLine[((frameCount-2)&(I2S_CHANS_PER_FRAME-1))+i][inDownsamplingCounter],
+                                ds3Data.inputDelayLine[((frameCount-2)&(I2S_CHANS_PER_FRAME-1))+i][inDownsamplingCounter],
                                 src_ff3v_ds3_voice_coefs[inDownsamplingCounter],
                                 samplesIn[readBuffNo][((frameCount-2)&(I2S_CHANS_PER_FRAME-1))]);
                     }
@@ -698,7 +698,7 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
                         ds3Sum[((frameCount-2)&(I2S_CHANS_PER_FRAME-1))+i] =
                             src_ds3_voice_add_sample(
                             ds3Sum[((frameCount-2)&(I2S_CHANS_PER_FRAME-1))+i],
-                            ds3Data.delayLine[((frameCount-2)&(I2S_CHANS_PER_FRAME-1))+i][inDownsamplingCounter],
+                            ds3Data.inputDelayLine[((frameCount-2)&(I2S_CHANS_PER_FRAME-1))+i][inDownsamplingCounter],
                             src_ff3v_ds3_voice_coefs[inDownsamplingCounter],
                             samplesIn[readBuffNo][((frameCount-2)&(I2S_CHANS_PER_FRAME-1))]);
                     }
@@ -825,7 +825,7 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
                         samplesIn[buffIndex][((frameCount-1)&(I2S_CHANS_PER_FRAME-1))+i] =
                             src_ds3_voice_add_final_sample(
                                 ds3Sum[((frameCount-1)&(I2S_CHANS_PER_FRAME-1))+i],
-                                ds3Data.delayLine[((frameCount-1)&(I2S_CHANS_PER_FRAME-1))+i][inDownsamplingCounter],
+                                ds3Data.inputDelayLine[((frameCount-1)&(I2S_CHANS_PER_FRAME-1))+i][inDownsamplingCounter],
                                 src_ff3v_ds3_voice_coefs[inDownsamplingCounter],
                                 samplesIn[readBuffNo][((frameCount-1)&(I2S_CHANS_PER_FRAME-1))+i]);
                     }
@@ -834,7 +834,7 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
                         ds3Sum[((frameCount-2)&(I2S_CHANS_PER_FRAME-1))+i] =
                             src_ds3_voice_add_sample(
                             ds3Sum[((frameCount-1)&(I2S_CHANS_PER_FRAME-1))+i],
-                            ds3Data.delayLine[((frameCount-1)&(I2S_CHANS_PER_FRAME-1))+i][inDownsamplingCounter],
+                            ds3Data.inputDelayLine[((frameCount-1)&(I2S_CHANS_PER_FRAME-1))+i][inDownsamplingCounter],
                             src_ff3v_ds3_voice_coefs[inDownsamplingCounter],
                             samplesIn[readBuffNo][((frameCount-1)&(I2S_CHANS_PER_FRAME-1))+i]);
                     }
