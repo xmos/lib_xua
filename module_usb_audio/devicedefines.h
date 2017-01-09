@@ -126,11 +126,11 @@
  *
  * Default: 1 i.e. downsampling is disabled.
  */
-#ifndef I2S_DOWNSAMPLE_FACTOR
-#define I2S_DOWNSAMPLE_FACTOR (1)
+#ifndef I2S_DOWNSAMPLE_FACTOR_IN
+#define I2S_DOWNSAMPLE_FACTOR_IN (1)
 #else
-    #if (I2S_DOWNSAMPLE_FACTOR != 3) && (I2S_DOWNSAMPLE_FACTOR != 1)
-        #error Unsupported I2S downsampling configuration
+    #if (I2S_DOWNSAMPLE_FACTOR_IN != 3) && (I2S_DOWNSAMPLE_FACTOR_IN != 1)
+        #error Unsupported I2S input downsampling configuration
     #endif
 #endif
 
@@ -150,8 +150,8 @@
  */
 #if (I2S_DOWNSAMPLE_MONO_IN == 1)
     #define I2S_DOWNSAMPLE_CHANS (I2S_CHANS_ADC / 2)
-    #if ((I2S_DOWNSAMPLE_FACTOR > 1) && (I2S_MODE_TDM == 1))
-        #error Mono I2S downsampling is not avaliable in TDM mode
+    #if ((I2S_DOWNSAMPLE_FACTOR_IN > 1) && (I2S_MODE_TDM == 1))
+        #error Mono I2S input downsampling is not avaliable in TDM mode
     #endif
 #else
 #define I2S_DOWNSAMPLE_CHANS I2S_CHANS_ADC
