@@ -135,12 +135,12 @@
 #endif
 
 /**
- * @brief Only downsample one channel per I2S frame.
+ * @brief Only downsample one channel per input I2S frame.
  *
- * Default: 0 i.e. mono mode is disabled, all channels will be downsampled.
+ * Default: 0 i.e. mono mode is disabled, all input channels will be downsampled.
  */
-#ifndef I2S_DOWNSAMPLE_MONO
-#define I2S_DOWNSAMPLE_MONO (0)
+#ifndef I2S_DOWNSAMPLE_MONO_IN
+#define I2S_DOWNSAMPLE_MONO_IN (0)
 #endif
 
 /**
@@ -148,7 +148,7 @@
  *
  * Default: The number of I2S incoming channels, or half this if mono downsampling is enabled.
  */
-#if (I2S_DOWNSAMPLE_MONO == 1)
+#if (I2S_DOWNSAMPLE_MONO_IN == 1)
     #define I2S_DOWNSAMPLE_CHANS (I2S_CHANS_ADC / 2)
     #if ((I2S_DOWNSAMPLE_FACTOR > 1) && (I2S_MODE_TDM == 1))
         #error Mono I2S downsampling is not avaliable in TDM mode

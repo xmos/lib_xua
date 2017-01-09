@@ -819,7 +819,7 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
 #endif // CODEC_MASTER
 
                     samplesIn[buffIndex][((frameCount-1)&(I2S_CHANS_PER_FRAME-1))+i] = bitrev(sample); // channels 1, 3, 5.. on each line.
-#if ((I2S_DOWNSAMPLE_FACTOR > 1) && !I2S_DOWNSAMPLE_MONO)
+#if ((I2S_DOWNSAMPLE_FACTOR > 1) && !I2S_DOWNSAMPLE_MONO_IN)
                     if ((I2S_DOWNSAMPLE_FACTOR - 1) == downsamplingCounter)
                     {
                         samplesIn[buffIndex][((frameCount-1)&(I2S_CHANS_PER_FRAME-1))+i] =
@@ -838,7 +838,7 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
                             src_ff3v_ds3_voice_coefs[downsamplingCounter],
                             samplesIn[readBuffNo][((frameCount-1)&(I2S_CHANS_PER_FRAME-1))+i]);
                     }
-#endif // ((I2S_DOWNSAMPLE_FACTOR > 1) && !I2S_DOWNSAMPLE_MONO)
+#endif // ((I2S_DOWNSAMPLE_FACTOR > 1) && !I2S_DOWNSAMPLE_MONO_IN)
 
                 }
 #endif
