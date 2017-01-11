@@ -135,6 +135,19 @@
 #endif
 
 /**
+ * @brief Output I2S (host to device) channels can be downsampled by a factor of 3.
+ *
+ * Default: 1 i.e. downsampling is disabled.
+ */
+#ifndef I2S_DOWNSAMPLE_FACTOR_OUT
+#define I2S_DOWNSAMPLE_FACTOR_OUT (1)
+#else
+    #if (I2S_DOWNSAMPLE_FACTOR_OUT != 3) && (I2S_DOWNSAMPLE_FACTOR_OUT != 1)
+        #error Unsupported I2S output downsampling configuration
+    #endif
+#endif
+
+/**
  * @brief Only downsample one channel per input I2S frame.
  *
  * Default: 0 i.e. mono mode is disabled, all input channels will be downsampled.
@@ -156,6 +169,13 @@
 #else
 #define I2S_DOWNSAMPLE_CHANS_IN I2S_CHANS_ADC
 #endif
+
+/**
+ * @brief Number of output (host to device) I2S channels to downsample.
+ *
+ * Default: The number of I2S output channels.
+ */
+#define I2S_DOWNSAMPLE_CHANS_OUT I2S_CHANS_ADC
 
 /**
  * @brief Max supported sample frequency for device (Hz). Default: 192000
