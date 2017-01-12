@@ -138,15 +138,7 @@ void pdm_buffer(streaming chanend c_ds_output[2], chanend c_audio)
                 /* Audio IO core requests samples */
                 if(req)
                 unsafe{
-                    slave
-                    {
-#pragma loop unroll
-                        for(int i = 0; i < NUM_PDM_MICS; i++)
-                        {
-                            c_audio <: current->data[i][0];
-                        }
-                    }
-
+                    
                     /* Get a new frame of mic data */
                     mic_array_frame_time_domain * unsafe current = mic_array_get_next_time_domain_frame(c_ds_output, decimatorCount, buffer, mic_audio, dc);
 
@@ -156,6 +148,14 @@ void pdm_buffer(streaming chanend c_ds_output[2], chanend c_audio)
 #else
                     user_pdm_process(current);
 #endif
+                    slave
+                    {
+#pragma loop unroll
+                        for(int i = 0; i < NUM_PDM_MICS; i++)
+                        {
+                            c_audio <: current->data[i][0];
+                        }
+                    }
                 }
                 else
                 unsafe{
