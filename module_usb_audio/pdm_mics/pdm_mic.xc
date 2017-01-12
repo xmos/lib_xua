@@ -42,6 +42,7 @@ void pdm_buffer(streaming chanend c_ds_output[2], chanend c_audio)
 {
     unsigned buffer;
     unsigned samplerate;
+    int output[NUM_PDM_MICS];
 
 #ifdef MIC_PROCESSING_USE_INTERFACE
     i_mic_process.init();
@@ -138,7 +139,17 @@ void pdm_buffer(streaming chanend c_ds_output[2], chanend c_audio)
                 /* Audio IO core requests samples */
                 if(req)
                 unsafe{
-                    
+
+                    slave   
+                    {
+                        /* We store an additional buffer so we can reply immediately */                    
+#pragma loop unroll
+                        for(int i = 0; i < NUM_PDM_MICS; i++)
+                        {
+                            c_audio <: output[i];
+                        }
+                    }
+
                     /* Get a new frame of mic data */
                     mic_array_frame_time_domain * unsafe current = mic_array_get_next_time_domain_frame(c_ds_output, decimatorCount, buffer, mic_audio, dc);
 
@@ -148,13 +159,11 @@ void pdm_buffer(streaming chanend c_ds_output[2], chanend c_audio)
 #else
                     user_pdm_process(current);
 #endif
-                    slave
-                    {
+                    /* Buffer up next mic data */
 #pragma loop unroll
-                        for(int i = 0; i < NUM_PDM_MICS; i++)
-                        {
-                            c_audio <: current->data[i][0];
-                        }
+                    for(int i = 0; i < NUM_PDM_MICS; i++)
+                    {
+                        output[i] = current->data[i][0];
                     }
                 }
                 else
@@ -179,6 +188,11 @@ void pdm_buffer(streaming chanend c_ds_output[2], chanend c_audio)
 #else
                     user_pdm_process(current);
 #endif
+#pragma loop unroll
+                    for(int i = 0; i < NUM_PDM_MICS; i++)
+                    {
+                        output[i] = current->data[i][0];
+                    }
                 }
                 break;
         } /* select */
