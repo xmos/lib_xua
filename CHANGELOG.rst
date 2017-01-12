@@ -1,6 +1,10 @@
 sc_usb_audio Change Log
 =======================
 
+7.0.1
+-----
+    - RESOLVED:   PDM microphone decimation issue at some samplerates caused by integration 
+
 7.0.0
 ------
     - ADDED:      I2S down-sampling (I2S_DOWNSAMPLE_FACTOR)
@@ -14,8 +18,8 @@ sc_usb_audio Change Log
 
 6.30.0
 ------
-    - RESOLVED:   Number of PDM microphone channels configured now based on
-    NUM_PDM_MICS define (previously hard-coded)
+    - RESOLVED:   Number of PDM microphone channels configured now based on NUM_PDM_MICS define
+                  (previously hard-coded)
     - RESOLVED:   PDM microphone clock divide now based MCLK defines (previously hard-coded)
     - CHANGE:     Second microphone decimation core only run if NUM_PDM_MICS > 4
 
