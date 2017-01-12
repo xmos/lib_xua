@@ -101,8 +101,8 @@ extern buffered in port:32  p_i2s_adc[I2S_WIRES_ADC];
 extern buffered out port:32 p_lrclk;
 extern buffered out port:32 p_bclk;
 #else
-extern in port p_lrclk;
-extern in port p_bclk;
+extern buffered in port:32 p_lrclk;
+extern buffered in port:32 p_bclk;
 #endif
 
 unsigned dsdMode = DSD_MODE_OFF;
@@ -472,6 +472,10 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
     int started = 0;
 #endif
 
+#ifdef CODEC_MASTER
+    int firstIteration = 1;
+#endif
+
 #if (DSD_CHANS_DAC != 0)
     unsigned dsdMarker = DSD_MARKER_2;    /* This alternates between DSD_MARKER_1 and DSD_MARKER_2 */
     int dsdCount = 0;
@@ -519,390 +523,431 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
 
     InitPorts(divide);
 
-    /* TODO In master mode, the i/o loop assumes L/RCLK = 32bit clocks.  We should check this every interation
-     * and resync if we got a bclk glitch */
-
     /* Main Audio I/O loop */
     while (1)
     {
-#if (DSD_CHANS_DAC != 0) && (NUM_USB_CHAN_OUT > 0)
-        if(dsdMode == DSD_MODE_NATIVE)
+#ifdef CODEC_MASTER
+        /* In CODEC master mode, the I/O loop assumes L/RCLK = 32bit clocks.
+         * Check this every iteration and resync if we get a bclk glitch.
+         */
+        int syncError = 0;
+
+        if (!firstIteration)
         {
-            /* 8 bits per chan, 1st 1-bit sample in MSB */
-            dsdSample_l =  samplesOut[0];
-            dsdSample_r =  samplesOut[1];
-            dsdSample_r = bitrev(byterev(dsdSample_r));
-            dsdSample_l = bitrev(byterev(dsdSample_l));
-
-            /* Output DSD data to ports then 32 clocks */
-            switch (divide)
-            {
-                case 4:
-                    asm volatile("out res[%0], %1"::"r"(p_dsd_dac[0]),"r"(dsdSample_l));
-                    asm volatile("out res[%0], %1"::"r"(p_dsd_dac[1]),"r"(dsdSample_r));
-                    p_dsd_clk <: 0xCCCCCCCC;
-                    p_dsd_clk <: 0xCCCCCCCC;
-                    p_dsd_clk <: 0xCCCCCCCC;
-                    p_dsd_clk <: 0xCCCCCCCC;
-                    break;
-
-                case 2:
-                    asm volatile("out res[%0], %1"::"r"(p_dsd_dac[0]),"r"(dsdSample_l));
-                    asm volatile("out res[%0], %1"::"r"(p_dsd_dac[1]),"r"(dsdSample_r));
-                    p_dsd_clk <: 0xAAAAAAAA;
-                    p_dsd_clk <: 0xAAAAAAAA;
-                    break;
-
-                default:
-                    /* Do some clocks anyway - this will stop us interrupting decouple too much */
-                    asm volatile("out res[%0], %1"::"r"(p_dsd_dac[0]),"r"(dsdSample_l));
-                    asm volatile("out res[%0], %1"::"r"(p_dsd_dac[1]),"r"(dsdSample_r));
-                    p_dsd_clk <: 0xF0F0F0F0;
-                    p_dsd_clk <: 0xF0F0F0F0;
-                    p_dsd_clk <: 0xF0F0F0F0;
-                    p_dsd_clk <: 0xF0F0F0F0;
-                    p_dsd_clk <: 0xF0F0F0F0;
-                    p_dsd_clk <: 0xF0F0F0F0;
-                    p_dsd_clk <: 0xF0F0F0F0;
-                    p_dsd_clk <: 0xF0F0F0F0;
-                    break;
-            }
-
-        }
-        else if(dsdMode == DSD_MODE_DOP)
-        {
-        if(!everyOther)
-            {
-                dsdSample_l = ((samplesOut[0] & 0xffff00) << 8);
-                dsdSample_r = ((samplesOut[1] & 0xffff00) << 8);
-
-                everyOther = 1;
-
-                switch (divide)
-                {
-                    case 8:
-                    p_dsd_clk <: 0xF0F0F0F0;
-                    p_dsd_clk <: 0xF0F0F0F0;
-                    p_dsd_clk <: 0xF0F0F0F0;
-                    p_dsd_clk <: 0xF0F0F0F0;
-                    break;
-
-                    case 4:
-                    p_dsd_clk <: 0xCCCCCCCC;
-                    p_dsd_clk <: 0xCCCCCCCC;
-                    break;
-
-                    case 2:
-                    p_dsd_clk <: 0xAAAAAAAA;
-                    break;
-                }
-            }
-            else // everyOther
-            {
-                everyOther = 0;
-                dsdSample_l =  dsdSample_l | ((samplesOut[0] & 0xffff00) >> 8);
-                dsdSample_r =  dsdSample_r | ((samplesOut[1] & 0xffff00) >> 8);
-
-                // Output 16 clocks DSD to all
-                //p_dsd_dac[0] <: bitrev(dsdSample_l);
-                //p_dsd_dac[1] <: bitrev(dsdSample_r);
-                asm volatile("out res[%0], %1"::"r"(p_dsd_dac[0]),"r"(bitrev(dsdSample_l)));
-                asm volatile("out res[%0], %1"::"r"(p_dsd_dac[1]),"r"(bitrev(dsdSample_r)));
-                switch (divide)
-                {
-                    case 8:
-                    p_dsd_clk <: 0xF0F0F0F0;
-                    p_dsd_clk <: 0xF0F0F0F0;
-                    p_dsd_clk <: 0xF0F0F0F0;
-                    p_dsd_clk <: 0xF0F0F0F0;
-                    break;
-
-                    case 4:
-                    p_dsd_clk <: 0xCCCCCCCC;
-                    p_dsd_clk <: 0xCCCCCCCC;
-                    break;
-
-                    case 2:
-                    p_dsd_clk <: 0xAAAAAAAA;
-                    break;
-                }
-
-            }
+            InitPorts(divide);
         }
         else
-#endif
         {
-#if (I2S_DOWNSAMPLE_FACTOR > 1)
-            if (0 == downsamplingCounter)
+            firstIteration = 0;
+        }
+
+        while (!syncError)
+#endif // CODEC_MASTER
+        {
+#if (DSD_CHANS_DAC != 0) && (NUM_USB_CHAN_OUT > 0)
+            if(dsdMode == DSD_MODE_NATIVE)
             {
-                memset(&ds3Sum, 0, sizeof ds3Sum);
+                /* 8 bits per chan, 1st 1-bit sample in MSB */
+                dsdSample_l =  samplesOut[0];
+                dsdSample_r =  samplesOut[1];
+                dsdSample_r = bitrev(byterev(dsdSample_r));
+                dsdSample_l = bitrev(byterev(dsdSample_l));
+
+                /* Output DSD data to ports then 32 clocks */
+                switch (divide)
+                {
+                    case 4:
+                        asm volatile("out res[%0], %1"::"r"(p_dsd_dac[0]),"r"(dsdSample_l));
+                        asm volatile("out res[%0], %1"::"r"(p_dsd_dac[1]),"r"(dsdSample_r));
+                        p_dsd_clk <: 0xCCCCCCCC;
+                        p_dsd_clk <: 0xCCCCCCCC;
+                        p_dsd_clk <: 0xCCCCCCCC;
+                        p_dsd_clk <: 0xCCCCCCCC;
+                        break;
+
+                    case 2:
+                        asm volatile("out res[%0], %1"::"r"(p_dsd_dac[0]),"r"(dsdSample_l));
+                        asm volatile("out res[%0], %1"::"r"(p_dsd_dac[1]),"r"(dsdSample_r));
+                        p_dsd_clk <: 0xAAAAAAAA;
+                        p_dsd_clk <: 0xAAAAAAAA;
+                        break;
+
+                    default:
+                        /* Do some clocks anyway - this will stop us interrupting decouple too much */
+                        asm volatile("out res[%0], %1"::"r"(p_dsd_dac[0]),"r"(dsdSample_l));
+                        asm volatile("out res[%0], %1"::"r"(p_dsd_dac[1]),"r"(dsdSample_r));
+                        p_dsd_clk <: 0xF0F0F0F0;
+                        p_dsd_clk <: 0xF0F0F0F0;
+                        p_dsd_clk <: 0xF0F0F0F0;
+                        p_dsd_clk <: 0xF0F0F0F0;
+                        p_dsd_clk <: 0xF0F0F0F0;
+                        p_dsd_clk <: 0xF0F0F0F0;
+                        p_dsd_clk <: 0xF0F0F0F0;
+                        p_dsd_clk <: 0xF0F0F0F0;
+                        break;
+                }
+
             }
+            else if(dsdMode == DSD_MODE_DOP)
+            {
+            if(!everyOther)
+                {
+                    dsdSample_l = ((samplesOut[0] & 0xffff00) << 8);
+                    dsdSample_r = ((samplesOut[1] & 0xffff00) << 8);
+
+                    everyOther = 1;
+
+                    switch (divide)
+                    {
+                        case 8:
+                        p_dsd_clk <: 0xF0F0F0F0;
+                        p_dsd_clk <: 0xF0F0F0F0;
+                        p_dsd_clk <: 0xF0F0F0F0;
+                        p_dsd_clk <: 0xF0F0F0F0;
+                        break;
+
+                        case 4:
+                        p_dsd_clk <: 0xCCCCCCCC;
+                        p_dsd_clk <: 0xCCCCCCCC;
+                        break;
+
+                        case 2:
+                        p_dsd_clk <: 0xAAAAAAAA;
+                        break;
+                    }
+                }
+                else // everyOther
+                {
+                    everyOther = 0;
+                    dsdSample_l =  dsdSample_l | ((samplesOut[0] & 0xffff00) >> 8);
+                    dsdSample_r =  dsdSample_r | ((samplesOut[1] & 0xffff00) >> 8);
+
+                    // Output 16 clocks DSD to all
+                    //p_dsd_dac[0] <: bitrev(dsdSample_l);
+                    //p_dsd_dac[1] <: bitrev(dsdSample_r);
+                    asm volatile("out res[%0], %1"::"r"(p_dsd_dac[0]),"r"(bitrev(dsdSample_l)));
+                    asm volatile("out res[%0], %1"::"r"(p_dsd_dac[1]),"r"(bitrev(dsdSample_r)));
+                    switch (divide)
+                    {
+                        case 8:
+                        p_dsd_clk <: 0xF0F0F0F0;
+                        p_dsd_clk <: 0xF0F0F0F0;
+                        p_dsd_clk <: 0xF0F0F0F0;
+                        p_dsd_clk <: 0xF0F0F0F0;
+                        break;
+
+                        case 4:
+                        p_dsd_clk <: 0xCCCCCCCC;
+                        p_dsd_clk <: 0xCCCCCCCC;
+                        break;
+
+                        case 2:
+                        p_dsd_clk <: 0xAAAAAAAA;
+                        break;
+                    }
+
+                }
+            }
+            else
+#endif
+            {
+#if (I2S_DOWNSAMPLE_FACTOR > 1)
+                if (0 == downsamplingCounter)
+                {
+                    memset(&ds3Sum, 0, sizeof ds3Sum);
+                }
 #endif
 #if (I2S_CHANS_ADC != 0)
-            /* Input previous L sample into L in buffer */
-            index = 0;
-            /* First input (i.e. frameCount == 0) we read last ADC channel of previous frame.. */
-            unsigned buffIndex = (frameCount > 1) ? !readBuffNo : readBuffNo;
+                /* Input previous L sample into L in buffer */
+                index = 0;
+                /* First input (i.e. frameCount == 0) we read last ADC channel of previous frame.. */
+                unsigned buffIndex = (frameCount > 1) ? !readBuffNo : readBuffNo;
 
 #pragma loop unroll
-            /* First time around we get channel 7 of TDM8 */
-            for(int i = 0; i < I2S_CHANS_ADC; i+=I2S_CHANS_PER_FRAME)
-            {
-                // p_i2s_adc[index++] :> sample;
-                // Manual IN instruction since compiler generates an extra setc per IN (bug #15256)
-                unsigned sample;
-                asm volatile("in %0, res[%1]" : "=r"(sample)  : "r"(p_i2s_adc[index++]));
-
-                /* Note the use of readBuffNo changes based on frameCount */
-                samplesIn[buffIndex][((frameCount-2)&(I2S_CHANS_PER_FRAME-1))+i] = bitrev(sample); // channels 0, 2, 4.. on each line.
-#if (I2S_DOWNSAMPLE_FACTOR > 1)
-                if ((I2S_DOWNSAMPLE_FACTOR - 1) == downsamplingCounter)
+                /* First time around we get channel 7 of TDM8 */
+                for(int i = 0; i < I2S_CHANS_ADC; i+=I2S_CHANS_PER_FRAME)
                 {
-                    samplesIn[readBuffNo][((frameCount-2)&(I2S_CHANS_PER_FRAME-1))] =
-                        src_ds3_voice_add_final_sample(
+                    // p_i2s_adc[index++] :> sample;
+                    // Manual IN instruction since compiler generates an extra setc per IN (bug #15256)
+                    unsigned sample;
+                    asm volatile("in %0, res[%1]" : "=r"(sample)  : "r"(p_i2s_adc[index++]));
+#ifdef CODEC_MASTER
+                    unsigned lrval;
+                    p_lrclk :> lrval;
+#ifdef I2S_MODE_TDM
+                    syncError += (lrval != 0x00000000);
+#else
+                    syncError += (lrval != 0x80000000);
+#endif // I2S_MODE_TDM
+#endif // CODEC_MASTER
+
+                    /* Note the use of readBuffNo changes based on frameCount */
+                    samplesIn[buffIndex][((frameCount-2)&(I2S_CHANS_PER_FRAME-1))+i] = bitrev(sample); // channels 0, 2, 4.. on each line.
+#if (I2S_DOWNSAMPLE_FACTOR > 1)
+                    if ((I2S_DOWNSAMPLE_FACTOR - 1) == downsamplingCounter)
+                    {
+                        samplesIn[readBuffNo][((frameCount-2)&(I2S_CHANS_PER_FRAME-1))] =
+                            src_ds3_voice_add_final_sample(
+                                ds3Sum[((frameCount-2)&(I2S_CHANS_PER_FRAME-1))+i],
+                                ds3Data.delayLine[((frameCount-2)&(I2S_CHANS_PER_FRAME-1))+i][downsamplingCounter],
+                                src_ff3v_ds3_voice_coefs[downsamplingCounter],
+                                samplesIn[readBuffNo][((frameCount-2)&(I2S_CHANS_PER_FRAME-1))]);
+                    }
+                    else
+                    {
+                        ds3Sum[((frameCount-2)&(I2S_CHANS_PER_FRAME-1))+i] =
+                            src_ds3_voice_add_sample(
                             ds3Sum[((frameCount-2)&(I2S_CHANS_PER_FRAME-1))+i],
                             ds3Data.delayLine[((frameCount-2)&(I2S_CHANS_PER_FRAME-1))+i][downsamplingCounter],
                             src_ff3v_ds3_voice_coefs[downsamplingCounter],
                             samplesIn[readBuffNo][((frameCount-2)&(I2S_CHANS_PER_FRAME-1))]);
-                }
-                else
-                {
-                    ds3Sum[((frameCount-2)&(I2S_CHANS_PER_FRAME-1))+i] =
-                        src_ds3_voice_add_sample(
-                        ds3Sum[((frameCount-2)&(I2S_CHANS_PER_FRAME-1))+i],
-                        ds3Data.delayLine[((frameCount-2)&(I2S_CHANS_PER_FRAME-1))+i][downsamplingCounter],
-                        src_ff3v_ds3_voice_coefs[downsamplingCounter],
-                        samplesIn[readBuffNo][((frameCount-2)&(I2S_CHANS_PER_FRAME-1))]);
-                }
+                    }
 #endif // (I2S_DOWNSAMPLE_FACTOR > 1)
-            }
+                }
 #endif
 
 
 
 
 #ifndef CODEC_MASTER
-            /* LR clock delayed by one clock, This is so MSB is output on the falling edge of BCLK
-             * after the falling edge on which LRCLK was toggled. (see I2S spec) */
-            /* Generate clocks LR Clock low - LEFT */
+                /* LR clock delayed by one clock, This is so MSB is output on the falling edge of BCLK
+                 * after the falling edge on which LRCLK was toggled. (see I2S spec) */
+                /* Generate clocks LR Clock low - LEFT */
 #ifdef I2S_MODE_TDM
-            p_lrclk <: 0x00000000;
+                p_lrclk <: 0x00000000;
 #else
-            p_lrclk <: 0x80000000;
+                p_lrclk <: 0x80000000;
 #endif
 #endif
 
 #pragma xta endpoint "i2s_output_l"
 
 #if (I2S_CHANS_DAC != 0) && (NUM_USB_CHAN_OUT != 0)
-            index = 0;
+                index = 0;
 #pragma loop unroll
-            /* Output "even" channel to DAC (i.e. left) */
-            for(int i = 0; i < I2S_CHANS_DAC; i+=I2S_CHANS_PER_FRAME)
-            {
-                p_i2s_dac[index++] <: bitrev(samplesOut[frameCount +i]);
-            }
+                /* Output "even" channel to DAC (i.e. left) */
+                for(int i = 0; i < I2S_CHANS_DAC; i+=I2S_CHANS_PER_FRAME)
+                {
+                    p_i2s_dac[index++] <: bitrev(samplesOut[frameCount +i]);
+                }
 #endif
 
 #ifndef CODEC_MASTER
-            /* Clock out the LR Clock, the DAC data and Clock in the next sample into ADC */
-            doI2SClocks(divide);
+                /* Clock out the LR Clock, the DAC data and Clock in the next sample into ADC */
+                doI2SClocks(divide);
 #endif
 
 #ifdef ADAT_TX
-             TransferAdatTxSamples(c_adat_out, samplesOut, adatSmuxMode, 1);
+                 TransferAdatTxSamples(c_adat_out, samplesOut, adatSmuxMode, 1);
 #endif
 
-        if(frameCount == 0)
-        {
+            if(frameCount == 0)
+            {
 
 #if defined(SPDIF_RX) || defined(ADAT_RX)
-            /* Sync with clockgen */
-            inuint(c_dig_rx);
+                /* Sync with clockgen */
+                inuint(c_dig_rx);
 
-            /* Note, digi-data we just store in samplesIn[readBuffNo] - we only double buffer the I2S input data */
+                /* Note, digi-data we just store in samplesIn[readBuffNo] - we only double buffer the I2S input data */
 #endif
 #ifdef SPDIF_RX
-            asm("ldw %0, dp[g_digData]"  :"=r"(samplesIn[readBuffNo][SPDIF_RX_INDEX + 0]));
-            asm("ldw %0, dp[g_digData+4]":"=r"(samplesIn[readBuffNo][SPDIF_RX_INDEX + 1]));
+                asm("ldw %0, dp[g_digData]"  :"=r"(samplesIn[readBuffNo][SPDIF_RX_INDEX + 0]));
+                asm("ldw %0, dp[g_digData+4]":"=r"(samplesIn[readBuffNo][SPDIF_RX_INDEX + 1]));
 #endif
 #ifdef ADAT_RX
-            asm("ldw %0, dp[g_digData+8]" :"=r"(samplesIn[readBuffNo][ADAT_RX_INDEX]));
-            asm("ldw %0, dp[g_digData+12]":"=r"(samplesIn[readBuffNo][ADAT_RX_INDEX + 1]));
-            asm("ldw %0, dp[g_digData+16]":"=r"(samplesIn[readBuffNo][ADAT_RX_INDEX + 2]));
-            asm("ldw %0, dp[g_digData+20]":"=r"(samplesIn[readBuffNo][ADAT_RX_INDEX + 3]));
-            asm("ldw %0, dp[g_digData+24]":"=r"(samplesIn[readBuffNo][ADAT_RX_INDEX + 4]));
-            asm("ldw %0, dp[g_digData+28]":"=r"(samplesIn[readBuffNo][ADAT_RX_INDEX + 5]));
-            asm("ldw %0, dp[g_digData+32]":"=r"(samplesIn[readBuffNo][ADAT_RX_INDEX + 6]));
-            asm("ldw %0, dp[g_digData+36]":"=r"(samplesIn[readBuffNo][ADAT_RX_INDEX + 7]));
+                asm("ldw %0, dp[g_digData+8]" :"=r"(samplesIn[readBuffNo][ADAT_RX_INDEX]));
+                asm("ldw %0, dp[g_digData+12]":"=r"(samplesIn[readBuffNo][ADAT_RX_INDEX + 1]));
+                asm("ldw %0, dp[g_digData+16]":"=r"(samplesIn[readBuffNo][ADAT_RX_INDEX + 2]));
+                asm("ldw %0, dp[g_digData+20]":"=r"(samplesIn[readBuffNo][ADAT_RX_INDEX + 3]));
+                asm("ldw %0, dp[g_digData+24]":"=r"(samplesIn[readBuffNo][ADAT_RX_INDEX + 4]));
+                asm("ldw %0, dp[g_digData+28]":"=r"(samplesIn[readBuffNo][ADAT_RX_INDEX + 5]));
+                asm("ldw %0, dp[g_digData+32]":"=r"(samplesIn[readBuffNo][ADAT_RX_INDEX + 6]));
+                asm("ldw %0, dp[g_digData+36]":"=r"(samplesIn[readBuffNo][ADAT_RX_INDEX + 7]));
 #endif
 
 #if defined(SPDIF_RX) || defined(ADAT_RX)
-            /* Request digital data (with prefill) */
-            outuint(c_dig_rx, 0);
+                /* Request digital data (with prefill) */
+                outuint(c_dig_rx, 0);
 #endif
 #if defined(SPDIF_TX) && (NUM_USB_CHAN_OUT > 0)
-            outuint(c_spd_out, samplesOut[SPDIF_TX_INDEX]);  /* Forward sample to S/PDIF Tx thread */
-            unsigned sample = samplesOut[SPDIF_TX_INDEX + 1];
-            outuint(c_spd_out, sample);                      /* Forward sample to S/PDIF Tx thread */
+                outuint(c_spd_out, samplesOut[SPDIF_TX_INDEX]);  /* Forward sample to S/PDIF Tx thread */
+                unsigned sample = samplesOut[SPDIF_TX_INDEX + 1];
+                outuint(c_spd_out, sample);                      /* Forward sample to S/PDIF Tx thread */
 #endif
 
 #if (NUM_PDM_MICS > 0)
-            if ((I2S_DOWNSAMPLE_FACTOR - 1) == downsamplingCounter)
-            {
-                /* Get samples from PDM->PCM comverter */
-                c_pdm_pcm <: 1;
-                master
-                {
-#pragma loop unroll
-                    for(int i = PDM_MIC_INDEX; i < (NUM_PDM_MICS + PDM_MIC_INDEX); i++)
-                    {
-                        c_pdm_pcm :> samplesIn[readBuffNo][i];
-                    }
-                }
-            }
-#endif
-        }
-
-#if (I2S_CHANS_ADC != 0)
-            index = 0;
-            /* Channels 0, 2, 4.. on each line */
-#pragma loop unroll
-            for(int i = 0; i < I2S_CHANS_ADC; i += I2S_CHANS_PER_FRAME)
-            {
-                /* Manual IN instruction since compiler generates an extra setc per IN (bug #15256) */
-                unsigned sample;
-                asm volatile("in %0, res[%1]" : "=r"(sample)  : "r"(p_i2s_adc[index++]));
-
-                samplesIn[buffIndex][((frameCount-1)&(I2S_CHANS_PER_FRAME-1))+i] = bitrev(sample); // channels 1, 3, 5.. on each line.
-#if ((I2S_DOWNSAMPLE_FACTOR > 1) && !I2S_DOWNSAMPLE_MONO)
                 if ((I2S_DOWNSAMPLE_FACTOR - 1) == downsamplingCounter)
                 {
-                    samplesIn[buffIndex][((frameCount-1)&(I2S_CHANS_PER_FRAME-1))+i] =
-                        src_ds3_voice_add_final_sample(
+                    /* Get samples from PDM->PCM comverter */
+                    c_pdm_pcm <: 1;
+                    master
+                    {
+#pragma loop unroll
+                        for(int i = PDM_MIC_INDEX; i < (NUM_PDM_MICS + PDM_MIC_INDEX); i++)
+                        {
+                            c_pdm_pcm :> samplesIn[readBuffNo][i];
+                        }
+                    }
+                }
+#endif
+            }
+
+#if (I2S_CHANS_ADC != 0)
+                index = 0;
+                /* Channels 0, 2, 4.. on each line */
+#pragma loop unroll
+                for(int i = 0; i < I2S_CHANS_ADC; i += I2S_CHANS_PER_FRAME)
+                {
+                    /* Manual IN instruction since compiler generates an extra setc per IN (bug #15256) */
+                    unsigned sample;
+                    asm volatile("in %0, res[%1]" : "=r"(sample)  : "r"(p_i2s_adc[index++]));
+#ifdef CODEC_MASTER
+                    unsigned lrval;
+                    p_lrclk :> lrval;
+#ifdef I2S_MODE_TDM
+                    if (frameCount == (I2S_CHANS_PER_FRAME-2))
+                    {
+                        syncError += (lrval != 0x80000000);
+                    }
+                    else
+                    {
+                       syncError += (lrval != 0x00000000);
+                    }
+#else
+                    syncError += (lrval != 0x7FFFFFFF);
+#endif // I2S_MODE_TDM
+#endif // CODEC_MASTER
+
+                    samplesIn[buffIndex][((frameCount-1)&(I2S_CHANS_PER_FRAME-1))+i] = bitrev(sample); // channels 1, 3, 5.. on each line.
+#if ((I2S_DOWNSAMPLE_FACTOR > 1) && !I2S_DOWNSAMPLE_MONO)
+                    if ((I2S_DOWNSAMPLE_FACTOR - 1) == downsamplingCounter)
+                    {
+                        samplesIn[buffIndex][((frameCount-1)&(I2S_CHANS_PER_FRAME-1))+i] =
+                            src_ds3_voice_add_final_sample(
+                                ds3Sum[((frameCount-1)&(I2S_CHANS_PER_FRAME-1))+i],
+                                ds3Data.delayLine[((frameCount-1)&(I2S_CHANS_PER_FRAME-1))+i][downsamplingCounter],
+                                src_ff3v_ds3_voice_coefs[downsamplingCounter],
+                                samplesIn[readBuffNo][((frameCount-1)&(I2S_CHANS_PER_FRAME-1))+i]);
+                    }
+                    else
+                    {
+                        ds3Sum[((frameCount-2)&(I2S_CHANS_PER_FRAME-1))+i] =
+                            src_ds3_voice_add_sample(
                             ds3Sum[((frameCount-1)&(I2S_CHANS_PER_FRAME-1))+i],
                             ds3Data.delayLine[((frameCount-1)&(I2S_CHANS_PER_FRAME-1))+i][downsamplingCounter],
                             src_ff3v_ds3_voice_coefs[downsamplingCounter],
                             samplesIn[readBuffNo][((frameCount-1)&(I2S_CHANS_PER_FRAME-1))+i]);
-                }
-                else
-                {
-                    ds3Sum[((frameCount-2)&(I2S_CHANS_PER_FRAME-1))+i] =
-                        src_ds3_voice_add_sample(
-                        ds3Sum[((frameCount-1)&(I2S_CHANS_PER_FRAME-1))+i],
-                        ds3Data.delayLine[((frameCount-1)&(I2S_CHANS_PER_FRAME-1))+i][downsamplingCounter],
-                        src_ff3v_ds3_voice_coefs[downsamplingCounter],
-                        samplesIn[readBuffNo][((frameCount-1)&(I2S_CHANS_PER_FRAME-1))+i]);
-                }
+                    }
 #endif // ((I2S_DOWNSAMPLE_FACTOR > 1) && !I2S_DOWNSAMPLE_MONO)
 
-            }
+                }
 #endif
 
 #ifndef CODEC_MASTER
 #ifdef I2S_MODE_TDM
-            if(frameCount == (I2S_CHANS_PER_FRAME-2))
-                p_lrclk <: 0x80000000;
-            else
-               p_lrclk <: 0x00000000;
+                if(frameCount == (I2S_CHANS_PER_FRAME-2))
+                    p_lrclk <: 0x80000000;
+                else
+                   p_lrclk <: 0x00000000;
 #else
-            p_lrclk <: 0x7FFFFFFF;
+                p_lrclk <: 0x7FFFFFFF;
 #endif
 #endif
 
-            index = 0;
+                index = 0;
 #pragma xta endpoint "i2s_output_r"
 #if (I2S_CHANS_DAC != 0) && (NUM_USB_CHAN_OUT != 0)
-            /* Output "odd" channel to DAC (i.e. right) */
+                /* Output "odd" channel to DAC (i.e. right) */
 #pragma loop unroll
-            for(int i = 1; i < I2S_CHANS_DAC; i+=I2S_CHANS_PER_FRAME)
-            {
-                p_i2s_dac[index++] <: bitrev(samplesOut[frameCount + i]);
-            }
+                for(int i = 1; i < I2S_CHANS_DAC; i+=I2S_CHANS_PER_FRAME)
+                {
+                    p_i2s_dac[index++] <: bitrev(samplesOut[frameCount + i]);
+                }
 #endif
 
 #ifndef CODEC_MASTER
-            doI2SClocks(divide);
+                doI2SClocks(divide);
 #endif
 
 
 
-        }  // !dsdMode
+            }  // !dsdMode
 #if (DSD_CHANS_DAC != 0) && (NUM_USB_CHAN_OUT > 0)
-        /* Check for DSD - note we only move into DoP mode if valid DoP Freq */
-        /* Currently we only check on channel 0 - we get all 0's on channels without data */
-        if((dsdMode == DSD_MODE_OFF) && (curSamFreq > 96000))
-        {
-            if((DSD_MASK(samplesOut[0]) == dsdMarker) && (DSD_MASK(samplesOut[1]) == dsdMarker))
+            /* Check for DSD - note we only move into DoP mode if valid DoP Freq */
+            /* Currently we only check on channel 0 - we get all 0's on channels without data */
+            if((dsdMode == DSD_MODE_OFF) && (curSamFreq > 96000))
             {
-                dsdCount++;
-                dsdMarker ^= DSD_MARKER_XOR;
-                if(dsdCount == DSD_EN_THRESH)
+                if((DSD_MASK(samplesOut[0]) == dsdMarker) && (DSD_MASK(samplesOut[1]) == dsdMarker))
                 {
-                    dsdMode = DSD_MODE_DOP;
+                    dsdCount++;
+                    dsdMarker ^= DSD_MARKER_XOR;
+                    if(dsdCount == DSD_EN_THRESH)
+                    {
+                        dsdMode = DSD_MODE_DOP;
+                        dsdCount = 0;
+                        dsdMarker = DSD_MARKER_2;
+
+                        // Set clocks low
+                        p_lrclk <: 0;
+                        p_bclk <: 0;
+                        p_dsd_clk <: 0;
+                        return 0;
+                    }
+                }
+                else
+                {
                     dsdCount = 0;
                     dsdMarker = DSD_MARKER_2;
-
-                    // Set clocks low
-                    p_lrclk <: 0;
-                    p_bclk <: 0;
-                    p_dsd_clk <: 0;
-                    return 0;
                 }
             }
-            else
+            else if(dsdMode == DSD_MODE_DOP) // DSD DoP Mode
             {
-                dsdCount = 0;
-                dsdMarker = DSD_MARKER_2;
-            }
-        }
-        else if(dsdMode == DSD_MODE_DOP) // DSD DoP Mode
-        {
-            /* If we are running in DOP mode, check if we need to come out */
-            if((DSD_MASK(samplesOut[0]) != DSD_MARKER_1) && (DSD_MASK(samplesOut[1]) != DSD_MARKER_1))
-            {
-                if((DSD_MASK(samplesOut[0]) != DSD_MARKER_2) && (DSD_MASK(samplesOut[1]) != DSD_MARKER_2))
+                /* If we are running in DOP mode, check if we need to come out */
+                if((DSD_MASK(samplesOut[0]) != DSD_MARKER_1) && (DSD_MASK(samplesOut[1]) != DSD_MARKER_1))
                 {
-                    dsdMode = DSD_MODE_OFF;
-                    // Set clocks low
-                    p_lrclk <: 0;
-                    p_bclk <: 0;
-                    p_dsd_clk <: 0;
-                    return 0;
+                    if((DSD_MASK(samplesOut[0]) != DSD_MARKER_2) && (DSD_MASK(samplesOut[1]) != DSD_MARKER_2))
+                    {
+                        dsdMode = DSD_MODE_OFF;
+                        // Set clocks low
+                        p_lrclk <: 0;
+                        p_bclk <: 0;
+                        p_dsd_clk <: 0;
+                        return 0;
+                    }
                 }
             }
-        }
 #endif
 
 #ifdef I2S_MODE_TDM
-        /* Increase frameCount by 2 since we have output two channels (per data line) */
-        frameCount+=2;
-        if(frameCount == I2S_CHANS_PER_FRAME)
+            /* Increase frameCount by 2 since we have output two channels (per data line) */
+            frameCount+=2;
+            if(frameCount == I2S_CHANS_PER_FRAME)
 #endif
-        {
-            if ((I2S_DOWNSAMPLE_FACTOR - 1) == downsamplingCounter)
             {
-                /* Do samples transfer */
-                /* The below looks a bit odd but forces the compiler to inline twice */
-                unsigned command;
-                if(readBuffNo)
-                    command = DoSampleTransfer(c_out, 1, underflowWord, i_audMan);
-                else
-                    command = DoSampleTransfer(c_out, 0, underflowWord, i_audMan);
-
-                if(command)
+                if ((I2S_DOWNSAMPLE_FACTOR - 1) == downsamplingCounter)
                 {
-                    return command;
-                }
+                    /* Do samples transfer */
+                    /* The below looks a bit odd but forces the compiler to inline twice */
+                    unsigned command;
+                    if(readBuffNo)
+                        command = DoSampleTransfer(c_out, 1, underflowWord, i_audMan);
+                    else
+                        command = DoSampleTransfer(c_out, 0, underflowWord, i_audMan);
 
-                /* Reset frame counter and flip the ADC buffer */
-                downsamplingCounter = 0;
-                frameCount = 0;
-                readBuffNo = !readBuffNo;
-            }
-            else
-            {
-                ++downsamplingCounter;
+                    if(command)
+                    {
+                        return command;
+                    }
+
+                    /* Reset frame counter and flip the ADC buffer */
+                    downsamplingCounter = 0;
+                    frameCount = 0;
+                    readBuffNo = !readBuffNo;
+                }
+                else
+                {
+                    ++downsamplingCounter;
+                }
             }
         }
     }

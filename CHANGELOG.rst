@@ -4,6 +4,7 @@ sc_usb_audio Change Log
 7.0.0
 ------
     - ADDED:      I2S down-sampling (I2S_DOWNSAMPLE_FACTOR)
+    - ADDED:      I2S resynchronisation when in slave mode (CODEC_MASTER=1)
     - CHANGE:     Various memory optimisations when MAX_FREQ = MIN_FREQ
     - CHANGE:     Memory optimisations in audio buffering
     - CHANGE:     Various memory optimisations in UAC1 mode
