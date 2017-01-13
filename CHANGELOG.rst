@@ -25,7 +25,7 @@ sc_usb_audio Change Log
 
 6.20.0
 ------
-    - RESOLVED:   Intra-frame sample delays of 1/2 samples on input streaming in TDM mode 
+    - RESOLVED:   Intra-frame sample delays of 1/2 samples on input streaming in TDM mode
     - RESOLVED:   Build issue with NUM_USB_CHAN_OUT set to 0 and MIXER enabled
     - RESOLVED:   SPDIF_TX_INDEX not defined build warning only emitted when SPDIF_TX defined
     - RESOLVED:   Failure to enter DFU mode when configured without input volume control
@@ -51,7 +51,7 @@ sc_usb_audio Change Log
 ------
     - ADDED:      Call to UserBufferManagement()
     - ADDED:      PDM_MIC_INDEX in devicedefines.h and usage
-    - CHANGE:     pdm_buffer() task now combinable 
+    - CHANGE:     pdm_buffer() task now combinable
     - CHANGE:     Audio I/O task now takes i_dsp interface as a parameter
     - CHANGE:     Removed built-in support for A/U series internal ADC
     - CHANGE:     User PDM Microphone processing now uses an interface (previously function call)
@@ -67,45 +67,45 @@ sc_usb_audio Change Log
 
 6.15.0
 ------
-   
-    - RESOLVED:   UAC 1.0 descriptors now support multi-channel volume control (previously were 
+
+    - RESOLVED:   UAC 1.0 descriptors now support multi-channel volume control (previously were
                   hard-coded as stereo)
     - CHANGE:     Removed 32kHz sample-rate support when PDM microphones enabled (lib_mic_array
                   currently does not support non-integer decimation factors)
 
 6.14.0
 ------
-    - ADDED:      Support for for master-clock/sample-rate divides that are not a power of 2 
-                  (i.e. 32kHz from 24.567MHz) 
-    - ADDED:      Extended available sample-rate/master-clock ratios. Previous restriction was <= 
-                  512x (i.e. could not support 1024x and above e.g. 49.152MHz MCLK for Sample Rates 
+    - ADDED:      Support for for master-clock/sample-rate divides that are not a power of 2
+                  (i.e. 32kHz from 24.567MHz)
+    - ADDED:      Extended available sample-rate/master-clock ratios. Previous restriction was <=
+                  512x (i.e. could not support 1024x and above e.g. 49.152MHz MCLK for Sample Rates
                   below 96kHz) (#13893)
     - ADDED:      Support for various "low" sample rates (i.e. < 44100) into UAC 2.0 sample rate
                   list and UAC 1.0 descriptors
-    - ADDED:      Support for the use and integration of PDM microphones (including PDM to PCM 
-                  conversion) via lib_mic_array 
+    - ADDED:      Support for the use and integration of PDM microphones (including PDM to PCM
+                  conversion) via lib_mic_array
     - RESOLVED:   MIDI data not accepted after "sleep" in OSX 10.11 (El Capitan) - related to sc_xud
                   issue #17092
     - CHANGE:     Asynchronous feedback system re-implemented to allow for the first two ADDED
-                  changelog items 
-    - CHANGE:     Hardware divider used to generate bit-clock from master clock (xCORE-200 only). 
+                  changelog items
+    - CHANGE:     Hardware divider used to generate bit-clock from master clock (xCORE-200 only).
                   Allows easy support for greater number of master-clock to sample-rate ratios.
     - CHANGE:     module_queue no longer uses any assert module/lib
 
 6.13.0
 ------
     - ADDED:      Device now uses implicit feedback when input stream is available (previously explicit
-                  feedback pipe always used). This saves chanend/EP resources and means less processing 
+                  feedback pipe always used). This saves chanend/EP resources and means less processing
                   burden for the host. Previous behaviour available by enabling UAC_FORCE_FEEDBACK_EP
     - RESOLVED:   Exception when SPDIF_TX and ADAT_TX both enabled due to clock-block being configured
                   after already started. Caused by SPDIF_TX define check typo
-    - RESOLVED:   DFU flag address changed to properly conform to memory address range allocated to 
+    - RESOLVED:   DFU flag address changed to properly conform to memory address range allocated to
                   apps by tools
     - RESOLVED:   Build failure when DFU disabled
     - RESOLVED:   Build issue when I2S_CHANS_ADC/DAC set to 0 and CODEC_MASTER enabled
     - RESOLVED:   Typo in MCLK_441 checking for MIN_FREQ define
     - CHANGE:     Mixer and non-mixer channel comms scheme (decouple <-> audio path) now identical
-    - CHANGE:     Input stream buffering modified such that during overflow older samples are removed 
+    - CHANGE:     Input stream buffering modified such that during overflow older samples are removed
                   rather than ignoring most recent samples. Removes any chance of stale input packets
                   being sent to host
     - CHANGE:     module_queue (in sc_usb_audio) now uses lib_xassert rather than module_xassert
@@ -116,17 +116,17 @@ sc_usb_audio Change Log
     - RESOLVED:   Build error when I2S_CHANS_ADC or I2S_CHANS_DAC set to 0 and CODEC_MASTER enabled
 
 6.12.5
-------   
+------
     - RESOLVED:   Stream issue when NUM_USB_CHAN_IN < I2S_CHANS_ADC
 
 6.12.4
-------   
+------
     - RESOLVED:   DFU fail when DSD enabled and USB library not running on tile[0]
 
 6.12.3
 ------
-    - RESOLVED:   Method for storing persistent state over a DFU reboot modified to improve resilience 
-                  against code-base and tools changes  
+    - RESOLVED:   Method for storing persistent state over a DFU reboot modified to improve resilience
+                  against code-base and tools changes
 
 6.12.2
 ------
