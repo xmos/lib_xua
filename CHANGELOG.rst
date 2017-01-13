@@ -3,7 +3,7 @@ sc_usb_audio Change Log
 
 7.0.1
 -----
-    - RESOLVED:   PDM microphone decimation issue at some samplerates caused by integration 
+    - RESOLVED:   PDM microphone decimation issue at some sample rates caused by integration
 
 7.0.0
 ------
@@ -14,7 +14,7 @@ sc_usb_audio Change Log
     - CHANGE:     Various memory optimisations in UAC1 mode
     - CHANGE:     user_pdm_process() API change
     - CHANGE:     PDM Mic decimator table now related to MIN_FREQ (memory optimisation)
-    - RESOLVED:   Audio request interrupt handler properly elminated 
+    - RESOLVED:   Audio request interrupt handler properly eliminated
 
 6.30.0
 ------
