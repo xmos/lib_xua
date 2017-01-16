@@ -1,13 +1,18 @@
 sc_usb_audio Change Log
 =======================
 
+7.0.2
+-----
+    - ADDED:      I2S output down-sampling (I2S_DOWNSAMPLE_FACTOR_OUT)
+    - CHANGE:     Rename I2S input down-sampling (I2S_DOWNSAMPLE_FACTOR to I2S_DOWNSAMPLE_FACTOR_IN)
+
 7.0.1
 -----
     - RESOLVED:   PDM microphone decimation issue at some sample rates caused by integration
 
 7.0.0
 ------
-    - ADDED:      I2S down-sampling (I2S_DOWNSAMPLE_FACTOR_IN)
+    - ADDED:      I2S down-sampling (I2S_DOWNSAMPLE_FACTOR)
     - ADDED:      I2S resynchronisation when in slave mode (CODEC_MASTER=1)
     - CHANGE:     Various memory optimisations when MAX_FREQ = MIN_FREQ
     - CHANGE:     Memory optimisations in audio buffering
