@@ -258,9 +258,11 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in,
     XUD_SetReady_In(ep_hid, g_hidData, 1);
 #endif
 
-#if (AUDIO_CLASS == 1)
+#if (AUDIO_CLASS == 1) 
+#if (NUM_USB_CHAN_IN == 0) || defined (UAC_FORCE_FEEDBACK_EP)
     /* In UAC1 we dont use a stream start event (and we are always FS) so mark FB EP ready now */
     XUD_SetReady_In(ep_aud_fb, fb_clocks, 3);
+#endif
 #endif
 
     while(1)
