@@ -255,6 +255,7 @@ static inline void TransferAdatTxSamples(chanend c_adat_out, const unsigned samp
 /* sampsFromAudioToUsb: The sample frame that was received from the audio interfaces and that the device is going to send to the host */
 void UserBufferManagement(unsigned sampsFromUsbToAudio[], unsigned sampsFromAudioToUsb[], client audManage_if i_audMan);
 
+#ifndef NO_USB
 #pragma unsafe arrays
 static inline unsigned DoSampleTransfer(chanend c_out, const int readBuffNo, const unsigned underflowWord, client audManage_if i_audMan)
 {
@@ -311,6 +312,15 @@ static inline unsigned DoSampleTransfer(chanend c_out, const int readBuffNo, con
 
     return 0;
 }
+
+#else /* NO_USB */
+#pragma unsafe arrays
+static inline unsigned DoSampleTransfer(chanend c_out, const int readBuffNo, const unsigned underflowWord, client audManage_if i_audMan)
+{
+    UserBufferManagement(samplesOut, samplesIn[readBuffNo], i_audMan);
+    return 0;
+}
+#endif /* NO_USB */
 
 static inline void InitPorts(unsigned divide)
 {
@@ -1231,7 +1241,9 @@ chanend ?c_config, chanend ?c
                 }
 #endif
                 /* Handshake back */
+#ifndef NO_USB
                 outct(c_mix_out, XS1_CT_END);
+#endif
             }
         }
         firstRun = 0;
@@ -1297,6 +1309,7 @@ chanend ?c_config, chanend ?c
                    null, i_audMan
                    );
 
+#ifndef NO_USB
                 if(command == SET_SAMPLE_FREQ)
                 {
                     curSamFreq = inuint(c_mix_out) * I2S_DOWNSAMPLE_FACTOR;
@@ -1339,6 +1352,8 @@ chanend ?c_config, chanend ?c
                     	}
                   	}
                 }
+#endif /* NO_USB */
+
 #ifdef SPDIF_TX
                 /* Notify S/PDIF task of impending new freq... */
                 outct(c_spdif_out, XS1_CT_END);

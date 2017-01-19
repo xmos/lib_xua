@@ -577,6 +577,7 @@ int main()
             DFUHandler(dfuInterface, null);
 #endif
 #endif
+#ifndef NO_USB
             usb_audio_core(c_mix_out
 #ifdef MIDI
                 , c_midi
@@ -594,6 +595,7 @@ int main()
                 VENDOR_REQUESTS_PARAMS_
 
             );
+#endif /* NO_USB */
         }
 
         on tile[AUDIO_IO_TILE]: usb_audio_io(c_mix_out, c_adc
