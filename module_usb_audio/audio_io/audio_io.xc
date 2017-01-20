@@ -60,13 +60,6 @@ static unsigned samplesIn[2][MAX(NUM_USB_CHAN_IN, IN_CHAN_COUNT)];
 static int inDownsamplingCounter = 0;
 #if (I2S_DOWNSAMPLE_FACTOR_IN > 1)
 #include "src.h"
-static union ds3Data
-{
-    long long doubleWordAlignmentEnsured;
-    /* [Number of I2S channels][Number of samples/phases][Taps per phase] */
-    int32_t inputDelayLine[I2S_DOWNSAMPLE_CHANS_IN][I2S_DOWNSAMPLE_FACTOR_IN][24];
-} ds3Data;
-static int64_t inputDs3Sum[I2S_DOWNSAMPLE_CHANS_IN];
 #endif // (I2S_DOWNSAMPLE_FACTOR_IN > 1)
 
 #if (DSD_CHANS_DAC != 0)
@@ -512,7 +505,14 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
 #endif
 
 #if (I2S_DOWNSAMPLE_FACTOR_IN > 1)
-    memset(&ds3Data.inputDelayLine, 0, sizeof ds3Data);
+    union ds3Data
+    {
+        long long doubleWordAlignmentEnsured;
+        /* [Number of I2S channels][Number of samples/phases][Taps per phase] */
+        int32_t inputDelayLine[I2S_DOWNSAMPLE_CHANS_IN][I2S_DOWNSAMPLE_FACTOR_IN][24];
+    } ds3Data;
+    memset(&ds3Data.inputDelayLine, 0, sizeof ds3Data.inputDelayLine);
+    int64_t inputDs3Sum[I2S_DOWNSAMPLE_CHANS_IN];
 #endif // (I2S_DOWNSAMPLE_FACTOR_IN > 1)
 
     unsigned command = DoSampleTransfer(c_out, readBuffNo, underflowWord, i_audMan);
