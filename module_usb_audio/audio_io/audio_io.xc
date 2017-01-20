@@ -513,7 +513,7 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
 
 #if (I2S_DOWNSAMPLE_FACTOR_IN > 1)
     memset(&ds3Data.inputDelayLine, 0, sizeof ds3Data);
-#endif
+#endif // (I2S_DOWNSAMPLE_FACTOR_IN > 1)
 
     unsigned command = DoSampleTransfer(c_out, readBuffNo, underflowWord, i_audMan);
 
@@ -666,7 +666,7 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
                 {
                     memset(&inputDs3Sum, 0, sizeof inputDs3Sum);
                 }
-#endif
+#endif // (I2S_DOWNSAMPLE_FACTOR_IN > 1)
 #if (I2S_CHANS_ADC != 0)
                 /* Input previous L sample into L in buffer */
                 index = 0;
@@ -740,12 +740,12 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
                 {
                     p_i2s_dac[index++] <: bitrev(samplesOut[frameCount +i]);
                 }
-#endif
+#endif // (I2S_CHANS_DAC != 0) && (NUM_USB_CHAN_OUT != 0)
 
 #ifndef CODEC_MASTER
                 /* Clock out the LR Clock, the DAC data and Clock in the next sample into ADC */
                 doI2SClocks(divide);
-#endif
+#endif // !CODEC_MASTER
 
 #ifdef ADAT_TX
                  TransferAdatTxSamples(c_adat_out, samplesOut, adatSmuxMode, 1);
@@ -873,11 +873,11 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
                 {
                     p_i2s_dac[index++] <: bitrev(samplesOut[frameCount + i]);
                 }
-#endif
+#endif // (I2S_CHANS_DAC != 0) && (NUM_USB_CHAN_OUT != 0)
 
 #ifndef CODEC_MASTER
                 doI2SClocks(divide);
-#endif
+#endif // !CODEC_MASTER
 
 
 
