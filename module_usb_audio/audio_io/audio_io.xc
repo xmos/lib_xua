@@ -58,27 +58,16 @@ static unsigned samplesIn[2][MAX(NUM_USB_CHAN_IN, IN_CHAN_COUNT)];
 #endif
 
 static int inDownsamplingCounter = 0;
-static int outDownsamplingCounter = 0;
-#if (I2S_DOWNSAMPLE_FACTOR_IN > 1) || (I2S_DOWNSAMPLE_FACTOR_OUT > 1)
+#if (I2S_DOWNSAMPLE_FACTOR_IN > 1)
 #include "src.h"
 static union ds3Data
 {
     long long doubleWordAlignmentEnsured;
-    /* delay lines = [Number of I2S channels][Number of samples/phases][Taps per phase] */
-#if (I2S_DOWNSAMPLE_FACTOR_IN > 1)
+    /* [Number of I2S channels][Number of samples/phases][Taps per phase] */
     int32_t inputDelayLine[I2S_DOWNSAMPLE_CHANS_IN][I2S_DOWNSAMPLE_FACTOR_IN][24];
-#endif // (I2S_DOWNSAMPLE_FACTOR_IN > 1)
-#if (I2S_DOWNSAMPLE_FACTOR_OUT > 1)
-    int32_t outputDelayLine[I2S_DOWNSAMPLE_CHANS_OUT][I2S_DOWNSAMPLE_FACTOR_OUT][24];
-#endif // (I2S_DOWNSAMPLE_FACTOR_OUT > 1)
 } ds3Data;
-#if (I2S_DOWNSAMPLE_FACTOR_IN > 1)
 static int64_t inputDs3Sum[I2S_DOWNSAMPLE_CHANS_IN];
 #endif // (I2S_DOWNSAMPLE_FACTOR_IN > 1)
-#if (I2S_DOWNSAMPLE_FACTOR_OUT > 1)
-static int64_t outputDs3Sum[I2S_DOWNSAMPLE_CHANS_OUT];
-#endif // (I2S_DOWNSAMPLE_FACTOR_OUT > 1)
-#endif // (I2S_DOWNSAMPLE_FACTOR_IN > 1) || (I2S_DOWNSAMPLE_FACTOR_OUT > 1)
 
 #if (DSD_CHANS_DAC != 0)
 extern buffered out port:32 p_dsd_dac[DSD_CHANS_DAC];
@@ -266,6 +255,7 @@ static inline void TransferAdatTxSamples(chanend c_adat_out, const unsigned samp
 /* sampsFromAudioToUsb: The sample frame that was received from the audio interfaces and that the device is going to send to the host */
 void UserBufferManagement(unsigned sampsFromUsbToAudio[], unsigned sampsFromAudioToUsb[], client audManage_if i_audMan);
 
+#ifndef NO_USB
 #pragma unsafe arrays
 static inline unsigned DoSampleTransfer(chanend c_out, const int readBuffNo, const unsigned underflowWord, client audManage_if i_audMan)
 {
@@ -322,6 +312,15 @@ static inline unsigned DoSampleTransfer(chanend c_out, const int readBuffNo, con
 
     return 0;
 }
+
+#else /* NO_USB */
+#pragma unsafe arrays
+static inline unsigned DoSampleTransfer(chanend c_out, const int readBuffNo, const unsigned underflowWord, client audManage_if i_audMan)
+{
+    UserBufferManagement(samplesOut, samplesIn[readBuffNo], i_audMan);
+    return 0;
+}
+#endif /* NO_USB */
 
 static inline void InitPorts(unsigned divide)
 {
@@ -734,22 +733,20 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
 #pragma xta endpoint "i2s_output_l"
 
 #if (I2S_CHANS_DAC != 0) && (NUM_USB_CHAN_OUT != 0)
-                if ((I2S_DOWNSAMPLE_FACTOR_OUT - 1) == outDownsamplingCounter)
-                {
-                    index = 0;
+                index = 0;
 #pragma loop unroll
-                    /* Output "even" channel to DAC (i.e. left) */
-                    for(int i = 0; i < I2S_CHANS_DAC; i+=I2S_CHANS_PER_FRAME)
-                    {
-                        p_i2s_dac[index++] <: bitrev(samplesOut[frameCount +i]);
-                    }
+                /* Output "even" channel to DAC (i.e. left) */
+                for(int i = 0; i < I2S_CHANS_DAC; i+=I2S_CHANS_PER_FRAME)
+                {
+                    p_i2s_dac[index++] <: bitrev(samplesOut[frameCount +i]);
+                }
 #endif
 
 #ifndef CODEC_MASTER
-                    /* Clock out the LR Clock, the DAC data and Clock in the next sample into ADC */
-                    doI2SClocks(divide);
+                /* Clock out the LR Clock, the DAC data and Clock in the next sample into ADC */
+                doI2SClocks(divide);
 #endif
-                }
+
 #ifdef ADAT_TX
                  TransferAdatTxSamples(c_adat_out, samplesOut, adatSmuxMode, 1);
 #endif
@@ -870,24 +867,19 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
                 index = 0;
 #pragma xta endpoint "i2s_output_r"
 #if (I2S_CHANS_DAC != 0) && (NUM_USB_CHAN_OUT != 0)
-                if ((I2S_DOWNSAMPLE_FACTOR_OUT - 1) == outDownsamplingCounter)
-                {
-                    /* Output "odd" channel to DAC (i.e. right) */
+                /* Output "odd" channel to DAC (i.e. right) */
 #pragma loop unroll
-                    for(int i = 1; i < I2S_CHANS_DAC; i+=I2S_CHANS_PER_FRAME)
-                    {
-                        p_i2s_dac[index++] <: bitrev(samplesOut[frameCount + i]);
-                    }
+                for(int i = 1; i < I2S_CHANS_DAC; i+=I2S_CHANS_PER_FRAME)
+                {
+                    p_i2s_dac[index++] <: bitrev(samplesOut[frameCount + i]);
+                }
 #endif
 
 #ifndef CODEC_MASTER
-                    doI2SClocks(divide);
+                doI2SClocks(divide);
 #endif
-                }
-                else
-                {
-                    ++outDownsamplingCounter;
-                }
+
+
 
             }  // !dsdMode
 #if (DSD_CHANS_DAC != 0) && (NUM_USB_CHAN_OUT > 0)
@@ -1249,7 +1241,9 @@ chanend ?c_config, chanend ?c
                 }
 #endif
                 /* Handshake back */
+#ifndef NO_USB
                 outct(c_mix_out, XS1_CT_END);
+#endif
             }
         }
         firstRun = 0;
@@ -1315,6 +1309,7 @@ chanend ?c_config, chanend ?c
                    null, i_audMan
                    );
 
+#ifndef NO_USB
                 if(command == SET_SAMPLE_FREQ)
                 {
                     curSamFreq = inuint(c_mix_out) * I2S_DOWNSAMPLE_FACTOR_IN;
@@ -1357,6 +1352,8 @@ chanend ?c_config, chanend ?c
                     	}
                   	}
                 }
+#endif /* NO_USB */
+
 #ifdef SPDIF_TX
                 /* Notify S/PDIF task of impending new freq... */
                 outct(c_spdif_out, XS1_CT_END);
