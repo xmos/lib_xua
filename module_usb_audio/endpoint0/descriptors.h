@@ -2320,24 +2320,24 @@ unsigned char cfgDesc_Audio1[] =
     AC_LENGTH,
     UAC_CS_DESCTYPE_INTERFACE,
     0x01,                                 /* HEADER */
-    0x00, 0x01,                           /* Class spec revision - 1.0 */
+    0x00, 0x01,                           /* bcdADC */
     (AC_TOTAL_LENGTH & 0xFF),             /* wTotallength (Combined length of this descriptor and all Unit and Terminal Descriptors) */
     (AC_TOTAL_LENGTH >> 8),               /* wTotalLength */
-    STREAMING_INTERFACES,                 /* Num streaming interfaces */
+    STREAMING_INTERFACES,                 /* bInCollection (Num streaming interfaces) */
 #if (NUM_USB_CHAN_OUT > 0)
-    0x01,                                 /* AudioStreaming interface 1 belongs to AC interface */
+    0x01,                                 /* baInterfaceNr(1) AudioStreaming interface 1 belongs to AC interface */
 #endif
 #if (NUM_USB_CHAN_IN > 0)
-    (OUTPUT_INTERFACES_A1 + 1),           /* AudioStreaming interface 2 belongs to AC interface */
+    (OUTPUT_INTERFACES_A1 + 1),           /* baInterfaceNr(2) AudioStreaming interface 2 belongs to AC interface */
 #endif
 
 #if (NUM_USB_CHAN_OUT > 0)
     /* CS_Interface Input Terminal 1 Descriptor - USB streaming Host to Device */
     0x0C,
-    UAC_CS_DESCTYPE_INTERFACE,            /* UAC_CS_DESCTYPE_INTERFACE */
-    0x02,                                 /* INPUT_TERMINAL */
-    0x01,                                 /* Terminal ID */
-    0x01, 0x01,                           /* Type - streaming */
+    UAC_CS_DESCTYPE_INTERFACE,            /* bDescriptorType (UAC_CS_DESCTYPE_INTERFACE) */
+    0x02,                                 /* bDescriptiorSubtype (INPUT_TERMINAL) */
+    0x01,                                 /* bTerminalID */
+    0x01, 0x01,                           /* wTerminalType (USB Streaming) */
     0x00,                                 /* Associated terminal - unused  */
     NUM_USB_CHAN_OUT_FS,                  /* bNrChannels */
     0x03, 0x00,                           /* wChannelConfig */
@@ -2481,16 +2481,16 @@ unsigned char cfgDesc_Audio1[] =
     /* Standard As Interface Descriptor (4.5.1) */
     0x09,
     0x04,                                 /* INTERFACE */
-    0x01,                                 /* Interface no */
-    0x01,                                 /* AlternateSetting */
+    0x01,                                 /* bInterfaceNumber */
+    0x01,                                 /* bAlternateSetting */
 #if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP)
     0x02,                                 /* bNumEndpoints 2: audio EP and feedback EP */
 #else
     0x01,                                 /* bNumEndpoints */
 #endif
-    0x01,                                 /* Interface class - AUDIO */
-    0x02,                                 /* subclass - AUDIO_STREAMING */
-    0x00,                                 /* Unused */
+    0x01,                                 /* bInterfaceClas - AUDIO */
+    0x02,                                 /* bInterfaceSubclass - AUDIO_STREAMING */
+    0x00,                                 /* bInterface Protocol - Unused */
     offsetof(StringDescTable_t, outputInterfaceStr_Audio1)/sizeof(char *), /* iInterface */ 
 
     /* Class-Specific AS Interface Descriptor (4.5.2) */

@@ -58,27 +58,9 @@ static unsigned samplesIn[2][MAX(NUM_USB_CHAN_IN, IN_CHAN_COUNT)];
 #endif
 
 static int inDownsamplingCounter = 0;
-static int outDownsamplingCounter = 0;
-#if (I2S_DOWNSAMPLE_FACTOR_IN > 1) || (I2S_DOWNSAMPLE_FACTOR_OUT > 1)
+#if (I2S_DOWNSAMPLE_FACTOR_IN > 1)
 #include "src.h"
-static union ds3Data
-{
-    long long doubleWordAlignmentEnsured;
-    /* delay lines = [Number of I2S channels][Number of samples/phases][Taps per phase] */
-#if (I2S_DOWNSAMPLE_FACTOR_IN > 1)
-    int32_t inputDelayLine[I2S_DOWNSAMPLE_CHANS_IN][I2S_DOWNSAMPLE_FACTOR_IN][24];
 #endif // (I2S_DOWNSAMPLE_FACTOR_IN > 1)
-#if (I2S_DOWNSAMPLE_FACTOR_OUT > 1)
-    int32_t outputDelayLine[I2S_DOWNSAMPLE_CHANS_OUT][I2S_DOWNSAMPLE_FACTOR_OUT][24];
-#endif // (I2S_DOWNSAMPLE_FACTOR_OUT > 1)
-} ds3Data;
-#if (I2S_DOWNSAMPLE_FACTOR_IN > 1)
-static int64_t inputDs3Sum[I2S_DOWNSAMPLE_CHANS_IN];
-#endif // (I2S_DOWNSAMPLE_FACTOR_IN > 1)
-#if (I2S_DOWNSAMPLE_FACTOR_OUT > 1)
-static int64_t outputDs3Sum[I2S_DOWNSAMPLE_CHANS_OUT];
-#endif // (I2S_DOWNSAMPLE_FACTOR_OUT > 1)
-#endif // (I2S_DOWNSAMPLE_FACTOR_IN > 1) || (I2S_DOWNSAMPLE_FACTOR_OUT > 1)
 
 #ifndef I2S_UPSAMPLE_FACTOR_OUT
 #define I2S_UPSAMPLE_FACTOR_OUT 1
@@ -533,8 +515,15 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
 #endif
 
 #if (I2S_DOWNSAMPLE_FACTOR_IN > 1)
-    memset(&ds3Data.inputDelayLine, 0, sizeof ds3Data);
-#endif
+    union ds3Data
+    {
+        long long doubleWordAlignmentEnsured;
+        /* [Number of I2S channels][Number of samples/phases][Taps per phase] */
+        int32_t inputDelayLine[I2S_DOWNSAMPLE_CHANS_IN][I2S_DOWNSAMPLE_FACTOR_IN][24];
+    } ds3Data;
+    memset(&ds3Data.inputDelayLine, 0, sizeof ds3Data.inputDelayLine);
+    int64_t inputDs3Sum[I2S_DOWNSAMPLE_CHANS_IN];
+#endif // (I2S_DOWNSAMPLE_FACTOR_IN > 1)
 
 #if (I2S_UPSAMPLE_FACTOR_OUT > 1)
     memset(us3OutputDelayLine, 0, sizeof us3OutputDelayLine);
@@ -692,7 +681,7 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
                 {
                     memset(&inputDs3Sum, 0, sizeof inputDs3Sum);
                 }
-#endif
+#endif // (I2S_DOWNSAMPLE_FACTOR_IN > 1)
 #if (I2S_CHANS_ADC != 0)
                 /* Input previous L sample into L in buffer */
                 index = 0;
@@ -759,9 +748,7 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
 #pragma xta endpoint "i2s_output_l"
 
 #if (I2S_CHANS_DAC != 0) && (NUM_USB_CHAN_OUT != 0)
-                if ((I2S_DOWNSAMPLE_FACTOR_OUT - 1) == outDownsamplingCounter)
-                {
-                    index = 0;
+                index = 0;
 #pragma loop unroll
                     /* Output "even" channel to DAC (i.e. left) */
                     for(int i = 0; i < I2S_CHANS_DAC; i+=I2S_CHANS_PER_FRAME)
@@ -782,10 +769,10 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
 #endif
 
 #ifndef CODEC_MASTER
-                    /* Clock out the LR Clock, the DAC data and Clock in the next sample into ADC */
-                    doI2SClocks(divide);
-#endif
-                }
+                /* Clock out the LR Clock, the DAC data and Clock in the next sample into ADC */
+                doI2SClocks(divide);
+#endif // !CODEC_MASTER
+
 #ifdef ADAT_TX
                  TransferAdatTxSamples(c_adat_out, samplesOut, adatSmuxMode, 1);
 #endif
@@ -906,9 +893,7 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
                 index = 0;
 #pragma xta endpoint "i2s_output_r"
 #if (I2S_CHANS_DAC != 0) && (NUM_USB_CHAN_OUT != 0)
-                if ((I2S_DOWNSAMPLE_FACTOR_OUT - 1) == outDownsamplingCounter)
-                {
-                    /* Output "odd" channel to DAC (i.e. right) */
+                /* Output "odd" channel to DAC (i.e. right) */
 #pragma loop unroll
                     for(int i = 1; i < I2S_CHANS_DAC; i+=I2S_CHANS_PER_FRAME)
                     {
@@ -934,8 +919,15 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
                 }
                 else
                 {
-                    ++outDownsamplingCounter;
+                    p_i2s_dac[index++] <: bitrev(samplesOut[frameCount + i]);
                 }
+#endif // (I2S_CHANS_DAC != 0) && (NUM_USB_CHAN_OUT != 0)
+
+#ifndef CODEC_MASTER
+                doI2SClocks(divide);
+#endif // !CODEC_MASTER
+
+
 
             }  // !dsdMode
 #if (DSD_CHANS_DAC != 0) && (NUM_USB_CHAN_OUT > 0)
