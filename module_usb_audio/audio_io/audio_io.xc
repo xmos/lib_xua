@@ -57,20 +57,15 @@ static unsigned samplesIn[2][MAX(NUM_USB_CHAN_IN, IN_CHAN_COUNT)];
 #undef SPDIF_RX
 #endif
 
-static int inDownsamplingCounter = 0;
-#if (I2S_DOWNSAMPLE_FACTOR_IN > 1)
-#include "src.h"
-#endif // (I2S_DOWNSAMPLE_FACTOR_IN > 1)
-
 #ifndef I2S_UPSAMPLE_FACTOR_OUT
-#define I2S_UPSAMPLE_FACTOR_OUT 1
+#define I2S_UPSAMPLE_FACTOR_OUT (1)
 #endif
 
+static int inDownsamplingCounter = 0;
 static int outUpsamplingCounter = 0;
-#if (I2S_UPSAMPLE_FACTOR_OUT > 1)
+#if (I2S_DOWNSAMPLE_FACTOR_IN > 1) || (I2S_UPSAMPLE_FACTOR_OUT > 1)
 #include "src.h"
-static int32_t us3OutputDelayLine[I2S_CHANS_DAC][24];
-#endif /* (I2S_UPSAMPLE_FACTOR_OUT > 1) */
+#endif // (I2S_DOWNSAMPLE_FACTOR_IN > 1)
 
 #if (DSD_CHANS_DAC != 0)
 extern buffered out port:32 p_dsd_dac[DSD_CHANS_DAC];
@@ -526,8 +521,13 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
 #endif // (I2S_DOWNSAMPLE_FACTOR_IN > 1)
 
 #if (I2S_UPSAMPLE_FACTOR_OUT > 1)
-    memset(us3OutputDelayLine, 0, sizeof us3OutputDelayLine);
-#endif
+    union us3Data
+    {
+        long long doubleWordAlignmentEnsured;
+        int32_t outputDelayLine[I2S_CHANS_DAC][24];
+    } us3Data;
+    memset(&us3Data.outputDelayLine, 0, sizeof us3Data.outputDelayLine);
+#endif // (I2S_UPSAMPLE_FACTOR_OUT > 1)
 
     unsigned command = DoSampleTransfer(c_out, readBuffNo, underflowWord, i_audMan);
 
@@ -568,7 +568,6 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
         while (!syncError)
 #endif // CODEC_MASTER
         {
-
 #if (DSD_CHANS_DAC != 0) && (NUM_USB_CHAN_OUT > 0)
             if(dsdMode == DSD_MODE_NATIVE)
             {
@@ -750,23 +749,22 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
 #if (I2S_CHANS_DAC != 0) && (NUM_USB_CHAN_OUT != 0)
                 index = 0;
 #pragma loop unroll
-                    /* Output "even" channel to DAC (i.e. left) */
-                    for(int i = 0; i < I2S_CHANS_DAC; i+=I2S_CHANS_PER_FRAME)
-                    {
+                /* Output "even" channel to DAC (i.e. left) */
+                for(int i = 0; i < I2S_CHANS_DAC; i+=I2S_CHANS_PER_FRAME)
+                {
 #if (I2S_UPSAMPLE_FACTOR_OUT > 1)
-                        if(outUpsamplingCounter == 0) {
-                            samplesOut[frameCount+i] = src_us3_voice_input_sample(us3OutputDelayLine[i],
-                                                                                  src_ff3v_fir_coefs[2],
-                                                                                  samplesOut[frameCount+i]);
-                        } else { /* outUpsamplingCounter is 1 or 2 */
-                            samplesOut[frameCount+i] = src_us3_voice_get_next_sample(us3OutputDelayLine[i], 
-                                                                                     src_ff3v_fir_coefs[2-outUpsamplingCounter]);
-                        }
-#endif /* (I2S_UPSAMPLE_FACTOR_OUT > 1) */
-
-                        p_i2s_dac[index++] <: bitrev(samplesOut[frameCount +i]);
+                    if(outUpsamplingCounter == 0) {
+                        samplesOut[frameCount+i] = src_us3_voice_input_sample(us3Data.outputDelayLine[i],
+                                                                              src_ff3v_fir_coefs[2],
+                                                                              samplesOut[frameCount+i]);
+                    } else { /* outUpsamplingCounter is 1 or 2 */
+                        samplesOut[frameCount+i] = src_us3_voice_get_next_sample(us3Data.outputDelayLine[i], 
+                                                                                 src_ff3v_fir_coefs[2-outUpsamplingCounter]);
                     }
-#endif
+#endif /* (I2S_UPSAMPLE_FACTOR_OUT > 1) */
+                    p_i2s_dac[index++] <: bitrev(samplesOut[frameCount +i]);
+                }
+#endif // (I2S_CHANS_DAC != 0) && (NUM_USB_CHAN_OUT != 0)
 
 #ifndef CODEC_MASTER
                 /* Clock out the LR Clock, the DAC data and Clock in the next sample into ADC */
@@ -895,30 +893,18 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
 #if (I2S_CHANS_DAC != 0) && (NUM_USB_CHAN_OUT != 0)
                 /* Output "odd" channel to DAC (i.e. right) */
 #pragma loop unroll
-                    for(int i = 1; i < I2S_CHANS_DAC; i+=I2S_CHANS_PER_FRAME)
-                    {
-#if (I2S_UPSAMPLE_FACTOR_OUT > 1)
-                        if(outUpsamplingCounter == 0) {
-                            samplesOut[frameCount+i] = src_us3_voice_input_sample(us3OutputDelayLine[i],
-                                                                                  src_ff3v_fir_coefs[2],
-                                                                                  samplesOut[frameCount+i]);
-                        } else { /* outUpsamplingCounter is 1 or 2 */
-                            samplesOut[frameCount+i] = src_us3_voice_get_next_sample(us3OutputDelayLine[i], 
-                                                                                     src_ff3v_fir_coefs[2-outUpsamplingCounter]);
-
-                        }
-#endif /* (I2S_UPSAMPLE_FACTOR_OUT > 1) */
-
-                        p_i2s_dac[index++] <: bitrev(samplesOut[frameCount + i]);
-                    }
-#endif
-
-#ifndef CODEC_MASTER
-                    doI2SClocks(divide);
-#endif
-                }
-                else
+                for(int i = 1; i < I2S_CHANS_DAC; i+=I2S_CHANS_PER_FRAME)
                 {
+#if (I2S_UPSAMPLE_FACTOR_OUT > 1)
+                    if(outUpsamplingCounter == 0) {
+                        samplesOut[frameCount+i] = src_us3_voice_input_sample(us3Data.outputDelayLine[i],
+                                                                              src_ff3v_fir_coefs[2],
+                                                                              samplesOut[frameCount+i]);
+                    } else { /* outUpsamplingCounter is 1 or 2 */
+                        samplesOut[frameCount+i] = src_us3_voice_get_next_sample(us3Data.outputDelayLine[i], 
+                                                                                 src_ff3v_fir_coefs[2-outUpsamplingCounter]);
+                    }
+#endif /* (I2S_UPSAMPLE_FACTOR_OUT > 1) */
                     p_i2s_dac[index++] <: bitrev(samplesOut[frameCount + i]);
                 }
 #endif // (I2S_CHANS_DAC != 0) && (NUM_USB_CHAN_OUT != 0)
@@ -1383,13 +1369,13 @@ chanend ?c_config, chanend ?c
 
                 /* Currently no more audio will happen after this point */
                 if ((curSamFreq / I2S_DOWNSAMPLE_FACTOR_IN) == AUDIO_STOP_FOR_DFU)
-				{
-                  	outct(c_mix_out, XS1_CT_END);
+                {
+                    outct(c_mix_out, XS1_CT_END);
 
                     outuint(c_mix_out, 0);
 
-                  	while (1)
-					{
+                    while (1)
+                    {
 #if XUD_TILE != 0
                        [[combine]]
                         par
@@ -1402,12 +1388,12 @@ chanend ?c_config, chanend ?c
 #endif
                         curSamFreq = inuint(c_mix_out);
 
-                    	if (curSamFreq == AUDIO_START_FROM_DFU)
-						{
-                      		outct(c_mix_out, XS1_CT_END);
-                      		break;
-                    	}
-                  	}
+                        if (curSamFreq == AUDIO_START_FROM_DFU)
+                        {
+                            outct(c_mix_out, XS1_CT_END);
+                            break;
+                        }
+                    }
                 }
 #endif /* NO_USB */
 
@@ -1430,5 +1416,5 @@ chanend ?c_config, chanend ?c
 #endif
             }
         }
-	}
+    }
 }
