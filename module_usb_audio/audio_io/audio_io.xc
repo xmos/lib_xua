@@ -57,8 +57,8 @@ static unsigned samplesIn[2][MAX(NUM_USB_CHAN_IN, IN_CHAN_COUNT)];
 #undef SPDIF_RX
 #endif
 
-static int inDownsamplingCounter = 0;
-static int outUpsamplingCounter = 0;
+static int i2sInDownsamplingCounter = 0;
+static int i2sOutUpsamplingCounter = 0;
 #if (I2S_DOWNSAMPLE_FACTOR_IN > 1) || (I2S_UPSAMPLE_FACTOR_OUT > 1)
 #include "src.h"
 #endif // (I2S_DOWNSAMPLE_FACTOR_IN > 1) || (I2S_UPSAMPLE_FACTOR_OUT > 1)
@@ -506,23 +506,23 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
 #endif
 
 #if (I2S_DOWNSAMPLE_FACTOR_IN > 1)
-    union ds3Data
+    union i2sInDs3
     {
         long long doubleWordAlignmentEnsured;
         /* [Number of I2S channels][Number of samples/phases][Taps per phase] */
-        int32_t inputDelayLine[I2S_DOWNSAMPLE_CHANS_IN][I2S_DOWNSAMPLE_FACTOR_IN][24];
-    } ds3Data;
-    memset(&ds3Data.inputDelayLine, 0, sizeof ds3Data.inputDelayLine);
-    int64_t inputDs3Sum[I2S_DOWNSAMPLE_CHANS_IN];
+        int32_t delayLine[I2S_DOWNSAMPLE_CHANS_IN][I2S_DOWNSAMPLE_FACTOR_IN][24];
+    } i2sInDs3;
+    memset(&i2sInDs3.delayLine, 0, sizeof i2sInDs3.delayLine);
+    int64_t i2sInDs3Sum[I2S_DOWNSAMPLE_CHANS_IN];
 #endif // (I2S_DOWNSAMPLE_FACTOR_IN > 1)
 
 #if (I2S_UPSAMPLE_FACTOR_OUT > 1)
-    union us3Data
+    union i2sOutUs3
     {
         long long doubleWordAlignmentEnsured;
-        int32_t outputDelayLine[I2S_CHANS_DAC][24];
-    } us3Data;
-    memset(&us3Data.outputDelayLine, 0, sizeof us3Data.outputDelayLine);
+        int32_t delayLine[I2S_CHANS_DAC][24];
+    } i2sOutUs3;
+    memset(&i2sOutUs3.delayLine, 0, sizeof i2sOutUs3.delayLine);
 #endif // (I2S_UPSAMPLE_FACTOR_OUT > 1)
 
     unsigned command = DoSampleTransfer(c_out, readBuffNo, underflowWord, i_audMan);
@@ -539,7 +539,7 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
         return command;
     }
 
-    inDownsamplingCounter = 0;
+    i2sInDownsamplingCounter = 0;
 
     InitPorts(divide);
 
@@ -672,9 +672,9 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
 #endif
             {
 #if (I2S_DOWNSAMPLE_FACTOR_IN > 1)
-                if (0 == inDownsamplingCounter)
+                if (0 == i2sInDownsamplingCounter)
                 {
-                    memset(&inputDs3Sum, 0, sizeof inputDs3Sum);
+                    memset(&i2sInDs3Sum, 0, sizeof i2sInDs3Sum);
                 }
 #endif // (I2S_DOWNSAMPLE_FACTOR_IN > 1)
 #if (I2S_CHANS_ADC != 0)
@@ -704,22 +704,22 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
                     /* Note the use of readBuffNo changes based on frameCount */
                     samplesIn[buffIndex][((frameCount-2)&(I2S_CHANS_PER_FRAME-1))+i] = bitrev(sample); // channels 0, 2, 4.. on each line.
 #if (I2S_DOWNSAMPLE_FACTOR_IN > 1)
-                    if ((I2S_DOWNSAMPLE_FACTOR_IN - 1) == inDownsamplingCounter)
+                    if ((I2S_DOWNSAMPLE_FACTOR_IN - 1) == i2sInDownsamplingCounter)
                     {
                         samplesIn[readBuffNo][((frameCount-2)&(I2S_CHANS_PER_FRAME-1))] =
                             src_ds3_voice_add_final_sample(
-                                inputDs3Sum[((frameCount-2)&(I2S_CHANS_PER_FRAME-1))+i],
-                                ds3Data.inputDelayLine[((frameCount-2)&(I2S_CHANS_PER_FRAME-1))+i][inDownsamplingCounter],
-                                src_ff3v_fir_coefs[inDownsamplingCounter],
+                                i2sInDs3Sum[((frameCount-2)&(I2S_CHANS_PER_FRAME-1))+i],
+                                i2sInDs3.delayLine[((frameCount-2)&(I2S_CHANS_PER_FRAME-1))+i][i2sInDownsamplingCounter],
+                                src_ff3v_fir_coefs[i2sInDownsamplingCounter],
                                 samplesIn[readBuffNo][((frameCount-2)&(I2S_CHANS_PER_FRAME-1))]);
                     }
                     else
                     {
-                        inputDs3Sum[((frameCount-2)&(I2S_CHANS_PER_FRAME-1))+i] =
+                        i2sInDs3Sum[((frameCount-2)&(I2S_CHANS_PER_FRAME-1))+i] =
                             src_ds3_voice_add_sample(
-                            inputDs3Sum[((frameCount-2)&(I2S_CHANS_PER_FRAME-1))+i],
-                            ds3Data.inputDelayLine[((frameCount-2)&(I2S_CHANS_PER_FRAME-1))+i][inDownsamplingCounter],
-                            src_ff3v_fir_coefs[inDownsamplingCounter],
+                            i2sInDs3Sum[((frameCount-2)&(I2S_CHANS_PER_FRAME-1))+i],
+                            i2sInDs3.delayLine[((frameCount-2)&(I2S_CHANS_PER_FRAME-1))+i][i2sInDownsamplingCounter],
+                            src_ff3v_fir_coefs[i2sInDownsamplingCounter],
                             samplesIn[readBuffNo][((frameCount-2)&(I2S_CHANS_PER_FRAME-1))]);
                     }
 #endif // (I2S_DOWNSAMPLE_FACTOR_IN > 1)
@@ -749,13 +749,13 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
                 for(int i = 0; i < I2S_CHANS_DAC; i+=I2S_CHANS_PER_FRAME)
                 {
 #if (I2S_UPSAMPLE_FACTOR_OUT > 1)
-                    if(outUpsamplingCounter == 0) {
-                        samplesOut[frameCount+i] = src_us3_voice_input_sample(us3Data.outputDelayLine[i],
+                    if(i2sOutUpsamplingCounter == 0) {
+                        samplesOut[frameCount+i] = src_us3_voice_input_sample(i2sOutUs3.delayLine[i],
                                                                               src_ff3v_fir_coefs[2],
                                                                               samplesOut[frameCount+i]);
-                    } else { /* outUpsamplingCounter is 1 or 2 */
-                        samplesOut[frameCount+i] = src_us3_voice_get_next_sample(us3Data.outputDelayLine[i], 
-                                                                                 src_ff3v_fir_coefs[2-outUpsamplingCounter]);
+                    } else { /* i2sOutUpsamplingCounter is 1 or 2 */
+                        samplesOut[frameCount+i] = src_us3_voice_get_next_sample(i2sOutUs3.delayLine[i], 
+                                                                                 src_ff3v_fir_coefs[2-i2sOutUpsamplingCounter]);
                     }
 #endif /* (I2S_UPSAMPLE_FACTOR_OUT > 1) */
                     p_i2s_dac[index++] <: bitrev(samplesOut[frameCount +i]);
@@ -806,7 +806,7 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
 #endif
 
 #if (NUM_PDM_MICS > 0)
-                if ((I2S_DOWNSAMPLE_FACTOR_IN - 1) == inDownsamplingCounter)
+                if ((I2S_DOWNSAMPLE_FACTOR_IN - 1) == i2sInDownsamplingCounter)
                 {
                     /* Get samples from PDM->PCM comverter */
                     c_pdm_pcm <: 1;
@@ -850,22 +850,22 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
 
                     samplesIn[buffIndex][((frameCount-1)&(I2S_CHANS_PER_FRAME-1))+i] = bitrev(sample); // channels 1, 3, 5.. on each line.
 #if ((I2S_DOWNSAMPLE_FACTOR_IN > 1) && !I2S_DOWNSAMPLE_MONO_IN)
-                    if ((I2S_DOWNSAMPLE_FACTOR_IN - 1) == inDownsamplingCounter)
+                    if ((I2S_DOWNSAMPLE_FACTOR_IN - 1) == i2sInDownsamplingCounter)
                     {
                         samplesIn[buffIndex][((frameCount-1)&(I2S_CHANS_PER_FRAME-1))+i] =
                             src_ds3_voice_add_final_sample(
-                                inputDs3Sum[((frameCount-1)&(I2S_CHANS_PER_FRAME-1))+i],
-                                ds3Data.inputDelayLine[((frameCount-1)&(I2S_CHANS_PER_FRAME-1))+i][inDownsamplingCounter],
-                                src_ff3v_fir_coefs[inDownsamplingCounter],
+                                i2sInDs3Sum[((frameCount-1)&(I2S_CHANS_PER_FRAME-1))+i],
+                                i2sInDs3.delayLine[((frameCount-1)&(I2S_CHANS_PER_FRAME-1))+i][i2sInDownsamplingCounter],
+                                src_ff3v_fir_coefs[i2sInDownsamplingCounter],
                                 samplesIn[readBuffNo][((frameCount-1)&(I2S_CHANS_PER_FRAME-1))+i]);
                     }
                     else
                     {
-                        inputDs3Sum[((frameCount-2)&(I2S_CHANS_PER_FRAME-1))+i] =
+                        i2sInDs3Sum[((frameCount-2)&(I2S_CHANS_PER_FRAME-1))+i] =
                             src_ds3_voice_add_sample(
-                            inputDs3Sum[((frameCount-1)&(I2S_CHANS_PER_FRAME-1))+i],
-                            ds3Data.inputDelayLine[((frameCount-1)&(I2S_CHANS_PER_FRAME-1))+i][inDownsamplingCounter],
-                            src_ff3v_fir_coefs[inDownsamplingCounter],
+                            i2sInDs3Sum[((frameCount-1)&(I2S_CHANS_PER_FRAME-1))+i],
+                            i2sInDs3.delayLine[((frameCount-1)&(I2S_CHANS_PER_FRAME-1))+i][i2sInDownsamplingCounter],
+                            src_ff3v_fir_coefs[i2sInDownsamplingCounter],
                             samplesIn[readBuffNo][((frameCount-1)&(I2S_CHANS_PER_FRAME-1))+i]);
                     }
 #endif // ((I2S_DOWNSAMPLE_FACTOR_IN > 1) && !I2S_DOWNSAMPLE_MONO_IN)
@@ -892,13 +892,13 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
                 for(int i = 1; i < I2S_CHANS_DAC; i+=I2S_CHANS_PER_FRAME)
                 {
 #if (I2S_UPSAMPLE_FACTOR_OUT > 1)
-                    if(outUpsamplingCounter == 0) {
-                        samplesOut[frameCount+i] = src_us3_voice_input_sample(us3Data.outputDelayLine[i],
+                    if(i2sOutUpsamplingCounter == 0) {
+                        samplesOut[frameCount+i] = src_us3_voice_input_sample(i2sOutUs3.delayLine[i],
                                                                               src_ff3v_fir_coefs[2],
                                                                               samplesOut[frameCount+i]);
-                    } else { /* outUpsamplingCounter is 1 or 2 */
-                        samplesOut[frameCount+i] = src_us3_voice_get_next_sample(us3Data.outputDelayLine[i], 
-                                                                                 src_ff3v_fir_coefs[2-outUpsamplingCounter]);
+                    } else { /* i2sOutUpsamplingCounter is 1 or 2 */
+                        samplesOut[frameCount+i] = src_us3_voice_get_next_sample(i2sOutUs3.delayLine[i],
+                                                                                 src_ff3v_fir_coefs[2-i2sOutUpsamplingCounter]);
                     }
 #endif /* (I2S_UPSAMPLE_FACTOR_OUT > 1) */
                     p_i2s_dac[index++] <: bitrev(samplesOut[frameCount + i]);
@@ -964,7 +964,7 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
             if(frameCount == I2S_CHANS_PER_FRAME)
 #endif
             {
-                if ((I2S_DOWNSAMPLE_FACTOR_IN - 1) == inDownsamplingCounter)
+                if ((I2S_DOWNSAMPLE_FACTOR_IN - 1) == i2sInDownsamplingCounter)
                 {
                     /* Do samples transfer */
                     /* The below looks a bit odd but forces the compiler to inline twice */
@@ -980,22 +980,22 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
                     }
 
                     /* Reset frame counter and flip the ADC buffer */
-                    inDownsamplingCounter = 0;
+                    i2sInDownsamplingCounter = 0;
                     frameCount = 0;
                     readBuffNo = !readBuffNo;
                 }
                 else
                 {
-                    ++inDownsamplingCounter;
+                    ++i2sInDownsamplingCounter;
                 }
 
-                if((I2S_UPSAMPLE_FACTOR_OUT - 1) == outUpsamplingCounter)
+                if((I2S_UPSAMPLE_FACTOR_OUT - 1) == i2sOutUpsamplingCounter)
                 {
-                    outUpsamplingCounter = 0;
+                    i2sOutUpsamplingCounter = 0;
                 }
                 else
                 {
-                    ++outUpsamplingCounter;
+                    ++i2sOutUpsamplingCounter;
                 }
             }
         }
