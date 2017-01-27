@@ -748,12 +748,15 @@ int i2sOutUpsamplingCounter = 0;
                 for(int i = 0; i < I2S_CHANS_DAC; i+=I2S_CHANS_PER_FRAME)
                 {
 #if (I2S_UPSAMPLE_FACTOR_OUT > 1)
-                    if(i2sOutUpsamplingCounter == 0) {
+                    if (i2sOutUpsamplingCounter == 0)
+                    {
                         samplesOut[frameCount+i] = src_us3_voice_input_sample(i2sOutUs3.delayLine[i],
                                                                               src_ff3v_fir_coefs[2],
                                                                               samplesOut[frameCount+i]);
-                    } else { /* i2sOutUpsamplingCounter is 1 or 2 */
-                        samplesOut[frameCount+i] = src_us3_voice_get_next_sample(i2sOutUs3.delayLine[i], 
+                    }
+                    else
+                    { /* i2sOutUpsamplingCounter is 1 or 2 */
+                        samplesOut[frameCount+i] = src_us3_voice_get_next_sample(i2sOutUs3.delayLine[i],
                                                                                  src_ff3v_fir_coefs[2-i2sOutUpsamplingCounter]);
                     }
 #endif /* (I2S_UPSAMPLE_FACTOR_OUT > 1) */
@@ -891,11 +894,14 @@ int i2sOutUpsamplingCounter = 0;
                 for(int i = 1; i < I2S_CHANS_DAC; i+=I2S_CHANS_PER_FRAME)
                 {
 #if (I2S_UPSAMPLE_FACTOR_OUT > 1)
-                    if(i2sOutUpsamplingCounter == 0) {
+                    if (i2sOutUpsamplingCounter == 0)
+                    {
                         samplesOut[frameCount+i] = src_us3_voice_input_sample(i2sOutUs3.delayLine[i],
                                                                               src_ff3v_fir_coefs[2],
                                                                               samplesOut[frameCount+i]);
-                    } else { /* i2sOutUpsamplingCounter is 1 or 2 */
+                    }
+                    else
+                    { /* i2sOutUpsamplingCounter is 1 or 2 */
                         samplesOut[frameCount+i] = src_us3_voice_get_next_sample(i2sOutUs3.delayLine[i],
                                                                                  src_ff3v_fir_coefs[2-i2sOutUpsamplingCounter]);
                     }
