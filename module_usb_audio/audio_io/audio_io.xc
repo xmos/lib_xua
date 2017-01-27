@@ -57,8 +57,6 @@ static unsigned samplesIn[2][MAX(NUM_USB_CHAN_IN, IN_CHAN_COUNT)];
 #undef SPDIF_RX
 #endif
 
-static int i2sInDownsamplingCounter = 0;
-static int i2sOutUpsamplingCounter = 0;
 #if (I2S_DOWNSAMPLE_FACTOR_IN > 1) || (I2S_UPSAMPLE_FACTOR_OUT > 1)
 #include "src.h"
 #endif // (I2S_DOWNSAMPLE_FACTOR_IN > 1) || (I2S_UPSAMPLE_FACTOR_OUT > 1)
@@ -505,6 +503,9 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
     }
 #endif
 
+int i2sInDownsamplingCounter = 0;
+int i2sOutUpsamplingCounter = 0;
+
 #if (I2S_DOWNSAMPLE_FACTOR_IN > 1)
     union i2sInDs3
     {
@@ -538,8 +539,6 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
     {
         return command;
     }
-
-    i2sInDownsamplingCounter = 0;
 
     InitPorts(divide);
 
