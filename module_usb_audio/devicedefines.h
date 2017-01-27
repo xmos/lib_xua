@@ -135,6 +135,19 @@
 #endif
 
 /**
+ * @brief Outgoing I2S (host to device) channels can be upsampled by a factor of 3.
+ *
+ * Default: 1 i.e. upsampling is disabled.
+ */
+#ifndef I2S_UPSAMPLE_FACTOR_OUT
+#define I2S_UPSAMPLE_FACTOR_OUT (1)
+#else
+    #if (I2S_UPSAMPLE_FACTOR_OUT != 3) && (I2S_UPSAMPLE_FACTOR_OUT != 1)
+        #error Unsupported I2S input upsampling configuration
+    #endif
+#endif
+
+/**
  * @brief Only downsample one channel per input I2S frame.
  *
  * Default: 0 i.e. mono mode is disabled, all input channels will be downsampled.

@@ -57,10 +57,6 @@ static unsigned samplesIn[2][MAX(NUM_USB_CHAN_IN, IN_CHAN_COUNT)];
 #undef SPDIF_RX
 #endif
 
-#ifndef I2S_UPSAMPLE_FACTOR_OUT
-#define I2S_UPSAMPLE_FACTOR_OUT (1)
-#endif
-
 static int inDownsamplingCounter = 0;
 static int outUpsamplingCounter = 0;
 #if (I2S_DOWNSAMPLE_FACTOR_IN > 1) || (I2S_UPSAMPLE_FACTOR_OUT > 1)
