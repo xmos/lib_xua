@@ -61,7 +61,7 @@ static int inDownsamplingCounter = 0;
 static int outUpsamplingCounter = 0;
 #if (I2S_DOWNSAMPLE_FACTOR_IN > 1) || (I2S_UPSAMPLE_FACTOR_OUT > 1)
 #include "src.h"
-#endif // (I2S_DOWNSAMPLE_FACTOR_IN > 1)
+#endif // (I2S_DOWNSAMPLE_FACTOR_IN > 1) || (I2S_UPSAMPLE_FACTOR_OUT > 1)
 
 #if (DSD_CHANS_DAC != 0)
 extern buffered out port:32 p_dsd_dac[DSD_CHANS_DAC];
