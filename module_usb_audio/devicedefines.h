@@ -143,7 +143,7 @@
 #define I2S_UPSAMPLE_FACTOR_OUT (1)
 #else
     #if (I2S_UPSAMPLE_FACTOR_OUT != 3) && (I2S_UPSAMPLE_FACTOR_OUT != 1)
-        #error Unsupported I2S input upsampling configuration
+        #error Unsupported I2S output upsampling configuration
     #endif
 #endif
 

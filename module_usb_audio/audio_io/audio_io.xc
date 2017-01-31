@@ -810,7 +810,7 @@ int i2sOutUpsamplingCounter = 0;
 #if (NUM_PDM_MICS > 0)
                 if ((I2S_DOWNSAMPLE_FACTOR_IN - 1) == i2sInDownsamplingCounter)
                 {
-                    /* Get samples from PDM->PCM comverter */
+                    /* Get samples from PDM->PCM converter */
                     c_pdm_pcm <: 1;
                     master
                     {

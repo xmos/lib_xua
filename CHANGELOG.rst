@@ -3,7 +3,7 @@ sc_usb_audio Change Log
 
 7.0.2
 -----
-    - ADDED:      I2S output down-sampling (I2S_DOWNSAMPLE_FACTOR_OUT)
+    - ADDED:      I2S output up-sampling (I2S_UPSAMPLE_FACTOR_OUT)
     - CHANGE:     Rename I2S input down-sampling (I2S_DOWNSAMPLE_FACTOR to I2S_DOWNSAMPLE_FACTOR_IN)
 
 7.0.1
