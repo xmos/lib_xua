@@ -16,6 +16,7 @@
 
 #include "devicedefines.h"
 
+#include "userbuffermanagement.h"
 #include "xua_audio.h"
 #include "audioports.h"
 #include "audiohw.h"
@@ -242,10 +243,6 @@ static inline void TransferAdatTxSamples(chanend c_adat_out, const unsigned samp
     }
 }
 #endif
-
-/* sampsFromUsbToAudio: The sample frame the device has received from the host and is going to play to the output audio interfaces */
-/* sampsFromAudioToUsb: The sample frame that was received from the audio interfaces and that the device is going to send to the host */
-void UserBufferManagement(unsigned sampsFromUsbToAudio[], unsigned sampsFromAudioToUsb[], client audManage_if i_audMan);
 
 #ifndef NO_USB
 #pragma unsafe arrays
@@ -526,7 +523,12 @@ int i2sOutUpsamplingCounter = 0;
     memset(&i2sOutUs3.delayLine, 0, sizeof i2sOutUs3.delayLine);
 #endif // (I2S_UPSAMPLE_FACTOR_OUT > 1)
 
+    UserBufferManagementInit(i_audMan);
+
     unsigned command = DoSampleTransfer(c_out, readBuffNo, underflowWord, i_audMan);
+
+    // Reinitialise user state before entering the main loop
+    UserBufferManagementInit(i_audMan);
 
 #ifdef ADAT_TX
     unsafe{

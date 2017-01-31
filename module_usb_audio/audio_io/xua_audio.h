@@ -1,6 +1,8 @@
 #ifndef __audio_h__
 #define __audio_h__
 
+#if __XC__
+
 #include "dfu_interface.h"
 
 typedef interface audManage_if
@@ -45,5 +47,7 @@ void audio(chanend c_in,
 );
 
 void SpdifTxWrapper(chanend c_spdif_tx);
+
+#endif // __XC__
 
 #endif // __audio_h__

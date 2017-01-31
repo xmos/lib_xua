@@ -3,6 +3,7 @@ sc_usb_audio Change Log
 
 7.0.2
 -----
+    - ADDED:      UserBufferManagementInit() to reset any state required in UserBufferManagement()
     - ADDED:      I2S output up-sampling (I2S_UPSAMPLE_FACTOR_OUT)
     - CHANGE:     Rename I2S input down-sampling (I2S_DOWNSAMPLE_FACTOR to I2S_DOWNSAMPLE_FACTOR_IN)
 
