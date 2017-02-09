@@ -702,27 +702,29 @@ int i2sOutUpsamplingCounter = 0;
 #endif // I2S_MODE_TDM
 #endif // CODEC_MASTER
 
-                    /* Note the use of readBuffNo changes based on frameCount */
-                    samplesIn[buffIndex][((frameCount-2)&(I2S_CHANS_PER_FRAME-1))+i] = bitrev(sample); // channels 0, 2, 4.. on each line.
+                    sample = bitrev(sample);
+                    int chanIndex = ((frameCount-2)&(I2S_CHANS_PER_FRAME-1))+i; // channels 0, 2, 4.. on each line.
 #if (I2S_DOWNSAMPLE_FACTOR_IN > 1)
                     if ((I2S_DOWNSAMPLE_FACTOR_IN - 1) == i2sInDownsamplingCounter)
                     {
-                        samplesIn[readBuffNo][((frameCount-2)&(I2S_CHANS_PER_FRAME-1))] =
+                        samplesIn[buffIndex][chanIndex] =
                             src_ds3_voice_add_final_sample(
-                                i2sInDs3Sum[((frameCount-2)&(I2S_CHANS_PER_FRAME-1))+i],
-                                i2sInDs3.delayLine[((frameCount-2)&(I2S_CHANS_PER_FRAME-1))+i][i2sInDownsamplingCounter],
+                                i2sInDs3Sum[chanIndex],
+                                i2sInDs3.delayLine[chanIndex][i2sInDownsamplingCounter],
                                 src_ff3v_fir_coefs[i2sInDownsamplingCounter],
-                                samplesIn[readBuffNo][((frameCount-2)&(I2S_CHANS_PER_FRAME-1))]);
+                                sample);
                     }
                     else
                     {
-                        i2sInDs3Sum[((frameCount-2)&(I2S_CHANS_PER_FRAME-1))+i] =
+                        i2sInDs3Sum[chanIndex] =
                             src_ds3_voice_add_sample(
-                            i2sInDs3Sum[((frameCount-2)&(I2S_CHANS_PER_FRAME-1))+i],
-                            i2sInDs3.delayLine[((frameCount-2)&(I2S_CHANS_PER_FRAME-1))+i][i2sInDownsamplingCounter],
-                            src_ff3v_fir_coefs[i2sInDownsamplingCounter],
-                            samplesIn[readBuffNo][((frameCount-2)&(I2S_CHANS_PER_FRAME-1))]);
+                                i2sInDs3Sum[chanIndex],
+                                i2sInDs3.delayLine[chanIndex][i2sInDownsamplingCounter],
+                                src_ff3v_fir_coefs[i2sInDownsamplingCounter],
+                                sample);
                     }
+#else
+                    samplesIn[buffIndex][chanIndex] = sample;
 #endif // (I2S_DOWNSAMPLE_FACTOR_IN > 1)
                 }
 #endif
@@ -852,26 +854,29 @@ int i2sOutUpsamplingCounter = 0;
 #endif // I2S_MODE_TDM
 #endif // CODEC_MASTER
 
-                    samplesIn[buffIndex][((frameCount-1)&(I2S_CHANS_PER_FRAME-1))+i] = bitrev(sample); // channels 1, 3, 5.. on each line.
+                    sample = bitrev(sample);
+                    int chanIndex = ((frameCount-1)&(I2S_CHANS_PER_FRAME-1))+i; // channels 1, 3, 5.. on each line.
 #if ((I2S_DOWNSAMPLE_FACTOR_IN > 1) && !I2S_DOWNSAMPLE_MONO_IN)
                     if ((I2S_DOWNSAMPLE_FACTOR_IN - 1) == i2sInDownsamplingCounter)
                     {
-                        samplesIn[buffIndex][((frameCount-1)&(I2S_CHANS_PER_FRAME-1))+i] =
+                        samplesIn[buffIndex][chanIndex] =
                             src_ds3_voice_add_final_sample(
-                                i2sInDs3Sum[((frameCount-1)&(I2S_CHANS_PER_FRAME-1))+i],
-                                i2sInDs3.delayLine[((frameCount-1)&(I2S_CHANS_PER_FRAME-1))+i][i2sInDownsamplingCounter],
+                                i2sInDs3Sum[chanIndex],
+                                i2sInDs3.delayLine[chanIndex][i2sInDownsamplingCounter],
                                 src_ff3v_fir_coefs[i2sInDownsamplingCounter],
-                                samplesIn[readBuffNo][((frameCount-1)&(I2S_CHANS_PER_FRAME-1))+i]);
+                                sample);
                     }
                     else
                     {
-                        i2sInDs3Sum[((frameCount-2)&(I2S_CHANS_PER_FRAME-1))+i] =
+                        i2sInDs3Sum[chanIndex] =
                             src_ds3_voice_add_sample(
-                            i2sInDs3Sum[((frameCount-1)&(I2S_CHANS_PER_FRAME-1))+i],
-                            i2sInDs3.delayLine[((frameCount-1)&(I2S_CHANS_PER_FRAME-1))+i][i2sInDownsamplingCounter],
-                            src_ff3v_fir_coefs[i2sInDownsamplingCounter],
-                            samplesIn[readBuffNo][((frameCount-1)&(I2S_CHANS_PER_FRAME-1))+i]);
+                                i2sInDs3Sum[chanIndex],
+                                i2sInDs3.delayLine[chanIndex][i2sInDownsamplingCounter],
+                                src_ff3v_fir_coefs[i2sInDownsamplingCounter],
+                                sample);
                     }
+#else
+                    samplesIn[buffIndex][chanIndex] = sample;
 #endif // ((I2S_DOWNSAMPLE_FACTOR_IN > 1) && !I2S_DOWNSAMPLE_MONO_IN)
 
                 }
