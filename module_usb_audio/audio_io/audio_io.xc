@@ -58,9 +58,9 @@ static unsigned samplesIn[2][MAX(NUM_USB_CHAN_IN, IN_CHAN_COUNT)];
 #undef SPDIF_RX
 #endif
 
-#if (I2S_DOWNSAMPLE_FACTOR_IN > 1) || (I2S_UPSAMPLE_FACTOR_OUT > 1)
+#if (USB_TO_AUD_RATIO > 1)
 #include "src.h"
-#endif // (I2S_DOWNSAMPLE_FACTOR_IN > 1) || (I2S_UPSAMPLE_FACTOR_OUT > 1)
+#endif
 
 #if (DSD_CHANS_DAC != 0)
 extern buffered out port:32 p_dsd_dac[DSD_CHANS_DAC];
@@ -500,28 +500,26 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
     }
 #endif
 
-int i2sInDownsamplingCounter = 0;
-int i2sOutUpsamplingCounter = 0;
+    unsigned usbToAudioRatioCounter = 0;
 
-#if (I2S_DOWNSAMPLE_FACTOR_IN > 1)
+#if (USB_TO_AUD_RATIO > 1)
     union i2sInDs3
     {
         long long doubleWordAlignmentEnsured;
         /* [Number of I2S channels][Number of samples/phases][Taps per phase] */
-        int32_t delayLine[I2S_DOWNSAMPLE_CHANS_IN][I2S_DOWNSAMPLE_FACTOR_IN][24];
+        /* TODO: Fix for mono */
+        int32_t delayLine[I2S_CHANS_ADC][USB_TO_AUD_RATIO][24];
     } i2sInDs3;
     memset(&i2sInDs3.delayLine, 0, sizeof i2sInDs3.delayLine);
-    int64_t i2sInDs3Sum[I2S_DOWNSAMPLE_CHANS_IN];
-#endif // (I2S_DOWNSAMPLE_FACTOR_IN > 1)
+    int64_t i2sInDs3Sum[I2S_CHANS_ADC];
 
-#if (I2S_UPSAMPLE_FACTOR_OUT > 1)
     union i2sOutUs3
     {
         long long doubleWordAlignmentEnsured;
         int32_t delayLine[I2S_CHANS_DAC][24];
     } i2sOutUs3;
     memset(&i2sOutUs3.delayLine, 0, sizeof i2sOutUs3.delayLine);
-#endif // (I2S_UPSAMPLE_FACTOR_OUT > 1)
+#endif /* (USB_TO_AUD_RATIO > 1) */
 
     UserBufferManagementInit(i_audMan);
 
@@ -672,13 +670,13 @@ int i2sOutUpsamplingCounter = 0;
             else
 #endif
             {
-#if (I2S_DOWNSAMPLE_FACTOR_IN > 1)
-                if (0 == i2sInDownsamplingCounter)
+#if (I2S_CHANS_ADC != 0)
+#if (USB_TO_AUD_RATIO > 1)
+                if (0 == usbToAudioRatioCounter)
                 {
                     memset(&i2sInDs3Sum, 0, sizeof i2sInDs3Sum);
                 }
-#endif // (I2S_DOWNSAMPLE_FACTOR_IN > 1)
-#if (I2S_CHANS_ADC != 0)
+#endif /* (USB_TO_AUD_RATIO > 1) */
                 /* Input previous L sample into L in buffer */
                 index = 0;
                 /* First input (i.e. frameCount == 0) we read last ADC channel of previous frame.. */
@@ -704,14 +702,14 @@ int i2sOutUpsamplingCounter = 0;
 
                     /* Note the use of readBuffNo changes based on frameCount */
                     samplesIn[buffIndex][((frameCount-2)&(I2S_CHANS_PER_FRAME-1))+i] = bitrev(sample); // channels 0, 2, 4.. on each line.
-#if (I2S_DOWNSAMPLE_FACTOR_IN > 1)
-                    if ((I2S_DOWNSAMPLE_FACTOR_IN - 1) == i2sInDownsamplingCounter)
+#if (USB_TO_AUD_RATIO > 1)
+                    if ((USB_TO_AUD_RATIO - 1) == usbToAudioRatioCounter)
                     {
                         samplesIn[readBuffNo][((frameCount-2)&(I2S_CHANS_PER_FRAME-1))] =
                             src_ds3_voice_add_final_sample(
                                 i2sInDs3Sum[((frameCount-2)&(I2S_CHANS_PER_FRAME-1))+i],
-                                i2sInDs3.delayLine[((frameCount-2)&(I2S_CHANS_PER_FRAME-1))+i][i2sInDownsamplingCounter],
-                                src_ff3v_fir_coefs[i2sInDownsamplingCounter],
+                                i2sInDs3.delayLine[((frameCount-2)&(I2S_CHANS_PER_FRAME-1))+i][usbToAudioRatioCounter],
+                                src_ff3v_fir_coefs[usbToAudioRatioCounter],
                                 samplesIn[readBuffNo][((frameCount-2)&(I2S_CHANS_PER_FRAME-1))]);
                     }
                     else
@@ -719,11 +717,11 @@ int i2sOutUpsamplingCounter = 0;
                         i2sInDs3Sum[((frameCount-2)&(I2S_CHANS_PER_FRAME-1))+i] =
                             src_ds3_voice_add_sample(
                             i2sInDs3Sum[((frameCount-2)&(I2S_CHANS_PER_FRAME-1))+i],
-                            i2sInDs3.delayLine[((frameCount-2)&(I2S_CHANS_PER_FRAME-1))+i][i2sInDownsamplingCounter],
-                            src_ff3v_fir_coefs[i2sInDownsamplingCounter],
+                            i2sInDs3.delayLine[((frameCount-2)&(I2S_CHANS_PER_FRAME-1))+i][usbToAudioRatioCounter],
+                            src_ff3v_fir_coefs[usbToAudioRatioCounter],
                             samplesIn[readBuffNo][((frameCount-2)&(I2S_CHANS_PER_FRAME-1))]);
                     }
-#endif // (I2S_DOWNSAMPLE_FACTOR_IN > 1)
+#endif /* (USB_TO_AUD_RATIO > 1) */
                 }
 #endif
 
@@ -749,19 +747,19 @@ int i2sOutUpsamplingCounter = 0;
                 /* Output "even" channel to DAC (i.e. left) */
                 for(int i = 0; i < I2S_CHANS_DAC; i+=I2S_CHANS_PER_FRAME)
                 {
-#if (I2S_UPSAMPLE_FACTOR_OUT > 1)
-                    if (i2sOutUpsamplingCounter == 0)
+#if (USB_TO_AUD_RATIO > 1)
+                    if (0 == usbToAudioRatioCounter)
                     {
                         samplesOut[frameCount+i] = src_us3_voice_input_sample(i2sOutUs3.delayLine[i],
                                                                               src_ff3v_fir_coefs[2],
                                                                               samplesOut[frameCount+i]);
                     }
-                    else
-                    { /* i2sOutUpsamplingCounter is 1 or 2 */
+                    else /* usbToAudioRatioCounter == 1 or 2 */
+                    {
                         samplesOut[frameCount+i] = src_us3_voice_get_next_sample(i2sOutUs3.delayLine[i],
-                                                                                 src_ff3v_fir_coefs[2-i2sOutUpsamplingCounter]);
+                                                                                 src_ff3v_fir_coefs[2-usbToAudioRatioCounter]);
                     }
-#endif /* (I2S_UPSAMPLE_FACTOR_OUT > 1) */
+#endif /* (USB_TO_AUD_RATIO > 1) */
                     p_i2s_dac[index++] <: bitrev(samplesOut[frameCount +i]);
                 }
 #endif // (I2S_CHANS_DAC != 0) && (NUM_USB_CHAN_OUT != 0)
@@ -810,7 +808,7 @@ int i2sOutUpsamplingCounter = 0;
 #endif
 
 #if (NUM_PDM_MICS > 0)
-                if ((I2S_DOWNSAMPLE_FACTOR_IN - 1) == i2sInDownsamplingCounter)
+                if ((USB_TO_AUD_RATIO - 1) == usbToAudioRatioCounter)
                 {
                     /* Get samples from PDM->PCM converter */
                     c_pdm_pcm <: 1;
@@ -853,14 +851,14 @@ int i2sOutUpsamplingCounter = 0;
 #endif // CODEC_MASTER
 
                     samplesIn[buffIndex][((frameCount-1)&(I2S_CHANS_PER_FRAME-1))+i] = bitrev(sample); // channels 1, 3, 5.. on each line.
-#if ((I2S_DOWNSAMPLE_FACTOR_IN > 1) && !I2S_DOWNSAMPLE_MONO_IN)
-                    if ((I2S_DOWNSAMPLE_FACTOR_IN - 1) == i2sInDownsamplingCounter)
+#if ((USB_TO_AUD_RATIO > 1) && !I2S_DOWNSAMPLE_MONO_IN)
+                    if ((USB_TO_AUD_RATIO - 1) == usbToAudioRatioCounter)
                     {
                         samplesIn[buffIndex][((frameCount-1)&(I2S_CHANS_PER_FRAME-1))+i] =
                             src_ds3_voice_add_final_sample(
                                 i2sInDs3Sum[((frameCount-1)&(I2S_CHANS_PER_FRAME-1))+i],
-                                i2sInDs3.delayLine[((frameCount-1)&(I2S_CHANS_PER_FRAME-1))+i][i2sInDownsamplingCounter],
-                                src_ff3v_fir_coefs[i2sInDownsamplingCounter],
+                                i2sInDs3.delayLine[((frameCount-1)&(I2S_CHANS_PER_FRAME-1))+i][usbToAudioRatioCounter],
+                                src_ff3v_fir_coefs[usbToAudioRatioCounter],
                                 samplesIn[readBuffNo][((frameCount-1)&(I2S_CHANS_PER_FRAME-1))+i]);
                     }
                     else
@@ -868,11 +866,11 @@ int i2sOutUpsamplingCounter = 0;
                         i2sInDs3Sum[((frameCount-2)&(I2S_CHANS_PER_FRAME-1))+i] =
                             src_ds3_voice_add_sample(
                             i2sInDs3Sum[((frameCount-1)&(I2S_CHANS_PER_FRAME-1))+i],
-                            i2sInDs3.delayLine[((frameCount-1)&(I2S_CHANS_PER_FRAME-1))+i][i2sInDownsamplingCounter],
-                            src_ff3v_fir_coefs[i2sInDownsamplingCounter],
+                            i2sInDs3.delayLine[((frameCount-1)&(I2S_CHANS_PER_FRAME-1))+i][usbToAudioRatioCounter],
+                            src_ff3v_fir_coefs[usbToAudioRatioCounter],
                             samplesIn[readBuffNo][((frameCount-1)&(I2S_CHANS_PER_FRAME-1))+i]);
                     }
-#endif // ((I2S_DOWNSAMPLE_FACTOR_IN > 1) && !I2S_DOWNSAMPLE_MONO_IN)
+#endif /* ((USB_TO_AUD_RATIO > 1) && !I2S_DOWNSAMPLE_MONO_IN) */
 
                 }
 #endif
@@ -895,19 +893,19 @@ int i2sOutUpsamplingCounter = 0;
 #pragma loop unroll
                 for(int i = 1; i < I2S_CHANS_DAC; i+=I2S_CHANS_PER_FRAME)
                 {
-#if (I2S_UPSAMPLE_FACTOR_OUT > 1)
-                    if (i2sOutUpsamplingCounter == 0)
+#if (USB_TO_AUD_RATIO > 1)
+                    if (usbToAudioRatioCounter == 0)
                     {
                         samplesOut[frameCount+i] = src_us3_voice_input_sample(i2sOutUs3.delayLine[i],
                                                                               src_ff3v_fir_coefs[2],
                                                                               samplesOut[frameCount+i]);
                     }
                     else
-                    { /* i2sOutUpsamplingCounter is 1 or 2 */
+                    { /* usbToAudioRatioCounter is 1 or 2 */
                         samplesOut[frameCount+i] = src_us3_voice_get_next_sample(i2sOutUs3.delayLine[i],
-                                                                                 src_ff3v_fir_coefs[2-i2sOutUpsamplingCounter]);
+                                                                                 src_ff3v_fir_coefs[2-usbToAudioRatioCounter]);
                     }
-#endif /* (I2S_UPSAMPLE_FACTOR_OUT > 1) */
+#endif /* (USB_TO_AUD_RATIO > 1) */
                     p_i2s_dac[index++] <: bitrev(samplesOut[frameCount + i]);
                 }
 #endif // (I2S_CHANS_DAC != 0) && (NUM_USB_CHAN_OUT != 0)
@@ -971,7 +969,7 @@ int i2sOutUpsamplingCounter = 0;
             if(frameCount == I2S_CHANS_PER_FRAME)
 #endif
             {
-                if ((I2S_DOWNSAMPLE_FACTOR_IN - 1) == i2sInDownsamplingCounter)
+                if ((USB_TO_AUD_RATIO - 1) == usbToAudioRatioCounter)
                 {
                     /* Do samples transfer */
                     /* The below looks a bit odd but forces the compiler to inline twice */
@@ -987,22 +985,13 @@ int i2sOutUpsamplingCounter = 0;
                     }
 
                     /* Reset frame counter and flip the ADC buffer */
-                    i2sInDownsamplingCounter = 0;
+                    usbToAudioRatioCounter = 0;
                     frameCount = 0;
                     readBuffNo = !readBuffNo;
                 }
                 else
                 {
-                    ++i2sInDownsamplingCounter;
-                }
-
-                if((I2S_UPSAMPLE_FACTOR_OUT - 1) == i2sOutUpsamplingCounter)
-                {
-                    i2sOutUpsamplingCounter = 0;
-                }
-                else
-                {
-                    ++i2sOutUpsamplingCounter;
+                    ++usbToAudioRatioCounter;
                 }
             }
         }
@@ -1119,7 +1108,7 @@ chanend ?c_config, chanend ?c
     unsigned adatMultiple = 0;
 #endif
 
-    unsigned curSamFreq = DEFAULT_FREQ * I2S_DOWNSAMPLE_FACTOR_IN;
+    unsigned curSamFreq = DEFAULT_FREQ * USB_TO_AUD_RATIO;
     unsigned curSamRes_DAC = STREAM_FORMAT_OUTPUT_1_RESOLUTION_BITS; /* Default to something reasonable */
     unsigned curSamRes_ADC = STREAM_FORMAT_INPUT_1_RESOLUTION_BITS; /* Default to something reasonable - note, currently this never changes*/
     unsigned command;
@@ -1274,7 +1263,7 @@ chanend ?c_config, chanend ?c
         {
             /* TODO wait for good mclk instead of delay */
             /* No delay for DFU modes */
-            if (((curSamFreq / I2S_DOWNSAMPLE_FACTOR_IN) != AUDIO_REBOOT_FROM_DFU) && ((curSamFreq / I2S_DOWNSAMPLE_FACTOR_IN) != AUDIO_STOP_FOR_DFU) && command)
+            if (((curSamFreq / USB_TO_AUD_RATIO) != AUDIO_REBOOT_FROM_DFU) && ((curSamFreq / USB_TO_AUD_RATIO) != AUDIO_STOP_FOR_DFU) && command)
             {
 #if 0
                 /* User should ensure MCLK is stable in AudioHwConfig */
@@ -1319,7 +1308,7 @@ chanend ?c_config, chanend ?c
 
 #if NUM_PDM_MICS > 0
                 /* Send decimation factor to PDM task(s) */
-                c_pdm_in <: curSamFreq / I2S_DOWNSAMPLE_FACTOR_IN;
+                c_pdm_in <: curSamFreq / MICS_TO_AUD_RATIO;
 #endif
 
 #ifdef ADAT_TX
@@ -1358,7 +1347,7 @@ chanend ?c_config, chanend ?c
 #ifndef NO_USB
                 if(command == SET_SAMPLE_FREQ)
                 {
-                    curSamFreq = inuint(c_mix_out) * I2S_DOWNSAMPLE_FACTOR_IN;
+                    curSamFreq = inuint(c_mix_out) * USB_TO_AUD_RATIO;
                 }
                 else if(command == SET_STREAM_FORMAT_OUT)
                 {
@@ -1371,7 +1360,7 @@ chanend ?c_config, chanend ?c
                 }
 
                 /* Currently no more audio will happen after this point */
-                if ((curSamFreq / I2S_DOWNSAMPLE_FACTOR_IN) == AUDIO_STOP_FOR_DFU)
+                if ((curSamFreq / USB_TO_AUD_RATIO) == AUDIO_STOP_FOR_DFU)
                 {
                     outct(c_mix_out, XS1_CT_END);
 
