@@ -4,8 +4,9 @@ sc_usb_audio Change Log
 7.1.0
 -----
     - ADDED:      UserBufferManagementInit() to reset any state required in UserBufferManagement()
-    - ADDED:      I2S output up-sampling (I2S_UPSAMPLE_FACTOR_OUT)
-    - CHANGE:     Rename I2S input down-sampling (I2S_DOWNSAMPLE_FACTOR to I2S_DOWNSAMPLE_FACTOR_IN)
+    - ADDED:      I2S output up-sampling (enabled when USB_TO_AUD_RATIO is > 1)
+    - ADDED:      PDM Mic decimator output rate can now be controlled independently (via MICS_TO_AUD_RATIO)
+    - CHANGE:     Rename I2S input down-sampling (enabled when USB_TO_AUD_RATIO is > 1, rather than via I2S_DOWNSAMPLE_FACTOR)
     - RESOLVED:   Crosstalk between input channels when I2S input down-sampling is enabled
 
 7.0.1

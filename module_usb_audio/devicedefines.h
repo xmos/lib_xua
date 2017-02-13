@@ -122,28 +122,31 @@
 #endif
 
 /**
- * @brief Incoming I2S (device to host) channels can be downsampled by a factor of 3.
+ * @brief Ratio of the USB Audio sample rate to the I2S sample rate. Up and
+ *        down-sampling will be enabled as necessary when the rates differ.
  *
- * Default: 1 i.e. downsampling is disabled.
+ * Default: 1 i.e. USB Audio and I2S are running at the same sample rate.
  */
-#ifndef I2S_DOWNSAMPLE_FACTOR_IN
-#define I2S_DOWNSAMPLE_FACTOR_IN (1)
+#ifndef USB_TO_AUD_RATIO
+#define USB_TO_AUD_RATIO (1)
 #else
-    #if (I2S_DOWNSAMPLE_FACTOR_IN != 3) && (I2S_DOWNSAMPLE_FACTOR_IN != 1)
-        #error Unsupported I2S input downsampling configuration
+    #if (USB_TO_AUD_RATIO != 3) && (USB_TO_AUD_RATIO != 1)
+        #error Unsupported USB Audio to I2S sample rate ratio
     #endif
 #endif
 
 /**
- * @brief Outgoing I2S (host to device) channels can be upsampled by a factor of 3.
+ * @brief Ratio of the PDM microphone decimator sample rate to the I2S sample
+ *        rate. Up and down-sampling will be enabled as necessary when the rates
+ *        differ.
  *
- * Default: 1 i.e. upsampling is disabled.
+ * Default: 1 i.e. PDM microphone decimator and I2S are running at the sample rate.
  */
-#ifndef I2S_UPSAMPLE_FACTOR_OUT
-#define I2S_UPSAMPLE_FACTOR_OUT (1)
+#ifndef MICS_TO_AUD_RATIO
+#define MICS_TO_AUD_RATIO (1)
 #else
-    #if (I2S_UPSAMPLE_FACTOR_OUT != 3) && (I2S_UPSAMPLE_FACTOR_OUT != 1)
-        #error Unsupported I2S output upsampling configuration
+    #if (MICS_TO_AUD_RATIO != 3) && (MICS_TO_AUD_RATIO != 1)
+        #error Unsupported PDM microphone decimator to I2S sample rate ratio
     #endif
 #endif
 
@@ -151,6 +154,7 @@
  * @brief Only downsample one channel per input I2S frame.
  *
  * Default: 0 i.e. mono mode is disabled, all input channels will be downsampled.
+ * TODO: Remove this define or reintroduce support in audio_io.xc
  */
 #ifndef I2S_DOWNSAMPLE_MONO_IN
 #define I2S_DOWNSAMPLE_MONO_IN (0)
@@ -160,6 +164,7 @@
  * @brief Number of incoming (device to host) I2S channels to downsample.
  *
  * Default: The number of I2S incoming channels, or half this if mono downsampling is enabled.
+ * TODO: Remove this define or reintroduce support in audio_io.xc
  */
 #if (I2S_DOWNSAMPLE_MONO_IN == 1)
     #define I2S_DOWNSAMPLE_CHANS_IN (I2S_CHANS_ADC / 2)
