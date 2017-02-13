@@ -507,11 +507,10 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
     {
         long long doubleWordAlignmentEnsured;
         /* [Number of I2S channels][Number of samples/phases][Taps per phase] */
-        /* TODO: Fix for mono */
-        int32_t delayLine[I2S_CHANS_ADC][USB_TO_AUD_RATIO][24];
+        int32_t delayLine[I2S_DOWNSAMPLE_CHANS_IN][USB_TO_AUD_RATIO][24];
     } i2sInDs3;
     memset(&i2sInDs3.delayLine, 0, sizeof i2sInDs3.delayLine);
-    int64_t i2sInDs3Sum[I2S_CHANS_ADC];
+    int64_t i2sInDs3Sum[I2S_DOWNSAMPLE_CHANS_IN];
 
     union i2sOutUs3
     {
@@ -854,7 +853,7 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
 
                     sample = bitrev(sample);
                     int chanIndex = ((frameCount-1)&(I2S_CHANS_PER_FRAME-1))+i; // channels 1, 3, 5.. on each line.
-#if (USB_TO_AUD_RATIO > 1)
+#if (USB_TO_AUD_RATIO > 1 && !I2S_DOWNSAMPLE_MONO_IN)
                     if ((USB_TO_AUD_RATIO - 1) == usbToAudioRatioCounter)
                     {
                         samplesIn[buffIndex][chanIndex] =
@@ -875,7 +874,7 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
                     }
 #else
                     samplesIn[buffIndex][chanIndex] = sample;
-#endif /* (USB_TO_AUD_RATIO > 1) */
+#endif /* (USB_TO_AUD_RATIO > 1) && !I2S_DOWNSAMPLE_MONO_IN */
                 }
 #endif
 

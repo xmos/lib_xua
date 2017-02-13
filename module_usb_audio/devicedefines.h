@@ -154,7 +154,6 @@
  * @brief Only downsample one channel per input I2S frame.
  *
  * Default: 0 i.e. mono mode is disabled, all input channels will be downsampled.
- * TODO: Remove this define or reintroduce support in audio_io.xc
  */
 #ifndef I2S_DOWNSAMPLE_MONO_IN
 #define I2S_DOWNSAMPLE_MONO_IN (0)
@@ -164,7 +163,6 @@
  * @brief Number of incoming (device to host) I2S channels to downsample.
  *
  * Default: The number of I2S incoming channels, or half this if mono downsampling is enabled.
- * TODO: Remove this define or reintroduce support in audio_io.xc
  */
 #if (I2S_DOWNSAMPLE_MONO_IN == 1)
     #define I2S_DOWNSAMPLE_CHANS_IN (I2S_CHANS_ADC / 2)
@@ -172,7 +170,7 @@
         #error Mono I2S input downsampling is not avaliable in TDM mode
     #endif
 #else
-#define I2S_DOWNSAMPLE_CHANS_IN I2S_CHANS_ADC
+    #define I2S_DOWNSAMPLE_CHANS_IN I2S_CHANS_ADC
 #endif
 
 /**
