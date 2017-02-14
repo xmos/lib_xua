@@ -501,6 +501,7 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
 #endif
 
     unsigned usbToAudioRatioCounter = 0;
+    unsigned micsToAudioRatioCounter = 0;
 
 #if (USB_TO_AUD_RATIO > 1)
     union i2sInDs3
@@ -519,6 +520,18 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
     } i2sOutUs3;
     memset(&i2sOutUs3.delayLine, 0, sizeof i2sOutUs3.delayLine);
 #endif /* (USB_TO_AUD_RATIO > 1) */
+
+
+    /* Get initial samples from PDM->PCM converter to avoid stalling the decimators */
+    c_pdm_pcm <: 1;
+    master
+    {
+#pragma loop unroll
+        for(int i = PDM_MIC_INDEX; i < (NUM_PDM_MICS + PDM_MIC_INDEX); i++)
+        {
+            c_pdm_pcm :> samplesIn[readBuffNo][i];
+        }
+    }
 
     UserBufferManagementInit(i_audMan);
 
@@ -809,7 +822,7 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
 #endif
 
 #if (NUM_PDM_MICS > 0)
-                if ((USB_TO_AUD_RATIO - 1) == usbToAudioRatioCounter)
+                if ((MICS_TO_AUD_RATIO - 1) == micsToAudioRatioCounter)
                 {
                     /* Get samples from PDM->PCM converter */
                     c_pdm_pcm <: 1;
@@ -821,6 +834,11 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
                             c_pdm_pcm :> samplesIn[readBuffNo][i];
                         }
                     }
+                    micsToAudioRatioCounter = 0;
+                }
+                else
+                {
+                    ++micsToAudioRatioCounter;
                 }
 #endif
             }
