@@ -140,9 +140,9 @@ void pdm_buffer(streaming chanend c_ds_output[2], chanend c_audio)
                 if(req)
                 unsafe{
 
-                    slave   
+                    slave
                     {
-                        /* We store an additional buffer so we can reply immediately */                    
+                        /* We store an additional buffer so we can reply immediately */
 #pragma loop unroll
                         for(int i = 0; i < NUM_PDM_MICS; i++)
                         {
@@ -218,9 +218,9 @@ void pdm_mic(streaming chanend c_ds_output[2])
 
     /* Note, codebase currently does not handle a different divide for each clock */
     assert((MCLK_48 / 3072000) == (MCLK_441 / 2822400));
-       
+
     unsigned micDiv = MCLK_48/3072000;
-    
+
     configure_clock_src_divide(pdmclk, p_mclk, micDiv/2);
     configure_port_clock_output(p_pdm_clk, pdmclk);
     configure_in_port(p_pdm_mics, pdmclk);
