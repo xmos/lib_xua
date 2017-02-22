@@ -17,7 +17,7 @@
 #include "mic_array.h"
 #include "xua_pdm_mic.h"
 
-#define MAX_DECIMATION_FACTOR (96000/MIN_FREQ)
+#define MAX_DECIMATION_FACTOR (96000/(MIN_FREQ/MICS_TO_AUD_RATIO))
 
 /* Hardware resources */
 in port p_pdm_clk                = PORT_PDM_CLK;
