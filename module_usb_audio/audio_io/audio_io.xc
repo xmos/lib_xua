@@ -507,8 +507,7 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
     union i2sInDs3
     {
         long long doubleWordAlignmentEnsured;
-        /* [Number of I2S channels][Number of samples/phases][Taps per phase] */
-        int32_t delayLine[I2S_DOWNSAMPLE_CHANS_IN][USB_TO_AUD_RATIO][24];
+        int32_t delayLine[I2S_DOWNSAMPLE_CHANS_IN][SRC_FF3V_FIR_NUM_PHASES][SRC_FF3V_FIR_TAPS_PER_PHASE];
     } i2sInDs3;
     memset(&i2sInDs3.delayLine, 0, sizeof i2sInDs3.delayLine);
     int64_t i2sInDs3Sum[I2S_DOWNSAMPLE_CHANS_IN];
@@ -516,7 +515,7 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
     union i2sOutUs3
     {
         long long doubleWordAlignmentEnsured;
-        int32_t delayLine[I2S_CHANS_DAC][24];
+        int32_t delayLine[I2S_CHANS_DAC][SRC_FF3V_FIR_TAPS_PER_PHASE];
     } i2sOutUs3;
     memset(&i2sOutUs3.delayLine, 0, sizeof i2sOutUs3.delayLine);
 #endif /* (USB_TO_AUD_RATIO > 1) */
