@@ -25,8 +25,7 @@ in buffered port:32 p_pdm_mics   = PORT_PDM_DATA;
 in port p_mclk                   = PORT_PDM_MCLK;
 clock pdmclk                     = on tile[PDM_TILE]: XS1_CLKBLK_3;
 
-int data_0[4*THIRD_STAGE_COEFS_PER_STAGE * MAX_DECIMATION_FACTOR] = {0};
-int data_1[4*THIRD_STAGE_COEFS_PER_STAGE * MAX_DECIMATION_FACTOR] = {0};
+int mic_decimator_fir_data[8][THIRD_STAGE_COEFS_PER_STAGE * MAX_DECIMATION_FACTOR] = {{0}};
 
 mic_array_frame_time_domain mic_audio[2];
 
@@ -97,16 +96,16 @@ void pdm_buffer(streaming chanend c_ds_output[2], chanend c_audio)
         dcc.buffering_type = DECIMATOR_NO_FRAME_OVERLAP;
         dcc.number_of_frame_buffers = 2;
 
-        //dc[2] = {{&dcc, data_0, {0, 0, 0, 0}, 4}, {&dcc, data_1, {0, 0, 0, 0}, 4}};
+        //dc[2] = {{&dcc, mic_decimator_fir_data[0], {0, 0, 0, 0}, 4}, {&dcc, mic_decimator_fir_data[4], {0, 0, 0, 0}, 4}};
         dc[0].dcc = &dcc;
-        dc[0].data = data_0;
+        dc[0].data = mic_decimator_fir_data[0];
         dc[0].mic_gain_compensation[0]=0;
         dc[0].mic_gain_compensation[1]=0;
         dc[0].mic_gain_compensation[2]=0;
         dc[0].mic_gain_compensation[3]=0;
         dc[0].channel_count = 4;
         dc[1].dcc = &dcc;
-        dc[1].data = data_1;
+        dc[1].data = mic_decimator_fir_data[4];
         dc[1].mic_gain_compensation[0]=0;
         dc[1].mic_gain_compensation[1]=0;
         dc[1].mic_gain_compensation[2]=0;
