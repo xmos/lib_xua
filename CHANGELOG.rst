@@ -8,6 +8,7 @@ sc_usb_audio Change Log
     - ADDED:      PDM Mic decimator output rate can now be controlled independently (via MICS_TO_AUD_RATIO)
     - CHANGE:     Rename I2S input down-sampling (enabled when USB_TO_AUD_RATIO is > 1, rather than via I2S_DOWNSAMPLE_FACTOR)
     - RESOLVED:   Crosstalk between input channels when I2S input down-sampling is enabled
+    - RESOLVED:   Mic decimation data tables properly sized when mic sample-rate < USB audio sample-rate
 
 7.0.1
 -----
