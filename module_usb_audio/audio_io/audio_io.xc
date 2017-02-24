@@ -521,6 +521,7 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
 #endif /* (AUD_TO_USB_RATIO > 1) */
 
 
+#if (NUM_PDM_MICS > 0)
     /* Get initial samples from PDM->PCM converter to avoid stalling the decimators */
     c_pdm_pcm <: 1;
     master
@@ -531,6 +532,7 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
             c_pdm_pcm :> samplesIn[readBuffNo][i];
         }
     }
+#endif // (NUM_PDM_MICS > 0)
 
     UserBufferManagementInit(i_audMan);
 
