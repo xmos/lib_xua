@@ -501,7 +501,7 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
 #endif
 
     unsigned audioToUsbRatioCounter = 0;
-    unsigned micsToAudioRatioCounter = 0;
+    unsigned audioToMicsRatioCounter = 0;
 
 #if (AUD_TO_USB_RATIO > 1)
     union i2sInDs3
@@ -821,7 +821,7 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
 #endif
 
 #if (NUM_PDM_MICS > 0)
-                if ((MICS_TO_AUD_RATIO - 1) == micsToAudioRatioCounter)
+                if ((AUD_TO_MICS_RATIO - 1) == audioToMicsRatioCounter)
                 {
                     /* Get samples from PDM->PCM converter */
                     c_pdm_pcm <: 1;
@@ -833,11 +833,11 @@ unsigned static deliver(chanend c_out, chanend ?c_spd_out,
                             c_pdm_pcm :> samplesIn[readBuffNo][i];
                         }
                     }
-                    micsToAudioRatioCounter = 0;
+                    audioToMicsRatioCounter = 0;
                 }
                 else
                 {
-                    ++micsToAudioRatioCounter;
+                    ++audioToMicsRatioCounter;
                 }
 #endif
             }
@@ -1328,7 +1328,7 @@ chanend ?c_config, chanend ?c
 
 #if NUM_PDM_MICS > 0
                 /* Send decimation factor to PDM task(s) */
-                c_pdm_in <: curSamFreq / MICS_TO_AUD_RATIO;
+                c_pdm_in <: curSamFreq / AUD_TO_MICS_RATIO;
 #endif
 
 #ifdef ADAT_TX

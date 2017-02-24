@@ -136,17 +136,16 @@
 #endif
 
 /**
- * @brief Ratio of the PDM microphone decimator sample rate to the I2S sample
- *        rate. Up and down-sampling will be enabled as necessary when the rates
- *        differ.
+ * @brief Ratio of the I2S sample rate to the PDM microphone decimator sample
+ *        rate.
  *
- * Default: 1 i.e. PDM microphone decimator and I2S are running at the sample rate.
+ * Default: 1 i.e. I2S and PDM microphone decimators are running at the same sample rate.
  */
-#ifndef MICS_TO_AUD_RATIO
-#define MICS_TO_AUD_RATIO (1)
+#ifndef AUD_TO_MICS_RATIO
+#define AUD_TO_MICS_RATIO (1)
 #else
-    #if (MICS_TO_AUD_RATIO != 3) && (MICS_TO_AUD_RATIO != 1)
-        #error Unsupported PDM microphone decimator to I2S sample rate ratio
+    #if (AUD_TO_MICS_RATIO != 3) && (AUD_TO_MICS_RATIO != 1)
+        #error Unsupported I2S to PDM microphone decimator sample rate ratio
     #endif
 #endif
 
