@@ -122,16 +122,16 @@
 #endif
 
 /**
- * @brief Ratio of the USB Audio sample rate to the I2S sample rate. Up and
+ * @brief Ratio of the I2S sample rate to the USB Audio sample rate. Up and
  *        down-sampling will be enabled as necessary when the rates differ.
  *
- * Default: 1 i.e. USB Audio and I2S are running at the same sample rate.
+ * Default: 1 i.e. I2S and USB Audio are running at the same sample rate.
  */
-#ifndef USB_TO_AUD_RATIO
-#define USB_TO_AUD_RATIO (1)
+#ifndef AUD_TO_USB_RATIO
+#define AUD_TO_USB_RATIO (1)
 #else
-    #if (USB_TO_AUD_RATIO != 3) && (USB_TO_AUD_RATIO != 1)
-        #error Unsupported USB Audio to I2S sample rate ratio
+    #if (AUD_TO_USB_RATIO != 3) && (AUD_TO_USB_RATIO != 1)
+        #error Unsupported I2S to USB Audio sample rate ratio
     #endif
 #endif
 
