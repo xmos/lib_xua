@@ -354,7 +354,7 @@ static inline void InitPorts(unsigned divide)
         {
 #pragma xta endpoint "divide_1"
             p_lrclk <: 0 @ tmp;
-            tmp += 100;
+            tmp += 200;
 
             /* Since BCLK is free-running, setup outputs/inputs at a known point in the future */
 #if (I2S_CHANS_DAC != 0)
