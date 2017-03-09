@@ -23,7 +23,7 @@
  *                                  endpoint manager if present
  */
 void Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioCtrl,
-        chanend ?c_mix_ctl,chanend ?c_clk_ctl, chanend ?c_EANativeTransport_ctr, client interface i_dfu dfuInterface
+        chanend ?c_mix_ctl,chanend ?c_clk_ctl, chanend ?c_EANativeTransport_ctr, client interface i_dfu ?dfuInterface
          VENDOR_REQUESTS_PARAMS_DEC_);
 
 #endif

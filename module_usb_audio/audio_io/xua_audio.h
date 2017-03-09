@@ -38,7 +38,7 @@ void audio(chanend c_in,
 #endif
     chanend ?c_config, chanend ?c_adc
 #if (XUD_TILE != 0)
-   , server interface i_dfu dfuInterface
+   , server interface i_dfu ?dfuInterface
 #endif
 #if (NUM_PDM_MICS > 0)
     , chanend c_pdm_in

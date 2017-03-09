@@ -1114,7 +1114,7 @@ chanend c_dig_rx,
 #endif
 chanend ?c_config, chanend ?c
 #if XUD_TILE != 0
-, server interface i_dfu dfuInterface
+, server interface i_dfu ?dfuInterface
 #endif
 #if (NUM_PDM_MICS > 0)
 , chanend c_pdm_in
@@ -1382,6 +1382,7 @@ chanend ?c_config, chanend ?c
                     curSamRes_DAC = inuint(c_mix_out);
                 }
 
+#ifdef DFU
                 /* Currently no more audio will happen after this point */
                 if ((curSamFreq / AUD_TO_USB_RATIO) == AUDIO_STOP_FOR_DFU)
                 {
@@ -1410,6 +1411,8 @@ chanend ?c_config, chanend ?c
                         }
                     }
                 }
+#endif
+
 #endif /* NO_USB */
 
 #ifdef SPDIF_TX
