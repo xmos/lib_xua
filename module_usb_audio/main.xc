@@ -416,7 +416,7 @@ void usb_audio_io(chanend c_aud_in, chanend ?c_adc,
     chanend ?c_clk_ctl,
     chanend ?c_clk_int
 #if (XUD_TILE != 0)
-    , server interface i_dfu dfuInterface
+    , server interface i_dfu ?dfuInterface
 #endif
 #if (NUM_PDM_MICS > 0)
     , chanend c_pdm_pcm
