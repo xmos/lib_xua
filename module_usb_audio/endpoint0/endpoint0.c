@@ -643,7 +643,7 @@ void Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
             if (!DFU_mode_active)
             {
 #endif
-#ifdef AUDIO_CLASS_FALLBACK
+#if defined(AUDIO_CLASS_FALLBACK) && (AUDIO_CLASS != 1)
                 /* Return Audio 2.0 Descriptors with Audio 1.0 as fallback */
                 result = USB_StandardRequests(ep0_out, ep0_in,
                     (unsigned char*)&devDesc_Audio2, sizeof(devDesc_Audio2),
