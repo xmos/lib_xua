@@ -718,7 +718,6 @@ void decouple(chanend c_mix_out
             /* Check for freq change or other update */
 
             GET_SHARED_GLOBAL(tmp, g_freqChange_flag);
-#if (MIN_FREQ != MAX_FREQ)
             if (tmp == SET_SAMPLE_FREQ)
             {
                 SET_SHARED_GLOBAL(g_freqChange_flag, 0);
@@ -765,7 +764,6 @@ void decouple(chanend c_mix_out
                 speedRem = 0;
                 continue;
             }
-#endif
 #if (AUDIO_CLASS == 2)
 #if (MIN_FREQ != MAX_FREQ)
             else
