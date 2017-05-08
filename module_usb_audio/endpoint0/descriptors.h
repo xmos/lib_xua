@@ -2264,11 +2264,11 @@ const unsigned num_freqs_a1 = MAX(3, (0
 #endif
 
 #if (DFU == 1) && (FORCE_UAC1_DFU == 1)
-#define NUM_DFU_INTERFACES 1
-#define DFU_INTERFACE_BYTES 18
+#define DFU_INTERFACE_BYTES   18
+#define DFU_INTERFACES_A1     1
 #else
-#define NUM_DFU_INTERFACES 0
-#define DFU_INTERFACE_BYTES 0
+#define DFU_INTERFACE_BYTES   0
+#define DFU_INTERFACES_A1     0
 #endif
 
 /* Total number of bytes returned for the class-specific AudioControl interface descriptor. 
