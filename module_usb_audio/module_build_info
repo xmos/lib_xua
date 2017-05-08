@@ -29,7 +29,9 @@
 #
 EXCLUDE_FILES += descriptors_2.rst
 
-#MODULE_XCC_FLAGS += $(XCC_FLAGS) -falways-inline
-
 XCC_FLAGS_endpoint0.c = -Os -mno-dual-issue $(XCC_FLAGS)
 XCC_FLAGS_dbcalc.xc = -Os -mno-dual-issue $(XCC_FLAGS)
+XCC_FLAGS_audiorequests.xc = -Os -mno-dual-issue $(XCC_FLAGS)
+XCC_FLAGS_flashlib_user.c = -Os -mno-dual-issue $(XCC_FLAGS)
+XCC_FLAGS_audioports.c = -Os -mno-dual-issue $(XCC_FLAGS)
+XCC_FLAGS_audioports.xc = -Os -mno-dual-issue $(XCC_FLAGS)
