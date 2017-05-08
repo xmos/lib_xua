@@ -1,6 +1,10 @@
 sc_usb_audio Change Log
 =======================
 
+7.2.0
+-----
+    - ADDED:      DFU to UAC1 descriptors (guarded by DFU and FORCE_UAC1_DFU)
+
 7.1.0
 -----
     - ADDED:      UserBufferManagementInit() to reset any state required in UserBufferManagement()

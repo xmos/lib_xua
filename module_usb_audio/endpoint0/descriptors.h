@@ -1067,7 +1067,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
 #error NUM_USB_CHAN_OUT > 32
 #endif
             },
-            0,                              /* 60 iFeature */
+            0,                      /* 60 iFeature */
         },
 #endif
 
@@ -2263,6 +2263,31 @@ const unsigned num_freqs_a1 = MAX(3, (0
 #define NUM_CONTROL_INTERFACES 0
 #endif
 
+#if (DFU == 1) && (FORCE_UAC1_DFU == 1)
+#define NUM_DFU_INTERFACES 1
+#define DFU_INTERFACE_BYTES 18
+#else
+#define NUM_DFU_INTERFACES 0
+#define DFU_INTERFACE_BYTES 0
+#endif
+
+/* Total number of bytes returned for the class-specific AudioControl interface descriptor. 
+ * Includes the combined length of this descriptor header and all Unit and Terminal descriptors 
+ * For us this is IT -> FU -> OT * 2 and a header */
+#define AC_TOTAL_LENGTH             (AC_LENGTH + \
+                                    (INPUT_INTERFACES_A1 *  (12 + ( (8 + NUM_USB_CHAN_IN_FS) * INPUT_VOLUME_CONTROL) + 9)) +\
+                                    (OUTPUT_INTERFACES_A1 * (12 + ( (8 + NUM_USB_CHAN_OUT_FS) * OUTPUT_VOLUME_CONTROL) + 9)))
+
+#define STREAMING_INTERFACES        (INPUT_INTERFACES_A1 + OUTPUT_INTERFACES_A1)
+
+/* Number of interfaces for Audio  1.0 (+1 for control ) */
+/* Note, this is different that INTERFACE_COUNT since we dont support items such as MIDI, iAP etc in UAC1 mode */
+#define NUM_INTERFACES_A1           (1+INPUT_INTERFACES_A1 + OUTPUT_INTERFACES_A1+NUM_CONTROL_INTERFACES)
+
+//#if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP)
+//#define CFG_TOTAL_LENGTH_A1         (18 + AC_TOTAL_LENGTH + (INPUT_INTERFACES_A1 * (49 + num_freqs_a1 * 3)) + (OUTPUT_INTERFACES_A1 * (58 + num_freqs_a1 * 3)) + CONTROL_INTERFACE_BYTES + DFU_INTERFACE_BYTES)
+//#endif
+
 /* Total number of bytes returned for the class-specific AudioControl interface descriptor. 
  * Includes the combined length of this descriptor header and all Unit and Terminal descriptors 
  * For us this is IT -> FU -> OT * 2 and a header */
@@ -2277,9 +2302,9 @@ const unsigned num_freqs_a1 = MAX(3, (0
 #define NUM_INTERFACES_A1           (1+INPUT_INTERFACES_A1 + OUTPUT_INTERFACES_A1+NUM_CONTROL_INTERFACES)
 
 #if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP)
-#define CFG_TOTAL_LENGTH_A1         (18 + AC_TOTAL_LENGTH + (INPUT_INTERFACES_A1 * (49 + num_freqs_a1 * 3)) + (OUTPUT_INTERFACES_A1 * (58 + num_freqs_a1 * 3)) + CONTROL_INTERFACE_BYTES)
+#define CFG_TOTAL_LENGTH_A1         (18 + AC_TOTAL_LENGTH + (INPUT_INTERFACES_A1 * (49 + num_freqs_a1 * 3)) + (OUTPUT_INTERFACES_A1 * (58 + num_freqs_a1 * 3)) + CONTROL_INTERFACE_BYTES + DFU_INTERFACE_BYTES)
 #else
-#define CFG_TOTAL_LENGTH_A1         (18 + AC_TOTAL_LENGTH + (INPUT_INTERFACES_A1 * (49 + num_freqs_a1 * 3)) + (OUTPUT_INTERFACES_A1 * (49 + num_freqs_a1 * 3)) + CONTROL_INTERFACE_BYTES)
+#define CFG_TOTAL_LENGTH_A1         (18 + AC_TOTAL_LENGTH + (INPUT_INTERFACES_A1 * (49 + num_freqs_a1 * 3)) + (OUTPUT_INTERFACES_A1 * (49 + num_freqs_a1 * 3)) + CONTROL_INTERFACE_BYTES + DFU_INTERFACE_BYTES)
 #endif
 
 #define CHARIFY_SR(x) (x & 0xff),((x & 0xff00)>> 8),((x & 0xff0000)>> 16)
@@ -2715,11 +2740,38 @@ unsigned char cfgDesc_Audio1[] =
     0x00, 0x00,                           /* Unused */
 #endif
 
+#if (DFU == 1) && (FORCE_UAC1_DFU == 1)
+
+    /* NOTE: By default we turn off DFU in UAC1.0 mode for a better user experiance in Windows */
+
+    /* Standard DFU class Interface descriptor */
+    0x09,                                /* 0 bLength : Size of this descriptor, in bytes. (field size 1 bytes) */
+    0x04,                                 /* 1 bDescriptorType : INTERFACE descriptor. (field size 1 bytes) */
+    (OUTPUT_INTERFACES_A1 + INPUT_INTERFACES_A1 + 1),  /* 2 bInterfaceNumber : Index of this interface. (field size 1 bytes) */
+    0x00,                                 /* 3 bAlternateSetting : Index of this setting. (field size 1 bytes) */
+    0x00,                                 /* 4 bNumEndpoints : 0 endpoints. (field size 1 bytes) */
+    0xFE,                                 /* 5 bInterfaceClass : DFU. (field size 1 bytes) */
+    0x01,                                 /* 6 bInterfaceSubclass : (field size 1 bytes) */
+    0x01,                                 /* 7 bInterfaceProtocol : Unused. (field size 1 bytes) */
+    offsetof(StringDescTable_t, dfuStr)/sizeof(char *), /* 8 iInterface */
+
+    /* DFU 1.1 Run-Time DFU Functional Descriptor */
+    0x09,                                 /* 0    Size */
+    0x21,                                 /* 1    bDescriptorType : DFU FUNCTIONAL */
+    0x07,                                 /* 2    bmAttributes */
+    0xFA,                                 /* 3    wDetachTimeOut */
+    0x00,                                 /* 4    wDetachTimeOut */
+    0x40,                                 /* 5    wTransferSize */
+    0x00,                                 /* 6    wTransferSize */
+    0x10,                                 /* 7    bcdDFUVersion */
+    0x01,                                /* 7    bcdDFUVersion */
+#endif
+
 #ifdef USB_CONTROL_DESCS
     /* Standard DFU class Interface descriptor */
     0x09,                                 /* 0 bLength : Size of this descriptor, in bytes. (field size 1 bytes) */
     0x04,                                 /* 1 bDescriptorType : INTERFACE descriptor. (field size 1 bytes) */
-    (OUTPUT_INTERFACES_A1 + 2),           /* bInterfaceNumber */
+    (OUTPUT_INTERFACES_A1 + INPUT_INTERFACES_A1 + DFU_INTERFACES_A1 + 1),  /* 2 bInterfaceNumber */
     0x00,                                 /* 3 bAlternateSetting : Index of this setting. (field size 1 bytes) */
     0x00,                                 /* 4 bNumEndpoints : 0 endpoints. (field size 1 bytes) */
     0xFF,                                 /* 5 bInterfaceClass : DFU. (field size 1 bytes) */
