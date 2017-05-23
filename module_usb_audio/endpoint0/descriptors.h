@@ -2280,10 +2280,6 @@ const unsigned num_freqs_a1 = MAX(3, (0
 
 #define STREAMING_INTERFACES        (INPUT_INTERFACES_A1 + OUTPUT_INTERFACES_A1)
 
-/* Number of interfaces for Audio  1.0 (+1 for control ) */
-/* Note, this is different that INTERFACE_COUNT since we dont support items such as MIDI, iAP etc in UAC1 mode */
-#define NUM_INTERFACES_A1           (1+INPUT_INTERFACES_A1 + OUTPUT_INTERFACES_A1+NUM_CONTROL_INTERFACES)
-
 //#if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP)
 //#define CFG_TOTAL_LENGTH_A1         (18 + AC_TOTAL_LENGTH + (INPUT_INTERFACES_A1 * (49 + num_freqs_a1 * 3)) + (OUTPUT_INTERFACES_A1 * (58 + num_freqs_a1 * 3)) + CONTROL_INTERFACE_BYTES + DFU_INTERFACE_BYTES)
 //#endif
