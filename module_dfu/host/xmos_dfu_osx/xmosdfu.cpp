@@ -11,14 +11,16 @@
 #define XMOS_L1_AUDIO1_PID 0x0003
 #define XMOS_L2_AUDIO2_PID 0x0004
 #define XMOS_SU1_AUDIO2_PID 0x0008
-#define XMOS_U8_MFA_AUDIO2_PID 0x000A
+#define XMOS_U8_MFA_AUDIO2_PID 0x0011
+#define XMOS_SMP_AUDIO2_PID 0x0010
 
 unsigned short pidList[] = {XMOS_XCORE_AUDIO_AUDIO2_PID, 
                             XMOS_L1_AUDIO2_PID,
                             XMOS_L1_AUDIO1_PID,
                             XMOS_L2_AUDIO2_PID,
                             XMOS_SU1_AUDIO2_PID, 
-                            XMOS_U8_MFA_AUDIO2_PID}; 
+                            XMOS_U8_MFA_AUDIO2_PID,
+                            XMOS_SMP_AUDIO2_PID}; 
 
 unsigned int XMOS_DFU_IF = 0;
 
@@ -86,8 +88,10 @@ static int find_xmos_device(unsigned int id, unsigned int list)
                     libusb_get_active_config_descriptor(dev, &config_desc); 
                     if (config_desc != NULL) 
                     {
+                        //printf("bNumInterfaces: %d\n", config_desc->bNumInterfaces);
                         for (int j = 0; j < config_desc->bNumInterfaces; j++) 
                         {
+                            //printf("%d\n", j);
                             const libusb_interface_descriptor *inter_desc = ((libusb_interface *)&config_desc->interface[j])->altsetting;
                             if (inter_desc->bInterfaceClass == 0xFE && inter_desc->bInterfaceSubClass == 0x1) 
                             {
@@ -174,8 +178,9 @@ int xmos_dfu_restore_state(unsigned int interface) {
 
 int dfu_download(unsigned int interface, unsigned int block_num, unsigned int size, unsigned char *data) {
   //printf("... Downloading block number %d size %d\r", block_num, size);
-  libusb_control_transfer(devh, DFU_REQUEST_TO_DEV, DFU_DNLOAD, block_num, interface, data, size, 0);
-  return 0;
+  /* Returns actual data size transferred */
+    unsigned int transfered = libusb_control_transfer(devh, DFU_REQUEST_TO_DEV, DFU_DNLOAD, block_num, interface, data, size, 0);
+    return transfered;
 }
 
 int dfu_upload(unsigned int interface, unsigned int block_num, unsigned int size, unsigned char*data) {
@@ -228,7 +233,14 @@ int write_dfu_image(char *file) {
   for (i = 0; i < num_blocks; i++) {
     memset(block_data, 0x0, block_size);
     fread(block_data, 1, block_size, inFile);
-    dfu_download(0, dfuBlockCount, block_size, block_data);
+    int transferred = dfu_download(0, dfuBlockCount, block_size, block_data);
+    if(transferred != block_size)
+    {
+        /* Error */
+        printf("ERROR: %d\n", transferred);
+        return -1;
+
+    }
     dfu_getStatus(0, &dfuState, &timeout, &nextDfuState, &strIndex);
     dfuBlockCount++;
   }
