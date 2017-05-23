@@ -80,7 +80,7 @@ static unsigned int g_midi_from_host_buffer[MAX_USB_MIDI_PACKET_SIZE/4];
 unsigned char  gc_zero_buffer[4];
 #endif
 
-unsigned char fb_clocks[16];
+unsigned int fb_clocks[4];
 
 //#define FB_TOLERANCE_TEST
 #define FB_TOLERANCE 0x100
@@ -239,7 +239,7 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in,
     SET_SHARED_GLOBAL(g_aud_to_host_flag, 1);
 #endif
 
-    (fb_clocks, unsigned[])[0] = 0;
+    fb_clocks[0] = 0;
 
     /* Mark OUT endpoints ready to receive data from host */
 #ifdef MIDI
@@ -261,7 +261,7 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in,
 #if (AUDIO_CLASS == 1) 
 #if (NUM_USB_CHAN_IN == 0) || defined (UAC_FORCE_FEEDBACK_EP)
     /* In UAC1 we dont use a stream start event (and we are always FS) so mark FB EP ready now */
-    XUD_SetReady_In(ep_aud_fb, fb_clocks, 3);
+    XUD_SetReady_In(ep_aud_fb, (fb_clocks, unsigned char[]), 3);
 #endif
 #endif
 
@@ -390,11 +390,11 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in,
 
                         if (busSpeed == XUD_SPEED_HS)
                         {
-                            XUD_SetReady_In(ep_aud_fb, fb_clocks, 4);
+                            XUD_SetReady_In(ep_aud_fb, (fb_clocks, unsigned char[]), 4);
                         }
                         else
                         {
-                            XUD_SetReady_In(ep_aud_fb, fb_clocks, 3);
+                            XUD_SetReady_In(ep_aud_fb, (fb_clocks, unsigned char[]), 3);
                         }
 #endif
                     }
@@ -468,11 +468,11 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in,
 
                             if (usb_speed == XUD_SPEED_HS)
                             {
-                                (fb_clocks, unsigned[])[0] = clocks;
+                                fb_clocks[0] = clocks;
                             }
                             else
                             {
-                                (fb_clocks, unsigned[])[0] = clocks>>2;
+                                fb_clocks[0] = clocks>>2;
                             }
                         }
 #ifdef FB_TOLERANCE_TEST
@@ -535,11 +535,11 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in,
 
                             if (usb_speed == XUD_SPEED_HS)
                             {
-                                (fb_clocks, unsigned[])[0] = clocks;
+                                fb_clocks[0] = clocks;
                             }
                             else
                             {
-                                (fb_clocks, unsigned[])[0] = clocks >> 2;
+                                fb_clocks[0] = clocks >> 2;
                             }
                         }
 #ifdef FB_TOLERANCE_TEST
@@ -578,11 +578,11 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in,
 
                 if (busSpeed == XUD_SPEED_HS)
                 {
-                    XUD_SetReady_In(ep_aud_fb, fb_clocks, 4);
+                    XUD_SetReady_In(ep_aud_fb, (fb_clocks, unsigned char[]), 4);
                 }
                 else
                 {
-                    XUD_SetReady_In(ep_aud_fb, fb_clocks, 3);
+                    XUD_SetReady_In(ep_aud_fb, (fb_clocks, unsigned char[]), 3);
                 }
             }
             break;
