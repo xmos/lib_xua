@@ -4,6 +4,7 @@ sc_usb_audio Change Log
 7.2.0
 -----
     - ADDED:      DFU to UAC1 descriptors (guarded by DFU and FORCE_UAC1_DFU)
+    - RESOLVED:   Removed 'reinterpretation to type of larger alignment' warnings
 
 7.1.0
 -----
