@@ -674,14 +674,16 @@ int main()
         }
 #endif
 
+#ifndef PDM_RECORD        
 #if (NUM_PDM_MICS > 0)
         on stdcore[PDM_TILE]: pdm_mic(c_ds_output);
 #ifdef MIC_PROCESSING_USE_INTERFACE
         on stdcore[PDM_TILE].core[0]: pdm_buffer(c_ds_output, c_pdm_pcm, i_mic_process);
 #else
         on stdcore[PDM_TILE].core[0]: pdm_buffer(c_ds_output, c_pdm_pcm);
-#endif
-#endif
+#endif /*MIC_PROCESSING_USE_INTERFACE*/
+#endif /*NUM_PDM_MICS > 0*/
+#endif /*PDM_RECORD*/
 
 
 #ifdef SU1_ADC_ENABLE
