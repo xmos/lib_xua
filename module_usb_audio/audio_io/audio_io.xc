@@ -1113,7 +1113,7 @@ chanend c_spdif_out,
 chanend c_dig_rx,
 #endif
 chanend ?c_config, chanend ?c
-#if XUD_TILE != 0
+#if (XUD_TILE != 0) && (AUDIO_IO_TILE == 0)
 , server interface i_dfu ?dfuInterface
 #endif
 #if (NUM_PDM_MICS > 0)
@@ -1392,7 +1392,7 @@ chanend ?c_config, chanend ?c
 
                     while (1)
                     {
-#if XUD_TILE != 0
+#if (XUD_TILE != 0) && (AUDIO_IO_TILE == 0)
                        [[combine]]
                         par
                         {

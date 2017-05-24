@@ -5,6 +5,7 @@ sc_usb_audio Change Log
 -----
     - ADDED:      DFU to UAC1 descriptors (guarded by DFU and FORCE_UAC1_DFU)
     - RESOLVED:   Removed 'reinterpretation to type of larger alignment' warnings
+    - RESOLVED:   DFU flash code run on tile[0] even if XUD_TILE and AUDIO_IO_TILE are not 0
 
 7.1.0
 -----

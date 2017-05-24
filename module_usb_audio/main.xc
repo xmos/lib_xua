@@ -415,7 +415,7 @@ void usb_audio_io(chanend c_aud_in, chanend ?c_adc,
     chanend ?c_adat_rx,
     chanend ?c_clk_ctl,
     chanend ?c_clk_int
-#if (XUD_TILE != 0)
+#if (XUD_TILE != 0)  && (AUDIO_IO_TILE == 0)
     , server interface i_dfu ?dfuInterface
 #endif
 #if (NUM_PDM_MICS > 0)
@@ -459,7 +459,7 @@ void usb_audio_io(chanend c_aud_in, chanend ?c_adc,
                 c_dig_rx,
 #endif
                 c_aud_cfg, c_adc
-#if XUD_TILE != 0
+#if (XUD_TILE != 0) && (AUDIO_IO_TILE == 0)
                 , dfuInterface
 #endif
 #if (NUM_PDM_MICS > 0)
@@ -606,7 +606,7 @@ int main()
             , c_mix_ctl
 #endif
             ,c_aud_cfg, c_spdif_rx, c_adat_rx, c_clk_ctl, c_clk_int
-#if XUD_TILE != 0
+#if (XUD_TILE != 0) && (AUDIO_IO_TILE == 0)
             , dfuInterface
 #endif
 #if (NUM_PDM_MICS > 0)
@@ -673,6 +673,13 @@ int main()
 			}
         }
 #endif
+
+#if (XUD_TILE != 0 ) && (AUDIO_IO_TILE != 0)
+        /* Run flash code on its own - hope it gets combined */
+#warning Running DFU flash code on its own
+        on stdcore[0]: DFUHandler(dfuInterface, null);
+#endif
+
 
 #if (NUM_PDM_MICS > 0)
         on stdcore[PDM_TILE]: pdm_mic(c_ds_output);
