@@ -479,19 +479,19 @@
 /**
  * @brief Product string for Audio Class 2.0 mode.
  *
- * Default: "xCore USB Audio 2.0"
+ * Default: "XMOS xCORE (UAC2.0)"
  */
 #ifndef PRODUCT_STR_A2
-#define PRODUCT_STR_A2           "xCORE USB Audio 2.0"
+#define PRODUCT_STR_A2           "XMOS xCORE (UAC2.0)"
 #endif
 
 /**
  * @brief Product string for Audio Class 1.0 mode
  *
- * Default: "xCore USB Audio 1.0"
+ * Default: "XMOS xCORE (UAC1.0)"
  */
 #ifndef PRODUCT_STR_A1
-#define PRODUCT_STR_A1           "xCORE USB Audio 1.0"
+#define PRODUCT_STR_A1           "XMOS xCORE (UAC1.0)"
 #endif
 
 /**
