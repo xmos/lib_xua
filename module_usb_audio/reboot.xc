@@ -7,6 +7,8 @@
 #define XS1_SU_PERIPH_USB_ID 0x1
 
 #if (XUD_SERIES_SUPPORT == XUD_X200_SERIES)
+#include "xs2_su_registers.h"
+#define XS2_SU_PERIPH_USB_ID 0x1
 #define PLL_MASK 0x7FFFFFFF
 #else
 #define PLL_MASK 0xFFFFFFFF
@@ -32,6 +34,12 @@ void device_reboot_aux(void)
     unsigned int localTileId = get_local_tile_id();
     unsigned int tileId;
     unsigned int tileArrayLength;
+
+#if (XUD_SERIES_SUPPORT == XUD_X200_SERIES)
+    /* Disconnect from bus */  
+    unsigned data[] = {4};  
+    write_periph_32(usb_tile, XS2_SU_PERIPH_USB_ID, XS1_GLX_PER_UIFM_FUNC_CONTROL_NUM, 1, data);  
+#endif
 
     /* Find size of tile array - note in future tools versions this will be available from platform.h */
     asm volatile ("ldc %0, tile.globound":"=r"(tileArrayLength));
@@ -61,14 +69,6 @@ void device_reboot_aux(void)
 /* Reboots XMOS device by writing to the PLL config register */
 void device_reboot(chanend spare)
 {
-#if (XUD_SERIES_SUPPORT != XUD_U_SERIES)
-    //outct(spare, XS1_CT_END);   // have to do this before freeing the chanend
-    //inct(spare);                // Receive end ct from usb_buffer to close down in both directions
-
-    /* Need a spare chanend so we can talk to the pll register */
-    //asm("freer res[%0]"::"r"(spare));
-#endif
     device_reboot_aux();
-
     while(1);
 }

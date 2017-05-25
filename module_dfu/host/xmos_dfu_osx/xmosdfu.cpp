@@ -351,7 +351,8 @@ int main(int argc, char **argv) {
     fprintf(stderr, "failed to initialise libusb\n");
     return -1;
   }
-
+//#define START_IN_DFU 1
+#ifndef START_IN_DFU
   r = find_xmos_device(0, listdev);
   if (r < 0) 
   {
@@ -369,6 +370,7 @@ int main(int argc, char **argv) {
     return -1;
   }
   printf("XMOS DFU application started - Interface %d claimed\n", XMOS_DFU_IF);
+#endif
 
   /* Dont go into DFU mode for save/restore */
   if(save) 
@@ -382,17 +384,18 @@ int main(int argc, char **argv) {
   else if(!listdev)
   {
 
+#ifndef START_IN_DFU
     printf("Detaching device from application mode.\n");
     xmos_dfu_resetintodfu(XMOS_DFU_IF);
 
     libusb_release_interface(devh, XMOS_DFU_IF);
     libusb_close(devh);
 
-
     printf("Waiting for device to restart and enter DFU mode...\n");
 
     // Wait for device to enter dfu mode and restart
     system("sleep 20");
+#endif
 
     // NOW IN DFU APPLICATION MODE
 
