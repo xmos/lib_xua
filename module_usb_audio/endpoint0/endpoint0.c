@@ -38,8 +38,10 @@
 /* Some warnings.... */
 
 /* Windows does not have a built in DFU driver (windows will prompt), so warn that DFU will not be functional in Audio 1.0 mode */
+#ifndef FORCE_UAC1_DFU
 #if ((AUDIO_CLASS==1) || defined(AUDIO_CLASS_FALLBACK)) && defined(DFU)
 #warning DFU will not be enabled in AUDIO 1.0 mode due to Windows requesting driver
+#endif
 #endif
 
 /* MIDI not supported in Audio 1.0 mode */
