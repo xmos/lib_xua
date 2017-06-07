@@ -11,8 +11,9 @@
 #define XMOS_L1_AUDIO1_PID 0x0003
 #define XMOS_L2_AUDIO2_PID 0x0004
 #define XMOS_SU1_AUDIO2_PID 0x0008
-#define XMOS_U8_MFA_AUDIO2_PID 0x0011
+#define XMOS_U8_MFA_AUDIO2_PID 0x000A
 #define XMOS_SMP_AUDIO2_PID 0x0010
+#define XMOS_SMP_AUDIO1_PID 0x0011
 
 unsigned short pidList[] = {XMOS_XCORE_AUDIO_AUDIO2_PID, 
                             XMOS_L1_AUDIO2_PID,
@@ -20,6 +21,7 @@ unsigned short pidList[] = {XMOS_XCORE_AUDIO_AUDIO2_PID,
                             XMOS_L2_AUDIO2_PID,
                             XMOS_SU1_AUDIO2_PID, 
                             XMOS_U8_MFA_AUDIO2_PID,
+                            XMOS_SMP_AUDIO1_PID,
                             XMOS_SMP_AUDIO2_PID}; 
 
 unsigned int XMOS_DFU_IF = 0;
