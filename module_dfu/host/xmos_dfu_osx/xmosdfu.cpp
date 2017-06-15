@@ -39,29 +39,29 @@ unsigned int XMOS_DFU_IF = 0;
 #define DFU_ABORT 6
 
 // XMOS alternate setting requests
-#define XMOS_DFU_RESETDEVICE 		0xf0
-#define XMOS_DFU_REVERTFACTORY 		0xf1
-#define XMOS_DFU_RESETINTODFU	 	0xf2
-#define XMOS_DFU_RESETFROMDFU 		0xf3
-#define XMOS_DFU_SAVESTATE   		0xf5
-#define XMOS_DFU_RESTORESTATE   	0xf6
+#define XMOS_DFU_RESETDEVICE          0xf0
+#define XMOS_DFU_REVERTFACTORY        0xf1
+#define XMOS_DFU_RESETINTODFU         0xf2
+#define XMOS_DFU_RESETFROMDFU         0xf3
+#define XMOS_DFU_SAVESTATE            0xf5
+#define XMOS_DFU_RESTORESTATE         0xf6
 
 static libusb_device_handle *devh = NULL;
 
-static int find_xmos_device(unsigned int id, unsigned int list) 
+static int find_xmos_device(unsigned int id, unsigned int list)
 {
     libusb_device *dev;
     libusb_device **devs;
     int i = 0;
     int found = 0;
-  
+
     libusb_get_device_list(NULL, &devs);
 
-    while ((dev = devs[i++]) != NULL) 
+    while ((dev = devs[i++]) != NULL)
     {
         int foundDev = 0;
         struct libusb_device_descriptor desc;
-        libusb_get_device_descriptor(dev, &desc); 
+        libusb_get_device_descriptor(dev, &desc);
         printf("VID = 0x%x, PID = 0x%x, BCDDevice: 0x%x\n", desc.idVendor, desc.idProduct, desc.bcdDevice);
 
         if(desc.idVendor == XMOS_VID)
@@ -78,30 +78,30 @@ static int find_xmos_device(unsigned int id, unsigned int list)
 
         if (foundDev)
         {
-            if (found == id) 
+            if (found == id)
             {
-                if (libusb_open(dev, &devh) < 0) 
+                if (libusb_open(dev, &devh) < 0)
                 {
                     return -1;
-                } 
-                else 
+                }
+                else
                 {
                     libusb_config_descriptor *config_desc = NULL;
-                    libusb_get_active_config_descriptor(dev, &config_desc); 
-                    if (config_desc != NULL) 
+                    libusb_get_active_config_descriptor(dev, &config_desc);
+                    if (config_desc != NULL)
                     {
                         //printf("bNumInterfaces: %d\n", config_desc->bNumInterfaces);
-                        for (int j = 0; j < config_desc->bNumInterfaces; j++) 
+                        for (int j = 0; j < config_desc->bNumInterfaces; j++)
                         {
                             //printf("%d\n", j);
                             const libusb_interface_descriptor *inter_desc = ((libusb_interface *)&config_desc->interface[j])->altsetting;
-                            if (inter_desc->bInterfaceClass == 0xFE && inter_desc->bInterfaceSubClass == 0x1) 
+                            if (inter_desc->bInterfaceClass == 0xFE && inter_desc->bInterfaceSubClass == 0x1)
                             {
                                 XMOS_DFU_IF = j;
-                            } 
+                            }
                         }
-                    } 
-                    else 
+                    }
+                    else
                     {
                         XMOS_DFU_IF = 0;
                     }
@@ -147,7 +147,7 @@ int dfu_getStatus(unsigned int interface, unsigned char *state, unsigned int *ti
                   unsigned char *nextState, unsigned char *strIndex) {
   unsigned int data[2];
   libusb_control_transfer(devh, DFU_REQUEST_FROM_DEV, DFU_GETSTATUS, 0, interface, (unsigned char *)data, 6, 0);
-  
+
   *state = data[0] & 0xff;
   *timeout = (data[0] >> 8) & 0xffffff;
   *nextState = data[1] & 0xff;
@@ -222,15 +222,15 @@ int write_dfu_image(char *file) {
 
   if( 0 != fseek( inFile, 0, SEEK_SET ) ) {
     fprintf(stderr,"Error: Failed to input file pointer.\n");
-   return -1; 
+   return -1;
   }
 
   num_blocks = image_size/block_size;
   remainder = image_size - (num_blocks * block_size);
 
   printf("... Downloading image (%s) to device\n", file);
- 
-  dfuBlockCount = 0; 
+
+  dfuBlockCount = 0;
 
   for (i = 0; i < num_blocks; i++) {
     memset(block_data, 0x0, block_size);
@@ -280,7 +280,7 @@ int read_dfu_image(char *file) {
   while (1) {
     unsigned int numBytes = 0;
     numBytes = dfu_upload(0, block_count, 64, block_data);
-    if (numBytes == 0) 
+    if (numBytes == 0)
       break;
     fwrite(block_data, 1, block_size, outFile);
     block_count++;
@@ -312,7 +312,7 @@ int main(int argc, char **argv) {
 
   if (strcmp(argv[1], "--download") == 0) {
     if (argv[2]) {
-      firmware_filename = argv[2]; 
+      firmware_filename = argv[2];
     } else {
       fprintf(stderr, "No filename specified for download option\n");
       return -1;
@@ -320,7 +320,7 @@ int main(int argc, char **argv) {
     download = 1;
   } else if (strcmp(argv[1], "--upload") == 0) {
     if (argv[2]) {
-      firmware_filename = argv[2]; 
+      firmware_filename = argv[2];
     } else {
       fprintf(stderr, "No filename specified for upload option\n");
       return -1;
@@ -328,7 +328,7 @@ int main(int argc, char **argv) {
     upload = 1;
   } else if (strcmp(argv[1], "--revertfactory") == 0) {
     revert = 1;
-  } 
+  }
   else if(strcmp(argv[1], "--savecustomstate") == 0)
   {
     save = 1;
@@ -346,7 +346,7 @@ int main(int argc, char **argv) {
     return -1;
   }
 
- 
+
 
   r = libusb_init(NULL);
   if (r < 0) {
@@ -356,7 +356,7 @@ int main(int argc, char **argv) {
 //#define START_IN_DFU 1
 #ifndef START_IN_DFU
   r = find_xmos_device(0, listdev);
-  if (r < 0) 
+  if (r < 0)
   {
       if(!listdev)
       {
@@ -375,13 +375,13 @@ int main(int argc, char **argv) {
 #endif
 
   /* Dont go into DFU mode for save/restore */
-  if(save) 
+  if(save)
   {
     xmos_dfu_save_state(XMOS_DFU_IF);
   }
-  else if(restore) 
+  else if(restore)
   {
-    xmos_dfu_restore_state(XMOS_DFU_IF); 
+    xmos_dfu_restore_state(XMOS_DFU_IF);
   }
   else if(!listdev)
   {
@@ -408,10 +408,10 @@ int main(int argc, char **argv) {
     }
 
     r = libusb_claim_interface(devh, 0);
-    if (r != 0) 
+    if (r != 0)
     {
         fprintf(stderr, "Error claiming interface 0\n");
-         
+
         switch(r)
         {
             case LIBUSB_ERROR_NOT_FOUND:
@@ -430,7 +430,7 @@ int main(int argc, char **argv) {
                 printf("Unknown error code:  %d\n", r);
                 break;
 
-        } 
+        }
         return -1;
     }
 
@@ -444,11 +444,11 @@ int main(int argc, char **argv) {
     xmos_dfu_resetfromdfu(XMOS_DFU_IF);
   } else if (revert) {
     printf("... Reverting device to factory image\n");
-    xmos_dfu_revertfactory(); 
+    xmos_dfu_revertfactory();
     // Give device time to revert firmware
     system("sleep 2");
     xmos_dfu_resetfromdfu(XMOS_DFU_IF);
-  } 
+  }
   else{
     xmos_dfu_resetfromdfu(XMOS_DFU_IF);
   }
