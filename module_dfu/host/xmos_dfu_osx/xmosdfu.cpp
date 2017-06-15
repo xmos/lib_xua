@@ -6,23 +6,21 @@
 /* the device's vendor and product id */
 #define XMOS_VID 0x20b1
 
-#define XMOS_XCORE_AUDIO_AUDIO2_PID 0x3066
-#define XMOS_L1_AUDIO2_PID 0x0002
-#define XMOS_L1_AUDIO1_PID 0x0003
-#define XMOS_L2_AUDIO2_PID 0x0004
-#define XMOS_SU1_AUDIO2_PID 0x0008
-#define XMOS_U8_MFA_AUDIO2_PID 0x000A
-#define XMOS_SMP_AUDIO2_PID 0x0010
-#define XMOS_SMP_AUDIO1_PID 0x0011
+typedef struct device_pid_t {
+  const char *device_name;
+  unsigned int pid;
+} device_pid_t;
 
-unsigned short pidList[] = {XMOS_XCORE_AUDIO_AUDIO2_PID, 
-                            XMOS_L1_AUDIO2_PID,
-                            XMOS_L1_AUDIO1_PID,
-                            XMOS_L2_AUDIO2_PID,
-                            XMOS_SU1_AUDIO2_PID, 
-                            XMOS_U8_MFA_AUDIO2_PID,
-                            XMOS_SMP_AUDIO1_PID,
-                            XMOS_SMP_AUDIO2_PID}; 
+device_pid_t pidList[] = {
+  { "XMOS_XCORE_AUDIO_AUDIO2_PID", 0x3066},
+  { "XMOS_L1_AUDIO2_PID",          0x0002},
+  { "XMOS_L1_AUDIO1_PID",          0x0003},
+  { "XMOS_L2_AUDIO2_PID",          0x0004},
+  { "XMOS_SU1_AUDIO2_PID",         0x0008},
+  { "XMOS_U8_MFA_AUDIO2_PID",      0x000A},
+  { "XMOS_SMP_AUDIO2_PID",         0x0010},
+  { "XMOS_SMP_AUDIO1_PID",         0x0011}
+};
 
 unsigned int XMOS_DFU_IF = 0;
 
@@ -48,14 +46,18 @@ unsigned int XMOS_DFU_IF = 0;
 
 static libusb_device_handle *devh = NULL;
 
-static int find_xmos_device(unsigned int id, unsigned int list)
+static int find_xmos_device(unsigned int id, unsigned int pid, unsigned int list)
 {
     libusb_device *dev;
     libusb_device **devs;
     int i = 0;
     int found = 0;
 
-    libusb_get_device_list(NULL, &devs);
+    size_t count = libusb_get_device_list(NULL, &devs);
+    if ((int)count < 0) {
+      printf("ERROR: get_device_list returned %d\n", (int)count);
+      exit(1);
+    }
 
     while ((dev = devs[i++]) != NULL)
     {
@@ -66,13 +68,9 @@ static int find_xmos_device(unsigned int id, unsigned int list)
 
         if(desc.idVendor == XMOS_VID)
         {
-            for(int j = 0; j < sizeof(pidList)/sizeof(unsigned short); j++)
+            if (desc.idProduct == pid && !list)
             {
-                if(desc.idProduct == pidList[j] && !list)
-                {
-                    foundDev = 1;
-                    break;
-                }
+                foundDev = 1;
             }
         }
 
@@ -119,18 +117,22 @@ static int find_xmos_device(unsigned int id, unsigned int list)
 
 int xmos_dfu_resetdevice(void) {
   libusb_control_transfer(devh, DFU_REQUEST_TO_DEV, XMOS_DFU_RESETDEVICE, 0, 0, NULL, 0, 0);
+  return 0;
 }
 
 int xmos_dfu_revertfactory(void) {
   libusb_control_transfer(devh, DFU_REQUEST_TO_DEV, XMOS_DFU_REVERTFACTORY, 0, 0, NULL, 0, 0);
+  return 0;
 }
 
 int xmos_dfu_resetintodfu(unsigned int interface) {
   libusb_control_transfer(devh, DFU_REQUEST_TO_DEV, XMOS_DFU_RESETINTODFU, 0, interface, NULL, 0, 0);
+  return 0;
 }
 
 int xmos_dfu_resetfromdfu(unsigned int interface) {
   libusb_control_transfer(devh, DFU_REQUEST_TO_DEV, XMOS_DFU_RESETFROMDFU, 0, interface, NULL, 0, 0);
+  return 0;
 }
 
 int dfu_detach(unsigned int interface, unsigned int timeout) {
@@ -287,10 +289,56 @@ int read_dfu_image(char *file) {
   }
 
   fclose(outFile);
+  return 0;
+}
+
+static void print_device_list(FILE *file, const char *indent) {
+  for (int i = 0; i < sizeof(pidList)/sizeof(pidList[0]); i++) {
+    fprintf(file, "%s%-30s (0x%0x)\n", indent, pidList[i].device_name, pidList[i].pid);
+  }
+}
+
+static void print_usage(const char *program_name, const char *error_msg) {
+
+  fprintf(stderr, "ERROR: %s\n\n", error_msg);
+  fprintf(stderr, "Usage:\n");
+  fprintf(stderr, "     %s --listdevices\n", program_name);
+  fprintf(stderr, "     %s DEVICE_PID COMMAND\n", program_name);
+
+  fprintf(stderr, "    Where DEVICE_PID can be a hex value or a name from:\n");
+  print_device_list(stderr, "      ");
+
+  fprintf(stderr, "    And COMMAND is one of:\n");
+  fprintf(stderr, "       --download <firmware> : install a new firmware\n");
+  fprintf(stderr, "       --upload <firmware>   : extract a firmware image\n");
+  fprintf(stderr, "       --revertfactory       : revert to the factory image\n");
+  fprintf(stderr, "       --savecustomstate     : \n");
+  fprintf(stderr, "       --restorecustomstate  : \n");
+
+  exit(1);
+}
+
+static unsigned int select_pid(char *device_pid) {
+  // Try interpreting the name as a hex value
+  char * endptr = device_pid;
+  int pid = strtol(device_pid, &endptr, 16);
+  if (endptr != device_pid && *endptr == '\0') {
+    return pid;
+  }
+
+  // Otherwise do a lookup of names
+  for (int i = 0; i < sizeof(pidList)/sizeof(pidList[0]); i++) {
+    if (strcmp(device_pid, pidList[i].device_name) == 0) {
+      return pidList[i].pid;
+    }
+  }
+
+  fprintf(stderr, "Failed to find device '%s', should have been one of:\n", device_pid);
+  print_device_list(stderr, "  ");
+  return 0;
 }
 
 int main(int argc, char **argv) {
-  int r = 1;
   unsigned char dfuState = 0;
   unsigned char nextDfuState = 0;
   unsigned int timeout = 0;
@@ -305,65 +353,67 @@ int main(int argc, char **argv) {
 
   char *firmware_filename = NULL;
 
-  if (argc < 2) {
-    fprintf(stderr, "No options passed to dfu application\n");
-    return -1;
-  }
+  const char *program_name = argv[0];
 
-  if (strcmp(argv[1], "--download") == 0) {
-    if (argv[2]) {
-      firmware_filename = argv[2];
-    } else {
-      fprintf(stderr, "No filename specified for download option\n");
-      return -1;
-    }
-    download = 1;
-  } else if (strcmp(argv[1], "--upload") == 0) {
-    if (argv[2]) {
-      firmware_filename = argv[2];
-    } else {
-      fprintf(stderr, "No filename specified for upload option\n");
-      return -1;
-    }
-    upload = 1;
-  } else if (strcmp(argv[1], "--revertfactory") == 0) {
-    revert = 1;
-  }
-  else if(strcmp(argv[1], "--savecustomstate") == 0)
-  {
-    save = 1;
-  }
-  else if(strcmp(argv[1], "--restorecustomstate") == 0)
-  {
-    restore = 1;
-  }
-  else if(strcmp(argv[1], "--listdevices") == 0)
-  {
-    listdev = 1;
-  }
-  else {
-    fprintf(stderr, "Invalid option passed to dfu application\n");
-    return -1;
-  }
-
-
-
-  r = libusb_init(NULL);
+  int r = libusb_init(NULL);
   if (r < 0) {
     fprintf(stderr, "failed to initialise libusb\n");
     return -1;
   }
+
+  if (argc == 2) {
+    if (strcmp(argv[1], "--listdevices") == 0) {
+      find_xmos_device(0, 0, 1);
+      return 0;
+    }
+    print_usage(program_name, "Not enough options passed to dfu application");
+  }
+
+  if (argc < 3) {
+    print_usage(program_name, "Not enough options passed to dfu application");
+  }
+
+  char *device_pid = argv[1];
+  char *command = argv[2];
+
+  if (strcmp(command, "--download") == 0) {
+    if (argc < 4) {
+      print_usage(program_name, "No filename specified for download option");
+    }
+    firmware_filename = argv[3];
+    download = 1;
+  } else if (strcmp(command, "--upload") == 0) {
+    if (argc < 4) {
+      print_usage(program_name, "No filename specified for upload option");
+    }
+    firmware_filename = argv[3];
+    upload = 1;
+  } else if (strcmp(command, "--revertfactory") == 0) {
+    revert = 1;
+  }
+  else if(strcmp(command, "--savecustomstate") == 0)
+  {
+    save = 1;
+  }
+  else if(strcmp(command, "--restorecustomstate") == 0)
+  {
+    restore = 1;
+  }
+  else {
+    print_usage(program_name,  "Invalid option passed to dfu application");
+  }
+
+  unsigned int pid = select_pid(device_pid);
+  if (pid == 0) {
+    return -1;
+  }
 //#define START_IN_DFU 1
 #ifndef START_IN_DFU
-  r = find_xmos_device(0, listdev);
+  r = find_xmos_device(0, pid, 0);
   if (r < 0)
   {
-      if(!listdev)
-      {
-        fprintf(stderr, "Could not find/open device\n");
-        return -1;
-      }
-      return 0;
+    fprintf(stderr, "Could not find/open device\n");
+    return -1;
   }
 
   r = libusb_claim_interface(devh, XMOS_DFU_IF);
@@ -401,7 +451,7 @@ int main(int argc, char **argv) {
 
     // NOW IN DFU APPLICATION MODE
 
-    r = find_xmos_device(0, 0);
+    r = find_xmos_device(0, pid, 0);
     if (r < 0) {
       fprintf(stderr, "Could not find/open device\n");
       return -1;
