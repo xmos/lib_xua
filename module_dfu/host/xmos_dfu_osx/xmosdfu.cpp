@@ -435,7 +435,6 @@ int main(int argc, char **argv) {
   }
   else if(!listdev)
   {
-
 #ifndef START_IN_DFU
     printf("Detaching device from application mode.\n");
     xmos_dfu_resetintodfu(XMOS_DFU_IF);
@@ -465,7 +464,7 @@ int main(int argc, char **argv) {
         switch(r)
         {
             case LIBUSB_ERROR_NOT_FOUND:
-                printf("The requested interface does not exist'n");
+                printf("The requested interface does not exist\n");
                 break;
             case LIBUSB_ERROR_BUSY:
                 printf("Another program or driver has claimed the interface\n");
