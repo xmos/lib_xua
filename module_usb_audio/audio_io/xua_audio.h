@@ -3,7 +3,9 @@
 
 #if __XC__
 
+#ifndef NO_USB
 #include "dfu_interface.h"
+#endif
 
 typedef interface audManage_if
 {

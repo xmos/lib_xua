@@ -7,6 +7,7 @@
 #include <safestring.h>
 #include <stddef.h>
 
+#ifndef NO_USB
 #include "xud.h"                 /* XUD user defines and functions */
 #include "usb_std_requests.h"
 #include "usbaudio20.h"          /* Defines from USB Audio 2.0 spec */
@@ -801,3 +802,4 @@ void Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
         }
     }
 }
+#endif /* NO_USB */

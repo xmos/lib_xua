@@ -1,3 +1,4 @@
+#ifndef NO_USB
 #include <xs1.h>
 #include "xc_ptr.h"
 #include "devicedefines.h"
@@ -1019,4 +1020,4 @@ void decouple(chanend c_mix_out
 #endif /* NUM_USB_CHAN_IN > 0 */
     }
 }
-
+#endif /* NO_USB */

@@ -1,4 +1,4 @@
-
+#ifndef NO_USB
 
 #include "xud.h"
 #include "vendorrequests.h"
@@ -31,3 +31,4 @@ void VendorRequests_Init(VENDOR_REQUESTS_PARAMS_DEC)
 
 }
 
+#endif /* NO_USB */
