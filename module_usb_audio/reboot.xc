@@ -4,6 +4,9 @@
 
 #define XS1_SU_PERIPH_USB_ID 0x1
 
+//Normally we would enumerate the XUD_SERIES_SUPPORT possibilities using defines in 
+//xud.h but we have hard coded them to remove dependancy of sc_xud
+
 #if (XUD_SERIES_SUPPORT == 4)
 #include "xs2_su_registers.h"
 #define XS2_SU_PERIPH_USB_ID 0x1
