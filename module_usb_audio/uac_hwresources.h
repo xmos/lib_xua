@@ -2,7 +2,9 @@
 #ifndef _UAC_HWRESOURCES_H_
 #define _UAC_HWRESOURCES_H_
 
+#ifndef NO_USB
 #include "xud.h"                 /* XMOS USB Device Layer defines and functions */
+#endif
 
 #if ((XUD_SERIES_SUPPORT != XUD_U_SERIES) && (XUD_SERIES_SUPPORT != XUD_X200_SERIES))
 

@@ -2,7 +2,7 @@
  * @brief   Implements relevant requests from the USB Audio 2.0 Specification
  * @author  Ross Owen, XMOS Semiconductor
  */
-
+#ifndef NO_USB
 #include <xs1.h>
 #include "xud.h"
 #include "usb_std_requests.h"
@@ -1282,4 +1282,4 @@ XUD_Result_t AudioClassRequests_1(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket
     return XUD_RES_ERR;
 }
 #endif
-
+#endif /* NO_USB */

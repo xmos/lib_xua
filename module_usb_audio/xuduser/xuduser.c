@@ -1,4 +1,4 @@
-
+#ifndef NO_USB
 #include "devicedefines.h"
 #include "hostactive.h"
 #include "audiostream.h"
@@ -22,3 +22,4 @@ void XUD_UserResume(void)
         UserHostActive(1);
     }
 }
+#endif /* NO_USB */

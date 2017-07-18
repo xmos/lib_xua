@@ -2,11 +2,12 @@
 #include <platform.h>
 #include <xs1_su.h>
 
-#include "xud.h"
-
 #define XS1_SU_PERIPH_USB_ID 0x1
 
-#if (XUD_SERIES_SUPPORT == XUD_X200_SERIES)
+//Normally we would enumerate the XUD_SERIES_SUPPORT possibilities using defines in 
+//xud.h but we have hard coded them to remove dependancy of sc_xud
+
+#if (XUD_SERIES_SUPPORT == 4)
 #include "xs2_su_registers.h"
 #define XS2_SU_PERIPH_USB_ID 0x1
 #define PLL_MASK 0x7FFFFFFF
@@ -21,7 +22,7 @@ extern tileref tile[];
 
 void device_reboot_aux(void)
 {
-#if (XUD_SERIES_SUPPORT == XUD_U_SERIES)
+#if (XUD_SERIES_SUPPORT == 1)
     /* Disconnect from bus */
     unsigned data[] = {4};
     write_periph_32(usb_tile, XS1_SU_PERIPH_USB_ID, XS1_SU_PER_UIFM_FUNC_CONTROL_NUM, 1, data);
@@ -35,7 +36,7 @@ void device_reboot_aux(void)
     unsigned int tileId;
     unsigned int tileArrayLength;
 
-#if (XUD_SERIES_SUPPORT == XUD_X200_SERIES)
+#if (XUD_SERIES_SUPPORT == 4)
     /* Disconnect from bus */  
     unsigned data[] = {4};  
     write_periph_32(usb_tile, XS2_SU_PERIPH_USB_ID, XS1_GLX_PER_UIFM_FUNC_CONTROL_NUM, 1, data);  

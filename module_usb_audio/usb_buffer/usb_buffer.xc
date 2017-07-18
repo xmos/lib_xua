@@ -1,4 +1,4 @@
-
+#ifndef NO_USB
 #include <xs1.h>
 #include <print.h>
 
@@ -957,3 +957,4 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in,
 
     }
 }
+#endif /* NO_USB */

@@ -2,6 +2,7 @@
 #include <platform.h>
 #include "devicedefines.h"
 
+#ifndef NO_USB
 #include "xud.h"
 #include "usb_std_requests.h"
 
@@ -580,4 +581,4 @@ int DFUDeviceRequests(XUD_ep ep0_out, XUD_ep &?ep0_in, USB_SetupPacket_t &sp, ch
     }
   	return returnVal;
 }
-
+#endif /* NO_USB */

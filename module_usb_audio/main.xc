@@ -12,11 +12,13 @@
 #include <xscope.h>
 #endif
 
+#ifndef NO_USB
 #include "xud.h"                 /* XMOS USB Device Layer defines and functions */
+#include "endpoint0.h"
+#endif
 
 #include "devicedefines.h"       /* Device specific defines */
 #include "uac_hwresources.h"
-#include "endpoint0.h"
 #include "usb_buffer.h"
 #include "decouple.h"
 #ifdef MIDI
@@ -48,8 +50,10 @@
 #include "xua_pdm_mic.h"
 #endif
 
+#ifdef DFU
 [[distributable]]
 void DFUHandler(server interface i_dfu i, chanend ?c_user_cmd);
+#endif
 
 /* Audio I/O - Port declarations */
 #if I2S_WIRES_DAC > 0
@@ -209,7 +213,7 @@ on tile [IAP_TILE] : struct r_i2c r_i2c = {PORT_I2C_SCL, PORT_I2C_SDA};
 #endif
 #endif
 
-
+#ifndef NO_USB
 /* Endpoint type tables for XUD */
 XUD_EpType epTypeTableOut[ENDPOINT_COUNT_OUT] = { XUD_EPTYPE_CTL | XUD_STATUS_ENABLE,
                                             XUD_EPTYPE_ISO,    /* Audio */
@@ -249,7 +253,7 @@ XUD_EpType epTypeTableIn[ENDPOINT_COUNT_IN] = { XUD_EPTYPE_CTL | XUD_STATUS_ENAB
 #endif
 #endif
                                         };
-
+#endif /* NO_USB */
 
 void thread_speed()
 {
@@ -270,6 +274,7 @@ void xscope_user_init()
 }
 #endif
 
+#ifndef NO_USB
 /* Core USB Audio functions - must be called on the Tile connected to the USB Phy */
 void usb_audio_core(chanend c_mix_out
 #ifdef MIDI
@@ -402,6 +407,7 @@ VENDOR_REQUESTS_PARAMS_DEC_
         //:
     }
 }
+#endif /* NO_USB */
 
 void usb_audio_io(chanend c_aud_in, chanend ?c_adc,
 #if defined(SPDIF_TX) && (SPDIF_TX_TILE != AUDIO_IO_TILE)

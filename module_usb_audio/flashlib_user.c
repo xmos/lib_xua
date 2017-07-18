@@ -1,8 +1,6 @@
+#ifdef DFU
 #include "devicedefines.h"
 #include "uac_hwresources.h"
-
-#ifdef DFU
-
 #include <xs1.h>
 #include <xclib.h>
 #ifdef QUAD_SPI_FLASH

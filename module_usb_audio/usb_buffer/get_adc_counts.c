@@ -1,3 +1,4 @@
+#ifndef NO_USB
 #include "xud.h"
 
 extern XUD_BusSpeed_t g_curUsbSpeed;
@@ -48,3 +49,5 @@ void GetADCCounts(unsigned samFreq, int *min, int *mid, int *max)
     }
 
 }
+#endif /* NO_USB */
+
