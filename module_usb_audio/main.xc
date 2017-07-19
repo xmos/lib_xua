@@ -12,8 +12,8 @@
 #include <xscope.h>
 #endif
 
-#ifndef NO_USB
 #include "xud.h"                 /* XMOS USB Device Layer defines and functions */
+#ifndef NO_USB
 #include "endpoint0.h"
 #endif
 
