@@ -4,7 +4,7 @@
 function usage {
     echo "USAGE: testdfu.sh device_pid device_string upgrade1 upgrade2"
     echo "  For example:"
-    echo "    testdfu.sh XMOS_SMART_MIC_PLUS_BASE \"XMOS SmartMic\" upgrade1.bin upgrade2.bin"
+    echo "    testdfu.sh XMOS_VF_SPK_BASE \"XMOS VocalFusion\" upgrade1.bin upgrade2.bin"
     echo "    testdfu.sh 0x0008 \"xCORE\" upgrade1.bin upgrade2.bin"
     exit 1
 }
