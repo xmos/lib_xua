@@ -1,0 +1,3 @@
+def use_module(bld):
+    source = bld.path.ant_glob('src/*.xc')
+    bld.module(source=source, depends_on='module_queue')

@@ -1,0 +1,2 @@
+def use_module(bld):
+    bld.module(source='src/queue.xc')

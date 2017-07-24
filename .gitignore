@@ -16,3 +16,8 @@ xmosdfu.*
 *.a
 *.swp
 *.*~
+
+# waf build files
+.lock-waf_*
+.waf-*/
+build/
