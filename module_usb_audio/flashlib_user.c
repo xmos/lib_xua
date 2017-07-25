@@ -1,5 +1,5 @@
-#ifdef DFU
 #include "devicedefines.h"
+#ifdef DFU
 #include "uac_hwresources.h"
 #include <xs1.h>
 #include <xclib.h>
