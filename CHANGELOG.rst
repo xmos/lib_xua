@@ -1,9 +1,17 @@
 sc_usb_audio Change Log
 =======================
 
+7.4.0
+-----
+    - RESOLVED:  PID_DFU now based on AUDIO_CLASS. This potentially caused issues
+    with UAC1 DFU
+
+
 7.3.0
 -----
-    - CHANGE:     Example OSX DFU host app updated to now can PID as runtime argument. This enabled multiple XMOS devices to be attached to the host during DFU process
+    - CHANGE:     Example OSX DFU host app updated to now can PID as runtime 
+      argument. This enabled multiple XMOS devices to be attached to the host
+      during DFU process
 
 7.2.0
 -----
