@@ -3,7 +3,7 @@ sc_usb_audio Change Log
 
 7.4.0
 -----
-    - RESOLVED:  PID_DFU now based on AUDIO_CLASS. This potentially caused issues
+    - RESOLVED:   PID_DFU now based on AUDIO_CLASS. This potentially caused issues
     with UAC1 DFU
 
 
