@@ -1264,7 +1264,11 @@ enum USBEndpointNumber_Out
 #define ID_MIXER_1               60
 
 /* Defines for DFU */
+#if (AUDIO_CLASS == 2)
 #define DFU_PID                     PID_AUDIO_2
+#else
+#define DFU_PID                     PID_AUDIO_1
+#endif
 #define DFU_VENDOR_ID               VENDOR_ID
 #define DFU_BCD_DEVICE              BCD_DEVICE
 #define DFU_MANUFACTURER_STR_INDEX  offsetof(StringDescTable_t, vendorStr)/sizeof(char *)
