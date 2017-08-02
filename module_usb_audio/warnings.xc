@@ -7,6 +7,8 @@ Warnings relating to configuration defines located in this XC source file rather
 
 #include "customdefines.h"
 
+#ifndef NO_USB
+
 #ifndef DEFAULT_FREQ
 #warning DEFAULT_FREQ not defined. Using MIN_FREQ
 #endif
@@ -72,3 +74,4 @@ Warnings relating to configuration defines located in this XC source file rather
 #error NUM_USB_CHAN_IN_FS expected to be less than or equal to NUM_USB_CHAN_IN
 #endif
 
+#endif
