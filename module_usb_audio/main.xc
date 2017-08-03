@@ -409,7 +409,7 @@ VENDOR_REQUESTS_PARAMS_DEC_
 }
 #endif /* NO_USB */
 
-void usb_audio_io(chanend c_aud_in, chanend ?c_adc,
+void usb_audio_io(chanend ?c_aud_in, chanend ?c_adc,
 #if defined(SPDIF_TX) && (SPDIF_TX_TILE != AUDIO_IO_TILE)
     chanend c_spdif_tx,
 #endif
@@ -501,7 +501,12 @@ void usb_audio_io(chanend c_aud_in, chanend ?c_adc,
 /* Main for USB Audio Applications */
 int main()
 {
+#if NO_USB
+    #define c_mix_out null
+#else
     chan c_mix_out;
+#endif
+
 #ifdef MIDI
     chan c_midi;
 #endif
