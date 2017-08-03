@@ -15,7 +15,7 @@
         </component>
         <component description = "MIDI" type = "demoCode" scope = "General Use" path = "module_usb_midi" local = "false" id = "module_usb_midi" name = "MIDI Module for USB Audio Framework">
             <board></board>
-            <componentDependency version = "6.18.1">module_queue</componentDependency>
+            <componentDependency version = "6.19.0">module_queue</componentDependency>
             <keyword>MIDI</keyword>
         </component>
     </components>
@@ -105,7 +105,8 @@
     <release parenthash = "d0929ae0676896b94a119e4b7c44ffadec1471d8" version = "6.16.0alpha0" githash = "5f2fec1d2ab32999c69536635f21ca42312dc267"></release>
     <release parenthash = "60b6ca27825c4ab385fb945acf23089a4240a5ba" version = "6.18.0alpha0" githash = "37855df2f1b9a0c32d8c37e9c98853df4740e446"></release>
     <release parenthash = "f770595930dac7e19fce394908a5817c34a79cda" version = "6.18.1alpha0" githash = "084863d720a4175b7248d68edb13f0d853321142"></release>
-    <release parenthash = "c3cae7fe525f1470ffae49e1f0955324924a1947" version = "6.19.0alpha0"></release>
+    <release parenthash = "c3cae7fe525f1470ffae49e1f0955324924a1947" version = "6.19.0alpha0" githash = "e7c954ba63f496c41cbbd90bfcb7b9c3f14ee79c"></release>
+    <release parenthash = "13f5bb313d5e6e4f8c40342137e9c18ebc6d8d3f" version = "7.4.0rc0"></release>
     <subpartnumber>XM-004720-SM</subpartnumber>
     <vendor>XMOS</vendor>
     <version_defines>
