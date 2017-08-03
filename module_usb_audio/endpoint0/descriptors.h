@@ -2271,8 +2271,8 @@ const unsigned num_freqs_a1 = MAX(3, (0
 #define DFU_INTERFACES_A1     0
 #endif
 
-/* Total number of bytes returned for the class-specific AudioControl interface descriptor. 
- * Includes the combined length of this descriptor header and all Unit and Terminal descriptors 
+/* Total number of bytes returned for the class-specific AudioControl interface descriptor.
+ * Includes the combined length of this descriptor header and all Unit and Terminal descriptors
  * For us this is IT -> FU -> OT * 2 and a header */
 #define AC_TOTAL_LENGTH             (AC_LENGTH + \
                                     (INPUT_INTERFACES_A1 *  (12 + ( (8 + NUM_USB_CHAN_IN_FS) * INPUT_VOLUME_CONTROL) + 9)) +\
@@ -2284,8 +2284,8 @@ const unsigned num_freqs_a1 = MAX(3, (0
 //#define CFG_TOTAL_LENGTH_A1         (18 + AC_TOTAL_LENGTH + (INPUT_INTERFACES_A1 * (49 + num_freqs_a1 * 3)) + (OUTPUT_INTERFACES_A1 * (58 + num_freqs_a1 * 3)) + CONTROL_INTERFACE_BYTES + DFU_INTERFACE_BYTES)
 //#endif
 
-/* Total number of bytes returned for the class-specific AudioControl interface descriptor. 
- * Includes the combined length of this descriptor header and all Unit and Terminal descriptors 
+/* Total number of bytes returned for the class-specific AudioControl interface descriptor.
+ * Includes the combined length of this descriptor header and all Unit and Terminal descriptors
  * For us this is IT -> FU -> OT * 2 and a header */
 #define AC_TOTAL_LENGTH             (AC_LENGTH + \
                                     (INPUT_INTERFACES_A1 *  (12 + ( (8 + NUM_USB_CHAN_IN_FS) * INPUT_VOLUME_CONTROL) + 9)) +\
@@ -2512,7 +2512,7 @@ unsigned char cfgDesc_Audio1[] =
     0x01,                                 /* bInterfaceClas - AUDIO */
     0x02,                                 /* bInterfaceSubclass - AUDIO_STREAMING */
     0x00,                                 /* bInterface Protocol - Unused */
-    offsetof(StringDescTable_t, outputInterfaceStr_Audio1)/sizeof(char *), /* iInterface */ 
+    offsetof(StringDescTable_t, outputInterfaceStr_Audio1)/sizeof(char *), /* iInterface */
 
     /* Class-Specific AS Interface Descriptor (4.5.2) */
     0x07,
@@ -2630,7 +2630,7 @@ unsigned char cfgDesc_Audio1[] =
     0x01,                                 /* Interface class - AUDIO */
     0x02,                                 /* subclass - AUDIO_STREAMING */
     0x00,                                 /* Unused */
-    offsetof(StringDescTable_t, inputInterfaceStr_Audio1)/sizeof(char *), 
+    offsetof(StringDescTable_t, inputInterfaceStr_Audio1)/sizeof(char *),
 
     /* Standard Interface Descriptor - Audio streaming IN */
     0x09,
@@ -2641,7 +2641,7 @@ unsigned char cfgDesc_Audio1[] =
     0x01,                                 /* Interface class - AUDIO */
     0x02,                                 /* Subclass - AUDIO_STREAMING */
     0x00,                                 /* Unused */
-    offsetof(StringDescTable_t, inputInterfaceStr_Audio1)/sizeof(char *), 
+    offsetof(StringDescTable_t, inputInterfaceStr_Audio1)/sizeof(char *),
 
     /* CS_Interface AC interface header descriptor */
     0x07,

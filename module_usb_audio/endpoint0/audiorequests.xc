@@ -1135,7 +1135,7 @@ int AudioEndpointRequests_1(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp
                 }
 #else
                 return XUD_SetBuffer(ep0_in, (buffer, unsigned char[]), 0);
-#endif     
+#endif
             }
             break;
         }

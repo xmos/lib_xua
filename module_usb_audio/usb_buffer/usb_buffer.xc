@@ -258,7 +258,7 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in,
     XUD_SetReady_In(ep_hid, g_hidData, 1);
 #endif
 
-#if (AUDIO_CLASS == 1) 
+#if (AUDIO_CLASS == 1)
 #if (NUM_USB_CHAN_IN == 0) || defined (UAC_FORCE_FEEDBACK_EP)
     /* In UAC1 we dont use a stream start event (and we are always FS) so mark FB EP ready now */
     XUD_SetReady_In(ep_aud_fb, (fb_clocks, unsigned char[]), 3);
@@ -354,7 +354,7 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in,
                         SET_SHARED_GLOBAL(g_freqChange_sampFreq, receivedSampleFreq);
                     }
 #if (AUDIO_CLASS == 2)
-                    else 
+                    else
                         if(cmd == SET_STREAM_FORMAT_IN)
                     {
                         unsigned formatChange_DataFormat = inuint(c_aud_ctl);
@@ -370,7 +370,7 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in,
                     /* FIXME when FB EP is enabled there is no inital XUD_SetReady */
                     else if (cmd == SET_STREAM_FORMAT_OUT)
                     {
-                        
+
                         XUD_BusSpeed_t busSpeed;
                         unsigned formatChange_DataFormat = inuint(c_aud_ctl);
                         unsigned formatChange_NumChans = inuint(c_aud_ctl);

@@ -4,7 +4,7 @@
 
 #define XS1_SU_PERIPH_USB_ID 0x1
 
-//Normally we would enumerate the XUD_SERIES_SUPPORT possibilities using defines in 
+//Normally we would enumerate the XUD_SERIES_SUPPORT possibilities using defines in
 //xud.h but we have hard coded them to remove dependancy of sc_xud
 
 #if (XUD_SERIES_SUPPORT == 4)
@@ -37,9 +37,9 @@ void device_reboot_aux(void)
     unsigned int tileArrayLength;
 
 #if (XUD_SERIES_SUPPORT == 4)
-    /* Disconnect from bus */  
-    unsigned data[] = {4};  
-    write_periph_32(usb_tile, XS2_SU_PERIPH_USB_ID, XS1_GLX_PER_UIFM_FUNC_CONTROL_NUM, 1, data);  
+    /* Disconnect from bus */
+    unsigned data[] = {4};
+    write_periph_32(usb_tile, XS2_SU_PERIPH_USB_ID, XS1_GLX_PER_UIFM_FUNC_CONTROL_NUM, 1, data);
 #endif
 
     /* Find size of tile array - note in future tools versions this will be available from platform.h */

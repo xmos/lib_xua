@@ -344,7 +344,7 @@ int DFUReportResetState(chanend ?c_user_cmd)
 #ifdef START_IN_DFU
     flag = 0x11042011;
 #endif
-    
+
     if (flag == 0x11042011)
     {
         unsigned int cmd_data[16];

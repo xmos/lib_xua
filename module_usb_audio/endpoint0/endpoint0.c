@@ -300,7 +300,7 @@ void Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
     {
         /* Returns XUD_RES_OKAY for success, XUD_RES_RST for bus reset */
         XUD_Result_t result = USB_GetSetupPacket(ep0_out, ep0_in, &sp);
-    
+
         if (result == XUD_RES_OKAY)
         {
             result = XUD_RES_ERR;

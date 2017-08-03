@@ -577,7 +577,7 @@ int main()
     par
     {
         USER_MAIN_CORES
-        
+
         on tile[XUD_TILE]:
         par
         {
@@ -694,7 +694,7 @@ int main()
 #endif
 #endif
 
-#ifndef PDM_RECORD    
+#ifndef PDM_RECORD
 #if (NUM_PDM_MICS > 0)
         on stdcore[PDM_TILE]: pdm_mic(c_ds_output);
 #ifdef MIC_PROCESSING_USE_INTERFACE

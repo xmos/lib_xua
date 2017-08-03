@@ -47,7 +47,7 @@ static unsigned samplesOut[MAX(NUM_USB_CHAN_OUT, I2S_CHANS_DAC)];
 #endif
 
 /* Two buffers for ADC data to allow for DAC and ADC I2S ports being offset */
-#define IN_CHAN_COUNT (I2S_CHANS_ADC + NUM_PDM_MICS + (8*ADAT_RX) + (2*SPDIF_RX)) 
+#define IN_CHAN_COUNT (I2S_CHANS_ADC + NUM_PDM_MICS + (8*ADAT_RX) + (2*SPDIF_RX))
 
 static unsigned samplesIn[2][MAX(NUM_USB_CHAN_IN, IN_CHAN_COUNT)];
 
