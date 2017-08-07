@@ -305,7 +305,7 @@ static inline unsigned DoSampleTransfer(chanend c_out, const int readBuffNo, con
 
 #else /* NO_USB */
 #pragma unsafe arrays
-static inline unsigned DoSampleTransfer(chanend c_out, const int readBuffNo, const unsigned underflowWord, client audManage_if i_audMan)
+static inline unsigned DoSampleTransfer(chanend ?c_out, const int readBuffNo, const unsigned underflowWord, client audManage_if i_audMan)
 {
     UserBufferManagement(samplesOut, samplesIn[readBuffNo], i_audMan);
     return 0;
@@ -447,7 +447,7 @@ static inline void InitPorts(unsigned divide)
 
 /* I2S delivery thread */
 #pragma unsafe arrays
-unsigned static deliver(chanend c_out, chanend ?c_spd_out,
+unsigned static deliver(chanend ?c_out, chanend ?c_spd_out,
 #ifdef ADAT_TX
     chanend c_adat_out,
     unsigned adatSmuxMode,
@@ -1062,7 +1062,7 @@ void testct_byref(chanend c, int &returnVal)
 }
 
 [[combinable]]
-static void dummy_deliver(chanend c_out, unsigned &command)
+static void dummy_deliver(chanend ?c_out, unsigned &command)
 {
     int ct;
 
@@ -1107,7 +1107,7 @@ static void dummy_deliver(chanend c_out, unsigned &command)
     }
 }
 
-void audio(chanend c_mix_out,
+void audio(chanend ?c_mix_out,
 #if defined(SPDIF_TX) && (SPDIF_TX_TILE != AUDIO_IO_TILE)
 chanend c_spdif_out,
 #endif
