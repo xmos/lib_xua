@@ -1,6 +1,10 @@
 sc_usb_audio Change Log
 =======================
 
+7.4.1
+-----
+    - RESOLVED:   Exception due to null chanend when using NO_USB
+
 7.4.0
 -----
     - RESOLVED:   PID_DFU now based on AUDIO_CLASS. This potentially caused issues
