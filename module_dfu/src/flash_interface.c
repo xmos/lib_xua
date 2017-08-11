@@ -175,17 +175,6 @@ int flash_cmd_write_page(unsigned char *data)
     return 0;
 }
 
-static int isAllOnes(unsigned char page[256])
-{
-    unsigned i;
-    for (i = 0; i < 256; i++)
-    {
-        if (page[i] != 0xff)
-            return 0;
-    }
-    return 1;
-}
-
 int flash_cmd_write_page_data(unsigned char *data)
 {
     unsigned char *page_data_ptr = &current_flash_page_data[current_flash_subpage_index * 64];
@@ -206,8 +195,6 @@ int flash_cmd_write_page_data(unsigned char *data)
 
     if (current_flash_subpage_index == 4)
     {
-        if (isAllOnes(data))
-            FLASH_ERROR();
         if (fl_writeImagePage(current_flash_page_data) != 0)
             FLASH_ERROR();
         pages_written++;
