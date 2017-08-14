@@ -155,7 +155,10 @@ static int DFU_Dnload(unsigned int request_len, unsigned int block_num, const un
             unsigned int subPagePad[16] = {0};
             for (i = 0; i < subPagesLeft; i++)
             {
-                flash_cmd_write_page_data((subPagePad, unsigned char[64]));
+                if(flash_cmd_write_page_data((subPagePad, unsigned char[64])))
+                {
+                    return 1;
+                }
             }
         }
 
@@ -192,7 +195,10 @@ static int DFU_Dnload(unsigned int request_len, unsigned int block_num, const un
             cmd_data[i] = request_data[i];
         }
 
-        flash_cmd_write_page_data((cmd_data, unsigned char[64]));
+        if(flash_cmd_write_page_data((cmd_data, unsigned char[64])))
+        {
+            return 1;
+        }
         subPagesLeft--;
 
         DFU_state = STATE_DFU_DOWNLOAD_SYNC;

@@ -196,7 +196,10 @@ int flash_cmd_write_page_data(unsigned char *data)
     if (current_flash_subpage_index == 4)
     {
         if (fl_writeImagePage(current_flash_page_data) != 0)
+        {
             FLASH_ERROR();
+            return 1;
+        }
         pages_written++;
     }
 
