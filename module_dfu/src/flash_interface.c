@@ -4,8 +4,18 @@
 #include <string.h>
 #include <xclib.h>
 
+/* Defines flash area to erase on first DFU download request received
+ *
+ * Flash library will round it up to the nearest sector, e.g. 4KB
+ *
+ * XS2 internal flash IS25LQ016B takes 70ms to erase one sector
+ * 128KB will take over 2 seconds, for instance
+ *
+ * Your host software might implement a 5sec timeout as per USB spec 9.2.6.1,
+ * and 5 seconds is just over 300KB
+ */
 #ifndef FLASH_MAX_UPGRADE_SIZE
-#define FLASH_MAX_UPGRADE_SIZE 128 * 1024 // 128K default
+#define FLASH_MAX_UPGRADE_SIZE (128 * 1024)
 #endif
 
 #define FLASH_ERROR() do {} while(0)
