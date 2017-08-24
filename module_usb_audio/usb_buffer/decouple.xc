@@ -150,15 +150,15 @@ int g_maxPacketSize = MAX_DEVICE_AUD_PACKET_SIZE_IN_FS;
 #pragma unsafe arrays
 void handle_audio_request(chanend c_mix_out)
 {
-    int outSamps;
     int space_left;
 
     /* Input word that triggered interrupt and handshake back */
     unsigned underflowSample = inuint(c_mix_out);
 
 #if (NUM_USB_CHAN_OUT == 0)
-    outuint(c_mix_out, 0);
+    outuint(c_mix_out, underflowSample);
 #else
+    int outSamps;
     if(outUnderflow)
     {
 #pragma xta endpoint "out_underflow"

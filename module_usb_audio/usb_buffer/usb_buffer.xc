@@ -180,7 +180,9 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in,
     unsigned expected_fb = 0;
 #endif
 
+#if (NUM_USB_CHAN_OUT > 0)
     xc_ptr aud_from_host_buffer = 0;
+#endif
 
 #ifdef MIDI
     xc_ptr midi_from_host_buffer = array_to_xc_ptr(g_midi_from_host_buffer);
