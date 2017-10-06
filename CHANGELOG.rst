@@ -13,7 +13,7 @@ sc_usb_audio Change Log
 
 7.3.0
 -----
-    - CHANGE:     Example OSX DFU host app updated to now can PID as runtime 
+    - CHANGE:     Example OSX DFU host app updated to now take PID as runtime 
       argument. This enabled multiple XMOS devices to be attached to the host
       during DFU process
 
