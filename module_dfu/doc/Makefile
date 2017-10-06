@@ -1,1 +1,1 @@
-SOURCE_INCLUDE_DIRS=../host/xmos_dfu_osx
+SOURCE_INCLUDE_DIRS=../host/xmosdfu
