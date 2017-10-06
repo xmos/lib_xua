@@ -1,6 +1,11 @@
 sc_usb_audio Change Log
 =======================
 
+7.5.1
+-----
+    - ADDED:      Linux Makefile for xmosdfu host application
+    - ADDED:      Raspberry Pi Makefile for xmosdfu host application
+
 7.4.1
 -----
     - RESOLVED:   Exception due to null chanend when using NO_USB
