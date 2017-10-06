@@ -5,4 +5,4 @@
 # vendor and product IDs
 
 xmosdfu: xmosdfu.cpp
-	g++ -D_GNU_SOURCE -Wall -g -o xmosdfu -Ilibusb/Rasp -lusb-1.0 xmosdfu.cpp
+	g++ -D_GNU_SOURCE -Wall -g -o xmosdfu -Ilibusb/Rasp -lusb-1.0 -x c xmosdfu.cpp -std=c99
