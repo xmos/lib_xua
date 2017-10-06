@@ -1,6 +1,11 @@
 sc_usb_audio Change Log
 =======================
 
+7.5.1
+-----
+    - ADDED:      Linux Makefile for xmosdfu host application
+    - ADDED:      Raspberry Pi Makefile for xmosdfu host application
+
 7.4.1
 -----
     - RESOLVED:   Exception due to null chanend when using NO_USB
@@ -13,7 +18,7 @@ sc_usb_audio Change Log
 
 7.3.0
 -----
-    - CHANGE:     Example OSX DFU host app updated to now can PID as runtime 
+    - CHANGE:     Example OSX DFU host app updated to now take PID as runtime 
       argument. This enabled multiple XMOS devices to be attached to the host
       during DFU process
 

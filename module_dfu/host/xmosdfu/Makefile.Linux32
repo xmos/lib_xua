@@ -1,0 +1,2 @@
+all:
+	g++ -m32 -Wall -g -o xmosdfu xmosdfu.cpp -Ilibusb/Linux32 -lusb-1.0

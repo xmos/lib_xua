@@ -86,7 +86,7 @@ static int find_xmos_device(unsigned int id, unsigned int pid, unsigned int list
                 }
                 else
                 {
-                    libusb_config_descriptor *config_desc = NULL;
+                    struct libusb_config_descriptor *config_desc = NULL;
                     libusb_get_active_config_descriptor(dev, &config_desc);
                     if (config_desc != NULL)
                     {
@@ -94,7 +94,7 @@ static int find_xmos_device(unsigned int id, unsigned int pid, unsigned int list
                         for (int j = 0; j < config_desc->bNumInterfaces; j++)
                         {
                             //printf("%d\n", j);
-                            const libusb_interface_descriptor *inter_desc = ((libusb_interface *)&config_desc->interface[j])->altsetting;
+                            const struct libusb_interface_descriptor *inter_desc = ((struct libusb_interface *)&config_desc->interface[j])->altsetting;
                             if (inter_desc->bInterfaceClass == 0xFE && inter_desc->bInterfaceSubClass == 0x1)
                             {
                                 XMOS_DFU_IF = j;
@@ -563,5 +563,5 @@ int main(int argc, char **argv)
     libusb_close(devh);
     libusb_exit(NULL);
 
-    return true;
+    return 1;
 }
