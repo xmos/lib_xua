@@ -1,5 +1,5 @@
-Using the DFU loader - OS X (via the XMOS DFU loader)
-=====================================================
+Using the DFU loader - macOS (via the XMOS DFU loader)
+======================================================
 
 The XMOS DFU loader is provided as source as part of the XMOS USB Audio software
 framework, see :ref:`usb_audiosec_building_xmos_dfu`.

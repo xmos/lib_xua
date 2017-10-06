@@ -1,7 +1,7 @@
 .. _usb_audiosec_building_xmos_dfu:
 
-Building the XMOS DFU loader - OS X
-===================================
+Building the XMOS DFU loader - macOS
+====================================
 
 The XMOS DFU loader is provided as source as part of the USB Audio
 framework, located in sc_usb_audio/module_dfu/host/xmos_dfu_osx.
