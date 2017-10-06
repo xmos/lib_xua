@@ -64,6 +64,9 @@ typedef struct
 #ifdef DFU
     STR_TABLE_ENTRY(dfuStr);                      /* iInterface for DFU interface */
 #endif
+#ifdef USB_CONTROL_DESCS
+    STR_TABLE_ENTRY(ctrlStr);
+#endif
 #ifdef MIDI
     STR_TABLE_ENTRY(midiOutStr);                  /* iJack for MIDI Out */
     STR_TABLE_ENTRY(midiInStr);                   /* iJack for MIDI In */
@@ -333,6 +336,9 @@ StringDescTable_t g_strTable =
 #endif
 #ifdef DFU
     .dfuStr                      = APPEND_VENDOR_STR(DFU),
+#endif
+#ifdef USB_CONTROL_DESCS
+    .ctrlStr                      = APPEND_VENDOR_STR(Control),
 #endif
 #ifdef MIDI
     .midiOutStr                   = APPEND_VENDOR_STR(MIDI Out),
@@ -2743,7 +2749,7 @@ unsigned char cfgDesc_Audio1[] =
     /* Standard DFU class Interface descriptor */
     0x09,                                /* 0 bLength : Size of this descriptor, in bytes. (field size 1 bytes) */
     0x04,                                 /* 1 bDescriptorType : INTERFACE descriptor. (field size 1 bytes) */
-    (OUTPUT_INTERFACES_A1 + INPUT_INTERFACES_A1 + 1),  /* 2 bInterfaceNumber : Index of this interface. (field size 1 bytes) */
+    (OUTPUT_INTERFACES_A1 + INPUT_INTERFACES_A1 + NUM_CONTROL_INTERFACES + 1),  /* 2 bInterfaceNumber : Index of this interface. (field size 1 bytes) */
     0x00,                                 /* 3 bAlternateSetting : Index of this setting. (field size 1 bytes) */
     0x00,                                 /* 4 bNumEndpoints : 0 endpoints. (field size 1 bytes) */
     0xFE,                                 /* 5 bInterfaceClass : DFU. (field size 1 bytes) */
@@ -2767,13 +2773,13 @@ unsigned char cfgDesc_Audio1[] =
     /* Standard DFU class Interface descriptor */
     0x09,                                 /* 0 bLength : Size of this descriptor, in bytes. (field size 1 bytes) */
     0x04,                                 /* 1 bDescriptorType : INTERFACE descriptor. (field size 1 bytes) */
-    (OUTPUT_INTERFACES_A1 + INPUT_INTERFACES_A1 + DFU_INTERFACES_A1 + 1),  /* 2 bInterfaceNumber */
+    (OUTPUT_INTERFACES_A1 + INPUT_INTERFACES_A1 + 1),  /* 2 bInterfaceNumber */
     0x00,                                 /* 3 bAlternateSetting : Index of this setting. (field size 1 bytes) */
     0x00,                                 /* 4 bNumEndpoints : 0 endpoints. (field size 1 bytes) */
     0xFF,                                 /* 5 bInterfaceClass : DFU. (field size 1 bytes) */
     0xFF,                                 /* 6 bInterfaceSubclass : (field size 1 bytes) */
     0xFF,                                 /* 7 bInterfaceProtocol : Unused. (field size 1 bytes) */
-    0x00,                                 /* 8 iInterface */
+    offsetof(StringDescTable_t, ctrlStr)/sizeof(char *), /* 8 iInterface */
 #endif
 
 };

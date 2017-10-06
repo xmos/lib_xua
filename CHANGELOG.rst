@@ -5,6 +5,8 @@ sc_usb_audio Change Log
 -----
     - ADDED:      Linux Makefile for xmosdfu host application
     - ADDED:      Raspberry Pi Makefile for xmosdfu host application
+    - CHANGE:     Vendor specific control interface in UAC1 descriptor now has a string descriptor
+                  so it shows up with a descriptive name in Windows Device Manager
 
 7.4.1
 -----
