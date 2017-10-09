@@ -72,7 +72,7 @@ void pdm_buffer(streaming chanend c_ds_output[2], chanend c_audio)
         fir_gain_compen[1] = FIR_COMPENSATOR_DIV_2;
         fir_gain_compen[2] = FIR_COMPENSATOR_DIV_4;
         fir_gain_compen[3] = FIR_COMPENSATOR_DIV_6;
-        fir_gain_compen[4] = FIR_COMPENSATOR_DIV_6;
+        fir_gain_compen[4] = FIR_COMPENSATOR_DIV_8;
         fir_gain_compen[5] = 0;
         fir_gain_compen[6] = FIR_COMPENSATOR_DIV_12;
 
