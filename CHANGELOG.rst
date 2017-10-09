@@ -1,7 +1,7 @@
 sc_usb_audio Change Log
 =======================
 
-7.5.1
+7.5.0
 -----
     - ADDED:      Linux Makefile for xmosdfu host application
     - ADDED:      Raspberry Pi Makefile for xmosdfu host application
