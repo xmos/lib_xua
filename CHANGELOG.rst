@@ -7,6 +7,7 @@ sc_usb_audio Change Log
     - ADDED:      Raspberry Pi Makefile for xmosdfu host application
     - CHANGE:     Vendor specific control interface in UAC1 descriptor now has a string descriptor
                   so it shows up with a descriptive name in Windows Device Manager
+    - RESOLVED:   FIR gain compensation for PDM mics set incorrectly for divide of 8
 
 7.4.1
 -----
