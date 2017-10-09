@@ -1,0 +1,4 @@
+def use_module(bld):
+    sources = bld.path.ant_glob(['src/*.xc', 'src/*.c'])
+    bld.env.XCC_FLAGS = ['-Os', '-mno-dual-issue'] + bld.env.XCC_FLAGS
+    bld.module(source=sources, includes=['src'])

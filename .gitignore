@@ -16,3 +16,8 @@ module_dfu/host/xmosdfu/xmosdfu
 *.a
 *.swp
 *.*~
+
+# waf build files
+.lock-waf_*
+.waf-*/
+build/

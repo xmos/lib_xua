@@ -1,0 +1,9 @@
+def use_module(bld):
+    # Set file specific flags
+    for item in ('endpoint0.c', 'dbcalc.xc', 'audiorequests.xc',
+                 'flashlib_user.c', 'audioports.c', 'audioports.xc'):
+        bld.env['XCC_FLAGS_{}'.format(item)] = ['-Os', '-mno-dual-issue'
+                                                ] + bld.env.XCC_FLAGS
+
+    sources = bld.path.ant_glob(['**/*.xc', '**/*.c', '**/*.S'])
+    tgen = bld.module(source=sources, includes=['.', 'audio_io'])
