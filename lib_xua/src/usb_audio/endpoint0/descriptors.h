@@ -12,9 +12,8 @@
 #include "descriptor_defs.h"
 #include "usbaudio20.h"                /* Defines from the USB Audio 2.0 Specifications */
 #include "usbaudiocommon.h"
-#include "usb_std_descriptors.h"
+#include "xud_device.h"
 #include "usbaudio20.h"                /* Defines from USB Audio 2.0 spec */
-#include "usb_defs.h"
 
 #ifdef IAP_EA_NATIVE_TRANS
 #include "iap2.h"                      /* Defines iAP EA Native Transport protocol name */

@@ -3,8 +3,7 @@
 
 #include <xccompat.h>
 #include "devicedefines.h"
-#include "xud.h"
-#include "usb_std_requests.h"
+#include "xud_device.h"
 
 /* Functions that handle vustomer vendor requests.
  *

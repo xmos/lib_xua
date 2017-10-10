@@ -2,7 +2,7 @@
 #ifndef __DFU_INTERFACE_H__
 #define __DFU_INTERFACE_H__
 
-#include "usb_std_requests.h"
+#include "xud_device.h"
 
 interface i_dfu
 {

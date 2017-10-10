@@ -4,8 +4,7 @@
  */
 #ifndef NO_USB
 #include <xs1.h>
-#include "xud.h"
-#include "usb_std_requests.h"
+#include "xud_device.h"
 #include "usbaudio20.h"
 #include "usbaudio10.h"
 #include "dbcalc.h"

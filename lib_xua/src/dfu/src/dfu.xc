@@ -3,13 +3,10 @@
 #include "devicedefines.h"
 
 #ifndef NO_USB
-#include "xud.h"
-#include "usb_std_requests.h"
-
+#include "xud_device.h"
 #include "dfu_types.h"
 #include "flash_interface.h"
-
-#include <dfu_interface.h>
+#include "dfu_interface.h"
 
 #if (XUD_SERIES_SUPPORT==4)
 /* xCORE-200 */

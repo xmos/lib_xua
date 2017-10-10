@@ -3,7 +3,7 @@
 #define _DFU_H_ 1
 
 #include <xccompat.h>
-#include "usb_std_descriptors.h"
+#include "xud_device.h"
 
 #ifndef DFU_VENDOR_ID
 #error DFU_VENDOR_ID not defined!

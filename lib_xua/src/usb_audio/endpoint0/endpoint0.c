@@ -8,12 +8,9 @@
 #include <stddef.h>
 
 #ifndef NO_USB
-#include "xud.h"                 /* XUD user defines and functions */
-#include "usb_std_requests.h"
+#include "xud_device.h"          /* Standard descriptor requests */
 #include "usbaudio20.h"          /* Defines from USB Audio 2.0 spec */
-
 #include "devicedefines.h"
-#include "usb_device.h"          /* Standard descriptor requests */
 #include "descriptors.h"         /* This devices descriptors */
 #include "commands.h"
 #include "audiostream.h"
