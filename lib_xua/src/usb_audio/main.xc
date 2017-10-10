@@ -1,3 +1,7 @@
+
+#include "devicedefines.h"       /* Device specific defines */
+#ifndef EXCLUDE_USB_AUDIO_MAIN
+
 /**
  * @file    main.xc
  * @brief   Top level for XMOS USB 2.0 Audio 2.0 Reference Designs.
@@ -14,10 +18,9 @@
 
 #include "xud.h"                 /* XMOS USB Device Layer defines and functions */
 #ifndef NO_USB
-#include "endpoint0.h"
+#include "xua_endpoint0.h"
 #endif
 
-#include "devicedefines.h"       /* Device specific defines */
 #include "uac_hwresources.h"
 #include "usb_buffer.h"
 #include "decouple.h"
@@ -392,7 +395,7 @@ VENDOR_REQUESTS_PARAMS_DEC_
         /* Endpoint 0 Core */
         {
             thread_speed();
-            Endpoint0( c_xud_out[0], c_xud_in[0], c_aud_ctl, c_mix_ctl, c_clk_ctl, c_EANativeTransport_ctrl, dfuInterface VENDOR_REQUESTS_PARAMS_);
+            XUA_Endpoint0( c_xud_out[0], c_xud_in[0], c_aud_ctl, c_mix_ctl, c_clk_ctl, c_EANativeTransport_ctrl, dfuInterface VENDOR_REQUESTS_PARAMS_);
         }
 
         /* Decoupling core */
@@ -496,7 +499,6 @@ void usb_audio_io(chanend ?c_aud_in, chanend ?c_adc,
 #define USER_MAIN_CORES
 #endif
 
-#ifndef EXCLUDE_USB_AUDIO_MAIN
 
 /* Main for USB Audio Applications */
 int main()

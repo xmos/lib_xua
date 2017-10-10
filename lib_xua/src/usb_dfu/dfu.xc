@@ -1,3 +1,5 @@
+#include "devicedefines.h"
+#if (XUA_DFU == 1)
 #include <xs1.h>
 #include <platform.h>
 #include "devicedefines.h"
@@ -579,3 +581,5 @@ int DFUDeviceRequests(XUD_ep ep0_out, XUD_ep &?ep0_in, USB_SetupPacket_t &sp, ch
   	return returnVal;
 }
 #endif /* NO_USB */
+
+#endif

@@ -1,5 +1,16 @@
-sc_usb_audio Change Log
-=======================
+lib_xua Change Log
+==================
+
+1.0.0
+-----
+    - CHANGE:      Fork from sc_xud to lib_xud
+
+
+Legacy release history
+----------------------
+
+(Note: Forked from sc_usb_audio at this point)
+
 
 7.5.0
 -----
