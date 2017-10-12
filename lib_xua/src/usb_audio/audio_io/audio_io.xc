@@ -1107,7 +1107,7 @@ static void dummy_deliver(chanend ?c_out, unsigned &command)
     }
 }
 
-void audio(chanend ?c_mix_out,
+void XUA_AudioHub(chanend ?c_mix_out,
 #if defined(SPDIF_TX) && (SPDIF_TX_TILE != AUDIO_IO_TILE)
 chanend c_spdif_out,
 #endif

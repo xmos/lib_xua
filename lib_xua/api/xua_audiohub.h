@@ -31,7 +31,7 @@ typedef interface audManage_if
  *  \param c_config An optional channel that will be passed on to the
  *                  CODEC configuration functions.
  */
-void audio(chanend ?c_in,
+void XUA_AudioHub(chanend ?c_in,
 #if defined(SPDIF_TX) && (SPDIF_TX_TILE != AUDIO_IO_TILE)
     chanend c_spdif_tx,
 #endif
