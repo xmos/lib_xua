@@ -1048,7 +1048,7 @@ void SpdifTxWrapper(chanend c_spdif_tx)
 /* This function is a dummy version of the deliver thread that does not
    connect to the codec ports. It is used during DFU reset. */
 
-#if DFU
+#if (XUA_DFU == 1)
 [[distributable]]
 void DFUHandler(server interface i_dfu i, chanend ?c_user_cmd);
 #endif
@@ -1384,7 +1384,7 @@ chanend ?c_config, chanend ?c
                     curSamRes_DAC = inuint(c_mix_out);
                 }
 
-#ifdef DFU
+#if (XUA_DFU == 1)
                 /* Currently no more audio will happen after this point */
                 if ((curSamFreq / AUD_TO_USB_RATIO) == AUDIO_STOP_FOR_DFU)
                 {
