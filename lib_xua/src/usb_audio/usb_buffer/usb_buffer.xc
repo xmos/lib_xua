@@ -185,9 +185,6 @@ void XUA_Buffer(
 }
 
 
-
-//extern unsigned inZeroBuff[];
-
 /**
  * Buffers data from audio endpoints
  * @param   c_aud_out     chanend for audio from xud
