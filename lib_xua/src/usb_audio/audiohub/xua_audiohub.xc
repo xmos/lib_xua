@@ -15,9 +15,9 @@
 #include <string.h>
 
 #include "devicedefines.h"
+#include "xua_audiohub.h"
 
 #include "userbuffermanagement.h"
-#include "xua_audio.h"
 #include "audioports.h"
 #include "audiohw.h"
 #include "mic_array_conf.h"
@@ -1107,15 +1107,14 @@ static void dummy_deliver(chanend ?c_out, unsigned &command)
     }
 }
 
-void XUA_AudioHub(chanend ?c_mix_out,
+void XUA_AudioHub(chanend ?c_mix_out
 #if defined(SPDIF_TX) && (SPDIF_TX_TILE != AUDIO_IO_TILE)
 chanend c_spdif_out,
 #endif
 #if (defined(ADAT_RX) || defined(SPDIF_RX))
 chanend c_dig_rx,
 #endif
-chanend ?c_config, chanend ?c
-#if (XUD_TILE != 0) && (AUDIO_IO_TILE == 0)
+#if (XUD_TILE != 0) && (AUDIO_IO_TILE == 0) && (XUA_DFU_EN == 1)
 , server interface i_dfu ?dfuInterface
 #endif
 #if (NUM_PDM_MICS > 0)
@@ -1169,7 +1168,7 @@ chanend ?c_config, chanend ?c
 #endif
 
     /* Perform required CODEC/ADC/DAC initialisation */
-    AudioHwInit(c_config);
+    AudioHwInit();
 
     while(1)
     {
@@ -1281,7 +1280,7 @@ chanend ?c_config, chanend ?c
             }
 #endif
             /* Configure Clocking/CODEC/DAC/ADC for SampleFreq/MClk */
-            AudioHwConfig(curFreq, mClk, c_config, dsdMode, curSamRes_DAC, curSamRes_ADC);
+            AudioHwConfig(curFreq, mClk, dsdMode, curSamRes_DAC, curSamRes_ADC);
         }
 
         if(!firstRun)

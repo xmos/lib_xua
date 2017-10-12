@@ -1,5 +1,5 @@
-#ifndef __audio_h__
-#define __audio_h__
+#ifndef __XUA_AUDIOHUB_H__
+#define __XUA_AUDIOHUB_H__
 
 #if __XC__
 
@@ -31,15 +31,14 @@ typedef interface audManage_if
  *  \param c_config An optional channel that will be passed on to the
  *                  CODEC configuration functions.
  */
-void XUA_AudioHub(chanend ?c_in,
+void XUA_AudioHub(chanend ?c_in
 #if defined(SPDIF_TX) && (SPDIF_TX_TILE != AUDIO_IO_TILE)
     chanend c_spdif_tx,
 #endif
 #if(defined(SPDIF_RX) || defined(ADAT_RX))
     chanend c_dig,
 #endif
-    chanend ?c_config, chanend ?c_adc
-#if (XUD_TILE != 0) && (AUDIO_IO_TILE == 0)
+#if (XUD_TILE != 0) && (AUDIO_IO_TILE == 0) && (XUA_DFU_EN == 1)
    , server interface i_dfu ?dfuInterface
 #endif
 #if (NUM_PDM_MICS > 0)
@@ -50,6 +49,15 @@ void XUA_AudioHub(chanend ?c_in,
 
 void SpdifTxWrapper(chanend c_spdif_tx);
 
+/* These functions must be implemented for the CODEC/ADC/DAC arrangement of a specific design */
+
+/* Any required clocking and CODEC initialisation - run once at start up */
+void AudioHwInit();
+
+/* Configure audio hardware (clocking, CODECs etc) for a specific mClk/Sample frquency - run on every sample frequency change */
+void AudioHwConfig(unsigned samFreq, unsigned mClk, unsigned dsdMode,
+        unsigned sampRes_DAC, unsigned sampRes_ADC);
+
 #endif // __XC__
 
-#endif // __audio_h__
+#endif // __XUA_AUDIOHUB_H__

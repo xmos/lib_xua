@@ -21,8 +21,8 @@
 #define SPDIF_TX_INDEX 0
 #define VENDOR_STR "XMOS"
 #define VENDOR_ID 0x20B1
-#define PRODUCT_STR_A2 "XUA Simple"
-#define PRODUCT_STR_A1 "XUA Simple"
+#define PRODUCT_STR_A2 "XUA Example"
+#define PRODUCT_STR_A1 "XUA Example"
 #define PID_AUDIO_1 1
 #define PID_AUDIO_2 2
 #define AUDIO_CLASS 2

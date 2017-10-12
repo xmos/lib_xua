@@ -419,7 +419,6 @@ void usb_audio_io(chanend ?c_aud_in, chanend ?c_adc,
 #ifdef MIXER
     chanend c_mix_ctl,
 #endif
-    chanend ?c_aud_cfg,
     streaming chanend ?c_spdif_rx,
     chanend ?c_adat_rx,
     chanend ?c_clk_ctl,
@@ -467,7 +466,6 @@ void usb_audio_io(chanend ?c_aud_in, chanend ?c_adc,
 #if defined(SPDIF_RX) || defined(ADAT_RX)
                 c_dig_rx,
 #endif
-                c_aud_cfg, c_adc
 #if (XUD_TILE != 0) && (AUDIO_IO_TILE == 0)
                 , dfuInterface
 #endif
@@ -526,12 +524,6 @@ int main()
 
 #ifdef MIXER
     chan c_mix_ctl;
-#endif
-
-#ifdef AUDIO_CFG_CHAN
-    chan c_aud_cfg;
-#else
-#define c_aud_cfg null
 #endif
 
 #ifdef SPDIF_RX
@@ -618,7 +610,7 @@ int main()
 #ifdef MIXER
             , c_mix_ctl
 #endif
-            ,c_aud_cfg, c_spdif_rx, c_adat_rx, c_clk_ctl, c_clk_int
+            , c_spdif_rx, c_adat_rx, c_clk_ctl, c_clk_int
 #if (XUD_TILE != 0) && (AUDIO_IO_TILE == 0)
             , dfuInterface
 #endif

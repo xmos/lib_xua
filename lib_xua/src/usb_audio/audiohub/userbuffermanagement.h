@@ -1,7 +1,7 @@
 #ifndef _USERBUFFERMANAGEMENT_H_
 #define _USERBUFFERMANAGEMENT_H_
 
-#include "xua_audio.h"
+#include "xua_audiohub.h"
 #include <xccompat.h>
 
 void UserBufferManagementInit(CLIENT_INTERFACE(audManage_if, i_audMan));
