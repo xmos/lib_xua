@@ -3,6 +3,8 @@
 #include <print.h>
 
 #include "devicedefines.h"
+#include "xua_buffer.h"
+
 #ifdef MIDI
 #include "usb_midi.h"
 #endif
@@ -21,6 +23,7 @@
 #include "user_hid.h"
 unsigned char g_hidData[1] = {0};
 #endif
+
 
 void GetADCCounts(unsigned samFreq, int &min, int &mid, int &max);
 #define BUFFER_SIZE_OUT       (1028 >> 2)
@@ -85,6 +88,104 @@ unsigned int fb_clocks[4];
 //#define FB_TOLERANCE_TEST
 #define FB_TOLERANCE 0x100
 
+void XUA_Buffer(
+            register chanend c_aud_out, 
+#if (NUM_USB_CHAN_IN > 0)
+	        register chanend c_aud_in,
+#endif
+#if (NUM_USB_CHAN_IN == 0) || defined (UAC_FORCE_FEEDBACK_EP)
+            chanend c_aud_fb,
+#endif
+#ifdef MIDI
+            chanend c_midi_from_host,
+            chanend c_midi_to_host,
+            chanend c_midi,
+#endif
+#ifdef IAP
+            chanend c_iap_from_host,
+            chanend c_iap_to_host,
+#ifdef IAP_INT_EP
+            chanend c_iap_to_host_int,
+#endif
+            chanend c_iap,
+#ifdef IAP_EA_NATIVE_TRANS
+            chanend c_iap_ea_native_out,
+            chanend c_iap_ea_native_in,
+            chanend c_iap_ea_native_ctrl,
+            chanend c_iap_ea_native_data,
+#endif
+#endif
+#if defined(SPDIF_RX) || defined(ADAT_RX)
+            chanend ?c_ep_int,
+            chanend ?c_clk_int,
+#endif
+            chanend c_sof,
+            chanend c_aud_ctl,
+            in port p_off_mclk
+#ifdef HID_CONTROLS
+            , chanend c_hid
+#endif
+            , chanend c_aud
+)
+{
+#ifdef CHAN_BUFF_CTRL
+    chan c_buff_ctrl;
+#endif
+
+    par
+    {
+        XUA_Buffer_Ep(c_aud_out,          /* USB Audio Out*/
+#if (NUM_USB_CHAN_IN > 0)
+                c_aud_in,                 /* USB Audio In */
+#endif
+#if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP)
+                c_aud_fb,                 /* Audio FB */
+#endif
+#ifdef MIDI
+                c_midi_from_host,         /* MIDI Out */ // 2
+                c_midi_to_host,           /* MIDI In */  // 4
+                c_midi,
+#endif
+#ifdef IAP
+                c_iap_from_host,          /* iAP Out */
+                c_iap_to_host,            /* iAP In */
+#ifdef IAP_INT_EP
+                c_iap_to_host_int,        /* iAP Interrupt In */
+#endif
+                c_iap,
+#ifdef IAP_EA_NATIVE_TRANS
+                c_iap_ea_native_out,
+                c_iap_ea_native_in,
+                c_EANativeTransport_ctrl,
+                c_ea_data,
+#endif
+#endif
+#if defined(SPDIF_RX) || defined(ADAT_RX)
+                /* Audio Interrupt - only used for interrupts on external clock change */
+                c_ep_int,
+                c_clk_int,
+#endif
+                c_sof, c_aud_ctl, p_off_mclk
+#ifdef HID_CONTROLS
+                , c_hid
+#endif
+#ifdef CHAN_BUFF_CTRL
+                , c_buff_ctrl
+#endif
+            );
+
+        {
+            XUA_Buffer_Decouple(c_aud
+#ifdef CHAN_BUFF_CTRL
+                , c_buff_ctrl
+#endif
+            );
+        }
+    }
+}
+
+
+
 //extern unsigned inZeroBuff[];
 
 /**
@@ -94,7 +195,10 @@ unsigned int fb_clocks[4];
  * @param   c_aud_fb      chanend for feeback to xud
  * @return  void
  */
-void buffer(register chanend c_aud_out, register chanend c_aud_in,
+void XUA_Buffer_Ep(register chanend c_aud_out, 
+#if (NUM_USB_CHAN_IN > 0)
+	register chanend c_aud_in,
+#endif
 #if (NUM_USB_CHAN_IN == 0) || defined (UAC_FORCE_FEEDBACK_EP)
     chanend c_aud_fb,
 #endif
@@ -133,10 +237,15 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in,
             )
 {
     XUD_ep ep_aud_out = XUD_InitEp(c_aud_out);
+
+#if (NUM_USB_CHAN_IN > 0)
     XUD_ep ep_aud_in = XUD_InitEp(c_aud_in);
+#endif
+
 #if (NUM_USB_CHAN_IN == 0) || defined (UAC_FORCE_FEEDBACK_EP)
     XUD_ep ep_aud_fb = XUD_InitEp(c_aud_fb);
 #endif
+
 #ifdef MIDI
     XUD_ep ep_midi_from_host = XUD_InitEp(c_midi_from_host);
     XUD_ep ep_midi_to_host = XUD_InitEp(c_midi_to_host);
@@ -226,7 +335,9 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in,
 
     /* Store EP's to globals so that decouple() can access them */
     asm("stw %0, dp[aud_from_host_usb_ep]"::"r"(ep_aud_out));
+#if (NUM_USB_CHAN_IN > 0)
     asm("stw %0, dp[aud_to_host_usb_ep]"::"r"(ep_aud_in));
+#endif
     asm("stw %0, dp[buffer_aud_ctl_chan]"::"r"(c_aud_ctl));
 
 #ifdef FB_TOLERANCE_TEST
@@ -432,60 +543,8 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in,
                 {
                     unsigned usb_speed;
                     GET_SHARED_GLOBAL(usb_speed, g_curUsbSpeed);
-#if 0
-                    unsigned mask = MASK_16_13;
-                    /* Original feedback implementation */
-                    if(usb_speed != XUD_SPEED_HS)
-                        mask = MASK_16_10;
-
-                    /* Number of MCLKS this SOF, approx 125 * 24 (3000), sample by sample rate */
-                    GET_SHARED_GLOBAL(cycles, g_curSamFreqMultiplier);
-                    cycles = ((int)((short)(u_tmp - lastClock))) * cycles;
-
-                    /* Any odd bits (lower than 16.23) have to be kept seperate */
-                    remnant += cycles & mask;
-
-                    /* Add 16.13 bits into clock count */
-                    clocks += (cycles & ~mask) + (remnant & ~mask);
-
-                    /* and overflow from odd bits. Remove overflow from odd bits. */
-                    remnant &= mask;
-
-                    /* Store MCLK for next time around... */
-                    lastClock = u_tmp;
-
-                    /* Reset counts based on SOF counting.  Expect 16ms (128 HS SOFs/16 FS SOFS) per feedback poll
-                     * We always count 128 SOFs, so 16ms @ HS, 128ms @ FS */
-                    if(sofCount == 128)
-                    {
-                        sofCount = 0;
-#ifdef FB_TOLERANCE_TEST
-                        if (clocks > (expected_fb - FB_TOLERANCE) &&
-                            clocks < (expected_fb + FB_TOLERANCE))
-#endif
-                        {
-                            int usb_speed;
-                            asm volatile("stw %0, dp[g_speed]"::"r"(clocks));   // g_speed = clocks
-                            GET_SHARED_GLOBAL(usb_speed, g_curUsbSpeed);
-
-                            if (usb_speed == XUD_SPEED_HS)
-                            {
-                                fb_clocks[0] = clocks;
-                            }
-                            else
-                            {
-                                fb_clocks[0] = clocks>>2;
-                            }
-                        }
-#ifdef FB_TOLERANCE_TEST
-                        else
-                        {
-                        }
-#endif
-                        clocks = 0;
-                    }
-#else
-                    /* Assuming 48kHz from a 24.576 master clock (0.0407uS period)
+                    
+					/* Assuming 48kHz from a 24.576 master clock (0.0407uS period)
                      * MCLK ticks per SOF = 125uS / 0.0407 = 3072 MCLK ticks per SOF.
                      * expected Feedback is 48000/8000 = 6 samples. so 0x60000 in 16:16 format.
                      * Average over 128 SOFs - 128 x 3072 = 0x60000.
@@ -551,13 +610,9 @@ void buffer(register chanend c_aud_out, register chanend c_aud_in,
 #endif
                         clockcounter = 0;
                     }
-#endif
-
                     sofCount++;
                 }
             break;
-
-
 
 #if (NUM_USB_CHAN_IN > 0)
             /* Sent audio packet DEVICE -> HOST */

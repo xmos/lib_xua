@@ -603,7 +603,7 @@ static inline void SetupZerosSendBuffer(XUD_ep aud_to_host_usb_ep, unsigned samp
 unsigned char tmpBuffer[1026];
 
 #pragma unsafe arrays
-void decouple(chanend c_mix_out
+void XUA_Buffer_Decouple(chanend c_mix_out
 #ifdef CHAN_BUFF_CTRL
     , chanend c_buf_ctrl
 #endif
