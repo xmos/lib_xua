@@ -6,4 +6,6 @@
 
 #include "xua_endpoint0.h"
 
+#include "xua_buffer.h"
+
 #endif
