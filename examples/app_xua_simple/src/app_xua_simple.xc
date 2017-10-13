@@ -49,9 +49,6 @@ int main()
     /* Channel for communcating control messages from EP0 to the rest of the device (via the buffering cores */
     chan c_aud_ctl;
 
-    /* TODO handle this */
-    interface audManage_if i_audMan;
-
     par
     {
         /* Low level USB device layer core */ 
@@ -70,7 +67,7 @@ int main()
         on tile[1]: XUA_Buffer(c_ep_out[1], c_ep_in[1], c_sof, c_aud_ctl, p_for_mclk_count, c_aud);
 
         /* IOHub core does most of the audio IO i.e. I2S (also serves as a hub for all audio) */
-        on tile[0]: XUA_AudioHub(c_aud, i_audMan);
+        on tile[0]: XUA_AudioHub(c_aud, null);
     }
     
     return 0;

@@ -247,7 +247,7 @@ static inline void TransferAdatTxSamples(chanend c_adat_out, const unsigned samp
 
 #ifndef NO_USB
 #pragma unsafe arrays
-static inline unsigned DoSampleTransfer(chanend c_out, const int readBuffNo, const unsigned underflowWord, client audManage_if i_audMan)
+static inline unsigned DoSampleTransfer(chanend c_out, const int readBuffNo, const unsigned underflowWord, client audManage_if ?i_audMan)
 {
     outuint(c_out, underflowWord);
 
@@ -305,7 +305,7 @@ static inline unsigned DoSampleTransfer(chanend c_out, const int readBuffNo, con
 
 #else /* NO_USB */
 #pragma unsafe arrays
-static inline unsigned DoSampleTransfer(chanend ?c_out, const int readBuffNo, const unsigned underflowWord, client audManage_if i_audMan)
+static inline unsigned DoSampleTransfer(chanend ?c_out, const int readBuffNo, const unsigned underflowWord, client audManage_if ?i_audMan)
 {
     UserBufferManagement(samplesOut, samplesIn[readBuffNo], i_audMan);
     return 0;
@@ -502,7 +502,9 @@ unsigned static deliver(chanend ?c_out, chanend ?c_spd_out,
 #endif
 
     unsigned audioToUsbRatioCounter = 0;
+#if (NUM_PDM_MICS > 0)
     unsigned audioToMicsRatioCounter = 0;
+#endif
 
 #if (AUD_TO_USB_RATIO > 1)
     union i2sInDs3
@@ -1120,7 +1122,7 @@ chanend c_dig_rx,
 #if (NUM_PDM_MICS > 0)
 , chanend c_pdm_in
 #endif
-, client audManage_if i_audMan
+, client audManage_if ?i_audMan
 )
 {
 #if defined (SPDIF_TX) && (SPDIF_TX_TILE == AUDIO_IO_TILE)
