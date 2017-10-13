@@ -17,6 +17,7 @@
 
 /* Port declarations. Note, the defines come from the xn file */
 buffered out port:32 p_i2s_dac[]    = {PORT_I2S_DAC0};   /* I2S Data-line(s) */
+buffered in port:32 p_i2s_adc[]    	= {PORT_I2S_ADC0};   /* I2S Data-line(s) */
 buffered out port:32 p_lrclk        = PORT_I2S_LRCLK;    /* I2S Bit-clock */
 buffered out port:32 p_bclk         = PORT_I2S_BCLK;     /* I2S L/R-clock */
 
@@ -38,7 +39,6 @@ int main()
     /* Channels for lib_xud */
     chan c_ep_out[2];
     chan c_ep_in[2];
-
 
     /* Channel for communicating SOF notifications from XUD to the Buffering cores */
     chan c_sof;

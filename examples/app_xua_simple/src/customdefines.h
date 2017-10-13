@@ -6,9 +6,9 @@
 #define __custom_defines_h__
 
 #define NUM_USB_CHAN_OUT 2
-#define NUM_USB_CHAN_IN 0
+#define NUM_USB_CHAN_IN 2
 #define I2S_CHANS_DAC 2
-#define I2S_CHANS_ADC 0
+#define I2S_CHANS_ADC 2
 #define EXCLUDE_USB_AUDIO_MAIN
 #define NUM_PDM_MICS 0
 #define XUD_TILE 1
