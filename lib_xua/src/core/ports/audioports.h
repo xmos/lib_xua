@@ -2,7 +2,7 @@
 #define _AUDIOPORTS_H_
 
 #include <xccompat.h>
-#include "devicedefines.h"
+#include "xua_conf_default.h"
 
 #ifdef __XC__
 void ConfigAudioPorts(

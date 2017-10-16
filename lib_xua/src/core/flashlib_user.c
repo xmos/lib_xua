@@ -1,4 +1,4 @@
-#include "devicedefines.h"
+#include "xua.h"
 #if (XUD_DFU == 1)
 #include "uac_hwresources.h"
 #include <xs1.h>

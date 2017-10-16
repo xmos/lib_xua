@@ -1,9 +1,9 @@
 
-#ifndef _ENDPOINT0_H_
-#define _ENDPOINT0_H_
+#ifndef _XUA_ENDPOINT0_H_
+#define _XUA_ENDPOINT0_H_
 
+#include "xua_conf_default.h"
 #include "dfu_interface.h"
-#include "devicedefines.h"
 #include "vendorrequests.h"
 
 /** Function implementing Endpoint 0 for enumeration, control and configuration

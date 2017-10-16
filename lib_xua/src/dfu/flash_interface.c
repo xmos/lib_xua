@@ -1,5 +1,3 @@
-#include "devicedefines.h"
-#if (XUA_DFU == 1)
 #include <xs1.h>
 #include <flash.h>
 #include <flashlib.h>
@@ -247,5 +245,4 @@ int flash_cmd_erase_all(void)
     }
     return 0;
 }
-#endif
 

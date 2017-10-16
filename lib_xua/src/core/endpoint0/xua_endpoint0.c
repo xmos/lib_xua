@@ -7,16 +7,16 @@
 #include <safestring.h>
 #include <stddef.h>
 
+#include "xua_conf_default.h"
+
 #ifndef NO_USB
 #include "xud_device.h"          /* Standard descriptor requests */
 #include "usbaudio20.h"          /* Defines from USB Audio 2.0 spec */
-#include "devicedefines.h"
-#include "descriptors.h"         /* This devices descriptors */
+#include "xua_ep0_descriptors.h"         /* This devices descriptors */
 #include "commands.h"
 #include "audiostream.h"
 #include "hostactive.h"
 #include "vendorrequests.h"
-//#include "dfu_types.h"
 #include "xc_ptr.h"
 #include "audiorequests.h"
 #ifdef HID_CONTROLS

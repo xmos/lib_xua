@@ -1,8 +1,10 @@
 #include <xs1.h>
 #include <platform.h>
 #include <print.h>
-#include "devicedefines.h"
+#include "xua_conf_default.h"
 #include "audioports.h"
+
+
 
 extern port p_mclk_in;
 extern clock    clk_audio_mclk;

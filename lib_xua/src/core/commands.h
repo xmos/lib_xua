@@ -1,5 +1,8 @@
 
-#include "devicedefines.h"
+#ifndef __XUA_INTERNAL_CMDS_H__
+#define __XUA_INTERNAL_CMDS_H_
+
+#include "xua_conf_default.h"
 
 /* Clocking commands - c_clk_ctl */
 #define GET_SEL                 0       /* Get value of clock selector */
@@ -28,5 +31,6 @@
 
 #include "dsd_support.h"
 
+#endif
 
 

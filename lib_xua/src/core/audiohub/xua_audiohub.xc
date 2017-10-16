@@ -14,10 +14,11 @@
 #include <xs1_su.h>
 #include <string.h>
 
-#include "devicedefines.h"
+#include "xua_conf_default.h"
+
+#include "devicedefines.h"  /* TODO rm me */
 #include "xua_audiohub.h"
 
-#include "userbuffermanagement.h"
 #include "audioports.h"
 #include "audiohw.h"
 #include "mic_array_conf.h"

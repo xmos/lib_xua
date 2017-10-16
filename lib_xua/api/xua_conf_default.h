@@ -1,12 +1,12 @@
 /*
- * @brief       Defines relating to device configuration and customisation.
+ * @brief       Defines relating to device configuration and customisation of lib_xua
  * @author      Ross Owen, XMOS Limited
  */
+#ifndef __XUA_CONF_H__
+#define __XUA_CONF_H__
 
-#ifndef _DEVICEDEFINES_H_
-#define _DEVICEDEFINES_H_
 
-#include "customdefines.h"
+
 
 /* Default tile arrangement */
 

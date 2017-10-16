@@ -1,6 +1,6 @@
-#include "userbuffermanagement.h"
+
 #include "xccompat.h"
-#include "devicedefines.h"
+#include "xua_audiohub.h"
 
 /* Default implementation for UserBufferManagementInit() */
 void __attribute__ ((weak)) UserBufferManagementInit(CLIENT_INTERFACE(audManage_if, i_audMan))

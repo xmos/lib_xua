@@ -62,4 +62,11 @@ void AudioHwConfig(unsigned samFreq, unsigned mClk, unsigned dsdMode,
 
 #endif // __XC__
 
+void UserBufferManagementInit(CLIENT_INTERFACE(audManage_if, i_audMan));
+
+void UserBufferManagement(unsigned sampsFromUsbToAudio[],
+                          unsigned sampsFromAudioToUsb[],
+                          CLIENT_INTERFACE(audManage_if, i_audMan));
+
+
 #endif // __XUA_AUDIOHUB_H__

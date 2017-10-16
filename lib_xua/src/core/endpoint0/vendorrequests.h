@@ -2,7 +2,7 @@
 #define _VENDORREQUESTS_H_
 
 #include <xccompat.h>
-#include "devicedefines.h"
+#include "xua_conf_default.h"
 #include "xud_device.h"
 
 /* Functions that handle vustomer vendor requests.

@@ -3,8 +3,9 @@
 #define __ASSEMBLER__ // Work around for bug #14118
 #include <platform.h>
 #undef __ASSEMBLER__
-#include "devicedefines.h"
 #include "audioports.h"
+#include <xccompat.h>
+#include "xua_conf_default.h"
 
 /* Note since DSD ports could be reused for I2S ports we do all the setup manually in C */
 #if DSD_CHANS_DAC > 0
@@ -58,3 +59,4 @@ unsigned int divide, unsigned curSamFreq, unsigned int dsdMode)
                 p_bclk,
                 divide, curSamFreq);
 }
+

@@ -1,5 +1,5 @@
 
-#include "devicedefines.h"
+#include "xua_conf_default.h""
 
 #if (NUM_PDM_MICS > 0) && !defined(MIC_PROCESSING_USE_INTERFACE)
 

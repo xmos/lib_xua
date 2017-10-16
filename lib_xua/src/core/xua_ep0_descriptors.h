@@ -8,7 +8,7 @@
 #define _DEVICE_DESCRIPTORS_
 
 #include <stddef.h>
-#include "devicedefines.h"             /* Device specific define */
+#include "xua_conf_default.h"             /* Device specific define */
 #include "descriptor_defs.h"
 #include "usbaudio20.h"                /* Defines from the USB Audio 2.0 Specifications */
 #include "usbaudiocommon.h"
