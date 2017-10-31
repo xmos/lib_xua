@@ -3,7 +3,7 @@
 Warnings relating to configuration defines located in this XC source file rather than the devicedefines.h header file in order to avoid multiple warnings being issued when the devicedefines.h header file is included in multiple files.
 */
 
-#include "xua_conf_default.h"
+#include "xua_conf_full.h"
 
 #ifndef NO_USB
 

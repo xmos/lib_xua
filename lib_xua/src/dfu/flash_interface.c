@@ -4,6 +4,8 @@
 #include <string.h>
 #include <xclib.h>
 
+#if (XUA_DFU_EN == 1)
+
 /* Defines flash area to erase on first DFU download request received
  *
  * Flash library will round it up to the nearest sector, e.g. 4KB
@@ -245,4 +247,5 @@ int flash_cmd_erase_all(void)
     }
     return 0;
 }
+#endif
 
