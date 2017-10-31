@@ -2,10 +2,11 @@
 #ifndef _XUA_ENDPOINT0_H_
 #define _XUA_ENDPOINT0_H_
 
-#include "xua_conf_default.h"
+#include "xua.h"
 #include "dfu_interface.h"
 #include "vendorrequests.h"
 
+#if __XC__
 /** Function implementing Endpoint 0 for enumeration, control and configuration
  *  of USB audio devices. It uses the descriptors defined in ``descriptors_2.h``.
  *
@@ -26,4 +27,5 @@ void XUA_Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioCtrl,
         chanend ?c_mix_ctl,chanend ?c_clk_ctl, chanend ?c_EANativeTransport_ctr, client interface i_dfu ?dfuInterface
          VENDOR_REQUESTS_PARAMS_DEC_);
 
+#endif
 #endif

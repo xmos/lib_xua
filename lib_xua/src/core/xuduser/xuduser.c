@@ -1,5 +1,5 @@
 #ifndef NO_USB
-#include "xua_conf_default.h"
+#include "xua.h"
 #include "hostactive.h"
 #include "audiostream.h"
 

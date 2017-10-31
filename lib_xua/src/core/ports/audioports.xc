@@ -1,7 +1,7 @@
 #include <xs1.h>
 #include <platform.h>
 #include <print.h>
-#include "xua_conf_default.h"
+#include "xua.h"
 #include "audioports.h"
 
 

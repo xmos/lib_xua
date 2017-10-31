@@ -2,8 +2,7 @@
 #include <xs1.h>
 #include <print.h>
 
-#include "devicedefines.h"
-#include "xua_buffer.h"
+#include "xua.h"
 
 #ifdef MIDI
 #include "usb_midi.h"

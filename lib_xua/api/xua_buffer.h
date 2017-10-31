@@ -1,6 +1,11 @@
 #ifndef __XUA_BUFFER_H__
 #define __XUA_BUFFER_H__
-/** USB Audio Buffering Thread.
+
+#if __XC__
+
+#include "xua.h"
+
+/** USB Audio Buffering Core.
  *
  *  This function buffers USB audio data between the XUD layer and the decouple
  *  thread. Most of the chanend parameters to the function should be connected to
@@ -17,8 +22,6 @@
  *  \param c_aud_ctl Audio control channel connected to  Endpoint0()
  *  \param p_off_mclk A port that is clocked of the MCLK input (not the MCLK input itself)
  */
-#include "devicedefines.h"
-
 
 void XUA_Buffer(
             chanend c_aud_out,
@@ -112,6 +115,6 @@ void XUA_Buffer_Decouple(chanend c_audio_out
 #endif
 );
 
-
+#endif
 
 #endif

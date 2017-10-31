@@ -2,9 +2,12 @@
  * @brief       Defines relating to device configuration and customisation of lib_xua
  * @author      Ross Owen, XMOS Limited
  */
-#ifndef __XUA_CONF_H__
-#define __XUA_CONF_H__
+#ifndef __XUA_CONF_DEFAULT_H__
+#define __XUA_CONF_DEFAULT_H__
 
+#ifdef __xua_conf_h_exists__
+    #include "xua_conf.h"
+#endif
 
 
 
@@ -1163,7 +1166,7 @@
 #endif
 
 
-
+#ifndef __ASSEMBLER__
 /* Endpoint addresses enums */
 enum USBEndpointNumber_In
 {
@@ -1208,6 +1211,8 @@ enum USBEndpointNumber_Out
 #endif
     ENDPOINT_COUNT_OUT              /* End marker */
 };
+
+#endif
 
 /*** Internal defines below here. NOT FOR MODIFICATION ***/
 

@@ -1,5 +1,5 @@
 
-#include "devicedefines.h"       /* Device specific defines */
+#include "xua.h"       /* Device specific defines */
 #ifndef EXCLUDE_USB_AUDIO_MAIN
 
 /**

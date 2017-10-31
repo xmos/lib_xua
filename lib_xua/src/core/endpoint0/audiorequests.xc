@@ -2,13 +2,15 @@
  * @brief   Implements relevant requests from the USB Audio 2.0 Specification
  * @author  Ross Owen, XMOS Semiconductor
  */
+
+#include "xua.h"
+
 #ifndef NO_USB
 #include <xs1.h>
 #include "xud_device.h"
 #include "usbaudio20.h"
 #include "usbaudio10.h"
 #include "dbcalc.h"
-#include "devicedefines.h"
 #include "commands.h"
 #include "xc_ptr.h"
 #ifdef MIXER

@@ -7,7 +7,7 @@
 #include <safestring.h>
 #include <stddef.h>
 
-#include "xua_conf_default.h"
+#include "xua.h"
 
 #ifndef NO_USB
 #include "xud_device.h"          /* Standard descriptor requests */

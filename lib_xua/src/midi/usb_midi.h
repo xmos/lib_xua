@@ -1,7 +1,7 @@
 #ifndef __usb_midi_h__
 #define __usb_midi_h__
 
-#include "devicedefines.h"
+#include "xua.h"
 
 /** USB MIDI I/O thread.
  *

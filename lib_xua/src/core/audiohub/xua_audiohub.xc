@@ -14,10 +14,7 @@
 #include <xs1_su.h>
 #include <string.h>
 
-#include "xua_conf_default.h"
-
-#include "devicedefines.h"  /* TODO rm me */
-#include "xua_audiohub.h"
+#include "xua.h"
 
 #include "audioports.h"
 #include "audiohw.h"
@@ -248,7 +245,7 @@ static inline void TransferAdatTxSamples(chanend c_adat_out, const unsigned samp
 
 #ifndef NO_USB
 #pragma unsafe arrays
-static inline unsigned DoSampleTransfer(chanend c_out, const int readBuffNo, const unsigned underflowWord, client audManage_if ?i_audMan)
+static inline unsigned DoSampleTransfer(chanend c_out, const int readBuffNo, const unsigned underflowWord)
 {
     outuint(c_out, underflowWord);
 
@@ -290,7 +287,7 @@ static inline unsigned DoSampleTransfer(chanend c_out, const int readBuffNo, con
 #else
         inuint(c_out);
 #endif
-        UserBufferManagement(samplesOut, samplesIn[readBuffNo], i_audMan);
+        UserBufferManagement(samplesOut, samplesIn[readBuffNo]);
 
 #if NUM_USB_CHAN_IN > 0
 #pragma loop unroll
@@ -306,9 +303,9 @@ static inline unsigned DoSampleTransfer(chanend c_out, const int readBuffNo, con
 
 #else /* NO_USB */
 #pragma unsafe arrays
-static inline unsigned DoSampleTransfer(chanend ?c_out, const int readBuffNo, const unsigned underflowWord, client audManage_if ?i_audMan)
+static inline unsigned DoSampleTransfer(chanend ?c_out, const int readBuffNo, const unsigned underflowWord)
 {
-    UserBufferManagement(samplesOut, samplesIn[readBuffNo], i_audMan);
+    UserBufferManagement(samplesOut, samplesIn[readBuffNo]);
     return 0;
 }
 #endif /* NO_USB */
@@ -448,20 +445,19 @@ static inline void InitPorts(unsigned divide)
 
 /* I2S delivery thread */
 #pragma unsafe arrays
-unsigned static deliver(chanend ?c_out, chanend ?c_spd_out,
+unsigned static deliver(chanend ?c_out, chanend ?c_spd_out
 #ifdef ADAT_TX
-    chanend c_adat_out,
-    unsigned adatSmuxMode,
+    , chanend c_adat_out
+    , unsigned adatSmuxMode
 #endif
-    unsigned divide, unsigned curSamFreq,
+    , unsigned divide, unsigned curSamFreq
 #if(defined(SPDIF_RX) || defined(ADAT_RX))
-    chanend c_dig_rx,
+    , chanend c_dig_rx
 #endif
 #if (NUM_PDM_MICS > 0)
-    chanend c_pdm_pcm,
+    , chanend c_pdm_pcm
 #endif
-    chanend ?unused,
-    client audManage_if i_audMan)
+)
 {
 
     /* Since DAC and ADC buffered ports off by one sample we buffer previous ADC frame */
@@ -538,12 +534,12 @@ unsigned static deliver(chanend ?c_out, chanend ?c_spd_out,
     }
 #endif // ((DEBUG_MIC_ARRAY == 1) && (NUM_PDM_MICS > 0))
 
-    UserBufferManagementInit(i_audMan);
+    UserBufferManagementInit();
 
-    unsigned command = DoSampleTransfer(c_out, readBuffNo, underflowWord, i_audMan);
+    unsigned command = DoSampleTransfer(c_out, readBuffNo, underflowWord);
 
     // Reinitialise user state before entering the main loop
-    UserBufferManagementInit(i_audMan);
+    UserBufferManagementInit();
 
 #ifdef ADAT_TX
     unsafe{
@@ -1001,9 +997,9 @@ unsigned static deliver(chanend ?c_out, chanend ?c_spd_out,
                     /* The below looks a bit odd but forces the compiler to inline twice */
                     unsigned command;
                     if(readBuffNo)
-                        command = DoSampleTransfer(c_out, 1, underflowWord, i_audMan);
+                        command = DoSampleTransfer(c_out, 1, underflowWord);
                     else
-                        command = DoSampleTransfer(c_out, 0, underflowWord, i_audMan);
+                        command = DoSampleTransfer(c_out, 0, underflowWord);
 
                     if(command)
                     {
@@ -1123,7 +1119,6 @@ chanend c_dig_rx,
 #if (NUM_PDM_MICS > 0)
 , chanend c_pdm_in
 #endif
-, client audManage_if ?i_audMan
 )
 {
 #if defined (SPDIF_TX) && (SPDIF_TX_TILE == AUDIO_IO_TILE)
@@ -1351,24 +1346,23 @@ chanend c_dig_rx,
                 outuint(c_adat_out, adatMultiple);
                 outuint(c_adat_out, adatSmuxMode);
 #endif
-                command = deliver(c_mix_out,
+                command = deliver(c_mix_out
 #ifdef SPDIF_TX
-                   c_spdif_out,
+                   , c_spdif_out
 #else
-                   null,
+                   , null
 #endif
 #ifdef ADAT_TX
-                   c_adat_out,
-                   adatSmuxMode,
+                   , c_adat_out
+                   , adatSmuxMode
 #endif
-                   divide, curSamFreq,
+                   , divide, curSamFreq
 #if defined (ADAT_RX) || defined (SPDIF_RX)
-                   c_dig_rx,
+                   , c_dig_rx
 #endif
 #if (NUM_PDM_MICS > 0)
-                   c_pdm_in,
+                   , c_pdm_in
 #endif
-                   null, i_audMan
                    );
 
 #ifndef NO_USB

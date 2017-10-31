@@ -1,7 +1,7 @@
 #ifndef NO_USB
 #include <xs1.h>
+#include "xua.h"
 #include "xc_ptr.h"
-#include "devicedefines.h"
 #include "interrupt.h"
 #include "commands.h"
 #include "xud.h"

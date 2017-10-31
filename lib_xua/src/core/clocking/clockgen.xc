@@ -3,7 +3,7 @@
 #include <assert.h>
 #include <print.h>
 
-#include "devicedefines.h"
+#include "xua.h"
 #include "commands.h"
 
 #if defined(SPDIF_RX)

@@ -3,21 +3,11 @@
 
 #if __XC__
 
+#include "xccompat.h"
+
 #ifndef NO_USB
 #include "dfu_interface.h"
 #endif
-
-typedef interface audManage_if
-{
-    [[guarded]]
-    void transfer_buffers(int * unsafe in_aud_buf, int * unsafe in_usb_buf,
-                            int * unsafe out_usb_buf, int * unsafe out_aud_buf);
-
-    [[guarded]]
-    void transfer_samples(int in_mic_buf[], int in_spk_buf[], int out_mic_buf[], int out_spk_buf[]);
-
-} audManage_if;
-
 
 /** The audio driver thread.
  *
@@ -44,7 +34,6 @@ void XUA_AudioHub(chanend ?c_aud
 #if (NUM_PDM_MICS > 0)
     , chanend c_pdm_in
 #endif
-    , client audManage_if ?i_audMan
 );
 
 void SpdifTxWrapper(chanend c_spdif_tx);
@@ -62,11 +51,8 @@ void AudioHwConfig(unsigned samFreq, unsigned mClk, unsigned dsdMode,
 
 #endif // __XC__
 
-void UserBufferManagementInit(CLIENT_INTERFACE(audManage_if, i_audMan));
+void UserBufferManagementInit();
 
-void UserBufferManagement(unsigned sampsFromUsbToAudio[],
-                          unsigned sampsFromAudioToUsb[],
-                          CLIENT_INTERFACE(audManage_if, i_audMan));
-
+void UserBufferManagement(unsigned sampsFromUsbToAudio[], unsigned sampsFromAudioToUsb[]);
 
 #endif // __XUA_AUDIOHUB_H__

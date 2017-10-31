@@ -2,8 +2,8 @@
 
 #include <platform.h>
 #include <timer.h>
-#include "audiohw.h"
-#include "customdefines.h"
+
+#include "xua.h"
 #include "i2c_shared.h"
 
 #include "cs5368.h"

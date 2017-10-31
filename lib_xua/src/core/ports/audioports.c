@@ -5,7 +5,7 @@
 #undef __ASSEMBLER__
 #include "audioports.h"
 #include <xccompat.h>
-#include "xua_conf_default.h"
+#include "xua.h"
 
 /* Note since DSD ports could be reused for I2S ports we do all the setup manually in C */
 #if DSD_CHANS_DAC > 0

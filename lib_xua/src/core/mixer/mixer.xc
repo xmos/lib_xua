@@ -2,8 +2,8 @@
 
 #include <xs1.h>
 #include <print.h>
+#include "xua.h"
 #include "mixer.h"
-#include "devicedefines.h"
 #include "xc_ptr.h"
 #include "commands.h"
 #include "dbcalc.h"

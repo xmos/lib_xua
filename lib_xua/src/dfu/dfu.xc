@@ -1,8 +1,7 @@
-#include "devicedefines.h"
+#include "xua.h"
 #if (XUA_DFU == 1)
 #include <xs1.h>
 #include <platform.h>
-#include "devicedefines.h"
 
 #ifndef NO_USB
 #include "xud_device.h"
