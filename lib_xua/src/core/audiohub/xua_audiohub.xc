@@ -100,7 +100,7 @@ extern buffered in port:32 p_bclk;
 unsigned dsdMode = DSD_MODE_OFF;
 
 /* Master clock input */
-extern port p_mclk_in;
+extern unsafe port p_mclk_in;
 extern in port p_mclk_in2;
 
 #ifdef SPDIF_TX
@@ -1139,7 +1139,11 @@ chanend c_dig_rx,
     unsigned firstRun = 1;
 
     /* Clock master clock-block from master-clock port */
-    configure_clock_src(clk_audio_mclk, p_mclk_in);
+    /* Note, marked unsafe since other cores may be using this mclk port */
+    unsafe
+    {
+        configure_clock_src(clk_audio_mclk, (port) p_mclk_in);
+    }
 
     start_clock(clk_audio_mclk);
 
