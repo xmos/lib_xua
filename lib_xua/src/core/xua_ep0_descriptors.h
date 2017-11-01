@@ -2262,10 +2262,10 @@ const unsigned num_freqs_a1 = MAX(3, (0
 
 #ifdef USB_CONTROL_DESCS
 #define CONTROL_INTERFACE_BYTES 9
-#define NUM_CONTROL_INTERFACES 1
+#define NUM_CONTROL_USB_INTERFACES 1
 #else
 #define CONTROL_INTERFACE_BYTES 0
-#define NUM_CONTROL_INTERFACES 0
+#define NUM_CONTROL_USB_INTERFACES 0
 #endif
 
 #if (DFU == 1) && (FORCE_UAC1_DFU == 1)
@@ -2300,7 +2300,7 @@ const unsigned num_freqs_a1 = MAX(3, (0
 
 /* Number of interfaces for Audio  1.0 (+1 for control ) */
 /* Note, this is different that INTERFACE_COUNT since we dont support items such as MIDI, iAP etc in UAC1 mode */
-#define NUM_INTERFACES_A1           (1+INPUT_INTERFACES_A1 + OUTPUT_INTERFACES_A1+NUM_CONTROL_INTERFACES+DFU_INTERFACES_A1)
+#define NUM_INTERFACES_A1           (1+INPUT_INTERFACES_A1 + OUTPUT_INTERFACES_A1+NUM_CONTROL_USB_INTERFACES+DFU_INTERFACES_A1)
 
 #if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP)
 #define CFG_TOTAL_LENGTH_A1         (18 + AC_TOTAL_LENGTH + (INPUT_INTERFACES_A1 * (49 + num_freqs_a1 * 3)) + (OUTPUT_INTERFACES_A1 * (58 + num_freqs_a1 * 3)) + CONTROL_INTERFACE_BYTES + DFU_INTERFACE_BYTES)
@@ -2748,7 +2748,7 @@ unsigned char cfgDesc_Audio1[] =
     /* Standard DFU class Interface descriptor */
     0x09,                                /* 0 bLength : Size of this descriptor, in bytes. (field size 1 bytes) */
     0x04,                                 /* 1 bDescriptorType : INTERFACE descriptor. (field size 1 bytes) */
-    (OUTPUT_INTERFACES_A1 + INPUT_INTERFACES_A1 + NUM_CONTROL_INTERFACES + 1),  /* 2 bInterfaceNumber : Index of this interface. (field size 1 bytes) */
+    (OUTPUT_INTERFACES_A1 + INPUT_INTERFACES_A1 + NUM_CONTROL_USB_INTERFACES + 1),  /* 2 bInterfaceNumber : Index of this interface. (field size 1 bytes) */
     0x00,                                 /* 3 bAlternateSetting : Index of this setting. (field size 1 bytes) */
     0x00,                                 /* 4 bNumEndpoints : 0 endpoints. (field size 1 bytes) */
     0xFE,                                 /* 5 bInterfaceClass : DFU. (field size 1 bytes) */
@@ -2765,19 +2765,19 @@ unsigned char cfgDesc_Audio1[] =
     0x40,                                 /* 5    wTransferSize */
     0x00,                                 /* 6    wTransferSize */
     0x10,                                 /* 7    bcdDFUVersion */
-    0x01,                                /* 7    bcdDFUVersion */
+    0x01,                                                  /* 7    bcdDFUVersion */
 #endif
 
 #ifdef USB_CONTROL_DESCS
     /* Standard DFU class Interface descriptor */
-    0x09,                                 /* 0 bLength : Size of this descriptor, in bytes. (field size 1 bytes) */
-    0x04,                                 /* 1 bDescriptorType : INTERFACE descriptor. (field size 1 bytes) */
-    (OUTPUT_INTERFACES_A1 + INPUT_INTERFACES_A1 + 1),  /* 2 bInterfaceNumber */
-    0x00,                                 /* 3 bAlternateSetting : Index of this setting. (field size 1 bytes) */
-    0x00,                                 /* 4 bNumEndpoints : 0 endpoints. (field size 1 bytes) */
-    0xFF,                                 /* 5 bInterfaceClass : DFU. (field size 1 bytes) */
-    0xFF,                                 /* 6 bInterfaceSubclass : (field size 1 bytes) */
-    0xFF,                                 /* 7 bInterfaceProtocol : Unused. (field size 1 bytes) */
+    0x09,                                                /* 0 bLength : Size of this descriptor, in bytes. (field size 1 bytes) */
+    0x04,                                                /* 1 bDescriptorType : INTERFACE descriptor. (field size 1 bytes) */
+    (OUTPUT_INTERFACES_A1 + INPUT_INTERFACES_A1 + 1),    /* 2 bInterfaceNumber */
+    0x00,                                                /* 3 bAlternateSetting : Index of this setting. (field size 1 bytes) */
+    0x00,                                                /* 4 bNumEndpoints : 0 endpoints. (field size 1 bytes) */
+    0xFF,                                                /* 5 bInterfaceClass : DFU. (field size 1 bytes) */
+    0xFF,                                                /* 6 bInterfaceSubclass : (field size 1 bytes) */
+    0xFF,                                                /* 7 bInterfaceProtocol : Unused. (field size 1 bytes) */
     offsetof(StringDescTable_t, ctrlStr)/sizeof(char *), /* 8 iInterface */
 #endif
 

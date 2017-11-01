@@ -127,8 +127,19 @@ on tile[AUDIO_IO_TILE] : buffered in port:32 p_lrclk        = PORT_I2S_LRCLK;
 on tile[AUDIO_IO_TILE] : buffered in port:32 p_bclk         = PORT_I2S_BCLK;
 #endif
 
-on tile[AUDIO_IO_TILE] : port p_mclk_in                     = PORT_MCLK_IN;
+/* Note, declared unsafe as sometimes we want to share this port
+e.g. PDM mics and I2S use same master clock IO */
+on tile[AUDIO_IO_TILE] :  port p_mclk_in_          = PORT_MCLK_IN;
+
+/* TODO p_mclk_in should be delared as an unsafe resource */
+unsafe
+{
+        unsafe port p_mclk_in;
+}
+
+#ifndef NO_USB 
 on tile[XUD_TILE] : in port p_for_mclk_count                = PORT_MCLK_COUNT;
+#endif
 
 #ifdef SPDIF_TX
 on tile[SPDIF_TX_TILE] : buffered out port:32 p_spdif_tx    = PORT_SPDIF_OUT;
@@ -161,7 +172,11 @@ on tile[MIDI_TILE] :  buffered in port:1 p_midi_rx          = PORT_MIDI_IN;
 #endif
 #endif
 
-/* Clock blocks */
+/*** Clock blocks ***/
+#if (NUM_PDM_MICS > 0)
+clock clk_pdm                                               = on tile[PDM_TILE]: XS1_CLKBLK_1;
+#endif
+
 #ifdef MIDI
 on tile[MIDI_TILE] : clock    clk_midi                      = CLKBLK_MIDI;
 #endif
@@ -183,7 +198,7 @@ on tile[XUD_TILE] : clock    clk_adat_rx                    = CLKBLK_ADAT_RX;
 
 on tile[AUDIO_IO_TILE] : clock    clk_audio_mclk            = CLKBLK_MCLK;       /* Master clock */
 
-#if(AUDIO_IO_TILE != XUD_TILE)
+#if(AUDIO_IO_TILE != XUD_TILE) && !defined(NO_USB)
 on tile[XUD_TILE] : clock    clk_audio_mclk2                = CLKBLK_MCLK;       /* Master clock */
 on tile[XUD_TILE] : in port  p_mclk_in2                     = PORT_MCLK_IN2;
 #endif
@@ -340,6 +355,12 @@ VENDOR_REQUESTS_PARAMS_DEC_
             unsigned x;
             thread_speed();
 
+            /* TODO p_mclk_in should be delared as an unsafe resource */
+            unsafe
+            {
+                p_mclk_in = p_mclk_in_;
+            }
+
             /* Attach mclk count port to mclk clock-block (for feedback) */
             //set_port_clock(p_for_mclk_count, clk_audio_mclk);
 #if(AUDIO_IO_TILE != XUD_TILE)
@@ -347,7 +368,8 @@ VENDOR_REQUESTS_PARAMS_DEC_
             set_port_clock(p_for_mclk_count, clk_audio_mclk2);
             start_clock(clk_audio_mclk2);
 #else
-            /* Uses same clock-block as I2S */
+            /* Clock port from same clock-block as I2S */
+            /* TODO remove asm() */
             asm("ldw %0, dp[clk_audio_mclk]":"=r"(x));
             asm("setclk res[%0], %1"::"r"(p_for_mclk_count), "r"(x));
 #endif
@@ -429,7 +451,6 @@ void usb_audio_io(chanend ?c_aud_in, chanend ?c_adc,
 #if (NUM_PDM_MICS > 0)
     , chanend c_pdm_pcm
 #endif
-    , client audManage_if i_audMan
 )
 {
 #ifdef MIXER
@@ -472,7 +493,6 @@ void usb_audio_io(chanend ?c_aud_in, chanend ?c_adc,
 #if (NUM_PDM_MICS > 0)
                 , c_pdm_pcm
 #endif
-                , i_audMan
             );
         }
 
@@ -565,8 +585,6 @@ int main()
 #endif
 #endif
 
-    interface audManage_if i_audMan;
-
     USER_MAIN_DECLARATIONS
     par
     {
@@ -603,22 +621,29 @@ int main()
 #endif /* NO_USB */
         }
 
-        on tile[AUDIO_IO_TILE]: usb_audio_io(c_mix_out, c_adc
+        on tile[AUDIO_IO_TILE]: 
+        {
+            /* TODO p_mclk_in should be delared as an unsafe resource */
+            unsafe
+            {
+                p_mclk_in = p_mclk_in_;
+            }
+            usb_audio_io(c_mix_out, c_adc
 #if defined(SPDIF_TX) && (SPDIF_TX_TILE != AUDIO_IO_TILE)
-            , c_spdif_tx
+                , c_spdif_tx
 #endif
 #ifdef MIXER
-            , c_mix_ctl
+                , c_mix_ctl
 #endif
-            , c_spdif_rx, c_adat_rx, c_clk_ctl, c_clk_int
+                , c_spdif_rx, c_adat_rx, c_clk_ctl, c_clk_int
 #if (XUD_TILE != 0) && (AUDIO_IO_TILE == 0)
-            , dfuInterface
+                , dfuInterface
 #endif
 #if (NUM_PDM_MICS > 0)
-            , c_pdm_pcm
+                , c_pdm_pcm
 #endif
-            , i_audMan
-        );
+            );
+        }
 
 #if defined(SPDIF_TX) && (SPDIF_TX_TILE != AUDIO_IO_TILE)
         on tile[SPDIF_TX_TILE]:
@@ -690,7 +715,16 @@ int main()
 
 #ifndef PDM_RECORD
 #if (NUM_PDM_MICS > 0)
-        on stdcore[PDM_TILE]: pdm_mic(c_ds_output);
+
+        on stdcore[PDM_TILE]:
+        { 
+            /* TODO p_mclk_in should be delared as an unsafe resource */
+            unsafe
+            {
+                p_mclk_in = p_mclk_in_;
+            }
+            pdm_mic(c_ds_output);
+        }
 #ifdef MIC_PROCESSING_USE_INTERFACE
         on stdcore[PDM_TILE].core[0]: pdm_buffer(c_ds_output, c_pdm_pcm, i_mic_process);
 #else

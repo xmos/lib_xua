@@ -27,8 +27,6 @@
 #define ENDPOINT_ADDRESS_OUT_IAP                  (ENDPOINT_NUMBER_OUT_IAP)
 #define ENDPOINT_ADDRESS_OUT_IAP_EA_NATIVE_TRANS  (ENDPOINT_NUMBER_OUT_IAP_EA_NATIVE_TRANS)
 
-
-
 /* Interface numbers enum */
 enum USBInterfaceNumber
 {
@@ -42,6 +40,9 @@ enum USBInterfaceNumber
 #if defined(MIDI) && (MIDI != 0)
     INTERFACE_NUMBER_MIDI_CONTROL,
     INTERFACE_NUMBER_MIDI_STREAM,
+#endif
+#if defined(USB_CONTROL_DESCS) && (USB_CONTROL_DESCS != 0)
+    INTERFACE_NUMBER_MISC_CONTROL,
 #endif
 #if defined(DFU) && (DFU != 0)
     INTERFACE_NUMBER_DFU,

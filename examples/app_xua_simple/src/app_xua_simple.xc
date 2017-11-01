@@ -21,7 +21,14 @@ buffered in port:32 p_i2s_adc[]    	= {PORT_I2S_ADC0};   /* I2S Data-line(s) */
 buffered out port:32 p_lrclk        = PORT_I2S_LRCLK;    /* I2S Bit-clock */
 buffered out port:32 p_bclk         = PORT_I2S_BCLK;     /* I2S L/R-clock */
 
-port p_mclk_in                      = PORT_MCLK_IN;      /* Audio master clock input */
+/* Note, declared unsafe as sometimes we want to share this port
+e.g. PDM mics and I2S use same master clock IO */
+port p_mclk_in_          = PORT_MCLK_IN;
+
+unsafe
+{
+    unsafe port p_mclk_in;                           /* Audio master clock input */
+}
 
 in port p_for_mclk_count            = PORT_MCLK_COUNT;   /* Extra port for counting master clock ticks */
 
@@ -67,7 +74,13 @@ int main()
         on tile[1]: XUA_Buffer(c_ep_out[1], c_ep_in[1], c_sof, c_aud_ctl, p_for_mclk_count, c_aud);
 
         /* IOHub core does most of the audio IO i.e. I2S (also serves as a hub for all audio) */
-        on tile[0]: XUA_AudioHub(c_aud);
+        on tile[0]: {
+                        unsafe
+                        {
+                            p_mclk_in = p_mclk_in_; 
+                        }
+                        XUA_AudioHub(c_aud);
+                    }
     }
     
     return 0;
