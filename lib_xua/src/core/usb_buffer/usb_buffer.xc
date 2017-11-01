@@ -28,8 +28,6 @@ void GetADCCounts(unsigned samFreq, int &min, int &mid, int &max);
 #define BUFFER_SIZE_OUT       (1028 >> 2)
 #define BUFFER_SIZE_IN        (1028 >> 2)
 
-/* Packet nuffers for audio data */
-
 extern unsigned int g_curSamFreqMultiplier;
 
 #ifdef CHAN_BUFF_CTRL
@@ -42,6 +40,7 @@ extern unsigned int g_curSamFreqMultiplier;
 /* Global var for speed.  Related to feedback. Used by input stream to determine IN packet size */
 unsigned g_speed;
 unsigned g_freqChange = 0;
+unsigned feedbackValid = 0;
 
 #if defined (SPDIF_RX) || defined (ADAT_RX)
 /* When digital Rx enabled we enable an interrupt EP to inform host about changes in clock validity */
@@ -272,6 +271,9 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
     unsigned clocks = 0;
     long long clockcounter = 0;
 
+#if FB_USE_REF_CLOCK
+    unsigned long long clock_remainder = 0;        /* The carry term from the 100MHz -> MCLK */
+#endif
 
 #if (NUM_USB_CHAN_IN > 0)
     unsigned bufferIn = 1;
@@ -438,9 +440,12 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
                              * to stabilise (i.e. sofCount == 128 to fire) */
                             sofCount = 1;
                             clocks = 0;
-                            //remnant = 0;
                             clockcounter = 0;
                             mod_from_last_time = 0;
+                            feedbackValid = 0;
+#if FB_USE_REF_CLOCK
+                            clock_remainder = 0;
+#endif
 
                             /* Set g_speed to something sensible. We expect it to get over-written before stream time */
                             int min, mid, max;
@@ -520,27 +525,110 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
             #define MASK_16_10            (127) /* For Audio 1.0 we use a mask 1 bit longer than expected to avoid Windows LSB issues */
                                                 /* (previously used 63 instead of 127) */
 
-            /* SOF notifcation from XUD_Manager() */
+            /* SOF notification from XUD_Manager() */
             case inuint_byref(c_sof, u_tmp):
 
                 /* NOTE our feedback will be wrong for a couple of SOF's after a SF change due to
                  * lastClock being incorrect */
 
+#if FB_USE_REF_CLOCK
+                /* Get core time i.e. 100MHz clock */
+                asm volatile("gettime %0" : "=r"(u_tmp));
+#else
                 /* Get MCLK count */
                 asm volatile(" getts %0, res[%1]" : "=r" (u_tmp) : "r" (p_off_mclk));
-
+#endif
+                /* The time we base feedback on will be invalid until we get 2 SOF's */
+                /* Additionally whilst the SR is being changed we could get some invalid values due to clocks being changed etc */
                 GET_SHARED_GLOBAL(freqChange, g_freqChange);
-                if(freqChange == SET_SAMPLE_FREQ)
+                if((freqChange == SET_SAMPLE_FREQ) || !feedbackValid)
                 {
-                    /* Keep getting MCLK counts */
+                     /* Keep getting MCLK counts */
                     lastClock = u_tmp;
+                    feedbackValid = 1;
                 }
                 else
                 {
                     unsigned usb_speed;
                     GET_SHARED_GLOBAL(usb_speed, g_curUsbSpeed);
-                    
-					/* Assuming 48kHz from a 24.576 master clock (0.0407uS period)
+                   
+#if FB_USE_REF_CLOCK
+                    unsigned long long feedbackMul = 64ULL;
+
+                    if(usb_speed != XUD_SPEED_HS)
+                        feedbackMul = 8ULL;  /* TODO Use 4 instead of 8 to avoid windows LSB issues? */
+
+                    /* Number of MCLK ticks in this SOF period (E.g = 125 * 100 = 12500) */
+                    int count = u_tmp - lastClock;
+
+                    unsigned long long full_result = count * feedbackMul * sampleFreq;
+
+                    /* This section scales from the 100MHz ref clock to the current MCLK */
+                    if (masterClockFreq == MCLK_48)
+                    {
+                        full_result = (full_result * 768) / 3125;
+                        clock_remainder += (full_result * 768) % 3125;
+                        if (clock_remainder >= 3125)
+                        {
+                            clock_remainder -= 3125;
+                            full_result++;
+                        }
+                    }
+                    else //MCLK_441
+                    {
+                        full_result = (full_result * 762) / 3375;
+                        clock_remainder += (full_result * 762) % 3375;
+                        if (clock_remainder >= 3375)
+                        {
+                            clock_remainder -= 3375;
+                            full_result++;
+                        }
+                    }
+
+                    clockcounter += full_result;
+
+                    /* Store MCLK for next time around... */
+                    lastClock = u_tmp;
+
+                    /* Reset counts based on SOF counting.  Expect 16ms (128 HS SOFs/16 FS SOFS) per feedback poll
+                     * We always count 128 SOFs, so 16ms @ HS, 128ms @ FS */
+                    if(sofCount == 128)
+                    {
+                        sofCount = 0;
+
+                        clockcounter += mod_from_last_time;
+                        clocks = clockcounter / masterClockFreq;
+                        mod_from_last_time = clockcounter % masterClockFreq;
+
+                        if(usb_speed == XUD_SPEED_HS)
+                        {
+                            clocks <<= 3;
+                        }
+                        else
+                        {
+                            clocks <<= 6;
+                        }
+
+                        {
+                            int usb_speed;
+                            asm volatile("stw %0, dp[g_speed]"::"r"(clocks));   // g_speed = clocks
+
+                            GET_SHARED_GLOBAL(usb_speed, g_curUsbSpeed);
+
+                            if (usb_speed == XUD_SPEED_HS)
+                            {
+                                (fb_clocks, unsigned[])[0] = clocks;
+                            }
+                            else
+                            {
+                                (fb_clocks, unsigned[])[0] = clocks >> 2;
+                            }
+                        }
+                        clockcounter = 0;
+                    }
+#else
+ 
+                    /* Assuming 48kHz from a 24.576 master clock (0.0407uS period)
                      * MCLK ticks per SOF = 125uS / 0.0407 = 3072 MCLK ticks per SOF.
                      * expected Feedback is 48000/8000 = 6 samples. so 0x60000 in 16:16 format.
                      * Average over 128 SOFs - 128 x 3072 = 0x60000.
@@ -579,7 +667,6 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
                         {
                             clocks <<= 6;
                         }
-
 #ifdef FB_TOLERANCE_TEST
                         if (clocks > (expected_fb - FB_TOLERANCE) &&
                             clocks < (expected_fb + FB_TOLERANCE))
@@ -606,6 +693,7 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
 #endif
                         clockcounter = 0;
                     }
+#endif
                     sofCount++;
                 }
             break;
