@@ -27,6 +27,7 @@ port p_mclk_in_          = PORT_MCLK_IN;
 
 unsafe
 {
+    /* TODO simplify this */
     unsafe port p_mclk_in;                           /* Audio master clock input */
 }
 

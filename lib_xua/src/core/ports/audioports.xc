@@ -6,7 +6,7 @@
 
 
 
-extern port p_mclk_in;
+extern unsafe port p_mclk_in;
 extern clock    clk_audio_mclk;
 extern clock    clk_audio_bclk;
 
@@ -58,9 +58,12 @@ unsigned int divide, unsigned curSamFreq)
 #endif
 
 #if defined(__XS2A__)
-    /* Clock bitclock clock block from master clock pin (divided) */
-    configure_clock_src_divide(clk_audio_bclk, p_mclk_in, (divide/2));
-    configure_port_clock_output(p_bclk, clk_audio_bclk);
+    unsafe
+    {
+        /* Clock bitclock clock block from master clock pin (divided) */
+        configure_clock_src_divide(clk_audio_bclk, (port) p_mclk_in, (divide/2));
+        configure_port_clock_output(p_bclk, clk_audio_bclk);
+    }
 #else
     /* For a divide of one (i.e. bitclock == master-clock) BClk is set to clock_output mode.
      * In this mode it outputs an edge clock on every tick of itsassociated clock_block.
