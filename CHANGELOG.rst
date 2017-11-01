@@ -3,22 +3,26 @@ lib_xua Change Log
 
 1.0.0
 -----
-    - CHANGE:      Fork from sc_xud to lib_xud
-
+    - ADDED:      FB_USE_REF_CLOCK to allow feedback generation from xCORE internal reference
+    - ADDED:      Linux Makefile for xmosdfu host application
+    - ADDED:      Raspberry Pi Makefile for xmosdfu host application
+    - ADDED:      Documentation of PID argument to xmosdfu
+    - CHANGE:     Removal of audManage_if, users should define their own interfaces as required
+    - RESOLVED:   FIR gain compensation for PDM mics set incorrectly for divide of 8
+    - RESOLVED:   Incorrect xmosdfu DYLD path in test script code
+    - RESOLVED:   xmosdfu cannot find XMOS device on modern MacBook Pro (#17897)
+    - RESOLVED:   Issue when feedback is initially incorrect when two SOF's are not yet received 
+    - RESOLVED:   AUDIO_TILE and PDM_TILE may now share the same value/tile      
+    - RESOLVED:   Cope with out of order interface numbers in xmosdfu
+    - CHANGE:     Renaming in descriptors.h to avoid clashes with application
+    - CHANGE:     Vendor specific control interface in UAC1 descriptor now has a string descriptor
+                  so it shows up with a descriptive name in Windows Device Manager
+    - CHANGE:     Fork from sc_usb_audio to lib_xua
 
 Legacy release history
 ----------------------
 
 (Note: Forked from sc_usb_audio at this point)
-
-
-7.5.0
------
-    - ADDED:      Linux Makefile for xmosdfu host application
-    - ADDED:      Raspberry Pi Makefile for xmosdfu host application
-    - CHANGE:     Vendor specific control interface in UAC1 descriptor now has a string descriptor
-                  so it shows up with a descriptive name in Windows Device Manager
-    - RESOLVED:   FIR gain compensation for PDM mics set incorrectly for divide of 8
 
 7.4.1
 -----
@@ -27,7 +31,7 @@ Legacy release history
 7.4.0
 -----
     - RESOLVED:   PID_DFU now based on AUDIO_CLASS. This potentially caused issues
-    with UAC1 DFU
+      with UAC1 DFU
 
 
 7.3.0
