@@ -9,16 +9,19 @@ Set up the image loader
 
 #. Open a terminal
 #. Change directory to where the loader has been built
-#. Run the command:
+#. Point DYLD_LIBRARY_PATH to libusb/OSX64:
 
-    ``source setup.sh``
+    ``export DYLD_LIBRARY_PATH=$PWD/libusb/OSX64:$DYLD_LIBRARY_PATH``
 
 Download new firmware
 ---------------------
 
 To program the new firmware run the command:
 
-   ``./xmosdfu --download new_firmware.bin``
+   ``./xmosdfu XMOS_L2_AUDIO2_PID --download new_firmware.bin``
+
+Replace ``XMOS_L2_AUDIO2_PID`` with product ID of your target device. Invoke
+``xmosdfu`` with no arguments to get a list of all supported product IDs.
 
 Note that once this is done the device restarts. The original factory default
 application is still present but the device is now running the upgraded
@@ -32,7 +35,7 @@ present.
 
 Run the command:
 
-  ``./xmosdfu --upload currentfirmware.bin``
+  ``./xmosdfu XMOS_L2_AUDIO2_PID --upload currentfirmware.bin``
 
 The file ``currentfirmware.bin`` contains the latest upgrade image. This file is
 an exact copy of the data from the flash and can be downloaded to the device
@@ -44,6 +47,6 @@ Reverting firmware to factory image
 To revert the device back to its factory (i.e XFLASH) installed state from the
 new firmware, run the command:
 
-  ``./xmosdfu --revertfactory``
+  ``./xmosdfu XMOS_L2_AUDIO2_PID --revertfactory``
 
 The device will now be running, and only contain the factory firmware.

@@ -12,8 +12,21 @@ function usage {
 #find out were we are running from so we only exec this programs
 PROGDIR=`dirname $0`
 
+if echo $OSTYPE | grep -q darwin ; then
+  platform=OSX64
+elif echo $OSTYPE | grep -q abihf ; then
+  platform=Rasp
+elif arch | grep -q x86_64 ; then
+  platform=Linux64
+elif echo $OSTYPE | grep -q linux ; then
+  platform=Linux32
+else
+  echo "Unknown OS $OSTYPE"
+  exit 1
+fi
+
 #setup environment
-export DYLD_LIBRARY_PATH=$PROGDIR:$DYLD_LIBRARY_PATH
+export DYLD_LIBRARY_PATH=$PROGDIR/libusb/$platform:$DYLD_LIBRARY_PATH
 
 if [ "$1" != "" ]; then
   device_pid=$1

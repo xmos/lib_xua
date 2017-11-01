@@ -1,0 +1,2 @@
+all:
+	g++ -g -o xmosdfu xmosdfu.cpp -Ilibusb/OSX64 libusb/OSX64/libusb-1.0.0.dylib -Wall
