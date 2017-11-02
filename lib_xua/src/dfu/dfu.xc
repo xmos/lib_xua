@@ -1,5 +1,5 @@
 #include "xua.h"
-#if (XUA_DFU == 1)
+#if (XUA_DFU_EN== 1)
 #include <xs1.h>
 #include <platform.h>
 
