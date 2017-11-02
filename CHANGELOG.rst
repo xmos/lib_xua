@@ -17,6 +17,7 @@ lib_xua Change Log
     - CHANGE:     Renaming in descriptors.h to avoid clashes with application
     - CHANGE:     Vendor specific control interface in UAC1 descriptor now has a string descriptor
                   so it shows up with a descriptive name in Windows Device Manager
+    - CHANGE:     DFU_BCD_DEVICE removed (used BCD_DEVICE)
     - CHANGE:     Fork from sc_usb_audio to lib_xua
 
 Legacy release history

@@ -535,7 +535,7 @@
  * @brief Device firmware version number in Binary Coded Decimal format: 0xJJMN where JJ: major, M: minor, N: sub-minor version number.
  */
 #ifndef BCD_DEVICE_N
-#define BCD_DEVICE_N             0
+#define BCD_DEVICE_N             
 #endif
 
 /**
@@ -1275,7 +1275,7 @@ enum USBEndpointNumber_Out
 #define DFU_PID                     PID_AUDIO_1
 #endif
 #define DFU_VENDOR_ID               VENDOR_ID
-#define DFU_BCD_DEVICE              BCD_DEVICE
+
 #define DFU_MANUFACTURER_STR_INDEX  offsetof(StringDescTable_t, vendorStr)/sizeof(char *)
 #if (AUDIO_CLASS == 2)
 #define DFU_PRODUCT_STR_INDEX       offsetof(StringDescTable_t, productStr_Audio2)/sizeof(char *)
