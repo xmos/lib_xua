@@ -10,6 +10,8 @@
 #include "xua_endpoint0.h"
 
 #include "xua_buffer.h"
+
+//#include "xua_dfu.h"
 #endif
 
 #endif

@@ -49,7 +49,7 @@
 #include "xua_pdm_mic.h"
 #endif
 
-#ifdef DFU
+#if XUA_DFU_EN == 1
 [[distributable]]
 void DFUHandler(server interface i_dfu i, chanend ?c_user_cmd);
 #endif
