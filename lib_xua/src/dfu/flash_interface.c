@@ -4,6 +4,8 @@
 #include <string.h>
 #include <xclib.h>
 
+#include "xua.h"
+
 #if (XUA_DFU_EN == 1)
 
 /* Defines flash area to erase on first DFU download request received
