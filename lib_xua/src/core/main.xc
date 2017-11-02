@@ -16,19 +16,15 @@
 #include <xscope.h>
 #endif
 
-#include "xud.h"                 /* XMOS USB Device Layer defines and functions */
 #ifndef NO_USB
+#include "xud_device.h"                 /* XMOS USB Device Layer defines and functions */
 #include "xua_endpoint0.h"
 #endif
 
 #include "uac_hwresources.h"
-#include "usb_buffer.h"
-#include "decouple.h"
 #ifdef MIDI
 #include "usb_midi.h"
 #endif
-
-#include "xua_audio.h"
 
 #ifdef IAP
 #include "i2c_shared.h"
@@ -374,7 +370,7 @@ VENDOR_REQUESTS_PARAMS_DEC_
             asm("setclk res[%0], %1"::"r"(p_for_mclk_count), "r"(x));
 #endif
             //:buffer
-            buffer(c_xud_out[ENDPOINT_NUMBER_OUT_AUDIO],    /* Audio Out*/
+            XUA_Buffer(c_xud_out[ENDPOINT_NUMBER_OUT_AUDIO],    /* Audio Out*/
                 c_xud_in[ENDPOINT_NUMBER_IN_AUDIO],         /* Audio In */
 #if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP)
                 c_xud_in[ENDPOINT_NUMBER_IN_FEEDBACK],      /* Audio FB */
@@ -410,6 +406,7 @@ VENDOR_REQUESTS_PARAMS_DEC_
 #ifdef CHAN_BUFF_CTRL
                 , c_buff_ctrl
 #endif
+                , c_mix_out
             );
             //:
         }
@@ -420,15 +417,6 @@ VENDOR_REQUESTS_PARAMS_DEC_
             XUA_Endpoint0( c_xud_out[0], c_xud_in[0], c_aud_ctl, c_mix_ctl, c_clk_ctl, c_EANativeTransport_ctrl, dfuInterface VENDOR_REQUESTS_PARAMS_);
         }
 
-        /* Decoupling core */
-        {
-            thread_speed();
-            decouple(c_mix_out
-#ifdef CHAN_BUFF_CTRL
-                , c_buff_ctrl
-#endif
-            );
-        }
         //:
     }
 }
@@ -480,14 +468,14 @@ void usb_audio_io(chanend ?c_aud_in, chanend ?c_adc,
 #else
 #define AUDIO_CHANNEL c_aud_in
 #endif
-            audio(AUDIO_CHANNEL,
+            XUA_AudioHub(AUDIO_CHANNEL
 #if defined(SPDIF_TX) && (SPDIF_TX_TILE != AUDIO_IO_TILE)
                 c_spdif_tx,
 #endif
 #if defined(SPDIF_RX) || defined(ADAT_RX)
                 c_dig_rx,
 #endif
-#if (XUD_TILE != 0) && (AUDIO_IO_TILE == 0)
+#if (XUD_TILE != 0) && (AUDIO_IO_TILE == 0) && (XUA_DFU_EN == 1)
                 , dfuInterface
 #endif
 #if (NUM_PDM_MICS > 0)
@@ -501,7 +489,6 @@ void usb_audio_io(chanend ?c_aud_in, chanend ?c_adc,
             thread_speed();
 
             clockGen(c_spdif_rx, c_adat_rx, p_pll_clk, c_dig_rx, c_clk_ctl, c_clk_int);
-
         }
 #endif
 
@@ -636,7 +623,7 @@ int main()
                 , c_mix_ctl
 #endif
                 , c_spdif_rx, c_adat_rx, c_clk_ctl, c_clk_int
-#if (XUD_TILE != 0) && (AUDIO_IO_TILE == 0)
+#if (XUD_TILE != 0) && (AUDIO_IO_TILE == 0) && (XUA_DFU_EN == 1)
                 , dfuInterface
 #endif
 #if (NUM_PDM_MICS > 0)
