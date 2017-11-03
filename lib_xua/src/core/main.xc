@@ -694,7 +694,7 @@ int main()
 
 
 #ifndef NO_USB
-#if (XUD_TILE != 0 ) && (AUDIO_IO_TILE != 0)
+#if (XUD_TILE != 0 ) && (AUDIO_IO_TILE != 0) && (XUA_DFU_EN == 1)
         /* Run flash code on its own - hope it gets combined */
 //#warning Running DFU flash code on its own
         on stdcore[0]: DFUHandler(dfuInterface, null);

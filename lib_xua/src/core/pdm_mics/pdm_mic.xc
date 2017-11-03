@@ -1,5 +1,5 @@
 
-#include "xua.h"
+#include "devicedefines.h"
 
 #if (NUM_PDM_MICS > 0)
 
@@ -20,10 +20,19 @@
 #define MAX_DECIMATION_FACTOR (96000/(MIN_FREQ/AUD_TO_MICS_RATIO))
 
 /* Hardware resources */
-in port p_pdm_clk                = PORT_PDM_CLK;
-in buffered port:32 p_pdm_mics   = PORT_PDM_DATA;
-in port p_mclk                   = PORT_PDM_MCLK;
-clock pdmclk                     = on tile[PDM_TILE]: XS1_CLKBLK_3;
+/* TODO these should be in main.xc with the rest of the resources */
+in port p_pdm_clk               = PORT_PDM_CLK;
+
+in buffered port:32 p_pdm_mics  = PORT_PDM_DATA;
+#if (PDM_TILE != AUDIO_IO_TILE)
+/* If Mics and I2S are on the same tile we'll share an MCLK port */
+in port p_pdm_mclk              = PORT_PDM_MCLK;
+#else
+extern unsafe port p_mclk_in;
+#endif
+
+/* Delcared in main.xc */
+extern clock clk_pdm;
 
 int mic_decimator_fir_data[8][THIRD_STAGE_COEFS_PER_STAGE * MAX_DECIMATION_FACTOR] = {{0}};
 
@@ -220,10 +229,18 @@ void pdm_mic(streaming chanend c_ds_output[2])
 
     unsigned micDiv = MCLK_48/3072000;
 
-    configure_clock_src_divide(pdmclk, p_mclk, micDiv/2);
-    configure_port_clock_output(p_pdm_clk, pdmclk);
-    configure_in_port(p_pdm_mics, pdmclk);
-    start_clock(pdmclk);
+#if (PDM_TILE != AUDIO_IO_TILE)
+    configure_clock_src_divide(clk_pdm, p_pdm_mclk, micDiv/2);
+#else
+    /* Sharing mclk port with I2S */
+    unsafe
+    {
+        configure_clock_src_divide(clk_pdm, (port) p_mclk_in, micDiv/2);
+    }
+#endif
+    configure_port_clock_output(p_pdm_clk, clk_pdm);
+    configure_in_port(p_pdm_mics, clk_pdm);
+    start_clock(clk_pdm);
 
     par
     {
