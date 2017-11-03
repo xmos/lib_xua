@@ -1,5 +1,5 @@
 
-#include "devicedefines.h"
+#include "xua.h"
 
 #if (NUM_PDM_MICS > 0)
 
