@@ -573,6 +573,7 @@ int main()
 #endif
 
     USER_MAIN_DECLARATIONS
+
     par
     {
         USER_MAIN_CORES

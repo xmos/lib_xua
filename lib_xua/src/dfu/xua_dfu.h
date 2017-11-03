@@ -1,6 +1,6 @@
 
-#ifndef _DFU_H_
-#define _DFU_H_ 1
+#ifndef _XUA_DFU_H_
+#define _XUA_DFU_H_ 1
 
 #include <xccompat.h>
 #include "xud_device.h"
