@@ -558,7 +558,7 @@ int main()
 #define c_clk_ctl null
 #endif
 
-#ifdef DFU
+#if (XUA_DFU_EN == 1)
     interface i_dfu dfuInterface;
 #else
     #define dfuInterface null
@@ -583,7 +583,7 @@ int main()
         {
 #if (XUD_TILE == 0)
             /* Check if USB is on the flash tile (tile 0) */
-#ifdef DFU
+#if (XUA_DFU_EN == 1)
             [[distribute]]
             DFUHandler(dfuInterface, null);
 #endif

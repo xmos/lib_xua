@@ -11,6 +11,7 @@
 
 #ifndef NO_USB
 #include "xud_device.h"          /* Standard descriptor requests */
+#include "dfu_types.h"
 #include "usbaudio20.h"          /* Defines from USB Audio 2.0 spec */
 #include "xua_ep0_descriptors.h"         /* This devices descriptors */
 #include "commands.h"
@@ -52,8 +53,8 @@
 #warning DFU_PID not defined, Using PID_AUDIO_2. This is probably fine!
 #endif
 
-#if (XUA_DFU == 1)
-#include "dfu.h"
+#if (XUA_DFU_EN == 1)
+#include "xua_dfu.h"
 #define DFU_IF_NUM INPUT_INTERFACES + OUTPUT_INTERFACES + MIDI_INTERFACES + 1
 extern void device_reboot(chanend);
 #endif
@@ -281,7 +282,7 @@ void XUA_Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
     VendorAudioRequestsInit(c_audioControl, c_mix_ctl, c_clk_ctl);
 #endif
 
-#if (XUA_DFU == 1)
+#if (XUA_DFU_EN == 1)
     /* Check if device has started in DFU mode */
     if (DFUReportResetState(null))
     {
@@ -547,7 +548,7 @@ void XUA_Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
 					    //unsigned request = (sp.bmRequestType.Recipient ) | (sp.bmRequestType.Type << 5);
 
                         /* TODO Check on return value retval =  */
-#if (XUA_DFU == 1)
+#if (XUA_DFU_EN == 1)
                         unsigned DFU_IF = INTERFACE_NUMBER_DFU;
 
                         /* DFU interface number changes based on which mode we are currently running in */
@@ -587,7 +588,7 @@ void XUA_Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
                          *              - Audio endpoint request (Audio 1.0 Sampling freq requests are sent to the endpoint)
                          */
                         if(((interfaceNum == 0) || (interfaceNum == 1) || (interfaceNum == 2))
-#if (XUA_DFU == 1)
+#if (XUA_DFU_EN == 1)
                                 && !DFU_mode_active
 #endif
                             )
@@ -639,7 +640,7 @@ void XUA_Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
 
         if(result == XUD_RES_ERR)
         {
-#ifdef DFU
+#if (XUA_DFU_EN == 1) 
             if (!DFU_mode_active)
             {
 #endif
@@ -750,8 +751,9 @@ void XUA_Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
                     cfgDesc_Null, sizeof(cfgDesc_Null),
                     (char**)&g_strTable, sizeof(g_strTable)/sizeof(char *), &sp, g_curUsbSpeed);
 #endif
+#if (XUA_DFU_EN == 1)
             }
-#if (XUA_DFU == 1)
+
             else
             {
                 /* Running in DFU mode - always return same descs for DFU whether HS or FS */
@@ -776,7 +778,7 @@ void XUA_Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
             g_curStreamAlt_Out = 0;
             g_curStreamAlt_In = 0;
 
-#if (XUA_DFU == 1)
+#if (XUA_DFU_EN == 1)
             if (DFUReportResetState(null))
             {
                 if (!DFU_mode_active)

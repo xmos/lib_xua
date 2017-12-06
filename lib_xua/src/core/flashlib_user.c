@@ -1,5 +1,5 @@
 #include "xua.h"
-#if (XUD_DFU == 1)
+#if (XUA_DFU_EN == 1)
 #include "uac_hwresources.h"
 #include <xs1.h>
 #include <xclib.h>
