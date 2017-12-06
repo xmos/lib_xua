@@ -44,7 +44,7 @@ enum USBInterfaceNumber
 #if defined(USB_CONTROL_DESCS) && (USB_CONTROL_DESCS != 0)
     INTERFACE_NUMBER_MISC_CONTROL,
 #endif
-#if defined(DFU) && (DFU != 0)
+#if defined(XUA_DFU_EN) && (XUA_DFU_EN != 0)
     INTERFACE_NUMBER_DFU,
 #endif
 #if defined(IAP) && (IAP != 0)

@@ -1379,7 +1379,7 @@ chanend c_dig_rx,
                     curSamRes_DAC = inuint(c_mix_out);
                 }
 
-#if (XUA_DFU == 1)
+#if (XUA_DFU_EN == 1)
                 /* Currently no more audio will happen after this point */
                 if ((curSamFreq / AUD_TO_USB_RATIO) == AUDIO_STOP_FOR_DFU)
                 {

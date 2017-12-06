@@ -412,10 +412,10 @@
  *
  * Default: 1 (Enabled)
  */
-#if !defined(DFU)
-#define DFU                   (1)
-#elif defined(DFU) && (DFU == 0)
-#undef DFU
+#if !defined(XUA_DFU_EN)
+#define XUA_DFU_EN                   (1)
+#elif defined(XUA_DFU_EN) && (XUA_DFU_EN == 0)
+#undef XUA_DFU_EN
 #endif
 
 /**
