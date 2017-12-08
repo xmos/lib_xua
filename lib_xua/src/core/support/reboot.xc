@@ -32,7 +32,6 @@ void device_reboot_aux(void)
     write_node_config_reg(usb_tile, XS1_SU_CFG_RST_MISC_NUM,0b10);
 #else
     unsigned int pllVal;
-    unsigned int localTileId = get_local_tile_id();
     unsigned int tileId;
     unsigned int tileArrayLength;
 
@@ -45,25 +44,21 @@ void device_reboot_aux(void)
     /* Find size of tile array - note in future tools versions this will be available from platform.h */
     asm volatile ("ldc %0, tile.globound":"=r"(tileArrayLength));
 
-    /* Reset all remote tiles */
-    for(int i = 0; i< tileArrayLength; i++)
+    /* Reset all tiles, starting from the remote ones */
+    #ifndef __XS2A__
+    for(int i = tileArrayLength-1;  i>=0; i--)
+    #else
+    /* Reset all even tiles, starting from the remote ones */
+    for(int i = tileArrayLength-2;  i>=0; i=i-2)
+    #endif 
     {
         /* Cannot cast tileref to unsigned! */
         tileId = get_tile_id(tile[i]);
-
-        /* Do not reboot local tile yet! */
-        if(localTileId != tileId)
-        {
-            read_sswitch_reg(tileId, 6, pllVal);
-            pllVal &= PLL_MASK;
-            write_sswitch_reg_no_ack(tileId, 6, pllVal);
-        }
+        read_sswitch_reg(tileId, 6, pllVal);
+        pllVal &= PLL_MASK;
+        write_sswitch_reg_no_ack(tileId, 6, pllVal);
     }
 
-    /* Finally reboot this tile! */
-    read_sswitch_reg(localTileId, 6, pllVal);
-    pllVal &= PLL_MASK;
-    write_sswitch_reg_no_ack(localTileId, 6, pllVal);
 #endif
 }
 
