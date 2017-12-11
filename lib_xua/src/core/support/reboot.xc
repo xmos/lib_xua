@@ -41,9 +41,13 @@ void device_reboot_aux(void)
     /* Disable USB and issue reset to xcore only - not analogue chip */
     write_node_config_reg(usb_tile, XS1_SU_CFG_RST_MISC_NUM,0b10);
 #else
-    unsigned int tileId;
+
     unsigned int localTileId = get_local_tile_id();
+    unsigned int tileId;
     unsigned int tileArrayLength;
+    #ifdef __XS2A__
+    unsigned int localTileNum;
+    #endif
 
 #if (XUD_SERIES_SUPPORT == 4)
     /* Disconnect from bus */
@@ -53,6 +57,16 @@ void device_reboot_aux(void)
 
     /* Find size of tile array - note in future tools versions this will be available from platform.h */
     asm volatile ("ldc %0, tile.globound":"=r"(tileArrayLength));
+
+    #ifdef __XS2A__
+    /* Find tile number of the local tile ID*/
+    for(int i = 0;  i<tileArrayLength; i++) {
+        if (get_tile_id(tile[i]) == localTileId) {
+            localTileNum = i;
+            break;
+        }
+    }
+    #endif
 
     #ifndef __XS2A__
     /* Reset all tiles, starting from the remote ones */
@@ -67,11 +81,17 @@ void device_reboot_aux(void)
         tileId = get_tile_id(tile[i]);
 
         /* Do not reboot local tile yet! */
+        #ifndef __XS2A__
         if(localTileId != tileId)
+        #else
+        /* In XS2A the tile paired up with the local tile can't be rebooted either */
+        if((localTileNum&0xFFFE) != (tileId&0xFFFE))
+        #endif    
         {
             reset_tile(tileId);
         }
     }
+
     /* Finally reboot this tile! */
     reset_tile(localTileId);
 #endif
