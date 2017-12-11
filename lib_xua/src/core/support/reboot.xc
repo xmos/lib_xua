@@ -25,7 +25,6 @@ void reset_tile(unsigned tileId)
 {
     unsigned int pllVal;
 
-    /* Cannot cast tileref to unsigned! */
     read_sswitch_reg(tileId, 6, pllVal);
     pllVal &= PLL_MASK;
     write_sswitch_reg_no_ack(tileId, 6, pllVal);
@@ -63,6 +62,10 @@ void device_reboot_aux(void)
     for(int i = tileArrayLength-2;  i>=0; i=i-2)
     #endif 
     {
+
+        /* Cannot cast tileref to unsigned! */
+        tileId = get_tile_id(tile[i]);
+
         /* Do not reboot local tile yet! */
         if(localTileId != tileId)
         {
