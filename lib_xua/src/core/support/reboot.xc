@@ -20,6 +20,17 @@ unsigned get_tile_id(tileref);
 
 extern tileref tile[];
 
+/* Function to reset the given tile */
+void reset_tile(unsigned tileId)
+{
+    unsigned int pllVal;
+
+    /* Cannot cast tileref to unsigned! */
+    read_sswitch_reg(tileId, 6, pllVal);
+    pllVal &= PLL_MASK;
+    write_sswitch_reg_no_ack(tileId, 6, pllVal);
+}        
+
 void device_reboot_aux(void)
 {
 #if (XUD_SERIES_SUPPORT == 1)
@@ -31,8 +42,8 @@ void device_reboot_aux(void)
     /* Disable USB and issue reset to xcore only - not analogue chip */
     write_node_config_reg(usb_tile, XS1_SU_CFG_RST_MISC_NUM,0b10);
 #else
-    unsigned int pllVal;
     unsigned int tileId;
+    unsigned int localTileId = get_local_tile_id();
     unsigned int tileArrayLength;
 
 #if (XUD_SERIES_SUPPORT == 4)
@@ -44,21 +55,22 @@ void device_reboot_aux(void)
     /* Find size of tile array - note in future tools versions this will be available from platform.h */
     asm volatile ("ldc %0, tile.globound":"=r"(tileArrayLength));
 
-    /* Reset all tiles, starting from the remote ones */
     #ifndef __XS2A__
+    /* Reset all tiles, starting from the remote ones */
     for(int i = tileArrayLength-1;  i>=0; i--)
     #else
     /* Reset all even tiles, starting from the remote ones */
     for(int i = tileArrayLength-2;  i>=0; i=i-2)
     #endif 
     {
-        /* Cannot cast tileref to unsigned! */
-        tileId = get_tile_id(tile[i]);
-        read_sswitch_reg(tileId, 6, pllVal);
-        pllVal &= PLL_MASK;
-        write_sswitch_reg_no_ack(tileId, 6, pllVal);
+        /* Do not reboot local tile yet! */
+        if(localTileId != tileId)
+        {
+            reset_tile(tileId);
+        }
     }
-
+    /* Finally reboot this tile! */
+    reset_tile(localTileId);
 #endif
 }
 
