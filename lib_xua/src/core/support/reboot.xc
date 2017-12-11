@@ -60,9 +60,9 @@ void device_reboot_aux(void)
 
     #ifdef __XS2A__
     /* Find tile number of the local tile ID*/
-    for(int i = 0;  i<tileArrayLength; i++) {
-        if (get_tile_id(tile[i]) == localTileId) {
-            localTileNum = i;
+    for(int tileNum = 0;  tileNum<tileArrayLength; tileNum++) {
+        if (get_tile_id(tile[tileNum]) == localTileId) {
+            localTileNum = tileNum;
             break;
         }
     }
@@ -70,22 +70,22 @@ void device_reboot_aux(void)
 
     #ifndef __XS2A__
     /* Reset all tiles, starting from the remote ones */
-    for(int i = tileArrayLength-1;  i>=0; i--)
+    for(int tileNum = tileArrayLength-1;  tileNum>=0; tileNum--)
     #else
     /* Reset all even tiles, starting from the remote ones */
-    for(int i = tileArrayLength-2;  i>=0; i=i-2)
+    for(int tileNum = tileArrayLength-2;  tileNum>=0; tileNum=tileNum-2)
     #endif 
     {
 
         /* Cannot cast tileref to unsigned! */
-        tileId = get_tile_id(tile[i]);
+        tileId = get_tile_id(tile[tileNum]);
 
         /* Do not reboot local tile yet! */
         #ifndef __XS2A__
         if(localTileId != tileId)
         #else
         /* In XS2A the tile paired up with the local tile can't be rebooted either */
-        if((localTileNum&0xFFFE) != (tileId&0xFFFE))
+        if((localTileNum|0x01) != (tileNum|0x01))
         #endif    
         {
             reset_tile(tileId);
