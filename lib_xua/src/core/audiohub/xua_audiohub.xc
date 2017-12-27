@@ -995,7 +995,6 @@ unsigned static deliver_slave(chanend ?c_out, chanend ?c_spd_out
 #endif
 )
 {
-
     /* Since DAC and ADC buffered ports off by one sample we buffer previous ADC frame */
     unsigned readBuffNo = 0;
     unsigned index;
@@ -1006,9 +1005,7 @@ unsigned static deliver_slave(chanend ?c_out, chanend ?c_spd_out
 #endif
 
     int firstIteration = 1;
-
     unsigned underflowWord = 0;
-
     unsigned frameCount = 0;
 #ifdef ADAT_TX
     adatCounter = 0;
@@ -1078,6 +1075,7 @@ unsigned static deliver_slave(chanend ?c_out, chanend ?c_spd_out
          * Check this every iteration and resync if we get a bclk glitch.
          */
         int syncError = 0;
+        unsigned lrval;
 
         if (!firstIteration)
         {
@@ -1110,13 +1108,16 @@ unsigned static deliver_slave(chanend ?c_out, chanend ?c_spd_out
                 // Manual IN instruction since compiler generates an extra setc per IN (bug #15256)
                 unsigned sample;
                 asm volatile("in %0, res[%1]" : "=r"(sample)  : "r"(p_i2s_adc[index++]));
-                unsigned lrval;
-                p_lrclk :> lrval;
+                
+                if (i == 0){
+                    p_lrclk :> lrval;
 #ifdef I2S_MODE_TDM
-                syncError += (lrval != 0x00000000);
+                    //We do not check this part of the frame because TDM frame sync falling egde timing
+                    //is not defined. We only care about rising edge which is checked in first half of frame
 #else
-                syncError += (lrval != 0x80000000);
+                    syncError += (lrval != 0x80000000);
 #endif // I2S_MODE_TDM
+                }
 
                 sample = bitrev(sample);
                 int chanIndex = ((frameCount-2)&(I2S_CHANS_PER_FRAME-1))+i; // channels 0, 2, 4.. on each line.
@@ -1143,7 +1144,15 @@ unsigned static deliver_slave(chanend ?c_out, chanend ?c_spd_out
                 samplesIn[buffIndex][chanIndex] = sample;
 #endif /* (AUD_TO_USB_RATIO > 1) */
             }
-#endif
+#else //(I2S_CHANS_ADC != 0) //If no ADC channels then just check lrclk for sync
+            p_lrclk :> lrval;
+#ifdef I2S_MODE_TDM
+            //We do not check this part of the frame because TDM frame sync falling egde timing
+            //is not defined. We only care about rising edge which is checked in first half of frame
+#else
+            syncError += (lrval != 0x80000000);
+#endif // I2S_MODE_TDM
+#endif //(I2S_CHANS_ADC != 0)
 
 
 #pragma xta endpoint "i2s_output_l"
@@ -1240,20 +1249,21 @@ unsigned static deliver_slave(chanend ?c_out, chanend ?c_spd_out
                 /* Manual IN instruction since compiler generates an extra setc per IN (bug #15256) */
                 unsigned sample;
                 asm volatile("in %0, res[%1]" : "=r"(sample)  : "r"(p_i2s_adc[index++]));
-                unsigned lrval;
-                p_lrclk :> lrval;
+                if (i == 0) {
+                    p_lrclk :> lrval;
 #ifdef I2S_MODE_TDM
-                if (frameCount == (I2S_CHANS_PER_FRAME-2))
-                {
-                    syncError += (lrval != 0x80000000);
-                }
-                else
-                {
-                   syncError += (lrval != 0x00000000);
-                }
+                    if (frameCount == (I2S_CHANS_PER_FRAME-2))
+                    {
+                        syncError += (lrval != 0x80000000);
+                    }
+                    else
+                    {
+                        syncError += (lrval != 0x00000000);
+                    }
 #else
-                syncError += (lrval != 0x7FFFFFFF);
+                    syncError += (lrval != 0x7FFFFFFF);
 #endif // I2S_MODE_TDM
+                }
 
                 sample = bitrev(sample);
                 int chanIndex = ((frameCount-1)&(I2S_CHANS_PER_FRAME-1))+i; // channels 1, 3, 5.. on each line.
@@ -1280,7 +1290,21 @@ unsigned static deliver_slave(chanend ?c_out, chanend ?c_spd_out
                 samplesIn[buffIndex][chanIndex] = sample;
 #endif /* (AUD_TO_USB_RATIO > 1) && !I2S_DOWNSAMPLE_MONO_IN */
             }
-#endif
+#else //(I2S_CHANS_ADC != 0) //No ADC so just do lrclk sync check only
+            p_lrclk :> lrval;
+#ifdef I2S_MODE_TDM
+            if (frameCount == (I2S_CHANS_PER_FRAME-2))
+            {
+                syncError += (lrval != 0x80000000);
+            }
+            else
+            {
+                syncError += (lrval != 0x00000000);
+            }
+#else
+            syncError += (lrval != 0x7FFFFFFF);
+#endif //I2S_MODE_TDM
+#endif //(I2S_CHANS_ADC != 0)
 
             index = 0;
 #pragma xta endpoint "i2s_output_r"
