@@ -443,6 +443,161 @@ static inline void InitPorts(unsigned divide)
 #endif
 }
 
+static inline void do_dsd_native(unsigned samplesOut[], unsigned &dsdSample_l, unsigned &dsdSample_r, unsigned divide){
+#if (DSD_CHANS_DAC != 0) && (NUM_USB_CHAN_OUT > 0)
+     /* 8 bits per chan, 1st 1-bit sample in MSB */
+    dsdSample_l =  samplesOut[0];
+    dsdSample_r =  samplesOut[1];
+    dsdSample_r = bitrev(byterev(dsdSample_r));
+    dsdSample_l = bitrev(byterev(dsdSample_l));
+
+    /* Output DSD data to ports then 32 clocks */
+    switch (divide)
+    {
+        case 4:
+            asm volatile("out res[%0], %1"::"r"(p_dsd_dac[0]),"r"(dsdSample_l));
+            asm volatile("out res[%0], %1"::"r"(p_dsd_dac[1]),"r"(dsdSample_r));
+            p_dsd_clk <: 0xCCCCCCCC;
+            p_dsd_clk <: 0xCCCCCCCC;
+            p_dsd_clk <: 0xCCCCCCCC;
+            p_dsd_clk <: 0xCCCCCCCC;
+            break;
+
+        case 2:
+            asm volatile("out res[%0], %1"::"r"(p_dsd_dac[0]),"r"(dsdSample_l));
+            asm volatile("out res[%0], %1"::"r"(p_dsd_dac[1]),"r"(dsdSample_r));
+            p_dsd_clk <: 0xAAAAAAAA;
+            p_dsd_clk <: 0xAAAAAAAA;
+            break;
+
+        default:
+            /* Do some clocks anyway - this will stop us interrupting decouple too much */
+            asm volatile("out res[%0], %1"::"r"(p_dsd_dac[0]),"r"(dsdSample_l));
+            asm volatile("out res[%0], %1"::"r"(p_dsd_dac[1]),"r"(dsdSample_r));
+            p_dsd_clk <: 0xF0F0F0F0;
+            p_dsd_clk <: 0xF0F0F0F0;
+            p_dsd_clk <: 0xF0F0F0F0;
+            p_dsd_clk <: 0xF0F0F0F0;
+            p_dsd_clk <: 0xF0F0F0F0;
+            p_dsd_clk <: 0xF0F0F0F0;
+            p_dsd_clk <: 0xF0F0F0F0;
+            p_dsd_clk <: 0xF0F0F0F0;
+            break;
+    }
+#endif
+}
+
+static inline void do_dsp_dop(unsigned &everyOther, unsigned samplesOut[], unsigned &dsdSample_l, unsigned &dsdSample_r, unsigned divide){
+#if (DSD_CHANS_DAC != 0) && (NUM_USB_CHAN_OUT > 0)
+    if(!everyOther)
+        {
+            dsdSample_l = ((samplesOut[0] & 0xffff00) << 8);
+            dsdSample_r = ((samplesOut[1] & 0xffff00) << 8);
+
+            everyOther = 1;
+
+            switch (divide)
+            {
+                case 8:
+                p_dsd_clk <: 0xF0F0F0F0;
+                p_dsd_clk <: 0xF0F0F0F0;
+                p_dsd_clk <: 0xF0F0F0F0;
+                p_dsd_clk <: 0xF0F0F0F0;
+                break;
+
+                case 4:
+                p_dsd_clk <: 0xCCCCCCCC;
+                p_dsd_clk <: 0xCCCCCCCC;
+                break;
+
+                case 2:
+                p_dsd_clk <: 0xAAAAAAAA;
+                break;
+            }
+        }
+    else // everyOther
+        {
+            everyOther = 0;
+            dsdSample_l =  dsdSample_l | ((samplesOut[0] & 0xffff00) >> 8);
+            dsdSample_r =  dsdSample_r | ((samplesOut[1] & 0xffff00) >> 8);
+
+            // Output 16 clocks DSD to all
+            //p_dsd_dac[0] <: bitrev(dsdSample_l);
+            //p_dsd_dac[1] <: bitrev(dsdSample_r);
+            asm volatile("out res[%0], %1"::"r"(p_dsd_dac[0]),"r"(bitrev(dsdSample_l)));
+            asm volatile("out res[%0], %1"::"r"(p_dsd_dac[1]),"r"(bitrev(dsdSample_r)));
+            switch (divide)
+            {
+                case 8:
+                p_dsd_clk <: 0xF0F0F0F0;
+                p_dsd_clk <: 0xF0F0F0F0;
+                p_dsd_clk <: 0xF0F0F0F0;
+                p_dsd_clk <: 0xF0F0F0F0;
+                break;
+
+                case 4:
+                p_dsd_clk <: 0xCCCCCCCC;
+                p_dsd_clk <: 0xCCCCCCCC;
+                break;
+
+                case 2:
+                p_dsd_clk <: 0xAAAAAAAA;
+                break;
+            }
+        }
+    }
+#endif
+}
+
+static inline void do_dsd_dop_check(unsigned &dsdMode, int &dsdCount, unsigned curSamFreq, unsigned samplesOut[], unsigned &dsdMarker){
+#if (DSD_CHANS_DAC != 0) && (NUM_USB_CHAN_OUT > 0)
+    /* Check for DSD - note we only move into DoP mode if valid DoP Freq */
+    /* Currently we only check on channel 0 - we get all 0's on channels without data */
+    if((dsdMode == DSD_MODE_OFF) && (curSamFreq > 96000))
+    {
+        if((DSD_MASK(samplesOut[0]) == dsdMarker) && (DSD_MASK(samplesOut[1]) == dsdMarker))
+        {
+            dsdCount++;
+            dsdMarker ^= DSD_MARKER_XOR;
+            if(dsdCount == DSD_EN_THRESH)
+            {
+                dsdMode = DSD_MODE_DOP;
+                dsdCount = 0;
+                dsdMarker = DSD_MARKER_2;
+
+                // Set clocks low
+                p_lrclk <: 0;
+                p_bclk <: 0;
+                p_dsd_clk <: 0;
+                return 0;
+            }
+        }
+        else
+        {
+            dsdCount = 0;
+            dsdMarker = DSD_MARKER_2;
+        }
+    }
+    else if(dsdMode == DSD_MODE_DOP) // DSD DoP Mode
+    {
+        /* If we are running in DOP mode, check if we need to come out */
+        if((DSD_MASK(samplesOut[0]) != DSD_MARKER_1) && (DSD_MASK(samplesOut[1]) != DSD_MARKER_1))
+        {
+            if((DSD_MASK(samplesOut[0]) != DSD_MARKER_2) && (DSD_MASK(samplesOut[1]) != DSD_MARKER_2))
+            {
+                dsdMode = DSD_MODE_OFF;
+                // Set clocks low
+                p_lrclk <: 0;
+                p_bclk <: 0;
+                p_dsd_clk <: 0;
+                return 0;
+            }
+        }
+    }
+#endif
+}
+
+
 /* I2S delivery thread */
 #pragma unsafe arrays
 unsigned static deliver(chanend ?c_out, chanend ?c_spd_out
@@ -473,9 +628,9 @@ unsigned static deliver(chanend ?c_out, chanend ?c_spd_out
     int firstIteration = 1;
 #endif
 
-#if (DSD_CHANS_DAC != 0)
     unsigned dsdMarker = DSD_MARKER_2;    /* This alternates between DSD_MARKER_1 and DSD_MARKER_2 */
     int dsdCount = 0;
+#if (DSD_CHANS_DAC != 0)
     int everyOther = 1;
     unsigned dsdSample_l = 0x96960000;
     unsigned dsdSample_r = 0x96960000;
@@ -577,109 +732,8 @@ unsigned static deliver(chanend ?c_out, chanend ?c_spd_out
 #endif // CODEC_MASTER
         {
 #if (DSD_CHANS_DAC != 0) && (NUM_USB_CHAN_OUT > 0)
-            if(dsdMode == DSD_MODE_NATIVE)
-            {
-                /* 8 bits per chan, 1st 1-bit sample in MSB */
-                dsdSample_l =  samplesOut[0];
-                dsdSample_r =  samplesOut[1];
-                dsdSample_r = bitrev(byterev(dsdSample_r));
-                dsdSample_l = bitrev(byterev(dsdSample_l));
-
-                /* Output DSD data to ports then 32 clocks */
-                switch (divide)
-                {
-                    case 4:
-                        asm volatile("out res[%0], %1"::"r"(p_dsd_dac[0]),"r"(dsdSample_l));
-                        asm volatile("out res[%0], %1"::"r"(p_dsd_dac[1]),"r"(dsdSample_r));
-                        p_dsd_clk <: 0xCCCCCCCC;
-                        p_dsd_clk <: 0xCCCCCCCC;
-                        p_dsd_clk <: 0xCCCCCCCC;
-                        p_dsd_clk <: 0xCCCCCCCC;
-                        break;
-
-                    case 2:
-                        asm volatile("out res[%0], %1"::"r"(p_dsd_dac[0]),"r"(dsdSample_l));
-                        asm volatile("out res[%0], %1"::"r"(p_dsd_dac[1]),"r"(dsdSample_r));
-                        p_dsd_clk <: 0xAAAAAAAA;
-                        p_dsd_clk <: 0xAAAAAAAA;
-                        break;
-
-                    default:
-                        /* Do some clocks anyway - this will stop us interrupting decouple too much */
-                        asm volatile("out res[%0], %1"::"r"(p_dsd_dac[0]),"r"(dsdSample_l));
-                        asm volatile("out res[%0], %1"::"r"(p_dsd_dac[1]),"r"(dsdSample_r));
-                        p_dsd_clk <: 0xF0F0F0F0;
-                        p_dsd_clk <: 0xF0F0F0F0;
-                        p_dsd_clk <: 0xF0F0F0F0;
-                        p_dsd_clk <: 0xF0F0F0F0;
-                        p_dsd_clk <: 0xF0F0F0F0;
-                        p_dsd_clk <: 0xF0F0F0F0;
-                        p_dsd_clk <: 0xF0F0F0F0;
-                        p_dsd_clk <: 0xF0F0F0F0;
-                        break;
-                }
-
-            }
-            else if(dsdMode == DSD_MODE_DOP)
-            {
-            if(!everyOther)
-                {
-                    dsdSample_l = ((samplesOut[0] & 0xffff00) << 8);
-                    dsdSample_r = ((samplesOut[1] & 0xffff00) << 8);
-
-                    everyOther = 1;
-
-                    switch (divide)
-                    {
-                        case 8:
-                        p_dsd_clk <: 0xF0F0F0F0;
-                        p_dsd_clk <: 0xF0F0F0F0;
-                        p_dsd_clk <: 0xF0F0F0F0;
-                        p_dsd_clk <: 0xF0F0F0F0;
-                        break;
-
-                        case 4:
-                        p_dsd_clk <: 0xCCCCCCCC;
-                        p_dsd_clk <: 0xCCCCCCCC;
-                        break;
-
-                        case 2:
-                        p_dsd_clk <: 0xAAAAAAAA;
-                        break;
-                    }
-                }
-                else // everyOther
-                {
-                    everyOther = 0;
-                    dsdSample_l =  dsdSample_l | ((samplesOut[0] & 0xffff00) >> 8);
-                    dsdSample_r =  dsdSample_r | ((samplesOut[1] & 0xffff00) >> 8);
-
-                    // Output 16 clocks DSD to all
-                    //p_dsd_dac[0] <: bitrev(dsdSample_l);
-                    //p_dsd_dac[1] <: bitrev(dsdSample_r);
-                    asm volatile("out res[%0], %1"::"r"(p_dsd_dac[0]),"r"(bitrev(dsdSample_l)));
-                    asm volatile("out res[%0], %1"::"r"(p_dsd_dac[1]),"r"(bitrev(dsdSample_r)));
-                    switch (divide)
-                    {
-                        case 8:
-                        p_dsd_clk <: 0xF0F0F0F0;
-                        p_dsd_clk <: 0xF0F0F0F0;
-                        p_dsd_clk <: 0xF0F0F0F0;
-                        p_dsd_clk <: 0xF0F0F0F0;
-                        break;
-
-                        case 4:
-                        p_dsd_clk <: 0xCCCCCCCC;
-                        p_dsd_clk <: 0xCCCCCCCC;
-                        break;
-
-                        case 2:
-                        p_dsd_clk <: 0xAAAAAAAA;
-                        break;
-                    }
-
-                }
-            }
+            if(dsdMode == DSD_MODE_NATIVE) do_dsd_native(samplesOut, dsdSample_l, dsdSample_r, divide);
+            else if(dsdMode == DSD_MODE_DOP) do_dsp_dop(everyOther, samplesOut, dsdSample_l, dsdSample_r, divide);
             else
 #endif
             {
@@ -939,51 +993,7 @@ unsigned static deliver(chanend ?c_out, chanend ?c_spd_out
 
 
             }  // !dsdMode
-#if (DSD_CHANS_DAC != 0) && (NUM_USB_CHAN_OUT > 0)
-            /* Check for DSD - note we only move into DoP mode if valid DoP Freq */
-            /* Currently we only check on channel 0 - we get all 0's on channels without data */
-            if((dsdMode == DSD_MODE_OFF) && (curSamFreq > 96000))
-            {
-                if((DSD_MASK(samplesOut[0]) == dsdMarker) && (DSD_MASK(samplesOut[1]) == dsdMarker))
-                {
-                    dsdCount++;
-                    dsdMarker ^= DSD_MARKER_XOR;
-                    if(dsdCount == DSD_EN_THRESH)
-                    {
-                        dsdMode = DSD_MODE_DOP;
-                        dsdCount = 0;
-                        dsdMarker = DSD_MARKER_2;
-
-                        // Set clocks low
-                        p_lrclk <: 0;
-                        p_bclk <: 0;
-                        p_dsd_clk <: 0;
-                        return 0;
-                    }
-                }
-                else
-                {
-                    dsdCount = 0;
-                    dsdMarker = DSD_MARKER_2;
-                }
-            }
-            else if(dsdMode == DSD_MODE_DOP) // DSD DoP Mode
-            {
-                /* If we are running in DOP mode, check if we need to come out */
-                if((DSD_MASK(samplesOut[0]) != DSD_MARKER_1) && (DSD_MASK(samplesOut[1]) != DSD_MARKER_1))
-                {
-                    if((DSD_MASK(samplesOut[0]) != DSD_MARKER_2) && (DSD_MASK(samplesOut[1]) != DSD_MARKER_2))
-                    {
-                        dsdMode = DSD_MODE_OFF;
-                        // Set clocks low
-                        p_lrclk <: 0;
-                        p_bclk <: 0;
-                        p_dsd_clk <: 0;
-                        return 0;
-                    }
-                }
-            }
-#endif
+            do_dsd_dop_check(dsdMode, dsdCount, curSamFreq, samplesOut, dsdMarker);
 
 #ifdef I2S_MODE_TDM
             /* Increase frameCount by 2 since we have output two channels (per data line) */
@@ -1018,7 +1028,6 @@ unsigned static deliver(chanend ?c_out, chanend ?c_spd_out
             }
         }
     }
-
 #pragma xta endpoint "deliver_return"
     return 0;
 }
