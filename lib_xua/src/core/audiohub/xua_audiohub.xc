@@ -310,138 +310,7 @@ static inline unsigned DoSampleTransfer(chanend ?c_out, const int readBuffNo, co
 }
 #endif /* NO_USB */
 
-static inline void InitPorts(unsigned divide)
-{
-    unsigned tmp;
-#ifndef CODEC_MASTER
-#if (DSD_CHANS_DAC > 0)
-    if(dsdMode == DSD_MODE_OFF)
-    {
-#endif
 
-#if !defined(__XS2A__)
-        if(divide != 1)
-        {
-            /* b_clk must start high */
-            p_bclk <: 0x80000000;
-            sync(p_bclk);
-         }
-#endif
-
-        /* Clear I2S port buffers */
-        clearbuf(p_lrclk);
-
-#if (I2S_CHANS_DAC != 0)
-        for(int i = 0; i < I2S_WIRES_DAC; i++)
-        {
-            clearbuf(p_i2s_dac[i]);
-        }
-#endif
-
-#if (I2S_CHANS_ADC != 0)
-        for(int i = 0; i < I2S_WIRES_ADC; i++)
-        {
-            clearbuf(p_i2s_adc[i]);
-        }
-#endif
-
-#if defined(__XS2A__)
-        if(1)
-#else
-        if(divide == 1)
-#endif
-        {
-#pragma xta endpoint "divide_1"
-            p_lrclk <: 0 @ tmp;
-            tmp += 100;
-
-            /* Since BCLK is free-running, setup outputs/inputs at a known point in the future */
-#if (I2S_CHANS_DAC != 0)
-#pragma loop unroll
-            for(int i = 0; i < I2S_WIRES_DAC; i++)
-            {
-                p_i2s_dac[i] @ tmp <: 0;
-            }
-#endif
-
-            p_lrclk @ tmp <: 0x7FFFFFFF;
-
-#if (I2S_CHANS_ADC != 0)
-            for(int i = 0; i < I2S_WIRES_ADC; i++)
-            {
-                asm("setpt res[%0], %1"::"r"(p_i2s_adc[i]),"r"(tmp-1));
-            }
-#endif
-        }
-        else /* Divide != 1  */
-        {
-#if (I2S_CHANS_DAC != 0)
-            /* Pre-fill the DAC ports */
-            for(int i = 0; i < I2S_WIRES_DAC; i++)
-            {
-                p_i2s_dac[i] <: 0;
-            }
-#endif
-            /* Pre-fill the LR clock output port */
-            p_lrclk <: 0x0;
-
-            doI2SClocks(divide);
-
-#if (I2S_CHANS_DAC != 0)
-            /* Pre-fill the DAC ports */
-            for(int i = 0; i < I2S_WIRES_DAC; i++)
-            {
-                p_i2s_dac[i] <: 0;
-            }
-#endif
-            /* Pre-fill the LR clock output port */
-            p_lrclk <: 0x0;
-
-            doI2SClocks(divide);
-        }
-#if (DSD_CHANS_DAC > 0)
-    } /* if (!dsdMode) */
-    else
-    {
-        /* p_dsd_clk must start high */
-        p_dsd_clk <: 0x80000000;
-    }
-#endif
-#else /* ifndef CODEC_MASTER */
-
-    /* Wait for LRCLK edge (in I2S LRCLK = 0 is left, TDM rising edge is start of frame) */
-    p_lrclk when pinseq(0) :> void;
-    p_lrclk when pinseq(1) :> void;
-    p_lrclk when pinseq(0) :> void;
-    p_lrclk when pinseq(1) :> void;
-#ifdef I2S_MODE_TDM
-    p_lrclk when pinseq(0) :> void;
-    p_lrclk when pinseq(1) :> void @ tmp;
-#else
-    p_lrclk when pinseq(0) :> void @ tmp;
-#endif
-
-    tmp += (I2S_CHANS_PER_FRAME * 32) - 32 + 1 ;
-    /* E.g. 2 * 32 - 32 + 1 = 33 for stereo */
-    /* E.g. 8 * 32 - 32 + 1 = 225 for 8 chan TDM */
-
-#if (I2S_CHANS_DAC != 0)
-#pragma loop unroll
-    for(int i = 0; i < I2S_WIRES_DAC; i++)
-    {
-        p_i2s_dac[i] @ tmp <: 0;
-    }
-#endif
-
-#if (I2S_CHANS_ADC != 0)
-#pragma loop unroll
-    for(int i = 0; i < I2S_WIRES_ADC; i++)
-    {
-       asm("setpt res[%0], %1"::"r"(p_i2s_adc[i]),"r"(tmp-1));
-    }
-#endif
-#endif
-}
 
 static inline void do_dsd_native(unsigned samplesOut[], unsigned &dsdSample_l, unsigned &dsdSample_r, unsigned divide){
 #if (DSD_CHANS_DAC != 0) && (NUM_USB_CHAN_OUT > 0)
@@ -599,6 +468,104 @@ static inline void do_dsd_dop_check(unsigned &dsdMode, int &dsdCount, unsigned c
 
 
 #ifndef CODEC_MASTER
+static inline void InitPorts_master(unsigned divide)
+{
+    unsigned tmp;
+#if (DSD_CHANS_DAC > 0)
+    if(dsdMode == DSD_MODE_OFF)
+    {
+#endif
+
+#if !defined(__XS2A__)
+        if(divide != 1)
+        {
+            /* b_clk must start high */
+            p_bclk <: 0x80000000;
+            sync(p_bclk);
+         }
+#endif
+
+        /* Clear I2S port buffers */
+        clearbuf(p_lrclk);
+
+#if (I2S_CHANS_DAC != 0)
+        for(int i = 0; i < I2S_WIRES_DAC; i++)
+        {
+            clearbuf(p_i2s_dac[i]);
+        }
+#endif
+
+#if (I2S_CHANS_ADC != 0)
+        for(int i = 0; i < I2S_WIRES_ADC; i++)
+        {
+            clearbuf(p_i2s_adc[i]);
+        }
+#endif
+
+#if defined(__XS2A__)
+        if(1)
+#else
+        if(divide == 1)
+#endif
+        {
+#pragma xta endpoint "divide_1"
+            p_lrclk <: 0 @ tmp;
+            tmp += 100;
+
+            /* Since BCLK is free-running, setup outputs/inputs at a known point in the future */
+#if (I2S_CHANS_DAC != 0)
+#pragma loop unroll
+            for(int i = 0; i < I2S_WIRES_DAC; i++)
+            {
+                p_i2s_dac[i] @ tmp <: 0;
+            }
+#endif
+
+            p_lrclk @ tmp <: 0x7FFFFFFF;
+
+#if (I2S_CHANS_ADC != 0)
+            for(int i = 0; i < I2S_WIRES_ADC; i++)
+            {
+                asm("setpt res[%0], %1"::"r"(p_i2s_adc[i]),"r"(tmp-1));
+            }
+#endif
+        }
+        else /* Divide != 1  */
+        {
+#if (I2S_CHANS_DAC != 0)
+            /* Pre-fill the DAC ports */
+            for(int i = 0; i < I2S_WIRES_DAC; i++)
+            {
+                p_i2s_dac[i] <: 0;
+            }
+#endif
+            /* Pre-fill the LR clock output port */
+            p_lrclk <: 0x0;
+
+            doI2SClocks(divide);
+
+#if (I2S_CHANS_DAC != 0)
+            /* Pre-fill the DAC ports */
+            for(int i = 0; i < I2S_WIRES_DAC; i++)
+            {
+                p_i2s_dac[i] <: 0;
+            }
+#endif
+            /* Pre-fill the LR clock output port */
+            p_lrclk <: 0x0;
+
+            doI2SClocks(divide);
+        }
+#if (DSD_CHANS_DAC > 0)
+    } /* if (!dsdMode) */
+    else
+    {
+        /* p_dsd_clk must start high */
+        p_dsd_clk <: 0x80000000;
+    }
+#endif
+}
+
 #pragma unsafe arrays
 unsigned static deliver_master(chanend ?c_out, chanend ?c_spd_out
 #ifdef ADAT_TX
@@ -704,7 +671,7 @@ unsigned static deliver_master(chanend ?c_out, chanend ?c_spd_out
         return command;
     }
 
-    InitPorts(divide);
+    InitPorts_master(divide);
 
     /* Main Audio I/O loop */
     while (1)
@@ -974,6 +941,44 @@ unsigned static deliver_master(chanend ?c_out, chanend ?c_spd_out
 
 
 #ifdef CODEC_MASTER
+static inline void InitPorts_slave(unsigned divide)
+{
+    unsigned tmp;
+
+    /* Wait for LRCLK edge (in I2S LRCLK = 0 is left, TDM rising edge is start of frame) */
+    p_lrclk when pinseq(0) :> void;
+    p_lrclk when pinseq(1) :> void;
+    p_lrclk when pinseq(0) :> void;
+    p_lrclk when pinseq(1) :> void;
+#ifdef I2S_MODE_TDM
+    p_lrclk when pinseq(0) :> void;
+    p_lrclk when pinseq(1) :> void @ tmp;
+#else
+    p_lrclk when pinseq(0) :> void @ tmp;
+#endif
+
+    tmp += (I2S_CHANS_PER_FRAME * 32) - 32 + 1 ;
+    /* E.g. 2 * 32 - 32 + 1 = 33 for stereo */
+    /* E.g. 8 * 32 - 32 + 1 = 225 for 8 chan TDM */
+
+#if (I2S_CHANS_DAC != 0)
+#pragma loop unroll
+    for(int i = 0; i < I2S_WIRES_DAC; i++)
+    {
+        p_i2s_dac[i] @ tmp <: 0;
+    }
+#endif
+
+#if (I2S_CHANS_ADC != 0)
+#pragma loop unroll
+    for(int i = 0; i < I2S_WIRES_ADC; i++)
+    {
+       asm("setpt res[%0], %1"::"r"(p_i2s_adc[i]),"r"(tmp-1));
+    }
+#endif
+}
+
+
 /* I2S delivery thread */
 #pragma unsafe arrays
 unsigned static deliver_slave(chanend ?c_out, chanend ?c_spd_out
@@ -1082,7 +1087,7 @@ unsigned static deliver_slave(chanend ?c_out, chanend ?c_spd_out
         return command;
     }
 
-    InitPorts(divide);
+    InitPorts_slave(divide);
 
     /* Main Audio I/O loop */
     while (1)
@@ -1094,7 +1099,7 @@ unsigned static deliver_slave(chanend ?c_out, chanend ?c_spd_out
 
         if (!firstIteration)
         {
-            InitPorts(divide);
+            InitPorts_slave(divide);
         }
         else
         {
