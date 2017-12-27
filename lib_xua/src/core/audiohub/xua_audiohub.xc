@@ -1252,13 +1252,10 @@ unsigned static deliver_slave(chanend ?c_out, chanend ?c_spd_out
                 if (i == 0) {
                     p_lrclk :> lrval;
 #ifdef I2S_MODE_TDM
-                    if (frameCount == (I2S_CHANS_PER_FRAME-2))
-                    {
-                        syncError += (lrval != 0x80000000);
-                    }
-                    else
-                    {
-                        syncError += (lrval != 0x00000000);
+                    //Just check for the rising edge of frame synch being in the right place because falling edge timing not specified
+                    if (frameCount == 0) {
+                        lrval &= 0xc0000000;    //Mask off last two (MSB) frame clock bits which are the most recently sampled
+                        syncError += (lrval != 0x80000000);  //We need MSB = 1 and MSB-1 = 0 to signify rising edge
                     }
 #else
                     syncError += (lrval != 0x7FFFFFFF);
