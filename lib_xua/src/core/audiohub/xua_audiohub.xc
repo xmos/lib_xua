@@ -311,8 +311,8 @@ static inline unsigned DoSampleTransfer(chanend ?c_out, const int readBuffNo, co
 #endif /* NO_USB */
 
 
-
-static inline void do_dsd_native(unsigned samplesOut[], unsigned &dsdSample_l, unsigned &dsdSample_r, unsigned divide){
+/* This function performs the DSD native loop and outputs a 32b DSD stream per loop */
+static inline void DoDsdNative(unsigned samplesOut[], unsigned &dsdSample_l, unsigned &dsdSample_r, unsigned divide){
 #if (DSD_CHANS_DAC != 0) && (NUM_USB_CHAN_OUT > 0)
      /* 8 bits per chan, 1st 1-bit sample in MSB */
     dsdSample_l =  samplesOut[0];
@@ -356,7 +356,9 @@ static inline void do_dsd_native(unsigned samplesOut[], unsigned &dsdSample_l, u
 #endif
 }
 
-static inline void do_dsp_dop(unsigned &everyOther, unsigned samplesOut[], unsigned &dsdSample_l, unsigned &dsdSample_r, unsigned divide){
+/* This function performs the DOP loop and collects 16b of DSD per loop 
+   and outputs a 32b word into the port buffer every other cycle. */
+static inline void DoDsdDop(unsigned &everyOther, unsigned samplesOut[], unsigned &dsdSample_l, unsigned &dsdSample_r, unsigned divide){
 #if (DSD_CHANS_DAC != 0) && (NUM_USB_CHAN_OUT > 0)
     if(!everyOther)
         {
@@ -418,7 +420,12 @@ static inline void do_dsp_dop(unsigned &everyOther, unsigned samplesOut[], unsig
 #endif
 }
 
-static inline void do_dsd_dop_check(unsigned &dsdMode, int &dsdCount, unsigned curSamFreq, unsigned samplesOut[], unsigned &dsdMarker){
+/* When DSD is enabled and streaming is normal I2S, this function checks for a series of DoP markers in the upper byte.
+   If found it will exit deliver() with the command to restart in DoP mode.
+   When in DoP mode, this function will check for a single absence of the DoP marker and exit deliver() with the command
+   to restart in I2S mode. */
+  
+static inline void DoDsdDopCheck(unsigned &dsdMode, int &dsdCount, unsigned curSamFreq, unsigned samplesOut[], unsigned &dsdMarker){
 #if (DSD_CHANS_DAC != 0) && (NUM_USB_CHAN_OUT > 0)
     /* Check for DSD - note we only move into DoP mode if valid DoP Freq */
     /* Currently we only check on channel 0 - we get all 0's on channels without data */
@@ -678,8 +685,8 @@ unsigned static deliver_master(chanend ?c_out, chanend ?c_spd_out
     {
         {
 #if (DSD_CHANS_DAC != 0) && (NUM_USB_CHAN_OUT > 0)
-            if(dsdMode == DSD_MODE_NATIVE) do_dsd_native(samplesOut, dsdSample_l, dsdSample_r, divide);
-            else if(dsdMode == DSD_MODE_DOP) do_dsp_dop(everyOther, samplesOut, dsdSample_l, dsdSample_r, divide);
+            if(dsdMode == DSD_MODE_NATIVE) DoDsdNative(samplesOut, dsdSample_l, dsdSample_r, divide);
+            else if(dsdMode == DSD_MODE_DOP) DoDsdDop(everyOther, samplesOut, dsdSample_l, dsdSample_r, divide);
             else
 #endif
             {
@@ -899,7 +906,7 @@ unsigned static deliver_master(chanend ?c_out, chanend ?c_spd_out
                 doI2SClocks(divide);
 
             }  // !dsdMode
-            do_dsd_dop_check(dsdMode, dsdCount, curSamFreq, samplesOut, dsdMarker);
+            DoDsdDopCheck(dsdMode, dsdCount, curSamFreq, samplesOut, dsdMarker);
 
 #ifdef I2S_MODE_TDM
             /* Increase frameCount by 2 since we have output two channels (per data line) */
