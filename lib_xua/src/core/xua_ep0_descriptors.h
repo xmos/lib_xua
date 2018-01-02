@@ -1985,7 +1985,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
     INTERFACE_NUMBER_DFU,                 /* 2 bInterfaceNumber : Index of this interface. (field size 1 bytes) */
     0x00,                                 /* 3 bAlternateSetting : Index of this setting. (field size 1 bytes) */
     0x00,                                 /* 4 bNumEndpoints : 0 endpoints. (field size 1 bytes) */
-    0xFE,                                 /* 5 bInterfaceClass : DFU. (field size 1 bytes) */
+    0xFE,                                 /* 5 bInterfaceClass : DFU. (Application Specific) (field size 1 bytes) */
     0x01,                                 /* 6 bInterfaceSubclass : (field size 1 bytes) */
     0x01,                                 /* 7 bInterfaceProtocol : Unused. (field size 1 bytes) */
     offsetof(StringDescTable_t, dfuStr)/sizeof(char *), /* 8 iInterface */
@@ -2751,7 +2751,7 @@ unsigned char cfgDesc_Audio1[] =
     (OUTPUT_INTERFACES_A1 + INPUT_INTERFACES_A1 + NUM_CONTROL_USB_INTERFACES + 1),  /* 2 bInterfaceNumber : Index of this interface. (field size 1 bytes) */
     0x00,                                 /* 3 bAlternateSetting : Index of this setting. (field size 1 bytes) */
     0x00,                                 /* 4 bNumEndpoints : 0 endpoints. (field size 1 bytes) */
-    0xFE,                                 /* 5 bInterfaceClass : DFU. (field size 1 bytes) */
+    0xFE,                                 /* 5 bInterfaceClass : DFU. (Application Specific) (field size 1 bytes) */
     0x01,                                 /* 6 bInterfaceSubclass : (field size 1 bytes) */
     0x01,                                 /* 7 bInterfaceProtocol : Unused. (field size 1 bytes) */
     offsetof(StringDescTable_t, dfuStr)/sizeof(char *), /* 8 iInterface */
@@ -2775,7 +2775,7 @@ unsigned char cfgDesc_Audio1[] =
     (OUTPUT_INTERFACES_A1 + INPUT_INTERFACES_A1 + 1),    /* 2 bInterfaceNumber */
     0x00,                                                /* 3 bAlternateSetting : Index of this setting. (field size 1 bytes) */
     0x00,                                                /* 4 bNumEndpoints : 0 endpoints. (field size 1 bytes) */
-    0xFF,                                                /* 5 bInterfaceClass : DFU. (field size 1 bytes) */
+    USB_CLASS_VENDOR_SPECIFIC,                           /* 5 bInterfaceClass : Vendor specific. (field size 1 bytes) */
     0xFF,                                                /* 6 bInterfaceSubclass : (field size 1 bytes) */
     0xFF,                                                /* 7 bInterfaceProtocol : Unused. (field size 1 bytes) */
     offsetof(StringDescTable_t, ctrlStr)/sizeof(char *), /* 8 iInterface */

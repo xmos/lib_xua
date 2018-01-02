@@ -69,7 +69,7 @@ void pdm_buffer(streaming chanend c_ds_output[2], chanend c_audio)
     mic_array_frame_time_domain * unsafe current;
     mic_array_decimator_config_t dc[2];
 
-    /* Get initial sample-rate and compute decimation factor */
+    /* Get initial sample-rate to run this thread at and compute decimation factor */
     c_audio :> samplerate;
     unsigned decimationfactor = 96000/samplerate;
 
