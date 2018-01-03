@@ -320,6 +320,7 @@ static inline void DoDsdNative(unsigned samplesOut[], unsigned &dsdSample_l, uns
     dsdSample_r = bitrev(byterev(dsdSample_r));
     dsdSample_l = bitrev(byterev(dsdSample_l));
 
+#ifndef __XS2A__
     /* Output DSD data to ports then 32 clocks */
     switch (divide)
     {
@@ -353,6 +354,7 @@ static inline void DoDsdNative(unsigned samplesOut[], unsigned &dsdSample_l, uns
             p_dsd_clk <: 0xF0F0F0F0;
             break;
     }
+#endif // __XS2A__
 #endif
 }
 
@@ -367,6 +369,7 @@ static inline void DoDsdDop(unsigned &everyOther, unsigned samplesOut[], unsigne
 
             everyOther = 1;
 
+#ifndef __XS2A__
             switch (divide)
             {
                 case 8:
@@ -385,6 +388,7 @@ static inline void DoDsdDop(unsigned &everyOther, unsigned samplesOut[], unsigne
                 p_dsd_clk <: 0xAAAAAAAA;
                 break;
             }
+#endif // __XS2A__
         }
     else // everyOther
         {
@@ -397,6 +401,8 @@ static inline void DoDsdDop(unsigned &everyOther, unsigned samplesOut[], unsigne
             //p_dsd_dac[1] <: bitrev(dsdSample_r);
             asm volatile("out res[%0], %1"::"r"(p_dsd_dac[0]),"r"(bitrev(dsdSample_l)));
             asm volatile("out res[%0], %1"::"r"(p_dsd_dac[1]),"r"(bitrev(dsdSample_r)));
+
+#ifndef __XS2A__
             switch (divide)
             {
                 case 8:
@@ -415,6 +421,7 @@ static inline void DoDsdDop(unsigned &everyOther, unsigned samplesOut[], unsigne
                 p_dsd_clk <: 0xAAAAAAAA;
                 break;
             }
+#endif // __XS2A__
         }
     }
 #endif
