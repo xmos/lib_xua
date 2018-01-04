@@ -1,5 +1,5 @@
 
-#include "xua.h"       /* Device specific defines */
+#include "xua.h"                          /* Device specific defines */
 #ifndef EXCLUDE_USB_AUDIO_MAIN
 
 /**
@@ -137,7 +137,7 @@ unsafe
 on tile[XUD_TILE] : in port p_for_mclk_count                = PORT_MCLK_COUNT;
 #endif
 
-#ifdef SPDIF_TX
+#if (XUA_SPDIF_TX_EN == 1)
 on tile[SPDIF_TX_TILE] : buffered out port:32 p_spdif_tx    = PORT_SPDIF_OUT;
 #endif
 
@@ -423,7 +423,7 @@ VENDOR_REQUESTS_PARAMS_DEC_
 #endif /* NO_USB */
 
 void usb_audio_io(chanend ?c_aud_in, chanend ?c_adc,
-#if defined(SPDIF_TX) && (SPDIF_TX_TILE != AUDIO_IO_TILE)
+#if (XUA_SPDIF_TX_EN) && (SPDIF_TX_TILE != AUDIO_IO_TILE)
     chanend c_spdif_tx,
 #endif
 #ifdef MIXER
@@ -433,7 +433,7 @@ void usb_audio_io(chanend ?c_aud_in, chanend ?c_adc,
     chanend ?c_adat_rx,
     chanend ?c_clk_ctl,
     chanend ?c_clk_int
-#if (XUD_TILE != 0)  && (AUDIO_IO_TILE == 0)
+#if (XUD_TILE != 0)  && (AUDIO_IO_TILE == 0) && (XUA_DFU_EN == 1)
     , server interface i_dfu ?dfuInterface
 #endif
 #if (NUM_PDM_MICS > 0)
@@ -469,7 +469,7 @@ void usb_audio_io(chanend ?c_aud_in, chanend ?c_adc,
 #define AUDIO_CHANNEL c_aud_in
 #endif
             XUA_AudioHub(AUDIO_CHANNEL
-#if defined(SPDIF_TX) && (SPDIF_TX_TILE != AUDIO_IO_TILE)
+#if (XUA_SPDIF_TX_EN) && (SPDIF_TX_TILE != AUDIO_IO_TILE)
                 c_spdif_tx,
 #endif
 #if defined(SPDIF_RX) || defined(ADAT_RX)
@@ -545,7 +545,7 @@ int main()
 #define c_adat_rx null
 #endif
 
-#if defined(SPDIF_TX) && (SPDIF_TX_TILE != AUDIO_IO_TILE)
+#if (XUA_SPDIF_TX_EN) && (SPDIF_TX_TILE != AUDIO_IO_TILE)
     chan c_spdif_tx;
 #endif
 
@@ -617,7 +617,7 @@ int main()
                 p_mclk_in = p_mclk_in_;
             }
             usb_audio_io(c_mix_out, c_adc
-#if defined(SPDIF_TX) && (SPDIF_TX_TILE != AUDIO_IO_TILE)
+#if (XUA_SPDIF_TX_EN) && (SPDIF_TX_TILE != AUDIO_IO_TILE)
                 , c_spdif_tx
 #endif
 #ifdef MIXER
@@ -633,7 +633,7 @@ int main()
             );
         }
 
-#if defined(SPDIF_TX) && (SPDIF_TX_TILE != AUDIO_IO_TILE)
+#if (XUA_SPDIF_TX_EN) && (SPDIF_TX_TILE != AUDIO_IO_TILE)
         on tile[SPDIF_TX_TILE]:
         {
             thread_speed();

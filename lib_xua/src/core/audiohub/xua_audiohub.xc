@@ -1,6 +1,6 @@
 /**
- * @file audio.xc
- * @brief XMOS L1/L2 USB 2,0 Audio Reference Design.  Audio Functions.
+ * @file xua_audiohub.xc
+ * @brief XMOS USB 2.0 Audio Reference Design.  Audio Functions.
  * @author Ross Owen, XMOS Semiconductor Ltd
  *
  * This thread handles I2S and pars an additional SPDIF Tx thread.  It forwards samples to the SPDIF Tx thread.
@@ -19,7 +19,7 @@
 #include "audioports.h"
 #include "audiohw.h"
 #include "mic_array_conf.h"
-#ifdef SPDIF_TX
+#if (XUA_SPDIF_TX_EN)
 #include "SpdifTransmit.h"
 #endif
 #ifdef ADAT_TX
@@ -103,7 +103,7 @@ unsigned dsdMode = DSD_MODE_OFF;
 extern unsafe port p_mclk_in;
 extern in port p_mclk_in2;
 
-#ifdef SPDIF_TX
+#if (XUA_SPDIF_TX_EN)
 extern buffered out port:32 p_spdif_tx;
 #endif
 
@@ -816,7 +816,7 @@ unsigned static deliver(chanend ?c_out, chanend ?c_spd_out
                 /* Request digital data (with prefill) */
                 outuint(c_dig_rx, 0);
 #endif
-#if defined(SPDIF_TX) && (NUM_USB_CHAN_OUT > 0)
+#if (XUA_SPDIF_TX_EN) && (NUM_USB_CHAN_OUT > 0)
                 outuint(c_spd_out, samplesOut[SPDIF_TX_INDEX]);  /* Forward sample to S/PDIF Tx thread */
                 unsigned sample = samplesOut[SPDIF_TX_INDEX + 1];
                 outuint(c_spd_out, sample);                      /* Forward sample to S/PDIF Tx thread */
@@ -1023,7 +1023,7 @@ unsigned static deliver(chanend ?c_out, chanend ?c_spd_out
     return 0;
 }
 
-#if defined(SPDIF_TX) && (SPDIF_TX_TILE != AUDIO_IO_TILE)
+#if (XUA_SPDIF_TX_EN) && (SPDIF_TX_TILE != AUDIO_IO_TILE)
 void SpdifTxWrapper(chanend c_spdif_tx)
 {
     unsigned portId;
@@ -1102,7 +1102,7 @@ static void dummy_deliver(chanend ?c_out, unsigned &command)
 }
 
 void XUA_AudioHub(chanend ?c_mix_out
-#if defined(SPDIF_TX) && (SPDIF_TX_TILE != AUDIO_IO_TILE)
+#if (XUA_SPDIF_TX_EN) && (SPDIF_TX_TILE != AUDIO_IO_TILE)
 chanend c_spdif_out,
 #endif
 #if (defined(ADAT_RX) || defined(SPDIF_RX))
@@ -1116,7 +1116,7 @@ chanend c_dig_rx,
 #endif
 )
 {
-#if defined (SPDIF_TX) && (SPDIF_TX_TILE == AUDIO_IO_TILE)
+#if (XUA_SPDIF_TX_EN) && (SPDIF_TX_TILE == AUDIO_IO_TILE)
     chan c_spdif_out;
 #endif
 #ifdef ADAT_TX
@@ -1155,12 +1155,12 @@ chanend c_dig_rx,
     configure_clock_src(clk_mst_spd, p_mclk_in);
     configure_out_port_no_ready(p_adat_tx, clk_mst_spd, 0);
     set_clock_fall_delay(clk_mst_spd, 7);
-#ifndef SPDIF_TX
+#if (XUA_SPDIF_TX_EN == 0)
     start_clock(clk_mst_spd);
 #endif
 #endif
     /* Configure ADAT/SPDIF tx ports */
-#if defined(SPDIF_TX) && (SPDIF_TX_TILE == AUDIO_IO_TILE)
+#if (XUA_SPDIF_TX_EN) && (SPDIF_TX_TILE == AUDIO_IO_TILE)
     SpdifTransmitPortConfig(p_spdif_tx, clk_mst_spd, p_mclk_in);
 #endif
 
@@ -1307,7 +1307,7 @@ chanend c_dig_rx,
         par
         {
 
-#if defined(SPDIF_TX) && (SPDIF_TX_TILE == AUDIO_IO_TILE)
+#if (XUA_SPDIF_TX_EN) && (SPDIF_TX_TILE == AUDIO_IO_TILE)
             {
                 set_thread_fast_mode_on();
                 SpdifTransmit(p_spdif_tx, c_spdif_out);
@@ -1321,7 +1321,7 @@ chanend c_dig_rx,
             }
 #endif
             {
-#ifdef SPDIF_TX
+#if (XUA_SPDIF_TX_EN)
                 /* Communicate master clock and sample freq to S/PDIF thread */
                 outuint(c_spdif_out, curSamFreq);
                 outuint(c_spdif_out, mClk);
@@ -1346,7 +1346,7 @@ chanend c_dig_rx,
                 outuint(c_adat_out, adatSmuxMode);
 #endif
                 command = deliver(c_mix_out
-#ifdef SPDIF_TX
+#if (XUA_SPDIF_TX_EN)
                    , c_spdif_out
 #else
                    , null
@@ -1412,7 +1412,7 @@ chanend c_dig_rx,
 
 #endif /* NO_USB */
 
-#ifdef SPDIF_TX
+#if (XUA_SPDIF_TX_EN)
                 /* Notify S/PDIF task of impending new freq... */
                 outct(c_spdif_out, XS1_CT_END);
 #endif

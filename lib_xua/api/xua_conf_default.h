@@ -299,13 +299,8 @@
 /**
  * @brief Enables SPDIF Tx. Default: 0 (Disabled)
  */
-#ifndef SPDIF_TX
-#define SPDIF_TX                (0)
-#endif
-
-/* Tidy up old SPDIF usage */
-#if defined(SPDIF_TX) && (SPDIF_TX == 0)
-#undef SPDIF_TX
+#ifndef XUA_SPDIF_TX_EN
+#define XUA_SPDIF_TX_EN          (0)
 #endif
 
 /**
