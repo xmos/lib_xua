@@ -177,7 +177,7 @@ clock clk_pdm                                               = on tile[PDM_TILE]:
 on tile[MIDI_TILE] : clock    clk_midi                      = CLKBLK_MIDI;
 #endif
 
-#if defined(SPDIF_TX) || defined(ADAT_TX)
+#if XUA_SPDIF_TX_EN || defined(ADAT_TX)
 on tile[SPDIF_TX_TILE] : clock    clk_mst_spd               = CLKBLK_SPDIF_TX;
 #endif
 
@@ -370,8 +370,11 @@ VENDOR_REQUESTS_PARAMS_DEC_
             asm("setclk res[%0], %1"::"r"(p_for_mclk_count), "r"(x));
 #endif
             //:buffer
-            XUA_Buffer(c_xud_out[ENDPOINT_NUMBER_OUT_AUDIO],    /* Audio Out*/
+            XUA_Buffer(c_xud_out[ENDPOINT_NUMBER_OUT_AUDIO],/* Audio Out*/
+#if (NUM_USB_CHAN_IN > 0)
+
                 c_xud_in[ENDPOINT_NUMBER_IN_AUDIO],         /* Audio In */
+#endif
 #if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP)
                 c_xud_in[ENDPOINT_NUMBER_IN_FEEDBACK],      /* Audio FB */
 #endif
@@ -470,10 +473,10 @@ void usb_audio_io(chanend ?c_aud_in, chanend ?c_adc,
 #endif
             XUA_AudioHub(AUDIO_CHANNEL
 #if (XUA_SPDIF_TX_EN) && (SPDIF_TX_TILE != AUDIO_IO_TILE)
-                c_spdif_tx,
+                , c_spdif_tx
 #endif
 #if defined(SPDIF_RX) || defined(ADAT_RX)
-                c_dig_rx,
+                , c_dig_rx,
 #endif
 #if (XUD_TILE != 0) && (AUDIO_IO_TILE == 0) && (XUA_DFU_EN == 1)
                 , dfuInterface

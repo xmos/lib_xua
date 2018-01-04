@@ -113,9 +113,12 @@ extern buffered out port:32 p_adat_tx;
 
 extern clock    clk_audio_mclk;
 extern clock    clk_audio_bclk;
-extern clock    clk_mst_spd;
 
-extern void device_reboot(void);
+#if XUA_SPDIF_TX_EN
+extern clock    clk_mst_spd;
+#endif
+
+//extern void device_reboot(void);
 
 #define MAX_DIVIDE_48 (MCLK_48/MIN_FREQ_48/64)
 #define MAX_DIVIDE_44 (MCLK_44/MIN_FREQ_44/64)
@@ -1161,7 +1164,10 @@ chanend c_dig_rx,
 #endif
     /* Configure ADAT/SPDIF tx ports */
 #if (XUA_SPDIF_TX_EN) && (SPDIF_TX_TILE == AUDIO_IO_TILE)
-    SpdifTransmitPortConfig(p_spdif_tx, clk_mst_spd, p_mclk_in);
+    unsafe
+    {
+        SpdifTransmitPortConfig(p_spdif_tx, clk_mst_spd,  (port)p_mclk_in);
+    }
 #endif
 
     /* Perform required CODEC/ADC/DAC initialisation */
