@@ -476,7 +476,7 @@ void usb_audio_io(chanend ?c_aud_in, chanend ?c_adc,
                 , c_spdif_tx
 #endif
 #if defined(SPDIF_RX) || defined(ADAT_RX)
-                , c_dig_rx,
+                , c_dig_rx
 #endif
 #if (XUD_TILE != 0) && (AUDIO_IO_TILE == 0) && (XUA_DFU_EN == 1)
                 , dfuInterface
