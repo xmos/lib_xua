@@ -114,7 +114,7 @@ extern buffered out port:32 p_adat_tx;
 extern clock    clk_audio_mclk;
 extern clock    clk_audio_bclk;
 
-#if XUA_SPDIF_TX_EN
+#if XUA_SPDIF_TX_EN || defined(ADAT_TX)
 extern clock    clk_mst_spd;
 #endif
 
@@ -1106,16 +1106,16 @@ static void dummy_deliver(chanend ?c_out, unsigned &command)
 
 void XUA_AudioHub(chanend ?c_mix_out
 #if (XUA_SPDIF_TX_EN) && (SPDIF_TX_TILE != AUDIO_IO_TILE)
-chanend c_spdif_out,
+    , chanend c_spdif_out
 #endif
 #if (defined(ADAT_RX) || defined(SPDIF_RX))
-chanend c_dig_rx,
+    , chanend c_dig_rx
 #endif
 #if (XUD_TILE != 0) && (AUDIO_IO_TILE == 0) && (XUA_DFU_EN == 1)
-, server interface i_dfu ?dfuInterface
+    , server interface i_dfu ?dfuInterface
 #endif
 #if (NUM_PDM_MICS > 0)
-, chanend c_pdm_in
+    , chanend c_pdm_in
 #endif
 )
 {
@@ -1155,7 +1155,10 @@ chanend c_dig_rx,
 #endif
 #ifdef ADAT_TX
     /* Share SPDIF clk blk */
-    configure_clock_src(clk_mst_spd, p_mclk_in);
+    unsafe
+    {
+        configure_clock_src(clk_mst_spd, (port)p_mclk_in);
+    }
     configure_out_port_no_ready(p_adat_tx, clk_mst_spd, 0);
     set_clock_fall_delay(clk_mst_spd, 7);
 #if (XUA_SPDIF_TX_EN == 0)
