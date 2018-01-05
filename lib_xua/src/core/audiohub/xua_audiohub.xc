@@ -321,13 +321,14 @@ static inline void DoDsdNative(unsigned samplesOut[], unsigned &dsdSample_l, uns
     dsdSample_r = bitrev(byterev(dsdSample_r));
     dsdSample_l = bitrev(byterev(dsdSample_l));
 
+    asm volatile("out res[%0], %1"::"r"(p_dsd_dac[0]),"r"(dsdSample_l));
+    asm volatile("out res[%0], %1"::"r"(p_dsd_dac[1]),"r"(dsdSample_r));
+
 #ifndef __XS2A__
     /* Output DSD data to ports then 32 clocks */
     switch (divide)
     {
         case 4:
-            asm volatile("out res[%0], %1"::"r"(p_dsd_dac[0]),"r"(dsdSample_l));
-            asm volatile("out res[%0], %1"::"r"(p_dsd_dac[1]),"r"(dsdSample_r));
             p_dsd_clk <: 0xCCCCCCCC;
             p_dsd_clk <: 0xCCCCCCCC;
             p_dsd_clk <: 0xCCCCCCCC;
@@ -335,16 +336,12 @@ static inline void DoDsdNative(unsigned samplesOut[], unsigned &dsdSample_l, uns
             break;
 
         case 2:
-            asm volatile("out res[%0], %1"::"r"(p_dsd_dac[0]),"r"(dsdSample_l));
-            asm volatile("out res[%0], %1"::"r"(p_dsd_dac[1]),"r"(dsdSample_r));
             p_dsd_clk <: 0xAAAAAAAA;
             p_dsd_clk <: 0xAAAAAAAA;
             break;
 
         default:
             /* Do some clocks anyway - this will stop us interrupting decouple too much */
-            asm volatile("out res[%0], %1"::"r"(p_dsd_dac[0]),"r"(dsdSample_l));
-            asm volatile("out res[%0], %1"::"r"(p_dsd_dac[1]),"r"(dsdSample_r));
             p_dsd_clk <: 0xF0F0F0F0;
             p_dsd_clk <: 0xF0F0F0F0;
             p_dsd_clk <: 0xF0F0F0F0;
