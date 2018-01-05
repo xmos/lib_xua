@@ -1402,6 +1402,11 @@ void SpdifTxWrapper(chanend c_spdif_tx)
 }
 #endif
 
+#if XUA_DFU_EN
+[[distributable]]
+void DFUHandler(server interface i_dfu i, chanend ?c_user_cmd);
+#endif
+
 /* This function is a dummy version of the deliver thread that does not
    connect to the codec ports. It is used during DFU reset. */
 
