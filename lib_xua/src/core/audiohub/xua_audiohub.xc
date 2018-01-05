@@ -312,7 +312,8 @@ static inline unsigned DoSampleTransfer(chanend ?c_out, const int readBuffNo, co
 
 
 /* This function performs the DSD native loop and outputs a 32b DSD stream per loop */
-static inline void DoDsdNative(unsigned samplesOut[], unsigned &dsdSample_l, unsigned &dsdSample_r, unsigned divide){
+static inline void DoDsdNative(unsigned samplesOut[], unsigned &dsdSample_l, unsigned &dsdSample_r, unsigned divide)
+{
 #if (DSD_CHANS_DAC != 0) && (NUM_USB_CHAN_OUT > 0)
      /* 8 bits per chan, 1st 1-bit sample in MSB */
     dsdSample_l =  samplesOut[0];
@@ -360,69 +361,69 @@ static inline void DoDsdNative(unsigned samplesOut[], unsigned &dsdSample_l, uns
 
 /* This function performs the DOP loop and collects 16b of DSD per loop 
    and outputs a 32b word into the port buffer every other cycle. */
-static inline void DoDsdDop(unsigned &everyOther, unsigned samplesOut[], unsigned &dsdSample_l, unsigned &dsdSample_r, unsigned divide){
+static inline void DoDsdDop(int &everyOther, unsigned samplesOut[], unsigned &dsdSample_l, unsigned &dsdSample_r, unsigned divide)
+{
 #if (DSD_CHANS_DAC != 0) && (NUM_USB_CHAN_OUT > 0)
     if(!everyOther)
-        {
-            dsdSample_l = ((samplesOut[0] & 0xffff00) << 8);
-            dsdSample_r = ((samplesOut[1] & 0xffff00) << 8);
+    {
+        dsdSample_l = ((samplesOut[0] & 0xffff00) << 8);
+        dsdSample_r = ((samplesOut[1] & 0xffff00) << 8);
 
-            everyOther = 1;
-
-#ifndef __XS2A__
-            switch (divide)
-            {
-                case 8:
-                p_dsd_clk <: 0xF0F0F0F0;
-                p_dsd_clk <: 0xF0F0F0F0;
-                p_dsd_clk <: 0xF0F0F0F0;
-                p_dsd_clk <: 0xF0F0F0F0;
-                break;
-
-                case 4:
-                p_dsd_clk <: 0xCCCCCCCC;
-                p_dsd_clk <: 0xCCCCCCCC;
-                break;
-
-                case 2:
-                p_dsd_clk <: 0xAAAAAAAA;
-                break;
-            }
-#endif // __XS2A__
-        }
-    else // everyOther
-        {
-            everyOther = 0;
-            dsdSample_l =  dsdSample_l | ((samplesOut[0] & 0xffff00) >> 8);
-            dsdSample_r =  dsdSample_r | ((samplesOut[1] & 0xffff00) >> 8);
-
-            // Output 16 clocks DSD to all
-            //p_dsd_dac[0] <: bitrev(dsdSample_l);
-            //p_dsd_dac[1] <: bitrev(dsdSample_r);
-            asm volatile("out res[%0], %1"::"r"(p_dsd_dac[0]),"r"(bitrev(dsdSample_l)));
-            asm volatile("out res[%0], %1"::"r"(p_dsd_dac[1]),"r"(bitrev(dsdSample_r)));
+        everyOther = 1;
 
 #ifndef __XS2A__
-            switch (divide)
-            {
-                case 8:
-                p_dsd_clk <: 0xF0F0F0F0;
-                p_dsd_clk <: 0xF0F0F0F0;
-                p_dsd_clk <: 0xF0F0F0F0;
-                p_dsd_clk <: 0xF0F0F0F0;
-                break;
+        switch (divide)
+        {
+            case 8:
+            p_dsd_clk <: 0xF0F0F0F0;
+            p_dsd_clk <: 0xF0F0F0F0;
+            p_dsd_clk <: 0xF0F0F0F0;
+            p_dsd_clk <: 0xF0F0F0F0;
+            break;
 
-                case 4:
-                p_dsd_clk <: 0xCCCCCCCC;
-                p_dsd_clk <: 0xCCCCCCCC;
-                break;
+            case 4:
+            p_dsd_clk <: 0xCCCCCCCC;
+            p_dsd_clk <: 0xCCCCCCCC;
+            break;
 
-                case 2:
-                p_dsd_clk <: 0xAAAAAAAA;
-                break;
-            }
-#endif // __XS2A__
+            case 2:
+            p_dsd_clk <: 0xAAAAAAAA;
+            break;
         }
+#endif // __XS2A__
+    }
+else // everyOther
+    {
+        everyOther = 0;
+        dsdSample_l =  dsdSample_l | ((samplesOut[0] & 0xffff00) >> 8);
+        dsdSample_r =  dsdSample_r | ((samplesOut[1] & 0xffff00) >> 8);
+
+        // Output 16 clocks DSD to all
+        //p_dsd_dac[0] <: bitrev(dsdSample_l);
+        //p_dsd_dac[1] <: bitrev(dsdSample_r);
+        asm volatile("out res[%0], %1"::"r"(p_dsd_dac[0]),"r"(bitrev(dsdSample_l)));
+        asm volatile("out res[%0], %1"::"r"(p_dsd_dac[1]),"r"(bitrev(dsdSample_r)));
+
+#ifndef __XS2A__
+        switch (divide)
+        {
+            case 8:
+            p_dsd_clk <: 0xF0F0F0F0;
+            p_dsd_clk <: 0xF0F0F0F0;
+            p_dsd_clk <: 0xF0F0F0F0;
+            p_dsd_clk <: 0xF0F0F0F0;
+            break;
+
+            case 4:
+            p_dsd_clk <: 0xCCCCCCCC;
+            p_dsd_clk <: 0xCCCCCCCC;
+            break;
+
+            case 2:
+            p_dsd_clk <: 0xAAAAAAAA;
+            break;
+        }
+#endif // __XS2A__
     }
 #endif
 }
@@ -432,7 +433,7 @@ static inline void DoDsdDop(unsigned &everyOther, unsigned samplesOut[], unsigne
    When in DoP mode, this function will check for a single absence of the DoP marker and exit deliver() with the command
    to restart in I2S mode. */
   
-static inline void DoDsdDopCheck(unsigned &dsdMode, int &dsdCount, unsigned curSamFreq, unsigned samplesOut[], unsigned &dsdMarker){
+static inline int DoDsdDopCheck(unsigned &dsdMode, int &dsdCount, unsigned curSamFreq, unsigned samplesOut[], unsigned &dsdMarker){
 #if (DSD_CHANS_DAC != 0) && (NUM_USB_CHAN_OUT > 0)
     /* Check for DSD - note we only move into DoP mode if valid DoP Freq */
     /* Currently we only check on channel 0 - we get all 0's on channels without data */
@@ -478,6 +479,7 @@ static inline void DoDsdDopCheck(unsigned &dsdMode, int &dsdCount, unsigned curS
         }
     }
 #endif
+    return 1;
 }
 
 
@@ -913,7 +915,8 @@ unsigned static deliver_master(chanend ?c_out, chanend ?c_spd_out
                 doI2SClocks(divide);
 
             }  // !dsdMode
-            DoDsdDopCheck(dsdMode, dsdCount, curSamFreq, samplesOut, dsdMarker);
+            int ret = DoDsdDopCheck(dsdMode, dsdCount, curSamFreq, samplesOut, dsdMarker);
+            if (ret == 0) return 0;
 
 #ifdef I2S_MODE_TDM
             /* Increase frameCount by 2 since we have output two channels (per data line) */
