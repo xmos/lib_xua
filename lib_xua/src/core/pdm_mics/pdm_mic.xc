@@ -34,6 +34,10 @@ extern unsafe port p_mclk_in;
 /* Delcared in main.xc */
 extern clock clk_pdm;
 
+#ifndef MIC_BUFFER_DEPTH 
+#define MIC_BUFFER_DEPTH 1
+#endif
+
 int mic_decimator_fir_data[8][THIRD_STAGE_COEFS_PER_STAGE * MAX_DECIMATION_FACTOR] = {{0}};
 
 mic_array_frame_time_domain mic_audio[2];
@@ -50,7 +54,7 @@ void pdm_buffer(streaming chanend c_ds_output[2], chanend c_audio)
 {
     unsigned buffer;
     unsigned samplerate;
-    int output[NUM_PDM_MICS];
+    int output[MIC_BUFFER_DEPTH][NUM_PDM_MICS];
 
 #ifdef MIC_PROCESSING_USE_INTERFACE
     i_mic_process.init();
@@ -63,6 +67,9 @@ void pdm_buffer(streaming chanend c_ds_output[2], chanend c_audio)
 #else
     unsigned decimatorCount = 1;
 #endif
+
+    unsigned micBufferWrite = (MIC_BUFFER_DEPTH -1);
+    unsigned micBufferRead = 0;
 
     mic_array_decimator_conf_common_t dcc;
     const int * unsafe fir_coefs[7];
@@ -154,8 +161,11 @@ void pdm_buffer(streaming chanend c_ds_output[2], chanend c_audio)
 #pragma loop unroll
                         for(int i = 0; i < NUM_PDM_MICS; i++)
                         {
-                            c_audio <: output[i];
+                            c_audio <: output[micBufferRead][i];
                         }
+                        micBufferRead++;
+                        if(micBufferRead == MIC_BUFFER_DEPTH)
+                            micBufferRead = 0;
                     }
 
                     /* Get a new frame of mic data */
@@ -171,8 +181,11 @@ void pdm_buffer(streaming chanend c_ds_output[2], chanend c_audio)
 #pragma loop unroll
                     for(int i = 0; i < NUM_PDM_MICS; i++)
                     {
-                        output[i] = current->data[i][0];
+                        output[micBufferWrite][i] = current->data[i][0];
                     }
+                    micBufferWrite++;
+                    if(micBufferWrite == MIC_BUFFER_DEPTH)
+                        micBufferWrite = 0;
                 }
                 else
                 unsafe{
@@ -199,8 +212,11 @@ void pdm_buffer(streaming chanend c_ds_output[2], chanend c_audio)
 #pragma loop unroll
                     for(int i = 0; i < NUM_PDM_MICS; i++)
                     {
-                        output[i] = current->data[i][0];
+                        output[micBufferWrite][i] = current->data[i][0];
                     }
+                    micBufferWrite++;
+                    if(micBufferWrite == MIC_BUFFER_DEPTH)
+                        micBufferWrite = 0;
                 }
                 break;
         } /* select */
