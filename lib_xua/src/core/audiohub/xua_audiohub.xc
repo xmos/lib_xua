@@ -588,12 +588,13 @@ unsigned static deliver(chanend ?c_out, chanend ?c_spd_out
                 dsdSample_r = bitrev(byterev(dsdSample_r));
                 dsdSample_l = bitrev(byterev(dsdSample_l));
 
-                /* Output DSD data to ports then 32 clocks */
+                /* Output DSD data to ports (then 32 clocks if we don't have the HW clock divider of X200 */
+                asm volatile("out res[%0], %1"::"r"(p_dsd_dac[0]),"r"(dsdSample_l));
+                asm volatile("out res[%0], %1"::"r"(p_dsd_dac[1]),"r"(dsdSample_r));
+#ifndef __XS2A__
                 switch (divide)
                 {
                     case 4:
-                        asm volatile("out res[%0], %1"::"r"(p_dsd_dac[0]),"r"(dsdSample_l));
-                        asm volatile("out res[%0], %1"::"r"(p_dsd_dac[1]),"r"(dsdSample_r));
                         p_dsd_clk <: 0xCCCCCCCC;
                         p_dsd_clk <: 0xCCCCCCCC;
                         p_dsd_clk <: 0xCCCCCCCC;
@@ -601,16 +602,13 @@ unsigned static deliver(chanend ?c_out, chanend ?c_spd_out
                         break;
 
                     case 2:
-                        asm volatile("out res[%0], %1"::"r"(p_dsd_dac[0]),"r"(dsdSample_l));
-                        asm volatile("out res[%0], %1"::"r"(p_dsd_dac[1]),"r"(dsdSample_r));
                         p_dsd_clk <: 0xAAAAAAAA;
                         p_dsd_clk <: 0xAAAAAAAA;
                         break;
 
                     default:
                         /* Do some clocks anyway - this will stop us interrupting decouple too much */
-                        asm volatile("out res[%0], %1"::"r"(p_dsd_dac[0]),"r"(dsdSample_l));
-                        asm volatile("out res[%0], %1"::"r"(p_dsd_dac[1]),"r"(dsdSample_r));
+                        /* (And stop the data outputs above pausing forever) */
                         p_dsd_clk <: 0xF0F0F0F0;
                         p_dsd_clk <: 0xF0F0F0F0;
                         p_dsd_clk <: 0xF0F0F0F0;
@@ -621,7 +619,7 @@ unsigned static deliver(chanend ?c_out, chanend ?c_spd_out
                         p_dsd_clk <: 0xF0F0F0F0;
                         break;
                 }
-
+#endif /* __XS2A__ */
             }
             else if(dsdMode == DSD_MODE_DOP)
             {
@@ -632,24 +630,26 @@ unsigned static deliver(chanend ?c_out, chanend ?c_spd_out
 
                     everyOther = 1;
 
+#ifndef __XS2A__
                     switch (divide)
                     {
                         case 8:
-                        p_dsd_clk <: 0xF0F0F0F0;
-                        p_dsd_clk <: 0xF0F0F0F0;
-                        p_dsd_clk <: 0xF0F0F0F0;
-                        p_dsd_clk <: 0xF0F0F0F0;
+                            p_dsd_clk <: 0xF0F0F0F0;
+                            p_dsd_clk <: 0xF0F0F0F0;
+                            p_dsd_clk <: 0xF0F0F0F0;
+                            p_dsd_clk <: 0xF0F0F0F0;
                         break;
 
                         case 4:
-                        p_dsd_clk <: 0xCCCCCCCC;
-                        p_dsd_clk <: 0xCCCCCCCC;
+                            p_dsd_clk <: 0xCCCCCCCC;
+                            p_dsd_clk <: 0xCCCCCCCC;
                         break;
 
                         case 2:
-                        p_dsd_clk <: 0xAAAAAAAA;
+                            p_dsd_clk <: 0xAAAAAAAA;
                         break;
                     }
+#endif
                 }
                 else // everyOther
                 {
@@ -662,6 +662,8 @@ unsigned static deliver(chanend ?c_out, chanend ?c_spd_out
                     //p_dsd_dac[1] <: bitrev(dsdSample_r);
                     asm volatile("out res[%0], %1"::"r"(p_dsd_dac[0]),"r"(bitrev(dsdSample_l)));
                     asm volatile("out res[%0], %1"::"r"(p_dsd_dac[1]),"r"(bitrev(dsdSample_r)));
+
+#ifndef __XS2A__
                     switch (divide)
                     {
                         case 8:
@@ -679,6 +681,7 @@ unsigned static deliver(chanend ?c_out, chanend ?c_spd_out
                         case 2:
                         p_dsd_clk <: 0xAAAAAAAA;
                         break;
+#endif
                     }
 
                 }
