@@ -1106,6 +1106,11 @@ static void dummy_deliver(chanend ?c_out, unsigned &command)
     }
 }
 
+#if XUA_DFU_EN
+ [[distributable]]
+ void DFUHandler(server interface i_dfu i, chanend ?c_user_cmd);
+ #endif
+
 void XUA_AudioHub(chanend ?c_mix_out
 #if (XUA_SPDIF_TX_EN) && (SPDIF_TX_TILE != AUDIO_IO_TILE)
     , chanend c_spdif_out
