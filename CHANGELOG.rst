@@ -7,19 +7,19 @@ lib_xua Change Log
     - ADDED:      Linux Makefile for xmosdfu host application
     - ADDED:      Raspberry Pi Makefile for xmosdfu host application
     - ADDED:      Documentation of PID argument to xmosdfu
+    - ADDED:      Optional build time microphone delay line (MIC_BUFFER_DEPTH) 
     - CHANGE:     Removal of audManage_if, users should define their own interfaces as required
+    - CHANGE:     Vendor specific control interface in UAC1 descriptor now has a string descriptor
+                  so it shows up with a descriptive name in Windows Device Manager
+    - CHANGE:     DFU_BCD_DEVICE removed (now uses BCD_DEVICE)
+    - CHANGE:     Renaming in descriptors.h to avoid clashes with application
     - RESOLVED:   FIR gain compensation for PDM mics set incorrectly for divide of 8
     - RESOLVED:   Incorrect xmosdfu DYLD path in test script code
     - RESOLVED:   xmosdfu cannot find XMOS device on modern MacBook Pro (#17897)
     - RESOLVED:   Issue when feedback is initially incorrect when two SOF's are not yet received 
     - RESOLVED:   AUDIO_TILE and PDM_TILE may now share the same value/tile      
     - RESOLVED:   Cope with out of order interface numbers in xmosdfu
-    - CHANGE:     Renaming in descriptors.h to avoid clashes with application
-    - CHANGE:     Vendor specific control interface in UAC1 descriptor now has a string descriptor
-                  so it shows up with a descriptive name in Windows Device Manager
-    - CHANGE:     DFU_BCD_DEVICE removed (used BCD_DEVICE)
-    - CHANGE:     Fork from sc_usb_audio to lib_xua
-
+    
 Legacy release history
 ----------------------
 
