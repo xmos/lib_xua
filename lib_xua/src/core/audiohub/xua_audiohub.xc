@@ -681,9 +681,8 @@ unsigned static deliver(chanend ?c_out, chanend ?c_spd_out
                         case 2:
                         p_dsd_clk <: 0xAAAAAAAA;
                         break;
-#endif
                     }
-
+#endif
                 }
             }
             else
