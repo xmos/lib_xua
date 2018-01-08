@@ -19,6 +19,7 @@ lib_xua Change Log
     - RESOLVED:   Issue when feedback is initially incorrect when two SOF's are not yet received 
     - RESOLVED:   AUDIO_TILE and PDM_TILE may now share the same value/tile      
     - RESOLVED:   Cope with out of order interface numbers in xmosdfu
+    - RESOLVED:   DSD playback not functional on xCORE-200 (introduced in sc_usb_audio 6.14)
     
 Legacy release history
 ----------------------
