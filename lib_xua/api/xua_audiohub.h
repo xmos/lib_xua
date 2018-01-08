@@ -22,7 +22,7 @@
  *                  CODEC configuration functions.
  */
 void XUA_AudioHub(chanend ?c_aud
-#if defined(SPDIF_TX) && (SPDIF_TX_TILE != AUDIO_IO_TILE)
+#if (XUA_SPDIF_TX_EN) && (SPDIF_TX_TILE != AUDIO_IO_TILE)
     , chanend c_spdif_tx
 #endif
 #if(defined(SPDIF_RX) || defined(ADAT_RX))

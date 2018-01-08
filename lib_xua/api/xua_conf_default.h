@@ -299,13 +299,8 @@
 /**
  * @brief Enables SPDIF Tx. Default: 0 (Disabled)
  */
-#ifndef SPDIF_TX
-#define SPDIF_TX                (0)
-#endif
-
-/* Tidy up old SPDIF usage */
-#if defined(SPDIF_TX) && (SPDIF_TX == 0)
-#undef SPDIF_TX
+#ifndef XUA_SPDIF_TX_EN
+#define XUA_SPDIF_TX_EN          (0)
 #endif
 
 /**
@@ -412,10 +407,10 @@
  *
  * Default: 1 (Enabled)
  */
-#if !defined(DFU)
-#define DFU                   (1)
-#elif defined(DFU) && (DFU == 0)
-#undef DFU
+#if !defined(XUA_DFU_EN)
+#define XUA_DFU_EN                   (1)
+#elif defined(XUA_DFU_EN) && (XUA_DFU_EN == 0)
+#undef XUA_DFU_EN
 #endif
 
 /**
@@ -521,21 +516,21 @@
  * @brief Device firmware version number in Binary Coded Decimal format: 0xJJMN where JJ: major, M: minor, N: sub-minor version number.
  */
 #ifndef BCD_DEVICE_J
-#define BCD_DEVICE_J             1
+#define BCD_DEVICE_J             (1)
 #endif
 
 /**
  * @brief Device firmware version number in Binary Coded Decimal format: 0xJJMN where JJ: major, M: minor, N: sub-minor version number.
  */
 #ifndef BCD_DEVICE_M
-#define BCD_DEVICE_M             0
+#define BCD_DEVICE_M             (0)
 #endif
 
 /**
  * @brief Device firmware version number in Binary Coded Decimal format: 0xJJMN where JJ: major, M: minor, N: sub-minor version number.
  */
 #ifndef BCD_DEVICE_N
-#define BCD_DEVICE_N             
+#define BCD_DEVICE_N             (0)       
 #endif
 
 /**

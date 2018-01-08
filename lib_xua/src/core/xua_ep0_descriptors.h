@@ -60,7 +60,7 @@ typedef struct
     STR_TABLE_ENTRY(adatClockSourceStr);          /* iClockSource for external S/PDIF clock */
 #endif
 #endif
-#ifdef DFU
+#if (XUA_DFU_EN == 1)
     STR_TABLE_ENTRY(dfuStr);                      /* iInterface for DFU interface */
 #endif
 #ifdef USB_CONTROL_DESCS
@@ -333,7 +333,7 @@ StringDescTable_t g_strTable =
     .adatClockSourceStr          = APPEND_VENDOR_STR(ADAT Clock),
 #endif
 #endif
-#ifdef DFU
+#if (XUA_DFU_EN == 1)
     .dfuStr                      = APPEND_VENDOR_STR(DFU),
 #endif
 #ifdef USB_CONTROL_DESCS
@@ -517,7 +517,7 @@ unsigned char devQualDesc_Null[] =
 #define MIDI_LENGTH                 (0)
 #endif
 
-#ifdef DFU
+#if (XUA_DFU_EN == 1)
 #define DFU_LENGTH                  (18)
 #else
 #define DFU_LENGTH                  (0)
@@ -739,7 +739,7 @@ typedef struct
     unsigned char configDesc_Midi[MIDI_LENGTH];
 #endif
 
-#ifdef DFU
+#if (XUA_DFU_EN == 1)
     /* DFU descriptors currently handled as a single block */
     unsigned char configDesc_DFU[DFU_LENGTH];
 #endif
@@ -1978,14 +1978,14 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
     },
 #endif
 
-#ifdef DFU
+#if (XUA_DFU_EN == 1)
     /* Standard DFU class Interface descriptor */
     {0x09,                                /* 0 bLength : Size of this descriptor, in bytes. (field size 1 bytes) */
     0x04,                                 /* 1 bDescriptorType : INTERFACE descriptor. (field size 1 bytes) */
     INTERFACE_NUMBER_DFU,                 /* 2 bInterfaceNumber : Index of this interface. (field size 1 bytes) */
     0x00,                                 /* 3 bAlternateSetting : Index of this setting. (field size 1 bytes) */
     0x00,                                 /* 4 bNumEndpoints : 0 endpoints. (field size 1 bytes) */
-    0xFE,                                 /* 5 bInterfaceClass : DFU. (field size 1 bytes) */
+    0xFE,                                 /* 5 bInterfaceClass : DFU. (Application Specific) (field size 1 bytes) */
     0x01,                                 /* 6 bInterfaceSubclass : (field size 1 bytes) */
     0x01,                                 /* 7 bInterfaceProtocol : Unused. (field size 1 bytes) */
     offsetof(StringDescTable_t, dfuStr)/sizeof(char *), /* 8 iInterface */
@@ -2268,7 +2268,7 @@ const unsigned num_freqs_a1 = MAX(3, (0
 #define NUM_CONTROL_USB_INTERFACES 0
 #endif
 
-#if (DFU == 1) && (FORCE_UAC1_DFU == 1)
+#if (XUA_DFU_EN == 1) && (FORCE_UAC1_DFU == 1)
 #define DFU_INTERFACE_BYTES   18
 #define DFU_INTERFACES_A1     1
 #else
@@ -2741,7 +2741,7 @@ unsigned char cfgDesc_Audio1[] =
     0x00, 0x00,                           /* Unused */
 #endif
 
-#if (DFU == 1) && (FORCE_UAC1_DFU == 1)
+#if (XUA_DFU_EN == 1) && (FORCE_UAC1_DFU == 1)
 
     /* NOTE: By default we turn off DFU in UAC1.0 mode for a better user experiance in Windows */
 
@@ -2751,7 +2751,7 @@ unsigned char cfgDesc_Audio1[] =
     (OUTPUT_INTERFACES_A1 + INPUT_INTERFACES_A1 + NUM_CONTROL_USB_INTERFACES + 1),  /* 2 bInterfaceNumber : Index of this interface. (field size 1 bytes) */
     0x00,                                 /* 3 bAlternateSetting : Index of this setting. (field size 1 bytes) */
     0x00,                                 /* 4 bNumEndpoints : 0 endpoints. (field size 1 bytes) */
-    0xFE,                                 /* 5 bInterfaceClass : DFU. (field size 1 bytes) */
+    0xFE,                                 /* 5 bInterfaceClass : DFU. (Application Specific) (field size 1 bytes) */
     0x01,                                 /* 6 bInterfaceSubclass : (field size 1 bytes) */
     0x01,                                 /* 7 bInterfaceProtocol : Unused. (field size 1 bytes) */
     offsetof(StringDescTable_t, dfuStr)/sizeof(char *), /* 8 iInterface */
@@ -2775,7 +2775,7 @@ unsigned char cfgDesc_Audio1[] =
     (OUTPUT_INTERFACES_A1 + INPUT_INTERFACES_A1 + 1),    /* 2 bInterfaceNumber */
     0x00,                                                /* 3 bAlternateSetting : Index of this setting. (field size 1 bytes) */
     0x00,                                                /* 4 bNumEndpoints : 0 endpoints. (field size 1 bytes) */
-    0xFF,                                                /* 5 bInterfaceClass : DFU. (field size 1 bytes) */
+    USB_CLASS_VENDOR_SPECIFIC,                           /* 5 bInterfaceClass : Vendor specific. (field size 1 bytes) */
     0xFF,                                                /* 6 bInterfaceSubclass : (field size 1 bytes) */
     0xFF,                                                /* 7 bInterfaceProtocol : Unused. (field size 1 bytes) */
     offsetof(StringDescTable_t, ctrlStr)/sizeof(char *), /* 8 iInterface */

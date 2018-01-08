@@ -1,6 +1,6 @@
 /**
- * @file audio.xc
- * @brief XMOS L1/L2 USB 2,0 Audio Reference Design.  Audio Functions.
+ * @file xua_audiohub.xc
+ * @brief XMOS USB 2.0 Audio Reference Design.  Audio Functions.
  * @author Ross Owen, XMOS Semiconductor Ltd
  *
  * This thread handles I2S and pars an additional SPDIF Tx thread.  It forwards samples to the SPDIF Tx thread.
@@ -19,7 +19,7 @@
 #include "audioports.h"
 #include "audiohw.h"
 #include "mic_array_conf.h"
-#ifdef SPDIF_TX
+#if (XUA_SPDIF_TX_EN)
 #include "SpdifTransmit.h"
 #endif
 #ifdef ADAT_TX
@@ -103,7 +103,7 @@ unsigned dsdMode = DSD_MODE_OFF;
 extern unsafe port p_mclk_in;
 extern in port p_mclk_in2;
 
-#ifdef SPDIF_TX
+#if (XUA_SPDIF_TX_EN)
 extern buffered out port:32 p_spdif_tx;
 #endif
 
@@ -113,9 +113,12 @@ extern buffered out port:32 p_adat_tx;
 
 extern clock    clk_audio_mclk;
 extern clock    clk_audio_bclk;
-extern clock    clk_mst_spd;
 
-extern void device_reboot(void);
+#if XUA_SPDIF_TX_EN || defined(ADAT_TX)
+extern clock    clk_mst_spd;
+#endif
+
+//extern void device_reboot(void);
 
 #define MAX_DIVIDE_48 (MCLK_48/MIN_FREQ_48/64)
 #define MAX_DIVIDE_44 (MCLK_44/MIN_FREQ_44/64)
@@ -816,7 +819,7 @@ unsigned static deliver(chanend ?c_out, chanend ?c_spd_out
                 /* Request digital data (with prefill) */
                 outuint(c_dig_rx, 0);
 #endif
-#if defined(SPDIF_TX) && (NUM_USB_CHAN_OUT > 0)
+#if (XUA_SPDIF_TX_EN) && (NUM_USB_CHAN_OUT > 0)
                 outuint(c_spd_out, samplesOut[SPDIF_TX_INDEX]);  /* Forward sample to S/PDIF Tx thread */
                 unsigned sample = samplesOut[SPDIF_TX_INDEX + 1];
                 outuint(c_spd_out, sample);                      /* Forward sample to S/PDIF Tx thread */
@@ -1023,7 +1026,7 @@ unsigned static deliver(chanend ?c_out, chanend ?c_spd_out
     return 0;
 }
 
-#if defined(SPDIF_TX) && (SPDIF_TX_TILE != AUDIO_IO_TILE)
+#if (XUA_SPDIF_TX_EN) && (SPDIF_TX_TILE != AUDIO_IO_TILE)
 void SpdifTxWrapper(chanend c_spdif_tx)
 {
     unsigned portId;
@@ -1102,21 +1105,21 @@ static void dummy_deliver(chanend ?c_out, unsigned &command)
 }
 
 void XUA_AudioHub(chanend ?c_mix_out
-#if defined(SPDIF_TX) && (SPDIF_TX_TILE != AUDIO_IO_TILE)
-chanend c_spdif_out,
+#if (XUA_SPDIF_TX_EN) && (SPDIF_TX_TILE != AUDIO_IO_TILE)
+    , chanend c_spdif_out
 #endif
 #if (defined(ADAT_RX) || defined(SPDIF_RX))
-chanend c_dig_rx,
+    , chanend c_dig_rx
 #endif
 #if (XUD_TILE != 0) && (AUDIO_IO_TILE == 0) && (XUA_DFU_EN == 1)
-, server interface i_dfu ?dfuInterface
+    , server interface i_dfu ?dfuInterface
 #endif
 #if (NUM_PDM_MICS > 0)
-, chanend c_pdm_in
+    , chanend c_pdm_in
 #endif
 )
 {
-#if defined (SPDIF_TX) && (SPDIF_TX_TILE == AUDIO_IO_TILE)
+#if (XUA_SPDIF_TX_EN) && (SPDIF_TX_TILE == AUDIO_IO_TILE)
     chan c_spdif_out;
 #endif
 #ifdef ADAT_TX
@@ -1152,16 +1155,22 @@ chanend c_dig_rx,
 #endif
 #ifdef ADAT_TX
     /* Share SPDIF clk blk */
-    configure_clock_src(clk_mst_spd, p_mclk_in);
+    unsafe
+    {
+        configure_clock_src(clk_mst_spd, (port)p_mclk_in);
+    }
     configure_out_port_no_ready(p_adat_tx, clk_mst_spd, 0);
     set_clock_fall_delay(clk_mst_spd, 7);
-#ifndef SPDIF_TX
+#if (XUA_SPDIF_TX_EN == 0)
     start_clock(clk_mst_spd);
 #endif
 #endif
     /* Configure ADAT/SPDIF tx ports */
-#if defined(SPDIF_TX) && (SPDIF_TX_TILE == AUDIO_IO_TILE)
-    SpdifTransmitPortConfig(p_spdif_tx, clk_mst_spd, p_mclk_in);
+#if (XUA_SPDIF_TX_EN) && (SPDIF_TX_TILE == AUDIO_IO_TILE)
+    unsafe
+    {
+        SpdifTransmitPortConfig(p_spdif_tx, clk_mst_spd,  (port)p_mclk_in);
+    }
 #endif
 
     /* Perform required CODEC/ADC/DAC initialisation */
@@ -1307,7 +1316,7 @@ chanend c_dig_rx,
         par
         {
 
-#if defined(SPDIF_TX) && (SPDIF_TX_TILE == AUDIO_IO_TILE)
+#if (XUA_SPDIF_TX_EN) && (SPDIF_TX_TILE == AUDIO_IO_TILE)
             {
                 set_thread_fast_mode_on();
                 SpdifTransmit(p_spdif_tx, c_spdif_out);
@@ -1321,7 +1330,7 @@ chanend c_dig_rx,
             }
 #endif
             {
-#ifdef SPDIF_TX
+#if (XUA_SPDIF_TX_EN)
                 /* Communicate master clock and sample freq to S/PDIF thread */
                 outuint(c_spdif_out, curSamFreq);
                 outuint(c_spdif_out, mClk);
@@ -1346,7 +1355,7 @@ chanend c_dig_rx,
                 outuint(c_adat_out, adatSmuxMode);
 #endif
                 command = deliver(c_mix_out
-#ifdef SPDIF_TX
+#if (XUA_SPDIF_TX_EN)
                    , c_spdif_out
 #else
                    , null
@@ -1379,7 +1388,7 @@ chanend c_dig_rx,
                     curSamRes_DAC = inuint(c_mix_out);
                 }
 
-#if (XUA_DFU == 1)
+#if (XUA_DFU_EN == 1)
                 /* Currently no more audio will happen after this point */
                 if ((curSamFreq / AUD_TO_USB_RATIO) == AUDIO_STOP_FOR_DFU)
                 {
@@ -1412,7 +1421,7 @@ chanend c_dig_rx,
 
 #endif /* NO_USB */
 
-#ifdef SPDIF_TX
+#if (XUA_SPDIF_TX_EN)
                 /* Notify S/PDIF task of impending new freq... */
                 outct(c_spdif_out, XS1_CT_END);
 #endif

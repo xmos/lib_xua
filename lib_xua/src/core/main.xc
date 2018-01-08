@@ -1,5 +1,5 @@
 
-#include "xua.h"       /* Device specific defines */
+#include "xua.h"                          /* Device specific defines */
 #ifndef EXCLUDE_USB_AUDIO_MAIN
 
 /**
@@ -137,7 +137,7 @@ unsafe
 on tile[XUD_TILE] : in port p_for_mclk_count                = PORT_MCLK_COUNT;
 #endif
 
-#ifdef SPDIF_TX
+#if (XUA_SPDIF_TX_EN == 1)
 on tile[SPDIF_TX_TILE] : buffered out port:32 p_spdif_tx    = PORT_SPDIF_OUT;
 #endif
 
@@ -177,7 +177,7 @@ clock clk_pdm                                               = on tile[PDM_TILE]:
 on tile[MIDI_TILE] : clock    clk_midi                      = CLKBLK_MIDI;
 #endif
 
-#if defined(SPDIF_TX) || defined(ADAT_TX)
+#if XUA_SPDIF_TX_EN || defined(ADAT_TX)
 on tile[SPDIF_TX_TILE] : clock    clk_mst_spd               = CLKBLK_SPDIF_TX;
 #endif
 
@@ -370,8 +370,11 @@ VENDOR_REQUESTS_PARAMS_DEC_
             asm("setclk res[%0], %1"::"r"(p_for_mclk_count), "r"(x));
 #endif
             //:buffer
-            XUA_Buffer(c_xud_out[ENDPOINT_NUMBER_OUT_AUDIO],    /* Audio Out*/
+            XUA_Buffer(c_xud_out[ENDPOINT_NUMBER_OUT_AUDIO],/* Audio Out*/
+#if (NUM_USB_CHAN_IN > 0)
+
                 c_xud_in[ENDPOINT_NUMBER_IN_AUDIO],         /* Audio In */
+#endif
 #if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP)
                 c_xud_in[ENDPOINT_NUMBER_IN_FEEDBACK],      /* Audio FB */
 #endif
@@ -423,7 +426,7 @@ VENDOR_REQUESTS_PARAMS_DEC_
 #endif /* NO_USB */
 
 void usb_audio_io(chanend ?c_aud_in, chanend ?c_adc,
-#if defined(SPDIF_TX) && (SPDIF_TX_TILE != AUDIO_IO_TILE)
+#if (XUA_SPDIF_TX_EN) && (SPDIF_TX_TILE != AUDIO_IO_TILE)
     chanend c_spdif_tx,
 #endif
 #ifdef MIXER
@@ -433,7 +436,7 @@ void usb_audio_io(chanend ?c_aud_in, chanend ?c_adc,
     chanend ?c_adat_rx,
     chanend ?c_clk_ctl,
     chanend ?c_clk_int
-#if (XUD_TILE != 0)  && (AUDIO_IO_TILE == 0)
+#if (XUD_TILE != 0)  && (AUDIO_IO_TILE == 0) && (XUA_DFU_EN == 1)
     , server interface i_dfu ?dfuInterface
 #endif
 #if (NUM_PDM_MICS > 0)
@@ -469,11 +472,11 @@ void usb_audio_io(chanend ?c_aud_in, chanend ?c_adc,
 #define AUDIO_CHANNEL c_aud_in
 #endif
             XUA_AudioHub(AUDIO_CHANNEL
-#if defined(SPDIF_TX) && (SPDIF_TX_TILE != AUDIO_IO_TILE)
-                c_spdif_tx,
+#if (XUA_SPDIF_TX_EN) && (SPDIF_TX_TILE != AUDIO_IO_TILE)
+                , c_spdif_tx
 #endif
 #if defined(SPDIF_RX) || defined(ADAT_RX)
-                c_dig_rx,
+                , c_dig_rx
 #endif
 #if (XUD_TILE != 0) && (AUDIO_IO_TILE == 0) && (XUA_DFU_EN == 1)
                 , dfuInterface
@@ -545,7 +548,7 @@ int main()
 #define c_adat_rx null
 #endif
 
-#if defined(SPDIF_TX) && (SPDIF_TX_TILE != AUDIO_IO_TILE)
+#if (XUA_SPDIF_TX_EN) && (SPDIF_TX_TILE != AUDIO_IO_TILE)
     chan c_spdif_tx;
 #endif
 
@@ -558,7 +561,7 @@ int main()
 #define c_clk_ctl null
 #endif
 
-#ifdef DFU
+#if (XUA_DFU_EN == 1)
     interface i_dfu dfuInterface;
 #else
     #define dfuInterface null
@@ -583,7 +586,7 @@ int main()
         {
 #if (XUD_TILE == 0)
             /* Check if USB is on the flash tile (tile 0) */
-#ifdef DFU
+#if (XUA_DFU_EN == 1)
             [[distribute]]
             DFUHandler(dfuInterface, null);
 #endif
@@ -617,7 +620,7 @@ int main()
                 p_mclk_in = p_mclk_in_;
             }
             usb_audio_io(c_mix_out, c_adc
-#if defined(SPDIF_TX) && (SPDIF_TX_TILE != AUDIO_IO_TILE)
+#if (XUA_SPDIF_TX_EN) && (SPDIF_TX_TILE != AUDIO_IO_TILE)
                 , c_spdif_tx
 #endif
 #ifdef MIXER
@@ -633,7 +636,7 @@ int main()
             );
         }
 
-#if defined(SPDIF_TX) && (SPDIF_TX_TILE != AUDIO_IO_TILE)
+#if (XUA_SPDIF_TX_EN) && (SPDIF_TX_TILE != AUDIO_IO_TILE)
         on tile[SPDIF_TX_TILE]:
         {
             thread_speed();
