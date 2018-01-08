@@ -1193,7 +1193,7 @@ enum USBEndpointNumber_In
     ENDPOINT_NUMBER_IN_IAP_EA_NATIVE_TRANS,
 #endif
 #endif
-    ENDPOINT_COUNT_IN               /* End marker */
+    XUA_ENDPOINT_COUNT_IN           /* End marker */
 };
 
 enum USBEndpointNumber_Out
@@ -1209,8 +1209,20 @@ enum USBEndpointNumber_Out
     ENDPOINT_NUMBER_OUT_IAP_EA_NATIVE_TRANS,
 #endif
 #endif
-    ENDPOINT_COUNT_OUT              /* End marker */
+    XUA_ENDPOINT_COUNT_OUT          /* End marker */
 };
+
+
+#ifndef XUA_ENDPOINT_COUNT_CUSTOM_OUT
+#define XUA_ENDPOINT_COUNT_CUSTOM_OUT   0
+#endif
+
+#ifndef XUA_ENDPOINT_COUNT_CUSTOM_IN
+#define XUA_ENDPOINT_COUNT_CUSTOM_IN   0 
+#endif
+
+#define ENDPOINT_COUNT_IN  (XUA_ENDPOINT_COUNT_IN + XUA_ENDPOINT_COUNT_CUSTOM_IN)
+#define ENDPOINT_COUNT_OUT (XUA_ENDPOINT_COUNT_OUT + XUA_ENDPOINT_COUNT_CUSTOM_OUT)
 
 #endif
 
