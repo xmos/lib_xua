@@ -61,11 +61,12 @@ static xc_ptr p_multIn;
 #endif
 
 /* Number of channels to/from the USB bus - initialised to HS Audio 2.0 */
-unsigned g_numUsbChan_Out = NUM_USB_CHAN_OUT;
 #if (AUDIO_CLASS == 1)
 unsigned g_numUsbChan_In = NUM_USB_CHAN_IN_FS;
+unsigned g_numUsbChan_Out = NUM_USB_CHAN_OUT_FS;
 #else
 unsigned g_numUsbChan_In = NUM_USB_CHAN_IN;
+unsigned g_numUsbChan_Out = NUM_USB_CHAN_OUT;
 #endif
 
 /* Circular audio buffers */
