@@ -1229,7 +1229,7 @@ unsigned static deliver_slave(chanend ?c_out, chanend ?c_spd_out
             /* Request digital data (with prefill) */
             outuint(c_dig_rx, 0);
 #endif
-#if defined(SPDIF_TX) && (NUM_USB_CHAN_OUT > 0)
+#if ((XUA_SPDIF_TX_EN) && (NUM_USB_CHAN_OUT > 0))
             outuint(c_spd_out, samplesOut[SPDIF_TX_INDEX]);  /* Forward sample to S/PDIF Tx thread */
             unsigned sample = samplesOut[SPDIF_TX_INDEX + 1];
             outuint(c_spd_out, sample);                      /* Forward sample to S/PDIF Tx thread */
@@ -1723,7 +1723,7 @@ void XUA_AudioHub(chanend ?c_mix_out
 #else
                 command = deliver_master(c_mix_out
 #endif
-#ifdef XUA_SPDIF_TX_EN
+#if (XUA_SPDIF_TX_EN)
                    , c_spdif_out
 #else
                    , null
