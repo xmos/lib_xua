@@ -1420,6 +1420,7 @@ void testct_byref(chanend c, int &returnVal)
         returnVal = 1;
 }
 
+#if (XUA_DFU_EN == 1)
 [[combinable]]
 static void dummy_deliver(chanend ?c_out, unsigned &command)
 {
@@ -1465,6 +1466,7 @@ static void dummy_deliver(chanend ?c_out, unsigned &command)
         }
     }
 }
+#endif
 
 void XUA_AudioHub(chanend ?c_mix_out
 #if (XUA_SPDIF_TX_EN) && (SPDIF_TX_TILE != AUDIO_IO_TILE)
