@@ -61,8 +61,13 @@ static xc_ptr p_multIn;
 #endif
 
 /* Number of channels to/from the USB bus - initialised to HS Audio 2.0 */
-unsigned g_numUsbChan_Out = NUM_USB_CHAN_OUT;
+#if (AUDIO_CLASS == 1)
+unsigned g_numUsbChan_In = NUM_USB_CHAN_IN_FS;
+unsigned g_numUsbChan_Out = NUM_USB_CHAN_OUT_FS;
+#else
 unsigned g_numUsbChan_In = NUM_USB_CHAN_IN;
+unsigned g_numUsbChan_Out = NUM_USB_CHAN_OUT;
+#endif
 
 /* Circular audio buffers */
 unsigned outAudioBuff[(BUFF_SIZE_OUT >> 2)+ (MAX_DEVICE_AUD_PACKET_SIZE_OUT >> 2)];
@@ -588,6 +593,15 @@ static inline void SetupZerosSendBuffer(XUD_ep aud_to_host_usb_ep, unsigned samp
 
     asm volatile("stw %0, %1[0]"::"r"(mid),"r"(g_aud_to_host_zeros));
 
+#if XUA_DEBUG_BUFFER
+    printstr("slotSize: ");
+    printintln(slotSize);
+    printstr("g_numUsbChan_In: ");
+    printintln(g_numUsbChan_In);
+    printstr("mid: ");
+    printintln(mid);
+#endif
+
     /* Mark EP ready with the zero buffer. Note this will simply update the packet size
     * if it is already ready */
 
@@ -693,7 +707,7 @@ void XUA_Buffer_Decouple(chanend c_mix_out
     /* NOTE: For UAC2 IN EP not marked ready at this point - Initial size of zero buffer not known
      * since we don't know the USB bus-speed yet.
      * The host will send a SetAltInterface before streaming which will lead to this core
-     * getting a SET_CHANNEL_COUNT_IN. This will setup the EP for the first packet */
+     * getting a SET_STREAM_FORMAT_IN. This will setup the EP for the first packet */
 #if (AUDIO_CLASS == 1)
     /* For UAC1 we know we only run at FS */
     /* Set buffer back to zeros buffer */
