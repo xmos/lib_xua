@@ -761,7 +761,7 @@ unsigned static deliver(chanend ?c_out, chanend ?c_spd_out
 
 #pragma xta endpoint "i2s_output_l"
 
-#if (I2S_CHANS_DAC != 0) && (NUM_USB_CHAN_OUT != 0)
+#if (I2S_CHANS_DAC != 0)
                 index = 0;
 #pragma loop unroll
                 /* Output "even" channel to DAC (i.e. left) */
@@ -782,7 +782,7 @@ unsigned static deliver(chanend ?c_out, chanend ?c_spd_out
 #endif /* (AUD_TO_USB_RATIO > 1) */
                     p_i2s_dac[index++] <: bitrev(samplesOut[frameCount +i]);
                 }
-#endif // (I2S_CHANS_DAC != 0) && (NUM_USB_CHAN_OUT != 0)
+#endif // (I2S_CHANS_DAC != 0)
 
 #ifndef CODEC_MASTER
                 /* Clock out the LR Clock, the DAC data and Clock in the next sample into ADC */
@@ -915,7 +915,7 @@ unsigned static deliver(chanend ?c_out, chanend ?c_spd_out
 
                 index = 0;
 #pragma xta endpoint "i2s_output_r"
-#if (I2S_CHANS_DAC != 0) && (NUM_USB_CHAN_OUT != 0)
+#if (I2S_CHANS_DAC != 0)
                 /* Output "odd" channel to DAC (i.e. right) */
 #pragma loop unroll
                 for(int i = 1; i < I2S_CHANS_DAC; i+=I2S_CHANS_PER_FRAME)
@@ -935,7 +935,7 @@ unsigned static deliver(chanend ?c_out, chanend ?c_spd_out
 #endif /* (AUD_TO_USB_RATIO > 1) */
                     p_i2s_dac[index++] <: bitrev(samplesOut[frameCount + i]);
                 }
-#endif // (I2S_CHANS_DAC != 0) && (NUM_USB_CHAN_OUT != 0)
+#endif // (I2S_CHANS_DAC != 0)
 
 #ifndef CODEC_MASTER
                 doI2SClocks(divide);
