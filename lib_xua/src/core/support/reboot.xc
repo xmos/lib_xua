@@ -20,6 +20,16 @@ unsigned get_tile_id(tileref);
 
 extern tileref tile[];
 
+/* Function to reset the given tile */
+void reset_tile(unsigned tileId)
+{
+    unsigned int pllVal;
+
+    read_sswitch_reg(tileId, 6, pllVal);
+    pllVal &= PLL_MASK;
+    write_sswitch_reg_no_ack(tileId, 6, pllVal);
+}        
+
 void device_reboot_aux(void)
 {
 #if (XUD_SERIES_SUPPORT == 1)
@@ -31,10 +41,13 @@ void device_reboot_aux(void)
     /* Disable USB and issue reset to xcore only - not analogue chip */
     write_node_config_reg(usb_tile, XS1_SU_CFG_RST_MISC_NUM,0b10);
 #else
-    unsigned int pllVal;
+
     unsigned int localTileId = get_local_tile_id();
     unsigned int tileId;
     unsigned int tileArrayLength;
+    #ifdef __XS2A__
+    unsigned int localTileNum;
+    #endif
 
 #if (XUD_SERIES_SUPPORT == 4)
     /* Disconnect from bus */
@@ -45,25 +58,42 @@ void device_reboot_aux(void)
     /* Find size of tile array - note in future tools versions this will be available from platform.h */
     asm volatile ("ldc %0, tile.globound":"=r"(tileArrayLength));
 
-    /* Reset all remote tiles */
-    for(int i = 0; i< tileArrayLength; i++)
+    #ifdef __XS2A__
+    /* Find tile number of the local tile ID*/
+    for(int tileNum = 0;  tileNum<tileArrayLength; tileNum++) {
+        if (get_tile_id(tile[tileNum]) == localTileId) {
+            localTileNum = tileNum;
+            break;
+        }
+    }
+    #endif
+
+    #ifndef __XS2A__
+    /* Reset all tiles, starting from the remote ones */
+    for(int tileNum = tileArrayLength-1;  tileNum>=0; tileNum--)
+    #else
+    /* Reset all even tiles, starting from the remote ones */
+    for(int tileNum = tileArrayLength-2;  tileNum>=0; tileNum=tileNum-2)
+    #endif 
     {
+
         /* Cannot cast tileref to unsigned! */
-        tileId = get_tile_id(tile[i]);
+        tileId = get_tile_id(tile[tileNum]);
 
         /* Do not reboot local tile yet! */
+        #ifndef __XS2A__
         if(localTileId != tileId)
+        #else
+        /* In XS2A the tile paired up with the local tile can't be rebooted either */
+        if((localTileNum|0x01) != (tileNum|0x01))
+        #endif    
         {
-            read_sswitch_reg(tileId, 6, pllVal);
-            pllVal &= PLL_MASK;
-            write_sswitch_reg_no_ack(tileId, 6, pllVal);
+            reset_tile(tileId);
         }
     }
 
     /* Finally reboot this tile! */
-    read_sswitch_reg(localTileId, 6, pllVal);
-    pllVal &= PLL_MASK;
-    write_sswitch_reg_no_ack(localTileId, 6, pllVal);
+    reset_tile(localTileId);
 #endif
 }
 
