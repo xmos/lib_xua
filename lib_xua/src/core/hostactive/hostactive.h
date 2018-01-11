@@ -1,2 +1,0 @@
-
-void UserHostActive(int active);

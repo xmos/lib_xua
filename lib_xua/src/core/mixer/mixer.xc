@@ -5,13 +5,14 @@
 #include "xua.h"
 #include "mixer.h"
 #include "xc_ptr.h"
-#include "commands.h"
+#include "xua_commands.h"
 #include "dbcalc.h"
 
 #ifdef MIXER
 
+/* FAST_MIXER has a bit of a nasty implentation but is more effcient */
 #define FAST_MIXER 1
-#warning USING FAST MIXER
+
 
 //#ifdef OUT_VOLUME_IN_MIXER
 static unsigned int multOut_array[NUM_USB_CHAN_OUT + 1];

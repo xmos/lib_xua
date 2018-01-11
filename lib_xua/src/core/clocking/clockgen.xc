@@ -4,13 +4,11 @@
 #include <print.h>
 
 #include "xua.h"
-#include "commands.h"
+#include "xua_commands.h"
 
 #if defined(SPDIF_RX)
 #include "SpdifReceive.h"
 #endif
-
-
 
 #define LOCAL_CLOCK_INCREMENT       166667
 #define LOCAL_CLOCK_MARGIN          1666
@@ -57,7 +55,6 @@ static int channelContainsControlToken(chanend x)
         default:
             return 0;
     }
-
 }
 
 static void outInterrupt(chanend c_interruptControl, int value)

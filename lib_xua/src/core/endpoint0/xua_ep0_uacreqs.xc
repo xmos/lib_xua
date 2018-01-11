@@ -11,7 +11,7 @@
 #include "usbaudio20.h"
 #include "usbaudio10.h"
 #include "dbcalc.h"
-#include "commands.h"
+#include "xua_commands.h"
 #include "xc_ptr.h"
 #ifdef MIXER
 #include "mixer.h"

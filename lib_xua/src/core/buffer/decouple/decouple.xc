@@ -3,7 +3,7 @@
 #include "xua.h"
 #include "xc_ptr.h"
 #include "interrupt.h"
-#include "commands.h"
+#include "xua_commands.h"
 #include "xud.h"
 
 #ifdef NATIVE_DSD

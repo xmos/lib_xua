@@ -17,7 +17,6 @@
 #include "xua.h"
 
 #include "audioports.h"
-#include "audiohw.h"
 #include "mic_array_conf.h"
 #if (XUA_SPDIF_TX_EN)
 #include "SpdifTransmit.h"
@@ -29,7 +28,7 @@
 #endif
 #endif
 
-#include "commands.h"
+#include "xua_commands.h"
 #include "xc_ptr.h"
 
 #define MAX(x,y) ((x)>(y) ? (x) : (y))

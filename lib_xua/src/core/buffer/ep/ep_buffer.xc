@@ -14,7 +14,7 @@
 #endif
 #endif
 #include "xc_ptr.h"
-#include "commands.h"
+#include "xua_commands.h"
 #include "xud.h"
 #include "testct_byref.h"
 
