@@ -84,6 +84,12 @@
     #define DSD_CHANS_DAC        0
 #endif
 
+
+/* TODO not required */
+#ifndef I2S_MODE_TDM
+#define I2S_MODE_TDM 0
+#endif
+
 /**
  * @brief Channels per I2S frame. *
  *
@@ -91,7 +97,7 @@
  *
  **/
 #ifndef I2S_CHANS_PER_FRAME
-    #ifdef I2S_MODE_TDM
+    #if (I2S_MODE_TDM == 1)
         #define I2S_CHANS_PER_FRAME 8
     #else
         #define I2S_CHANS_PER_FRAME 2
