@@ -435,6 +435,8 @@ static inline void InitPorts_slave(unsigned divide)
        asm("setpt res[%0], %1"::"r"(p_i2s_adc[i]),"r"(tmp-1));
     }
 #endif
+
+    asm("setpt res[%0], %1"::"r"(p_lrclk),"r"(tmp-1));
 }
 #endif
 
