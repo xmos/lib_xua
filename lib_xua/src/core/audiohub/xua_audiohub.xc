@@ -127,71 +127,6 @@ extern clock    clk_mst_spd;
 #define MAX_DIVIDE (MAX_DIVIDE_48)
 #endif
 
-#ifndef CODEC_MASTER
-static inline void doI2SClocks(unsigned divide)
-{
-#ifndef __XS2A__
-    switch (divide)
-    {
-#if (MAX_DIVIDE > 16)
-#error MCLK/BCLK Ratio not supported!!
-#endif
-#if (MAX_DIVIDE > 8)
-             case 16:
-                p_bclk <: 0xff00ff00;
-                p_bclk <: 0xff00ff00;
-                p_bclk <: 0xff00ff00;
-                p_bclk <: 0xff00ff00;
-                p_bclk <: 0xff00ff00;
-                p_bclk <: 0xff00ff00;
-                p_bclk <: 0xff00ff00;
-                p_bclk <: 0xff00ff00;
-
-                p_bclk <: 0xff00ff00;
-                p_bclk <: 0xff00ff00;
-                p_bclk <: 0xff00ff00;
-                p_bclk <: 0xff00ff00;
-                p_bclk <: 0xff00ff00;
-                p_bclk <: 0xff00ff00;
-                p_bclk <: 0xff00ff00;
-                p_bclk <: 0xff00ff00;
-                break;
-#endif
-#if (MAX_DIVIDE > 4)
-           case 8:
-                p_bclk <: 0xF0F0F0F0;
-                p_bclk <: 0xF0F0F0F0;
-                p_bclk <: 0xF0F0F0F0;
-                p_bclk <: 0xF0F0F0F0;
-                p_bclk <: 0xF0F0F0F0;
-                p_bclk <: 0xF0F0F0F0;
-                p_bclk <: 0xF0F0F0F0;
-                p_bclk <: 0xF0F0F0F0;
-                break;
-#endif
-#if (MAX_DIVIDE > 2)
-            case 4:
-                p_bclk <: 0xCCCCCCCC;
-                p_bclk <: 0xCCCCCCCC;
-                p_bclk <: 0xCCCCCCCC;
-                p_bclk <: 0xCCCCCCCC;
-                break;
-#endif
-#if (MAX_DIVIDE > 1)
-            case 2:
-                p_bclk <: 0xAAAAAAAA;
-                p_bclk <: 0xAAAAAAAA;
-                break;
-#endif
-#if (MAX_DIVIDE > 0)
-            case 1:
-                break;
-#endif
-   }
-#endif
-}
-#endif
-
 #ifdef ADAT_TX
 unsigned adatCounter = 0;
 unsigned adatSamples[8];
@@ -325,36 +260,6 @@ static inline void DoDsdNative(unsigned samplesOut[], unsigned &dsdSample_l, uns
 
     asm volatile("out res[%0], %1"::"r"(p_dsd_dac[0]),"r"(dsdSample_l));
     asm volatile("out res[%0], %1"::"r"(p_dsd_dac[1]),"r"(dsdSample_r));
-
-#ifndef __XS2A__
-    /* Output DSD data to ports then 32 clocks */
-    switch (divide)
-    {
-        case 4:
-            p_dsd_clk <: 0xCCCCCCCC;
-            p_dsd_clk <: 0xCCCCCCCC;
-            p_dsd_clk <: 0xCCCCCCCC;
-            p_dsd_clk <: 0xCCCCCCCC;
-            break;
-
-        case 2:
-            p_dsd_clk <: 0xAAAAAAAA;
-            p_dsd_clk <: 0xAAAAAAAA;
-            break;
-
-        default:
-            /* Do some clocks anyway - this will stop us interrupting decouple too much */
-            p_dsd_clk <: 0xF0F0F0F0;
-            p_dsd_clk <: 0xF0F0F0F0;
-            p_dsd_clk <: 0xF0F0F0F0;
-            p_dsd_clk <: 0xF0F0F0F0;
-            p_dsd_clk <: 0xF0F0F0F0;
-            p_dsd_clk <: 0xF0F0F0F0;
-            p_dsd_clk <: 0xF0F0F0F0;
-            p_dsd_clk <: 0xF0F0F0F0;
-            break;
-    }
-#endif // __XS2A__
 #endif
 }
 
@@ -367,62 +272,16 @@ static inline void DoDsdDop(int &everyOther, unsigned samplesOut[], unsigned &ds
     {
         dsdSample_l = ((samplesOut[0] & 0xffff00) << 8);
         dsdSample_r = ((samplesOut[1] & 0xffff00) << 8);
-
         everyOther = 1;
-
-#ifndef __XS2A__
-        switch (divide)
-        {
-            case 8:
-            p_dsd_clk <: 0xF0F0F0F0;
-            p_dsd_clk <: 0xF0F0F0F0;
-            p_dsd_clk <: 0xF0F0F0F0;
-            p_dsd_clk <: 0xF0F0F0F0;
-            break;
-
-            case 4:
-            p_dsd_clk <: 0xCCCCCCCC;
-            p_dsd_clk <: 0xCCCCCCCC;
-            break;
-
-            case 2:
-            p_dsd_clk <: 0xAAAAAAAA;
-            break;
-        }
-#endif // __XS2A__
     }
-else // everyOther
+    else 
     {
         everyOther = 0;
         dsdSample_l =  dsdSample_l | ((samplesOut[0] & 0xffff00) >> 8);
         dsdSample_r =  dsdSample_r | ((samplesOut[1] & 0xffff00) >> 8);
 
-        // Output 16 clocks DSD to all
-        //p_dsd_dac[0] <: bitrev(dsdSample_l);
-        //p_dsd_dac[1] <: bitrev(dsdSample_r);
         asm volatile("out res[%0], %1"::"r"(p_dsd_dac[0]),"r"(bitrev(dsdSample_l)));
         asm volatile("out res[%0], %1"::"r"(p_dsd_dac[1]),"r"(bitrev(dsdSample_r)));
-
-#ifndef __XS2A__
-        switch (divide)
-        {
-            case 8:
-            p_dsd_clk <: 0xF0F0F0F0;
-            p_dsd_clk <: 0xF0F0F0F0;
-            p_dsd_clk <: 0xF0F0F0F0;
-            p_dsd_clk <: 0xF0F0F0F0;
-            break;
-
-            case 4:
-            p_dsd_clk <: 0xCCCCCCCC;
-            p_dsd_clk <: 0xCCCCCCCC;
-            break;
-
-            case 2:
-            p_dsd_clk <: 0xAAAAAAAA;
-            break;
-        }
-#endif // __XS2A__
     }
 #endif
 }
@@ -490,16 +349,6 @@ static inline void InitPorts_master(unsigned divide)
     if(dsdMode == DSD_MODE_OFF)
     {
 #endif
-
-#if !defined(__XS2A__)
-        if(divide != 1)
-        {
-            /* b_clk must start high */
-            p_bclk <: 0x80000000;
-            sync(p_bclk);
-         }
-#endif
-
         /* Clear I2S port buffers */
         clearbuf(p_lrclk);
 
@@ -517,60 +366,28 @@ static inline void InitPorts_master(unsigned divide)
         }
 #endif
 
-#if defined(__XS2A__)
-        if(1)
-#else
-        if(divide == 1)
-#endif
-        {
 #pragma xta endpoint "divide_1"
-            p_lrclk <: 0 @ tmp;
-            tmp += 100;
+        p_lrclk <: 0 @ tmp;
+        tmp += 100;
 
-            /* Since BCLK is free-running, setup outputs/inputs at a known point in the future */
+        /* Since BCLK is free-running, setup outputs/inputs at a known point in the future */
 #if (I2S_CHANS_DAC != 0)
 #pragma loop unroll
-            for(int i = 0; i < I2S_WIRES_DAC; i++)
-            {
-                p_i2s_dac[i] @ tmp <: 0;
-            }
+        for(int i = 0; i < I2S_WIRES_DAC; i++)
+        {
+            p_i2s_dac[i] @ tmp <: 0;
+        }
 #endif
 
-            p_lrclk @ tmp <: 0x7FFFFFFF;
+        p_lrclk @ tmp <: 0x7FFFFFFF;
 
 #if (I2S_CHANS_ADC != 0)
-            for(int i = 0; i < I2S_WIRES_ADC; i++)
-            {
-                asm("setpt res[%0], %1"::"r"(p_i2s_adc[i]),"r"(tmp-1));
-            }
-#endif
-        }
-        else /* Divide != 1  */
+        for(int i = 0; i < I2S_WIRES_ADC; i++)
         {
-#if (I2S_CHANS_DAC != 0)
-            /* Pre-fill the DAC ports */
-            for(int i = 0; i < I2S_WIRES_DAC; i++)
-            {
-                p_i2s_dac[i] <: 0;
-            }
-#endif
-            /* Pre-fill the LR clock output port */
-            p_lrclk <: 0x0;
-
-            doI2SClocks(divide);
-
-#if (I2S_CHANS_DAC != 0)
-            /* Pre-fill the DAC ports */
-            for(int i = 0; i < I2S_WIRES_DAC; i++)
-            {
-                p_i2s_dac[i] <: 0;
-            }
-#endif
-            /* Pre-fill the LR clock output port */
-            p_lrclk <: 0x0;
-
-            doI2SClocks(divide);
+            asm("setpt res[%0], %1"::"r"(p_i2s_adc[i]),"r"(tmp-1));
         }
+#endif
+
 #if (DSD_CHANS_DAC > 0)
     } /* if (!dsdMode) */
     else
@@ -580,7 +397,50 @@ static inline void InitPorts_master(unsigned divide)
     }
 #endif
 }
+#endif
 
+#ifdef CODEC_MASTER
+static inline void InitPorts_slave(unsigned divide)
+{
+    unsigned tmp;
+
+    /* Wait for LRCLK edge (in I2S LRCLK = 0 is left, TDM rising edge is start of frame) */
+    p_lrclk when pinseq(0) :> void;
+    p_lrclk when pinseq(1) :> void;
+    p_lrclk when pinseq(0) :> void;
+    p_lrclk when pinseq(1) :> void;
+#ifdef I2S_MODE_TDM
+    p_lrclk when pinseq(0) :> void;
+    p_lrclk when pinseq(1) :> void @ tmp;
+#else
+    p_lrclk when pinseq(0) :> void @ tmp;
+#endif
+
+    tmp += (I2S_CHANS_PER_FRAME * 32) - 32 + 1 ;
+    /* E.g. 2 * 32 - 32 + 1 = 33 for stereo */
+    /* E.g. 8 * 32 - 32 + 1 = 225 for 8 chan TDM */
+
+#if (I2S_CHANS_DAC != 0)
+#pragma loop unroll
+    for(int i = 0; i < I2S_WIRES_DAC; i++)
+    {
+        p_i2s_dac[i] @ tmp <: 0;
+    }
+#endif
+
+#if (I2S_CHANS_ADC != 0)
+#pragma loop unroll
+    for(int i = 0; i < I2S_WIRES_ADC; i++)
+    {
+       asm("setpt res[%0], %1"::"r"(p_i2s_adc[i]),"r"(tmp-1));
+    }
+#endif
+}
+#endif
+
+
+
+#ifndef CODEC_MASTER
 #pragma unsafe arrays
 unsigned static deliver_master(chanend ?c_out, chanend ?c_spd_out
 #ifdef ADAT_TX
@@ -596,7 +456,6 @@ unsigned static deliver_master(chanend ?c_out, chanend ?c_spd_out
 #endif
 )
 {
-
     /* Since DAC and ADC buffered ports off by one sample we buffer previous ADC frame */
     unsigned readBuffNo = 0;
     unsigned index;
@@ -693,8 +552,10 @@ unsigned static deliver_master(chanend ?c_out, chanend ?c_spd_out
     {
         {
 #if (DSD_CHANS_DAC != 0) && (NUM_USB_CHAN_OUT > 0)
-            if(dsdMode == DSD_MODE_NATIVE) DoDsdNative(samplesOut, dsdSample_l, dsdSample_r, divide);
-            else if(dsdMode == DSD_MODE_DOP) DoDsdDop(everyOther, samplesOut, dsdSample_l, dsdSample_r, divide);
+            if(dsdMode == DSD_MODE_NATIVE) 
+                DoDsdNative(samplesOut, dsdSample_l, dsdSample_r, divide);
+            else if(dsdMode == DSD_MODE_DOP) 
+                DoDsdDop(everyOther, samplesOut, dsdSample_l, dsdSample_r, divide);
             else
 #endif
             {
@@ -778,9 +639,6 @@ unsigned static deliver_master(chanend ?c_out, chanend ?c_spd_out
                     p_i2s_dac[index++] <: bitrev(samplesOut[frameCount +i]);
                 }
 #endif // (I2S_CHANS_DAC != 0)
-
-                /* Clock out the LR Clock, the DAC data and Clock in the next sample into ADC */
-                doI2SClocks(divide);
 
 #ifdef ADAT_TX
                  TransferAdatTxSamples(c_adat_out, samplesOut, adatSmuxMode, 1);
@@ -911,8 +769,6 @@ unsigned static deliver_master(chanend ?c_out, chanend ?c_spd_out
                 }
 #endif // (I2S_CHANS_DAC != 0)
 
-                doI2SClocks(divide);
-
             }  // !dsdMode
             int ret = DoDsdDopCheck(dsdMode, dsdCount, curSamFreq, samplesOut, dsdMarker);
             if (ret == 0) return 0;
@@ -957,43 +813,6 @@ unsigned static deliver_master(chanend ?c_out, chanend ?c_spd_out
 
 
 #ifdef CODEC_MASTER
-static inline void InitPorts_slave(unsigned divide)
-{
-    unsigned tmp;
-
-    /* Wait for LRCLK edge (in I2S LRCLK = 0 is left, TDM rising edge is start of frame) */
-    p_lrclk when pinseq(0) :> void;
-    p_lrclk when pinseq(1) :> void;
-    p_lrclk when pinseq(0) :> void;
-    p_lrclk when pinseq(1) :> void;
-#ifdef I2S_MODE_TDM
-    p_lrclk when pinseq(0) :> void;
-    p_lrclk when pinseq(1) :> void @ tmp;
-#else
-    p_lrclk when pinseq(0) :> void @ tmp;
-#endif
-
-    tmp += (I2S_CHANS_PER_FRAME * 32) - 32 + 1 ;
-    /* E.g. 2 * 32 - 32 + 1 = 33 for stereo */
-    /* E.g. 8 * 32 - 32 + 1 = 225 for 8 chan TDM */
-
-#if (I2S_CHANS_DAC != 0)
-#pragma loop unroll
-    for(int i = 0; i < I2S_WIRES_DAC; i++)
-    {
-        p_i2s_dac[i] @ tmp <: 0;
-    }
-#endif
-
-#if (I2S_CHANS_ADC != 0)
-#pragma loop unroll
-    for(int i = 0; i < I2S_WIRES_ADC; i++)
-    {
-       asm("setpt res[%0], %1"::"r"(p_i2s_adc[i]),"r"(tmp-1));
-    }
-#endif
-}
-
 
 /* I2S delivery thread */
 #pragma unsafe arrays
