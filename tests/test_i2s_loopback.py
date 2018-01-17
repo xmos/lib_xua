@@ -7,8 +7,8 @@ def runtest_one_config(env, format, i2s_role, num_chans_in, num_chans_out, sampl
 
     binary = 'i2s_loopback/bin/{env}_{format}_{i2s_role}_{num_chans_in}in_{num_chans_out}out_{sample_rate}/i2s_loopback_{env}_{format}_{i2s_role}_{num_chans_in}in_{num_chans_out}out_{sample_rate}.xe'.format(env=env, format=format, i2s_role=i2s_role, num_chans_in=num_chans_in, num_chans_out=num_chans_out, sample_rate=sample_rate)
     tester = xmostest.ComparisonTester(open('pass.expect'),
-                                       'sw_vocalfusion',
-                                       'digital_audio_tests',
+                                       'lib_xua',
+                                       'i2s_loopback_sim_tests',
                                        'i2s_loopback',
                                        {'env':env,
                                         'format':format,
@@ -31,19 +31,19 @@ def runtest_one_config(env, format, i2s_role, num_chans_in, num_chans_out, sampl
 
 def runtest():
     runtest_one_config('simulation', 'i2s', 'master', 2, 2, '48khz')
-    #runtest_one_config('simulation', 'i2s', 'slave', 2, 2, '48khz')
+    runtest_one_config('simulation', 'i2s', 'slave', 2, 2, '48khz')
 
-    #runtest_one_config('simulation', 'i2s', 'master', 2, 2, '192khz')
-    #runtest_one_config('simulation', 'i2s', 'slave', 2, 2, '192khz')
+    runtest_one_config('simulation', 'i2s', 'master', 2, 2, '192khz')
+    runtest_one_config('simulation', 'i2s', 'slave', 2, 2, '192khz')
 
-    #runtest_one_config('simulation', 'i2s', 'master', 8, 8, '48khz')
-    #runtest_one_config('simulation', 'i2s', 'slave', 8, 8, '48khz')
+    runtest_one_config('simulation', 'i2s', 'master', 8, 8, '48khz')
+    runtest_one_config('simulation', 'i2s', 'slave', 8, 8, '48khz')
 
-    #runtest_one_config('simulation', 'i2s', 'master', 8, 8, '192khz')
-    #runtest_one_config('simulation', 'i2s', 'slave', 8, 8, '192khz')
+    runtest_one_config('simulation', 'i2s', 'master', 8, 8, '192khz')
+    runtest_one_config('simulation', 'i2s', 'slave', 8, 8, '192khz')
 
-    #runtest_one_config('simulation', 'tdm', 'master', 8, 8, '48khz')
-    #runtest_one_config('simulation', 'tdm', 'slave', 8, 8, '48khz')
+    runtest_one_config('simulation', 'tdm', 'master', 8, 8, '48khz')
+    runtest_one_config('simulation', 'tdm', 'slave', 8, 8, '48khz')
 
-    #runtest_one_config('simulation', 'tdm', 'master', 16, 16, '48khz')
-    #runtest_one_config('simulation', 'tdm', 'slave', 16, 16, '48khz')
+    runtest_one_config('simulation', 'tdm', 'master', 16, 16, '48khz')
+    runtest_one_config('simulation', 'tdm', 'slave', 16, 16, '48khz')

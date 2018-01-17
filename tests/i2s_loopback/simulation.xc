@@ -2,8 +2,7 @@
 #ifdef SIMULATION
 
 #include <platform.h>
-#include "audiohw.h"
-#include "print.h"
+#include <print.h>
 
 extern port p_mclk_in;
 
