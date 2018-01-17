@@ -904,25 +904,16 @@ unsigned static deliver_slave(chanend ?c_out, chanend ?c_spd_out
         return command;
     }
 
-    InitPorts_slave(divide);
-
     /* Main Audio I/O loop */
     while (1)
     {
         /* In CODEC master mode, the I/O loop assumes L/RCLK = 32bit clocks.
          * Check this every iteration and resync if we get a bclk glitch.
          */
-        int syncError = 0;
         unsigned lrval;
+        unsigned syncError = 0;
 
-        if (!firstIteration)
-        {
-            InitPorts_slave(divide);
-        }
-        else
-        {
-            firstIteration = 0;
-        }
+        InitPorts_slave(divide);
 
         while (!syncError)
         {
@@ -938,7 +929,8 @@ unsigned static deliver_slave(chanend ?c_out, chanend ?c_spd_out
             /* First input (i.e. frameCount == 0) we read last ADC channel of previous frame.. */
             unsigned buffIndex = (frameCount > 1) ? !readBuffNo : readBuffNo;
 
-#pragma loop unroll
+
+            #pragma loop unroll
             /* First time around we get channel 7 of TDM8 */
             for(int i = 0; i < I2S_CHANS_ADC; i+=I2S_CHANS_PER_FRAME)
             {
@@ -947,16 +939,6 @@ unsigned static deliver_slave(chanend ?c_out, chanend ?c_spd_out
                 unsigned sample;
                 asm volatile("in %0, res[%1]" : "=r"(sample)  : "r"(p_i2s_adc[index++]));
                 
-                if (i == 0){
-                    p_lrclk :> lrval;
-#ifdef I2S_MODE_TDM
-                    //We do not check this part of the frame because TDM frame sync falling egde timing
-                    //is not defined. We only care about rising edge which is checked in first half of frame
-#else
-                    syncError += (lrval != 0x80000000);
-#endif // I2S_MODE_TDM
-                }
-
                 sample = bitrev(sample);
                 int chanIndex = ((frameCount-2)&(I2S_CHANS_PER_FRAME-1))+i; // channels 0, 2, 4.. on each line.
 #if (AUD_TO_USB_RATIO > 1)
@@ -982,16 +964,24 @@ unsigned static deliver_slave(chanend ?c_out, chanend ?c_spd_out
                 samplesIn[buffIndex][chanIndex] = sample;
 #endif /* (AUD_TO_USB_RATIO > 1) */
             }
-#else //(I2S_CHANS_ADC != 0) //If no ADC channels then just check lrclk for sync
-            p_lrclk :> lrval;
-#ifdef I2S_MODE_TDM
-            //We do not check this part of the frame because TDM frame sync falling egde timing
-            //is not defined. We only care about rising edge which is checked in first half of frame
-#else
-            syncError += (lrval != 0x80000000);
-#endif // I2S_MODE_TDM
 #endif //(I2S_CHANS_ADC != 0)
 
+            /* LR Clock sync check */
+            p_lrclk :> lrval;
+                   
+            if(I2S_MODE_TDM)
+            {        
+                /* Only check for the rising edge of frame sync being in the right place because falling edge timing not specified */
+                if (frameCount == (I2S_CHANS_PER_FRAME-1)) 
+                {
+                    lrval &= 0xc0000000;                 // Mask off last two (MSB) frame clock bits which are the most recently sampled
+                    syncError += (lrval != 0x80000000);  // We need MSB = 1 and MSB-1 = 0 to signify rising edge
+                }
+            }
+            else
+            {
+                syncError += (lrval != 0x7fffffff);
+            }
 
 #pragma xta endpoint "i2s_output_l"
 
@@ -1087,19 +1077,6 @@ unsigned static deliver_slave(chanend ?c_out, chanend ?c_spd_out
                 /* Manual IN instruction since compiler generates an extra setc per IN (bug #15256) */
                 unsigned sample;
                 asm volatile("in %0, res[%1]" : "=r"(sample)  : "r"(p_i2s_adc[index++]));
-                if (i == 0) {
-                    p_lrclk :> lrval;
-#ifdef I2S_MODE_TDM
-                    //Just check for the rising edge of frame synch being in the right place because falling edge timing not specified
-                    if (frameCount == 0) {
-                        lrval &= 0xc0000000;    //Mask off last two (MSB) frame clock bits which are the most recently sampled
-                        syncError += (lrval != 0x80000000);  //We need MSB = 1 and MSB-1 = 0 to signify rising edge
-                    }
-#else
-                    syncError += (lrval != 0x7FFFFFFF);
-#endif // I2S_MODE_TDM
-                }
-
                 sample = bitrev(sample);
                 int chanIndex = ((frameCount-1)&(I2S_CHANS_PER_FRAME-1))+i; // channels 1, 3, 5.. on each line.
 #if (AUD_TO_USB_RATIO > 1 && !I2S_DOWNSAMPLE_MONO_IN)
@@ -1125,21 +1102,21 @@ unsigned static deliver_slave(chanend ?c_out, chanend ?c_spd_out
                 samplesIn[buffIndex][chanIndex] = sample;
 #endif /* (AUD_TO_USB_RATIO > 1) && !I2S_DOWNSAMPLE_MONO_IN */
             }
-#else //(I2S_CHANS_ADC != 0) //No ADC so just do lrclk sync check only
+#endif //(I2S_CHANS_ADC != 0)
+
+            /* LR Clock sync check */
             p_lrclk :> lrval;
-#ifdef I2S_MODE_TDM
-            if (frameCount == (I2S_CHANS_PER_FRAME-2))
+
+            if(I2S_MODE_TDM)
             {
-                syncError += (lrval != 0x80000000);
+                /* Do nothing */
+                // We do not check this part of the frame because TDM frame sync falling egde timing
+                // is not defined. We only care about rising edge which is checked in first half of frame
             }
             else
-            {
-                syncError += (lrval != 0x00000000);
+            {  
+                syncError += (lrval != 0x80000000);
             }
-#else
-            syncError += (lrval != 0x7FFFFFFF);
-#endif //I2S_MODE_TDM
-#endif //(I2S_CHANS_ADC != 0)
 
             index = 0;
 #pragma xta endpoint "i2s_output_r"
