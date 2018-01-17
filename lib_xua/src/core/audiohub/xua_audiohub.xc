@@ -902,8 +902,6 @@ unsigned static deliver_slave(chanend ?c_out, chanend ?c_spd_out
         return command;
     }
 
-    InitPorts_slave(divide);
-
     /* Main Audio I/O loop */
     while (1)
     {
@@ -913,14 +911,7 @@ unsigned static deliver_slave(chanend ?c_out, chanend ?c_spd_out
         int syncError = 0;
         unsigned lrval;
 
-        if (!firstIteration)
-        {
-            InitPorts_slave(divide);
-        }
-        else
-        {
-            firstIteration = 0;
-        }
+        InitPorts_slave(divide);
 
         while (!syncError)
         {
