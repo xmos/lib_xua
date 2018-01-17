@@ -21,7 +21,7 @@ unsigned get_tile_id(tileref);
 extern tileref tile[];
 
 /* Function to reset the given tile */
-void reset_tile(unsigned tileId)
+static void reset_tile(unsigned const tileId)
 {
     unsigned int pllVal;
 
@@ -30,7 +30,8 @@ void reset_tile(unsigned tileId)
     write_sswitch_reg_no_ack(tileId, 6, pllVal);
 }        
 
-void device_reboot_aux(void)
+/* Note - resetting is per *node* not tile */
+static inline void device_reboot_aux(void)
 {
 #if (XUD_SERIES_SUPPORT == 1)
     /* Disconnect from bus */
@@ -45,9 +46,7 @@ void device_reboot_aux(void)
     unsigned int localTileId = get_local_tile_id();
     unsigned int tileId;
     unsigned int tileArrayLength;
-    #ifdef __XS2A__
     unsigned int localTileNum;
-    #endif
 
 #if (XUD_SERIES_SUPPORT == 4)
     /* Disconnect from bus */
@@ -55,44 +54,46 @@ void device_reboot_aux(void)
     write_periph_32(usb_tile, XS2_SU_PERIPH_USB_ID, XS1_GLX_PER_UIFM_FUNC_CONTROL_NUM, 1, data);
 #endif
 
-    /* Find size of tile array - note in future tools versions this will be available from platform.h */
-    asm volatile ("ldc %0, tile.globound":"=r"(tileArrayLength));
+    tileArrayLength = sizeof(tile)/sizeof(tileref);
 
-    #ifdef __XS2A__
-    /* Find tile number of the local tile ID*/
-    for(int tileNum = 0;  tileNum<tileArrayLength; tileNum++) {
-        if (get_tile_id(tile[tileNum]) == localTileId) {
+    /* Note - we could be in trouble if this doesn't return 0/1 since 
+     * this code doesn't properly handle any network topology other than a
+     * simple line 
+     */
+    /* Find tile index of the local tile ID */
+    for(int tileNum = 0;  tileNum<tileArrayLength; tileNum++) 
+    {
+        if (get_tile_id(tile[tileNum]) == localTileId)
+        {
             localTileNum = tileNum;
             break;
         }
     }
-    #endif
 
-    #ifndef __XS2A__
-    /* Reset all tiles, starting from the remote ones */
-    for(int tileNum = tileArrayLength-1;  tileNum>=0; tileNum--)
-    #else
+#ifdef __XS2A__
     /* Reset all even tiles, starting from the remote ones */
-    for(int tileNum = tileArrayLength-2;  tileNum>=0; tileNum=tileNum-2)
-    #endif 
+    for(unsigned int tileNum = tileArrayLength-2;  tileNum>=0; tileNum-2)
+#else
+    /* Reset all tiles, starting from the remote ones */
+    for(unsigned int tileNum = tileArrayLength-1;  tileNum>=0; tileNum--)
+#endif 
     {
-
         /* Cannot cast tileref to unsigned! */
         tileId = get_tile_id(tile[tileNum]);
 
-        /* Do not reboot local tile yet! */
-        #ifndef __XS2A__
-        if(localTileId != tileId)
-        #else
-        /* In XS2A the tile paired up with the local tile can't be rebooted either */
-        if((localTileNum|0x01) != (tileNum|0x01))
-        #endif    
+        /* Do not reboot local tile (or tiles residing on the same node) yet */
+#ifdef __XS2A__
+        if((localTileNum | 1) != (tileNum | 1))
+
+#else
+        if(localTileNum != tileNum)
+#endif    
         {
             reset_tile(tileId);
         }
     }
 
-    /* Finally reboot this tile! */
+    /* Finally reboot the node this tile resides on */
     reset_tile(localTileId);
 #endif
 }
