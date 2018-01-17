@@ -88,12 +88,12 @@ extern buffered in port:32  p_i2s_adc[I2S_WIRES_ADC];
 #endif
 
 /* I2S LR/Bit clock I/O */
-#ifndef CODEC_MASTER
-extern buffered out port:32 p_lrclk;
-extern buffered out port:32 p_bclk;
-#else
+#if CODEC_MASTER
 extern buffered in port:32 p_lrclk;
 extern buffered in port:32 p_bclk;
+#else
+extern buffered out port:32 p_lrclk;
+extern buffered out port:32 p_bclk;
 #endif
 
 unsigned dsdMode = DSD_MODE_OFF;
@@ -341,7 +341,7 @@ static inline int DoDsdDopCheck(unsigned &dsdMode, int &dsdCount, unsigned curSa
 }
 
 
-#ifndef CODEC_MASTER
+#if !CODEC_MASTER
 static inline void InitPorts_master(unsigned divide)
 {
     unsigned tmp;
@@ -399,7 +399,7 @@ static inline void InitPorts_master(unsigned divide)
 }
 #endif
 
-#ifdef CODEC_MASTER
+#if CODEC_MASTER
 static inline void InitPorts_slave(unsigned divide)
 {
     unsigned tmp;
@@ -440,7 +440,7 @@ static inline void InitPorts_slave(unsigned divide)
 
 
 
-#ifndef CODEC_MASTER
+#if (CODEC_MASTER == 0)
 #pragma unsafe arrays
 unsigned static deliver_master(chanend ?c_out, chanend ?c_spd_out
 #ifdef ADAT_TX
@@ -581,6 +581,7 @@ unsigned static deliver_master(chanend ?c_out, chanend ?c_spd_out
                     asm volatile("in %0, res[%1]" : "=r"(sample)  : "r"(p_i2s_adc[index++]));
                     sample = bitrev(sample);
                     int chanIndex = ((frameCount-2)&(I2S_CHANS_PER_FRAME-1))+i; // channels 0, 2, 4.. on each line.
+
 #if (AUD_TO_USB_RATIO > 1)
                     if ((AUD_TO_USB_RATIO - 1) == audioToUsbRatioCounter)
                     {
@@ -809,10 +810,10 @@ unsigned static deliver_master(chanend ?c_out, chanend ?c_spd_out
 #pragma xta endpoint "deliver_return"
     return 0;
 }
-#endif //ndef CODEC_MASTER
+#endif
 
 
-#ifdef CODEC_MASTER
+#if (CODEC_MASTER == 1)
 
 /* I2S delivery thread */
 #pragma unsafe arrays

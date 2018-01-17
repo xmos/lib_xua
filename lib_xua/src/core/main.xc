@@ -114,13 +114,12 @@ on tile[AUDIO_IO_TILE] : buffered in port:32 p_i2s_adc[I2S_WIRES_ADC] =
 #endif
 
 
-
-#ifndef CODEC_MASTER
-on tile[AUDIO_IO_TILE] : buffered out port:32 p_lrclk       = PORT_I2S_LRCLK;
-on tile[AUDIO_IO_TILE] : buffered out port:32 p_bclk        = PORT_I2S_BCLK;
-#else
+#if CODEC_MASTER
 on tile[AUDIO_IO_TILE] : buffered in port:32 p_lrclk        = PORT_I2S_LRCLK;
 on tile[AUDIO_IO_TILE] : buffered in port:32 p_bclk         = PORT_I2S_BCLK;
+#else
+on tile[AUDIO_IO_TILE] : buffered out port:32 p_lrclk       = PORT_I2S_LRCLK;
+on tile[AUDIO_IO_TILE] : buffered out port:32 p_bclk        = PORT_I2S_BCLK;
 #endif
 
 /* Note, declared unsafe as sometimes we want to share this port

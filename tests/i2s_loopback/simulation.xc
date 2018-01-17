@@ -33,7 +33,7 @@ void master_mode_clk_setup(void)
 }
 
 
-#ifdef CODEC_MASTER
+#if CODEC_MASTER
 extern out port  p_bclk_gen;  
 extern clock clk_audio_bclk_gen;
 extern out port  p_lrclk_gen; 

@@ -438,10 +438,6 @@
 #define CODEC_MASTER       (0)
 #endif
 
-#if defined(CODEC_MASTER) && (CODEC_MASTER == 0)
-#undef CODEC_MASTER
-#endif
-
 /**
  * @brief Vendor String used by the device. This is also pre-pended to various strings used by the design.
  *

@@ -18,7 +18,7 @@ void ConfigAudioPorts(
 #endif
 
 #if (I2S_CHANS_DAC != 0) || (I2S_CHANS_ADC != 0)
-#ifndef CODEC_MASTER
+#if (CODEC_MASTER == 0)
                 buffered out port:32 ?p_lrclk,
                 buffered out port:32 p_bclk,
 #else
@@ -41,7 +41,7 @@ void ConfigAudioPorts(
 #endif
 
 #if (I2S_CHANS_DAC != 0) || (I2S_CHANS_ADC != 0)
-#ifndef CODEC_MASTER
+#if (CODEC_MASTER == 0)
                 port p_lrclk,
                 port p_bclk,
 #else
@@ -66,7 +66,7 @@ void ConfigAudioPortsWrapper(
 #endif
 
 #if (I2S_CHANS_DAC != 0) || (I2S_CHANS_ADC != 0)
-#ifndef CODEC_MASTER
+#if (CODEC_MASTER == 0)
                 buffered out port:32 ?p_lrclk,
                 buffered out port:32 p_bclk,
 #else

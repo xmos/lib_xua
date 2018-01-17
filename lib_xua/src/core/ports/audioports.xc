@@ -22,7 +22,7 @@ void ConfigAudioPorts(
 #endif
 
 #if (I2S_CHANS_DAC != 0) || (I2S_CHANS_ADC != 0)
-#if !defined(CODEC_MASTER)
+#if (CODEC_MASTER == 0)
         buffered out port:32 ?p_lrclk,
         buffered out port:32 p_bclk,
 #else
@@ -32,7 +32,7 @@ void ConfigAudioPorts(
 #endif
 unsigned int divide, unsigned curSamFreq)
 {
-#if !defined(CODEC_MASTER)
+#if (CODEC_MASTER == 0)
     /* Note this call to stop_clock() will pause forever if the port clocking the clock-block is not low.
      * deliver() should return with this being the case */
     stop_clock(clk_audio_bclk);

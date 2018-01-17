@@ -69,7 +69,7 @@ on tile[AUDIO_IO_TILE] : buffered in port:32 p_i2s_adc[I2S_WIRES_ADC] =
 #endif
 
 
-#if defined(CODEC_MASTER) && (CODEC_MASTER != 0)
+#if CODEC_MASTER
 buffered in port:32 p_lrclk       = PORT_I2S_LRCLK;
 buffered in port:32 p_bclk        = PORT_I2S_BCLK;
 #else
@@ -200,13 +200,14 @@ out port p_mclk_gen       = on tile[AUDIO_IO_TILE] :  XS1_PORT_1A;
 clock clk_audio_mclk_gen  = on tile[AUDIO_IO_TILE] : XS1_CLKBLK_3;
 void master_mode_clk_setup(void);
 
-#ifdef CODEC_MASTER
+#if CODEC_MASTER
 out port  p_bclk_gen      = on tile[AUDIO_IO_TILE] : XS1_PORT_1B;  
 clock clk_audio_bclk_gen  = on tile[AUDIO_IO_TILE] : XS1_CLKBLK_4;
 out port  p_lrclk_gen     = on tile[AUDIO_IO_TILE] : XS1_PORT_1C; 
 clock clk_audio_lrclk_gen = on tile[AUDIO_IO_TILE] : XS1_CLKBLK_5;
 void slave_mode_clk_setup(const unsigned samFreq, const unsigned chans_per_frame);
 #endif
+
 #endif
 
 #if I2S_MODE_TDM
@@ -233,7 +234,7 @@ int main(void)
         generator(c_checker, c_out);
         checker(c_checker, 0);
 #ifdef SIMULATION
-#ifdef CODEC_MASTER
+#if CODEC_MASTER
         slave_mode_clk_setup(DEFAULT_FREQ, (i2s_tdm_mode != 0) ? 8 : 2);
 #else
         master_mode_clk_setup();
