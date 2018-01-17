@@ -15,20 +15,19 @@ OPTIONAL_HEADERS += xua_conf.h
 
 VERSION = 1.0.0
 
-DEPENDENT_MODULES = lib_logging(>=2.0.0) lib_xassert(>=2.0.0) lib_xud(>=1.0.0)
+DEPENDENT_MODULES = lib_logging(>=2.0.0) lib_xud(>=1.0.0)
 
-
-#usb_audio
+#core
 EXCLUDE_FILES += descriptors_2.rst
-XCC_FLAGS_endpoint0.c = -Os -mno-dual-issue $(XCC_FLAGS)
+XCC_FLAGS_xua_endpoint0.c = -Os -mno-dual-issue $(XCC_FLAGS)
+XCC_FLAGS_xua_ep0_uacreqs.xc = -Os -mno-dual-issue $(XCC_FLAGS)
 XCC_FLAGS_dbcalc.xc = -Os -mno-dual-issue $(XCC_FLAGS)
-XCC_FLAGS_audiorequests.xc = -Os -mno-dual-issue $(XCC_FLAGS)
-XCC_FLAGS_flashlib_user.c = -Os -mno-dual-issue $(XCC_FLAGS)
 XCC_FLAGS_audioports.c = -Os -mno-dual-issue $(XCC_FLAGS)
 XCC_FLAGS_audioports.xc = -Os -mno-dual-issue $(XCC_FLAGS)
 
 #dfu
 XCC_FLAGS_dfu.xc = -Os -mno-dual-issue $(XCC_FLAGS)
 XCC_FLAGS_flash_interface.c = -Os -mno-dual-issue $(XCC_FLAGS)
+XCC_FLAGS_flashlib_user.c = -Os -mno-dual-issue $(XCC_FLAGS)
 
 
