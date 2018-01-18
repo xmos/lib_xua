@@ -13,6 +13,7 @@ lib_xua Change Log
                   so it shows up with a descriptive name in Windows Device Manager
     - CHANGE:     DFU_BCD_DEVICE removed (now uses BCD_DEVICE)
     - CHANGE:     Renaming in descriptors.h to avoid clashes with application
+    - CHANGE:     Make device reboot function no-argument (was one channel end)
     - RESOLVED:   FIR gain compensation for PDM mics set incorrectly for divide of 8
     - RESOLVED:   Incorrect xmosdfu DYLD path in test script code
     - RESOLVED:   xmosdfu cannot find XMOS device on modern MacBook Pro (#17897)

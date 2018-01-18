@@ -30,8 +30,10 @@ static void reset_tile(unsigned const tileId)
     write_sswitch_reg_no_ack(tileId, 6, pllVal);
 }        
 
-/* Note - resetting is per *node* not tile */
-static inline void device_reboot_aux(void)
+/* Reboots XMOS device by writing to the PLL config register
+ * Note - resetting is per *node* not tile
+ */
+void device_reboot(void)
 {
 #if (XUD_SERIES_SUPPORT == 1)
     /* Disconnect from bus */
@@ -96,11 +98,6 @@ static inline void device_reboot_aux(void)
     /* Finally reboot the node this tile resides on */
     reset_tile(localTileId);
 #endif
-}
 
-/* Reboots XMOS device by writing to the PLL config register */
-void device_reboot(chanend spare)
-{
-    device_reboot_aux();
-    while(1);
+    while (1);
 }
