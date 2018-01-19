@@ -72,7 +72,7 @@ static inline void device_reboot_aux(void)
 
 #ifdef __XS2A__
     /* Reset all even tiles, starting from the remote ones */
-    for(unsigned int tileNum = tileArrayLength-2;  tileNum>=0; tileNum-2)
+    for(unsigned int tileNum = tileArrayLength-2;  tileNum>=0; tileNum-=2)
 #else
     /* Reset all tiles, starting from the remote ones */
     for(unsigned int tileNum = tileArrayLength-1;  tileNum>=0; tileNum--)
