@@ -20,6 +20,7 @@ lib_xua Change Log
     - RESOLVED:   AUDIO_TILE and PDM_TILE may now share the same value/tile      
     - RESOLVED:   Cope with out of order interface numbers in xmosdfu
     - RESOLVED:   DSD playback not functional on xCORE-200 (introduced in sc_usb_audio 6.14)
+    - RESOLVED:   Improvements made to clock sync code in TDM slave mode
     
 Legacy release history
 ----------------------
