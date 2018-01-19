@@ -248,10 +248,10 @@ static inline unsigned DoSampleTransfer(chanend ?c_out, const int readBuffNo, co
 #endif /* NO_USB */
 
 
+#if (DSD_CHANS_DAC != 0) && (NUM_USB_CHAN_OUT > 0)
 /* This function performs the DSD native loop and outputs a 32b DSD stream per loop */
 static inline void DoDsdNative(unsigned samplesOut[], unsigned &dsdSample_l, unsigned &dsdSample_r, unsigned divide)
 {
-#if (DSD_CHANS_DAC != 0) && (NUM_USB_CHAN_OUT > 0)
      /* 8 bits per chan, 1st 1-bit sample in MSB */
     dsdSample_l =  samplesOut[0];
     dsdSample_r =  samplesOut[1];
@@ -260,14 +260,12 @@ static inline void DoDsdNative(unsigned samplesOut[], unsigned &dsdSample_l, uns
 
     asm volatile("out res[%0], %1"::"r"(p_dsd_dac[0]),"r"(dsdSample_l));
     asm volatile("out res[%0], %1"::"r"(p_dsd_dac[1]),"r"(dsdSample_r));
-#endif
 }
 
 /* This function performs the DOP loop and collects 16b of DSD per loop 
    and outputs a 32b word into the port buffer every other cycle. */
 static inline void DoDsdDop(int &everyOther, unsigned samplesOut[], unsigned &dsdSample_l, unsigned &dsdSample_r, unsigned divide)
 {
-#if (DSD_CHANS_DAC != 0) && (NUM_USB_CHAN_OUT > 0)
     if(!everyOther)
     {
         dsdSample_l = ((samplesOut[0] & 0xffff00) << 8);
@@ -283,16 +281,14 @@ static inline void DoDsdDop(int &everyOther, unsigned samplesOut[], unsigned &ds
         asm volatile("out res[%0], %1"::"r"(p_dsd_dac[0]),"r"(bitrev(dsdSample_l)));
         asm volatile("out res[%0], %1"::"r"(p_dsd_dac[1]),"r"(bitrev(dsdSample_r)));
     }
-#endif
 }
 
-/* When DSD is enabled and streaming is normal I2S, this function checks for a series of DoP markers in the upper byte.
+/* When DSD is enabled and streaming is standard PCM, this function checks for a series of DoP markers in the upper byte.
    If found it will exit deliver() with the command to restart in DoP mode.
    When in DoP mode, this function will check for a single absence of the DoP marker and exit deliver() with the command
    to restart in I2S mode. */
-  
-static inline int DoDsdDopCheck(unsigned &dsdMode, int &dsdCount, unsigned curSamFreq, unsigned samplesOut[], unsigned &dsdMarker){
-#if (DSD_CHANS_DAC != 0) && (NUM_USB_CHAN_OUT > 0)
+static inline int DoDsdDopCheck(unsigned &dsdMode, int &dsdCount, unsigned curSamFreq, unsigned samplesOut[], unsigned &dsdMarker)
+{
     /* Check for DSD - note we only move into DoP mode if valid DoP Freq */
     /* Currently we only check on channel 0 - we get all 0's on channels without data */
     if((dsdMode == DSD_MODE_OFF) && (curSamFreq > 96000))
@@ -320,7 +316,7 @@ static inline int DoDsdDopCheck(unsigned &dsdMode, int &dsdCount, unsigned curSa
             dsdMarker = DSD_MARKER_2;
         }
     }
-    else if(dsdMode == DSD_MODE_DOP) // DSD DoP Mode
+    else if(dsdMode == DSD_MODE_DOP) 
     {
         /* If we are running in DOP mode, check if we need to come out */
         if((DSD_MASK(samplesOut[0]) != DSD_MARKER_1) && (DSD_MASK(samplesOut[1]) != DSD_MARKER_1))
@@ -336,10 +332,9 @@ static inline int DoDsdDopCheck(unsigned &dsdMode, int &dsdCount, unsigned curSa
             }
         }
     }
-#endif
     return 1;
 }
-
+#endif
 
 #if !CODEC_MASTER
 static inline void InitPorts_master(unsigned divide)
