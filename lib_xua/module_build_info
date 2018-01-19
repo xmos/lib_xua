@@ -15,7 +15,7 @@ OPTIONAL_HEADERS += xua_conf.h
 
 VERSION = 0.1.0
 
-DEPENDENT_MODULES = lib_logging(>=2.0.0) lib_xud(>=1.0.0)
+DEPENDENT_MODULES = lib_logging(>=2.0.0) lib_xud(>=0.1.0)
 
 #core
 EXCLUDE_FILES += descriptors_2.rst
