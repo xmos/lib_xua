@@ -406,7 +406,7 @@ static inline void InitPorts_slave(unsigned divide)
     p_lrclk when pinseq(1) :> void;
     p_lrclk when pinseq(0) :> void;
     p_lrclk when pinseq(1) :> void;
-#ifdef I2S_MODE_TDM
+#if I2S_MODE_TDM
     p_lrclk when pinseq(0) :> void;
     p_lrclk when pinseq(1) :> void @ tmp;
 #else
@@ -609,7 +609,7 @@ unsigned static deliver_master(chanend ?c_out, chanend ?c_spd_out
                 /* LR clock delayed by one clock, This is so MSB is output on the falling edge of BCLK
                  * after the falling edge on which LRCLK was toggled. (see I2S spec) */
                 /* Generate clocks LR Clock low - LEFT */
-#ifdef I2S_MODE_TDM
+#if I2S_MODE_TDM
                 p_lrclk <: 0x00000000;
 #else
                 p_lrclk <: 0x80000000;
@@ -736,7 +736,7 @@ unsigned static deliver_master(chanend ?c_out, chanend ?c_spd_out
                 }
 #endif
 
-#ifdef I2S_MODE_TDM
+#if I2S_MODE_TDM
                 if(frameCount == (I2S_CHANS_PER_FRAME-2))
                     p_lrclk <: 0x80000000;
                 else
@@ -778,7 +778,7 @@ unsigned static deliver_master(chanend ?c_out, chanend ?c_spd_out
                     return 0;
             }
 
-#ifdef I2S_MODE_TDM
+#if I2S_MODE_TDM
             /* Increase frameCount by 2 since we have output two channels (per data line) */
             frameCount+=2;
             if(frameCount == I2S_CHANS_PER_FRAME)
@@ -1145,7 +1145,7 @@ unsigned static deliver_slave(chanend ?c_out, chanend ?c_spd_out
 #endif // (I2S_CHANS_DAC != 0) && (NUM_USB_CHAN_OUT != 0)
 
 
-#ifdef I2S_MODE_TDM
+#if I2S_MODE_TDM
             /* Increase frameCount by 2 since we have output two channels (per data line) */
             frameCount+=2;
             if(frameCount == I2S_CHANS_PER_FRAME)
