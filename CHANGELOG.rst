@@ -1,7 +1,7 @@
 lib_xua Change Log
 ==================
 
-1.0.0
+0.1.0
 -----
     - ADDED:      FB_USE_REF_CLOCK to allow feedback generation from xCORE internal reference
     - ADDED:      Linux Makefile for xmosdfu host application
