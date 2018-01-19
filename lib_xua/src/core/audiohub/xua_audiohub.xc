@@ -282,6 +282,7 @@ static inline void DoDsdDop(int &everyOther, unsigned samplesOut[], unsigned &ds
         asm volatile("out res[%0], %1"::"r"(p_dsd_dac[1]),"r"(bitrev(dsdSample_r)));
     }
 }
+#endif
 
 /* When DSD is enabled and streaming is standard PCM, this function checks for a series of DoP markers in the upper byte.
    If found it will exit deliver() with the command to restart in DoP mode.
@@ -334,7 +335,6 @@ static inline int DoDsdDopCheck(unsigned &dsdMode, int &dsdCount, unsigned curSa
     }
     return 1;
 }
-#endif
 
 #if !CODEC_MASTER
 static inline void InitPorts_master(unsigned divide)
@@ -768,8 +768,13 @@ unsigned static deliver_master(chanend ?c_out, chanend ?c_spd_out
 #endif // (I2S_CHANS_DAC != 0)
 
             }  // !dsdMode
-            int ret = DoDsdDopCheck(dsdMode, dsdCount, curSamFreq, samplesOut, dsdMarker);
-            if (ret == 0) return 0;
+
+
+            if((DSD_CHANS_DAC != 0) && (NUM_USB_CHAN_OUT > 0))
+            {
+                if(DoDsdDopCheck(dsdMode, dsdCount, curSamFreq, samplesOut, dsdMarker) == 0)
+                    return 0;
+            }
 
 #ifdef I2S_MODE_TDM
             /* Increase frameCount by 2 since we have output two channels (per data line) */
