@@ -290,6 +290,7 @@ static inline void DoDsdDop(int &everyOther, unsigned samplesOut[], unsigned &ds
    to restart in I2S mode. */
 static inline int DoDsdDopCheck(unsigned &dsdMode, int &dsdCount, unsigned curSamFreq, unsigned samplesOut[], unsigned &dsdMarker)
 {
+#if (DSD_CHANS_DAC != 0) && (NUM_USB_CHAN_OUT > 0)
     /* Check for DSD - note we only move into DoP mode if valid DoP Freq */
     /* Currently we only check on channel 0 - we get all 0's on channels without data */
     if((dsdMode == DSD_MODE_OFF) && (curSamFreq > 96000))
@@ -333,6 +334,7 @@ static inline int DoDsdDopCheck(unsigned &dsdMode, int &dsdCount, unsigned curSa
             }
         }
     }
+#endif
     return 1;
 }
 
