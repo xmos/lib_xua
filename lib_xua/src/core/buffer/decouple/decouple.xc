@@ -112,11 +112,11 @@ xc_ptr g_aud_to_host_dptr;
 xc_ptr g_aud_to_host_rdptr;
 xc_ptr g_aud_to_host_zeros;
 #if (AUDIO_CLASS == 2)
-int sampsToWrite = DEFAULT_FREQ/8000;  /* HS assumed here. Expect to be junked during a overflow before stream start */
-int totalSampsToWrite = DEFAULT_FREQ/8000;
+unsigned sampsToWrite = DEFAULT_FREQ/8000;  /* HS assumed here. Expect to be junked during a overflow before stream start */
+unsigned totalSampsToWrite = DEFAULT_FREQ/8000;
 #else
-int sampsToWrite = DEFAULT_FREQ/1000;  /* HS assumed here. Expect to be junked during a overflow before stream start */
-int totalSampsToWrite = DEFAULT_FREQ/1000;
+unsigned sampsToWrite = DEFAULT_FREQ/1000;  /* HS assumed here. Expect to be junked during a overflow before stream start */
+unsigned totalSampsToWrite = DEFAULT_FREQ/1000;
 #endif
 int aud_data_remaining_to_device = 0;
 
@@ -146,9 +146,11 @@ unsigned g_curSubSlot_In  = FS_STREAM_FORMAT_INPUT_1_SUBSLOT_BYTES;
 
 /* IN packet size. Init to something sensible, but expect to be re-set before stream start */
 #if (AUDIO_CLASS==2)
-int g_maxPacketSize = MAX_DEVICE_AUD_PACKET_SIZE_IN_HS;
+unsigned g_maxPacketSize = MAX_DEVICE_AUD_PACKET_SIZE_IN_HS;
+unsigned g_typPacketSizeSamps = DEFAULT_FREQ/8000;
 #else
-int g_maxPacketSize = MAX_DEVICE_AUD_PACKET_SIZE_IN_FS;
+unsigned g_maxPacketSize = MAX_DEVICE_AUD_PACKET_SIZE_IN_FS;
+unsigned g_typPacketSizeSamps = DEFAULT_FREQ/1000;
 #endif
 
 #pragma select handler
@@ -322,6 +324,7 @@ __builtin_unreachable();
 
 #endif
 
+    if (sampsToWrite > 0)
     {
         /* Store samples from mixer into sample buffer */
         switch(g_curSubSlot_In)
@@ -451,6 +454,14 @@ __builtin_unreachable();
 
         sampsToWrite--;
     }
+    else
+    {
+        /* Burn all the samples when sampToWrite is 0 */
+        for(int i = 0; i < NUM_USB_CHAN_IN; i++)
+        {
+            inuint(c_mix_out);
+        }
+    }
 
     {
         /* Finished creating packet - commit it to the FIFO */
@@ -490,23 +501,48 @@ __builtin_unreachable();
             totalSampsToWrite = speedRem >> 16;
             speedRem &= 0xffff;
 
-# if 0
-            if (totalSampsToWrite < 0 || totalSampsToWrite * g_curSubSlot_In * g_numUsbChan_In > g_maxPacketSize)
+            /*
+             * If the totalSampsToWrite would write beyond the end of the buffer
+             * then we cap it at the typical number of samples for the current
+             * sample rate and USB speed as set by GetADCCounts().
+             */
+            if (g_aud_to_host_dptr + (totalSampsToWrite * g_curSubSlot_In * g_numUsbChan_In) > (aud_to_host_fifo_start + sizeof(audioBuffIn)))
             {
-                totalSampsToWrite = 0;
+                totalSampsToWrite = g_typPacketSizeSamps;
+                if (g_aud_to_host_dptr + (totalSampsToWrite * g_curSubSlot_In * g_numUsbChan_In) > (aud_to_host_fifo_start + sizeof(audioBuffIn)))
+                {
+                    /*
+                     * Double check we still aren't going to overrun the buffer
+                     * after changing the number of samples to write. If we are
+                     * then just set it to zero and hope that g_speed gets updated
+                     * to something sensible.
+                     */
+                    totalSampsToWrite = 0;
+                }
             }
-#endif
 
-            /* Calc slots left in fifo */
+            /*
+             * Calc slots left in fifo. When the read pointer is ahead
+             * in memory of the write pointer (write pointer has wrapped)
+             * then we have (read pointer - write pointer) bytes available
+             * to write.
+             */
             space_left = g_aud_to_host_rdptr - g_aud_to_host_wrptr;
 
-            /* Mod and special case */
-            if ((space_left <= 0) && (g_aud_to_host_rdptr == aud_to_host_fifo_start))
+            /*
+             * If the read and write pointers are on top of each other and
+             * the input is in the underflow condition, then the buffer is
+             * empty rather than full.
+             *
+             * If the buffer is empty or if the read pointer is behind the write
+             * pointer then the bytes available to write is only from the write
+             * pointer to the end of the buffer since the next write cannot wrap.
+             */
+            if ((space_left == 0 && inUnderflow) || space_left < 0)
             {
-                space_left = aud_to_host_fifo_end - g_aud_to_host_wrptr;
+                space_left = (aud_to_host_fifo_start + sizeof(audioBuffIn)) - g_aud_to_host_wrptr;
             }
 
-            //if((space_left > 0) && (space_left < (totalSampsToWrite * g_numUsbChan_In * g_curSubSlot_In + 4)))
             if((space_left < (totalSampsToWrite * g_numUsbChan_In * g_curSubSlot_In + 4)))
             {
                 /* In pipe has filled its buffer - we need to overflow
@@ -588,6 +624,7 @@ static inline void SetupZerosSendBuffer(XUD_ep aud_to_host_usb_ep, unsigned samp
      * over flow and this to be reset */
     SET_SHARED_GLOBAL(sampsToWrite, 0);
     SET_SHARED_GLOBAL(totalSampsToWrite, 0);
+    SET_SHARED_GLOBAL(g_typPacketSizeSamps, mid);
 
     mid *= g_numUsbChan_In * slotSize;
 
@@ -676,8 +713,6 @@ void XUA_Buffer_Decouple(chanend c_mix_out
     }
 #endif
 
-    set_interrupt_handler(handle_audio_request, 1, c_mix_out, 0);
-
     /* Wait for usb_buffer() to set up globals for us to use
      * Note: assumed that buffer_aud_ctl_chan is also setup before these globals are !0 */
 #if (NUM_USB_CHAN_OUT > 0)
@@ -715,6 +750,8 @@ void XUA_Buffer_Decouple(chanend c_mix_out
     SetupZerosSendBuffer(aud_to_host_usb_ep, sampFreq, g_curSubSlot_In);
 #endif
 #endif
+
+    set_interrupt_handler(handle_audio_request, 1, c_mix_out, 0);
 
     while(1)
     {
@@ -882,6 +919,9 @@ void XUA_Buffer_Decouple(chanend c_mix_out
             int space_left;
             int aud_from_host_wrptr;
             int aud_from_host_rdptr;
+
+            DISABLE_INTERRUPTS();
+
             GET_SHARED_GLOBAL(aud_from_host_wrptr, g_aud_from_host_wrptr);
             GET_SHARED_GLOBAL(aud_from_host_rdptr, g_aud_from_host_rdptr);
 
@@ -915,6 +955,8 @@ void XUA_Buffer_Decouple(chanend c_mix_out
             {
                 space_left = aud_from_host_fifo_end - g_aud_from_host_wrptr;
             }
+
+            ENABLE_INTERRUPTS();
 
             if (space_left <= 0 || space_left >= MAX_DEVICE_AUD_PACKET_SIZE_OUT)
             {
@@ -966,6 +1008,8 @@ void XUA_Buffer_Decouple(chanend c_mix_out
                 /* Signals that the IN endpoint has sent data from the passed buffer */
                 /* Reset flag */
                 SET_SHARED_GLOBAL(g_aud_to_host_flag, 0);
+
+                DISABLE_INTERRUPTS();
 
                 if (inUnderflow)
                 {
@@ -1020,6 +1064,8 @@ void XUA_Buffer_Decouple(chanend c_mix_out
                         SET_SHARED_GLOBAL(g_aud_to_host_buffer, g_aud_to_host_zeros);
                     }
                 }
+
+                ENABLE_INTERRUPTS();
 
                 /* Request to send packet */
                 {
