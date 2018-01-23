@@ -1,5 +1,6 @@
 #include <xs1.h>
 #include <platform.h>
+#include <print.h>
 #include <xs1_su.h>
 
 #define XS1_SU_PERIPH_USB_ID 0x1
@@ -74,10 +75,10 @@ void device_reboot(void)
 
 #ifdef __XS2A__
     /* Reset all even tiles, starting from the remote ones */
-    for(unsigned int tileNum = tileArrayLength-2;  tileNum>=0; tileNum-=2)
+    for(int tileNum = tileArrayLength-2;  tileNum>=0; tileNum-=2)
 #else
     /* Reset all tiles, starting from the remote ones */
-    for(unsigned int tileNum = tileArrayLength-1;  tileNum>=0; tileNum--)
+    for(int tileNum = tileArrayLength-1;  tileNum>=0; tileNum--)
 #endif 
     {
         /* Cannot cast tileref to unsigned! */
