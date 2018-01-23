@@ -21,3 +21,4 @@ module_dfu/host/xmosdfu/xmosdfu
 .lock-waf_*
 .waf-*/
 build/
+host/xmosdfu/xmosdfu
