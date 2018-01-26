@@ -55,8 +55,10 @@ unsigned int divide, unsigned curSamFreq, unsigned int dsdMode)
                 p_adc,
                 numPortsAdc,
 #endif
+#if (I2S_CHANS_DAC != 0) || (I2S_CHANS_ADC != 0)
                 p_lrclk,
                 p_bclk,
+#endif
                 divide, curSamFreq);
 }
 

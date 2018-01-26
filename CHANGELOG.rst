@@ -1,6 +1,10 @@
 lib_xua Change Log
 ==================
 
+0.1.1
+-----
+    - RESOLVED:   Configurations where I2S_CHANS_DAC and I2S_CHANS_ADC are both 0 now build
+
 0.1.0
 -----
     - ADDED:      FB_USE_REF_CLOCK to allow feedback generation from xCORE internal reference

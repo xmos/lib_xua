@@ -32,10 +32,13 @@ void ConfigAudioPorts(
 #endif
 unsigned int divide, unsigned curSamFreq)
 {
+#if (I2S_CHANS_DAC != 0) || (I2S_CHANS_ADC != 0)
+
 #if (CODEC_MASTER == 0)
     /* Note this call to stop_clock() will pause forever if the port clocking the clock-block is not low.
      * deliver() should return with this being the case */
     stop_clock(clk_audio_bclk);
+
 
     if(!isnull(p_lrclk))
     {
@@ -65,6 +68,7 @@ unsigned int divide, unsigned curSamFreq)
         configure_port_clock_output(p_bclk, clk_audio_bclk);
     }
 #else
+    #error XS1 no longer supported in audio core 
     /* For a divide of one (i.e. bitclock == master-clock) BClk is set to clock_output mode.
      * In this mode it outputs an edge clock on every tick of itsassociated clock_block.
      *
@@ -152,6 +156,7 @@ unsigned int divide, unsigned curSamFreq)
     configure_in_port_no_ready(p_lrclk, clk_audio_bclk);
 
     start_clock(clk_audio_bclk);
+#endif
 #endif
 }
 
