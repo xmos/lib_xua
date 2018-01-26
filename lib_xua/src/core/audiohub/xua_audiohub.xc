@@ -981,7 +981,7 @@ unsigned static deliver_slave(chanend ?c_out, chanend ?c_spd_out
             }
             else
             {
-                syncError += (lrval != 0x7fffffff);
+                syncError += (lrval != 0x80000000);
             }
 
 #pragma xta endpoint "i2s_output_l"
@@ -1116,7 +1116,7 @@ unsigned static deliver_slave(chanend ?c_out, chanend ?c_spd_out
             }
             else
             {  
-                syncError += (lrval != 0x80000000);
+                syncError += (lrval != 0x7fffffff);
             }
 
             index = 0;
