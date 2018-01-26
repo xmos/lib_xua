@@ -1,5 +1,6 @@
 #include <xs1.h>
 #include <platform.h>
+#include <print.h>
 #include <xs1_su.h>
 
 #define XS1_SU_PERIPH_USB_ID 0x1
@@ -30,8 +31,10 @@ static void reset_tile(unsigned const tileId)
     write_sswitch_reg_no_ack(tileId, 6, pllVal);
 }        
 
-/* Note - resetting is per *node* not tile */
-static inline void device_reboot_aux(void)
+/* Reboots XMOS device by writing to the PLL config register
+ * Note - resetting is per *node* not tile
+ */
+void device_reboot(void)
 {
 #if (XUD_SERIES_SUPPORT == 1)
     /* Disconnect from bus */
@@ -72,10 +75,10 @@ static inline void device_reboot_aux(void)
 
 #ifdef __XS2A__
     /* Reset all even tiles, starting from the remote ones */
-    for(unsigned int tileNum = tileArrayLength-2;  tileNum>=0; tileNum-=2)
+    for(int tileNum = tileArrayLength-2;  tileNum>=0; tileNum-=2)
 #else
     /* Reset all tiles, starting from the remote ones */
-    for(unsigned int tileNum = tileArrayLength-1;  tileNum>=0; tileNum--)
+    for(int tileNum = tileArrayLength-1;  tileNum>=0; tileNum--)
 #endif 
     {
         /* Cannot cast tileref to unsigned! */
@@ -96,11 +99,6 @@ static inline void device_reboot_aux(void)
     /* Finally reboot the node this tile resides on */
     reset_tile(localTileId);
 #endif
-}
 
-/* Reboots XMOS device by writing to the PLL config register */
-void device_reboot(chanend spare)
-{
-    device_reboot_aux();
-    while(1);
+    while (1);
 }

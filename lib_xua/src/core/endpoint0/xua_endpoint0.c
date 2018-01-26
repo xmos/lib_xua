@@ -56,7 +56,7 @@
 #if (XUA_DFU_EN == 1)
 #include "xua_dfu.h"
 #define DFU_IF_NUM INPUT_INTERFACES + OUTPUT_INTERFACES + MIDI_INTERFACES + 1
-extern void device_reboot(chanend);
+extern void device_reboot(void);
 #endif
 
 unsigned int DFU_mode_active = 0;         // 0 - App active, 1 - DFU active
@@ -579,7 +579,7 @@ void XUA_Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
                             if(reset)
                             {
                                 DFUDelay(50000000);
-                                device_reboot(c_audioControl);
+                                device_reboot();
                             }
                         }
 #endif
@@ -794,7 +794,7 @@ void XUA_Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
 
                     /* Send reboot command */
                     DFUDelay(5000000);
-                    device_reboot(c_audioControl);
+                    device_reboot();
                 }
             }
 #endif
