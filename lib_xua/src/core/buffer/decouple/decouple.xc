@@ -594,6 +594,9 @@ __builtin_unreachable();
             aud_data_remaining_to_device = 0;
         }
 
+        /* move read pointer up to next word boundary */
+        g_aud_from_host_rdptr = (g_aud_from_host_rdptr + 3) & ~0x3;
+
         /* Wrap read pointer */
         if (g_aud_from_host_rdptr >= aud_from_host_fifo_end)
         {
