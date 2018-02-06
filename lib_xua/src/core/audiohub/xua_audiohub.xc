@@ -464,9 +464,9 @@ unsigned static deliver_master(chanend ?c_out, chanend ?c_spd_out
     int started = 0;
 #endif
 
+#if (DSD_CHANS_DAC != 0)
     unsigned dsdMarker = DSD_MARKER_2;    /* This alternates between DSD_MARKER_1 and DSD_MARKER_2 */
     int dsdCount = 0;
-#if (DSD_CHANS_DAC != 0)
     int everyOther = 1;
     unsigned dsdSample_l = 0x96960000;
     unsigned dsdSample_r = 0x96960000;
@@ -981,7 +981,7 @@ unsigned static deliver_slave(chanend ?c_out, chanend ?c_spd_out
             }
             else
             {
-                syncError += (lrval != 0x7fffffff);
+                syncError += (lrval != 0x80000000);
             }
 
 #pragma xta endpoint "i2s_output_l"
@@ -1116,7 +1116,7 @@ unsigned static deliver_slave(chanend ?c_out, chanend ?c_spd_out
             }
             else
             {  
-                syncError += (lrval != 0x80000000);
+                syncError += (lrval != 0x7fffffff);
             }
 
             index = 0;
