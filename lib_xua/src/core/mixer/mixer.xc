@@ -149,7 +149,6 @@ static inline int doMix(xc_ptr samples, xc_ptr ptr, xc_ptr mult)
 
     if(l != h)
     {
-        //if(h < 0)
         if(h>>32)
             h = (0x80000000>>7);
         else
@@ -363,9 +362,11 @@ static void mixer1(chanend c_host, chanend c_mix_ctl, chanend c_mixer2)
         /* Request from audio()/mixer2() */
         request = inuint(c_mixer2);
 
-
         /* Forward on Request for data to decouple thread */
         outuint(c_host, request);
+    
+        /* Sync */
+        outuint(c_mixer2, 0);
 
         /* Between request to decouple and response ~ 400nS latency for interrupt to fire */
         select
@@ -380,11 +381,7 @@ static void mixer1(chanend c_host, chanend c_mix_ctl, chanend c_mixer2)
                         index = inuint(c_mix_ctl);
                         val = inuint(c_mix_ctl);
                         inct(c_mix_ctl);
-
-
-                        write_via_xc_ptr_indexed(samples_to_host_map,
-                                                 index,
-                                                 val);
+                        write_via_xc_ptr_indexed(samples_to_host_map, index, val);
                         break;
 
                     case SET_SAMPLES_TO_DEVICE_MAP:
@@ -412,7 +409,6 @@ static void mixer1(chanend c_host, chanend c_mix_ctl, chanend c_mixer2)
                         setPtr(index, val, mix);
 #else
                         write_word_to_mix_map(mix, index, val);
-
 #endif
                         break;
 #endif /* if MAX_MIX_COUNT > 0 */
@@ -537,16 +533,15 @@ static void mixer1(chanend c_host, chanend c_mix_ctl, chanend c_mixer2)
         }
         else
         {
-
 #if MAX_MIX_COUNT > 0
-            outuint(c_mixer2, 0);
+            GetSamplesFromHost(c_host);
             GiveSamplesToHost(c_host, samples_to_host_map, multIn);
 
+            /* Sync with mixer 2 (once it has swapped samples with audiohub) */
             outuint(c_mixer2, 0);
             inuint(c_mixer2);
-            GetSamplesFromHost(c_host);
-            outuint(c_mixer2, 0);
-            inuint(c_mixer2);
+           
+            /* Do the mixing */ 
 #ifdef FAST_MIXER
             mixed = doMix0(samples, mix_mult_slice(0));
 #else
@@ -633,6 +628,9 @@ static void mixer2(chanend c_mixer1, chanend c_audio)
         /* Forward the request on */
         outuint(c_mixer1, request);
 
+        /* Sync */
+        inuint(c_mixer1);
+
         if(testct(c_mixer1))
         {
             int sampFreq;
@@ -667,86 +665,82 @@ static void mixer2(chanend c_mixer1, chanend c_audio)
                 write_via_xc_ptr_indexed(samples, (NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + i), 0);
             }
 
-            /* Inform audio thread about freq change */
-            //outct(c_audio, XS1_CT_END);
-            //outuint(c_audio, sampFreq);
-
             /* Wait for handshake and pass on */
             chkct(c_audio, XS1_CT_END);
             outct(c_mixer1, XS1_CT_END);
         }
         else
         {
-            (void) inuint(c_mixer1);
             GiveSamplesToDevice(c_audio, samples_to_device_map, multOut);
-            inuint(c_mixer1);
-            outuint(c_mixer1, 0);
             GetSamplesFromDevice(c_audio);
+           
+            /* Sync with mixer 1 (once it has swapped samples with the buffering sub-system) */ 
             inuint(c_mixer1);
             outuint(c_mixer1, 0);
+
+            /* Do the mixing */
 #if MAX_MIX_COUNT > 1
 #ifdef FAST_MIXER
-      mixed = doMix1(samples, mix_mult_slice(1));
+            mixed = doMix1(samples, mix_mult_slice(1));
 #else
-      mixed = doMix(samples, mix_map_slice(1),mix_mult_slice(1));
+            mixed = doMix(samples, mix_map_slice(1),mix_mult_slice(1));
 #endif
 
-      write_via_xc_ptr_indexed(samples, (NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + 1), mixed);
+            write_via_xc_ptr_indexed(samples, (NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + 1), mixed);
 
 #if defined (LEVEL_METER_HOST) || defined(LEVEL_METER_LEDS)
-        ComputeMixerLevel(mixed, 1);
+            ComputeMixerLevel(mixed, 1);
 #endif
 #endif
 
-
-
+            
 #if (MAX_FREQ > 96000)
-      if (!mixer2_mix2_flag)
+            /* Fewer mixes when running higher than 96kHz */
+            if (!mixer2_mix2_flag)
 #endif
-      {
+            {
 #if MAX_MIX_COUNT > 3
 #ifdef FAST_MIXER
-        mixed = doMix3(samples, mix_mult_slice(3));
+                mixed = doMix3(samples, mix_mult_slice(3));
 #else
-        mixed = doMix(samples, mix_map_slice(3),mix_mult_slice(3));
+                mixed = doMix(samples, mix_map_slice(3),mix_mult_slice(3));
 #endif
 
-        write_via_xc_ptr_indexed(samples, (NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + 3), mixed);
+                write_via_xc_ptr_indexed(samples, (NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + 3), mixed);
 
 #if defined (LEVEL_METER_HOST) || defined(LEVEL_METER_LEDS)
-            ComputeMixerLevel(mixed, 3);
+                ComputeMixerLevel(mixed, 3);
 #endif
 #endif
 
 #if MAX_MIX_COUNT > 5
 #ifdef FAST_MIXER
-    mixed = doMix5(samples, mix_mult_slice(5));
+                mixed = doMix5(samples, mix_mult_slice(5));
 #else
-    mixed = doMix(samples, mix_map_slice(5),mix_mult_slice(5));
+                mixed = doMix(samples, mix_map_slice(5),mix_mult_slice(5));
 #endif
-    write_via_xc_ptr_indexed(samples, NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + 5, mixed);
+                write_via_xc_ptr_indexed(samples, NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + 5, mixed);
 
 #if defined (LEVEL_METER_HOST) || defined(LEVEL_METER_LEDS)
-            ComputeMixerLevel(mixed, 5);
+                ComputeMixerLevel(mixed, 5);
 #endif
 #endif
 
 #if MAX_MIX_COUNT > 7
 #ifdef FAST_MIXER
-    mixed = doMix7(samples, mix_mult_slice(7));
+                mixed = doMix7(samples, mix_mult_slice(7));
 #else
-    mixed = doMix(samples, mix_map_slice(7),mix_mult_slice(7));
+                mixed = doMix(samples, mix_map_slice(7),mix_mult_slice(7));
 #endif
 
-    write_via_xc_ptr_indexed(samples,  NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + 7, mixed);
+                write_via_xc_ptr_indexed(samples,  NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + 7, mixed);
 #if defined (LEVEL_METER_HOST) || defined(LEVEL_METER_LEDS)
-            ComputeMixerLevel(mixed, 7);
+                ComputeMixerLevel(mixed, 7);
 #endif
 #endif
-      }
-
+            }
+        }
     }
-  }
 }
 #endif
 
