@@ -1,4 +1,4 @@
-// Copyright (c) 2011-2017, XMOS Ltd, All rights reserved
+// Copyright (c) 2011-2018, XMOS Ltd, All rights reserved
 #ifndef __mixer_h__
 #define __mixer_h__
 

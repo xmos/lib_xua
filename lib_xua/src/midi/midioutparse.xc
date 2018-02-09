@@ -1,4 +1,4 @@
-// Copyright (c) 2011-2017, XMOS Ltd, All rights reserved
+// Copyright (c) 2011-2018, XMOS Ltd, All rights reserved
 /**
  * @file midioutparse.xc
  * @brief Parses USB-MIDI events into set of MIDI bytes

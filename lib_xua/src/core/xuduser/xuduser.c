@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2017, XMOS Ltd, All rights reserved
+// Copyright (c) 2013-2018, XMOS Ltd, All rights reserved
 #ifndef NO_USB
 #include "xua.h"
 #include "hostactive.h"

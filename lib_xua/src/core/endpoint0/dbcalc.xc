@@ -1,4 +1,4 @@
-// Copyright (c) 2011-2017, XMOS Ltd, All rights reserved
+// Copyright (c) 2011-2018, XMOS Ltd, All rights reserved
 #include <xs1.h>
 #include <print.h>
 /* The coefficients of the chebychev polynomial to approximate 10^x in the interval [-1,1].
