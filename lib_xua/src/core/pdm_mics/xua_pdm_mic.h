@@ -1,3 +1,4 @@
+// Copyright (c) 2015-2017, XMOS Ltd, All rights reserved
 
 #include "mic_array.h"
 

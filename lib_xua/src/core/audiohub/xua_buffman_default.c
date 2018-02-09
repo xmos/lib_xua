@@ -1,3 +1,4 @@
+// Copyright (c) 2016-2017, XMOS Ltd, All rights reserved
 
 #include "xccompat.h"
 #include "xua_audiohub.h"

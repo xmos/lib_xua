@@ -1,3 +1,4 @@
+// Copyright (c) 2013-2018, XMOS Ltd, All rights reserved
 
 #include <xs1.h>
 #define __ASSEMBLER__ // Work around for bug #14118

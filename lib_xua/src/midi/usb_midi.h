@@ -1,3 +1,4 @@
+// Copyright (c) 2011-2017, XMOS Ltd, All rights reserved
 #ifndef __usb_midi_h__
 #define __usb_midi_h__
 

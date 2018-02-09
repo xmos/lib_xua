@@ -1,3 +1,4 @@
+// Copyright (c) 2011-2017, XMOS Ltd, All rights reserved
 #include "xua.h"
 #if (XUA_DFU_EN== 1)
 #include <xs1.h>

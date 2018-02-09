@@ -1,3 +1,4 @@
+// Copyright (c) 2013-2018, XMOS Ltd, All rights reserved
 
 #ifndef _DSD_H_
 #define _DSD_H_

@@ -1,3 +1,4 @@
+// Copyright (c) 2011-2017, XMOS Ltd, All rights reserved
 #ifndef __XUA_BUFFER_H__
 #define __XUA_BUFFER_H__
 

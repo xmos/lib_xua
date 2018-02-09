@@ -1,3 +1,4 @@
+// Copyright (c) 2015-2017, XMOS Ltd, All rights reserved
 
 #ifndef __DFU_INTERFACE_H__
 #define __DFU_INTERFACE_H__

@@ -1,3 +1,4 @@
+// Copyright (c) 2014-2018, XMOS Ltd, All rights reserved
 
 #ifndef _AUDIOREQUESTS_H_
 #define _AUDIOREQUESTS_H_

@@ -1,4 +1,4 @@
-// Copyright (c) 2016, XMOS Ltd, All rights reserved
+// Copyright (c) 2016-2018, XMOS Ltd, All rights reserved
 #ifndef __gpio_access_h__
 #define __gpio_access_h__
 

@@ -1,3 +1,4 @@
+// Copyright (c) 2015-2017, XMOS Ltd, All rights reserved
 
 #ifndef __DESCRIPTOR_DEFS_H__
 #define __DESCRIPTOR_DEFS_H__

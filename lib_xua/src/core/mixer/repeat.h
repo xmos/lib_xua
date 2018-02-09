@@ -1,3 +1,4 @@
+// Copyright (c) 2011-2017, XMOS Ltd, All rights reserved
 #ifndef N
 #error "N must be defined before including repeat.h"
 #endif

@@ -1,3 +1,4 @@
+// Copyright (c) 2011-2017, XMOS Ltd, All rights reserved
 /* This file contains the MID device descriptor
    It is intended to be included in the main device descriptor definition */
 

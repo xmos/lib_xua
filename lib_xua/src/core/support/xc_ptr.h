@@ -1,3 +1,4 @@
+// Copyright (c) 2011-2018, XMOS Ltd, All rights reserved
 #ifndef __xc_ptr__
 #define __xc_ptr__
 

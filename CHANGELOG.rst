@@ -6,7 +6,8 @@ lib_xua Change Log
 
   * RESOLVED:   Configurations where I2S_CHANS_DAC and I2S_CHANS_ADC are both 0
     now build
-  * RESOLVED:   Deadlock in mixer when MAX_MIX_COUNT > 0 for larger channel counts
+  * RESOLVED:   Deadlock in mixer when MAX_MIX_COUNT > 0 for larger channel
+    counts
 
   * Changes to dependencies:
 

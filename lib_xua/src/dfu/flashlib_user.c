@@ -1,3 +1,4 @@
+// Copyright (c) 2012-2018, XMOS Ltd, All rights reserved
 #include "xua.h"
 #if (XUA_DFU_EN == 1)
 #include "uac_hwresources.h"

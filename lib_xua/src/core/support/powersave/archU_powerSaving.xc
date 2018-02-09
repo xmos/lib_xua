@@ -1,3 +1,4 @@
+// Copyright (c) 2013-2018, XMOS Ltd, All rights reserved
 
 #if (XUD_SERIES_SUPPORT==1)
 #include "archU_powerSaving.h"

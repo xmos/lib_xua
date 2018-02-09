@@ -1,3 +1,4 @@
+// Copyright (c) 2011-2017, XMOS Ltd, All rights reserved
 /**
  * @file midiinparse.xc
  * @brief Generates USB MIDI events from MIDI events

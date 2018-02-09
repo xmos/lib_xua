@@ -1,3 +1,4 @@
+// Copyright (c) 2017-2018, XMOS Ltd, All rights reserved
 #ifndef CS4384_H_
 #define CS4384_H_
 

@@ -1,3 +1,4 @@
+// Copyright (c) 2013-2017, XMOS Ltd, All rights reserved
 #include "queue.h"
 
 // Force external definitions of inline functions.
