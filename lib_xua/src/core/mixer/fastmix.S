@@ -1,3 +1,4 @@
+// Copyright (c) 2018, XMOS Ltd, All rights reserved
 //#include "devicedefines.h"
 
 #define MAX_MIX_COUNT 8

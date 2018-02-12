@@ -1,3 +1,4 @@
+// Copyright (c) 2016-2018, XMOS Ltd, All rights reserved
 #ifndef NO_USB
 
 #include "xud.h"

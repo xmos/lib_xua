@@ -1,3 +1,4 @@
+// Copyright (c) 2011-2018, XMOS Ltd, All rights reserved
 
 #ifndef __XUA_INTERNAL_CMDS_H__
 #define __XUA_INTERNAL_CMDS_H__

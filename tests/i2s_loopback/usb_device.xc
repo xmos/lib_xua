@@ -1,5 +1,5 @@
+// Copyright (c) 2018, XMOS Ltd, All rights reserved
 #if 0
-// Copyright (c) 2016, XMOS Ltd, All rights reserved
 #include <xs1.h>
 #include <xccompat.h>
 #include "usb_std_requests.h"

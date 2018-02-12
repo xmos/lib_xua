@@ -1,3 +1,4 @@
+// Copyright (c) 2011-2018, XMOS Ltd, All rights reserved
 #include <xs1.h>
 
 /* TODO Currently complier does not support inline select functions, hense this is in a seperate file to ensure this is not the case */

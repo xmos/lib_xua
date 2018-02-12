@@ -1,3 +1,4 @@
+// Copyright (c) 2011-2018, XMOS Ltd, All rights reserved
 #ifndef NO_USB
 #include <xs1.h>
 #include "xua.h"

@@ -15,3 +15,7 @@ This document assumes familiarity with the XMOS xCORE architecture, the
 Universal Serial Bus 2.0 Specification (and related specifications),
 the XMOS tool chain and XC language.
 
+Known Issues
+============
+
+.. include:: ../../../CHANGELOG.rst

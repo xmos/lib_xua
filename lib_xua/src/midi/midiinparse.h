@@ -1,3 +1,4 @@
+// Copyright (c) 2011-2018, XMOS Ltd, All rights reserved
 #ifndef MIDIINPARSE_XH
 #define MIDIINPARSE_XH
 
