@@ -1,3 +1,4 @@
+// Copyright (c) 2015-2018, XMOS Ltd, All rights reserved
 
 #ifndef _UAC_HWRESOURCES_H_
 #define _UAC_HWRESOURCES_H_

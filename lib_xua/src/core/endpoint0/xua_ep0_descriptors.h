@@ -1,3 +1,4 @@
+// Copyright (c) 2011-2018, XMOS Ltd, All rights reserved
 /**
  * @file    descriptors.h
  * @brief   Device Descriptors

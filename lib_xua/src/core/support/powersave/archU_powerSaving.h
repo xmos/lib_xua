@@ -1,3 +1,4 @@
+// Copyright (c) 2013-2018, XMOS Ltd, All rights reserved
 #ifndef ARCH_U_POWER_SAVING_
 #define ARCH_U_POWER_SAVING_
 

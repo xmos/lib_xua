@@ -1,3 +1,4 @@
+// Copyright (c) 2018, XMOS Ltd, All rights reserved
 #define CS2100_I2C_DEVICE_ADDR      (0x9c>>1)
 
 #define CS2100_DEVICE_CONTROL       0x02

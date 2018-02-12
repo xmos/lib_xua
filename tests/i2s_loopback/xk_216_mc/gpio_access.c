@@ -1,4 +1,4 @@
-// Copyright (c) 2016, XMOS Ltd, All rights reserved
+// Copyright (c) 2016-2018, XMOS Ltd, All rights reserved
 #ifdef HARDWARE
 #include <xs1.h>
 #include "gpio_access.h"

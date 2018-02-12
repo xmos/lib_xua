@@ -1,3 +1,4 @@
+// Copyright (c) 2017-2018, XMOS Ltd, All rights reserved
 
 #ifndef __XUA_H__
 #define __XUA_H__

@@ -1,3 +1,4 @@
+// Copyright (c) 2011-2018, XMOS Ltd, All rights reserved
 /**
  * @file xua_audiohub.xc
  * @brief XMOS USB 2.0 Audio Reference Design.  Audio Functions.

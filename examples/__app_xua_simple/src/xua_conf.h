@@ -1,3 +1,4 @@
+// Copyright (c) 2017-2018, XMOS Ltd, All rights reserved
 
 #define NUM_USB_CHAN_OUT 2
 #define NUM_USB_CHAN_IN 2

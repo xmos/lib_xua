@@ -1,3 +1,4 @@
+// Copyright (c) 2013-2018, XMOS Ltd, All rights reserved
 
 
 /* These defines relate to the HID report desc - do not mod */
