@@ -18,9 +18,7 @@ device_pid_t pidList[] = {
     { "XMOS_L1_AUDIO1_PID",          0x0003},
     { "XMOS_L2_AUDIO2_PID",          0x0004},
     { "XMOS_SU1_AUDIO2_PID",         0x0008},
-    { "XMOS_U8_MFA_AUDIO2_PID",      0x000A},
-    { "XMOS_VF_SPK_BASE_AUDIO2_PID",         0x0010},
-    { "XMOS_VF_SPK_BASE_AUDIO1_PID",         0x0011}
+    { "XMOS_U8_MFA_AUDIO2_PID",      0x000A}
 };
 
 unsigned int XMOS_DFU_IF = 0;
