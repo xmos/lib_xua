@@ -279,7 +279,6 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
 #if (NUM_USB_CHAN_IN > 0)
     unsigned bufferIn = 1;
 #endif
-    //unsigned remnant = 0;
     unsigned sofCount = 0;
     unsigned freqChange = 0;
 
