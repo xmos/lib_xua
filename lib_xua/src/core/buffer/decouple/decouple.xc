@@ -567,7 +567,6 @@ __builtin_unreachable();
 
         outUnderflow = (g_aud_from_host_rdptr == g_aud_from_host_wrptr);
 
-
         if (!outUnderflow)
         {
             read_via_xc_ptr(aud_data_remaining_to_device, g_aud_from_host_rdptr);
@@ -595,6 +594,7 @@ static inline void SetupZerosSendBuffer(XUD_ep aud_to_host_usb_ep, unsigned samp
     asm volatile("stw %0, %1[0]"::"r"(mid),"r"(g_aud_to_host_zeros));
 
 #if XUA_DEBUG_BUFFER
+    printstr("SetupZerosSendBuffer\n");
     printstr("slotSize: ");
     printintln(slotSize);
     printstr("g_numUsbChan_In: ");
@@ -612,10 +612,6 @@ static inline void SetupZerosSendBuffer(XUD_ep aud_to_host_usb_ep, unsigned samp
 
     XUD_SetReady_InPtr(aud_to_host_usb_ep, p+4, mid);
 }
-
-
-
-unsigned char tmpBuffer[1026];
 
 #pragma unsafe arrays
 void XUA_Buffer_Decouple(chanend c_mix_out
