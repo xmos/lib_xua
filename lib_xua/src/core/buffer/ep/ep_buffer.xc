@@ -468,8 +468,7 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
                         SET_SHARED_GLOBAL(g_freqChange_sampFreq, receivedSampleFreq);
                     }
 #if (AUDIO_CLASS == 2)
-                    else
-                        if(cmd == SET_STREAM_FORMAT_IN)
+                    else if(cmd == SET_STREAM_FORMAT_IN)
                     {
                         unsigned formatChange_DataFormat = inuint(c_aud_ctl);
                         unsigned formatChange_NumChans = inuint(c_aud_ctl);
