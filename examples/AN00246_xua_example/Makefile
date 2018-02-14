@@ -3,13 +3,14 @@ APP_NAME = app_xua_simple
 TARGET = xk-audio-216-mc.xn
 
 # The flags passed to xcc when building the application
-XCC_FLAGS     = -fcomment-asm -Xmapper --map -Xmapper MAPFILE -O3 -report -fsubword-select -save-temps -g -Wno-unused-function -Wno-timing -DXUD_SERIES_SUPPORT=XUD_X200_SERIES -DUSB_TILE=tile[1] -DSDA_HIGH=2 -DSCL_HIGH=1 
+XCC_FLAGS	= -fcomment-asm -Xmapper --map -Xmapper MAPFILE -O3 -report -fsubword-select -save-temps \
+			  -g -Wno-unused-function -Wno-timing -DXUD_SERIES_SUPPORT=XUD_X200_SERIES -DUSB_TILE=tile[1] \
+			  -DSDA_HIGH=2 -DSCL_HIGH=1 
 
 # The USED_MODULES variable lists other module used by the application. These
 # modules will extend the SOURCE_DIRS, INCLUDE_DIRS and LIB_DIRS variables.
 # Modules are expected to be in the directory above the BASE_DIR directory.
-USED_MODULES = lib_mic_array lib_logging lib_xua lib_device_control lib_xud module_i2c_shared module_i2c_single_port module_locks
-
+USED_MODULES = lib_xua lib_device_control lib_xud module_i2c_shared module_i2c_single_port module_locks
 
 #=============================================================================
 # The following part of the Makefile includes the common build infrastructure

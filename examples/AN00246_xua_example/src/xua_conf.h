@@ -10,10 +10,6 @@
 #define MAX_FREQ 48000
 
 #define EXCLUDE_USB_AUDIO_MAIN
-#define NUM_PDM_MICS 0
-#define XUD_TILE 1
-#define AUDIO_IO_TILE 0
-#define MIXER 0
 
 #define SPDIF_TX_INDEX 0
 #define VENDOR_STR "XMOS"
@@ -26,6 +22,3 @@
 #define AUDIO_CLASS_FALLBACK 0
 #define BCD_DEVICE 0x1234
 #define XUA_DFU_EN 0
-
-/* TODO */
-#define XUA_DFU XUA_DFU_EN

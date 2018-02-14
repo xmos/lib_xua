@@ -13,8 +13,8 @@
 #include <xs1.h>
 #include <platform.h>
 
-#include "xud_device.h"
 #include "xua.h"
+#include "xud_device.h"
 
 /* Port declarations. Note, the defines come from the xn file */
 buffered out port:32 p_i2s_dac[]    = {PORT_I2S_DAC0};   /* I2S Data-line(s) */
@@ -24,12 +24,12 @@ buffered out port:32 p_bclk         = PORT_I2S_BCLK;     /* I2S L/R-clock */
 
 /* Note, declared unsafe as sometimes we want to share this port
 e.g. PDM mics and I2S use same master clock IO */
-port p_mclk_in_          = PORT_MCLK_IN;
+port p_mclk_in_                     = PORT_MCLK_IN;
 
 unsafe
 {
     /* TODO simplify this */
-    unsafe port p_mclk_in;                           /* Audio master clock input */
+    unsafe port p_mclk_in;                               /* Audio master clock input */
 }
 
 in port p_for_mclk_count            = PORT_MCLK_COUNT;   /* Extra port for counting master clock ticks */
@@ -55,7 +55,7 @@ int main()
     /* Channel for audio data between buffering cores and audio IO core */
     chan c_aud;
     
-    /* Channel for communcating control messages from EP0 to the rest of the device (via the buffering cores */
+    /* Channel for communicating control messages from EP0 to the rest of the device (via the buffering cores */
     chan c_aud_ctl;
 
     par
@@ -63,7 +63,6 @@ int main()
         /* Low level USB device layer core */ 
         on tile[1]: XUD_Main(c_ep_out, 2, c_ep_in, 2,
                       c_sof, epTypeTableOut, epTypeTableIn, 
-                      /* TODO rm me! */
                       null, null, -1 , 
                       XUD_SPEED_HS, XUD_PWR_BUS);
         
