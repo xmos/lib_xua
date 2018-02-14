@@ -33,10 +33,12 @@ unsafe
 }
 
 in port p_for_mclk_count            = PORT_MCLK_COUNT;   /* Extra port for counting master clock ticks */
+in port p_mclk_in2                  = PORT_MCLK_IN2;
 
 /* Clock-block declarations */
 clock clk_audio_bclk                = on tile[0]: XS1_CLKBLK_4;   /* Bit clock */    
 clock clk_audio_mclk                = on tile[0]: XS1_CLKBLK_5;   /* Master clock */
+clock clk_audio_mclk2               = on tile[1]: XS1_CLKBLK_1;   /* Master clock */
 
 /* Endpoint type tables - informs XUD what the transfer types for each Endpoint in use and also
  * if the endpoint wishes to be informed of USB bus resets */
@@ -72,7 +74,14 @@ int main()
 
         /* Buffering cores - handles audio data to/from EP's and gives/gets data to/from the audio I/O core */
         /* Note, this spawns two cores */
-        on tile[1]: XUA_Buffer(c_ep_out[1], c_ep_in[1], c_sof, c_aud_ctl, p_for_mclk_count, c_aud);
+        on tile[1]: {
+                        set_clock_src(clk_audio_mclk2, p_mclk_in2);
+                        set_port_clock(p_for_mclk_count, clk_audio_mclk2);
+                        start_clock(clk_audio_mclk2);
+
+                        XUA_Buffer(c_ep_out[1], c_ep_in[1], c_sof, c_aud_ctl, p_for_mclk_count, c_aud);
+
+                    }
 
         /* IOHub core does most of the audio IO i.e. I2S (also serves as a hub for all audio) */
         on tile[0]: {
