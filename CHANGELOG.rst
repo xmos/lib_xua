@@ -1,6 +1,11 @@
 lib_xua Change Log
 ==================
 
+0.1.2
+-----
+
+  * ADDED:     Application note AN00246
+
 0.1.1
 -----
 
