@@ -491,12 +491,12 @@ __builtin_unreachable();
             totalSampsToWrite = speedRem >> 16;
             speedRem &= 0xffff;
 
-# if 0
+            /* This patches up the case where the FB is well off, leading to totalSampsToWrite to also be off */
+            /* This can be startup case, back mclk input etc */
             if (totalSampsToWrite < 0 || totalSampsToWrite * g_curSubSlot_In * g_numUsbChan_In > g_maxPacketSize)
             {
                 totalSampsToWrite = 0;
             }
-#endif
 
             /* Calc slots left in fifo */
             space_left = g_aud_to_host_rdptr - g_aud_to_host_wrptr;
@@ -507,7 +507,6 @@ __builtin_unreachable();
                 space_left = aud_to_host_fifo_end - g_aud_to_host_wrptr;
             }
 
-            //if((space_left > 0) && (space_left < (totalSampsToWrite * g_numUsbChan_In * g_curSubSlot_In + 4)))
             if((space_left < (totalSampsToWrite * g_numUsbChan_In * g_curSubSlot_In + 4)))
             {
                 /* In pipe has filled its buffer - we need to overflow
