@@ -7,6 +7,7 @@ lib_xua Change Log
   * ADDED:     Application note AN00246
   * RESOLVED:  Runtime exeption issues when incorrect feedback calculated (introduced in sc_xud
     6.13)
+  * RESOLVED:  Output sample counter reset on stream start. Caused playback issues on some Linux based hosts
 
 0.1.1
 -----
