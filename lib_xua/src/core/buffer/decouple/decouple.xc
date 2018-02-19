@@ -834,6 +834,7 @@ void XUA_Buffer_Decouple(chanend c_mix_out
                 /* Reset OUT buffer state */
                 SET_SHARED_GLOBAL(g_aud_from_host_rdptr, aud_from_host_fifo_start);
                 SET_SHARED_GLOBAL(g_aud_from_host_wrptr, aud_from_host_fifo_start);
+                SET_SHARED_GLOBAL(aud_data_remaining_to_device, 0);
 
                 /* NOTE, this is potentially usefull for UAC1 */
                 unpackState = 0;
