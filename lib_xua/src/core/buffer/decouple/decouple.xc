@@ -492,7 +492,7 @@ __builtin_unreachable();
             speedRem &= 0xffff;
 
             /* This patches up the case where the FB is well off, leading to totalSampsToWrite to also be off */
-            /* This can be startup case, back mclk input etc */
+            /* This can be startup case, bad mclk input etc */
             if (totalSampsToWrite < 0 || totalSampsToWrite * g_curSubSlot_In * g_numUsbChan_In > g_maxPacketSize)
             {
                 totalSampsToWrite = 0;

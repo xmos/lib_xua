@@ -5,7 +5,7 @@ lib_xua Change Log
 -----
 
   * ADDED:     Application note AN00246
-  * RESOLVED:  Runtime exeption issues when incorrect feedback calculated
+  * RESOLVED:  Runtime exception issues when incorrect feedback calculated
     (introduced in sc_xud 6.13)
 
 0.1.1
