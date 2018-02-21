@@ -100,7 +100,7 @@ extern buffered out port:32 p_bclk;
 unsigned dsdMode = DSD_MODE_OFF;
 
 /* Master clock input */
-extern unsafe port p_mclk_in;
+extern in port p_mclk_in;
 extern in port p_mclk_in2;
 
 #if (XUA_SPDIF_TX_EN)

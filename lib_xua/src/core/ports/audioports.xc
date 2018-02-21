@@ -7,7 +7,7 @@
 
 
 
-extern unsafe port p_mclk_in;
+extern in port p_mclk_in;
 extern clock    clk_audio_mclk;
 extern clock    clk_audio_bclk;
 

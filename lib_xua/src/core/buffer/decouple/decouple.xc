@@ -492,7 +492,7 @@ __builtin_unreachable();
             speedRem &= 0xffff;
 
             /* This patches up the case where the FB is well off, leading to totalSampsToWrite to also be off */
-            /* This can be startup case, back mclk input etc */
+            /* This can be startup case, bad mclk input etc */
             if (totalSampsToWrite < 0 || totalSampsToWrite * g_curSubSlot_In * g_numUsbChan_In > g_maxPacketSize)
             {
                 totalSampsToWrite = 0;
@@ -834,6 +834,7 @@ void XUA_Buffer_Decouple(chanend c_mix_out
                 /* Reset OUT buffer state */
                 SET_SHARED_GLOBAL(g_aud_from_host_rdptr, aud_from_host_fifo_start);
                 SET_SHARED_GLOBAL(g_aud_from_host_wrptr, aud_from_host_fifo_start);
+                SET_SHARED_GLOBAL(aud_data_remaining_to_device, 0);
 
                 /* NOTE, this is potentially usefull for UAC1 */
                 unpackState = 0;
