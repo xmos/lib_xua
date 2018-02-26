@@ -9,6 +9,7 @@ lib_xua Change Log
     (introduced in sc_xud 6.13)
   * RESOLVED:  Output sample counter reset on stream start. Caused playback
     issues on some Linux based hosts
+  * ADDED:     Warning about empty image in USB DFU upload  
 
 0.1.1
 -----
