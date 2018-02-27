@@ -6,6 +6,7 @@ lib_xua Change Log
 
   * ADDED:     Application note AN00246
   * CHANGE:    xmosdfu emits warning if empty image read via upload  
+  * CHANGE:    Simplified mclk port sharing - no longer uses unsafe pointer
   * RESOLVED:  Runtime exception issues when incorrect feedback calculated
     (introduced in sc_usb_audio 6.13)
   * RESOLVED:  Output sample counter reset on stream start. Caused playback
