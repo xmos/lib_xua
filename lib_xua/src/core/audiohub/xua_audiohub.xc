@@ -1323,11 +1323,6 @@ void XUA_AudioHub(chanend ?c_mix_out
     SpdifTransmitPortConfig(p_spdif_tx, clk_mst_spd, p_mclk_in);
 #endif
 
-#if (NUM_PDM_MICS > 0) && (PDM_TILE == AUDIO_IO_TILE)
-    /* Configure clocks ports - sharing mclk port with I2S */
-    xua_pdm_mic_config(p_mclk_in);
-#endif
-
     /* Perform required CODEC/ADC/DAC initialisation */
     AudioHwInit();
 
@@ -1491,7 +1486,7 @@ void XUA_AudioHub(chanend ?c_mix_out
                 outuint(c_spdif_out, mClk);
 #endif
 
-#if NUM_PDM_MICS > 0
+#if (NUM_PDM_MICS > 0)
                 /* Send decimation factor to PDM task(s) */
                 c_pdm_in <: curSamFreq / AUD_TO_MICS_RATIO;
 #endif
