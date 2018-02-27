@@ -36,11 +36,11 @@
 #include "mixer.h"
 #endif
 
-#ifdef SPDIF_RX
+#if (SPDIF_RX == 1)
 #include "SpdifReceive.h"
 #endif
 
-#ifdef ADAT_RX
+#if ADAT_RX
 #include "adat_rx.h"
 #endif
 
@@ -137,15 +137,15 @@ on tile[SPDIF_TX_TILE] : buffered out port:32 p_spdif_tx    = PORT_SPDIF_OUT;
 on stdcore[AUDIO_IO_TILE] : buffered out port:32 p_adat_tx  = PORT_ADAT_OUT;
 #endif
 
-#ifdef ADAT_RX
+#if ADAT_RX
 on stdcore[XUD_TILE] : buffered in port:32 p_adat_rx        = PORT_ADAT_IN;
 #endif
 
-#ifdef SPDIF_RX
+#if (SPDIF_RX == 1)
 on tile[XUD_TILE] : buffered in port:4 p_spdif_rx           = PORT_SPDIF_IN;
 #endif
 
-#if defined (SPDIF_RX) || defined (ADAT_RX)
+#if (SPDIF_RX == 1) || (ADAT_RX)
 /* Reference to external clock multiplier */
 on tile[AUDIO_IO_TILE] : out port p_pll_clk                 = PORT_PLL_REF;
 #endif
@@ -173,7 +173,7 @@ on tile[MIDI_TILE] : clock    clk_midi                      = CLKBLK_MIDI;
 on tile[SPDIF_TX_TILE] : clock    clk_mst_spd               = CLKBLK_SPDIF_TX;
 #endif
 
-#ifdef SPDIF_RX
+#if (SPDIF_RX == 1)
 on tile[XUD_TILE] : clock    clk_spd_rx                     = CLKBLK_SPDIF_RX;
 #endif
 
@@ -189,7 +189,7 @@ in port p_pdm_mclk              = PORT_PDM_MCLK;
 
 
 
-#if(XUD_SERIES_SUPPORT == XUD_L_SERIES) && defined(ADAT_RX)
+#if(XUD_SERIES_SUPPORT == XUD_L_SERIES) && (ADAT_RX)
 /* Cannot use default clock (CLKBLK_REF) for ADAT RX since it is tied to the
 60MHz USB clock on G/L series parts. */
 on tile[XUD_TILE] : clock    clk_adat_rx                    = CLKBLK_ADAT_RX;
@@ -245,7 +245,7 @@ XUD_EpType epTypeTableIn[ENDPOINT_COUNT_IN] = { XUD_EPTYPE_CTL | XUD_STATUS_ENAB
 #if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP)
                                             XUD_EPTYPE_ISO,    /* Async feedback endpoint */
 #endif
-#if defined (SPDIF_RX) || defined (ADAT_RX)
+#if (SPDIF_RX == 1) || (ADAT_RX)
                                             XUD_EPTYPE_BUL,
 #endif
 #ifdef MIDI
@@ -386,7 +386,7 @@ VENDOR_REQUESTS_PARAMS_DEC_
                 c_ea_data,
 #endif
 #endif
-#if defined(SPDIF_RX) || defined(ADAT_RX)
+#if (SPDIF_RX) || (ADAT_RX)
                 /* Audio Interrupt - only used for interrupts on external clock change */
                 c_xud_in[ENDPOINT_NUMBER_IN_INTERRUPT],
                 c_clk_int,
@@ -437,7 +437,7 @@ void usb_audio_io(chanend ?c_aud_in, chanend ?c_adc,
     chan c_mix_out;
 #endif
 
-#if defined(SPDIF_RX) || defined(ADAT_RX)
+#if (SPDIF_RX) || (ADAT_RX)
     chan c_dig_rx;
 #else
     #define c_dig_rx null
@@ -464,7 +464,7 @@ void usb_audio_io(chanend ?c_aud_in, chanend ?c_adc,
 #if (XUA_SPDIF_TX_EN) && (SPDIF_TX_TILE != AUDIO_IO_TILE)
                 , c_spdif_tx
 #endif
-#if defined(SPDIF_RX) || defined(ADAT_RX)
+#if (SPDIF_RX) ||(ADAT_RX)
                 , c_dig_rx
 #endif
 #if (XUD_TILE != 0) && (AUDIO_IO_TILE == 0) && (XUA_DFU_EN == 1)
@@ -476,7 +476,7 @@ void usb_audio_io(chanend ?c_aud_in, chanend ?c_adc,
             );
         }
 
-#if defined(SPDIF_RX) || defined(ADAT_RX)
+#if (SPDIF_RX) || (ADAT_RX)
         {
             thread_speed();
 
@@ -525,13 +525,13 @@ int main()
     chan c_mix_ctl;
 #endif
 
-#ifdef SPDIF_RX
+#if SPDIF_RX
     streaming chan c_spdif_rx;
 #else
 #define c_spdif_rx null
 #endif
 
-#ifdef ADAT_RX
+#if ADAT_RX
     chan c_adat_rx;
 #else
 #define c_adat_rx null
@@ -542,7 +542,7 @@ int main()
 #endif
 
 
-#if (defined (SPDIF_RX) || defined (ADAT_RX))
+#if ((SPDIF_RX) || (ADAT_RX))
     chan c_clk_ctl;
     chan c_clk_int;
 #else
@@ -653,7 +653,7 @@ int main()
 #endif
 #endif
 
-#ifdef SPDIF_RX
+#if SPDIF_RX
         on tile[XUD_TILE]:
         {
             thread_speed();
@@ -661,7 +661,7 @@ int main()
         }
 #endif
 
-#ifdef ADAT_RX
+#if (ADAT_RX)
         on stdcore[XUD_TILE] :
         {
             set_thread_fast_mode_on();

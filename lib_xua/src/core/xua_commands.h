@@ -13,7 +13,7 @@
 
 #define CLOCK_INTERNAL          1
 #define CLOCK_SPDIF             2
-#ifdef SPDIF_RX
+#if SPDIF_RX
 #define CLOCK_ADAT              3
 #else
 #define CLOCK_ADAT              2

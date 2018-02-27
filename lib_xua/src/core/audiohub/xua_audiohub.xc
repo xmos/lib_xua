@@ -44,28 +44,10 @@
 
 static unsigned samplesOut[MAX(NUM_USB_CHAN_OUT, I2S_CHANS_DAC)];
 
-/* TODO Rm me */
-#ifndef ADAT_RX
-#define ADAT_RX 0
-#endif
-
-#ifndef SPDIF_RX
-#define SPDIF_RX 0
-#endif
-
 /* Two buffers for ADC data to allow for DAC and ADC I2S ports being offset */
 #define IN_CHAN_COUNT (I2S_CHANS_ADC + NUM_PDM_MICS + (8*ADAT_RX) + (2*SPDIF_RX))
 
 static unsigned samplesIn[2][MAX(NUM_USB_CHAN_IN, IN_CHAN_COUNT)];
-
-/* TODO Rm me */
-#if defined(ADAT_RX) && (ADAT_RX ==0)
-#undef ADAT_RX
-#endif
-
-#if defined(SPDIF_RX) && (SPDIF_RX ==0)
-#undef SPDIF_RX
-#endif
 
 #if (DSD_CHANS_DAC != 0)
 extern buffered out port:32 p_dsd_dac[DSD_CHANS_DAC];
@@ -454,7 +436,7 @@ unsigned static deliver_master(chanend ?c_out, chanend ?c_spd_out
     , unsigned adatSmuxMode
 #endif
     , unsigned divide, unsigned curSamFreq
-#if(defined(SPDIF_RX) || defined(ADAT_RX))
+#if( (SPDIF_RX==1) || (ADAT_RX == 1))
     , chanend c_dig_rx
 #endif
 #if (NUM_PDM_MICS > 0)
@@ -654,17 +636,17 @@ unsigned static deliver_master(chanend ?c_out, chanend ?c_spd_out
             if(frameCount == 0)
             {
 
-#if defined(SPDIF_RX) || defined(ADAT_RX)
+#if (SPDIF_RX == 1) || (ADAT_RX == 1)
                 /* Sync with clockgen */
                 inuint(c_dig_rx);
 
                 /* Note, digi-data we just store in samplesIn[readBuffNo] - we only double buffer the I2S input data */
 #endif
-#ifdef SPDIF_RX
+#if (SPDIF_RX == 1)
                 asm("ldw %0, dp[g_digData]"  :"=r"(samplesIn[readBuffNo][SPDIF_RX_INDEX + 0]));
                 asm("ldw %0, dp[g_digData+4]":"=r"(samplesIn[readBuffNo][SPDIF_RX_INDEX + 1]));
 #endif
-#ifdef ADAT_RX
+#if (ADAT_RX == 1)
                 asm("ldw %0, dp[g_digData+8]" :"=r"(samplesIn[readBuffNo][ADAT_RX_INDEX]));
                 asm("ldw %0, dp[g_digData+12]":"=r"(samplesIn[readBuffNo][ADAT_RX_INDEX + 1]));
                 asm("ldw %0, dp[g_digData+16]":"=r"(samplesIn[readBuffNo][ADAT_RX_INDEX + 2]));
@@ -675,7 +657,7 @@ unsigned static deliver_master(chanend ?c_out, chanend ?c_spd_out
                 asm("ldw %0, dp[g_digData+36]":"=r"(samplesIn[readBuffNo][ADAT_RX_INDEX + 7]));
 #endif
 
-#if defined(SPDIF_RX) || defined(ADAT_RX)
+#if (SPDIF_RX == 1) || (ADAT_RX == 1)
                 /* Request digital data (with prefill) */
                 outuint(c_dig_rx, 0);
 #endif
@@ -833,7 +815,7 @@ unsigned static deliver_slave(chanend ?c_out, chanend ?c_spd_out
     , unsigned adatSmuxMode
 #endif
     , unsigned divide, unsigned curSamFreq
-#if(defined(SPDIF_RX) || defined(ADAT_RX))
+#if(SPDIF_RX == 1) || (ADAT_RX == 1))
     , chanend c_dig_rx
 #endif
 #if (NUM_PDM_MICS > 0)
@@ -1023,17 +1005,17 @@ unsigned static deliver_slave(chanend ?c_out, chanend ?c_spd_out
         if(frameCount == 0)
         {
 
-#if defined(SPDIF_RX) || defined(ADAT_RX)
+#if (SPDIF_RX == 1) || (ADAT_RX == 1)
             /* Sync with clockgen */
             inuint(c_dig_rx);
 
             /* Note, digi-data we just store in samplesIn[readBuffNo] - we only double buffer the I2S input data */
 #endif
-#ifdef SPDIF_RX
+#if (SPDIF_RX == 1)
             asm("ldw %0, dp[g_digData]"  :"=r"(samplesIn[readBuffNo][SPDIF_RX_INDEX + 0]));
             asm("ldw %0, dp[g_digData+4]":"=r"(samplesIn[readBuffNo][SPDIF_RX_INDEX + 1]));
 #endif
-#ifdef ADAT_RX
+#if (ADAT_RX == 1)
             asm("ldw %0, dp[g_digData+8]" :"=r"(samplesIn[readBuffNo][ADAT_RX_INDEX]));
             asm("ldw %0, dp[g_digData+12]":"=r"(samplesIn[readBuffNo][ADAT_RX_INDEX + 1]));
             asm("ldw %0, dp[g_digData+16]":"=r"(samplesIn[readBuffNo][ADAT_RX_INDEX + 2]));
@@ -1044,7 +1026,7 @@ unsigned static deliver_slave(chanend ?c_out, chanend ?c_spd_out
             asm("ldw %0, dp[g_digData+36]":"=r"(samplesIn[readBuffNo][ADAT_RX_INDEX + 7]));
 #endif
 
-#if defined(SPDIF_RX) || defined(ADAT_RX)
+#if (SPDIF_RX== 1) || (ADAT_RX == 1)
             /* Request digital data (with prefill) */
             outuint(c_dig_rx, 0);
 #endif
@@ -1283,7 +1265,7 @@ void XUA_AudioHub(chanend ?c_mix_out
 #if (XUA_SPDIF_TX_EN) && (SPDIF_TX_TILE != AUDIO_IO_TILE)
     , chanend c_spdif_out
 #endif
-#if (defined(ADAT_RX) || defined(SPDIF_RX))
+#if ((ADAT_RX == 1) || (SPDIF_RX == 1))
     , chanend c_dig_rx
 #endif
 #if (XUD_TILE != 0) && (AUDIO_IO_TILE == 0) && (XUA_DFU_EN == 1)
@@ -1542,7 +1524,7 @@ void XUA_AudioHub(chanend ?c_mix_out
                    , adatSmuxMode
 #endif
                    , divide, curSamFreq
-#if defined (ADAT_RX) || defined (SPDIF_RX)
+#if (ADAT_RX == 1) || (SPDIF_RX == 1)
                    , c_dig_rx
 #endif
 #if (NUM_PDM_MICS > 0)

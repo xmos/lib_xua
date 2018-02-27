@@ -26,7 +26,7 @@ void XUA_AudioHub(chanend ?c_aud
 #if (XUA_SPDIF_TX_EN) && (SPDIF_TX_TILE != AUDIO_IO_TILE)
     , chanend c_spdif_tx
 #endif
-#if(defined(SPDIF_RX) || defined(ADAT_RX))
+#if((SPDIF_RX) || (ADAT_RX))
     , chanend c_dig
 #endif
 #if (XUD_TILE != 0) && (AUDIO_IO_TILE == 0) && (XUA_DFU_EN == 1)

@@ -7,7 +7,7 @@
 #include "xua.h"
 #include "xua_commands.h"
 
-#if defined(SPDIF_RX)
+#if (SPDIF_RX == 1)
 #include "SpdifReceive.h"
 #endif
 
@@ -38,7 +38,7 @@ static int clockInt[NUM_CLOCKS];                            /* Interupt flag for
 static int clockId[NUM_CLOCKS];
 
 
-#if defined(SPDIF_RX) || defined(ADAT_RX)
+#if (SPDIF_RX) || (ADAT_RX)
 static int abs(int x)
 {
     if (x < 0) return -x;
@@ -73,7 +73,7 @@ static void outInterrupt(chanend c_interruptControl, int value)
 void VendorClockValidity(int valid);
 #endif
 
-#if defined(SPDIF_RX) || defined(ADAT_RX)
+#if (SPDIF_RX) || (ADAT_RX)
 static inline void setClockValidity(chanend c_interruptControl, int clkIndex, int valid, int currentClkMode)
 {
     if (clockValid[clkIndex] != valid)
@@ -82,13 +82,13 @@ static inline void setClockValidity(chanend c_interruptControl, int clkIndex, in
         outInterrupt(c_interruptControl, clockId[clkIndex]);
 
 #ifdef CLOCK_VALIDITY_CALL
-#ifdef ADAT_RX
+#if ADAT_RX
         if (currentClkMode == CLOCK_ADAT && clkIndex == CLOCK_ADAT_INDEX)
         {
             VendorClockValidity(valid);
         }
 #endif
-#ifdef SPDIF_RX
+#if SPDIF_RX
         if (currentClkMode == CLOCK_SPDIF && clkIndex == CLOCK_SPDIF_INDEX)
         {
             VendorClockValidity(valid);
@@ -215,11 +215,11 @@ void clockGen (streaming chanend ?c_spdif_rx, chanend ?c_adat_rx, out port p, ch
     unsigned levelTime;
 #endif
 
-#if defined(SPDIF_RX) || defined(ADAT_RX)
+#if (SPDIF_RX) || (ADAT_RX)
     timer t_external;
 #endif
 
-#ifdef SPDIF_RX
+#if SPDIF_RX
     /* S/PDIF buffer state */
 	int spdifSamples[MAX_SPDIF_SAMPLES];           /* S/PDIF sample buffer */
 	int spdifWr = 0;                               /* Write index */
@@ -233,7 +233,7 @@ void clockGen (streaming chanend ?c_spdif_rx, chanend ?c_adat_rx, out port p, ch
     unsigned spdifLeft = 0;
 #endif
 
-#ifdef ADAT_RX
+#if ADAT_RX
     /* ADAT buffer state */
     int adatSamples[MAX_ADAT_SAMPLES];
     int adatWr = 0;
@@ -255,7 +255,7 @@ void clockGen (streaming chanend ?c_spdif_rx, chanend ?c_adat_rx, out port p, ch
     }
 
     /* Init clock unit state */
-#ifdef SPDIF_RX
+#if  SPDIF_RX
     clockFreq[CLOCK_SPDIF_INDEX] = 0;
     clockValid[CLOCK_SPDIF_INDEX] = 0;
     clockInt[CLOCK_SPDIF_INDEX] = 0;
@@ -265,13 +265,13 @@ void clockGen (streaming chanend ?c_spdif_rx, chanend ?c_adat_rx, out port p, ch
     clockId[CLOCK_INTERNAL_INDEX] = ID_CLKSRC_INT;
     clockValid[CLOCK_INTERNAL_INDEX] = 0;
     clockInt[CLOCK_INTERNAL_INDEX] = 0;
-#ifdef ADAT_RX
+#if  ADAT_RX
     clockFreq[CLOCK_ADAT_INDEX] = 0;
     clockInt[CLOCK_ADAT_INDEX] = 0;
     clockValid[CLOCK_ADAT_INDEX] = 0;
     clockId[CLOCK_ADAT_INDEX] = ID_CLKSRC_ADAT;
 #endif
-#ifdef SPDIF_RX
+#if SPDIF_RX
     spdifCounters.receivedSamples = 0;
     spdifCounters.samples = 0;
     spdifCounters.savedSamples = 0;
@@ -280,7 +280,7 @@ void clockGen (streaming chanend ?c_spdif_rx, chanend ?c_adat_rx, out port p, ch
     spdifCounters.samplesPerTick = 0;
 #endif
 
-#ifdef ADAT_RX
+#if ADAT_RX
     adatCounters.receivedSamples = 0;
     adatCounters.samples = 0;
     adatCounters.savedSamples = 0;
@@ -300,7 +300,7 @@ void clockGen (streaming chanend ?c_spdif_rx, chanend ?c_adat_rx, out port p, ch
     levelTime+= LEVEL_UPDATE_RATE;
 #endif
 
-#if defined(SPDIF_RX) || defined(ADAT_RX)
+#if (SPDIF_RX) || (ADAT_RX)
     /* Fill channel */
     outuint(c_dig_rx, 1);
 #endif
@@ -379,12 +379,12 @@ void clockGen (streaming chanend ?c_spdif_rx, chanend ?c_adat_rx, out port p, ch
                             case CLOCK_INTERNAL:
                                 VendorClockValidity(1);
                                 break;
-#ifdef ADAT_RX
+#if ADAT_RX
                             case CLOCK_ADAT:
                                 VendorClockValidity(clockValid[CLOCK_ADAT_INDEX]);
                                 break;
 #endif
-#ifdef SPDIF_RX
+#if SPDIF_RX
                             case CLOCK_SPDIF:
                                 VendorClockValidity(clockValid[CLOCK_SPDIF_INDEX]);
                                 break;
@@ -410,7 +410,7 @@ void clockGen (streaming chanend ?c_spdif_rx, chanend ?c_adat_rx, out port p, ch
 
                     case SET_SMUX:
                         smux = inuint(c_clk_ctl);
-#ifdef ADAT_RX
+#if ADAT_RX
                         adatRd = 0; /* Reset adat FIFO */
                         adatWr = 0;
                         adatSamps = 0;
@@ -446,14 +446,14 @@ void clockGen (streaming chanend ?c_spdif_rx, chanend ?c_adat_rx, out port p, ch
 
                 /* If we are in an external clock mode and this fire, then clock invalid */
 
-#ifdef SPDIF_RX
+#if SPDIF_RX
                // if(clkMode == CLOCK_SPDIF)
                 {
                     /* We must have lost valid S/PDIF stream, reset counters, so we dont produce a double edge */
                     spdifCounters.receivedSamples = 0;
                 }
 #endif
-#ifdef ADAT_RX
+#if ADAT_RX
                 //if(clkMode == CLOCK_ADAT)
                 {
                     adatCounters.receivedSamples = 0;
@@ -470,18 +470,18 @@ void clockGen (streaming chanend ?c_spdif_rx, chanend ?c_adat_rx, out port p, ch
                 break;
 
 
-#if defined(SPDIF_RX) || defined(ADAT_RX)
+#if (SPDIF_RX) || (ADAT_RX)
             case t_external when timerafter(timeNextClockDetection) :> void:
 
                 timeNextClockDetection += (LOCAL_CLOCK_INCREMENT);
-#ifdef SPDIF_RX
+#if  SPDIF_RX
                 tmp = spdifCounters.samplesPerTick;
 
                 /* Returns 1 if valid clock found */
                 tmp = validSamples(spdifCounters, CLOCK_SPDIF_INDEX);
                 setClockValidity(c_clk_int, CLOCK_SPDIF_INDEX, tmp, clkMode);
 #endif
-#ifdef ADAT_RX
+#if ADAT_RX
                 tmp = validSamples(adatCounters, CLOCK_ADAT_INDEX);
                 setClockValidity(c_clk_int, CLOCK_ADAT_INDEX, tmp, clkMode);
 #endif
@@ -490,7 +490,7 @@ void clockGen (streaming chanend ?c_spdif_rx, chanend ?c_adat_rx, out port p, ch
 
 #endif
 
-#ifdef SPDIF_RX
+#if SPDIF_RX
             /* Receive sample from S/PDIF RX thread (steaming chan) */
             case c_spdif_rx :> tmp:
 
@@ -577,7 +577,7 @@ void clockGen (streaming chanend ?c_spdif_rx, chanend ?c_adat_rx, out port p, ch
                 }
                 break;
 #endif
-#ifdef ADAT_RX
+#if ADAT_RX
                 /* receive sample from ADAT rx thread (streaming channel with CT_END) */
                 case inuint_byref(c_adat_rx, tmp):
                     /* record time of sample */
@@ -693,10 +693,10 @@ void clockGen (streaming chanend ?c_spdif_rx, chanend ?c_adat_rx, out port p, ch
 #endif
 
 
-#if defined(SPDIF_RX) || defined(ADAT_RX)
+#if (SPDIF_RX) || (ADAT_RX)
 			/* Mixer requests data */
 			case inuint_byref(c_dig_rx, tmp):
-#ifdef SPDIF_RX
+#if SPDIF_RX
                     if(spdifUnderflow)
                     {
                         /* S/PDIF underflowing, send out zero samples */
@@ -711,8 +711,6 @@ void clockGen (streaming chanend ?c_spdif_rx, chanend ?c_adat_rx, out port p, ch
 
                         spdifRd += 2;
 					    spdifRd &= (MAX_SPDIF_SAMPLES - 1);
-
-
 
                         g_digData[0] = tmp;
                         g_digData[1] = tmp2;
@@ -736,7 +734,7 @@ void clockGen (streaming chanend ?c_spdif_rx, chanend ?c_adat_rx, out port p, ch
                     }
 
 #endif
-#ifdef ADAT_RX
+#if ADAT_RX
                 if (adatUnderflow)
                 {
                     /* ADAT underflowing, send out zero samples */
