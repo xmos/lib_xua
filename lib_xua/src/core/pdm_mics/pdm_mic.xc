@@ -25,13 +25,6 @@ extern in port p_pdm_clk;
 
 extern in buffered port:32 p_pdm_mics;
 
-#if (PDM_TILE != AUDIO_IO_TILE)
-/* If Mics and I2S are on the same tile we'll share an MCLK port */
-extern in port p_pdm_mclk;
-#else
-extern unsafe port p_mclk_in;
-#endif
-
 /* Delcared in main.xc */
 extern clock clk_pdm;
 
@@ -46,11 +39,11 @@ mic_array_frame_time_domain mic_audio[2];
 #ifdef MIC_PROCESSING_USE_INTERFACE
 [[combinable]]
 #pragma unsafe arrays
-void pdm_buffer(streaming chanend c_ds_output[2], chanend c_audio, client mic_process_if i_mic_process)
+void xua_pdm_buffer(streaming chanend c_ds_output[2], chanend c_audio, client mic_process_if i_mic_process)
 #else
 #pragma unsafe arrays
 [[combinable]]
-void pdm_buffer(streaming chanend c_ds_output[2], chanend c_audio)
+void xua_pdm_buffer(streaming chanend c_ds_output[2], chanend c_audio)
 #endif
 {
     unsigned buffer;
@@ -228,15 +221,8 @@ void pdm_buffer(streaming chanend c_ds_output[2], chanend c_audio)
 #error MAX_FREQ > 48000 NOT CURRENTLY SUPPORTED
 #endif
 
-void pdm_mic(streaming chanend c_ds_output[2])
+void xua_pdm_mic_config(in port p_pdm_mclk)
 {
-    streaming chan c_4x_pdm_mic_0;
-#if (NUM_PDM_MICS > 4)
-    streaming chan c_4x_pdm_mic_1;
-#else
-    #define c_4x_pdm_mic_1 null
-#endif
-
     /* Mics expect a clock in the 3Mhz range, calculate the divide based on mclk */
     /* e.g. For a 48kHz range mclk we expect a 3072000Hz mic clock */
     /* e.g. For a 44.1kHz range mclk we expect a 2822400Hz mic clock */
@@ -246,19 +232,22 @@ void pdm_mic(streaming chanend c_ds_output[2])
 
     unsigned micDiv = MCLK_48/3072000;
 
-#if (PDM_TILE != AUDIO_IO_TILE)
     configure_clock_src_divide(clk_pdm, p_pdm_mclk, micDiv/2);
-#else
-    /* Sharing mclk port with I2S */
-    unsafe
-    {
-        configure_clock_src_divide(clk_pdm, (port) p_mclk_in, micDiv/2);
-    }
-#endif
+    
     configure_port_clock_output(p_pdm_clk, clk_pdm);
     configure_in_port(p_pdm_mics, clk_pdm);
     start_clock(clk_pdm);
+}
 
+void xua_pdm_mic(streaming chanend c_ds_output[2])
+{
+    streaming chan c_4x_pdm_mic_0;
+#if (NUM_PDM_MICS > 4)
+    streaming chan c_4x_pdm_mic_1;
+#else
+    #define c_4x_pdm_mic_1 null
+#endif
+  
     par
     {
         mic_array_pdm_rx(p_pdm_mics, c_4x_pdm_mic_0, c_4x_pdm_mic_1);

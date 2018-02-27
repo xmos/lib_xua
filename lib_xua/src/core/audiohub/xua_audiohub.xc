@@ -29,6 +29,14 @@
 #endif
 #endif
 
+#if (NUM_PDM_MICS > 0)
+#include "xua_pdm_mic.h"
+#endif 
+
+#if (AUD_TO_USB_RATIO > 1)
+#include "src.h"
+#endif
+
 #include "xua_commands.h"
 #include "xc_ptr.h"
 
@@ -36,6 +44,7 @@
 
 static unsigned samplesOut[MAX(NUM_USB_CHAN_OUT, I2S_CHANS_DAC)];
 
+/* TODO Rm me */
 #ifndef ADAT_RX
 #define ADAT_RX 0
 #endif
@@ -49,16 +58,13 @@ static unsigned samplesOut[MAX(NUM_USB_CHAN_OUT, I2S_CHANS_DAC)];
 
 static unsigned samplesIn[2][MAX(NUM_USB_CHAN_IN, IN_CHAN_COUNT)];
 
+/* TODO Rm me */
 #if defined(ADAT_RX) && (ADAT_RX ==0)
 #undef ADAT_RX
 #endif
 
 #if defined(SPDIF_RX) && (SPDIF_RX ==0)
 #undef SPDIF_RX
-#endif
-
-#if (AUD_TO_USB_RATIO > 1)
-#include "src.h"
 #endif
 
 #if (DSD_CHANS_DAC != 0)
@@ -1307,10 +1313,7 @@ void XUA_AudioHub(chanend ?c_mix_out
 
     /* Clock master clock-block from master-clock port */
     /* Note, marked unsafe since other cores may be using this mclk port */
-    unsafe
-    {
-        configure_clock_src(clk_audio_mclk, (port) p_mclk_in);
-    }
+    configure_clock_src(clk_audio_mclk, p_mclk_in);
 
     start_clock(clk_audio_mclk);
 
@@ -1322,24 +1325,25 @@ void XUA_AudioHub(chanend ?c_mix_out
         EnableBufferedPort(p_dsd_dac[i], 32);
     }
 #endif
+
 #ifdef ADAT_TX
     /* Share SPDIF clk blk */
-    unsafe
-    {
-        configure_clock_src(clk_mst_spd, (port)p_mclk_in);
-    }
+    configure_clock_src(clk_mst_spd, p_mclk_in);
     configure_out_port_no_ready(p_adat_tx, clk_mst_spd, 0);
     set_clock_fall_delay(clk_mst_spd, 7);
 #if (XUA_SPDIF_TX_EN == 0)
     start_clock(clk_mst_spd);
 #endif
 #endif
+    
     /* Configure ADAT/SPDIF tx ports */
 #if (XUA_SPDIF_TX_EN) && (SPDIF_TX_TILE == AUDIO_IO_TILE)
-    unsafe
-    {
-        SpdifTransmitPortConfig(p_spdif_tx, clk_mst_spd,  (port)p_mclk_in);
-    }
+    SpdifTransmitPortConfig(p_spdif_tx, clk_mst_spd, p_mclk_in);
+#endif
+
+#if (NUM_PDM_MICS > 0) && (PDM_TILE == AUDIO_IO_TILE)
+    /* Configure clocks ports - sharing mclk port with I2S */
+    xua_pdm_mic_config(p_mclk_in);
 #endif
 
     /* Perform required CODEC/ADC/DAC initialisation */
