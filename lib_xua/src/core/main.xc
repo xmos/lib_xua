@@ -331,16 +331,14 @@ VENDOR_REQUESTS_PARAMS_DEC_
 #ifdef XUD_PRIORITY_HIGH
             set_core_high_priority_on();
 #endif
+
+            /* Run UAC2.0 at high-speed, UAC1.0 at full-speed */
+            unsigned usbSpeed = (AUDIO_CLASS == 2) ? XUD_SPEED_HS : XUD_SPEED_FS;
+
             /* USB Interface Core */
-#if (AUDIO_CLASS==2)
             XUD_Main(c_xud_out, ENDPOINT_COUNT_OUT, c_xud_in, ENDPOINT_COUNT_IN,
                 c_sof, epTypeTableOut, epTypeTableIn, p_usb_rst,
-                clk, 1, XUD_SPEED_HS, XUD_PWR_CFG);
-#else
-            XUD_Main(c_xud_out, ENDPOINT_COUNT_OUT, c_xud_in, ENDPOINT_COUNT_IN,
-                c_sof, epTypeTableOut, epTypeTableIn, p_usb_rst,
-                clk, 1, XUD_SPEED_FS, XUD_PWR_CFG);
-#endif
+                null, 0, usbSpeed, XUD_PWR_CFG);
         }
 
         /* USB Packet buffering Core */
