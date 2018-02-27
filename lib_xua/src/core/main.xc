@@ -215,13 +215,6 @@ on tile[XUD_TILE] : out port p_usb_rst                      = PORT_USB_RESET;
 #define p_usb_rst   null
 #endif
 
-#if (XUD_SERIES_SUPPORT != XUD_U_SERIES && XUD_SERIES_SUPPORT != XUD_X200_SERIES)
-/* L Series also needs a clock block for this port */
-on tile[XUD_TILE] : clock clk                               = CLKBLK_USB_RST;
-#else
-#define clk         null
-#endif
-
 #ifdef IAP
 /* I2C ports - in a struct for use with module_i2c_shared & module_i2c_simple/module_i2c_single_port */
 #ifdef PORT_I2C
