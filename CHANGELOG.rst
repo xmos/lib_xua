@@ -7,7 +7,7 @@ lib_xua Change Log
   * ADDED:     Application note AN00246
   * CHANGE:    xmosdfu emits warning if empty image read via upload  
   * RESOLVED:  Runtime exception issues when incorrect feedback calculated
-    (introduced in sc_xud 6.13)
+    (introduced in sc_usb_audio 6.13)
   * RESOLVED:  Output sample counter reset on stream start. Caused playback
     issues on some Linux based hosts
   
