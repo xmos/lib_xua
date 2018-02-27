@@ -21,13 +21,13 @@
 #define MAX_DECIMATION_FACTOR (96000/(MIN_FREQ/AUD_TO_MICS_RATIO))
 
 /* Hardware resources */
-/* TODO these should be in main.xc with the rest of the resources */
-in port p_pdm_clk               = PORT_PDM_CLK;
+extern in port p_pdm_clk;
 
-in buffered port:32 p_pdm_mics  = PORT_PDM_DATA;
+extern in buffered port:32 p_pdm_mics;
+
 #if (PDM_TILE != AUDIO_IO_TILE)
 /* If Mics and I2S are on the same tile we'll share an MCLK port */
-in port p_pdm_mclk              = PORT_PDM_MCLK;
+extern in port p_pdm_mclk;
 #else
 extern unsafe port p_mclk_in;
 #endif

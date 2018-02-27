@@ -185,21 +185,33 @@ on tile[SPDIF_TX_TILE] : clock    clk_mst_spd               = CLKBLK_SPDIF_TX;
 on tile[XUD_TILE] : clock    clk_spd_rx                     = CLKBLK_SPDIF_RX;
 #endif
 
+#if (NUM_PDM_MICS > 0)
+in port p_pdm_clk               = PORT_PDM_CLK;
+
+in buffered port:32 p_pdm_mics  = PORT_PDM_DATA;
+#if (PDM_TILE != AUDIO_IO_TILE)
+/* If Mics and I2S are on the same tile we'll share an MCLK port */
+in port p_pdm_mclk              = PORT_PDM_MCLK;
+#endif
+#endif
+
+
+
 #if(XUD_SERIES_SUPPORT == XUD_L_SERIES) && defined(ADAT_RX)
 /* Cannot use default clock (CLKBLK_REF) for ADAT RX since it is tied to the
 60MHz USB clock on G/L series parts. */
 on tile[XUD_TILE] : clock    clk_adat_rx                    = CLKBLK_ADAT_RX;
 #endif
 
-
-on tile[AUDIO_IO_TILE] : clock    clk_audio_mclk            = CLKBLK_MCLK;       /* Master clock */
+on tile[AUDIO_IO_TILE] : clock clk_audio_mclk               = CLKBLK_MCLK;       /* Master clock */
 
 #if(AUDIO_IO_TILE != XUD_TILE) && !defined(NO_USB)
-on tile[XUD_TILE] : clock    clk_audio_mclk2                = CLKBLK_MCLK;       /* Master clock */
-on tile[XUD_TILE] : in port  p_mclk_in2                     = PORT_MCLK_IN2;
+/* Separate clock/port for USB feedback calculation */
+on tile[XUD_TILE] : clock clk_audio_mclk_usb                = CLKBLK_MCLK;       /* Master clock */
+on tile[XUD_TILE] : in port p_mclk_in_usb                   = PORT_MCLK_IN_USB;
 #endif
 
-on tile[AUDIO_IO_TILE] : clock    clk_audio_bclk            = CLKBLK_I2S_BIT;    /* Bit clock */
+on tile[AUDIO_IO_TILE] : clock clk_audio_bclk            = CLKBLK_I2S_BIT;    /* Bit clock */
 
 
 /* L/G Series needs a port to use for USB reset */
