@@ -11,8 +11,8 @@ module_dfu/host/xmosdfu/xmosdfu
 *.xi
 *.i
 *.bin
-.*
 *~
+.settings
 *.a
 *.swp
 *.*~
