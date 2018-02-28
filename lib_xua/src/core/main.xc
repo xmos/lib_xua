@@ -429,7 +429,9 @@ void usb_audio_io(chanend ?c_aud_in, chanend ?c_adc,
     , server interface i_dfu ?dfuInterface
 #endif
 #if (NUM_PDM_MICS > 0)
+#if (PDM_TILE == AUDIO_IO_TILE)
     , streaming chanend c_ds_output[2]
+#endif
     , chanend c_pdm_pcm
 #endif
 )
@@ -625,7 +627,9 @@ int main()
                 , dfuInterface
 #endif
 #if (NUM_PDM_MICS > 0)
-                , c_ds_output
+#if (PDM_TILE == AUDIO_IO_TILE)
+                , c_ds_output[2]
+#endif
                 , c_pdm_pcm
 #endif
             );
