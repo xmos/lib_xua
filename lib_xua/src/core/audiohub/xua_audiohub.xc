@@ -815,7 +815,7 @@ unsigned static deliver_slave(chanend ?c_out, chanend ?c_spd_out
     , unsigned adatSmuxMode
 #endif
     , unsigned divide, unsigned curSamFreq
-#if(SPDIF_RX == 1) || (ADAT_RX == 1))
+#if(SPDIF_RX == 1) || (ADAT_RX == 1)
     , chanend c_dig_rx
 #endif
 #if (NUM_PDM_MICS > 0)
