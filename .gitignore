@@ -1,5 +1,4 @@
 *.log
-module_dfu/host/xmosdfu/xmosdfu
 *.dSYM
 */.build_*/*
 */bin/*
