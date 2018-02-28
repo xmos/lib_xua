@@ -701,12 +701,11 @@ int main()
 
 #ifndef PDM_RECORD
 #if (NUM_PDM_MICS > 0) 
-
 #if (PDM_TILE != AUDIO_IO_TILE)
         /* PDM Mics running on a separate to AudioHub */
         on stdcore[PDM_TILE]:
         { 
-            xua_pdm_mic_config(p_mclk_pdm);
+            xua_pdm_mic_config(p_pdm_mclk);
             xua_pdm_mic(c_ds_output);
         }
 #endif
