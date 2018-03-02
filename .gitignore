@@ -22,3 +22,5 @@ module_dfu/host/xmosdfu/xmosdfu
 .waf-*/
 build/
 host/xmosdfu/xmosdfu
+.build*
+*.pyc
