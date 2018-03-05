@@ -20,12 +20,11 @@
 
 #define MAX_DECIMATION_FACTOR (96000/(MIN_FREQ/AUD_TO_MICS_RATIO))
 
-/* Hardware resources */
+/* Hardware resources - declated in main.xc */
 extern in port p_pdm_clk;
 
 extern in buffered port:32 p_pdm_mics;
 
-/* Delcared in main.xc */
 extern clock clk_pdm;
 
 #ifndef MIC_BUFFER_DEPTH 
