@@ -25,12 +25,6 @@ buffered out port:32 p_bclk         = PORT_I2S_BCLK;     /* I2S L/R-clock */
 /* Master clock for the audio IO tile */
 in port p_mclk_in                   = PORT_MCLK_IN;
 
-//unsafe
-//{
-//    /* TODO simplify this */
-//    unsafe port p_mclk_in;                               /* Audio master clock input */
-//}
-
 /* Resources for USB feedback */
 in port p_for_mclk_count            = PORT_MCLK_COUNT;   /* Extra port for counting master clock ticks */
 in port p_mclk_in_usb               = PORT_MCLK_IN_USB;  /* Extra master clock input for the USB tile */
@@ -86,13 +80,7 @@ int main()
                     }
 
         /* AudioHub/IO core does most of the audio IO i.e. I2S (also serves as a hub for all audio) */
-        on tile[0]: {
-                        //unsafe
-                        //{
-                         //   p_mclk_in = p_mclk_in_; 
-                       // }
-                        XUA_AudioHub(c_aud);
-                    }
+        on tile[0]: XUA_AudioHub(c_aud);
     }
     
     return 0;
