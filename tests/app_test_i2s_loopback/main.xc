@@ -219,7 +219,7 @@ int main(void)
         { 
             par 
             {
-                XUA_AudioHub(c_out);
+                XUA_AudioHub(c_out, clk_audio_mclk, clk_audio_bclk, p_mclk_in, p_lrclk, p_bclk);
                 generator(c_checker, c_out);
                 checker(c_checker, 0);
 #ifdef SIMULATION

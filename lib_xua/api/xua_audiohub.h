@@ -15,14 +15,24 @@
  *  This function drives I2S ports and handles samples to/from other digital
  *  I/O threads.
  *
- *  \param c_aud Audio sample channel connected to the mixer() thread or the
- *              decouple() thread
- *  \param c_dig channel connected to the clockGen() thread for
- *               receiving/transmitting samples
- *  \param c_config An optional channel that will be passed on to the
- *                  CODEC configuration functions.
+ *  \param c_aud            Audio sample channel connected to the mixer() thread or the
+ *                          decouple() thread
+ *
+ *  \param clk_audio_mclk   Nullable clockblock to be clocked from master clock
+ *
+ *  \param clk_audio_mclk   Nullable clockblock to be clocked from i2s clock
+ *
+ *  \param p_mclk_in        Master clock inport port (must be 1-bit)
+ *
+ *  \param c_dig            channel connected to the clockGen() thread for
+ *                          receiving/transmitting samples
  */
-void XUA_AudioHub(chanend ?c_aud
+void XUA_AudioHub(chanend ?c_aud, 
+    clock ?clk_audio_mclk, 
+    clock ?clk_audio_bclk, 
+    in port p_mclk_in,
+    buffered _XUA_CLK_DIR port:32 ?p_lrclk,
+    buffered _XUA_CLK_DIR port:32 ?p_bclk
 #if (XUA_SPDIF_TX_EN) && (SPDIF_TX_TILE != AUDIO_IO_TILE)
     , chanend c_spdif_tx
 #endif
