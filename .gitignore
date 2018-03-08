@@ -15,6 +15,10 @@
 *.a
 *.swp
 *.*~
+*.pyc
+.build*
+.DS_Store
+test_results.csv
 
 # waf build files
 .lock-waf_*
