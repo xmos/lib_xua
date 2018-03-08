@@ -1,4 +1,5 @@
 // Copyright (c) 2016-2018, XMOS Ltd, All rights reserved
+#include "xua.h"
 #if XUA_USB_EN
 
 #include "xud.h"

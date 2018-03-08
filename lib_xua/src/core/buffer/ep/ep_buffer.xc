@@ -1,9 +1,9 @@
 // Copyright (c) 2011-2018, XMOS Ltd, All rights reserved
+#include "xua.h"
 #if XUA_USB_EN
 #include <xs1.h>
 #include <print.h>
 
-#include "xua.h"
 
 #ifdef MIDI
 #include "usb_midi.h"
@@ -23,7 +23,6 @@
 #include "user_hid.h"
 unsigned char g_hidData[1] = {0};
 #endif
-
 
 void GetADCCounts(unsigned samFreq, int &min, int &mid, int &max);
 #define BUFFER_SIZE_OUT       (1028 >> 2)

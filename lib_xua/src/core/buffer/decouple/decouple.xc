@@ -1,7 +1,8 @@
 // Copyright (c) 2011-2018, XMOS Ltd, All rights reserved
+#include "xua.h"
+
 #if XUA_USB_EN
 #include <xs1.h>
-#include "xua.h"
 #include "xc_ptr.h"
 #include "interrupt.h"
 #include "xua_commands.h"
