@@ -25,3 +25,5 @@ test_results.csv
 .waf-*/
 build/
 host/xmosdfu/xmosdfu
+.build*
+*.pyc
