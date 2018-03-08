@@ -8,10 +8,6 @@
 
 #include "xua_conf_default.h"
 
-#if CODEC_MASTER
-    #define _XUA_CLK_DIR in
-#else
-    #define _XUA_CLK_DIR out
-#endif
+
 
 #endif

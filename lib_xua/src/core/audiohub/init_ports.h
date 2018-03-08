@@ -59,9 +59,9 @@ static inline void InitPorts_master(unsigned divide, buffered out port:32 p_lrcl
     }
 #endif
 }
-#endif
 
-#if CODEC_MASTER
+#else 
+
 static inline void InitPorts_slave(unsigned divide, buffered in port:32 p_lrclk, buffered in port:32 p_bclk)
 {
 #if (I2S_CHANS_ADC != 0 || I2S_CHANS_DAC != 0)

@@ -1453,3 +1453,14 @@ enum USBEndpointNumber_Out
 #define MIN_FREQ_44 (((44100*512)/((48000 * 512)/MIN_FREQ))*2)
 #endif
 
+/* Internal define for port declaration */
+#if CODEC_MASTER
+    #define _XUA_CLK_DIR in
+#else
+    #define _XUA_CLK_DIR out
+#endif
+
+#if (CODEC_MASTER == 1) && (DSD_CHANS_DAC != 0) 
+#error CODEC_MASTER with DSD is currently unsupported 
+#endif
+
