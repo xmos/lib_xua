@@ -51,7 +51,7 @@ int main()
     /* Channel for audio data between buffering cores and AudioHub/IO core */
     chan c_aud;
     
-    /* Channel for communicating control messages from EP0 to the rest of the device (via the buffering cores */
+    /* Channel for communicating control messages from EP0 to the rest of the device (via the buffering cores) */
     chan c_aud_ctl;
 
     par
@@ -80,7 +80,7 @@ int main()
                     }
 
         /* AudioHub/IO core does most of the audio IO i.e. I2S (also serves as a hub for all audio) */
-        on tile[0]: XUA_AudioHub(c_aud);
+        on tile[0]: XUA_AudioHub(c_aud, clk_audio_mclk, clk_audio_bclk, p_mclk_in, p_lrclk, p_bclk);
     }
     
     return 0;
