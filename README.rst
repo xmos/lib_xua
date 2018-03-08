@@ -6,6 +6,8 @@ Summary
 
 USB Audio Shared Components. For use in the XMOS USB Audio Refererence Designs.
 
+This library enables the development of USB Audio devices on the XMOS xCORE architecture.
+
 Features
 ........
 

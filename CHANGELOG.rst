@@ -11,7 +11,6 @@ lib_xua Change Log
     (introduced in sc_usb_audio 6.13)
   * RESOLVED:  Output sample counter reset on stream start. Caused playback
     issues on some Linux based hosts
-  
 
 0.1.1
 -----
