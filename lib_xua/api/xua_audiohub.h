@@ -6,7 +6,7 @@
 
 #include "xccompat.h"
 
-#ifndef NO_USB
+#if XUA_USB_EN
 #include "dfu_interface.h"
 #endif
 

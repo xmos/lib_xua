@@ -1,5 +1,5 @@
 // Copyright (c) 2011-2018, XMOS Ltd, All rights reserved
-#ifndef NO_USB
+#if XUA_USB_EN
 #include <xs1.h>
 #include <print.h>
 
@@ -1097,4 +1097,4 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
 
     }
 }
-#endif /* NO_USB */
+#endif /* XUA_USB_EN */

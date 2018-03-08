@@ -6,7 +6,7 @@ Warnings relating to configuration defines located in this XC source file rather
 
 #include "xua_conf_full.h"
 
-#ifndef NO_USB
+#if XUA_USB_EN
 
 #ifndef DEFAULT_FREQ
 #warning DEFAULT_FREQ not defined. Using MIN_FREQ

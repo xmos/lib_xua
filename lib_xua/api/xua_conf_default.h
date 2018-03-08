@@ -56,6 +56,13 @@
 #define PDM_TILE        AUDIO_IO_TILE
 #endif
 
+/** 
+ * @brief Disable USB functionalty just leaving AudioHub 
+ */
+#ifndef XUA_USB_EN
+#define XUA_USB_EN      1
+#endif
+
 /**
  * @brief Number of input channels (device to host). Default: NONE (Must be defined by app)
  */

@@ -91,15 +91,6 @@ extern buffered out port:32 p_adat_tx;
 extern clock    clk_mst_spd;
 #endif
 
-#define MAX_DIVIDE_48 (MCLK_48/MIN_FREQ_48/64)
-#define MAX_DIVIDE_44 (MCLK_44/MIN_FREQ_44/64)
-#if (MAX_DIVIDE_44 > MAX_DIVIDE_48)
-#define MAX_DIVIDE (MAX_DIVIDE_44)
-#else
-#define MAX_DIVIDE (MAX_DIVIDE_48)
-#endif
-
-
 #include "init_ports.h"
 
 #ifdef ADAT_TX
@@ -156,171 +147,70 @@ static inline void TransferAdatTxSamples(chanend c_adat_out, const unsigned samp
 }
 #endif
 
-#ifndef NO_USB
 #pragma unsafe arrays
 static inline unsigned DoSampleTransfer(chanend c_out, const int readBuffNo, const unsigned underflowWord)
 {
-    outuint(c_out, underflowWord);
 
-    /* Check for sample freq change (or other command) or new samples from mixer*/
-    if(testct(c_out))
+    if(XUA_USB_EN)
     {
-        unsigned command = inct(c_out);
-#ifndef CODEC_MASTER
-        if(dsdMode == DSD_MODE_OFF)
+        outuint(c_out, underflowWord);
+
+        /* Check for sample freq change (or other command) or new samples from mixer*/
+        if(testct(c_out))
         {
+            unsigned command = inct(c_out);
+#ifndef CODEC_MASTER
+            if(dsdMode == DSD_MODE_OFF)
+            {
 #if (I2S_CHANS_ADC != 0 || I2S_CHANS_DAC != 0)
-            /* Set clocks low */
-            p_lrclk <: 0;
-            p_bclk <: 0;
+                /* Set clocks low */
+                p_lrclk <: 0;
+                p_bclk <: 0;
 #endif
+            }
+            else
+            {
+#if(DSD_CHANS_DAC != 0)
+                /* DSD Clock might not be shared with lrclk or bclk... */
+                p_dsd_clk <: 0;
+#endif
+            }
+#endif
+#if (DSD_CHANS_DAC > 0)
+            if(dsdMode == DSD_MODE_DOP)
+                dsdMode = DSD_MODE_OFF;
+#endif
+#pragma xta endpoint "received_command"
+                return command;
         }
         else
         {
-#if(DSD_CHANS_DAC != 0)
-            /* DSD Clock might not be shared with lrclk or bclk... */
-            p_dsd_clk <: 0;
-#endif
-        }
-#endif
-#if (DSD_CHANS_DAC > 0)
-        if(dsdMode == DSD_MODE_DOP)
-            dsdMode = DSD_MODE_OFF;
-#endif
-#pragma xta endpoint "received_command"
-            return command;
-    }
-    else
-    {
 #if NUM_USB_CHAN_OUT > 0
 #pragma loop unroll
-        for(int i = 0; i < NUM_USB_CHAN_OUT; i++)
-        {
-            int tmp = inuint(c_out);
-            samplesOut[i] = tmp;
-        }
+            for(int i = 0; i < NUM_USB_CHAN_OUT; i++)
+            {
+                int tmp = inuint(c_out);
+                samplesOut[i] = tmp;
+            }
 #else
-        inuint(c_out);
+            inuint(c_out);
 #endif
-        UserBufferManagement(samplesOut, samplesIn[readBuffNo]);
+            UserBufferManagement(samplesOut, samplesIn[readBuffNo]);
 
 #if NUM_USB_CHAN_IN > 0
 #pragma loop unroll
-        for(int i = 0; i < NUM_USB_CHAN_IN; i++)
-        {
-            outuint(c_out, samplesIn[readBuffNo][i]);
-        }
+            for(int i = 0; i < NUM_USB_CHAN_IN; i++)
+            {
+                outuint(c_out, samplesIn[readBuffNo][i]);
+            }
 #endif
+        }
     }
+    else
+        UserBufferManagement(samplesOut, samplesIn[readBuffNo]);
 
     return 0;
 }
-
-#else /* NO_USB */
-#pragma unsafe arrays
-static inline unsigned DoSampleTransfer(chanend ?c_out, const int readBuffNo, const unsigned underflowWord)
-{
-    UserBufferManagement(samplesOut, samplesIn[readBuffNo]);
-    return 0;
-}
-#endif /* NO_USB */
-
-
-#if (DSD_CHANS_DAC != 0) && (NUM_USB_CHAN_OUT > 0)
-/* This function performs the DSD native loop and outputs a 32b DSD stream per loop */
-static inline void DoDsdNative(unsigned samplesOut[], unsigned &dsdSample_l, unsigned &dsdSample_r, unsigned divide)
-{
-     /* 8 bits per chan, 1st 1-bit sample in MSB */
-    dsdSample_l =  samplesOut[0];
-    dsdSample_r =  samplesOut[1];
-    dsdSample_r = bitrev(byterev(dsdSample_r));
-    dsdSample_l = bitrev(byterev(dsdSample_l));
-
-    asm volatile("out res[%0], %1"::"r"(p_dsd_dac[0]),"r"(dsdSample_l));
-    asm volatile("out res[%0], %1"::"r"(p_dsd_dac[1]),"r"(dsdSample_r));
-}
-
-/* This function performs the DOP loop and collects 16b of DSD per loop 
-   and outputs a 32b word into the port buffer every other cycle. */
-static inline void DoDsdDop(int &everyOther, unsigned samplesOut[], unsigned &dsdSample_l, unsigned &dsdSample_r, unsigned divide)
-{
-    if(!everyOther)
-    {
-        dsdSample_l = ((samplesOut[0] & 0xffff00) << 8);
-        dsdSample_r = ((samplesOut[1] & 0xffff00) << 8);
-        everyOther = 1;
-    }
-    else 
-    {
-        everyOther = 0;
-        dsdSample_l =  dsdSample_l | ((samplesOut[0] & 0xffff00) >> 8);
-        dsdSample_r =  dsdSample_r | ((samplesOut[1] & 0xffff00) >> 8);
-
-        asm volatile("out res[%0], %1"::"r"(p_dsd_dac[0]),"r"(bitrev(dsdSample_l)));
-        asm volatile("out res[%0], %1"::"r"(p_dsd_dac[1]),"r"(bitrev(dsdSample_r)));
-    }
-}
-
-/* When DSD is enabled and streaming is standard PCM, this function checks for a series of DoP markers in the upper byte.
-   If found it will exit deliver() with the command to restart in DoP mode.
-   When in DoP mode, this function will check for a single absence of the DoP marker and exit deliver() with the command
-   to restart in I2S mode. */
-static inline int DoDsdDopCheck(unsigned &dsdMode, int &dsdCount, unsigned curSamFreq, unsigned samplesOut[], unsigned &dsdMarker)
-{
-#if (DSD_CHANS_DAC != 0) && (NUM_USB_CHAN_OUT > 0)
-    /* Check for DSD - note we only move into DoP mode if valid DoP Freq */
-    /* Currently we only check on channel 0 - we get all 0's on channels without data */
-    if((dsdMode == DSD_MODE_OFF) && (curSamFreq > 96000))
-    {
-        if((DSD_MASK(samplesOut[0]) == dsdMarker) && (DSD_MASK(samplesOut[1]) == dsdMarker))
-        {
-            dsdCount++;
-            dsdMarker ^= DSD_MARKER_XOR;
-            if(dsdCount == DSD_EN_THRESH)
-            {
-                dsdMode = DSD_MODE_DOP;
-                dsdCount = 0;
-                dsdMarker = DSD_MARKER_2;
-
-#if (I2S_CHANS_ADC != 0 || I2S_CHANS_DAC != 0)
-                // Set clocks low
-                p_lrclk <: 0;
-                p_bclk <: 0;
-#endif
-                p_dsd_clk <: 0;
-                return 0;
-            }
-        }
-        else
-        {
-            dsdCount = 0;
-            dsdMarker = DSD_MARKER_2;
-        }
-    }
-    else if(dsdMode == DSD_MODE_DOP) 
-    {
-        /* If we are running in DOP mode, check if we need to come out */
-        if((DSD_MASK(samplesOut[0]) != DSD_MARKER_1) && (DSD_MASK(samplesOut[1]) != DSD_MARKER_1))
-        {
-            if((DSD_MASK(samplesOut[0]) != DSD_MARKER_2) && (DSD_MASK(samplesOut[1]) != DSD_MARKER_2))
-            {
-                dsdMode = DSD_MODE_OFF;
-                // Set clocks low
-#if (I2S_CHANS_ADC != 0 || I2S_CHANS_DAC != 0)
-                p_lrclk <: 0;
-                p_bclk <: 0;
-#endif
-                p_dsd_clk <: 0;
-                return 0;
-            }
-        }
-    }
-#endif
-    return 1;
-}
-#endif
-
-
 
 
 #if (CODEC_MASTER == 0)
@@ -1363,7 +1253,7 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
                 }
 #endif
                 /* Handshake back */
-#ifndef NO_USB
+#if (XUA_USB_EN)
                 outct(c_aud, XS1_CT_END);
 #endif
             }
@@ -1436,7 +1326,7 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
                    p_bclk
                    );
 
-#ifndef NO_USB
+#if (XUA_USB_EN)
                 if(command == SET_SAMPLE_FREQ)
                 {
                     curSamFreq = inuint(c_aud) * AUD_TO_USB_RATIO;
@@ -1482,7 +1372,7 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
                 }
 #endif
 
-#endif /* NO_USB */
+#endif /* XUA_USB_EN */
 
 #if (XUA_SPDIF_TX_EN)
                 /* Notify S/PDIF task of impending new freq... */

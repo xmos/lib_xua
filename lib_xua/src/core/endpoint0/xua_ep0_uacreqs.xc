@@ -6,7 +6,7 @@
 
 #include "xua.h"
 
-#ifndef NO_USB
+#if XUA_USB_EN
 #include <xs1.h>
 #include "xud_device.h"
 #include "usbaudio20.h"

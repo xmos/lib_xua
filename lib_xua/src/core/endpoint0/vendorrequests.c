@@ -1,5 +1,5 @@
 // Copyright (c) 2016-2018, XMOS Ltd, All rights reserved
-#ifndef NO_USB
+#if XUA_USB_EN
 
 #include "xud.h"
 #include "vendorrequests.h"
@@ -32,4 +32,4 @@ void VendorRequests_Init(VENDOR_REQUESTS_PARAMS_DEC)
 
 }
 
-#endif /* NO_USB */
+#endif /* XUA_USB_EN */

@@ -10,7 +10,7 @@
 
 #include "xua.h"
 
-#ifndef NO_USB
+#if XUA_USB_EN 
 #include "xud_device.h"          /* Standard descriptor requests */
 #include "dfu_types.h"
 #include "usbaudio20.h"          /* Defines from USB Audio 2.0 spec */
@@ -802,4 +802,4 @@ void XUA_Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
         }
     }
 }
-#endif /* NO_USB */
+#endif /* XUA_USB_EN*/

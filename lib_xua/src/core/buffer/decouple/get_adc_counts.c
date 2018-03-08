@@ -1,5 +1,5 @@
 // Copyright (c) 2011-2018, XMOS Ltd, All rights reserved
-#ifndef NO_USB
+#if XUA_USB_EN
 #include "xud.h"
 
 extern XUD_BusSpeed_t g_curUsbSpeed;
@@ -50,5 +50,5 @@ void GetADCCounts(unsigned samFreq, int *min, int *mid, int *max)
     }
 
 }
-#endif /* NO_USB */
+#endif /* XUA_USB_EN */
 

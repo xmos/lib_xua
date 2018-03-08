@@ -17,7 +17,7 @@
 #include <xscope.h>
 #endif
 
-#ifndef NO_USB
+#if XUA_USB_EN
 #include "xud_device.h"                 /* XMOS USB Device Layer defines and functions */
 #include "xua_endpoint0.h"
 #endif
@@ -125,7 +125,7 @@ on tile[AUDIO_IO_TILE] : buffered out port:32 p_bclk        = PORT_I2S_BCLK;
 
 on tile[AUDIO_IO_TILE] :  in port p_mclk_in                 = PORT_MCLK_IN;
 
-#ifndef NO_USB 
+#if XUA_USB_EN 
 on tile[XUD_TILE] : in port p_for_mclk_count                = PORT_MCLK_COUNT;
 #endif
 
@@ -197,7 +197,7 @@ on tile[XUD_TILE] : clock    clk_adat_rx                    = CLKBLK_ADAT_RX;
 
 on tile[AUDIO_IO_TILE] : clock clk_audio_mclk               = CLKBLK_MCLK;       /* Master clock */
 
-#if(AUDIO_IO_TILE != XUD_TILE) && !defined(NO_USB)
+#if(AUDIO_IO_TILE != XUD_TILE) && XUA_USB_EN
 /* Separate clock/port for USB feedback calculation */
 on tile[XUD_TILE] : clock clk_audio_mclk_usb                = CLKBLK_MCLK;       /* Master clock */
 on tile[XUD_TILE] : in port p_mclk_in_usb                   = PORT_MCLK_IN_USB;
@@ -224,7 +224,7 @@ on tile [IAP_TILE] : struct r_i2c r_i2c = {PORT_I2C_SCL, PORT_I2C_SDA};
 #endif
 #endif
 
-#ifndef NO_USB
+#if XUA_USB_EN
 /* Endpoint type tables for XUD */
 XUD_EpType epTypeTableOut[ENDPOINT_COUNT_OUT] = { XUD_EPTYPE_CTL | XUD_STATUS_ENABLE,
                                             XUD_EPTYPE_ISO,    /* Audio */
@@ -264,7 +264,7 @@ XUD_EpType epTypeTableIn[ENDPOINT_COUNT_IN] = { XUD_EPTYPE_CTL | XUD_STATUS_ENAB
 #endif
 #endif
                                         };
-#endif /* NO_USB */
+#endif /* XUA_USB_EN */
 
 void thread_speed()
 {
@@ -285,7 +285,7 @@ void xscope_user_init()
 }
 #endif
 
-#ifndef NO_USB
+#if XUA_USB_EN
 /* Core USB Audio functions - must be called on the Tile connected to the USB Phy */
 void usb_audio_core(chanend c_mix_out
 #ifdef MIDI
@@ -412,7 +412,7 @@ VENDOR_REQUESTS_PARAMS_DEC_
         //:
     }
 }
-#endif /* NO_USB */
+#endif /* XUA_USB_EN */
 
 void usb_audio_io(chanend ?c_aud_in, chanend ?c_adc,
 #if (XUA_SPDIF_TX_EN) && (SPDIF_TX_TILE != AUDIO_IO_TILE)
@@ -512,7 +512,7 @@ void usb_audio_io(chanend ?c_aud_in, chanend ?c_adc,
 /* Main for USB Audio Applications */
 int main()
 {
-#if NO_USB
+#if !XUA_USB_EN
     #define c_mix_out null
 #else
     chan c_mix_out;
@@ -592,7 +592,7 @@ int main()
             DFUHandler(dfuInterface, null);
 #endif
 #endif
-#ifndef NO_USB
+#if XUA_USB_EN
             usb_audio_core(c_mix_out
 #ifdef MIDI
                 , c_midi
@@ -610,7 +610,7 @@ int main()
                 VENDOR_REQUESTS_PARAMS_
 
             );
-#endif /* NO_USB */
+#endif /* XUA_USB_EN */
         }
 
         on tile[AUDIO_IO_TILE]: 
@@ -695,7 +695,7 @@ int main()
 #endif
 
 
-#ifndef NO_USB
+#if XUA_USB_EN
 #if (XUD_TILE != 0 ) && (AUDIO_IO_TILE != 0) && (XUA_DFU_EN == 1)
         /* Run flash code on its own - hope it gets combined */
 //#warning Running DFU flash code on its own
