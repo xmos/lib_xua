@@ -26,3 +26,5 @@ _build*
 .waf-*/
 build/
 host/xmosdfu/xmosdfu
+.build*
+*.pyc

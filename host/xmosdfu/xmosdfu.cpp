@@ -318,6 +318,11 @@ int read_dfu_image(char *file)
             }
             break;
         }
+        else if (numBytes < 0)
+        {
+            fprintf(stderr,"dfu_upload error (%d)\n", numBytes);
+            break;
+        }
         fwrite(block_data, 1, block_size, outFile);
         block_count++;
     }
