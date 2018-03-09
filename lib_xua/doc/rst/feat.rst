@@ -46,7 +46,7 @@ These hardware resources must be passed into the call to ``XUA_AudioHub()``::
 
 For configuration options, master vs slave, TDM etc please see the API section.
 
-
+|newpage|
 
 
 

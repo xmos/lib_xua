@@ -4,12 +4,9 @@
 USB Audio Software Overview
 ---------------------------
 
-This section describes the software architecture of a USB Audio device implemented using `lib_xua`, its dependancies and other supporting libraries.
+This section describes the software architecture of a USB Audio device implemented using `lib_xua`, its dependencies and other supporting libraries.
 
-
-`lib_xua` provides the fundamental building blocks for producing USB Audio products on XMOS devices. 
-
-Every system is required to have the shared components from `lib_xua` listed in :ref:`usb_audio_shared_components`.
+`lib_xua` provides fundamental building blocks for producing USB Audio products on XMOS devices. Every system is required to have the components from `lib_xua` listed in :ref:`usb_audio_shared_components`.
 
 .. _usb_audio_shared_components:
 
@@ -40,7 +37,7 @@ In addition low-level USB I/0 is required and is provided by the external depend
  * - XMOS USB Device Driver (XUD)
    - Handles the low level USB I/O.
 
-In addition :ref:`usb_audio_optional_components` shows optional components that can be added/enabled from `lib_xua`
+In addition :ref:`usb_audio_optional_components` shows optional components that can be added/enabled from within `lib_xua`
 
 .. _usb_audio_optional_components:
 
@@ -53,21 +50,30 @@ In addition :ref:`usb_audio_optional_components` shows optional components that 
  * - Mixer
    - Allows digital mixing of input and output channels.  It can also 
      handle volume control instead of the decoupler.
- * - S/PDIF Transmitter
-   - Outputs samples of an S/PDIF digital audio interface.
- * - S/PDIF Receiver
-   - Inputs samples of an S/PDIF digital audio interface (requires the
-     clockgen component).
- * - ADAT Receiver
-   - Inputs samples of an ADAT digital audio interface (requires the
-     clockgen component).
  * - Clockgen
    - Drives an external frequency generator (PLL) and manages
      changes between internal clocks and external clocks arising
      from digital input.
  * - MIDI
    - Outputs and inputs MIDI over a serial UART interface.
- * - PDM Microphones
+
+`lib_xua` also provides optional support for integrating with the following eternal dependencies:
+
+.. list-table:: Optional Components
+ :header-rows: 1
+ :widths: 40 60
+
+ * - Component
+   - Description
+ * - S/PDIF Transmitter (lib_spdif)
+   - Outputs samples of an S/PDIF digital audio interface.
+ * - S/PDIF Receiver (lib_spdif)
+   - Inputs samples of an S/PDIF digital audio interface (requires the
+     clockgen component).
+ * - ADAT Receiver (lib_adat)
+   - Inputs samples of an ADAT digital audio interface (requires the
+     clockgen component).
+ * - PDM Microphones (lib_mic_array)
    - Receives PDM data from microphones and performs PDM to PCM conversion
 
 .. _usb_audio_threads:

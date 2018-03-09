@@ -159,7 +159,7 @@ To enable custom functionality, such as configuring external audio hardware, cus
 Codeless programming model
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Whilst it is possible to code a USB Audio device using the building blocks provided by `lib_xud` it is realised that this might not be desirable for some classes of customers or product.
+Whilst it is possible to code a USB Audio device using the building blocks provided by `lib_xua` it is realised that this might not be desirable for some classes of customers or product.
 
 For instance, some users may not have a large software development experience and simply want to customise some basic settings such as strings. Others may want to fully customise the implementation - adding additional functionality such as adding DSD or possibly only using a subset of the functions provided - just ``XUA_AudioHub``, for example.
 
@@ -171,6 +171,6 @@ Using this development model the user simply must include a ``xua_conf.h`` with 
 
 This model also provides the benefit of a known-good, full codebase as a basis for a product. 
 
-This behaviour described in this section is the default behaviour of `lib_xud`, to disable this please set ``EXCLUDE_USB_AUDIO_MAIN`` to 1 in the application makefile or ``xua_conf.h``.
+This behaviour described in this section is the default behaviour of `lib_xua`, to disable this please set ``EXCLUDE_USB_AUDIO_MAIN`` to 1 in the application makefile or ``xua_conf.h``.
 
 
