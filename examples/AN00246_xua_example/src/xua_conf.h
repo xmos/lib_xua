@@ -1,5 +1,8 @@
 // Copyright (c) 2017-2018, XMOS Ltd, All rights reserved
 
+#ifndef _XUA_CONF_H_ 
+#define _XUA_CONF_H_
+
 #define NUM_USB_CHAN_OUT 2
 #define NUM_USB_CHAN_IN 2
 #define I2S_CHANS_DAC 2
@@ -22,3 +25,5 @@
 #define AUDIO_CLASS_FALLBACK 0
 #define BCD_DEVICE 0x1234
 #define XUA_DFU_EN 0
+
+#endif

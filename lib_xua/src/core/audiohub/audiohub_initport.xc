@@ -1,5 +1,16 @@
+#include "xua.h"
+
+#include "dsd_support.h"
+
+#if (DSD_CHANS_DAC != 0)
+extern buffered out port:32 p_dsd_dac[DSD_CHANS_DAC];
+extern buffered out port:32 p_dsd_clk;
+#endif
+
+extern unsigned dsdMode;
+
 #if !CODEC_MASTER
-static inline void InitPorts_master(unsigned divide, buffered out port:32 p_lrclk, buffered out port:32 p_bclk)
+void InitPorts_master(unsigned divide, buffered _XUA_CLK_DIR port:32 p_lrclk, buffered _XUA_CLK_DIR port:32 p_bclk, buffered out port:32 (&?p_i2s_dac)[I2S_WIRES_DAC], buffered in port:32  (&?p_i2s_adc)[I2S_WIRES_ADC])
 {
 #if (DSD_CHANS_DAC > 0)
     if(dsdMode == DSD_MODE_OFF)
@@ -62,7 +73,7 @@ static inline void InitPorts_master(unsigned divide, buffered out port:32 p_lrcl
 
 #else 
 
-static inline void InitPorts_slave(unsigned divide, buffered in port:32 p_lrclk, buffered in port:32 p_bclk)
+void InitPorts_slave(unsigned divide, buffered _XUA_CLK_DIR port:32 p_lrclk, buffered _XUA_CLK_DIR port:32 p_bclk, buffered out port:32 (&?p_i2s_dac)[I2S_WIRES_DAC], buffered in port:32  (&?p_i2s_adc)[I2S_WIRES_ADC])
 {
 #if (I2S_CHANS_ADC != 0 || I2S_CHANS_DAC != 0)
     unsigned tmp;

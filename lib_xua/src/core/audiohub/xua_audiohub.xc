@@ -49,11 +49,6 @@ static unsigned samplesOut[MAX(NUM_USB_CHAN_OUT, I2S_CHANS_DAC)];
 
 static unsigned samplesIn[2][MAX(NUM_USB_CHAN_IN, IN_CHAN_COUNT)];
 
-#if (DSD_CHANS_DAC != 0)
-extern buffered out port:32 p_dsd_dac[DSD_CHANS_DAC];
-extern buffered out port:32 p_dsd_clk;
-#endif
-
 #ifdef XTA_TIMING_AUDIO
 #pragma xta command "add exclusion received_command"
 #pragma xta command "analyse path i2s_output_l i2s_output_r"
@@ -67,18 +62,6 @@ extern buffered out port:32 p_dsd_clk;
 #pragma xta command "set required - 2000 ns"
 #endif
 
-/* I2S Data I/O*/
-#if (I2S_CHANS_DAC != 0)
-extern buffered out port:32 p_i2s_dac[I2S_WIRES_DAC];
-#endif
-
-#if (I2S_CHANS_ADC != 0)
-extern buffered in port:32  p_i2s_adc[I2S_WIRES_ADC];
-#endif
-
-
-unsigned dsdMode = DSD_MODE_OFF;
-
 #if (XUA_SPDIF_TX_EN)
 extern buffered out port:32 p_spdif_tx;
 #endif
@@ -91,66 +74,28 @@ extern buffered out port:32 p_adat_tx;
 extern clock    clk_mst_spd;
 #endif
 
-#include "init_ports.h"
+#if CODEC_MASTER
+void InitPorts_slave
+#else
+void InitPorts_master
+#endif
+(unsigned divide, buffered _XUA_CLK_DIR port:32 p_lrclk, buffered _XUA_CLK_DIR port:32 p_bclk, buffered out port:32 ?p_i2s_dac[I2S_WIRES_DAC], 
+    buffered in port:32  ?p_i2s_adc[I2S_WIRES_ADC]);
+
+
+unsigned dsdMode = DSD_MODE_OFF;
+
+#if (DSD_CHANS_DAC != 0) && (NUM_USB_CHAN_OUT > 0)
+#include "audiohub_dsd.h"
+#endif
 
 #ifdef ADAT_TX
-unsigned adatCounter = 0;
-unsigned adatSamples[8];
-
-
-#pragma unsafe arrays
-static inline void TransferAdatTxSamples(chanend c_adat_out, const unsigned samplesFromHost[], int smux, int handshake)
-{
-
-    /* Do some re-arranging for SMUX.. */
-    unsafe
-    {
-        unsigned * unsafe samplesFromHostAdat = &samplesFromHost[ADAT_TX_INDEX];
-
-        /* Note, when smux == 1 this loop just does a straight 1:1 copy */
-        //if(smux != 1)
-        {
-            int adatSampleIndex = adatCounter;
-            for(int i = 0; i < (8/smux); i++)
-            {
-                adatSamples[adatSampleIndex] = samplesFromHostAdat[i];
-                adatSampleIndex += smux;
-            }
-        }
-    }
-
-    adatCounter++;
-
-    if(adatCounter == smux)
-    {
-
-#ifdef ADAT_TX_USE_SHARED_BUFF
-        unsafe
-        {
-            /* Wait for ADAT core to be done with buffer */
-            /* Note, we are "running ahead" of the ADAT core */
-            inuint(c_adat_out);
-
-            /* Send buffer pointer over to ADAT core */
-            volatile unsigned * unsafe samplePtr = &adatSamples;
-            outuint(c_adat_out, (unsigned) samplePtr);
-        }
-#else
-#pragma loop unroll
-        for (int i = 0; i < 8; i++)
-        {
-            outuint(c_adat_out, samplesFromHost[ADAT_TX_INDEX + i]);
-        }
-#endif
-        adatCounter = 0;
-    }
-}
+#include "audiohub_adat.h"
 #endif
 
 #pragma unsafe arrays
 static inline unsigned DoSampleTransfer(chanend c_out, const int readBuffNo, const unsigned underflowWord)
 {
-
     if(XUA_USB_EN)
     {
         outuint(c_out, underflowWord);
@@ -277,17 +222,15 @@ unsigned static AudioHub_MainLoop(chanend ?c_out, chanend ?c_spd_out
 #if (NUM_PDM_MICS > 0)
     , chanend c_pdm_pcm
 #endif
-    , buffered _XUA_CLK_DIR port:32 p_lrclk, buffered _XUA_CLK_DIR port:32 p_bclk
+    , buffered _XUA_CLK_DIR port:32 p_lrclk, 
+    buffered _XUA_CLK_DIR port:32 p_bclk,
+    buffered out port:32 (&?p_i2s_dac)[I2S_WIRES_DAC],
+    buffered in port:32  (&?p_i2s_adc)[I2S_WIRES_ADC]
 )
 {
     /* Since DAC and ADC buffered ports off by one sample we buffer previous ADC frame */
     unsigned readBuffNo = 0;
     unsigned index;
-
-#ifdef RAMP_CHECK
-    unsigned prev=0;
-    int started = 0;
-#endif
 
 #if (DSD_CHANS_DAC != 0)
     unsigned dsdMarker = DSD_MARKER_2;    /* This alternates between DSD_MARKER_1 and DSD_MARKER_2 */
@@ -375,9 +318,9 @@ unsigned static AudioHub_MainLoop(chanend ?c_out, chanend ?c_spd_out
         unsigned syncError = 0;
 
 #if CODEC_MASTER
-        InitPorts_slave(divide, p_lrclk, p_bclk);
+        InitPorts_slave(divide, p_lrclk, p_bclk, p_i2s_dac, p_i2s_adc);
 #else
-        InitPorts_master(divide, p_lrclk, p_bclk);
+        InitPorts_master(divide, p_lrclk, p_bclk, p_i2s_dac, p_i2s_adc);
 #endif
         
         /* Note we always expect syncError to be 0 when we are master */
@@ -599,7 +542,15 @@ unsigned static AudioHub_MainLoop(chanend ?c_out, chanend ?c_spd_out
 
 #if (DSD_CHANS_DAC != 0) && (NUM_USB_CHAN_OUT > 0)
             if(DoDsdDopCheck(dsdMode, dsdCount, curSamFreq, samplesOut, dsdMarker) == 0)
+            {
+#if (I2S_CHANS_ADC != 0) || (I2S_CHANS_DAC != 0)
+                // Set clocks low
+                p_lrclk <: 0;
+                p_bclk <: 0;
+#endif
+                p_dsd_clk <: 0;
                 return 0;
+            }
 #endif
 
 #if I2S_MODE_TDM
@@ -683,7 +634,6 @@ static void dummy_deliver(chanend ?c_out, unsigned &command)
 {
     int ct;
 
-
     while (1)
     {
         select
@@ -733,7 +683,9 @@ static void dummy_deliver(chanend ?c_out, unsigned &command)
 void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
     in port p_mclk_in,
     buffered _XUA_CLK_DIR port:32 ?p_lrclk,
-    buffered _XUA_CLK_DIR port:32 ?p_bclk
+    buffered _XUA_CLK_DIR port:32 ?p_bclk,
+    buffered out port:32 (&?p_i2s_dac)[I2S_WIRES_DAC], 
+    buffered in port:32  (&?p_i2s_adc)[I2S_WIRES_ADC]
 #if (XUA_SPDIF_TX_EN) && (SPDIF_TX_TILE != AUDIO_IO_TILE)
     , chanend c_spdif_out
 #endif
@@ -994,9 +946,7 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
 #if (NUM_PDM_MICS > 0)
                    , c_pdm_in
 #endif
-                  , p_lrclk, 
-                   p_bclk
-                   );
+                  , p_lrclk, p_bclk, p_i2s_dac, p_i2s_adc);
 
 #if (XUA_USB_EN)
                 if(command == SET_SAMPLE_FREQ)
@@ -1028,16 +978,16 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
                         par
                         {
                             DFUHandler(dfuInterface, null);
-                            dummy_deliver(c_mix_out, command);
+                            dummy_deliver(c_aud, command);
                         }
 #else
-                        dummy_deliver(c_mix_out, command);
+                        dummy_deliver(c_aud, command);
 #endif
-                        curSamFreq = inuint(c_mix_out);
+                        curSamFreq = inuint(c_aud);
 
                         if (curSamFreq == AUDIO_START_FROM_DFU)
                         {
-                            outct(c_mix_out, XS1_CT_END);
+                            outct(c_aud, XS1_CT_END);
                             break;
                         }
                     }

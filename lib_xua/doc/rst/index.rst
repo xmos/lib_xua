@@ -28,7 +28,7 @@ Host System Requirements
     Hardware Platforms <hw>
     Software Overview <sw>
     Using lib_xua <using>
-    Implementation Detail <sw_arch>
+    Features <feat>
     Known Issues <issues>
 
 

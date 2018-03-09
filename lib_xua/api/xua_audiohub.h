@@ -24,6 +24,14 @@
  *
  *  \param p_mclk_in        Master clock inport port (must be 1-bit)
  *
+ *  \param p_lrclk          Nullable port for I2S sample clock
+ *
+ *  \param p_bclk           Nullable port for I2S bit
+ *
+ *  \param p_i2s_dac        Nullable array of ports for I2S data output lines
+ *
+ *  \param p_i2s_adc        Nullable array of ports for I2S data input lines
+ *
  *  \param c_dig            channel connected to the clockGen() thread for
  *                          receiving/transmitting samples
  */
@@ -32,7 +40,9 @@ void XUA_AudioHub(chanend ?c_aud,
     clock ?clk_audio_bclk, 
     in port p_mclk_in,
     buffered _XUA_CLK_DIR port:32 ?p_lrclk,
-    buffered _XUA_CLK_DIR port:32 ?p_bclk
+    buffered _XUA_CLK_DIR port:32 ?p_bclk,
+    buffered out port:32 (&?p_i2s_dac)[I2S_WIRES_DAC], 
+    buffered in port:32  (&?p_i2s_adc)[I2S_WIRES_ADC]
 #if (XUA_SPDIF_TX_EN) && (SPDIF_TX_TILE != AUDIO_IO_TILE)
     , chanend c_spdif_tx
 #endif

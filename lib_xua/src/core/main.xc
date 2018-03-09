@@ -83,6 +83,8 @@ on tile[AUDIO_IO_TILE] : buffered out port:32 p_i2s_dac[I2S_WIRES_DAC] =
 #endif
 #if I2S_WIRES_DAC > 0
                 };
+#else
+    #define p_i2s_dac null
 #endif
 
 #if I2S_WIRES_ADC > 0
@@ -112,6 +114,8 @@ on tile[AUDIO_IO_TILE] : buffered in port:32 p_i2s_adc[I2S_WIRES_ADC] =
 #endif
 #if I2S_WIRES_ADC > 0
                 };
+#else
+    #define p_i2s_adc null
 #endif
 
 
@@ -468,7 +472,7 @@ void usb_audio_io(chanend ?c_aud_in, chanend ?c_adc,
 #else
 #define AUDIO_CHANNEL c_aud_in
 #endif
-            XUA_AudioHub(AUDIO_CHANNEL
+            XUA_AudioHub(AUDIO_CHANNEL, clk_audio_mclk, clk_audio_bclk, p_mclk_in, p_lrclk, p_bclk, p_i2s_dac, p_i2s_adc
 #if (XUA_SPDIF_TX_EN) && (SPDIF_TX_TILE != AUDIO_IO_TILE)
                 , c_spdif_tx
 #endif
