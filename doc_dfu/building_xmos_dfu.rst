@@ -4,7 +4,7 @@ Building the XMOS DFU loader - macOS
 ====================================
 
 The XMOS DFU loader is provided as source as part of the USB Audio
-framework, located in sc_usb_audio/module_dfu/host/xmos_dfu_osx.
+framework, located in lib_xua/host/xmosdfu.
 
 The loader is compiled using libusb, the code for the loader is contained in the
 file ``xmosdfu.cpp``
