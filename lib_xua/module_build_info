@@ -18,7 +18,7 @@ VERSION = 0.1.2
 DEPENDENT_MODULES = lib_logging(>=2.1.0) lib_xud(>=0.1.0)
 
 #ignore host dir
-SOURCE_DIRS = src
+SOURCE_DIRS = src/*
 
 #core
 EXCLUDE_FILES += descriptors_2.rst
