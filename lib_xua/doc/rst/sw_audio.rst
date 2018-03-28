@@ -1,28 +1,26 @@
 .. _usb_audio_sec_audio:
 
-Audio Driver
+AudioHub/I2S
 ............
 
-The audio driver receives and transmits samples from/to the decoupler
-or mixer core over an XC channel. 
-It then drives several in and out I2S/TDM channels. If
-the firmware is configured with the CODEC as slave, it will also
-drive the word and bit clocks in this core as well. The word
-clocks, bit clocks and data are all derived from the incoming
-master clock (typically the output of the external oscillator or PLL). The audio
-driver is implemented in the file ``audio.xc``.
+The AudioHub task performs many functions. It receives and transmits samples from/to the decoupler or mixer core over an XC channel.
 
-The audio driver captures and plays audio data over I2S. It also
-forwards on relevant audio data to the S/PDIF transmit core.  
+It also drives several in and out I2S/TDM channels to/from a CODEC, DAC, ADC etc - from now on termed "audio hardware".
 
-The audio core must be connected to a CODEC that supports I2S (other
-modes such as "left justified" can be supported with firmware changes). In
-slave mode, the XMOS device acts as the master generating the Bit
-Clock (BCLK) and Left-Right Clock (LRCLK, also called Word Clock)
-signals. Any CODEC or DAC/ADC combination that supports I2S and can be used.
+If the firmware is configured with the xCORE as I2S master the requred clock lines will also be driven out from this task also. 
 
-:ref:`usb_audio_codec_signals` shows the signals used to communicate audio between
-the XMOS device and the CODEC.
+It also has the task of formwarding on and reciving samples to/from other audio related tasks such as S/PDIF tasks, ADAT tasks etc.
+
+The AudioHub task must be connected to external audio hardware that supports I2S (other modes such as "left justified" can be supported with firmware changes). 
+
+In master mode, the XMOS device acts as the master generating the I2S "Continous Serial Clock (SCK)" typically called the Bit-Clock (BCLK) and the "Word Select (WS)" line typically called left-right clock (LRCLK) signals. Any CODEC or DAC/ADC combination that supports I2S and can be used.
+
+The LR-clock, bit-clock and data are all derived from the incoming master clock (typically the output of the external oscillator or PLL) 
+- This is not part of the I2S standard but is commonly included for synchronizing the internal operation of the analog/digital converters.
+
+The AudioHub task is implemented in the file ``xua_audiohub.xc``.
+
+:ref:`usb_audio_codec_signals` shows the signals used to communicate audio between the XMOS device and the external audio hardware.
 
 .. _usb_audio_codec_signals:
 
@@ -43,16 +41,16 @@ the XMOS device and the CODEC.
    * - MCLK
      - The master clock running the CODEC/DAC/ADC
 
-The bit clock controls the rate at which data is transmitted to and from the CODEC. 
+The bit clock controls the rate at which data is transmitted to and from the external audio hardware.
+
 In the case where the XMOS device is the master, it divides the MCLK to generate the required signals for both BCLK and LRCLK,
-with BCLK then being used to clock data in (SDIN) and data out (SDOUT) of the CODEC.
+with BCLK then being used to clock data in (SDIN) and data out (SDOUT) of the external audio hardware.
 
-:ref:`usb_audio_l1_clock_divides` shows some example clock frequencies and divides
-for different sample rates (note that this reflects the single tile L-Series reference board configuration):
+:ref:`usb_audio_example_clock_divides` shows some example clock frequencies and divides for different sample rates:
 
-.. _usb_audio_l1_clock_divides:
+.. _usb_audio_example_clock_divides:
 
-.. list-table:: Clock Divides used in single tile L-Series Ref Design
+.. list-table:: Clock Divide examples
   :header-rows: 1
   :widths: 30 25 25 20
 
@@ -85,18 +83,16 @@ for different sample rates (note that this reflects the single tile L-Series ref
     - 12.288 
     - 2
 
-The master clock must be supplied by an external source e.g. clock generator, 
-fixed oscillators, PLL etc to generate the two frequencies to support
-44.1kHz and 48kHz audio frequencies (e.g. 11.2896/22.5792MHz and 12.288/24.576MHz
-respectively).  This master clock input is then provided to the CODEC and
-the XMOS device. 
+The master clock must be supplied by an external source e.g. clock generator, fixed oscillators, PLL etc to generate the two frequencies to support
+44.1kHz and 48kHz audio frequencies (e.g. 11.2896/22.5792MHz and 12.288/24.576MHzrespectively).  This master clock input is then provided to the 
+external audio hardware and the xCORE device. 
 
 
 Port Configuration (xCORE Master)
 +++++++++++++++++++++++++++++++++
 
-The default software configuration is CODEC Slave (xCORE master).  That is, the XMOS device
-provides the BCLK and LRCLK signals to the CODEC.
+The default software configuration is xCORE is I2S master.  That is, the XMOS device
+provides the BCLK and LRCLK signals to the audio hardware
 
 XS1 ports and XMOS clocks provide many valuable features for
 implementing I2S. This section describes how these are configured

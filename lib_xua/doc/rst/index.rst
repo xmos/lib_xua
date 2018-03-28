@@ -31,6 +31,7 @@ Older versions of Windows are not guaranteed to operate as expected. Devices are
     Software Overview <sw>
     Using lib_xua <using>
     Features <feat>
+    Software Detail <sw_detail>
     Known Issues <issues>
 
 

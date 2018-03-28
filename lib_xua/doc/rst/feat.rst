@@ -2,7 +2,6 @@
 Features & Options
 ------------------
 
-
 The previous sections describes only the basic core set of ``lib_xua`` details on enabling additional features e.g. S/PDIF are discussed in this section.
 
 If using the "codeless" programming model then the steps in this section are informational only.
@@ -25,13 +24,9 @@ Ports for the sample and bit clocks are also required::
 
 .. note::
 
-    All of these ports must be buffered, width 32
+    All of these ports must be buffered, width 32. Based on whether the xCORE is bus slave/master the ports must be declared as input/output respectively
 
 These ports must then be passed to the ``XUA_AudioHub()`` task appropriately.
-
-.. note::
-
-    Based on whether the xCORE is bus slave/master the ports must be declared as input/output respectively
 
 I2S functionality also requires two clock-blocks, one for bit and sample clock e.g.::
 
