@@ -20,7 +20,7 @@
 #include "audioports.h"
 #include "mic_array_conf.h"
 #if (XUA_SPDIF_TX_EN)
-#include "SpdifTransmit.h"
+#include "spdif.h"
 #endif
 #ifdef ADAT_TX
 #include "adat_tx.h"
@@ -607,7 +607,7 @@ void SpdifTxWrapper(chanend c_spdif_tx)
 
     while(1)
     {
-        SpdifTransmit(p_spdif_tx, c_spdif_tx);
+        spdif_tx(p_spdif_tx, c_spdif_tx);
     }
 }
 #endif
@@ -744,7 +744,7 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
     
     /* Configure ADAT/SPDIF tx ports */
 #if (XUA_SPDIF_TX_EN) && (SPDIF_TX_TILE == AUDIO_IO_TILE)
-    SpdifTransmitPortConfig(p_spdif_tx, clk_mst_spd, p_mclk_in);
+    spdif_tx_port_config(p_spdif_tx, clk_mst_spd, p_mclk_in, 7);
 #endif
 
     /* Perform required CODEC/ADC/DAC initialisation */
@@ -893,7 +893,7 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
 #if (XUA_SPDIF_TX_EN) && (SPDIF_TX_TILE == AUDIO_IO_TILE)
             {
                 set_thread_fast_mode_on();
-                SpdifTransmit(p_spdif_tx, c_spdif_out);
+                spdif_tx(p_spdif_tx, c_spdif_out);
             }
 #endif
 
