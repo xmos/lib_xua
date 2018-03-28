@@ -13,9 +13,9 @@ MODULE_XCC_FLAGS = $(XCC_FLAGS) -O3 -DREF_CLK_FREQ=100 -fasm-linenum -fcomment-a
 
 OPTIONAL_HEADERS += xua_conf.h
 
-VERSION = 0.1.2
+VERSION = 0.2.0
 
-DEPENDENT_MODULES = lib_logging(>=2.1.0) lib_xud(>=0.1.0)
+DEPENDENT_MODULES = lib_logging(>=2.1.0) lib_xud(>=0.1.0) lib_spdif
 
 #ignore host dir
 SOURCE_DIRS = src/*
