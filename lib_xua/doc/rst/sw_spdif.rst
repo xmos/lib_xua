@@ -1,8 +1,8 @@
 S/PDIF Transmit
----------------
+...............
 
-XMOS devices can support S/PDIF transmit up to 192kHz. The XMOS S/SPDIF transmitter component runs
-in a single core and can be found in ``sc_spdif/module_spdif_tx``
+``lib_xua`` supports the development of devices with S/PDIF transmit throught the use of ``lib_spdif``.
+The XMOS S/SPDIF transmitter component runs in a single core and supports sample-rates upto 192kHz.
 
 The S/PDIF transmitter core takes PCM audio samples via a channel and outputs them
 in S/PDIF format to a port.  A lookup table is used to encode the audio data into the required format. 
@@ -24,8 +24,8 @@ clock generation (e.g. when clock source is already locked to desired audio cloc
      - 44.1, 48, 88.2, 96, 176.4, 192 kHz
    * - **Master clock ratios** 
      - 128x, 256x, 512x
-   * - **Module**  
-     - ``module_spdif_tx``
+   * - **Library**  
+     - ``lib_spdif``
 
 Clocking
 ++++++++
@@ -60,6 +60,8 @@ The following protocol is used on the channel:
 
 .. list-table:: S/PDIF Component Protocol
 
+  * - ``outct`` 
+    -  New sample rate command
   * - ``outuint`` 
     - Sample frequency (Hz)
   * - ``outuint`` 
@@ -76,8 +78,6 @@ The following protocol is used on the channel:
     -
   * - ``...``
     -
-  * - ``outct`` 
-    -  Terminate
 
 
 
@@ -137,12 +137,4 @@ indicates sampling frequency as shown in :ref:`usb_audio_spdif_sample_bits`.
     - C
   * - 192
     - E
-
-
-
-
-
-
-
-
 

@@ -9,6 +9,7 @@ This section will now examine the operation of these components in further detai
 .. toctree::
 
     sw_audio
+    sw_spdif
 
 
 ..  
@@ -16,7 +17,6 @@ This section will now examine the operation of these components in further detai
    sw_ep0
    sw_audio
    sw_mixer
-   sw_spdif
    sw_spdif_rx
    sw_adat
    sw_clocking

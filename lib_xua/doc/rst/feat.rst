@@ -65,12 +65,13 @@ S/PDIF Transmit
 ``lib_xua`` supports the development of devices with S/PDIF transmit functionality through the use of 
 ``lib_spdif``. The XMOS S/PDIF transmitter runs in a single core and supports rates up to 192kHz.
 
-The S/PDIF transmitter core takes PCM audio samples via a channel and outputs them
-in S/PDIF format to a port. The channel should be declared a normal::
+The S/PDIF transmitter core takes PCM audio samples via a channel and outputs them in S/PDIF format to a port.
+Samples are provided to the S/PDIF transmitter task from the ``XUA_AudioHub()`` task.
+
+The channel should be declared a normal::
 
     chan c_spdif_tx
 
-Samples are provided to the S/PDIF transmitter task from the ``XUA_AudioHub()`` task.
 
 In order to use the S/PDIF transmmiter with ``lib_xua`` hardware resources must be declared e.g::
 
@@ -81,7 +82,7 @@ This port should be clocked from the master-clock, ``lib_spdif`` provides a help
     spdif_tx_port_config(p_spdif_tx2, clk_audio_mclk, p_mclk_in, delay);
 
 .. note:: If sharing the master-clock port and clockblock with ``XUA_AudioHub()`` (or any other task) then this setup
-          should be done before running the tasks in a par{}
+          should be done before running the tasks in a ``par`` statement.
 
 Finally the S/PDIF transmitter task must be run - passing in the port and channel for communication with ``XUA_AudioHub``.
 For example::
