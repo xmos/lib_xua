@@ -4,11 +4,11 @@ lib_xua Change Log
 0.2.0
 -----
 
-  * ADDED:     Documentation
+  * ADDED:     Initial library documentation
   * CHANGE:    I2S hardware resources no longer used globally and must be passed
     to XUA_AudioHub()
   * CHANGE:    NO_USB define renamed to XUA_USB_EN
-  * CHANGE:    Moved to lib_spdif (from module_spdif_tx)
+  * CHANGE:    Moved to using lib_spdif (from module_spdif_tx)
 
 0.1.2
 -----
