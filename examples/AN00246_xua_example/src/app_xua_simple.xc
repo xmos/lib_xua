@@ -80,7 +80,7 @@ int main()
                     }
 
         /* AudioHub/IO core does most of the audio IO i.e. I2S (also serves as a hub for all audio) */
-        on tile[0]: XUA_AudioHub(c_aud, clk_audio_mclk, clk_audio_bclk, p_mclk_in, p_lrclk, p_bclk);
+        on tile[0]: XUA_AudioHub(c_aud, clk_audio_mclk, clk_audio_bclk, p_mclk_in, p_lrclk, p_bclk, p_i2s_dac, p_i2s_adc);
     }
     
     return 0;

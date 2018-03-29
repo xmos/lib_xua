@@ -21,7 +21,7 @@ note.
 The Makefile
 ------------
 
-To start using the lib_xua, you need to add ``lib_xua`` and ``lib_spdif`` to your Makefile::
+To start using ``lib_xua``, you need to add ``lib_xua`` and ``lib_spdif`` to your Makefile::
 
   USED_MODULES = .. lib_xua lib_spdif ...
 
@@ -83,7 +83,7 @@ port for the master clock input signal.
 
 ``lib_xua`` also requires two ports for internally calculating USB feedback. Please refer to 
 the ``lib_xua`` library documentation for further details.  The additonal input port for the master
-clock is required since USB and S/PDIF do not reside of the same tiles with the example hardware.
+clock is required since USB and S/PDIF do not reside of the same tiles on the example hardware.
 
 These ports are declared as follows:
 
@@ -142,13 +142,13 @@ The application main() function
 The ``main()`` function sets up the tasks in the application.
 
 Various channels are required in order to allow the required tasks to communcate. 
-These must firs be declared:
+These must first be declared:
 
 .. literalinclude:: app_xua_simple.xc
    :start-on: /* Channels for lib_xud
    :end-on: chan c_spdif_tx
 
-The rest of the ``main()`` function starts all the tasks in parallel
+The rest of the ``main()`` function starts all of the tasks in parallel
 using the xC ``par`` construct:
 
 .. literalinclude:: app_xua_simple.xc
