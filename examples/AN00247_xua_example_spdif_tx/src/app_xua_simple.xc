@@ -19,7 +19,7 @@
 #include "spdif.h"
 
 /* Lib_spdif port declarations. Note, the defines come from the xn file */
-buffered out port:32 p_spdif_tx2         = PORT_SPDIF_OUT;     /* SPDIF transmit port */
+buffered out port:32 p_spdif_tx2    = PORT_SPDIF_OUT;    /* SPDIF transmit port */
 
 /* Lib_xua port declarations. Note, the defines come from the xn file */
 in port p_mclk_in                   = PORT_MCLK_IN;      /* Master clock for the audio IO tile */

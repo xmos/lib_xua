@@ -62,15 +62,11 @@ static unsigned samplesIn[2][MAX(NUM_USB_CHAN_IN, IN_CHAN_COUNT)];
 #pragma xta command "set required - 2000 ns"
 #endif
 
-#if (XUA_SPDIF_TX_EN)
-extern buffered out port:32 p_spdif_tx;
-#endif
-
 #ifdef ADAT_TX
 extern buffered out port:32 p_adat_tx;
 #endif
 
-#if XUA_SPDIF_TX_EN || defined(ADAT_TX)
+#if defined(ADAT_TX)
 extern clock    clk_mst_spd;
 #endif
 
@@ -222,8 +218,8 @@ unsigned static AudioHub_MainLoop(chanend ?c_out, chanend ?c_spd_out
 #if (NUM_PDM_MICS > 0)
     , chanend c_pdm_pcm
 #endif
-    , buffered _XUA_CLK_DIR port:32 p_lrclk, 
-    buffered _XUA_CLK_DIR port:32 p_bclk,
+    , buffered _XUA_CLK_DIR port:32 ?p_lrclk, 
+    buffered _XUA_CLK_DIR port:32 ?p_bclk,
     buffered out port:32 (&?p_i2s_dac)[I2S_WIRES_DAC],
     buffered in port:32  (&?p_i2s_adc)[I2S_WIRES_ADC]
 )
@@ -317,11 +313,14 @@ unsigned static AudioHub_MainLoop(chanend ?c_out, chanend ?c_spd_out
     {
         unsigned syncError = 0;
 
+        if ((I2S_CHANS_DAC > 0 || I2S_CHANS_ADC > 0))
+        {
 #if CODEC_MASTER
-        InitPorts_slave(divide, p_lrclk, p_bclk, p_i2s_dac, p_i2s_adc);
+            InitPorts_slave(divide, p_lrclk, p_bclk, p_i2s_dac, p_i2s_adc);
 #else
-        InitPorts_master(divide, p_lrclk, p_bclk, p_i2s_dac, p_i2s_adc);
+            InitPorts_master(divide, p_lrclk, p_bclk, p_i2s_dac, p_i2s_adc);
 #endif
+        }
         
         /* Note we always expect syncError to be 0 when we are master */
         while(!syncError)
@@ -590,7 +589,7 @@ unsigned static AudioHub_MainLoop(chanend ?c_out, chanend ?c_spd_out
     return 0;
 }
 
-
+#if 0
 #if (XUA_SPDIF_TX_EN) && (SPDIF_TX_TILE != AUDIO_IO_TILE)
 void SpdifTxWrapper(chanend c_spdif_tx)
 {
@@ -610,6 +609,7 @@ void SpdifTxWrapper(chanend c_spdif_tx)
         spdif_tx(p_spdif_tx, c_spdif_tx);
     }
 }
+#endif
 #endif
 
 #if XUA_DFU_EN
@@ -686,7 +686,7 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
     buffered _XUA_CLK_DIR port:32 ?p_bclk,
     buffered out port:32 (&?p_i2s_dac)[I2S_WIRES_DAC], 
     buffered in port:32  (&?p_i2s_adc)[I2S_WIRES_ADC]
-#if (XUA_SPDIF_TX_EN) && (SPDIF_TX_TILE != AUDIO_IO_TILE)
+#if (XUA_SPDIF_TX_EN) //&& (SPDIF_TX_TILE != AUDIO_IO_TILE)
     , chanend c_spdif_out
 #endif
 #if ((ADAT_RX == 1) || (SPDIF_RX == 1))
@@ -700,9 +700,6 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
 #endif
 )
 {
-#if (XUA_SPDIF_TX_EN) && (SPDIF_TX_TILE == AUDIO_IO_TILE)
-    chan c_spdif_out;
-#endif
 #ifdef ADAT_TX
     chan c_adat_out;
     unsigned adatSmuxMode = 0;
@@ -742,11 +739,6 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
 #endif
 #endif
     
-    /* Configure ADAT/SPDIF tx ports */
-#if (XUA_SPDIF_TX_EN) && (SPDIF_TX_TILE == AUDIO_IO_TILE)
-    spdif_tx_port_config(p_spdif_tx, clk_mst_spd, p_mclk_in, 7);
-#endif
-
     /* Perform required CODEC/ADC/DAC initialisation */
     AudioHwInit();
 
@@ -890,13 +882,6 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
         par
         {
 
-#if (XUA_SPDIF_TX_EN) && (SPDIF_TX_TILE == AUDIO_IO_TILE)
-            {
-                set_thread_fast_mode_on();
-                spdif_tx(p_spdif_tx, c_spdif_out);
-            }
-#endif
-
 #ifdef ADAT_TX
             {
                 set_thread_fast_mode_on();
@@ -906,6 +891,7 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
             {
 #if (XUA_SPDIF_TX_EN)
                 /* Communicate master clock and sample freq to S/PDIF thread */
+                outct(c_spdif_out, XS1_CT_END);
                 outuint(c_spdif_out, curSamFreq);
                 outuint(c_spdif_out, mClk);
 #endif
@@ -995,11 +981,6 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
 #endif
 
 #endif /* XUA_USB_EN */
-
-#if (XUA_SPDIF_TX_EN)
-                /* Notify S/PDIF task of impending new freq... */
-                outct(c_spdif_out, XS1_CT_END);
-#endif
 
 #if NUM_PDM_MICS > 0
                 c_pdm_in <: 0;

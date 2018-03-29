@@ -1,6 +1,6 @@
 
-Simple USB Audio Device using lib_xua
-=====================================
+Using lib_xua with lib_spdif (transmit) 
+=======================================
 
 .. version:: 0.1.0
 

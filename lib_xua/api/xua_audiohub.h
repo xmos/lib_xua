@@ -43,7 +43,7 @@ void XUA_AudioHub(chanend ?c_aud,
     buffered _XUA_CLK_DIR port:32 ?p_bclk,
     buffered out port:32 (&?p_i2s_dac)[I2S_WIRES_DAC], 
     buffered in port:32  (&?p_i2s_adc)[I2S_WIRES_ADC]
-#if (XUA_SPDIF_TX_EN) && (SPDIF_TX_TILE != AUDIO_IO_TILE)
+#if (XUA_SPDIF_TX_EN) //&& (SPDIF_TX_TILE != AUDIO_IO_TILE)
     , chanend c_spdif_tx
 #endif
 #if((SPDIF_RX) || (ADAT_RX))
