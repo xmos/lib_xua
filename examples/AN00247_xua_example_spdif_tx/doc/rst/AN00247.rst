@@ -142,7 +142,8 @@ using the xC ``par`` construct:
    :end-before: return 0
 
 This code starts the low-level USB task, an Endpoint 0 task, an Audio buffering task and a task to handle 
-the audio I/O (i.e. I2S signalling). In addition the ``spdif_tx()`` task is also run.
+the audio I/O. Note, since there is no I2S funcitonality in this example this task simply forwards samples to the 
+SPDIF transmitter task. In addition the ``spdif_tx()`` task is also run.
 
 Configuration 
 .............
