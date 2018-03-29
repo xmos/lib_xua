@@ -50,6 +50,10 @@
 #include "xua_pdm_mic.h"
 #endif
 
+#if (XUA_SPDIF_TX_EN)
+#include "spdif.h"   /* From lib_spdif */
+#endif
+
 #if (XUA_DFU_EN == 1)
 [[distributable]]
 void DFUHandler(server interface i_dfu i, chanend ?c_user_cmd);
@@ -418,6 +422,28 @@ VENDOR_REQUESTS_PARAMS_DEC_
 }
 #endif /* XUA_USB_EN */
 
+
+#if (XUA_SPDIF_TX_EN) && (SPDIF_TX_TILE != AUDIO_IO_TILE)
+void SpdifTxWrapper(chanend c_spdif_tx)
+{
+    unsigned portId;
+    //configure_clock_src(clk, p_mclk);
+
+    // TODO could share clock block here..
+    // NOTE, Assuming SPDIF tile == USB tile here..
+    asm("ldw %0, dp[p_mclk_in_usb]":"=r"(portId));
+    asm("setclk res[%0], %1"::"r"(clk_mst_spd), "r"(portId));
+    configure_out_port_no_ready(p_spdif_tx, clk_mst_spd, 0);
+    set_clock_fall_delay(clk_mst_spd, 7);
+    start_clock(clk_mst_spd);
+
+    while(1)
+    {
+        spdif_tx(p_spdif_tx, c_spdif_tx);
+    }
+}
+#endif
+
 void usb_audio_io(chanend ?c_aud_in, chanend ?c_adc,
 #if (XUA_SPDIF_TX_EN) && (SPDIF_TX_TILE != AUDIO_IO_TILE)
     chanend c_spdif_tx,
@@ -455,6 +481,13 @@ void usb_audio_io(chanend ?c_aud_in, chanend ?c_adc,
     xua_pdm_mic_config(p_mclk_in);
 #endif
 
+#if (XUA_SPDIF_TX_EN) && (SPDIF_TX_TILE == AUDIO_IO_TILE)
+    chan c_spdif_tx;
+
+    /* Setup S/PDIF tx port - note this is done before par since sharing clock-block/port */
+    spdif_tx_port_config(p_spdif_tx, clk_audio_mclk, p_mclk_in, 7);
+#endif
+
     par
     {
 #ifdef MIXER
@@ -464,6 +497,14 @@ void usb_audio_io(chanend ?c_aud_in, chanend ?c_adc,
             mixer(c_aud_in, c_mix_out, c_mix_ctl);
         }
 #endif
+
+#if (XUA_SPDIF_TX_EN) && (SPDIF_TX_TILE == AUDIO_IO_TILE)
+        while(1)
+        {
+            spdif_tx(p_spdif_tx, c_spdif_tx);
+        }
+#endif
+
         /* Audio I/O Core (pars additional S/PDIF TX Core) */
         {
             thread_speed();
@@ -473,7 +514,7 @@ void usb_audio_io(chanend ?c_aud_in, chanend ?c_adc,
 #define AUDIO_CHANNEL c_aud_in
 #endif
             XUA_AudioHub(AUDIO_CHANNEL, clk_audio_mclk, clk_audio_bclk, p_mclk_in, p_lrclk, p_bclk, p_i2s_dac, p_i2s_adc
-#if (XUA_SPDIF_TX_EN) && (SPDIF_TX_TILE != AUDIO_IO_TILE)
+#if (XUA_SPDIF_TX_EN) //&& (SPDIF_TX_TILE != AUDIO_IO_TILE)
                 , c_spdif_tx
 #endif
 #if (SPDIF_RX) ||(ADAT_RX)
@@ -553,7 +594,7 @@ int main()
 #define c_adat_rx null
 #endif
 
-#if (XUA_SPDIF_TX_EN) && (SPDIF_TX_TILE != AUDIO_IO_TILE)
+#if (XUA_SPDIF_TX_EN) //&& (SPDIF_TX_TILE != AUDIO_IO_TILE)
     chan c_spdif_tx;
 #endif
 

@@ -589,29 +589,6 @@ unsigned static AudioHub_MainLoop(chanend ?c_out, chanend ?c_spd_out
     return 0;
 }
 
-#if 0
-#if (XUA_SPDIF_TX_EN) && (SPDIF_TX_TILE != AUDIO_IO_TILE)
-void SpdifTxWrapper(chanend c_spdif_tx)
-{
-    unsigned portId;
-    //configure_clock_src(clk, p_mclk);
-
-    // TODO could share clock block here..
-    // NOTE, Assuming SPDIF tile == USB tile here..
-    asm("ldw %0, dp[p_mclk_in_usb]":"=r"(portId));
-    asm("setclk res[%0], %1"::"r"(clk_mst_spd), "r"(portId));
-    configure_out_port_no_ready(p_spdif_tx, clk_mst_spd, 0);
-    set_clock_fall_delay(clk_mst_spd, 7);
-    start_clock(clk_mst_spd);
-
-    while(1)
-    {
-        spdif_tx(p_spdif_tx, c_spdif_tx);
-    }
-}
-#endif
-#endif
-
 #if XUA_DFU_EN
 [[distributable]]
 void DFUHandler(server interface i_dfu i, chanend ?c_user_cmd);
