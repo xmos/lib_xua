@@ -10,7 +10,7 @@ lib_xua Change Log
     to XUA_AudioHub()
   * CHANGE:    NO_USB define renamed to XUA_USB_EN
   * CHANGE:    XUA_AudioHub() no longer pars S/PDIF transmitter task
-  * CHANGE:    Moved to using lib_spdif (from module_spdif_tx)
+  * CHANGE:    Moved to lib_spdif (from module_spdif_tx & module_spdif_rx)
 
 0.1.2
 -----

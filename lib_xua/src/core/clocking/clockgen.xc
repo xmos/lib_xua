@@ -7,8 +7,8 @@
 #include "xua.h"
 #include "xua_commands.h"
 
-#if (SPDIF_RX == 1)
-#include "SpdifReceive.h"
+#if (SPDIF_RX)
+#include "spdif.h"
 #endif
 
 #define LOCAL_CLOCK_INCREMENT       166667
@@ -506,14 +506,14 @@ void clockGen (streaming chanend ?c_spdif_rx, chanend ?c_adat_rx, out port p, ch
                 switch(tmp2)
                 {
                     /* LEFT */
-                    case FRAME_X:
-                    case FRAME_Z:
+                    case SPDIF_FRAME_X:
+                    case SPDIF_FRAME_Z:
 
                         spdifLeft = tmp << 4;
                         break;
 
                     /* RIGHT */
-                    case FRAME_Y:
+                    case SPDIF_FRAME_Y:
 
                         /* Only store sample if not in overflow and stream is reasonably valid */
                         if(!spdifOverflow && clockValid[CLOCK_SPDIF_INDEX])
