@@ -1,3 +1,6 @@
+
+unsigned adatCounter = 0;
+
 #pragma unsafe arrays
 static inline void TransferAdatTxSamples(chanend c_adat_out, const unsigned samplesFromHost[], int smux, int handshake)
 {
