@@ -19,7 +19,9 @@
 #include "spdif.h"
 
 /* Lib_spdif port declarations. Note, the defines come from the xn file */
-buffered out port:32 p_spdif_tx2    = PORT_SPDIF_OUT;    /* SPDIF transmit port */
+buffered out port:32 p_spdif_tx     = PORT_SPDIF_OUT;             /* SPDIF transmit port */
+
+clock clk_spdif_tx                  = on tile[0]: XS1_CLKBLK_4    /* Clock block for S/PDIF transmit */
 
 /* Lib_xua port declarations. Note, the defines come from the xn file */
 in port p_mclk_in                   = PORT_MCLK_IN;      /* Master clock for the audio IO tile */
@@ -80,14 +82,14 @@ int main()
         on tile[0]: {
 
                         /* Setup S/PDIF tx port from clock etc - note we do this before par to avoid parallel usage */
-                        spdif_tx_port_config(p_spdif_tx2, clk_audio_mclk, p_mclk_in, 7);
+                        spdif_tx_port_config(p_spdif_tx, clk_spdif_tx, p_mclk_in, 7);
         
                         par
                         {
                             while(1)
                             {
                                 /* Run the S/PDIF transmitter task */
-                                spdif_tx(p_spdif_tx2, c_spdif_tx);   
+                                spdif_tx(p_spdif_tx, c_spdif_tx);   
                             }
                         
                             /* AudioHub/IO core does most of the audio IO i.e. I2S (also serves as a hub for all audio) */
