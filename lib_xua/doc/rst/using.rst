@@ -161,13 +161,13 @@ Codeless programming model
 
 Whilst it is possible to code a USB Audio device using the building blocks provided by `lib_xua` it is realised that this might not be desirable for some classes of customers or product.
 
-For instance, some users may not have a large software development experience and simply want to customise some basic settings such as strings. Others may want to fully customise the implementation - adding additional functionality such as adding DSD or possibly only using a subset of the functions provided - just ``XUA_AudioHub``, for example.
+For instance, some users may not have a large software development experience and simply want to customise some basic settings such as strings, sample-rates, channel-counts etc. Others may want to fully customise the implementation - adding additional functionality such as adding DSD or possibly only using a subset of the functions provided - just ``XUA_AudioHub``, for example.
 
-In addition, the large number of supported features can lead a large number of tasks, hardware resources, communication channels etc, requiring quite a lot of code to be authored for each product.
+In addition, the large number of supported features can lead to a large number of tasks, hardware resources, communication channels etc, requiring quite a lot of code to be authored for each product.
 
 In order to cater for the former class of users, a "codeless" option is provided. Put simply, a file ``main.xc`` is provided which includes a pre-authored ``main()`` function along with all of the required hardware resource declarations. Code is generated based on the options provided in ``xua_conf.h``
 
-Using this development model the user simply must include a ``xua_conf.h`` with their settings and optionally implementations of any 'user functions' as desired. This, along with an XN file for their hardware platform, is all that is required to build a fully featured and functioning product.
+Using this development model the user simply must include a ``xua_conf.h`` with their settings and optional implementations of any 'user functions' as desired. This, along with an XN file for their hardware platform, is all that is required to build a fully featured and functioning product.
 
 This model also provides the benefit of a known-good, full codebase as a basis for a product. 
 

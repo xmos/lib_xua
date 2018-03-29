@@ -45,4 +45,3 @@ static inline void TransferAdatTxSamples(chanend c_adat_out, const unsigned samp
         adatCounter = 0;
     }
 }
-#endif
