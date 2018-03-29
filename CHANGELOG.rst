@@ -1,12 +1,12 @@
 lib_xua Change Log
 ==================
 
-
 0.2.0
 -----
 
-  * ADDED:     Documentation 
-  * CHANGE:    I2S hardware resources no longer used globally and must be passed to XUA_AudioHub()
+  * ADDED:     Documentation
+  * CHANGE:    I2S hardware resources no longer used globally and must be passed
+    to XUA_AudioHub()
   * CHANGE:    NO_USB define renamed to XUA_USB_EN
   * CHANGE:    Moved to lib_spdif (from module_spdif_tx)
 
@@ -14,7 +14,7 @@ lib_xua Change Log
 -----
 
   * ADDED:     Application note AN00246
-  * CHANGE:    xmosdfu emits warning if empty image read via upload  
+  * CHANGE:    xmosdfu emits warning if empty image read via upload
   * CHANGE:    Simplified mclk port sharing - no longer uses unsafe pointer
   * RESOLVED:  Runtime exception issues when incorrect feedback calculated
     (introduced in sc_usb_audio 6.13)
