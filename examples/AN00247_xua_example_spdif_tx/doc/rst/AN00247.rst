@@ -149,7 +149,8 @@ S/PDIF Tx functionality must be  ``lib_xua``
     - Various product strings
     - Master clock frequency
 
-To enable S/PDIF funtionality ``XUA_SPDIF_TX_EN`` must be set to a non-zero value.
+To enable S/PDIF funtionality ``XUA_SPDIF_TX_EN`` must be set to a non-zero value. Setting this will cause the ``XUA_AudioHub``
+tasks to forward samples and sample rate information to the S/PDIF transmitter task. 
 
 These parameters are set via defines in an optional ``xua_conf.h`` header file. For this simple application the 
 complete contents of this file are as follows:

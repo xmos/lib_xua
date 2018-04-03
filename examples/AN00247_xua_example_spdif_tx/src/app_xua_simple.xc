@@ -21,7 +21,7 @@
 /* Lib_spdif port declarations. Note, the defines come from the xn file */
 buffered out port:32 p_spdif_tx     = PORT_SPDIF_OUT;             /* SPDIF transmit port */
 
-clock clk_spdif_tx                  = on tile[0]: XS1_CLKBLK_4    /* Clock block for S/PDIF transmit */
+clock clk_spdif_tx                  = on tile[0]: XS1_CLKBLK_4;   /* Clock block for S/PDIF transmit */
 
 /* Lib_xua port declarations. Note, the defines come from the xn file */
 in port p_mclk_in                   = PORT_MCLK_IN;      /* Master clock for the audio IO tile */
