@@ -2,6 +2,7 @@
 
 #include <platform.h>
 #include <timer.h>
+#include <stdint.h>
 
 #include "xua.h"
 #include "i2c.h"     /* From lib_i2c */
@@ -9,10 +10,7 @@
 #include "cs5368.h"
 #include "cs4384.h"
 
-//on tile [0] : struct r_i2c r_i2c = {XS1_PORT_4A};
-
 port p_i2c = on tile[0]:XS1_PORT_4A;
-
 
 /* General output port bit definitions */
 #define P_GPIO_DSD_MODE         (1 << 0) /* DSD mode select 0 = 8i/8o I2S, 1 = 8o DSD*/
@@ -24,17 +22,16 @@ port p_i2c = on tile[0]:XS1_PORT_4A;
 #define P_GPIO_ADC_RST_N        (1 << 6)
 #define P_GPIO_MCLK_FSEL        (1 << 7) /* Select frequency on Phaselink clock. 0 = 24.576MHz for 48k, 1 = 22.5792MHz for 44.1k.*/
 
-#define DAC_REGWRITE(reg, val) //{data[0] = val; i2c_shared_master_write_reg(r_i2c, CS4384_I2C_ADDR, reg, data, 1);}
-#define DAC_REGREAD(reg, val)  //{i2c_shared_master_read_reg(r_i2c, CS4384_I2C_ADDR, reg, val, 1);}
-#define ADC_REGWRITE(reg, val) //{data[0] = val; i2c_shared_master_write_reg(r_i2c, CS5368_I2C_ADDR, reg, data, 1);}
+#define DAC_REGWRITE(reg, val) result = i2c.write_reg(CS4384_I2C_ADDR, reg, val);
+#define DAC_REGREAD(reg)  data = i2c.read_reg(CS4384_I2C_ADDR, reg, result);
+#define ADC_REGWRITE(reg, val) result = i2c.write_reg(CS5368_I2C_ADDR, reg, val);
 
 out port p_gpio = on tile[0]:XS1_PORT_8C;
 
-
 void AudioHwConfig2(unsigned samFreq, unsigned mClk, unsigned dsdMode, unsigned sampRes_DAC, unsigned sampRes_ADC, client interface i2c_master_if i2c)
 {
-    unsigned char data[1] = {0};
 	unsigned char gpioVal = 0;
+    i2c_regop_res_t result;
 
     /* Set master clock select appropriately and put ADC and DAC into reset */
     if (mClk == MCLK_441)
@@ -69,6 +66,7 @@ void AudioHwConfig2(unsigned samFreq, unsigned mClk, unsigned dsdMode, unsigned 
 	*/
 	ADC_REGWRITE(CS5368_GCTL_MDE, 0b10010000 | (dif << 2) | mode);
 
+
 	/* Reg 0x06: (PDN) Power Down Register */
 	/* Bit[7:6]: Reserved
 	 * Bit[5]: PDN-BG: When set, this bit powers-own the bandgap reference
@@ -92,8 +90,8 @@ void AudioHwConfig2(unsigned samFreq, unsigned mClk, unsigned dsdMode, unsigned 
 	 * bit[0] : Power Down (PDN)               : Powered down
 	 */
 	DAC_REGWRITE(CS4384_MODE_CTRL, 0b11000001);
-
-	/* PCM Control (Address: 0x03) */
+	
+    /* PCM Control (Address: 0x03) */
 	/* bit[7:4] : Digital Interface Format (DIF) : 0b0001 for I2S up to 24bit
 	 * bit[3:2] : Reserved
 	 * bit[1:0] : Functional Mode (FM) : 0x00 - single-speed mode (4-50kHz)
@@ -122,6 +120,8 @@ void AudioHwConfig2(unsigned samFreq, unsigned mClk, unsigned dsdMode, unsigned 
 	 */
 	DAC_REGWRITE(CS4384_MODE_CTRL, 0b10000000);
 
+    /* Kill the i2c task */
+    i2c.shutdown();
     return;
 }
 
@@ -130,9 +130,6 @@ void AudioHwInit()
     /* Set USB Mux to micro-b */
     /* ADC and DAC in reset */
     p_gpio <: P_GPIO_USB_SEL0 | P_GPIO_USB_SEL1;
-
-    /* Init the i2c module */
-    //i2c_shared_master_init(r_i2c);
 }
 
 void AudioHwConfig(unsigned samFreq, unsigned mClk, unsigned dsdMode,
