@@ -4,12 +4,14 @@
 #include <timer.h>
 
 #include "xua.h"
-#include "i2c_shared.h"
+#include "i2c.h"     /* From lib_i2c */
 
 #include "cs5368.h"
 #include "cs4384.h"
 
-on tile [0] : struct r_i2c r_i2c = {XS1_PORT_4A};
+//on tile [0] : struct r_i2c r_i2c = {XS1_PORT_4A};
+
+port p_i2c = on tile[0]:XS1_PORT_4A;
 
 
 /* General output port bit definitions */
@@ -22,14 +24,14 @@ on tile [0] : struct r_i2c r_i2c = {XS1_PORT_4A};
 #define P_GPIO_ADC_RST_N        (1 << 6)
 #define P_GPIO_MCLK_FSEL        (1 << 7) /* Select frequency on Phaselink clock. 0 = 24.576MHz for 48k, 1 = 22.5792MHz for 44.1k.*/
 
-#define DAC_REGWRITE(reg, val) {data[0] = val; i2c_shared_master_write_reg(r_i2c, CS4384_I2C_ADDR, reg, data, 1);}
-#define DAC_REGREAD(reg, val)  {i2c_shared_master_read_reg(r_i2c, CS4384_I2C_ADDR, reg, val, 1);}
-#define ADC_REGWRITE(reg, val) {data[0] = val; i2c_shared_master_write_reg(r_i2c, CS5368_I2C_ADDR, reg, data, 1);}
+#define DAC_REGWRITE(reg, val) //{data[0] = val; i2c_shared_master_write_reg(r_i2c, CS4384_I2C_ADDR, reg, data, 1);}
+#define DAC_REGREAD(reg, val)  //{i2c_shared_master_read_reg(r_i2c, CS4384_I2C_ADDR, reg, val, 1);}
+#define ADC_REGWRITE(reg, val) //{data[0] = val; i2c_shared_master_write_reg(r_i2c, CS5368_I2C_ADDR, reg, data, 1);}
 
 out port p_gpio = on tile[0]:XS1_PORT_8C;
 
-void AudioHwConfig(unsigned samFreq, unsigned mClk, unsigned dsdMode,
-    unsigned sampRes_DAC, unsigned sampRes_ADC)
+
+void AudioHwConfig2(unsigned samFreq, unsigned mClk, unsigned dsdMode, unsigned sampRes_DAC, unsigned sampRes_ADC, client interface i2c_master_if i2c)
 {
     unsigned char data[1] = {0};
 	unsigned char gpioVal = 0;
@@ -130,6 +132,17 @@ void AudioHwInit()
     p_gpio <: P_GPIO_USB_SEL0 | P_GPIO_USB_SEL1;
 
     /* Init the i2c module */
-    i2c_shared_master_init(r_i2c);
+    //i2c_shared_master_init(r_i2c);
+}
+
+void AudioHwConfig(unsigned samFreq, unsigned mClk, unsigned dsdMode,
+    unsigned sampRes_DAC, unsigned sampRes_ADC)
+{
+    i2c_master_if i2c[1];
+    par
+    {
+        i2c_master_single_port(i2c, 1, p_i2c, 10, 0, 1, 0);
+        AudioHwConfig2(samFreq, mClk, dsdMode, sampRes_DAC, sampRes_ADC, i2c[0]);
+    }
 }
 
