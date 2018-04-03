@@ -135,6 +135,28 @@ These are declared as follows:
    :start-on: /* Endpoint type tables
    :end-on: XUD_EpType epTypeTableIn
 
+Configuring lib_xua
+-------------------
+
+S/PDIF Tx functionality must be  ``lib_xua`` 
+
+``lib_xua`` has many parameters than can be configured at build time, some examples include:
+
+    - Sample-rates
+    - Channel counts
+    - Audio Class version
+    - Product/Vendor ID's
+    - Various product strings
+    - Master clock frequency
+
+To enable S/PDIF funtionality ``XUA_SPDIF_TX_EN`` must be set to a non-zero value.
+
+These parameters are set via defines in an optional ``xua_conf.h`` header file. For this simple application the 
+complete contents of this file are as follows:
+
+.. literalinclude:: xua_conf.h
+   :start-on: // Copyright
+   :end-on: #endif
 
 The application main() function
 -------------------------------
