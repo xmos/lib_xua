@@ -17,7 +17,7 @@ typedef interface mic_process_if
 
 
 [[combinable]]
-void xua_pdm_buffer(streaming chanend c_ds_output[2], chanend c_audio
+void XUA_PdmBuffer(streaming chanend c_ds_output[2], chanend c_audio
 #ifdef MIC_PROCESSING_USE_INTERFACE
    , client mic_process_if i_mic_process
 #endif
@@ -38,7 +38,7 @@ void user_pdm_init();
 
 /* PDM interface and decimation cores */
 [[combinable]]
-void xua_pdm_buffer(streaming chanend c_ds_output[2], chanend c_audio);
+void XUA_PdmBuffer(streaming chanend c_ds_output[2], chanend c_audio);
 
 /* PDM interface and decimation cores */
 void xua_pdm_mic(streaming chanend c_ds_output[2]);
