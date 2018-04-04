@@ -8,7 +8,7 @@ Overview
 Introduction
 ............
 
-The XMOS USB Audio (XUA) library provides an implemention of USB Audio Class versions 1.0 and 2.0.
+The XMOS USB Audio (XUA) library provides an implementation of USB Audio Class versions 1.0 and 2.0.
 
 This application note demonstrates the implementation of a basic USB Audio Device with 
 record functionality from PDM microphones on the xCORE-200 Array Microphone board.
@@ -75,7 +75,7 @@ Declarations
 Allocating hardware resources for lib_xua
 .........................................
 
-A minimal implementation of a USB Audio device using ``lib_xua``,  without I2S functionalilty,
+A minimal implementation of a USB Audio device using ``lib_xua``,  without I2S functionality,
 requires the follow I/O pins:
 
     - Audio Master clock (from clock source to xCORE)
@@ -139,7 +139,7 @@ Other declarations
 
 For a simple application the following endpoints are required:
 
-    - ``Control`` enpoint zero 
+    - ``Control`` endpoint zero 
     - ``Isochonous`` endpoint for each direction for audio data to/from the USB host
 
 These are declared as follows:
@@ -175,7 +175,7 @@ complete contents of this file are as follows:
 The application main() function
 -------------------------------
 
-The ``main()`` function sets up the tasks in the application.
+The ``main()`` function sets up and runs the tasks in the application.
 
 Channel declarations
 ....................
@@ -214,11 +214,13 @@ Microphone related tasks are executed on tile 0 as follows:
    :start-on: Microphone related tasks
    :end-before: return 0
 
+Two functions from ``lib_mic_array`` are used - a PDM receiver task (``mic_array_pdm_rx()``) and a decimation task (``mic_array_decimate_to_pcm_4ch()``).
 
+Each call to ``mic_array_decimate_to_pcm_4ch()`` can handle the decimation of up to 4 microphone signals. Since the xCORE-200 Array microphone
+board is equipped with seven microphones two instances of this task are run.
 
+The ``mic_array_pdm_rx()`` task expects the PDM microphone port to be clocked from the PDM clock.
 
-Note that the ``spdif_tx_port_config()`` function is called before a nested ``par`` of ``spdif_tx()`` and ``XUA_AudioHub()``.
-This is because of the "shared" nature of ``p_mclk_in`` and avoids a parrallel usage check failure by the XMOS toolchain.
 
 |appendix|
 |newpage|
