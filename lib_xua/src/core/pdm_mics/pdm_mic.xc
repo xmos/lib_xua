@@ -20,13 +20,7 @@
 
 #define MAX_DECIMATION_FACTOR (96000/(MIN_FREQ/AUD_TO_MICS_RATIO))
 
-/* Hardware resources - declated in main.xc */
-extern in port p_pdm_clk;
-
-extern in buffered port:32 p_pdm_mics;
-
-extern clock clk_pdm;
-
+/* Build time sized microphone delay line */
 #ifndef MIC_BUFFER_DEPTH 
 #define MIC_BUFFER_DEPTH 1
 #endif
@@ -220,7 +214,7 @@ void XUA_PdmBuffer(streaming chanend c_ds_output[2], chanend c_audio)
 #error MAX_FREQ > 48000 NOT CURRENTLY SUPPORTED
 #endif
 
-void xua_pdm_mic_config(in port p_pdm_mclk)
+void xua_pdm_mic_config(in port p_pdm_mclk, in port p_pdm_clk, buffered in port:32 p_pdm_mics, clock clk_pdm)
 {
     /* Mics expect a clock in the 3Mhz range, calculate the divide based on mclk */
     /* e.g. For a 48kHz range mclk we expect a 3072000Hz mic clock */
@@ -238,7 +232,7 @@ void xua_pdm_mic_config(in port p_pdm_mclk)
     start_clock(clk_pdm);
 }
 
-void xua_pdm_mic(streaming chanend c_ds_output[2])
+void xua_pdm_mic(streaming chanend c_ds_output[2], buffered in port:32 p_pdm_mics)
 {
     streaming chan c_4x_pdm_mic_0;
 #if (XUA_NUM_PDM_MICS > 4)
