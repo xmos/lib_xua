@@ -109,18 +109,26 @@ Again, for the same reasoning as the master-clock ports, only one master-clock c
 Allocating hardware resources for lib_mic_array
 ...............................................
 
-The S/PDIF transmitter requires a single (buffered) 1-bit port:
+``lib_mic_array`` requires a single 8-bit port for PDM data from up to 8 microphones. This port must be declared
+as 32-bit buffered:
 
 .. literalinclude:: app_xua_simple.xc
-   :start-on: /* Lib_spdif port 
-   :end-on: buffered out port 
+   :start-on: in buffered port:32 p_pdm_mics
+   :end-before: clock clk_pdm
 
-This port must be clocked from the audio master clock. This application note chooses to declare
-an extra clock-block as follows:
+The microphones must be clocked by an audio related clock - typically 3.072MHz.
+
+The xCORE-200 Array Microphone Board expects the xCORE to divide down the audio master clock input (24.576MHz)
+and output the result to the microphones.
+
+Two ports for this purpose are declared as follows:
 
 .. literalinclude:: app_xua_simple.xc
-   :start-on: clock clk_spdif_tx
-   :end-before: /* Lib_xua
+   :start-on: /* Lib_mic_array declarations
+   :end-before: in buffered
+
+
+Please see the ``lib_mic_array`` library documentation for full details.
 
 
 Other declarations
@@ -143,18 +151,19 @@ These are declared as follows:
 Configuring lib_xua
 -------------------
 
-S/PDIF Tx functionality must be  ``lib_xua`` 
+``lib_xua`` must be configured to enable support for PDM microphones.
 
 ``lib_xua`` has many parameters than can be configured at build time, some examples include:
 
-    - Sample-rates
+    - Supported sample-rates
     - Channel counts
     - Audio Class version
     - Product/Vendor ID's
     - Various product strings
     - Master clock frequency
 
-To enable S/PDIF funtionality ``XUA_SPDIF_TX_EN`` must be set to a non-zero value.
+To enable PDM microphone support  ``XUA_NUM_PDM_MICS`` must be set to a non-zero value.  Setting this will cause the ``XUA_AudioHub``
+task to forward sample rate information and receive samples from the relevant microphone related tasks. 
 
 These parameters are set via defines in an optional ``xua_conf.h`` header file. For this simple application the 
 complete contents of this file are as follows:
@@ -168,23 +177,45 @@ The application main() function
 
 The ``main()`` function sets up the tasks in the application.
 
-Various channels are required in order to allow the required tasks to communcate. 
+Channel declarations
+....................
+
+Various channels are required in order to allow the required tasks to communicate. 
 These must first be declared:
 
 .. literalinclude:: app_xua_simple.xc
    :start-on: /* Channels for lib_xud
-   :end-on: chan c_spdif_tx
+   :end-on: chan c_mic_pcm
+
+Standard ``lib_xua`` tasks
+..........................
 
 The rest of the ``main()`` function starts all of the tasks in parallel
-using the xC ``par`` construct:
+using the xC ``par`` construct.
+
+Firstly the standard ``lib_xua`` tasks are run on tile 1:  
 
 .. literalinclude:: app_xua_simple.xc
    :start-on: par
-   :end-before: return 0
+   :end-before: on tile[0]
 
 This code starts the low-level USB task, an Endpoint 0 task, an Audio buffering task and a task to handle 
-the audio I/O. Note, since there is no I2S funcitonality in this example this task simply forwards samples to the 
-SPDIF transmitter task. In addition the ``spdif_tx()`` task is also run.
+the audio I/O (``XUA_AudioHub``).
+
+Note, since there is no I2S functionality in this example the ``XUA_AudioHub`` task essentially just receives 
+samples from the PDM buffer task and forwards samples to the ``XUA_Buffer`` task for forwarding to the USB host. 
+
+Microphone related tasks
+........................
+
+Microphone related tasks are executed on tile 0 as follows:
+
+.. literalinclude:: app_xua_simple.xc
+   :start-on: Microphone related tasks
+   :end-before: return 0
+
+
+
 
 Note that the ``spdif_tx_port_config()`` function is called before a nested ``par`` of ``spdif_tx()`` and ``XUA_AudioHub()``.
 This is because of the "shared" nature of ``p_mclk_in`` and avoids a parrallel usage check failure by the XMOS toolchain.

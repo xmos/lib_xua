@@ -27,13 +27,13 @@ clock clk_pdm                    = on tile[0]: XS1_CLKBLK_1;   /* Clock-block fo
 
 
 /* Lib_xua port declarations. Note, the defines come from the xn file */
-in port p_mclk_in                   = PORT_MCLK_IN;            /* Master clock for the audio IO tile */
+in port p_mclk_in                = PORT_MCLK_IN;               /* Master clock for the audio IO tile */
 
 /* Resources for USB feedback */
-in port p_for_mclk_count            = PORT_MCLK_COUNT;         /* Extra port for counting master clock ticks */
+in port p_for_mclk_count         = PORT_MCLK_COUNT;            /* Extra port for counting master clock ticks */
 
 /* Clock-block declarations */
-clock clk_audio_mclk                = on tile[1]: XS1_CLKBLK_1;/* Master clock */
+clock clk_audio_mclk             = on tile[1]: XS1_CLKBLK_1;   /* Master clock */
 
 /* Endpoint type tables - informs XUD what the transfer types for each Endpoint in use and also
  * if the endpoint wishes to be informed of USB bus resets */
@@ -89,6 +89,7 @@ int main()
             }
         }
 
+        /* Microphone related tasks */
         on tile[0]:
         {
             streaming chan c_4x_pdm_mic_0;
