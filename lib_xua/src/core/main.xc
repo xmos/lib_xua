@@ -478,7 +478,7 @@ void usb_audio_io(chanend ?c_aud_in, chanend ?c_adc,
 
 #if (XUA_NUM_PDM_MICS > 0) && (PDM_TILE == AUDIO_IO_TILE)
     /* Configure clocks ports - sharing mclk port with I2S */
-    xua_pdm_mic_config(p_mclk_in);
+    xua_pdm_mic_config(p_mclk_in, p_pdm_mclk, p_pdm_clk, p_pdm_mics, clk_pdm);
 #endif
 
 #if (XUA_SPDIF_TX_EN) && (SPDIF_TX_TILE == AUDIO_IO_TILE)
@@ -530,7 +530,7 @@ void usb_audio_io(chanend ?c_aud_in, chanend ?c_adc,
         }
 
 #if (XUA_NUM_PDM_MICS > 0) && (PDM_TILE == AUDIO_IO_TILE)
-        xua_pdm_mic(c_ds_output);
+        xua_pdm_mic(c_ds_output, p_pdm_mics);
 #endif
 
 #if (SPDIF_RX) || (ADAT_RX)
@@ -754,8 +754,8 @@ int main()
         /* PDM Mics running on a separate to AudioHub */
         on stdcore[PDM_TILE]:
         { 
-            xua_pdm_mic_config(p_pdm_mclk);
-            xua_pdm_mic(c_ds_output);
+            xua_pdm_mic_config(p_pdm_mclk, p_pdm_clk, p_pdm_mics, clk_pdm);
+            xua_pdm_mic(c_ds_output, p_pdm_mics);
         }
 #endif
 

@@ -8,7 +8,7 @@
 
 
 /* Configures PDM ports/clocks */
-void xua_pdm_mic_config(in port p_mclk_pdm);
+void xua_pdm_mic_config(in port p_pdm_mclk, in port p_pdm_clk, buffered in port:32 p_pdm_mics, clock clk_pdm);
 
 #ifdef MIC_PROCESSING_USE_INTERFACE
 /* Interface based user processing */
@@ -30,7 +30,7 @@ void XUA_PdmBuffer(streaming chanend c_ds_output[2], chanend c_audio
 void user_pdm_process(server mic_process_if i_mic_data);
 
 /* PDM interface and decimation cores */
-void xua_pdm_mic(streaming chanend c_ds_output[2]);
+void xua_pdm_mic(streaming chanend c_ds_output[2], buffered in port:32 p_pdm_mics);
 
 #else
 
@@ -44,7 +44,7 @@ void user_pdm_init();
 void XUA_PdmBuffer(streaming chanend c_ds_output[2], chanend c_audio);
 
 /* PDM interface and decimation cores */
-void xua_pdm_mic(streaming chanend c_ds_output[2]);
+void xua_pdm_mic(streaming chanend c_ds_output[2], buffered in port:32 p_pdm_mics);
 
 #endif
 #endif
