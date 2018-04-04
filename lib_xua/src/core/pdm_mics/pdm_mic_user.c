@@ -2,7 +2,7 @@
 
 #include "xua.h"
 
-#if (NUM_PDM_MICS > 0) && !defined(MIC_PROCESSING_USE_INTERFACE)
+#if (XUA_NUM_PDM_MICS > 0) && !defined(MIC_PROCESSING_USE_INTERFACE)
 
 #include "mic_array_frame.h"
 

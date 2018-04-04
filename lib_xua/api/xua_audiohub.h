@@ -52,7 +52,7 @@ void XUA_AudioHub(chanend ?c_aud,
 #if (XUD_TILE != 0) && (AUDIO_IO_TILE == 0) && (XUA_DFU_EN == 1)
    , server interface i_dfu ?dfuInterface
 #endif
-#if (NUM_PDM_MICS > 0)
+#if (XUA_NUM_PDM_MICS > 0)
     , chanend c_pdm_in
 #endif
 );

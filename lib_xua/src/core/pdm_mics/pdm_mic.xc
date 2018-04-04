@@ -2,7 +2,7 @@
 
 #include "xua.h"
 
-#if (NUM_PDM_MICS > 0)
+#if (XUA_NUM_PDM_MICS > 0)
 
 /* This file includes an example integration of lib_array_mic into USB Audio */
 
@@ -47,7 +47,7 @@ void XUA_PdmBuffer(streaming chanend c_ds_output[2], chanend c_audio)
 {
     unsigned buffer;
     unsigned samplerate;
-    int output[MIC_BUFFER_DEPTH][NUM_PDM_MICS];
+    int output[MIC_BUFFER_DEPTH][XUA_NUM_PDM_MICS];
 
 #ifdef MIC_PROCESSING_USE_INTERFACE
     i_mic_process.init();
@@ -55,7 +55,7 @@ void XUA_PdmBuffer(streaming chanend c_ds_output[2], chanend c_audio)
     user_pdm_init();
 #endif
 
-#if NUM_PDM_MICS > 4
+#if XUA_NUM_PDM_MICS > 4
     unsigned decimatorCount = 2;
 #else
     unsigned decimatorCount = 1;
@@ -152,7 +152,7 @@ void XUA_PdmBuffer(streaming chanend c_ds_output[2], chanend c_audio)
                     {
                         /* We store an additional buffer so we can reply immediately */
 #pragma loop unroll
-                        for(int i = 0; i < NUM_PDM_MICS; i++)
+                        for(int i = 0; i < XUA_NUM_PDM_MICS; i++)
                         {
                             c_audio <: output[micBufferRead][i];
                         }
@@ -172,7 +172,7 @@ void XUA_PdmBuffer(streaming chanend c_ds_output[2], chanend c_audio)
 #endif
                     /* Buffer up next mic data */
 #pragma loop unroll
-                    for(int i = 0; i < NUM_PDM_MICS; i++)
+                    for(int i = 0; i < XUA_NUM_PDM_MICS; i++)
                     {
                         output[micBufferWrite][i] = current->data[i][0];
                     }
@@ -203,7 +203,7 @@ void XUA_PdmBuffer(streaming chanend c_ds_output[2], chanend c_audio)
                     user_pdm_process(current);
 #endif
 #pragma loop unroll
-                    for(int i = 0; i < NUM_PDM_MICS; i++)
+                    for(int i = 0; i < XUA_NUM_PDM_MICS; i++)
                     {
                         output[micBufferWrite][i] = current->data[i][0];
                     }
@@ -241,7 +241,7 @@ void xua_pdm_mic_config(in port p_pdm_mclk)
 void xua_pdm_mic(streaming chanend c_ds_output[2])
 {
     streaming chan c_4x_pdm_mic_0;
-#if (NUM_PDM_MICS > 4)
+#if (XUA_NUM_PDM_MICS > 4)
     streaming chan c_4x_pdm_mic_1;
 #else
     #define c_4x_pdm_mic_1 null
@@ -251,7 +251,7 @@ void xua_pdm_mic(streaming chanend c_ds_output[2])
     {
         mic_array_pdm_rx(p_pdm_mics, c_4x_pdm_mic_0, c_4x_pdm_mic_1);
         mic_array_decimate_to_pcm_4ch(c_4x_pdm_mic_0, c_ds_output[0], MIC_ARRAY_NO_INTERNAL_CHANS);
-#if (NUM_PDM_MICS > 4)
+#if (XUA_NUM_PDM_MICS > 4)
         mic_array_decimate_to_pcm_4ch(c_4x_pdm_mic_1, c_ds_output[1], MIC_ARRAY_NO_INTERNAL_CHANS);
 #endif
     }

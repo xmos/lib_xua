@@ -29,7 +29,7 @@
 #endif
 #endif
 
-#if (NUM_PDM_MICS > 0)
+#if (XUA_NUM_PDM_MICS > 0)
 #include "xua_pdm_mic.h"
 #endif 
 
@@ -45,7 +45,7 @@
 static unsigned samplesOut[MAX(NUM_USB_CHAN_OUT, I2S_CHANS_DAC)];
 
 /* Two buffers for ADC data to allow for DAC and ADC I2S ports being offset */
-#define IN_CHAN_COUNT (I2S_CHANS_ADC + NUM_PDM_MICS + (8*ADAT_RX) + (2*SPDIF_RX))
+#define IN_CHAN_COUNT (I2S_CHANS_ADC + XUA_NUM_PDM_MICS + (8*ADAT_RX) + (2*SPDIF_RX))
 
 static unsigned samplesIn[2][MAX(NUM_USB_CHAN_IN, IN_CHAN_COUNT)];
 
@@ -215,7 +215,7 @@ unsigned static AudioHub_MainLoop(chanend ?c_out, chanend ?c_spd_out
 #if( (SPDIF_RX==1) || (ADAT_RX == 1))
     , chanend c_dig_rx
 #endif
-#if (NUM_PDM_MICS > 0)
+#if (XUA_NUM_PDM_MICS > 0)
     , chanend c_pdm_pcm
 #endif
     , buffered _XUA_CLK_DIR port:32 ?p_lrclk, 
@@ -254,7 +254,7 @@ unsigned static AudioHub_MainLoop(chanend ?c_out, chanend ?c_spd_out
 #endif
 
     unsigned audioToUsbRatioCounter = 0;
-#if (NUM_PDM_MICS > 0)
+#if (XUA_NUM_PDM_MICS > 0)
     unsigned audioToMicsRatioCounter = 0;
 #endif
 
@@ -276,18 +276,18 @@ unsigned static AudioHub_MainLoop(chanend ?c_out, chanend ?c_spd_out
 #endif /* (AUD_TO_USB_RATIO > 1) */
 
 
-#if ((DEBUG_MIC_ARRAY == 1) && (NUM_PDM_MICS > 0))
+#if ((DEBUG_MIC_ARRAY == 1) && (XUA_NUM_PDM_MICS > 0))
     /* Get initial samples from PDM->PCM converter to avoid stalling the decimators */
     c_pdm_pcm <: 1;
     master
     {
 #pragma loop unroll
-        for(int i = PDM_MIC_INDEX; i < (NUM_PDM_MICS + PDM_MIC_INDEX); i++)
+        for(int i = PDM_MIC_INDEX; i < (XUA_NUM_PDM_MICS + PDM_MIC_INDEX); i++)
         {
             c_pdm_pcm :> samplesIn[readBuffNo][i];
         }
     }
-#endif // ((DEBUG_MIC_ARRAY == 1) && (NUM_PDM_MICS > 0))
+#endif // ((DEBUG_MIC_ARRAY == 1) && (XUA_NUM_PDM_MICS > 0))
 
     UserBufferManagementInit();
 
@@ -448,7 +448,7 @@ unsigned static AudioHub_MainLoop(chanend ?c_out, chanend ?c_spd_out
                 outuint(c_spd_out, sample);                      /* Forward sample to S/PDIF Tx thread */
 #endif
 
-#if (NUM_PDM_MICS > 0)
+#if (XUA_NUM_PDM_MICS > 0)
                 if ((AUD_TO_MICS_RATIO - 1) == audioToMicsRatioCounter)
                 {
                     /* Get samples from PDM->PCM converter */
@@ -456,7 +456,7 @@ unsigned static AudioHub_MainLoop(chanend ?c_out, chanend ?c_spd_out
                     master
                     {
 #pragma loop unroll
-                        for(int i = PDM_MIC_INDEX; i < (NUM_PDM_MICS + PDM_MIC_INDEX); i++)
+                        for(int i = PDM_MIC_INDEX; i < (XUA_NUM_PDM_MICS + PDM_MIC_INDEX); i++)
                         {
                             c_pdm_pcm :> samplesIn[readBuffNo][i];
                         }
@@ -672,7 +672,7 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
 #if (XUD_TILE != 0) && (AUDIO_IO_TILE == 0) && (XUA_DFU_EN == 1)
     , server interface i_dfu ?dfuInterface
 #endif
-#if (NUM_PDM_MICS > 0)
+#if (XUA_NUM_PDM_MICS > 0)
     , chanend c_pdm_in
 #endif
 )
@@ -873,7 +873,7 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
                 outuint(c_spdif_out, mClk);
 #endif
 
-#if (NUM_PDM_MICS > 0)
+#if (XUA_NUM_PDM_MICS > 0)
                 /* Send decimation factor to PDM task(s) */
                 c_pdm_in <: curSamFreq / AUD_TO_MICS_RATIO;
 #endif
@@ -906,7 +906,7 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
 #if (ADAT_RX == 1) || (SPDIF_RX == 1)
                    , c_dig_rx
 #endif
-#if (NUM_PDM_MICS > 0)
+#if (XUA_NUM_PDM_MICS > 0)
                    , c_pdm_in
 #endif
                   , p_lrclk, p_bclk, p_i2s_dac, p_i2s_adc);
@@ -959,7 +959,7 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
 
 #endif /* XUA_USB_EN */
 
-#if NUM_PDM_MICS > 0
+#if XUA_NUM_PDM_MICS > 0
                 c_pdm_in <: 0;
 #endif
 

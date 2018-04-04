@@ -46,7 +46,7 @@
 
 #include "clocking.h"
 
-#if (NUM_PDM_MICS > 0)
+#if (XUA_NUM_PDM_MICS > 0)
 #include "xua_pdm_mic.h"
 #endif
 
@@ -169,7 +169,7 @@ on tile[MIDI_TILE] :  buffered in port:1 p_midi_rx          = PORT_MIDI_IN;
 #endif
 
 /*** Clock blocks ***/
-#if (NUM_PDM_MICS > 0)
+#if (XUA_NUM_PDM_MICS > 0)
 clock clk_pdm                                               = on tile[PDM_TILE]: XS1_CLKBLK_1;
 #endif
 
@@ -185,7 +185,7 @@ on tile[SPDIF_TX_TILE] : clock    clk_mst_spd               = CLKBLK_SPDIF_TX;
 on tile[XUD_TILE] : clock    clk_spd_rx                     = CLKBLK_SPDIF_RX;
 #endif
 
-#if (NUM_PDM_MICS > 0)
+#if (XUA_NUM_PDM_MICS > 0)
 in port p_pdm_clk               = PORT_PDM_CLK;
 
 in buffered port:32 p_pdm_mics  = PORT_PDM_DATA;
@@ -458,7 +458,7 @@ void usb_audio_io(chanend ?c_aud_in, chanend ?c_adc,
 #if (XUD_TILE != 0)  && (AUDIO_IO_TILE == 0) && (XUA_DFU_EN == 1)
     , server interface i_dfu ?dfuInterface
 #endif
-#if (NUM_PDM_MICS > 0)
+#if (XUA_NUM_PDM_MICS > 0)
 #if (PDM_TILE == AUDIO_IO_TILE)
     , streaming chanend c_ds_output[2]
 #endif
@@ -476,7 +476,7 @@ void usb_audio_io(chanend ?c_aud_in, chanend ?c_adc,
     #define c_dig_rx null
 #endif
 
-#if (NUM_PDM_MICS > 0) && (PDM_TILE == AUDIO_IO_TILE)
+#if (XUA_NUM_PDM_MICS > 0) && (PDM_TILE == AUDIO_IO_TILE)
     /* Configure clocks ports - sharing mclk port with I2S */
     xua_pdm_mic_config(p_mclk_in);
 #endif
@@ -523,13 +523,13 @@ void usb_audio_io(chanend ?c_aud_in, chanend ?c_adc,
 #if (XUD_TILE != 0) && (AUDIO_IO_TILE == 0) && (XUA_DFU_EN == 1)
                 , dfuInterface
 #endif
-#if (NUM_PDM_MICS > 0)
+#if (XUA_NUM_PDM_MICS > 0)
                 , c_pdm_pcm
 #endif
             );
         }
 
-#if (NUM_PDM_MICS > 0) && (PDM_TILE == AUDIO_IO_TILE)
+#if (XUA_NUM_PDM_MICS > 0) && (PDM_TILE == AUDIO_IO_TILE)
         xua_pdm_mic(c_ds_output);
 #endif
 
@@ -613,7 +613,7 @@ int main()
     #define dfuInterface null
 #endif
 
-#if (NUM_PDM_MICS > 0)
+#if (XUA_NUM_PDM_MICS > 0)
     chan c_pdm_pcm;
     streaming chan c_ds_output[2];
 #ifdef MIC_PROCESSING_USE_INTERFACE
@@ -671,7 +671,7 @@ int main()
 #if (XUD_TILE != 0) && (AUDIO_IO_TILE == 0) && (XUA_DFU_EN == 1)
                 , dfuInterface
 #endif
-#if (NUM_PDM_MICS > 0)
+#if (XUA_NUM_PDM_MICS > 0)
 #if (PDM_TILE == AUDIO_IO_TILE)
                 , c_ds_output[2]
 #endif
@@ -749,7 +749,7 @@ int main()
 #endif
 
 #ifndef PDM_RECORD
-#if (NUM_PDM_MICS > 0) 
+#if (XUA_NUM_PDM_MICS > 0) 
 #if (PDM_TILE != AUDIO_IO_TILE)
         /* PDM Mics running on a separate to AudioHub */
         on stdcore[PDM_TILE]:
@@ -764,7 +764,7 @@ int main()
 #else
         on stdcore[PDM_TILE].core[0]: xua_pdm_buffer(c_ds_output, c_pdm_pcm);
 #endif /*MIC_PROCESSING_USE_INTERFACE*/
-#endif /*NUM_PDM_MICS > 0*/
+#endif /*XUA_NUM_PDM_MICS > 0*/
 #endif /*PDM_RECORD*/
 
 

@@ -278,15 +278,15 @@
 /**
  * @brief Number of PDM microphones in the design. Default: None
  */
-#ifndef NUM_PDM_MICS
-#define NUM_PDM_MICS            (0)
+#ifndef XUA_NUM_PDM_MICS
+#define XUA_NUM_PDM_MICS            (0)
 #endif
 
 /**
  * @brief PDM Microphone first channel index, defines which channels microphones will be input on.
  * Note, indexed from 0.
  *
- * Default: 0 (i.e. channels [0:NUM_PDM_MICS-1])
+ * Default: 0 (i.e. channels [0:XUA_NUM_PDM_MICS-1])
  * */
 #ifndef PDM_MIC_INDEX
 #define PDM_MIC_INDEX           (0)
