@@ -1,5 +1,8 @@
 // Copyright (c) 2015-2018, XMOS Ltd, All rights reserved
 
+#ifndef XUA_PDM_MIC_H
+#define XUA_PDM_MIC_H
+
 /* Included from lib_mic_array */
 #include "mic_array.h"
 
@@ -43,5 +46,6 @@ void XUA_PdmBuffer(streaming chanend c_ds_output[2], chanend c_audio);
 /* PDM interface and decimation cores */
 void xua_pdm_mic(streaming chanend c_ds_output[2]);
 
+#endif
 #endif
 

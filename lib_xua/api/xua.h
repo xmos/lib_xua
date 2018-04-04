@@ -6,16 +6,17 @@
 #include "xua_conf_full.h"
 
 #if __XC__ || __STDC__
-#include "xua_audiohub.h"
+    #include "xua_audiohub.h"
 
-#include "xua_endpoint0.h"
+    #include "xua_endpoint0.h"
 
-#include "xua_buffer.h"
-
-#if __XC__
-#include "xua_pdm_mic.h"
+    #include "xua_buffer.h"
 #endif
 
+#if __XC__
+    #if XUA_NUM_PDM_MICS > 0
+        #include "xua_pdm_mic.h"
+    #endif
 #endif
 
 #endif

@@ -760,9 +760,9 @@ int main()
 #endif
 
 #ifdef MIC_PROCESSING_USE_INTERFACE
-        on stdcore[PDM_TILE].core[0]: xua_pdm_buffer(c_ds_output, c_pdm_pcm, i_mic_process);
+        on stdcore[PDM_TILE].core[0]: XUA_PdmBuffer(c_ds_output, c_pdm_pcm, i_mic_process);
 #else
-        on stdcore[PDM_TILE].core[0]: xua_pdm_buffer(c_ds_output, c_pdm_pcm);
+        on stdcore[PDM_TILE].core[0]: XUA_PdmBuffer(c_ds_output, c_pdm_pcm);
 #endif /*MIC_PROCESSING_USE_INTERFACE*/
 #endif /*XUA_NUM_PDM_MICS > 0*/
 #endif /*PDM_RECORD*/
