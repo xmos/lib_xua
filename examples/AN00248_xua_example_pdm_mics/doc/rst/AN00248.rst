@@ -11,12 +11,16 @@ Introduction
 The XMOS USB Audio (XUA) library provides an implemention of USB Audio Class versions 1.0 and 2.0.
 
 This application note demonstrates the implementation of a basic USB Audio Device with 
-S/PDIF transmit functionality the xCORE-200 MC Audio board.
+record functionality from PDM microphones on the xCORE-200 Array Microphone board.
+
+Core PDM microphone functionality is contained in` ``lib_mic_array``. This library includes both the physical
+interfacing to the PDM microphones as well as efficient decimation to user selectable output
+sample rates - essentially providing PDM to PCM conversion.
 
 To reduce complexity this application note does not enable any other audio interfaces other than recording 
 from PDM microphones (i.e. no I2S and the on board DAC is not configured. 
 
-Readers are encouraged to read applicaition note AN00246 in conjunction with this application note.
+Readers are encouraged to read application note AN00246 in conjunction with this application note.
 
 
 The Makefile
@@ -28,7 +32,7 @@ added for this application example::
   USED_MODULES = .. lib_xua lib_mic_array ...
 
 This demo also uses the XMOS USB Device library (``lib_xud``) for low-level USB connectivity.
-The Makefile also includes::
+The Makefile therefore also includes this lib::
 
   USED_MODULES = .. lib_xud ..
 
@@ -44,26 +48,26 @@ Secondly, the architecture of the target device, for example::
 Includes
 --------
 
-This application requires the system header that defines XMOS xCORE specific
+This application requires the system header files that contains XMOS xCORE specific
 defines for declaring and initialising hardware:
 
 .. literalinclude:: app_xua_simple.xc
    :start-on: include <xs1.h>
    :end-before: include "xua.h"
 
-The XUA library functions are defined in ``xua.h``. This header must
-be included in your code to use the library. 
+The XUA and XUD library functions are defined in header files ``xua.h`` and ``xud_device.h`` respectively. These headers must
+be included in the code in order to use these libraries. 
 
 .. literalinclude:: app_xua_simple.xc
    :start-on: include "xua.h"
    :end-on: include "xud_device.h"
 
-The application uses the S/PDIF transmitter from ``lib_spdif``. This header
-must be included in your code.
+The application uses PDM interfacing and decimation code from ``lib_mic_array``. This header
+must be included in the code.
 
 .. literalinclude:: app_xua_simple.xc
-   :start-on: /* From lib_spdif 
-   :end-on: include "spdif.h"
+   :start-on: /* From lib_mic
+   :end-on: include "mic_array.h"
 
 Declarations
 ------------
@@ -71,8 +75,8 @@ Declarations
 Allocating hardware resources for lib_xua
 .........................................
 
-A minimal implementation of a USB Audio device, without I2S functionalilty,
-using ``lib_xua`` requires the follow pins:
+A minimal implementation of a USB Audio device using ``lib_xua``,  without I2S functionalilty,
+requires the follow I/O pins:
 
     - Audio Master clock (from clock source to xCORE)
 
@@ -84,27 +88,26 @@ port for the master clock input signal.
    :end-on: in port p_mclk_in
 
 ``lib_xua`` also requires two ports for internally calculating USB feedback. Please refer to 
-the ``lib_xua`` library documentation for further details.  The additonal input port for the master
-clock is required since USB and S/PDIF do not reside of the same tiles on the example hardware.
+the ``lib_xua`` library documentation for further details.  In this example ``XUA_Buffer()`` and ``XUA_AudioHub()``
+reside on the same tile and can therefore make use of the same master-clock port.
 
 These ports are declared as follows:
 
 .. literalinclude:: app_xua_simple.xc
    :start-on: /* Resources for USB feedback
-   :end-on: in port p_mclk_in_usb
+   :end-on: in port p_for
 
-In addition to ``port`` resources two clock-block resources are also required:
+In addition to ``port`` resources a single clock-block resource is also required:
 
 .. literalinclude:: app_xua_simple.xc
-   :start-on: /* Clock-block
-   :end-on: clock clk_audio_mclk_usb
+   :start-on: /* Clock-block declarations
+   :end-on: clock clk_audio_mclk
 
-Again, for the same reasoning as the master-clock ports, two master-clock clock-blocks are required
-- one on each tile.
+Again, for the same reasoning as the master-clock ports, only one master-clock clock-blocks is required.
 
 
-Allocating hardware resources for lib_spdif
-...........................................
+Allocating hardware resources for lib_mic_array
+...............................................
 
 The S/PDIF transmitter requires a single (buffered) 1-bit port:
 

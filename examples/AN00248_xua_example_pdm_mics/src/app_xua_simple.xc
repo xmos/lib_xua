@@ -17,7 +17,7 @@
 /* From lib_mic_array */
 #include "mic_array.h"
 
-/* Lib_mic_array declarations. Note, the defines come from the xn file */
+/* Lib_mic_array declarations. Note, the defines derived from the xn file */
 in port p_pdm_clk                = PORT_PDM_CLK;               /* Port for PDM mic clock */
 in port p_pdm_mclk               = PORT_PDM_MCLK;              /* Master clock for PDM mics */
 
