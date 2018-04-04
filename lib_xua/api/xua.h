@@ -12,7 +12,10 @@
 
 #include "xua_buffer.h"
 
-//#include "xua_dfu.h"
+#if __XC__
+#include "xua_pdm_mic.h"
+#endif
+
 #endif
 
 #endif
