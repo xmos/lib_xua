@@ -38,11 +38,11 @@ mic_array_frame_time_domain mic_audio[2];
 #ifdef MIC_PROCESSING_USE_INTERFACE
 [[combinable]]
 #pragma unsafe arrays
-void xua_pdm_buffer(streaming chanend c_ds_output[2], chanend c_audio, client mic_process_if i_mic_process)
+void XUA_PdmBuffer(streaming chanend c_ds_output[2], chanend c_audio, client mic_process_if i_mic_process)
 #else
 #pragma unsafe arrays
 [[combinable]]
-void xua_pdm_buffer(streaming chanend c_ds_output[2], chanend c_audio)
+void XUA_PdmBuffer(streaming chanend c_ds_output[2], chanend c_audio)
 #endif
 {
     unsigned buffer;
