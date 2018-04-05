@@ -1,3 +1,4 @@
+// Copyright (c) 2018, XMOS Ltd, All rights reserved
 #include "xua.h"
 
 #include "dsd_support.h"

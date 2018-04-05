@@ -1,3 +1,4 @@
+// Copyright (c) 2018, XMOS Ltd, All rights reserved
 
 #if (DSD_CHANS_DAC != 0)
 extern buffered out port:32 p_dsd_dac[DSD_CHANS_DAC];

@@ -1,3 +1,4 @@
+// Copyright (c) 2018, XMOS Ltd, All rights reserved
 
 unsigned adatCounter = 0;
 unsigned adatSamples[8];
