@@ -163,7 +163,7 @@ static inline int HandleSampleClock(int frameCount, buffered _XUA_CLK_DIR port:3
     if(I2S_MODE_TDM)
     {
         /* Only check for the rising edge of frame sync being in the right place because falling edge timing not specified */
-        if (frameCount == (I2S_CHANS_PER_FRAME-1)) 
+        if (frameCount == 1) 
         {
             lrval &= 0xc0000000;                 // Mask off last two (MSB) frame clock bits which are the most recently sampled
             syncError += (lrval != 0x80000000);  // We need MSB = 1 and MSB-1 = 0 to signify rising edge
@@ -181,7 +181,7 @@ static inline int HandleSampleClock(int frameCount, buffered _XUA_CLK_DIR port:3
         else
             syncError += (lrval != 0x7FFFFFFF);
     }
-    
+ 
     return syncError;
 
 #else
@@ -237,7 +237,6 @@ unsigned static AudioHub_MainLoop(chanend ?c_out, chanend ?c_spd_out
 #endif
     unsigned underflowWord = 0;
 
-    unsigned frameCount = 0;
 #ifdef ADAT_TX
     adatCounter = 0;
 #endif
@@ -312,6 +311,7 @@ unsigned static AudioHub_MainLoop(chanend ?c_out, chanend ?c_spd_out
     while (1)
     {
         unsigned syncError = 0;
+        unsigned frameCount = 0;
 
         if ((I2S_CHANS_DAC > 0 || I2S_CHANS_ADC > 0))
         {
