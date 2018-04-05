@@ -3,9 +3,9 @@ lib_xua Change Log
 
 0.2.0
 -----
-    
+
   * ADDED:     Initial library documentation
-  * ADDED:     Application note AN00247: Using lib_xua with lib_spdif (transmit) 
+  * ADDED:     Application note AN00247: Using lib_xua with lib_spdif (transmit)
   * CHANGE:    I2S hardware resources no longer used globally and must be passed
     to XUA_AudioHub()
   * CHANGE:    XUA_AudioHub() no longer pars S/PDIF transmitter task
