@@ -15,7 +15,7 @@ OPTIONAL_HEADERS += xua_conf.h
 
 VERSION = 0.2.0
 
-DEPENDENT_MODULES = lib_logging(>=2.1.0) lib_xud(>=0.1.0) lib_spdif
+DEPENDENT_MODULES = lib_logging(>=2.1.0) lib_xud(>=0.1.0) lib_spdif(>=3.0.0)
 
 #ignore host dir
 SOURCE_DIRS = src/*
