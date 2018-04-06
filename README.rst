@@ -4,7 +4,7 @@ lib_xua
 Summary
 -------
 
-USB Audio Shared Components. For use in the XMOS USB Audio Refererence Designs.
+USB Audio Shared Components for use in the XMOS USB Audio Refererence Designs.
 
 This library enables the development of USB Audio devices on the XMOS xCORE architecture.
 
@@ -57,3 +57,5 @@ Related Application Notes
 The following application notes use this library:
 
     * AN000246 - Simple USB Audio Device using lib_xua
+    * AN000247 - Using lib_xua with lib_spdif (transmit)
+    * AN000248 - Using lib_xua with lib_mic_array
