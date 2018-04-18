@@ -288,7 +288,7 @@ void xscope_user_init()
 }
 #endif
 
-#ifndef NO_USB
+#if !NO_USB
 /* Core USB Audio functions - must be called on the Tile connected to the USB Phy */
 void usb_audio_core(chanend c_mix_out
 #ifdef MIDI
@@ -350,12 +350,6 @@ VENDOR_REQUESTS_PARAMS_DEC_
         {
             unsigned x;
             thread_speed();
-
-            /* TODO p_mclk_in should be delared as an unsafe resource */
-            unsafe
-            {
-                p_mclk_in = p_mclk_in_;
-            }
 
             /* Attach mclk count port to mclk clock-block (for feedback) */
             //set_port_clock(p_for_mclk_count, clk_audio_mclk);
