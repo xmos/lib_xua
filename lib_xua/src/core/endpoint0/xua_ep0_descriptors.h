@@ -2358,7 +2358,10 @@ unsigned char cfgDesc_Audio1[] =
     (OUTPUT_INTERFACES_A1 + 1),           /* baInterfaceNr(2) AudioStreaming interface 2 belongs to AC interface */
 #endif
 
+
 #if (NUM_USB_CHAN_OUT > 0)
+#define CHANNEL_CONFIG_OUT (0xFF >> (8 - NUM_USB_CHAN_OUT_FS))
+
     /* CS_Interface Input Terminal 1 Descriptor - USB streaming Host to Device */
     0x0C,
     UAC_CS_DESCTYPE_INTERFACE,            /* bDescriptorType (UAC_CS_DESCTYPE_INTERFACE) */
@@ -2367,7 +2370,7 @@ unsigned char cfgDesc_Audio1[] =
     0x01, 0x01,                           /* wTerminalType (USB Streaming) */
     0x00,                                 /* Associated terminal - unused  */
     NUM_USB_CHAN_OUT_FS,                  /* bNrChannels */
-    0x03, 0x00,                           /* wChannelConfig */
+    CHANNEL_CONFIG_OUT, 0x00,             /* wChannelConfig */
     offsetof(StringDescTable_t, outputChanStr_1)/sizeof(char *), /* iChannelNames */
     offsetof(StringDescTable_t, usbInputTermStr_Audio1)/sizeof(char *), /* iTerminal */
 
@@ -2427,6 +2430,8 @@ unsigned char cfgDesc_Audio1[] =
 #endif
 
 #if (NUM_USB_CHAN_IN > 0)
+#define CHANNEL_CONFIG_IN (0xFF >> (8 - NUM_USB_CHAN_IN_FS))
+
     /* CS_Interface Input Terminal 2 Descriptor - Analog in from line in */
     0x0C,
     UAC_CS_DESCTYPE_INTERFACE,
@@ -2435,7 +2440,7 @@ unsigned char cfgDesc_Audio1[] =
     0x01, 0x02,                           /* Type - streaming in, mic */
     0x00,                                 /* Associated terminal - unused  */
     NUM_USB_CHAN_IN_FS,                   /* bNrChannels */
-    0x03, 0x00,                           /* wChannelConfigs */
+    CHANNEL_CONFIG_IN, 0x00,              /* wChannelConfigs */
     offsetof(StringDescTable_t, inputChanStr_1)/sizeof(char *), /* iChannelNames */
     offsetof(StringDescTable_t, usbOutputTermStr_Audio1)/sizeof(char *), /* iTerminal */
 
