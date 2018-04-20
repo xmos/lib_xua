@@ -56,6 +56,13 @@
 #define PDM_TILE        AUDIO_IO_TILE
 #endif
 
+/** 
+ * @brief Disable USB functionalty just leaving AudioHub 
+ */
+#ifndef XUA_USB_EN
+#define XUA_USB_EN      1
+#endif
+
 /**
  * @brief Number of input channels (device to host). Default: NONE (Must be defined by app)
  */
@@ -271,15 +278,15 @@
 /**
  * @brief Number of PDM microphones in the design. Default: None
  */
-#ifndef NUM_PDM_MICS
-#define NUM_PDM_MICS            (0)
+#ifndef XUA_NUM_PDM_MICS
+#define XUA_NUM_PDM_MICS            (0)
 #endif
 
 /**
  * @brief PDM Microphone first channel index, defines which channels microphones will be input on.
  * Note, indexed from 0.
  *
- * Default: 0 (i.e. channels [0:NUM_PDM_MICS-1])
+ * Default: 0 (i.e. channels [0:XUA_NUM_PDM_MICS-1])
  * */
 #ifndef PDM_MIC_INDEX
 #define PDM_MIC_INDEX           (0)
@@ -347,20 +354,11 @@
 #define SPDIF_RX              (0)
 #endif
 
-/* Tidy up old SPDIF_RX usage */
-#if defined(SPDIF_RX) && (SPDIF_RX == 0)
-#undef SPDIF_RX
-#endif
-
 /**
  * @brief Enables ADAT Rx. Default: 0 (Disabled)
  */
 #ifndef ADAT_RX
 #define ADAT_RX               (0)
-#endif
-
-#if defined(ADAT_RX) && (ADAT_RX == 0)
-#undef ADAT_RX
 #endif
 
 /**
@@ -369,7 +367,7 @@
  *
  * Default: NONE (Must be defined by app when SPDIF_RX enabled)
  */
-#if defined (SPDIF_RX) || defined (__DOXYGEN__)
+#if (SPDIF_RX) || defined (__DOXYGEN__)
 #ifndef SPDIF_RX_INDEX
     #error SPDIF_RX_INDEX not defined and SPDIF_RX defined
     #define SPDIF_RX_INDEX 0 /* Default define for doxygen */
@@ -382,7 +380,7 @@
  *
  * Default: NONE (Must be defined by app when ADAT_RX enabled)
  */
-#if defined(ADAT_RX) || defined(__DOXYGEN__)
+#if (ADAT_RX) || defined(__DOXYGEN__)
 #ifndef ADAT_RX_INDEX
     #error ADAT_RX_INDEX not defined and ADAT_RX defined
     #define ADAT_RX_INDEX (0) /* Default define for doxygen */
@@ -393,7 +391,7 @@
 #endif
 #endif
 
-#ifdef ADAT_RX
+#if ADAT_RX
 
 /* Setup input stream formats for ADAT */
 #if(MAX_FREQ > 96000)
@@ -1173,7 +1171,7 @@ enum USBEndpointNumber_In
     ENDPOINT_NUMBER_IN_FEEDBACK,
 #endif
     ENDPOINT_NUMBER_IN_AUDIO,
-#if defined(SPDIF_RX) || defined(ADAT_RX)
+#if (SPDIF_RX) || (ADAT_RX)
     ENDPOINT_NUMBER_IN_INTERRUPT,   /* Audio interrupt/status EP */
 #endif
 #ifdef MIDI
@@ -1251,9 +1249,9 @@ enum USBEndpointNumber_Out
 #endif
 
 /* Length of clock unit/clock-selector units */
-#if defined(SPDIF_RX) && defined(ADAT_RX)
+#if (SPDIF_RX) && (ADAT_RX)
 #define NUM_CLOCKS               (3)
-#elif defined(SPDIF_RX) || defined(ADAT_RX)
+#elif (SPDIF_RX) || (ADAT_RX)
 #define NUM_CLOCKS               (2)
 #else
 #define NUM_CLOCKS               (1)
@@ -1453,5 +1451,16 @@ enum USBEndpointNumber_Out
 #define MIN_FREQ_48 MIN_FREQ
 /* * 2 required since we want the next 44.1 based freq above MIN_FREQ */
 #define MIN_FREQ_44 (((44100*512)/((48000 * 512)/MIN_FREQ))*2)
+#endif
+
+/* Internal define for port declaration */
+#if CODEC_MASTER
+    #define _XUA_CLK_DIR in
+#else
+    #define _XUA_CLK_DIR out
+#endif
+
+#if (CODEC_MASTER == 1) && (DSD_CHANS_DAC != 0) 
+#error CODEC_MASTER with DSD is currently unsupported 
 #endif
 

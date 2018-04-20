@@ -51,7 +51,7 @@ void XUA_Buffer(
             chanend c_iap_ea_native_data,
 #endif
 #endif
-#if defined(SPDIF_RX) || defined(ADAT_RX)
+#if (SPDIF_RX) || (ADAT_RX)
             chanend ?c_int,
             chanend ?c_clk_int,
 #endif
@@ -90,7 +90,7 @@ void XUA_Buffer_Ep(chanend c_aud_out,
             chanend c_iap_ea_native_data,
 #endif
 #endif
-#if defined(SPDIF_RX) || defined(ADAT_RX)
+#if (SPDIF_RX) || (ADAT_RX)
             chanend ?c_int,
             chanend ?c_clk_int,
 #endif

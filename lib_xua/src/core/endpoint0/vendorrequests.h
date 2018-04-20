@@ -6,7 +6,7 @@
 #include "xua.h"
 #include "xud_device.h"
 
-/* Functions that handle vustomer vendor requests.
+/* Functions that handle customer vendor requests.
  *
  * THESE NEED IMPLEMENTING FOR A SPECIFIC DESIGN
  *

@@ -1,12 +1,26 @@
 lib_xua Change Log
 ==================
 
+0.2.0
+-----
+
+  * ADDED:     Initial library documentation
+  * ADDED:     Application note AN00247: Using lib_xua with lib_spdif (transmit)
+  * CHANGE:    I2S hardware resources no longer used globally and must be passed
+    to XUA_AudioHub()
+  * CHANGE:    XUA_AudioHub() no longer pars S/PDIF transmitter task
+  * CHANGE:    Moved to lib_spdif (from module_spdif_tx & module_spdif_rx)
+  * CHANGE:    Define NUM_PDM_MICS renamed to XUA_NUM_PDM_MICS
+  * CHANGE:    Define NO_USB renamed to XUA_USB_EN
+
 0.1.2
 -----
 
-  * ADDED:     Application note AN00246
+  * ADDED:     Application note AN00246: Simple USB Audio Device using lib_xua
+  * CHANGE:    xmosdfu emits warning if empty image read via upload
+  * CHANGE:    Simplified mclk port sharing - no longer uses unsafe pointer
   * RESOLVED:  Runtime exception issues when incorrect feedback calculated
-    (introduced in sc_xud 6.13)
+    (introduced in sc_usb_audio 6.13)
   * RESOLVED:  Output sample counter reset on stream start. Caused playback
     issues on some Linux based hosts
 

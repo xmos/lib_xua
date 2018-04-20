@@ -11,7 +11,7 @@
     #if (1 < I2S_CHANS_DAC+1)
         "Analogue 1"
     #endif
-    #if ((1 < SPDIF_TX_INDEX+2+1) && (1 > SPDIF_TX_INDEX)) && defined(SPDIF_TX)
+    #if ((1 < SPDIF_TX_INDEX+2+1) && (1 > SPDIF_TX_INDEX)) && (XUA_SPDIF_TX_EN)
         #if (1 < I2S_CHANS_DAC+1)
         "/"
         #endif
@@ -22,7 +22,7 @@
         #endif
     #endif
     #if ((1 < ADAT_TX_INDEX+8+1) && (1 > ADAT_TX_INDEX)) && defined(ADAT_TX)
-        #if ((1 < SPDIF_TX_INDEX+2+1) && (1 > SPDIF_TX_INDEX)) && defined(SPDIF_TX) || (1 < I2S_CHANS_DAC+1)
+        #if ((1 < SPDIF_TX_INDEX+2+1) && (1 > SPDIF_TX_INDEX)) && (XUA_SPDIF_TX_EN) || (1 < I2S_CHANS_DAC+1)
         "/"
         #endif
         #if(1 - ADAT_TX_INDEX == 1)
@@ -51,7 +51,7 @@
     #if (2 < I2S_CHANS_DAC+1)
         "Analogue 2"
     #endif
-    #if ((2 < SPDIF_TX_INDEX+2+1) && (2 > SPDIF_TX_INDEX)) && defined(SPDIF_TX)
+    #if ((2 < SPDIF_TX_INDEX+2+1) && (2 > SPDIF_TX_INDEX)) && (XUA_SPDIF_TX_EN)
         #if (2 < I2S_CHANS_DAC+1)
         "/"
         #endif
@@ -62,7 +62,7 @@
         #endif
     #endif
     #if ((2 < ADAT_TX_INDEX+8+1) && (2 > ADAT_TX_INDEX)) && defined(ADAT_TX)
-        #if ((2 < SPDIF_TX_INDEX+2+1) && (2 > SPDIF_TX_INDEX)) && defined(SPDIF_TX) || (2 < I2S_CHANS_DAC+1)
+        #if ((2 < SPDIF_TX_INDEX+2+1) && (2 > SPDIF_TX_INDEX)) && (XUA_SPDIF_TX_EN) || (2 < I2S_CHANS_DAC+1)
         "/"
         #endif
         #if(2 - ADAT_TX_INDEX == 1)
@@ -91,7 +91,7 @@
     #if (3 < I2S_CHANS_DAC+1)
         "Analogue 3"
     #endif
-    #if ((3 < SPDIF_TX_INDEX+2+1) && (3 > SPDIF_TX_INDEX)) && defined(SPDIF_TX)
+    #if ((3 < SPDIF_TX_INDEX+2+1) && (3 > SPDIF_TX_INDEX)) && (XUA_SPDIF_TX_EN)
         #if (3 < I2S_CHANS_DAC+1)
         "/"
         #endif
@@ -102,7 +102,7 @@
         #endif
     #endif
     #if ((3 < ADAT_TX_INDEX+8+1) && (3 > ADAT_TX_INDEX)) && defined(ADAT_TX)
-        #if ((3 < SPDIF_TX_INDEX+2+1) && (3 > SPDIF_TX_INDEX)) && defined(SPDIF_TX) || (3 < I2S_CHANS_DAC+1)
+        #if ((3 < SPDIF_TX_INDEX+2+1) && (3 > SPDIF_TX_INDEX)) && (XUA_SPDIF_TX_EN) || (3 < I2S_CHANS_DAC+1)
         "/"
         #endif
         #if(3 - ADAT_TX_INDEX == 1)
@@ -131,7 +131,7 @@
     #if (4 < I2S_CHANS_DAC+1)
         "Analogue 4"
     #endif
-    #if ((4 < SPDIF_TX_INDEX+2+1) && (4 > SPDIF_TX_INDEX)) && defined(SPDIF_TX)
+    #if ((4 < SPDIF_TX_INDEX+2+1) && (4 > SPDIF_TX_INDEX)) && (XUA_SPDIF_TX_EN)
         #if (4 < I2S_CHANS_DAC+1)
         "/"
         #endif
@@ -142,7 +142,7 @@
         #endif
     #endif
     #if ((4 < ADAT_TX_INDEX+8+1) && (4 > ADAT_TX_INDEX)) && defined(ADAT_TX)
-        #if ((4 < SPDIF_TX_INDEX+2+1) && (4 > SPDIF_TX_INDEX)) && defined(SPDIF_TX) || (4 < I2S_CHANS_DAC+1)
+        #if ((4 < SPDIF_TX_INDEX+2+1) && (4 > SPDIF_TX_INDEX)) && (XUA_SPDIF_TX_EN) || (4 < I2S_CHANS_DAC+1)
         "/"
         #endif
         #if(4 - ADAT_TX_INDEX == 1)
@@ -171,7 +171,7 @@
     #if (5 < I2S_CHANS_DAC+1)
         "Analogue 5"
     #endif
-    #if ((5 < SPDIF_TX_INDEX+2+1) && (5 > SPDIF_TX_INDEX)) && defined(SPDIF_TX)
+    #if ((5 < SPDIF_TX_INDEX+2+1) && (5 > SPDIF_TX_INDEX)) && (XUA_SPDIF_TX_EN)
         #if (5 < I2S_CHANS_DAC+1)
         "/"
         #endif
@@ -182,7 +182,7 @@
         #endif
     #endif
     #if ((5 < ADAT_TX_INDEX+8+1) && (5 > ADAT_TX_INDEX)) && defined(ADAT_TX)
-        #if ((5 < SPDIF_TX_INDEX+2+1) && (5 > SPDIF_TX_INDEX)) && defined(SPDIF_TX) || (5 < I2S_CHANS_DAC+1)
+        #if ((5 < SPDIF_TX_INDEX+2+1) && (5 > SPDIF_TX_INDEX)) && (XUA_SPDIF_TX_EN) || (5 < I2S_CHANS_DAC+1)
         "/"
         #endif
         #if(5 - ADAT_TX_INDEX == 1)
@@ -211,7 +211,7 @@
     #if (6 < I2S_CHANS_DAC+1)
         "Analogue 6"
     #endif
-    #if ((6 < SPDIF_TX_INDEX+2+1) && (6 > SPDIF_TX_INDEX)) && defined(SPDIF_TX)
+    #if ((6 < SPDIF_TX_INDEX+2+1) && (6 > SPDIF_TX_INDEX)) && (XUA_SPDIF_TX_EN)
         #if (6 < I2S_CHANS_DAC+1)
         "/"
         #endif
@@ -222,7 +222,7 @@
         #endif
     #endif
     #if ((6 < ADAT_TX_INDEX+8+1) && (6 > ADAT_TX_INDEX)) && defined(ADAT_TX)
-        #if ((6 < SPDIF_TX_INDEX+2+1) && (6 > SPDIF_TX_INDEX)) && defined(SPDIF_TX) || (6 < I2S_CHANS_DAC+1)
+        #if ((6 < SPDIF_TX_INDEX+2+1) && (6 > SPDIF_TX_INDEX)) && (XUA_SPDIF_TX_EN) || (6 < I2S_CHANS_DAC+1)
         "/"
         #endif
         #if(6 - ADAT_TX_INDEX == 1)
@@ -251,7 +251,7 @@
     #if (7 < I2S_CHANS_DAC+1)
         "Analogue 7"
     #endif
-    #if ((7 < SPDIF_TX_INDEX+2+1) && (7 > SPDIF_TX_INDEX)) && defined(SPDIF_TX)
+    #if ((7 < SPDIF_TX_INDEX+2+1) && (7 > SPDIF_TX_INDEX)) && (XUA_SPDIF_TX_EN)
         #if (7 < I2S_CHANS_DAC+1)
         "/"
         #endif
@@ -262,7 +262,7 @@
         #endif
     #endif
     #if ((7 < ADAT_TX_INDEX+8+1) && (7 > ADAT_TX_INDEX)) && defined(ADAT_TX)
-        #if ((7 < SPDIF_TX_INDEX+2+1) && (7 > SPDIF_TX_INDEX)) && defined(SPDIF_TX) || (7 < I2S_CHANS_DAC+1)
+        #if ((7 < SPDIF_TX_INDEX+2+1) && (7 > SPDIF_TX_INDEX)) && (XUA_SPDIF_TX_EN) || (7 < I2S_CHANS_DAC+1)
         "/"
         #endif
         #if(7 - ADAT_TX_INDEX == 1)
@@ -291,7 +291,7 @@
     #if (8 < I2S_CHANS_DAC+1)
         "Analogue 8"
     #endif
-    #if ((8 < SPDIF_TX_INDEX+2+1) && (8 > SPDIF_TX_INDEX)) && defined(SPDIF_TX)
+    #if ((8 < SPDIF_TX_INDEX+2+1) && (8 > SPDIF_TX_INDEX)) && (XUA_SPDIF_TX_EN)
         #if (8 < I2S_CHANS_DAC+1)
         "/"
         #endif
@@ -302,7 +302,7 @@
         #endif
     #endif
     #if ((8 < ADAT_TX_INDEX+8+1) && (8 > ADAT_TX_INDEX)) && defined(ADAT_TX)
-        #if ((8 < SPDIF_TX_INDEX+2+1) && (8 > SPDIF_TX_INDEX)) && defined(SPDIF_TX) || (8 < I2S_CHANS_DAC+1)
+        #if ((8 < SPDIF_TX_INDEX+2+1) && (8 > SPDIF_TX_INDEX)) && (XUA_SPDIF_TX_EN) || (8 < I2S_CHANS_DAC+1)
         "/"
         #endif
         #if(8 - ADAT_TX_INDEX == 1)
@@ -331,7 +331,7 @@
     #if (9 < I2S_CHANS_DAC+1)
         "Analogue 9"
     #endif
-    #if ((9 < SPDIF_TX_INDEX+2+1) && (9 > SPDIF_TX_INDEX)) && defined(SPDIF_TX)
+    #if ((9 < SPDIF_TX_INDEX+2+1) && (9 > SPDIF_TX_INDEX)) && (XUA_SPDIF_TX_EN)
         #if (9 < I2S_CHANS_DAC+1)
         "/"
         #endif
@@ -342,7 +342,7 @@
         #endif
     #endif
     #if ((9 < ADAT_TX_INDEX+8+1) && (9 > ADAT_TX_INDEX)) && defined(ADAT_TX)
-        #if ((9 < SPDIF_TX_INDEX+2+1) && (9 > SPDIF_TX_INDEX)) && defined(SPDIF_TX) || (9 < I2S_CHANS_DAC+1)
+        #if ((9 < SPDIF_TX_INDEX+2+1) && (9 > SPDIF_TX_INDEX)) && (XUA_SPDIF_TX_EN) || (9 < I2S_CHANS_DAC+1)
         "/"
         #endif
         #if(9 - ADAT_TX_INDEX == 1)
@@ -371,7 +371,7 @@
     #if (10 < I2S_CHANS_DAC+1)
         "Analogue 10"
     #endif
-    #if ((10 < SPDIF_TX_INDEX+2+1) && (10 > SPDIF_TX_INDEX)) && defined(SPDIF_TX)
+    #if ((10 < SPDIF_TX_INDEX+2+1) && (10 > SPDIF_TX_INDEX)) && (XUA_SPDIF_TX_EN)
         #if (10 < I2S_CHANS_DAC+1)
         "/"
         #endif
@@ -382,7 +382,7 @@
         #endif
     #endif
     #if ((10 < ADAT_TX_INDEX+8+1) && (10 > ADAT_TX_INDEX)) && defined(ADAT_TX)
-        #if ((10 < SPDIF_TX_INDEX+2+1) && (10 > SPDIF_TX_INDEX)) && defined(SPDIF_TX) || (10 < I2S_CHANS_DAC+1)
+        #if ((10 < SPDIF_TX_INDEX+2+1) && (10 > SPDIF_TX_INDEX)) && (XUA_SPDIF_TX_EN) || (10 < I2S_CHANS_DAC+1)
         "/"
         #endif
         #if(10 - ADAT_TX_INDEX == 1)
@@ -411,7 +411,7 @@
     #if (11 < I2S_CHANS_DAC+1)
         "Analogue 11"
     #endif
-    #if ((11 < SPDIF_TX_INDEX+2+1) && (11 > SPDIF_TX_INDEX)) && defined(SPDIF_TX)
+    #if ((11 < SPDIF_TX_INDEX+2+1) && (11 > SPDIF_TX_INDEX)) && (XUA_SPDIF_TX_EN)
         #if (11 < I2S_CHANS_DAC+1)
         "/"
         #endif
@@ -422,7 +422,7 @@
         #endif
     #endif
     #if ((11 < ADAT_TX_INDEX+8+1) && (11 > ADAT_TX_INDEX)) && defined(ADAT_TX)
-        #if ((11 < SPDIF_TX_INDEX+2+1) && (11 > SPDIF_TX_INDEX)) && defined(SPDIF_TX) || (11 < I2S_CHANS_DAC+1)
+        #if ((11 < SPDIF_TX_INDEX+2+1) && (11 > SPDIF_TX_INDEX)) && (XUA_SPDIF_TX_EN) || (11 < I2S_CHANS_DAC+1)
         "/"
         #endif
         #if(11 - ADAT_TX_INDEX == 1)
@@ -451,7 +451,7 @@
     #if (12 < I2S_CHANS_DAC+1)
         "Analogue 12"
     #endif
-    #if ((12 < SPDIF_TX_INDEX+2+1) && (12 > SPDIF_TX_INDEX)) && defined(SPDIF_TX)
+    #if ((12 < SPDIF_TX_INDEX+2+1) && (12 > SPDIF_TX_INDEX)) && (XUA_SPDIF_TX_EN)
         #if (12 < I2S_CHANS_DAC+1)
         "/"
         #endif
@@ -462,7 +462,7 @@
         #endif
     #endif
     #if ((12 < ADAT_TX_INDEX+8+1) && (12 > ADAT_TX_INDEX)) && defined(ADAT_TX)
-        #if ((12 < SPDIF_TX_INDEX+2+1) && (12 > SPDIF_TX_INDEX)) && defined(SPDIF_TX) || (12 < I2S_CHANS_DAC+1)
+        #if ((12 < SPDIF_TX_INDEX+2+1) && (12 > SPDIF_TX_INDEX)) && (XUA_SPDIF_TX_EN) || (12 < I2S_CHANS_DAC+1)
         "/"
         #endif
         #if(12 - ADAT_TX_INDEX == 1)
@@ -491,7 +491,7 @@
     #if (13 < I2S_CHANS_DAC+1)
         "Analogue 13"
     #endif
-    #if ((13 < SPDIF_TX_INDEX+2+1) && (13 > SPDIF_TX_INDEX)) && defined(SPDIF_TX)
+    #if ((13 < SPDIF_TX_INDEX+2+1) && (13 > SPDIF_TX_INDEX)) && (XUA_SPDIF_TX_EN)
         #if (13 < I2S_CHANS_DAC+1)
         "/"
         #endif
@@ -502,7 +502,7 @@
         #endif
     #endif
     #if ((13 < ADAT_TX_INDEX+8+1) && (13 > ADAT_TX_INDEX)) && defined(ADAT_TX)
-        #if ((13 < SPDIF_TX_INDEX+2+1) && (13 > SPDIF_TX_INDEX)) && defined(SPDIF_TX) || (13 < I2S_CHANS_DAC+1)
+        #if ((13 < SPDIF_TX_INDEX+2+1) && (13 > SPDIF_TX_INDEX)) && (XUA_SPDIF_TX_EN) || (13 < I2S_CHANS_DAC+1)
         "/"
         #endif
         #if(13 - ADAT_TX_INDEX == 1)
@@ -531,7 +531,7 @@
     #if (14 < I2S_CHANS_DAC+1)
         "Analogue 14"
     #endif
-    #if ((14 < SPDIF_TX_INDEX+2+1) && (14 > SPDIF_TX_INDEX)) && defined(SPDIF_TX)
+    #if ((14 < SPDIF_TX_INDEX+2+1) && (14 > SPDIF_TX_INDEX)) && (XUA_SPDIF_TX_EN)
         #if (14 < I2S_CHANS_DAC+1)
         "/"
         #endif
@@ -542,7 +542,7 @@
         #endif
     #endif
     #if ((14 < ADAT_TX_INDEX+8+1) && (14 > ADAT_TX_INDEX)) && defined(ADAT_TX)
-        #if ((14 < SPDIF_TX_INDEX+2+1) && (14 > SPDIF_TX_INDEX)) && defined(SPDIF_TX) || (14 < I2S_CHANS_DAC+1)
+        #if ((14 < SPDIF_TX_INDEX+2+1) && (14 > SPDIF_TX_INDEX)) && (XUA_SPDIF_TX_EN) || (14 < I2S_CHANS_DAC+1)
         "/"
         #endif
         #if(14 - ADAT_TX_INDEX == 1)
@@ -571,7 +571,7 @@
     #if (15 < I2S_CHANS_DAC+1)
         "Analogue 15"
     #endif
-    #if ((15 < SPDIF_TX_INDEX+2+1) && (15 > SPDIF_TX_INDEX)) && defined(SPDIF_TX)
+    #if ((15 < SPDIF_TX_INDEX+2+1) && (15 > SPDIF_TX_INDEX)) && (XUA_SPDIF_TX_EN)
         #if (15 < I2S_CHANS_DAC+1)
         "/"
         #endif
@@ -582,7 +582,7 @@
         #endif
     #endif
     #if ((15 < ADAT_TX_INDEX+8+1) && (15 > ADAT_TX_INDEX)) && defined(ADAT_TX)
-        #if ((15 < SPDIF_TX_INDEX+2+1) && (15 > SPDIF_TX_INDEX)) && defined(SPDIF_TX) || (15 < I2S_CHANS_DAC+1)
+        #if ((15 < SPDIF_TX_INDEX+2+1) && (15 > SPDIF_TX_INDEX)) && (XUA_SPDIF_TX_EN) || (15 < I2S_CHANS_DAC+1)
         "/"
         #endif
         #if(15 - ADAT_TX_INDEX == 1)
@@ -611,7 +611,7 @@
     #if (16 < I2S_CHANS_DAC+1)
         "Analogue 16"
     #endif
-    #if ((16 < SPDIF_TX_INDEX+2+1) && (16 > SPDIF_TX_INDEX)) && defined(SPDIF_TX)
+    #if ((16 < SPDIF_TX_INDEX+2+1) && (16 > SPDIF_TX_INDEX)) && (XUA_SPDIF_TX_EN)
         #if (16 < I2S_CHANS_DAC+1)
         "/"
         #endif
@@ -622,7 +622,7 @@
         #endif
     #endif
     #if ((16 < ADAT_TX_INDEX+8+1) && (16 > ADAT_TX_INDEX)) && defined(ADAT_TX)
-        #if ((16 < SPDIF_TX_INDEX+2+1) && (16 > SPDIF_TX_INDEX)) && defined(SPDIF_TX) || (16 < I2S_CHANS_DAC+1)
+        #if ((16 < SPDIF_TX_INDEX+2+1) && (16 > SPDIF_TX_INDEX)) && (XUA_SPDIF_TX_EN) || (16 < I2S_CHANS_DAC+1)
         "/"
         #endif
         #if(16 - ADAT_TX_INDEX == 1)
@@ -651,7 +651,7 @@
     #if (17 < I2S_CHANS_DAC+1)
         "Analogue 17"
     #endif
-    #if ((17 < SPDIF_TX_INDEX+2+1) && (17 > SPDIF_TX_INDEX)) && defined(SPDIF_TX)
+    #if ((17 < SPDIF_TX_INDEX+2+1) && (17 > SPDIF_TX_INDEX)) && (XUA_SPDIF_TX_EN)
         #if (17 < I2S_CHANS_DAC+1)
         "/"
         #endif
@@ -662,7 +662,7 @@
         #endif
     #endif
     #if ((17 < ADAT_TX_INDEX+8+1) && (17 > ADAT_TX_INDEX)) && defined(ADAT_TX)
-        #if ((17 < SPDIF_TX_INDEX+2+1) && (17 > SPDIF_TX_INDEX)) && defined(SPDIF_TX) || (17 < I2S_CHANS_DAC+1)
+        #if ((17 < SPDIF_TX_INDEX+2+1) && (17 > SPDIF_TX_INDEX)) && (XUA_SPDIF_TX_EN) || (17 < I2S_CHANS_DAC+1)
         "/"
         #endif
         #if(17 - ADAT_TX_INDEX == 1)
@@ -691,7 +691,7 @@
     #if (18 < I2S_CHANS_DAC+1)
         "Analogue 18"
     #endif
-    #if ((18 < SPDIF_TX_INDEX+2+1) && (18 > SPDIF_TX_INDEX)) && defined(SPDIF_TX)
+    #if ((18 < SPDIF_TX_INDEX+2+1) && (18 > SPDIF_TX_INDEX)) && (XUA_SPDIF_TX_EN)
         #if (18 < I2S_CHANS_DAC+1)
         "/"
         #endif
@@ -702,7 +702,7 @@
         #endif
     #endif
     #if ((18 < ADAT_TX_INDEX+8+1) && (18 > ADAT_TX_INDEX)) && defined(ADAT_TX)
-        #if ((18 < SPDIF_TX_INDEX+2+1) && (18 > SPDIF_TX_INDEX)) && defined(SPDIF_TX) || (18 < I2S_CHANS_DAC+1)
+        #if ((18 < SPDIF_TX_INDEX+2+1) && (18 > SPDIF_TX_INDEX)) && (XUA_SPDIF_TX_EN) || (18 < I2S_CHANS_DAC+1)
         "/"
         #endif
         #if(18 - ADAT_TX_INDEX == 1)
@@ -731,7 +731,7 @@
     #if (19 < I2S_CHANS_DAC+1)
         "Analogue 19"
     #endif
-    #if ((19 < SPDIF_TX_INDEX+2+1) && (19 > SPDIF_TX_INDEX)) && defined(SPDIF_TX)
+    #if ((19 < SPDIF_TX_INDEX+2+1) && (19 > SPDIF_TX_INDEX)) && (XUA_SPDIF_TX_EN)
         #if (19 < I2S_CHANS_DAC+1)
         "/"
         #endif
@@ -742,7 +742,7 @@
         #endif
     #endif
     #if ((19 < ADAT_TX_INDEX+8+1) && (19 > ADAT_TX_INDEX)) && defined(ADAT_TX)
-        #if ((19 < SPDIF_TX_INDEX+2+1) && (19 > SPDIF_TX_INDEX)) && defined(SPDIF_TX) || (19 < I2S_CHANS_DAC+1)
+        #if ((19 < SPDIF_TX_INDEX+2+1) && (19 > SPDIF_TX_INDEX)) && (XUA_SPDIF_TX_EN) || (19 < I2S_CHANS_DAC+1)
         "/"
         #endif
         #if(19 - ADAT_TX_INDEX == 1)
@@ -771,7 +771,7 @@
     #if (20 < I2S_CHANS_DAC+1)
         "Analogue 20"
     #endif
-    #if ((20 < SPDIF_TX_INDEX+2+1) && (20 > SPDIF_TX_INDEX)) && defined(SPDIF_TX)
+    #if ((20 < SPDIF_TX_INDEX+2+1) && (20 > SPDIF_TX_INDEX)) && (XUA_SPDIF_TX_EN)
         #if (20 < I2S_CHANS_DAC+1)
         "/"
         #endif
@@ -782,7 +782,7 @@
         #endif
     #endif
     #if ((20 < ADAT_TX_INDEX+8+1) && (20 > ADAT_TX_INDEX)) && defined(ADAT_TX)
-        #if ((20 < SPDIF_TX_INDEX+2+1) && (20 > SPDIF_TX_INDEX)) && defined(SPDIF_TX) || (20 < I2S_CHANS_DAC+1)
+        #if ((20 < SPDIF_TX_INDEX+2+1) && (20 > SPDIF_TX_INDEX)) && (XUA_SPDIF_TX_EN) || (20 < I2S_CHANS_DAC+1)
         "/"
         #endif
         #if(20 - ADAT_TX_INDEX == 1)
@@ -811,7 +811,7 @@
     #if (21 < I2S_CHANS_DAC+1)
         "Analogue 21"
     #endif
-    #if ((21 < SPDIF_TX_INDEX+2+1) && (21 > SPDIF_TX_INDEX)) && defined(SPDIF_TX)
+    #if ((21 < SPDIF_TX_INDEX+2+1) && (21 > SPDIF_TX_INDEX)) && (XUA_SPDIF_TX_EN)
         #if (21 < I2S_CHANS_DAC+1)
         "/"
         #endif
@@ -822,7 +822,7 @@
         #endif
     #endif
     #if ((21 < ADAT_TX_INDEX+8+1) && (21 > ADAT_TX_INDEX)) && defined(ADAT_TX)
-        #if ((21 < SPDIF_TX_INDEX+2+1) && (21 > SPDIF_TX_INDEX)) && defined(SPDIF_TX) || (21 < I2S_CHANS_DAC+1)
+        #if ((21 < SPDIF_TX_INDEX+2+1) && (21 > SPDIF_TX_INDEX)) && (XUA_SPDIF_TX_EN) || (21 < I2S_CHANS_DAC+1)
         "/"
         #endif
         #if(21 - ADAT_TX_INDEX == 1)
@@ -851,7 +851,7 @@
     #if (22 < I2S_CHANS_DAC+1)
         "Analogue 22"
     #endif
-    #if ((22 < SPDIF_TX_INDEX+2+1) && (22 > SPDIF_TX_INDEX)) && defined(SPDIF_TX)
+    #if ((22 < SPDIF_TX_INDEX+2+1) && (22 > SPDIF_TX_INDEX)) && (XUA_SPDIF_TX_EN)
         #if (22 < I2S_CHANS_DAC+1)
         "/"
         #endif
@@ -862,7 +862,7 @@
         #endif
     #endif
     #if ((22 < ADAT_TX_INDEX+8+1) && (22 > ADAT_TX_INDEX)) && defined(ADAT_TX)
-        #if ((22 < SPDIF_TX_INDEX+2+1) && (22 > SPDIF_TX_INDEX)) && defined(SPDIF_TX) || (22 < I2S_CHANS_DAC+1)
+        #if ((22 < SPDIF_TX_INDEX+2+1) && (22 > SPDIF_TX_INDEX)) && (XUA_SPDIF_TX_EN) || (22 < I2S_CHANS_DAC+1)
         "/"
         #endif
         #if(22 - ADAT_TX_INDEX == 1)
@@ -891,7 +891,7 @@
     #if (23 < I2S_CHANS_DAC+1)
         "Analogue 23"
     #endif
-    #if ((23 < SPDIF_TX_INDEX+2+1) && (23 > SPDIF_TX_INDEX)) && defined(SPDIF_TX)
+    #if ((23 < SPDIF_TX_INDEX+2+1) && (23 > SPDIF_TX_INDEX)) && (XUA_SPDIF_TX_EN)
         #if (23 < I2S_CHANS_DAC+1)
         "/"
         #endif
@@ -902,7 +902,7 @@
         #endif
     #endif
     #if ((23 < ADAT_TX_INDEX+8+1) && (23 > ADAT_TX_INDEX)) && defined(ADAT_TX)
-        #if ((23 < SPDIF_TX_INDEX+2+1) && (23 > SPDIF_TX_INDEX)) && defined(SPDIF_TX) || (23 < I2S_CHANS_DAC+1)
+        #if ((23 < SPDIF_TX_INDEX+2+1) && (23 > SPDIF_TX_INDEX)) && (XUA_SPDIF_TX_EN) || (23 < I2S_CHANS_DAC+1)
         "/"
         #endif
         #if(23 - ADAT_TX_INDEX == 1)
@@ -931,7 +931,7 @@
     #if (24 < I2S_CHANS_DAC+1)
         "Analogue 24"
     #endif
-    #if ((24 < SPDIF_TX_INDEX+2+1) && (24 > SPDIF_TX_INDEX)) && defined(SPDIF_TX)
+    #if ((24 < SPDIF_TX_INDEX+2+1) && (24 > SPDIF_TX_INDEX)) && (XUA_SPDIF_TX_EN)
         #if (24 < I2S_CHANS_DAC+1)
         "/"
         #endif
@@ -942,7 +942,7 @@
         #endif
     #endif
     #if ((24 < ADAT_TX_INDEX+8+1) && (24 > ADAT_TX_INDEX)) && defined(ADAT_TX)
-        #if ((24 < SPDIF_TX_INDEX+2+1) && (24 > SPDIF_TX_INDEX)) && defined(SPDIF_TX) || (24 < I2S_CHANS_DAC+1)
+        #if ((24 < SPDIF_TX_INDEX+2+1) && (24 > SPDIF_TX_INDEX)) && (XUA_SPDIF_TX_EN) || (24 < I2S_CHANS_DAC+1)
         "/"
         #endif
         #if(24 - ADAT_TX_INDEX == 1)
@@ -971,7 +971,7 @@
     #if (25 < I2S_CHANS_DAC+1)
         "Analogue 25"
     #endif
-    #if ((25 < SPDIF_TX_INDEX+2+1) && (25 > SPDIF_TX_INDEX)) && defined(SPDIF_TX)
+    #if ((25 < SPDIF_TX_INDEX+2+1) && (25 > SPDIF_TX_INDEX)) && (XUA_SPDIF_TX_EN)
         #if (25 < I2S_CHANS_DAC+1)
         "/"
         #endif
@@ -982,7 +982,7 @@
         #endif
     #endif
     #if ((25 < ADAT_TX_INDEX+8+1) && (25 > ADAT_TX_INDEX)) && defined(ADAT_TX)
-        #if ((25 < SPDIF_TX_INDEX+2+1) && (25 > SPDIF_TX_INDEX)) && defined(SPDIF_TX) || (25 < I2S_CHANS_DAC+1)
+        #if ((25 < SPDIF_TX_INDEX+2+1) && (25 > SPDIF_TX_INDEX)) && (XUA_SPDIF_TX_EN) || (25 < I2S_CHANS_DAC+1)
         "/"
         #endif
         #if(25 - ADAT_TX_INDEX == 1)
@@ -1011,7 +1011,7 @@
     #if (26 < I2S_CHANS_DAC+1)
         "Analogue 26"
     #endif
-    #if ((26 < SPDIF_TX_INDEX+2+1) && (26 > SPDIF_TX_INDEX)) && defined(SPDIF_TX)
+    #if ((26 < SPDIF_TX_INDEX+2+1) && (26 > SPDIF_TX_INDEX)) && (XUA_SPDIF_TX_EN)
         #if (26 < I2S_CHANS_DAC+1)
         "/"
         #endif
@@ -1022,7 +1022,7 @@
         #endif
     #endif
     #if ((26 < ADAT_TX_INDEX+8+1) && (26 > ADAT_TX_INDEX)) && defined(ADAT_TX)
-        #if ((26 < SPDIF_TX_INDEX+2+1) && (26 > SPDIF_TX_INDEX)) && defined(SPDIF_TX) || (26 < I2S_CHANS_DAC+1)
+        #if ((26 < SPDIF_TX_INDEX+2+1) && (26 > SPDIF_TX_INDEX)) && (XUA_SPDIF_TX_EN) || (26 < I2S_CHANS_DAC+1)
         "/"
         #endif
         #if(26 - ADAT_TX_INDEX == 1)
@@ -1051,7 +1051,7 @@
     #if (27 < I2S_CHANS_DAC+1)
         "Analogue 27"
     #endif
-    #if ((27 < SPDIF_TX_INDEX+2+1) && (27 > SPDIF_TX_INDEX)) && defined(SPDIF_TX)
+    #if ((27 < SPDIF_TX_INDEX+2+1) && (27 > SPDIF_TX_INDEX)) && (XUA_SPDIF_TX_EN)
         #if (27 < I2S_CHANS_DAC+1)
         "/"
         #endif
@@ -1062,7 +1062,7 @@
         #endif
     #endif
     #if ((27 < ADAT_TX_INDEX+8+1) && (27 > ADAT_TX_INDEX)) && defined(ADAT_TX)
-        #if ((27 < SPDIF_TX_INDEX+2+1) && (27 > SPDIF_TX_INDEX)) && defined(SPDIF_TX) || (27 < I2S_CHANS_DAC+1)
+        #if ((27 < SPDIF_TX_INDEX+2+1) && (27 > SPDIF_TX_INDEX)) && (XUA_SPDIF_TX_EN) || (27 < I2S_CHANS_DAC+1)
         "/"
         #endif
         #if(27 - ADAT_TX_INDEX == 1)
@@ -1091,7 +1091,7 @@
     #if (28 < I2S_CHANS_DAC+1)
         "Analogue 28"
     #endif
-    #if ((28 < SPDIF_TX_INDEX+2+1) && (28 > SPDIF_TX_INDEX)) && defined(SPDIF_TX)
+    #if ((28 < SPDIF_TX_INDEX+2+1) && (28 > SPDIF_TX_INDEX)) && (XUA_SPDIF_TX_EN)
         #if (28 < I2S_CHANS_DAC+1)
         "/"
         #endif
@@ -1102,7 +1102,7 @@
         #endif
     #endif
     #if ((28 < ADAT_TX_INDEX+8+1) && (28 > ADAT_TX_INDEX)) && defined(ADAT_TX)
-        #if ((28 < SPDIF_TX_INDEX+2+1) && (28 > SPDIF_TX_INDEX)) && defined(SPDIF_TX) || (28 < I2S_CHANS_DAC+1)
+        #if ((28 < SPDIF_TX_INDEX+2+1) && (28 > SPDIF_TX_INDEX)) && (XUA_SPDIF_TX_EN) || (28 < I2S_CHANS_DAC+1)
         "/"
         #endif
         #if(28 - ADAT_TX_INDEX == 1)
@@ -1131,7 +1131,7 @@
     #if (29 < I2S_CHANS_DAC+1)
         "Analogue 29"
     #endif
-    #if ((29 < SPDIF_TX_INDEX+2+1) && (29 > SPDIF_TX_INDEX)) && defined(SPDIF_TX)
+    #if ((29 < SPDIF_TX_INDEX+2+1) && (29 > SPDIF_TX_INDEX)) && (XUA_SPDIF_TX_EN)
         #if (29 < I2S_CHANS_DAC+1)
         "/"
         #endif
@@ -1142,7 +1142,7 @@
         #endif
     #endif
     #if ((29 < ADAT_TX_INDEX+8+1) && (29 > ADAT_TX_INDEX)) && defined(ADAT_TX)
-        #if ((29 < SPDIF_TX_INDEX+2+1) && (29 > SPDIF_TX_INDEX)) && defined(SPDIF_TX) || (29 < I2S_CHANS_DAC+1)
+        #if ((29 < SPDIF_TX_INDEX+2+1) && (29 > SPDIF_TX_INDEX)) && (XUA_SPDIF_TX_EN) || (29 < I2S_CHANS_DAC+1)
         "/"
         #endif
         #if(29 - ADAT_TX_INDEX == 1)
@@ -1171,7 +1171,7 @@
     #if (30 < I2S_CHANS_DAC+1)
         "Analogue 30"
     #endif
-    #if ((30 < SPDIF_TX_INDEX+2+1) && (30 > SPDIF_TX_INDEX)) && defined(SPDIF_TX)
+    #if ((30 < SPDIF_TX_INDEX+2+1) && (30 > SPDIF_TX_INDEX)) && (XUA_SPDIF_TX_EN)
         #if (30 < I2S_CHANS_DAC+1)
         "/"
         #endif
@@ -1182,7 +1182,7 @@
         #endif
     #endif
     #if ((30 < ADAT_TX_INDEX+8+1) && (30 > ADAT_TX_INDEX)) && defined(ADAT_TX)
-        #if ((30 < SPDIF_TX_INDEX+2+1) && (30 > SPDIF_TX_INDEX)) && defined(SPDIF_TX) || (30 < I2S_CHANS_DAC+1)
+        #if ((30 < SPDIF_TX_INDEX+2+1) && (30 > SPDIF_TX_INDEX)) && (XUA_SPDIF_TX_EN) || (30 < I2S_CHANS_DAC+1)
         "/"
         #endif
         #if(30 - ADAT_TX_INDEX == 1)
@@ -1211,7 +1211,7 @@
     #if (31 < I2S_CHANS_DAC+1)
         "Analogue 31"
     #endif
-    #if ((31 < SPDIF_TX_INDEX+2+1) && (31 > SPDIF_TX_INDEX)) && defined(SPDIF_TX)
+    #if ((31 < SPDIF_TX_INDEX+2+1) && (31 > SPDIF_TX_INDEX)) && (XUA_SPDIF_TX_EN)
         #if (31 < I2S_CHANS_DAC+1)
         "/"
         #endif
@@ -1222,7 +1222,7 @@
         #endif
     #endif
     #if ((31 < ADAT_TX_INDEX+8+1) && (31 > ADAT_TX_INDEX)) && defined(ADAT_TX)
-        #if ((31 < SPDIF_TX_INDEX+2+1) && (31 > SPDIF_TX_INDEX)) && defined(SPDIF_TX) || (31 < I2S_CHANS_DAC+1)
+        #if ((31 < SPDIF_TX_INDEX+2+1) && (31 > SPDIF_TX_INDEX)) && (XUA_SPDIF_TX_EN) || (31 < I2S_CHANS_DAC+1)
         "/"
         #endif
         #if(31 - ADAT_TX_INDEX == 1)
@@ -1251,7 +1251,7 @@
     #if (32 < I2S_CHANS_DAC+1)
         "Analogue 32"
     #endif
-    #if ((32 < SPDIF_TX_INDEX+2+1) && (32 > SPDIF_TX_INDEX)) && defined(SPDIF_TX)
+    #if ((32 < SPDIF_TX_INDEX+2+1) && (32 > SPDIF_TX_INDEX)) && (XUA_SPDIF_TX_EN)
         #if (32 < I2S_CHANS_DAC+1)
         "/"
         #endif
@@ -1262,7 +1262,7 @@
         #endif
     #endif
     #if ((32 < ADAT_TX_INDEX+8+1) && (32 > ADAT_TX_INDEX)) && defined(ADAT_TX)
-        #if ((32 < SPDIF_TX_INDEX+2+1) && (32 > SPDIF_TX_INDEX)) && defined(SPDIF_TX) || (32 < I2S_CHANS_DAC+1)
+        #if ((32 < SPDIF_TX_INDEX+2+1) && (32 > SPDIF_TX_INDEX)) && (XUA_SPDIF_TX_EN) || (32 < I2S_CHANS_DAC+1)
         "/"
         #endif
         #if(32 - ADAT_TX_INDEX == 1)
@@ -1294,7 +1294,7 @@
     #if (1 < I2S_CHANS_ADC+1)
         "Analogue 1"
     #endif
-    #if ((1 < SPDIF_RX_INDEX+2+1) && (1 > SPDIF_RX_INDEX)) && defined(SPDIF_RX)
+    #if ((1 < SPDIF_RX_INDEX+2+1) && (1 > SPDIF_RX_INDEX)) && (XUA_SPDIF_RX_EN)
         #if (1 < I2S_CHANS_ADC+1)
         "/"
         #endif
@@ -1305,7 +1305,7 @@
         #endif
     #endif
     #if ((1 < ADAT_RX_INDEX+8+1) && (1 > ADAT_RX_INDEX)) && defined(ADAT_RX)
-        #if ((1 < SPDIF_RX_INDEX+2+1) && (1 > SPDIF_RX_INDEX)) && defined(SPDIF_RX) || (1 < I2S_CHANS_ADC+1)
+        #if ((1 < SPDIF_RX_INDEX+2+1) && (1 > SPDIF_RX_INDEX)) && (XUA_SPDIF_RX_EN) || (1 < I2S_CHANS_ADC+1)
         "/"
         #endif
         #if(1 - ADAT_TX_INDEX == 1)
@@ -1334,7 +1334,7 @@
     #if (2 < I2S_CHANS_ADC+1)
         "Analogue 2"
     #endif
-    #if ((2 < SPDIF_RX_INDEX+2+1) && (2 > SPDIF_RX_INDEX)) && defined(SPDIF_RX)
+    #if ((2 < SPDIF_RX_INDEX+2+1) && (2 > SPDIF_RX_INDEX)) && (XUA_SPDIF_RX_EN)
         #if (2 < I2S_CHANS_ADC+1)
         "/"
         #endif
@@ -1345,7 +1345,7 @@
         #endif
     #endif
     #if ((2 < ADAT_RX_INDEX+8+1) && (2 > ADAT_RX_INDEX)) && defined(ADAT_RX)
-        #if ((2 < SPDIF_RX_INDEX+2+1) && (2 > SPDIF_RX_INDEX)) && defined(SPDIF_RX) || (2 < I2S_CHANS_ADC+1)
+        #if ((2 < SPDIF_RX_INDEX+2+1) && (2 > SPDIF_RX_INDEX)) && (XUA_SPDIF_RX_EN) || (2 < I2S_CHANS_ADC+1)
         "/"
         #endif
         #if(2 - ADAT_TX_INDEX == 1)
@@ -1374,7 +1374,7 @@
     #if (3 < I2S_CHANS_ADC+1)
         "Analogue 3"
     #endif
-    #if ((3 < SPDIF_RX_INDEX+2+1) && (3 > SPDIF_RX_INDEX)) && defined(SPDIF_RX)
+    #if ((3 < SPDIF_RX_INDEX+2+1) && (3 > SPDIF_RX_INDEX)) && (XUA_SPDIF_RX_EN)
         #if (3 < I2S_CHANS_ADC+1)
         "/"
         #endif
@@ -1385,7 +1385,7 @@
         #endif
     #endif
     #if ((3 < ADAT_RX_INDEX+8+1) && (3 > ADAT_RX_INDEX)) && defined(ADAT_RX)
-        #if ((3 < SPDIF_RX_INDEX+2+1) && (3 > SPDIF_RX_INDEX)) && defined(SPDIF_RX) || (3 < I2S_CHANS_ADC+1)
+        #if ((3 < SPDIF_RX_INDEX+2+1) && (3 > SPDIF_RX_INDEX)) && (XUA_SPDIF_RX_EN) || (3 < I2S_CHANS_ADC+1)
         "/"
         #endif
         #if(3 - ADAT_TX_INDEX == 1)
@@ -1414,7 +1414,7 @@
     #if (4 < I2S_CHANS_ADC+1)
         "Analogue 4"
     #endif
-    #if ((4 < SPDIF_RX_INDEX+2+1) && (4 > SPDIF_RX_INDEX)) && defined(SPDIF_RX)
+    #if ((4 < SPDIF_RX_INDEX+2+1) && (4 > SPDIF_RX_INDEX)) && (XUA_SPDIF_RX_EN)
         #if (4 < I2S_CHANS_ADC+1)
         "/"
         #endif
@@ -1425,7 +1425,7 @@
         #endif
     #endif
     #if ((4 < ADAT_RX_INDEX+8+1) && (4 > ADAT_RX_INDEX)) && defined(ADAT_RX)
-        #if ((4 < SPDIF_RX_INDEX+2+1) && (4 > SPDIF_RX_INDEX)) && defined(SPDIF_RX) || (4 < I2S_CHANS_ADC+1)
+        #if ((4 < SPDIF_RX_INDEX+2+1) && (4 > SPDIF_RX_INDEX)) && (XUA_SPDIF_RX_EN) || (4 < I2S_CHANS_ADC+1)
         "/"
         #endif
         #if(4 - ADAT_TX_INDEX == 1)
@@ -1454,7 +1454,7 @@
     #if (5 < I2S_CHANS_ADC+1)
         "Analogue 5"
     #endif
-    #if ((5 < SPDIF_RX_INDEX+2+1) && (5 > SPDIF_RX_INDEX)) && defined(SPDIF_RX)
+    #if ((5 < SPDIF_RX_INDEX+2+1) && (5 > SPDIF_RX_INDEX)) && (XUA_SPDIF_RX_EN)
         #if (5 < I2S_CHANS_ADC+1)
         "/"
         #endif
@@ -1465,7 +1465,7 @@
         #endif
     #endif
     #if ((5 < ADAT_RX_INDEX+8+1) && (5 > ADAT_RX_INDEX)) && defined(ADAT_RX)
-        #if ((5 < SPDIF_RX_INDEX+2+1) && (5 > SPDIF_RX_INDEX)) && defined(SPDIF_RX) || (5 < I2S_CHANS_ADC+1)
+        #if ((5 < SPDIF_RX_INDEX+2+1) && (5 > SPDIF_RX_INDEX)) && (XUA_SPDIF_RX_EN) || (5 < I2S_CHANS_ADC+1)
         "/"
         #endif
         #if(5 - ADAT_TX_INDEX == 1)
@@ -1494,7 +1494,7 @@
     #if (6 < I2S_CHANS_ADC+1)
         "Analogue 6"
     #endif
-    #if ((6 < SPDIF_RX_INDEX+2+1) && (6 > SPDIF_RX_INDEX)) && defined(SPDIF_RX)
+    #if ((6 < SPDIF_RX_INDEX+2+1) && (6 > SPDIF_RX_INDEX)) && (XUA_SPDIF_RX_EN)
         #if (6 < I2S_CHANS_ADC+1)
         "/"
         #endif
@@ -1505,7 +1505,7 @@
         #endif
     #endif
     #if ((6 < ADAT_RX_INDEX+8+1) && (6 > ADAT_RX_INDEX)) && defined(ADAT_RX)
-        #if ((6 < SPDIF_RX_INDEX+2+1) && (6 > SPDIF_RX_INDEX)) && defined(SPDIF_RX) || (6 < I2S_CHANS_ADC+1)
+        #if ((6 < SPDIF_RX_INDEX+2+1) && (6 > SPDIF_RX_INDEX)) && (XUA_SPDIF_RX_EN) || (6 < I2S_CHANS_ADC+1)
         "/"
         #endif
         #if(6 - ADAT_TX_INDEX == 1)
@@ -1534,7 +1534,7 @@
     #if (7 < I2S_CHANS_ADC+1)
         "Analogue 7"
     #endif
-    #if ((7 < SPDIF_RX_INDEX+2+1) && (7 > SPDIF_RX_INDEX)) && defined(SPDIF_RX)
+    #if ((7 < SPDIF_RX_INDEX+2+1) && (7 > SPDIF_RX_INDEX)) && (XUA_SPDIF_RX_EN)
         #if (7 < I2S_CHANS_ADC+1)
         "/"
         #endif
@@ -1545,7 +1545,7 @@
         #endif
     #endif
     #if ((7 < ADAT_RX_INDEX+8+1) && (7 > ADAT_RX_INDEX)) && defined(ADAT_RX)
-        #if ((7 < SPDIF_RX_INDEX+2+1) && (7 > SPDIF_RX_INDEX)) && defined(SPDIF_RX) || (7 < I2S_CHANS_ADC+1)
+        #if ((7 < SPDIF_RX_INDEX+2+1) && (7 > SPDIF_RX_INDEX)) && (XUA_SPDIF_RX_EN) || (7 < I2S_CHANS_ADC+1)
         "/"
         #endif
         #if(7 - ADAT_TX_INDEX == 1)
@@ -1574,7 +1574,7 @@
     #if (8 < I2S_CHANS_ADC+1)
         "Analogue 8"
     #endif
-    #if ((8 < SPDIF_RX_INDEX+2+1) && (8 > SPDIF_RX_INDEX)) && defined(SPDIF_RX)
+    #if ((8 < SPDIF_RX_INDEX+2+1) && (8 > SPDIF_RX_INDEX)) && (XUA_SPDIF_RX_EN)
         #if (8 < I2S_CHANS_ADC+1)
         "/"
         #endif
@@ -1585,7 +1585,7 @@
         #endif
     #endif
     #if ((8 < ADAT_RX_INDEX+8+1) && (8 > ADAT_RX_INDEX)) && defined(ADAT_RX)
-        #if ((8 < SPDIF_RX_INDEX+2+1) && (8 > SPDIF_RX_INDEX)) && defined(SPDIF_RX) || (8 < I2S_CHANS_ADC+1)
+        #if ((8 < SPDIF_RX_INDEX+2+1) && (8 > SPDIF_RX_INDEX)) && (XUA_SPDIF_RX_EN) || (8 < I2S_CHANS_ADC+1)
         "/"
         #endif
         #if(8 - ADAT_TX_INDEX == 1)
@@ -1614,7 +1614,7 @@
     #if (9 < I2S_CHANS_ADC+1)
         "Analogue 9"
     #endif
-    #if ((9 < SPDIF_RX_INDEX+2+1) && (9 > SPDIF_RX_INDEX)) && defined(SPDIF_RX)
+    #if ((9 < SPDIF_RX_INDEX+2+1) && (9 > SPDIF_RX_INDEX)) && (XUA_SPDIF_RX_EN)
         #if (9 < I2S_CHANS_ADC+1)
         "/"
         #endif
@@ -1625,7 +1625,7 @@
         #endif
     #endif
     #if ((9 < ADAT_RX_INDEX+8+1) && (9 > ADAT_RX_INDEX)) && defined(ADAT_RX)
-        #if ((9 < SPDIF_RX_INDEX+2+1) && (9 > SPDIF_RX_INDEX)) && defined(SPDIF_RX) || (9 < I2S_CHANS_ADC+1)
+        #if ((9 < SPDIF_RX_INDEX+2+1) && (9 > SPDIF_RX_INDEX)) && (XUA_SPDIF_RX_EN) || (9 < I2S_CHANS_ADC+1)
         "/"
         #endif
         #if(9 - ADAT_TX_INDEX == 1)
@@ -1654,7 +1654,7 @@
     #if (10 < I2S_CHANS_ADC+1)
         "Analogue 10"
     #endif
-    #if ((10 < SPDIF_RX_INDEX+2+1) && (10 > SPDIF_RX_INDEX)) && defined(SPDIF_RX)
+    #if ((10 < SPDIF_RX_INDEX+2+1) && (10 > SPDIF_RX_INDEX)) && (XUA_SPDIF_RX_EN)
         #if (10 < I2S_CHANS_ADC+1)
         "/"
         #endif
@@ -1665,7 +1665,7 @@
         #endif
     #endif
     #if ((10 < ADAT_RX_INDEX+8+1) && (10 > ADAT_RX_INDEX)) && defined(ADAT_RX)
-        #if ((10 < SPDIF_RX_INDEX+2+1) && (10 > SPDIF_RX_INDEX)) && defined(SPDIF_RX) || (10 < I2S_CHANS_ADC+1)
+        #if ((10 < SPDIF_RX_INDEX+2+1) && (10 > SPDIF_RX_INDEX)) && (XUA_SPDIF_RX_EN) || (10 < I2S_CHANS_ADC+1)
         "/"
         #endif
         #if(10 - ADAT_TX_INDEX == 1)
@@ -1694,7 +1694,7 @@
     #if (11 < I2S_CHANS_ADC+1)
         "Analogue 11"
     #endif
-    #if ((11 < SPDIF_RX_INDEX+2+1) && (11 > SPDIF_RX_INDEX)) && defined(SPDIF_RX)
+    #if ((11 < SPDIF_RX_INDEX+2+1) && (11 > SPDIF_RX_INDEX)) && (XUA_SPDIF_RX_EN)
         #if (11 < I2S_CHANS_ADC+1)
         "/"
         #endif
@@ -1705,7 +1705,7 @@
         #endif
     #endif
     #if ((11 < ADAT_RX_INDEX+8+1) && (11 > ADAT_RX_INDEX)) && defined(ADAT_RX)
-        #if ((11 < SPDIF_RX_INDEX+2+1) && (11 > SPDIF_RX_INDEX)) && defined(SPDIF_RX) || (11 < I2S_CHANS_ADC+1)
+        #if ((11 < SPDIF_RX_INDEX+2+1) && (11 > SPDIF_RX_INDEX)) && (XUA_SPDIF_RX_EN) || (11 < I2S_CHANS_ADC+1)
         "/"
         #endif
         #if(11 - ADAT_TX_INDEX == 1)
@@ -1734,7 +1734,7 @@
     #if (12 < I2S_CHANS_ADC+1)
         "Analogue 12"
     #endif
-    #if ((12 < SPDIF_RX_INDEX+2+1) && (12 > SPDIF_RX_INDEX)) && defined(SPDIF_RX)
+    #if ((12 < SPDIF_RX_INDEX+2+1) && (12 > SPDIF_RX_INDEX)) && (XUA_SPDIF_RX_EN)
         #if (12 < I2S_CHANS_ADC+1)
         "/"
         #endif
@@ -1745,7 +1745,7 @@
         #endif
     #endif
     #if ((12 < ADAT_RX_INDEX+8+1) && (12 > ADAT_RX_INDEX)) && defined(ADAT_RX)
-        #if ((12 < SPDIF_RX_INDEX+2+1) && (12 > SPDIF_RX_INDEX)) && defined(SPDIF_RX) || (12 < I2S_CHANS_ADC+1)
+        #if ((12 < SPDIF_RX_INDEX+2+1) && (12 > SPDIF_RX_INDEX)) && (XUA_SPDIF_RX_EN) || (12 < I2S_CHANS_ADC+1)
         "/"
         #endif
         #if(12 - ADAT_TX_INDEX == 1)
@@ -1774,7 +1774,7 @@
     #if (13 < I2S_CHANS_ADC+1)
         "Analogue 13"
     #endif
-    #if ((13 < SPDIF_RX_INDEX+2+1) && (13 > SPDIF_RX_INDEX)) && defined(SPDIF_RX)
+    #if ((13 < SPDIF_RX_INDEX+2+1) && (13 > SPDIF_RX_INDEX)) && (XUA_SPDIF_RX_EN)
         #if (13 < I2S_CHANS_ADC+1)
         "/"
         #endif
@@ -1785,7 +1785,7 @@
         #endif
     #endif
     #if ((13 < ADAT_RX_INDEX+8+1) && (13 > ADAT_RX_INDEX)) && defined(ADAT_RX)
-        #if ((13 < SPDIF_RX_INDEX+2+1) && (13 > SPDIF_RX_INDEX)) && defined(SPDIF_RX) || (13 < I2S_CHANS_ADC+1)
+        #if ((13 < SPDIF_RX_INDEX+2+1) && (13 > SPDIF_RX_INDEX)) && (XUA_SPDIF_RX_EN) || (13 < I2S_CHANS_ADC+1)
         "/"
         #endif
         #if(13 - ADAT_TX_INDEX == 1)
@@ -1814,7 +1814,7 @@
     #if (14 < I2S_CHANS_ADC+1)
         "Analogue 14"
     #endif
-    #if ((14 < SPDIF_RX_INDEX+2+1) && (14 > SPDIF_RX_INDEX)) && defined(SPDIF_RX)
+    #if ((14 < SPDIF_RX_INDEX+2+1) && (14 > SPDIF_RX_INDEX)) && (XUA_SPDIF_RX_EN)
         #if (14 < I2S_CHANS_ADC+1)
         "/"
         #endif
@@ -1825,7 +1825,7 @@
         #endif
     #endif
     #if ((14 < ADAT_RX_INDEX+8+1) && (14 > ADAT_RX_INDEX)) && defined(ADAT_RX)
-        #if ((14 < SPDIF_RX_INDEX+2+1) && (14 > SPDIF_RX_INDEX)) && defined(SPDIF_RX) || (14 < I2S_CHANS_ADC+1)
+        #if ((14 < SPDIF_RX_INDEX+2+1) && (14 > SPDIF_RX_INDEX)) && (XUA_SPDIF_RX_EN) || (14 < I2S_CHANS_ADC+1)
         "/"
         #endif
         #if(14 - ADAT_TX_INDEX == 1)
@@ -1854,7 +1854,7 @@
     #if (15 < I2S_CHANS_ADC+1)
         "Analogue 15"
     #endif
-    #if ((15 < SPDIF_RX_INDEX+2+1) && (15 > SPDIF_RX_INDEX)) && defined(SPDIF_RX)
+    #if ((15 < SPDIF_RX_INDEX+2+1) && (15 > SPDIF_RX_INDEX)) && (XUA_SPDIF_RX_EN)
         #if (15 < I2S_CHANS_ADC+1)
         "/"
         #endif
@@ -1865,7 +1865,7 @@
         #endif
     #endif
     #if ((15 < ADAT_RX_INDEX+8+1) && (15 > ADAT_RX_INDEX)) && defined(ADAT_RX)
-        #if ((15 < SPDIF_RX_INDEX+2+1) && (15 > SPDIF_RX_INDEX)) && defined(SPDIF_RX) || (15 < I2S_CHANS_ADC+1)
+        #if ((15 < SPDIF_RX_INDEX+2+1) && (15 > SPDIF_RX_INDEX)) && (XUA_SPDIF_RX_EN) || (15 < I2S_CHANS_ADC+1)
         "/"
         #endif
         #if(15 - ADAT_TX_INDEX == 1)
@@ -1894,7 +1894,7 @@
     #if (16 < I2S_CHANS_ADC+1)
         "Analogue 16"
     #endif
-    #if ((16 < SPDIF_RX_INDEX+2+1) && (16 > SPDIF_RX_INDEX)) && defined(SPDIF_RX)
+    #if ((16 < SPDIF_RX_INDEX+2+1) && (16 > SPDIF_RX_INDEX)) && (XUA_SPDIF_RX_EN)
         #if (16 < I2S_CHANS_ADC+1)
         "/"
         #endif
@@ -1905,7 +1905,7 @@
         #endif
     #endif
     #if ((16 < ADAT_RX_INDEX+8+1) && (16 > ADAT_RX_INDEX)) && defined(ADAT_RX)
-        #if ((16 < SPDIF_RX_INDEX+2+1) && (16 > SPDIF_RX_INDEX)) && defined(SPDIF_RX) || (16 < I2S_CHANS_ADC+1)
+        #if ((16 < SPDIF_RX_INDEX+2+1) && (16 > SPDIF_RX_INDEX)) && (XUA_SPDIF_RX_EN) || (16 < I2S_CHANS_ADC+1)
         "/"
         #endif
         #if(16 - ADAT_TX_INDEX == 1)
@@ -1934,7 +1934,7 @@
     #if (17 < I2S_CHANS_ADC+1)
         "Analogue 17"
     #endif
-    #if ((17 < SPDIF_RX_INDEX+2+1) && (17 > SPDIF_RX_INDEX)) && defined(SPDIF_RX)
+    #if ((17 < SPDIF_RX_INDEX+2+1) && (17 > SPDIF_RX_INDEX)) && (XUA_SPDIF_RX_EN)
         #if (17 < I2S_CHANS_ADC+1)
         "/"
         #endif
@@ -1945,7 +1945,7 @@
         #endif
     #endif
     #if ((17 < ADAT_RX_INDEX+8+1) && (17 > ADAT_RX_INDEX)) && defined(ADAT_RX)
-        #if ((17 < SPDIF_RX_INDEX+2+1) && (17 > SPDIF_RX_INDEX)) && defined(SPDIF_RX) || (17 < I2S_CHANS_ADC+1)
+        #if ((17 < SPDIF_RX_INDEX+2+1) && (17 > SPDIF_RX_INDEX)) && (XUA_SPDIF_RX_EN) || (17 < I2S_CHANS_ADC+1)
         "/"
         #endif
         #if(17 - ADAT_TX_INDEX == 1)
@@ -1974,7 +1974,7 @@
     #if (18 < I2S_CHANS_ADC+1)
         "Analogue 18"
     #endif
-    #if ((18 < SPDIF_RX_INDEX+2+1) && (18 > SPDIF_RX_INDEX)) && defined(SPDIF_RX)
+    #if ((18 < SPDIF_RX_INDEX+2+1) && (18 > SPDIF_RX_INDEX)) && (XUA_SPDIF_RX_EN)
         #if (18 < I2S_CHANS_ADC+1)
         "/"
         #endif
@@ -1985,7 +1985,7 @@
         #endif
     #endif
     #if ((18 < ADAT_RX_INDEX+8+1) && (18 > ADAT_RX_INDEX)) && defined(ADAT_RX)
-        #if ((18 < SPDIF_RX_INDEX+2+1) && (18 > SPDIF_RX_INDEX)) && defined(SPDIF_RX) || (18 < I2S_CHANS_ADC+1)
+        #if ((18 < SPDIF_RX_INDEX+2+1) && (18 > SPDIF_RX_INDEX)) && (XUA_SPDIF_RX_EN) || (18 < I2S_CHANS_ADC+1)
         "/"
         #endif
         #if(18 - ADAT_TX_INDEX == 1)
@@ -2014,7 +2014,7 @@
     #if (19 < I2S_CHANS_ADC+1)
         "Analogue 19"
     #endif
-    #if ((19 < SPDIF_RX_INDEX+2+1) && (19 > SPDIF_RX_INDEX)) && defined(SPDIF_RX)
+    #if ((19 < SPDIF_RX_INDEX+2+1) && (19 > SPDIF_RX_INDEX)) && (XUA_SPDIF_RX_EN)
         #if (19 < I2S_CHANS_ADC+1)
         "/"
         #endif
@@ -2025,7 +2025,7 @@
         #endif
     #endif
     #if ((19 < ADAT_RX_INDEX+8+1) && (19 > ADAT_RX_INDEX)) && defined(ADAT_RX)
-        #if ((19 < SPDIF_RX_INDEX+2+1) && (19 > SPDIF_RX_INDEX)) && defined(SPDIF_RX) || (19 < I2S_CHANS_ADC+1)
+        #if ((19 < SPDIF_RX_INDEX+2+1) && (19 > SPDIF_RX_INDEX)) && (XUA_SPDIF_RX_EN) || (19 < I2S_CHANS_ADC+1)
         "/"
         #endif
         #if(19 - ADAT_TX_INDEX == 1)
@@ -2054,7 +2054,7 @@
     #if (20 < I2S_CHANS_ADC+1)
         "Analogue 20"
     #endif
-    #if ((20 < SPDIF_RX_INDEX+2+1) && (20 > SPDIF_RX_INDEX)) && defined(SPDIF_RX)
+    #if ((20 < SPDIF_RX_INDEX+2+1) && (20 > SPDIF_RX_INDEX)) && (XUA_SPDIF_RX_EN)
         #if (20 < I2S_CHANS_ADC+1)
         "/"
         #endif
@@ -2065,7 +2065,7 @@
         #endif
     #endif
     #if ((20 < ADAT_RX_INDEX+8+1) && (20 > ADAT_RX_INDEX)) && defined(ADAT_RX)
-        #if ((20 < SPDIF_RX_INDEX+2+1) && (20 > SPDIF_RX_INDEX)) && defined(SPDIF_RX) || (20 < I2S_CHANS_ADC+1)
+        #if ((20 < SPDIF_RX_INDEX+2+1) && (20 > SPDIF_RX_INDEX)) && (XUA_SPDIF_RX_EN) || (20 < I2S_CHANS_ADC+1)
         "/"
         #endif
         #if(20 - ADAT_TX_INDEX == 1)
@@ -2094,7 +2094,7 @@
     #if (21 < I2S_CHANS_ADC+1)
         "Analogue 21"
     #endif
-    #if ((21 < SPDIF_RX_INDEX+2+1) && (21 > SPDIF_RX_INDEX)) && defined(SPDIF_RX)
+    #if ((21 < SPDIF_RX_INDEX+2+1) && (21 > SPDIF_RX_INDEX)) && (XUA_SPDIF_RX_EN)
         #if (21 < I2S_CHANS_ADC+1)
         "/"
         #endif
@@ -2105,7 +2105,7 @@
         #endif
     #endif
     #if ((21 < ADAT_RX_INDEX+8+1) && (21 > ADAT_RX_INDEX)) && defined(ADAT_RX)
-        #if ((21 < SPDIF_RX_INDEX+2+1) && (21 > SPDIF_RX_INDEX)) && defined(SPDIF_RX) || (21 < I2S_CHANS_ADC+1)
+        #if ((21 < SPDIF_RX_INDEX+2+1) && (21 > SPDIF_RX_INDEX)) && (XUA_SPDIF_RX_EN) || (21 < I2S_CHANS_ADC+1)
         "/"
         #endif
         #if(21 - ADAT_TX_INDEX == 1)
@@ -2134,7 +2134,7 @@
     #if (22 < I2S_CHANS_ADC+1)
         "Analogue 22"
     #endif
-    #if ((22 < SPDIF_RX_INDEX+2+1) && (22 > SPDIF_RX_INDEX)) && defined(SPDIF_RX)
+    #if ((22 < SPDIF_RX_INDEX+2+1) && (22 > SPDIF_RX_INDEX)) && (XUA_SPDIF_RX_EN)
         #if (22 < I2S_CHANS_ADC+1)
         "/"
         #endif
@@ -2145,7 +2145,7 @@
         #endif
     #endif
     #if ((22 < ADAT_RX_INDEX+8+1) && (22 > ADAT_RX_INDEX)) && defined(ADAT_RX)
-        #if ((22 < SPDIF_RX_INDEX+2+1) && (22 > SPDIF_RX_INDEX)) && defined(SPDIF_RX) || (22 < I2S_CHANS_ADC+1)
+        #if ((22 < SPDIF_RX_INDEX+2+1) && (22 > SPDIF_RX_INDEX)) && (XUA_SPDIF_RX_EN) || (22 < I2S_CHANS_ADC+1)
         "/"
         #endif
         #if(22 - ADAT_TX_INDEX == 1)
@@ -2174,7 +2174,7 @@
     #if (23 < I2S_CHANS_ADC+1)
         "Analogue 23"
     #endif
-    #if ((23 < SPDIF_RX_INDEX+2+1) && (23 > SPDIF_RX_INDEX)) && defined(SPDIF_RX)
+    #if ((23 < SPDIF_RX_INDEX+2+1) && (23 > SPDIF_RX_INDEX)) && (XUA_SPDIF_RX_EN)
         #if (23 < I2S_CHANS_ADC+1)
         "/"
         #endif
@@ -2185,7 +2185,7 @@
         #endif
     #endif
     #if ((23 < ADAT_RX_INDEX+8+1) && (23 > ADAT_RX_INDEX)) && defined(ADAT_RX)
-        #if ((23 < SPDIF_RX_INDEX+2+1) && (23 > SPDIF_RX_INDEX)) && defined(SPDIF_RX) || (23 < I2S_CHANS_ADC+1)
+        #if ((23 < SPDIF_RX_INDEX+2+1) && (23 > SPDIF_RX_INDEX)) && (XUA_SPDIF_RX_EN) || (23 < I2S_CHANS_ADC+1)
         "/"
         #endif
         #if(23 - ADAT_TX_INDEX == 1)
@@ -2214,7 +2214,7 @@
     #if (24 < I2S_CHANS_ADC+1)
         "Analogue 24"
     #endif
-    #if ((24 < SPDIF_RX_INDEX+2+1) && (24 > SPDIF_RX_INDEX)) && defined(SPDIF_RX)
+    #if ((24 < SPDIF_RX_INDEX+2+1) && (24 > SPDIF_RX_INDEX)) && (XUA_SPDIF_RX_EN)
         #if (24 < I2S_CHANS_ADC+1)
         "/"
         #endif
@@ -2225,7 +2225,7 @@
         #endif
     #endif
     #if ((24 < ADAT_RX_INDEX+8+1) && (24 > ADAT_RX_INDEX)) && defined(ADAT_RX)
-        #if ((24 < SPDIF_RX_INDEX+2+1) && (24 > SPDIF_RX_INDEX)) && defined(SPDIF_RX) || (24 < I2S_CHANS_ADC+1)
+        #if ((24 < SPDIF_RX_INDEX+2+1) && (24 > SPDIF_RX_INDEX)) && (XUA_SPDIF_RX_EN) || (24 < I2S_CHANS_ADC+1)
         "/"
         #endif
         #if(24 - ADAT_TX_INDEX == 1)
@@ -2254,7 +2254,7 @@
     #if (25 < I2S_CHANS_ADC+1)
         "Analogue 25"
     #endif
-    #if ((25 < SPDIF_RX_INDEX+2+1) && (25 > SPDIF_RX_INDEX)) && defined(SPDIF_RX)
+    #if ((25 < SPDIF_RX_INDEX+2+1) && (25 > SPDIF_RX_INDEX)) && (XUA_SPDIF_RX_EN)
         #if (25 < I2S_CHANS_ADC+1)
         "/"
         #endif
@@ -2265,7 +2265,7 @@
         #endif
     #endif
     #if ((25 < ADAT_RX_INDEX+8+1) && (25 > ADAT_RX_INDEX)) && defined(ADAT_RX)
-        #if ((25 < SPDIF_RX_INDEX+2+1) && (25 > SPDIF_RX_INDEX)) && defined(SPDIF_RX) || (25 < I2S_CHANS_ADC+1)
+        #if ((25 < SPDIF_RX_INDEX+2+1) && (25 > SPDIF_RX_INDEX)) && (XUA_SPDIF_RX_EN) || (25 < I2S_CHANS_ADC+1)
         "/"
         #endif
         #if(25 - ADAT_TX_INDEX == 1)
@@ -2294,7 +2294,7 @@
     #if (26 < I2S_CHANS_ADC+1)
         "Analogue 26"
     #endif
-    #if ((26 < SPDIF_RX_INDEX+2+1) && (26 > SPDIF_RX_INDEX)) && defined(SPDIF_RX)
+    #if ((26 < SPDIF_RX_INDEX+2+1) && (26 > SPDIF_RX_INDEX)) && (XUA_SPDIF_RX_EN)
         #if (26 < I2S_CHANS_ADC+1)
         "/"
         #endif
@@ -2305,7 +2305,7 @@
         #endif
     #endif
     #if ((26 < ADAT_RX_INDEX+8+1) && (26 > ADAT_RX_INDEX)) && defined(ADAT_RX)
-        #if ((26 < SPDIF_RX_INDEX+2+1) && (26 > SPDIF_RX_INDEX)) && defined(SPDIF_RX) || (26 < I2S_CHANS_ADC+1)
+        #if ((26 < SPDIF_RX_INDEX+2+1) && (26 > SPDIF_RX_INDEX)) && (XUA_SPDIF_RX_EN) || (26 < I2S_CHANS_ADC+1)
         "/"
         #endif
         #if(26 - ADAT_TX_INDEX == 1)
@@ -2334,7 +2334,7 @@
     #if (27 < I2S_CHANS_ADC+1)
         "Analogue 27"
     #endif
-    #if ((27 < SPDIF_RX_INDEX+2+1) && (27 > SPDIF_RX_INDEX)) && defined(SPDIF_RX)
+    #if ((27 < SPDIF_RX_INDEX+2+1) && (27 > SPDIF_RX_INDEX)) && (XUA_SPDIF_RX_EN)
         #if (27 < I2S_CHANS_ADC+1)
         "/"
         #endif
@@ -2345,7 +2345,7 @@
         #endif
     #endif
     #if ((27 < ADAT_RX_INDEX+8+1) && (27 > ADAT_RX_INDEX)) && defined(ADAT_RX)
-        #if ((27 < SPDIF_RX_INDEX+2+1) && (27 > SPDIF_RX_INDEX)) && defined(SPDIF_RX) || (27 < I2S_CHANS_ADC+1)
+        #if ((27 < SPDIF_RX_INDEX+2+1) && (27 > SPDIF_RX_INDEX)) && (XUA_SPDIF_RX_EN) || (27 < I2S_CHANS_ADC+1)
         "/"
         #endif
         #if(27 - ADAT_TX_INDEX == 1)
@@ -2374,7 +2374,7 @@
     #if (28 < I2S_CHANS_ADC+1)
         "Analogue 28"
     #endif
-    #if ((28 < SPDIF_RX_INDEX+2+1) && (28 > SPDIF_RX_INDEX)) && defined(SPDIF_RX)
+    #if ((28 < SPDIF_RX_INDEX+2+1) && (28 > SPDIF_RX_INDEX)) && (XUA_SPDIF_RX_EN)
         #if (28 < I2S_CHANS_ADC+1)
         "/"
         #endif
@@ -2385,7 +2385,7 @@
         #endif
     #endif
     #if ((28 < ADAT_RX_INDEX+8+1) && (28 > ADAT_RX_INDEX)) && defined(ADAT_RX)
-        #if ((28 < SPDIF_RX_INDEX+2+1) && (28 > SPDIF_RX_INDEX)) && defined(SPDIF_RX) || (28 < I2S_CHANS_ADC+1)
+        #if ((28 < SPDIF_RX_INDEX+2+1) && (28 > SPDIF_RX_INDEX)) && (XUA_SPDIF_RX_EN) || (28 < I2S_CHANS_ADC+1)
         "/"
         #endif
         #if(28 - ADAT_TX_INDEX == 1)
@@ -2414,7 +2414,7 @@
     #if (29 < I2S_CHANS_ADC+1)
         "Analogue 29"
     #endif
-    #if ((29 < SPDIF_RX_INDEX+2+1) && (29 > SPDIF_RX_INDEX)) && defined(SPDIF_RX)
+    #if ((29 < SPDIF_RX_INDEX+2+1) && (29 > SPDIF_RX_INDEX)) && (XUA_SPDIF_RX_EN)
         #if (29 < I2S_CHANS_ADC+1)
         "/"
         #endif
@@ -2425,7 +2425,7 @@
         #endif
     #endif
     #if ((29 < ADAT_RX_INDEX+8+1) && (29 > ADAT_RX_INDEX)) && defined(ADAT_RX)
-        #if ((29 < SPDIF_RX_INDEX+2+1) && (29 > SPDIF_RX_INDEX)) && defined(SPDIF_RX) || (29 < I2S_CHANS_ADC+1)
+        #if ((29 < SPDIF_RX_INDEX+2+1) && (29 > SPDIF_RX_INDEX)) && (XUA_SPDIF_RX_EN) || (29 < I2S_CHANS_ADC+1)
         "/"
         #endif
         #if(29 - ADAT_TX_INDEX == 1)
@@ -2454,7 +2454,7 @@
     #if (30 < I2S_CHANS_ADC+1)
         "Analogue 30"
     #endif
-    #if ((30 < SPDIF_RX_INDEX+2+1) && (30 > SPDIF_RX_INDEX)) && defined(SPDIF_RX)
+    #if ((30 < SPDIF_RX_INDEX+2+1) && (30 > SPDIF_RX_INDEX)) && (XUA_SPDIF_RX_EN)
         #if (30 < I2S_CHANS_ADC+1)
         "/"
         #endif
@@ -2465,7 +2465,7 @@
         #endif
     #endif
     #if ((30 < ADAT_RX_INDEX+8+1) && (30 > ADAT_RX_INDEX)) && defined(ADAT_RX)
-        #if ((30 < SPDIF_RX_INDEX+2+1) && (30 > SPDIF_RX_INDEX)) && defined(SPDIF_RX) || (30 < I2S_CHANS_ADC+1)
+        #if ((30 < SPDIF_RX_INDEX+2+1) && (30 > SPDIF_RX_INDEX)) && (XUA_SPDIF_RX_EN) || (30 < I2S_CHANS_ADC+1)
         "/"
         #endif
         #if(30 - ADAT_TX_INDEX == 1)
@@ -2494,7 +2494,7 @@
     #if (31 < I2S_CHANS_ADC+1)
         "Analogue 31"
     #endif
-    #if ((31 < SPDIF_RX_INDEX+2+1) && (31 > SPDIF_RX_INDEX)) && defined(SPDIF_RX)
+    #if ((31 < SPDIF_RX_INDEX+2+1) && (31 > SPDIF_RX_INDEX)) && (XUA_SPDIF_RX_EN)
         #if (31 < I2S_CHANS_ADC+1)
         "/"
         #endif
@@ -2505,7 +2505,7 @@
         #endif
     #endif
     #if ((31 < ADAT_RX_INDEX+8+1) && (31 > ADAT_RX_INDEX)) && defined(ADAT_RX)
-        #if ((31 < SPDIF_RX_INDEX+2+1) && (31 > SPDIF_RX_INDEX)) && defined(SPDIF_RX) || (31 < I2S_CHANS_ADC+1)
+        #if ((31 < SPDIF_RX_INDEX+2+1) && (31 > SPDIF_RX_INDEX)) && (XUA_SPDIF_RX_EN) || (31 < I2S_CHANS_ADC+1)
         "/"
         #endif
         #if(31 - ADAT_TX_INDEX == 1)
@@ -2534,7 +2534,7 @@
     #if (32 < I2S_CHANS_ADC+1)
         "Analogue 32"
     #endif
-    #if ((32 < SPDIF_RX_INDEX+2+1) && (32 > SPDIF_RX_INDEX)) && defined(SPDIF_RX)
+    #if ((32 < SPDIF_RX_INDEX+2+1) && (32 > SPDIF_RX_INDEX)) && (XUA_SPDIF_RX_EN)
         #if (32 < I2S_CHANS_ADC+1)
         "/"
         #endif
@@ -2545,7 +2545,7 @@
         #endif
     #endif
     #if ((32 < ADAT_RX_INDEX+8+1) && (32 > ADAT_RX_INDEX)) && defined(ADAT_RX)
-        #if ((32 < SPDIF_RX_INDEX+2+1) && (32 > SPDIF_RX_INDEX)) && defined(SPDIF_RX) || (32 < I2S_CHANS_ADC+1)
+        #if ((32 < SPDIF_RX_INDEX+2+1) && (32 > SPDIF_RX_INDEX)) && (XUA_SPDIF_RX_EN) || (32 < I2S_CHANS_ADC+1)
         "/"
         #endif
         #if(32 - ADAT_TX_INDEX == 1)

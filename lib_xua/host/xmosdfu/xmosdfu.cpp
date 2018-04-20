@@ -307,8 +307,20 @@ int read_dfu_image(char *file)
     {
         unsigned int numBytes = 0;
         numBytes = dfu_upload(0, block_count, 64, block_data);
+        /* Upload is completed when dfu_upload() returns an empty block */
         if (numBytes == 0)
         {
+            /* If upload is complete, but no block has been read,
+               issue a warning about the upgrade image
+            */
+            if (block_count==0) {
+                printf("... WARNING: Upgrade image size is 0: check if image is present in the flash\n");
+            }
+            break;
+        }
+        else if (numBytes < 0)
+        {
+            fprintf(stderr,"dfu_upload error (%d)\n", numBytes);
             break;
         }
         fwrite(block_data, 1, block_size, outFile);
@@ -338,8 +350,8 @@ static void print_usage(const char *program_name, const char *error_msg)
     print_device_list(stderr, "      ");
 
     fprintf(stderr, "    And COMMAND is one of:\n");
-    fprintf(stderr, "       --download <firmware> : install a new firmware\n");
-    fprintf(stderr, "       --upload <firmware>   : extract a firmware image\n");
+    fprintf(stderr, "       --download <firmware> : write an upgrade image\n");
+    fprintf(stderr, "       --upload <firmware>   : read the upgrade image\n");
     fprintf(stderr, "       --revertfactory       : revert to the factory image\n");
     fprintf(stderr, "       --savecustomstate     : \n");
     fprintf(stderr, "       --restorecustomstate  : \n");

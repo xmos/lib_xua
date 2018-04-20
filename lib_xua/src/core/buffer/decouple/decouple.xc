@@ -1,7 +1,8 @@
 // Copyright (c) 2011-2018, XMOS Ltd, All rights reserved
-#ifndef NO_USB
-#include <xs1.h>
 #include "xua.h"
+
+#if XUA_USB_EN
+#include <xs1.h>
 #include "xc_ptr.h"
 #include "interrupt.h"
 #include "xua_commands.h"
@@ -1031,4 +1032,4 @@ void XUA_Buffer_Decouple(chanend c_mix_out
 #endif /* NUM_USB_CHAN_IN > 0 */
     }
 }
-#endif /* NO_USB */
+#endif /* XUA_USB_EN */

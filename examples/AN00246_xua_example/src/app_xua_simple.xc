@@ -22,23 +22,17 @@ buffered in port:32 p_i2s_adc[]    	= {PORT_I2S_ADC0};   /* I2S Data-line(s) */
 buffered out port:32 p_lrclk        = PORT_I2S_LRCLK;    /* I2S Bit-clock */
 buffered out port:32 p_bclk         = PORT_I2S_BCLK;     /* I2S L/R-clock */
 
-/* Note, declared unsafe as sometimes we want to share this port
-e.g. PDM mics and I2S use same master clock IO */
-port p_mclk_in_                     = PORT_MCLK_IN;
+/* Master clock for the audio IO tile */
+in port p_mclk_in                   = PORT_MCLK_IN;
 
-unsafe
-{
-    /* TODO simplify this */
-    unsafe port p_mclk_in;                               /* Audio master clock input */
-}
-
+/* Resources for USB feedback */
 in port p_for_mclk_count            = PORT_MCLK_COUNT;   /* Extra port for counting master clock ticks */
-in port p_mclk_in2                  = PORT_MCLK_IN2;
+in port p_mclk_in_usb               = PORT_MCLK_IN_USB;  /* Extra master clock input for the USB tile */
 
 /* Clock-block declarations */
 clock clk_audio_bclk                = on tile[0]: XS1_CLKBLK_4;   /* Bit clock */    
 clock clk_audio_mclk                = on tile[0]: XS1_CLKBLK_5;   /* Master clock */
-clock clk_audio_mclk2               = on tile[1]: XS1_CLKBLK_1;   /* Master clock */
+clock clk_audio_mclk_usb            = on tile[1]: XS1_CLKBLK_1;   /* Master clock for USB tile */
 
 /* Endpoint type tables - informs XUD what the transfer types for each Endpoint in use and also
  * if the endpoint wishes to be informed of USB bus resets */
@@ -54,10 +48,10 @@ int main()
     /* Channel for communicating SOF notifications from XUD to the Buffering cores */
     chan c_sof;
 
-    /* Channel for audio data between buffering cores and audio IO core */
+    /* Channel for audio data between buffering cores and AudioHub/IO core */
     chan c_aud;
     
-    /* Channel for communicating control messages from EP0 to the rest of the device (via the buffering cores */
+    /* Channel for communicating control messages from EP0 to the rest of the device (via the buffering cores) */
     chan c_aud_ctl;
 
     par
@@ -66,7 +60,7 @@ int main()
         on tile[1]: XUD_Main(c_ep_out, 2, c_ep_in, 2,
                       c_sof, epTypeTableOut, epTypeTableIn, 
                       null, null, -1 , 
-                      XUD_SPEED_HS, XUD_PWR_BUS);
+                      XUD_SPEED_HS, XUD_PWR_SELF);
         
         /* Endpoint 0 core from lib_xua */
         /* Note, since we are not using many features we pass in null for quite a few params.. */
@@ -75,22 +69,18 @@ int main()
         /* Buffering cores - handles audio data to/from EP's and gives/gets data to/from the audio I/O core */
         /* Note, this spawns two cores */
         on tile[1]: {
-                        set_clock_src(clk_audio_mclk2, p_mclk_in2);
-                        set_port_clock(p_for_mclk_count, clk_audio_mclk2);
-                        start_clock(clk_audio_mclk2);
+                        
+                        /* Connect master-clock clock-block to clock-block pin */
+                        set_clock_src(clk_audio_mclk_usb, p_mclk_in_usb);           /* Clock clock-block from mclk pin */
+                        set_port_clock(p_for_mclk_count, clk_audio_mclk_usb);       /* Clock the "count" port from the clock block */
+                        start_clock(clk_audio_mclk_usb);                            /* Set the clock off running */
 
                         XUA_Buffer(c_ep_out[1], c_ep_in[1], c_sof, c_aud_ctl, p_for_mclk_count, c_aud);
 
                     }
 
-        /* IOHub core does most of the audio IO i.e. I2S (also serves as a hub for all audio) */
-        on tile[0]: {
-                        unsafe
-                        {
-                            p_mclk_in = p_mclk_in_; 
-                        }
-                        XUA_AudioHub(c_aud);
-                    }
+        /* AudioHub/IO core does most of the audio IO i.e. I2S (also serves as a hub for all audio) */
+        on tile[0]: XUA_AudioHub(c_aud, clk_audio_mclk, clk_audio_bclk, p_mclk_in, p_lrclk, p_bclk, p_i2s_dac, p_i2s_adc);
     }
     
     return 0;

@@ -77,19 +77,11 @@ buffered out port:32 p_lrclk       = PORT_I2S_LRCLK;    /* I2S Bit-clock */
 buffered out port:32 p_bclk        = PORT_I2S_BCLK;     /* I2S L/R-clock */
 #endif
 
-/* Note, declared unsafe as sometimes we want to share this port
-e.g. PDM mics and I2S use same master clock IO */
-port p_mclk_in_                    = PORT_MCLK_IN;
+in port p_mclk_in                   = PORT_MCLK_IN;
 
 /* Clock-block declarations */
 clock clk_audio_bclk                = on tile[AUDIO_IO_TILE]: XS1_CLKBLK_1;   /* Bit clock */    
 clock clk_audio_mclk                = on tile[AUDIO_IO_TILE]: XS1_CLKBLK_2;   /* Master clock */
-
-unsafe
-{
-    /* TODO simplify this */
-    unsafe port p_mclk_in;                           /* Audio master clock input */
-}
 
 #ifdef SIMULATION
 #define INITIAL_SKIP_FRAMES 10
@@ -211,38 +203,35 @@ void slave_mode_clk_setup(const unsigned samFreq, const unsigned chans_per_frame
 #endif
 
 #if I2S_MODE_TDM
-const int i2s_tdm_mode = 1;
+const int i2s_tdm_mode = 8;
 #else
-const int i2s_tdm_mode = 0;
+const int i2s_tdm_mode = 2;
 #endif
 
 int main(void)
 {
-  chan c_checker;
-  chan c_out;
+    chan c_checker;
+    chan c_out;
 
-  par {
-    on tile[AUDIO_IO_TILE]: 
+    par 
     {
-      unsafe
-      {
-        p_mclk_in = p_mclk_in_;
-      }
-      par 
-      {
-        XUA_AudioHub(c_out);
-        generator(c_checker, c_out);
-        checker(c_checker, 0);
+        on tile[AUDIO_IO_TILE]: 
+        { 
+            par 
+            {
+                XUA_AudioHub(c_out, clk_audio_mclk, clk_audio_bclk, p_mclk_in, p_lrclk, p_bclk, p_i2s_dac, p_i2s_adc);
+                generator(c_checker, c_out);
+                checker(c_checker, 0);
 #ifdef SIMULATION
 #if CODEC_MASTER
-        slave_mode_clk_setup(DEFAULT_FREQ, (i2s_tdm_mode != 0) ? 8 : 2);
+                slave_mode_clk_setup(DEFAULT_FREQ, i2s_tdm_mode);
 #else
-        master_mode_clk_setup();
+                master_mode_clk_setup();
 #endif
 #endif
-      }
+            }
+        }
     }
-  }
 
-  return 0;
+    return 0;
 }

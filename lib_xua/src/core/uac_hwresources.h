@@ -3,7 +3,7 @@
 #ifndef _UAC_HWRESOURCES_H_
 #define _UAC_HWRESOURCES_H_
 
-#ifndef NO_USB
+#if XUA_USB_EN
 #include "xud.h"                 /* XMOS USB Device Layer defines and functions */
 #endif
 

@@ -9,7 +9,7 @@ def genstrings(outputChanCount, chanString, portString, structureString, adc_dac
     #if ({i} < I2S_CHANS_{adcdac}+1)\n\
         \"Analogue {i}\"\n\
     #endif\n\
-    #if (({i} < SPDIF_{p}_INDEX+2+1) && ({i} > SPDIF_{p}_INDEX)) && defined(SPDIF_{p})\n\
+    #if (({i} < SPDIF_{p}_INDEX+2+1) && ({i} > SPDIF_{p}_INDEX)) && (XUA_SPDIF_{p}_EN)\n\
         #if ({i} < I2S_CHANS_{adcdac}+1)\n\
         \"/\"\n\
         #endif\n\
@@ -20,7 +20,7 @@ def genstrings(outputChanCount, chanString, portString, structureString, adc_dac
         #endif\n\
     #endif\n\
     #if (({i} < ADAT_{p}_INDEX+8+1) && ({i} > ADAT_{p}_INDEX)) && defined(ADAT_{p})\n\
-        #if (({i} < SPDIF_{p}_INDEX+2+1) && ({i} > SPDIF_{p}_INDEX)) && defined(SPDIF_{p}) || ({i} < I2S_CHANS_{adcdac}+1)\n\
+        #if (({i} < SPDIF_{p}_INDEX+2+1) && ({i} > SPDIF_{p}_INDEX)) && (XUA_SPDIF_{p}_EN) || ({i} < I2S_CHANS_{adcdac}+1)\n\
         \"/\"\n\
         #endif\n\
         #if({i} - ADAT_TX_INDEX == 1)\n\

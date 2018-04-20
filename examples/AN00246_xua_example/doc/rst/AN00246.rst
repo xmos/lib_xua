@@ -8,29 +8,16 @@ Overview
 Introduction
 ............
 
-The XMOS USB Audio (XUA) library provides an implemention of USB Audio Class 2.0 
+The XMOS USB Audio (XUA) library provides an implemention of USB Audio Class versions 1.0 and 2.0.
 
 This application note demonstrates the implementation of a basic USB Audio Device on 
 the xCORE-200 MC Audio board.
 
-Block diagram
-.............
-
-.. figure:: images/block_diagram.*
-   :width: 80%
-
-   Application block diagram
-
-The application uses a single logical core which runs the application and makes
-calls to the |I2C| master library functions as required.
-
-How to use lib_xua
-------------------
 
 The Makefile
-............
+------------
 
-To start using the lib_xua, you need to add ``lib_xua`` to your Makefile::
+To start using ``lib_xua``, you need to add ``lib_xua`` to your Makefile::
 
   USED_MODULES = .. lib_xua ...
 
@@ -68,7 +55,7 @@ be included in your code to use the library.
 Allocating hardware resources
 .............................
 
-A most basic implementation of a USB Audio device (i.e. simple stereo input and output via I2S)
+A basic implementation of a USB Audio device (i.e. simple stereo input and output via I2S)
 using ``lib_xua`` requires the follow pins:
 
     - I2S Bit Clock (from xCORE to DAC)
@@ -79,20 +66,34 @@ using ``lib_xua`` requires the follow pins:
 
 .. note::
 
-    ANOO246 assumes xCORE is I2S bus master
+    This application note assumes xCORE is I2S bus master
 
 On an xCORE the pins are controlled by ``ports``. The application therefore declares various ``ports``
 for this purpose:
 
 .. literalinclude:: app_xua_simple.xc
    :start-on: /* Port declaration
-   :end-on: /* Clock-block
+   :end-on: in port p_mclk_in
+
+``lib_xua`` also requires two ports for internally calculating USB feedback. Please refer to 
+the ``lib_xua`` library documentation for further details.  The additonal input port for the master
+clock is required since USB and S/PDIF do not reside of the same tiles on the example hardware.
+
+These ports are declared as follows:
+
+.. literalinclude:: app_xua_simple.xc
+   :start-on: /* Resources for USB feedback
+   :end-on: in port p_mclk_in_usb
 
 In addition to ``port`` resources two clock-block resources are also required:
 
 .. literalinclude:: app_xua_simple.xc
    :start-on: /* Clock-block
-   :end-on: /* clock clk_audio_mclk
+   :end-on: clock clk_audio_mclk_usb
+
+Again, for the same reasoning as the master-clock ports, two master-clock clock-blocks are required
+- one on each tile.
+
 
 Other declarations
 ..................
@@ -109,21 +110,21 @@ These are declared as follows:
 
 .. literalinclude:: app_xua_simple.xc
    :start-on: /* Endpoint type tables
-   :end-on: /* XUD_EpType epTypeTableIn
+   :end-on: XUD_EpType epTypeTableIn
 
 The application main() function
-...............................
+-------------------------------
 
 The ``main()`` function sets up the tasks in the application.
 
 Various channels are required in order to allow the required tasks to communcate. 
-These must be declared":
+These must first be declared:
 
 .. literalinclude:: app_xua_simple.xc
    :start-on: /* Channels for lib_xud
-   :end-on: /* chan c_aud_ctl
+   :end-on: chan c_aud_ctl
 
-The rest of the ``main()`` function starts all the tasks in parallel
+The rest of the ``main()`` function starts all of the tasks in parallel
 using the xC ``par`` construct:
 
 .. literalinclude:: app_xua_simple.xc
@@ -135,6 +136,25 @@ the audio I/O (i.e. I2S signalling).
 
 Configuration 
 .............
+
+``lib_xua`` has many parameters than can be configured at build time, some examples include:
+
+    - Sample-rates
+    - Channel counts
+    - Audio Class version
+    - Product/Vendor ID's
+    - Various product strings
+    - Master clock frequency
+
+These parameters are set via defines in an optional ``xua_conf.h`` header file. For this simple application the contents 
+of this file might look something like the following:
+
+.. literalinclude:: xua_conf.h
+   :start-on: // Copyright
+   :end-on: #endif
+
+Some items have sensible default values, items like strings and sample rates for example. However, some items are specific to a hardware 
+implentation e.g. master clock frequencies and must be defined.  Please see the ``lib_xua`` library documentation for full details.
 
 |appendix|
 |newpage|

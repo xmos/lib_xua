@@ -1,9 +1,9 @@
 // Copyright (c) 2011-2018, XMOS Ltd, All rights reserved
-#ifndef NO_USB
+#include "xua.h"
+#if XUA_USB_EN
 #include <xs1.h>
 #include <print.h>
 
-#include "xua.h"
 
 #ifdef MIDI
 #include "usb_midi.h"
@@ -23,7 +23,6 @@
 #include "user_hid.h"
 unsigned char g_hidData[1] = {0};
 #endif
-
 
 void GetADCCounts(unsigned samFreq, int &min, int &mid, int &max);
 #define BUFFER_SIZE_OUT       (1028 >> 2)
@@ -114,7 +113,7 @@ void XUA_Buffer(
             chanend c_iap_ea_native_data,
 #endif
 #endif
-#if defined(SPDIF_RX) || defined(ADAT_RX)
+#if (SPDIF_RX) || (ADAT_RX)
             chanend ?c_ep_int,
             chanend ?c_clk_int,
 #endif
@@ -159,7 +158,7 @@ void XUA_Buffer(
                 c_ea_data,
 #endif
 #endif
-#if defined(SPDIF_RX) || defined(ADAT_RX)
+#if (SPDIF_RX) || (ADAT_RX)
                 /* Audio Interrupt - only used for interrupts on external clock change */
                 c_ep_int,
                 c_clk_int,
@@ -217,7 +216,7 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
             chanend c_iap_ea_native_data,
 #endif
 #endif
-#if defined(SPDIF_RX) || defined(ADAT_RX)
+#if (SPDIF_RX) || (ADAT_RX)
             chanend ?c_ep_int,
             chanend ?c_clk_int,
 #endif
@@ -257,7 +256,7 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
     XUD_ep ep_iap_ea_native_in = XUD_InitEp(c_iap_ea_native_in);
 #endif
 #endif
-#if defined(SPDIF_RX) || defined(ADAT_RX)
+#if (SPDIF_RX) || (ADAT_RX)
     XUD_ep ep_int = XUD_InitEp(c_ep_int);
 #endif
 
@@ -384,7 +383,7 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
         /* Wait for response from XUD and service relevant EP */
         select
         {
-#if defined(SPDIF_RX) || defined(ADAT_RX)
+#if (SPDIF_RX) || (ADAT_RX)
             /* Clocking thread wants to produce an interrupt... */
             case inuint_byref(c_clk_int, u_tmp):
                 chkct(c_clk_int, XS1_CT_END);
@@ -1097,4 +1096,4 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
 
     }
 }
-#endif /* NO_USB */
+#endif /* XUA_USB_EN */

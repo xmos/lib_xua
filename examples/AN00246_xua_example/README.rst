@@ -1,6 +1,6 @@
 
-How to use the lib_xua_library
-===============================
+Simple USB Audio Device using lib_xua
+=====================================
 
 .. version:: 0.1.0
 

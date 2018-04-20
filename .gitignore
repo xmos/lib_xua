@@ -1,5 +1,4 @@
 *.log
-module_dfu/host/xmosdfu/xmosdfu
 *.dSYM
 */.build_*/*
 */bin/*
@@ -11,14 +10,19 @@ module_dfu/host/xmosdfu/xmosdfu
 *.xi
 *.i
 *.bin
-.*
 *~
 *.a
 *.swp
 *.*~
+*.pyc
+.build*
+.DS_Store
+test_results.csv
+_build*
 
 # waf build files
 .lock-waf_*
 .waf-*/
 build/
-host/xmosdfu/xmosdfu
+.build*
+*.pyc

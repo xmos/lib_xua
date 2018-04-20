@@ -2,7 +2,7 @@
 
 #include "xua.h"
 
-#if (NUM_PDM_MICS > 0)
+#if (XUA_NUM_PDM_MICS > 0)
 
 /* This file includes an example integration of lib_array_mic into USB Audio */
 
@@ -20,21 +20,7 @@
 
 #define MAX_DECIMATION_FACTOR (96000/(MIN_FREQ/AUD_TO_MICS_RATIO))
 
-/* Hardware resources */
-/* TODO these should be in main.xc with the rest of the resources */
-in port p_pdm_clk               = PORT_PDM_CLK;
-
-in buffered port:32 p_pdm_mics  = PORT_PDM_DATA;
-#if (PDM_TILE != AUDIO_IO_TILE)
-/* If Mics and I2S are on the same tile we'll share an MCLK port */
-in port p_pdm_mclk              = PORT_PDM_MCLK;
-#else
-extern unsafe port p_mclk_in;
-#endif
-
-/* Delcared in main.xc */
-extern clock clk_pdm;
-
+/* Build time sized microphone delay line */
 #ifndef MIC_BUFFER_DEPTH 
 #define MIC_BUFFER_DEPTH 1
 #endif
@@ -46,16 +32,16 @@ mic_array_frame_time_domain mic_audio[2];
 #ifdef MIC_PROCESSING_USE_INTERFACE
 [[combinable]]
 #pragma unsafe arrays
-void pdm_buffer(streaming chanend c_ds_output[2], chanend c_audio, client mic_process_if i_mic_process)
+void XUA_PdmBuffer(streaming chanend c_ds_output[2], chanend c_audio, client mic_process_if i_mic_process)
 #else
 #pragma unsafe arrays
 [[combinable]]
-void pdm_buffer(streaming chanend c_ds_output[2], chanend c_audio)
+void XUA_PdmBuffer(streaming chanend c_ds_output[2], chanend c_audio)
 #endif
 {
     unsigned buffer;
     unsigned samplerate;
-    int output[MIC_BUFFER_DEPTH][NUM_PDM_MICS];
+    int output[MIC_BUFFER_DEPTH][XUA_NUM_PDM_MICS];
 
 #ifdef MIC_PROCESSING_USE_INTERFACE
     i_mic_process.init();
@@ -63,7 +49,7 @@ void pdm_buffer(streaming chanend c_ds_output[2], chanend c_audio)
     user_pdm_init();
 #endif
 
-#if NUM_PDM_MICS > 4
+#if XUA_NUM_PDM_MICS > 4
     unsigned decimatorCount = 2;
 #else
     unsigned decimatorCount = 1;
@@ -160,7 +146,7 @@ void pdm_buffer(streaming chanend c_ds_output[2], chanend c_audio)
                     {
                         /* We store an additional buffer so we can reply immediately */
 #pragma loop unroll
-                        for(int i = 0; i < NUM_PDM_MICS; i++)
+                        for(int i = 0; i < XUA_NUM_PDM_MICS; i++)
                         {
                             c_audio <: output[micBufferRead][i];
                         }
@@ -180,7 +166,7 @@ void pdm_buffer(streaming chanend c_ds_output[2], chanend c_audio)
 #endif
                     /* Buffer up next mic data */
 #pragma loop unroll
-                    for(int i = 0; i < NUM_PDM_MICS; i++)
+                    for(int i = 0; i < XUA_NUM_PDM_MICS; i++)
                     {
                         output[micBufferWrite][i] = current->data[i][0];
                     }
@@ -211,7 +197,7 @@ void pdm_buffer(streaming chanend c_ds_output[2], chanend c_audio)
                     user_pdm_process(current);
 #endif
 #pragma loop unroll
-                    for(int i = 0; i < NUM_PDM_MICS; i++)
+                    for(int i = 0; i < XUA_NUM_PDM_MICS; i++)
                     {
                         output[micBufferWrite][i] = current->data[i][0];
                     }
@@ -228,15 +214,8 @@ void pdm_buffer(streaming chanend c_ds_output[2], chanend c_audio)
 #error MAX_FREQ > 48000 NOT CURRENTLY SUPPORTED
 #endif
 
-void pdm_mic(streaming chanend c_ds_output[2])
+void xua_pdm_mic_config(in port p_pdm_mclk, in port p_pdm_clk, buffered in port:32 p_pdm_mics, clock clk_pdm)
 {
-    streaming chan c_4x_pdm_mic_0;
-#if (NUM_PDM_MICS > 4)
-    streaming chan c_4x_pdm_mic_1;
-#else
-    #define c_4x_pdm_mic_1 null
-#endif
-
     /* Mics expect a clock in the 3Mhz range, calculate the divide based on mclk */
     /* e.g. For a 48kHz range mclk we expect a 3072000Hz mic clock */
     /* e.g. For a 44.1kHz range mclk we expect a 2822400Hz mic clock */
@@ -246,24 +225,27 @@ void pdm_mic(streaming chanend c_ds_output[2])
 
     unsigned micDiv = MCLK_48/3072000;
 
-#if (PDM_TILE != AUDIO_IO_TILE)
     configure_clock_src_divide(clk_pdm, p_pdm_mclk, micDiv/2);
-#else
-    /* Sharing mclk port with I2S */
-    unsafe
-    {
-        configure_clock_src_divide(clk_pdm, (port) p_mclk_in, micDiv/2);
-    }
-#endif
+    
     configure_port_clock_output(p_pdm_clk, clk_pdm);
     configure_in_port(p_pdm_mics, clk_pdm);
     start_clock(clk_pdm);
+}
 
+void xua_pdm_mic(streaming chanend c_ds_output[2], buffered in port:32 p_pdm_mics)
+{
+    streaming chan c_4x_pdm_mic_0;
+#if (XUA_NUM_PDM_MICS > 4)
+    streaming chan c_4x_pdm_mic_1;
+#else
+    #define c_4x_pdm_mic_1 null
+#endif
+  
     par
     {
         mic_array_pdm_rx(p_pdm_mics, c_4x_pdm_mic_0, c_4x_pdm_mic_1);
         mic_array_decimate_to_pcm_4ch(c_4x_pdm_mic_0, c_ds_output[0], MIC_ARRAY_NO_INTERNAL_CHANS);
-#if (NUM_PDM_MICS > 4)
+#if (XUA_NUM_PDM_MICS > 4)
         mic_array_decimate_to_pcm_4ch(c_4x_pdm_mic_1, c_ds_output[1], MIC_ARRAY_NO_INTERNAL_CHANS);
 #endif
     }

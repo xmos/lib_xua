@@ -5,7 +5,7 @@ def runtest_one_config(env, format, i2s_role, num_chans_in, num_chans_out, sampl
     testlevel = 'smoke'
     resources = xmostest.request_resource('xsim')
 
-    binary = 'i2s_loopback/bin/{env}_{format}_{i2s_role}_{num_chans_in}in_{num_chans_out}out_{sample_rate}/i2s_loopback_{env}_{format}_{i2s_role}_{num_chans_in}in_{num_chans_out}out_{sample_rate}.xe'.format(env=env, format=format, i2s_role=i2s_role, num_chans_in=num_chans_in, num_chans_out=num_chans_out, sample_rate=sample_rate)
+    binary = 'app_test_i2s_loopback/bin/{env}_{format}_{i2s_role}_{num_chans_in}in_{num_chans_out}out_{sample_rate}/app_test_i2s_loopback_{env}_{format}_{i2s_role}_{num_chans_in}in_{num_chans_out}out_{sample_rate}.xe'.format(env=env, format=format, i2s_role=i2s_role, num_chans_in=num_chans_in, num_chans_out=num_chans_out, sample_rate=sample_rate)
     tester = xmostest.ComparisonTester(open('pass.expect'),
                                        'lib_xua',
                                        'i2s_loopback_sim_tests',

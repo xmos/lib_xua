@@ -1,5 +1,5 @@
 // Copyright (c) 2013-2018, XMOS Ltd, All rights reserved
-#ifndef NO_USB
+#if XUA_USB_EN
 #include "xua.h"
 #include "hostactive.h"
 #include "audiostream.h"
@@ -23,4 +23,4 @@ void XUD_UserResume(void)
         UserHostActive(1);
     }
 }
-#endif /* NO_USB */
+#endif /* XUA_USB_EN*/
