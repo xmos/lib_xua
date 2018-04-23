@@ -12,6 +12,8 @@ lib_xua Change Log
   * CHANGE:    Moved to lib_spdif (from module_spdif_tx & module_spdif_rx)
   * CHANGE:    Define NUM_PDM_MICS renamed to XUA_NUM_PDM_MICS
   * CHANGE:    Define NO_USB renamed to XUA_USB_EN
+  * RESOLVED:  wChannelConfig in UAC1 descriptor set according to output channel
+    count 
 
 0.1.2
 -----
