@@ -478,7 +478,7 @@ void usb_audio_io(chanend ?c_aud_in, chanend ?c_adc,
 
 #if (XUA_NUM_PDM_MICS > 0) && (PDM_TILE == AUDIO_IO_TILE)
     /* Configure clocks ports - sharing mclk port with I2S */
-    xua_pdm_mic_config(p_mclk_in, p_pdm_mclk, p_pdm_clk, p_pdm_mics, clk_pdm);
+    xua_pdm_mic_config(p_mclk_in, p_pdm_clk, p_pdm_mics, clk_pdm);
 #endif
 
 #if (XUA_SPDIF_TX_EN) && (SPDIF_TX_TILE == AUDIO_IO_TILE)
@@ -673,7 +673,7 @@ int main()
 #endif
 #if (XUA_NUM_PDM_MICS > 0)
 #if (PDM_TILE == AUDIO_IO_TILE)
-                , c_ds_output[2]
+                , c_ds_output
 #endif
                 , c_pdm_pcm
 #endif
