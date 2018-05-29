@@ -75,8 +75,8 @@ void InitPorts_slave
 #else
 void InitPorts_master
 #endif
-(unsigned divide, buffered _XUA_CLK_DIR port:32 p_lrclk, buffered _XUA_CLK_DIR port:32 p_bclk, buffered out port:32 ?p_i2s_dac[I2S_WIRES_DAC], 
-    buffered in port:32  ?p_i2s_adc[I2S_WIRES_ADC]);
+(unsigned divide, buffered _XUA_CLK_DIR port:32 p_lrclk, buffered _XUA_CLK_DIR port:32 p_bclk, buffered out port:32 (&?p_i2s_dac)[I2S_WIRES_DAC], 
+    buffered in port:32  (&?p_i2s_adc)[I2S_WIRES_ADC]);
 
 
 unsigned dsdMode = DSD_MODE_OFF;
