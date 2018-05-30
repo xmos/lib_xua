@@ -4,7 +4,7 @@
  * @brief XMOS USB 2.0 Audio Reference Design.  Audio Functions.
  * @author Ross Owen, XMOS Semiconductor Ltd
  *
- * This thread handles I2S and pars an additional SPDIF Tx thread.  It forwards samples to the SPDIF Tx thread.
+ * This thread handles I2S and forwards samples to the SPDIF Tx core.
  * Additionally this thread handles clocking and CODEC/DAC/ADC config.
  **/
 
