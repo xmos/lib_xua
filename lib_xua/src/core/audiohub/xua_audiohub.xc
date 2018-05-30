@@ -90,7 +90,7 @@ unsigned dsdMode = DSD_MODE_OFF;
 #endif
 
 #pragma unsafe arrays
-static inline unsigned DoSampleTransfer(chanend c_out, const int readBuffNo, const unsigned underflowWord)
+static inline unsigned DoSampleTransfer(chanend ?c_out, const int readBuffNo, const unsigned underflowWord)
 {
     if(XUA_USB_EN)
     {
