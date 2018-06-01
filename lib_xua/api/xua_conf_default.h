@@ -242,10 +242,6 @@
 #define AUDIO_CLASS_FALLBACK  0     /* Default to not falling back to UAC 1 */
 #endif
 
-#if defined(AUDIO_CLASS_FALLBACK) && (AUDIO_CLASS_FALLBACK==0)
-#undef AUDIO_CLASS_FALLBACK
-#endif
-
 /**
  * @brief Whether or not to run UAC2 in full-speed. When disabled device can either operate in
  *        UAC1 mode in full-speed (if AUDIO_CLASS_FALLBACK enabled) or return "null" descriptors.
@@ -254,7 +250,7 @@
  */
 #if (AUDIO_CLASS == 2)
     /* Whether to run in Audio Class 2.0 mode in USB Full-speed */
-    #if !defined(FULL_SPEED_AUDIO_2) && !defined(AUDIO_CLASS_FALLBACK)
+    #if !defined(FULL_SPEED_AUDIO_2) && (AUDIO_CLASS_FALLBACK == 0)
         #define FULL_SPEED_AUDIO_2    1     /* Default to falling back to UAC2 */
     #endif
 #endif
@@ -264,7 +260,7 @@
 #endif
 
 /* Some checks on full-speed functionality */
-#if defined(FULL_SPEED_AUDIO_2) && defined(AUDIO_CLASS_FALLBACK)
+#if defined(FULL_SPEED_AUDIO_2) && (AUDIO_CLASS_FALLBACK != 0)
 #error FULL_SPEED_AUDIO_2 and AUDIO_CLASS_FALLBACK enabled!
 #endif
 
@@ -498,7 +494,7 @@
  *
  * Default: 0x0003
  */
-#if (AUDIO_CLASS==1) || defined(AUDIO_CLASS_FALLBACK) || defined(__DOXYGEN__)
+#if (AUDIO_CLASS == 1) || (AUDIO_CLASS_FALLBACK != 0) || defined(__DOXYGEN__)
 #ifndef PID_AUDIO_1
 #define PID_AUDIO_1              (0x0003)
 #endif

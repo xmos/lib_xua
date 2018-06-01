@@ -43,7 +43,7 @@ typedef struct
     STR_TABLE_ENTRY(usbInputTermStr_Audio2);      /* Users sees as output from host */
     STR_TABLE_ENTRY(usbOutputTermStr_Audio2);     /* User sees as input to host */
 #endif
-#if defined (AUDIO_CLASS_FALLBACK) || (AUDIO_CLASS == 1)
+#if  (AUDIO_CLASS_FALLBACK != 0) || (AUDIO_CLASS == 1)
     /* Audio 1.0 Strings */
     STR_TABLE_ENTRY(productStr_Audio1);           /* Product string for Audio 1 */
     STR_TABLE_ENTRY(outputInterfaceStr_Audio1);   /* iInterface for streaming intefaces */
@@ -317,7 +317,7 @@ StringDescTable_t g_strTable =
     .usbInputTermStr_Audio2      = APPEND_PRODUCT_STR_A2(),
     .usbOutputTermStr_Audio2     = APPEND_PRODUCT_STR_A2(),
 #endif
-#if defined (AUDIO_CLASS_FALLBACK) || (AUDIO_CLASS == 1)
+#if (AUDIO_CLASS_FALLBACK != 0) || (AUDIO_CLASS == 1)
     .productStr_Audio1           = PRODUCT_STR_A1,
     .outputInterfaceStr_Audio1   = APPEND_PRODUCT_STR_A1(),
     .inputInterfaceStr_Audio1    = APPEND_PRODUCT_STR_A1(),
@@ -392,7 +392,7 @@ StringDescTable_t g_strTable =
 
 /***** Device Descriptors *****/
 
-#if defined(AUDIO_CLASS_FALLBACK) || (AUDIO_CLASS==1)
+#if (AUDIO_CLASS_FALLBACK != 0) || (AUDIO_CLASS==1)
 /* Device Descriptor for Audio Class 1.0 (Assumes Full-Speed) */
 USB_Descriptor_Device_t devDesc_Audio1 =
 {
@@ -474,7 +474,7 @@ unsigned char devQualDesc_Audio2[] =
     0x00                            /* 9  bReserved (must be zero) */
 };
 
-#if defined(AUDIO_CLASS_FALLBACK) || (AUDIO_CLASS==1)
+#if (AUDIO_CLASS_FALLBACK != 0) || (AUDIO_CLASS == 1)
 /* Device Qualifier Descriptor for running at high-speed (matches audio 1.0 device descriptor) */
 unsigned char devQualDesc_Audio1[] =
 {
@@ -2208,7 +2208,7 @@ unsigned char cfgDesc_Null[] =
 };
 
 
-#if defined (AUDIO_CLASS_FALLBACK) || (AUDIO_CLASS == 1)
+#if (AUDIO_CLASS_FALLBACK != 0) || (AUDIO_CLASS == 1)
 /* Configuration descriptor for Audio v1.0 */
 /* Note Audio 1.0 descriptors still a simple array so we need some extra defines regarding lengths.. */
 #if (NUM_USB_CHAN_IN > 0)

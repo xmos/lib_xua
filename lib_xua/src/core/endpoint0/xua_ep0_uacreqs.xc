@@ -1069,7 +1069,7 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
 
 }
 
-#if defined (AUDIO_CLASS_FALLBACK) || (AUDIO_CLASS==1)
+#if (AUDIO_CLASS_FALLBACK != 0) || (AUDIO_CLASS == 1)
 
 int AudioEndpointRequests_1(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, chanend c_audioControl, chanend ?c_mix_ctl, chanend ?c_clk_ctl)
 {
