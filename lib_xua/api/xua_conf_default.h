@@ -260,7 +260,7 @@
 #endif
 
 /* Some checks on full-speed functionality */
-#if defined(FULL_SPEED_AUDIO_2) && (AUDIO_CLASS_FALLBACK != 0)
+#if defined(FULL_SPEED_AUDIO_2) && (AUDIO_CLASS_FALLBACK)
 #error FULL_SPEED_AUDIO_2 and AUDIO_CLASS_FALLBACK enabled!
 #endif
 
@@ -494,7 +494,7 @@
  *
  * Default: 0x0003
  */
-#if (AUDIO_CLASS == 1) || (AUDIO_CLASS_FALLBACK != 0) || defined(__DOXYGEN__)
+#if (AUDIO_CLASS == 1) || (AUDIO_CLASS_FALLBACK) || defined(__DOXYGEN__)
 #ifndef PID_AUDIO_1
 #define PID_AUDIO_1              (0x0003)
 #endif
