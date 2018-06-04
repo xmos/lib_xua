@@ -39,13 +39,13 @@
 
 /* Windows does not have a built in DFU driver (windows will prompt), so warn that DFU will not be functional in Audio 1.0 mode */
 #ifndef FORCE_UAC1_DFU
-#if ((AUDIO_CLASS == 1) || (AUDIO_CLASS_FALLBACK != 0)) && defined(DFU)
+#if ((AUDIO_CLASS == 1) || (AUDIO_CLASS_FALLBACK)) && defined(DFU)
 #warning DFU will not be enabled in AUDIO 1.0 mode due to Windows requesting driver
 #endif
 #endif
 
 /* MIDI not supported in Audio 1.0 mode */
-#if ((AUDIO_CLASS == 1) || (AUDIO_CLASS_FALLBACK != 0)) && defined(MIDI)
+#if ((AUDIO_CLASS == 1) || (AUDIO_CLASS_FALLBACK)) && defined(MIDI)
 #warning MIDI is currently not supported and will not be enabled in AUDIO 1.0 mode
 #endif
 
@@ -529,7 +529,7 @@ void XUA_Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
 
                         if ((epNum == ENDPOINT_ADDRESS_OUT_AUDIO) || (epNum == ENDPOINT_ADDRESS_IN_AUDIO))
 				        {
-#if (AUDIO_CLASS == 2) && (AUDIO_CLASS_FALLBACK != 0)
+#if (AUDIO_CLASS == 2) && (AUDIO_CLASS_FALLBACK)
                             if(g_curUsbSpeed == XUD_SPEED_FS)
                             {
                                 result = AudioEndpointRequests_1(ep0_out, ep0_in, &sp, c_audioControl, c_mix_ctl, c_clk_ctl);
@@ -594,7 +594,7 @@ void XUA_Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
 #endif
                             )
                         {
-#if (AUDIO_CLASS == 2) && (AUDIO_CLASS_FALLBACK != 0)
+#if (AUDIO_CLASS == 2) && (AUDIO_CLASS_FALLBACK)
                             if(g_curUsbSpeed == XUD_SPEED_HS)
                             {
                                 result = AudioClassRequests_2(ep0_out, ep0_in, &sp, c_audioControl, c_mix_ctl, c_clk_ctl);
@@ -645,7 +645,7 @@ void XUA_Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
             if (!DFU_mode_active)
             {
 #endif
-#if (AUDIO_CLASS_FALLBACK != 0) && (AUDIO_CLASS != 1)
+#if (AUDIO_CLASS_FALLBACK) && (AUDIO_CLASS != 1)
                 /* Return Audio 2.0 Descriptors with Audio 1.0 as fallback */
                 result = USB_StandardRequests(ep0_out, ep0_in,
                     (unsigned char*)&devDesc_Audio2, sizeof(devDesc_Audio2),
