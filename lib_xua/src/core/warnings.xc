@@ -46,7 +46,7 @@ Warnings relating to configuration defines located in this XC source file rather
 #warning BCD_DEVICE not defined. Using XMOS release version number
 #endif
 
-#if (AUDIO_CLASS == 1) || (AUDIO_CLASS_FALLBACK != 0)
+#if (AUDIO_CLASS == 1) || (AUDIO_CLASS_FALLBACK)
 #ifndef PID_AUDIO_1
 #warning PID_AUDIO_1 not defined. Using 0x0003
 #endif
