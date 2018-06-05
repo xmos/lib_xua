@@ -13,7 +13,11 @@ lib_xua Change Log
   * CHANGE:    Define NUM_PDM_MICS renamed to XUA_NUM_PDM_MICS
   * CHANGE:    Define NO_USB renamed to XUA_USB_EN
   * RESOLVED:  wChannelConfig in UAC1 descriptor set according to output channel
-    count 
+    count
+
+  * Changes to dependencies:
+
+    - lib_spdif: Added dependency 3.0.0
 
 0.1.2
 -----
