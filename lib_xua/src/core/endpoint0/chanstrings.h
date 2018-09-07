@@ -1308,21 +1308,21 @@
         #if ((1 < SPDIF_RX_INDEX+2+1) && (1 > SPDIF_RX_INDEX)) && (XUA_SPDIF_RX_EN) || (1 < I2S_CHANS_ADC+1)
         "/"
         #endif
-        #if(1 - ADAT_TX_INDEX == 1)
+        #if(1 - ADAT_RX_INDEX == 1)
             "ADAT 1"
-        #elif(1 - ADAT_TX_INDEX == 2)
+        #elif(1 - ADAT_RX_INDEX == 2)
             "ADAT 2"
-        #elif(1 - ADAT_TX_INDEX == 3)
+        #elif(1 - ADAT_RX_INDEX == 3)
             "ADAT 3"
-        #elif(1 - ADAT_TX_INDEX == 4)
+        #elif(1 - ADAT_RX_INDEX == 4)
             "ADAT 4"
-        #elif(1 - ADAT_TX_INDEX == 5)
+        #elif(1 - ADAT_RX_INDEX == 5)
             "ADAT 5"
-        #elif(1 - ADAT_TX_INDEX == 6)
+        #elif(1 - ADAT_RX_INDEX == 6)
             "ADAT 6"
-        #elif(1 - ADAT_TX_INDEX == 7)
+        #elif(1 - ADAT_RX_INDEX == 7)
             "ADAT 7"
-        #elif(1 - ADAT_TX_INDEX == 8)
+        #elif(1 - ADAT_RX_INDEX == 8)
             "ADAT 8"
         #endif
      #endif
@@ -1348,21 +1348,21 @@
         #if ((2 < SPDIF_RX_INDEX+2+1) && (2 > SPDIF_RX_INDEX)) && (XUA_SPDIF_RX_EN) || (2 < I2S_CHANS_ADC+1)
         "/"
         #endif
-        #if(2 - ADAT_TX_INDEX == 1)
+        #if(2 - ADAT_RX_INDEX == 1)
             "ADAT 1"
-        #elif(2 - ADAT_TX_INDEX == 2)
+        #elif(2 - ADAT_RX_INDEX == 2)
             "ADAT 2"
-        #elif(2 - ADAT_TX_INDEX == 3)
+        #elif(2 - ADAT_RX_INDEX == 3)
             "ADAT 3"
-        #elif(2 - ADAT_TX_INDEX == 4)
+        #elif(2 - ADAT_RX_INDEX == 4)
             "ADAT 4"
-        #elif(2 - ADAT_TX_INDEX == 5)
+        #elif(2 - ADAT_RX_INDEX == 5)
             "ADAT 5"
-        #elif(2 - ADAT_TX_INDEX == 6)
+        #elif(2 - ADAT_RX_INDEX == 6)
             "ADAT 6"
-        #elif(2 - ADAT_TX_INDEX == 7)
+        #elif(2 - ADAT_RX_INDEX == 7)
             "ADAT 7"
-        #elif(2 - ADAT_TX_INDEX == 8)
+        #elif(2 - ADAT_RX_INDEX == 8)
             "ADAT 8"
         #endif
      #endif
@@ -1388,21 +1388,21 @@
         #if ((3 < SPDIF_RX_INDEX+2+1) && (3 > SPDIF_RX_INDEX)) && (XUA_SPDIF_RX_EN) || (3 < I2S_CHANS_ADC+1)
         "/"
         #endif
-        #if(3 - ADAT_TX_INDEX == 1)
+        #if(3 - ADAT_RX_INDEX == 1)
             "ADAT 1"
-        #elif(3 - ADAT_TX_INDEX == 2)
+        #elif(3 - ADAT_RX_INDEX == 2)
             "ADAT 2"
-        #elif(3 - ADAT_TX_INDEX == 3)
+        #elif(3 - ADAT_RX_INDEX == 3)
             "ADAT 3"
-        #elif(3 - ADAT_TX_INDEX == 4)
+        #elif(3 - ADAT_RX_INDEX == 4)
             "ADAT 4"
-        #elif(3 - ADAT_TX_INDEX == 5)
+        #elif(3 - ADAT_RX_INDEX == 5)
             "ADAT 5"
-        #elif(3 - ADAT_TX_INDEX == 6)
+        #elif(3 - ADAT_RX_INDEX == 6)
             "ADAT 6"
-        #elif(3 - ADAT_TX_INDEX == 7)
+        #elif(3 - ADAT_RX_INDEX == 7)
             "ADAT 7"
-        #elif(3 - ADAT_TX_INDEX == 8)
+        #elif(3 - ADAT_RX_INDEX == 8)
             "ADAT 8"
         #endif
      #endif
@@ -1428,21 +1428,21 @@
         #if ((4 < SPDIF_RX_INDEX+2+1) && (4 > SPDIF_RX_INDEX)) && (XUA_SPDIF_RX_EN) || (4 < I2S_CHANS_ADC+1)
         "/"
         #endif
-        #if(4 - ADAT_TX_INDEX == 1)
+        #if(4 - ADAT_RX_INDEX == 1)
             "ADAT 1"
-        #elif(4 - ADAT_TX_INDEX == 2)
+        #elif(4 - ADAT_RX_INDEX == 2)
             "ADAT 2"
-        #elif(4 - ADAT_TX_INDEX == 3)
+        #elif(4 - ADAT_RX_INDEX == 3)
             "ADAT 3"
-        #elif(4 - ADAT_TX_INDEX == 4)
+        #elif(4 - ADAT_RX_INDEX == 4)
             "ADAT 4"
-        #elif(4 - ADAT_TX_INDEX == 5)
+        #elif(4 - ADAT_RX_INDEX == 5)
             "ADAT 5"
-        #elif(4 - ADAT_TX_INDEX == 6)
+        #elif(4 - ADAT_RX_INDEX == 6)
             "ADAT 6"
-        #elif(4 - ADAT_TX_INDEX == 7)
+        #elif(4 - ADAT_RX_INDEX == 7)
             "ADAT 7"
-        #elif(4 - ADAT_TX_INDEX == 8)
+        #elif(4 - ADAT_RX_INDEX == 8)
             "ADAT 8"
         #endif
      #endif
@@ -1468,21 +1468,21 @@
         #if ((5 < SPDIF_RX_INDEX+2+1) && (5 > SPDIF_RX_INDEX)) && (XUA_SPDIF_RX_EN) || (5 < I2S_CHANS_ADC+1)
         "/"
         #endif
-        #if(5 - ADAT_TX_INDEX == 1)
+        #if(5 - ADAT_RX_INDEX == 1)
             "ADAT 1"
-        #elif(5 - ADAT_TX_INDEX == 2)
+        #elif(5 - ADAT_RX_INDEX == 2)
             "ADAT 2"
-        #elif(5 - ADAT_TX_INDEX == 3)
+        #elif(5 - ADAT_RX_INDEX == 3)
             "ADAT 3"
-        #elif(5 - ADAT_TX_INDEX == 4)
+        #elif(5 - ADAT_RX_INDEX == 4)
             "ADAT 4"
-        #elif(5 - ADAT_TX_INDEX == 5)
+        #elif(5 - ADAT_RX_INDEX == 5)
             "ADAT 5"
-        #elif(5 - ADAT_TX_INDEX == 6)
+        #elif(5 - ADAT_RX_INDEX == 6)
             "ADAT 6"
-        #elif(5 - ADAT_TX_INDEX == 7)
+        #elif(5 - ADAT_RX_INDEX == 7)
             "ADAT 7"
-        #elif(5 - ADAT_TX_INDEX == 8)
+        #elif(5 - ADAT_RX_INDEX == 8)
             "ADAT 8"
         #endif
      #endif
@@ -1508,21 +1508,21 @@
         #if ((6 < SPDIF_RX_INDEX+2+1) && (6 > SPDIF_RX_INDEX)) && (XUA_SPDIF_RX_EN) || (6 < I2S_CHANS_ADC+1)
         "/"
         #endif
-        #if(6 - ADAT_TX_INDEX == 1)
+        #if(6 - ADAT_RX_INDEX == 1)
             "ADAT 1"
-        #elif(6 - ADAT_TX_INDEX == 2)
+        #elif(6 - ADAT_RX_INDEX == 2)
             "ADAT 2"
-        #elif(6 - ADAT_TX_INDEX == 3)
+        #elif(6 - ADAT_RX_INDEX == 3)
             "ADAT 3"
-        #elif(6 - ADAT_TX_INDEX == 4)
+        #elif(6 - ADAT_RX_INDEX == 4)
             "ADAT 4"
-        #elif(6 - ADAT_TX_INDEX == 5)
+        #elif(6 - ADAT_RX_INDEX == 5)
             "ADAT 5"
-        #elif(6 - ADAT_TX_INDEX == 6)
+        #elif(6 - ADAT_RX_INDEX == 6)
             "ADAT 6"
-        #elif(6 - ADAT_TX_INDEX == 7)
+        #elif(6 - ADAT_RX_INDEX == 7)
             "ADAT 7"
-        #elif(6 - ADAT_TX_INDEX == 8)
+        #elif(6 - ADAT_RX_INDEX == 8)
             "ADAT 8"
         #endif
      #endif
@@ -1548,21 +1548,21 @@
         #if ((7 < SPDIF_RX_INDEX+2+1) && (7 > SPDIF_RX_INDEX)) && (XUA_SPDIF_RX_EN) || (7 < I2S_CHANS_ADC+1)
         "/"
         #endif
-        #if(7 - ADAT_TX_INDEX == 1)
+        #if(7 - ADAT_RX_INDEX == 1)
             "ADAT 1"
-        #elif(7 - ADAT_TX_INDEX == 2)
+        #elif(7 - ADAT_RX_INDEX == 2)
             "ADAT 2"
-        #elif(7 - ADAT_TX_INDEX == 3)
+        #elif(7 - ADAT_RX_INDEX == 3)
             "ADAT 3"
-        #elif(7 - ADAT_TX_INDEX == 4)
+        #elif(7 - ADAT_RX_INDEX == 4)
             "ADAT 4"
-        #elif(7 - ADAT_TX_INDEX == 5)
+        #elif(7 - ADAT_RX_INDEX == 5)
             "ADAT 5"
-        #elif(7 - ADAT_TX_INDEX == 6)
+        #elif(7 - ADAT_RX_INDEX == 6)
             "ADAT 6"
-        #elif(7 - ADAT_TX_INDEX == 7)
+        #elif(7 - ADAT_RX_INDEX == 7)
             "ADAT 7"
-        #elif(7 - ADAT_TX_INDEX == 8)
+        #elif(7 - ADAT_RX_INDEX == 8)
             "ADAT 8"
         #endif
      #endif
@@ -1588,21 +1588,21 @@
         #if ((8 < SPDIF_RX_INDEX+2+1) && (8 > SPDIF_RX_INDEX)) && (XUA_SPDIF_RX_EN) || (8 < I2S_CHANS_ADC+1)
         "/"
         #endif
-        #if(8 - ADAT_TX_INDEX == 1)
+        #if(8 - ADAT_RX_INDEX == 1)
             "ADAT 1"
-        #elif(8 - ADAT_TX_INDEX == 2)
+        #elif(8 - ADAT_RX_INDEX == 2)
             "ADAT 2"
-        #elif(8 - ADAT_TX_INDEX == 3)
+        #elif(8 - ADAT_RX_INDEX == 3)
             "ADAT 3"
-        #elif(8 - ADAT_TX_INDEX == 4)
+        #elif(8 - ADAT_RX_INDEX == 4)
             "ADAT 4"
-        #elif(8 - ADAT_TX_INDEX == 5)
+        #elif(8 - ADAT_RX_INDEX == 5)
             "ADAT 5"
-        #elif(8 - ADAT_TX_INDEX == 6)
+        #elif(8 - ADAT_RX_INDEX == 6)
             "ADAT 6"
-        #elif(8 - ADAT_TX_INDEX == 7)
+        #elif(8 - ADAT_RX_INDEX == 7)
             "ADAT 7"
-        #elif(8 - ADAT_TX_INDEX == 8)
+        #elif(8 - ADAT_RX_INDEX == 8)
             "ADAT 8"
         #endif
      #endif
@@ -1628,21 +1628,21 @@
         #if ((9 < SPDIF_RX_INDEX+2+1) && (9 > SPDIF_RX_INDEX)) && (XUA_SPDIF_RX_EN) || (9 < I2S_CHANS_ADC+1)
         "/"
         #endif
-        #if(9 - ADAT_TX_INDEX == 1)
+        #if(9 - ADAT_RX_INDEX == 1)
             "ADAT 1"
-        #elif(9 - ADAT_TX_INDEX == 2)
+        #elif(9 - ADAT_RX_INDEX == 2)
             "ADAT 2"
-        #elif(9 - ADAT_TX_INDEX == 3)
+        #elif(9 - ADAT_RX_INDEX == 3)
             "ADAT 3"
-        #elif(9 - ADAT_TX_INDEX == 4)
+        #elif(9 - ADAT_RX_INDEX == 4)
             "ADAT 4"
-        #elif(9 - ADAT_TX_INDEX == 5)
+        #elif(9 - ADAT_RX_INDEX == 5)
             "ADAT 5"
-        #elif(9 - ADAT_TX_INDEX == 6)
+        #elif(9 - ADAT_RX_INDEX == 6)
             "ADAT 6"
-        #elif(9 - ADAT_TX_INDEX == 7)
+        #elif(9 - ADAT_RX_INDEX == 7)
             "ADAT 7"
-        #elif(9 - ADAT_TX_INDEX == 8)
+        #elif(9 - ADAT_RX_INDEX == 8)
             "ADAT 8"
         #endif
      #endif
@@ -1668,21 +1668,21 @@
         #if ((10 < SPDIF_RX_INDEX+2+1) && (10 > SPDIF_RX_INDEX)) && (XUA_SPDIF_RX_EN) || (10 < I2S_CHANS_ADC+1)
         "/"
         #endif
-        #if(10 - ADAT_TX_INDEX == 1)
+        #if(10 - ADAT_RX_INDEX == 1)
             "ADAT 1"
-        #elif(10 - ADAT_TX_INDEX == 2)
+        #elif(10 - ADAT_RX_INDEX == 2)
             "ADAT 2"
-        #elif(10 - ADAT_TX_INDEX == 3)
+        #elif(10 - ADAT_RX_INDEX == 3)
             "ADAT 3"
-        #elif(10 - ADAT_TX_INDEX == 4)
+        #elif(10 - ADAT_RX_INDEX == 4)
             "ADAT 4"
-        #elif(10 - ADAT_TX_INDEX == 5)
+        #elif(10 - ADAT_RX_INDEX == 5)
             "ADAT 5"
-        #elif(10 - ADAT_TX_INDEX == 6)
+        #elif(10 - ADAT_RX_INDEX == 6)
             "ADAT 6"
-        #elif(10 - ADAT_TX_INDEX == 7)
+        #elif(10 - ADAT_RX_INDEX == 7)
             "ADAT 7"
-        #elif(10 - ADAT_TX_INDEX == 8)
+        #elif(10 - ADAT_RX_INDEX == 8)
             "ADAT 8"
         #endif
      #endif
@@ -1708,21 +1708,21 @@
         #if ((11 < SPDIF_RX_INDEX+2+1) && (11 > SPDIF_RX_INDEX)) && (XUA_SPDIF_RX_EN) || (11 < I2S_CHANS_ADC+1)
         "/"
         #endif
-        #if(11 - ADAT_TX_INDEX == 1)
+        #if(11 - ADAT_RX_INDEX == 1)
             "ADAT 1"
-        #elif(11 - ADAT_TX_INDEX == 2)
+        #elif(11 - ADAT_RX_INDEX == 2)
             "ADAT 2"
-        #elif(11 - ADAT_TX_INDEX == 3)
+        #elif(11 - ADAT_RX_INDEX == 3)
             "ADAT 3"
-        #elif(11 - ADAT_TX_INDEX == 4)
+        #elif(11 - ADAT_RX_INDEX == 4)
             "ADAT 4"
-        #elif(11 - ADAT_TX_INDEX == 5)
+        #elif(11 - ADAT_RX_INDEX == 5)
             "ADAT 5"
-        #elif(11 - ADAT_TX_INDEX == 6)
+        #elif(11 - ADAT_RX_INDEX == 6)
             "ADAT 6"
-        #elif(11 - ADAT_TX_INDEX == 7)
+        #elif(11 - ADAT_RX_INDEX == 7)
             "ADAT 7"
-        #elif(11 - ADAT_TX_INDEX == 8)
+        #elif(11 - ADAT_RX_INDEX == 8)
             "ADAT 8"
         #endif
      #endif
@@ -1748,21 +1748,21 @@
         #if ((12 < SPDIF_RX_INDEX+2+1) && (12 > SPDIF_RX_INDEX)) && (XUA_SPDIF_RX_EN) || (12 < I2S_CHANS_ADC+1)
         "/"
         #endif
-        #if(12 - ADAT_TX_INDEX == 1)
+        #if(12 - ADAT_RX_INDEX == 1)
             "ADAT 1"
-        #elif(12 - ADAT_TX_INDEX == 2)
+        #elif(12 - ADAT_RX_INDEX == 2)
             "ADAT 2"
-        #elif(12 - ADAT_TX_INDEX == 3)
+        #elif(12 - ADAT_RX_INDEX == 3)
             "ADAT 3"
-        #elif(12 - ADAT_TX_INDEX == 4)
+        #elif(12 - ADAT_RX_INDEX == 4)
             "ADAT 4"
-        #elif(12 - ADAT_TX_INDEX == 5)
+        #elif(12 - ADAT_RX_INDEX == 5)
             "ADAT 5"
-        #elif(12 - ADAT_TX_INDEX == 6)
+        #elif(12 - ADAT_RX_INDEX == 6)
             "ADAT 6"
-        #elif(12 - ADAT_TX_INDEX == 7)
+        #elif(12 - ADAT_RX_INDEX == 7)
             "ADAT 7"
-        #elif(12 - ADAT_TX_INDEX == 8)
+        #elif(12 - ADAT_RX_INDEX == 8)
             "ADAT 8"
         #endif
      #endif
@@ -1788,21 +1788,21 @@
         #if ((13 < SPDIF_RX_INDEX+2+1) && (13 > SPDIF_RX_INDEX)) && (XUA_SPDIF_RX_EN) || (13 < I2S_CHANS_ADC+1)
         "/"
         #endif
-        #if(13 - ADAT_TX_INDEX == 1)
+        #if(13 - ADAT_RX_INDEX == 1)
             "ADAT 1"
-        #elif(13 - ADAT_TX_INDEX == 2)
+        #elif(13 - ADAT_RX_INDEX == 2)
             "ADAT 2"
-        #elif(13 - ADAT_TX_INDEX == 3)
+        #elif(13 - ADAT_RX_INDEX == 3)
             "ADAT 3"
-        #elif(13 - ADAT_TX_INDEX == 4)
+        #elif(13 - ADAT_RX_INDEX == 4)
             "ADAT 4"
-        #elif(13 - ADAT_TX_INDEX == 5)
+        #elif(13 - ADAT_RX_INDEX == 5)
             "ADAT 5"
-        #elif(13 - ADAT_TX_INDEX == 6)
+        #elif(13 - ADAT_RX_INDEX == 6)
             "ADAT 6"
-        #elif(13 - ADAT_TX_INDEX == 7)
+        #elif(13 - ADAT_RX_INDEX == 7)
             "ADAT 7"
-        #elif(13 - ADAT_TX_INDEX == 8)
+        #elif(13 - ADAT_RX_INDEX == 8)
             "ADAT 8"
         #endif
      #endif
@@ -1828,21 +1828,21 @@
         #if ((14 < SPDIF_RX_INDEX+2+1) && (14 > SPDIF_RX_INDEX)) && (XUA_SPDIF_RX_EN) || (14 < I2S_CHANS_ADC+1)
         "/"
         #endif
-        #if(14 - ADAT_TX_INDEX == 1)
+        #if(14 - ADAT_RX_INDEX == 1)
             "ADAT 1"
-        #elif(14 - ADAT_TX_INDEX == 2)
+        #elif(14 - ADAT_RX_INDEX == 2)
             "ADAT 2"
-        #elif(14 - ADAT_TX_INDEX == 3)
+        #elif(14 - ADAT_RX_INDEX == 3)
             "ADAT 3"
-        #elif(14 - ADAT_TX_INDEX == 4)
+        #elif(14 - ADAT_RX_INDEX == 4)
             "ADAT 4"
-        #elif(14 - ADAT_TX_INDEX == 5)
+        #elif(14 - ADAT_RX_INDEX == 5)
             "ADAT 5"
-        #elif(14 - ADAT_TX_INDEX == 6)
+        #elif(14 - ADAT_RX_INDEX == 6)
             "ADAT 6"
-        #elif(14 - ADAT_TX_INDEX == 7)
+        #elif(14 - ADAT_RX_INDEX == 7)
             "ADAT 7"
-        #elif(14 - ADAT_TX_INDEX == 8)
+        #elif(14 - ADAT_RX_INDEX == 8)
             "ADAT 8"
         #endif
      #endif
@@ -1868,21 +1868,21 @@
         #if ((15 < SPDIF_RX_INDEX+2+1) && (15 > SPDIF_RX_INDEX)) && (XUA_SPDIF_RX_EN) || (15 < I2S_CHANS_ADC+1)
         "/"
         #endif
-        #if(15 - ADAT_TX_INDEX == 1)
+        #if(15 - ADAT_RX_INDEX == 1)
             "ADAT 1"
-        #elif(15 - ADAT_TX_INDEX == 2)
+        #elif(15 - ADAT_RX_INDEX == 2)
             "ADAT 2"
-        #elif(15 - ADAT_TX_INDEX == 3)
+        #elif(15 - ADAT_RX_INDEX == 3)
             "ADAT 3"
-        #elif(15 - ADAT_TX_INDEX == 4)
+        #elif(15 - ADAT_RX_INDEX == 4)
             "ADAT 4"
-        #elif(15 - ADAT_TX_INDEX == 5)
+        #elif(15 - ADAT_RX_INDEX == 5)
             "ADAT 5"
-        #elif(15 - ADAT_TX_INDEX == 6)
+        #elif(15 - ADAT_RX_INDEX == 6)
             "ADAT 6"
-        #elif(15 - ADAT_TX_INDEX == 7)
+        #elif(15 - ADAT_RX_INDEX == 7)
             "ADAT 7"
-        #elif(15 - ADAT_TX_INDEX == 8)
+        #elif(15 - ADAT_RX_INDEX == 8)
             "ADAT 8"
         #endif
      #endif
@@ -1908,21 +1908,21 @@
         #if ((16 < SPDIF_RX_INDEX+2+1) && (16 > SPDIF_RX_INDEX)) && (XUA_SPDIF_RX_EN) || (16 < I2S_CHANS_ADC+1)
         "/"
         #endif
-        #if(16 - ADAT_TX_INDEX == 1)
+        #if(16 - ADAT_RX_INDEX == 1)
             "ADAT 1"
-        #elif(16 - ADAT_TX_INDEX == 2)
+        #elif(16 - ADAT_RX_INDEX == 2)
             "ADAT 2"
-        #elif(16 - ADAT_TX_INDEX == 3)
+        #elif(16 - ADAT_RX_INDEX == 3)
             "ADAT 3"
-        #elif(16 - ADAT_TX_INDEX == 4)
+        #elif(16 - ADAT_RX_INDEX == 4)
             "ADAT 4"
-        #elif(16 - ADAT_TX_INDEX == 5)
+        #elif(16 - ADAT_RX_INDEX == 5)
             "ADAT 5"
-        #elif(16 - ADAT_TX_INDEX == 6)
+        #elif(16 - ADAT_RX_INDEX == 6)
             "ADAT 6"
-        #elif(16 - ADAT_TX_INDEX == 7)
+        #elif(16 - ADAT_RX_INDEX == 7)
             "ADAT 7"
-        #elif(16 - ADAT_TX_INDEX == 8)
+        #elif(16 - ADAT_RX_INDEX == 8)
             "ADAT 8"
         #endif
      #endif
@@ -1948,21 +1948,21 @@
         #if ((17 < SPDIF_RX_INDEX+2+1) && (17 > SPDIF_RX_INDEX)) && (XUA_SPDIF_RX_EN) || (17 < I2S_CHANS_ADC+1)
         "/"
         #endif
-        #if(17 - ADAT_TX_INDEX == 1)
+        #if(17 - ADAT_RX_INDEX == 1)
             "ADAT 1"
-        #elif(17 - ADAT_TX_INDEX == 2)
+        #elif(17 - ADAT_RX_INDEX == 2)
             "ADAT 2"
-        #elif(17 - ADAT_TX_INDEX == 3)
+        #elif(17 - ADAT_RX_INDEX == 3)
             "ADAT 3"
-        #elif(17 - ADAT_TX_INDEX == 4)
+        #elif(17 - ADAT_RX_INDEX == 4)
             "ADAT 4"
-        #elif(17 - ADAT_TX_INDEX == 5)
+        #elif(17 - ADAT_RX_INDEX == 5)
             "ADAT 5"
-        #elif(17 - ADAT_TX_INDEX == 6)
+        #elif(17 - ADAT_RX_INDEX == 6)
             "ADAT 6"
-        #elif(17 - ADAT_TX_INDEX == 7)
+        #elif(17 - ADAT_RX_INDEX == 7)
             "ADAT 7"
-        #elif(17 - ADAT_TX_INDEX == 8)
+        #elif(17 - ADAT_RX_INDEX == 8)
             "ADAT 8"
         #endif
      #endif
@@ -1988,21 +1988,21 @@
         #if ((18 < SPDIF_RX_INDEX+2+1) && (18 > SPDIF_RX_INDEX)) && (XUA_SPDIF_RX_EN) || (18 < I2S_CHANS_ADC+1)
         "/"
         #endif
-        #if(18 - ADAT_TX_INDEX == 1)
+        #if(18 - ADAT_RX_INDEX == 1)
             "ADAT 1"
-        #elif(18 - ADAT_TX_INDEX == 2)
+        #elif(18 - ADAT_RX_INDEX == 2)
             "ADAT 2"
-        #elif(18 - ADAT_TX_INDEX == 3)
+        #elif(18 - ADAT_RX_INDEX == 3)
             "ADAT 3"
-        #elif(18 - ADAT_TX_INDEX == 4)
+        #elif(18 - ADAT_RX_INDEX == 4)
             "ADAT 4"
-        #elif(18 - ADAT_TX_INDEX == 5)
+        #elif(18 - ADAT_RX_INDEX == 5)
             "ADAT 5"
-        #elif(18 - ADAT_TX_INDEX == 6)
+        #elif(18 - ADAT_RX_INDEX == 6)
             "ADAT 6"
-        #elif(18 - ADAT_TX_INDEX == 7)
+        #elif(18 - ADAT_RX_INDEX == 7)
             "ADAT 7"
-        #elif(18 - ADAT_TX_INDEX == 8)
+        #elif(18 - ADAT_RX_INDEX == 8)
             "ADAT 8"
         #endif
      #endif
@@ -2028,21 +2028,21 @@
         #if ((19 < SPDIF_RX_INDEX+2+1) && (19 > SPDIF_RX_INDEX)) && (XUA_SPDIF_RX_EN) || (19 < I2S_CHANS_ADC+1)
         "/"
         #endif
-        #if(19 - ADAT_TX_INDEX == 1)
+        #if(19 - ADAT_RX_INDEX == 1)
             "ADAT 1"
-        #elif(19 - ADAT_TX_INDEX == 2)
+        #elif(19 - ADAT_RX_INDEX == 2)
             "ADAT 2"
-        #elif(19 - ADAT_TX_INDEX == 3)
+        #elif(19 - ADAT_RX_INDEX == 3)
             "ADAT 3"
-        #elif(19 - ADAT_TX_INDEX == 4)
+        #elif(19 - ADAT_RX_INDEX == 4)
             "ADAT 4"
-        #elif(19 - ADAT_TX_INDEX == 5)
+        #elif(19 - ADAT_RX_INDEX == 5)
             "ADAT 5"
-        #elif(19 - ADAT_TX_INDEX == 6)
+        #elif(19 - ADAT_RX_INDEX == 6)
             "ADAT 6"
-        #elif(19 - ADAT_TX_INDEX == 7)
+        #elif(19 - ADAT_RX_INDEX == 7)
             "ADAT 7"
-        #elif(19 - ADAT_TX_INDEX == 8)
+        #elif(19 - ADAT_RX_INDEX == 8)
             "ADAT 8"
         #endif
      #endif
@@ -2068,21 +2068,21 @@
         #if ((20 < SPDIF_RX_INDEX+2+1) && (20 > SPDIF_RX_INDEX)) && (XUA_SPDIF_RX_EN) || (20 < I2S_CHANS_ADC+1)
         "/"
         #endif
-        #if(20 - ADAT_TX_INDEX == 1)
+        #if(20 - ADAT_RX_INDEX == 1)
             "ADAT 1"
-        #elif(20 - ADAT_TX_INDEX == 2)
+        #elif(20 - ADAT_RX_INDEX == 2)
             "ADAT 2"
-        #elif(20 - ADAT_TX_INDEX == 3)
+        #elif(20 - ADAT_RX_INDEX == 3)
             "ADAT 3"
-        #elif(20 - ADAT_TX_INDEX == 4)
+        #elif(20 - ADAT_RX_INDEX == 4)
             "ADAT 4"
-        #elif(20 - ADAT_TX_INDEX == 5)
+        #elif(20 - ADAT_RX_INDEX == 5)
             "ADAT 5"
-        #elif(20 - ADAT_TX_INDEX == 6)
+        #elif(20 - ADAT_RX_INDEX == 6)
             "ADAT 6"
-        #elif(20 - ADAT_TX_INDEX == 7)
+        #elif(20 - ADAT_RX_INDEX == 7)
             "ADAT 7"
-        #elif(20 - ADAT_TX_INDEX == 8)
+        #elif(20 - ADAT_RX_INDEX == 8)
             "ADAT 8"
         #endif
      #endif
@@ -2108,21 +2108,21 @@
         #if ((21 < SPDIF_RX_INDEX+2+1) && (21 > SPDIF_RX_INDEX)) && (XUA_SPDIF_RX_EN) || (21 < I2S_CHANS_ADC+1)
         "/"
         #endif
-        #if(21 - ADAT_TX_INDEX == 1)
+        #if(21 - ADAT_RX_INDEX == 1)
             "ADAT 1"
-        #elif(21 - ADAT_TX_INDEX == 2)
+        #elif(21 - ADAT_RX_INDEX == 2)
             "ADAT 2"
-        #elif(21 - ADAT_TX_INDEX == 3)
+        #elif(21 - ADAT_RX_INDEX == 3)
             "ADAT 3"
-        #elif(21 - ADAT_TX_INDEX == 4)
+        #elif(21 - ADAT_RX_INDEX == 4)
             "ADAT 4"
-        #elif(21 - ADAT_TX_INDEX == 5)
+        #elif(21 - ADAT_RX_INDEX == 5)
             "ADAT 5"
-        #elif(21 - ADAT_TX_INDEX == 6)
+        #elif(21 - ADAT_RX_INDEX == 6)
             "ADAT 6"
-        #elif(21 - ADAT_TX_INDEX == 7)
+        #elif(21 - ADAT_RX_INDEX == 7)
             "ADAT 7"
-        #elif(21 - ADAT_TX_INDEX == 8)
+        #elif(21 - ADAT_RX_INDEX == 8)
             "ADAT 8"
         #endif
      #endif
@@ -2148,21 +2148,21 @@
         #if ((22 < SPDIF_RX_INDEX+2+1) && (22 > SPDIF_RX_INDEX)) && (XUA_SPDIF_RX_EN) || (22 < I2S_CHANS_ADC+1)
         "/"
         #endif
-        #if(22 - ADAT_TX_INDEX == 1)
+        #if(22 - ADAT_RX_INDEX == 1)
             "ADAT 1"
-        #elif(22 - ADAT_TX_INDEX == 2)
+        #elif(22 - ADAT_RX_INDEX == 2)
             "ADAT 2"
-        #elif(22 - ADAT_TX_INDEX == 3)
+        #elif(22 - ADAT_RX_INDEX == 3)
             "ADAT 3"
-        #elif(22 - ADAT_TX_INDEX == 4)
+        #elif(22 - ADAT_RX_INDEX == 4)
             "ADAT 4"
-        #elif(22 - ADAT_TX_INDEX == 5)
+        #elif(22 - ADAT_RX_INDEX == 5)
             "ADAT 5"
-        #elif(22 - ADAT_TX_INDEX == 6)
+        #elif(22 - ADAT_RX_INDEX == 6)
             "ADAT 6"
-        #elif(22 - ADAT_TX_INDEX == 7)
+        #elif(22 - ADAT_RX_INDEX == 7)
             "ADAT 7"
-        #elif(22 - ADAT_TX_INDEX == 8)
+        #elif(22 - ADAT_RX_INDEX == 8)
             "ADAT 8"
         #endif
      #endif
@@ -2188,21 +2188,21 @@
         #if ((23 < SPDIF_RX_INDEX+2+1) && (23 > SPDIF_RX_INDEX)) && (XUA_SPDIF_RX_EN) || (23 < I2S_CHANS_ADC+1)
         "/"
         #endif
-        #if(23 - ADAT_TX_INDEX == 1)
+        #if(23 - ADAT_RX_INDEX == 1)
             "ADAT 1"
-        #elif(23 - ADAT_TX_INDEX == 2)
+        #elif(23 - ADAT_RX_INDEX == 2)
             "ADAT 2"
-        #elif(23 - ADAT_TX_INDEX == 3)
+        #elif(23 - ADAT_RX_INDEX == 3)
             "ADAT 3"
-        #elif(23 - ADAT_TX_INDEX == 4)
+        #elif(23 - ADAT_RX_INDEX == 4)
             "ADAT 4"
-        #elif(23 - ADAT_TX_INDEX == 5)
+        #elif(23 - ADAT_RX_INDEX == 5)
             "ADAT 5"
-        #elif(23 - ADAT_TX_INDEX == 6)
+        #elif(23 - ADAT_RX_INDEX == 6)
             "ADAT 6"
-        #elif(23 - ADAT_TX_INDEX == 7)
+        #elif(23 - ADAT_RX_INDEX == 7)
             "ADAT 7"
-        #elif(23 - ADAT_TX_INDEX == 8)
+        #elif(23 - ADAT_RX_INDEX == 8)
             "ADAT 8"
         #endif
      #endif
@@ -2228,21 +2228,21 @@
         #if ((24 < SPDIF_RX_INDEX+2+1) && (24 > SPDIF_RX_INDEX)) && (XUA_SPDIF_RX_EN) || (24 < I2S_CHANS_ADC+1)
         "/"
         #endif
-        #if(24 - ADAT_TX_INDEX == 1)
+        #if(24 - ADAT_RX_INDEX == 1)
             "ADAT 1"
-        #elif(24 - ADAT_TX_INDEX == 2)
+        #elif(24 - ADAT_RX_INDEX == 2)
             "ADAT 2"
-        #elif(24 - ADAT_TX_INDEX == 3)
+        #elif(24 - ADAT_RX_INDEX == 3)
             "ADAT 3"
-        #elif(24 - ADAT_TX_INDEX == 4)
+        #elif(24 - ADAT_RX_INDEX == 4)
             "ADAT 4"
-        #elif(24 - ADAT_TX_INDEX == 5)
+        #elif(24 - ADAT_RX_INDEX == 5)
             "ADAT 5"
-        #elif(24 - ADAT_TX_INDEX == 6)
+        #elif(24 - ADAT_RX_INDEX == 6)
             "ADAT 6"
-        #elif(24 - ADAT_TX_INDEX == 7)
+        #elif(24 - ADAT_RX_INDEX == 7)
             "ADAT 7"
-        #elif(24 - ADAT_TX_INDEX == 8)
+        #elif(24 - ADAT_RX_INDEX == 8)
             "ADAT 8"
         #endif
      #endif
@@ -2268,21 +2268,21 @@
         #if ((25 < SPDIF_RX_INDEX+2+1) && (25 > SPDIF_RX_INDEX)) && (XUA_SPDIF_RX_EN) || (25 < I2S_CHANS_ADC+1)
         "/"
         #endif
-        #if(25 - ADAT_TX_INDEX == 1)
+        #if(25 - ADAT_RX_INDEX == 1)
             "ADAT 1"
-        #elif(25 - ADAT_TX_INDEX == 2)
+        #elif(25 - ADAT_RX_INDEX == 2)
             "ADAT 2"
-        #elif(25 - ADAT_TX_INDEX == 3)
+        #elif(25 - ADAT_RX_INDEX == 3)
             "ADAT 3"
-        #elif(25 - ADAT_TX_INDEX == 4)
+        #elif(25 - ADAT_RX_INDEX == 4)
             "ADAT 4"
-        #elif(25 - ADAT_TX_INDEX == 5)
+        #elif(25 - ADAT_RX_INDEX == 5)
             "ADAT 5"
-        #elif(25 - ADAT_TX_INDEX == 6)
+        #elif(25 - ADAT_RX_INDEX == 6)
             "ADAT 6"
-        #elif(25 - ADAT_TX_INDEX == 7)
+        #elif(25 - ADAT_RX_INDEX == 7)
             "ADAT 7"
-        #elif(25 - ADAT_TX_INDEX == 8)
+        #elif(25 - ADAT_RX_INDEX == 8)
             "ADAT 8"
         #endif
      #endif
@@ -2308,21 +2308,21 @@
         #if ((26 < SPDIF_RX_INDEX+2+1) && (26 > SPDIF_RX_INDEX)) && (XUA_SPDIF_RX_EN) || (26 < I2S_CHANS_ADC+1)
         "/"
         #endif
-        #if(26 - ADAT_TX_INDEX == 1)
+        #if(26 - ADAT_RX_INDEX == 1)
             "ADAT 1"
-        #elif(26 - ADAT_TX_INDEX == 2)
+        #elif(26 - ADAT_RX_INDEX == 2)
             "ADAT 2"
-        #elif(26 - ADAT_TX_INDEX == 3)
+        #elif(26 - ADAT_RX_INDEX == 3)
             "ADAT 3"
-        #elif(26 - ADAT_TX_INDEX == 4)
+        #elif(26 - ADAT_RX_INDEX == 4)
             "ADAT 4"
-        #elif(26 - ADAT_TX_INDEX == 5)
+        #elif(26 - ADAT_RX_INDEX == 5)
             "ADAT 5"
-        #elif(26 - ADAT_TX_INDEX == 6)
+        #elif(26 - ADAT_RX_INDEX == 6)
             "ADAT 6"
-        #elif(26 - ADAT_TX_INDEX == 7)
+        #elif(26 - ADAT_RX_INDEX == 7)
             "ADAT 7"
-        #elif(26 - ADAT_TX_INDEX == 8)
+        #elif(26 - ADAT_RX_INDEX == 8)
             "ADAT 8"
         #endif
      #endif
@@ -2348,21 +2348,21 @@
         #if ((27 < SPDIF_RX_INDEX+2+1) && (27 > SPDIF_RX_INDEX)) && (XUA_SPDIF_RX_EN) || (27 < I2S_CHANS_ADC+1)
         "/"
         #endif
-        #if(27 - ADAT_TX_INDEX == 1)
+        #if(27 - ADAT_RX_INDEX == 1)
             "ADAT 1"
-        #elif(27 - ADAT_TX_INDEX == 2)
+        #elif(27 - ADAT_RX_INDEX == 2)
             "ADAT 2"
-        #elif(27 - ADAT_TX_INDEX == 3)
+        #elif(27 - ADAT_RX_INDEX == 3)
             "ADAT 3"
-        #elif(27 - ADAT_TX_INDEX == 4)
+        #elif(27 - ADAT_RX_INDEX == 4)
             "ADAT 4"
-        #elif(27 - ADAT_TX_INDEX == 5)
+        #elif(27 - ADAT_RX_INDEX == 5)
             "ADAT 5"
-        #elif(27 - ADAT_TX_INDEX == 6)
+        #elif(27 - ADAT_RX_INDEX == 6)
             "ADAT 6"
-        #elif(27 - ADAT_TX_INDEX == 7)
+        #elif(27 - ADAT_RX_INDEX == 7)
             "ADAT 7"
-        #elif(27 - ADAT_TX_INDEX == 8)
+        #elif(27 - ADAT_RX_INDEX == 8)
             "ADAT 8"
         #endif
      #endif
@@ -2388,21 +2388,21 @@
         #if ((28 < SPDIF_RX_INDEX+2+1) && (28 > SPDIF_RX_INDEX)) && (XUA_SPDIF_RX_EN) || (28 < I2S_CHANS_ADC+1)
         "/"
         #endif
-        #if(28 - ADAT_TX_INDEX == 1)
+        #if(28 - ADAT_RX_INDEX == 1)
             "ADAT 1"
-        #elif(28 - ADAT_TX_INDEX == 2)
+        #elif(28 - ADAT_RX_INDEX == 2)
             "ADAT 2"
-        #elif(28 - ADAT_TX_INDEX == 3)
+        #elif(28 - ADAT_RX_INDEX == 3)
             "ADAT 3"
-        #elif(28 - ADAT_TX_INDEX == 4)
+        #elif(28 - ADAT_RX_INDEX == 4)
             "ADAT 4"
-        #elif(28 - ADAT_TX_INDEX == 5)
+        #elif(28 - ADAT_RX_INDEX == 5)
             "ADAT 5"
-        #elif(28 - ADAT_TX_INDEX == 6)
+        #elif(28 - ADAT_RX_INDEX == 6)
             "ADAT 6"
-        #elif(28 - ADAT_TX_INDEX == 7)
+        #elif(28 - ADAT_RX_INDEX == 7)
             "ADAT 7"
-        #elif(28 - ADAT_TX_INDEX == 8)
+        #elif(28 - ADAT_RX_INDEX == 8)
             "ADAT 8"
         #endif
      #endif
@@ -2428,21 +2428,21 @@
         #if ((29 < SPDIF_RX_INDEX+2+1) && (29 > SPDIF_RX_INDEX)) && (XUA_SPDIF_RX_EN) || (29 < I2S_CHANS_ADC+1)
         "/"
         #endif
-        #if(29 - ADAT_TX_INDEX == 1)
+        #if(29 - ADAT_RX_INDEX == 1)
             "ADAT 1"
-        #elif(29 - ADAT_TX_INDEX == 2)
+        #elif(29 - ADAT_RX_INDEX == 2)
             "ADAT 2"
-        #elif(29 - ADAT_TX_INDEX == 3)
+        #elif(29 - ADAT_RX_INDEX == 3)
             "ADAT 3"
-        #elif(29 - ADAT_TX_INDEX == 4)
+        #elif(29 - ADAT_RX_INDEX == 4)
             "ADAT 4"
-        #elif(29 - ADAT_TX_INDEX == 5)
+        #elif(29 - ADAT_RX_INDEX == 5)
             "ADAT 5"
-        #elif(29 - ADAT_TX_INDEX == 6)
+        #elif(29 - ADAT_RX_INDEX == 6)
             "ADAT 6"
-        #elif(29 - ADAT_TX_INDEX == 7)
+        #elif(29 - ADAT_RX_INDEX == 7)
             "ADAT 7"
-        #elif(29 - ADAT_TX_INDEX == 8)
+        #elif(29 - ADAT_RX_INDEX == 8)
             "ADAT 8"
         #endif
      #endif
@@ -2468,21 +2468,21 @@
         #if ((30 < SPDIF_RX_INDEX+2+1) && (30 > SPDIF_RX_INDEX)) && (XUA_SPDIF_RX_EN) || (30 < I2S_CHANS_ADC+1)
         "/"
         #endif
-        #if(30 - ADAT_TX_INDEX == 1)
+        #if(30 - ADAT_RX_INDEX == 1)
             "ADAT 1"
-        #elif(30 - ADAT_TX_INDEX == 2)
+        #elif(30 - ADAT_RX_INDEX == 2)
             "ADAT 2"
-        #elif(30 - ADAT_TX_INDEX == 3)
+        #elif(30 - ADAT_RX_INDEX == 3)
             "ADAT 3"
-        #elif(30 - ADAT_TX_INDEX == 4)
+        #elif(30 - ADAT_RX_INDEX == 4)
             "ADAT 4"
-        #elif(30 - ADAT_TX_INDEX == 5)
+        #elif(30 - ADAT_RX_INDEX == 5)
             "ADAT 5"
-        #elif(30 - ADAT_TX_INDEX == 6)
+        #elif(30 - ADAT_RX_INDEX == 6)
             "ADAT 6"
-        #elif(30 - ADAT_TX_INDEX == 7)
+        #elif(30 - ADAT_RX_INDEX == 7)
             "ADAT 7"
-        #elif(30 - ADAT_TX_INDEX == 8)
+        #elif(30 - ADAT_RX_INDEX == 8)
             "ADAT 8"
         #endif
      #endif
@@ -2508,21 +2508,21 @@
         #if ((31 < SPDIF_RX_INDEX+2+1) && (31 > SPDIF_RX_INDEX)) && (XUA_SPDIF_RX_EN) || (31 < I2S_CHANS_ADC+1)
         "/"
         #endif
-        #if(31 - ADAT_TX_INDEX == 1)
+        #if(31 - ADAT_RX_INDEX == 1)
             "ADAT 1"
-        #elif(31 - ADAT_TX_INDEX == 2)
+        #elif(31 - ADAT_RX_INDEX == 2)
             "ADAT 2"
-        #elif(31 - ADAT_TX_INDEX == 3)
+        #elif(31 - ADAT_RX_INDEX == 3)
             "ADAT 3"
-        #elif(31 - ADAT_TX_INDEX == 4)
+        #elif(31 - ADAT_RX_INDEX == 4)
             "ADAT 4"
-        #elif(31 - ADAT_TX_INDEX == 5)
+        #elif(31 - ADAT_RX_INDEX == 5)
             "ADAT 5"
-        #elif(31 - ADAT_TX_INDEX == 6)
+        #elif(31 - ADAT_RX_INDEX == 6)
             "ADAT 6"
-        #elif(31 - ADAT_TX_INDEX == 7)
+        #elif(31 - ADAT_RX_INDEX == 7)
             "ADAT 7"
-        #elif(31 - ADAT_TX_INDEX == 8)
+        #elif(31 - ADAT_RX_INDEX == 8)
             "ADAT 8"
         #endif
      #endif
@@ -2548,21 +2548,21 @@
         #if ((32 < SPDIF_RX_INDEX+2+1) && (32 > SPDIF_RX_INDEX)) && (XUA_SPDIF_RX_EN) || (32 < I2S_CHANS_ADC+1)
         "/"
         #endif
-        #if(32 - ADAT_TX_INDEX == 1)
+        #if(32 - ADAT_RX_INDEX == 1)
             "ADAT 1"
-        #elif(32 - ADAT_TX_INDEX == 2)
+        #elif(32 - ADAT_RX_INDEX == 2)
             "ADAT 2"
-        #elif(32 - ADAT_TX_INDEX == 3)
+        #elif(32 - ADAT_RX_INDEX == 3)
             "ADAT 3"
-        #elif(32 - ADAT_TX_INDEX == 4)
+        #elif(32 - ADAT_RX_INDEX == 4)
             "ADAT 4"
-        #elif(32 - ADAT_TX_INDEX == 5)
+        #elif(32 - ADAT_RX_INDEX == 5)
             "ADAT 5"
-        #elif(32 - ADAT_TX_INDEX == 6)
+        #elif(32 - ADAT_RX_INDEX == 6)
             "ADAT 6"
-        #elif(32 - ADAT_TX_INDEX == 7)
+        #elif(32 - ADAT_RX_INDEX == 7)
             "ADAT 7"
-        #elif(32 - ADAT_TX_INDEX == 8)
+        #elif(32 - ADAT_RX_INDEX == 8)
             "ADAT 8"
         #endif
      #endif
