@@ -14,6 +14,7 @@ lib_xua Change Log
   * CHANGE:    Define NO_USB renamed to XUA_USB_EN
   * RESOLVED:  wChannelConfig in UAC1 descriptor set according to output channel
     count
+  * RESOLVED:  Indexing of ADAT channel strings (#18059)
 
   * Changes to dependencies:
 
