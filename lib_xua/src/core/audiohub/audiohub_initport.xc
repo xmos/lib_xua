@@ -91,7 +91,7 @@ void InitPorts_slave(unsigned divide, buffered _XUA_CLK_DIR port:32 p_lrclk, buf
     p_lrclk when pinseq(0) :> void @ tmp;
 #endif
 
-    tmp += (I2S_CHANS_PER_FRAME * 32) - 32 + 1 ;
+    tmp += (I2S_CHANS_PER_FRAME * N_BITS_I2S) - N_BITS_I2S + 1 ;
     /* E.g. 2 * 32 - 32 + 1 = 33 for stereo */
     /* E.g. 8 * 32 - 32 + 1 = 225 for 8 chan TDM */
 
@@ -99,7 +99,7 @@ void InitPorts_slave(unsigned divide, buffered _XUA_CLK_DIR port:32 p_lrclk, buf
 #pragma loop unroll
     for(int i = 0; i < I2S_WIRES_DAC; i++)
     {
-        p_i2s_dac[i] @ tmp <: 0;
+        partout_timed(p_i2s_dac[i], N_BITS_I2S, 0, tmp);
     }
 #endif
 
@@ -108,10 +108,12 @@ void InitPorts_slave(unsigned divide, buffered _XUA_CLK_DIR port:32 p_lrclk, buf
     for(int i = 0; i < I2S_WIRES_ADC; i++)
     {
        asm("setpt res[%0], %1"::"r"(p_i2s_adc[i]),"r"(tmp-1));
+       set_port_shift_count(p_i2s_adc[i], N_BITS_I2S);
     }
 #endif
 
     asm("setpt res[%0], %1"::"r"(p_lrclk),"r"(tmp-1));
+    set_port_shift_count(p_lrclk, N_BITS_I2S);
 #endif /* (I2S_CHANS_ADC != 0 || I2S_CHANS_DAC != 0) */
 }
 #endif
