@@ -14,6 +14,7 @@
 #include <xclib.h>
 #include <xs1_su.h>
 #include <string.h>
+#include <print.h>
 
 #include "xua.h"
 
@@ -179,13 +180,24 @@ static inline int HandleSampleClock(int frameCount, buffered _XUA_CLK_DIR port:3
     else
     {
         if(frameCount == 0) 
-            syncError += (lrval != 0x80000000);
+        {
+            if ((lrval & 0xFFFFFF00) != 0x80000000)
+            {
+                syncError = 1;
+                printhexln(lrval);
+            }
+        }
         else
-            syncError += (lrval != 0x7FFFFFFF);
+        {
+            if ((lrval | 0x000000FF) != 0x7FFFFFFF)
+            {
+                syncError = 1;
+                printhexln(lrval);
+            }
+        }
     }
  
-    //return syncError;
-    return 0; //TMP bodge!
+    return syncError;
 
 #else
     if(I2S_MODE_TDM)
