@@ -99,7 +99,7 @@ void InitPorts_slave(unsigned divide, buffered _XUA_CLK_DIR port:32 p_lrclk, buf
 #pragma loop unroll
     for(int i = 0; i < I2S_WIRES_DAC; i++)
     {
-        partout_timed(p_i2s_dac[i], N_BITS_I2S, 0, tmp);
+        partout_timed(p_i2s_dac[i], N_BITS_I2S, 0, tmp-1);
     }
 #endif
 
