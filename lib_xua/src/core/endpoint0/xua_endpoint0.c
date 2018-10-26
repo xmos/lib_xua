@@ -299,13 +299,15 @@ void XUA_Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
     {
 #if XUA_LITE
         unsigned char sbuffer[120];
-        unsigned length;
+        unsigned length = 0;
+        XUD_Result_t result = XUD_RES_ERR;
 
         //XUD_Result_t result = XUD_GetSetupBuffer(ep0_out, sbuffer, &length); //Flattened from xud_device
-        XUD_Result_t result = XUD_GetSetupData(ep0_out, sbuffer, &length);//Flattened from XUD_EpFunctions.xc
+        result = XUD_GetSetupData(ep0_out, sbuffer, &length);//Flattened from XUD_EpFunctions.xc
 
-        //Next step:
-        //void XUD_GetSetupData_Select(chan c,XUD_ep e_out, unsigned &length, XUD_Result_t &result);
+        // select{
+        //     case XUD_GetSetupData_Select(c_ep0_out, ep0_out, &length, &result):
+        //     break;
 
         if (result == XUD_RES_OKAY)
         {

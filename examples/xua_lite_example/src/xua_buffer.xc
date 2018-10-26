@@ -101,6 +101,7 @@ void XUA_Buffer_lite(chanend c_aud_out, chanend c_feedback, chanend c_aud_in, ch
   
   #define FEEDBACK_BUFF_SIZE    4
   unsigned char buffer_feedback[FEEDBACK_BUFF_SIZE];
+  unsigned int fb_clocks[1] = {0}; 
 
 
   unsigned in_subslot_size = (AUDIO_CLASS == 1) ? FS_STREAM_FORMAT_INPUT_1_SUBSLOT_BYTES : HS_STREAM_FORMAT_INPUT_1_SUBSLOT_BYTES;
@@ -110,6 +111,12 @@ void XUA_Buffer_lite(chanend c_aud_out, chanend c_feedback, chanend c_aud_in, ch
   unsigned out_num_chan = NUM_USB_CHAN_OUT;
 
   unsigned tmp;
+
+  unsigned lastClock = 0;
+  unsigned clocks = 0;
+  long long clockcounter = 0;
+  unsigned sof_count=0;
+  unsigned mod_from_last_time = 0;
 
   
   XUD_ep ep_aud_out = XUD_InitEp(c_aud_out);
@@ -180,44 +187,38 @@ void XUA_Buffer_lite(chanend c_aud_out, chanend c_feedback, chanend c_aud_in, ch
         unsigned mclk_port_count = 0;
         asm volatile(" getts %0, res[%1]" : "=r" (mclk_port_count) : "r" (p_for_mclk_count));
 
-        static unsigned sof_count=0;
-        sof_count++;
-        if (sof_count > SOF_FREQ_HZ * 10){
-          debug_printf("SOF\n");
-          sof_count = 0;
-        }
-
         /* Assuming 48kHz from a 24.576 master clock (0.0407uS period)
          * MCLK ticks per SOF = 125uS / 0.0407 = 3072 MCLK ticks per SOF.
          * expected Feedback is 48000/8000 = 6 samples. so 0x60000 in 16:16 format.
          * Average over 128 SOFs - 128 x 3072 = 0x60000.
          */
-#if 0
+
         unsigned long long feedbackMul = 64ULL;
-        if(usb_speed != XUD_SPEED_HS)
+        if(AUDIO_CLASS == 1)
             feedbackMul = 8ULL;  /* TODO Use 4 instead of 8 to avoid windows LSB issues? */
 
         /* Number of MCLK ticks in this SOF period (E.g = 125 * 24.576 = 3072) */
-        int count = (int) ((short)(u_tmp - lastClock));
+        int count = (int) ((short)(mclk_port_count - lastClock));
 
-        unsigned long long full_result = count * feedbackMul * sampleFreq;
+        unsigned long long full_result = count * feedbackMul * DEFAULT_FREQ;
 
         clockcounter += full_result;
 
         /* Store MCLK for next time around... */
-        lastClock = u_tmp;
+        lastClock = mclk_port_count;
 
         /* Reset counts based on SOF counting.  Expect 16ms (128 HS SOFs/16 FS SOFS) per feedback poll
          * We always count 128 SOFs, so 16ms @ HS, 128ms @ FS */
-        if(sofCount == 128)
+        if(sof_count == 128)
         {
-            sofCount = 0;
+            debug_printf("fb\n");
+            sof_count = 0;
 
             clockcounter += mod_from_last_time;
-            clocks = clockcounter / masterClockFreq;
-            mod_from_last_time = clockcounter % masterClockFreq;
+            clocks = clockcounter / MCLK_48;
+            mod_from_last_time = clockcounter % MCLK_48;
 
-            if(usb_speed == XUD_SPEED_HS)
+            if(AUDIO_CLASS == 2)
             {
                 clocks <<= 3;
             }
@@ -230,9 +231,8 @@ void XUA_Buffer_lite(chanend c_aud_out, chanend c_feedback, chanend c_aud_in, ch
                 int usb_speed;
                 asm volatile("stw %0, dp[g_speed]"::"r"(clocks));   // g_speed = clocks
 
-                GET_SHARED_GLOBAL(usb_speed, g_curUsbSpeed);
 
-                if (usb_speed == XUD_SPEED_HS)
+                if (AUDIO_CLASS == 2)
                 {
                     fb_clocks[0] = clocks;
                 }
@@ -241,10 +241,9 @@ void XUA_Buffer_lite(chanend c_aud_out, chanend c_feedback, chanend c_aud_in, ch
                     fb_clocks[0] = clocks >> 2;
                 }
             }
-  clockcounter = 0;
+            clockcounter = 0;
         }
-#endif
-
+        sof_count++;
       break;
 
       //Receive samples from host
@@ -264,7 +263,16 @@ void XUA_Buffer_lite(chanend c_aud_out, chanend c_feedback, chanend c_aud_in, ch
       //Send feedback
       case XUD_SetData_Select(c_feedback, ep_feedback, result):
         //debug_printf("ep_feedback\n");
-        XUD_SetReady_InPtr(ep_feedback, (unsigned)buffer_feedback, FEEDBACK_BUFF_SIZE);
+        //XUD_SetReady_InPtr(ep_feedback, (unsigned)buffer_feedback, FEEDBACK_BUFF_SIZE);
+        if (AUDIO_CLASS == 2)
+        {
+            XUD_SetReady_In(ep_feedback, (fb_clocks, unsigned char[]), 4);
+        }
+        else
+        {
+            XUD_SetReady_In(ep_feedback, (fb_clocks, unsigned char[]), 3);
+        }
+
       break;
 
       //Send samples to host
