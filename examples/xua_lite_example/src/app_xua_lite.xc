@@ -1,11 +1,13 @@
 // Copyright (c) 2017-2018, XMOS Ltd, All rights reserved
 
 // A very simple *example* of a USB audio application (and as such is un-verified for production)
+#include <stdint.h>
 
 #include <xs1.h>
 #include <platform.h>
 
 #include "xua.h"
+#include "xud.h"
 #include "i2s.h"
 #include "i2c.h"
 #include "gpio.h"
@@ -15,8 +17,8 @@
 #include "debug_print.h"
 
 // Port declarations. Note, the defines come from the xn file 
-on tile[0]: buffered out port:32 p_i2s_dac[]    = {XS1_PORT_1M};   //DAC
-on tile[0]: buffered in port:32 p_i2s_adc[]    	= {XS1_PORT_1N};   //Unused currently
+on tile[0]: buffered out port:32 p_i2s_dac[]    = {XS1_PORT_1N};   //DAC
+on tile[0]: buffered in port:32 p_i2s_adc[]    	= {XS1_PORT_1F};   //Unused currently
 on tile[0]: buffered out port:32 p_lrclk        = XS1_PORT_1O;     //I2S Bit-clock 
 on tile[0]: out port p_bclk                     = XS1_PORT_1P;     //I2S L/R-clock 
 

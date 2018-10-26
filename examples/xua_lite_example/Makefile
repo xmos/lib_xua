@@ -6,8 +6,6 @@ TARGET = RPI_HAT_60QFN.xn
 XCC_FLAGS	= -fcomment-asm -Xmapper --map -Xmapper MAPFILE -Os -report \
 			  -g -Wno-unused-function -Wno-timing -DXUD_SERIES_SUPPORT=XUD_X200_SERIES -DUSB_TILE=tile[1] 
 			  
-#-DSDA_HIGH=2 -DSCL_HIGH=1 -fxscope
-
 # The USED_MODULES variable lists other module used by the application. These
 # modules will extend the SOURCE_DIRS, INCLUDE_DIRS and LIB_DIRS variables.
 # Modules are expected to be in the directory above the BASE_DIR directory.

@@ -9,12 +9,12 @@
 
 [[distributable]]
 void AudioHub(server i2s_frame_callback_if i2s,
-                  chanend c_aud,
+                  chanend c_audio_hub,
                   client i2c_master_if ?i_i2c,
                   client output_gpio_if dac_reset)
 {
-  int32_t samples[8] = {0}; // Array used for looping back samples
-  
+  int32_t samples_out[NUM_USB_CHAN_OUT] = {0};
+  int32_t samples_in[NUM_USB_CHAN_IN] = {0};
 
   // Set reset DAC
   dac_reset.output(0);
@@ -29,19 +29,21 @@ void AudioHub(server i2s_frame_callback_if i2s,
       i2s_config.mclk_bclk_ratio = (MCLK_48/DEFAULT_FREQ)/64;
 
       debug_printf("I2S init\n");
-      break;
+    break;
 
     case i2s.receive(size_t n_chans, int32_t in_samps[n_chans]):
-    for (int i = 0; i < n_chans; i++) samples[i] = in_samps[i]; // copy samples
-      break;
+      for (int i = 0; i < n_chans; i++) samples_in[i] = in_samps[i];
+    break;
 
     case i2s.send(size_t n_chans, int32_t out_samps[n_chans]):
-      for (int i = 0; i < n_chans; i++) out_samps[i] = samples[i]; // copy samples
-      break;
+      for (int i = 0; i < n_chans; i++) out_samps[i] = samples_out[i];
+    break;
 
     case i2s.restart_check() -> i2s_restart_t restart:
       restart = I2S_NO_RESTART; // Keep on looping
-      break;
+      for (int i = 0; i < NUM_USB_CHAN_IN; i++) c_audio_hub <: samples_in[i];
+      for (int i = 0; i < NUM_USB_CHAN_OUT; i++) c_audio_hub :> samples_out[i];
+    break;
     }
   }
 }

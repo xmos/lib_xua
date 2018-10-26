@@ -1,4 +1,7 @@
+#include <stdint.h>
+
 #include <xs1.h>
+
 #include "xua_commands.h"
 #include "xud.h"
 #include "testct_byref.h"
@@ -135,6 +138,8 @@ void XUA_Buffer_lite(chanend c_aud_out, chanend c_feedback, chanend c_aud_in, ch
   // printintln(MAX_OUT_SAMPLES_PER_SOF_PERIOD);
 
   int loopback_samples[MAX_OUT_SAMPLES_PER_SOF_PERIOD] = {0};
+  int32_t samples_out[NUM_USB_CHAN_OUT] = {0};
+  int32_t samples_in[NUM_USB_CHAN_IN] = {0};
 
   while(1){
     XUD_Result_t result;
@@ -218,6 +223,7 @@ void XUA_Buffer_lite(chanend c_aud_out, chanend c_feedback, chanend c_aud_in, ch
             clocks = clockcounter / MCLK_48;
             mod_from_last_time = clockcounter % MCLK_48;
 
+            //Scale for working out number of samps to take from device for input
             if(AUDIO_CLASS == 2)
             {
                 clocks <<= 3;
@@ -226,20 +232,16 @@ void XUA_Buffer_lite(chanend c_aud_out, chanend c_feedback, chanend c_aud_in, ch
             {
                 clocks <<= 6;
             }
+            asm volatile("stw %0, dp[g_speed]"::"r"(clocks));   // g_speed = clocks
 
+            //Write to feedback EP buffer
+            if (AUDIO_CLASS == 2)
             {
-                int usb_speed;
-                asm volatile("stw %0, dp[g_speed]"::"r"(clocks));   // g_speed = clocks
-
-
-                if (AUDIO_CLASS == 2)
-                {
-                    fb_clocks[0] = clocks;
-                }
-                else
-                {
-                    fb_clocks[0] = clocks >> 2;
-                }
+                fb_clocks[0] = clocks;
+            }
+            else
+            {
+                fb_clocks[0] = clocks >> 2;
             }
             clockcounter = 0;
         }
@@ -286,6 +288,12 @@ void XUA_Buffer_lite(chanend c_aud_out, chanend c_feedback, chanend c_aud_in, ch
         unsigned input_buffer_size = num_samples_to_send_to_host * in_subslot_size;
         XUD_SetReady_InPtr(ep_aud_in, (unsigned)buffer_aud_in, input_buffer_size); //loopback
         num_samples_to_send_to_host = 0;
+      break;
+
+      case c_audio_hub :> samples_in[0]:
+        for (int i = 1; i < NUM_USB_CHAN_IN; i++) c_audio_hub :> samples_in[i];
+        // for (int i = 0; i < NUM_USB_CHAN_OUT; i++) c_audio_hub <: samples_out[1];
+        for (int i = 0; i < NUM_USB_CHAN_OUT; i++) c_audio_hub <: loopback_samples[i];
       break;
     }
   }
