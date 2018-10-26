@@ -75,7 +75,6 @@ int main()
     {
         on tile[0]: {
             par {
-
                 i2s_frame_master(i_i2s, p_i2s_dac, 1, p_i2s_adc, 1, p_bclk, p_lrclk, p_mclk_in, clk_audio_bclk);
                 [[distribute]]AudioHub(i_i2s, c_audio, null, i_gpio[0]);
                 [[distribute]]output_gpio(i_gpio, 1, p_gpio, null);
@@ -87,6 +86,7 @@ int main()
             set_port_clock(p_for_mclk_count, clk_usb_mclk);       // Clock the "count" port from the clock block 
             start_clock(clk_usb_mclk);                            // Set the clock off running 
 
+            //Setup DAC and then return so we do not use a thread
             par{
                 i2c_master(i_i2c, 1, p_scl, p_sda, 100);
                 AudioHwConfigure(DEFAULT_FREQ, i_i2c[0]);
@@ -104,9 +104,9 @@ int main()
                 XUA_Endpoint0(c_ep_out[0], c_ep_in[0], c_aud_ctl, null, null, null, null);
 
                 // Buffering cores - handles audio data to/from EP's and gives/gets data to/from the audio I/O core 
-                XUA_Buffer_lite(c_ep_out[1], c_ep_in[2], c_ep_in[1], c_sof, c_aud_ctl, p_for_mclk_count, c_audio);
+                XUA_Buffer_lite(c_ep_out[1], c_ep_in[1], c_ep_in[2], c_sof, c_aud_ctl, p_for_mclk_count, c_audio);
             }
-        }//Tile[1]
+        }//Tile[1] par
     }//Top level par
     
     return 0;

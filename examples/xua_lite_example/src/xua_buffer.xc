@@ -89,10 +89,8 @@ static inline void pack_samples_to_buff(int input[], const unsigned n_samples, c
   }
 }
 
-//Shared memory buffers between buffer task and audio side
-int asrc_to_host_sample_buffer[MAX_IN_SAMPLES_PER_SOF_PERIOD] = {0};
 
-void XUA_Buffer_lite(chanend c_aud_out, chanend c_feedback, chanend c_aud_in, chanend c_sof, chanend c_aud_ctl, in port p_for_mclk_count, chanend c_aud_host){
+void XUA_Buffer_lite(chanend c_aud_out, chanend c_feedback, chanend c_aud_in, chanend c_sof, chanend c_aud_ctl, in port p_for_mclk_count, chanend c_audio_hub){
 
   debug_printf("%d\n", MAX_OUT_SAMPLES_PER_SOF_PERIOD);
 
@@ -100,7 +98,9 @@ void XUA_Buffer_lite(chanend c_aud_out, chanend c_feedback, chanend c_aud_in, ch
 
   unsigned char buffer_aud_out[OUT_AUDIO_BUFFER_SIZE_BYTES];
   unsigned char buffer_aud_in[IN_AUDIO_BUFFER_SIZE_BYTES];
-  unsigned char buffer_feedback[4];
+  
+  #define FEEDBACK_BUFF_SIZE    4
+  unsigned char buffer_feedback[FEEDBACK_BUFF_SIZE];
 
 
   unsigned in_subslot_size = (AUDIO_CLASS == 1) ? FS_STREAM_FORMAT_INPUT_1_SUBSLOT_BYTES : HS_STREAM_FORMAT_INPUT_1_SUBSLOT_BYTES;
@@ -122,10 +122,12 @@ void XUA_Buffer_lite(chanend c_aud_out, chanend c_feedback, chanend c_aud_in, ch
 
   XUD_SetReady_OutPtr(ep_aud_out, (unsigned)buffer_aud_out);
   XUD_SetReady_InPtr(ep_aud_in, (unsigned)buffer_aud_in, num_samples_to_send_to_host);
-  XUD_SetReady_InPtr(ep_feedback, (unsigned)buffer_feedback, 4);
+  XUD_SetReady_InPtr(ep_feedback, (unsigned)buffer_feedback, FEEDBACK_BUFF_SIZE);
 
   // printintln(OUT_AUDIO_BUFFER_SIZE_BYTES);
   // printintln(MAX_OUT_SAMPLES_PER_SOF_PERIOD);
+
+  int loopback_samples[MAX_OUT_SAMPLES_PER_SOF_PERIOD] = {0};
 
   while(1){
     XUD_Result_t result;
@@ -250,13 +252,10 @@ void XUA_Buffer_lite(chanend c_aud_out, chanend c_feedback, chanend c_aud_in, ch
         num_samples_received_from_host = length / out_subslot_size;
         //debug_printf("out samps: %d\n", num_samples_received_from_host);
         outstanding_samples_to_host += num_samples_received_from_host;
-        int samples[MAX_OUT_SAMPLES_PER_SOF_PERIOD];
-        unpack_buff_to_samples(buffer_aud_out, num_samples_received_from_host, out_subslot_size, samples);
 
+        unpack_buff_to_samples(buffer_aud_out, num_samples_received_from_host, out_subslot_size, loopback_samples);
 
-        //Tell ASRC manager what we have just sent
-        //outuint(c_aud_host, num_samples_received_from_host); //We assume this will not block and other side always consumes
-        //num_samples_to_send_to_host = inuint(c_aud_host);    //get number of return samples for sending back to host
+        num_samples_to_send_to_host = num_samples_received_from_host;
         
         //Mark EP as ready for next frame from host
         XUD_SetReady_OutPtr(ep_aud_out, (unsigned)buffer_aud_out);
@@ -264,8 +263,8 @@ void XUA_Buffer_lite(chanend c_aud_out, chanend c_feedback, chanend c_aud_in, ch
 
       //Send feedback
       case XUD_SetData_Select(c_feedback, ep_feedback, result):
-        debug_printf("ep_feedback\n");
-        XUD_SetReady_InPtr(ep_feedback, (unsigned)buffer_feedback, 4);
+        //debug_printf("ep_feedback\n");
+        XUD_SetReady_InPtr(ep_feedback, (unsigned)buffer_feedback, FEEDBACK_BUFF_SIZE);
       break;
 
       //Send samples to host
@@ -273,8 +272,9 @@ void XUA_Buffer_lite(chanend c_aud_out, chanend c_feedback, chanend c_aud_in, ch
         //debug_printf("sent data\n");
 
         //Populate the input buffer ready for the next read
-        pack_samples_to_buff(asrc_to_host_sample_buffer, num_samples_to_send_to_host, in_subslot_size, buffer_aud_in);
+        pack_samples_to_buff(loopback_samples, num_samples_to_send_to_host, in_subslot_size, buffer_aud_in);
         //Use the number of samples we received last time so we are always balanced (assumes same in/out count)
+        
         unsigned input_buffer_size = num_samples_to_send_to_host * in_subslot_size;
         XUD_SetReady_InPtr(ep_aud_in, (unsigned)buffer_aud_in, input_buffer_size); //loopback
         num_samples_to_send_to_host = 0;
