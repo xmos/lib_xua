@@ -2,11 +2,16 @@
 #include "i2c.h"
 #include "gpio.h"
 #include "xua.h"
+#define DEBUG_UNIT XUA_AUDIO_HUB
+#define DEBUG_PRINT_ENABLE_XUA_AUDIO_HUB 1
+#include "debug_print.h"
+
+void AudioHwConfigure(unsigned samFreq, client i2c_master_if i_i2c);
 
 [[distributable]]
 void AudioHub(server i2s_frame_callback_if i2s,
                   chanend c_aud,
-                  client i2c_master_if i2c,
+                  client i2c_master_if i_i2c,
                   client output_gpio_if dac_reset)
 {
   int32_t samples[8] = {0}; // Array used for looping back samples
@@ -25,7 +30,8 @@ void AudioHub(server i2s_frame_callback_if i2s,
       // Take CODECs out of reset
       dac_reset.output(1);
 
-      //reset_codecs(i2c);
+      AudioHwConfigure(DEFAULT_FREQ, i_i2c);
+      debug_printf("I2S init\n");
       break;
 
     case i2s.receive(size_t n_chans, int32_t in_samps[n_chans]):
@@ -38,6 +44,7 @@ void AudioHub(server i2s_frame_callback_if i2s,
 
     case i2s.restart_check() -> i2s_restart_t restart:
       restart = I2S_NO_RESTART; // Keep on looping
+      debug_printf("I2S restart\n");
       break;
     }
   }

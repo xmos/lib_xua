@@ -2,8 +2,10 @@
 #include "xua_commands.h"
 #include "xud.h"
 #include "testct_byref.h"
+#define DEBUG_UNIT XUA_LITE_BUFFER
+#define DEBUG_PRINT_ENABLE_XUA_LITE_BUFFER 1
 #include "debug_print.h"
-#include "xua_conf.h"
+#include "xua.h"
 //#include "fifo_impl.h"  //xua_conf.h must be included before hand so that we have FIFO sizes
 
 //Currently only single frequency supported
@@ -98,6 +100,8 @@ void XUA_Buffer_lite(chanend c_aud_out, chanend c_feedback, chanend c_aud_in, ch
 
   unsigned char buffer_aud_out[OUT_AUDIO_BUFFER_SIZE_BYTES];
   unsigned char buffer_aud_in[IN_AUDIO_BUFFER_SIZE_BYTES];
+  unsigned char buffer_feedback[4];
+
 
   unsigned in_subslot_size = (AUDIO_CLASS == 1) ? FS_STREAM_FORMAT_INPUT_1_SUBSLOT_BYTES : HS_STREAM_FORMAT_INPUT_1_SUBSLOT_BYTES;
   unsigned out_subslot_size = (AUDIO_CLASS == 1) ? FS_STREAM_FORMAT_OUTPUT_1_SUBSLOT_BYTES : HS_STREAM_FORMAT_OUTPUT_1_SUBSLOT_BYTES;
@@ -107,7 +111,9 @@ void XUA_Buffer_lite(chanend c_aud_out, chanend c_feedback, chanend c_aud_in, ch
 
   unsigned tmp;
 
+  
   XUD_ep ep_aud_out = XUD_InitEp(c_aud_out);
+  XUD_ep ep_feedback = XUD_InitEp(c_feedback);
   XUD_ep ep_aud_in = XUD_InitEp(c_aud_in);
 
   unsigned num_samples_received_from_host = 0;
@@ -116,6 +122,7 @@ void XUA_Buffer_lite(chanend c_aud_out, chanend c_feedback, chanend c_aud_in, ch
 
   XUD_SetReady_OutPtr(ep_aud_out, (unsigned)buffer_aud_out);
   XUD_SetReady_InPtr(ep_aud_in, (unsigned)buffer_aud_in, num_samples_to_send_to_host);
+  XUD_SetReady_InPtr(ep_feedback, (unsigned)buffer_feedback, 4);
 
   // printintln(OUT_AUDIO_BUFFER_SIZE_BYTES);
   // printintln(MAX_OUT_SAMPLES_PER_SOF_PERIOD);
@@ -245,17 +252,20 @@ void XUA_Buffer_lite(chanend c_aud_out, chanend c_feedback, chanend c_aud_in, ch
         outstanding_samples_to_host += num_samples_received_from_host;
         int samples[MAX_OUT_SAMPLES_PER_SOF_PERIOD];
         unpack_buff_to_samples(buffer_aud_out, num_samples_received_from_host, out_subslot_size, samples);
-        
-        //Push into fifo for ASRC
 
-        //else debug_printf("Push\n");
 
         //Tell ASRC manager what we have just sent
-        outuint(c_aud_host, num_samples_received_from_host); //We assume this will not block and other side always consumes
-        num_samples_to_send_to_host = inuint(c_aud_host);    //get number of return samples for sending back to host
+        //outuint(c_aud_host, num_samples_received_from_host); //We assume this will not block and other side always consumes
+        //num_samples_to_send_to_host = inuint(c_aud_host);    //get number of return samples for sending back to host
         
         //Mark EP as ready for next frame from host
         XUD_SetReady_OutPtr(ep_aud_out, (unsigned)buffer_aud_out);
+      break;
+
+      //Send feedback
+      case XUD_SetData_Select(c_feedback, ep_feedback, result):
+        debug_printf("ep_feedback\n");
+        XUD_SetReady_InPtr(ep_feedback, (unsigned)buffer_feedback, 4);
       break;
 
       //Send samples to host

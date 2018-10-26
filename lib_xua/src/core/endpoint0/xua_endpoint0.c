@@ -297,9 +297,25 @@ void XUA_Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
 
     while(1)
     {
+#if XUA_LITE
+        unsigned char sbuffer[120];
+        unsigned length;
+
+        //XUD_Result_t result = XUD_GetSetupBuffer(ep0_out, sbuffer, &length); //Flattened from xud_device
+        XUD_Result_t result = XUD_GetSetupData(ep0_out, sbuffer, &length);//Flattened from XUD_EpFunctions.xc
+
+        //Next step:
+        //void XUD_GetSetupData_Select(chan c,XUD_ep e_out, unsigned &length, XUD_Result_t &result);
+
+        if (result == XUD_RES_OKAY)
+        {
+            /* Parse data buffer end populate SetupPacket struct */
+            USB_ParseSetupPacket(sbuffer, &sp);
+        }
+#else
         /* Returns XUD_RES_OKAY for success, XUD_RES_RST for bus reset */
         XUD_Result_t result = USB_GetSetupPacket(ep0_out, ep0_in, &sp);
-
+#endif
         if (result == XUD_RES_OKAY)
         {
             result = XUD_RES_ERR;

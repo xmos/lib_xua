@@ -10,6 +10,10 @@
 #include "i2c.h"
 #include "gpio.h"
 
+#define DEBUG_UNIT XUA_APP
+#define DEBUG_PRINT_ENABLE_XUA_APP 1
+#include "debug_print.h"
+
 // Port declarations. Note, the defines come from the xn file 
 on tile[0]: buffered out port:32 p_i2s_dac[]    = {XS1_PORT_1M};   //DAC
 on tile[0]: buffered in port:32 p_i2s_adc[]    	= {XS1_PORT_1N};   //Unused currently
@@ -17,7 +21,7 @@ on tile[0]: buffered out port:32 p_lrclk        = XS1_PORT_1O;     //I2S Bit-clo
 on tile[0]: out port p_bclk                     = XS1_PORT_1P;     //I2S L/R-clock 
 
 // Master clock for the audio IO tile 
-on tile[0]: in port p_mclk_in       = XS1_PORT_1A;
+on tile[0]: in port p_mclk_in       = XS1_PORT_1K;
 
 // Resources for USB feedback 
 on tile[0]: in port p_for_mclk_count= XS1_PORT_16A;   // Extra port for counting master clock ticks 
@@ -35,6 +39,7 @@ on tile[1]: port p_sda              = XS1_PORT_1D;
 // Clock-block declarations 
 clock clk_audio_bclk                = on tile[0]: XS1_CLKBLK_2;   // Bit clock     
 clock clk_audio_mclk                = on tile[0]: XS1_CLKBLK_3;   // Master clock 
+//XUD uses XS1_CLKBLK_4, XS1_CLKBLK_5
 
 // Endpoint type tables - informs XUD what the transfer types for each Endpoint in use and also
 // if the endpoint wishes to be informed of USB bus resets 
@@ -79,7 +84,7 @@ int main()
                 XUD_Main(c_ep_out, 2, c_ep_in, 3,
                           c_sof, epTypeTableOut, epTypeTableIn, 
                           null, null, -1 , 
-                          XUD_SPEED_FS, XUD_PWR_BUS);
+                          (AUDIO_CLASS == 1) ? XUD_SPEED_FS : XUD_SPEED_HS, XUD_PWR_BUS);
             
                 // Endpoint 0 core from lib_xua 
                 // Note, since we are not using many features we pass in null for quite a few params.. 
