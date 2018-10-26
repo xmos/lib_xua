@@ -57,9 +57,9 @@
 
 void AudioHwConfigure(unsigned samFreq, client i2c_master_if i_i2c)
 {
-    
-    // Wait for 1ms
-    delay_milliseconds(1);
+
+    // Wait for 2ms because we apply reset for 1ms from other tile
+    delay_milliseconds(2);
     
     // Set register page to 0
     DAC3101_REGWRITE(DAC3101_PAGE_CTRL, 0x00);
@@ -201,7 +201,8 @@ void AudioHwConfigure(unsigned samFreq, client i2c_master_if i_i2c)
     // Unmute digital volume control
     // Unmute DAC left and right channels
     DAC3101_REGWRITE(DAC3101_DAC_VOL, 0x00);
-
+    
+    i_i2c.shutdown();
 }
 
 //These are here just to silence compiler warnings

@@ -6,31 +6,28 @@
 #define DEBUG_PRINT_ENABLE_XUA_AUDIO_HUB 1
 #include "debug_print.h"
 
-void AudioHwConfigure(unsigned samFreq, client i2c_master_if i_i2c);
 
 [[distributable]]
 void AudioHub(server i2s_frame_callback_if i2s,
                   chanend c_aud,
-                  client i2c_master_if i_i2c,
+                  client i2c_master_if ?i_i2c,
                   client output_gpio_if dac_reset)
 {
   int32_t samples[8] = {0}; // Array used for looping back samples
+  
+
+  // Set reset DAC
+  dac_reset.output(0);
+  delay_milliseconds(1);
+  dac_reset.output(1);
+
+
   while (1) {
     select {
     case i2s.init(i2s_config_t &?i2s_config, tdm_config_t &?tdm_config):
       i2s_config.mode = I2S_MODE_I2S;
       i2s_config.mclk_bclk_ratio = (MCLK_48/DEFAULT_FREQ)/64;
 
-      // Set CODECs in reset
-      dac_reset.output(0);
-
-      // Allow reset to assert
-      delay_milliseconds(1);
-
-      // Take CODECs out of reset
-      dac_reset.output(1);
-
-      AudioHwConfigure(DEFAULT_FREQ, i_i2c);
       debug_printf("I2S init\n");
       break;
 
@@ -44,7 +41,6 @@ void AudioHub(server i2s_frame_callback_if i2s,
 
     case i2s.restart_check() -> i2s_restart_t restart:
       restart = I2S_NO_RESTART; // Keep on looping
-      debug_printf("I2S restart\n");
       break;
     }
   }

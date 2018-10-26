@@ -4,9 +4,7 @@ TARGET = RPI_HAT_60QFN.xn
 
 # The flags passed to xcc when building the application
 XCC_FLAGS	= -fcomment-asm -Xmapper --map -Xmapper MAPFILE -O3 -report \
-			  -g -Wno-unused-function -Wno-timing -DXUD_SERIES_SUPPORT=XUD_X200_SERIES -DUSB_TILE=tile[0] \
-			  -D XUA_LITE=1
-
+			  -g -Wno-unused-function -Wno-timing -DXUD_SERIES_SUPPORT=XUD_X200_SERIES -DUSB_TILE=tile[1] 
 			  
 #-DSDA_HIGH=2 -DSCL_HIGH=1 -fxscope
 

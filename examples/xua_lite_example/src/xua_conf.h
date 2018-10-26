@@ -22,4 +22,6 @@
 #define PID_AUDIO_2     2
 #define XUA_DFU_EN      0           /* Disable DFU (for simplicity of example */
 
+#define XUA_LITE        1
+
 #endif
