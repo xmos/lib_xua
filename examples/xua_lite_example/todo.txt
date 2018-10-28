@@ -1,0 +1,6 @@
+- Bring ep0 serivice into xua_buffer select (make control mem)
+- Tidy feeback endpoint
+- Get UAC1 / FS working
+- Add timer to xua_buffer to prepare for exchange with audio (remove banckpressure to audio)
+- Adaptive 
+- DFU
