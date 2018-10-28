@@ -93,6 +93,12 @@ static inline void pack_samples_to_buff(int input[], const unsigned n_samples, c
 }
 
 
+unsigned do_feedback_calculation(unsigned mclk_port_counter, unsigned mclk_port_counter_old, long long feedback_value, unsigned mod_from_last_time){
+  unsigned fb_clock = 0;
+
+  return 
+}
+
 void XUA_Buffer_lite(chanend c_aud_out, chanend c_feedback, chanend c_aud_in, chanend c_sof, chanend c_aud_ctl, in port p_for_mclk_count, chanend c_audio_hub) {
 
   debug_printf("%d\n", MAX_OUT_SAMPLES_PER_SOF_PERIOD);
@@ -113,13 +119,11 @@ void XUA_Buffer_lite(chanend c_aud_out, chanend c_feedback, chanend c_aud_in, ch
   unsigned in_num_chan = NUM_USB_CHAN_IN;
   unsigned out_num_chan = NUM_USB_CHAN_OUT;
 
-  unsigned tmp;
-
-  unsigned lastClock = 0;
-  unsigned clocks = 0;
-  long long clockcounter = 0;
-  unsigned sof_count=0;
+  unsigned sof_count = 0;
+  unsigned mclk_port_counter_old = 0;
+  long long feedback_value = 0;
   unsigned mod_from_last_time = 0;
+  const unsigned mclk_hz = MCLK_48;
 
   
   XUD_ep ep_aud_out = XUD_InitEp(c_aud_out);
@@ -148,6 +152,7 @@ void XUA_Buffer_lite(chanend c_aud_out, chanend c_feedback, chanend c_aud_in, ch
     XUD_Result_t result;
     unsigned length = 0;
 
+    unsigned tmp; //For select channel input by ref
     while(1){
       select{
         //Handle control path from EP0
@@ -192,8 +197,10 @@ void XUA_Buffer_lite(chanend c_aud_out, chanend c_feedback, chanend c_aud_in, ch
 
         //SOF
         case inuint_byref(c_sof, tmp):
-          unsigned mclk_port_count = 0;
-          asm volatile(" getts %0, res[%1]" : "=r" (mclk_port_count) : "r" (p_for_mclk_count));
+          unsigned mclk_port_counter = 0;
+          asm volatile(" getts %0, res[%1]" : "=r" (mclk_port_counter) : "r" (p_for_mclk_count));
+
+          //fb_clocks[0] = do_feedback_calculation(mclk_port_counter, mclk_port_counter_old, feedback_value, mod_from_last_time);
 
           /* Assuming 48kHz from a 24.576 master clock (0.0407uS period)
            * MCLK ticks per SOF = 125uS / 0.0407 = 3072 MCLK ticks per SOF.
@@ -206,14 +213,14 @@ void XUA_Buffer_lite(chanend c_aud_out, chanend c_feedback, chanend c_aud_in, ch
               feedbackMul = 8ULL;  /* TODO Use 4 instead of 8 to avoid windows LSB issues? */
 
           /* Number of MCLK ticks in this SOF period (E.g = 125 * 24.576 = 3072) */
-          int count = (int) ((short)(mclk_port_count - lastClock));
+          int mclk_ticks_this_sof_period = (int) ((short)(mclk_port_counter - mclk_port_counter_old));
 
-          unsigned long long full_result = count * feedbackMul * DEFAULT_FREQ;
+          unsigned long long full_result = mclk_ticks_this_sof_period * feedbackMul * DEFAULT_FREQ;
 
-          clockcounter += full_result;
+          feedback_value += full_result;
 
           /* Store MCLK for next time around... */
-          lastClock = mclk_port_count;
+          mclk_port_counter_old = mclk_port_counter;
 
           /* Reset counts based on SOF counting.  Expect 16ms (128 HS SOFs/16 FS SOFS) per feedback poll
            * We always count 128 SOFs, so 16ms @ HS, 128ms @ FS */
@@ -222,9 +229,9 @@ void XUA_Buffer_lite(chanend c_aud_out, chanend c_feedback, chanend c_aud_in, ch
               //debug_printf("fb\n");
               sof_count = 0;
 
-              clockcounter += mod_from_last_time;
-              clocks = clockcounter / MCLK_48;
-              mod_from_last_time = clockcounter % MCLK_48;
+              feedback_value += mod_from_last_time;
+              unsigned clocks = feedback_value / mclk_hz;
+              mod_from_last_time = feedback_value % mclk_hz;
 
               //Scale for working out number of samps to take from device for input
               if(AUDIO_CLASS == 2)
@@ -246,7 +253,7 @@ void XUA_Buffer_lite(chanend c_aud_out, chanend c_feedback, chanend c_aud_in, ch
               {
                   fb_clocks[0] = clocks >> 2;
               }
-              clockcounter = 0;
+              feedback_value = 0;
           }
           sof_count++;
         break;
