@@ -93,10 +93,64 @@ static inline void pack_samples_to_buff(int input[], const unsigned n_samples, c
 }
 
 
-unsigned do_feedback_calculation(unsigned mclk_port_counter, unsigned mclk_port_counter_old, long long feedback_value, unsigned mod_from_last_time){
-  unsigned fb_clock = 0;
+void do_feedback_calculation(unsigned &sof_count
+                                ,const unsigned mclk_hz
+                                ,unsigned mclk_port_counter
+                                ,unsigned &mclk_port_counter_old
+                                ,long long &feedback_value
+                                ,unsigned &mod_from_last_time
+                                ,unsigned fb_clocks[1]){
+  /* Assuming 48kHz from a 24.576 master clock (0.0407uS period)
+   * MCLK ticks per SOF = 125uS / 0.0407 = 3072 MCLK ticks per SOF.
+   * expected Feedback is 48000/8000 = 6 samples. so 0x60000 in 16:16 format.
+   * Average over 128 SOFs - 128 x 3072 = 0x60000. */
 
-  return 
+  unsigned long long feedbackMul = 64ULL;
+  if(AUDIO_CLASS == 1)
+      feedbackMul = 8ULL;  /* TODO Use 4 instead of 8 to avoid windows LSB issues? */
+
+  /* Number of MCLK ticks in this SOF period (E.g = 125 * 24.576 = 3072) */
+  int mclk_ticks_this_sof_period = (int) ((short)(mclk_port_counter - mclk_port_counter_old));
+  unsigned long long full_result = mclk_ticks_this_sof_period * feedbackMul * DEFAULT_FREQ;
+  feedback_value += full_result;
+
+  /* Store MCLK for next time around... */
+  mclk_port_counter_old = mclk_port_counter;
+
+  /* Reset counts based on SOF counting.  Expect 16ms (128 HS SOFs/16 FS SOFS) per feedback poll
+   * We always count 128 SOFs, so 16ms @ HS, 128ms @ FS */
+  if(sof_count == 128)
+  {
+    //debug_printf("fb\n");
+    sof_count = 0;
+
+    feedback_value += mod_from_last_time;
+    unsigned clocks = feedback_value / mclk_hz;
+    mod_from_last_time = feedback_value % mclk_hz;
+    feedback_value = 0;
+
+
+    //Scale for working out number of samps to take from device for input
+    if(AUDIO_CLASS == 2)
+    {
+        clocks <<= 3;
+    }
+    else
+    {
+        clocks <<= 6;
+    }
+    asm volatile("stw %0, dp[g_speed]"::"r"(clocks));   // g_speed = clocks
+
+    //Write to feedback EP buffer
+    if (AUDIO_CLASS == 2)
+    {
+        fb_clocks[0] = clocks;
+    }
+    else
+    {
+        fb_clocks[0] = clocks >> 2;
+    }
+  }
 }
 
 void XUA_Buffer_lite(chanend c_aud_out, chanend c_feedback, chanend c_aud_in, chanend c_sof, chanend c_aud_ctl, in port p_for_mclk_count, chanend c_audio_hub) {
@@ -199,62 +253,7 @@ void XUA_Buffer_lite(chanend c_aud_out, chanend c_feedback, chanend c_aud_in, ch
         case inuint_byref(c_sof, tmp):
           unsigned mclk_port_counter = 0;
           asm volatile(" getts %0, res[%1]" : "=r" (mclk_port_counter) : "r" (p_for_mclk_count));
-
-          //fb_clocks[0] = do_feedback_calculation(mclk_port_counter, mclk_port_counter_old, feedback_value, mod_from_last_time);
-
-          /* Assuming 48kHz from a 24.576 master clock (0.0407uS period)
-           * MCLK ticks per SOF = 125uS / 0.0407 = 3072 MCLK ticks per SOF.
-           * expected Feedback is 48000/8000 = 6 samples. so 0x60000 in 16:16 format.
-           * Average over 128 SOFs - 128 x 3072 = 0x60000.
-           */
-
-          unsigned long long feedbackMul = 64ULL;
-          if(AUDIO_CLASS == 1)
-              feedbackMul = 8ULL;  /* TODO Use 4 instead of 8 to avoid windows LSB issues? */
-
-          /* Number of MCLK ticks in this SOF period (E.g = 125 * 24.576 = 3072) */
-          int mclk_ticks_this_sof_period = (int) ((short)(mclk_port_counter - mclk_port_counter_old));
-
-          unsigned long long full_result = mclk_ticks_this_sof_period * feedbackMul * DEFAULT_FREQ;
-
-          feedback_value += full_result;
-
-          /* Store MCLK for next time around... */
-          mclk_port_counter_old = mclk_port_counter;
-
-          /* Reset counts based on SOF counting.  Expect 16ms (128 HS SOFs/16 FS SOFS) per feedback poll
-           * We always count 128 SOFs, so 16ms @ HS, 128ms @ FS */
-          if(sof_count == 128)
-          {
-              //debug_printf("fb\n");
-              sof_count = 0;
-
-              feedback_value += mod_from_last_time;
-              unsigned clocks = feedback_value / mclk_hz;
-              mod_from_last_time = feedback_value % mclk_hz;
-
-              //Scale for working out number of samps to take from device for input
-              if(AUDIO_CLASS == 2)
-              {
-                  clocks <<= 3;
-              }
-              else
-              {
-                  clocks <<= 6;
-              }
-              asm volatile("stw %0, dp[g_speed]"::"r"(clocks));   // g_speed = clocks
-
-              //Write to feedback EP buffer
-              if (AUDIO_CLASS == 2)
-              {
-                  fb_clocks[0] = clocks;
-              }
-              else
-              {
-                  fb_clocks[0] = clocks >> 2;
-              }
-              feedback_value = 0;
-          }
+          do_feedback_calculation(sof_count, mclk_hz, mclk_port_counter, mclk_port_counter_old, feedback_value, mod_from_last_time, fb_clocks);
           sof_count++;
         break;
 
@@ -275,19 +274,10 @@ void XUA_Buffer_lite(chanend c_aud_out, chanend c_feedback, chanend c_aud_in, ch
           XUD_SetReady_OutPtr(ep_aud_out, (unsigned)buffer_aud_out);
         break;
 
-        //Send feedback
+        //Send asynch explicit feedback value
         case XUD_SetData_Select(c_feedback, ep_feedback, result):
           //debug_printf("ep_feedback\n");
-          //XUD_SetReady_InPtr(ep_feedback, (unsigned)buffer_feedback, FEEDBACK_BUFF_SIZE);
-          if (AUDIO_CLASS == 2)
-          {
-              XUD_SetReady_In(ep_feedback, (fb_clocks, unsigned char[]), 4);
-          }
-          else
-          {
-              XUD_SetReady_In(ep_feedback, (fb_clocks, unsigned char[]), 3);
-          }
-
+          XUD_SetReady_In(ep_feedback, (fb_clocks, unsigned char[]), (AUDIO_CLASS == 2) ? 4 : 3);
         break;
 
         //Send samples to host
