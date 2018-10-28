@@ -53,6 +53,8 @@ void XUA_Buffer_lite(chanend c_aud_out, chanend c_feedback, chanend c_aud_in, ch
 [[distributable]]
 void AudioHub(server i2s_frame_callback_if i2s, chanend c_aud, client i2c_master_if ?i2c, client output_gpio_if dac_reset);
 void AudioHwConfigure(unsigned samFreq, client i2c_master_if i_i2c);
+void XUA_Endpoint0_select(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
+    chanend ?c_mix_ctl, chanend ?c_clk_ctl, chanend ?c_EANativeTransport_ctrl, CLIENT_INTERFACE(i_dfu, ?dfuInterface) VENDOR_REQUESTS_PARAMS_DEC_);
 
 int main()
 {
@@ -103,7 +105,8 @@ int main()
                 
                 // Endpoint 0 core from lib_xua 
                 // Note, since we are not using many features we pass in null for quite a few params.. 
-                XUA_Endpoint0(c_ep_out[0], c_ep_in[0], c_aud_ctl, null, null, null, null);
+                // XUA_Endpoint0(c_ep_out[0], c_ep_in[0], c_aud_ctl, null, null, null, null);
+                XUA_Endpoint0_select(c_ep_out[0], c_ep_in[0], c_aud_ctl, null, null, null, null);
 
                 // Buffering cores - handles audio data to/from EP's and gives/gets data to/from the audio I/O core 
                 XUA_Buffer_lite(c_ep_out[1], c_ep_in[1], c_ep_in[2], c_sof, c_aud_ctl, p_for_mclk_count, c_audio);

@@ -301,7 +301,7 @@ void XUA_Buffer_lite(chanend c_aud_out, chanend c_feedback, chanend c_aud_in, ch
           // for (int i = 0; i < NUM_USB_CHAN_OUT; i++) c_audio_hub <: samples_out[1];
           int out_samps[NUM_USB_CHAN_OUT];
           fifo_ret_t ret = fifo_block_pop(host_to_device_fifo_ptr, out_samps, NUM_USB_CHAN_OUT);
-          if (ret != FIFO_SUCCESS) debug_printf("empty\n");
+          //if (ret != FIFO_SUCCESS) debug_printf("empty\n");
           for (int i = 0; i < NUM_USB_CHAN_OUT; i++) c_audio_hub <: out_samps[i];
         break;
       }
