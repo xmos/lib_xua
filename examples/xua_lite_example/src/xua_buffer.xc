@@ -153,7 +153,25 @@ void do_feedback_calculation(unsigned &sof_count
   }
 }
 
-void XUA_Buffer_lite(chanend c_aud_out, chanend c_feedback, chanend c_aud_in, chanend c_sof, chanend c_aud_ctl, in port p_for_mclk_count, chanend c_audio_hub) {
+#define SINGLE_XUA_EP_BUFFER 1
+
+
+#if SINGLE_XUA_EP_BUFFER
+extern "C"{
+void XUA_Endpoint0_lite_init(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
+    chanend ?c_mix_ctl, chanend ?c_clk_ctl, chanend ?c_EANativeTransport_ctrl, CLIENT_INTERFACE(i_dfu, ?dfuInterface) VENDOR_REQUESTS_PARAMS_DEC_);
+void XUA_Endpoint0_lite_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
+    chanend ?c_mix_ctl, chanend ?c_clk_ctl, chanend ?c_EANativeTransport_ctrl, CLIENT_INTERFACE(i_dfu, ?dfuInterface) VENDOR_REQUESTS_PARAMS_DEC_, unsigned *input_interface_num, unsigned *output_interface_num);
+}
+#pragma select handler
+void XUD_GetSetupData_Select(chanend c, XUD_ep e_out, unsigned &length, XUD_Result_t &result);
+
+extern XUD_ep ep0_out;
+extern XUD_ep ep0_in;
+#endif
+
+
+void XUA_Buffer_lite(chanend c_ep0_out, chanend c_ep0_in, chanend c_aud_out, chanend c_feedback, chanend c_aud_in, chanend c_sof, in port p_for_mclk_count, chanend c_audio_hub) {
 
   debug_printf("%d\n", MAX_OUT_SAMPLES_PER_SOF_PERIOD);
 
@@ -196,6 +214,20 @@ void XUA_Buffer_lite(chanend c_aud_out, chanend c_feedback, chanend c_aud_in, ch
   int32_t samples_out[NUM_USB_CHAN_OUT] = {0};
   int32_t samples_in[NUM_USB_CHAN_IN] = {0};
 
+#if SINGLE_XUA_EP_BUFFER
+  #define c_audioControl null
+  #define dfuInterface null
+  XUA_Endpoint0_lite_init(c_ep0_out, c_ep0_in, c_audioControl, null, null, null, dfuInterface);
+  unsigned char sbuffer[120];
+  USB_SetupPacket_t sp;
+  XUD_SetReady_Out(ep0_out, sbuffer);
+
+  unsigned input_interface_num = 0;
+  unsigned output_interface_num = 0;
+
+#endif
+
+
   unsafe{
 
     int host_to_device_fifo_storage[MAX_OUT_SAMPLES_PER_SOF_PERIOD * 2];
@@ -209,6 +241,8 @@ void XUA_Buffer_lite(chanend c_aud_out, chanend c_feedback, chanend c_aud_in, ch
     unsigned tmp; //For select channel input by ref
     while(1){
       select{
+
+#if !SINGLE_XUA_EP_BUFFER
         //Handle control path from EP0
         case testct_byref(c_aud_ctl, tmp):
           //ignore tmp as is used for reboot signalling only
@@ -248,6 +282,22 @@ void XUA_Buffer_lite(chanend c_aud_out, chanend c_feedback, chanend c_aud_in, ch
           }
           outct(c_aud_ctl, XS1_CT_END);
         break;
+#endif
+
+
+#if SINGLE_XUA_EP_BUFFER
+        case XUD_GetSetupData_Select(c_ep0_out, ep0_out, length, result):
+          if (result == XUD_RES_OKAY)
+          {
+              /* Parse data buffer end populate SetupPacket struct */
+              USB_ParseSetupPacket(sbuffer, sp);
+          }
+          debug_printf("ep0, result: %d, length: %d\n", result, length); //-1 reset, 0 ok, 1 error
+
+          XUA_Endpoint0_lite_loop(result, sp, c_ep0_out, c_ep0_in, c_audioControl, null/*mix*/, null/*clk*/, null/*EA*/, dfuInterface, &input_interface_num, &output_interface_num);
+          XUD_SetReady_Out(ep0_out, sbuffer);
+        break;
+#endif
 
         //SOF
         case inuint_byref(c_sof, tmp):

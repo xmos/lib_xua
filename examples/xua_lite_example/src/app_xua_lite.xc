@@ -49,7 +49,7 @@ on tile[0]:clock clk_audio_mclk     = XS1_CLKBLK_3;   // Master clock
 XUD_EpType epTypeTableOut[]   = {XUD_EPTYPE_CTL | XUD_STATUS_ENABLE, XUD_EPTYPE_ISO};
 XUD_EpType epTypeTableIn[]    = {XUD_EPTYPE_CTL | XUD_STATUS_ENABLE, XUD_EPTYPE_ISO, XUD_EPTYPE_ISO};
 
-void XUA_Buffer_lite(chanend c_aud_out, chanend c_feedback, chanend c_aud_in, chanend c_sof, chanend c_aud_ctl, in port p_for_mclk_count, chanend c_aud_host);
+void XUA_Buffer_lite(chanend c_ep0_out, chanend c_ep0_in, chanend c_aud_out, chanend c_feedback, chanend c_aud_in, chanend c_sof, in port p_for_mclk_count, chanend c_aud_host);
 [[distributable]]
 void AudioHub(server i2s_frame_callback_if i2s, chanend c_aud, client i2c_master_if ?i2c, client output_gpio_if dac_reset);
 void AudioHwConfigure(unsigned samFreq, client i2c_master_if i_i2c);
@@ -96,6 +96,7 @@ int main()
                 AudioHwConfigure(DEFAULT_FREQ, i_i2c[0]);
             }
 
+            debug_printf("XUD SPEED: %d\n", (AUDIO_CLASS == 1) ? XUD_SPEED_FS : XUD_SPEED_HS);
             par{
                 // Low level USB device layer core  
                 XUD_Main(c_ep_out, 2, c_ep_in, 3,
@@ -106,10 +107,10 @@ int main()
                 // Endpoint 0 core from lib_xua 
                 // Note, since we are not using many features we pass in null for quite a few params.. 
                 // XUA_Endpoint0(c_ep_out[0], c_ep_in[0], c_aud_ctl, null, null, null, null);
-                XUA_Endpoint0_select(c_ep_out[0], c_ep_in[0], c_aud_ctl, null, null, null, null);
+                //XUA_Endpoint0_select(c_ep_out[0], c_ep_in[0], c_aud_ctl, null, null, null, null);
 
                 // Buffering cores - handles audio data to/from EP's and gives/gets data to/from the audio I/O core 
-                XUA_Buffer_lite(c_ep_out[1], c_ep_in[1], c_ep_in[2], c_sof, c_aud_ctl, p_for_mclk_count, c_audio);
+                XUA_Buffer_lite(c_ep_out[0], c_ep_in[0], c_ep_out[1], c_ep_in[1], c_ep_in[2], c_sof, p_for_mclk_count, c_audio);
             }
         }//Tile[1] par
     }//Top level par
