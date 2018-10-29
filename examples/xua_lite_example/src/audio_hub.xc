@@ -41,8 +41,8 @@ void AudioHub(server i2s_frame_callback_if i2s,
 
     case i2s.restart_check() -> i2s_restart_t restart:
       restart = I2S_NO_RESTART; // Keep on looping
-      for (int i = 0; i < NUM_USB_CHAN_IN; i++) c_audio_hub <: samples_in[i];
-      for (int i = 0; i < NUM_USB_CHAN_OUT; i++) c_audio_hub :> samples_out[i];
+      for (int i = 0; i < NUM_USB_CHAN_OUT; i++) samples_out[i] = (int)inuint(c_audio_hub);
+      for (int i = 0; i < NUM_USB_CHAN_IN; i++) outuint(c_audio_hub, (unsigned)samples_in[i]);
       //delay_microseconds(5); //Test backpressure tolerance
     break;
     }
