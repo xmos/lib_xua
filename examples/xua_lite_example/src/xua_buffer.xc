@@ -180,22 +180,16 @@ void XUA_Buffer_lite(chanend c_ep0_out, chanend c_ep0_in, chanend c_aud_out, cha
   unsigned char buffer_aud_out[OUT_AUDIO_BUFFER_SIZE_BYTES];
   unsigned char buffer_aud_in[IN_AUDIO_BUFFER_SIZE_BYTES];
   
-  #define FEEDBACK_BUFF_SIZE    4
-  unsigned char buffer_feedback[FEEDBACK_BUFF_SIZE];
-  unsigned int fb_clocks[1] = {0}; 
-
-
   unsigned in_subslot_size = (AUDIO_CLASS == 1) ? FS_STREAM_FORMAT_INPUT_1_SUBSLOT_BYTES : HS_STREAM_FORMAT_INPUT_1_SUBSLOT_BYTES;
   unsigned out_subslot_size = (AUDIO_CLASS == 1) ? FS_STREAM_FORMAT_OUTPUT_1_SUBSLOT_BYTES : HS_STREAM_FORMAT_OUTPUT_1_SUBSLOT_BYTES;
 
-  unsigned in_num_chan = NUM_USB_CHAN_IN;
-  unsigned out_num_chan = NUM_USB_CHAN_OUT;
-
+  //Asynch feedback calculation
   unsigned sof_count = 0;
   unsigned mclk_port_counter_old = 0;
   long long feedback_value = 0;
   unsigned mod_from_last_time = 0;
   const unsigned mclk_hz = MCLK_48;
+  unsigned int fb_clocks[1] = {0}; 
 
   
   XUD_ep ep_aud_out = XUD_InitEp(c_aud_out);
@@ -203,103 +197,55 @@ void XUA_Buffer_lite(chanend c_ep0_out, chanend c_ep0_in, chanend c_aud_out, cha
   XUD_ep ep_aud_in = XUD_InitEp(c_aud_in);
 
   unsigned num_samples_received_from_host = 0;
-  unsigned outstanding_samples_to_host = 0;
   unsigned num_samples_to_send_to_host = 0;
-
-  XUD_SetReady_OutPtr(ep_aud_out, (unsigned)buffer_aud_out);
-  XUD_SetReady_InPtr(ep_aud_in, (unsigned)buffer_aud_in, num_samples_to_send_to_host);
-  XUD_SetReady_InPtr(ep_feedback, (unsigned)buffer_feedback, FEEDBACK_BUFF_SIZE);
 
   int loopback_samples[MAX_OUT_SAMPLES_PER_SOF_PERIOD] = {0};
   int32_t samples_out[NUM_USB_CHAN_OUT] = {0};
   int32_t samples_in[NUM_USB_CHAN_IN] = {0};
 
-#if SINGLE_XUA_EP_BUFFER
   #define c_audioControl null
   #define dfuInterface null
   XUA_Endpoint0_lite_init(c_ep0_out, c_ep0_in, c_audioControl, null, null, null, dfuInterface);
-  unsigned char sbuffer[120];
-  USB_SetupPacket_t sp;
-  XUD_SetReady_Out(ep0_out, sbuffer);
+  unsigned char sbuffer[120]; //Raw buffer for EP0 data
+  USB_SetupPacket_t sp;       //Parsed setup packet from EP0
 
   unsigned input_interface_num = 0;
   unsigned output_interface_num = 0;
 
-#endif
+  //Enable all EPs
+  XUD_SetReady_OutPtr(ep_aud_out, (unsigned)buffer_aud_out);
+  XUD_SetReady_InPtr(ep_aud_in, (unsigned)buffer_aud_in, num_samples_to_send_to_host);
+  XUD_SetReady_InPtr(ep_feedback, (unsigned)fb_clocks, (AUDIO_CLASS == 2) ? 4 : 3);
+  XUD_SetReady_Out(ep0_out, sbuffer);
 
-
+  //Unsafe to allow us to use fifo API
   unsafe{
 
     int host_to_device_fifo_storage[MAX_OUT_SAMPLES_PER_SOF_PERIOD * 2];
-    mem_fifo_t host_to_device_fifo = {sizeof(host_to_device_fifo_storage)/sizeof(host_to_device_fifo_storage[0])
-                                            , host_to_device_fifo_storage, 0, 0};
+    mem_fifo_t host_to_device_fifo = {sizeof(host_to_device_fifo_storage)/sizeof(host_to_device_fifo_storage[0]), host_to_device_fifo_storage, 0, 0};
     volatile mem_fifo_t * unsafe host_to_device_fifo_ptr = &host_to_device_fifo;
 
+    //XUD trasnaction variables
     XUD_Result_t result;
     unsigned length = 0;
 
     unsigned tmp; //For select channel input by ref
     while(1){
       select{
-
-#if !SINGLE_XUA_EP_BUFFER
-        //Handle control path from EP0
-        case testct_byref(c_aud_ctl, tmp):
-          //ignore tmp as is used for reboot signalling only
-          unsigned cmd = inuint(c_aud_ctl);
-          
-          debug_printf("c_aud_ctl cmd: %d\n", cmd);
-          if(cmd == SET_SAMPLE_FREQ){
-              unsigned receivedSampleFreq = inuint(c_aud_ctl);
-              debug_printf("SET_SAMPLE_FREQ: %d\n", receivedSampleFreq);
-              sampleFreq = receivedSampleFreq;
-          }
-
-          else if(cmd == SET_STREAM_FORMAT_IN){
-            unsigned formatChange_DataFormat = inuint(c_aud_ctl);
-            unsigned formatChange_NumChans = inuint(c_aud_ctl);
-            unsigned formatChange_SubSlot = inuint(c_aud_ctl);
-            unsigned formatChange_SampRes = inuint(c_aud_ctl);
-            debug_printf("SET_STREAM_FORMAT_IN: %d %d %d %d\n", formatChange_DataFormat, formatChange_NumChans, formatChange_SubSlot, formatChange_SampRes);
-            in_subslot_size = formatChange_SubSlot;
-            in_num_chan = formatChange_NumChans;
-          }
-
-          else if (cmd == SET_STREAM_FORMAT_OUT)
-          {
-              XUD_BusSpeed_t busSpeed;
-              unsigned formatChange_DataFormat = inuint(c_aud_ctl);
-              unsigned formatChange_NumChans = inuint(c_aud_ctl);
-              unsigned formatChange_SubSlot = inuint(c_aud_ctl);
-              unsigned formatChange_SampRes = inuint(c_aud_ctl);
-              debug_printf("SET_STREAM_FORMAT_OUT: %d %d %d %d\n", formatChange_DataFormat, formatChange_NumChans, formatChange_SubSlot, formatChange_SampRes);
-              out_subslot_size = formatChange_SubSlot;
-              out_num_chan = formatChange_NumChans;
-          }
-
-          else{
-            debug_printf("Unhandled command\n");
-          }
-          outct(c_aud_ctl, XS1_CT_END);
-        break;
-#endif
-
-
-#if SINGLE_XUA_EP_BUFFER
+        //Handle EP0 requests
         case XUD_GetSetupData_Select(c_ep0_out, ep0_out, length, result):
           if (result == XUD_RES_OKAY)
           {
               /* Parse data buffer end populate SetupPacket struct */
               USB_ParseSetupPacket(sbuffer, sp);
           }
-          debug_printf("ep0, result: %d, length: %d\n", result, length); //-1 reset, 0 ok, 1 error
+          //debug_printf("ep0, result: %d, length: %d\n", result, length); //-1 reset, 0 ok, 1 error
 
           XUA_Endpoint0_lite_loop(result, sp, c_ep0_out, c_ep0_in, c_audioControl, null/*mix*/, null/*clk*/, null/*EA*/, dfuInterface, &input_interface_num, &output_interface_num);
           XUD_SetReady_Out(ep0_out, sbuffer);
         break;
-#endif
 
-        //SOF
+        //SOF handling
         case inuint_byref(c_sof, tmp):
           unsigned mclk_port_counter = 0;
           asm volatile(" getts %0, res[%1]" : "=r" (mclk_port_counter) : "r" (p_for_mclk_count));
@@ -311,13 +257,11 @@ void XUA_Buffer_lite(chanend c_ep0_out, chanend c_ep0_in, chanend c_aud_out, cha
         case XUD_GetData_Select(c_aud_out, ep_aud_out, length, result):
           num_samples_received_from_host = length / out_subslot_size;
           //debug_printf("out samps: %d\n", num_samples_received_from_host);
-          outstanding_samples_to_host += num_samples_received_from_host;
 
           unpack_buff_to_samples(buffer_aud_out, num_samples_received_from_host, out_subslot_size, loopback_samples);
 
           fifo_ret_t ret = fifo_block_push(host_to_device_fifo_ptr, loopback_samples, num_samples_received_from_host);
-          if (ret != FIFO_SUCCESS) debug_printf("full\n");
-
+          if (ret != FIFO_SUCCESS) debug_printf("host_to_device_fifo full\n");
           num_samples_to_send_to_host = num_samples_received_from_host;
           
           //Mark EP as ready for next frame from host
@@ -326,23 +270,21 @@ void XUA_Buffer_lite(chanend c_ep0_out, chanend c_ep0_in, chanend c_aud_out, cha
 
         //Send asynch explicit feedback value
         case XUD_SetData_Select(c_feedback, ep_feedback, result):
-          //debug_printf("ep_feedback\n");
           XUD_SetReady_In(ep_feedback, (fb_clocks, unsigned char[]), (AUDIO_CLASS == 2) ? 4 : 3);
         break;
 
         //Send samples to host
         case XUD_SetData_Select(c_aud_in, ep_aud_in, result):
-          //debug_printf("sent data\n");
-
           //Populate the input buffer ready for the next read
           pack_samples_to_buff(loopback_samples, num_samples_to_send_to_host, in_subslot_size, buffer_aud_in);
           //Use the number of samples we received last time so we are always balanced (assumes same in/out count)
-          
+      
           unsigned input_buffer_size = num_samples_to_send_to_host * in_subslot_size;
           XUD_SetReady_InPtr(ep_aud_in, (unsigned)buffer_aud_in, input_buffer_size); //loopback
           num_samples_to_send_to_host = 0;
         break;
 
+        //Exchange samples with audiohub
         case c_audio_hub :> samples_in[0]:
           for (int i = 1; i < NUM_USB_CHAN_IN; i++) c_audio_hub :> samples_in[i];
           // for (int i = 0; i < NUM_USB_CHAN_OUT; i++) c_audio_hub <: samples_out[1];
