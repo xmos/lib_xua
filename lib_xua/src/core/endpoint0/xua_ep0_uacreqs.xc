@@ -273,7 +273,7 @@ static void updateVol(int unitID, int channel, chanend ?c_mix_ctl)
  *              XUD_RES_RST for device reset
  *              else XUD_RES_ERR
  */
-int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, chanend c_audioControl, chanend ?c_mix_ctl, chanend ?c_clk_ctl
+int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, chanend ?c_audioControl, chanend ?c_mix_ctl, chanend ?c_clk_ctl
 )
 {
     unsigned int buffer[32];
@@ -1071,7 +1071,7 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
 
 #if (AUDIO_CLASS_FALLBACK != 0) || (AUDIO_CLASS == 1)
 
-int AudioEndpointRequests_1(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, chanend c_audioControl, chanend ?c_mix_ctl, chanend ?c_clk_ctl)
+int AudioEndpointRequests_1(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, chanend ?c_audioControl, chanend ?c_mix_ctl, chanend ?c_clk_ctl)
 {
     /* At this point we know:
      * bmRequestType.Recipient = Endpoint
@@ -1159,7 +1159,7 @@ int AudioEndpointRequests_1(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp
 
 
 /* Handles the Audio Class 1.0 specific requests */
-XUD_Result_t AudioClassRequests_1(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, chanend c_audioControl, chanend ?c_mix_ctl, chanend ?c_clk_ctl
+XUD_Result_t AudioClassRequests_1(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, chanend ?c_audioControl, chanend ?c_mix_ctl, chanend ?c_clk_ctl
 )
 {
 #if (OUTPUT_VOLUME_CONTROL == 1) || (INPUT_VOLUME_CONTROL == 1)
