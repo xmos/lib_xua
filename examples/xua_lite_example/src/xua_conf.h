@@ -29,6 +29,6 @@
 
 #define UAC_FORCE_FEEDBACK_EP 1
 #define XUA_LITE              1           // Use simple/optimised USB buffer tasks
-#define AUDIO_CLASS           2
+#define AUDIO_CLASS           1
 
 #endif

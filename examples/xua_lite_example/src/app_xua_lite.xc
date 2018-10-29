@@ -96,7 +96,7 @@ int main()
                 AudioHwConfigure(DEFAULT_FREQ, i_i2c[0]);
             }
 
-            debug_printf("XUD SPEED: %d\n", (AUDIO_CLASS == 1) ? XUD_SPEED_FS : XUD_SPEED_HS);
+            debug_printf("XUD SPEED: %d\n", (AUDIO_CLASS == 1) ? XUD_SPEED_FS : XUD_SPEED_HS); //FS = 1, HS = 2
             par{
                 // Low level USB device layer core  
                 XUD_Main(c_ep_out, 2, c_ep_in, 3,

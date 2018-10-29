@@ -253,7 +253,7 @@ void XUA_Buffer_lite(chanend c_ep0_out, chanend c_ep0_in, chanend c_aud_out, cha
           unpack_buff_to_samples(buffer_aud_out, num_samples_received_from_host, out_subslot_size, loopback_samples);
 
           fifo_ret_t ret = fifo_block_push(host_to_device_fifo_ptr, loopback_samples, num_samples_received_from_host);
-          if (ret != FIFO_SUCCESS) debug_printf("host_to_device_fifo full\n");
+          if (ret != FIFO_SUCCESS) debug_printf("h2f full\n");
           num_samples_to_send_to_host = num_samples_received_from_host;
           
           //Mark EP as ready for next frame from host
@@ -263,6 +263,7 @@ void XUA_Buffer_lite(chanend c_ep0_out, chanend c_ep0_in, chanend c_aud_out, cha
         //Send asynch explicit feedback value
         case XUD_SetData_Select(c_feedback, ep_feedback, result):
           XUD_SetReady_In(ep_feedback, (fb_clocks, unsigned char[]), (AUDIO_CLASS == 2) ? 4 : 3);
+          //debug_printf("0x%x\n", fb_clocks[0]);
         break;
 
         //Send samples to host
