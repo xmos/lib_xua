@@ -153,10 +153,7 @@ void do_feedback_calculation(unsigned &sof_count
   }
 }
 
-#define SINGLE_XUA_EP_BUFFER 1
 
-
-#if SINGLE_XUA_EP_BUFFER
 extern "C"{
 void XUA_Endpoint0_lite_init(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
     chanend ?c_mix_ctl, chanend ?c_clk_ctl, chanend ?c_EANativeTransport_ctrl, CLIENT_INTERFACE(i_dfu, ?dfuInterface) VENDOR_REQUESTS_PARAMS_DEC_);
@@ -168,7 +165,6 @@ void XUD_GetSetupData_Select(chanend c, XUD_ep e_out, unsigned &length, XUD_Resu
 
 extern XUD_ep ep0_out;
 extern XUD_ep ep0_in;
-#endif
 
 
 void XUA_Buffer_lite(chanend c_ep0_out, chanend c_ep0_in, chanend c_aud_out, chanend c_feedback, chanend c_aud_in, chanend c_sof, in port p_for_mclk_count, chanend c_audio_hub) {
@@ -273,7 +269,8 @@ void XUA_Buffer_lite(chanend c_ep0_out, chanend c_ep0_in, chanend c_aud_out, cha
         case XUD_SetData_Select(c_aud_in, ep_aud_in, result):
           //Populate the input buffer ready for the next read
           pack_samples_to_buff(loopback_samples, num_samples_to_send_to_host, in_subslot_size, buffer_aud_in);
-          //Use the number of samples we received last time so we are always balanced (assumes same in/out count)      
+          //Use the number of samples we received last time so we are always balanced (assumes same in/out count)
+      
           unsigned input_buffer_size = num_samples_to_send_to_host * in_subslot_size;
           XUD_SetReady_InPtr(ep_aud_in, (unsigned)buffer_aud_in, input_buffer_size); //loopback
           num_samples_to_send_to_host = 0;
