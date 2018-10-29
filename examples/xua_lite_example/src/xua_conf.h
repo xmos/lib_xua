@@ -22,6 +22,11 @@
 #define PID_AUDIO_2           2
 #define XUA_DFU_EN            0           /* Disable DFU (for simplicity of example) */
 
+#define INPUT_FORMAT_COUNT    1
+#define STREAM_FORMAT_INPUT_1_RESOLUTION_BITS     16
+#define OUTPUT_FORMAT_COUNT   1
+#define STREAM_FORMAT_OUTPUT_1_RESOLUTION_BITS    16
+
 #define UAC_FORCE_FEEDBACK_EP 1
 #define XUA_LITE              1           // Use simple/optimised USB buffer tasks
 #define AUDIO_CLASS           2
