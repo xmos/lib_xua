@@ -103,13 +103,8 @@ int main()
                           c_sof, epTypeTableOut, epTypeTableIn, 
                           null, null, -1 , 
                           (AUDIO_CLASS == 1) ? XUD_SPEED_FS : XUD_SPEED_HS, XUD_PWR_BUS);
-                
-                // Endpoint 0 core from lib_xua 
-                // Note, since we are not using many features we pass in null for quite a few params.. 
-                // XUA_Endpoint0(c_ep_out[0], c_ep_in[0], c_aud_ctl, null, null, null, null);
-                //XUA_Endpoint0_select(c_ep_out[0], c_ep_in[0], c_aud_ctl, null, null, null, null);
 
-                // Buffering cores - handles audio data to/from EP's and gives/gets data to/from the audio I/O core 
+                // Buffering cores - handles audio and control data to/from EP's and gives/gets data to/from the audio I/O core 
                 XUA_Buffer_lite(c_ep_out[0], c_ep_in[0], c_ep_out[1], c_ep_in[1], c_ep_in[2], c_sof, p_for_mclk_count, c_audio);
             }
         }//Tile[1] par

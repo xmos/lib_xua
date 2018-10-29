@@ -4,7 +4,7 @@
 #include "xua.h"
 
 #define DEBUG_UNIT EP0_WRAPPER
-#define DEBUG_PRINT_ENABLE_EP0_WRAPPER 1
+#define DEBUG_PRINT_ENABLE_EP0_WRAPPER 0
 #include "debug_print.h"
 
 extern "C"{
@@ -37,9 +37,6 @@ void XUA_Endpoint0_select(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioCo
 
       XUD_Result_t result = XUD_RES_ERR;
       unsigned length = 0;
-
-      //XUD_Result_t result = XUD_GetSetupBuffer(ep0_out, sbuffer, &length); //Flattened from xud_device
-      // result = XUD_GetSetupData(ep0_out, sbuffer, length);//Flattened from XUD_EpFunctions.xc
 
       select{
         case XUD_GetSetupData_Select(c_ep0_out, ep0_out, length, result):
