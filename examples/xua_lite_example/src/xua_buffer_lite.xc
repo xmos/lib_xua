@@ -167,11 +167,9 @@ extern XUD_ep ep0_out;
 extern XUD_ep ep0_in;
 
 
-void XUA_Buffer_lite(chanend c_ep0_out, chanend c_ep0_in, chanend c_aud_out, chanend c_feedback, chanend c_aud_in, chanend c_sof, in port p_for_mclk_count, chanend c_audio_hub) {
+void XUA_Buffer_lite(chanend c_ep0_out, chanend c_ep0_in, chanend c_aud_out, chanend c_feedback, chanend c_aud_in, chanend c_sof, in port p_for_mclk_count, streaming chanend c_audio_hub) {
 
   debug_printf("%d\n", MAX_OUT_SAMPLES_PER_SOF_PERIOD);
-
-  unsigned sampleFreq = DEFAULT_FREQ;
 
   unsigned char buffer_aud_out[OUT_AUDIO_BUFFER_SIZE_BYTES];
   unsigned char buffer_aud_in[IN_AUDIO_BUFFER_SIZE_BYTES];
@@ -215,7 +213,7 @@ void XUA_Buffer_lite(chanend c_ep0_out, chanend c_ep0_in, chanend c_aud_out, cha
   XUD_SetReady_Out(ep0_out, sbuffer);
 
   //Send initial samples so audiohub is not blocked
-  for (int i = 0; i < NUM_USB_CHAN_OUT; i++) outuint(c_audio_hub, 0);
+  for (int i = 0; i < NUM_USB_CHAN_OUT * 5; i++) outuint(c_audio_hub, 0);
  
 
   //Unsafe to allow us to use fifo API
@@ -233,23 +231,32 @@ void XUA_Buffer_lite(chanend c_ep0_out, chanend c_ep0_in, chanend c_aud_out, cha
       select{
         //Handle EP0 requests
         case XUD_GetSetupData_Select(c_ep0_out, ep0_out, length, result):
+        timer tmr; int t0, t1; tmr :> t0;
+
           if (result == XUD_RES_OKAY) USB_ParseSetupPacket(sbuffer, sp); //Parse data buffer end populate SetupPacket struct
           //debug_printf("ep0, result: %d, length: %d\n", result, length); //-1 reset, 0 ok, 1 error
 
           XUA_Endpoint0_lite_loop(result, sp, c_ep0_out, c_ep0_in, c_audioControl, null/*mix*/, null/*clk*/, null/*EA*/, dfuInterface, &input_interface_num, &output_interface_num);
           XUD_SetReady_Out(ep0_out, sbuffer);
+        tmr :> t1; debug_printf("c%d\n", t1 - t0);
+
         break;
 
         //SOF handling
         case inuint_byref(c_sof, u_tmp):
+        timer tmr; int t0, t1; tmr :> t0;
           unsigned mclk_port_counter = 0;
           asm volatile(" getts %0, res[%1]" : "=r" (mclk_port_counter) : "r" (p_for_mclk_count));
           do_feedback_calculation(sof_count, mclk_hz, mclk_port_counter, mclk_port_counter_old, feedback_value, mod_from_last_time, fb_clocks);
           sof_count++;
+        tmr :> t1; debug_printf("s%d\n", t1 - t0);
+
         break;
 
         //Receive samples from host
         case XUD_GetData_Select(c_aud_out, ep_aud_out, length, result):
+        timer tmr; int t0, t1; tmr :> t0;
+
           num_samples_received_from_host = length / out_subslot_size;
           //debug_printf("out samps: %d\n", num_samples_received_from_host);
 
@@ -261,16 +268,24 @@ void XUA_Buffer_lite(chanend c_ep0_out, chanend c_ep0_in, chanend c_aud_out, cha
           
           //Mark EP as ready for next frame from host
           XUD_SetReady_OutPtr(ep_aud_out, (unsigned)buffer_aud_out);
+        tmr :> t1; debug_printf("o%d\n", t1 - t0);
+
         break;
 
         //Send asynch explicit feedback value
         case XUD_SetData_Select(c_feedback, ep_feedback, result):
+        timer tmr; int t0, t1; tmr :> t0;
+
           XUD_SetReady_In(ep_feedback, (fb_clocks, unsigned char[]), (AUDIO_CLASS == 2) ? 4 : 3);
           //debug_printf("0x%x\n", fb_clocks[0]);
+          tmr :> t1; debug_printf("f%d\n", t1 - t0);
+
         break;
 
         //Send samples to host
         case XUD_SetData_Select(c_aud_in, ep_aud_in, result):
+        timer tmr; int t0, t1; tmr :> t0;
+
           //Populate the input buffer ready for the next read
           pack_samples_to_buff(loopback_samples, num_samples_to_send_to_host, in_subslot_size, buffer_aud_in);
           //Use the number of samples we received last time so we are always balanced (assumes same in/out count)
@@ -278,6 +293,8 @@ void XUA_Buffer_lite(chanend c_ep0_out, chanend c_ep0_in, chanend c_aud_out, cha
           unsigned input_buffer_size = num_samples_to_send_to_host * in_subslot_size;
           XUD_SetReady_InPtr(ep_aud_in, (unsigned)buffer_aud_in, input_buffer_size); //loopback
           num_samples_to_send_to_host = 0;
+          tmr :> t1; debug_printf("i%d\n", t1 - t0);
+
         break;
 
         //Exchange samples with audiohub. Note we are using channel buffering here to act as a FIFO

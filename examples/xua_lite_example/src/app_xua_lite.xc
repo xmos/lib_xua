@@ -49,9 +49,9 @@ on tile[0]:clock clk_audio_mclk     = XS1_CLKBLK_3;   // Master clock
 XUD_EpType epTypeTableOut[]   = {XUD_EPTYPE_CTL | XUD_STATUS_ENABLE, XUD_EPTYPE_ISO};
 XUD_EpType epTypeTableIn[]    = {XUD_EPTYPE_CTL | XUD_STATUS_ENABLE, XUD_EPTYPE_ISO, XUD_EPTYPE_ISO};
 
-void XUA_Buffer_lite(chanend c_ep0_out, chanend c_ep0_in, chanend c_aud_out, chanend c_feedback, chanend c_aud_in, chanend c_sof, in port p_for_mclk_count, chanend c_aud_host);
+void XUA_Buffer_lite(chanend c_ep0_out, chanend c_ep0_in, chanend c_aud_out, chanend c_feedback, chanend c_aud_in, chanend c_sof, in port p_for_mclk_count, streaming chanend c_aud_host);
 [[distributable]]
-void AudioHub(server i2s_frame_callback_if i2s, chanend c_aud, client i2c_master_if ?i2c, client output_gpio_if dac_reset);
+void AudioHub(server i2s_frame_callback_if i2s, streaming chanend c_aud, client i2c_master_if ?i2c, client output_gpio_if dac_reset);
 void AudioHwConfigure(unsigned samFreq, client i2c_master_if i_i2c);
 void XUA_Endpoint0_select(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
     chanend ?c_mix_ctl, chanend ?c_clk_ctl, chanend ?c_EANativeTransport_ctrl, CLIENT_INTERFACE(i_dfu, ?dfuInterface) VENDOR_REQUESTS_PARAMS_DEC_);
@@ -69,11 +69,7 @@ int main()
     interface i2c_master_if i_i2c[1];
     interface output_gpio_if i_gpio[1];
 
-    chan c_audio;
-
-    
-    // Channel for communicating control messages from EP0 to the rest of the device (via the buffering cores) 
-    chan c_aud_ctl;
+    streaming chan c_audio; //We use the channel buffering (48B across switch each way)
 
     par
     {

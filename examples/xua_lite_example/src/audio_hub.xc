@@ -9,7 +9,7 @@
 
 [[distributable]]
 void AudioHub(server i2s_frame_callback_if i2s,
-                  chanend c_audio_hub,
+                  streaming chanend c_audio_hub,
                   client i2c_master_if ?i_i2c,
                   client output_gpio_if dac_reset)
 {
@@ -41,9 +41,11 @@ void AudioHub(server i2s_frame_callback_if i2s,
 
     case i2s.restart_check() -> i2s_restart_t restart:
       restart = I2S_NO_RESTART; // Keep on looping
-      for (int i = 0; i < NUM_USB_CHAN_OUT; i++) samples_out[i] = (int)inuint(c_audio_hub);
-      for (int i = 0; i < NUM_USB_CHAN_IN; i++) outuint(c_audio_hub, (unsigned)samples_in[i]);
-      //delay_microseconds(5); //Test backpressure tolerance
+      timer tmr; int t0, t1; tmr :> t0;
+      for (int i = 0; i < NUM_USB_CHAN_OUT; i++) c_audio_hub :> samples_out[i];
+      for (int i = 0; i < NUM_USB_CHAN_IN; i++) c_audio_hub <: samples_in[i];
+      //tmr :> t1; debug_printf("%d\n", t1 - t0);
+      //delay_microseconds(10); //Test backpressure tolerance
     break;
     }
   }
