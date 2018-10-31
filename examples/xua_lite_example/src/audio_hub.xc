@@ -5,21 +5,47 @@
 #define DEBUG_UNIT XUA_AUDIO_HUB
 #define DEBUG_PRINT_ENABLE_XUA_AUDIO_HUB 1
 #include "debug_print.h"
+#include "mic_array.h"
 
+
+void mic_array_decimator_set_samprate(const unsigned samplerate, int fir_gain_compen[], int * unsafe fir_coefs[], int mic_decimator_fir_data_array[], mic_array_decimator_conf_common_t *dcc, mic_array_decimator_config_t dc[]);
+
+
+void setup_audio_gpio(out port p_gpio){
+  // Reset DAC and disable MUTE
+  p_gpio <: 0x0;
+  delay_milliseconds(1);
+  p_gpio <: 0x1;
+  delay_milliseconds(1);
+}
+
+
+//Globally declared for 64b alignment
+int mic_decimator_fir_data_array[8][THIRD_STAGE_COEFS_PER_STAGE * PDM_MAX_DECIMATION] = {{0}};
+mic_array_frame_time_domain mic_audio_frame[2];
 
 [[distributable]]
 void AudioHub(server i2s_frame_callback_if i2s,
-                  streaming chanend c_audio_hub,
-                  client i2c_master_if ?i_i2c,
-                  client output_gpio_if dac_reset)
+                  streaming chanend c_audio,
+                  streaming chanend (&?c_ds_output)[1])
 {
   int32_t samples_out[NUM_USB_CHAN_OUT] = {0};
   int32_t samples_in[NUM_USB_CHAN_IN] = {0};
 
-  // Reset DAC
-  dac_reset.output(0);
-  delay_milliseconds(1);
-  dac_reset.output(1);
+#if XUA_NUM_PDM_MICS > 0
+  unsigned buffer;
+  int output[XUA_NUM_PDM_MICS] = {0};
+  const unsigned decimatorCount = 1; // Supports up to 4 mics
+  mic_array_decimator_conf_common_t dcc;
+  int * unsafe fir_coefs[7];
+  mic_array_decimator_config_t dc[1];
+  int fir_gain_compen[7];
+  mic_array_frame_time_domain * unsafe current;
+
+  mic_array_decimator_set_samprate(DEFAULT_FREQ, fir_gain_compen, fir_coefs, mic_decimator_fir_data_array[0], &dcc, dc);
+  mic_array_decimator_configure(c_ds_output, decimatorCount, dc);
+  mic_array_init_time_domain_frame(c_ds_output, decimatorCount, buffer, mic_audio_frame, dc);
+#endif
 
 
   while (1) {
@@ -42,10 +68,16 @@ void AudioHub(server i2s_frame_callback_if i2s,
     case i2s.restart_check() -> i2s_restart_t restart:
       restart = I2S_NO_RESTART; // Keep on looping
       timer tmr; int t0, t1; tmr :> t0;
-      for (int i = 0; i < NUM_USB_CHAN_OUT; i++) c_audio_hub :> samples_out[i];
-      for (int i = 0; i < NUM_USB_CHAN_IN; i++) c_audio_hub <: samples_in[i];
+      // for (int i = 0; i < NUM_USB_CHAN_OUT; i++) c_audio :> samples_out[i];
+      // for (int i = 0; i < NUM_USB_CHAN_IN; i++) c_audio <: samples_in[i];
       //tmr :> t1; debug_printf("%d\n", t1 - t0);
-      //delay_microseconds(10); //Test backpressure tolerance
+      //delay_microseconds(15); //Test backpressure tolerance
+
+      current = mic_array_get_next_time_domain_frame(c_ds_output, decimatorCount, buffer, mic_audio_frame, dc);
+      unsafe {
+          samples_out[0] = current->data[0][0];
+          samples_out[1] = current->data[1][0];
+      }
     break;
     }
   }

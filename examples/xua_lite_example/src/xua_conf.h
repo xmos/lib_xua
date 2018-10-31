@@ -20,15 +20,21 @@
 #define PRODUCT_STR_A1        "XUA Lite Class 1"
 #define PID_AUDIO_1           1   
 #define PID_AUDIO_2           2
-#define XUA_DFU_EN            0           /* Disable DFU (for simplicity of example) */
+#define XUA_DFU_EN            0      /* Disable DFU (for simplicity of example) */
 
 #define INPUT_FORMAT_COUNT    1
 #define STREAM_FORMAT_INPUT_1_RESOLUTION_BITS     16
 #define OUTPUT_FORMAT_COUNT   1
 #define STREAM_FORMAT_OUTPUT_1_RESOLUTION_BITS    16
 
+#define OUTPUT_VOLUME_CONTROL 0
+#define INPUT_VOLUME_CONTROL  0 
+
 #define UAC_FORCE_FEEDBACK_EP 1
-#define XUA_LITE              1           // Use simple/optimised USB buffer tasks
+#define XUA_LITE              1       // Use simple/optimised USB buffer tasks
 #define AUDIO_CLASS           1
+
+#define XUA_NUM_PDM_MICS      4       // It's actually 2 but we run 4ch and ignore 2
+#define PDM_MAX_DECIMATION    (96000/(MIN_FREQ))
 
 #endif
