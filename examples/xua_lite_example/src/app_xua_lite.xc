@@ -66,6 +66,15 @@ void XUA_Endpoint0_select(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioCo
     chanend ?c_mix_ctl, chanend ?c_clk_ctl, chanend ?c_EANativeTransport_ctrl, CLIENT_INTERFACE(i_dfu, ?dfuInterface) VENDOR_REQUESTS_PARAMS_DEC_);
 void pdm_mic(streaming chanend c_ds_output, in buffered port:32 p_pdm_mics);
 
+void burn_normal_priority(void){
+    while(1);
+}
+
+void burn_high_priority(void){
+    set_core_high_priority_on();
+    while(1);
+}
+
 int main()
 {
     // Channels for lib_xud 
@@ -84,7 +93,7 @@ int main()
     par
     {
         on tile[0]: {
-            //Set the GPIOs needed for audio
+            //Set the GPIOs needed for audio (reset and mute)
             setup_audio_gpio(p_gpio);
             c_audio <: 0;       //Signal that we can now do i2c setup
             c_audio :> int _;   //Now wait until i2c has finished mclk setup
@@ -96,6 +105,9 @@ int main()
                 i2s_frame_master(i_i2s, p_i2s_dac, 1, p_i2s_adc, 1, p_bclk, p_lrclk, p_mclk_in, clk_audio_bclk);
                 [[distribute]]AudioHub(i_i2s, c_audio, c_ds_output);
                 pdm_mic(c_ds_output[0], p_pdm_mics);
+
+                par (int i = 0; i < 5; i++) burn_normal_priority();
+                par (int i = 0; i < 0; i++) burn_high_priority();
             }
         }
         on tile[1]:{
@@ -121,6 +133,9 @@ int main()
 
                 // Buffering core - handles audio and control data to/from EP's and gives/gets data to/from the audio I/O core 
                 XUA_Buffer_lite(c_ep_out[0], c_ep_in[0], c_ep_out[1], c_ep_in[1], c_ep_in[2], c_sof, p_for_mclk_count, c_audio);
+
+                par (int i = 0; i < 4; i++) burn_normal_priority();
+                par (int i = 0; i < 2; i++) burn_high_priority();
             }
         }//Tile[1] par
     }//Top level par
