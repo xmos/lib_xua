@@ -8,7 +8,7 @@
 #include "mic_array.h"
 
 
-void mic_array_decimator_set_samprate(const unsigned samplerate, int fir_gain_compen[], int * unsafe fir_coefs[], int mic_decimator_fir_data_array[], mic_array_decimator_conf_common_t *dcc, mic_array_decimator_config_t dc[]);
+void mic_array_decimator_set_samprate(const unsigned samplerate, int mic_decimator_fir_data_array[], mic_array_decimator_conf_common_t *dcc, mic_array_decimator_config_t dc[]);
 
 
 void setup_audio_gpio(out port p_gpio){
@@ -37,12 +37,10 @@ void AudioHub(server i2s_frame_callback_if i2s,
   int raw_mics[XUA_NUM_PDM_MICS] = {0};
   const unsigned decimatorCount = 1; // Supports up to 4 mics
   mic_array_decimator_conf_common_t dcc;
-  int * unsafe fir_coefs[7];
   mic_array_decimator_config_t dc[1];
-  int fir_gain_compen[7];
   mic_array_frame_time_domain * unsafe current;
 
-  mic_array_decimator_set_samprate(DEFAULT_FREQ, fir_gain_compen, fir_coefs, mic_decimator_fir_data_array[0], &dcc, dc);
+  mic_array_decimator_set_samprate(DEFAULT_FREQ, mic_decimator_fir_data_array[0], &dcc, dc);
   mic_array_decimator_configure(c_ds_output, decimatorCount, dc);
   mic_array_init_time_domain_frame(c_ds_output, decimatorCount, buffer, mic_audio_frame, dc);
 #endif

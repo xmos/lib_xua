@@ -13,9 +13,11 @@
 #include "mic_array.h"
 
 
-void mic_array_decimator_set_samprate(const unsigned samplerate, int fir_gain_compen[], int * unsafe fir_coefs[], int mic_decimator_fir_data_array[], mic_array_decimator_conf_common_t *dcc, mic_array_decimator_config_t dc[])
+void mic_array_decimator_set_samprate(const unsigned samplerate, int mic_decimator_fir_data_array[], mic_array_decimator_conf_common_t *dcc, mic_array_decimator_config_t dc[])
 {
     unsigned decimationfactor = 96000/samplerate;
+    int fir_gain_compen[7];
+    int * unsafe fir_coefs[7];
     unsafe
     {
         fir_gain_compen[0] = 0;
