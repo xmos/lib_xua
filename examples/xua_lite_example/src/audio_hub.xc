@@ -34,7 +34,7 @@ void AudioHub(server i2s_frame_callback_if i2s,
 
 #if XUA_NUM_PDM_MICS > 0
   unsigned buffer;
-  int output[XUA_NUM_PDM_MICS] = {0};
+  int raw_mics[XUA_NUM_PDM_MICS] = {0};
   const unsigned decimatorCount = 1; // Supports up to 4 mics
   mic_array_decimator_conf_common_t dcc;
   int * unsafe fir_coefs[7];
@@ -68,15 +68,15 @@ void AudioHub(server i2s_frame_callback_if i2s,
     case i2s.restart_check() -> i2s_restart_t restart:
       restart = I2S_NO_RESTART; // Keep on looping
       timer tmr; int t0, t1; tmr :> t0;
-      // for (int i = 0; i < NUM_USB_CHAN_OUT; i++) c_audio :> samples_out[i];
-      // for (int i = 0; i < NUM_USB_CHAN_IN; i++) c_audio <: samples_in[i];
+       for (int i = 0; i < NUM_USB_CHAN_OUT; i++) c_audio :> samples_out[i];
+       for (int i = 0; i < NUM_USB_CHAN_IN; i++) c_audio <: raw_mics[i];
       //tmr :> t1; debug_printf("%d\n", t1 - t0);
       //delay_microseconds(15); //Test backpressure tolerance
 
       current = mic_array_get_next_time_domain_frame(c_ds_output, decimatorCount, buffer, mic_audio_frame, dc);
       unsafe {
-          samples_out[0] = current->data[0][0];
-          samples_out[1] = current->data[1][0];
+          raw_mics[0] = current->data[0][0];
+          raw_mics[1] = current->data[1][0];
       }
     break;
     }

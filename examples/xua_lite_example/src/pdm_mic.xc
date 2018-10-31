@@ -64,7 +64,7 @@ void mic_array_decimator_set_samprate(const unsigned samplerate, int fir_gain_co
 void pdm_mic(streaming chanend c_ds_output, in buffered port:32 p_pdm_mics)
 {
     streaming chan c_4x_pdm_mic_0;
-    assert((MCLK_48 / 3072000) == (MCLK_441 / 2822400));
+    assert((MCLK_48 / 3072000) == (MCLK_441 / 2822400)); //Make sure mic clock is achievable from MCLK
     par
     {
         mic_array_pdm_rx(p_pdm_mics, c_4x_pdm_mic_0, null);

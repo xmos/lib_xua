@@ -96,24 +96,22 @@ int main()
                 i2s_frame_master(i_i2s, p_i2s_dac, 1, p_i2s_adc, 1, p_bclk, p_lrclk, p_mclk_in, clk_audio_bclk);
                 [[distribute]]AudioHub(i_i2s, c_audio, c_ds_output);
                 pdm_mic(c_ds_output[0], p_pdm_mics);
-
             }
         }
         on tile[1]:{
-            // Connect master-clock clock-block to clock-block pin 
+            // Connect master-clock input clock-block to clock-block pin 
             set_clock_src(clk_usb_mclk, p_mclk_in_usb);           // Clock clock-block from mclk pin 
             set_port_clock(p_for_mclk_count, clk_usb_mclk);       // Clock the "count" port from the clock block 
             start_clock(clk_usb_mclk);                            // Set the clock off running 
 
             //Setup DAC over i2c and then return so we do not use a thread
-            c_audio :> int _; //Wait for reset asserted from other tile to complete
+            c_audio :> int _; //Wait for reset to be asserted/deasserted by other tile
             par{
                 i2c_master(i_i2c, 1, p_scl, p_sda, 100);
                 AudioHwConfigure(DEFAULT_FREQ, i_i2c[0]);
             }
-            c_audio <: 0; //Signal to tile[0] that clock is good
+            c_audio <: 0; //Signal to tile[0] that mclk is now good
 
-            debug_printf("XUD SPEED: %d\n", (AUDIO_CLASS == 1) ? XUD_SPEED_FS : XUD_SPEED_HS); //FS = 1, HS = 2
             par{
                 // Low level USB device layer core  
                 XUD_Main(c_ep_out, 2, c_ep_in, 3,
@@ -121,7 +119,7 @@ int main()
                           null, null, -1 , 
                           (AUDIO_CLASS == 1) ? XUD_SPEED_FS : XUD_SPEED_HS, XUD_PWR_BUS);
 
-                // Buffering cores - handles audio and control data to/from EP's and gives/gets data to/from the audio I/O core 
+                // Buffering core - handles audio and control data to/from EP's and gives/gets data to/from the audio I/O core 
                 XUA_Buffer_lite(c_ep_out[0], c_ep_in[0], c_ep_out[1], c_ep_in[1], c_ep_in[2], c_sof, p_for_mclk_count, c_audio);
             }
         }//Tile[1] par
