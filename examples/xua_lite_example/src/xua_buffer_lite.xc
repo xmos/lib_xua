@@ -30,6 +30,7 @@
 #define IN_AUDIO_BUFFER_SIZE_BYTES        (MAX_IN_SAMPLES_PER_SOF_PERIOD * MAX_INPUT_SLOT_SIZE)
 
 //Helper to disassemble USB packets into 32b left aligned audio samples
+#pragma unsafe arrays
 static inline void unpack_buff_to_samples(unsigned char input[], const unsigned n_samples, const unsigned slot_size, int output[]){
   switch(slot_size){
     case 4:
@@ -57,6 +58,7 @@ static inline void unpack_buff_to_samples(unsigned char input[], const unsigned 
 }
 
 //Helper to assemble USB packets from 32b left aligned audio samples
+#pragma unsafe arrays
 static inline void pack_samples_to_buff(int input[], const unsigned n_samples, const unsigned slot_size, unsigned char output[]){
   switch(slot_size){
     case 4:
@@ -213,7 +215,7 @@ void XUA_Buffer_lite(chanend c_ep0_out, chanend c_ep0_in, chanend c_aud_out, cha
   XUD_SetReady_Out(ep0_out, sbuffer);
 
   //Send initial samples so audiohub is not blocked
-  for (int i = 0; i < NUM_USB_CHAN_OUT * 5; i++) outuint(c_audio_hub, 0);
+  for (int i = 0; i < NUM_USB_CHAN_OUT * 6; i++) c_audio_hub <: 0;
  
 
   //Unsafe to allow us to use fifo API
@@ -260,9 +262,10 @@ void XUA_Buffer_lite(chanend c_ep0_out, chanend c_ep0_in, chanend c_aud_out, cha
           num_samples_received_from_host = length / out_subslot_size;
           //debug_printf("out samps: %d\n", num_samples_received_from_host);
 
-          unpack_buff_to_samples(buffer_aud_out, num_samples_received_from_host, out_subslot_size, loopback_samples);
+          //unpack_buff_to_samples(buffer_aud_out, num_samples_received_from_host, out_subslot_size, loopback_samples);
 
-          fifo_ret_t ret = fifo_block_push(host_to_device_fifo_ptr, loopback_samples, num_samples_received_from_host);
+          //fifo_ret_t ret = fifo_block_push(host_to_device_fifo_ptr, loopback_samples, num_samples_received_from_host);
+          fifo_ret_t ret = fifo_block_push_short_pairs(host_to_device_fifo_ptr, (short *)buffer_aud_out, num_samples_received_from_host);
           if (ret != FIFO_SUCCESS) debug_printf("h2f full\n");
           num_samples_to_send_to_host = num_samples_received_from_host;
           
@@ -298,16 +301,18 @@ void XUA_Buffer_lite(chanend c_ep0_out, chanend c_ep0_in, chanend c_aud_out, cha
         break;
 
         //Exchange samples with audiohub. Note we are using channel buffering here to act as a FIFO
-        case inuint_byref(c_audio_hub, u_tmp):
-          samples_in[0] = (int)u_tmp;
+        case c_audio_hub :> samples_in[0]:
+        timer tmr; int t0, t1; tmr :> t0;
+
           for (int i = 1; i < NUM_USB_CHAN_IN; i++){
-            u_tmp = inuint(c_audio_hub);
-            samples_in[i] = (int)u_tmp;
+            c_audio_hub :> samples_in[i];
           }
           int out_samps[NUM_USB_CHAN_OUT];
           fifo_ret_t ret = fifo_block_pop(host_to_device_fifo_ptr, out_samps, NUM_USB_CHAN_OUT);
           //if (ret != FIFO_SUCCESS) debug_printf("empty\n");
-          for (int i = 0; i < NUM_USB_CHAN_OUT; i++) outuint(c_audio_hub, (unsigned) out_samps[i]);
+          for (int i = 0; i < NUM_USB_CHAN_OUT; i++) c_audio_hub <: out_samps[i];
+            tmr :> t1; debug_printf("a%d\n", t1 - t0);
+
         break;
       }
     }
