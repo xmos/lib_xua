@@ -292,6 +292,8 @@ void XUA_Buffer_lite(chanend c_ep0_out, chanend c_ep0_in, chanend c_aud_out, cha
         case XUD_SetData_Select(c_aud_in, ep_aud_in, result):
         timer tmr; int t0, t1; tmr :> t0;
 
+          if (output_interface_num == 0) num_samples_to_send_to_host = (DEFAULT_FREQ  / SOF_FREQ_HZ) * NUM_USB_CHAN_IN;
+
           fifo_ret_t ret = fifo_block_pop_short_pairs(device_to_host_fifo_ptr, (short *)buffer_aud_in, num_samples_received_from_host);
           if (ret != FIFO_SUCCESS) debug_printf("d2h empty\n");
 
@@ -314,11 +316,11 @@ void XUA_Buffer_lite(chanend c_ep0_out, chanend c_ep0_in, chanend c_aud_out, cha
             c_audio_hub :> samples_in[i];
           }
           fifo_ret_t ret = fifo_block_pop(host_to_device_fifo_ptr, samples_out, NUM_USB_CHAN_OUT);
-          //if (ret != FIFO_SUCCESS) debug_printf("empty\n");
+          if (ret != FIFO_SUCCESS && output_interface_num) debug_printf("h2s empty\n");
           for (int i = 0; i < NUM_USB_CHAN_OUT; i++) c_audio_hub <: samples_out[i];
             tmr :> t1; debug_printf("a%d\n", t1 - t0);
           ret = fifo_block_push(device_to_host_fifo_ptr, samples_in, NUM_USB_CHAN_IN);
-
+          if (ret != FIFO_SUCCESS && input_interface_num) debug_printf("d2h full\n");
         break;
       }
     }
