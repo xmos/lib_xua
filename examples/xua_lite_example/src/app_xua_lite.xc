@@ -56,7 +56,7 @@ on tile[0]: clock pdmclk6                    = XS1_CLKBLK_5;
 XUD_EpType epTypeTableOut[]   = {XUD_EPTYPE_CTL | XUD_STATUS_ENABLE, XUD_EPTYPE_ISO};
 XUD_EpType epTypeTableIn[]    = {XUD_EPTYPE_CTL | XUD_STATUS_ENABLE, XUD_EPTYPE_ISO, XUD_EPTYPE_ISO};
 
-void XUA_Buffer_lite(chanend c_ep0_out, chanend c_ep0_in, chanend c_aud_out, chanend c_feedback, chanend c_aud_in, chanend c_sof, in port p_for_mclk_count, streaming chanend c_aud_host);
+void XUA_Buffer_lite(chanend c_ep0_out, chanend c_ep0_in, chanend c_aud_out, chanend ?c_feedback, chanend c_aud_in, chanend c_sof, in port p_for_mclk_count, streaming chanend c_aud_host);
 [[distributable]]
 void AudioHub(server i2s_frame_callback_if i2s, streaming chanend c_audio, streaming chanend (&?c_ds_output)[1]);
 void setup_audio_gpio(out port p_gpio);
@@ -77,8 +77,8 @@ void burn_high_priority(void){
 int main()
 {
     // Channels for lib_xud 
-    chan c_ep_out[2];
-    chan c_ep_in[3];
+    chan c_ep_out[XUA_ENDPOINT_COUNT_OUT];
+    chan c_ep_in[XUA_ENDPOINT_COUNT_IN];
 
     // Channel for communicating SOF notifications from XUD to the Buffering cores 
     chan c_sof;
@@ -125,13 +125,18 @@ int main()
 
             par{
                 // Low level USB device layer core  
-                XUD_Main(c_ep_out, 2, c_ep_in, 3,
+                XUD_Main(c_ep_out, XUA_ENDPOINT_COUNT_OUT, c_ep_in, XUA_ENDPOINT_COUNT_IN,
                           c_sof, epTypeTableOut, epTypeTableIn, 
                           null, null, -1 , 
                           (AUDIO_CLASS == 1) ? XUD_SPEED_FS : XUD_SPEED_HS, XUD_PWR_BUS);
 
                 // Buffering core - handles audio and control data to/from EP's and gives/gets data to/from the audio I/O core 
-                XUA_Buffer_lite(c_ep_out[0], c_ep_in[0], c_ep_out[1], c_ep_in[1], c_ep_in[2], c_sof, p_for_mclk_count, c_audio);
+                XUA_Buffer_lite(c_ep_out[0],
+                                c_ep_in[0],
+                                c_ep_out[1],
+                                null, //c_ep_in[XUA_ENDPOINT_COUNT_IN - 2],/*feedback*/
+                                c_ep_in[XUA_ENDPOINT_COUNT_IN - 1],
+                                c_sof, p_for_mclk_count, c_audio);
 
                 par (int i = 0; i < 4; i++) burn_normal_priority();
                 par (int i = 0; i < 2; i++) burn_high_priority();

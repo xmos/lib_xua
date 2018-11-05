@@ -169,7 +169,7 @@ extern XUD_ep ep0_out;
 extern XUD_ep ep0_in;
 
 
-void XUA_Buffer_lite(chanend c_ep0_out, chanend c_ep0_in, chanend c_aud_out, chanend c_feedback, chanend c_aud_in, chanend c_sof, in port p_for_mclk_count, streaming chanend c_audio_hub) {
+void XUA_Buffer_lite(chanend c_ep0_out, chanend c_ep0_in, chanend c_aud_out, chanend ?c_feedback, chanend c_aud_in, chanend c_sof, in port p_for_mclk_count, streaming chanend c_audio_hub) {
 
   debug_printf("%d\n", MAX_OUT_SAMPLES_PER_SOF_PERIOD);
 
@@ -189,8 +189,9 @@ void XUA_Buffer_lite(chanend c_ep0_out, chanend c_ep0_in, chanend c_aud_out, cha
 
   
   XUD_ep ep_aud_out = XUD_InitEp(c_aud_out);
-  XUD_ep ep_feedback = XUD_InitEp(c_feedback);
   XUD_ep ep_aud_in = XUD_InitEp(c_aud_in);
+  XUD_ep ep_feedback = 0;
+  if (!isnull(c_feedback)) ep_feedback = XUD_InitEp(c_feedback);
 
   unsigned num_samples_received_from_host = 0;
   unsigned num_samples_to_send_to_host = 0;
@@ -210,8 +211,9 @@ void XUA_Buffer_lite(chanend c_ep0_out, chanend c_ep0_in, chanend c_aud_out, cha
   //Enable all EPs
   XUD_SetReady_OutPtr(ep_aud_out, (unsigned)buffer_aud_out);
   XUD_SetReady_InPtr(ep_aud_in, (unsigned)buffer_aud_in, num_samples_to_send_to_host);
-  XUD_SetReady_InPtr(ep_feedback, (unsigned)fb_clocks, (AUDIO_CLASS == 2) ? 4 : 3);
   XUD_SetReady_Out(ep0_out, sbuffer);
+  if (!isnull(c_feedback)) XUD_SetReady_InPtr(ep_feedback, (unsigned)fb_clocks, (AUDIO_CLASS == 2) ? 4 : 3);
+ 
 
   //Send initial samples so audiohub is not blocked
   for (int i = 0; i < NUM_USB_CHAN_OUT * 6; i++) c_audio_hub <: 0;
@@ -274,8 +276,8 @@ void XUA_Buffer_lite(chanend c_ep0_out, chanend c_ep0_in, chanend c_aud_out, cha
 
         break;
 
-        //Send asynch explicit feedback value
-        case XUD_SetData_Select(c_feedback, ep_feedback, result):
+        //Send asynch explicit feedback value, but only if enabled
+        case !isnull(c_feedback) => XUD_SetData_Select(c_feedback, ep_feedback, result):
         timer tmr; int t0, t1; tmr :> t0;
 
           XUD_SetReady_In(ep_feedback, (fb_clocks, unsigned char[]), (AUDIO_CLASS == 2) ? 4 : 3);

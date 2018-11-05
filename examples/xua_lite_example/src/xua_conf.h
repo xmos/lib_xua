@@ -30,7 +30,8 @@
 #define OUTPUT_VOLUME_CONTROL 0
 #define INPUT_VOLUME_CONTROL  0 
 
-#define UAC_FORCE_FEEDBACK_EP 1
+#define UAC_FORCE_FEEDBACK_EP 0
+#define XUA_ADAPTIVE          1
 #define XUA_LITE              1       // Use simple/optimised USB buffer tasks
 #define AUDIO_CLASS           1
 
