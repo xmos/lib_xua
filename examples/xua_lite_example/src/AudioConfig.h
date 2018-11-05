@@ -1,15 +1,8 @@
 #ifndef _AUDIO_CONFIG_
 #define _AUDIO_CONFIG_
 
-void ConfigAudioPorts(unsigned divide);
+void AudioHwConfigure(unsigned samFreq, client i2c_master_if i_i2c);
+void pll_nudge(int nudge);
 
-void AudioHwInit();
-
-void PLL_Init(void);
-
-/* Configures master clock and codc for passed sample freq */
-void AudioHwConfig(unsigned samFreq);
-
-void ConfigCodec24576(unsigned samFeq);
 
 #endif

@@ -155,6 +155,27 @@ void do_feedback_calculation(unsigned &sof_count
   }
 }
 
+void fill_level_process(int fill_level, int &clock_nudge){
+  const int trigger_high_upper = 6;
+  const int trigger_high_lower = 8;
+
+  const int trigger_low_upper = -6;
+  const int trigger_low_lower = -8;
+
+  if (fill_level >= trigger_high_upper){
+    clock_nudge = 1;
+    //debug_printf("Nudge down\n");
+  }
+  else if (fill_level <= trigger_low_upper){
+    //debug_printf("Nudge up\n");
+    clock_nudge = -1;
+  }
+  else clock_nudge = 0;
+  //debug_printf("%d\n", clock_nudge);
+
+  static unsigned counter; counter++; if (counter>SOF_FREQ_HZ){counter = 0; debug_printf("f: %d\n",fill_level);}
+}
+
 
 extern "C"{
 void XUA_Endpoint0_lite_init(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
@@ -187,7 +208,10 @@ void XUA_Buffer_lite(chanend c_ep0_out, chanend c_ep0_in, chanend c_aud_out, cha
   const unsigned mclk_hz = MCLK_48;
   unsigned int fb_clocks[1] = {0}; 
 
-  
+  //Adapative device clock control
+  int clock_nudge = 0;
+
+  //Endpoints
   XUD_ep ep_aud_out = XUD_InitEp(c_aud_out);
   XUD_ep ep_aud_in = XUD_InitEp(c_aud_in);
   XUD_ep ep_feedback = 0;
@@ -270,6 +294,9 @@ void XUA_Buffer_lite(chanend c_ep0_out, chanend c_ep0_in, chanend c_aud_out, cha
           if (ret != FIFO_SUCCESS) debug_printf("h2d full\n");
           num_samples_to_send_to_host = num_samples_received_from_host;
           
+          int fill_level = fifo_get_fill_relative_half(host_to_device_fifo_ptr);
+          fill_level_process(fill_level, clock_nudge);
+
           //Mark EP as ready for next frame from host
           XUD_SetReady_OutPtr(ep_aud_out, (unsigned)buffer_aud_out);
           //tmr :> t1; debug_printf("o%d\n", t1 - t0);
@@ -314,10 +341,11 @@ void XUA_Buffer_lite(chanend c_ep0_out, chanend c_ep0_in, chanend c_aud_out, cha
             c_audio_hub :> samples_in[i];
           }
           fifo_ret_t ret = fifo_block_pop(host_to_device_fifo_ptr, samples_out, NUM_USB_CHAN_OUT);
-          if (ret != FIFO_SUCCESS && output_interface_num) debug_printf("h2s empty\n");
+          if (ret != FIFO_SUCCESS && output_interface_num != 0) debug_printf("h2d empty\n");
           for (int i = 0; i < NUM_USB_CHAN_OUT; i++) c_audio_hub <: samples_out[i];
+          if (XUA_ADAPTIVE) c_audio_hub <: clock_nudge;
           ret = fifo_block_push(device_to_host_fifo_ptr, samples_in, NUM_USB_CHAN_IN);
-          if (ret != FIFO_SUCCESS && input_interface_num) debug_printf("d2h full\n");
+          if (ret != FIFO_SUCCESS && input_interface_num != 0) debug_printf("d2h full\n");
           //tmr :> t1; debug_printf("a%d\n", t1 - t0);
         break;
       }

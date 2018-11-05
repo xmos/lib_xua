@@ -5,6 +5,7 @@
 #define DEBUG_PRINT_ENABLE_XUA_AUDIO_HUB 1
 #include "debug_print.h"
 #include "mic_array.h"
+#include "AudioConfig.h"
 
 
 void mic_array_decimator_set_samprate(const unsigned samplerate, int mic_decimator_fir_data_array[], mic_array_decimator_conf_common_t *dcc, mic_array_decimator_config_t dc[]);
@@ -30,6 +31,8 @@ void AudioHub(server i2s_frame_callback_if i2s,
 {
   int32_t samples_out[NUM_USB_CHAN_OUT] = {0};
   int32_t samples_in[NUM_USB_CHAN_IN] = {0};
+
+  int32_t clock_nudge = 0;
 
 #if XUA_NUM_PDM_MICS > 0
   unsigned buffer;
@@ -66,8 +69,9 @@ void AudioHub(server i2s_frame_callback_if i2s,
     case i2s.restart_check() -> i2s_restart_t restart:
       restart = I2S_NO_RESTART; // Keep on looping
       timer tmr; int t0, t1; tmr :> t0;
-       for (int i = 0; i < NUM_USB_CHAN_OUT; i++) c_audio :> samples_out[i];
-       for (int i = 0; i < NUM_USB_CHAN_IN; i++) c_audio <: raw_mics[i];
+      for (int i = 0; i < NUM_USB_CHAN_OUT; i++) c_audio :> samples_out[i];
+      if (XUA_ADAPTIVE) c_audio :> clock_nudge;
+      for (int i = 0; i < NUM_USB_CHAN_IN; i++) c_audio <: raw_mics[i];
 
       //Grab mics
       current = mic_array_get_next_time_domain_frame(c_ds_output, decimatorCount, buffer, mic_audio_frame, dc);
@@ -75,8 +79,10 @@ void AudioHub(server i2s_frame_callback_if i2s,
           raw_mics[0] = current->data[0][0];
           raw_mics[1] = current->data[1][0];
       }
+
+      pll_nudge(clock_nudge);
       //tmr :> t1; debug_printf("%d\n", t1 - t0);
-      delay_microseconds(15); //Test backpressure tolerance
+      //delay_microseconds(10); //Test backpressure tolerance
     break;
     }
   }

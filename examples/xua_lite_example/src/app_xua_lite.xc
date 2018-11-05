@@ -64,6 +64,7 @@ void AudioHwConfigure(unsigned samFreq, client i2c_master_if i_i2c);
 void XUA_Endpoint0_select(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
     chanend ?c_mix_ctl, chanend ?c_clk_ctl, chanend ?c_EANativeTransport_ctrl, CLIENT_INTERFACE(i_dfu, ?dfuInterface) VENDOR_REQUESTS_PARAMS_DEC_);
 void pdm_mic(streaming chanend c_ds_output, in buffered port:32 p_pdm_mics);
+void mic_array_setup_ddr_xcore(clock pdmclk, clock pdmclk6, out port p_pdm_clk, buffered in port:32 p_pdm_data, int divide);
 
 void burn_normal_priority(void){
     while(1);
@@ -98,7 +99,8 @@ int main()
             c_audio :> int _;   //Now wait until i2c has finished mclk setup
             
             const unsigned micDiv = MCLK_48/3072000;
-            mic_array_setup_ddr(pdmclk, pdmclk6, p_mclk_in, p_pdm_clk, p_pdm_mics, micDiv);
+            if (XUA_ADAPTIVE) mic_array_setup_ddr_xcore(pdmclk, pdmclk6, p_pdm_clk, p_pdm_mics, micDiv);
+            else mic_array_setup_ddr(pdmclk, pdmclk6, p_mclk_in, p_pdm_clk, p_pdm_mics, micDiv);
 
             par {
                 i2s_frame_master(i_i2s, p_i2s_dac, 1, p_i2s_adc, 1, p_bclk, p_lrclk, p_mclk_in, clk_audio_bclk);
@@ -110,7 +112,7 @@ int main()
             }
         }
         on tile[1]:{
-            // Connect master-clock input clock-block to clock-block pin 
+            // Connect master-clock input clock-block to clock-block pin for asnch feedback calculation
             set_clock_src(clk_usb_mclk, p_mclk_in_usb);           // Clock clock-block from mclk pin 
             set_port_clock(p_for_mclk_count, clk_usb_mclk);       // Clock the "count" port from the clock block 
             start_clock(clk_usb_mclk);                            // Set the clock off running 

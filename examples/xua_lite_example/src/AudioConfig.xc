@@ -4,7 +4,10 @@
 #include <print.h>
 #include <stdio.h>
 #include "i2c.h"
-
+#include "xua.h"
+#define DEBUG_UNIT AUDIO_CFG
+#define DEBUG_PRINT_ENABLE_AUDIO_CFG 1
+#include "debug_print.h"
 
 
 // TLV320DAC3101 Device I2C Address
@@ -45,15 +48,38 @@
 #define DAC3101_SPKR_DRVR     0x2B // Register 43 - Right Class-D Speaker Driver
 
 // TLV320DAC3101 easy register access defines
-//#define DAC3101_REGREAD(reg, data)  {data[0] = 0xAA; i2c_master_read_reg(DAC3101_I2C_DEVICE_ADDR, reg, data, 1, i2c);}
-//#define DAC3101_REGWRITE(reg, val) {data[0] = val; i2c_master_write_reg(DAC3101_I2C_DEVICE_ADDR, reg, data, 1, i2c);}
-
-//#define DAC3101_REGWRITE(reg, val) {i_i2c[0].write_reg(DAC3101_I2C_DEVICE_ADDR, reg, val);}
-
-// TLV320DAC3101 easy register access defines
-//#define DAC3101_REGWRITE(reg, val) {data[0] = val; i2c_master_write_reg(DAC3101_I2C_DEVICE_ADDR, reg, data, 1, i2c);}
 #define DAC3101_REGWRITE(reg, val) {i_i2c.write_reg(DAC3101_I2C_DEVICE_ADDR, reg, val);}
 
+
+
+static void set_node_pll_reg(tileref tile_ref, unsigned reg_val){
+    write_sswitch_reg(get_tile_id(tile_ref), XS1_SSWITCH_PLL_CTL_NUM, reg_val);
+}
+
+// Nominal setting is ref div = 25, fb_div = 1024, op_div = 2
+// PCF Freq 0.96MHz
+
+enum clock_nudge{
+    PLL_SLOWER = -1,
+    PLL_NOMINAL = 0,
+    PLL_FASTER = 1
+};
+
+#define PLL_LOW  0xC003FE18 // This is 3.069MHz
+#define PLL_NOM  0xC003FF18 // This is 3.072MHz
+#define PLL_HIGH 0xC0040018 // This is 3.075MHz
+
+int old_nudge = 0;
+void pll_nudge(int nudge) {
+    if (nudge > 0){
+        set_node_pll_reg(tile[0], PLL_HIGH);
+    }
+    else if (nudge < 0){
+        set_node_pll_reg(tile[0], PLL_LOW);
+    }
+    set_node_pll_reg(tile[0], PLL_NOM);
+    if(nudge != old_nudge && nudge){debug_printf("nudge: %d\n", nudge); }old_nudge = nudge;
+}
 
 void AudioHwConfigure(unsigned samFreq, client i2c_master_if i_i2c)
 {
@@ -101,6 +127,34 @@ void AudioHwConfigure(unsigned samFreq, client i2c_master_if i_i2c)
     // DAC_MOD_CLK = DAC_CLK / 4 = 5.6448MHz.
     // DAC_FS = DAC_MOD_CLK / 128 = 44.1kHz.
 
+#if XUA_ADAPTIVE
+    //Set nominal clock speed on PLL
+    write_sswitch_reg(get_tile_id(tile[0]), XS1_SSWITCH_PLL_CTL_NUM, PLL_NOM);
+
+    // We are assuming 48kHz family only and we generate MCLK
+    // Set PLL J Value to 7
+    DAC3101_REGWRITE(DAC3101_PLL_J, 0x07);
+    // Set PLL D to 0 ...
+    // Set PLL D MSB Value to 0x00
+    DAC3101_REGWRITE(DAC3101_PLL_D_MSB, 0x07);
+    // Set PLL D LSB Value to 0x00
+    DAC3101_REGWRITE(DAC3101_PLL_D_LSB, 0x80);
+
+    delay_milliseconds(1);
+    
+    // Set PLL_CLKIN = BCLK (device pin), CODEC_CLKIN = PLL_CLK (generated on-chip)
+    DAC3101_REGWRITE(DAC3101_CLK_GEN_MUX, 0x07);
+    
+    // Set PLL P and R values and power up.
+    DAC3101_REGWRITE(DAC3101_PLL_P_R, 0x94);
+    // Set NDAC clock divider to 2 and power up.
+    DAC3101_REGWRITE(DAC3101_NDAC_VAL, 0x82);
+    // Set MDAC clock divider to 7 and power up.
+    DAC3101_REGWRITE(DAC3101_MDAC_VAL, 0x87);
+    // Set OSR clock divider to 128.
+    DAC3101_REGWRITE(DAC3101_DOSR_VAL_LSB, 0x80);
+
+#else
     /* Sample frequency dependent register settings */
     if ((samFreq % 11025) == 0)
     {
@@ -143,7 +197,9 @@ void AudioHwConfigure(unsigned samFreq, client i2c_master_if i_i2c)
     DAC3101_REGWRITE(DAC3101_MDAC_VAL, 0x84);
     // Set OSR clock divider to 128.
     DAC3101_REGWRITE(DAC3101_DOSR_VAL_LSB, 0x80);
-    
+
+#endif
+
     // Set CLKOUT Mux to DAC_CLK
     DAC3101_REGWRITE(DAC3101_CLKOUT_MUX, 0x04);
     // Set CLKOUT M divider to 1 and power up.
@@ -204,6 +260,7 @@ void AudioHwConfigure(unsigned samFreq, client i2c_master_if i_i2c)
     
     i_i2c.shutdown();
 }
+
 
 //These are here just to silence compiler warnings
 void AudioHwInit(){}
