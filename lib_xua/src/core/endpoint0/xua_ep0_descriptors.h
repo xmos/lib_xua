@@ -33,6 +33,9 @@
 #define ISO_EP_IMPL_ATTRIBUTES_ASYNCH              0x25 //ISO, ASYNCH, IMPLICIT FB DATA EP
 #define ISO_EP_IMPL_ATTRIBUTES_ADAPTIVE            0x29 //ISO, ADAPTIVE, IMPLICIT FB DATA EP
 
+#if (defined(XUA_ADAPTIVE) && (XUA_ADAPTIVE == 0))
+#undef XUA_ADAPTIVE
+#endif
 
 #if __STDC__
 typedef struct

@@ -1158,6 +1158,10 @@
 #endif
 
 
+#if (defined(UAC_FORCE_FEEDBACK_EP) && UAC_FORCE_FEEDBACK_EP == 0)
+#undef UAC_FORCE_FEEDBACK_EP
+#endif
+
 #ifndef __ASSEMBLER__
 /* Endpoint addresses enums */
 enum USBEndpointNumber_In
