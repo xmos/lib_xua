@@ -243,7 +243,7 @@ void XUA_Buffer_lite(chanend c_ep0_out, chanend c_ep0_in, chanend c_aud_out, cha
 
           XUA_Endpoint0_lite_loop(result, sp, c_ep0_out, c_ep0_in, c_audioControl, null/*mix*/, null/*clk*/, null/*EA*/, dfuInterface, &input_interface_num, &output_interface_num);
           XUD_SetReady_Out(ep0_out, sbuffer);
-        tmr :> t1; debug_printf("c%d\n", t1 - t0);
+          //tmr :> t1; debug_printf("c%d\n", t1 - t0);
 
         break;
 
@@ -254,7 +254,7 @@ void XUA_Buffer_lite(chanend c_ep0_out, chanend c_ep0_in, chanend c_aud_out, cha
           asm volatile(" getts %0, res[%1]" : "=r" (mclk_port_counter) : "r" (p_for_mclk_count));
           do_feedback_calculation(sof_count, mclk_hz, mclk_port_counter, mclk_port_counter_old, feedback_value, mod_from_last_time, fb_clocks);
           sof_count++;
-        tmr :> t1; debug_printf("s%d\n", t1 - t0);
+          //tmr :> t1; debug_printf("s%d\n", t1 - t0);
 
         break;
 
@@ -263,18 +263,14 @@ void XUA_Buffer_lite(chanend c_ep0_out, chanend c_ep0_in, chanend c_aud_out, cha
         timer tmr; int t0, t1; tmr :> t0;
 
           num_samples_received_from_host = length / out_subslot_size;
-          //debug_printf("out samps: %d\n", num_samples_received_from_host);
-
-          //unpack_buff_to_samples(buffer_aud_out, num_samples_received_from_host, out_subslot_size, loopback_samples);
-
-          //fifo_ret_t ret = fifo_block_push(host_to_device_fifo_ptr, loopback_samples, num_samples_received_from_host);
+    
           fifo_ret_t ret = fifo_block_push_short_pairs(host_to_device_fifo_ptr, (short *)buffer_aud_out, num_samples_received_from_host);
           if (ret != FIFO_SUCCESS) debug_printf("h2d full\n");
           num_samples_to_send_to_host = num_samples_received_from_host;
           
           //Mark EP as ready for next frame from host
           XUD_SetReady_OutPtr(ep_aud_out, (unsigned)buffer_aud_out);
-        tmr :> t1; debug_printf("o%d\n", t1 - t0);
+          //tmr :> t1; debug_printf("o%d\n", t1 - t0);
 
         break;
 
@@ -284,7 +280,7 @@ void XUA_Buffer_lite(chanend c_ep0_out, chanend c_ep0_in, chanend c_aud_out, cha
 
           XUD_SetReady_In(ep_feedback, (fb_clocks, unsigned char[]), (AUDIO_CLASS == 2) ? 4 : 3);
           //debug_printf("0x%x\n", fb_clocks[0]);
-          tmr :> t1; debug_printf("f%d\n", t1 - t0);
+          //tmr :> t1; debug_printf("f%d\n", t1 - t0);
 
         break;
 
@@ -304,7 +300,7 @@ void XUA_Buffer_lite(chanend c_ep0_out, chanend c_ep0_in, chanend c_aud_out, cha
           unsigned input_buffer_size = num_samples_to_send_to_host * in_subslot_size;
           XUD_SetReady_InPtr(ep_aud_in, (unsigned)buffer_aud_in, input_buffer_size); //loopback
           num_samples_to_send_to_host = 0;
-          tmr :> t1; debug_printf("i%d\n", t1 - t0);
+          //tmr :> t1; debug_printf("i%d\n", t1 - t0);
 
         break;
 
@@ -318,9 +314,9 @@ void XUA_Buffer_lite(chanend c_ep0_out, chanend c_ep0_in, chanend c_aud_out, cha
           fifo_ret_t ret = fifo_block_pop(host_to_device_fifo_ptr, samples_out, NUM_USB_CHAN_OUT);
           if (ret != FIFO_SUCCESS && output_interface_num) debug_printf("h2s empty\n");
           for (int i = 0; i < NUM_USB_CHAN_OUT; i++) c_audio_hub <: samples_out[i];
-            tmr :> t1; debug_printf("a%d\n", t1 - t0);
           ret = fifo_block_push(device_to_host_fifo_ptr, samples_in, NUM_USB_CHAN_IN);
           if (ret != FIFO_SUCCESS && input_interface_num) debug_printf("d2h full\n");
+          //tmr :> t1; debug_printf("a%d\n", t1 - t0);
         break;
       }
     }

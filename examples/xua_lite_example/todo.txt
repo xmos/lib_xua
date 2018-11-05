@@ -1,8 +1,17 @@
-- Bring ep0 serivice into xua_buffer select (make control mem)
-- Tidy feeback endpoint
-- Input path + FIFO
-- Single input/ouput format
-- Get UAC1 / FS working
-- Add timer to xua_buffer to prepare for exchange with audio (remove banckpressure to audio)
-- Adaptive 
+- Bring ep0 serivice into xua_buffer select (make control mem) (DONE)
+- Tidy feeback endpoint (DONE)
+- Input path + FIFO (DONE)
+- Function prototypes into includes
+- Single input/ouput format (DONE)
+- Get UAC1 / FS working (DONE)
+- Optimised EP buffer (either triple block or block FIFO) 
+- Fix output gain issue
+- Add timer to xua_buffer to prepare for exchange with audio (remove backpressure to audio) (WONT DO)
+- Adaptive endpoint EP and descriptors
+- Adpative clock control
+- Switchable MICS using define
 - DFU
+- Combinable EP0
+- Interrupt EP0 option
+- Control processing
+

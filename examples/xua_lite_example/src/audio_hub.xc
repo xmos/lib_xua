@@ -1,6 +1,5 @@
 #include "i2s.h"
 #include "i2c.h"
-#include "gpio.h"
 #include "xua.h"
 #define DEBUG_UNIT XUA_AUDIO_HUB
 #define DEBUG_PRINT_ENABLE_XUA_AUDIO_HUB 1

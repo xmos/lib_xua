@@ -10,7 +10,6 @@
 #include "xud.h"
 #include "i2s.h"
 #include "i2c.h"
-#include "gpio.h"
 #include "mic_array.h"
 
 #define DEBUG_UNIT XUA_APP
