@@ -69,13 +69,21 @@ enum clock_nudge{
 #define PLL_NOM  0xC003FF18 // This is 3.072MHz
 #define PLL_HIGH 0xC0040018 // This is 3.075MHz
 
+on tile[0]: out port p_leds = XS1_PORT_4F;
+
 int old_nudge = 0;
 void pll_nudge(int nudge) {
     if (nudge > 0){
         set_node_pll_reg(tile[0], PLL_HIGH);
+        p_leds <: 0xf;
     }
     else if (nudge < 0){
         set_node_pll_reg(tile[0], PLL_LOW);
+        p_leds <: 0xf;
+
+    }
+    else {
+        p_leds <: 0x0;
     }
     set_node_pll_reg(tile[0], PLL_NOM);
     if(nudge != old_nudge && nudge){debug_printf("nudge: %d\n", nudge); }old_nudge = nudge;
