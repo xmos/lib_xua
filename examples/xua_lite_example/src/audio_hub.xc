@@ -53,8 +53,9 @@ void AudioHub(server i2s_frame_callback_if i2s,
     case i2s.init(i2s_config_t &?i2s_config, tdm_config_t &?tdm_config):
       i2s_config.mode = I2S_MODE_I2S;
       i2s_config.mclk_bclk_ratio = (MCLK_48/DEFAULT_FREQ)/64;
-
       debug_printf("I2S init\n");
+      delay_milliseconds(500); //Work around to ensure I2S does not start until enumeration complete so timing does not break for exchange
+                               //This should be ideally done by set config by the host (via xua_buffer) to know we are enumerated
     break;
 
     case i2s.receive(size_t n_chans, int32_t in_samps[n_chans]):
