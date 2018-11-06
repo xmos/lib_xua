@@ -264,9 +264,9 @@ void XUA_Buffer_lite(chanend c_ep0_out, chanend c_ep0_in, chanend c_aud_out, cha
         case XUD_GetSetupData_Select(c_ep0_out, ep0_out, length, result):
         timer tmr; int t0, t1; tmr :> t0;
 
-          if (result == XUD_RES_OKAY) USB_ParseSetupPacket(sbuffer, sp); //Parse data buffer end populate SetupPacket struct
-          //debug_printf("ep0, result: %d, length: %d\n", result, length); //-1 reset, 0 ok, 1 error
-
+          debug_printf("ep0, result: %d, length: %d\n", result, length); //-1 reset, 0 ok, 1 error
+          USB_ParseSetupPacket(sbuffer, sp); //Parse data buffer end populate SetupPacket struct
+          
           XUA_Endpoint0_lite_loop(result, sp, c_ep0_out, c_ep0_in, c_audioControl, null/*mix*/, null/*clk*/, null/*EA*/, dfuInterface, &input_interface_num, &output_interface_num);
           XUD_SetReady_Out(ep0_out, sbuffer);
           //tmr :> t1; debug_printf("c%d\n", t1 - t0);
@@ -300,7 +300,6 @@ void XUA_Buffer_lite(chanend c_ep0_out, chanend c_ep0_in, chanend c_aud_out, cha
           //Mark EP as ready for next frame from host
           XUD_SetReady_OutPtr(ep_aud_out, (unsigned)buffer_aud_out);
           //tmr :> t1; debug_printf("o%d\n", t1 - t0);
-
         break;
 
         //Send asynch explicit feedback value, but only if enabled
