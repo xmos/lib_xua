@@ -11,6 +11,8 @@
 #include "i2s.h"
 #include "i2c.h"
 #include "mic_array.h"
+#include "XUA_Buffer_lite.h"
+#include "xua_ep0_wrapper.h"
 
 #define DEBUG_UNIT XUA_APP
 #define DEBUG_PRINT_ENABLE_XUA_APP 1
@@ -56,13 +58,10 @@ on tile[0]: clock pdmclk6                    = XS1_CLKBLK_5;
 XUD_EpType epTypeTableOut[]   = {XUD_EPTYPE_CTL | XUD_STATUS_ENABLE, XUD_EPTYPE_ISO};
 XUD_EpType epTypeTableIn[]    = {XUD_EPTYPE_CTL | XUD_STATUS_ENABLE, XUD_EPTYPE_ISO, XUD_EPTYPE_ISO};
 
-void XUA_Buffer_lite(chanend c_ep0_out, chanend c_ep0_in, chanend c_aud_out, chanend ?c_feedback, chanend c_aud_in, chanend c_sof, in port p_for_mclk_count, streaming chanend c_aud_host);
 [[distributable]]
 void AudioHub(server i2s_frame_callback_if i2s, streaming chanend c_audio, streaming chanend (&?c_ds_output)[1]);
 void setup_audio_gpio(out port p_gpio);
 void AudioHwConfigure(unsigned samFreq, client i2c_master_if i_i2c);
-void XUA_Endpoint0_select(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
-    chanend ?c_mix_ctl, chanend ?c_clk_ctl, chanend ?c_EANativeTransport_ctrl, CLIENT_INTERFACE(i_dfu, ?dfuInterface) VENDOR_REQUESTS_PARAMS_DEC_);
 void pdm_mic(streaming chanend c_ds_output, in buffered port:32 p_pdm_mics);
 void mic_array_setup_ddr_xcore(clock pdmclk, clock pdmclk6, out port p_pdm_clk, buffered in port:32 p_pdm_data, int divide);
 
@@ -90,6 +89,8 @@ int main()
     streaming chan c_audio; //We use the channel buffering (48B across switch each way)
     streaming chan c_ds_output[1];
 
+    interface ep0_control_if i_ep0_ctl;
+
     par
     {
         on tile[0]: {
@@ -111,7 +112,7 @@ int main()
                 par (int i = 0; i < 0; i++) burn_high_priority();
             }
         }
-        on tile[1]:{
+        on tile[1]:unsafe{
             // Connect master-clock input clock-block to clock-block pin for asnch feedback calculation
             set_clock_src(clk_usb_mclk, p_mclk_in_usb);           // Clock clock-block from mclk pin 
             set_port_clock(p_for_mclk_count, clk_usb_mclk);       // Clock the "count" port from the clock block 
@@ -132,15 +133,22 @@ int main()
                           null, null, -1 , 
                           (AUDIO_CLASS == 1) ? XUD_SPEED_FS : XUD_SPEED_HS, XUD_PWR_BUS);
 
-                // Buffering core - handles audio and control data to/from EP's and gives/gets data to/from the audio I/O core 
-                XUA_Buffer_lite(c_ep_out[0],
-                                c_ep_in[0],
+                // // Buffering core - handles audio and control data to/from EP's and gives/gets data to/from the audio I/O core 
+                // XUA_Buffer_lite(c_ep_out[0],
+                //                 c_ep_in[0],
+                //                 c_ep_out[1],
+                //                 null, //c_ep_in[XUA_ENDPOINT_COUNT_IN - 2],/*feedback*/
+                //                 c_ep_in[XUA_ENDPOINT_COUNT_IN - 1],
+                //                 c_sof, p_for_mclk_count, c_audio);
+
+                XUA_Buffer_lite2(i_ep0_ctl,
                                 c_ep_out[1],
                                 null, //c_ep_in[XUA_ENDPOINT_COUNT_IN - 2],/*feedback*/
                                 c_ep_in[XUA_ENDPOINT_COUNT_IN - 1],
                                 c_sof, p_for_mclk_count, c_audio);
+                XUA_Endpoint0_select(c_ep_out[0], c_ep_in[0], i_ep0_ctl, null VENDOR_REQUESTS_PARAMS_DEC_);
 
-                par (int i = 0; i < 4; i++) burn_normal_priority();
+                par (int i = 0; i < 3; i++) burn_normal_priority();
                 par (int i = 0; i < 2; i++) burn_high_priority();
             }
         }//Tile[1] par

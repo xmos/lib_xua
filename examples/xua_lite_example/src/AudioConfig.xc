@@ -86,7 +86,7 @@ void pll_nudge(int nudge) {
         p_leds <: 0x0;
     }
     set_node_pll_reg(tile[0], PLL_NOM);
-    if(nudge != old_nudge && nudge){debug_printf("nudge: %d\n", nudge); }old_nudge = nudge;
+    //if(nudge != old_nudge && nudge){debug_printf("nudge: %d\n", nudge); }old_nudge = nudge;
 }
 
 void AudioHwConfigure(unsigned samFreq, client i2c_master_if i_i2c)
