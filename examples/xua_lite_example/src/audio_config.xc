@@ -50,6 +50,8 @@
 // TLV320DAC3101 easy register access defines
 #define DAC3101_REGWRITE(reg, val) {i_i2c.write_reg(DAC3101_I2C_DEVICE_ADDR, reg, val);}
 
+
+
 static void set_node_pll_reg(tileref tile_ref, unsigned reg_val){
     write_sswitch_reg(get_tile_id(tile_ref), XS1_SSWITCH_PLL_CTL_NUM, reg_val);
 }
@@ -145,26 +147,26 @@ void AudioHwConfigure(unsigned samFreq, client i2c_master_if i_i2c)
     //Set nominal clock speed on PLL
     write_sswitch_reg(get_tile_id(tile[0]), XS1_SSWITCH_PLL_CTL_NUM, PLL_NOM);
 
-    // We are assuming 48kHz family only and we generate MCLK
-    // Set PLL J Value to 7
-    DAC3101_REGWRITE(DAC3101_PLL_J, 0x07);
+    // We are assuming 48kHz family only and we generate MCLK in the DAC from BLCK supplied by XCORE
+    // Set PLL J Value to 8
+    DAC3101_REGWRITE(DAC3101_PLL_J, 0x08);
     // Set PLL D to 0 ...
     // Set PLL D MSB Value to 0x00
-    DAC3101_REGWRITE(DAC3101_PLL_D_MSB, 0x07);
+    DAC3101_REGWRITE(DAC3101_PLL_D_MSB, 0x00);
     // Set PLL D LSB Value to 0x00
-    DAC3101_REGWRITE(DAC3101_PLL_D_LSB, 0x80);
+    DAC3101_REGWRITE(DAC3101_PLL_D_LSB, 0x00);
 
     delay_milliseconds(1);
     
     // Set PLL_CLKIN = BCLK (device pin), CODEC_CLKIN = PLL_CLK (generated on-chip)
     DAC3101_REGWRITE(DAC3101_CLK_GEN_MUX, 0x07);
     
-    // Set PLL P and R values and power up.
+    // Set PLL P=1 and R=4 values and power up.
     DAC3101_REGWRITE(DAC3101_PLL_P_R, 0x94);
-    // Set NDAC clock divider to 2 and power up.
-    DAC3101_REGWRITE(DAC3101_NDAC_VAL, 0x82);
-    // Set MDAC clock divider to 7 and power up.
-    DAC3101_REGWRITE(DAC3101_MDAC_VAL, 0x87);
+    // Set NDAC clock divider to 4 and power up.
+    DAC3101_REGWRITE(DAC3101_NDAC_VAL, 0x84);
+    // Set MDAC clock divider to 4 and power up.
+    DAC3101_REGWRITE(DAC3101_MDAC_VAL, 0x84);
     // Set OSR clock divider to 128.
     DAC3101_REGWRITE(DAC3101_DOSR_VAL_LSB, 0x80);
 
