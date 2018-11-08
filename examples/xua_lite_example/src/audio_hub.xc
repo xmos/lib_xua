@@ -22,7 +22,7 @@ void AudioHub(server i2s_frame_callback_if i2s,
 
   int32_t clock_nudge = 0;
 
-#if XUA_NUM_PDM_MICS > 0
+  //PDM mic and decimator
   unsigned buffer;
   int raw_mics[XUA_NUM_PDM_MICS] = {0};
   const unsigned decimatorCount = 1; // Supports up to 4 mics
@@ -33,7 +33,6 @@ void AudioHub(server i2s_frame_callback_if i2s,
   mic_array_decimator_set_samprate(DEFAULT_FREQ, mic_decimator_fir_data_array[0], &dcc, dc);
   mic_array_decimator_configure(c_ds_output, decimatorCount, dc);
   mic_array_init_time_domain_frame(c_ds_output, decimatorCount, buffer, mic_audio_frame, dc);
-#endif
 
 
   while (1) {
@@ -65,8 +64,7 @@ void AudioHub(server i2s_frame_callback_if i2s,
       //Grab mics
       current = mic_array_get_next_time_domain_frame(c_ds_output, decimatorCount, buffer, mic_audio_frame, dc);
       unsafe {
-          raw_mics[0] = current->data[0][0];
-          raw_mics[1] = current->data[1][0];
+          for (int i = 0; i < XUA_NUM_PDM_MICS; i++) raw_mics[i] = current->data[i][0];
       }
 
       pll_nudge(clock_nudge);
