@@ -50,8 +50,6 @@
 // TLV320DAC3101 easy register access defines
 #define DAC3101_REGWRITE(reg, val) {i_i2c.write_reg(DAC3101_I2C_DEVICE_ADDR, reg, val);}
 
-
-
 static void set_node_pll_reg(tileref tile_ref, unsigned reg_val){
     write_sswitch_reg(get_tile_id(tile_ref), XS1_SSWITCH_PLL_CTL_NUM, reg_val);
 }
@@ -87,6 +85,14 @@ void pll_nudge(int nudge) {
     }
     set_node_pll_reg(tile[0], PLL_NOM);
     //if(nudge != old_nudge && nudge){debug_printf("nudge: %d\n", nudge); }old_nudge = nudge;
+}
+
+void setup_audio_gpio(out port p_gpio){
+  // Reset DAC and disable MUTE
+  p_gpio <: 0x0;
+  delay_milliseconds(1);
+  p_gpio <: 0x1;
+  delay_milliseconds(1);
 }
 
 void AudioHwConfigure(unsigned samFreq, client i2c_master_if i_i2c)

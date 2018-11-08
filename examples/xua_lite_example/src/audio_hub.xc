@@ -5,20 +5,8 @@
 #define DEBUG_PRINT_ENABLE_XUA_AUDIO_HUB 1
 #include "debug_print.h"
 #include "mic_array.h"
-#include "AudioConfig.h"
-
-
-void mic_array_decimator_set_samprate(const unsigned samplerate, int mic_decimator_fir_data_array[], mic_array_decimator_conf_common_t *dcc, mic_array_decimator_config_t dc[]);
-
-
-void setup_audio_gpio(out port p_gpio){
-  // Reset DAC and disable MUTE
-  p_gpio <: 0x0;
-  delay_milliseconds(1);
-  p_gpio <: 0x1;
-  delay_milliseconds(1);
-}
-
+#include "audio_config.h"
+#include "pdm_mic.h"
 
 //Globally declared for 64b alignment
 int mic_decimator_fir_data_array[8][THIRD_STAGE_COEFS_PER_STAGE * PDM_MAX_DECIMATION] = {{0}};

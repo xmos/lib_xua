@@ -1,6 +1,4 @@
 #include "xua.h"
-#if (XUA_NUM_PDM_MICS > 0)
-
 #include <platform.h>
 #include <xs1.h>
 #include <stdlib.h>
@@ -105,5 +103,3 @@ void mic_array_setup_ddr_xcore(clock pdmclk,
      */
 
 }
-
-#endif

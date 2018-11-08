@@ -13,6 +13,9 @@
 #include "mic_array.h"
 #include "XUA_Buffer_lite.h"
 #include "xua_ep0_wrapper.h"
+#include "pdm_mic.h"
+#include "audio_config.h"
+#include "audio_hub.h"
 
 #define DEBUG_UNIT XUA_APP
 #define DEBUG_PRINT_ENABLE_XUA_APP 1
@@ -57,13 +60,6 @@ on tile[0]: clock pdmclk6                    = XS1_CLKBLK_5;
 
 XUD_EpType epTypeTableOut[]   = {XUD_EPTYPE_CTL | XUD_STATUS_ENABLE, XUD_EPTYPE_ISO};
 XUD_EpType epTypeTableIn[]    = {XUD_EPTYPE_CTL | XUD_STATUS_ENABLE, XUD_EPTYPE_ISO, XUD_EPTYPE_ISO};
-
-[[distributable]]
-void AudioHub(server i2s_frame_callback_if i2s, streaming chanend c_audio, streaming chanend (&?c_ds_output)[1]);
-void setup_audio_gpio(out port p_gpio);
-void AudioHwConfigure(unsigned samFreq, client i2c_master_if i_i2c);
-void pdm_mic(streaming chanend c_ds_output, in buffered port:32 p_pdm_mics);
-void mic_array_setup_ddr_xcore(clock pdmclk, clock pdmclk6, out port p_pdm_clk, buffered in port:32 p_pdm_data, int divide);
 
 void burn_normal_priority(void){
     while(1);
