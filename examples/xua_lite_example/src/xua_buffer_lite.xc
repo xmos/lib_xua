@@ -196,8 +196,17 @@ unsafe void XUA_Buffer_lite(chanend c_ep0_out, chanend c_ep0_in, chanend c_aud_o
 
   debug_printf("%d\n", MAX_OUT_SAMPLES_PER_SOF_PERIOD);
 
-  unsigned char buffer_aud_out[OUT_AUDIO_BUFFER_SIZE_BYTES];
-  unsigned char buffer_aud_in[IN_AUDIO_BUFFER_SIZE_BYTES];
+  //These buffers are unions so we can access them as different types
+  union buffer_aud_out{
+    unsigned char bytes[OUT_AUDIO_BUFFER_SIZE_BYTES];
+    short short_words[OUT_AUDIO_BUFFER_SIZE_BYTES / 2];
+    long long_words[OUT_AUDIO_BUFFER_SIZE_BYTES / 4];  
+  }buffer_aud_out;
+  union buffer_aud_in{
+    unsigned char bytes[IN_AUDIO_BUFFER_SIZE_BYTES];
+    short short_words[IN_AUDIO_BUFFER_SIZE_BYTES / 2];
+    unsigned long long_words[IN_AUDIO_BUFFER_SIZE_BYTES / 4];  
+  }buffer_aud_in;
   
   unsigned in_subslot_size = (AUDIO_CLASS == 1) ? FS_STREAM_FORMAT_INPUT_1_SUBSLOT_BYTES : HS_STREAM_FORMAT_INPUT_1_SUBSLOT_BYTES;
   unsigned out_subslot_size = (AUDIO_CLASS == 1) ? FS_STREAM_FORMAT_OUTPUT_1_SUBSLOT_BYTES : HS_STREAM_FORMAT_OUTPUT_1_SUBSLOT_BYTES;
@@ -235,8 +244,8 @@ unsafe void XUA_Buffer_lite(chanend c_ep0_out, chanend c_ep0_in, chanend c_aud_o
   unsigned output_interface_num = 0;
 
   //Enable all EPs
-  XUD_SetReady_OutPtr(ep_aud_out, (unsigned)buffer_aud_out);
-  XUD_SetReady_InPtr(ep_aud_in, (unsigned)buffer_aud_in, num_samples_to_send_to_host);
+  XUD_SetReady_OutPtr(ep_aud_out, (unsigned)buffer_aud_out.long_words);
+  XUD_SetReady_InPtr(ep_aud_in, (unsigned)buffer_aud_in.long_words, num_samples_to_send_to_host);
   XUD_SetReady_Out(ep0_out, sbuffer);
   if (!isnull(c_feedback)) XUD_SetReady_InPtr(ep_feedback, (unsigned)fb_clocks, (AUDIO_CLASS == 2) ? 4 : 3);
  
@@ -288,7 +297,7 @@ unsafe void XUA_Buffer_lite(chanend c_ep0_out, chanend c_ep0_in, chanend c_aud_o
 
         num_samples_received_from_host = length / out_subslot_size;
   
-        fifo_ret_t ret = fifo_block_push_short_pairs(host_to_device_fifo_ptr, (short *)buffer_aud_out, num_samples_received_from_host);
+        fifo_ret_t ret = fifo_block_push_short_pairs(host_to_device_fifo_ptr, buffer_aud_out.short_words, num_samples_received_from_host);
         if (ret != FIFO_SUCCESS) debug_printf("h2d full\n");
         num_samples_to_send_to_host = num_samples_received_from_host;
         
@@ -296,7 +305,7 @@ unsafe void XUA_Buffer_lite(chanend c_ep0_out, chanend c_ep0_in, chanend c_aud_o
         fill_level_process(fill_level, clock_nudge);
 
         //Mark EP as ready for next frame from host
-        XUD_SetReady_OutPtr(ep_aud_out, (unsigned)buffer_aud_out);
+        XUD_SetReady_OutPtr(ep_aud_out, (unsigned)buffer_aud_out.long_words);
         //tmr :> t1; debug_printf("o%d\n", t1 - t0);
       break;
 
@@ -316,7 +325,7 @@ unsafe void XUA_Buffer_lite(chanend c_ep0_out, chanend c_ep0_in, chanend c_aud_o
 
         if (output_interface_num == 0) num_samples_to_send_to_host = (DEFAULT_FREQ  / SOF_FREQ_HZ) * NUM_USB_CHAN_IN;
 
-        fifo_ret_t ret = fifo_block_pop_short_pairs(device_to_host_fifo_ptr, (short *)buffer_aud_in, num_samples_received_from_host);
+        fifo_ret_t ret = fifo_block_pop_short_pairs(device_to_host_fifo_ptr, buffer_aud_in.short_words, num_samples_received_from_host);
         if (ret != FIFO_SUCCESS) debug_printf("d2h empty\n");
 
         //Populate the input buffer ready for the next read
@@ -324,7 +333,7 @@ unsafe void XUA_Buffer_lite(chanend c_ep0_out, chanend c_ep0_in, chanend c_aud_o
         //Use the number of samples we received last time so we are always balanced (assumes same in/out count)
     
         unsigned input_buffer_size = num_samples_to_send_to_host * in_subslot_size;
-        XUD_SetReady_InPtr(ep_aud_in, (unsigned)buffer_aud_in, input_buffer_size); //loopback
+        XUD_SetReady_InPtr(ep_aud_in, (unsigned)buffer_aud_in.long_words, input_buffer_size); //loopback
         num_samples_to_send_to_host = 0;
         //tmr :> t1; debug_printf("i%d\n", t1 - t0);
 
@@ -355,8 +364,17 @@ unsafe void XUA_Buffer_lite2(server ep0_control_if i_ep0_ctl, chanend c_aud_out,
 
   debug_printf("%d\n", MAX_OUT_SAMPLES_PER_SOF_PERIOD);
 
-  unsigned char buffer_aud_out[OUT_AUDIO_BUFFER_SIZE_BYTES];
-  unsigned char buffer_aud_in[IN_AUDIO_BUFFER_SIZE_BYTES];
+  //These buffers are unions so we can access them as different types
+  union buffer_aud_out{
+    unsigned char bytes[OUT_AUDIO_BUFFER_SIZE_BYTES];
+    short short_words[OUT_AUDIO_BUFFER_SIZE_BYTES / 2];
+    long long_words[OUT_AUDIO_BUFFER_SIZE_BYTES / 4];  
+  }buffer_aud_out;
+  union buffer_aud_in{
+    unsigned char bytes[IN_AUDIO_BUFFER_SIZE_BYTES];
+    short short_words[IN_AUDIO_BUFFER_SIZE_BYTES / 2];
+    unsigned long long_words[IN_AUDIO_BUFFER_SIZE_BYTES / 4];  
+  }buffer_aud_in;
   
   unsigned in_subslot_size = (AUDIO_CLASS == 1) ? FS_STREAM_FORMAT_INPUT_1_SUBSLOT_BYTES : HS_STREAM_FORMAT_INPUT_1_SUBSLOT_BYTES;
   unsigned out_subslot_size = (AUDIO_CLASS == 1) ? FS_STREAM_FORMAT_OUTPUT_1_SUBSLOT_BYTES : HS_STREAM_FORMAT_OUTPUT_1_SUBSLOT_BYTES;
@@ -388,8 +406,8 @@ unsafe void XUA_Buffer_lite2(server ep0_control_if i_ep0_ctl, chanend c_aud_out,
   unsigned output_interface_num = 0;
 
   //Enable all EPs
-  XUD_SetReady_OutPtr(ep_aud_out, (unsigned)buffer_aud_out);
-  XUD_SetReady_InPtr(ep_aud_in, (unsigned)buffer_aud_in, num_samples_to_send_to_host);
+  XUD_SetReady_OutPtr(ep_aud_out, (unsigned)buffer_aud_out.long_words);
+  XUD_SetReady_InPtr(ep_aud_in, (unsigned)buffer_aud_in.long_words, num_samples_to_send_to_host);
   if (!isnull(c_feedback)) XUD_SetReady_InPtr(ep_feedback, (unsigned)fb_clocks, (AUDIO_CLASS == 2) ? 4 : 3);
  
 
@@ -439,7 +457,7 @@ unsafe void XUA_Buffer_lite2(server ep0_control_if i_ep0_ctl, chanend c_aud_out,
 
         num_samples_received_from_host = length / out_subslot_size;
   
-        fifo_ret_t ret = fifo_block_push_short_pairs(host_to_device_fifo_ptr, (short *)buffer_aud_out, num_samples_received_from_host);
+        fifo_ret_t ret = fifo_block_push_short_pairs(host_to_device_fifo_ptr, buffer_aud_out.short_words, num_samples_received_from_host);
         if (ret != FIFO_SUCCESS) debug_printf("h2d full\n");
         num_samples_to_send_to_host = num_samples_received_from_host;
         
@@ -447,7 +465,7 @@ unsafe void XUA_Buffer_lite2(server ep0_control_if i_ep0_ctl, chanend c_aud_out,
         fill_level_process(fill_level, clock_nudge);
 
         //Mark EP as ready for next frame from host
-        XUD_SetReady_OutPtr(ep_aud_out, (unsigned)buffer_aud_out);
+        XUD_SetReady_OutPtr(ep_aud_out, (unsigned)buffer_aud_out.long_words);
         //tmr :> t1; debug_printf("o%d\n", t1 - t0);
       break;
 
@@ -467,7 +485,7 @@ unsafe void XUA_Buffer_lite2(server ep0_control_if i_ep0_ctl, chanend c_aud_out,
 
         if (output_interface_num == 0) num_samples_to_send_to_host = (DEFAULT_FREQ  / SOF_FREQ_HZ) * NUM_USB_CHAN_IN;
 
-        fifo_ret_t ret = fifo_block_pop_short_pairs(device_to_host_fifo_ptr, (short *)buffer_aud_in, num_samples_received_from_host);
+        fifo_ret_t ret = fifo_block_pop_short_pairs(device_to_host_fifo_ptr, buffer_aud_in.short_words, num_samples_received_from_host);
         if (ret != FIFO_SUCCESS) debug_printf("d2h empty\n");
 
         //Populate the input buffer ready for the next read
@@ -475,7 +493,7 @@ unsafe void XUA_Buffer_lite2(server ep0_control_if i_ep0_ctl, chanend c_aud_out,
         //Use the number of samples we received last time so we are always balanced (assumes same in/out count)
     
         unsigned input_buffer_size = num_samples_to_send_to_host * in_subslot_size;
-        XUD_SetReady_InPtr(ep_aud_in, (unsigned)buffer_aud_in, input_buffer_size); //loopback
+        XUD_SetReady_InPtr(ep_aud_in, (unsigned)buffer_aud_in.long_words, input_buffer_size); //loopback
         num_samples_to_send_to_host = 0;
         //tmr :> t1; debug_printf("i%d\n", t1 - t0);
 
