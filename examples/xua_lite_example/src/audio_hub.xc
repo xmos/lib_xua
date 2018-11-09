@@ -57,6 +57,8 @@ void AudioHub(server i2s_frame_callback_if i2s,
     case i2s.restart_check() -> i2s_restart_t restart:
       restart = I2S_NO_RESTART; // Keep on looping
       timer tmr; int t0, t1; tmr :> t0;
+      
+      //Transfer samples
       for (int i = 0; i < NUM_USB_CHAN_OUT; i++) c_audio :> samples_out[i];
       if (XUA_ADAPTIVE) c_audio :> clock_nudge;
       for (int i = 0; i < NUM_USB_CHAN_IN; i++) c_audio <: raw_mics[i];

@@ -27,4 +27,11 @@ typedef struct mem_fifo_t {
     unsigned read_idx;
 } mem_fifo_t;
 
+typedef struct mem_fifo_short_t {
+    const unsigned size;              //Size in SHORTs
+    short * const unsafe data_base_ptr; //Base of the data array - declared externally so we can have differnt sized FIFOs
+    unsigned write_idx;
+    unsigned read_idx;
+} mem_fifo_short_t;
+
 #endif

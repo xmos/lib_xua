@@ -137,13 +137,15 @@ int main()
                 //                 c_ep_in[XUA_ENDPOINT_COUNT_IN - 1],
                 //                 c_sof, p_for_mclk_count, c_audio);
 
+                //[[combine]]
+                par{
                 XUA_Buffer_lite2(i_ep0_ctl,
                                 c_ep_out[1],
                                 null, //c_ep_in[XUA_ENDPOINT_COUNT_IN - 2],/*feedback*/
                                 c_ep_in[XUA_ENDPOINT_COUNT_IN - 1],
                                 c_sof, p_for_mclk_count, c_audio);
                 XUA_Endpoint0_select(c_ep_out[0], c_ep_in[0], i_ep0_ctl, null VENDOR_REQUESTS_PARAMS_DEC_);
-
+                }
                 par (int i = 0; i < 3; i++) burn_normal_priority();
                 par (int i = 0; i < 2; i++) burn_high_priority();
             }
