@@ -5,13 +5,15 @@
 - Single input/ouput format (DONE)
 - Get UAC1 / FS working (DONE)
 - Optimised EP buffer (either triple block or block FIFO) 
-- Fix output gain issue
-- Add timer to xua_buffer to prepare for exchange with audio (remove backpressure to audio) (WONT DO)
-- Adaptive endpoint EP and descriptors
-- Adpative clock control
-- Switchable MICS using define
+- Fix output gain issue (IN PROGRESS)
+- Add timer to xua_buffer to prepare for exchange with audio (remove backpressure to audio) (WONT DO - use port buffer and reduce case overhead)
+- Adaptive endpoint EP and descriptors (DONE)
+- Adpative clock control (IN PROGRESS)
+- Switchable MICS using define (WONT DO - separate app)
 - DFU
-- Combinable EP0
+- Combinable EP0 (DONE)
 - Interrupt EP0 option
 - Control processing
-
+- Fix cast warning (DONE)
+- Work out why no clock drift on Android / OSX (drift seen on Linux and Win)
+- Tidy/cut down EP0 handling
