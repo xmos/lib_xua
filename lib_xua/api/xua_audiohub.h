@@ -5,6 +5,7 @@
 #if __XC__
 
 #include "xccompat.h"
+#include "xs1.h"
 
 #if XUA_USB_EN
 #include "dfu_interface.h"
