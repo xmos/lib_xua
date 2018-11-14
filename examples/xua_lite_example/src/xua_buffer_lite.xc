@@ -88,8 +88,8 @@ void fill_level_process(int fill_level, int &clock_nudge){
   //Because we always check level after USB has produced a block, and total FIFO size is 2x max, half full is at 3/4 
   const int half_full_out = ((MAX_OUT_SAMPLES_PER_SOF_PERIOD * 2) * 3) / 4;
 
-  const int trigger_high_upper = half_full_out + 4;
-  const int trigger_low_upper = half_full_out - 4;
+  const int trigger_high_upper = half_full_out + 2;
+  const int trigger_low_upper = half_full_out - 2;
 
   if (fill_level >= trigger_high_upper){
     clock_nudge = 1;
@@ -382,6 +382,9 @@ unsafe void XUA_Buffer_lite2(server ep0_control_if i_ep0_ctl, chanend c_aud_out,
         if (!isnull(c_feedback)) do_feedback_calculation(sof_count, mclk_hz, mclk_port_counter, mclk_port_counter_old, feedback_value, mod_from_last_time, fb_clocks);
         sof_count++;
         //tmr :> t1; debug_printf("s%d\n", t1 - t0);
+        uint16_t port_counter;
+        p_sda <: 1 @ port_counter;
+        p_sda @ port_counter + 10 <: 0;
       break;
 
       //Receive samples from host
