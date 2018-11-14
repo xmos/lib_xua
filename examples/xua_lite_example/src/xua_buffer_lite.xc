@@ -421,7 +421,10 @@ unsafe void XUA_Buffer_lite2(server ep0_control_if i_ep0_ctl, chanend c_aud_out,
         if (output_interface_num == 0) num_samples_to_send_to_host = (DEFAULT_FREQ  / SOF_FREQ_HZ) * NUM_USB_CHAN_IN;
 
         fifo_ret_t ret = fifo_block_pop_short_fast(device_to_host_fifo_ptr, buffer_aud_in.short_words, num_samples_received_from_host);
-        if (ret != FIFO_SUCCESS) debug_printf("d2h empty\n");
+        if (ret != FIFO_SUCCESS) {
+          memset(buffer_aud_in.short_words, 0, sizeof(buffer_aud_in.short_words));
+          debug_printf("d2h empty\n");
+        }
 
         //Populate the input buffer ready for the next read
         //pack_samples_to_buff(loopback_samples, num_samples_to_send_to_host, in_subslot_size, buffer_aud_in);
@@ -442,7 +445,10 @@ unsafe void XUA_Buffer_lite2(server ep0_control_if i_ep0_ctl, chanend c_aud_out,
           samples_in_short[i] = s_tmp >> 16;
         }
         fifo_ret_t ret = fifo_block_pop_short(host_to_device_fifo_ptr, samples_out_short, NUM_USB_CHAN_OUT);
-        if (ret != FIFO_SUCCESS && output_interface_num != 0) debug_printf("h2d empty\n");
+        if (ret != FIFO_SUCCESS && output_interface_num != 0) {
+          memset(samples_out_short, 0, sizeof(samples_out_short));
+          debug_printf("h2d empty\n");
+        }
         for (int i = 0; i < NUM_USB_CHAN_OUT; i++) c_audio_hub <: (int)samples_out_short[i] << 16;
         if (XUA_ADAPTIVE) c_audio_hub <: clock_nudge;
         ret = fifo_block_push_short(device_to_host_fifo_ptr, samples_in_short, NUM_USB_CHAN_IN);
