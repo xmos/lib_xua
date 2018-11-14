@@ -51,11 +51,6 @@
 #define DAC3101_REGWRITE(reg, val) {i_i2c.write_reg(DAC3101_I2C_DEVICE_ADDR, reg, val);}
 
 
-
-static void set_node_pll_reg(tileref tile_ref, unsigned reg_val){
-    write_sswitch_reg(get_tile_id(tile_ref), XS1_SSWITCH_PLL_CTL_NUM, reg_val);
-}
-
 // Nominal setting is ref div = 25, fb_div = 1024, op_div = 2
 // PCF Freq 0.96MHz
 
@@ -71,21 +66,22 @@ enum clock_nudge{
 
 on tile[0]: out port p_leds = XS1_PORT_4F;
 
-int old_nudge = 0;
+//Note use of no_ack write to prevent backpressure. There is enough buffering to
+//store both writes so we can move on without blocking
 void pll_nudge(int nudge) {
     if (nudge > 0){
-        write_sswitch_reg(get_tile_id(tile[0]), XS1_SSWITCH_PLL_CTL_NUM, PLL_HIGH);
+        write_sswitch_reg_no_ack(get_tile_id(tile[0]), XS1_SSWITCH_PLL_CTL_NUM, PLL_HIGH);
         p_leds <: 0x02; //LED B
     }
     else if (nudge < 0){
-        write_sswitch_reg(get_tile_id(tile[0]), XS1_SSWITCH_PLL_CTL_NUM, PLL_LOW);
+        write_sswitch_reg_no_ack(get_tile_id(tile[0]), XS1_SSWITCH_PLL_CTL_NUM, PLL_LOW);
         p_leds <: 0x01; //LED A
 
     }
     else {
         p_leds <: 0x0;
     }
-    write_sswitch_reg(get_tile_id(tile[0]), XS1_SSWITCH_PLL_CTL_NUM, PLL_NOM);
+    write_sswitch_reg_no_ack(get_tile_id(tile[0]), XS1_SSWITCH_PLL_CTL_NUM, PLL_NOM);
 }
 
 void setup_audio_gpio(out port p_gpio){
