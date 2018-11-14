@@ -848,13 +848,13 @@ void XUA_Endpoint0_lite_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend 
                     switch (sp.wIndex)
                     {
                         /* Check for audio stream from host start/stop */
-#if (NUM_USB_CHAN_OUT > 0) && (AUDIO_CLASS == 2)
+#if (NUM_USB_CHAN_OUT > 0)
                         case INTERFACE_NUMBER_AUDIO_OUTPUT:
                             *output_interface_num = sp.wValue; 
                             break;
 #endif
 
-#if (NUM_USB_CHAN_IN > 0) && (AUDIO_CLASS == 2)
+#if (NUM_USB_CHAN_IN > 0)
                         case INTERFACE_NUMBER_AUDIO_INPUT:
                             *input_interface_num = sp.wValue;
                             break;
