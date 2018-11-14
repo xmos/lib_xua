@@ -343,7 +343,8 @@ unsafe void XUA_Buffer_lite2(server ep0_control_if i_ep0_ctl, chanend c_aud_out,
 
 
   //Send initial samples so audiohub is not blocked
-  for (int i = 0; i < 2 * (NUM_USB_CHAN_OUT + (XUA_ADAPTIVE != 0 ? 1 : 0)); i++) c_audio_hub <: 0;
+  const unsigned n_sample_periods_to_preload = 2;
+  for (int i = 0; i < n_sample_periods_to_preload * (NUM_USB_CHAN_OUT + (XUA_ADAPTIVE != 0 ? 1 : 0)); i++) c_audio_hub <: 0;
 
   //FIFOs from EP buffers to audio
   short host_to_device_fifo_storage[MAX_OUT_SAMPLES_PER_SOF_PERIOD * 2];
