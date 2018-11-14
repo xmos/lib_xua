@@ -70,7 +70,7 @@ void AudioHub(server i2s_frame_callback_if i2s,
       }
 
       pll_nudge(clock_nudge);
-      //tmr :> t1; debug_printf("%d\n", t1 - t0);
+      //tmr :> t1; if (t1-t0 > 500) debug_printf("*%d\n", t1 - t0);
       //delay_microseconds(10); //Test backpressure tolerance
     break;
     }

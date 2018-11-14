@@ -103,27 +103,25 @@ static void do_feedback_calculation(unsigned &sof_count
                                 ,long long &feedback_value
                                 ,unsigned &mod_from_last_time
                                 ,unsigned fb_clocks[1]){
-  /* Assuming 48kHz from a 24.576 master clock (0.0407uS period)
-   * MCLK ticks per SOF = 125uS / 0.0407 = 3072 MCLK ticks per SOF.
-   * expected Feedback is 48000/8000 = 6 samples. so 0x60000 in 16:16 format.
-   * Average over 128 SOFs - 128 x 3072 = 0x60000. */
+  // Assuming 48kHz from a 24.576 master clock (0.0407uS period)
+  // MCLK ticks per SOF = 125uS / 0.0407 = 3072 MCLK ticks per SOF.
+  // expected Feedback is 48000/8000 = 6 samples. so 0x60000 in 16:16 format.
+  // Average over 128 SOFs - 128 x 3072 = 0x60000.
 
   unsigned long long feedbackMul = 64ULL;
-  if(AUDIO_CLASS == 1)
-      feedbackMul = 8ULL;  /* TODO Use 4 instead of 8 to avoid windows LSB issues? */
+  if(AUDIO_CLASS == 1) feedbackMul = 8ULL;  // TODO Use 4 instead of 8 to avoid windows LSB issues? 
 
-  /* Number of MCLK ticks in this SOF period (E.g = 125 * 24.576 = 3072) */
+  // Number of MCLK ticks in this SOF period (E.g = 125 * 24.576 = 3072) 
   int mclk_ticks_this_sof_period = (int) ((short)(mclk_port_counter - mclk_port_counter_old));
   unsigned long long full_result = mclk_ticks_this_sof_period * feedbackMul * DEFAULT_FREQ;
   feedback_value += full_result;
 
-  /* Store MCLK for next time around... */
+  // Store MCLK for next time around... 
   mclk_port_counter_old = mclk_port_counter;
 
-  /* Reset counts based on SOF counting.  Expect 16ms (128 HS SOFs/16 FS SOFS) per feedback poll
-   * We always count 128 SOFs, so 16ms @ HS, 128ms @ FS */
-  if(sof_count == 128)
-  {
+  // Reset counts based on SOF counting.  Expect 16ms (128 HS SOFs/16 FS SOFS) per feedback poll
+  // We always count 128 SOFs, so 16ms @ HS, 128ms @ FS 
+  if(sof_count == 128){
     //debug_printf("fb\n");
     sof_count = 0;
 
@@ -132,36 +130,31 @@ static void do_feedback_calculation(unsigned &sof_count
     mod_from_last_time = feedback_value % mclk_hz;
     feedback_value = 0;
 
-
     //Scale for working out number of samps to take from device for input
-    if(AUDIO_CLASS == 2)
-    {
+    if(AUDIO_CLASS == 2){
         clocks <<= 3;
     }
-    else
-    {
+    else{
         clocks <<= 6;
     }
     asm volatile("stw %0, dp[g_speed]"::"r"(clocks));   // g_speed = clocks
 
     //Write to feedback EP buffer
-    if (AUDIO_CLASS == 2)
-    {
+    if (AUDIO_CLASS == 2){
         fb_clocks[0] = clocks;
     }
-    else
-    {
+    else{
         fb_clocks[0] = clocks >> 2;
     }
   }
 }
 
 void fill_level_process(int fill_level, int &clock_nudge){
-  const int trigger_high_upper = 6;
-  //const int trigger_high_lower = 8;
+  //Because we always check level after USB has produced a block, and total FIFO size is 2x max, half full is at 3/4 
+  const int half_full_out = ((MAX_OUT_SAMPLES_PER_SOF_PERIOD * 2) * 3) / 4;
 
-  const int trigger_low_upper = -6;
-  //const int trigger_low_lower = -8;
+  const int trigger_high_upper = half_full_out + 4;
+  const int trigger_low_upper = half_full_out - 4;
 
   if (fill_level >= trigger_high_upper){
     clock_nudge = 1;
@@ -250,7 +243,7 @@ unsafe void XUA_Buffer_lite(chanend c_ep0_out, chanend c_ep0_in, chanend c_aud_o
  
 
   //Send initial samples so audiohub is not blocked
-  for (int i = 0; i < NUM_USB_CHAN_OUT * 2; i++) c_audio_hub <: 0;
+  for (int i = 0; i < 2 * (NUM_USB_CHAN_OUT + (XUA_ADAPTIVE != 0 ? 1 : 0)); i++) c_audio_hub <: 0;
 
   //FIFOs from EP buffers to audio
   short host_to_device_fifo_storage[MAX_OUT_SAMPLES_PER_SOF_PERIOD * 2];
@@ -263,7 +256,8 @@ unsafe void XUA_Buffer_lite(chanend c_ep0_out, chanend c_ep0_in, chanend c_aud_o
   //XUD transaction variables passed in by reference
   XUD_Result_t result;
   unsigned length = 0;
-  unsigned u_tmp; //For select channel input by ref
+  unsigned u_tmp; //For select channel input by ref on EP0
+  int s_tmp;      //For select on channel from audiohub
   while(1){
     #pragma ordered
     select{
@@ -301,7 +295,7 @@ unsafe void XUA_Buffer_lite(chanend c_ep0_out, chanend c_ep0_in, chanend c_aud_o
         if (ret != FIFO_SUCCESS) debug_printf("h2d full\n");
         num_samples_to_send_to_host = num_samples_received_from_host;
         
-        int fill_level = fifo_get_fill_relative_half_short(host_to_device_fifo_ptr);
+        int fill_level = fifo_get_fill_short(host_to_device_fifo_ptr);
         fill_level_process(fill_level, clock_nudge);
 
         //Mark EP as ready for next frame from host
@@ -340,12 +334,12 @@ unsafe void XUA_Buffer_lite(chanend c_ep0_out, chanend c_ep0_in, chanend c_aud_o
       break;
 
       //Exchange samples with audiohub. Note we are using channel buffering here to act as a FIFO
-      case c_audio_hub :> u_tmp:
+      case c_audio_hub :> s_tmp:
       timer tmr; int t0, t1; tmr :> t0;
-        samples_in_short[0] = (int)u_tmp >> 16;
+        samples_in_short[0] = s_tmp >> 16;
         for (int i = 1; i < NUM_USB_CHAN_IN; i++){
-          c_audio_hub :> u_tmp;
-          samples_in_short[i] = (int)u_tmp >> 16;
+          c_audio_hub :> s_tmp;
+          samples_in_short[i] = s_tmp >> 16;
         }
         fifo_ret_t ret = fifo_block_pop_short(host_to_device_fifo_ptr, samples_out_short, NUM_USB_CHAN_OUT);
         if (ret != FIFO_SUCCESS && output_interface_num != 0) debug_printf("h2d empty\n");
@@ -414,7 +408,7 @@ unsafe void XUA_Buffer_lite2(server ep0_control_if i_ep0_ctl, chanend c_aud_out,
 
 
   //Send initial samples so audiohub is not blocked
-  for (int i = 0; i < NUM_USB_CHAN_OUT * 6; i++) c_audio_hub <: 0;
+  for (int i = 0; i < 2 * (NUM_USB_CHAN_OUT + (XUA_ADAPTIVE != 0 ? 1 : 0)); i++) c_audio_hub <: 0;
 
   //FIFOs from EP buffers to audio
   short host_to_device_fifo_storage[MAX_OUT_SAMPLES_PER_SOF_PERIOD * 2];
@@ -424,29 +418,22 @@ unsafe void XUA_Buffer_lite2(server ep0_control_if i_ep0_ctl, chanend c_aud_out,
   volatile mem_fifo_short_t * unsafe host_to_device_fifo_ptr = &host_to_device_fifo;
   volatile mem_fifo_short_t * unsafe device_to_host_fifo_ptr = &device_to_host_fifo;
 
-  //debug
-  const unsigned trig_period = 100000000; //1s
-  timer tmr;
-  unsigned sc = 0;
-  unsigned ac = 0;
-  unsigned hc = 0;
-  unsigned tmr_trig;
-  tmr :> tmr_trig;
-  tmr_trig += trig_period;
-
   //XUD transaction variables passed in by reference
   XUD_Result_t result;
   unsigned length = 0;
-  unsigned u_tmp; //For select channel input by ref
+  unsigned u_tmp; //For select channel input by ref on EP0
+  int s_tmp;      //For select on channel from audiohub
   while(1){
     select{
       //Handle EP0 requests
       case i_ep0_ctl.set_output_interface(unsigned num):
         output_interface_num = num;
+        debug_printf("output_interface_num: %d\n", num);
       break;
 
       case i_ep0_ctl.set_input_interface(unsigned num):
         input_interface_num = num;
+        debug_printf("input_interface_num: %d\n", num);
       break;
 
       case i_ep0_ctl.set_host_active(unsigned active):
@@ -460,9 +447,6 @@ unsafe void XUA_Buffer_lite2(server ep0_control_if i_ep0_ctl, chanend c_aud_out,
         if (!isnull(c_feedback)) do_feedback_calculation(sof_count, mclk_hz, mclk_port_counter, mclk_port_counter_old, feedback_value, mod_from_last_time, fb_clocks);
         sof_count++;
         //tmr :> t1; debug_printf("s%d\n", t1 - t0);
-        p_sda <: 1;
-        p_sda <: 0;
-        sc++;
       break;
 
       //Receive samples from host
@@ -470,13 +454,14 @@ unsafe void XUA_Buffer_lite2(server ep0_control_if i_ep0_ctl, chanend c_aud_out,
       timer tmr; int t0, t1; tmr :> t0;
 
         num_samples_received_from_host = length / out_subslot_size;
-        hc += num_samples_received_from_host / NUM_USB_CHAN_OUT;
+
+        if (num_samples_received_from_host != 96) debug_printf("hs: %d\n", num_samples_received_from_host);
   
         fifo_ret_t ret = fifo_block_push_short_fast(host_to_device_fifo_ptr, buffer_aud_out.short_words, num_samples_received_from_host);
         if (ret != FIFO_SUCCESS) debug_printf("h2d full\n");
         num_samples_to_send_to_host = num_samples_received_from_host;
         
-        int fill_level = fifo_get_fill_relative_half_short(host_to_device_fifo_ptr);
+        int fill_level = fifo_get_fill_short(host_to_device_fifo_ptr);
         fill_level_process(fill_level, clock_nudge);
 
         //Mark EP as ready for next frame from host
@@ -491,7 +476,6 @@ unsafe void XUA_Buffer_lite2(server ep0_control_if i_ep0_ctl, chanend c_aud_out,
         XUD_SetReady_In(ep_feedback, (fb_clocks, unsigned char[]), (AUDIO_CLASS == 2) ? 4 : 3);
         //debug_printf("0x%x\n", fb_clocks[0]);
         //tmr :> t1; debug_printf("f%d\n", t1 - t0);
-
       break;
 
       //Send samples to host
@@ -514,22 +498,13 @@ unsafe void XUA_Buffer_lite2(server ep0_control_if i_ep0_ctl, chanend c_aud_out,
         //tmr :> t1; debug_printf("i%d\n", t1 - t0);
       break;
 
-      case tmr when timerafter(tmr_trig) :> int _:
-        tmr_trig += trig_period;
-        debug_printf("HOST: %d SAMP: %d SOF: %d\n", ac, hc, sc);
-        sc = 0;
-        ac = 0;
-        hc = 0;
-      break;
-
       //Exchange samples with audiohub. Note we are using channel buffering here to act as a FIFO
-      case c_audio_hub :> u_tmp:
+      case c_audio_hub :> s_tmp:
       timer tmr; int t0, t1; tmr :> t0;
-        samples_in_short[0] = (int)u_tmp >> 16;
-        ac++;
+        samples_in_short[0] = s_tmp >> 16;
         for (int i = 1; i < NUM_USB_CHAN_IN; i++){
-          c_audio_hub :> u_tmp;
-          samples_in_short[i] = (int)u_tmp >> 16;
+          c_audio_hub :> s_tmp;
+          samples_in_short[i] = s_tmp >> 16;
         }
         fifo_ret_t ret = fifo_block_pop_short(host_to_device_fifo_ptr, samples_out_short, NUM_USB_CHAN_OUT);
         if (ret != FIFO_SUCCESS && output_interface_num != 0) debug_printf("h2d empty\n");

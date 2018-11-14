@@ -74,19 +74,18 @@ on tile[0]: out port p_leds = XS1_PORT_4F;
 int old_nudge = 0;
 void pll_nudge(int nudge) {
     if (nudge > 0){
-        set_node_pll_reg(tile[0], PLL_HIGH);
-        p_leds <: 0xf;
+        write_sswitch_reg(get_tile_id(tile[0]), XS1_SSWITCH_PLL_CTL_NUM, PLL_HIGH);
+        p_leds <: 0x02; //LED B
     }
     else if (nudge < 0){
-        set_node_pll_reg(tile[0], PLL_LOW);
-        p_leds <: 0xf;
+        write_sswitch_reg(get_tile_id(tile[0]), XS1_SSWITCH_PLL_CTL_NUM, PLL_LOW);
+        p_leds <: 0x01; //LED A
 
     }
     else {
         p_leds <: 0x0;
     }
-    set_node_pll_reg(tile[0], PLL_NOM);
-    //if(nudge != old_nudge && nudge){debug_printf("nudge: %d\n", nudge); }old_nudge = nudge;
+    write_sswitch_reg(get_tile_id(tile[0]), XS1_SSWITCH_PLL_CTL_NUM, PLL_NOM);
 }
 
 void setup_audio_gpio(out port p_gpio){
