@@ -573,15 +573,16 @@ unsigned static AudioHub_MainLoop(chanend ?c_out, chanend ?c_spd_out
                         return command;
                     }
 
-                    /* Reset frame counter and flip the ADC buffer */
+                    /* Reset audio to usb counter because we have now completed one USB transfer and flip the ADC buffer */
                     audioToUsbRatioCounter = 0;
-                    frameCount = 0;
                     readBuffNo = !readBuffNo;
                 }
                 else
                 {
                     ++audioToUsbRatioCounter;
                 }
+                /* Reset the framecount because we have outputted all channels in the frame now */
+                frameCount = 0;
             }
         }
     }
