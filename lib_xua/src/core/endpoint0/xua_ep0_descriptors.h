@@ -64,6 +64,9 @@ typedef struct
 #if (XUA_DFU_EN == 1)
     STR_TABLE_ENTRY(dfuStr);                      /* iInterface for DFU interface */
 #endif
+#if HID_CONTROLS
+    STR_TABLE_ENTRY(hidStr);                      /* iInterface for HID interface */
+#endif
 #ifdef USB_CONTROL_DESCS
     STR_TABLE_ENTRY(ctrlStr);
 #endif
@@ -337,6 +340,9 @@ StringDescTable_t g_strTable =
 #if (XUA_DFU_EN == 1)
     .dfuStr                      = APPEND_VENDOR_STR(DFU),
 #endif
+#if HID_CONTROLS
+    .hidStr                      = APPEND_VENDOR_STR(HID),
+#endif
 #ifdef USB_CONTROL_DESCS
     .ctrlStr                      = APPEND_VENDOR_STR(Control),
 #endif
@@ -538,7 +544,7 @@ unsigned char devQualDesc_Null[] =
 #endif
 
 
-#ifdef HID_CONTROLS
+#if HID_CONTROLS
 unsigned char hidReportDescriptor[] =
 {
     0x05, 0x0c,     /* Usage Page (Consumer Device) */
@@ -760,7 +766,7 @@ typedef struct
 #endif
 #endif
 
-#ifdef HID_CONTROLS
+#if HID_CONTROLS
     USB_Descriptor_Interface_t                  HID_Interface;
     unsigned char hidDesc[9];                   //TODO ideally we would have a struct for this.
     USB_Descriptor_Endpoint_t                   HID_In_Endpoint;
@@ -2121,7 +2127,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
 #endif
 #endif /* IAP */
 
-#ifdef HID_CONTROLS
+#if HID_CONTROLS
     .HID_Interface =
     {
         9,                                /* 0  bLength : Size of descriptor in Bytes */
@@ -2132,7 +2138,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
         3,                                /* 5: bInterfaceClass */
         0,                                /* 6: bInterfaceSubClass - no boot device */
         0,                                /* 7: bInterfaceProtocol*/
-        0,                                /* 8  iInterface */
+        offsetof(StringDescTable_t, hidStr)/sizeof(char *), /* 8  iInterface */
     },
 
     {
@@ -2155,6 +2161,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
         ENDPOINT_ADDRESS_IN_HID,          /* 2  bEndpointAddress  */
         3,                                /* 3  bmAttributes (INTERRUPT) */
         64,                               /* 4  wMaxPacketSize */
+        0,                                /* 5  wMaxPacketSize */
         8,                                /* 6  bInterval */
     }
 #endif
@@ -2162,7 +2169,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
 };
 #endif
 
-#ifdef HID_CONTROLS
+#if HID_CONTROLS
 unsigned char hidDescriptor[] =
 {
     9,                                    /* 0  bLength : Size of descriptor in Bytes */
@@ -2277,6 +2284,14 @@ const unsigned num_freqs_a1 = MAX(3, (0
 #define DFU_INTERFACES_A1     0
 #endif
 
+#if ( HID_CONTROLS ) && ( FORCE_UAC1_HID )
+#define HID_INTERFACE_BYTES   ( 9 + 9 + 7 )
+#define HID_INTERFACES_A1     1
+#else
+#define HID_INTERFACE_BYTES   0
+#define HID_INTERFACES_A1     0
+#endif
+
 /* Total number of bytes returned for the class-specific AudioControl interface descriptor.
  * Includes the combined length of this descriptor header and all Unit and Terminal descriptors
  * For us this is IT -> FU -> OT * 2 and a header */
@@ -2301,12 +2316,12 @@ const unsigned num_freqs_a1 = MAX(3, (0
 
 /* Number of interfaces for Audio  1.0 (+1 for control ) */
 /* Note, this is different that INTERFACE_COUNT since we dont support items such as MIDI, iAP etc in UAC1 mode */
-#define NUM_INTERFACES_A1           (1+INPUT_INTERFACES_A1 + OUTPUT_INTERFACES_A1+NUM_CONTROL_USB_INTERFACES+DFU_INTERFACES_A1)
+#define NUM_INTERFACES_A1           (1 + INPUT_INTERFACES_A1 + OUTPUT_INTERFACES_A1 + NUM_CONTROL_USB_INTERFACES + DFU_INTERFACES_A1 + HID_INTERFACES_A1)
 
 #if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP)
-#define CFG_TOTAL_LENGTH_A1         (18 + AC_TOTAL_LENGTH + (INPUT_INTERFACES_A1 * (49 + num_freqs_a1 * 3)) + (OUTPUT_INTERFACES_A1 * (58 + num_freqs_a1 * 3)) + CONTROL_INTERFACE_BYTES + DFU_INTERFACE_BYTES)
+#define CFG_TOTAL_LENGTH_A1         (18 + AC_TOTAL_LENGTH + (INPUT_INTERFACES_A1 * (49 + num_freqs_a1 * 3)) + (OUTPUT_INTERFACES_A1 * (58 + num_freqs_a1 * 3)) + CONTROL_INTERFACE_BYTES + DFU_INTERFACE_BYTES + HID_INTERFACE_BYTES)
 #else
-#define CFG_TOTAL_LENGTH_A1         (18 + AC_TOTAL_LENGTH + (INPUT_INTERFACES_A1 * (49 + num_freqs_a1 * 3)) + (OUTPUT_INTERFACES_A1 * (49 + num_freqs_a1 * 3)) + CONTROL_INTERFACE_BYTES + DFU_INTERFACE_BYTES)
+#define CFG_TOTAL_LENGTH_A1         (18 + AC_TOTAL_LENGTH + (INPUT_INTERFACES_A1 * (49 + num_freqs_a1 * 3)) + (OUTPUT_INTERFACES_A1 * (49 + num_freqs_a1 * 3)) + CONTROL_INTERFACE_BYTES + DFU_INTERFACE_BYTES + HID_INTERFACE_BYTES)
 #endif
 
 #define CHARIFY_SR(x) (x & 0xff),((x & 0xff00)>> 8),((x & 0xff0000)>> 16)
@@ -2771,7 +2786,40 @@ unsigned char cfgDesc_Audio1[] =
     0x40,                                 /* 5    wTransferSize */
     0x00,                                 /* 6    wTransferSize */
     0x10,                                 /* 7    bcdDFUVersion */
-    0x01,                                                  /* 7    bcdDFUVersion */
+    0x01,                                 /* 8    bcdDFUVersion */
+#endif
+
+#if ( HID_CONTROLS ) && ( FORCE_UAC1_HID )
+    /* HID Interface descriptor */
+    0x09,                                /* 0  bLength : Size of descriptor in Bytes */
+    0x04,                                /* 1  bDescriptorType (Interface: 0x04)*/
+    INTERFACE_NUMBER_HID,                /* 2  bInterfaceNumber : Number of interface */
+    0x00,                                /* 3  bAlternateSetting : Value used  alternate interfaces using SetInterface Request */
+    0x01,                                /* 4: bNumEndpoints : Number of endpoitns for this interface (excluding 0) */
+    0x03,                                /* 5: bInterfaceClass */
+    0x00,                                /* 6: bInterfaceSubClass - no boot device */
+    0x00,                                /* 7: bInterfaceProtocol*/
+    offsetof(StringDescTable_t, hidStr)/sizeof(char *), /* 8  iInterface */
+
+    /* HID Functional descriptor */
+    0x09,                                /* 0  bLength : Size of descriptor in Bytes */
+    0x21,                                /* 1  bDescriptorType (HID) */
+    0x10,                                /* 2  bcdHID */
+    0x01,                                /* 3  bcdHID */
+    0x00,                                /* 4  bCountryCode */
+    0x01,                                /* 5  bNumDescriptors */
+    0x22,                                /* 6  bDescriptorType[0] (Report) */
+    sizeof(hidReportDescriptor) & 0xff,  /* 7  wDescriptorLength[0] */
+    sizeof(hidReportDescriptor) >> 8,    /* 8  wDescriptorLength[0] */
+
+    /* HID Endpoint descriptor (IN) */
+    0x07,                                /* 0  bLength */
+    0x05,                                /* 1  bDescriptorType */
+    ENDPOINT_ADDRESS_IN_HID,             /* 2  bEndpointAddress  */
+    0x03,                                /* 3  bmAttributes (INTERRUPT) */
+    0x40,                                /* 4  wMaxPacketSize */
+    0x00,                                /* 4  wMaxPacketSize */
+    0x08,                                /* 6  bInterval */
 #endif
 
 #ifdef USB_CONTROL_DESCS

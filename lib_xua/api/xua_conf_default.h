@@ -429,6 +429,17 @@
 #undef HID_CONTROLS
 #endif
 
+/**
+ * @brief Enable HID playback controls functionality in USB Audio Class 1.
+ *
+ * 1 for enabled, 0 for disabled.
+ *
+ * Default 0 (Disabled)
+ */
+#ifndef FORCE_UAC1_HID
+#define FORCE_UAC1_HID     (0)
+#endif
+
 /* @brief Defines whether XMOS device runs as master (i.e. drives LR and Bit clocks)
  *
  * 0: XMOS is I2S master. 1: CODEC is I2s master.
