@@ -97,11 +97,11 @@ typedef int32_t xua_lite_fixed_point_t;
 #define FIFO_LEVEL_A_COEFF                  ((int32_t)(INT_MAX * FIFO_LEVEL_EMA_COEFF)) //Scale to signed 1.31 format
 #define FIFO_LEVEL_B_COEFF                  (INT_MAX - FIFO_LEVEL_A_COEFF)
 
-#define RANDOMISATION_PERCENT               0 //How much noise to inject in percent of existing signal amplitude
-#define RANDOMISATION_COEFF_A               ((INT_MAX / 100) * (100 - RANDOMISATION_PERCENT))
+#define RANDOMISATION_PERCENT               50 //How much noise to inject in percent of existing signal amplitude
+#define RANDOMISATION_COEFF_A               ((INT_MAX / 100) * RANDOMISATION_PERCENT)
 
-#define PI_CONTROL_P_TERM                   3.0
-#define PI_CONTROL_I_TERM                   1.5
+#define PI_CONTROL_P_TERM                   15.0
+#define PI_CONTROL_I_TERM                   1.1
 #define PI_CONTROL_P_TERM_COEFF             ((xua_lite_fixed_point_t)(XUA_LIGHT_FIXED_POINT_ONE * PI_CONTROL_P_TERM)) //scale to fixed point
 #define PI_CONTROL_I_TERM_COEFF             ((xua_lite_fixed_point_t)(XUA_LIGHT_FIXED_POINT_ONE * PI_CONTROL_I_TERM)) //scale to fixed point
 
@@ -148,35 +148,39 @@ static void fill_level_process(int fill_level, int &clock_nudge){
   xua_lite_fixed_point_t i_term_pre_clip = fifo_level_integrated + fifo_level_filtered;
   
   //clip the I term. Check to see if overflow (which will change sign)
-  if (fifo_level_integrated > 0){ //If it was positive before, ensure it still is else clip to positive
-    if (i_term_pre_clip < 0){
-      fifo_level_integrated = INT_MAX;
+  if (fifo_level_filtered > 0){ //If it was positive before, ensure it still is else clip to positive
+    if (i_term_pre_clip > fifo_level_integrated){
+      fifo_level_integrated = i_term_pre_clip;
     }
     else{
-      fifo_level_integrated = i_term_pre_clip;
+      fifo_level_integrated = INT_MAX;
+      debug_printf("clip+ %d\n", fifo_level_integrated);
     }
   }
   else{                           //Value was negative so ensure it still is else clip negative
-    if (i_term_pre_clip > 0){
-      fifo_level_integrated = INT_MIN;
+    if (i_term_pre_clip < fifo_level_integrated){
+      fifo_level_integrated = i_term_pre_clip;
     }
     else{
-      fifo_level_integrated = i_term_pre_clip;
+      fifo_level_integrated = INT_MIN;
+      debug_printf("clip- %d %d\n", fifo_level_integrated, fifo_level_filtered);
     }
   }
 
   //Do PID calculation
   xua_lite_fixed_point_t p_term = (((int64_t) fifo_level_filtered * (int64_t)PI_CONTROL_P_TERM_COEFF)) >> (64 - XUA_LIGHT_FIXED_POINT_TOTAL_BITS + 2);
   xua_lite_fixed_point_t i_term = (((int64_t) fifo_level_integrated * (int64_t)PI_CONTROL_I_TERM_COEFF)) >> (64 - XUA_LIGHT_FIXED_POINT_TOTAL_BITS + 2);
-  debug_printf("p: %d i: %d\n", p_term >> XUA_LIGHT_FIXED_POINT_Q_BITS, i_term >> XUA_LIGHT_FIXED_POINT_Q_BITS);
+  debug_printf("p: %d i: %d f: %d\n", p_term >> XUA_LIGHT_FIXED_POINT_Q_BITS, i_term >> XUA_LIGHT_FIXED_POINT_Q_BITS, fill_level_wrt_half);
 
   //Sum and scale to +- 1.0 (important it does not exceed these values for following step)
   //xua_lite_fixed_point_t controller_out = (p_term + i_term) >> (XUA_LIGHT_FIXED_POINT_Q_BITS - 1);
-  xua_lite_fixed_point_t controller_out = p_term + i_term;
+  xua_lite_fixed_point_t controller_out = (p_term + i_term);
+
+  controller_out = add_noise(controller_out);
+
 
   static xua_lite_fixed_point_t nudge_accumulator = 0;
   nudge_accumulator += controller_out;
-  //nudge_accumulator = add_noise(nudge_accumulator);
 
   //debug_printf("na: %d -1: %d\n", nudge_accumulator, XUA_LIGHT_FIXED_POINT_MINUS_ONE);
 
