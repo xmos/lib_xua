@@ -58,19 +58,23 @@ void AudioHub(server i2s_frame_callback_if i2s,
       restart = I2S_NO_RESTART; // Keep on looping
       timer tmr; int t0, t1; tmr :> t0;
       
-      //Transfer samples
+      //Transfer samples. Takes about 25 ticks
       for (int i = 0; i < NUM_USB_CHAN_OUT; i++) c_audio :> samples_out[i];
       if (XUA_ADAPTIVE) c_audio :> clock_nudge;
       for (int i = 0; i < NUM_USB_CHAN_IN; i++) c_audio <: raw_mics[i];
 
-      //Grab mics
+      //Grab mics. Takes about 200 ticks currently
       current = mic_array_get_next_time_domain_frame(c_ds_output, decimatorCount, buffer, mic_audio_frame, dc);
+      //50 ticks
       unsafe {
           for (int i = 0; i < XUA_NUM_PDM_MICS; i++) raw_mics[i] = current->data[i][0];
       }
 
+      //Taking about 160 ticks when adjusting, 100 when not
+      tmr :> t0;
       pll_nudge(clock_nudge);
-      //tmr :> t1; if (t1-t0 > 500) debug_printf("*%d\n", t1 - t0);
+      tmr :> t1;
+      if (t1-t0 > 500) debug_printf("*%d\n", t1 - t0);
       //delay_microseconds(10); //Test backpressure tolerance
     break;
     }

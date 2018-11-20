@@ -60,6 +60,7 @@ enum clock_nudge{
     PLL_FASTER = 1
 };
 
+//These steps provide just under +-0.1% frequency jumps
 #define PLL_LOW  0xC003FE18 // This is 3.069MHz
 #define PLL_NOM  0xC003FF18 // This is 3.072MHz
 #define PLL_HIGH 0xC0040018 // This is 3.075MHz
@@ -273,6 +274,6 @@ void AudioHwConfigure(unsigned samFreq, client i2c_master_if i_i2c)
 }
 
 
-//These are here just to silence compiler warnings
+//These are here just to silence compiler warnings about unimplemented xua callbacks (not needed in xua lite)
 void AudioHwInit(){}
 void AudioHwConfig(unsigned samFreq, unsigned mClk, unsigned dsdMode, unsigned sampRes_DAC, unsigned sampRes_ADC){}

@@ -1,5 +1,5 @@
 #include <stdint.h>
-
+#include <limits.h>
 #include <xs1.h>
 
 #include "xua_commands.h"
@@ -84,12 +84,119 @@ static void do_feedback_calculation(unsigned &sof_count
   }
 }
 
-void fill_level_process(int fill_level, int &clock_nudge){
-  //Because we always check level after USB has produced a block, and total FIFO size is 2x max, half full is at 3/4 
-  const int half_full_out = ((MAX_OUT_SAMPLES_PER_SOF_PERIOD * 2) * 3) / 4;
+#define CONTROL_LOOP 1
 
-  const int trigger_high_upper = half_full_out + 2;
-  const int trigger_low_upper = half_full_out - 2;
+typedef int32_t xua_lite_fixed_point_t;
+#define XUA_LIGHT_FIXED_POINT_Q_BITS        10 //Including sign bit
+#define XUA_LIGHT_FIXED_POINT_FRAC_BITS     (32 - XUA_LIGHT_FIXED_POINT_Q_BITS)
+#define XUA_LIGHT_FIXED_POINT_TOTAL_BITS    (XUA_LIGHT_FIXED_POINT_Q_BITS + XUA_LIGHT_FIXED_POINT_FRAC_BITS)
+#define XUA_LIGHT_FIXED_POINT_ONE           (1 << XUA_LIGHT_FIXED_POINT_FRAC_BITS)
+#define XUA_LIGHT_FIXED_POINT_MINUS_ONE     (-XUA_LIGHT_FIXED_POINT_ONE)
+
+#define FIFO_LEVEL_EMA_COEFF                0.98   //Proportion of signal from y[-1]
+#define FIFO_LEVEL_A_COEFF                  ((int32_t)(INT_MAX * FIFO_LEVEL_EMA_COEFF)) //Scale to signed 1.31 format
+#define FIFO_LEVEL_B_COEFF                  (INT_MAX - FIFO_LEVEL_A_COEFF)
+
+#define RANDOMISATION_PERCENT               0 //How much noise to inject in percent of existing signal amplitude
+#define RANDOMISATION_COEFF_A               ((INT_MAX / 100) * (100 - RANDOMISATION_PERCENT))
+
+#define PI_CONTROL_P_TERM                   3.0
+#define PI_CONTROL_I_TERM                   1.5
+#define PI_CONTROL_P_TERM_COEFF             ((xua_lite_fixed_point_t)(XUA_LIGHT_FIXED_POINT_ONE * PI_CONTROL_P_TERM)) //scale to fixed point
+#define PI_CONTROL_I_TERM_COEFF             ((xua_lite_fixed_point_t)(XUA_LIGHT_FIXED_POINT_ONE * PI_CONTROL_I_TERM)) //scale to fixed point
+
+
+xua_lite_fixed_point_t do_fifo_depth_lowpass_filter(xua_lite_fixed_point_t old, int fifo_depth){
+  //we grow from 32b to 64b for intermediate
+  int64_t intermediate = ((int64_t)(fifo_depth << XUA_LIGHT_FIXED_POINT_FRAC_BITS) * (int64_t)FIFO_LEVEL_B_COEFF) + ((int64_t)old * (int64_t)FIFO_LEVEL_A_COEFF);
+  xua_lite_fixed_point_t new_fifo_depth = (xua_lite_fixed_point_t)( intermediate >> (64 - XUA_LIGHT_FIXED_POINT_TOTAL_BITS - 1)); //-1 because signed int
+  return new_fifo_depth;
+}
+
+static int32_t get_random_number(void)
+{
+  static const unsigned random_poly = 0xEDB88320;
+  static unsigned random = 0x12345678;
+  crc32(random, -1, random_poly);
+  return (int32_t) random;
+}
+
+static xua_lite_fixed_point_t add_noise(xua_lite_fixed_point_t input){
+  //Note the input number cannot be bigger than 2 ^ (FIXED_POINT_Q_BITS - 1) * (1 + PERCENT) else we could oveflow
+  //Eg. if Q bits = 10 then biggest input value is 255.9999
+  int32_t random = get_random_number();
+  int32_t input_fraction = ((int64_t)input * (int64_t)RANDOMISATION_COEFF_A) >> (XUA_LIGHT_FIXED_POINT_TOTAL_BITS - 1);
+  int64_t output_64 = ((int64_t)input << (XUA_LIGHT_FIXED_POINT_TOTAL_BITS - 1)) + ((int64_t)input_fraction * (int64_t)random);
+  return (xua_lite_fixed_point_t)( output_64 >> (64 - XUA_LIGHT_FIXED_POINT_TOTAL_BITS - 1));
+}
+
+static void fill_level_process(int fill_level, int &clock_nudge){
+  //Because we always check level after USB has produced a block, and total FIFO size is 2x max, half full is at 3/4 
+  const int half_full = ((MAX_OUT_SAMPLES_PER_SOF_PERIOD * 2) * 3) / 4;
+
+#if CONTROL_LOOP
+  static xua_lite_fixed_point_t fifo_level_filtered = 0;
+  static xua_lite_fixed_point_t fifo_level_filtered_old = 0;
+  static xua_lite_fixed_point_t fifo_level_integrated = 0;
+  int fill_level_wrt_half = fill_level - half_full; //Will be +ve for more than half full and negative for less than half full
+
+  //Do PI control
+  //Low pass filter fill level and get error w.r.t. to set point which is depth = 0 (relative to half full)
+  fifo_level_filtered = do_fifo_depth_lowpass_filter(fifo_level_filtered_old , fill_level_wrt_half);
+  //debug_printf("o: %d n: %d\n", fifo_level_filtered_old, fifo_level_filtered);
+  //Calculate integral term which is the accumulated fill level error
+  xua_lite_fixed_point_t i_term_pre_clip = fifo_level_integrated + fifo_level_filtered;
+  
+  //clip the I term. Check to see if overflow (which will change sign)
+  if (fifo_level_integrated > 0){ //If it was positive before, ensure it still is else clip to positive
+    if (i_term_pre_clip < 0){
+      fifo_level_integrated = INT_MAX;
+    }
+    else{
+      fifo_level_integrated = i_term_pre_clip;
+    }
+  }
+  else{                           //Value was negative so ensure it still is else clip negative
+    if (i_term_pre_clip > 0){
+      fifo_level_integrated = INT_MIN;
+    }
+    else{
+      fifo_level_integrated = i_term_pre_clip;
+    }
+  }
+
+  //Do PID calculation
+  xua_lite_fixed_point_t p_term = (((int64_t) fifo_level_filtered * (int64_t)PI_CONTROL_P_TERM_COEFF)) >> (64 - XUA_LIGHT_FIXED_POINT_TOTAL_BITS + 2);
+  xua_lite_fixed_point_t i_term = (((int64_t) fifo_level_integrated * (int64_t)PI_CONTROL_I_TERM_COEFF)) >> (64 - XUA_LIGHT_FIXED_POINT_TOTAL_BITS + 2);
+  debug_printf("p: %d i: %d\n", p_term >> XUA_LIGHT_FIXED_POINT_Q_BITS, i_term >> XUA_LIGHT_FIXED_POINT_Q_BITS);
+
+  //Sum and scale to +- 1.0 (important it does not exceed these values for following step)
+  //xua_lite_fixed_point_t controller_out = (p_term + i_term) >> (XUA_LIGHT_FIXED_POINT_Q_BITS - 1);
+  xua_lite_fixed_point_t controller_out = p_term + i_term;
+
+  static xua_lite_fixed_point_t nudge_accumulator = 0;
+  nudge_accumulator += controller_out;
+  //nudge_accumulator = add_noise(nudge_accumulator);
+
+  //debug_printf("na: %d -1: %d\n", nudge_accumulator, XUA_LIGHT_FIXED_POINT_MINUS_ONE);
+
+  if (nudge_accumulator >= XUA_LIGHT_FIXED_POINT_ONE){
+    clock_nudge = 1;
+    nudge_accumulator -= XUA_LIGHT_FIXED_POINT_ONE;
+  }
+  else if (nudge_accumulator <= XUA_LIGHT_FIXED_POINT_MINUS_ONE){
+    nudge_accumulator -= XUA_LIGHT_FIXED_POINT_MINUS_ONE;
+    clock_nudge = -1;
+  }
+  else{
+    clock_nudge = 0;
+  }
+
+  fifo_level_filtered_old = fifo_level_filtered;
+  //debug_printf("filtered: %d raw: %d\n", fifo_level_filtered >> 22, fill_level_wrt_half);
+#else
+  const int trigger_high_upper = half_full + 2;
+  const int trigger_low_upper = half_full - 2;
 
   if (fill_level >= trigger_high_upper){
     clock_nudge = 1;
@@ -101,6 +208,7 @@ void fill_level_process(int fill_level, int &clock_nudge){
   }
   else clock_nudge = 0;
   //debug_printf("%d\n", clock_nudge);
+#endif
 
   static unsigned counter; counter++; if (counter>SOF_FREQ_HZ){counter = 0; debug_printf("f: %d\n",fill_level);}
 }
@@ -385,7 +493,7 @@ unsafe void XUA_Buffer_lite2(server ep0_control_if i_ep0_ctl, chanend c_aud_out,
         //tmr :> t1; debug_printf("s%d\n", t1 - t0);
         uint16_t port_counter;
         p_sda <: 1 @ port_counter;
-        p_sda @ port_counter + 10 <: 0;
+        p_sda @ port_counter + 100 <: 0;
       break;
 
       //Receive samples from host
