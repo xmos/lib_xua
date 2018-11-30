@@ -38,6 +38,14 @@ static inline unsigned fifo_get_fill_short(volatile mem_fifo_short_t * unsafe fi
     }
 }
 
+static inline void fifo_init_short(volatile mem_fifo_short_t * unsafe fifo) {
+    unsafe{
+        fifo->write_idx = 0;
+        fifo->read_idx = (fifo->size * 2) / 4;
+        memset(fifo->data_base_ptr , 0, fifo->size * sizeof(short));
+    }
+}
+
 #pragma unsafe arrays
 static inline fifo_ret_t fifo_block_push(volatile mem_fifo_t * unsafe fifo, int data[], unsigned n) {
     unsafe{
