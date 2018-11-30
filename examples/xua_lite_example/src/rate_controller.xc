@@ -11,24 +11,28 @@
 #define XUA_LIGHT_FIXED_POINT_ONE           (1 << XUA_LIGHT_FIXED_POINT_FRAC_BITS)
 #define XUA_LIGHT_FIXED_POINT_MINUS_ONE     (-XUA_LIGHT_FIXED_POINT_ONE)
 
-#define FIFO_LEVEL_EMA_COEFF                0.8   //Proportion of signal from y[-1]
+#define FIFO_LEVEL_EMA_COEFF                0.949 //Proportion of signal from y[-1].
+                                                  //0.939 gives ~10Hz 3db cutoff low pass filter for filter rate of 1kHz
+                                                  //dsp.stackexchange.com/questions/40462/exponential-moving-average-cut-off-frequency/40465
 #define FIFO_LEVEL_A_COEFF                  ((int32_t)(INT_MAX * FIFO_LEVEL_EMA_COEFF)) //Scale to signed 1.31 format
 #define FIFO_LEVEL_B_COEFF                  (INT_MAX - FIFO_LEVEL_A_COEFF)
 
-#define RANDOMISATION_PERCENT               50 //How much noise to inject in percent of existing signal amplitude
+#define RANDOMISATION_PERCENT               20 //How much radnom noise to inject in percent of existing signal amplitude
 #define RANDOMISATION_COEFF_A               ((INT_MAX / 100) * RANDOMISATION_PERCENT)
 
-#define PID_CONTROL_P_TERM                  6.0
-#define PID_CONTROL_I_TERM                  0.0
-#define PID_CONTROL_D_TERM                  0.0
+#define PID_CALC_OVERHEAD_BITS              6 //Allow large P,I or D constants, up to 2^(this number)
+
+
+#define PID_CONTROL_P_TERM                  10.0
+#define PID_CONTROL_I_TERM                  150.0
+#define PID_CONTROL_D_TERM                  1.0
 
 #define PID_RATE_MULTIPLIER                 SOF_FREQ_HZ
 
-#define PID_CONTROL_P_TERM_COEFF            ((xua_lite_fixed_point_t)(XUA_LIGHT_FIXED_POINT_ONE * (float)PID_CONTROL_P_TERM)) //scale to fixed point
-#define PID_CONTROL_I_TERM_COEFF            ((xua_lite_fixed_point_t)(XUA_LIGHT_FIXED_POINT_ONE * (float)PID_CONTROL_I_TERM / PID_RATE_MULTIPLIER)) //scale to fixed point
-#define PID_CONTROL_D_TERM_COEFF            ((xua_lite_fixed_point_t)(XUA_LIGHT_FIXED_POINT_ONE * (float)PID_CONTROL_D_TERM)) //scale to fixed point
+#define PID_CONTROL_P_TERM_COEFF            ((xua_lite_fixed_point_t)((XUA_LIGHT_FIXED_POINT_ONE >> PID_CALC_OVERHEAD_BITS) * (float)PID_CONTROL_P_TERM)) //scale to fixed point
+#define PID_CONTROL_I_TERM_COEFF            ((xua_lite_fixed_point_t)((XUA_LIGHT_FIXED_POINT_ONE >> PID_CALC_OVERHEAD_BITS) * (float)PID_CONTROL_I_TERM / PID_RATE_MULTIPLIER)) //scale to fixed point
+#define PID_CONTROL_D_TERM_COEFF            ((xua_lite_fixed_point_t)((XUA_LIGHT_FIXED_POINT_ONE >> PID_CALC_OVERHEAD_BITS) * (float)PID_CONTROL_D_TERM * PID_RATE_MULTIPLIER)) //scale to fixed point
 
-#define PID_CALC_OVERHEAD_BITS              6 //Allow large P,I or D constants, up to 2^(this number)
 
 static inline xua_lite_fixed_point_t do_fifo_depth_lowpass_filter(xua_lite_fixed_point_t old, int fifo_depth){
   //we grow from 32b to 64b for intermediate
@@ -95,14 +99,12 @@ void do_rate_control(int fill_level, pid_state_t *pid_state, int *clock_nudge){
 
 
   //Do PID calculation. Note there is an implicit cast back to xua_lite_fixed_point_t before assignment
-  const unsigned pid_mul_r_shift_bits = XUA_LIGHT_FIXED_POINT_FRAC_BITS + PID_CALC_OVERHEAD_BITS;
-  xua_lite_fixed_point_t p_term = (((int64_t) fifo_level_filtered * (int64_t)PID_CONTROL_P_TERM_COEFF)) >> pid_mul_r_shift_bits;
-  xua_lite_fixed_point_t i_term = (((int64_t) pid_state->fifo_level_accum * (int64_t)PID_CONTROL_I_TERM_COEFF)) >> pid_mul_r_shift_bits;
-  xua_lite_fixed_point_t d_term = (((int64_t) fifo_level_delta * (int64_t)PID_CONTROL_D_TERM_COEFF)) >> pid_mul_r_shift_bits;
+  xua_lite_fixed_point_t p_term = (((int64_t) fifo_level_filtered * (int64_t)PID_CONTROL_P_TERM_COEFF)) >> XUA_LIGHT_FIXED_POINT_FRAC_BITS;
+  xua_lite_fixed_point_t i_term = (((int64_t) pid_state->fifo_level_accum * (int64_t)PID_CONTROL_I_TERM_COEFF)) >> XUA_LIGHT_FIXED_POINT_FRAC_BITS;
+  xua_lite_fixed_point_t d_term = (((int64_t) fifo_level_delta * (int64_t)PID_CONTROL_D_TERM_COEFF)) >> XUA_LIGHT_FIXED_POINT_FRAC_BITS;
 
   //debug_printf("p: %d i: %d f: %d\n", p_term >> XUA_LIGHT_FIXED_POINT_Q_BITS, i_term >> XUA_LIGHT_FIXED_POINT_Q_BITS, fill_level_wrt_half);
   //printf("p: %f i: %f d: %f filtered: %f integrated: %f\n", (float)p_term / (1<<(XUA_LIGHT_FIXED_POINT_FRAC_BITS-PID_CALC_OVERHEAD_BITS)), (float)i_term / (1<<(XUA_LIGHT_FIXED_POINT_FRAC_BITS-PID_CALC_OVERHEAD_BITS)), (float)d_term / (1<<(XUA_LIGHT_FIXED_POINT_FRAC_BITS-PID_CALC_OVERHEAD_BITS)), (float)fifo_level_filtered/(1<<XUA_LIGHT_FIXED_POINT_FRAC_BITS), (float)pid_state->fifo_level_accum/(1<<XUA_LIGHT_FIXED_POINT_FRAC_BITS));
-
 
   //Sum and scale to +- 1.0 (important it does not exceed these values for following step)
   xua_lite_fixed_point_t controller_out = (p_term + i_term + d_term) >> (XUA_LIGHT_FIXED_POINT_Q_BITS - 1 - PID_CALC_OVERHEAD_BITS);
@@ -130,7 +132,7 @@ void do_rate_control(int fill_level, pid_state_t *pid_state, int *clock_nudge){
   pid_state->fifo_level_filtered_old = fifo_level_filtered;
   //debug_printf("filtered: %d raw: %d\n", fifo_level_filtered >> 22, fill_level_wrt_half);
 
-  static unsigned counter; counter++; if (counter>100){counter = 0; debug_printf("f: %d\n",fill_level_wrt_half);}
+  static unsigned counter; counter++; if (counter>100){counter = 0; debug_printf("f: %d\n",fifo_level_filtered >> (XUA_LIGHT_FIXED_POINT_FRAC_BITS - 10));}
 }
 
 
