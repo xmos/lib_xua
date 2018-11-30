@@ -10,7 +10,11 @@ typedef struct pid_state_t{
 
 
 //USB Adaptive mode helper
-void do_rate_control(int fill_level, pid_state_t *pid_state, int *clock_nudge);
+xua_lite_fixed_point_t do_rate_control(int fill_level, pid_state_t *pid_state);
+
+//PDM modulator for clock control
+void do_clock_nudge_pdm(xua_lite_fixed_point_t controller_out, int *clock_nudge);
+
 
 //USB Asynch mode helper
 void do_feedback_calculation(unsigned &sof_count, const unsigned mclk_hz, unsigned mclk_port_counter,unsigned &mclk_port_counter_old

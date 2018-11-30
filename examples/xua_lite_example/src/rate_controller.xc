@@ -11,7 +11,7 @@
 #define XUA_LIGHT_FIXED_POINT_ONE           (1 << XUA_LIGHT_FIXED_POINT_FRAC_BITS)
 #define XUA_LIGHT_FIXED_POINT_MINUS_ONE     (-XUA_LIGHT_FIXED_POINT_ONE)
 
-#define FIFO_LEVEL_EMA_COEFF                0.949 //Proportion of signal from y[-1].
+#define FIFO_LEVEL_EMA_COEFF                0.939 //Proportion of signal from y[-1].
                                                   //0.939 gives ~10Hz 3db cutoff low pass filter for filter rate of 1kHz
                                                   //dsp.stackexchange.com/questions/40462/exponential-moving-average-cut-off-frequency/40465
 #define FIFO_LEVEL_A_COEFF                  ((int32_t)(INT_MAX * FIFO_LEVEL_EMA_COEFF)) //Scale to signed 1.31 format
@@ -20,7 +20,7 @@
 #define RANDOMISATION_PERCENT               20 //How much radnom noise to inject in percent of existing signal amplitude
 #define RANDOMISATION_COEFF_A               ((INT_MAX / 100) * RANDOMISATION_PERCENT)
 
-#define PID_CALC_OVERHEAD_BITS              6 //Allow large P,I or D constants, up to 2^(this number)
+#define PID_CALC_OVERHEAD_BITS              2 //Allow large P,I or D constants, up to 2^(this number)
 
 
 #define PID_CONTROL_P_TERM                  10.0
@@ -58,8 +58,33 @@ static inline xua_lite_fixed_point_t add_noise(xua_lite_fixed_point_t input){
   return (xua_lite_fixed_point_t)( output_64 >> (64 - XUA_LIGHT_FIXED_POINT_TOTAL_BITS - 1));
 }
 
+//Convert the control input into a pdm output (dither) with optional noise 
+void do_clock_nudge_pdm(xua_lite_fixed_point_t controller_out, int *clock_nudge){
+
+  //Randomise - add a proportion of rectangular probability distribution noise to spread the spectrum
+  controller_out = add_noise(controller_out);
+
+  //Convert to pulse density modulation (sigma-delta)
+  static xua_lite_fixed_point_t nudge_accumulator = 0;
+  nudge_accumulator += controller_out; //Note no overflow check as if we reach XUA_LIGHT_FIXED_POINT_Q_BITS
+                                       //something is very wrong
+  //printf("co: %d  ratio: %f \n", controller_out, (float)controller_out/XUA_LIGHT_FIXED_POINT_ONE);
+  if (nudge_accumulator >= XUA_LIGHT_FIXED_POINT_ONE){
+    *clock_nudge = 1;
+    nudge_accumulator -= XUA_LIGHT_FIXED_POINT_ONE;
+  }
+  else if (nudge_accumulator <= XUA_LIGHT_FIXED_POINT_MINUS_ONE){
+    nudge_accumulator -= XUA_LIGHT_FIXED_POINT_MINUS_ONE;
+    *clock_nudge = -1;
+  }
+  else{
+    *clock_nudge = 0;
+  }
+}
+
+
 //Do PI control and modulation for adaptive USB audio
-void do_rate_control(int fill_level, pid_state_t *pid_state, int *clock_nudge){
+xua_lite_fixed_point_t do_rate_control(int fill_level, pid_state_t *pid_state){
 
   //We always check the FIFO level after USB has produced a block, and total FIFO size is 2x max, so half full is at 3/4
   const int half_full = ((MAX_OUT_SAMPLES_PER_SOF_PERIOD * 2) * 3) / 4;
@@ -97,42 +122,26 @@ void do_rate_control(int fill_level, pid_state_t *pid_state, int *clock_nudge){
   //which is already scaled to fit within the fixed point representation
   xua_lite_fixed_point_t fifo_level_delta = fifo_level_filtered - pid_state->fifo_level_filtered_old;
 
+  //Save to struct for next iteration
+  pid_state->fifo_level_filtered_old = fifo_level_filtered;
 
   //Do PID calculation. Note there is an implicit cast back to xua_lite_fixed_point_t before assignment
   xua_lite_fixed_point_t p_term = (((int64_t) fifo_level_filtered * (int64_t)PID_CONTROL_P_TERM_COEFF)) >> XUA_LIGHT_FIXED_POINT_FRAC_BITS;
   xua_lite_fixed_point_t i_term = (((int64_t) pid_state->fifo_level_accum * (int64_t)PID_CONTROL_I_TERM_COEFF)) >> XUA_LIGHT_FIXED_POINT_FRAC_BITS;
   xua_lite_fixed_point_t d_term = (((int64_t) fifo_level_delta * (int64_t)PID_CONTROL_D_TERM_COEFF)) >> XUA_LIGHT_FIXED_POINT_FRAC_BITS;
 
-  //debug_printf("p: %d i: %d f: %d\n", p_term >> XUA_LIGHT_FIXED_POINT_Q_BITS, i_term >> XUA_LIGHT_FIXED_POINT_Q_BITS, fill_level_wrt_half);
+  //debug_printf("p: %d i: %d f: %d\n", p_term >> XUA_LIGHT_FIXED_POINT_Q_BITS, i_term >> XUA_LIGHT_FIXED_POINT_Q_BITS, fifo_level_filtered >> (XUA_LIGHT_FIXED_POINT_FRAC_BITS - 10));
   //printf("p: %f i: %f d: %f filtered: %f integrated: %f\n", (float)p_term / (1<<(XUA_LIGHT_FIXED_POINT_FRAC_BITS-PID_CALC_OVERHEAD_BITS)), (float)i_term / (1<<(XUA_LIGHT_FIXED_POINT_FRAC_BITS-PID_CALC_OVERHEAD_BITS)), (float)d_term / (1<<(XUA_LIGHT_FIXED_POINT_FRAC_BITS-PID_CALC_OVERHEAD_BITS)), (float)fifo_level_filtered/(1<<XUA_LIGHT_FIXED_POINT_FRAC_BITS), (float)pid_state->fifo_level_accum/(1<<XUA_LIGHT_FIXED_POINT_FRAC_BITS));
 
   //Sum and scale to +- 1.0 (important it does not exceed these values for following step)
   xua_lite_fixed_point_t controller_out = (p_term + i_term + d_term) >> (XUA_LIGHT_FIXED_POINT_Q_BITS - 1 - PID_CALC_OVERHEAD_BITS);
 
-  //Randomise - add a proportion of rectangular probability distribution noise to spread the spectrum
-  controller_out = add_noise(controller_out);
 
-  //Convert to pulse density modulation (sigma-delta)
-  static xua_lite_fixed_point_t nudge_accumulator = 0;
-  nudge_accumulator += controller_out; //Note no overflow check as if we reach XUA_LIGHT_FIXED_POINT_Q_BITS
-                                       //something is very wrong
-  //printf("co: %d  ratio: %f \n", controller_out, (float)controller_out/XUA_LIGHT_FIXED_POINT_ONE);
-  if (nudge_accumulator >= XUA_LIGHT_FIXED_POINT_ONE){
-    *clock_nudge = 1;
-    nudge_accumulator -= XUA_LIGHT_FIXED_POINT_ONE;
-  }
-  else if (nudge_accumulator <= XUA_LIGHT_FIXED_POINT_MINUS_ONE){
-    nudge_accumulator -= XUA_LIGHT_FIXED_POINT_MINUS_ONE;
-    *clock_nudge = -1;
-  }
-  else{
-    *clock_nudge = 0;
-  }
-
-  pid_state->fifo_level_filtered_old = fifo_level_filtered;
   //debug_printf("filtered: %d raw: %d\n", fifo_level_filtered >> 22, fill_level_wrt_half);
 
-  static unsigned counter; counter++; if (counter>100){counter = 0; debug_printf("f: %d\n",fifo_level_filtered >> (XUA_LIGHT_FIXED_POINT_FRAC_BITS - 10));}
+  //static unsigned counter; counter++; if (counter>100){counter = 0; debug_printf("pid: %d\n",i_term >> (XUA_LIGHT_FIXED_POINT_FRAC_BITS - 10));}
+  debug_printf("co: %d\n", controller_out >> XUA_LIGHT_FIXED_POINT_FRAC_BITS);
+  return controller_out;
 }
 
 

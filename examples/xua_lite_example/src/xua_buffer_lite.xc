@@ -141,7 +141,7 @@ unsafe void XUA_Buffer_lite(chanend c_ep0_out, chanend c_ep0_in, chanend c_aud_o
         num_samples_to_send_to_host = num_samples_received_from_host;
         
         int fill_level = fifo_get_fill_short(host_to_device_fifo_ptr);
-        if (isnull(c_feedback)) do_rate_control(fill_level, &pid_state, &clock_nudge);
+        if (isnull(c_feedback))  do_clock_nudge_pdm(do_rate_control(fill_level, &pid_state), &clock_nudge);
 
         //Mark EP as ready for next frame from host
         XUD_SetReady_OutPtr(ep_aud_out, (unsigned)buffer_aud_out.long_words);
@@ -315,7 +315,7 @@ unsafe void XUA_Buffer_lite2(server ep0_control_if i_ep0_ctl, chanend c_aud_out,
         num_samples_to_send_to_host = num_samples_received_from_host;
         
         int fill_level = fifo_get_fill_short(host_to_device_fifo_ptr);
-        if (isnull(c_feedback)) do_rate_control(fill_level, &pid_state, &clock_nudge);
+        if (isnull(c_feedback))  do_clock_nudge_pdm(do_rate_control(fill_level, &pid_state), &clock_nudge);
 
         //Mark EP as ready for next frame from host
         XUD_SetReady_OutPtr(ep_aud_out, (unsigned)buffer_aud_out.long_words);
