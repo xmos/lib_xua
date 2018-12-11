@@ -19,7 +19,6 @@ def use_module(bld):
 
     bld.env['XCC_FLAGS_endpoint0.c'] = bld.env.XCC_FLAGS + ['-Os', '-mno-dual-issue']
     bld.env['XCC_FLAGS_dbcalc.xc'] = bld.env.XCC_FLAGS + ['-Os', '-mno-dual-issue']
-    bld.env['XCC_FLAGS_audiorequests.xc'] = bld.env.XCC_FLAGS + ['-Os', '-mno-dual-issue']
     bld.env['XCC_FLAGS_flashlib_user.c'] = bld.env.XCC_FLAGS + ['-Os', '-mno-dual-issue']
     bld.env['XCC_FLAGS_audioports.c'] = bld.env.XCC_FLAGS + ['-Os', '-mno-dual-issue']
     bld.env['XCC_FLAGS_audioports.xc'] = bld.env.XCC_FLAGS + ['-Os', '-mno-dual-issue']
