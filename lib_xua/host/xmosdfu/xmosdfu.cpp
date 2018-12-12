@@ -2,6 +2,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#ifdef _WIN32
+#include <windows.h>
+#else
+#include <unistd.h>
+
+void Sleep(unsigned milliseconds) {
+    usleep(milliseconds * 1000);
+}
+#endif
+
 #include "libusb.h"
 
 /* the device's vendor and product id */
@@ -501,7 +511,7 @@ int main(int argc, char **argv)
         printf("Waiting for device to restart and enter DFU mode...\n");
 
         // Wait for device to enter dfu mode and restart
-        system("sleep 20");
+        Sleep(20 * 1000);
 #endif
 
         // NOW IN DFU APPLICATION MODE
@@ -556,7 +566,7 @@ int main(int argc, char **argv)
             printf("... Reverting device to factory image\n");
             xmos_dfu_revertfactory();
             // Give device time to revert firmware
-            system("sleep 2");
+            Sleep(2 * 1000);
             xmos_dfu_resetfromdfu(XMOS_DFU_IF);
         }
         else
