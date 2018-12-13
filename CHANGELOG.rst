@@ -20,6 +20,8 @@ lib_xua Change Log
 
     - lib_spdif: Added dependency 3.0.0
 
+    - lib_xassert: Added dependency 3.0.1
+
 0.1.2
 -----
 
