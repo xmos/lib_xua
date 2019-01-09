@@ -1,6 +1,11 @@
 lib_xua Change Log
 ==================
 
+0.2.1
+-----
+
+  * FIXED: reset tile in case second highest PLL register bit is set to 1
+
 0.2.0
 -----
 
