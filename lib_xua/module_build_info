@@ -17,6 +17,8 @@ VERSION = 0.2.0
 
 DEPENDENT_MODULES = lib_logging(>=2.1.0) lib_xassert(>=2.0.0) lib_xud(>=0.1.0) lib_spdif(>=3.0.0)
 
+INCLUDE_DIRS = api src/*
+
 #ignore host dir
 SOURCE_DIRS = src/*
 
