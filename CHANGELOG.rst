@@ -15,6 +15,7 @@ lib_xua Change Log
   * RESOLVED:  wChannelConfig in UAC1 descriptor set according to output channel
     count
   * RESOLVED:  Indexing of ADAT channel strings (#18059)
+  * RESOLVED:  Rebooting device fails when PLL config "not reset" bit is set 
 
   * Changes to dependencies:
 
