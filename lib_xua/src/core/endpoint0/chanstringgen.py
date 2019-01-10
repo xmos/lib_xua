@@ -1,3 +1,4 @@
+# Copyright (c) 2015-2018, XMOS Ltd, All rights reserved
 
 
 def genstrings(outputChanCount, chanString, portString, structureString, adc_dac):

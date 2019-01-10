@@ -1,4 +1,5 @@
 #!/usr/bin/env python2.7
+# Copyright (c) 2018, XMOS Ltd, All rights reserved
 import xmostest
 import os.path
 
