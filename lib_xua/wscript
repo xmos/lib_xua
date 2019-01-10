@@ -32,4 +32,4 @@ def use_module(bld):
         depends_on=depends_on,
         includes=['api'],
         optional_headers='xua_conf.h',
-        version='0.2.1')
+        version='0.2.0')
