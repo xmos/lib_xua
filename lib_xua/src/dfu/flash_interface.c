@@ -3,6 +3,7 @@
 #include <flash.h>
 #include <flashlib.h>
 #include <string.h>
+#include <print.h>
 #include <xclib.h>
 
 #include "xua.h"
@@ -23,7 +24,11 @@
 #define FLASH_MAX_UPGRADE_SIZE (128 * 1024)
 #endif
 
-#define FLASH_ERROR() do {} while(0)
+#if DFU_DEBUG
+#define FLASH_ERROR() __builtin_trap()
+#else
+#define FLASH_ERROR() do {} while (0)
+#endif
 
 static int flash_device_open = 0;
 static fl_BootImageInfo factory_image;
@@ -58,6 +63,9 @@ void DFUCustomFlashDisable()
 /* Returns non-zero for error */
 int flash_cmd_init(void)
 {
+#if DFU_DEBUG
+    printstr("flash_cmd_init\n");
+#endif
     fl_BootImageInfo image;
 
     if (!flash_device_open)
@@ -78,13 +86,22 @@ int flash_cmd_init(void)
 
     if (fl_getFactoryImage(&image) != 0)
     {
+#if DFU_DEBUG
+        printstr("fl_getFactoryImage !0\n");
+#endif
         return 1;
     }
+#if DFU_DEBUG
+    printstr("fl_getFactoryImage 0\n");
+#endif
 
     factory_image = image;
 
     if (fl_getNextBootImage(&image) == 0)
     {
+#if DFU_DEBUG
+        printstr("fl_getNextBootImage 0\n");
+#endif
         upgrade_image_valid = 1;
         upgrade_image = image;
     }
@@ -148,6 +165,9 @@ static void begin_write()
     {
         result = fl_startImageAdd(&factory_image, FLASH_MAX_UPGRADE_SIZE, 0);
     } while (result > 0);
+#if DFU_DEBUG
+    printstr("fl_startImageAdd done\n");
+#endif
 
     if (result < 0)
         FLASH_ERROR();
@@ -179,10 +199,16 @@ int flash_cmd_write_page(unsigned char *data)
             if (fl_endWriteImage() != 0)
                 FLASH_ERROR();
 
+#if DFU_DEBUG
+            printstr("fl_endWriteImage done\n");
+#endif
             // Sanity check
             fl_BootImageInfo image = factory_image;
             if (fl_getNextBootImage(&image) != 0)
                 FLASH_ERROR();
+#if DFU_DEBUG
+            printstr("fl_getNextBootImage 0\n");
+#endif
             break;
     }
     current_flash_subpage_index = 0;
@@ -210,9 +236,18 @@ int flash_cmd_write_page_data(unsigned char *data)
 
     if (current_flash_subpage_index == 4)
     {
-        if (fl_writeImagePage(current_flash_page_data) != 0)
-            FLASH_ERROR();
+        int ret = fl_writeImagePage(current_flash_page_data);
+#if DFU_DEBUG
+        printstr("fl_writeImagePage 0x");
+        printhex(current_flash_page_data[0]);
+        printstr(" 0x");
+        printhex(current_flash_page_data[255]);
+        printstr(" ");
+        printintln(ret);
+#endif
         pages_written++;
+        if (ret != 0)
+            FLASH_ERROR();
     }
 
     return 0;
@@ -220,6 +255,9 @@ int flash_cmd_write_page_data(unsigned char *data)
 
 int flash_cmd_erase_all(void)
 {
+#if DFU_DEBUG
+    printstr("flash_cmd_erase_all\n");
+#endif
     fl_BootImageInfo tmp_image = upgrade_image;
 
     if (upgrade_image_valid)
