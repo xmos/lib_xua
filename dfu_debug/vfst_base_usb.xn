@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Network xmlns="http://www.xmos.com"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://www.xmos.com http://www.xmos.com">
+  <Type>Board</Type>
+  <Name>Mic Array Motherboard - Quad Tile - 167BGA</Name>
+
+  <Declarations>
+    <Declaration>tileref tile[4]</Declaration>
+    <Declaration>tileref usb_tile</Declaration>
+  </Declarations>
+
+  <Packages>
+    <Package id="0" Type="XS2-UFnA-1024-FB374">
+      <Nodes>
+        <Node Id="0" InPackageId="0" Type="XS2-L16A-512" SystemFrequency="500MHz" OscillatorSrc="1">
+          <Boot>
+            <Source Location="bootFlash0"/>
+            <Bootee NodeId="2"/>
+          </Boot>
+          <Tile Number="0" Reference="tile[0]">
+            <!-- QSPI Flash -->  
+            <Port Location="XS1_PORT_1B" Name="PORT_SQI_CS_0"/>
+            <Port Location="XS1_PORT_1C" Name="PORT_SQI_SCLK_0"/>
+            <Port Location="XS1_PORT_4B" Name="PORT_SQI_SIO_0"/>
+          </Tile>
+          <Tile Number="1" Reference="tile[1]">
+            <!-- USB -->
+            <Port Location="XS1_PORT_1H"  Name="PORT_USB_TX_READYIN"/>
+            <Port Location="XS1_PORT_1J"  Name="PORT_USB_CLK"/>
+            <Port Location="XS1_PORT_1K"  Name="PORT_USB_TX_READYOUT"/>
+            <Port Location="XS1_PORT_1I"  Name="PORT_USB_RX_READY"/>
+            <Port Location="XS1_PORT_1E"  Name="PORT_USB_FLAG0"/>
+            <Port Location="XS1_PORT_1F"  Name="PORT_USB_FLAG1"/>
+            <Port Location="XS1_PORT_1G"  Name="PORT_USB_FLAG2"/>
+            <Port Location="XS1_PORT_8A"  Name="PORT_USB_TXD"/>
+            <Port Location="XS1_PORT_8B"  Name="PORT_USB_RXD"/>
+            <Port Location="XS1_PORT_16B" Name="PORT_MCLK_COUNT"/>
+            <Port Location="XS1_PORT_1C"  Name="PORT_MCLK_IN2"/>
+          </Tile>
+        </Node>
+        <Node Id="2" InPackageId="2" Type="XS2-L16A-512" SystemFrequency="500MHz" OscillatorSrc="1">
+          <Boot>
+            <Source Location="LINK" BootMode="4"/>
+          </Boot>
+          <Tile Number="0" Reference="tile[2]">
+            <!-- Audio Ports -->
+            <Port Location="XS1_PORT_1G"  Name="PORT_MCLK_IN"/>
+            <Port Location="XS1_PORT_1L"  Name="PORT_I2S_LRCLK"/>
+            <Port Location="XS1_PORT_1M"  Name="PORT_I2S_BCLK"/>
+            <Port Location="XS1_PORT_1K"  Name="PORT_I2S_DAC0"/>
+            <Port Location="XS1_PORT_1E"  Name="PORT_I2S_ADC0"/>
+            <!-- Mics -->
+            <Port Location="XS1_PORT_1H" Name="PORT_PDM_CLK"/>
+            <Port Location="XS1_PORT_8B" Name="PORT_PDM_DATA"/>
+            <Port Location="XS1_PORT_1G" Name="PORT_PDM_MCLK"/> <!-- overlap with PORT_MCLK_IN -->
+          </Tile>
+          <Tile Number="1" Reference="tile[3]">
+            <!-- LED ports -->
+            <Port Location="XS1_PORT_1A" Name="PORT_LED_STCP"/>
+            <Port Location="XS1_PORT_1B" Name="PORT_LED_SHCP"/>
+            <Port Location="XS1_PORT_1E" Name="PORT_LED_DATA"/>
+            <Port Location="XS1_PORT_1F" Name="PORT_LED_OE_N"/>
+          </Tile>
+        </Node>
+        <Node Id="1" InPackageId="1" Type="periph:XS1-SU" Reference="usb_tile" Oscillator="24MHz">
+        </Node>
+      </Nodes>
+      <Links>
+        <Link Encoding="5wire" Delays="3clk">
+          <LinkEndpoint NodeId="0" Link="7"/>
+          <LinkEndpoint NodeId="2" Link="0"/>
+        </Link>
+        <Link Encoding="5wire" Delays="3clk">
+          <LinkEndpoint NodeId="0" Link="4"/>
+          <LinkEndpoint NodeId="2" Link="3"/>
+        </Link>
+        <Link Encoding="5wire" Delays="3clk">
+          <LinkEndpoint NodeId="0" Link="6"/>
+          <LinkEndpoint NodeId="2" Link="1"/>
+        </Link>
+        <Link Encoding="5wire" Delays="3clk">
+          <LinkEndpoint NodeId="0" Link="5"/>
+          <LinkEndpoint NodeId="2" Link="2"/>
+        </Link>
+        <Link Encoding="5wire">
+          <LinkEndpoint NodeId="0" Link="8" Delays="52clk,52clk"/>
+          <LinkEndpoint NodeId="1" Link="XL0" Delays="1clk,1clk"/>
+        </Link>
+      </Links>
+    </Package>
+  </Packages>
+  
+  <Nodes>
+    <Node Id="3" Type="device:" RoutingId="0x8000">
+      <Service Id="0" Proto="xscope_host_data(chanend c);">
+        <Chanend Identifier="c" end="3"/>
+      </Service>
+    </Node>
+  </Nodes>
+  
+  <Links>
+    <Link Encoding="2wire" Delays="4,4" Flags="XSCOPE">
+      <LinkEndpoint NodeId="0" Link="XL0"/>
+      <LinkEndpoint NodeId="3" Chanend="1"/>
+    </Link>
+  </Links>
+
+  <ExternalDevices>
+    <Device NodeId="0" Tile="0" Class="SQIFlash" Name="bootFlash0">
+      <Attribute Name="PORT_SQI_CS" Value="PORT_SQI_CS_0"/>
+      <Attribute Name="PORT_SQI_SCLK" Value="PORT_SQI_SCLK_0"/>
+      <Attribute Name="PORT_SQI_SIO" Value="PORT_SQI_SIO_0"/>
+    </Device>
+  </ExternalDevices>
+
+  <JTAGChain>
+    <JTAGDevice NodeId="0"/>
+    <JTAGDevice NodeId="2"/>
+  </JTAGChain>
+
+</Network>
