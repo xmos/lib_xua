@@ -88,7 +88,7 @@ void XUA_PdmBuffer(streaming chanend c_ds_output[2], chanend c_audio)
         fir_coefs[6] = g_third_stage_div_12_fir;
 
         //dcc = {MIC_ARRAY_MAX_FRAME_SIZE_LOG2, 1, 0, 0, decimationfactor, fir_coefs[decimationfactor/2], 0, 0, DECIMATOR_NO_FRAME_OVERLAP, 2};
-        dcc.frame_size_log2 = MIC_ARRAY_MAX_FRAME_SIZE_LOG2;
+        dcc.len = MIC_ARRAY_MAX_FRAME_SIZE_LOG2;
         dcc.apply_dc_offset_removal = 1;
         dcc.index_bit_reversal = 0;
         dcc.windowing_function = null;

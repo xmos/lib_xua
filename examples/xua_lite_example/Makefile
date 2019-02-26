@@ -10,7 +10,7 @@ XCC_FLAGS	= -fcomment-asm -Xmapper --map -Xmapper MAPFILE -Os -report \
 # The USED_MODULES variable lists other module used by the application. These
 # modules will extend the SOURCE_DIRS, INCLUDE_DIRS and LIB_DIRS variables.
 # Modules are expected to be in the directory above the BASE_DIR directory.
-USED_MODULES = lib_xua lib_i2s lib_xud lib_i2c lib_mic_array_ddr
+USED_MODULES = lib_xua lib_i2s lib_xud lib_i2c lib_mic_array
 
 #=============================================================================
 # The following part of the Makefile includes the common build infrastructure

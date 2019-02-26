@@ -35,7 +35,7 @@ void mic_array_decimator_set_samprate(const unsigned samplerate, int mic_decimat
         fir_coefs[6] = (int * unsafe)g_third_stage_div_12_fir;
 
         //dcc = {MIC_ARRAY_MAX_FRAME_SIZE_LOG2, 1, 0, 0, decimationfactor, fir_coefs[decimationfactor/2], 0, 0, DECIMATOR_NO_FRAME_OVERLAP, 2};
-        dcc->frame_size_log2 = MIC_ARRAY_MAX_FRAME_SIZE_LOG2;
+        dcc->len = MIC_ARRAY_MAX_FRAME_SIZE_LOG2;
         dcc->apply_dc_offset_removal = 1;
         dcc->index_bit_reversal = 0;
         dcc->windowing_function = null;
@@ -73,17 +73,24 @@ void pdm_mic(streaming chanend c_ds_output, in buffered port:32 p_pdm_mics)
     }
 }
 
-void mic_array_setup_ddr_xcore(clock pdmclk,
+void mic_array_setup_ddr(clock pdmclk,
                          clock pdmclk6,
+                         in port p_mclk, /*used only in I2S slave case*/
                          out port p_pdm_clk,
                          buffered in port:32 p_pdm_data,
                          int divide) {
-    configure_clock_xcore(pdmclk, 80);
-    //configure_clock_src_divide(pdmclk, p_mclk, divide/2);
 
-    configure_clock_xcore(pdmclk6, 40);
-    //configure_clock_src_divide(pdmclk6, p_mclk, divide/4);
-    
+
+#if !XUA_ADAPTIVE //i2s slave
+    //p_mclk coming from the Pi is 24.576 MHz
+    configure_clock_src_divide(pdmclk, p_mclk, 4); //3.072 = 24.576 / 8
+    configure_clock_src_divide(pdmclk6, p_mclk, 2); //6.144 = 24.576 / 4
+
+#else
+    configure_clock_xcore(pdmclk, 80); // 3.072
+    configure_clock_xcore(pdmclk6, 40); // 6.144
+#endif
+
     configure_port_clock_output(p_pdm_clk, pdmclk);
     configure_in_port(p_pdm_data, pdmclk6);
 

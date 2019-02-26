@@ -1,3 +1,4 @@
+#include <string.h>
 #include "i2s.h"
 #include "i2c.h"
 #include "xua.h"
@@ -34,6 +35,8 @@ void AudioHub(server i2s_frame_callback_if i2s,
   mic_array_decimator_configure(c_ds_output, decimatorCount, dc);
   mic_array_init_time_domain_frame(c_ds_output, decimatorCount, buffer, mic_audio_frame, dc);
 
+  // Used for debug
+  //int saw = 0;
 
   while (1) {
     select {
@@ -57,7 +60,7 @@ void AudioHub(server i2s_frame_callback_if i2s,
     case i2s.restart_check() -> i2s_restart_t restart:
       restart = I2S_NO_RESTART; // Keep on looping
       timer tmr; int t0, t1; tmr :> t0;
-      
+
       //Transfer samples. Takes about 25 ticks
       for (int i = 0; i < NUM_USB_CHAN_OUT; i++) c_audio :> samples_out[i];
       if (XUA_ADAPTIVE) c_audio :> clock_nudge;
@@ -69,6 +72,9 @@ void AudioHub(server i2s_frame_callback_if i2s,
       unsafe {
           for (int i = 0; i < XUA_NUM_PDM_MICS; i++) raw_mics[i] = current->data[i][0];
       }
+
+      //memset(raw_mics, saw, sizeof(int) * XUA_NUM_PDM_MICS);
+      //saw += 500;
 
       //Taking about 160 ticks when adjusting, 100 when not
       tmr :> t0;

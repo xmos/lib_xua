@@ -11,7 +11,7 @@
 #include "i2s.h"
 #include "i2c.h"
 #include "mic_array.h"
-#include "XUA_Buffer_lite.h"
+#include "xua_buffer_lite.h"
 #include "xua_ep0_wrapper.h"
 #include "pdm_mic.h"
 #include "audio_config.h"
@@ -96,12 +96,11 @@ int main()
             c_audio :> int _;   //Now wait until i2c has finished mclk setup
             
             const unsigned micDiv = MCLK_48/3072000;
-            if (XUA_ADAPTIVE) mic_array_setup_ddr_xcore(pdmclk, pdmclk6, p_pdm_clk, p_pdm_mics, micDiv);
-            else mic_array_setup_ddr(pdmclk, pdmclk6, p_mclk_in, p_pdm_clk, p_pdm_mics, micDiv);
+            mic_array_setup_ddr(pdmclk, pdmclk6, p_mclk_in, p_pdm_clk, p_pdm_mics, micDiv);
 
             par {
                 i2s_frame_master(i_i2s, p_i2s_dac, 1, p_i2s_adc, 1, p_bclk, p_lrclk, p_mclk_in, clk_audio_bclk);
-                [[distribute]]AudioHub(i_i2s, c_audio, c_ds_output);
+                [[distribute]] AudioHub(i_i2s, c_audio, c_ds_output);
                 pdm_mic(c_ds_output[0], p_pdm_mics);
 
                 par (int i = 0; i < 5; i++) burn_normal_priority();

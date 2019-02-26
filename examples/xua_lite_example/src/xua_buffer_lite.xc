@@ -27,6 +27,7 @@ void XUD_GetSetupData_Select(chanend c, XUD_ep e_out, unsigned &length, XUD_Resu
 extern XUD_ep ep0_out;
 extern XUD_ep ep0_in;
 
+#if 0
 //Unsafe to allow us to use fifo API without local unsafe scope
 unsafe void XUA_Buffer_lite(chanend c_ep0_out, chanend c_ep0_in, chanend c_aud_out, chanend ?c_feedback, chanend c_aud_in, chanend c_sof, in port p_for_mclk_count, streaming chanend c_audio_hub) {
 
@@ -197,6 +198,7 @@ unsafe void XUA_Buffer_lite(chanend c_ep0_out, chanend c_ep0_in, chanend c_aud_o
     }
   }
 }
+#endif
 extern port p_sda;
 
 [[combinable]]
@@ -336,7 +338,11 @@ unsafe void XUA_Buffer_lite2(server ep0_control_if i_ep0_ctl, chanend c_aud_out,
       timer tmr; int t0, t1; tmr :> t0;
 
         //If host is not streaming out, then send a fixed number of samples to host
-        if (output_interface_num == 0) num_samples_to_send_to_host = (DEFAULT_FREQ  / SOF_FREQ_HZ) * NUM_USB_CHAN_IN;
+        if (output_interface_num == 0) {
+            num_samples_to_send_to_host = (DEFAULT_FREQ  / SOF_FREQ_HZ) * NUM_USB_CHAN_IN;
+            int fill_level = fifo_get_fill_short(device_to_host_fifo_ptr);
+            if (isnull(c_feedback))  do_clock_nudge_pdm(-do_rate_control(fill_level, &pid_state), &clock_nudge);
+        }
 
         fifo_ret_t ret = fifo_block_pop_short_fast(device_to_host_fifo_ptr, buffer_aud_in.short_words, num_samples_received_from_host);
         if (ret != FIFO_SUCCESS) {
@@ -349,7 +355,7 @@ unsafe void XUA_Buffer_lite2(server ep0_control_if i_ep0_ctl, chanend c_aud_out,
         //Use the number of samples we received last time so we are always balanced (assumes same in/out count)
     
         unsigned input_buffer_size = num_samples_to_send_to_host * in_subslot_size;
-        XUD_SetReady_InPtr(ep_aud_in, (unsigned)buffer_aud_in.long_words, input_buffer_size); //loopback
+        XUD_SetReady_InPtr(ep_aud_in, (unsigned) buffer_aud_in.long_words, input_buffer_size); //loopback
         num_samples_to_send_to_host = 0;
         //tmr :> t1; debug_printf("i%d\n", t1 - t0);
       break;
