@@ -15,7 +15,7 @@ typedef enum fifo_ret_t {
 //
 //Note that the actual storage for the FIFO is declared externally
 //and a reference to the base address of the storage is passed in along
-//with the size of the storage. This way, multiple instances may be 
+//with the size of the storage. This way, multiple instances may be
 //different sizes.
 //
 /////////////////////////////////////////////////////////////////////////

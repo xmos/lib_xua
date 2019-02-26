@@ -58,7 +58,7 @@ static inline xua_lite_fixed_point_t add_noise(xua_lite_fixed_point_t input){
   return (xua_lite_fixed_point_t)( output_64 >> (64 - XUA_LIGHT_FIXED_POINT_TOTAL_BITS - 1));
 }
 
-//Convert the control input into a pdm output (dither) with optional noise 
+//Convert the control input into a pdm output (dither) with optional noise
 void do_clock_nudge_pdm(xua_lite_fixed_point_t controller_out, int *clock_nudge){
 
   //Randomise - add a proportion of rectangular probability distribution noise to spread the spectrum
@@ -96,7 +96,7 @@ xua_lite_fixed_point_t do_rate_control(int fill_level, pid_state_t *pid_state){
 
   //Calculate the value for the integral term which is the accumulated fill level error
   xua_lite_fixed_point_t i_term_pre_clip = pid_state->fifo_level_accum + fifo_level_filtered;
-  
+
   //clip the I term (which can wind up) to maximum fixed point representation. Check to see if overflow (which will change sign)
   if (fifo_level_filtered >= 0){ //If it was positive before, ensure it still is else clip to positive
     if (i_term_pre_clip >= pid_state->fifo_level_accum){
@@ -159,18 +159,18 @@ void do_feedback_calculation(unsigned &sof_count
   // Average over 128 SOFs - 128 x 3072 = 0x60000.
 
   unsigned long long feedbackMul = 64ULL;
-  if(AUDIO_CLASS == 1) feedbackMul = 8ULL;  // TODO Use 4 instead of 8 to avoid windows LSB issues? 
+  if(AUDIO_CLASS == 1) feedbackMul = 8ULL;  // TODO Use 4 instead of 8 to avoid windows LSB issues?
 
-  // Number of MCLK ticks in this SOF period (E.g = 125 * 24.576 = 3072) 
+  // Number of MCLK ticks in this SOF period (E.g = 125 * 24.576 = 3072)
   int mclk_ticks_this_sof_period = (int) ((short)(mclk_port_counter - mclk_port_counter_old));
   unsigned long long full_result = mclk_ticks_this_sof_period * feedbackMul * DEFAULT_FREQ;
   feedback_value += full_result;
 
-  // Store MCLK for next time around... 
+  // Store MCLK for next time around...
   mclk_port_counter_old = mclk_port_counter;
 
   // Reset counts based on SOF counting.  Expect 16ms (128 HS SOFs/16 FS SOFS) per feedback poll
-  // We always count 128 SOFs, so 16ms @ HS, 128ms @ FS 
+  // We always count 128 SOFs, so 16ms @ HS, 128ms @ FS
   if(sof_count == 128){
     //debug_printf("fb\n");
     sof_count = 0;

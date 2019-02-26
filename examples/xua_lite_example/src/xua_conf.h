@@ -1,6 +1,6 @@
 // Copyright (c) 2017-2018, XMOS Ltd, All rights reserved
 
-#ifndef _XUA_CONF_H_ 
+#ifndef _XUA_CONF_H_
 #define _XUA_CONF_H_
 
 #define NUM_USB_CHAN_OUT      2     /* Number of channels from host to device */
@@ -18,7 +18,7 @@
 #define VENDOR_ID             0x20B1
 #define PRODUCT_STR_A2        "XUA Lite Class 2"
 #define PRODUCT_STR_A1        "XUA Lite Class 1"
-#define PID_AUDIO_1           1   
+#define PID_AUDIO_1           1
 #define PID_AUDIO_2           2
 #define XUA_DFU_EN            0      /* Disable DFU (for simplicity of example) */
 
@@ -28,7 +28,7 @@
 #define STREAM_FORMAT_OUTPUT_1_RESOLUTION_BITS    16
 
 #define OUTPUT_VOLUME_CONTROL 0
-#define INPUT_VOLUME_CONTROL  0 
+#define INPUT_VOLUME_CONTROL  0
 
 #define UAC_FORCE_FEEDBACK_EP 0
 #define XUA_ADAPTIVE          1

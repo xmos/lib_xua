@@ -112,7 +112,7 @@ static inline fifo_ret_t fifo_block_push_short_fast(volatile mem_fifo_short_t * 
             memcpy(&fifo->data_base_ptr[fifo->write_idx], &data[0], first_block_size * sizeof(short));
             fifo->write_idx += first_block_size;
         }
-        
+
         return FIFO_SUCCESS;
     }
 }
@@ -181,7 +181,7 @@ static inline fifo_ret_t fifo_block_pop_short_fast(volatile mem_fifo_short_t * u
             // printf("no wrap\n");
 
         }
-        
+
         return FIFO_SUCCESS;
     }
 }

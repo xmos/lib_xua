@@ -98,21 +98,21 @@ void AudioHwConfigure(unsigned samFreq, client i2c_master_if i_i2c)
 
     // Wait for 2ms because we apply reset for 1ms from other tile
     delay_milliseconds(2);
-    
+
     // Set register page to 0
     DAC3101_REGWRITE(DAC3101_PAGE_CTRL, 0x00);
     // Initiate SW reset (PLL is powered off as part of reset)
     DAC3101_REGWRITE(DAC3101_SW_RST, 0x01);
-    
+
     // so I've got 24MHz in to PLL, I want 24.576MHz or 22.5792MHz out.
-    
+
     // I will always be using fractional-N (D != 0) so we must set R = 1
     // PLL_CLKIN/P must be between 10 and 20MHz so we must set P = 2
-    
+
     // PLL_CLK = CLKIN * ((RxJ.D)/P)
     // We know R = 1, P = 2.
     // PLL_CLK = CLKIN * (J.D / 2)
-                
+
     // For 24.576MHz:
     // J = 8
     // D = 1920
@@ -125,7 +125,7 @@ void AudioHwConfigure(unsigned samFreq, client i2c_master_if i_i2c)
     // DAC_CLK = PLL_CLK / 4 = 24.576MHz.
     // DAC_MOD_CLK = DAC_CLK / 4 = 6.144MHz.
     // DAC_FS = DAC_MOD_CLK / 128 = 48kHz.
-    
+
     // For 22.5792MHz:
     // J = 7
     // D = 5264
@@ -153,10 +153,10 @@ void AudioHwConfigure(unsigned samFreq, client i2c_master_if i_i2c)
     DAC3101_REGWRITE(DAC3101_PLL_D_LSB, 0x00);
 
     delay_milliseconds(1);
-    
+
     // Set PLL_CLKIN = BCLK (device pin), CODEC_CLKIN = PLL_CLK (generated on-chip)
     DAC3101_REGWRITE(DAC3101_CLK_GEN_MUX, 0x07);
-    
+
     // Set PLL P=1 and R=4 values and power up.
     DAC3101_REGWRITE(DAC3101_PLL_P_R, 0x94);
     // Set NDAC clock divider to 4 and power up.
@@ -197,10 +197,10 @@ void AudioHwConfigure(unsigned samFreq, client i2c_master_if i_i2c)
     }
 
     delay_milliseconds(1);
-    
+
     // Set PLL_CLKIN = MCLK (device pin), CODEC_CLKIN = PLL_CLK (generated on-chip)
     DAC3101_REGWRITE(DAC3101_CLK_GEN_MUX, 0x03);
-    
+
     // Set PLL P and R values and power up.
     DAC3101_REGWRITE(DAC3101_PLL_P_R, 0xA1);
     // Set NDAC clock divider to 4 and power up.
@@ -218,7 +218,7 @@ void AudioHwConfigure(unsigned samFreq, client i2c_master_if i_i2c)
     DAC3101_REGWRITE(DAC3101_CLKOUT_M_VAL, 0x81);
     // Set GPIO1 output to come from CLKOUT output.
     DAC3101_REGWRITE(DAC3101_GPIO1_IO, 0x10);
-    
+
     // Set CODEC interface mode: I2S, 24 bit, slave mode (BCLK, WCLK both inputs).
     DAC3101_REGWRITE(DAC3101_CODEC_IF, 0x20);
     // Set register page to 1
@@ -253,7 +253,7 @@ void AudioHwConfigure(unsigned samFreq, client i2c_master_if i_i2c)
     DAC3101_REGWRITE(DAC3101_SPKL_VOL_A, 0x92);
     // Enable Right Class-D output analog volume, set = -9 dB
     DAC3101_REGWRITE(DAC3101_SPKR_VOL_A, 0x92);
-    
+
     delay_milliseconds(100);
 
     // Power up DAC
@@ -269,7 +269,7 @@ void AudioHwConfigure(unsigned samFreq, client i2c_master_if i_i2c)
     // Unmute digital volume control
     // Unmute DAC left and right channels
     DAC3101_REGWRITE(DAC3101_DAC_VOL, 0x00);
-    
+
     i_i2c.shutdown();
 }
 

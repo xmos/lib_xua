@@ -37,14 +37,14 @@ unsafe void XUA_Buffer_lite(chanend c_ep0_out, chanend c_ep0_in, chanend c_aud_o
   union buffer_aud_out{
     unsigned char bytes[OUT_AUDIO_BUFFER_SIZE_BYTES];
     short short_words[OUT_AUDIO_BUFFER_SIZE_BYTES / 2];
-    long long_words[OUT_AUDIO_BUFFER_SIZE_BYTES / 4];  
+    long long_words[OUT_AUDIO_BUFFER_SIZE_BYTES / 4];
   }buffer_aud_out;
   union buffer_aud_in{
     unsigned char bytes[IN_AUDIO_BUFFER_SIZE_BYTES];
     short short_words[IN_AUDIO_BUFFER_SIZE_BYTES / 2];
-    unsigned long long_words[IN_AUDIO_BUFFER_SIZE_BYTES / 4];  
+    unsigned long long_words[IN_AUDIO_BUFFER_SIZE_BYTES / 4];
   }buffer_aud_in;
-  
+
   unsigned in_subslot_size = (AUDIO_CLASS == 1) ? FS_STREAM_FORMAT_INPUT_1_SUBSLOT_BYTES : HS_STREAM_FORMAT_INPUT_1_SUBSLOT_BYTES;
   unsigned out_subslot_size = (AUDIO_CLASS == 1) ? FS_STREAM_FORMAT_OUTPUT_1_SUBSLOT_BYTES : HS_STREAM_FORMAT_OUTPUT_1_SUBSLOT_BYTES;
 
@@ -54,7 +54,7 @@ unsafe void XUA_Buffer_lite(chanend c_ep0_out, chanend c_ep0_in, chanend c_aud_o
   long long feedback_value = 0;
   unsigned mod_from_last_time = 0;
   const unsigned mclk_hz = MCLK_48;
-  unsigned int fb_clocks[1] = {0}; 
+  unsigned int fb_clocks[1] = {0};
 
   //Adapative device clock control
   int clock_nudge = 0;
@@ -86,7 +86,7 @@ unsafe void XUA_Buffer_lite(chanend c_ep0_out, chanend c_ep0_in, chanend c_aud_o
   XUD_SetReady_InPtr(ep_aud_in, (unsigned)buffer_aud_in.long_words, num_samples_to_send_to_host);
   XUD_SetReady_Out(ep0_out, sbuffer);
   if (!isnull(c_feedback)) XUD_SetReady_InPtr(ep_feedback, (unsigned)fb_clocks, (AUDIO_CLASS == 2) ? 4 : 3);
- 
+
 
   //Send initial samples so audiohub is not blocked
   for (int i = 0; i < 2 * (NUM_USB_CHAN_OUT + (XUA_ADAPTIVE != 0 ? 1 : 0)); i++) c_audio_hub <: 0;
@@ -113,7 +113,7 @@ unsafe void XUA_Buffer_lite(chanend c_ep0_out, chanend c_ep0_in, chanend c_aud_o
 
         debug_printf("ep0, result: %d, length: %d\n", result, length); //-1 reset, 0 ok, 1 error
         USB_ParseSetupPacket(sbuffer, sp); //Parse data buffer end populate SetupPacket struct
-        
+
         XUA_Endpoint0_lite_loop(result, sp, c_ep0_out, c_ep0_in, c_audioControl, null/*mix*/, null/*clk*/, null/*EA*/, dfuInterface, &input_interface_num, &output_interface_num);
         XUD_SetReady_Out(ep0_out, sbuffer);
         tmr :> t1; debug_printf("c%d\n", t1 - t0);
@@ -136,11 +136,11 @@ unsafe void XUA_Buffer_lite(chanend c_ep0_out, chanend c_ep0_in, chanend c_aud_o
       timer tmr; int t0, t1; tmr :> t0;
 
         num_samples_received_from_host = length / out_subslot_size;
-  
+
         fifo_ret_t ret = fifo_block_push_short(host_to_device_fifo_ptr, buffer_aud_out.short_words, num_samples_received_from_host);
         if (ret != FIFO_SUCCESS) debug_printf("h2d full\n");
         num_samples_to_send_to_host = num_samples_received_from_host;
-        
+
         int fill_level = fifo_get_fill_short(host_to_device_fifo_ptr);
         if (isnull(c_feedback))  do_clock_nudge_pdm(do_rate_control(fill_level, &pid_state), &clock_nudge);
 
@@ -171,7 +171,7 @@ unsafe void XUA_Buffer_lite(chanend c_ep0_out, chanend c_ep0_in, chanend c_aud_o
         //Populate the input buffer ready for the next read
         //pack_samples_to_buff(loopback_samples, num_samples_to_send_to_host, in_subslot_size, buffer_aud_in);
         //Use the number of samples we received last time so we are always balanced (assumes same in/out count)
-    
+
         unsigned input_buffer_size = num_samples_to_send_to_host * in_subslot_size;
         XUD_SetReady_InPtr(ep_aud_in, (unsigned)buffer_aud_in.long_words, input_buffer_size); //loopback
         num_samples_to_send_to_host = 0;
@@ -211,14 +211,14 @@ unsafe void XUA_Buffer_lite2(server ep0_control_if i_ep0_ctl, chanend c_aud_out,
   union buffer_aud_out{
     unsigned char bytes[OUT_AUDIO_BUFFER_SIZE_BYTES];
     short short_words[OUT_AUDIO_BUFFER_SIZE_BYTES / 2];
-    long long_words[OUT_AUDIO_BUFFER_SIZE_BYTES / 4];  
+    long long_words[OUT_AUDIO_BUFFER_SIZE_BYTES / 4];
   }buffer_aud_out;
   union buffer_aud_in{
     unsigned char bytes[IN_AUDIO_BUFFER_SIZE_BYTES];
     short short_words[IN_AUDIO_BUFFER_SIZE_BYTES / 2];
-    unsigned long long_words[IN_AUDIO_BUFFER_SIZE_BYTES / 4];  
+    unsigned long long_words[IN_AUDIO_BUFFER_SIZE_BYTES / 4];
   }buffer_aud_in;
-  
+
   unsigned in_subslot_size = (AUDIO_CLASS == 1) ? FS_STREAM_FORMAT_INPUT_1_SUBSLOT_BYTES : HS_STREAM_FORMAT_INPUT_1_SUBSLOT_BYTES;
   unsigned out_subslot_size = (AUDIO_CLASS == 1) ? FS_STREAM_FORMAT_OUTPUT_1_SUBSLOT_BYTES : HS_STREAM_FORMAT_OUTPUT_1_SUBSLOT_BYTES;
 
@@ -228,7 +228,7 @@ unsafe void XUA_Buffer_lite2(server ep0_control_if i_ep0_ctl, chanend c_aud_out,
   long long feedback_value = 0;
   unsigned mod_from_last_time = 0;
   const unsigned mclk_hz = MCLK_48;
-  unsigned int fb_clocks[1] = {0}; 
+  unsigned int fb_clocks[1] = {0};
 
   //Adapative device clock control
   int clock_nudge = 0;
@@ -251,7 +251,7 @@ unsafe void XUA_Buffer_lite2(server ep0_control_if i_ep0_ctl, chanend c_aud_out,
   XUD_SetReady_OutPtr(ep_aud_out, (unsigned)buffer_aud_out.long_words);
   XUD_SetReady_InPtr(ep_aud_in, (unsigned)buffer_aud_in.long_words, num_samples_to_send_to_host);
   if (!isnull(c_feedback)) XUD_SetReady_InPtr(ep_feedback, (unsigned)fb_clocks, (AUDIO_CLASS == 2) ? 4 : 3);
- 
+
   short samples_in_short[NUM_USB_CHAN_IN] = {0};
   short samples_out_short[NUM_USB_CHAN_OUT] = {0};
 
@@ -311,11 +311,11 @@ unsafe void XUA_Buffer_lite2(server ep0_control_if i_ep0_ctl, chanend c_aud_out,
         num_samples_received_from_host = length / out_subslot_size;
 
         if (num_samples_received_from_host != 96) debug_printf("hs: %d\n", num_samples_received_from_host);
-  
+
         fifo_ret_t ret = fifo_block_push_short_fast(host_to_device_fifo_ptr, buffer_aud_out.short_words, num_samples_received_from_host);
         if (ret != FIFO_SUCCESS) debug_printf("h2d full\n");
         num_samples_to_send_to_host = num_samples_received_from_host;
-        
+
         int fill_level = fifo_get_fill_short(host_to_device_fifo_ptr);
         if (isnull(c_feedback))  do_clock_nudge_pdm(do_rate_control(fill_level, &pid_state), &clock_nudge);
 
@@ -353,7 +353,7 @@ unsafe void XUA_Buffer_lite2(server ep0_control_if i_ep0_ctl, chanend c_aud_out,
         //Populate the input buffer ready for the next read
         //pack_samples_to_buff(loopback_samples, num_samples_to_send_to_host, in_subslot_size, buffer_aud_in);
         //Use the number of samples we received last time so we are always balanced (assumes same in/out count)
-    
+
         unsigned input_buffer_size = num_samples_to_send_to_host * in_subslot_size;
         XUD_SetReady_InPtr(ep_aud_in, (unsigned) buffer_aud_in.long_words, input_buffer_size); //loopback
         num_samples_to_send_to_host = 0;

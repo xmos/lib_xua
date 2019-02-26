@@ -35,6 +35,8 @@ void AudioHub(server i2s_frame_callback_if i2s,
   mic_array_decimator_configure(c_ds_output, decimatorCount, dc);
   mic_array_init_time_domain_frame(c_ds_output, decimatorCount, buffer, mic_audio_frame, dc);
 
+  UserBufferManagementInit();
+
   // Used for debug
   //int saw = 0;
 
@@ -60,6 +62,8 @@ void AudioHub(server i2s_frame_callback_if i2s,
     case i2s.restart_check() -> i2s_restart_t restart:
       restart = I2S_NO_RESTART; // Keep on looping
       timer tmr; int t0, t1; tmr :> t0;
+
+      UserBufferManagement((unsigned *) raw_mics, (unsigned *) samples_out);
 
       //Transfer samples. Takes about 25 ticks
       for (int i = 0; i < NUM_USB_CHAN_OUT; i++) c_audio :> samples_out[i];
