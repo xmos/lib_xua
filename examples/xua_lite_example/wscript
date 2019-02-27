@@ -9,7 +9,7 @@ def configure(conf):
 
 def build(bld):
 	target_path = 'bin/' + bld.options.target
-	bld.env.TARGET_ARCH ='src/RPI_HAT_60QFN.xn'
+	bld.env.TARGET_ARCH ='config/RPI_HAT_60QFN.xn'
 	bld.env.XSCOPE = bld.path.find_resource('config.xscope')
 	depends_on = ['lib_xua','lib_i2s','lib_xud','lib_mic_array', 'lib_i2c']
 	#bld.env.XCC_FLAGS = ['-O2', '-g', '-Wall', '-fcmdline-buffer-bytes=512', '-report', '-DDISABLE_STAGE_C']
@@ -20,5 +20,7 @@ def build(bld):
 	if bld.options.debug:
 		bld.env.XCC_FLAGS.append('-DDEBUG')
 
-	source = bld.path.ant_glob(['src/**/*.xc', 'src/**/*.c'])
-	bld.program(source=source, depends_on=depends_on,target=target_path)
+	source = bld.path.ant_glob(['src/**/*.xc', 'src/**/*.c',
+                                    'xua_lite/**/*.xc', 'xua_lite/**/*.c'])
+        includes = ['config']
+	bld.program(source=source, includes=includes, depends_on=depends_on,target=target_path)

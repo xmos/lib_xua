@@ -23,3 +23,13 @@
 unsafe void XUA_Buffer_lite(chanend c_ep0_out, chanend c_ep0_in, chanend c_aud_out, chanend ?c_feedback, chanend c_aud_in, chanend c_sof, in port p_for_mclk_count, streaming chanend c_audio_hub);
 [[combinable]]
 unsafe void XUA_Buffer_lite2(server ep0_control_if i_ep0_ctl, chanend c_aud_out, chanend ?c_feedback, chanend c_aud_in, chanend c_sof, in port p_for_mclk_count, streaming chanend c_audio_hub);
+
+static inline void XUA_transfer_samples(streaming chanend c_audio,
+                                        unsigned sampsFromUsbToAudio[],
+                                        unsigned sampsFromAudioToUsb[],
+                                        int &clock_nudge) {
+    //Transfer samples. Takes about 25 ticks
+    for (int i = 0; i < NUM_USB_CHAN_OUT; i++) c_audio :> sampsFromUsbToAudio[i];
+    if (XUA_ADAPTIVE) c_audio :> clock_nudge;
+    for (int i = 0; i < NUM_USB_CHAN_IN; i++) c_audio <: sampsFromAudioToUsb[i];
+}

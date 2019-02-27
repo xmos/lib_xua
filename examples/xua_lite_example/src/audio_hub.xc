@@ -8,6 +8,7 @@
 #include "mic_array.h"
 #include "audio_config.h"
 #include "pdm_mic.h"
+#include "xua_buffer_lite.h"
 
 //Globally declared for 64b alignment
 int mic_decimator_fir_data_array[8][THIRD_STAGE_COEFS_PER_STAGE * PDM_MAX_DECIMATION] = {{0}};
@@ -35,8 +36,6 @@ void AudioHub(server i2s_frame_callback_if i2s,
   mic_array_decimator_configure(c_ds_output, decimatorCount, dc);
   mic_array_init_time_domain_frame(c_ds_output, decimatorCount, buffer, mic_audio_frame, dc);
 
-  UserBufferManagementInit();
-
   // Used for debug
   //int saw = 0;
 
@@ -63,12 +62,7 @@ void AudioHub(server i2s_frame_callback_if i2s,
       restart = I2S_NO_RESTART; // Keep on looping
       timer tmr; int t0, t1; tmr :> t0;
 
-      UserBufferManagement((unsigned *) raw_mics, (unsigned *) samples_out);
-
-      //Transfer samples. Takes about 25 ticks
-      for (int i = 0; i < NUM_USB_CHAN_OUT; i++) c_audio :> samples_out[i];
-      if (XUA_ADAPTIVE) c_audio :> clock_nudge;
-      for (int i = 0; i < NUM_USB_CHAN_IN; i++) c_audio <: raw_mics[i];
+      XUA_transfer_samples(c_audio, (unsigned *) samples_out, (unsigned *) raw_mics, (clock_nudge, int));
 
       //Grab mics. Takes about 200 ticks currently
       current = mic_array_get_next_time_domain_frame(c_ds_output, decimatorCount, buffer, mic_audio_frame, dc);
