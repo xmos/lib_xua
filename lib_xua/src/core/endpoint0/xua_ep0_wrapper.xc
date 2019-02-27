@@ -16,7 +16,7 @@ void XUA_Endpoint0_select(chanend c_ep0_out, chanend c_ep0_in, client ep0_contro
 {
 
   USB_SetupPacket_t sp;
-  XUA_Endpoint0_lite_init(c_ep0_out, c_ep0_in, null, null, null, null, dfuInterface);
+  XUA_Endpoint0_lite_init(c_ep0_out, c_ep0_in, null, null, null, null, dfuInterface VENDOR_REQUESTS_PARAMS_);
   unsigned char sbuffer[120];
   XUD_SetReady_Out(ep0_out, sbuffer);
 
@@ -36,7 +36,8 @@ void XUA_Endpoint0_select(chanend c_ep0_out, chanend c_ep0_in, client ep0_contro
         }
         debug_printf("ep0, result: %d, length: %d\n", result, length); //-1 reset, 0 ok, 1 error
 
-        XUA_Endpoint0_lite_loop(result, sp, c_ep0_out, c_ep0_in, null, null, null, null, dfuInterface, &input_interface_num, &output_interface_num);
+        XUA_Endpoint0_lite_loop(result, sp, c_ep0_out, c_ep0_in, null, null, null, null, dfuInterface
+        VENDOR_REQUESTS_PARAMS_, &input_interface_num, &output_interface_num);
         i_ep0_ctl.set_output_interface(output_interface_num);
         i_ep0_ctl.set_input_interface(input_interface_num);
 

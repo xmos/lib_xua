@@ -1213,13 +1213,13 @@ void XUA_Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
     chanend c_mix_ctl, chanend c_clk_ctl, chanend c_EANativeTransport_ctrl, CLIENT_INTERFACE(i_dfu, dfuInterface) VENDOR_REQUESTS_PARAMS_DEC_)
 {
     USB_SetupPacket_t sp;
-    XUA_Endpoint0_init(c_ep0_out, c_ep0_in, c_audioControl, c_mix_ctl, c_clk_ctl, c_EANativeTransport_ctrl, dfuInterface);
+    XUA_Endpoint0_init(c_ep0_out, c_ep0_in, c_audioControl, c_mix_ctl, c_clk_ctl, c_EANativeTransport_ctrl, dfuInterface VENDOR_REQUESTS_PARAMS_);
 
     while(1)
     {
         /* Returns XUD_RES_OKAY for success, XUD_RES_RST for bus reset */
         XUD_Result_t result = USB_GetSetupPacket(ep0_out, ep0_in, &sp);
-        XUA_Endpoint0_loop(result, sp, c_ep0_out, c_ep0_in, c_audioControl, c_mix_ctl, c_clk_ctl, c_EANativeTransport_ctrl, dfuInterface);
+        XUA_Endpoint0_loop(result, sp, c_ep0_out, c_ep0_in, c_audioControl, c_mix_ctl, c_clk_ctl, c_EANativeTransport_ctrl, dfuInterface VENDOR_REQUESTS_PARAMS_);
     }
 }
 #endif /* XUA_USB_EN*/

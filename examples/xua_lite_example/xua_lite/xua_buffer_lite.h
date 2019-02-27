@@ -24,6 +24,19 @@ unsafe void XUA_Buffer_lite(chanend c_ep0_out, chanend c_ep0_in, chanend c_aud_o
 [[combinable]]
 unsafe void XUA_Buffer_lite2(server ep0_control_if i_ep0_ctl, chanend c_aud_out, chanend ?c_feedback, chanend c_aud_in, chanend c_sof, in port p_for_mclk_count, streaming chanend c_audio_hub);
 
+/** Transfer samples to/from XUA. Should be called at the current USB rate.
+ * This function is non-blocking.
+ *
+ * \param[in,out] c_audio               Channel to XUA.
+ *
+ * \param[out] sampsFromUsbToAudio      Samples sent from host to device.
+ *
+ * \param[in] sampsFromAudioToUsb       Samples to send from device to host.
+ *
+ * \param[out] clock_nudge              Notification that the device is running
+ *                                      too slowly/quickly. Only used when in
+ *                                      adaptive endpoint mode.
+ */
 static inline void XUA_transfer_samples(streaming chanend c_audio,
                                         unsigned sampsFromUsbToAudio[],
                                         unsigned sampsFromAudioToUsb[],
