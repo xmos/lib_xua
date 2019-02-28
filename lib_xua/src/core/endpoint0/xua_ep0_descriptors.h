@@ -2819,7 +2819,7 @@ unsigned char cfgDesc_Audio1[] =
 #endif
 
 #ifdef USB_CONTROL_DESCS
-    /* Standard DFU class Interface descriptor */
+    /* Control interface descriptor */
     0x09,                                                /* 0 bLength : Size of this descriptor, in bytes. (field size 1 bytes) */
     0x04,                                                /* 1 bDescriptorType : INTERFACE descriptor. (field size 1 bytes) */
     (OUTPUT_INTERFACES_A1 + INPUT_INTERFACES_A1 + 1),    /* 2 bInterfaceNumber */
