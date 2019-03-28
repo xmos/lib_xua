@@ -2659,7 +2659,7 @@ unsigned char cfgDesc_Audio1[] =
 #ifdef XUA_ADAPTIVE
     0x08, 0x00,                           /* bLockDelay */
 #else
-    0x00, 0x00,                           /* bLockDelay */
+    0x00, 0x00,                           /* Not used */
 #endif
 
 #if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP)
@@ -2795,8 +2795,8 @@ unsigned char cfgDesc_Audio1[] =
     0x02,                                 /* Lock Delay units PCM samples*/
     0x08, 0x00,                           /* No lock delay */
 #else
-    0x00,                                 /* Lock Delay units PCM samples*/
-    0x00, 0x00,                           /* No lock delay */
+    0x00,                                 /* Undefined */
+    0x00, 0x00,                           /* Not used */
 #endif // XUA_ADAPTIVE
 #endif
 
