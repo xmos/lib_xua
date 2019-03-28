@@ -2656,7 +2656,11 @@ unsigned char cfgDesc_Audio1[] =
     0x01,                                 /* subtype - GENERAL */
     0x01,                                 /* attributes. D[0]: sample freq ctrl. */
     0x02,                                 /* bLockDelayUnits */
+#ifdef XUA_ADAPTIVE
     0x08, 0x00,                           /* bLockDelay */
+#else
+    0x00, 0x00,                           /* bLockDelay */
+#endif
 
 #if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP)
     /* Feedback EP */
@@ -2787,8 +2791,13 @@ unsigned char cfgDesc_Audio1[] =
     0x25,                                 /* CS_ENDPOINT */
     0x01,                                 /* Subtype - GENERAL */
     0x01,                                 /* Attributes. D[0]: sample freq ctrl. */
+#ifdef XUA_ADAPTIVE
     0x02,                                 /* Lock Delay units PCM samples*/
     0x08, 0x00,                           /* No lock delay */
+#else
+    0x00,                                 /* Lock Delay units PCM samples*/
+    0x00, 0x00,                           /* No lock delay */
+#endif // XUA_ADAPTIVE
 #endif
 
 #if (XUA_DFU_EN == 1) && (FORCE_UAC1_DFU == 1)
