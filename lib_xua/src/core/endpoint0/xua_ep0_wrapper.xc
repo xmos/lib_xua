@@ -2,6 +2,8 @@
 #include <safestring.h>
 #include <stddef.h>
 #include "xua.h"
+
+#if XUA_USB_EN
 #include "xua_ep0_wrapper.h"
 
 #define DEBUG_UNIT EP0_WRAPPER
@@ -46,3 +48,4 @@ void XUA_Endpoint0_select(chanend c_ep0_out, chanend c_ep0_in, client ep0_contro
     }
   }
 }
+#endif
