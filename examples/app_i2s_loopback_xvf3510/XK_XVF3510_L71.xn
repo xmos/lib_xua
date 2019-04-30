@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Network xmlns="http://www.xmos.com"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://www.xmos.com http://www.xmos.com">
+  <Type>Device</Type>
+  <Name>XVF3510 Device</Name>
+
+  <Declarations>
+    <Declaration>tileref tile[2]</Declaration>
+    <Declaration>tileref usb_tile</Declaration>
+  </Declarations>
+
+  <Packages>
+    <Package id="0" Type="XS2-UFnA-512-FB236">
+      <Nodes>
+        <Node Id="0" InPackageId="0" Type="XS2-L16A-512" SystemFrequency="500MHz" OscillatorSrc="1">
+          <Boot>
+            <Source Location="bootFlash0"/>
+          </Boot>
+          <Tile Number="0" Reference="tile[0]">
+            <Port Location="XS1_PORT_1B" Name="PORT_SQI_CS_0"/>
+            <Port Location="XS1_PORT_1C" Name="PORT_SQI_SCLK_0"/>
+            <Port Location="XS1_PORT_4B" Name="PORT_SQI_SIO_0"/>
+
+            <!-- Mic related ports -->
+            <Port Location="XS1_PORT_1L" Name="PORT_PDM_CLK"/>
+            <Port Location="XS1_PORT_4D" Name="PORT_MUTE"/>
+            <Port Location="XS1_PORT_4E" Name="PORT_PDM_DATA"/>
+            <Port Location="XS1_PORT_1K" Name="PORT_PDM_MCLK"/>
+
+            <!-- Audio Ports -->
+            <Port Location="XS1_PORT_1O"  Name="PORT_I2S_LRCLK"/>
+            <Port Location="XS1_PORT_1P"  Name="PORT_I2S_BCLK"/>
+            <Port Location="XS1_PORT_1N"  Name="I2S_DATA_IN"/>
+
+            <!-- connected to DAC -->
+            <Port Location="XS1_PORT_4F"  Name="PORT_I2C"/>
+            <Port Location="XS1_PORT_1M"  Name="I2S_MIC_DATA"/>
+
+
+          </Tile>
+          <Tile Number="1" Reference="tile[1]">
+
+            <!-- I2C slave -->
+            <Port Location="XS1_PORT_1D" Name="PORT_I2C_SDA"/>
+            <Port Location="XS1_PORT_1C" Name="PORT_I2C_SCL"/>
+
+
+            <Port Location="XS1_PORT_1A"  Name="PORT_MCLK_TILE1"/>
+            <Port Location="XS1_PORT_16B" Name="PORT_MCLK_COUNT"/>
+
+
+          </Tile>
+
+        </Node>
+        <Node Id="1" InPackageId="1" Type="periph:XS1-SU" Reference="usb_tile" Oscillator="24MHz">
+        </Node>
+      </Nodes>
+      <Links>
+        <Link Encoding="5wire">
+          <LinkEndpoint NodeId="0" Link="8" Delays="52clk,52clk"/>
+          <LinkEndpoint NodeId="1" Link="XL0" Delays="1clk,1clk"/>
+        </Link>
+      </Links>
+    </Package>
+  </Packages>
+  
+  <Nodes>
+    <Node Id="3" Type="device:" RoutingId="0x8000">
+      <Service Id="0" Proto="xscope_host_data(chanend c);">
+        <Chanend Identifier="c" end="3"/>
+      </Service>
+    </Node>
+  </Nodes>
+
+  <Links>
+    <Link Encoding="2wire" Delays="4,4" Flags="XSCOPE">
+      <LinkEndpoint NodeId="0" Link="XL0"/>
+      <LinkEndpoint NodeId="3" Chanend="1"/>
+    </Link>
+  </Links>
+
+  <ExternalDevices>
+    <Device NodeId="0" Tile="0" Class="SQIFlash" Name="bootFlash0">
+      <Attribute Name="PORT_SQI_CS" Value="PORT_SQI_CS_0"/>
+      <Attribute Name="PORT_SQI_SCLK" Value="PORT_SQI_SCLK_0"/>
+      <Attribute Name="PORT_SQI_SIO" Value="PORT_SQI_SIO_0"/>
+    </Device>
+  </ExternalDevices>
+
+  <JTAGChain>
+    <JTAGDevice NodeId="0"/>
+  </JTAGChain>
+
+</Network>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
