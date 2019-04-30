@@ -39,7 +39,7 @@ void InitPorts_master(unsigned divide, buffered _XUA_CLK_DIR port:32 p_lrclk, bu
 
 #pragma xta endpoint "divide_1"
         unsigned tmp;
-        p_lrclk <: 0 @ tmp;
+        tmp = partout_timestamped(p_lrclk, N_BITS_I2S, 0);
         tmp += 100;
 
         /* Since BCLK is free-running, setup outputs/inputs at a known point in the future */
@@ -47,16 +47,17 @@ void InitPorts_master(unsigned divide, buffered _XUA_CLK_DIR port:32 p_lrclk, bu
 #pragma loop unroll
         for(int i = 0; i < I2S_WIRES_DAC; i++)
         {
-            p_i2s_dac[i] @ tmp <: 0;
+            partout_timed(p_i2s_dac[i], N_BITS_I2S, 0, tmp);
         }
 #endif
 
-        p_lrclk @ tmp <: 0x7FFFFFFF;
+        partout_timed(p_lrclk, N_BITS_I2S, 0x7FFFFFFF, tmp);
 
 #if (I2S_CHANS_ADC != 0)
         for(int i = 0; i < I2S_WIRES_ADC; i++)
         {
             asm("setpt res[%0], %1"::"r"(p_i2s_adc[i]),"r"(tmp-1));
+            set_port_shift_count(p_i2s_adc[i], N_BITS_I2S);
         }
 #endif
 #endif /* (I2S_CHANS_ADC != 0 || I2S_CHANS_DAC != 0) */

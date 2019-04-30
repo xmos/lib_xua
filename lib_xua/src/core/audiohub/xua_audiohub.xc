@@ -211,9 +211,10 @@ static inline int HandleSampleClock(int frameCount, buffered _XUA_CLK_DIR port:3
     else
     {
         if(frameCount == 0)
-            p_lrclk <: 0x80000000;
+            partout(p_lrclk, N_BITS_I2S, 0x80000000);
         else
-            p_lrclk <: 0x7fffffff;
+            partout(p_lrclk, N_BITS_I2S, 0x7fffffff);
+
     }
     
     return 0;
@@ -769,9 +770,14 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
 #if I2S_MODE_TDM
             /* I2S has 32 bits per sample. *8 as 8 channels */
             unsigned numBits = 256;
+
+#if N_BITS_I2S != 32
+#error TDM mode only supports 32 bclks per sample
+#endif
+
 #else
             /* I2S has 32 bits per sample. *2 as 2 channels */
-            unsigned numBits = 64;
+            unsigned numBits = 2 * N_BITS_I2S;
 #endif
 
 #if (DSD_CHANS_DAC > 0)
