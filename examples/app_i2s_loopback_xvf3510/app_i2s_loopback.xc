@@ -80,7 +80,8 @@ void loopback(chanend c_i2s)
         for (int i=0; i<NUM_USB_CHAN_OUT; i++) outuint(c_i2s, samps[i]);
         for (int i=0; i<NUM_USB_CHAN_IN; i++) samps[i] = inuint(c_i2s);
 
-        xscope_int(0, samps[0]);
+        samps[0] = 0xf0aaaaaa; //Test pattern for ch 0 (left)
+        //xscope_int(0, samps[0]);
     }
 }
 

@@ -14,7 +14,7 @@
 #define XUD_TILE 1
 #define AUDIO_IO_TILE 0
 #define MIXER 0
-#define XUA_USB_EN 0
+#define XUA_USB_EN 1 //switch on transfer samples
 
 #define SPDIF_TX_INDEX 0
 #define VENDOR_STR "XMOS"
