@@ -14,7 +14,8 @@
 #include <xclib.h>
 #include <xs1_su.h>
 #include <string.h>
-#include <print.h>
+#include <xassert.h>
+
 
 #include "xua.h"
 
@@ -185,7 +186,6 @@ static inline int HandleSampleClock(int frameCount, buffered _XUA_CLK_DIR port:3
             if ((lrval & lrval_mask) != 0x80000000)
             {
                 syncError = 1;
-                printhexln(lrval);
             }
         }
         else
@@ -193,7 +193,6 @@ static inline int HandleSampleClock(int frameCount, buffered _XUA_CLK_DIR port:3
             if ((lrval | (~lrval_mask)) != 0x7FFFFFFF)
             {
                 syncError = 1;
-                printhexln(lrval);
             }
         }
     }
@@ -794,7 +793,15 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
 #endif
             divide = mClk / ( curSamFreq * numBits);
 
-            /* TODO; we should catch and handle the case when divide is 0. Currently design will lock up */
+            //Do some checks
+            xassert((divide > 0) && "Error: divider is 0, BCLK rate unachievable");
+
+            unsigned remainder = mClk % ( curSamFreq * numBits);
+            xassert((!remainder) && "Error: MCLK not divisible into BCLK by an integer number");
+
+            unsigned divider_is_odd =  divide & 0x1;
+            xassert((!divider_is_odd) && "Error: divider is odd, clockblock cannot produce desired BCLK");
+
        }
 
 
