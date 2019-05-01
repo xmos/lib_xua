@@ -211,9 +211,9 @@ static inline int HandleSampleClock(int frameCount, buffered _XUA_CLK_DIR port:3
     else
     {
         if(frameCount == 0)
-            partout(p_lrclk, N_BITS_I2S, 0x80000000);
+            partout(p_lrclk, N_BITS_I2S, 0x80000000 >> (32 - N_BITS_I2S));
         else
-            partout(p_lrclk, N_BITS_I2S, 0x7fffffff);
+            partout(p_lrclk, N_BITS_I2S, 0x7fffffff >> (32 - N_BITS_I2S));
 
     }
     
