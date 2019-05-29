@@ -100,7 +100,6 @@ extern buffered out port:32 p_bclk;
 unsigned dsdMode = DSD_MODE_OFF;
 
 /* Master clock input */
-extern unsafe port p_mclk_in;
 extern in port p_mclk_in2;
 
 #if (XUA_SPDIF_TX_EN)
@@ -1274,6 +1273,7 @@ static void dummy_deliver(chanend ?c_out, unsigned &command)
  #endif
 
 void XUA_AudioHub(chanend ?c_mix_out
+    , in port p_mclk_in
 #if (XUA_SPDIF_TX_EN) && (SPDIF_TX_TILE != AUDIO_IO_TILE)
     , chanend c_spdif_out
 #endif

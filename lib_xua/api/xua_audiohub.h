@@ -17,12 +17,14 @@
  *
  *  \param c_aud Audio sample channel connected to the mixer() thread or the
  *              decouple() thread
+ *  \param p_mclk_in Master clock port
  *  \param c_dig channel connected to the clockGen() thread for
  *               receiving/transmitting samples
  *  \param c_config An optional channel that will be passed on to the
  *                  CODEC configuration functions.
  */
 void XUA_AudioHub(chanend ?c_aud
+    , in port p_mclk_in
 #if (XUA_SPDIF_TX_EN) && (SPDIF_TX_TILE != AUDIO_IO_TILE)
     , chanend c_spdif_tx
 #endif
