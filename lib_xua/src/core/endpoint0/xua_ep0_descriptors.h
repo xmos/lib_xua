@@ -414,7 +414,22 @@ USB_Descriptor_Device_t devDesc_Audio1 =
 #endif
 
 #if (AUDIO_CLASS == 2)
-/* Device Descriptor for Audio Class 2.0 (Assumes High-Speed ) */
+/* Device Descriptor for Audio Class 2.0 (Assumes High-Speed )
+ *
+ * The use of two configurations dates back to Windows XP (could be SP2). This
+ * lacked some standards support and incorrectly parsed the full audio class 2.0
+ * descriptor with its IADs (Interface Association Descriptors). The observed
+ * behaviour included loading the built-in audio class 1.0 driver on some
+ * interfaces (possibly the wrong ones, too), and hanging.
+ *
+ * Presenting a blank configuration first prevented loading the composite driver
+ * and issues arising from it, while still allowing to load a vendor driver on
+ * the actual configuration.
+ *
+ * Recent Windows subsystem can parse our class 2.0 descriptor correctly
+ * (certainly Windows 7 and onwards). It may be possible to remove this
+ * workaround.
+ */
 USB_Descriptor_Device_t devDesc_Audio2 =
 {
     .bLength                        = sizeof(USB_Descriptor_Device_t),
