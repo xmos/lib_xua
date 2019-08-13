@@ -1,6 +1,11 @@
 lib_xua Change Log
 ==================
 
+0.3.0
+-----
+
+  * CHANGED: Build files updated to support new "xcommon" behaviour in xwaf.
+
 0.2.0
 -----
 
@@ -15,7 +20,7 @@ lib_xua Change Log
   * RESOLVED:  wChannelConfig in UAC1 descriptor set according to output channel
     count
   * RESOLVED:  Indexing of ADAT channel strings (#18059)
-  * RESOLVED:  Rebooting device fails when PLL config "not reset" bit is set 
+  * RESOLVED:  Rebooting device fails when PLL config "not reset" bit is set
 
   * Changes to dependencies:
 
@@ -95,7 +100,7 @@ Legacy release history
 
 7.3.0
 -----
-    - CHANGE:     Example OSX DFU host app updated to now take PID as runtime 
+    - CHANGE:     Example OSX DFU host app updated to now take PID as runtime
       argument. This enabled multiple XMOS devices to be attached to the host
       during DFU process
 
