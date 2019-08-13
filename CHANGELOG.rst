@@ -6,6 +6,12 @@ lib_xua Change Log
 
   * CHANGED: Build files updated to support new "xcommon" behaviour in xwaf.
 
+  * Changes to dependencies:
+
+    - lib_dsp: Added dependency 5.0.0
+
+    - lib_mic_array: Added dependency 4.0.0
+
 0.2.0
 -----
 
