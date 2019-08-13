@@ -1,6 +1,11 @@
 lib_xua Change Log
 ==================
 
+0.3.0
+-----
+
+  * CHANGED: Build files updated to support new "xcommon" behaviour in xwaf.
+
 0.2.0
 -----
 
