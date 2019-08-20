@@ -21,7 +21,7 @@ lib_xua Change Log
 
     - lib_spdif: Added dependency 3.1.0
 
-    - lib_xassert: Added dependency 4.0.0
+    - lib_xassert: Added dependency 3.0.1
 
 0.1.2
 -----
@@ -95,7 +95,7 @@ Legacy release history
 
 7.3.0
 -----
-    - CHANGE:     Example OSX DFU host app updated to now take PID as runtime 
+    - CHANGE:     Example OSX DFU host app updated to now take PID as runtime
       argument. This enabled multiple XMOS devices to be attached to the host
       during DFU process
 
