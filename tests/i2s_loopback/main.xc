@@ -1,4 +1,4 @@
-// Copyright (c) 2016-2018, XMOS Ltd, All rights reserved
+// Copyright (c) 2016-2019, XMOS Ltd, All rights reserved
 #include <platform.h>
 #include <stdlib.h>
 #include <print.h>
@@ -79,17 +79,11 @@ buffered out port:32 p_bclk        = PORT_I2S_BCLK;     /* I2S L/R-clock */
 
 /* Note, declared unsafe as sometimes we want to share this port
 e.g. PDM mics and I2S use same master clock IO */
-port p_mclk_in_                    = PORT_MCLK_IN;
+in port p_mclk_in                  = PORT_MCLK_IN;
 
 /* Clock-block declarations */
 clock clk_audio_bclk                = on tile[AUDIO_IO_TILE]: XS1_CLKBLK_1;   /* Bit clock */    
 clock clk_audio_mclk                = on tile[AUDIO_IO_TILE]: XS1_CLKBLK_2;   /* Master clock */
-
-unsafe
-{
-    /* TODO simplify this */
-    unsafe port p_mclk_in;                           /* Audio master clock input */
-}
 
 #ifdef SIMULATION
 #define INITIAL_SKIP_FRAMES 10
@@ -224,13 +218,9 @@ int main(void)
   par {
     on tile[AUDIO_IO_TILE]: 
     {
-      unsafe
-      {
-        p_mclk_in = p_mclk_in_;
-      }
       par 
       {
-        XUA_AudioHub(c_out);
+        XUA_AudioHub(c_out, p_mclk_in);
         generator(c_checker, c_out);
         checker(c_checker, 0);
 #ifdef SIMULATION
