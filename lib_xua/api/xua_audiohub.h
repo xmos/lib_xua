@@ -1,4 +1,4 @@
-// Copyright (c) 2011-2018, XMOS Ltd, All rights reserved
+// Copyright (c) 2011-2019, XMOS Ltd, All rights reserved
 #ifndef __XUA_AUDIOHUB_H__
 #define __XUA_AUDIOHUB_H__
 
