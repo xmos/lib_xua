@@ -60,10 +60,6 @@ Warnings relating to configuration defines located in this XC source file rather
 #warning AUDIO_CLASS not defined, using 2
 #endif
 
-#ifndef AUDIO_CLASS_FALLBACK
-#warning AUDIO_CLASS_FALLBACK not defined, using 0 (i.e. disabled)
-#endif
-
 /* Sanity check on FS channel counts */
 #if (NUM_USB_CHAN_OUT_FS > NUM_USB_CHAN_OUT)
 #error NUM_USB_CHAN_OUT_FS expected to be less than or equal to NUM_USB_CHAN_OUT
