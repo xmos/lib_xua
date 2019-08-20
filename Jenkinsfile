@@ -3,9 +3,7 @@
 getApproval()
 
 pipeline {
-  agent {
-    label 'x86_64&&brew&&macOS'
-  }
+  agent none
   environment {
     REPO = 'lib_xua'
     VIEW = "${env.JOB_NAME.contains('PR-') ? REPO+'_'+env.CHANGE_TARGET : REPO+'_'+env.BRANCH_NAME}"
@@ -52,45 +50,92 @@ pipeline {
     skipDefaultCheckout()
   }
   stages {
-    stage('Get view') {
-      steps {
-        xcorePrepareSandbox("${VIEW}", "${REPO}")
+    stage('Basic tests') {
+      agent {
+        label 'x86_64&&brew'
       }
-    }
-    stage('Library checks') {
-      steps {
-        xcoreLibraryChecks("${REPO}")
+      stages {
+        stage('Get view') {
+          steps {
+            xcorePrepareSandbox("${VIEW}", "${REPO}")
+          }
+        }
+        stage('Library checks') {
+          steps {
+            xcoreLibraryChecks("${REPO}")
+          }
+        }
+        stage('Tests') {
+          steps {
+            runXmostest("${REPO}", 'tests')
+          }
+        }
+        stage('xCORE builds') {
+          steps {
+            dir("${REPO}") {
+              xcoreAllAppNotesBuild('examples')
+              dir("${REPO}") {
+                runXdoc('doc')
+              }
+            }
+          }
+        }
       }
-    }
-    stage('Tests') {
-      steps {
-        runXmostest("${REPO}", 'tests')
-      }
-    }
-    stage('Host builds') {
-      steps {
-        dir("${REPO}/${REPO}/host/xmosdfu") {
-          sh 'make -f Makefile.OSX64'
+      post {
+        cleanup {
+          xcoreCleanSandbox()
         }
       }
     }
-    stage('xCORE builds') {
-      steps {
-        dir("${REPO}") {
-          xcoreAllAppNotesBuild('examples')
-          dir("${REPO}") {
-            runXdoc('doc')
+    stage('Build host apps') {
+      failFast true
+      parallel {
+        stage('Build Linux host app') {
+          agent {
+            label 'x86_64&&brew&&linux'
+          }
+          steps {
+            xcorePrepareSandbox("${VIEW}", "${REPO}")
+            dir("${REPO}/${REPO}/host/xmosdfu") {
+              sh 'make -f Makefile.Linux64'
+            }
+          }
+          post {
+            cleanup {
+              xcoreCleanSandbox()
+            }
+          }
+        }
+        stage('Build Mac host app') {
+          agent {
+            label 'x86_64&&brew&&macOS'
+          }
+          steps {
+            xcorePrepareSandbox("${VIEW}", "${REPO}")
+            dir("${REPO}/${REPO}/host/xmosdfu") {
+              sh 'make -f Makefile.OSX64'
+            }
+          }
+          post {
+            cleanup {
+              xcoreCleanSandbox()
+            }
           }
         }
       }
     }
-  }
-  post {
-    success {
-      updateViewfiles()
-    }
-    cleanup {
-      cleanWs()
+    stage('Update') {
+      agent {
+        label 'x86_64&&brew'
+      }
+      steps {
+        updateViewfiles()
+      }
+      post {
+        cleanup {
+          cleanWs()
+        }
+      }
     }
   }
 }
