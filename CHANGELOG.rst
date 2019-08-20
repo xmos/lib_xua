@@ -1,6 +1,13 @@
 lib_xua Change Log
 ==================
 
+0.1.3
+-----
+
+  * CHANGED:   Remove sharing of global master clock port variable for
+               compatibility with tools 14.4
+  * CHANGED:   Remove obsolete -fsubword-select to clear warning in tools 14.4
+
 0.1.2
 -----
 
