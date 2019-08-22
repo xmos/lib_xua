@@ -6,7 +6,7 @@ pipeline {
   agent none
   environment {
     REPO = 'lib_xua'
-    VIEW = 'lib_xua_mainten_01'
+    VIEW = 'lib_xua_release_0_1_3'
   }
   options {
     skipDefaultCheckout()
