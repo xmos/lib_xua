@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2018, XMOS Ltd, All rights reserved
+// Copyright (c) 2013-2019, XMOS Ltd, All rights reserved
 
 /* Default implementations of AudioStreamStop() and AudioStreamStart()
  * callbacks.
