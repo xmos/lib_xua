@@ -34,17 +34,17 @@ def runtest():
     runtest_one_config('simulation', 'i2s', 'master', 2, 2, '48khz')
     runtest_one_config('simulation', 'i2s', 'slave', 2, 2, '48khz')
 
-    #runtest_one_config('simulation', 'i2s', 'master', 2, 2, '192khz')
-    #runtest_one_config('simulation', 'i2s', 'slave', 2, 2, '192khz')
+    runtest_one_config('simulation', 'i2s', 'master', 2, 2, '192khz')
+    runtest_one_config('simulation', 'i2s', 'slave', 2, 2, '192khz')
 
-    #runtest_one_config('simulation', 'i2s', 'master', 8, 8, '48khz')
-    #runtest_one_config('simulation', 'i2s', 'slave', 8, 8, '48khz')
+    runtest_one_config('simulation', 'i2s', 'master', 8, 8, '48khz')
+    runtest_one_config('simulation', 'i2s', 'slave', 8, 8, '48khz')
 
-    #runtest_one_config('simulation', 'i2s', 'master', 8, 8, '192khz')
-    #runtest_one_config('simulation', 'i2s', 'slave', 8, 8, '192khz')
+    runtest_one_config('simulation', 'i2s', 'master', 8, 8, '192khz')
+    runtest_one_config('simulation', 'i2s', 'slave', 8, 8, '192khz')
 
-    #runtest_one_config('simulation', 'tdm', 'master', 8, 8, '48khz')
-    #runtest_one_config('simulation', 'tdm', 'slave', 8, 8, '48khz')
+    runtest_one_config('simulation', 'tdm', 'master', 8, 8, '48khz')
+    runtest_one_config('simulation', 'tdm', 'slave', 8, 8, '48khz')
 
-    #runtest_one_config('simulation', 'tdm', 'master', 16, 16, '48khz')
-    #runtest_one_config('simulation', 'tdm', 'slave', 16, 16, '48khz')
+    runtest_one_config('simulation', 'tdm', 'master', 16, 16, '48khz')
+    runtest_one_config('simulation', 'tdm', 'slave', 16, 16, '48khz')
