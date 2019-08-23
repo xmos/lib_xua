@@ -14,5 +14,17 @@ void UserAudioStreamStart(void);
 /* Any actions required on stream stop e.g. DAC mute - run every steam stop  */
 void UserAudioStreamStop(void);
 
+/* Any actions required on input stream start */
+void UserAudioInputStreamStart(void);
+
+/* Any actions required on input stream stop */
+void UserAudioInputStreamStop(void);
+
+/* Any actions required on output stream start */
+void UserAudioOutputStreamStart(void);
+
+/* Any actions required on output stream stop */
+void UserAudioOutputStreamStop(void);
+
 #endif
 
