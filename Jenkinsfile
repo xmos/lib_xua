@@ -90,10 +90,12 @@ pipeline {
       agent {
         label 'x86_64&&brew'
       }
-      steps {
-        xcorePrepareSandbox("${VIEW}", "${REPO}")
-      }
       stages {
+        stage('Get view') {
+          steps {
+            xcorePrepareSandbox("${VIEW}", "${REPO}")
+          }
+        }
         stage('Release') {
           /*when {
             expression {
