@@ -17,10 +17,10 @@ the xCORE-200 MC Audio board.
 Block diagram
 .............
 
-.. figure:: images/block_diagram.*
-   :width: 80%
-
-   Application block diagram
+.. .. figure:: images/block_diagram.*
+..   :width: 80%
+..
+..   Application block diagram
 
 The application uses a single logical core which runs the application and makes
 calls to the |I2C| master library functions as required.
