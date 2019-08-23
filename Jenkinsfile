@@ -86,16 +86,31 @@ pipeline {
         }
       }
     }
-    stage('Update') {
+    stage('Release and update') {
       agent {
         label 'x86_64&&brew'
       }
-      steps {
-        updateViewfiles()
+      stages {
+        stage('Release') {
+          when {
+            expression {
+              isReleaseBranchOfOrganisation('xmos')
+            }
+          }
+          steps {
+            sh 'mkdir ${REPO}/empty'
+            xcoreReleaseToGithub("${WORKSPACE}/${REPO}","${WORKSPACE}/${REPO}/empty")
+          }
+        }
+        stage('Update') {
+          steps {
+            updateViewfiles()
+          }
+        }
       }
       post {
         cleanup {
-          cleanWs()
+          xcoreCleanSandbox()
         }
       }
     }
