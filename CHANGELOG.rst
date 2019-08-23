@@ -15,11 +15,11 @@ lib_xua Change Log
   * RESOLVED:  wChannelConfig in UAC1 descriptor set according to output channel
     count
   * RESOLVED:  Indexing of ADAT channel strings (#18059)
-  * RESOLVED:  Rebooting device fails when PLL config "not reset" bit is set 
+  * RESOLVED:  Rebooting device fails when PLL config "not reset" bit is set
 
   * Changes to dependencies:
 
-    - lib_spdif: Added dependency 3.0.0
+    - lib_spdif: Added dependency 3.1.0
 
     - lib_xassert: Added dependency 3.0.1
 
@@ -95,7 +95,7 @@ Legacy release history
 
 7.3.0
 -----
-    - CHANGE:     Example OSX DFU host app updated to now take PID as runtime 
+    - CHANGE:     Example OSX DFU host app updated to now take PID as runtime
       argument. This enabled multiple XMOS devices to be attached to the host
       during DFU process
 
