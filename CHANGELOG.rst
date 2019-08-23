@@ -61,9 +61,8 @@ lib_xua Change Log
     sc_usb_audio 6.14)
   * RESOLVED:   Improvements made to clock sync code in TDM slave mode
 
-
 Legacy release history
-----------------------
+======================
 
 (Note: Forked from sc_usb_audio at this point)
 
@@ -340,7 +339,7 @@ Legacy release history
 
 
 Legacy release history
-----------------------
+======================
 
 Please see changelog in sw_usb_audio for changes prior to 6.8.0 release.
 
