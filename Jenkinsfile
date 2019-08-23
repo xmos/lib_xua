@@ -92,13 +92,13 @@ pipeline {
       }
       stages {
         stage('Release') {
-          when {
+          /*when {
             expression {
               isReleaseBranchOfOrganisation('xmos')
             }
-          }
+          }*/
           steps {
-            sh 'mkdir ${REPO}/empty'
+            sh "mkdir ${REPO}/empty"
             xcoreReleaseToGithub("${WORKSPACE}/${REPO}","${WORKSPACE}/${REPO}/empty")
           }
         }
