@@ -160,10 +160,14 @@ static inline int HandleSampleClock(int frameCount, buffered _XUA_CLK_DIR port:3
 #if CODEC_MASTER
     unsigned syncError = 0;
     unsigned lrval = 0;
-    const unsigned lrval_mask = (0xffffffff << (32 - N_BITS_I2S));
 
+    #ifdef N_BITS_I2S
+    const unsigned lrval_mask = (0xffffffff << (32 - N_BITS_I2S));
     asm volatile("in %0, res[%1]":"=r"(lrval):"r"(p_lrclk):"memory");
     set_port_shift_count(p_lrclk, N_BITS_I2S);
+    #else
+    p_lrclk :> lrval;
+    #endif
 
     if(I2S_MODE_TDM)
     {
@@ -181,20 +185,32 @@ static inline int HandleSampleClock(int frameCount, buffered _XUA_CLK_DIR port:3
     }
     else
     {
-        if(frameCount == 0) 
+        if(frameCount == 0)
+        #ifdef N_BITS_I2S
         {
             if ((lrval & lrval_mask) != 0x80000000)
             {
                 syncError = 1;
             }
         }
+        #else
+        {
+            syncError += (lrval != 0x80000000);
+        }
+        #endif
         else
+        #ifdef N_BITS_I2S
         {
             if ((lrval | (~lrval_mask)) != 0x7FFFFFFF)
             {
                 syncError = 1;
             }
         }
+        #else
+        {    
+            syncError += (lrval != 0x7FFFFFFF);
+        }
+        #endif
     }
  
     return syncError;
@@ -210,9 +226,17 @@ static inline int HandleSampleClock(int frameCount, buffered _XUA_CLK_DIR port:3
     else
     {
         if(frameCount == 0)
+            #ifdef N_BITS_I2S
             partout(p_lrclk, N_BITS_I2S, 0x80000000 >> (32 - N_BITS_I2S));
+            #else
+            p_lrclk <: 0x80000000;
+            #endif
         else
+            #ifdef N_BITS_I2S
             partout(p_lrclk, N_BITS_I2S, 0x7fffffff >> (32 - N_BITS_I2S));
+            #else
+            p_lrclk <: 0x7fffffff;
+            #endif
 
     }
     
@@ -369,8 +393,12 @@ unsigned static AudioHub_MainLoop(chanend ?c_out, chanend ?c_spd_out
                     // Manual IN instruction since compiler generates an extra setc per IN (bug #15256)
                     unsigned sample;
                     asm volatile("in %0, res[%1]" : "=r"(sample)  : "r"(p_i2s_adc[index++]));
+                    #ifdef N_BITS_I2S
                     set_port_shift_count(p_i2s_adc[i], N_BITS_I2S);
                     sample = bitrev(sample) << (32 - N_BITS_I2S);
+                    #else
+                    sample = bitrev(sample);
+                    #endif
                     int chanIndex = ((frameCount-2)&(I2S_CHANS_PER_FRAME-1))+i; // channels 0, 2, 4.. on each line.
 
 #if (AUD_TO_USB_RATIO > 1)
@@ -423,7 +451,11 @@ unsigned static AudioHub_MainLoop(chanend ?c_out, chanend ?c_spd_out
                                                                                  src_ff3v_fir_coefs[2-audioToUsbRatioCounter]);
                     }
 #endif /* (AUD_TO_USB_RATIO > 1) */
+                    #ifdef N_BITS_I2SN
                     partout(p_i2s_dac[index++], N_BITS_I2S, bitrev(samplesOut[frameCount +i]));
+                    #else
+                    p_i2s_dac[index++] <: bitrev(samplesOut[frameCount +i]);
+                    #endif
 
                 }
 #endif // (I2S_CHANS_DAC != 0)
@@ -499,8 +531,12 @@ unsigned static AudioHub_MainLoop(chanend ?c_out, chanend ?c_spd_out
                     /* Manual IN instruction since compiler generates an extra setc per IN (bug #15256) */
                     unsigned sample;
                     asm volatile("in %0, res[%1]" : "=r"(sample)  : "r"(p_i2s_adc[index++]));
+                    #ifdef N_BITS_I2S
                     set_port_shift_count(p_i2s_adc[i], N_BITS_I2S);
                     sample = bitrev(sample) << (32 - N_BITS_I2S);
+                    #else
+                    sample = bitrev(sample);
+                    #endif
 
                     int chanIndex = ((frameCount-2)&(I2S_CHANS_PER_FRAME-1))+i; // channels 1, 3, 5.. on each line.
 #if (AUD_TO_USB_RATIO > 1 && !I2S_DOWNSAMPLE_MONO_IN)
@@ -552,7 +588,11 @@ unsigned static AudioHub_MainLoop(chanend ?c_out, chanend ?c_spd_out
                                                                                  src_ff3v_fir_coefs[2-audioToUsbRatioCounter]);
                     }
 #endif /* (AUD_TO_USB_RATIO > 1) */
+                    #ifdef N_BITS_I2S
                     partout(p_i2s_dac[index++], N_BITS_I2S, bitrev(samplesOut[frameCount + i]));
+                    #else
+                    p_i2s_dac[index++] <: bitrev(samplesOut[frameCount + i]);
+                    #endif
 
                 }
 #endif // (I2S_CHANS_DAC != 0)
@@ -775,8 +815,12 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
 #endif
 
 #else
+            #ifndef N_BITS_I2S
             /* I2S has 32 bits per sample. *2 as 2 channels */
+            unsigned numBits = 2 * 32;
+            #else
             unsigned numBits = 2 * N_BITS_I2S;
+            #endif            
 #endif
 
 #if (DSD_CHANS_DAC > 0)
