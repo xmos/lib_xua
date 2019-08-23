@@ -91,6 +91,11 @@ pipeline {
         label 'x86_64&&brew'
       }
       stages {
+        stage('Get view') {
+          steps {
+            xcorePrepareSandbox("${VIEW}", "${REPO}")
+          }
+        }
         stage('Release') {
           when {
             expression {
@@ -98,7 +103,7 @@ pipeline {
             }
           }
           steps {
-            sh 'mkdir ${REPO}/empty'
+            sh "mkdir ${REPO}/empty"
             xcoreReleaseToGithub("${WORKSPACE}/${REPO}","${WORKSPACE}/${REPO}/empty")
           }
         }
