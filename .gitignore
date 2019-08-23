@@ -11,7 +11,8 @@ module_dfu/host/xmosdfu/xmosdfu
 *.xi
 *.i
 *.bin
-.*
+.build*
+*/.venv/*
 *~
 *.a
 *.swp

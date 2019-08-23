@@ -2,6 +2,7 @@
 .. include:: ../../../README.rst
 
 
+==============
 XMOS USB Audio
 ==============
 

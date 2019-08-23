@@ -1,4 +1,4 @@
-// Copyright (c) 2012-2018, XMOS Ltd, All rights reserved
+// Copyright (c) 2012-2019, XMOS Ltd, All rights reserved
 
 #include "xua.h"                          /* Device specific defines */
 #ifndef EXCLUDE_USB_AUDIO_MAIN
@@ -123,15 +123,7 @@ on tile[AUDIO_IO_TILE] : buffered out port:32 p_lrclk       = PORT_I2S_LRCLK;
 on tile[AUDIO_IO_TILE] : buffered out port:32 p_bclk        = PORT_I2S_BCLK;
 #endif
 
-/* Note, declared unsafe as sometimes we want to share this port
-e.g. PDM mics and I2S use same master clock IO */
-on tile[AUDIO_IO_TILE] :  port p_mclk_in_          = PORT_MCLK_IN;
-
-/* TODO p_mclk_in should be delared as an unsafe resource */
-unsafe
-{
-        unsafe port p_mclk_in;
-}
+on tile[AUDIO_IO_TILE] :  in port p_mclk_in                 = PORT_MCLK_IN;
 
 #ifndef NO_USB 
 on tile[XUD_TILE] : in port p_for_mclk_count                = PORT_MCLK_COUNT;
@@ -183,6 +175,16 @@ on tile[SPDIF_TX_TILE] : clock    clk_mst_spd               = CLKBLK_SPDIF_TX;
 
 #ifdef SPDIF_RX
 on tile[XUD_TILE] : clock    clk_spd_rx                     = CLKBLK_SPDIF_RX;
+#endif
+
+#if (NUM_PDM_MICS > 0)
+in port p_pdm_clk               = PORT_PDM_CLK;
+
+ in buffered port:32 p_pdm_mics  = PORT_PDM_DATA;
+#if (PDM_TILE != AUDIO_IO_TILE)
+/* If Mics and I2S are not the same tile we need a separate MCLK port */
+in port p_pdm_mclk              = PORT_PDM_MCLK;
+#endif
 #endif
 
 #if(XUD_SERIES_SUPPORT == XUD_L_SERIES) && defined(ADAT_RX)
@@ -351,12 +353,6 @@ VENDOR_REQUESTS_PARAMS_DEC_
             unsigned x;
             thread_speed();
 
-            /* TODO p_mclk_in should be delared as an unsafe resource */
-            unsafe
-            {
-                p_mclk_in = p_mclk_in_;
-            }
-
             /* Attach mclk count port to mclk clock-block (for feedback) */
             //set_port_clock(p_for_mclk_count, clk_audio_mclk);
 #if(AUDIO_IO_TILE != XUD_TILE)
@@ -440,6 +436,9 @@ void usb_audio_io(chanend ?c_aud_in, chanend ?c_adc,
     , server interface i_dfu ?dfuInterface
 #endif
 #if (NUM_PDM_MICS > 0)
+#if (PDM_TILE == AUDIO_IO_TILE)
+    , streaming chanend c_ds_output[2]
+#endif
     , chanend c_pdm_pcm
 #endif
 )
@@ -452,6 +451,11 @@ void usb_audio_io(chanend ?c_aud_in, chanend ?c_adc,
     chan c_dig_rx;
 #else
     #define c_dig_rx null
+#endif
+
+#if (NUM_PDM_MICS > 0) && (PDM_TILE == AUDIO_IO_TILE)
+    /* Configure clocks ports - sharing mclk port with I2S */
+    xua_pdm_mic_config(p_mclk_in, p_pdm_clk, p_pdm_mics, clk_pdm);
 #endif
 
     par
@@ -472,6 +476,7 @@ void usb_audio_io(chanend ?c_aud_in, chanend ?c_adc,
 #define AUDIO_CHANNEL c_aud_in
 #endif
             XUA_AudioHub(AUDIO_CHANNEL
+                , p_mclk_in
 #if (XUA_SPDIF_TX_EN) && (SPDIF_TX_TILE != AUDIO_IO_TILE)
                 , c_spdif_tx
 #endif
@@ -486,6 +491,9 @@ void usb_audio_io(chanend ?c_aud_in, chanend ?c_adc,
 #endif
             );
         }
+#if (NUM_PDM_MICS > 0) && (PDM_TILE == AUDIO_IO_TILE)
+        xua_pdm_mic(c_ds_output, p_pdm_mics);
+#endif
 
 #if defined(SPDIF_RX) || defined(ADAT_RX)
         {
@@ -614,11 +622,6 @@ int main()
 
         on tile[AUDIO_IO_TILE]: 
         {
-            /* TODO p_mclk_in should be delared as an unsafe resource */
-            unsafe
-            {
-                p_mclk_in = p_mclk_in_;
-            }
             usb_audio_io(c_mix_out, c_adc
 #if (XUA_SPDIF_TX_EN) && (SPDIF_TX_TILE != AUDIO_IO_TILE)
                 , c_spdif_tx
@@ -631,6 +634,9 @@ int main()
                 , dfuInterface
 #endif
 #if (NUM_PDM_MICS > 0)
+#if (PDM_TILE == AUDIO_IO_TILE)
+                , c_ds_output
+#endif
                 , c_pdm_pcm
 #endif
             );
@@ -706,16 +712,14 @@ int main()
 
 #ifndef PDM_RECORD
 #if (NUM_PDM_MICS > 0)
-
+#if (PDM_TILE != AUDIO_IO_TILE)
+        /* PDM Mics running on a separate to AudioHub */
         on stdcore[PDM_TILE]:
         { 
-            /* TODO p_mclk_in should be delared as an unsafe resource */
-            unsafe
-            {
-                p_mclk_in = p_mclk_in_;
-            }
-            pdm_mic(c_ds_output);
+            xua_pdm_mic_config(p_pdm_mclk, p_pdm_clk, p_pdm_mics, clk_pdm);
+            xua_pdm_mic(c_ds_output, p_pdm_mics);
         }
+#endif
 #ifdef MIC_PROCESSING_USE_INTERFACE
         on stdcore[PDM_TILE].core[0]: pdm_buffer(c_ds_output, c_pdm_pcm, i_mic_process);
 #else

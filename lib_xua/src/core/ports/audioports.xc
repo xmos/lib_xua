@@ -1,4 +1,4 @@
-// Copyright (c) 2011-2018, XMOS Ltd, All rights reserved
+// Copyright (c) 2011-2019, XMOS Ltd, All rights reserved
 #include <xs1.h>
 #include <platform.h>
 #include <print.h>
@@ -7,7 +7,7 @@
 
 
 
-extern unsafe port p_mclk_in;
+extern in port p_mclk_in;
 extern clock    clk_audio_mclk;
 extern clock    clk_audio_bclk;
 

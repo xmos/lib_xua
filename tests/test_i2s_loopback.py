@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# Copyright (c) 2018-2019, XMOS Ltd, All rights reserved
 import xmostest
 
 def runtest_one_config(env, format, i2s_role, num_chans_in, num_chans_out, sample_rate):

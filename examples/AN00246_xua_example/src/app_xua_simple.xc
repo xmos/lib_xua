@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2018, XMOS Ltd, All rights reserved
+// Copyright (c) 2017-2019, XMOS Ltd, All rights reserved
 
 /* A very simple *example* of a USB audio application (and as such is un-verified for production)
  *
@@ -24,13 +24,7 @@ buffered out port:32 p_bclk         = PORT_I2S_BCLK;     /* I2S L/R-clock */
 
 /* Note, declared unsafe as sometimes we want to share this port
 e.g. PDM mics and I2S use same master clock IO */
-port p_mclk_in_                     = PORT_MCLK_IN;
-
-unsafe
-{
-    /* TODO simplify this */
-    unsafe port p_mclk_in;                               /* Audio master clock input */
-}
+in port p_mclk_in                   = PORT_MCLK_IN;
 
 in port p_for_mclk_count            = PORT_MCLK_COUNT;   /* Extra port for counting master clock ticks */
 in port p_mclk_in2                  = PORT_MCLK_IN2;
@@ -85,11 +79,7 @@ int main()
 
         /* IOHub core does most of the audio IO i.e. I2S (also serves as a hub for all audio) */
         on tile[0]: {
-                        unsafe
-                        {
-                            p_mclk_in = p_mclk_in_; 
-                        }
-                        XUA_AudioHub(c_aud);
+                        XUA_AudioHub(c_aud, p_mclk_in);
                     }
     }
     

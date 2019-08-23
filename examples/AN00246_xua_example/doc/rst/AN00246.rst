@@ -1,4 +1,5 @@
 .. include:: ../../README.rst
+.. |I2C| replace:: I\ :sup:`2`\ C
 
 |newpage|
 
@@ -16,10 +17,10 @@ the xCORE-200 MC Audio board.
 Block diagram
 .............
 
-.. figure:: images/block_diagram.*
-   :width: 80%
-
-   Application block diagram
+.. .. figure:: images/block_diagram.*
+..   :width: 80%
+..
+..   Application block diagram
 
 The application uses a single logical core which runs the application and makes
 calls to the |I2C| master library functions as required.
@@ -135,6 +136,17 @@ the audio I/O (i.e. I2S signalling).
 
 Configuration 
 .............
+
+``lib_xua`` has many parameters than can be configured at build time, some examples include:
+
+    - Sample-rates
+    - Channel counts
+    - Audio Class version
+    - Product/Vendor ID's
+    - Various product strings
+    - Master clock frequency
+
+These parameters are set via defines in an optional ``xua_conf.h`` header file.
 
 |appendix|
 |newpage|

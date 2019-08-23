@@ -1,6 +1,14 @@
 lib_xua Change Log
 ==================
 
+0.1.3
+-----
+
+  * CHANGED:   Remove sharing of global master clock port variable for
+    compatibility with tools 14.4 (API change but preserve 0.1 version as this
+    is maintenance branch)
+  * CHANGED:   Remove obsolete -fsubword-select to clear warning in tools 14.4
+
 0.1.2
 -----
 
@@ -55,7 +63,7 @@ lib_xua Change Log
 
 
 Legacy release history
-----------------------
+======================
 
 (Note: Forked from sc_usb_audio at this point)
 
@@ -332,7 +340,7 @@ Legacy release history
 
 
 Legacy release history
-----------------------
+======================
 
 Please see changelog in sw_usb_audio for changes prior to 6.8.0 release.
 
