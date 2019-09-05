@@ -1,17 +1,6 @@
 lib_xua Change Log
 ==================
 
-0.3.0
------
-
-  * CHANGED: Build files updated to support new "xcommon" behaviour in xwaf.
-
-  * Changes to dependencies:
-
-    - lib_dsp: Added dependency 5.0.0
-
-    - lib_mic_array: Added dependency 4.0.0
-
 0.2.0
 -----
 
@@ -24,6 +13,7 @@ lib_xua Change Log
   * CHANGE:    Moved to lib_spdif (from module_spdif_tx & module_spdif_rx)
   * CHANGE:    Define NUM_PDM_MICS renamed to XUA_NUM_PDM_MICS
   * CHANGE:    Define NO_USB renamed to XUA_USB_EN
+  * CHANGE:    Build files updated to support new "xcommon" behaviour in xwaf.
   * RESOLVED:  wChannelConfig in UAC1 descriptor set according to output channel
     count
   * RESOLVED:  Indexing of ADAT channel strings (#18059)
@@ -34,6 +24,10 @@ lib_xua Change Log
     - lib_spdif: Added dependency 3.1.0
 
     - lib_xassert: Added dependency 3.0.1
+
+    - lib_dsp: Added dependency 5.0.0
+
+    - lib_mic_array: Added dependency 4.0.0
 
 0.1.2
 -----
