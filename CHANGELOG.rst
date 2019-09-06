@@ -21,13 +21,13 @@ lib_xua Change Log
 
   * Changes to dependencies:
 
-    - lib_spdif: Added dependency 3.1.0
-
-    - lib_xassert: Added dependency 3.0.1
-
     - lib_dsp: Added dependency 5.0.0
 
     - lib_mic_array: Added dependency 4.0.0
+
+    - lib_spdif: Added dependency 3.1.0
+
+    - lib_xassert: Added dependency 3.0.1
 
 0.1.2
 -----
