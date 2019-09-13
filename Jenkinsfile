@@ -6,8 +6,7 @@ pipeline {
   agent none
   environment {
     REPO = 'lib_xua'
-    VIEW = 'lib_xua_xwaf_xcommon'
-    //VIEW = "${env.JOB_NAME.contains('PR-') ? REPO+'_'+env.CHANGE_TARGET : REPO+'_'+env.BRANCH_NAME}"
+    VIEW = "${env.JOB_NAME.contains('PR-') ? REPO+'_'+env.CHANGE_TARGET : REPO+'_'+env.BRANCH_NAME}"
   }
   triggers {
     /* Trigger this Pipeline on changes to the repos dependencies
