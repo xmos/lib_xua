@@ -1,4 +1,4 @@
-// Copyright (c) 2015-2018, XMOS Ltd, All rights reserved
+// Copyright (c) 2015-2019, XMOS Ltd, All rights reserved
 
 #include "xua.h"
 
@@ -88,7 +88,7 @@ void XUA_PdmBuffer(streaming chanend c_ds_output[2], chanend c_audio)
         fir_coefs[6] = g_third_stage_div_12_fir;
 
         //dcc = {MIC_ARRAY_MAX_FRAME_SIZE_LOG2, 1, 0, 0, decimationfactor, fir_coefs[decimationfactor/2], 0, 0, DECIMATOR_NO_FRAME_OVERLAP, 2};
-        dcc.frame_size_log2 = MIC_ARRAY_MAX_FRAME_SIZE_LOG2;
+        dcc.len = MIC_ARRAY_MAX_FRAME_SIZE_LOG2;
         dcc.apply_dc_offset_removal = 1;
         dcc.index_bit_reversal = 0;
         dcc.windowing_function = null;
@@ -107,6 +107,7 @@ void XUA_PdmBuffer(streaming chanend c_ds_output[2], chanend c_audio)
         dc[0].mic_gain_compensation[2]=0;
         dc[0].mic_gain_compensation[3]=0;
         dc[0].channel_count = 4;
+        dc[0].async_interface_enabled = 0;
         dc[1].dcc = &dcc;
         dc[1].data = mic_decimator_fir_data[4];
         dc[1].mic_gain_compensation[0]=0;
@@ -114,6 +115,7 @@ void XUA_PdmBuffer(streaming chanend c_ds_output[2], chanend c_audio)
         dc[1].mic_gain_compensation[2]=0;
         dc[1].mic_gain_compensation[3]=0;
         dc[1].channel_count = 4;
+        dc[0].async_interface_enabled = 0;
 
         mic_array_decimator_configure(c_ds_output, decimatorCount, dc);
 
