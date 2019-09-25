@@ -2309,18 +2309,6 @@ const unsigned num_freqs_a1 = MAX(3, (0
 #define DFU_INTERFACES_A1     0
 #endif
 
-/* Total number of bytes returned for the class-specific AudioControl interface descriptor.
- * Includes the combined length of this descriptor header and all Unit and Terminal descriptors
- * For us this is IT -> FU -> OT * 2 and a header */
-#define AC_TOTAL_LENGTH             (AC_LENGTH + \
-                                    (INPUT_INTERFACES_A1 *  (12 + ( (8 + NUM_USB_CHAN_IN_FS) * INPUT_VOLUME_CONTROL) + 9)) +\
-                                    (OUTPUT_INTERFACES_A1 * (12 + ( (8 + NUM_USB_CHAN_OUT_FS) * OUTPUT_VOLUME_CONTROL) + 9)))
-
-#define STREAMING_INTERFACES        (INPUT_INTERFACES_A1 + OUTPUT_INTERFACES_A1)
-
-//#if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP)
-//#define CFG_TOTAL_LENGTH_A1         (18 + AC_TOTAL_LENGTH + (INPUT_INTERFACES_A1 * (49 + num_freqs_a1 * 3)) + (OUTPUT_INTERFACES_A1 * (58 + num_freqs_a1 * 3)) + CONTROL_INTERFACE_BYTES + DFU_INTERFACE_BYTES)
-//#endif
 
 /* Total number of bytes returned for the class-specific AudioControl interface descriptor.
  * Includes the combined length of this descriptor header and all Unit and Terminal descriptors
