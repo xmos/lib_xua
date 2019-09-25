@@ -2197,12 +2197,12 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
 #if( 0 < HID_CONTROLS )
 unsigned char hidDescriptor[] =
 {
-    9,                                    /* 0  bLength : Size of descriptor in Bytes */
+    0x09,                                 /* 0  bLength : Size of descriptor in Bytes */
     0x21,                                 /* 1  bDescriptorType (HID) */
     0x10,                                 /* 2  bcdHID */
     0x01,                                 /* 3  bcdHID */
-    0,                                    /* 4  bCountryCode */
-    1,                                    /* 5  bNumDescriptors */
+    0x00,                                 /* 4  bCountryCode */
+    0x01,                                 /* 5  bNumDescriptors */
     0x22,                                 /* 6  bDescriptorType[0] (Report) */
     sizeof(hidReportDescriptor) & 0xff,   /* 7  wDescriptorLength[0] */
     sizeof(hidReportDescriptor) >> 8,     /* 8  wDescriptorLength[0] */
