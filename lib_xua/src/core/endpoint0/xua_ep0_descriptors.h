@@ -547,7 +547,7 @@ unsigned char devQualDesc_Null[] =
 #endif
 
 
-#ifdef HID_CONTROLS
+#if( 0 < HID_CONTROLS )
 unsigned char hidReportDescriptor[] =
 {
     0x05, 0x0c,     /* Usage Page (Consumer Device) */
@@ -769,7 +769,7 @@ typedef struct
 #endif
 #endif
 
-#ifdef HID_CONTROLS
+#if( 0 < HID_CONTROLS )
     USB_Descriptor_Interface_t                  HID_Interface;
     unsigned char hidDesc[9];                   //TODO ideally we would have a struct for this.
     USB_Descriptor_Endpoint_t                   HID_In_Endpoint;
@@ -2153,7 +2153,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
 #endif
 #endif /* IAP */
 
-#ifdef HID_CONTROLS
+#if( 0 < HID_CONTROLS )
     .HID_Interface =
     {
         9,                                /* 0  bLength : Size of descriptor in Bytes */
@@ -2194,7 +2194,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
 };
 #endif /* (AUDIO_CLASS == 2) */
 
-#ifdef HID_CONTROLS
+#if( 0 < HID_CONTROLS )
 unsigned char hidDescriptor[] =
 {
     9,                                    /* 0  bLength : Size of descriptor in Bytes */
