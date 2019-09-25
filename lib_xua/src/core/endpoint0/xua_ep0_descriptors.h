@@ -556,15 +556,10 @@ unsigned char hidReportDescriptor[] =
     0x15, 0x00,     /* Logical Minimum (0) */
     0x25, 0x01,     /* Logical Maximum (1) */
     0x09, 0xb0,     /* Usage (Play) */
-    0x09, 0xb5,     /* Usage (Scan Next Track) */
-    0x09, 0xb6,     /* Usage (Scan Previous Track) */
-    0x09, 0xe9,     /* Usage (Volume Up) */
-    0x09, 0xea,     /* Usage (Volume Down) */
-    0x09, 0xe2,     /* Usage (Mute) */
     0x75, 0x01,     /* Report Size (1) */
-    0x95, 0x06,     /* Report Count (6) */
+    0x95, 0x01,     /* Report Count (1) */
     0x81, 0x02,     /* Input (Data, Var, Abs) */
-    0x95, 0x02,     /* Report Count (2) */
+    0x95, 0x07,     /* Report Count (7) */
     0x81, 0x01,     /* Input (Cnst, Ary, Abs) */
     0xc0            /* End collection */
 };
@@ -2855,7 +2850,7 @@ unsigned char cfgDesc_Audio1[] =
     0x00,                                 /* 4  bCountryCode */
     0x01,                                 /* 5  bNumDescriptors */
     0x22,                                 /* 6  bDescriptorType[0] (Report) */
-    0x21,                                 /* 7  wDescriptorLength[0] */
+    0x17,                                 /* 7  wDescriptorLength[0] */
     0x00,                                 /* 8  wDescriptorLength[0] */
 
     /* HID Endpoint descriptor (IN) */
