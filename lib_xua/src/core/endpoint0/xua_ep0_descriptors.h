@@ -2863,7 +2863,8 @@ unsigned char cfgDesc_Audio1[] =
     0x05,                                 /* 1  bDescriptorType */
     ENDPOINT_ADDRESS_IN_HID,              /* 2  bEndpointAddress  */
     0x03,                                 /* 3  bmAttributes (INTERRUPT) */
-    64,                                   /* 4  wMaxPacketSize */
+    0x40,                                 /* 4  wMaxPacketSize */
+    0x00,                                 /* 5  wMaxPacketSize */
     0x08,                                 /* 6  bInterval */
 #endif
 
