@@ -1084,7 +1084,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
             },
             0,                      /* 60 iFeature */
         },
-#endif
+#endif /* (OUTPUT_VOLUME_CONTROL == 1) */
 
         /* Output Terminal Descriptor (Audio) */
         .Audio_Out_OutputTerminal =
@@ -1104,7 +1104,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
             0x0000,                                      /* 9  bmControls */
             0,                                           /* 11 iTerminal */
         },
-#endif
+#endif /* (NUM_USB_CHAN_OUT > 0) */
 
 
 
@@ -1259,7 +1259,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
             },
             0,                            /* 60 iFeature */
         },
-#endif
+#endif /* (INPUT_VOLUME_CONTROL == 1) */
 
         .Audio_In_OutputTerminal =
         {
@@ -1280,7 +1280,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
             .bmControls                = 0x0000,
             .iTerminal                 = offsetof(StringDescTable_t, usbOutputTermStr_Audio2)/sizeof(char *)
         },
-#endif
+#endif /* (NUM_USB_CHAN_IN > 0) */
 
 #if defined(MIXER) && (MAX_MIX_COUNT > 0)
         /* Extension Unit Descriptor (4.7.2.12) */
@@ -1374,7 +1374,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
             0x00,                         /* bmControls */
             0                             /* Mixer unit string descriptor index */
         },
-#endif
+#endif /* defined(MIXER) && (MAX_MIX_COUNT > 0) */
 
 #if (SPDIF_RX) || (ADAT_RX)
         /* Standard AS Interrupt Endpoint Descriptor (4.8.2.1): */
@@ -1571,7 +1571,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
         4,                                /* 6  bInterval. Only values <= 1 frame (4) supported by MS */
     },
 #endif
-#endif
+#endif /* OUTPUT_FORMAT_COUNT > 1 */
 #if (OUTPUT_FORMAT_COUNT > 2)
     /* Standard AS Interface Descriptor (4.9.1) (Alt) */
     .Audio_Out_StreamInterface_Alt3 =
@@ -1815,7 +1815,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
         .bLockDelayUnits               = 0x02,
         .wLockDelay                    = 0x0008,
     },
-#endif
+#endif /* (INPUT_FORMAT_COUNT > 1) */
 #if (INPUT_FORMAT_COUNT > 2)
     /* Alternative 3 */
     /* Standard AS Interface Descriptor (4.9.1) (Alt) */
@@ -1888,7 +1888,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
         .bLockDelayUnits               = 0x02,
         .wLockDelay                    = 0x0008,
     },
-#endif
+#endif /* (INPUT_FORMAT_COUNT > 2) */
 
 #endif /* #if(NUM_USB_CHAN_IN > 0) */
 #ifdef MIDI
@@ -2044,7 +2044,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
     0x10,                                 /* 7    bcdDFUVersion */
     0x01},                                /* 7    bcdDFUVersion */
 #endif
-#endif
+#endif /* (XUA_DFU_EN == 1) */
 
 #ifdef IAP
     /* Interface descriptor */
@@ -2192,7 +2192,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
 #endif
 
 };
-#endif
+#endif /* (AUDIO_CLASS == 2) */
 
 #ifdef HID_CONTROLS
 unsigned char hidDescriptor[] =
