@@ -555,10 +555,10 @@ unsigned char hidReportDescriptor[] =
     0xa1, 0x01,     /* Collection (Application) */
     0x15, 0x00,     /* Logical Minimum (0) */
     0x25, 0x01,     /* Logical Maximum (1) */
-    0x09, 0xb0,     /* Usage (Play) */
+    0x09, 0xcf,     /* Usage (Voice Command), use 0xcd for (Play/Pause OSC) */
     0x75, 0x01,     /* Report Size (1) */
     0x95, 0x01,     /* Report Count (1) */
-    0x81, 0x02,     /* Input (Data, Var, Abs) */
+    0x81, 0x06,     /* Input (Data, Var, Rel) */
     0x95, 0x07,     /* Report Count (7) */
     0x81, 0x01,     /* Input (Cnst, Ary, Abs) */
     0xc0            /* End collection */
