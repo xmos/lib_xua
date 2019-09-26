@@ -1,6 +1,11 @@
 lib_xua Change Log
 ==================
 
+0.2.0_demo
+----------
+  * ADDED:     UAC1 HID support with simulated Voice Command detection reported
+    every 10 seconds
+
 0.2.0
 -----
 
