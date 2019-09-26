@@ -21,7 +21,7 @@
 #include "vendorrequests.h"
 #include "xc_ptr.h"
 #include "xua_ep0_uacreqs.h"
-#ifdef HID_CONTROLS
+#if( 0 < HID_CONTROLS )
 #include "hid.h"
 #endif
 #if DSD_CHANS_DAC > 0
@@ -492,7 +492,7 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
 
                 switch(sp.bRequest)
                 {
-#ifdef HID_CONTROLS
+#if( 0 < HID_CONTROLS )
                     case USB_GET_DESCRIPTOR:
 
                         /* Check what inteface request is for */
@@ -871,7 +871,7 @@ void XUA_Endpoint0_lite_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend 
 
                 switch(sp.bRequest)
                 {
-#ifdef HID_CONTROLS
+#if( 0 < HID_CONTROLS )
                     case USB_GET_DESCRIPTOR:
 
                         /* Check what inteface request is for */

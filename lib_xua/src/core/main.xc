@@ -259,7 +259,7 @@ XUD_EpType epTypeTableIn[ENDPOINT_COUNT_IN] = { XUD_EPTYPE_CTL | XUD_STATUS_ENAB
 #ifdef MIDI
                                             XUD_EPTYPE_BUL,
 #endif
-#ifdef HID_CONTROLS
+#if( 0 < HID_CONTROLS )
                                             XUD_EPTYPE_INT,
 #endif
 #ifdef IAP
@@ -400,7 +400,7 @@ VENDOR_REQUESTS_PARAMS_DEC_
                 c_clk_int,
 #endif
                 c_sof, c_aud_ctl, p_for_mclk_count
-#ifdef HID_CONTROLS
+#if( 0 < HID_CONTROLS )
                 , c_xud_in[ENDPOINT_NUMBER_IN_HID]
 #endif
 #ifdef CHAN_BUFF_CTRL

@@ -425,10 +425,6 @@
 #define HID_CONTROLS       (0)
 #endif
 
-#if defined(HID_CONTROLS) && (HID_CONTROLS == 0)
-#undef HID_CONTROLS
-#endif
-
 /* @brief Defines whether XMOS device runs as master (i.e. drives LR and Bit clocks)
  *
  * 0: XMOS is I2S master. 1: CODEC is I2s master.
@@ -1177,7 +1173,7 @@ enum USBEndpointNumber_In
 #ifdef MIDI
     ENDPOINT_NUMBER_IN_MIDI,
 #endif
-#ifdef HID_CONTROLS
+#if( 0 < HID_CONTROLS )
     ENDPOINT_NUMBER_IN_HID,
 #endif
 #ifdef IAP

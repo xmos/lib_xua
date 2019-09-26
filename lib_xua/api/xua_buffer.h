@@ -58,7 +58,7 @@ void XUA_Buffer(
             chanend c_sof,
             chanend c_aud_ctl,
             in port p_off_mclk
-#ifdef HID_CONTROLS
+#if( 0 < HID_CONTROLS )
             , chanend c_hid
 #endif
             , chanend c_aud
@@ -97,7 +97,7 @@ void XUA_Buffer_Ep(chanend c_aud_out,
             chanend c_sof,
             chanend c_aud_ctl,
             in port p_off_mclk
-#ifdef HID_CONTROLS
+#if( 0 < HID_CONTROLS )
             , chanend c_hid
 #endif
 #ifdef CHAN_BUFF_CTRL

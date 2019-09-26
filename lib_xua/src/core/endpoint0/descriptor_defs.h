@@ -54,7 +54,7 @@ enum USBInterfaceNumber
     INTERFACE_NUMBER_IAP_EA_NATIVE_TRANS,
 #endif
 #endif
-#if defined(HID_CONTROLS) && (HID_CONTROLS != 0)
+#if( 0 < HID_CONTROLS )
     INTERFACE_NUMBER_HID,
 #endif
     INTERFACE_COUNT          /* End marker */
