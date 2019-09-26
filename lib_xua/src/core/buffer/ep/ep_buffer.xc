@@ -19,7 +19,7 @@
 #include "xud.h"
 #include "testct_byref.h"
 
-#ifdef HID_CONTROLS
+#if( 0 < HID_CONTROLS )
 #include "user_hid.h"
 unsigned char g_hidData[1] = {0};
 #endif
@@ -120,7 +120,7 @@ void XUA_Buffer(
             chanend c_sof,
             chanend c_aud_ctl,
             in port p_off_mclk
-#ifdef HID_CONTROLS
+#if( 0 < HID_CONTROLS )
             , chanend c_hid
 #endif
             , chanend c_aud
@@ -164,7 +164,7 @@ void XUA_Buffer(
                 c_clk_int,
 #endif
                 c_sof, c_aud_ctl, p_off_mclk
-#ifdef HID_CONTROLS
+#if( 0 < HID_CONTROLS )
                 , c_hid
 #endif
 #ifdef CHAN_BUFF_CTRL
@@ -223,7 +223,7 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
             chanend c_sof,
             chanend c_aud_ctl,
             in port p_off_mclk
-#ifdef HID_CONTROLS
+#if( 0 < HID_CONTROLS )
             , chanend c_hid
 #endif
 #ifdef CHAN_BUFF_CTRL
@@ -260,7 +260,7 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
     XUD_ep ep_int = XUD_InitEp(c_ep_int);
 #endif
 
-#ifdef HID_CONTROLS
+#if( 0 < HID_CONTROLS )
     XUD_ep ep_hid = XUD_InitEp(c_hid);
 #endif
     unsigned u_tmp;
@@ -364,7 +364,7 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
 #endif
 #endif
 
-#ifdef HID_CONTROLS
+#if( 0 < HID_CONTROLS )
     XUD_SetReady_In(ep_hid, g_hidData, 1);
 #endif
 
@@ -875,12 +875,12 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
 #endif
 #endif
 
-#ifdef HID_CONTROLS
+#if( 0 < HID_CONTROLS )
             /* HID Report Data */
             case XUD_SetData_Select(c_hid, ep_hid, result):
             {
                 g_hidData[0]=0;
-                UserReadHIDButtons(g_hidData);
+                UserReadHIDData(g_hidData);
                 XUD_SetReady_In(ep_hid, g_hidData, 1);
             }
             break;

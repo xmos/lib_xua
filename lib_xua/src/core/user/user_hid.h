@@ -9,5 +9,7 @@
 #define HID_CONTROL_VOLDN_SHIFT		   0x04
 #define HID_CONTROL_MUTE_SHIFT		   0x05
 
-void UserReadHIDButtons(unsigned char hidData[]);
+#define HID_DATA_SIZE 1
+
+void UserReadHIDData(unsigned char hidData[HID_DATA_SIZE]);
 
