@@ -11,5 +11,34 @@
 
 #define HID_DATA_SIZE 1
 
+#ifndef HID_SIMULATE_INTERRUPTS
+#define HID_SIMULATE_INTERRUPTS 0
+#endif
+
+#ifndef HID_SIMULATE_NDP10X
+#define HID_SIMULATE_NDP10X 0
+#endif
+
+#ifndef NDP_ASSERT_HIGH
+#define NDP_ASSERT_HIGH 0
+#endif
+
+#if( 0 < HID_CONTROLS )
+
+#if( 0 < NDP_ASSERT_HIGH )
+#define NDP100_ASSERT_LEVEL   1
+#define NDP100_DEASSERT_LEVEL 0
+#else
+#define NDP100_ASSERT_LEVEL   0
+#define NDP100_DEASSERT_LEVEL 1
+#endif
+
+#if(( 0 < HID_SIMULATE_INTERRUPTS ) || ( 0 < HID_SIMULATE_NDP10X ))
+#define HID_DEASSERT_COUNT    10000000
+#define HID_INTERRUPT_COUNT 1000000000
+#endif
+
+#endif /* ( 0 < HID_CONTROLS ) */
+
 void UserReadHIDData(in port p_int, unsigned char hidData[HID_DATA_SIZE]);
 
