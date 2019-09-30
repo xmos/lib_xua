@@ -11,5 +11,5 @@
 
 #define HID_DATA_SIZE 1
 
-void UserReadHIDData(unsigned char hidData[HID_DATA_SIZE]);
+void UserReadHIDData(in port p_int, unsigned char hidData[HID_DATA_SIZE]);
 

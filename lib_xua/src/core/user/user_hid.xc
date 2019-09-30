@@ -14,7 +14,7 @@ static unsigned int curr_time  = 0;
 static unsigned int last_time  = 0;
 static unsigned int tick_count = 0;
 
-void UserReadHIDData( unsigned char hidData[ HID_DATA_SIZE ])
+void UserReadHIDData( in port p_int, unsigned char hidData[ HID_DATA_SIZE ])
 {
   timer tmr;
 

@@ -122,6 +122,7 @@ void XUA_Buffer(
             in port p_off_mclk
 #if( 0 < HID_CONTROLS )
             , chanend c_hid
+            , in port p_int
 #endif
             , chanend c_aud
 )
@@ -166,6 +167,7 @@ void XUA_Buffer(
                 c_sof, c_aud_ctl, p_off_mclk
 #if( 0 < HID_CONTROLS )
                 , c_hid
+                , p_int
 #endif
 #ifdef CHAN_BUFF_CTRL
                 , c_buff_ctrl
@@ -225,6 +227,7 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
             in port p_off_mclk
 #if( 0 < HID_CONTROLS )
             , chanend c_hid
+            , in port p_int
 #endif
 #ifdef CHAN_BUFF_CTRL
             , chanend c_buff_ctrl
@@ -880,7 +883,7 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
             case XUD_SetData_Select(c_hid, ep_hid, result):
             {
                 g_hidData[0]=0;
-                UserReadHIDData(g_hidData);
+                UserReadHIDData(p_int, g_hidData);
                 XUD_SetReady_In(ep_hid, g_hidData, 1);
             }
             break;
