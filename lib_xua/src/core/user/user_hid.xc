@@ -13,7 +13,12 @@ void UserReadHIDData( in port p_int, unsigned char hidData[ HID_DATA_SIZE ])
   unsigned curr_val;
 
   p_int :> curr_val;
-  hidData[ 0 ] = ( curr_val == NDP10X_ASSERT_LEVEL ) ? HID_REPORT_INTERRUPT_ASSERTED : HID_REPORT_INTERRUPT_DEASSERTED;
+
+  if( curr_val == NDP10X_ASSERT_LEVEL ) {
+    hidData[ 0 ] = HID_REPORT_INTERRUPT_ASSERTED;
+  } else {
+    hidData[ 0 ] = HID_REPORT_INTERRUPT_DEASSERTED;
+  }
 
   for( unsigned idx = 1; idx < HID_DATA_SIZE; ++idx ) {
     hidData[ idx ] = 0U;
