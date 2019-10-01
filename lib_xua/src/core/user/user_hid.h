@@ -30,11 +30,12 @@
 #endif
 
 #if( 0 < HID_SIMULATE_INTERRUPTS )
-#define HID_DEASSERT_COUNT    10000000
+#define HID_DEASSERT_COUNT       10000
 #define HID_INTERRUPT_COUNT 1000000000
 #endif
 
+void UserInitHIDData(void);
+void UserReadHIDData(unsigned char hidData[ HID_DATA_SIZE ]);
+void UserSetHIDData(const unsigned hidData);
+
 #endif /* ( 0 < HID_CONTROLS ) */
-
-void UserReadHIDData(in port p_int, unsigned char hidData[HID_DATA_SIZE]);
-

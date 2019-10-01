@@ -8,20 +8,28 @@
 #define HID_REPORT_INTERRUPT_ASSERTED   0x01
 #define HID_REPORT_INTERRUPT_DEASSERTED 0x00
 
-void UserReadHIDData( in port p_int, unsigned char hidData[ HID_DATA_SIZE ])
+static unsigned char s_hidData;
+
+void UserInitHIDData( void )
 {
-  unsigned curr_val;
+  s_hidData  = HID_REPORT_INTERRUPT_DEASSERTED;
+}
 
-  p_int :> curr_val;
+void UserReadHIDData( unsigned char hidData[ HID_DATA_SIZE ])
+{
+  hidData[ 0 ] = s_hidData;
 
-  if( curr_val == NDP10X_ASSERT_LEVEL ) {
-    hidData[ 0 ] = HID_REPORT_INTERRUPT_ASSERTED;
-  } else {
-    hidData[ 0 ] = HID_REPORT_INTERRUPT_DEASSERTED;
+  for( unsigned i = 1; i < HID_DATA_SIZE; ++i ) {
+    hidData[ i ] = 0U;
   }
+}
 
-  for( unsigned idx = 1; idx < HID_DATA_SIZE; ++idx ) {
-    hidData[ idx ] = 0U;
+void UserSetHIDData( const unsigned hidData )
+{
+  if( hidData == NDP10X_ASSERT_LEVEL ) {
+    s_hidData = HID_REPORT_INTERRUPT_ASSERTED;
+  } else {
+    s_hidData = HID_REPORT_INTERRUPT_DEASSERTED;
   }
 }
 
