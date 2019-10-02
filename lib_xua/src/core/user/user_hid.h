@@ -34,8 +34,9 @@
 #define HID_INTERRUPT_COUNT 1000000000
 #endif
 
-void UserInitHIDData(void);
-void UserReadHIDData(unsigned char hidData[ HID_DATA_SIZE ]);
-void UserSetHIDData(const unsigned hidData);
+select UserHIDTrigger( unsigned* hidValueLatched );
+void UserInitHIDData( void );
+void UserReadHIDData( unsigned char hidData[ HID_DATA_SIZE ]);
+void UserSetHIDData( const unsigned hidData );
 
 #endif /* ( 0 < HID_CONTROLS ) */
