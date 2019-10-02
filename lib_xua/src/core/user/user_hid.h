@@ -21,7 +21,7 @@
 
 #if( 0 < HID_CONTROLS )
 
-#if( 0 < NDP_ASSERT_LEVEL )
+#if( 0 < INTERRUPT_ASSERT_LEVEL )
 #define INT_ASSERT_LEVEL   1
 #define INT_DEASSERT_LEVEL 0
 #else
