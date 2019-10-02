@@ -26,7 +26,7 @@ void UserReadHIDData( unsigned char hidData[ HID_DATA_SIZE ])
 
 void UserSetHIDData( const unsigned hidData )
 {
-  if( hidData == NDP10X_ASSERT_LEVEL ) {
+  if( hidData == INT_ASSERT_LEVEL ) {
     s_hidData = HID_REPORT_INTERRUPT_ASSERTED;
   } else {
     s_hidData = HID_REPORT_INTERRUPT_DEASSERTED;
