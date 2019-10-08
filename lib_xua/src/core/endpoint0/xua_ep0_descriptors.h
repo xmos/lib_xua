@@ -546,25 +546,7 @@ unsigned char devQualDesc_Null[] =
     #define MIXER_LENGTH                (0)
 #endif
 
-
 #if( 0 < HID_CONTROLS )
-#if 0
-unsigned char hidReportDescriptor[] =
-{
-    0x05, 0x0c,     /* Usage Page (Consumer Device) */
-    0x09, 0x01,     /* Usage (Consumer Control) */
-    0xa1, 0x01,     /* Collection (Application) */
-    0x15, 0x00,     /* Logical Minimum (0) */
-    0x25, 0x01,     /* Logical Maximum (1) */
-    0x09, 0xcf,     /* Usage (Voice Command), use 0xcd for (Play/Pause OSC) */
-    0x75, 0x01,     /* Report Size (1) */
-    0x95, 0x01,     /* Report Count (1) */
-    0x81, 0x06,     /* Input (Data, Var, Rel) */
-    0x95, 0x07,     /* Report Count (7) */
-    0x81, 0x01,     /* Input (Cnst, Ary, Abs) */
-    0xc0            /* End collection */
-};
-#else
 unsigned char hidReportDescriptor[] =
 {
     0x15, 0x01,         /* Logical Minimum (1) */
@@ -575,7 +557,7 @@ unsigned char hidReportDescriptor[] =
     0xa1, 0x01,         /* Collection (Application) */
     0x0a, 0x00, 0x02,   /* Usage (Generic GUI Application Controls) */
     0xa1, 0x02,         /* Collection (Logical) */
-    0x0a, 0x21, 0x02,    /* Usage (AC Search) */
+    0x0a, 0x21, 0x02,   /* Usage (AC Search) */
     0x95, 0x01,         /* Report Count (1) */
     0x81, 0x40,         /* Input (Data, Ary, Abs, Nul) */
     0x95, 0x07,         /* Report Count (7) */
@@ -583,7 +565,6 @@ unsigned char hidReportDescriptor[] =
     0xc0,               /* End collection (Logical) */
     0xc0                /* End collection (Application) */
 };
-#endif
 #endif
 
 /* Max packet sizes:
