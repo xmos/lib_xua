@@ -16,7 +16,7 @@ XUD_Result_t HidInterfaceClassRequests(XUD_ep c_ep0_out, XUD_ep c_ep0_in,
 {
     switch (sp.bRequest) {
       case HID_SET_IDLE:
-          printstrln("HID_SET_IDLE\n");
+          printstr("HID_SET_IDLE\n");
           hidSetIdle = 1; // TODO implement duration
           return XUD_DoSetRequestStatus(c_ep0_in);
       default:
