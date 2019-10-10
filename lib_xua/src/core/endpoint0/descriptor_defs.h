@@ -60,4 +60,8 @@ enum USBInterfaceNumber
     INTERFACE_COUNT          /* End marker */
 };
 
+#if( 0 < HID_CONTROLS )
+#define ENDPOINT_INT_INTERVAL_IN_HID 0x08
+#endif
+
 #endif
