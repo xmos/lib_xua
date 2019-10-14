@@ -60,7 +60,7 @@
 extern void device_reboot(void);
 #endif
 
-#if HID_CONTROLS
+#if( 0 < HID_CONTROLS )
 #include "xua_hid.h"
 #endif
 
@@ -993,7 +993,7 @@ void XUA_Endpoint0_lite_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend 
                         }
                     }
 #endif
-#if HID_CONTROLS
+#if( 0 < HID_CONTROLS )
                     if (interfaceNum == INTERFACE_NUMBER_HID)
                     {
                         result = HidInterfaceClassRequests(ep0_out, ep0_in, &sp);
