@@ -9,6 +9,7 @@
 
 static unsigned s_hidIdleActive = 0;
 static unsigned s_hidCurrentPeriod = ENDPOINT_INT_INTERVAL_IN_HID * MS_IN_TICKS;
+static unsigned s_hidIndefiniteDuration = 0;
 static unsigned s_hidNextReportTime = 0;
 static unsigned s_hidReportTime = 0;
 
@@ -163,8 +164,10 @@ XUD_Result_t HidInterfaceClassRequests(
           unsigned reportToSetIdleInterval = HidCalcReportToSetIdleInterval( s_hidReportTime );
           s_hidNextReportTime = HidCalcNewReportTime( s_hidCurrentPeriod, s_hidReportTime, reportToSetIdleInterval, duration * MS_IN_TICKS );
           s_hidCurrentPeriod = duration * MS_IN_TICKS;
+          s_hidIndefiniteDuration = ( 0U == duration );
         } else {
           s_hidCurrentPeriod = ENDPOINT_INT_INTERVAL_IN_HID * MS_IN_TICKS;
+          s_hidIndefiniteDuration = 0;
         }
 
         result = XUD_DoSetRequestStatus( c_ep0_in );
@@ -185,7 +188,7 @@ unsigned HidIsSetIdleSilenced( void )
   if( s_hidIdleActive ) {
     unsigned currentTime;
     asm volatile( "gettime %0" : "=r" ( currentTime )); // Use inline assembly to access the time without creating a side-effect
-    isSilenced = timeafter( s_hidNextReportTime, currentTime );
+    isSilenced = ( s_hidIndefiniteDuration || ( timeafter( s_hidNextReportTime, currentTime )));
   }
 
   return isSilenced;
