@@ -147,7 +147,7 @@ XUD_Result_t HidInterfaceClassRequests(
        */
       uint8_t  duration     = ( sp.wValue & 0xFF00 ) >> 6; // Transform into units of 1ms.
       uint8_t  reportId     =   sp.wValue & 0x00FF;
-      uint16_t interfaceNum = ( sp.wIndex & 0xFF00 ) >> 8;
+      uint16_t interfaceNum =   sp.wIndex;
 
       /*
           As long as our HID Report Descriptor does not include a Report ID, any Report ID value other than zero
