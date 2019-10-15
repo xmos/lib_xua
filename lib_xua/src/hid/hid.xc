@@ -92,11 +92,11 @@ static unsigned HidFindSetIdleActivationPoint( const unsigned currentPeriod, con
  * \param[in]  reportTime              -- The time at which the last HID Report was sent
  * \param[in]  reportToSetIdleInterval -- The time interval between receiving the Set Idle Request
  *                                        and sending the most recent HID Report
- * \param[in]  nextPeriod              -- The new period value in timer ticks
+ * \param[in]  newPeriod               -- The new period value in timer ticks
  *
  * \return     The time at which the next HID Report should be sent
  */
-static unsigned HidCalcNewReportTime( const unsigned currentPeriod, const unsigned reportTime, const unsigned reportToSetIdleInterval, const unsigned nextPeriod )
+static unsigned HidCalcNewReportTime( const unsigned currentPeriod, const unsigned reportTime, const unsigned reportToSetIdleInterval, const unsigned newPeriod )
 {
   unsigned nextReportTime = 0;
 
@@ -105,7 +105,7 @@ static unsigned HidCalcNewReportTime( const unsigned currentPeriod, const unsign
     nextReportTime = reportTime + currentPeriod;
   } else {
     /* Activate immediately after sending the most recent HID Report */
-    nextReportTime = reportTime + nextPeriod;
+    nextReportTime = reportTime + newPeriod;
   }
 
   return nextReportTime;
