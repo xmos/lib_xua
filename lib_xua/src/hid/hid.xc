@@ -146,7 +146,7 @@ XUD_Result_t HidInterfaceClassRequests(
 
           The Set Idle request xIndex field contains the interface number.
        */
-      uint8_t  duration     = ( sp.wValue & 0xFF00 ) >> 6; // Transform into units of 1ms.
+      uint16_t duration     = ( sp.wValue & 0xFF00 ) >> 6; // Transform from units of 4ms into units of 1ms.
       uint8_t  reportId     =   sp.wValue & 0x00FF;
       uint16_t interfaceNum =   sp.wIndex;
 
