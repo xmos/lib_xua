@@ -158,7 +158,7 @@ XUD_Result_t HidInterfaceClassRequests(
           Any Interface value other than INTERFACE_NUMBER_HID indicates an error by the USB Host.
        */
       if(( 0U == reportId ) && ( interfaceNum == INTERFACE_NUMBER_HID )) {
-        s_hidIdleActive = !(( 0 < duration ) && ( duration < ENDPOINT_INT_INTERVAL_IN_HID ));
+        s_hidIdleActive = (( 0U == duration ) || ( ENDPOINT_INT_INTERVAL_IN_HID < duration ));
 
         if( s_hidIdleActive ) {
           unsigned reportToSetIdleInterval = HidCalcReportToSetIdleInterval( s_hidReportTime );
