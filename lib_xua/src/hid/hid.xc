@@ -7,11 +7,11 @@
 
 #define MS_IN_TICKS 100000U
 
-static unsigned s_hidIdleActive = 0;
+static unsigned s_hidIdleActive = 0U;
 static unsigned s_hidCurrentPeriod = ENDPOINT_INT_INTERVAL_IN_HID * MS_IN_TICKS;
-static unsigned s_hidIndefiniteDuration = 0;
-static unsigned s_hidNextReportTime = 0;
-static unsigned s_hidReportTime = 0;
+static unsigned s_hidIndefiniteDuration = 0U;
+static unsigned s_hidNextReportTime = 0U;
+static unsigned s_hidReportTime = 0U;
 
 /**
  * \brief Calculate the difference between two points in time
@@ -167,7 +167,7 @@ XUD_Result_t HidInterfaceClassRequests(
           s_hidIndefiniteDuration = ( 0U == duration );
         } else {
           s_hidCurrentPeriod = ENDPOINT_INT_INTERVAL_IN_HID * MS_IN_TICKS;
-          s_hidIndefiniteDuration = 0;
+          s_hidIndefiniteDuration = 0U;
         }
 
         result = XUD_DoSetRequestStatus( c_ep0_in );
