@@ -132,7 +132,6 @@ XUD_Result_t HidInterfaceClassRequests(
 
   switch ( sp.bRequest ) {
     case HID_SET_IDLE:
-      printstr("HID_SET_IDLE\n");
       /*
           The Set Idle request wValue field contains two sub-fields:
           - Duration in the MSB; and
