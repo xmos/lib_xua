@@ -13,10 +13,11 @@ static unsigned s_hidIndefiniteDuration = 0U;
 static unsigned s_hidNextReportTime = 0U;
 static unsigned s_hidReportTime = 0U;
 
-static unsigned HidCalcNewReportTime( const unsigned currentPeriod, const unsigned reportTime, const unsigned reportToSetIdleInterval, const unsigned newPeriod );
-static unsigned HidCalcReportToSetIdleInterval( const unsigned reportTime );
-static unsigned HidFindSetIdleActivationPoint( const unsigned currentPeriod, const unsigned timeWithinPeriod );
-static unsigned HidTimeDiff( const unsigned earlierTime, const unsigned laterTime );
+static unsigned     HidCalcNewReportTime( const unsigned currentPeriod, const unsigned reportTime, const unsigned reportToSetIdleInterval, const unsigned newPeriod );
+static unsigned     HidCalcReportToSetIdleInterval( const unsigned reportTime );
+static unsigned     HidFindSetIdleActivationPoint( const unsigned currentPeriod, const unsigned timeWithinPeriod );
+static XUD_Result_t HidProcessSetIdleRequest( XUD_ep c_ep0_out, XUD_ep c_ep0_in, USB_SetupPacket_t &sp );
+static unsigned     HidTimeDiff( const unsigned earlierTime, const unsigned laterTime );
 
 void HidCalcNextReportTime( void )
 {
@@ -38,45 +39,7 @@ XUD_Result_t HidInterfaceClassRequests(
 
   switch ( sp.bRequest ) {
     case HID_SET_IDLE:
-      /*
-          The Set Idle request wValue field contains two sub-fields:
-          - Duration in the MSB; and
-          - Report ID in the LSB.
-
-          The Duration field specifies how long the USB Device responds with NAK provided the HID data hasn't changed.
-          Zero means indefinitely.
-          The value is in units of 4ms.
-
-          The Report ID identifies the HID report that the USB Host wishes to silence.
-
-          The Set Idle request xIndex field contains the interface number.
-       */
-      uint16_t duration     = ( sp.wValue & 0xFF00 ) >> 6; // Transform from units of 4ms into units of 1ms.
-      uint8_t  reportId     =   sp.wValue & 0x00FF;
-      uint16_t interfaceNum =   sp.wIndex;
-
-      /*
-          As long as our HID Report Descriptor does not include a Report ID, any Report ID value other than zero
-            indicates an error by the USB Host (see xua_ep0_descriptors.h for the definition of the HID
-            Report Descriptor).
-
-          Any Interface value other than INTERFACE_NUMBER_HID indicates an error by the USB Host.
-       */
-      if(( 0U == reportId ) && ( interfaceNum == INTERFACE_NUMBER_HID )) {
-        s_hidIdleActive = (( 0U == duration ) || ( ENDPOINT_INT_INTERVAL_IN_HID < duration ));
-
-        if( s_hidIdleActive ) {
-          unsigned reportToSetIdleInterval = HidCalcReportToSetIdleInterval( s_hidReportTime );
-          s_hidNextReportTime = HidCalcNewReportTime( s_hidCurrentPeriod, s_hidReportTime, reportToSetIdleInterval, duration * MS_IN_TICKS );
-          s_hidCurrentPeriod = duration * MS_IN_TICKS;
-          s_hidIndefiniteDuration = ( 0U == duration );
-        } else {
-          s_hidCurrentPeriod = ENDPOINT_INT_INTERVAL_IN_HID * MS_IN_TICKS;
-          s_hidIndefiniteDuration = 0U;
-        }
-
-        result = XUD_DoSetRequestStatus( c_ep0_in );
-      }
+      result = HidProcessSetIdleRequest( c_ep0_out, c_ep0_in, sp );
       break;
 
     default:
@@ -173,6 +136,62 @@ static unsigned HidCalcReportToSetIdleInterval( const unsigned reportTime )
 static unsigned HidFindSetIdleActivationPoint( const unsigned currentPeriod, const unsigned timeWithinPeriod )
 {
   unsigned result = (( currentPeriod - timeWithinPeriod ) < ( 4U * MS_IN_TICKS )) ? 1 : 0;
+
+  return result;
+}
+
+/**
+ *  \brief Process a Set Idle request
+ *
+ *  \param[in]  c_ep0_out -- the channel that carries data from Endpoint 0
+ *  \param[in]  c_ep0_in  -- the channel that carries data for Endpoint 0
+ *  \param[in]  sp        -- a structure containing the Set Idle data
+ *
+ *  \return     An XUD status value
+ */
+static XUD_Result_t HidProcessSetIdleRequest( XUD_ep c_ep0_out, XUD_ep c_ep0_in, USB_SetupPacket_t &sp )
+{
+  XUD_Result_t result = XUD_RES_ERR;
+
+    /*
+      The Set Idle request wValue field contains two sub-fields:
+      - Duration in the MSB; and
+      - Report ID in the LSB.
+
+      The Duration field specifies how long the USB Device responds with NAK provided the HID data hasn't changed.
+      Zero means indefinitely.
+      The value is in units of 4ms.
+
+      The Report ID identifies the HID report that the USB Host wishes to silence.
+
+      The Set Idle request xIndex field contains the interface number.
+   */
+  uint16_t duration     = ( sp.wValue & 0xFF00 ) >> 6; // Transform from units of 4ms into units of 1ms.
+  uint8_t  reportId     =   sp.wValue & 0x00FF;
+  uint16_t interfaceNum =   sp.wIndex;
+
+  /*
+      As long as our HID Report Descriptor does not include a Report ID, any Report ID value other than zero
+        indicates an error by the USB Host (see xua_ep0_descriptors.h for the definition of the HID
+        Report Descriptor).
+
+      Any Interface value other than INTERFACE_NUMBER_HID indicates an error by the USB Host.
+   */
+  if(( 0U == reportId ) && ( interfaceNum == INTERFACE_NUMBER_HID )) {
+    s_hidIdleActive = (( 0U == duration ) || ( ENDPOINT_INT_INTERVAL_IN_HID < duration ));
+
+    if( s_hidIdleActive ) {
+      unsigned reportToSetIdleInterval = HidCalcReportToSetIdleInterval( s_hidReportTime );
+      s_hidNextReportTime = HidCalcNewReportTime( s_hidCurrentPeriod, s_hidReportTime, reportToSetIdleInterval, duration * MS_IN_TICKS );
+      s_hidCurrentPeriod = duration * MS_IN_TICKS;
+      s_hidIndefiniteDuration = ( 0U == duration );
+    } else {
+      s_hidCurrentPeriod = ENDPOINT_INT_INTERVAL_IN_HID * MS_IN_TICKS;
+      s_hidIndefiniteDuration = 0U;
+    }
+
+    result = XUD_DoSetRequestStatus( c_ep0_in );
+  }
 
   return result;
 }
