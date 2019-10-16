@@ -177,7 +177,7 @@ static XUD_Result_t HidProcessSetIdleRequest( XUD_ep c_ep0_out, XUD_ep c_ep0_in,
 
       Any Interface value other than INTERFACE_NUMBER_HID indicates an error by the USB Host.
    */
-  if(( 0U == reportId ) && ( interfaceNum == INTERFACE_NUMBER_HID )) {
+  if(( 0U == reportId ) && ( INTERFACE_NUMBER_HID == interfaceNum )) {
     s_hidIdleActive = (( 0U == duration ) || ( ENDPOINT_INT_INTERVAL_IN_HID < duration ));
 
     if( s_hidIdleActive ) {
