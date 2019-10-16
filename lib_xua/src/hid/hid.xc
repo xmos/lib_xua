@@ -13,104 +13,10 @@ static unsigned s_hidIndefiniteDuration = 0U;
 static unsigned s_hidNextReportTime = 0U;
 static unsigned s_hidReportTime = 0U;
 
-/**
- * \brief Calculate the difference between two points in time
- *
- * This function calculates the difference between two two points in time.
- * It always returns a positive value even if the timer used to obtain the two
- *   time measurements has wrapped around.
- *
- * \warning If time values have been obtained from a timer that has wrapped
- *   more than once in between the two measurements, this function returns an
- *   incorrect value.
- *
- * \param[in]  earlierTime -- A value from a timer
- * \param[in]  laterTime   -- A value from a timer taken after \a earlierTime
- *
- * \return     The interval between the two points in time
- */
-static unsigned HidTimeDiff( const unsigned earlierTime, const unsigned laterTime )
-{
-  return ( earlierTime < laterTime ) ? laterTime - earlierTime : UINT_MAX - earlierTime + laterTime;
-}
-
-/**
- * \brief Calculate the time interval between the most recent HID Report and a subsequent Set Idle Request
- *
- * \warning For this function to produce an accurate interval measument, it must be called without delay
- *   upon receiving a Set Idle Request from the USB Host.
- *
- * \param[in]  reportTime -- The time at which the last HID Report was sent
- *
- * \return     The time interval between receiving the Set Idle Request and sending the most recent HID Report
- */
-static unsigned HidCalcReportToSetIdleInterval( const unsigned reportTime )
-{
-  timer tmr;
-  unsigned setIdleTime;
-
-  tmr :> setIdleTime;
-  unsigned result = HidTimeDiff( reportTime, setIdleTime );
-  return result;
-}
-
-/**
- * \brief Indicate if activation of the Set Idle Request happens at the previous or next HID Report
- *
- *  Section 7.2.4 Set_Idle Request of the USB Device Class Definition for Human Interface
- *    Devices (HID) Version 1.11 makes two statements about the activation point for starting the
- *    duration of the request:
- *  - 'A new request will be executed as if it were issued immediately after the last report, if
- *     the new request is received at least 4 milliseconds before the end of the currently executing
- *     period.'
- *  - 'If the new request is received within 4 milliseconds of the end of the current period, then
- *     the new request will have no effect until after the report.'
- *
- * \param[in]  currentPeriod    -- The duration of the current period
- * \param[in]  timeWithinPeriod -- The current point in time relative to the current period
- *
- * \return     A Boolean indicating where the activation of the Set Idle Request Duration occurs.
- * \retval     1 -- Activate immediately after the next HID Report
- * \retval     0 -- Activate immediately after the previous HID Report
- */
-static unsigned HidFindSetIdleActivationPoint( const unsigned currentPeriod, const unsigned timeWithinPeriod )
-{
-  unsigned result = (( currentPeriod - timeWithinPeriod ) < ( 4U * MS_IN_TICKS )) ? 1 : 0;
-
-  return result;
-}
-
-/**
- * \brief Calculate the timer value for sending the next HID Report.
- *
- *  With regard to Section 7.2.4 Set_Idle Request of the USB Device Class Definition for Human
- *    Interface Devices (HID) Version 1.11, I've interpreted 'currently executing period' and
- *    'current period' to mean the previously established Set Idle duration if one has been
- *    established or the polling interval from the HID Report Descriptor if a Set Idle duration
- *    has not been established.
- *
- * \param[in]  currentPeriod           -- The duration of the current period in timer ticks
- * \param[in]  reportTime              -- The time at which the last HID Report was sent
- * \param[in]  reportToSetIdleInterval -- The time interval between receiving the Set Idle Request
- *                                        and sending the most recent HID Report
- * \param[in]  newPeriod               -- The new period value in timer ticks
- *
- * \return     The time at which the next HID Report should be sent
- */
-static unsigned HidCalcNewReportTime( const unsigned currentPeriod, const unsigned reportTime, const unsigned reportToSetIdleInterval, const unsigned newPeriod )
-{
-  unsigned nextReportTime = 0;
-
-  if( HidFindSetIdleActivationPoint( currentPeriod, reportToSetIdleInterval )) {
-    /* Activate immediately after sending the next HID Report */
-    nextReportTime = reportTime + currentPeriod;
-  } else {
-    /* Activate immediately after sending the most recent HID Report */
-    nextReportTime = reportTime + newPeriod;
-  }
-
-  return nextReportTime;
-}
+static unsigned HidCalcNewReportTime( const unsigned currentPeriod, const unsigned reportTime, const unsigned reportToSetIdleInterval, const unsigned newPeriod );
+static unsigned HidCalcReportToSetIdleInterval( const unsigned reportTime );
+static unsigned HidFindSetIdleActivationPoint( const unsigned currentPeriod, const unsigned timeWithinPeriod );
+static unsigned HidTimeDiff( const unsigned earlierTime, const unsigned laterTime );
 
 void HidCalcNextReportTime( void )
 {
@@ -191,4 +97,103 @@ unsigned HidIsSetIdleSilenced( void )
   }
 
   return isSilenced;
+}
+
+/**
+ * \brief Calculate the timer value for sending the next HID Report.
+ *
+ *  With regard to Section 7.2.4 Set_Idle Request of the USB Device Class Definition for Human
+ *    Interface Devices (HID) Version 1.11, I've interpreted 'currently executing period' and
+ *    'current period' to mean the previously established Set Idle duration if one has been
+ *    established or the polling interval from the HID Report Descriptor if a Set Idle duration
+ *    has not been established.
+ *
+ * \param[in]  currentPeriod           -- The duration of the current period in timer ticks
+ * \param[in]  reportTime              -- The time at which the last HID Report was sent
+ * \param[in]  reportToSetIdleInterval -- The time interval between receiving the Set Idle Request
+ *                                        and sending the most recent HID Report
+ * \param[in]  newPeriod               -- The new period value in timer ticks
+ *
+ * \return     The time at which the next HID Report should be sent
+ */
+static unsigned HidCalcNewReportTime( const unsigned currentPeriod, const unsigned reportTime, const unsigned reportToSetIdleInterval, const unsigned newPeriod )
+{
+  unsigned nextReportTime = 0;
+
+  if( HidFindSetIdleActivationPoint( currentPeriod, reportToSetIdleInterval )) {
+    /* Activate immediately after sending the next HID Report */
+    nextReportTime = reportTime + currentPeriod;
+  } else {
+    /* Activate immediately after sending the most recent HID Report */
+    nextReportTime = reportTime + newPeriod;
+  }
+
+  return nextReportTime;
+}
+
+/**
+ * \brief Calculate the time interval between the most recent HID Report and a subsequent Set Idle Request
+ *
+ * \warning For this function to produce an accurate interval measument, it must be called without delay
+ *   upon receiving a Set Idle Request from the USB Host.
+ *
+ * \param[in]  reportTime -- The time at which the last HID Report was sent
+ *
+ * \return     The time interval between receiving the Set Idle Request and sending the most recent HID Report
+ */
+static unsigned HidCalcReportToSetIdleInterval( const unsigned reportTime )
+{
+  timer tmr;
+  unsigned setIdleTime;
+
+  tmr :> setIdleTime;
+  unsigned result = HidTimeDiff( reportTime, setIdleTime );
+  return result;
+}
+
+/**
+ * \brief Indicate if activation of the Set Idle Request happens at the previous or next HID Report
+ *
+ *  Section 7.2.4 Set_Idle Request of the USB Device Class Definition for Human Interface
+ *    Devices (HID) Version 1.11 makes two statements about the activation point for starting the
+ *    duration of the request:
+ *  - 'A new request will be executed as if it were issued immediately after the last report, if
+ *     the new request is received at least 4 milliseconds before the end of the currently executing
+ *     period.'
+ *  - 'If the new request is received within 4 milliseconds of the end of the current period, then
+ *     the new request will have no effect until after the report.'
+ *
+ * \param[in]  currentPeriod    -- The duration of the current period
+ * \param[in]  timeWithinPeriod -- The current point in time relative to the current period
+ *
+ * \return     A Boolean indicating where the activation of the Set Idle Request Duration occurs.
+ * \retval     1 -- Activate immediately after the next HID Report
+ * \retval     0 -- Activate immediately after the previous HID Report
+ */
+static unsigned HidFindSetIdleActivationPoint( const unsigned currentPeriod, const unsigned timeWithinPeriod )
+{
+  unsigned result = (( currentPeriod - timeWithinPeriod ) < ( 4U * MS_IN_TICKS )) ? 1 : 0;
+
+  return result;
+}
+
+/**
+ * \brief Calculate the difference between two points in time
+ *
+ * This function calculates the difference between two two points in time.
+ * It always returns a positive value even if the timer used to obtain the two
+ *   time measurements has wrapped around.
+ *
+ * \warning If time values have been obtained from a timer that has wrapped
+ *   more than once in between the two measurements, this function returns an
+ *   incorrect value.
+ *
+ * \param[in]  earlierTime -- A value from a timer
+ * \param[in]  laterTime   -- A value from a timer taken after \a earlierTime
+ *
+ * \return     The interval between the two points in time
+ */
+static unsigned HidTimeDiff( const unsigned earlierTime, const unsigned laterTime )
+{
+  return ( earlierTime < laterTime ) ? laterTime - earlierTime : UINT_MAX - earlierTime + laterTime;
 }
