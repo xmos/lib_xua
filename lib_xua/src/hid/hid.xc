@@ -5,6 +5,7 @@
 #include "xud_std_requests.h"
 #include "xua_hid.h"
 
+#if( 0 < HID_CONTROLS )
 #define MS_IN_TICKS 100000U
 
 static unsigned s_hidIdleActive = 0U;
@@ -216,3 +217,5 @@ static unsigned HidTimeDiff( const unsigned earlierTime, const unsigned laterTim
 {
   return ( earlierTime < laterTime ) ? laterTime - earlierTime : UINT_MAX - earlierTime + laterTime;
 }
+
+#endif /* ( 0 < HID_CONTROLS ) */
