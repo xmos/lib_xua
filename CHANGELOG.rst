@@ -5,6 +5,7 @@ lib_xua Change Log
 ----------
   * ADDED:     UAC1 HID support with simulated Voice Command detection reported
     every 10 seconds
+  * ADDED:     Support for USB HID Set Idle request
 
 0.2.0
 -----
