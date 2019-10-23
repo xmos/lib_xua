@@ -1,5 +1,4 @@
-// Copyright (c) 2013-2018, XMOS Ltd, All rights reserved
-
+// Copyright (c) 2013-2019, XMOS Ltd, All rights reserved
 
 /* These defines relate to the HID report desc - do not mod */
 #define HID_CONTROL_PLAYPAUSE_SHIFT  0x00
@@ -11,30 +10,8 @@
 
 #define HID_DATA_SIZE 1
 
-#ifndef HID_SIMULATE_INTERRUPTS
-#define HID_SIMULATE_INTERRUPTS 0
-#endif
-
-#ifndef INTERRUPT_ASSERT_LEVEL
-#define INTERRUPT_ASSERT_LEVEL 0
-#endif
-
 #if( 0 < HID_CONTROLS )
 
-#if( 0 < INTERRUPT_ASSERT_LEVEL )
-#define INT_ASSERT_LEVEL   1
-#define INT_DEASSERT_LEVEL 0
-#else
-#define INT_ASSERT_LEVEL   0
-#define INT_DEASSERT_LEVEL 1
-#endif
-
-#if( 0 < HID_SIMULATE_INTERRUPTS )
-#define HID_DEASSERT_COUNT    10000000
-#define HID_INTERRUPT_COUNT 1000000000
-#endif
-
-select UserHIDTrigger( unsigned* hidValueLatched );
 void UserInitHIDData( void );
 void UserReadHIDData( unsigned char hidData[ HID_DATA_SIZE ]);
 void UserSetHIDData( const unsigned hidData );
