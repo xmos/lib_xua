@@ -12,20 +12,26 @@ lib_xua Change Log
 
   * ADDED:     Initial library documentation
   * ADDED:     Application note AN00247: Using lib_xua with lib_spdif (transmit)
+  * ADDED:     Separate callbacks for input/output audio stream start/stop
   * CHANGE:    I2S hardware resources no longer used globally and must be passed
     to XUA_AudioHub()
   * CHANGE:    XUA_AudioHub() no longer pars S/PDIF transmitter task
   * CHANGE:    Moved to lib_spdif (from module_spdif_tx & module_spdif_rx)
   * CHANGE:    Define NUM_PDM_MICS renamed to XUA_NUM_PDM_MICS
   * CHANGE:    Define NO_USB renamed to XUA_USB_EN
+  * CHANGE:    Build files updated to support new "xcommon" behaviour in xwaf.
   * RESOLVED:  wChannelConfig in UAC1 descriptor set according to output channel
     count
   * RESOLVED:  Indexing of ADAT channel strings (#18059)
-  * RESOLVED:  Rebooting device fails when PLL config "not reset" bit is set 
+  * RESOLVED:  Rebooting device fails when PLL config "not reset" bit is set
 
   * Changes to dependencies:
 
-    - lib_spdif: Added dependency 3.0.0
+    - lib_dsp: Added dependency 5.0.0
+
+    - lib_mic_array: Added dependency 4.0.0
+
+    - lib_spdif: Added dependency 3.1.0
 
     - lib_xassert: Added dependency 3.0.1
 
@@ -101,7 +107,7 @@ Legacy release history
 
 7.3.0
 -----
-    - CHANGE:     Example OSX DFU host app updated to now take PID as runtime 
+    - CHANGE:     Example OSX DFU host app updated to now take PID as runtime
       argument. This enabled multiple XMOS devices to be attached to the host
       during DFU process
 

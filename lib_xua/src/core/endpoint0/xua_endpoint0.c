@@ -1,4 +1,4 @@
-// Copyright (c) 2011-2018, XMOS Ltd, All rights reserved
+// Copyright (c) 2011-2019, XMOS Ltd, All rights reserved
 /**
  * @brief   Implements endpoint zero for an USB Audio 1.0/2.0 device
  * @author  Ross Owen, XMOS Semiconductor
@@ -439,18 +439,50 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
                     }
 
 #if (NUM_USB_CHAN_OUT > 0) && (NUM_USB_CHAN_IN > 0)
-                    if ((sp.wIndex == INTERFACE_NUMBER_AUDIO_OUTPUT) || (sp.wIndex == INTERFACE_NUMBER_AUDIO_INPUT))
                     {
-                        /* Check for stream start stop on output and input audio interfaces */
-                        if(sp.wValue && !g_interfaceAlt[INTERFACE_NUMBER_AUDIO_OUTPUT] && !g_interfaceAlt[INTERFACE_NUMBER_AUDIO_INPUT])
+                        unsigned num_input_interfaces = g_interfaceAlt[INTERFACE_NUMBER_AUDIO_INPUT];
+                        unsigned num_output_interfaces = g_interfaceAlt[INTERFACE_NUMBER_AUDIO_OUTPUT];
+                        if (sp.wIndex == INTERFACE_NUMBER_AUDIO_INPUT)
                         {
-                            /* If start and input AND output not currently running */
-                            UserAudioStreamStart();
+                            // in: 0 -> 1
+                            if (sp.wValue && !num_input_interfaces)
+                            {
+                                UserAudioInputStreamStart();
+                                if (!num_output_interfaces)
+                                {
+                                    UserAudioStreamStart();
+                                }
+                            }
+                            // in: 1 -> 0
+                            else if (!sp.wValue && num_input_interfaces)
+                            {
+                                UserAudioInputStreamStop();
+                                if (!num_output_interfaces)
+                                {
+                                    UserAudioStreamStop();
+                                }
+                            }
                         }
-                        else if(((sp.wIndex == 1) && (!sp.wValue)) && g_interfaceAlt[INTERFACE_NUMBER_AUDIO_OUTPUT] && (!g_interfaceAlt[INTERFACE_NUMBER_AUDIO_INPUT]))
+                        else if (sp.wIndex == INTERFACE_NUMBER_AUDIO_OUTPUT)
                         {
-                            /* if output stop and output running and input not running */
-                            UserAudioStreamStop();
+                            // out: 0 -> 1
+                            if (sp.wValue && !num_output_interfaces)
+                            {
+                                UserAudioOutputStreamStart();
+                                if (!num_input_interfaces)
+                                {
+                                    UserAudioStreamStart();
+                                }
+                            }
+                            // out: 1 -> 0
+                            else if (!sp.wValue && num_output_interfaces)
+                            {
+                                UserAudioOutputStreamStop();
+                                if (!num_input_interfaces)
+                                {
+                                    UserAudioStreamStop();
+                                }
+                            }
                         }
                         else if(((sp.wIndex == 2) && (!sp.wValue)) && g_interfaceAlt[INTERFACE_NUMBER_AUDIO_INPUT] && (!g_interfaceAlt[INTERFACE_NUMBER_AUDIO_OUTPUT]))
                         {
@@ -465,11 +497,13 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
                         {
                             /* if start and not currently running */
                             UserAudioStreamStart();
+                            UserAudioOutputStreamStart();
                         }
                         else if (!sp.wValue && g_interfaceAlt[INTERFACE_NUMBER_AUDIO_OUTPUT])
                         {
                             /* if stop and currently running */
                             UserAudioStreamStop();
+                            UserAudioOutputStreamStop();
                         }
                     }
 #elif (NUM_USB_CHAN_IN > 0)
@@ -479,11 +513,13 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
                         {
                             /* if start and not currently running */
                             UserAudioStreamStart();
+                            UserAudioInputStreamStart();
                         }
                         else if (!sp.wValue && g_interfaceAlt[INTERFACE_NUMBER_AUDIO_INPUT])
                         {
                             /* if stop and currently running */
                             UserAudioStreamStop();
+                            UserAudioInputStreamStop();
                         }
                     }
 #endif
