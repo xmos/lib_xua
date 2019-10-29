@@ -439,55 +439,48 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
                     }
 
 #if (NUM_USB_CHAN_OUT > 0) && (NUM_USB_CHAN_IN > 0)
+                    unsigned num_input_interfaces = g_interfaceAlt[INTERFACE_NUMBER_AUDIO_INPUT];
+                    unsigned num_output_interfaces = g_interfaceAlt[INTERFACE_NUMBER_AUDIO_OUTPUT];
+                    if (sp.wIndex == INTERFACE_NUMBER_AUDIO_INPUT)
                     {
-                        unsigned num_input_interfaces = g_interfaceAlt[INTERFACE_NUMBER_AUDIO_INPUT];
-                        unsigned num_output_interfaces = g_interfaceAlt[INTERFACE_NUMBER_AUDIO_OUTPUT];
-                        if (sp.wIndex == INTERFACE_NUMBER_AUDIO_INPUT)
+                        // in: 0 -> 1
+                        if (sp.wValue && !num_input_interfaces)
                         {
-                            // in: 0 -> 1
-                            if (sp.wValue && !num_input_interfaces)
+                            UserAudioInputStreamStart();
+                            if (!num_output_interfaces)
                             {
-                                UserAudioInputStreamStart();
-                                if (!num_output_interfaces)
-                                {
-                                    UserAudioStreamStart();
-                                }
-                            }
-                            // in: 1 -> 0
-                            else if (!sp.wValue && num_input_interfaces)
-                            {
-                                UserAudioInputStreamStop();
-                                if (!num_output_interfaces)
-                                {
-                                    UserAudioStreamStop();
-                                }
+                                UserAudioStreamStart();
                             }
                         }
-                        else if (sp.wIndex == INTERFACE_NUMBER_AUDIO_OUTPUT)
+                        // in: 1 -> 0
+                        else if (!sp.wValue && num_input_interfaces)
                         {
-                            // out: 0 -> 1
-                            if (sp.wValue && !num_output_interfaces)
+                            UserAudioInputStreamStop();
+                            if (!num_output_interfaces)
                             {
-                                UserAudioOutputStreamStart();
-                                if (!num_input_interfaces)
-                                {
-                                    UserAudioStreamStart();
-                                }
-                            }
-                            // out: 1 -> 0
-                            else if (!sp.wValue && num_output_interfaces)
-                            {
-                                UserAudioOutputStreamStop();
-                                if (!num_input_interfaces)
-                                {
-                                    UserAudioStreamStop();
-                                }
+                                UserAudioStreamStop();
                             }
                         }
-                        else if(((sp.wIndex == 2) && (!sp.wValue)) && g_interfaceAlt[INTERFACE_NUMBER_AUDIO_INPUT] && (!g_interfaceAlt[INTERFACE_NUMBER_AUDIO_OUTPUT]))
+                    }
+                    else if (sp.wIndex == INTERFACE_NUMBER_AUDIO_OUTPUT)
+                    {
+                        // out: 0 -> 1
+                        if (sp.wValue && !num_output_interfaces)
                         {
-                            /* if input stop and input running and output not running */
-                            UserAudioStreamStop();
+                            UserAudioOutputStreamStart();
+                            if (!num_input_interfaces)
+                            {
+                                UserAudioStreamStart();
+                            }
+                        }
+                        // out: 1 -> 0
+                        else if (!sp.wValue && num_output_interfaces)
+                        {
+                            UserAudioOutputStreamStop();
+                            if (!num_input_interfaces)
+                            {
+                                UserAudioStreamStop();
+                            }
                         }
                     }
 #elif (NUM_USB_CHAN_OUT > 0)
