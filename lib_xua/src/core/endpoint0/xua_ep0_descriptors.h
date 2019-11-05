@@ -28,6 +28,15 @@
 
 #define STR_TABLE_ENTRY(name) char *name
 
+#define ISO_EP_ATTRIBUTES_ASYNCH                   0x05 //ISO, ASYNCH, DATA EP
+#define ISO_EP_ATTRIBUTES_ADAPTIVE                 0x09 //ISO, ADAPTIVE, DATA EP
+#define ISO_EP_IMPL_ATTRIBUTES_ASYNCH              0x25 //ISO, ASYNCH, IMPLICIT FB DATA EP
+#define ISO_EP_IMPL_ATTRIBUTES_ADAPTIVE            0x29 //ISO, ADAPTIVE, IMPLICIT FB DATA EP
+
+#if (defined(XUA_ADAPTIVE) && (XUA_ADAPTIVE == 0))
+#undef XUA_ADAPTIVE
+#endif
+
 #if __STDC__
 typedef struct
 {
@@ -1463,7 +1472,11 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
         .bLength                        = sizeof(USB_Descriptor_Endpoint_t),
         .bDescriptorType                = USB_DESCTYPE_ENDPOINT,
         .bEndpointAddress               = ENDPOINT_ADDRESS_OUT_AUDIO,
-        .bmAttributes                   = 0x05,     /* (bitmap)  */
+#ifdef XUA_ADAPTIVE
+        .bmAttributes                   = ISO_EP_ATTRIBUTES_ADAPTIVE, /* (bitmap)  */
+#else
+        .bmAttributes                   = ISO_EP_ATTRIBUTES_ASYNCH,   /* (bitmap)  */
+#endif
         .wMaxPacketSize                 = HS_STREAM_FORMAT_OUTPUT_1_MAXPACKETSIZE,
         .bInterval                      = 1,
     },
@@ -1541,7 +1554,11 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
         .bLength                        = sizeof(USB_Descriptor_Endpoint_t),
         .bDescriptorType                = USB_DESCTYPE_ENDPOINT,
         .bEndpointAddress               = ENDPOINT_ADDRESS_OUT_AUDIO,
-        .bmAttributes                   = 0x05,
+#ifdef XUA_ADAPTIVE
+        .bmAttributes                   = ISO_EP_ATTRIBUTES_ADAPTIVE, /* (bitmap)  */
+#else
+        .bmAttributes                   = ISO_EP_ATTRIBUTES_ASYNCH,   /* (bitmap)  */
+#endif
         .wMaxPacketSize                 = HS_STREAM_FORMAT_OUTPUT_2_MAXPACKETSIZE,
         .bInterval                      = 1,
     },
@@ -1621,8 +1638,11 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
         .bLength                       = 0x07,
         .bDescriptorType               = USB_DESCTYPE_ENDPOINT,
         .bEndpointAddress              = ENDPOINT_ADDRESS_OUT_AUDIO,
-        .bmAttributes                  = 0x05,
-        .wMaxPacketSize                = HS_STREAM_FORMAT_OUTPUT_3_MAXPACKETSIZE,
+#ifdef XUA_ADAPTIVE
+        .bmAttributes                  = ISO_EP_ATTRIBUTES_ADAPTIVE, /* (bitmap)  */
+#else
+        .bmAttributes                  = ISO_EP_ATTRIBUTES_ASYNCH,   /* (bitmap)  */
+#endif        .wMaxPacketSize                = HS_STREAM_FORMAT_OUTPUT_3_MAXPACKETSIZE,
         .bInterval                     = 1,
     },
 
@@ -1715,9 +1735,13 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
         .bDescriptorType               = USB_DESCTYPE_ENDPOINT,
         .bEndpointAddress              = ENDPOINT_ADDRESS_IN_AUDIO,
 #if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP)
-        .bmAttributes                  = 0x05,  /* Iso, async, data endpoint */
+        .bmAttributes                  = ISO_EP_ATTRIBUTES_ASYNCH, /* Iso, async, data endpoint */
 #else
-        .bmAttributes                  = 0x25,  /* Iso, async, implicit feedback data endpoint */
+        #ifdef XUA_ADAPTIVE
+        .bmAttributes                  = ISO_EP_ATTRIBUTES_ADAPTIVE,
+        #else
+        .bmAttributes                  = ISO_EP_IMPL_ATTRIBUTES_ASYNCH,        /* Feedback data endpoint */
+        #endif
 #endif
         .wMaxPacketSize                = HS_STREAM_FORMAT_INPUT_1_MAXPACKETSIZE,
         .bInterval                     = 0x01,
@@ -1783,9 +1807,13 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
         .bDescriptorType               = USB_DESCTYPE_ENDPOINT,
         .bEndpointAddress              = ENDPOINT_ADDRESS_IN_AUDIO,
 #if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP)
-        .bmAttributes                  = 0x05,  /* Iso, async, data endpoint */
+        .bmAttributes                  = ISO_EP_ATTRIBUTES_ASYNCH, /* Iso, async, data endpoint */
 #else
-        .bmAttributes                  = 0x25,  /* Iso, async, implicit feedback data endpoint */
+        #ifdef XUA_ADAPTIVE
+        .bmAttributes                  = ISO_EP_ATTRIBUTES_ADAPTIVE,
+        #else
+        .bmAttributes                  = ISO_EP_IMPL_ATTRIBUTES_ASYNCH,        /* Feedback data endpoint */
+        #endif
 #endif
         .wMaxPacketSize                = HS_STREAM_FORMAT_INPUT_2_MAXPACKETSIZE,
         .bInterval                     = 0x01,
@@ -1852,9 +1880,13 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
         .bDescriptorType               = USB_DESCTYPE_ENDPOINT,
         .bEndpointAddress              = ENDPOINT_ADDRESS_IN_AUDIO,
 #if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP)
-        .bmAttributes                  = 0x05,  /* Iso, async, data endpoint */
+        .bmAttributes                  = ISO_EP_ATTRIBUTES_ASYNCH, /* Iso, async, data endpoint */
 #else
-        .bmAttributes                  = 0x25,  /* Iso, async, implicit feedback data endpoint */
+        #ifdef XUA_ADAPTIVE
+        .bmAttributes                  = ISO_EP_ATTRIBUTES_ADAPTIVE,
+        #else
+        .bmAttributes                  = ISO_EP_IMPL_ATTRIBUTES_ASYNCH,        /* Feedback data endpoint */
+        #endif
 #endif
         .wMaxPacketSize                = HS_STREAM_FORMAT_INPUT_3_MAXPACKETSIZE,
         .bInterval                     = 0x01,
@@ -2614,15 +2646,23 @@ unsigned char cfgDesc_Audio1[] =
     0x09,
     0x05,                                 /* ENDPOINT */
     0x01,                                 /* endpointAddress - D7, direction (0 OUT, 1 IN). D6..4 reserved (0). D3..0 endpoint no. */
-    0x05,                                 /* attributes - isochronous async */
+#ifdef XUA_ADAPTIVE
+    ISO_EP_ATTRIBUTES_ADAPTIVE,
+#else
+    ISO_EP_ATTRIBUTES_ASYNCH,
+#endif
     (FS_STREAM_FORMAT_OUTPUT_1_MAXPACKETSIZE&0xff),      /* 4  wMaxPacketSize (Typically 294 bytes)*/
     (FS_STREAM_FORMAT_OUTPUT_1_MAXPACKETSIZE&0xff00)>>8, /* 5  wMaxPacketSize */
     0x01,                                 /* bInterval */
-    0x00,                                 /* bRefresh */
+    0x00,                                 /* bRefresh */ 
 #if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP)
     ENDPOINT_ADDRESS_IN_FEEDBACK,         /* bSynchAdddress - address of EP used to communicate sync info */
+#else /* Bi-directional in/out device */
+#ifdef XUA_ADAPTIVE
+    0, /* OUT */
 #else
     ENDPOINT_ADDRESS_IN_AUDIO,
+#endif
 #endif
 
     /* CS_Endpoint Descriptor ?? */
@@ -2631,7 +2671,11 @@ unsigned char cfgDesc_Audio1[] =
     0x01,                                 /* subtype - GENERAL */
     0x01,                                 /* attributes. D[0]: sample freq ctrl. */
     0x02,                                 /* bLockDelayUnits */
-    0x00, 0x00,                           /* bLockDelay */
+#ifdef XUA_ADAPTIVE
+    0x08, 0x00,                           /* bLockDelay */
+#else
+    0x00, 0x00,                           /* Not used */
+#endif
 
 #if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP)
     /* Feedback EP */
@@ -2743,9 +2787,13 @@ unsigned char cfgDesc_Audio1[] =
     0x05,                                 /* ENDPOINT */
     ENDPOINT_ADDRESS_IN_AUDIO,            /* EndpointAddress */
 #if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP)
-    0x05,  /* Iso, async, data endpoint */
+    ISO_EP_ATTRIBUTES_ASYNCH,  /* Iso, async, data endpoint */
 #else
-    0x25,  /* Iso, async, implicit feedback data endpoint */
+    #ifdef XUA_ADAPTIVE
+    ISO_EP_ATTRIBUTES_ADAPTIVE,
+    #else
+    ISO_EP_IMPL_ATTRIBUTES_ASYNCH,        /* Feedback data endpoint */
+    #endif
 #endif
     FS_STREAM_FORMAT_INPUT_1_MAXPACKETSIZE&0xff,        /* 4  wMaxPacketSize (Typically 294 bytes)*/
     (FS_STREAM_FORMAT_INPUT_1_MAXPACKETSIZE&0xff00)>>8, /* 5  wMaxPacketSize */
@@ -2758,8 +2806,13 @@ unsigned char cfgDesc_Audio1[] =
     0x25,                                 /* CS_ENDPOINT */
     0x01,                                 /* Subtype - GENERAL */
     0x01,                                 /* Attributes. D[0]: sample freq ctrl. */
-    0x00,                                 /* Unused */
-    0x00, 0x00,                           /* Unused */
+#ifdef XUA_ADAPTIVE
+    0x02,                                 /* Lock Delay units PCM samples*/
+    0x08, 0x00,                           /* No lock delay */
+#else
+    0x00,                                 /* Undefined */
+    0x00, 0x00,                           /* Not used */
+#endif // XUA_ADAPTIVE
 #endif
 
 #if (XUA_DFU_EN == 1) && (FORCE_UAC1_DFU == 1)

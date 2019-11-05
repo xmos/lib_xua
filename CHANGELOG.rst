@@ -1,6 +1,11 @@
 lib_xua Change Log
 ==================
 
+0.2.1
+-----
+
+  * HOTFIX: Fix descriptors for XUA_ADAPTIVE
+
 0.2.0
 -----
 
