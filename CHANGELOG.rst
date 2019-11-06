@@ -1,6 +1,11 @@
 lib_xua Change Log
 ==================
 
+0.2.1
+-----
+
+  * HOTFIX: Fix descriptors for XUA_ADAPTIVE
+
 0.2.0_demo
 ----------
   * ADDED:     UAC1 HID support with simulated Voice Command detection reported
