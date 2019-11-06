@@ -1642,7 +1642,8 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
         .bmAttributes                  = ISO_EP_ATTRIBUTES_ADAPTIVE, /* (bitmap)  */
 #else
         .bmAttributes                  = ISO_EP_ATTRIBUTES_ASYNCH,   /* (bitmap)  */
-#endif        .wMaxPacketSize                = HS_STREAM_FORMAT_OUTPUT_3_MAXPACKETSIZE,
+#endif        
+        .wMaxPacketSize                = HS_STREAM_FORMAT_OUTPUT_3_MAXPACKETSIZE,
         .bInterval                     = 1,
     },
 
