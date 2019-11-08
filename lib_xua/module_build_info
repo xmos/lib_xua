@@ -62,6 +62,7 @@ SOURCE_DIRS = src/core \
               src/core/user/hostactive \
               src/core/xuduser \
               src/dfu \
+              src/hid \
               src/midi
 
 EXCLUDE_FILES += descriptors_2.rst
