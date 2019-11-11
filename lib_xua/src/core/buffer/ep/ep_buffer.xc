@@ -1,4 +1,4 @@
-// Copyright (c) 2011-2018, XMOS Ltd, All rights reserved
+// Copyright (c) 2011-2019, XMOS Ltd, All rights reserved
 #include "xua.h"
 #if XUA_USB_EN
 #include <xs1.h>
