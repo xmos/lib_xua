@@ -12,4 +12,8 @@
 #define MIC_ARRAY_NUM_MICS (XUA_NUM_PDM_MICS)
 #endif
 
+#ifndef MIC_DUAL_FRAME_SIZE
+#define MIC_DUAL_FRAME_SIZE (MIC_ARRAY_FRAME_SIZE)
+#endif
+
 #endif /* MIC_ARRAY_CONF_H_ */
