@@ -1,4 +1,4 @@
-// Copyright (c) 2011-2018, XMOS Ltd, All rights reserved
+// Copyright (c) 2011-2019, XMOS Ltd, All rights reserved
 /*
  * @brief       Defines relating to device configuration and customisation of lib_xua
  * @author      Ross Owen, XMOS Limited
@@ -423,10 +423,6 @@
  */
 #ifndef HID_CONTROLS
 #define HID_CONTROLS       (0)
-#endif
-
-#if defined(HID_CONTROLS) && (HID_CONTROLS == 0)
-#undef HID_CONTROLS
 #endif
 
 /* @brief Defines whether XMOS device runs as master (i.e. drives LR and Bit clocks)
@@ -1158,6 +1154,10 @@
 #endif
 
 
+#if (defined(UAC_FORCE_FEEDBACK_EP) && UAC_FORCE_FEEDBACK_EP == 0)
+#undef UAC_FORCE_FEEDBACK_EP
+#endif
+
 #ifndef __ASSEMBLER__
 /* Endpoint addresses enums */
 enum USBEndpointNumber_In
@@ -1173,7 +1173,7 @@ enum USBEndpointNumber_In
 #ifdef MIDI
     ENDPOINT_NUMBER_IN_MIDI,
 #endif
-#ifdef HID_CONTROLS
+#if( 0 < HID_CONTROLS )
     ENDPOINT_NUMBER_IN_HID,
 #endif
 #ifdef IAP

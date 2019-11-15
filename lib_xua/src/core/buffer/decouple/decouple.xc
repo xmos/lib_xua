@@ -1,4 +1,4 @@
-// Copyright (c) 2011-2018, XMOS Ltd, All rights reserved
+// Copyright (c) 2011-2019, XMOS Ltd, All rights reserved
 #include "xua.h"
 
 #if XUA_USB_EN
@@ -12,7 +12,7 @@
 #include "usbaudio20.h"             /* Defines from the USB Audio 2.0 Specifications */
 #endif
 
-#ifdef HID_CONTROLS
+#if( 0 < HID_CONTROLS )
 #include "user_hid.h"
 #endif
 #define MAX(x,y) ((x)>(y) ? (x) : (y))

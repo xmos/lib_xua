@@ -27,3 +27,4 @@ _build*
 build/
 .build*
 *.pyc
+xscope.xmt

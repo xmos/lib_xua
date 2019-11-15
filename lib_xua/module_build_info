@@ -1,4 +1,4 @@
-VERSION = 0.2.1
+VERSION = 0.3.0
 
 DEPENDENT_MODULES = lib_logging(>=3.0.0) \
                     lib_xassert(>=4.0.0) \
@@ -43,6 +43,7 @@ INCLUDE_DIRS = $(EXPORT_INCLUDE_DIRS) \
                src/core/support/powersave \
                src/core/user \
                src/core/user/audiostream \
+               src/core/user/hid \
                src/core/user/hostactive \
                src/midi
 
@@ -61,6 +62,7 @@ SOURCE_DIRS = src/core \
               src/core/user/hostactive \
               src/core/xuduser \
               src/dfu \
+              src/hid \
               src/midi
 
 EXCLUDE_FILES += descriptors_2.rst
