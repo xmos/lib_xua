@@ -21,6 +21,7 @@
 #define PID_AUDIO_1     1   
 #define PID_AUDIO_2     2
 #define XUA_DFU_EN      0           /* Disable DFU (for simplicity of example */
-#define MIC_DUAL_ENABLED 0          // Use multiple thread
+#define MIC_DUAL_ENABLED 1          // Use single-threaded design with dual PDM microphones
+#define MIC_ARRAY_FRAME_SIZE 240
 
 #endif
