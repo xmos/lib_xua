@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2018, XMOS Ltd, All rights reserved
+// Copyright (c) 2017-2019, XMOS Ltd, All rights reserved
 
 #ifndef _XUA_CONF_H_ 
 #define _XUA_CONF_H_
