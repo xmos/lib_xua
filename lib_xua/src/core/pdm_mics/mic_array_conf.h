@@ -4,8 +4,8 @@
 
 #include "xua_conf_full.h"
 
-#ifndef MIC_ARRAY_MAX_FRAME_SIZE_LOG2
-#define MIC_ARRAY_MAX_FRAME_SIZE_LOG2 0
+#ifndef MIC_ARRAY_FRAME_SIZE
+#define MIC_ARRAY_FRAME_SIZE (XUA_MIC_FRAME_SIZE)
 #endif
 
 #ifndef MIC_ARRAY_NUM_MICS
@@ -13,7 +13,7 @@
 #endif
 
 #ifndef MIC_DUAL_FRAME_SIZE
-#define MIC_DUAL_FRAME_SIZE (MIC_ARRAY_FRAME_SIZE)
+#define MIC_DUAL_FRAME_SIZE (XUA_MIC_FRAME_SIZE)
 #endif
 
 #endif /* MIC_ARRAY_CONF_H_ */
