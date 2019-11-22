@@ -25,7 +25,6 @@
 #define AUDIO_CLASS_FALLBACK 0
 #define BCD_DEVICE 0x1234
 #define XUA_DFU_EN 0
-#define MIC_DUAL_ENABLED 1          // Use single-threaded design with dual PDM microphones
-#define MIC_ARRAY_FRAME_SIZE 240
+#define MIC_DUAL_ENABLED 0          // Use multi-threaded design
 
 #endif
