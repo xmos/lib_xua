@@ -9,6 +9,7 @@ lib_xua Change Log
   * ADDED:     Support for USB HID Set Idle request
   * ADDED:     Pre-processor symbols to enable single-threaded, dual-PDM
     microphone operation
+  * FIXED:     Descriptors for XUA_ADAPTIVE incorrectly defined for IN endpoint
 
 0.2.1
 -----
