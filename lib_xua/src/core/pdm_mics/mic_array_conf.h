@@ -19,8 +19,12 @@
 #define MIC_ARRAY_NUM_MICS (XUA_NUM_PDM_MICS)
 #endif
 
+// MIC_DUAL_FRAME_SIZE has no meaning if MIC_DUAL_ENABLED is false.
+// Only define MIC_DUAL_FRAME_SIZE if MIC_DUAL_ENABLED is true.
+#if defined(MIC_DUAL_ENABLED) && (MIC_DUAL_ENABLED != 0)
 #ifndef MIC_DUAL_FRAME_SIZE
 #define MIC_DUAL_FRAME_SIZE (XUA_MIC_FRAME_SIZE)
+#endif
 #endif
 
 #endif /* MIC_ARRAY_CONF_H_ */
