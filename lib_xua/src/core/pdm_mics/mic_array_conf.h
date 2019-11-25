@@ -4,10 +4,6 @@
 
 #include "xua_conf_full.h"
 
-#ifndef MIC_ARRAY_FRAME_SIZE
-#define MIC_ARRAY_FRAME_SIZE (XUA_MIC_FRAME_SIZE)
-#endif
-
 // The default definition of MIC_ARRAY_MAX_FRAME_SIZE_LOG2 must appear in this file
 //   because an assembler file #includes it.
 // The assembler does not understand C language syntax, only C pre-processor syntax.
