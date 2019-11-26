@@ -618,6 +618,12 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
                         }
                     }
 #endif
+#if( 0 < HID_CONTROLS )
+                    if (interfaceNum == INTERFACE_NUMBER_HID)
+                    {
+                        result = HidInterfaceClassRequests(ep0_out, ep0_in, &sp);
+                    }
+#endif
                     /* Check for:   - Audio CONTROL interface request - always 0, note we check for DFU first
                      *              - Audio STREAMING interface request  (In or Out)
                      *              - Audio endpoint request (Audio 1.0 Sampling freq requests are sent to the endpoint)
