@@ -289,6 +289,13 @@
 #endif
 
 /**
+ * @brief Size of a frame of microphone data samples. Default: 1
+ */
+#ifndef XUA_MIC_FRAME_SIZE
+#define XUA_MIC_FRAME_SIZE      (1)
+#endif
+
+/**
  * @brief Enable MIDI functionality including buffering, descriptors etc. Default: DISABLED
  */
 #ifndef MIDI
