@@ -10,6 +10,7 @@ lib_xua Change Log
   * ADDED:     Pre-processor symbols to enable single-threaded, dual-PDM
     microphone operation
   * FIXED:     Descriptors for XUA_ADAPTIVE incorrectly defined for IN endpoint
+  * ADDED:     Guards to user_hid.h and xua_hid.h
 
 0.2.1
 -----
