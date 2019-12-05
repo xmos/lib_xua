@@ -1,4 +1,8 @@
 // Copyright (c) 2019, XMOS Ltd, All rights reserved
+
+#ifndef __XUA_HID_H__
+#define __XUA_HID_H__
+
 #include <xs1.h>
 #include <xccompat.h>
 #include "xud.h"
@@ -53,3 +57,5 @@ XUD_Result_t HidInterfaceClassRequests(
  *  \retval   0 -- Send the HID Report
  */
 unsigned HidIsSetIdleSilenced( void );
+
+#endif // __XUA_HID_H__
