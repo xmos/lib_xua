@@ -57,7 +57,10 @@ unsigned HidIsSetIdleSilenced( void )
 
   if( s_hidIdleActive ) {
     unsigned currentTime;
-    asm volatile( "gettime %0" : "=r" ( currentTime )); // Use inline assembly to access the time without creating a side-effect
+    // Use inline assembly to access the time without creating a side-effect.
+    // The mapper complains if the time comes from an XC timer because this function is called in the guard of a select case.
+    // Appearently the use of a timer creates a side-effect that prohibits the operation of the select functionality.
+    asm volatile( "gettime %0" : "=r" ( currentTime ));
     isSilenced = ( s_hidIndefiniteDuration || ( timeafter( s_hidNextReportTime, currentTime )));
   }
 
