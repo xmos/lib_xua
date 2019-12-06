@@ -1,5 +1,8 @@
 // Copyright (c) 2013-2019, XMOS Ltd, All rights reserved
 
+#ifndef __USER_HID_H__
+#define __USER_HID_H__
+
 /* These defines relate to the HID report desc - do not mod */
 #define HID_CONTROL_PLAYPAUSE_SHIFT  0x00
 #define HID_CONTROL_NEXT_SHIFT       0x01
@@ -17,3 +20,4 @@ void UserReadHIDData( unsigned char hidData[ HID_DATA_SIZE ]);
 void UserSetHIDData( const unsigned hidData );
 
 #endif /* ( 0 < HID_CONTROLS ) */
+#endif /* __USER_HID_H__ */
