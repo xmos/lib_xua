@@ -41,6 +41,17 @@ XUD_Result_t HidInterfaceClassRequests(
   REFERENCE_PARAM( USB_SetupPacket_t, sp ));
 
 /**
+ *  \brief Register that previously changed HID Report data has reported
+ *         to the USB Host.
+ */
+void HidClearChangePending( void );
+
+/**
+ *  \brief Indicate if a change to the HID Report data has been received.
+ */
+unsigned HidIsChangePending( void );
+
+/**
  *  \brief Indicate whether to send a HID Report based on elapsed time.
  *
  *  If the USB Host has previously sent a valid HID Set_Idle request with
@@ -57,5 +68,10 @@ XUD_Result_t HidInterfaceClassRequests(
  *  \retval   0 -- Send the HID Report
  */
 unsigned HidIsSetIdleSilenced( void );
+
+/**
+ *  \brief Register that a change to the HID Report data has been received.
+ */
+void HidSetChangePending( void );
 
 #endif // __XUA_HID_H__
