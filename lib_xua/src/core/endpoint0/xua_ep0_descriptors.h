@@ -574,11 +574,8 @@ unsigned char hidReportDescriptor[] = /* Voice Command usage as per request #HUT
     0xa1, 0x02,         /* Collection (Logical) */
     0x95, 0x01,         /* Report Count (1) */
     0x0a, 0x21, 0x02,   /* Usage (AC Search) */
-    0x81, 0x40,         /* Input (Data, Ary, Abs, Nul) */
     0x0a, 0x26, 0x02,   /* Usage (AC Stop) */
-    0x81, 0x40,         /* Input (Data, Ary, Abs, Nul) */
     0x09, 0xe9,         /* Usage (Volume Increment) */
-    0x81, 0x40,         /* Input (Data, Ary, Abs, Nul) */
     0x09, 0xea,         /* Usage (Volume Decrement) */
     0x81, 0x40,         /* Input (Data, Ary, Abs, Nul) */
     0x95, 0x04,         /* Report Count (4) */
@@ -2890,7 +2887,7 @@ unsigned char cfgDesc_Audio1[] =
     0x00,                                 /* 4  bCountryCode */
     0x01,                                 /* 5  bNumDescriptors */
     0x22,                                 /* 6  bDescriptorType[0] (Report) */
-    0x2B,                                 /* 7  wDescriptorLength[0] */
+    0x25,                                 /* 7  wDescriptorLength[0] */
     0x00,                                 /* 8  wDescriptorLength[0] */
 
     /* HID Endpoint descriptor (IN) */
