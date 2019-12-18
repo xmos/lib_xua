@@ -3,7 +3,13 @@
 #ifndef __USER_HID_H__
 #define __USER_HID_H__
 
-/* These enumerated constants relate to the HID report desc - do not mod */
+/**
+ *  \brief  HID event identifiers
+ *
+ *  This enumeration defines a constant value for each HID event.
+ *  It defines one value for each of the four GPI pins supported in the standard voice products.
+ *  It defines a further 28 values for generic events.
+ */
 typedef enum hidEventId_t {
   HID_EVENT_ID_GPI0 = 0,
   HID_EVENT_ID_GPI1,
@@ -39,13 +45,40 @@ typedef enum hidEventId_t {
   HID_EVENT_ID_EVT27
 } hidEventId_t;
 
-#define HID_DATA_SIZE 1
+#define HID_DATA_BYTES 4
 
 #if( 0 < HID_CONTROLS )
 
-unsigned UserHIDGetData( void );
+/**
+ *  \brief  Get the data for the next HID report
+ *
+ *  \note This function returns the HID data as a list of unsigned char because the
+ *        \c XUD_SetReady_In() accepts data for transmission to the USB Host using
+ *        this type.
+ *
+ *  \param{out} hidData  The HID data
+ */
+void UserHIDGetData( unsigned char hidData[ HID_DATA_BYTES ]);
+
+/**
+ *	\brief  Initialize HID processing
+ */
 void UserHIDInit( void );
-void UserHIDRegisterEvent( const hidEventId_t hidEventId, const int * hidEventData, const unsigned hidEventDataSize );
+
+/**
+ *  \brief  Record that a HID event has occurred
+ *
+ *  \param{in}  hidEventId        The identifier of an event which has occurred
+ *  \param{in}  hidEventData      A list of data associated with the event
+ *  \param{in}  hidEventDataSize  The length of the event data list
+ *
+ *  \note At present, this function only takes a single element of event data, i.e.
+ *        hidEventDataSize must equal 1.
+ *
+ *  \note At present, this function treats the event data as a Boolean flag.
+ *        Zero means False; all other values mean True.
+ */
+void UserHIDRecordEvent( const hidEventId_t hidEventId, const int * hidEventData, const unsigned hidEventDataSize );
 
 #endif /* ( 0 < HID_CONTROLS ) */
 #endif /* __USER_HID_H__ */
