@@ -11,6 +11,8 @@ lib_xua Change Log
     microphone operation
   * FIXED:     Descriptors for XUA_ADAPTIVE incorrectly defined for IN endpoint
   * ADDED:     Guards to user_hid.h and xua_hid.h
+  * ADDED:     UAC1 HID support for AC Stop (End Call), Volume Increment and
+    Volume Decrement
 
 0.2.1
 -----
