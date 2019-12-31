@@ -17,6 +17,7 @@
 #ifdef MIXER
 #include "mixer.h"
 #endif
+#include "xua_conf.h"
 
 #define CS_XU_MIXSEL (0x06)
 
@@ -46,7 +47,7 @@ extern unsigned char mixSel[MAX_MIX_COUNT][MIX_INPUTS];
 #endif
 
 /* Global var for current frequency, set to default freq */
-unsigned int g_curSamFreq = DEFAULT_FREQ;
+unsigned int g_curAudOut_SamFreq = DEFAULT_AUDOUT_FREQ;
 #if 0
 unsigned int g_curSamFreq48000Family = DEFAULT_FREQ % 48000 == 0;
 
@@ -320,14 +321,14 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
                                     int newSampleRate = buffer[0];
 
                                     /* Instruct audio thread to change sample freq (if change required) */
-                                    if(newSampleRate != g_curSamFreq)
+                                    if(newSampleRate != g_curAudOut_SamFreq)
                                     {
                                         int newMasterClock;
 
-                                        g_curSamFreq = newSampleRate;
+                                        g_curAudOut_SamFreq = newSampleRate;
 #if 0
                                         /* Original feedback implementation */
-                                        g_curSamFreq48000Family = ((MCLK_48 % g_curSamFreq) == 0);
+                                        g_curSamFreq48000Family = ((MCLK_48 % g_curAudOut_SamFreq) == 0);
 
                                         if(g_curSamFreq48000Family)
                                         {
@@ -338,17 +339,17 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
                                             newMasterClock = MCLK_441;
                                         }
 
-                                        setG_curSamFreqMultiplier(g_curSamFreq/(newMasterClock/512));
+                                        setG_curSamFreqMultiplier(g_curAudOut_SamFreq/(newMasterClock/512));
 #endif
 #if ADAT_RX 
                                         /* Configure ADAT SMUX based on sample rate */
                                         outuint(c_clk_ctl, SET_SMUX);
-                                        if(g_curSamFreq < 88200)
+                                        if(g_curAudOut_SamFreq < 88200)
                                         {
                                             /* No SMUX */
                                             outuint(c_clk_ctl, 0);
                                         }
-                                        else if(g_curSamFreq < 176400)
+                                        else if(g_curAudOut_SamFreq < 176400)
                                         {
                                             /* SMUX */
                                             outuint(c_clk_ctl, 1);
@@ -361,7 +362,7 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
                                         outct(c_clk_ctl, XS1_CT_END);
 #endif
                                         outuint(c_audioControl, SET_SAMPLE_FREQ);
-                                        outuint(c_audioControl, g_curSamFreq);
+                                        outuint(c_audioControl, g_curAudOut_SamFreq);
 
                                         /* Wait for handshake back - i.e. PLL locked and clocks okay */
                                         chkct(c_audioControl, XS1_CT_END);
@@ -395,7 +396,7 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
                                         }
                                         else
                                         {
-                                            buffer[0] = g_curSamFreq;
+                                            buffer[0] = g_curAudOut_SamFreq;
                                             return XUD_DoGetRequest(ep0_out, ep0_in, (buffer, unsigned char[]), 4, sp.wLength );
                                         }
 
@@ -403,7 +404,7 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
 #endif
                                     case ID_CLKSRC_INT:
                                         /* Always report our current operating frequency */
-                                        buffer[0] = g_curSamFreq;
+                                        buffer[0] = g_curAudOut_SamFreq;
                                         return XUD_DoGetRequest(ep0_out, ep0_in, (buffer, unsigned char[]), 4, sp.wLength );
                                         break;
 
@@ -1107,7 +1108,7 @@ int AudioEndpointRequests_1(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp
                         /* Recontruct sample-freq */
                         int newSampleRate = (buffer, unsigned char[])[0] | ((buffer, unsigned char[])[1] << 8) | ((buffer, unsigned char[])[2] << 16);
 
-                        if(newSampleRate != g_curSamFreq)
+                        if(newSampleRate != g_curAudOut_SamFreq)
                         {
                             int curSamFreq44100Family;
                             int curSamFreq48000Family;
@@ -1119,11 +1120,11 @@ int AudioEndpointRequests_1(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp
 
                             if(curSamFreq48000Family || curSamFreq44100Family)
                             {
-                                g_curSamFreq = newSampleRate;
+                                g_curAudOut_SamFreq = newSampleRate;
 
                                 /* Instruct audio thread to change sample freq */
                                 outuint(c_audioControl, SET_SAMPLE_FREQ);
-                                outuint(c_audioControl, g_curSamFreq);
+                                outuint(c_audioControl, g_curAudOut_SamFreq);
 
                                 /* Wait for handshake back - i.e. pll locked and clocks okay */
                                 chkct(c_audioControl, XS1_CT_END);
@@ -1147,7 +1148,7 @@ int AudioEndpointRequests_1(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp
         switch(sp.bRequest)
         {
             case UAC_B_REQ_GET_CUR:
-                buffer[0] = g_curSamFreq;
+                buffer[0] = g_curAudOut_SamFreq;
                 return XUD_DoGetRequest(ep0_out, ep0_in, (buffer, unsigned char[]), 3, sp.wLength);
                 break;
         }

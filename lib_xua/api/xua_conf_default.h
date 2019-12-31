@@ -226,6 +226,13 @@
 #define DEFAULT_FREQ             (MIN_FREQ)
 #endif
 
+/**
+ * @brief Default Audio output sampling frequency
+ */
+#ifndef DEFAULT_AUDOUT_FREQ
+#define DEFAULT_AUDOUT_FREQ      (48000)
+#endif
+
 /* Audio Class Defines */
 
 /**
