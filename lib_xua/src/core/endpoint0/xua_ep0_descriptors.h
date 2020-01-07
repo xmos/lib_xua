@@ -20,6 +20,8 @@
 #include "iap2.h"                      /* Defines iAP EA Native Transport protocol name */
 #endif
 
+#include "xua_conf_default.h"
+
 #define APPEND_VENDOR_STR(x) VENDOR_STR" "#x
 
 #define APPEND_PRODUCT_STR_A2(x) PRODUCT_STR_A2 " "#x
@@ -2738,6 +2740,13 @@ unsigned char cfgDesc_Audio1[] =
     NUM_USB_CHAN_IN_FS,                   /* bNrChannels - Typically 2 */
     FS_STREAM_FORMAT_INPUT_1_SUBSLOT_BYTES,         /* subFrameSize - Typically 4 bytes per slot */
     FS_STREAM_FORMAT_INPUT_1_RESOLUTION_BITS,       /* bitResolution - Typically 24bit */
+	
+#ifdef USB_CMD_CFG_SAMP_FREQ
+	USB_IN_SAMP_FREQ_NUM,
+	CHARIFY_SR(USB_IN_SAMP_FREQ_0),
+	CHARIFY_SR(USB_IN_SAMP_FREQ_1),
+	CHARIFY_SR(USB_IN_SAMP_FREQ_2),
+#else
     num_freqs_a1,                         /* SamFreqType - sample freq count */
 
 /* Windows enum issue with <= two sample rates work around */
@@ -2790,6 +2799,7 @@ unsigned char cfgDesc_Audio1[] =
 #if (MIN_FREQ <= 96000) && (MAX_FREQ_FS >= 96000)
     0x00, 0x77, 0x01,                     /* sampleFreq - 96KHz */
 #endif
+#endif //USB_CMD_CFG_SAMP_FREQ
 
     /* Standard Endpoint Descriptor */
     0x09,

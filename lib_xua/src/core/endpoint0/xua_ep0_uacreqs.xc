@@ -17,6 +17,12 @@
 #ifdef MIXER
 #include "mixer.h"
 #endif
+#include "xua_conf_default.h"
+
+
+#define DEBUG_UNIT XUA_EP0_UACREQS
+#define DEBUG_PRINT_ENABLE_XUA_EP0_UACREQS 0
+#include "debug_print.h"
 
 #define CS_XU_MIXSEL (0x06)
 
@@ -45,8 +51,17 @@ extern unsigned char channelMapUsb[NUM_USB_CHAN_IN];
 extern unsigned char mixSel[MAX_MIX_COUNT][MIX_INPUTS];
 #endif
 
+
+#ifdef USB_CMD_CFG_SAMP_FREQ
+extern unsigned int g_curAudOut_SamFreq;
+#endif
+
 /* Global var for current frequency, set to default freq */
+#ifdef DEFAULT_AUDOUT_FREQ
+unsigned int g_curSamFreq = DEFAULT_AUDOUT_FREQ;
+#else
 unsigned int g_curSamFreq = DEFAULT_FREQ;
+#endif
 #if 0
 unsigned int g_curSamFreq48000Family = DEFAULT_FREQ % 48000 == 0;
 
@@ -325,6 +340,9 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
                                         int newMasterClock;
 
                                         g_curSamFreq = newSampleRate;
+                                        #ifdef USB_CMD_CFG_SAMP_FREQ
+                                        g_curAudOut_SamFreq = newSampleRate;
+                                        #endif
 #if 0
                                         /* Original feedback implementation */
                                         g_curSamFreq48000Family = ((MCLK_48 % g_curSamFreq) == 0);
@@ -1098,7 +1116,7 @@ int AudioEndpointRequests_1(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp
                 {
                     return result;
                 }
-#if (MAX_FREQ != MIN_FREQ)
+#if ((MAX_FREQ != MIN_FREQ) || (defined USB_CMD_CFG_SAMP_FREQ)
                 if(controlSelector == SAMPLING_FREQ_CONTROL)
                 {
                     /* Expect length 3 for sample rate */
@@ -1120,6 +1138,9 @@ int AudioEndpointRequests_1(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp
                             if(curSamFreq48000Family || curSamFreq44100Family)
                             {
                                 g_curSamFreq = newSampleRate;
+                                #ifdef USB_CMD_CFG_SAMP_FREQ
+                                g_curAudOut_SamFreq = newSampleRate;
+                                #endif
 
                                 /* Instruct audio thread to change sample freq */
                                 outuint(c_audioControl, SET_SAMPLE_FREQ);
