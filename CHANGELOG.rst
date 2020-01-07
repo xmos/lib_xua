@@ -13,6 +13,8 @@ lib_xua Change Log
   * ADDED:     Guards to user_hid.h and xua_hid.h
   * ADDED:     UAC1 HID support for AC Stop (End Call), Volume Increment and
     Volume Decrement
+  * CHANGE:    UAC1 HID to report function keys f21 through f24 as specified by
+    customer
 
 0.2.1
 -----
