@@ -17,7 +17,4 @@ int AudioEndpointRequests_1(XUD_ep ep0_out, XUD_ep ep0_in, REFERENCE_PARAM(USB_S
 
 void VendorAudioRequestsInit(chanend c_audioControl, NULLABLE_RESOURCE(chanend, c_mix_ctl), NULLABLE_RESOURCE(chanend, c_clk_ctl));
 
-extern unsigned int g_curAudOut_SamFreq;
-
-
 #endif

@@ -231,6 +231,13 @@
  */
 #ifndef DEFAULT_AUDOUT_FREQ
 #define DEFAULT_AUDOUT_FREQ      (48000)
+
+#define USB_IN_DESCRIPTOR_FREQ_OVERRIDE	//used if USB in frequency is not conifigurable by USB endpoint command
+#ifdef USB_IN_DESCRIPTOR_FREQ_OVERRIDE
+	#define USB_IN_FREQ_DESCIPTOR_OFFSET	161	//161- (3 * 3) are the position of descriptor that needed to be modified for USB in frequency
+	#define CHARIFY_SR(x) (x & 0xff),((x & 0xff00)>> 8),((x & 0xff0000)>> 16)
+#endif
+
 #endif
 
 /* Audio Class Defines */
