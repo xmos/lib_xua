@@ -233,30 +233,6 @@
 #define DEFAULT_AUDOUT_FREQ      (48000)
 #endif
 
-#define USB_CMD_CFG_SAMP_FREQ
-// Not ready yet
-// #define USB_IN_CONFIGURABLE_BIT_RES
-// #ifdef USB_IN_CONFIGURABLE_BIT_RES
-	// #define USB_IN_BIT_RES_0	STREAM_FORMAT_INPUT_1_RESOLUTION_BITS
-	// #define USB_IN_BIT_RES_1	STREAM_FORMAT_INPUT_1_RESOLUTION_BITS//24
-// #endif
-
-#ifdef USB_CMD_CFG_SAMP_FREQ
-	#define USB_IN_SAMP_FREQ_NUM	3
-	#define USB_IN_SAMP_FREQ_0		DEFAULT_AUDOUT_FREQ
-	#define USB_IN_SAMP_FREQ_1		16000
-	#define USB_IN_SAMP_FREQ_2		16000
-	
-	#if (USB_IN_SAMP_FREQ_NUM < 3)
-		#error "USB_IN_SAMP_FREQ_NUM must be >=3"
-	#endif
-#else
-	#define USB_IN_DESCRIPTOR_FREQ_OVERRIDE	//used if USB in frequency is not conifigurable by USB endpoint command
-	#ifdef USB_IN_DESCRIPTOR_FREQ_OVERRIDE
-		#define USB_IN_FREQ_DESCIPTOR_OFFSET	161	//161- (3 * 3) are the position of descriptor that needed to be modified for USB in frequency
-	#endif
-#endif
-
 /* Audio Class Defines */
 
 /**

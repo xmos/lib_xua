@@ -1116,7 +1116,7 @@ int AudioEndpointRequests_1(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp
                 {
                     return result;
                 }
-#if ((MAX_FREQ != MIN_FREQ) || (defined USB_CMD_CFG_SAMP_FREQ)
+#if ((MAX_FREQ != MIN_FREQ) || (defined USB_CMD_CFG_SAMP_FREQ))
                 if(controlSelector == SAMPLING_FREQ_CONTROL)
                 {
                     /* Expect length 3 for sample rate */
