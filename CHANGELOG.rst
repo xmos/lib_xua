@@ -15,6 +15,8 @@ lib_xua Change Log
     Volume Decrement
   * CHANGE:    UAC1 HID to report function keys f21 through f24 as specified by
     customer
+  * CHANGE:    HID interface for user to set and clear events from global
+    variable to function
 
 0.2.1
 -----
