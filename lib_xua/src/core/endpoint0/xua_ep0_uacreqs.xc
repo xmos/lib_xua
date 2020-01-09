@@ -57,8 +57,9 @@ extern unsigned int g_curAudOut_SamFreq;
 #endif
 
 /* Global var for current frequency, set to default freq */
-#ifdef DEFAULT_AUDOUT_FREQ
-unsigned int g_curSamFreq = DEFAULT_AUDOUT_FREQ;
+#ifdef USB_CMD_CFG_SAMP_FREQ
+#define g_curSamFreq g_curAudOut_SamFreq
+//unsigned int g_curSamFreq = DEFAULT_AUDOUT_FREQ;
 #else
 unsigned int g_curSamFreq = DEFAULT_FREQ;
 #endif
