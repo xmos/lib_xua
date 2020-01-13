@@ -2656,7 +2656,7 @@ unsigned char cfgDesc_Audio1[] =
     /* Standard AS Isochronous Audio Data Endpoint Descriptor 4.6.1.1 */
     0x09,
     0x05,                                 /* ENDPOINT */
-    0x01,                                 /* endpointAddress - D7, direction (0 OUT, 1 IN). D6..4 reserved (0). D3..0 endpoint no. */
+    ENDPOINT_ADDRESS_OUT_AUDIO,           /* endpointAddress - D7, direction (0 OUT, 1 IN). D6..4 reserved (0). D3..0 endpoint no. */
 #ifdef XUA_ADAPTIVE
     ISO_EP_ATTRIBUTES_ADAPTIVE,
 #else
