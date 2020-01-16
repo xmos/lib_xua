@@ -233,6 +233,13 @@
 #define DEFAULT_AUDOUT_FREQ      (48000)
 #endif
 
+/**
+ * @brief Default Reference input sampling frequency
+ */
+#ifndef DEFAULT_AUDIN_FREQ
+#define DEFAULT_AUDIN_FREQ      (48000)
+#endif
+
 /* Audio Class Defines */
 
 /**

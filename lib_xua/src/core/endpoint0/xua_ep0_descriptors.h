@@ -2599,6 +2599,13 @@ unsigned char cfgDesc_Audio1[] =
     NUM_USB_CHAN_OUT_FS,                  /* nrChannels */
     FS_STREAM_FORMAT_OUTPUT_1_SUBSLOT_BYTES,   /* subFrameSize */
     FS_STREAM_FORMAT_OUTPUT_1_RESOLUTION_BITS, /* bitResolution */
+	
+	#ifdef USB_CMD_CFG_SAMP_FREQ
+	USB_OUT_SAMP_FREQ_NUM,
+	CHARIFY_SR(USB_OUT_SAMP_FREQ_0),
+	CHARIFY_SR(USB_OUT_SAMP_FREQ_1),
+	CHARIFY_SR(USB_OUT_SAMP_FREQ_2),
+	#else
 
     num_freqs_a1,                         /* SamFreqType - sample freq count */
 
@@ -2652,6 +2659,7 @@ unsigned char cfgDesc_Audio1[] =
 #if (MIN_FREQ <= 96000) && (MAX_FREQ_FS >= 96000)
     0x00, 0x77, 0x01,                     /* sampleFreq - 96KHz */
 #endif
+	#endif	//USB_CMD_CFG_SAMP_FREQ
 
     /* Standard AS Isochronous Audio Data Endpoint Descriptor 4.6.1.1 */
     0x09,

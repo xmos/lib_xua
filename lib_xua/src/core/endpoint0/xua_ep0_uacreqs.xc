@@ -55,12 +55,14 @@ extern unsigned char mixSel[MAX_MIX_COUNT][MIX_INPUTS];
 
 #ifdef USB_CMD_CFG_SAMP_FREQ
 extern unsigned int g_curAudOut_SamFreq;
+extern unsigned int g_curAudIn_SamFreq;
 #endif
 
 /* Global var for current frequency, set to default freq */
 #ifdef USB_CMD_CFG_SAMP_FREQ
 #define g_curUSBin_SamFreq g_curAudOut_SamFreq
-unsigned int g_curUSBout_SamFreq = DEFAULT_FREQ;
+#define g_curUSBout_SamFreq g_curAudIn_SamFreq
+
 unsigned int g_curSamFreq = DEFAULT_FREQ;	// should no longer be used
 #else
 unsigned int g_curUSBin_SamFreq = DEFAULT_FREQ;
