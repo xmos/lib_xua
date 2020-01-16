@@ -1,4 +1,4 @@
-// Copyright (c) 2011-2019, XMOS Ltd, All rights reserved
+// Copyright (c) 2011-2020, XMOS Ltd, All rights reserved
 #include "xua.h"
 #if XUA_USB_EN
 #include <xs1.h>
@@ -21,7 +21,7 @@
 
 #if( 0 < HID_CONTROLS )
 #include "user_hid.h"
-unsigned char g_hidData[1] = {0};
+unsigned char g_hidData[HID_DATA_BYTES] = {0};
 #endif
 
 void GetADCCounts(unsigned samFreq, int &min, int &mid, int &max);
@@ -880,7 +880,7 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
             case XUD_SetData_Select(c_hid, ep_hid, result):
             {
                 g_hidData[0]=0;
-                g_hidData[0]=UserHIDGetData();
+                UserHIDGetData(g_hidData);
                 XUD_SetReady_In(ep_hid, g_hidData, 1);
             }
             break;
