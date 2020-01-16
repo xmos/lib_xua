@@ -30,7 +30,7 @@ The headings in this License do not affect its interpretation. Save where the co
 
 Unless the context otherwise requires:
 
-- references to XMOS and the Customer include their permitted successors and assigns;
+- references to XMOS and the Customer include their permitted successors and assigns; 
 - references to statutory provisions include those statutory provisions as amended or re-enacted; and
 - references to any gender include all genders.
 
@@ -58,12 +58,12 @@ The Customer will adhere to all applicable import and export laws and regulation
 
 The Customer will own all intellectual property rights in the Licensee Modifications but will undertake to provide XMOS with any fixes made to correct any bugs found in the XMOS Software on a non-exclusive, perpetual and royalty free license basis.
 
-XMOS will own all intellectual property rights in the XMOS Modifications.
+XMOS will own all intellectual property rights in the XMOS Modifications. 
 The Customer may only use the Licensee Modifications and XMOS Modifications on, or in relation to, XMOS Hardware.
 
 7. Support
 
-Support of the XMOS Software may be provided by XMOS pursuant to a separate support agreement.
+Support of the XMOS Software may be provided by XMOS pursuant to a separate support agreement. 
 
 8. Warranty and Disclaimer
 
