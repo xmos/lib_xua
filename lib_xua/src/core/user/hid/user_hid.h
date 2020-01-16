@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2019, XMOS Ltd, All rights reserved
+// Copyright (c) 2013-2020, XMOS Ltd, All rights reserved
 
 #ifndef __USER_HID_H__
 #define __USER_HID_H__
