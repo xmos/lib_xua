@@ -17,6 +17,9 @@ lib_xua Change Log
     customer
   * CHANGE:    HID interface for user to set and clear events from global
     variable to function
+  * CHANGE     HID report descriptor to use generic events instead of GPI
+    events, to report Key-phrase detection as AC Search, and to report end-call
+    detection as AC Stop
 
 0.2.1
 -----
