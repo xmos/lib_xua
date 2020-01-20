@@ -88,6 +88,12 @@ int min(int x, int y);
 /* Global current device config var*/
 extern unsigned char g_currentConfig;
 
+
+#if((defined USB_CMD_CFG_SAMP_FREQ) || (defined USB_DESCRIPTOR_OVERRIDE_RATE_RES))
+extern unsigned int g_curAudOut_SamFreq;
+extern unsigned int g_curAudIn_SamFreq;
+#endif
+
 /* Global endpoint status arrays - declared in usb_device.xc */
 extern unsigned char g_interfaceAlt[];
 
@@ -777,6 +783,27 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
 #endif
 #elif (AUDIO_CLASS == 1)
             /* Return Audio 1.0 Descriptors in FS, should never be in HS! */
+			
+			
+			#ifdef USB_DESCRIPTOR_OVERRIDE_RATE_RES	//change USB descriptor frequencies and bit resolution values here
+				int i=0;
+				for(i=0;i<3;i++)
+				{
+					cfgDesc_Audio1[USB_AS_IN_INTERFACE_DESCRIPTOR_OFFSET_FREQ + 3*i] = g_curAudOut_SamFreq & 0xff;
+					cfgDesc_Audio1[USB_AS_IN_INTERFACE_DESCRIPTOR_OFFSET_FREQ + 3*i + 1] = (g_curAudOut_SamFreq & 0xff00)>> 8;
+					cfgDesc_Audio1[USB_AS_IN_INTERFACE_DESCRIPTOR_OFFSET_FREQ + 3*i + 2] = (g_curAudOut_SamFreq & 0xff0000)>> 16;
+				}
+				
+				for(i=0;i<3;i++)
+				{
+					cfgDesc_Audio1[USB_AS_OUT_INTERFACE_DESCRIPTOR_OFFSET_FREQ + 3*i] = g_curAudIn_SamFreq & 0xff;
+					cfgDesc_Audio1[USB_AS_OUT_INTERFACE_DESCRIPTOR_OFFSET_FREQ + 3*i + 1] = (g_curAudIn_SamFreq & 0xff00)>> 8;
+					cfgDesc_Audio1[USB_AS_OUT_INTERFACE_DESCRIPTOR_OFFSET_FREQ + 3*i + 2] = (g_curAudIn_SamFreq & 0xff0000)>> 16;
+				}
+			#endif
+		
+		
+		
              result = USB_StandardRequests(ep0_out, ep0_in,
                 null, 0,
                 null, 0,
