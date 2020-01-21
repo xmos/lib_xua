@@ -42,7 +42,8 @@ typedef enum hidEventId_t {
   HID_EVENT_ID_EVT24,
   HID_EVENT_ID_EVT25,
   HID_EVENT_ID_EVT26,
-  HID_EVENT_ID_EVT27
+  HID_EVENT_ID_EVT27,
+  HID_EVENT_ID_INVALID = 0xffffffff,
 } hidEventId_t;
 
 #define HID_DATA_BYTES 4
