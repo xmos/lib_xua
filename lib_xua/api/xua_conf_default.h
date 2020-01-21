@@ -1445,6 +1445,12 @@ enum USBEndpointNumber_Out
 #error Bad DEFAULT_MCLK_FREQ
 #endif
 
+/* DFU functional descriptor wDetachTimeOut field (milliseconds)
+ * Time for device to wait for bus reset after DETACH request before reverting to idle state */
+#ifndef DFU_DETACH_TIME_OUT
+#define DFU_DETACH_TIME_OUT 250
+#endif
+
 #if ((MCLK_441 % MIN_FREQ) == 0)
 #define MIN_FREQ_44 MIN_FREQ
 #define MIN_FREQ_48 ((48000 * 512)/((44100 * 512)/MIN_FREQ))
@@ -1466,4 +1472,3 @@ enum USBEndpointNumber_Out
 #if (CODEC_MASTER == 1) && (DSD_CHANS_DAC != 0) 
 #error CODEC_MASTER with DSD is currently unsupported 
 #endif
-

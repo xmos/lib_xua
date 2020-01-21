@@ -2068,8 +2068,8 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
     0x09,                                 /* 0    Size */
     0x21,                                 /* 1    bDescriptorType : DFU FUNCTIONAL */
     0x07,                                 /* 2    bmAttributes */
-    0xFA,                                 /* 3    wDetachTimeOut */
-    0x00,                                 /* 4    wDetachTimeOut */
+    DFU_DETACH_TIME_OUT & 0xFF,           /* 3    wDetachTimeOut */
+    (DFU_DETACH_TIME_OUT >> 8) & 0xFF,    /* 4    wDetachTimeOut */
     0x40,                                 /* 5    wTransferSize */
     0x00,                                 /* 6    wTransferSize */
     0x10,                                 /* 7    bcdDFUVersion */
@@ -2849,8 +2849,8 @@ unsigned char cfgDesc_Audio1[] =
     0x09,                                 /* 0    Size */
     0x21,                                 /* 1    bDescriptorType : DFU FUNCTIONAL */
     0x07,                                 /* 2    bmAttributes */
-    0xFA,                                 /* 3    wDetachTimeOut */
-    0x00,                                 /* 4    wDetachTimeOut */
+    DFU_DETACH_TIME_OUT & 0xFF,           /* 3    wDetachTimeOut */
+    (DFU_DETACH_TIME_OUT >> 8) & 0xFF,    /* 4    wDetachTimeOut */
     0x40,                                 /* 5    wTransferSize */
     0x00,                                 /* 6    wTransferSize */
     0x10,                                 /* 7    bcdDFUVersion */
