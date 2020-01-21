@@ -1,4 +1,4 @@
-// Copyright (c) 2011-2019, XMOS Ltd, All rights reserved
+// Copyright (c) 2011-2020, XMOS Ltd, All rights reserved
 /**
  * @file    xua_ep0_descriptors.h
  * @brief   Device Descriptors
