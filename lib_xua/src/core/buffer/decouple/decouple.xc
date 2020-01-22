@@ -136,6 +136,8 @@ unsigned unpackData = 0;
 unsigned packState = 0;
 unsigned packData = 0;
 
+extern unsigned int g_BitResolution;
+
 /* Default to something sensible but the following are setup at stream start (unless UAC1 only..) */
 #if (AUDIO_CLASS == 2)
 unsigned g_curSubSlot_Out = HS_STREAM_FORMAT_OUTPUT_1_SUBSLOT_BYTES;
@@ -144,7 +146,6 @@ unsigned g_curSubSlot_In  = HS_STREAM_FORMAT_INPUT_1_SUBSLOT_BYTES;
 unsigned g_curSubSlot_Out = FS_STREAM_FORMAT_OUTPUT_1_SUBSLOT_BYTES;
 unsigned g_curSubSlot_In  = FS_STREAM_FORMAT_INPUT_1_SUBSLOT_BYTES;
 #endif
-
 
 /* IN packet size. Init to something sensible, but expect to be re-set before stream start */
 #if (AUDIO_CLASS==2)
@@ -158,6 +159,10 @@ int g_maxPacketSize = MAX_DEVICE_AUD_PACKET_SIZE_IN_FS;
 void handle_audio_request(chanend c_mix_out)
 {
     int space_left;
+    if (AUDIO_CLASS == 1){
+        g_curSubSlot_Out = g_BitResolution/8;
+        g_curSubSlot_In = g_BitResolution/8;
+    }
 
     /* Input word that triggered interrupt and handshake back */
     unsigned underflowSample = inuint(c_mix_out);
