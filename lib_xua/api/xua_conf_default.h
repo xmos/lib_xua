@@ -461,6 +461,15 @@
 #endif
 
 /**
+ * @brief Flag to indicate that EP0 configuration is complete
+ *
+ * Default: 1
+ */
+#ifndef EP0_CONFIG_COMPLETE
+#define EP0_CONFIG_COMPLETE      (1)
+#endif
+
+/**
  * @brief USB Product String for the device. If defined will be used for both PRODUCT_STR_A2 and PRODUCT_STR_A1
  *
  * Default: Undefined

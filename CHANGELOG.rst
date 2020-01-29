@@ -20,6 +20,7 @@ lib_xua Change Log
   * CHANGE     HID report descriptor to use generic events instead of GPI
     events, to report Key-phrase detection as AC Search, and to report end-call
     detection as AC Stop
+  * ADDED:     VID and PID's can be configured at runtime in EndPoint0 
 
 0.2.1
 -----

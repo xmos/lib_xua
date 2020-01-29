@@ -99,6 +99,10 @@ unsigned g_curStreamAlt_In = 0;
 /* Global variable for current USB bus speed (i.e. FS/HS) */
 XUD_BusSpeed_t g_curUsbSpeed = 0;
 
+unsigned char xua_isEp0ConfigComplete = EP0_CONFIG_COMPLETE;
+unsigned short xua_IdVendor = VENDOR_ID;             /* Vendor ID */
+unsigned short xua_IdProductAudio1 = PID_AUDIO_1;    /* Product ID for Audio 1*/
+unsigned short xua_IdProductAudio2 = PID_AUDIO_2;    /* Product ID for Audio 1*/
 
 /* Subslot */
 const unsigned g_subSlot_Out_HS[OUTPUT_FORMAT_COUNT]    = {HS_STREAM_FORMAT_OUTPUT_1_SUBSLOT_BYTES,
@@ -301,10 +305,12 @@ void XUA_Endpoint0_init(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioCont
 #endif
 
 }
-
 void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
     chanend c_mix_ctl, chanend c_clk_ctl, chanend c_EANativeTransport_ctrl, CLIENT_INTERFACE(i_dfu, dfuInterface) VENDOR_REQUESTS_PARAMS_DEC_)
 {
+ if (xua_isEp0ConfigComplete==0) {
+    return;
+ }
  if (result == XUD_RES_OKAY)
     {
         result = XUD_RES_ERR;
@@ -685,6 +691,13 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
         if (!DFU_mode_active)
         {
 #endif
+#if (AUDIO_CLASS == 1)
+            devDesc_Audio1.idVendor = xua_IdVendor;
+            devDesc_Audio1.idProduct = xua_IdProductAudio1;
+#else
+            devDesc_Audio2.idVendor = xua_IdVendor;
+            devDesc_Audio2.idProduct = xua_IdProductAudio2;
+#endif // AUDIO_CLASS == 1
 #if (AUDIO_CLASS_FALLBACK) && (AUDIO_CLASS != 1)
             /* Return Audio 2.0 Descriptors with Audio 1.0 as fallback */
             result = USB_StandardRequests(ep0_out, ep0_in,
@@ -764,7 +777,6 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
                 cfgDesc_Audio2.Audio_In_ClassStreamInterface.bNrChannels = NUM_USB_CHAN_IN_FS;
 #endif
             }
-
             result = USB_StandardRequests(ep0_out, ep0_in,
                 (unsigned char*)&devDesc_Audio2, sizeof(devDesc_Audio2),
                 (unsigned char*)&cfgDesc_Audio2, sizeof(cfgDesc_Audio2),
