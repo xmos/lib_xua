@@ -240,6 +240,20 @@
 #define DEFAULT_AUDIN_FREQ      (48000)
 #endif
 
+/**
+ * @brief Default USB input (Audio output) bit resolution
+ */
+#ifndef DEFAULT_BIT_RES_IN
+#define DEFAULT_BIT_RES_IN      (16)
+#endif
+
+/**
+ * @brief Default USB output (Reference input) bit resolution
+ */
+#ifndef DEFAULT_BIT_RES_OUT
+#define DEFAULT_BIT_RES_OUT     (32)
+#endif
+
 /* Audio Class Defines */
 
 /**
