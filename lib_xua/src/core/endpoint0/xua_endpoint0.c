@@ -92,6 +92,8 @@ extern unsigned char g_currentConfig;
 #if((defined USB_CMD_CFG_SAMP_FREQ) || (defined USB_DESCRIPTOR_OVERRIDE_RATE_RES))
 extern unsigned int g_curAudOut_SamFreq;
 extern unsigned int g_curAudIn_SamFreq;
+extern unsigned int g_BitResolution_In;
+extern unsigned int g_BitResolution_Out;
 #endif
 
 /* Global endpoint status arrays - declared in usb_device.xc */
@@ -786,6 +788,13 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
 			
 			
 			#ifdef USB_DESCRIPTOR_OVERRIDE_RATE_RES	//change USB descriptor frequencies and bit resolution values here
+			
+				cfgDesc_Audio1[USB_AS_IN_INTERFACE_DESCRIPTOR_OFFSET_SUB_FRAME] = g_BitResolution_In >> 3; 	//sub frame rate = bit rate /8
+				cfgDesc_Audio1[USB_AS_IN_INTERFACE_DESCRIPTOR_OFFSET_SUB_FRAME + 1] = (g_BitResolution_In & 0xff);		//bit resolution
+				
+				cfgDesc_Audio1[USB_AS_OUT_INTERFACE_DESCRIPTOR_OFFSET_SUB_FRAME] = g_BitResolution_Out >> 3; 	//sub frame rate = bit rate /8
+				cfgDesc_Audio1[USB_AS_OUT_INTERFACE_DESCRIPTOR_OFFSET_SUB_FRAME + 1] = (g_BitResolution_Out & 0xff);		//bit resolution
+				
 				int i=0;
 				for(i=0;i<3;i++)
 				{
@@ -800,6 +809,13 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
 					cfgDesc_Audio1[USB_AS_OUT_INTERFACE_DESCRIPTOR_OFFSET_FREQ + 3*i + 1] = (g_curAudIn_SamFreq & 0xff00)>> 8;
 					cfgDesc_Audio1[USB_AS_OUT_INTERFACE_DESCRIPTOR_OFFSET_FREQ + 3*i + 2] = (g_curAudIn_SamFreq & 0xff0000)>> 16;
 				}
+				
+				cfgDesc_Audio1[USB_AS_IN_EP_DESCRIPTOR_OFFSET_MAXPACKETSIZE] = ((g_BitResolution_In >> 3) * MAX_PACKET_SIZE_MULT_IN_FS) & 0xff; 	//max packet size
+				cfgDesc_Audio1[USB_AS_IN_EP_DESCRIPTOR_OFFSET_MAXPACKETSIZE + 1] = (((g_BitResolution_In >> 3)  * MAX_PACKET_SIZE_MULT_IN_FS) & 0xff00) >> 8;		//max packet size
+				
+				cfgDesc_Audio1[USB_AS_OUT_EP_DESCRIPTOR_OFFSET_MAXPACKETSIZE] = ((g_BitResolution_Out >> 3) * MAX_PACKET_SIZE_MULT_OUT_FS) & 0xff; 	//max packet size
+				cfgDesc_Audio1[USB_AS_OUT_EP_DESCRIPTOR_OFFSET_MAXPACKETSIZE + 1] = (((g_BitResolution_Out >> 3)  * MAX_PACKET_SIZE_MULT_OUT_FS) & 0xff00) >> 8;		//max packet size
+				
 			#endif
 		
 		
