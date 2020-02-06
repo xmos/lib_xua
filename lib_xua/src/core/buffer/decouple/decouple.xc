@@ -17,6 +17,13 @@
 #endif
 #define MAX(x,y) ((x)>(y) ? (x) : (y))
 
+#if((defined USB_CMD_CFG_SAMP_FREQ) || (defined USB_DESCRIPTOR_OVERRIDE_RATE_RES))
+unsigned int xua_lite_curAudOutFreq(void);
+unsigned int xua_lite_curAudInFreq(void);
+unsigned int xua_lite_curUSB_Res_In(void);
+unsigned int xua_lite_curUSB_Res_Out(void);
+#endif
+
 /* TODO use SLOTSIZE to potentially save memory */
 /* Note we could improve on this, for one subslot is set to 4 */
 /* The *4 is conversion to bytes, note we're assuming a slotsize of 4 here whic is potentially as waste */
@@ -136,7 +143,6 @@ unsigned unpackData = 0;
 unsigned packState = 0;
 unsigned packData = 0;
 
-extern unsigned int g_BitResolution;
 
 /* Default to something sensible but the following are setup at stream start (unless UAC1 only..) */
 #if (AUDIO_CLASS == 2)
@@ -160,8 +166,8 @@ void handle_audio_request(chanend c_mix_out)
 {
     int space_left;
     if (AUDIO_CLASS == 1){
-        g_curSubSlot_Out = g_BitResolution/8;
-        g_curSubSlot_In = g_BitResolution/8;
+        g_curSubSlot_Out = xua_lite_curUSB_Res_Out() >> 3;
+        g_curSubSlot_In = xua_lite_curUSB_Res_In() >> 3;
     }
 
     /* Input word that triggered interrupt and handshake back */
