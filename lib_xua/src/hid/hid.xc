@@ -9,11 +9,16 @@
 #if( 0 < HID_CONTROLS )
 #define MS_IN_TICKS 100000U
 
-static unsigned s_hidIdleActive = 0U;
+static unsigned s_hidChangePending = 0U;
 static unsigned s_hidCurrentPeriod = ENDPOINT_INT_INTERVAL_IN_HID * MS_IN_TICKS;
+static unsigned s_hidIdleActive = 0U;
 static unsigned s_hidIndefiniteDuration = 0U;
 static unsigned s_hidNextReportTime = 0U;
 static unsigned s_hidReportTime = 0U;
+
+unsafe {
+  volatile unsigned * unsafe s_hidChangePendingPtr = &s_hidChangePending;
+}
 
 static unsigned     HidCalcNewReportTime( const unsigned currentPeriod, const unsigned reportTime, const unsigned reportToSetIdleInterval, const unsigned newPeriod );
 static unsigned     HidCalcReportToSetIdleInterval( const unsigned reportTime );
@@ -51,6 +56,18 @@ XUD_Result_t HidInterfaceClassRequests(
   return result;
 }
 
+void HidClearChangePending( void )
+{
+  unsafe {
+    *s_hidChangePendingPtr = 0U;
+  }
+}
+
+unsigned HidIsChangePending( void )
+{
+  return( s_hidChangePending != 0 );
+}
+
 unsigned HidIsSetIdleSilenced( void )
 {
   unsigned isSilenced = s_hidIdleActive;
@@ -65,6 +82,13 @@ unsigned HidIsSetIdleSilenced( void )
   }
 
   return isSilenced;
+}
+
+void HidSetChangePending( void )
+{
+  unsafe {
+    *s_hidChangePendingPtr = 1;
+  }
 }
 
 /**

@@ -1,4 +1,4 @@
-// Copyright (c) 2011-2019, XMOS Ltd, All rights reserved
+// Copyright (c) 2011-2020, XMOS Ltd, All rights reserved
 /**
  * @file    xua_ep0_descriptors.h
  * @brief   Device Descriptors
@@ -566,20 +566,26 @@ unsigned char devQualDesc_Null[] =
 #if( 0 < HID_CONTROLS )
 unsigned char hidReportDescriptor[] = /* Voice Command usage as per request #HUTRR45 */
 {
-    0x15, 0x01,         /* Logical Minimum (1) */
-    0x25, 0x01,         /* Logical Maximum (1) */
-    0x75, 0x01,         /* Report Size (1) */
-    0x05, 0x0c,         /* Usage Page (Consumer Device) */
-    0x09, 0x01,         /* Usage (Consumer Control) */
+    0x05, 0x01,         /* Usage Page (Generic Desktop) */
+    0x09, 0x06,         /* Usage (Keyboard) */
     0xa1, 0x01,         /* Collection (Application) */
-    0x0a, 0x00, 0x02,   /* Usage (Generic GUI Application Controls) */
-    0xa1, 0x02,         /* Collection (Logical) */
-    0x0a, 0x21, 0x02,   /* Usage (AC Search) */
+    0x75, 0x01,         /* Report Size (1) */
+    0x95, 0x04,         /* Report Count (4) */
+    0x15, 0x00,         /* Logical Minimum (0) */
+    0x25, 0x00,         /* Logical Maximum (0) */
+    0x81, 0x01,         /* Input (Cnst, Ary, Abs, No Wrap, Lin, Pref, No Nul) */
     0x95, 0x01,         /* Report Count (1) */
-    0x81, 0x40,         /* Input (Data, Ary, Abs, Nul) */
-    0x95, 0x07,         /* Report Count (7) */
-    0x81, 0x01,         /* Input (Cnst, Ary, Abs) */
-    0xc0,               /* End collection (Logical) */
+    0x25, 0x01,         /* Logical Maximum (1) */
+    0x05, 0x0C,         /* Usage Page (Consumer) */
+    0x0a, 0x21, 0x02,   /* Usage (AC Search) */
+    0x81, 0x02,         /* Input (Data, Var, Abs, No Wrap, Lin, Pref, No Nul) */
+    0x0a, 0x26, 0x02,   /* Usage (AC Stop) */
+    0x81, 0x02,         /* Input (Data, Var, Abs, No Wrap, Lin, Pref, No Nul) */
+    0x95, 0x02,         /* Report Count (2) */
+    0x05, 0x07,         /* Usage Page (Key Codes) */
+    0x19, 0x72,         /* Usage Minimum (Keyboard F23) */
+    0x29, 0x73,         /* Usage Maximum (Keyboard F24) */
+    0x81, 0x02,         /* Input (Data, Var, Abs, No Wrap, Lin, Pref, No Nul) */
     0xc0                /* End collection (Application) */
 };
 #endif
@@ -2064,8 +2070,8 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
     0x09,                                 /* 0    Size */
     0x21,                                 /* 1    bDescriptorType : DFU FUNCTIONAL */
     0x07,                                 /* 2    bmAttributes */
-    0xFA,                                 /* 3    wDetachTimeOut */
-    0x00,                                 /* 4    wDetachTimeOut */
+    DFU_DETACH_TIME_OUT & 0xFF,           /* 3    wDetachTimeOut */
+    (DFU_DETACH_TIME_OUT >> 8) & 0xFF,    /* 4    wDetachTimeOut */
     0x40,                                 /* 5    wTransferSize */
     0x00,                                 /* 6    wTransferSize */
     0x10,                                 /* 7    bcdDFUVersion */
@@ -2692,7 +2698,7 @@ unsigned char cfgDesc_Audio1[] =
     (FS_STREAM_FORMAT_OUTPUT_1_MAXPACKETSIZE&0xff),      /* 4  wMaxPacketSize (Typically 294 bytes)*/
     (FS_STREAM_FORMAT_OUTPUT_1_MAXPACKETSIZE&0xff00)>>8, /* 5  wMaxPacketSize */
     0x01,                                 /* bInterval */
-    0x00,                                 /* bRefresh */ 
+    0x00,                                 /* bRefresh */
 #if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP)
     ENDPOINT_ADDRESS_IN_FEEDBACK,         /* bSynchAdddress - address of EP used to communicate sync info */
 #else /* Bi-directional in/out device */
@@ -3004,8 +3010,8 @@ unsigned char cfgDesc_Audio1[] =
     0x09,                                 /* 0    Size */
     0x21,                                 /* 1    bDescriptorType : DFU FUNCTIONAL */
     0x07,                                 /* 2    bmAttributes */
-    0xFA,                                 /* 3    wDetachTimeOut */
-    0x00,                                 /* 4    wDetachTimeOut */
+    DFU_DETACH_TIME_OUT & 0xFF,           /* 3    wDetachTimeOut */
+    (DFU_DETACH_TIME_OUT >> 8) & 0xFF,    /* 4    wDetachTimeOut */
     0x40,                                 /* 5    wTransferSize */
     0x00,                                 /* 6    wTransferSize */
     0x10,                                 /* 7    bcdDFUVersion */
@@ -3045,7 +3051,7 @@ unsigned char cfgDesc_Audio1[] =
     0x00,                                 /* 4  bCountryCode */
     0x01,                                 /* 5  bNumDescriptors */
     0x22,                                 /* 6  bDescriptorType[0] (Report) */
-    0x1E,                                 /* 7  wDescriptorLength[0] */
+    0x2B,                                 /* 7  wDescriptorLength[0] */
     0x00,                                 /* 8  wDescriptorLength[0] */
 
     /* HID Endpoint descriptor (IN) */

@@ -11,6 +11,15 @@ lib_xua Change Log
     microphone operation
   * FIXED:     Descriptors for XUA_ADAPTIVE incorrectly defined for IN endpoint
   * ADDED:     Guards to user_hid.h and xua_hid.h
+  * ADDED:     UAC1 HID support for AC Stop (End Call), Volume Increment and
+    Volume Decrement
+  * CHANGE:    UAC1 HID to report function keys f21 through f24 as specified by
+    customer
+  * CHANGE:    HID interface for user to set and clear events from global
+    variable to function
+  * CHANGE     HID report descriptor to use generic events instead of GPI
+    events, to report Key-phrase detection as AC Search, and to report end-call
+    detection as AC Stop
 
 0.2.1
 -----
