@@ -46,7 +46,7 @@ void XUA_Endpoint0_setProductId(unsigned short pid);
 */
 unsigned short XUA_Endpoint0_getVendorId();
 
-/** Function to get the Vendor ID value
+/** Function to get the Product ID value
  *
  *  \return Product ID value
 */
