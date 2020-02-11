@@ -20,7 +20,7 @@ lib_xua Change Log
   * CHANGE     HID report descriptor to use generic events instead of GPI
     events, to report Key-phrase detection as AC Search, and to report end-call
     detection as AC Stop
-  * ADDED:     Enndpoint0 API functions to read and write Vendor and Product IDs
+  * ADDED:     Endpoint0 API functions to read and write Vendor and Product IDs
 
 0.2.1
 -----
