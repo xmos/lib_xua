@@ -20,8 +20,6 @@
 #include "iap2.h"                      /* Defines iAP EA Native Transport protocol name */
 #endif
 
-#include "xua_conf.h"
-
 #define APPEND_VENDOR_STR(x) VENDOR_STR" "#x
 
 #define APPEND_PRODUCT_STR_A2(x) PRODUCT_STR_A2 " "#x

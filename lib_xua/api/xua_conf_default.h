@@ -244,7 +244,7 @@
  * @brief Default USB input (Audio output) bit resolution
  */
 #ifndef DEFAULT_BIT_RES_IN
-#define DEFAULT_BIT_RES_IN      (16)
+#define DEFAULT_BIT_RES_IN      (32)
 #endif
 
 /**
