@@ -1,4 +1,4 @@
-// Copyright (c) 2011-2019, XMOS Ltd, All rights reserved
+// Copyright (c) 2011-2020, XMOS Ltd, All rights reserved
 /**
  * @brief   Implements endpoint zero for an USB Audio 1.0/2.0 device
  * @author  Ross Owen, XMOS Semiconductor
@@ -206,6 +206,42 @@ const unsigned g_chanCount_In_HS[INPUT_FORMAT_COUNT]       = {HS_STREAM_FORMAT_I
 
 XUD_ep ep0_out;
 XUD_ep ep0_in;
+
+void XUA_Endpoint0_setVendorId(unsigned short vid) {
+#if (AUDIO_CLASS == 1)
+    devDesc_Audio1.idVendor = vid;
+#else
+    devDesc_Audio2.idVendor = vid;
+#endif // AUDIO_CLASS == 1}
+}
+
+void XUA_Endpoint0_setProductId(unsigned short pid) {
+#if (AUDIO_CLASS == 1)
+    devDesc_Audio1.idProduct = pid;
+#else
+    devDesc_Audio2.idProduct = pid;
+#endif // AUDIO_CLASS == 1}
+}
+
+unsigned short XUA_Endpoint0_getVendorId() {
+    unsigned short vid;
+#if (AUDIO_CLASS == 1)
+    vid = devDesc_Audio1.idVendor;
+#else
+    vid = devDesc_Audio2.idVendor;
+#endif // AUDIO_CLASS == 1}
+    return vid;
+}
+
+unsigned short XUA_Endpoint0_getProductId() {
+    unsigned short pid;    
+#if (AUDIO_CLASS == 1)
+    pid = devDesc_Audio1.idProduct;
+#else
+    pid = devDesc_Audio2.idProduct;
+#endif // AUDIO_CLASS == 1}
+    return pid;
+}
 
 void XUA_Endpoint0_init(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
     chanend c_mix_ctl, chanend c_clk_ctl, chanend c_EANativeTransport_ctrl, CLIENT_INTERFACE(i_dfu, dfuInterface) VENDOR_REQUESTS_PARAMS_DEC_)
