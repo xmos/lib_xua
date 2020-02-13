@@ -1094,7 +1094,7 @@ int AudioEndpointRequests_1(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp
      * bmRequestType.Recipient = Endpoint
      * bmRequestType.Type = Class
      * endpoint (wIndex & 0xff) is 0x01 or 0x82
-	 * wIndex is endpoint address for distinguishing input and output
+     * wIndex is endpoint address for distinguishing input and output
      */
 
     XUD_Result_t result;
@@ -1126,7 +1126,7 @@ int AudioEndpointRequests_1(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp
                         int newSampleRate = (buffer, unsigned char[])[0] | ((buffer, unsigned char[])[1] << 8) | ((buffer, unsigned char[])[2] << 16);
 
                         if(((sp.wIndex == ENDPOINT_ADDRESS_IN_AUDIO) && (newSampleRate != g_curUSBin_SamFreq)) || \
-							((sp.wIndex == ENDPOINT_ADDRESS_OUT_AUDIO) && (newSampleRate != g_curUSBout_SamFreq)))
+                          ((sp.wIndex == ENDPOINT_ADDRESS_OUT_AUDIO) && (newSampleRate != g_curUSBout_SamFreq)))
                         {
                             int curSamFreq44100Family;
                             int curSamFreq48000Family;
@@ -1138,18 +1138,18 @@ int AudioEndpointRequests_1(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp
 
                             if(curSamFreq48000Family || curSamFreq44100Family)
                             {
-								if(sp.wIndex == ENDPOINT_ADDRESS_IN_AUDIO){
-									g_curUSBin_SamFreq = newSampleRate;
-									/* Instruct audio thread to change sample freq */
-									outuint(c_audioControl, SET_SAMPLE_FREQ);
-									outuint(c_audioControl, g_curUSBin_SamFreq);
-								}
-								else{	//if sp.wIndex == ENDPOINT_ADDRESS_OUT_AUDIO
-									g_curUSBout_SamFreq = newSampleRate;
-									/* Instruct audio thread to change sample freq */
-									//outuint(c_audioControl, SET_SAMPLE_FREQ);
-									//outuint(c_audioControl, g_curUSBout_SamFreq);	// FIXME: not implemented yet
-								}
+                                if(sp.wIndex == ENDPOINT_ADDRESS_IN_AUDIO){
+                                    g_curUSBin_SamFreq = newSampleRate;
+                                   /* Instruct audio thread to change sample freq */
+                                    outuint(c_audioControl, SET_SAMPLE_FREQ);
+                                    outuint(c_audioControl, g_curUSBin_SamFreq);
+                                }
+                                else{    //if sp.wIndex == ENDPOINT_ADDRESS_OUT_AUDIO
+                                    g_curUSBout_SamFreq = newSampleRate;
+                                    /* Instruct audio thread to change sample freq */
+                                    //outuint(c_audioControl, SET_SAMPLE_FREQ);
+                                    //outuint(c_audioControl, g_curUSBout_SamFreq);	// FIXME: not implemented yet
+                                }
 
                                 /* Wait for handshake back - i.e. pll locked and clocks okay */
                                 chkct(c_audioControl, XS1_CT_END);
