@@ -95,7 +95,6 @@ int min(int x, int y);
 /* Global current device config var*/
 extern unsigned char g_currentConfig;
 
-
 /* Global endpoint status arrays - declared in usb_device.xc */
 extern unsigned char g_interfaceAlt[];
 
@@ -306,6 +305,38 @@ void XUA_Endpoint0_init(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioCont
         /* No Handshake */
         DFU_mode_active = 1;
     }
+#endif
+
+#ifdef USB_DESCRIPTOR_OVERRIDE_RATE_RES	//change USB descriptor frequencies and bit resolution values here
+
+	cfgDesc_Audio1[USB_AS_IN_INTERFACE_DESCRIPTOR_OFFSET_SUB_FRAME] = xua_lite_curUSB_Res_In() >> 3; 	//sub frame rate = bit rate /8
+	cfgDesc_Audio1[USB_AS_IN_INTERFACE_DESCRIPTOR_OFFSET_SUB_FRAME + 1] = (xua_lite_curUSB_Res_In() & 0xff);		//bit resolution
+	
+	cfgDesc_Audio1[USB_AS_OUT_INTERFACE_DESCRIPTOR_OFFSET_SUB_FRAME] = xua_lite_curUSB_Res_Out() >> 3; 	//sub frame rate = bit rate /8
+	cfgDesc_Audio1[USB_AS_OUT_INTERFACE_DESCRIPTOR_OFFSET_SUB_FRAME + 1] = (xua_lite_curUSB_Res_Out() & 0xff);		//bit resolution
+	
+	const unsigned num_of_usb_descriptor_freq=3;	//This should be =3 according to the comments "sing a value of <=2 or > 7 for num_freqs_a1 causes enumeration issues on Windows" in xua_ep0_descriptors.h
+	int i=0;
+	for(i=0;i<num_of_usb_descriptor_freq;i++)
+	{
+		cfgDesc_Audio1[USB_AS_IN_INTERFACE_DESCRIPTOR_OFFSET_FREQ + 3*i] = xua_lite_curAudOutFreq() & 0xff;
+		cfgDesc_Audio1[USB_AS_IN_INTERFACE_DESCRIPTOR_OFFSET_FREQ + 3*i + 1] = (xua_lite_curAudOutFreq() & 0xff00)>> 8;
+		cfgDesc_Audio1[USB_AS_IN_INTERFACE_DESCRIPTOR_OFFSET_FREQ + 3*i + 2] = (xua_lite_curAudOutFreq() & 0xff0000)>> 16;
+	}
+	
+	for(i=0;i<num_of_usb_descriptor_freq;i++)
+	{
+		cfgDesc_Audio1[USB_AS_OUT_INTERFACE_DESCRIPTOR_OFFSET_FREQ + 3*i] = xua_lite_curAudInFreq() & 0xff;
+		cfgDesc_Audio1[USB_AS_OUT_INTERFACE_DESCRIPTOR_OFFSET_FREQ + 3*i + 1] = (xua_lite_curAudInFreq() & 0xff00)>> 8;
+		cfgDesc_Audio1[USB_AS_OUT_INTERFACE_DESCRIPTOR_OFFSET_FREQ + 3*i + 2] = (xua_lite_curAudInFreq() & 0xff0000)>> 16;
+	}
+	
+	cfgDesc_Audio1[USB_AS_IN_EP_DESCRIPTOR_OFFSET_MAXPACKETSIZE] = ((xua_lite_curUSB_Res_In() >> 3) * MAX_PACKET_SIZE_MULT_IN_FS) & 0xff; 	//max packet size
+	cfgDesc_Audio1[USB_AS_IN_EP_DESCRIPTOR_OFFSET_MAXPACKETSIZE + 1] = (((xua_lite_curUSB_Res_In() >> 3)  * MAX_PACKET_SIZE_MULT_IN_FS) & 0xff00) >> 8;		//max packet size
+	
+	cfgDesc_Audio1[USB_AS_OUT_EP_DESCRIPTOR_OFFSET_MAXPACKETSIZE] = ((xua_lite_curUSB_Res_Out() >> 3) * MAX_PACKET_SIZE_MULT_OUT_FS) & 0xff; 	//max packet size
+	cfgDesc_Audio1[USB_AS_OUT_EP_DESCRIPTOR_OFFSET_MAXPACKETSIZE + 1] = (((xua_lite_curUSB_Res_Out() >> 3)  * MAX_PACKET_SIZE_MULT_OUT_FS) & 0xff00) >> 8;		//max packet size
+	
 #endif
 
 }
@@ -785,41 +816,6 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
 #endif
 #elif (AUDIO_CLASS == 1)
             /* Return Audio 1.0 Descriptors in FS, should never be in HS! */
-			
-			
-			#ifdef USB_DESCRIPTOR_OVERRIDE_RATE_RES	//change USB descriptor frequencies and bit resolution values here
-			
-				cfgDesc_Audio1[USB_AS_IN_INTERFACE_DESCRIPTOR_OFFSET_SUB_FRAME] = xua_lite_curUSB_Res_In() >> 3; 	//sub frame rate = bit rate /8
-				cfgDesc_Audio1[USB_AS_IN_INTERFACE_DESCRIPTOR_OFFSET_SUB_FRAME + 1] = (xua_lite_curUSB_Res_In() & 0xff);		//bit resolution
-				
-				cfgDesc_Audio1[USB_AS_OUT_INTERFACE_DESCRIPTOR_OFFSET_SUB_FRAME] = xua_lite_curUSB_Res_Out() >> 3; 	//sub frame rate = bit rate /8
-				cfgDesc_Audio1[USB_AS_OUT_INTERFACE_DESCRIPTOR_OFFSET_SUB_FRAME + 1] = (xua_lite_curUSB_Res_Out() & 0xff);		//bit resolution
-				
-				int i=0;
-				for(i=0;i<3;i++)
-				{
-					cfgDesc_Audio1[USB_AS_IN_INTERFACE_DESCRIPTOR_OFFSET_FREQ + 3*i] = xua_lite_curAudOutFreq() & 0xff;
-					cfgDesc_Audio1[USB_AS_IN_INTERFACE_DESCRIPTOR_OFFSET_FREQ + 3*i + 1] = (xua_lite_curAudOutFreq() & 0xff00)>> 8;
-					cfgDesc_Audio1[USB_AS_IN_INTERFACE_DESCRIPTOR_OFFSET_FREQ + 3*i + 2] = (xua_lite_curAudOutFreq() & 0xff0000)>> 16;
-				}
-				
-				for(i=0;i<3;i++)
-				{
-					cfgDesc_Audio1[USB_AS_OUT_INTERFACE_DESCRIPTOR_OFFSET_FREQ + 3*i] = xua_lite_curAudInFreq() & 0xff;
-					cfgDesc_Audio1[USB_AS_OUT_INTERFACE_DESCRIPTOR_OFFSET_FREQ + 3*i + 1] = (xua_lite_curAudInFreq() & 0xff00)>> 8;
-					cfgDesc_Audio1[USB_AS_OUT_INTERFACE_DESCRIPTOR_OFFSET_FREQ + 3*i + 2] = (xua_lite_curAudInFreq() & 0xff0000)>> 16;
-				}
-				
-				cfgDesc_Audio1[USB_AS_IN_EP_DESCRIPTOR_OFFSET_MAXPACKETSIZE] = ((xua_lite_curUSB_Res_In() >> 3) * MAX_PACKET_SIZE_MULT_IN_FS) & 0xff; 	//max packet size
-				cfgDesc_Audio1[USB_AS_IN_EP_DESCRIPTOR_OFFSET_MAXPACKETSIZE + 1] = (((xua_lite_curUSB_Res_In() >> 3)  * MAX_PACKET_SIZE_MULT_IN_FS) & 0xff00) >> 8;		//max packet size
-				
-				cfgDesc_Audio1[USB_AS_OUT_EP_DESCRIPTOR_OFFSET_MAXPACKETSIZE] = ((xua_lite_curUSB_Res_Out() >> 3) * MAX_PACKET_SIZE_MULT_OUT_FS) & 0xff; 	//max packet size
-				cfgDesc_Audio1[USB_AS_OUT_EP_DESCRIPTOR_OFFSET_MAXPACKETSIZE + 1] = (((xua_lite_curUSB_Res_Out() >> 3)  * MAX_PACKET_SIZE_MULT_OUT_FS) & 0xff00) >> 8;		//max packet size
-				
-			#endif
-		
-		
-		
              result = USB_StandardRequests(ep0_out, ep0_in,
                 null, 0,
                 null, 0,
