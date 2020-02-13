@@ -1147,8 +1147,8 @@ int AudioEndpointRequests_1(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp
                                 else{    //if sp.wIndex == ENDPOINT_ADDRESS_OUT_AUDIO
                                     g_curUSBout_SamFreq = newSampleRate;
                                     /* Instruct audio thread to change sample freq */
-                                    //outuint(c_audioControl, SET_SAMPLE_FREQ);
-                                    //outuint(c_audioControl, g_curUSBout_SamFreq);	// FIXME: not implemented yet
+                                    outuint(c_audioControl, SET_SAMPLE_FREQ);
+                                    outuint(c_audioControl, g_curUSBout_SamFreq);
                                 }
 
                                 /* Wait for handshake back - i.e. pll locked and clocks okay */
