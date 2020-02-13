@@ -18,8 +18,8 @@
 #define MAX(x,y) ((x)>(y) ? (x) : (y))
 
 #if((defined USB_CMD_CFG_SAMP_FREQ) || (defined USB_DESCRIPTOR_OVERRIDE_RATE_RES))
-unsigned int xua_lite_curAudOutFreq(void);
-unsigned int xua_lite_curAudInFreq(void);
+unsigned int xua_lite_curAudToUsbFreq(void);
+unsigned int xua_lite_curUsbToAudFreq(void);
 unsigned int xua_lite_curUSB_Res_In(void);
 unsigned int xua_lite_curUSB_Res_Out(void);
 #endif

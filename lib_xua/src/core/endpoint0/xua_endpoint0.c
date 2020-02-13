@@ -65,8 +65,8 @@ extern void device_reboot(void);
 #endif
 
 #if((defined USB_CMD_CFG_SAMP_FREQ) || (defined USB_DESCRIPTOR_OVERRIDE_RATE_RES))
-unsigned int xua_lite_curAudOutFreq(void);
-unsigned int xua_lite_curAudInFreq(void);
+unsigned int xua_lite_curAudToUsbFreq(void);
+unsigned int xua_lite_curUsbToAudFreq(void);
 unsigned int xua_lite_curUSB_Res_In(void);
 unsigned int xua_lite_curUSB_Res_Out(void);
 #endif
@@ -319,16 +319,16 @@ void XUA_Endpoint0_init(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioCont
     int i=0;
     for(i=0;i<num_of_usb_descriptor_freq;i++)
     {
-        cfgDesc_Audio1[USB_AS_IN_INTERFACE_DESCRIPTOR_OFFSET_FREQ + 3*i] = xua_lite_curAudOutFreq() & 0xff;
-        cfgDesc_Audio1[USB_AS_IN_INTERFACE_DESCRIPTOR_OFFSET_FREQ + 3*i + 1] = (xua_lite_curAudOutFreq() & 0xff00)>> 8;
-        cfgDesc_Audio1[USB_AS_IN_INTERFACE_DESCRIPTOR_OFFSET_FREQ + 3*i + 2] = (xua_lite_curAudOutFreq() & 0xff0000)>> 16;
+        cfgDesc_Audio1[USB_AS_IN_INTERFACE_DESCRIPTOR_OFFSET_FREQ + 3*i] = xua_lite_curAudToUsbFreq() & 0xff;
+        cfgDesc_Audio1[USB_AS_IN_INTERFACE_DESCRIPTOR_OFFSET_FREQ + 3*i + 1] = (xua_lite_curAudToUsbFreq() & 0xff00)>> 8;
+        cfgDesc_Audio1[USB_AS_IN_INTERFACE_DESCRIPTOR_OFFSET_FREQ + 3*i + 2] = (xua_lite_curAudToUsbFreq() & 0xff0000)>> 16;
     }
     
     for(i=0;i<num_of_usb_descriptor_freq;i++)
     {
-        cfgDesc_Audio1[USB_AS_OUT_INTERFACE_DESCRIPTOR_OFFSET_FREQ + 3*i] = xua_lite_curAudInFreq() & 0xff;
-        cfgDesc_Audio1[USB_AS_OUT_INTERFACE_DESCRIPTOR_OFFSET_FREQ + 3*i + 1] = (xua_lite_curAudInFreq() & 0xff00)>> 8;
-        cfgDesc_Audio1[USB_AS_OUT_INTERFACE_DESCRIPTOR_OFFSET_FREQ + 3*i + 2] = (xua_lite_curAudInFreq() & 0xff0000)>> 16;
+        cfgDesc_Audio1[USB_AS_OUT_INTERFACE_DESCRIPTOR_OFFSET_FREQ + 3*i] = xua_lite_curUsbToAudFreq() & 0xff;
+        cfgDesc_Audio1[USB_AS_OUT_INTERFACE_DESCRIPTOR_OFFSET_FREQ + 3*i + 1] = (xua_lite_curUsbToAudFreq() & 0xff00)>> 8;
+        cfgDesc_Audio1[USB_AS_OUT_INTERFACE_DESCRIPTOR_OFFSET_FREQ + 3*i + 2] = (xua_lite_curUsbToAudFreq() & 0xff0000)>> 16;
     }
     
     cfgDesc_Audio1[USB_AS_IN_EP_DESCRIPTOR_OFFSET_MAXPACKETSIZE] = ((xua_lite_curUSB_Res_In() >> 3) * MAX_PACKET_SIZE_MULT_IN_FS) & 0xff; 	//max packet size
