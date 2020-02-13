@@ -165,10 +165,8 @@ int g_maxPacketSize = MAX_DEVICE_AUD_PACKET_SIZE_IN_FS;
 void handle_audio_request(chanend c_mix_out)
 {
     int space_left;
-    if (AUDIO_CLASS == 1){
-        g_curSubSlot_Out = xua_lite_curUSB_Res_Out() >> 3;
-        g_curSubSlot_In = xua_lite_curUSB_Res_In() >> 3;
-    }
+    g_curSubSlot_Out = xua_lite_curUSB_Res_Out() >> 3;
+    g_curSubSlot_In = xua_lite_curUSB_Res_In() >> 3;
 
     /* Input word that triggered interrupt and handshake back */
     unsigned underflowSample = inuint(c_mix_out);
