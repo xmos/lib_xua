@@ -2864,7 +2864,7 @@ unsigned char cfgDesc_Audio1[] =
     0x00, 0x00,                           /* Not used */
 #endif // XUA_ADAPTIVE
 
-#ifdef USB_CMD_CFG_SAMP_FREQ
+#ifdef USB_CMD_CFG_SAMP_FREQ	//add extra Interface Descriptor in case mulitple bit resolution is needed to be offered to host
     /* Standard Interface Descriptor - Audio streaming IN */
     0x09,
     0x04,                                 /* INTERFACE */
@@ -2892,66 +2892,12 @@ unsigned char cfgDesc_Audio1[] =
     NUM_USB_CHAN_IN_FS,                   /* bNrChannels - Typically 2 */
     FS_STREAM_FORMAT_INPUT_1_SUBSLOT_BYTES,         /* subFrameSize - Typically 4 bytes per slot */
     FS_STREAM_FORMAT_INPUT_1_RESOLUTION_BITS,       /* bitResolution - Typically 24bit */
-	
-#ifdef USB_CMD_CFG_SAMP_FREQ
+
 	USB_IN_SAMP_FREQ_NUM,
 	CHARIFY_SR(USB_IN_SAMP_FREQ_0),
 	CHARIFY_SR(USB_IN_SAMP_FREQ_1),
 	CHARIFY_SR(USB_IN_SAMP_FREQ_2),
-#else
-    num_freqs_a1,                         /* SamFreqType - sample freq count */
 
-/* Windows enum issue with <= two sample rates work around */
-#if ((MIN_FREQ == 8000) && (MAX_FREQ_FS == 11025)) \
-    || (MIN_FREQ == 11025) && (MAX_FREQ_FS == 12000) \
-    || (MIN_FREQ == 12000) && (MAX_FREQ_FS == 16000) \
-    || (MIN_FREQ == 16000) && (MAX_FREQ_FS == 32000) \
-    || (MIN_FREQ == 44100) && (MAX_FREQ_FS == 48000) \
-    || (MIN_FREQ == 48000) && (MAX_FREQ_FS == 88200) \
-    || (MIN_FREQ == 88200) && (MAX_FREQ_FS == 96000)
-    CHARIFY_SR(MAX_FREQ_FS),
-#endif
-#if (MIN_FREQ == MAX_FREQ_FS)
-    CHARIFY_SR(MAX_FREQ_FS),
-    CHARIFY_SR(MAX_FREQ_FS),
-#endif
-
-#if(MIN_FREQ <= 8000) && (MAX_FREQ_FS >= 8000)
-    0x40, 0x1F, 0x00,                     /* sampleFreq - 8000KHz */
-#endif
-
-#if(MIN_FREQ <= 11025) && (MAX_FREQ_FS >= 11025)
-    0x11, 0x2B, 0x00,                     /* sampleFreq - 11025KHz */
-#endif
-
-#if(MIN_FREQ <= 12000) && (MAX_FREQ_FS >= 12000)
-    0xE0, 0x2E, 0x00,                     /* sampleFreq - 12000KHz */
-#endif
-
-#if(MIN_FREQ <= 16000) && (MAX_FREQ_FS >= 16000)
-    CHARIFY_SR(16000),                    /* sampleFreq - 32KHz */
-#endif
-
-#if(MIN_FREQ <= 32000) && (MAX_FREQ_FS >= 32000)
-    CHARIFY_SR(32000),                    /* sampleFreq - 32KHz */
-#endif
-
-#if (MIN_FREQ <= 44100) && (MAX_FREQ_FS >= 44100)
-    0x44, 0xAC, 0x00,                     /* sampleFreq - 44.1Khz */
-#endif
-
-#if (MIN_FREQ <= 48000) && (MAX_FREQ_FS >= 48000)
-    0x80, 0xBB, 0x00,                     /* sampleFreq - 48KHz */
-#endif
-
-#if (MIN_FREQ <= 88200) && (MAX_FREQ_FS >= 88200)
-    0x88, 0x58, 0x01,                     /* sampleFreq - 88.2KHz */
-#endif
-
-#if (MIN_FREQ <= 96000) && (MAX_FREQ_FS >= 96000)
-    0x00, 0x77, 0x01,                     /* sampleFreq - 96KHz */
-#endif
-#endif //USB_CMD_CFG_SAMP_FREQ
 
     /* Standard Endpoint Descriptor */
     0x09,
