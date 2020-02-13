@@ -229,15 +229,15 @@
 /**
  * @brief Default Audio output sampling frequency
  */
-#ifndef DEFAULT_AUDOUT_FREQ
-#define DEFAULT_AUDOUT_FREQ      (48000)
+#ifndef DEFAULT_AUD_TO_USB_FREQ
+#define DEFAULT_AUD_TO_USB_FREQ      (48000)
 #endif
 
 /**
  * @brief Default Reference input sampling frequency
  */
-#ifndef DEFAULT_AUDIN_FREQ
-#define DEFAULT_AUDIN_FREQ      (48000)
+#ifndef DEFAULT_USB_TO_AUD_FREQ
+#define DEFAULT_USB_TO_AUD_FREQ      (48000)
 #endif
 
 /**
