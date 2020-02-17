@@ -18,10 +18,10 @@
 #define MAX(x,y) ((x)>(y) ? (x) : (y))
 
 #if((defined USB_CMD_CFG_SAMP_FREQ) || (defined USB_DESCRIPTOR_OVERRIDE_RATE_RES))
-unsigned int xua_lite_curAudToUsbFreq(void);
-unsigned int xua_lite_curUsbToAudFreq(void);
-unsigned int xua_lite_curUSB_Res_In(void);
-unsigned int xua_lite_curUSB_Res_Out(void);
+extern uint32_t get_usb_to_device_rate();
+extern uint32_t get_device_to_usb_rate();
+extern uint32_t get_usb_to_device_bit_res();
+extern uint32_t get_device_to_usb_bit_res();
 #endif
 
 /* TODO use SLOTSIZE to potentially save memory */
@@ -165,8 +165,8 @@ int g_maxPacketSize = MAX_DEVICE_AUD_PACKET_SIZE_IN_FS;
 void handle_audio_request(chanend c_mix_out)
 {
     int space_left;
-    g_curSubSlot_Out = xua_lite_curUSB_Res_Out() >> 3;
-    g_curSubSlot_In = xua_lite_curUSB_Res_In() >> 3;
+    g_curSubSlot_Out = get_usb_to_device_bit_res() >> 3;
+    g_curSubSlot_In = get_device_to_usb_bit_res() >> 3;
 
     /* Input word that triggered interrupt and handshake back */
     unsigned underflowSample = inuint(c_mix_out);
