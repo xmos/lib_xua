@@ -55,7 +55,7 @@ extern unsigned char mixSel[MAX_MIX_COUNT][MIX_INPUTS];
 
 
 /* Global var for current frequency, set to default freq */
-#if((defined USB_CMD_CFG_SAMP_FREQ) || (defined USB_DESCRIPTOR_OVERRIDE_RATE_RES))
+#if(defined USB_DESCRIPTOR_OVERRIDE_RATE_RES)
 extern uint32_t get_usb_to_device_rate();
 extern uint32_t get_device_to_usb_rate();
 extern uint32_t get_usb_to_device_bit_res();
@@ -1121,7 +1121,7 @@ int AudioEndpointRequests_1(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp
                 {
                     return result;
                 }
-#if ((MAX_FREQ != MIN_FREQ) || (defined USB_CMD_CFG_SAMP_FREQ))
+#if (MAX_FREQ != MIN_FREQ)
                 if(controlSelector == SAMPLING_FREQ_CONTROL)
                 {
                     /* Expect length 3 for sample rate */
