@@ -165,8 +165,10 @@ int g_maxPacketSize = MAX_DEVICE_AUD_PACKET_SIZE_IN_FS;
 void handle_audio_request(chanend c_mix_out)
 {
     int space_left;
+#if(defined USB_DESCRIPTOR_OVERRIDE_RATE_RES)
     g_curSubSlot_Out = get_usb_to_device_bit_res() >> 3;
     g_curSubSlot_In = get_device_to_usb_bit_res() >> 3;
+#endif
 
     /* Input word that triggered interrupt and handshake back */
     unsigned underflowSample = inuint(c_mix_out);
