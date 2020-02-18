@@ -226,34 +226,6 @@
 #define DEFAULT_FREQ             (MIN_FREQ)
 #endif
 
-/**
- * @brief Default Audio output sampling frequency
- */
-#ifndef DEFAULT_AUD_TO_USB_FREQ
-#define DEFAULT_AUD_TO_USB_FREQ      (48000)
-#endif
-
-/**
- * @brief Default Reference input sampling frequency
- */
-#ifndef DEFAULT_USB_TO_AUD_FREQ
-#define DEFAULT_USB_TO_AUD_FREQ      (48000)
-#endif
-
-/**
- * @brief Default USB input (Audio output) bit resolution
- */
-#ifndef DEFAULT_BIT_RES_IN
-#define DEFAULT_BIT_RES_IN      (32)
-#endif
-
-/**
- * @brief Default USB output (Reference input) bit resolution
- */
-#ifndef DEFAULT_BIT_RES_OUT
-#define DEFAULT_BIT_RES_OUT     (32)
-#endif
-
 /* Audio Class Defines */
 
 /**
