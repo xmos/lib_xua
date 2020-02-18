@@ -65,7 +65,7 @@ extern void device_reboot(void);
 #include "xua_hid.h"
 #endif
 
-#if((defined USB_CMD_CFG_SAMP_FREQ) || (defined USB_DESCRIPTOR_OVERRIDE_RATE_RES))
+#if(defined USB_DESCRIPTOR_OVERRIDE_RATE_RES)
 extern uint32_t get_usb_to_device_rate();
 extern uint32_t get_device_to_usb_rate();
 extern uint32_t get_usb_to_device_bit_res();
