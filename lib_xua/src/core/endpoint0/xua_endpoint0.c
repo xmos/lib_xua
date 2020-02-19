@@ -352,7 +352,7 @@ void XUA_Endpoint0_init(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioCont
     cfgDesc_Audio1[USB_AS_OUT_INTERFACE_DESCRIPTOR_OFFSET_SUB_FRAME] = get_usb_to_device_bit_res() >> 3; 	//sub frame rate = bit rate /8
     cfgDesc_Audio1[USB_AS_OUT_INTERFACE_DESCRIPTOR_OFFSET_SUB_FRAME + 1] = (get_usb_to_device_bit_res() & 0xff);		//bit resolution
     
-    const unsigned num_of_usb_descriptor_freq=3;	//This should be =3 according to the comments "sing a value of <=2 or > 7 for num_freqs_a1 causes enumeration issues on Windows" in xua_ep0_descriptors.h
+    const unsigned num_of_usb_descriptor_freq=3;	//This should be =3 according to the comments "using a value of <=2 or > 7 for num_freqs_a1 causes enumeration issues on Windows" in xua_ep0_descriptors.h
     int i=0;
     for(i=0;i<num_of_usb_descriptor_freq;i++)
     {
