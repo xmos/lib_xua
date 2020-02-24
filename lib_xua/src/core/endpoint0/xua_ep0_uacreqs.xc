@@ -1,4 +1,4 @@
-// Copyright (c) 2011-2018, XMOS Ltd, All rights reserved
+// Copyright (c) 2011-2020, XMOS Ltd, All rights reserved
 /**
  * @brief   Implements relevant requests from the USB Audio 2.0 Specification
  * @author  Ross Owen, XMOS Semiconductor
@@ -17,13 +17,6 @@
 #ifdef MIXER
 #include "mixer.h"
 #endif
-#include "xua_conf_default.h"
-#include "descriptor_defs.h"
-
-
-#define DEBUG_UNIT XUA_EP0_UACREQS
-#define DEBUG_PRINT_ENABLE_XUA_EP0_UACREQS 0
-#include "debug_print.h"
 
 #define CS_XU_MIXSEL (0x06)
 
@@ -52,23 +45,8 @@ extern unsigned char channelMapUsb[NUM_USB_CHAN_IN];
 extern unsigned char mixSel[MAX_MIX_COUNT][MIX_INPUTS];
 #endif
 
-
-
 /* Global var for current frequency, set to default freq */
-#if(defined USB_DESCRIPTOR_OVERRIDE_RATE_RES)
-extern uint32_t get_usb_to_device_rate();
-extern uint32_t get_device_to_usb_rate();
-extern uint32_t get_usb_to_device_bit_res();
-extern uint32_t get_device_to_usb_bit_res();
-#define g_curUSBin_SamFreq get_device_to_usb_rate()
-#define g_curUSBout_SamFreq get_usb_to_device_rate()
-
-unsigned int g_curSamFreq = DEFAULT_FREQ;	// should no longer be used
-#else
-unsigned int g_curUSBin_SamFreq = DEFAULT_FREQ;
-unsigned int g_curUSBout_SamFreq = DEFAULT_FREQ;
-unsigned int g_curSamFreq = DEFAULT_FREQ;	// should no longer be used
-#endif
+unsigned int g_curSamFreq = DEFAULT_FREQ;
 #if 0
 unsigned int g_curSamFreq48000Family = DEFAULT_FREQ % 48000 == 0;
 
@@ -1099,7 +1077,6 @@ int AudioEndpointRequests_1(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp
      * bmRequestType.Recipient = Endpoint
      * bmRequestType.Type = Class
      * endpoint (wIndex & 0xff) is 0x01 or 0x82
-     * wIndex is endpoint address for distinguishing input and output
      */
 
     XUD_Result_t result;
@@ -1130,8 +1107,7 @@ int AudioEndpointRequests_1(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp
                         /* Recontruct sample-freq */
                         int newSampleRate = (buffer, unsigned char[])[0] | ((buffer, unsigned char[])[1] << 8) | ((buffer, unsigned char[])[2] << 16);
 
-                        if(((sp.wIndex == ENDPOINT_ADDRESS_IN_AUDIO) && (newSampleRate != g_curUSBin_SamFreq)) || \
-                          ((sp.wIndex == ENDPOINT_ADDRESS_OUT_AUDIO) && (newSampleRate != g_curUSBout_SamFreq)))
+                        if(newSampleRate != g_curSamFreq)
                         {
                             int curSamFreq44100Family;
                             int curSamFreq48000Family;
@@ -1143,25 +1119,18 @@ int AudioEndpointRequests_1(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp
 
                             if(curSamFreq48000Family || curSamFreq44100Family)
                             {
-                                if(sp.wIndex == ENDPOINT_ADDRESS_IN_AUDIO){
-                                    g_curUSBin_SamFreq = newSampleRate;
-                                   /* Instruct audio thread to change sample freq */
-                                    outuint(c_audioControl, SET_SAMPLE_FREQ);
-                                    outuint(c_audioControl, g_curUSBin_SamFreq);
-                                }
-                                else{    //if sp.wIndex == ENDPOINT_ADDRESS_OUT_AUDIO
-                                    g_curUSBout_SamFreq = newSampleRate;
-                                    /* Instruct audio thread to change sample freq */
-                                    outuint(c_audioControl, SET_SAMPLE_FREQ);
-                                    outuint(c_audioControl, g_curUSBout_SamFreq);
-                                }
+                                g_curSamFreq = newSampleRate;
+
+                                /* Instruct audio thread to change sample freq */
+                                outuint(c_audioControl, SET_SAMPLE_FREQ);
+                                outuint(c_audioControl, g_curSamFreq);
 
                                 /* Wait for handshake back - i.e. pll locked and clocks okay */
                                 chkct(c_audioControl, XS1_CT_END);
 
                                 /* Allow time for the change - feedback to stabilise */
                                 FeedbackStabilityDelay();
-                             }
+                                                            }
                         }
                         return XUD_SetBuffer(ep0_in, (buffer, unsigned char[]), 0);
                     }
