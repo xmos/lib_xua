@@ -21,6 +21,8 @@ lib_xua Change Log
     events, to report Key-phrase detection as AC Search, and to report end-call
     detection as AC Stop
   * ADDED:     Ability to read or modify vendor and product IDs
+  * ADDED:     Override USB descriptor with sampling frequency and
+    bit-resolution set at boot time.
 
 0.2.1
 -----

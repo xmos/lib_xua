@@ -2361,10 +2361,25 @@ const unsigned num_freqs_a1 = MAX(3, (0
 /* Note, this is different that INTERFACE_COUNT since we dont support items such as MIDI, iAP etc in UAC1 mode */
 #define NUM_INTERFACES_A1           (1 + INPUT_INTERFACES_A1 + OUTPUT_INTERFACES_A1 + NUM_CONTROL_USB_INTERFACES + DFU_INTERFACES_A1 + HID_INTERFACES_A1)
 
-#if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP)
+#if ((NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP))
 #define CFG_TOTAL_LENGTH_A1         (18 + AC_TOTAL_LENGTH + (INPUT_INTERFACES_A1 * (49 + num_freqs_a1 * 3)) + (OUTPUT_INTERFACES_A1 * (58 + num_freqs_a1 * 3)) + CONTROL_INTERFACE_BYTES + DFU_INTERFACE_BYTES + HID_INTERFACE_BYTES)
 #else
 #define CFG_TOTAL_LENGTH_A1         (18 + AC_TOTAL_LENGTH + (INPUT_INTERFACES_A1 * (49 + num_freqs_a1 * 3)) + (OUTPUT_INTERFACES_A1 * (49 + num_freqs_a1 * 3)) + CONTROL_INTERFACE_BYTES + DFU_INTERFACE_BYTES + HID_INTERFACE_BYTES)
+#endif
+
+#ifdef XUA_USB_DESCRIPTOR_OVERWRITE_RATE_RES
+	#define AS_INTERFACE_BYTES		(7)
+	#define INTERFACE_DESCRIPTOR_BYTES		(9)
+	#define AS_FORMAT_TYPE_BYTES		(17)
+	#define USB_AS_IN_INTERFACE_DESCRIPTOR_OFFSET_SUB_FRAME		(18 + AC_TOTAL_LENGTH + (OUTPUT_INTERFACES_A1 * (49 + num_freqs_a1 * 3)) + (2*INTERFACE_DESCRIPTOR_BYTES) + (AS_INTERFACE_BYTES) + 5)
+	#define USB_AS_OUT_INTERFACE_DESCRIPTOR_OFFSET_SUB_FRAME	(18 + AC_TOTAL_LENGTH + (2*INTERFACE_DESCRIPTOR_BYTES) + (AS_INTERFACE_BYTES) + 5)
+	
+	#define USB_AS_IN_INTERFACE_DESCRIPTOR_OFFSET_FREQ	(18 + AC_TOTAL_LENGTH + (OUTPUT_INTERFACES_A1 * (49 + num_freqs_a1 * 3)) + (2*INTERFACE_DESCRIPTOR_BYTES) + (AS_INTERFACE_BYTES) + 8)
+	#define USB_AS_OUT_INTERFACE_DESCRIPTOR_OFFSET_FREQ	(18 + AC_TOTAL_LENGTH + (2*INTERFACE_DESCRIPTOR_BYTES) + (AS_INTERFACE_BYTES) + 8)
+	
+	#define USB_AS_IN_EP_DESCRIPTOR_OFFSET_MAXPACKETSIZE	(18 + AC_TOTAL_LENGTH + (OUTPUT_INTERFACES_A1 * (49 + num_freqs_a1 * 3)) + (2*INTERFACE_DESCRIPTOR_BYTES) + (AS_INTERFACE_BYTES) + (AS_FORMAT_TYPE_BYTES) + 4)
+	#define USB_AS_OUT_EP_DESCRIPTOR_OFFSET_MAXPACKETSIZE	(18 + AC_TOTAL_LENGTH + (2*INTERFACE_DESCRIPTOR_BYTES) + (AS_INTERFACE_BYTES) + (AS_FORMAT_TYPE_BYTES) + 4)
+		
 #endif
 
 #define CHARIFY_SR(x) (x & 0xff),((x & 0xff00)>> 8),((x & 0xff0000)>> 16)
@@ -2599,7 +2614,6 @@ unsigned char cfgDesc_Audio1[] =
     NUM_USB_CHAN_OUT_FS,                  /* nrChannels */
     FS_STREAM_FORMAT_OUTPUT_1_SUBSLOT_BYTES,   /* subFrameSize */
     FS_STREAM_FORMAT_OUTPUT_1_RESOLUTION_BITS, /* bitResolution */
-
     num_freqs_a1,                         /* SamFreqType - sample freq count */
 
 /* Windows enum issue with <= two sample rates work around */
@@ -2656,7 +2670,7 @@ unsigned char cfgDesc_Audio1[] =
     /* Standard AS Isochronous Audio Data Endpoint Descriptor 4.6.1.1 */
     0x09,
     0x05,                                 /* ENDPOINT */
-    0x01,                                 /* endpointAddress - D7, direction (0 OUT, 1 IN). D6..4 reserved (0). D3..0 endpoint no. */
+    ENDPOINT_ADDRESS_OUT_AUDIO,           /* endpointAddress - D7, direction (0 OUT, 1 IN). D6..4 reserved (0). D3..0 endpoint no. */
 #ifdef XUA_ADAPTIVE
     ISO_EP_ATTRIBUTES_ADAPTIVE,
 #else
