@@ -29,7 +29,7 @@
 #include "dsd_support.h"
 #endif
 
-#include "xua_api.h"
+#include "xua_usb_params_funcs.h"
 
 #ifndef __XC__
 /* Support for xCORE  channels in C */

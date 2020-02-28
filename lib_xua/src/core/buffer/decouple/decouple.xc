@@ -7,7 +7,7 @@
 #include "interrupt.h"
 #include "xua_commands.h"
 #include "xud.h"
-#include "xua_api.h"
+#include "xua_usb_params_funcs.h"
 
 #ifdef NATIVE_DSD
 #include "usbaudio20.h"             /* Defines from the USB Audio 2.0 Specifications */
