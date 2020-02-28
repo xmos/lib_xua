@@ -29,6 +29,8 @@
 #include "dsd_support.h"
 #endif
 
+#include "xua_usb_params_funcs.h"
+
 #ifndef __XC__
 /* Support for xCORE  channels in C */
 #define null 0
@@ -63,13 +65,6 @@ extern void device_reboot(void);
 
 #if( 0 < HID_CONTROLS )
 #include "xua_hid.h"
-#endif
-
-#if(defined USB_DESCRIPTOR_OVERRIDE_RATE_RES)
-extern uint32_t get_usb_to_device_rate();
-extern uint32_t get_device_to_usb_rate();
-extern uint32_t get_usb_to_device_bit_res();
-extern uint32_t get_device_to_usb_bit_res();
 #endif
 
 unsigned int DFU_mode_active = 0;         // 0 - App active, 1 - DFU active
@@ -344,7 +339,7 @@ void XUA_Endpoint0_init(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioCont
     }
 #endif
 
-#ifdef USB_DESCRIPTOR_OVERRIDE_RATE_RES	//change USB descriptor frequencies and bit resolution values here
+#ifdef XUA_USB_DESCRIPTOR_OVERWRITE_RATE_RES	//change USB descriptor frequencies and bit resolution values here
 
     cfgDesc_Audio1[USB_AS_IN_INTERFACE_DESCRIPTOR_OFFSET_SUB_FRAME] = get_device_to_usb_bit_res() >> 3; 	//sub frame rate = bit rate /8
     cfgDesc_Audio1[USB_AS_IN_INTERFACE_DESCRIPTOR_OFFSET_SUB_FRAME + 1] = (get_device_to_usb_bit_res() & 0xff);		//bit resolution
@@ -352,7 +347,7 @@ void XUA_Endpoint0_init(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioCont
     cfgDesc_Audio1[USB_AS_OUT_INTERFACE_DESCRIPTOR_OFFSET_SUB_FRAME] = get_usb_to_device_bit_res() >> 3; 	//sub frame rate = bit rate /8
     cfgDesc_Audio1[USB_AS_OUT_INTERFACE_DESCRIPTOR_OFFSET_SUB_FRAME + 1] = (get_usb_to_device_bit_res() & 0xff);		//bit resolution
     
-    const unsigned num_of_usb_descriptor_freq=3;	//This should be =3 according to the comments "sing a value of <=2 or > 7 for num_freqs_a1 causes enumeration issues on Windows" in xua_ep0_descriptors.h
+    const unsigned num_of_usb_descriptor_freq=3;	//This should be =3 according to the comments "using a value of <=2 or > 7 for num_freqs_a1 causes enumeration issues on Windows" in xua_ep0_descriptors.h
     int i=0;
     for(i=0;i<num_of_usb_descriptor_freq;i++)
     {
