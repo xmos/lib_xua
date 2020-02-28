@@ -3,6 +3,8 @@
 #ifndef __XUA_API_H__
 #define __XUA_API_H__
 
+#include <stdint.h>
+
 extern void set_usb_to_device_rate(uint32_t rate);
 extern void set_device_to_usb_rate(uint32_t rate);
 extern void set_usb_to_device_bit_res(uint32_t rate);
