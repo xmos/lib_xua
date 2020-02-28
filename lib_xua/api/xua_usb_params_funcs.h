@@ -5,14 +5,14 @@
 
 #include <stdint.h>
 
-extern void set_usb_to_device_rate(uint32_t rate);
-extern void set_device_to_usb_rate(uint32_t rate);
-extern void set_usb_to_device_bit_res(uint32_t rate);
-extern void set_device_to_usb_bit_res(uint32_t rate);
+void set_usb_to_device_rate(uint32_t rate);
+void set_device_to_usb_rate(uint32_t rate);
+void set_usb_to_device_bit_res(uint32_t rate);
+void set_device_to_usb_bit_res(uint32_t rate);
 
-extern uint32_t get_usb_to_device_rate();
-extern uint32_t get_device_to_usb_rate();
-extern uint32_t get_usb_to_device_bit_res();
-extern uint32_t get_device_to_usb_bit_res();
+uint32_t get_usb_to_device_rate();
+uint32_t get_device_to_usb_rate();
+uint32_t get_usb_to_device_bit_res();
+uint32_t get_device_to_usb_bit_res();
 
 #endif  //__XUA_API_H__
