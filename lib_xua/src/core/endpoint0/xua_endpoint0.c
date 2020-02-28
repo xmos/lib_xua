@@ -65,7 +65,7 @@ extern void device_reboot(void);
 #include "xua_hid.h"
 #endif
 
-#if(defined USB_DESCRIPTOR_OVERRIDE_RATE_RES)
+#if(defined XUA_USB_DESCRIPTOR_OVERWRITE_RATE_RES)
 extern uint32_t get_usb_to_device_rate();
 extern uint32_t get_device_to_usb_rate();
 extern uint32_t get_usb_to_device_bit_res();
@@ -344,7 +344,7 @@ void XUA_Endpoint0_init(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioCont
     }
 #endif
 
-#ifdef USB_DESCRIPTOR_OVERRIDE_RATE_RES	//change USB descriptor frequencies and bit resolution values here
+#ifdef XUA_USB_DESCRIPTOR_OVERWRITE_RATE_RES	//change USB descriptor frequencies and bit resolution values here
 
     cfgDesc_Audio1[USB_AS_IN_INTERFACE_DESCRIPTOR_OFFSET_SUB_FRAME] = get_device_to_usb_bit_res() >> 3; 	//sub frame rate = bit rate /8
     cfgDesc_Audio1[USB_AS_IN_INTERFACE_DESCRIPTOR_OFFSET_SUB_FRAME + 1] = (get_device_to_usb_bit_res() & 0xff);		//bit resolution

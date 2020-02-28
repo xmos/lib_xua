@@ -17,7 +17,7 @@
 #endif
 #define MAX(x,y) ((x)>(y) ? (x) : (y))
 
-#if(defined USB_DESCRIPTOR_OVERRIDE_RATE_RES)
+#if(defined XUA_USB_DESCRIPTOR_OVERWRITE_RATE_RES)
 extern uint32_t get_usb_to_device_rate();
 extern uint32_t get_device_to_usb_rate();
 extern uint32_t get_usb_to_device_bit_res();
@@ -165,7 +165,7 @@ int g_maxPacketSize = MAX_DEVICE_AUD_PACKET_SIZE_IN_FS;
 void handle_audio_request(chanend c_mix_out)
 {
     int space_left;
-#if(defined USB_DESCRIPTOR_OVERRIDE_RATE_RES)
+#if(defined XUA_USB_DESCRIPTOR_OVERWRITE_RATE_RES)
     g_curSubSlot_Out = get_usb_to_device_bit_res() >> 3;
     g_curSubSlot_In = get_device_to_usb_bit_res() >> 3;
 #endif
