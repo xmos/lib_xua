@@ -29,6 +29,8 @@
 #include "dsd_support.h"
 #endif
 
+#include "xua_api.h"
+
 #ifndef __XC__
 /* Support for xCORE  channels in C */
 #define null 0
@@ -63,13 +65,6 @@ extern void device_reboot(void);
 
 #if( 0 < HID_CONTROLS )
 #include "xua_hid.h"
-#endif
-
-#if(defined XUA_USB_DESCRIPTOR_OVERWRITE_RATE_RES)
-extern uint32_t get_usb_to_device_rate();
-extern uint32_t get_device_to_usb_rate();
-extern uint32_t get_usb_to_device_bit_res();
-extern uint32_t get_device_to_usb_bit_res();
 #endif
 
 unsigned int DFU_mode_active = 0;         // 0 - App active, 1 - DFU active

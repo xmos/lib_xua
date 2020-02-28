@@ -7,6 +7,7 @@
 #include "interrupt.h"
 #include "xua_commands.h"
 #include "xud.h"
+#include "xua_api.h"
 
 #ifdef NATIVE_DSD
 #include "usbaudio20.h"             /* Defines from the USB Audio 2.0 Specifications */
@@ -17,12 +18,6 @@
 #endif
 #define MAX(x,y) ((x)>(y) ? (x) : (y))
 
-#if(defined XUA_USB_DESCRIPTOR_OVERWRITE_RATE_RES)
-extern uint32_t get_usb_to_device_rate();
-extern uint32_t get_device_to_usb_rate();
-extern uint32_t get_usb_to_device_bit_res();
-extern uint32_t get_device_to_usb_bit_res();
-#endif
 
 /* TODO use SLOTSIZE to potentially save memory */
 /* Note we could improve on this, for one subslot is set to 4 */
