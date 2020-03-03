@@ -323,13 +323,31 @@ unsigned short XUA_Endpoint0_getVendorId() {
 }
 
 unsigned short XUA_Endpoint0_getProductId() {
-    unsigned short pid;    
+    unsigned short pid;
 #if (AUDIO_CLASS == 1)
     pid = devDesc_Audio1.idProduct;
 #else
     pid = devDesc_Audio2.idProduct;
 #endif // AUDIO_CLASS == 1}
     return pid;
+}
+
+unsigned short XUA_Endpoint0_getBcdDevice() {
+    unsigned short bcd;
+#if (AUDIO_CLASS == 1)
+    bcd = devDesc_Audio1.bcdDevice;
+#else
+    bcd = devDesc_Audio2.bcdDevice;
+#endif // AUDIO_CLASS == 1}
+    return bcd;
+}
+
+void XUA_Endpoint0_setBcdDevice(unsigned short bcd) {
+#if (AUDIO_CLASS == 1)
+    devDesc_Audio1.bcdDevice = bcd;
+#else
+    devDesc_Audio2.bcdDevice = bcd;
+#endif // AUDIO_CLASS == 1}
 }
 
 void XUA_Endpoint0_init(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,

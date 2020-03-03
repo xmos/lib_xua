@@ -98,5 +98,9 @@ unsigned short XUA_Endpoint0_getVendorId();
 */
 unsigned short XUA_Endpoint0_getProductId();
 
+unsigned short XUA_Endpoint0_getBcdDevice();
+
+void XUA_Endpoint0_setBcdDevice(unsigned short bcdDevice);
+
 #endif
 #endif
