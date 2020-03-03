@@ -1,6 +1,30 @@
 lib_xua Change Log
 ==================
 
+0.3.0
+-----
+
+  * ADDED:     UAC1 HID support with simulated Voice Command detection reported
+    every 10 seconds
+  * ADDED:     Support for USB HID Set Idle request
+  * ADDED:     Pre-processor symbols to enable single-threaded, dual-PDM
+    microphone operation
+  * FIXED:     Descriptors for XUA_ADAPTIVE incorrectly defined for IN endpoint
+  * ADDED:     Guards to user_hid.h and xua_hid.h
+  * ADDED:     UAC1 HID support for AC Stop (End Call), Volume Increment and
+    Volume Decrement
+  * CHANGE:    UAC1 HID to report function keys f21 through f24 as specified by
+    customer
+  * CHANGE:    HID interface for user to set and clear events from global
+    variable to function
+  * CHANGE     HID report descriptor to use generic events instead of GPI
+    events, to report Key-phrase detection as AC Search, and to report end-call
+    detection as AC Stop
+  * ADDED:     Ability to read or modify vendor and product IDs
+  * ADDED:     Ability to read or modify bcdDevice
+  * ADDED:     Override USB descriptor with sampling frequency and
+    bit-resolution set at boot time.
+
 0.2.1
 -----
 

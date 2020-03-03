@@ -1,4 +1,4 @@
-// Copyright (c) 2011-2018, XMOS Ltd, All rights reserved
+// Copyright (c) 2011-2020, XMOS Ltd, All rights reserved
 /*
  * @brief       Defines relating to device configuration and customisation of lib_xua
  * @author      Ross Owen, XMOS Limited
@@ -289,6 +289,13 @@
 #endif
 
 /**
+ * @brief Size of a frame of microphone data samples. Default: 1
+ */
+#ifndef XUA_MIC_FRAME_SIZE
+#define XUA_MIC_FRAME_SIZE      (1)
+#endif
+
+/**
  * @brief Enable MIDI functionality including buffering, descriptors etc. Default: DISABLED
  */
 #ifndef MIDI
@@ -423,10 +430,6 @@
  */
 #ifndef HID_CONTROLS
 #define HID_CONTROLS       (0)
-#endif
-
-#if defined(HID_CONTROLS) && (HID_CONTROLS == 0)
-#undef HID_CONTROLS
 #endif
 
 /* @brief Defines whether XMOS device runs as master (i.e. drives LR and Bit clocks)
@@ -1158,6 +1161,10 @@
 #endif
 
 
+#if (defined(UAC_FORCE_FEEDBACK_EP) && UAC_FORCE_FEEDBACK_EP == 0)
+#undef UAC_FORCE_FEEDBACK_EP
+#endif
+
 #ifndef __ASSEMBLER__
 /* Endpoint addresses enums */
 enum USBEndpointNumber_In
@@ -1173,7 +1180,7 @@ enum USBEndpointNumber_In
 #ifdef MIDI
     ENDPOINT_NUMBER_IN_MIDI,
 #endif
-#ifdef HID_CONTROLS
+#if( 0 < HID_CONTROLS )
     ENDPOINT_NUMBER_IN_HID,
 #endif
 #ifdef IAP
@@ -1438,6 +1445,12 @@ enum USBEndpointNumber_Out
 #error Bad DEFAULT_MCLK_FREQ
 #endif
 
+/* DFU functional descriptor wDetachTimeOut field (milliseconds)
+ * Time for device to wait for bus reset after DETACH request before reverting to idle state */
+#ifndef DFU_DETACH_TIME_OUT
+#define DFU_DETACH_TIME_OUT 250
+#endif
+
 #if ((MCLK_441 % MIN_FREQ) == 0)
 #define MIN_FREQ_44 MIN_FREQ
 #define MIN_FREQ_48 ((48000 * 512)/((44100 * 512)/MIN_FREQ))
@@ -1459,4 +1472,3 @@ enum USBEndpointNumber_Out
 #if (CODEC_MASTER == 1) && (DSD_CHANS_DAC != 0) 
 #error CODEC_MASTER with DSD is currently unsupported 
 #endif
-

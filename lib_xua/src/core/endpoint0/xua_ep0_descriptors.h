@@ -1,4 +1,4 @@
-// Copyright (c) 2011-2019, XMOS Ltd, All rights reserved
+// Copyright (c) 2011-2020, XMOS Ltd, All rights reserved
 /**
  * @file    xua_ep0_descriptors.h
  * @brief   Device Descriptors
@@ -561,27 +561,30 @@ unsigned char devQualDesc_Null[] =
     #define MIXER_LENGTH                (0)
 #endif
 
-
-#ifdef HID_CONTROLS
-unsigned char hidReportDescriptor[] =
+#if( 0 < HID_CONTROLS )
+unsigned char hidReportDescriptor[] = /* Voice Command usage as per request #HUTRR45 */
 {
-    0x05, 0x0c,     /* Usage Page (Consumer Device) */
-    0x09, 0x01,     /* Usage (Consumer Control) */
-    0xa1, 0x01,     /* Collection (Application) */
-    0x15, 0x00,     /* Logical Minimum (0) */
-    0x25, 0x01,     /* Logical Maximum (1) */
-    0x09, 0xb0,     /* Usage (Play) */
-    0x09, 0xb5,     /* Usage (Scan Next Track) */
-    0x09, 0xb6,     /* Usage (Scan Previous Track) */
-    0x09, 0xe9,     /* Usage (Volume Up) */
-    0x09, 0xea,     /* Usage (Volume Down) */
-    0x09, 0xe2,     /* Usage (Mute) */
-    0x75, 0x01,     /* Report Size (1) */
-    0x95, 0x06,     /* Report Count (6) */
-    0x81, 0x02,     /* Input (Data, Var, Abs) */
-    0x95, 0x02,     /* Report Count (2) */
-    0x81, 0x01,     /* Input (Cnst, Ary, Abs) */
-    0xc0            /* End collection */
+    0x05, 0x01,         /* Usage Page (Generic Desktop) */
+    0x09, 0x06,         /* Usage (Keyboard) */
+    0xa1, 0x01,         /* Collection (Application) */
+    0x75, 0x01,         /* Report Size (1) */
+    0x95, 0x04,         /* Report Count (4) */
+    0x15, 0x00,         /* Logical Minimum (0) */
+    0x25, 0x00,         /* Logical Maximum (0) */
+    0x81, 0x01,         /* Input (Cnst, Ary, Abs, No Wrap, Lin, Pref, No Nul) */
+    0x95, 0x01,         /* Report Count (1) */
+    0x25, 0x01,         /* Logical Maximum (1) */
+    0x05, 0x0C,         /* Usage Page (Consumer) */
+    0x0a, 0x21, 0x02,   /* Usage (AC Search) */
+    0x81, 0x02,         /* Input (Data, Var, Abs, No Wrap, Lin, Pref, No Nul) */
+    0x0a, 0x26, 0x02,   /* Usage (AC Stop) */
+    0x81, 0x02,         /* Input (Data, Var, Abs, No Wrap, Lin, Pref, No Nul) */
+    0x95, 0x02,         /* Report Count (2) */
+    0x05, 0x07,         /* Usage Page (Key Codes) */
+    0x19, 0x72,         /* Usage Minimum (Keyboard F23) */
+    0x29, 0x73,         /* Usage Maximum (Keyboard F24) */
+    0x81, 0x02,         /* Input (Data, Var, Abs, No Wrap, Lin, Pref, No Nul) */
+    0xc0                /* End collection (Application) */
 };
 #endif
 
@@ -784,7 +787,7 @@ typedef struct
 #endif
 #endif
 
-#ifdef HID_CONTROLS
+#if( 0 < HID_CONTROLS )
     USB_Descriptor_Interface_t                  HID_Interface;
     unsigned char hidDesc[9];                   //TODO ideally we would have a struct for this.
     USB_Descriptor_Endpoint_t                   HID_In_Endpoint;
@@ -1099,7 +1102,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
             },
             0,                      /* 60 iFeature */
         },
-#endif
+#endif /* (OUTPUT_VOLUME_CONTROL == 1) */
 
         /* Output Terminal Descriptor (Audio) */
         .Audio_Out_OutputTerminal =
@@ -1119,7 +1122,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
             0x0000,                                      /* 9  bmControls */
             0,                                           /* 11 iTerminal */
         },
-#endif
+#endif /* (NUM_USB_CHAN_OUT > 0) */
 
 
 
@@ -1274,7 +1277,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
             },
             0,                            /* 60 iFeature */
         },
-#endif
+#endif /* (INPUT_VOLUME_CONTROL == 1) */
 
         .Audio_In_OutputTerminal =
         {
@@ -1295,7 +1298,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
             .bmControls                = 0x0000,
             .iTerminal                 = offsetof(StringDescTable_t, usbOutputTermStr_Audio2)/sizeof(char *)
         },
-#endif
+#endif /* (NUM_USB_CHAN_IN > 0) */
 
 #if defined(MIXER) && (MAX_MIX_COUNT > 0)
         /* Extension Unit Descriptor (4.7.2.12) */
@@ -1389,7 +1392,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
             0x00,                         /* bmControls */
             0                             /* Mixer unit string descriptor index */
         },
-#endif
+#endif /* defined(MIXER) && (MAX_MIX_COUNT > 0) */
 
 #if (SPDIF_RX) || (ADAT_RX)
         /* Standard AS Interrupt Endpoint Descriptor (4.8.2.1): */
@@ -1473,9 +1476,13 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
         .bDescriptorType                = USB_DESCTYPE_ENDPOINT,
         .bEndpointAddress               = ENDPOINT_ADDRESS_OUT_AUDIO,
 #ifdef XUA_ADAPTIVE
-        .bmAttributes                   = ISO_EP_ATTRIBUTES_ADAPTIVE, /* (bitmap)  */
+        .bmAttributes                   = ISO_EP_ATTRIBUTES_ADAPTIVE,
 #else
-        .bmAttributes                   = ISO_EP_ATTRIBUTES_ASYNCH,   /* (bitmap)  */
+        #if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP)
+        .bmAttributes                   = ISO_EP_ATTRIBUTES_ASYNCH, /* Iso, async, data endpoint */
+        #else
+        .bmAttributes                   = ISO_EP_IMPL_ATTRIBUTES_ASYNCH,        /* Feedback data endpoint */
+        #endif
 #endif
         .wMaxPacketSize                 = HS_STREAM_FORMAT_OUTPUT_1_MAXPACKETSIZE,
         .bInterval                      = 1,
@@ -1555,9 +1562,13 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
         .bDescriptorType                = USB_DESCTYPE_ENDPOINT,
         .bEndpointAddress               = ENDPOINT_ADDRESS_OUT_AUDIO,
 #ifdef XUA_ADAPTIVE
-        .bmAttributes                   = ISO_EP_ATTRIBUTES_ADAPTIVE, /* (bitmap)  */
+        .bmAttributes                   = ISO_EP_ATTRIBUTES_ADAPTIVE,
 #else
-        .bmAttributes                   = ISO_EP_ATTRIBUTES_ASYNCH,   /* (bitmap)  */
+        #if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP)
+        .bmAttributes                   = ISO_EP_ATTRIBUTES_ASYNCH, /* Iso, async, data endpoint */
+        #else
+        .bmAttributes                   = ISO_EP_IMPL_ATTRIBUTES_ASYNCH,        /* Feedback data endpoint */
+        #endif
 #endif
         .wMaxPacketSize                 = HS_STREAM_FORMAT_OUTPUT_2_MAXPACKETSIZE,
         .bInterval                      = 1,
@@ -1586,7 +1597,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
         4,                                /* 6  bInterval. Only values <= 1 frame (4) supported by MS */
     },
 #endif
-#endif
+#endif /* OUTPUT_FORMAT_COUNT > 1 */
 #if (OUTPUT_FORMAT_COUNT > 2)
     /* Standard AS Interface Descriptor (4.9.1) (Alt) */
     .Audio_Out_StreamInterface_Alt3 =
@@ -1639,10 +1650,15 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
         .bDescriptorType               = USB_DESCTYPE_ENDPOINT,
         .bEndpointAddress              = ENDPOINT_ADDRESS_OUT_AUDIO,
 #ifdef XUA_ADAPTIVE
-        .bmAttributes                  = ISO_EP_ATTRIBUTES_ADAPTIVE, /* (bitmap)  */
+        .bmAttributes                  = ISO_EP_ATTRIBUTES_ADAPTIVE,
 #else
-        .bmAttributes                  = ISO_EP_ATTRIBUTES_ASYNCH,   /* (bitmap)  */
-#endif        .wMaxPacketSize                = HS_STREAM_FORMAT_OUTPUT_3_MAXPACKETSIZE,
+        #if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP)
+        .bmAttributes                  = ISO_EP_ATTRIBUTES_ASYNCH, /* Iso, async, data endpoint */
+        #else
+        .bmAttributes                  = ISO_EP_IMPL_ATTRIBUTES_ASYNCH,        /* Feedback data endpoint */
+        #endif
+#endif
+        .wMaxPacketSize                = HS_STREAM_FORMAT_OUTPUT_3_MAXPACKETSIZE,
         .bInterval                     = 1,
     },
 
@@ -1734,11 +1750,11 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
         .bLength                       = 0x07,
         .bDescriptorType               = USB_DESCTYPE_ENDPOINT,
         .bEndpointAddress              = ENDPOINT_ADDRESS_IN_AUDIO,
-#if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP)
-        .bmAttributes                  = ISO_EP_ATTRIBUTES_ASYNCH, /* Iso, async, data endpoint */
-#else
-        #ifdef XUA_ADAPTIVE
+#ifdef XUA_ADAPTIVE
         .bmAttributes                  = ISO_EP_ATTRIBUTES_ADAPTIVE,
+#else
+        #if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP)
+        .bmAttributes                  = ISO_EP_ATTRIBUTES_ASYNCH, /* Iso, async, data endpoint */
         #else
         .bmAttributes                  = ISO_EP_IMPL_ATTRIBUTES_ASYNCH,        /* Feedback data endpoint */
         #endif
@@ -1806,11 +1822,11 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
         .bLength                       = 0x07,
         .bDescriptorType               = USB_DESCTYPE_ENDPOINT,
         .bEndpointAddress              = ENDPOINT_ADDRESS_IN_AUDIO,
-#if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP)
-        .bmAttributes                  = ISO_EP_ATTRIBUTES_ASYNCH, /* Iso, async, data endpoint */
-#else
-        #ifdef XUA_ADAPTIVE
+#ifdef XUA_ADAPTIVE
         .bmAttributes                  = ISO_EP_ATTRIBUTES_ADAPTIVE,
+#else
+        #if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP)
+        .bmAttributes                  = ISO_EP_ATTRIBUTES_ASYNCH, /* Iso, async, data endpoint */
         #else
         .bmAttributes                  = ISO_EP_IMPL_ATTRIBUTES_ASYNCH,        /* Feedback data endpoint */
         #endif
@@ -1830,7 +1846,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
         .bLockDelayUnits               = 0x02,
         .wLockDelay                    = 0x0008,
     },
-#endif
+#endif /* (INPUT_FORMAT_COUNT > 1) */
 #if (INPUT_FORMAT_COUNT > 2)
     /* Alternative 3 */
     /* Standard AS Interface Descriptor (4.9.1) (Alt) */
@@ -1879,11 +1895,11 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
         .bLength                       = 0x07,
         .bDescriptorType               = USB_DESCTYPE_ENDPOINT,
         .bEndpointAddress              = ENDPOINT_ADDRESS_IN_AUDIO,
-#if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP)
-        .bmAttributes                  = ISO_EP_ATTRIBUTES_ASYNCH, /* Iso, async, data endpoint */
-#else
-        #ifdef XUA_ADAPTIVE
+#ifdef XUA_ADAPTIVE
         .bmAttributes                  = ISO_EP_ATTRIBUTES_ADAPTIVE,
+#else
+        #if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP)
+        .bmAttributes                  = ISO_EP_ATTRIBUTES_ASYNCH, /* Iso, async, data endpoint */
         #else
         .bmAttributes                  = ISO_EP_IMPL_ATTRIBUTES_ASYNCH,        /* Feedback data endpoint */
         #endif
@@ -1903,7 +1919,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
         .bLockDelayUnits               = 0x02,
         .wLockDelay                    = 0x0008,
     },
-#endif
+#endif /* (INPUT_FORMAT_COUNT > 2) */
 
 #endif /* #if(NUM_USB_CHAN_IN > 0) */
 #ifdef MIDI
@@ -2052,14 +2068,14 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
     0x09,                                 /* 0    Size */
     0x21,                                 /* 1    bDescriptorType : DFU FUNCTIONAL */
     0x07,                                 /* 2    bmAttributes */
-    0xFA,                                 /* 3    wDetachTimeOut */
-    0x00,                                 /* 4    wDetachTimeOut */
+    DFU_DETACH_TIME_OUT & 0xFF,           /* 3    wDetachTimeOut */
+    (DFU_DETACH_TIME_OUT >> 8) & 0xFF,    /* 4    wDetachTimeOut */
     0x40,                                 /* 5    wTransferSize */
     0x00,                                 /* 6    wTransferSize */
     0x10,                                 /* 7    bcdDFUVersion */
     0x01},                                /* 7    bcdDFUVersion */
 #endif
-#endif
+#endif /* (XUA_DFU_EN == 1) */
 
 #ifdef IAP
     /* Interface descriptor */
@@ -2168,7 +2184,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
 #endif
 #endif /* IAP */
 
-#ifdef HID_CONTROLS
+#if( 0 < HID_CONTROLS )
     .HID_Interface =
     {
         9,                                /* 0  bLength : Size of descriptor in Bytes */
@@ -2202,22 +2218,22 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
         ENDPOINT_ADDRESS_IN_HID,          /* 2  bEndpointAddress  */
         3,                                /* 3  bmAttributes (INTERRUPT) */
         64,                               /* 4  wMaxPacketSize */
-        8,                                /* 6  bInterval */
+        ENDPOINT_INT_INTERVAL_IN_HID,     /* 6  bInterval */
     }
 #endif
 
 };
-#endif
+#endif /* (AUDIO_CLASS == 2) */
 
-#ifdef HID_CONTROLS
+#if( 0 < HID_CONTROLS )
 unsigned char hidDescriptor[] =
 {
-    9,                                    /* 0  bLength : Size of descriptor in Bytes */
+    0x09,                                 /* 0  bLength : Size of descriptor in Bytes */
     0x21,                                 /* 1  bDescriptorType (HID) */
     0x10,                                 /* 2  bcdHID */
     0x01,                                 /* 3  bcdHID */
-    0,                                    /* 4  bCountryCode */
-    1,                                    /* 5  bNumDescriptors */
+    0x00,                                 /* 4  bCountryCode */
+    0x01,                                 /* 5  bNumDescriptors */
     0x22,                                 /* 6  bDescriptorType[0] (Report) */
     sizeof(hidReportDescriptor) & 0xff,   /* 7  wDescriptorLength[0] */
     sizeof(hidReportDescriptor) >> 8,     /* 8  wDescriptorLength[0] */
@@ -2324,18 +2340,13 @@ const unsigned num_freqs_a1 = MAX(3, (0
 #define DFU_INTERFACES_A1     0
 #endif
 
-/* Total number of bytes returned for the class-specific AudioControl interface descriptor.
- * Includes the combined length of this descriptor header and all Unit and Terminal descriptors
- * For us this is IT -> FU -> OT * 2 and a header */
-#define AC_TOTAL_LENGTH             (AC_LENGTH + \
-                                    (INPUT_INTERFACES_A1 *  (12 + ( (8 + NUM_USB_CHAN_IN_FS) * INPUT_VOLUME_CONTROL) + 9)) +\
-                                    (OUTPUT_INTERFACES_A1 * (12 + ( (8 + NUM_USB_CHAN_OUT_FS) * OUTPUT_VOLUME_CONTROL) + 9)))
-
-#define STREAMING_INTERFACES        (INPUT_INTERFACES_A1 + OUTPUT_INTERFACES_A1)
-
-//#if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP)
-//#define CFG_TOTAL_LENGTH_A1         (18 + AC_TOTAL_LENGTH + (INPUT_INTERFACES_A1 * (49 + num_freqs_a1 * 3)) + (OUTPUT_INTERFACES_A1 * (58 + num_freqs_a1 * 3)) + CONTROL_INTERFACE_BYTES + DFU_INTERFACE_BYTES)
-//#endif
+#if( 0 < HID_CONTROLS )
+#define HID_INTERFACE_BYTES   ( 9 + 9 + 7 )
+#define HID_INTERFACES_A1     1
+#else
+#define HID_INTERFACE_BYTES   0
+#define HID_INTERFACES_A1     0
+#endif
 
 /* Total number of bytes returned for the class-specific AudioControl interface descriptor.
  * Includes the combined length of this descriptor header and all Unit and Terminal descriptors
@@ -2348,12 +2359,27 @@ const unsigned num_freqs_a1 = MAX(3, (0
 
 /* Number of interfaces for Audio  1.0 (+1 for control ) */
 /* Note, this is different that INTERFACE_COUNT since we dont support items such as MIDI, iAP etc in UAC1 mode */
-#define NUM_INTERFACES_A1           (1+INPUT_INTERFACES_A1 + OUTPUT_INTERFACES_A1+NUM_CONTROL_USB_INTERFACES+DFU_INTERFACES_A1)
+#define NUM_INTERFACES_A1           (1 + INPUT_INTERFACES_A1 + OUTPUT_INTERFACES_A1 + NUM_CONTROL_USB_INTERFACES + DFU_INTERFACES_A1 + HID_INTERFACES_A1)
 
-#if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP)
-#define CFG_TOTAL_LENGTH_A1         (18 + AC_TOTAL_LENGTH + (INPUT_INTERFACES_A1 * (49 + num_freqs_a1 * 3)) + (OUTPUT_INTERFACES_A1 * (58 + num_freqs_a1 * 3)) + CONTROL_INTERFACE_BYTES + DFU_INTERFACE_BYTES)
+#if ((NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP))
+#define CFG_TOTAL_LENGTH_A1         (18 + AC_TOTAL_LENGTH + (INPUT_INTERFACES_A1 * (49 + num_freqs_a1 * 3)) + (OUTPUT_INTERFACES_A1 * (58 + num_freqs_a1 * 3)) + CONTROL_INTERFACE_BYTES + DFU_INTERFACE_BYTES + HID_INTERFACE_BYTES)
 #else
-#define CFG_TOTAL_LENGTH_A1         (18 + AC_TOTAL_LENGTH + (INPUT_INTERFACES_A1 * (49 + num_freqs_a1 * 3)) + (OUTPUT_INTERFACES_A1 * (49 + num_freqs_a1 * 3)) + CONTROL_INTERFACE_BYTES + DFU_INTERFACE_BYTES)
+#define CFG_TOTAL_LENGTH_A1         (18 + AC_TOTAL_LENGTH + (INPUT_INTERFACES_A1 * (49 + num_freqs_a1 * 3)) + (OUTPUT_INTERFACES_A1 * (49 + num_freqs_a1 * 3)) + CONTROL_INTERFACE_BYTES + DFU_INTERFACE_BYTES + HID_INTERFACE_BYTES)
+#endif
+
+#ifdef XUA_USB_DESCRIPTOR_OVERWRITE_RATE_RES
+	#define AS_INTERFACE_BYTES		(7)
+	#define INTERFACE_DESCRIPTOR_BYTES		(9)
+	#define AS_FORMAT_TYPE_BYTES		(17)
+	#define USB_AS_IN_INTERFACE_DESCRIPTOR_OFFSET_SUB_FRAME		(18 + AC_TOTAL_LENGTH + (OUTPUT_INTERFACES_A1 * (49 + num_freqs_a1 * 3)) + (2*INTERFACE_DESCRIPTOR_BYTES) + (AS_INTERFACE_BYTES) + 5)
+	#define USB_AS_OUT_INTERFACE_DESCRIPTOR_OFFSET_SUB_FRAME	(18 + AC_TOTAL_LENGTH + (2*INTERFACE_DESCRIPTOR_BYTES) + (AS_INTERFACE_BYTES) + 5)
+	
+	#define USB_AS_IN_INTERFACE_DESCRIPTOR_OFFSET_FREQ	(18 + AC_TOTAL_LENGTH + (OUTPUT_INTERFACES_A1 * (49 + num_freqs_a1 * 3)) + (2*INTERFACE_DESCRIPTOR_BYTES) + (AS_INTERFACE_BYTES) + 8)
+	#define USB_AS_OUT_INTERFACE_DESCRIPTOR_OFFSET_FREQ	(18 + AC_TOTAL_LENGTH + (2*INTERFACE_DESCRIPTOR_BYTES) + (AS_INTERFACE_BYTES) + 8)
+	
+	#define USB_AS_IN_EP_DESCRIPTOR_OFFSET_MAXPACKETSIZE	(18 + AC_TOTAL_LENGTH + (OUTPUT_INTERFACES_A1 * (49 + num_freqs_a1 * 3)) + (2*INTERFACE_DESCRIPTOR_BYTES) + (AS_INTERFACE_BYTES) + (AS_FORMAT_TYPE_BYTES) + 4)
+	#define USB_AS_OUT_EP_DESCRIPTOR_OFFSET_MAXPACKETSIZE	(18 + AC_TOTAL_LENGTH + (2*INTERFACE_DESCRIPTOR_BYTES) + (AS_INTERFACE_BYTES) + (AS_FORMAT_TYPE_BYTES) + 4)
+		
 #endif
 
 #define CHARIFY_SR(x) (x & 0xff),((x & 0xff00)>> 8),((x & 0xff0000)>> 16)
@@ -2588,7 +2614,6 @@ unsigned char cfgDesc_Audio1[] =
     NUM_USB_CHAN_OUT_FS,                  /* nrChannels */
     FS_STREAM_FORMAT_OUTPUT_1_SUBSLOT_BYTES,   /* subFrameSize */
     FS_STREAM_FORMAT_OUTPUT_1_RESOLUTION_BITS, /* bitResolution */
-
     num_freqs_a1,                         /* SamFreqType - sample freq count */
 
 /* Windows enum issue with <= two sample rates work around */
@@ -2645,16 +2670,20 @@ unsigned char cfgDesc_Audio1[] =
     /* Standard AS Isochronous Audio Data Endpoint Descriptor 4.6.1.1 */
     0x09,
     0x05,                                 /* ENDPOINT */
-    0x01,                                 /* endpointAddress - D7, direction (0 OUT, 1 IN). D6..4 reserved (0). D3..0 endpoint no. */
+    ENDPOINT_ADDRESS_OUT_AUDIO,           /* endpointAddress - D7, direction (0 OUT, 1 IN). D6..4 reserved (0). D3..0 endpoint no. */
 #ifdef XUA_ADAPTIVE
     ISO_EP_ATTRIBUTES_ADAPTIVE,
 #else
-    ISO_EP_ATTRIBUTES_ASYNCH,
+    #if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP)
+    ISO_EP_ATTRIBUTES_ASYNCH, /* Iso, async, data endpoint */
+    #else
+    ISO_EP_IMPL_ATTRIBUTES_ASYNCH,        /* Feedback data endpoint */
+    #endif
 #endif
     (FS_STREAM_FORMAT_OUTPUT_1_MAXPACKETSIZE&0xff),      /* 4  wMaxPacketSize (Typically 294 bytes)*/
     (FS_STREAM_FORMAT_OUTPUT_1_MAXPACKETSIZE&0xff00)>>8, /* 5  wMaxPacketSize */
     0x01,                                 /* bInterval */
-    0x00,                                 /* bRefresh */ 
+    0x00,                                 /* bRefresh */
 #if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP)
     ENDPOINT_ADDRESS_IN_FEEDBACK,         /* bSynchAdddress - address of EP used to communicate sync info */
 #else /* Bi-directional in/out device */
@@ -2786,11 +2815,11 @@ unsigned char cfgDesc_Audio1[] =
     0x09,
     0x05,                                 /* ENDPOINT */
     ENDPOINT_ADDRESS_IN_AUDIO,            /* EndpointAddress */
-#if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP)
-    ISO_EP_ATTRIBUTES_ASYNCH,  /* Iso, async, data endpoint */
-#else
-    #ifdef XUA_ADAPTIVE
+#ifdef XUA_ADAPTIVE
     ISO_EP_ATTRIBUTES_ADAPTIVE,
+#else
+    #if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP)
+    ISO_EP_ATTRIBUTES_ASYNCH, /* Iso, async, data endpoint */
     #else
     ISO_EP_IMPL_ATTRIBUTES_ASYNCH,        /* Feedback data endpoint */
     #endif
@@ -2834,8 +2863,8 @@ unsigned char cfgDesc_Audio1[] =
     0x09,                                 /* 0    Size */
     0x21,                                 /* 1    bDescriptorType : DFU FUNCTIONAL */
     0x07,                                 /* 2    bmAttributes */
-    0xFA,                                 /* 3    wDetachTimeOut */
-    0x00,                                 /* 4    wDetachTimeOut */
+    DFU_DETACH_TIME_OUT & 0xFF,           /* 3    wDetachTimeOut */
+    (DFU_DETACH_TIME_OUT >> 8) & 0xFF,    /* 4    wDetachTimeOut */
     0x40,                                 /* 5    wTransferSize */
     0x00,                                 /* 6    wTransferSize */
     0x10,                                 /* 7    bcdDFUVersion */
@@ -2853,6 +2882,39 @@ unsigned char cfgDesc_Audio1[] =
     0xFF,                                                /* 6 bInterfaceSubclass : (field size 1 bytes) */
     0xFF,                                                /* 7 bInterfaceProtocol : Unused. (field size 1 bytes) */
     offsetof(StringDescTable_t, ctrlStr)/sizeof(char *), /* 8 iInterface */
+#endif
+
+#if( 0 < HID_CONTROLS )
+    /* HID interface descriptor */
+    0x09,                                 /* 0  bLength : Size of descriptor in Bytes */
+    0x04,                                 /* 1  bDescriptorType (Interface: 0x04)*/
+    INTERFACE_NUMBER_HID,                 /* 2  bInterfaceNumber : Number of interface */
+    0x00,                                 /* 3  bAlternateSetting : Value used  alternate interfaces using SetInterface Request */
+    0x01,                                 /* 4: bNumEndpoints : Number of endpoitns for this interface (excluding 0) */
+    0x03,                                 /* 5: bInterfaceClass */
+    0x00,                                 /* 6: bInterfaceSubClass - no boot device */
+    0x00,                                 /* 7: bInterfaceProtocol*/
+    0x00,                                 /* 8  iInterface */
+
+    /* HID descriptor */
+    0x09,                                 /* 0  bLength : Size of descriptor in Bytes */
+    0x21,                                 /* 1  bDescriptorType (HID) */
+    0x10,                                 /* 2  bcdHID */
+    0x01,                                 /* 3  bcdHID */
+    0x00,                                 /* 4  bCountryCode */
+    0x01,                                 /* 5  bNumDescriptors */
+    0x22,                                 /* 6  bDescriptorType[0] (Report) */
+    0x2B,                                 /* 7  wDescriptorLength[0] */
+    0x00,                                 /* 8  wDescriptorLength[0] */
+
+    /* HID Endpoint descriptor (IN) */
+    0x07,                                 /* 0  bLength */
+    0x05,                                 /* 1  bDescriptorType */
+    ENDPOINT_ADDRESS_IN_HID,              /* 2  bEndpointAddress  */
+    0x03,                                 /* 3  bmAttributes (INTERRUPT) */
+    0x40,                                 /* 4  wMaxPacketSize */
+    0x00,                                 /* 5  wMaxPacketSize */
+    ENDPOINT_INT_INTERVAL_IN_HID,         /* 6  bInterval */
 #endif
 
 };

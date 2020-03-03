@@ -1,4 +1,4 @@
-// Copyright (c) 2011-2019, XMOS Ltd, All rights reserved
+// Copyright (c) 2011-2020, XMOS Ltd, All rights reserved
 /**
  * @brief   Implements endpoint zero for an USB Audio 1.0/2.0 device
  * @author  Ross Owen, XMOS Semiconductor
@@ -7,6 +7,7 @@
 #include <xs1.h>
 #include <safestring.h>
 #include <stddef.h>
+#include <stdint.h>
 
 #include "xua.h"
 
@@ -21,12 +22,14 @@
 #include "vendorrequests.h"
 #include "xc_ptr.h"
 #include "xua_ep0_uacreqs.h"
-#ifdef HID_CONTROLS
+#if( 0 < HID_CONTROLS )
 #include "hid.h"
 #endif
 #if DSD_CHANS_DAC > 0
 #include "dsd_support.h"
 #endif
+
+#include "xua_usb_params_funcs.h"
 
 #ifndef __XC__
 /* Support for xCORE  channels in C */
@@ -58,6 +61,10 @@
 #include "xua_dfu.h"
 #define DFU_IF_NUM INPUT_INTERFACES + OUTPUT_INTERFACES + MIDI_INTERFACES + 1
 extern void device_reboot(void);
+#endif
+
+#if( 0 < HID_CONTROLS )
+#include "xua_hid.h"
 #endif
 
 unsigned int DFU_mode_active = 0;         // 0 - App active, 1 - DFU active
@@ -200,13 +207,68 @@ const unsigned g_chanCount_In_HS[INPUT_FORMAT_COUNT]       = {HS_STREAM_FORMAT_I
 #endif
 };
 
-/* Endpoint 0 function.  Handles all requests to the device */
-void XUA_Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
+XUD_ep ep0_out;
+XUD_ep ep0_in;
+
+void XUA_Endpoint0_setVendorId(unsigned short vid) {
+#if (AUDIO_CLASS == 1)
+    devDesc_Audio1.idVendor = vid;
+#else
+    devDesc_Audio2.idVendor = vid;
+#endif // AUDIO_CLASS == 1}
+}
+
+void XUA_Endpoint0_setProductId(unsigned short pid) {
+#if (AUDIO_CLASS == 1)
+    devDesc_Audio1.idProduct = pid;
+#else
+    devDesc_Audio2.idProduct = pid;
+#endif // AUDIO_CLASS == 1}
+}
+
+unsigned short XUA_Endpoint0_getVendorId() {
+    unsigned short vid;
+#if (AUDIO_CLASS == 1)
+    vid = devDesc_Audio1.idVendor;
+#else
+    vid = devDesc_Audio2.idVendor;
+#endif // AUDIO_CLASS == 1}
+    return vid;
+}
+
+unsigned short XUA_Endpoint0_getProductId() {
+    unsigned short pid;
+#if (AUDIO_CLASS == 1)
+    pid = devDesc_Audio1.idProduct;
+#else
+    pid = devDesc_Audio2.idProduct;
+#endif // AUDIO_CLASS == 1}
+    return pid;
+}
+
+unsigned short XUA_Endpoint0_getBcdDevice() {
+    unsigned short bcd;
+#if (AUDIO_CLASS == 1)
+    bcd = devDesc_Audio1.bcdDevice;
+#else
+    bcd = devDesc_Audio2.bcdDevice;
+#endif // AUDIO_CLASS == 1}
+    return bcd;
+}
+
+void XUA_Endpoint0_setBcdDevice(unsigned short bcd) {
+#if (AUDIO_CLASS == 1)
+    devDesc_Audio1.bcdDevice = bcd;
+#else
+    devDesc_Audio2.bcdDevice = bcd;
+#endif // AUDIO_CLASS == 1}
+}
+
+void XUA_Endpoint0_init(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
     chanend c_mix_ctl, chanend c_clk_ctl, chanend c_EANativeTransport_ctrl, CLIENT_INTERFACE(i_dfu, dfuInterface) VENDOR_REQUESTS_PARAMS_DEC_)
 {
-    USB_SetupPacket_t sp;
-    XUD_ep ep0_out = XUD_InitEp(c_ep0_out);
-    XUD_ep ep0_in  = XUD_InitEp(c_ep0_in);
+    ep0_out = XUD_InitEp(c_ep0_out);
+    ep0_in  = XUD_InitEp(c_ep0_in);
 
 #if 0
     /* Dont need to init globals.. */
@@ -295,540 +357,592 @@ void XUA_Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
     }
 #endif
 
+#ifdef XUA_USB_DESCRIPTOR_OVERWRITE_RATE_RES	//change USB descriptor frequencies and bit resolution values here
+
+    cfgDesc_Audio1[USB_AS_IN_INTERFACE_DESCRIPTOR_OFFSET_SUB_FRAME] = get_device_to_usb_bit_res() >> 3; 	//sub frame rate = bit rate /8
+    cfgDesc_Audio1[USB_AS_IN_INTERFACE_DESCRIPTOR_OFFSET_SUB_FRAME + 1] = (get_device_to_usb_bit_res() & 0xff);		//bit resolution
+    
+    cfgDesc_Audio1[USB_AS_OUT_INTERFACE_DESCRIPTOR_OFFSET_SUB_FRAME] = get_usb_to_device_bit_res() >> 3; 	//sub frame rate = bit rate /8
+    cfgDesc_Audio1[USB_AS_OUT_INTERFACE_DESCRIPTOR_OFFSET_SUB_FRAME + 1] = (get_usb_to_device_bit_res() & 0xff);		//bit resolution
+    
+    const unsigned num_of_usb_descriptor_freq=3;	//This should be =3 according to the comments "using a value of <=2 or > 7 for num_freqs_a1 causes enumeration issues on Windows" in xua_ep0_descriptors.h
+    int i=0;
+    for(i=0;i<num_of_usb_descriptor_freq;i++)
+    {
+        cfgDesc_Audio1[USB_AS_IN_INTERFACE_DESCRIPTOR_OFFSET_FREQ + 3*i] = get_device_to_usb_rate() & 0xff;
+        cfgDesc_Audio1[USB_AS_IN_INTERFACE_DESCRIPTOR_OFFSET_FREQ + 3*i + 1] = (get_device_to_usb_rate() & 0xff00)>> 8;
+        cfgDesc_Audio1[USB_AS_IN_INTERFACE_DESCRIPTOR_OFFSET_FREQ + 3*i + 2] = (get_device_to_usb_rate() & 0xff0000)>> 16;
+    }
+    
+    for(i=0;i<num_of_usb_descriptor_freq;i++)
+    {
+        cfgDesc_Audio1[USB_AS_OUT_INTERFACE_DESCRIPTOR_OFFSET_FREQ + 3*i] = get_usb_to_device_rate() & 0xff;
+        cfgDesc_Audio1[USB_AS_OUT_INTERFACE_DESCRIPTOR_OFFSET_FREQ + 3*i + 1] = (get_usb_to_device_rate() & 0xff00)>> 8;
+        cfgDesc_Audio1[USB_AS_OUT_INTERFACE_DESCRIPTOR_OFFSET_FREQ + 3*i + 2] = (get_usb_to_device_rate() & 0xff0000)>> 16;
+    }
+    
+    cfgDesc_Audio1[USB_AS_IN_EP_DESCRIPTOR_OFFSET_MAXPACKETSIZE] = ((get_device_to_usb_bit_res() >> 3) * MAX_PACKET_SIZE_MULT_IN_FS) & 0xff; 	//max packet size
+    cfgDesc_Audio1[USB_AS_IN_EP_DESCRIPTOR_OFFSET_MAXPACKETSIZE + 1] = (((get_device_to_usb_bit_res() >> 3)  * MAX_PACKET_SIZE_MULT_IN_FS) & 0xff00) >> 8;		//max packet size
+    
+    cfgDesc_Audio1[USB_AS_OUT_EP_DESCRIPTOR_OFFSET_MAXPACKETSIZE] = ((get_usb_to_device_bit_res() >> 3) * MAX_PACKET_SIZE_MULT_OUT_FS) & 0xff; 	//max packet size
+    cfgDesc_Audio1[USB_AS_OUT_EP_DESCRIPTOR_OFFSET_MAXPACKETSIZE + 1] = (((get_usb_to_device_bit_res() >> 3)  * MAX_PACKET_SIZE_MULT_OUT_FS) & 0xff00) >> 8;		//max packet size
+    
+#endif
+
+}
+
+void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
+    chanend c_mix_ctl, chanend c_clk_ctl, chanend c_EANativeTransport_ctrl, CLIENT_INTERFACE(i_dfu, dfuInterface) VENDOR_REQUESTS_PARAMS_DEC_)
+{
+ if (result == XUD_RES_OKAY)
+    {
+        result = XUD_RES_ERR;
+
+        /* Inspect Request type and Receipient and direction */
+        switch( (sp.bmRequestType.Direction << 7) | (sp.bmRequestType.Recipient ) | (sp.bmRequestType.Type << 5) )
+        {
+            case USB_BMREQ_H2D_STANDARD_INT:
+
+                /* Over-riding USB_StandardRequests implementation */
+                if(sp.bRequest == USB_SET_INTERFACE)
+                {
+                    switch (sp.wIndex)
+                    {
+                        /* Check for audio stream from host start/stop */
+#if (NUM_USB_CHAN_OUT > 0) && (AUDIO_CLASS == 2)
+                        case INTERFACE_NUMBER_AUDIO_OUTPUT:
+                            /* Check the alt is in range */
+                            if(sp.wValue <= OUTPUT_FORMAT_COUNT)
+                            {
+                                /* Alt 0 is stream stop */
+                                /* Only send change if we need to */
+                                if((sp.wValue > 0) && (g_curStreamAlt_Out != sp.wValue))
+                                {
+                                    g_curStreamAlt_Out = sp.wValue;
+
+                                    /* Send format of data onto buffering */
+                                    outuint(c_audioControl, SET_STREAM_FORMAT_OUT);
+                                    outuint(c_audioControl, g_dataFormat_Out[sp.wValue-1]);        /* Data format (PCM/DSD) */
+
+                                    if(g_curUsbSpeed == XUD_SPEED_HS)
+                                    {
+                                        outuint(c_audioControl, NUM_USB_CHAN_OUT);                 /* Channel count */
+                                        outuint(c_audioControl, g_subSlot_Out_HS[sp.wValue-1]);    /* Subslot */
+                                        outuint(c_audioControl, g_sampRes_Out_HS[sp.wValue-1]);    /* Resolution */
+                                    }
+                                    else
+                                    {
+                                        outuint(c_audioControl, NUM_USB_CHAN_OUT_FS);              /* Channel count */
+                                        outuint(c_audioControl, g_subSlot_Out_FS[sp.wValue-1]);    /* Subslot */
+                                        outuint(c_audioControl, g_sampRes_Out_FS[sp.wValue-1]);    /* Resolution */
+                                    }
+
+                                    /* Handshake */
+                                    chkct(c_audioControl, XS1_CT_END);
+                                }
+                            }
+                            break;
+#endif
+
+#if (NUM_USB_CHAN_IN > 0) && (AUDIO_CLASS == 2)
+                        case INTERFACE_NUMBER_AUDIO_INPUT:
+                            /* Check the alt is in range */
+                            if(sp.wValue <= INPUT_FORMAT_COUNT)
+                            {
+                                /* Alt 0 is stream stop */
+                                /* Only send change if we need to */
+                                if((sp.wValue > 0) && (g_curStreamAlt_In != sp.wValue))
+                                {
+                                    g_curStreamAlt_In = sp.wValue;
+
+                                    /* Send format of data onto buffering */
+                                    outuint(c_audioControl, SET_STREAM_FORMAT_IN);
+                                    outuint(c_audioControl, g_dataFormat_In[sp.wValue-1]);        /* Data format (PCM/DSD) */
+
+                                    if(g_curUsbSpeed == XUD_SPEED_HS)
+                                    {
+                                        outuint(c_audioControl, g_chanCount_In_HS[sp.wValue-1]);  /* Channel count */
+                                        outuint(c_audioControl, g_subSlot_In_HS[sp.wValue-1]);    /* Subslot */
+                                        outuint(c_audioControl, g_sampRes_In_HS[sp.wValue-1]);    /* Resolution */
+                                    }
+                                    else
+                                    {
+                                        outuint(c_audioControl, NUM_USB_CHAN_IN_FS);               /* Channel count */
+                                        outuint(c_audioControl, g_subSlot_In_FS[sp.wValue-1]);     /* Subslot */
+                                        outuint(c_audioControl, g_sampRes_In_FS[sp.wValue-1]);     /* Resolution */
+                                    }
+
+                                    /* Wait for handshake */
+                                    chkct(c_audioControl, XS1_CT_END);
+                                }
+                            }
+                            break;
+#endif
+
+#ifdef IAP_EA_NATIVE_TRANS
+                        case INTERFACE_NUMBER_IAP_EA_NATIVE_TRANS:
+                            /* Check the alt is in range */
+                            if (sp.wValue <= IAP_EA_NATIVE_TRANS_ALT_COUNT)
+                            {
+                                /* Reset all state of endpoints associated with this interface
+                                 * when changing an alternative setting. See USB 2.0 Spec 9.1.1.5 */
+                                XUD_ResetEpStateByAddr(ENDPOINT_ADDRESS_IN_IAP_EA_NATIVE_TRANS);
+                                XUD_ResetEpStateByAddr(ENDPOINT_ADDRESS_OUT_IAP_EA_NATIVE_TRANS);
+
+                                /* Send selected Alt interface number onto EA Native EP manager */
+                                outuint(c_EANativeTransport_ctrl, (unsigned)sp.wValue);
+
+                                /* Wait for handshake */
+                                chkct(c_EANativeTransport_ctrl, XS1_CT_END);
+                            }
+                            break;
+#endif
+                        default:
+                            /* Unhandled interface */
+                            break;
+                    }
+
+#if (NUM_USB_CHAN_OUT > 0) && (NUM_USB_CHAN_IN > 0)
+                    unsigned num_input_interfaces = g_interfaceAlt[INTERFACE_NUMBER_AUDIO_INPUT];
+                    unsigned num_output_interfaces = g_interfaceAlt[INTERFACE_NUMBER_AUDIO_OUTPUT];
+                    if (sp.wIndex == INTERFACE_NUMBER_AUDIO_INPUT)
+                    {
+                        // in: 0 -> 1
+                        if (sp.wValue && !num_input_interfaces)
+                        {
+                            UserAudioInputStreamStart();
+                            if (!num_output_interfaces)
+                            {
+                                UserAudioStreamStart();
+                            }
+                        }
+                        // in: 1 -> 0
+                        else if (!sp.wValue && num_input_interfaces)
+                        {
+                            UserAudioInputStreamStop();
+                            if (!num_output_interfaces)
+                            {
+                                UserAudioStreamStop();
+                            }
+                        }
+                    }
+                    else if (sp.wIndex == INTERFACE_NUMBER_AUDIO_OUTPUT)
+                    {
+                        // out: 0 -> 1
+                        if (sp.wValue && !num_output_interfaces)
+                        {
+                            UserAudioOutputStreamStart();
+                            if (!num_input_interfaces)
+                            {
+                                UserAudioStreamStart();
+                            }
+                        }
+                        // out: 1 -> 0
+                        else if (!sp.wValue && num_output_interfaces)
+                        {
+                            UserAudioOutputStreamStop();
+                            if (!num_input_interfaces)
+                            {
+                                UserAudioStreamStop();
+                            }
+                        }
+                    }
+#elif (NUM_USB_CHAN_OUT > 0)
+                    if(sp.wIndex == INTERFACE_NUMBER_AUDIO_OUTPUT)
+                    {
+                        if(sp.wValue && (!g_interfaceAlt[INTERFACE_NUMBER_AUDIO_OUTPUT]))
+                        {
+                            /* if start and not currently running */
+                            UserAudioStreamStart();
+                            UserAudioOutputStreamStart();
+                        }
+                        else if (!sp.wValue && g_interfaceAlt[INTERFACE_NUMBER_AUDIO_OUTPUT])
+                        {
+                            /* if stop and currently running */
+                            UserAudioStreamStop();
+                            UserAudioOutputStreamStop();
+                        }
+                    }
+#elif (NUM_USB_CHAN_IN > 0)
+                    if(sp.wIndex == INTERFACE_NUMBER_AUDIO_INPUT)
+                    {
+                        if(sp.wValue && (!g_interfaceAlt[INTERFACE_NUMBER_AUDIO_INPUT]))
+                        {
+                            /* if start and not currently running */
+                            UserAudioStreamStart();
+                            UserAudioInputStreamStart();
+                        }
+                        else if (!sp.wValue && g_interfaceAlt[INTERFACE_NUMBER_AUDIO_INPUT])
+                        {
+                            /* if stop and currently running */
+                            UserAudioStreamStop();
+                            UserAudioInputStreamStop();
+                        }
+                    }
+#endif
+                } /* if(sp.bRequest == SET_INTERFACE) */
+
+                break; /* BMREQ_H2D_STANDARD_INT */
+
+            case USB_BMREQ_D2H_STANDARD_INT:
+
+                switch(sp.bRequest)
+                {
+#if( 0 < HID_CONTROLS )
+                    case USB_GET_DESCRIPTOR:
+
+                        /* Check what inteface request is for */
+                        if(sp.wIndex == INTERFACE_NUMBER_HID)
+                        {
+                            /* High byte of wValue is descriptor type */
+                            unsigned descriptorType = sp.wValue & 0xff00;
+
+                            switch (descriptorType)
+                            {
+                                case HID_HID:
+                                    /* Return HID Descriptor */
+                                     result = XUD_DoGetRequest(ep0_out, ep0_in, hidDescriptor,
+                                        sizeof(hidDescriptor), sp.wLength);
+                                    break;
+                                case HID_REPORT:
+                                    /* Return HID report descriptor */
+                                    result = XUD_DoGetRequest(ep0_out, ep0_in, hidReportDescriptor,
+                                        sizeof(hidReportDescriptor), sp.wLength);
+                                break;
+                            }
+                        }
+                        break;
+#endif
+                    default:
+                        break;
+               }
+               break;
+
+            /* Recipient: Device */
+            case USB_BMREQ_H2D_STANDARD_DEV:
+
+                /* Inspect for actual request */
+                switch( sp.bRequest )
+                {
+                    /* Standard request: SetConfiguration */
+                    /* Overriding implementation in USB_StandardRequests */
+                    case USB_SET_CONFIGURATION:
+
+                        //if(g_current_config == 1)
+                        {
+                            /* Consider host active with valid driver at this point */
+                            UserHostActive(1);
+                        }
+
+                        /* We want to run USB_StandardsRequests() implementation also. Don't modify result
+                         * and don't call XUD_DoSetRequestStatus() */
+                        break;
+
+                    default:
+                        //Unknown device request"
+                        break;
+                }
+                break;
+
+            /* Audio Class 1.0 Sampling Freqency Requests go to Endpoint */
+            case USB_BMREQ_H2D_CLASS_EP:
+            case USB_BMREQ_D2H_CLASS_EP:
+                {
+                    unsigned epNum = sp.wIndex & 0xff;
+
+                    if ((epNum == ENDPOINT_ADDRESS_OUT_AUDIO) || (epNum == ENDPOINT_ADDRESS_IN_AUDIO))
+                    {
+#if (AUDIO_CLASS == 2) && (AUDIO_CLASS_FALLBACK)
+                        if(g_curUsbSpeed == XUD_SPEED_FS)
+                        {
+                            result = AudioEndpointRequests_1(ep0_out, ep0_in, &sp, c_audioControl, c_mix_ctl, c_clk_ctl);
+                        }
+#elif (AUDIO_CLASS==1)
+                        result = AudioEndpointRequests_1(ep0_out, ep0_in, &sp, c_audioControl, c_mix_ctl, c_clk_ctl);
+#endif
+                    }
+
+                }
+                break;
+
+            case USB_BMREQ_H2D_CLASS_INT:
+            case USB_BMREQ_D2H_CLASS_INT:
+                {
+                    unsigned interfaceNum = sp.wIndex & 0xff;
+                    //unsigned request = (sp.bmRequestType.Recipient ) | (sp.bmRequestType.Type << 5);
+
+                    /* TODO Check on return value retval =  */
+#if (XUA_DFU_EN == 1)
+                    unsigned DFU_IF = INTERFACE_NUMBER_DFU;
+
+                    /* DFU interface number changes based on which mode we are currently running in */
+                    if (DFU_mode_active)
+                    {
+                        DFU_IF = 0;
+                    }
+
+                    if (interfaceNum == DFU_IF)
+                    {
+                        int reset = 0;
+
+                        /* If running in application mode stop audio */
+                        /* Don't interupt audio for save and restore cmds */
+                        if ((DFU_IF == INTERFACE_NUMBER_DFU) && (sp.bRequest != XMOS_DFU_SAVESTATE) &&
+                            (sp.bRequest != XMOS_DFU_RESTORESTATE))
+                        {
+                            // Stop audio
+                            outuint(c_audioControl, SET_SAMPLE_FREQ);
+                            outuint(c_audioControl, AUDIO_STOP_FOR_DFU);
+                            // Handshake
+                            chkct(c_audioControl, XS1_CT_END);
+                        }
+
+                        /* This will return 1 if reset requested */
+                        result = DFUDeviceRequests(ep0_out, &ep0_in, &sp, null, g_interfaceAlt[sp.wIndex], dfuInterface, &reset);
+
+                        if(reset)
+                        {
+                            DFUDelay(50000000);
+                            device_reboot();
+                        }
+                    }
+#endif
+#if( 0 < HID_CONTROLS )
+                    if (interfaceNum == INTERFACE_NUMBER_HID)
+                    {
+                        result = HidInterfaceClassRequests(ep0_out, ep0_in, &sp);
+                    }
+#endif
+                    /* Check for:   - Audio CONTROL interface request - always 0, note we check for DFU first
+                     *              - Audio STREAMING interface request  (In or Out)
+                     *              - Audio endpoint request (Audio 1.0 Sampling freq requests are sent to the endpoint)
+                     */
+                    if(((interfaceNum == 0) || (interfaceNum == 1) || (interfaceNum == 2))
+#if (XUA_DFU_EN == 1)
+                            && !DFU_mode_active
+#endif
+                        )
+                    {
+#if (AUDIO_CLASS == 2) && (AUDIO_CLASS_FALLBACK)
+                        if(g_curUsbSpeed == XUD_SPEED_HS)
+                        {
+                            result = AudioClassRequests_2(ep0_out, ep0_in, &sp, c_audioControl, c_mix_ctl, c_clk_ctl);
+                        }
+                        else
+                        {
+                            result = AudioClassRequests_1(ep0_out, ep0_in, &sp, c_audioControl, c_mix_ctl, c_clk_ctl);
+                        }
+#elif (AUDIO_CLASS==2)
+                        result = AudioClassRequests_2(ep0_out, ep0_in, &sp, c_audioControl, c_mix_ctl, c_clk_ctl);
+#else
+                        result = AudioClassRequests_1(ep0_out, ep0_in, &sp, c_audioControl, c_mix_ctl, c_clk_ctl);
+#endif
+
+#ifdef VENDOR_AUDIO_REQS
+                        /* If result is ERR at this point, then request to audio interface not handled - handle vendor audio reqs */
+                        if(result == XUD_RES_ERR)
+                        {
+                            result = VendorAudioRequests(ep0_out, ep0_in, sp.bRequest,
+                                sp.wValue >> 8, sp.wValue & 0xff,
+                                sp.wIndex >> 8, sp.bmRequestType.Direction,
+                                c_audioControl, c_mix_ctl, c_clk_ctl);
+                        }
+#endif
+                    }
+                }
+                break;
+
+            default:
+                break;
+        }
+
+    } /* if(result == XUD_RES_OKAY) */
+
+    {
+        if(result == XUD_RES_ERR)
+        {
+            /* Run vendor defined parsing/processing */
+            /* Note, an interface might seem ideal here but this *must* be executed on the same
+             * core sure to shared memory depandancy */
+            result = VendorRequests(ep0_out, ep0_in, &sp VENDOR_REQUESTS_PARAMS_);
+        }
+    }
+
+    if(result == XUD_RES_ERR)
+    {
+#if (XUA_DFU_EN == 1) 
+        if (!DFU_mode_active)
+        {
+#endif
+#if (AUDIO_CLASS_FALLBACK) && (AUDIO_CLASS != 1)
+            /* Return Audio 2.0 Descriptors with Audio 1.0 as fallback */
+            result = USB_StandardRequests(ep0_out, ep0_in,
+                (unsigned char*)&devDesc_Audio2, sizeof(devDesc_Audio2),
+                (unsigned char*)&cfgDesc_Audio2, sizeof(cfgDesc_Audio2),
+                (unsigned char*)&devDesc_Audio1, sizeof(devDesc_Audio1),
+                cfgDesc_Audio1, sizeof(cfgDesc_Audio1),
+                (char**)&g_strTable, sizeof(g_strTable)/sizeof(char *),
+                &sp, g_curUsbSpeed);
+#elif FULL_SPEED_AUDIO_2
+            /* Return Audio 2.0 Descriptors for high_speed and full-speed */
+
+            /* Unfortunately we need to munge the descriptors a bit between full and high-speed */
+            if(g_curUsbSpeed == XUD_SPEED_HS)
+            {
+                /* Modify Audio Class 2.0 Config descriptor for High-speed operation */
+#if (NUM_USB_CHAN_OUT > 0)
+                cfgDesc_Audio2.Audio_CS_Control_Int.Audio_Out_InputTerminal.bNrChannels = NUM_USB_CHAN_OUT;
+#if (NUM_USB_CHAN_OUT > 0)
+                cfgDesc_Audio2.Audio_Out_Format.bSubslotSize = HS_STREAM_FORMAT_OUTPUT_1_SUBSLOT_BYTES;
+                cfgDesc_Audio2.Audio_Out_Format.bBitResolution = HS_STREAM_FORMAT_OUTPUT_1_RESOLUTION_BITS;
+                cfgDesc_Audio2.Audio_Out_Endpoint.wMaxPacketSize = HS_STREAM_FORMAT_OUTPUT_1_MAXPACKETSIZE;
+                cfgDesc_Audio2.Audio_Out_ClassStreamInterface.bNrChannels = NUM_USB_CHAN_OUT;
+#endif
+#if (OUTPUT_FORMAT_COUNT > 1)
+                cfgDesc_Audio2.Audio_Out_Format_2.bSubslotSize = HS_STREAM_FORMAT_OUTPUT_2_SUBSLOT_BYTES;
+                cfgDesc_Audio2.Audio_Out_Format_2.bBitResolution = HS_STREAM_FORMAT_OUTPUT_2_RESOLUTION_BITS;
+                cfgDesc_Audio2.Audio_Out_Endpoint_2.wMaxPacketSize = HS_STREAM_FORMAT_OUTPUT_2_MAXPACKETSIZE;
+                cfgDesc_Audio2.Audio_Out_ClassStreamInterface_2.bNrChannels = NUM_USB_CHAN_OUT;
+#endif
+
+#if (OUTPUT_FORMAT_COUNT > 2)
+                cfgDesc_Audio2.Audio_Out_Format_3.bSubslotSize = HS_STREAM_FORMAT_OUTPUT_3_SUBSLOT_BYTES;
+                cfgDesc_Audio2.Audio_Out_Format_3.bBitResolution = HS_STREAM_FORMAT_OUTPUT_3_RESOLUTION_BITS;
+                cfgDesc_Audio2.Audio_Out_Endpoint_3.wMaxPacketSize = HS_STREAM_FORMAT_OUTPUT_3_MAXPACKETSIZE;
+                cfgDesc_Audio2.Audio_Out_ClassStreamInterface_3.bNrChannels = NUM_USB_CHAN_OUT;
+#endif
+#endif
+#if (NUM_USB_CHAN_IN > 0)
+                cfgDesc_Audio2.Audio_CS_Control_Int.Audio_In_InputTerminal.bNrChannels = NUM_USB_CHAN_IN;
+                cfgDesc_Audio2.Audio_In_Format.bSubslotSize = HS_STREAM_FORMAT_INPUT_1_SUBSLOT_BYTES;
+                cfgDesc_Audio2.Audio_In_Format.bBitResolution = HS_STREAM_FORMAT_INPUT_1_RESOLUTION_BITS;
+                cfgDesc_Audio2.Audio_In_Endpoint.wMaxPacketSize = HS_STREAM_FORMAT_INPUT_1_MAXPACKETSIZE;
+                cfgDesc_Audio2.Audio_In_ClassStreamInterface.bNrChannels = NUM_USB_CHAN_IN;
+#endif
+            }
+            else
+            {
+                /* Modify Audio Class 2.0 Config descriptor for Full-speed operation */
+#if (NUM_USB_CHAN_OUT > 0)
+                cfgDesc_Audio2.Audio_CS_Control_Int.Audio_Out_InputTerminal.bNrChannels = NUM_USB_CHAN_OUT_FS;
+#if (NUM_USB_CHAN_OUT > 0)
+                cfgDesc_Audio2.Audio_Out_Format.bSubslotSize = FS_STREAM_FORMAT_OUTPUT_1_SUBSLOT_BYTES;
+                cfgDesc_Audio2.Audio_Out_Format.bBitResolution = FS_STREAM_FORMAT_OUTPUT_1_RESOLUTION_BITS;
+                cfgDesc_Audio2.Audio_Out_Endpoint.wMaxPacketSize = FS_STREAM_FORMAT_OUTPUT_1_MAXPACKETSIZE;
+                cfgDesc_Audio2.Audio_Out_ClassStreamInterface.bNrChannels = NUM_USB_CHAN_OUT_FS;
+#endif
+#if (OUTPUT_FORMAT_COUNT > 1)
+                cfgDesc_Audio2.Audio_Out_Format_2.bSubslotSize = FS_STREAM_FORMAT_OUTPUT_2_SUBSLOT_BYTES;
+                cfgDesc_Audio2.Audio_Out_Format_2.bBitResolution = FS_STREAM_FORMAT_OUTPUT_2_RESOLUTION_BITS;
+                cfgDesc_Audio2.Audio_Out_Endpoint_2.wMaxPacketSize = FS_STREAM_FORMAT_OUTPUT_2_MAXPACKETSIZE;
+                cfgDesc_Audio2.Audio_Out_ClassStreamInterface_2.bNrChannels = NUM_USB_CHAN_OUT_FS;
+#endif
+
+#if (OUTPUT_FORMAT_COUNT > 2)
+                cfgDesc_Audio2.Audio_Out_Format_3.bSubslotSize = FS_STREAM_FORMAT_OUTPUT_3_SUBSLOT_BYTES;
+                cfgDesc_Audio2.Audio_Out_Format_3.bBitResolution = FS_STREAM_FORMAT_OUTPUT_3_RESOLUTION_BITS;
+                cfgDesc_Audio2.Audio_Out_Endpoint_3.wMaxPacketSize = FS_STREAM_FORMAT_OUTPUT_3_MAXPACKETSIZE;
+                cfgDesc_Audio2.Audio_Out_ClassStreamInterface_3.bNrChannels = NUM_USB_CHAN_OUT_FS;
+#endif
+#endif
+#if (NUM_USB_CHAN_IN > 0)
+                cfgDesc_Audio2.Audio_CS_Control_Int.Audio_In_InputTerminal.bNrChannels = NUM_USB_CHAN_IN_FS;
+                cfgDesc_Audio2.Audio_In_Format.bSubslotSize = FS_STREAM_FORMAT_INPUT_1_SUBSLOT_BYTES;
+                cfgDesc_Audio2.Audio_In_Format.bBitResolution = FS_STREAM_FORMAT_INPUT_1_RESOLUTION_BITS;
+                cfgDesc_Audio2.Audio_In_Endpoint.wMaxPacketSize = FS_STREAM_FORMAT_INPUT_1_MAXPACKETSIZE;
+                cfgDesc_Audio2.Audio_In_ClassStreamInterface.bNrChannels = NUM_USB_CHAN_IN_FS;
+#endif
+            }
+
+            result = USB_StandardRequests(ep0_out, ep0_in,
+                (unsigned char*)&devDesc_Audio2, sizeof(devDesc_Audio2),
+                (unsigned char*)&cfgDesc_Audio2, sizeof(cfgDesc_Audio2),
+                null, 0,
+                null, 0,
+#ifdef __XC__
+                g_strTable, sizeof(g_strTable), sp, null, g_curUsbSpeed);
+#else
+                (char**)&g_strTable, sizeof(g_strTable)/sizeof(char *), &sp, g_curUsbSpeed);
+#endif
+#elif (AUDIO_CLASS == 1)
+            /* Return Audio 1.0 Descriptors in FS, should never be in HS! */
+             result = USB_StandardRequests(ep0_out, ep0_in,
+                null, 0,
+                null, 0,
+                (unsigned char*)&devDesc_Audio1, sizeof(devDesc_Audio1),
+                cfgDesc_Audio1, sizeof(cfgDesc_Audio1),
+                (char**)&g_strTable, sizeof(g_strTable)/sizeof(char *), &sp, g_curUsbSpeed);
+#else
+            /* Return Audio 2.0 Descriptors with Null device as fallback */
+            result = USB_StandardRequests(ep0_out, ep0_in,
+                (unsigned char*)&devDesc_Audio2, sizeof(devDesc_Audio2),
+                (unsigned char*)&cfgDesc_Audio2, sizeof(cfgDesc_Audio2),
+                devDesc_Null, sizeof(devDesc_Null),
+                cfgDesc_Null, sizeof(cfgDesc_Null),
+                (char**)&g_strTable, sizeof(g_strTable)/sizeof(char *), &sp, g_curUsbSpeed);
+#endif
+#if (XUA_DFU_EN == 1)
+        }
+
+        else
+        {
+            /* Running in DFU mode - always return same descs for DFU whether HS or FS */
+            result = USB_StandardRequests(ep0_out, ep0_in,
+                DFUdevDesc, sizeof(DFUdevDesc),
+                DFUcfgDesc, sizeof(DFUcfgDesc),
+                null, 0, /* Used same descriptors for full and high-speed */
+                null, 0,
+                (char**)&g_strTable, sizeof(g_strTable)/sizeof(char *), &sp, g_curUsbSpeed);
+        }
+#endif
+    }
+
+    if (result == XUD_RES_RST)
+    {
+#ifdef __XC__
+        g_curUsbSpeed = XUD_ResetEndpoint(ep0_out, ep0_in);
+#else
+        g_curUsbSpeed = XUD_ResetEndpoint(ep0_out, &ep0_in);
+#endif
+        g_currentConfig = 0;
+        g_curStreamAlt_Out = 0;
+        g_curStreamAlt_In = 0;
+
+#if (XUA_DFU_EN == 1)
+        if (DFUReportResetState(null))
+        {
+            if (!DFU_mode_active)
+            {
+                DFU_mode_active = 1;
+            }
+        }
+        else
+        {
+            if (DFU_mode_active)
+            {
+                DFU_mode_active = 0;
+
+                /* Send reboot command */
+                DFUDelay(5000000);
+                device_reboot();
+            }
+        }
+#endif
+    }
+}
+
+/* Endpoint 0 function.  Handles all requests to the device */
+void XUA_Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
+    chanend c_mix_ctl, chanend c_clk_ctl, chanend c_EANativeTransport_ctrl, CLIENT_INTERFACE(i_dfu, dfuInterface) VENDOR_REQUESTS_PARAMS_DEC_)
+{
+    USB_SetupPacket_t sp;
+    XUA_Endpoint0_init(c_ep0_out, c_ep0_in, c_audioControl, c_mix_ctl, c_clk_ctl, c_EANativeTransport_ctrl, dfuInterface VENDOR_REQUESTS_PARAMS_);
+
     while(1)
     {
         /* Returns XUD_RES_OKAY for success, XUD_RES_RST for bus reset */
         XUD_Result_t result = USB_GetSetupPacket(ep0_out, ep0_in, &sp);
-
-        if (result == XUD_RES_OKAY)
-        {
-            result = XUD_RES_ERR;
-
-            /* Inspect Request type and Receipient and direction */
-            switch( (sp.bmRequestType.Direction << 7) | (sp.bmRequestType.Recipient ) | (sp.bmRequestType.Type << 5) )
-            {
-                case USB_BMREQ_H2D_STANDARD_INT:
-
-                    /* Over-riding USB_StandardRequests implementation */
-                    if(sp.bRequest == USB_SET_INTERFACE)
-                    {
-                        switch (sp.wIndex)
-                        {
-                            /* Check for audio stream from host start/stop */
-#if (NUM_USB_CHAN_OUT > 0) && (AUDIO_CLASS == 2)
-                            case INTERFACE_NUMBER_AUDIO_OUTPUT:
-                                /* Check the alt is in range */
-                                if(sp.wValue <= OUTPUT_FORMAT_COUNT)
-                                {
-                                    /* Alt 0 is stream stop */
-                                    /* Only send change if we need to */
-                                    if((sp.wValue > 0) && (g_curStreamAlt_Out != sp.wValue))
-                                    {
-                                        g_curStreamAlt_Out = sp.wValue;
-
-                                        /* Send format of data onto buffering */
-                                        outuint(c_audioControl, SET_STREAM_FORMAT_OUT);
-                                        outuint(c_audioControl, g_dataFormat_Out[sp.wValue-1]);        /* Data format (PCM/DSD) */
-
-                                        if(g_curUsbSpeed == XUD_SPEED_HS)
-                                        {
-                                            outuint(c_audioControl, NUM_USB_CHAN_OUT);                 /* Channel count */
-                                            outuint(c_audioControl, g_subSlot_Out_HS[sp.wValue-1]);    /* Subslot */
-                                            outuint(c_audioControl, g_sampRes_Out_HS[sp.wValue-1]);    /* Resolution */
-                                        }
-                                        else
-                                        {
-                                            outuint(c_audioControl, NUM_USB_CHAN_OUT_FS);              /* Channel count */
-                                            outuint(c_audioControl, g_subSlot_Out_FS[sp.wValue-1]);    /* Subslot */
-                                            outuint(c_audioControl, g_sampRes_Out_FS[sp.wValue-1]);    /* Resolution */
-                                        }
-
-                                        /* Handshake */
-                                        chkct(c_audioControl, XS1_CT_END);
-                                    }
-                                }
-                                break;
-#endif
-
-#if (NUM_USB_CHAN_IN > 0) && (AUDIO_CLASS == 2)
-                            case INTERFACE_NUMBER_AUDIO_INPUT:
-                                /* Check the alt is in range */
-                                if(sp.wValue <= INPUT_FORMAT_COUNT)
-                                {
-                                    /* Alt 0 is stream stop */
-                                    /* Only send change if we need to */
-                                    if((sp.wValue > 0) && (g_curStreamAlt_In != sp.wValue))
-                                    {
-                                        g_curStreamAlt_In = sp.wValue;
-
-                                        /* Send format of data onto buffering */
-                                        outuint(c_audioControl, SET_STREAM_FORMAT_IN);
-                                        outuint(c_audioControl, g_dataFormat_In[sp.wValue-1]);        /* Data format (PCM/DSD) */
-
-                                        if(g_curUsbSpeed == XUD_SPEED_HS)
-                                        {
-                                            outuint(c_audioControl, g_chanCount_In_HS[sp.wValue-1]);  /* Channel count */
-                                            outuint(c_audioControl, g_subSlot_In_HS[sp.wValue-1]);    /* Subslot */
-                                            outuint(c_audioControl, g_sampRes_In_HS[sp.wValue-1]);    /* Resolution */
-                                        }
-                                        else
-                                        {
-                                            outuint(c_audioControl, NUM_USB_CHAN_IN_FS);               /* Channel count */
-                                            outuint(c_audioControl, g_subSlot_In_FS[sp.wValue-1]);     /* Subslot */
-                                            outuint(c_audioControl, g_sampRes_In_FS[sp.wValue-1]);     /* Resolution */
-                                        }
-
-                                        /* Wait for handshake */
-                                        chkct(c_audioControl, XS1_CT_END);
-                                    }
-                                }
-                                break;
-#endif
-
-#ifdef IAP_EA_NATIVE_TRANS
-                            case INTERFACE_NUMBER_IAP_EA_NATIVE_TRANS:
-                                /* Check the alt is in range */
-                                if (sp.wValue <= IAP_EA_NATIVE_TRANS_ALT_COUNT)
-                                {
-                                    /* Reset all state of endpoints associated with this interface
-                                     * when changing an alternative setting. See USB 2.0 Spec 9.1.1.5 */
-                                    XUD_ResetEpStateByAddr(ENDPOINT_ADDRESS_IN_IAP_EA_NATIVE_TRANS);
-                                    XUD_ResetEpStateByAddr(ENDPOINT_ADDRESS_OUT_IAP_EA_NATIVE_TRANS);
-
-                                    /* Send selected Alt interface number onto EA Native EP manager */
-                                    outuint(c_EANativeTransport_ctrl, (unsigned)sp.wValue);
-
-                                    /* Wait for handshake */
-                                    chkct(c_EANativeTransport_ctrl, XS1_CT_END);
-                                }
-                                break;
-#endif
-                            default:
-                                /* Unhandled interface */
-                                break;
-                        }
-
-#if (NUM_USB_CHAN_OUT > 0) && (NUM_USB_CHAN_IN > 0)
-                        unsigned num_input_interfaces = g_interfaceAlt[INTERFACE_NUMBER_AUDIO_INPUT];
-                        unsigned num_output_interfaces = g_interfaceAlt[INTERFACE_NUMBER_AUDIO_OUTPUT];
-                        if (sp.wIndex == INTERFACE_NUMBER_AUDIO_INPUT)
-                        {
-                            // in: 0 -> 1
-                            if (sp.wValue && !num_input_interfaces)
-                            {
-                                UserAudioInputStreamStart();
-                                if (!num_output_interfaces)
-                                {
-                                    UserAudioStreamStart();
-                                }
-                            }
-                            // in: 1 -> 0
-                            else if (!sp.wValue && num_input_interfaces)
-                            {
-                                UserAudioInputStreamStop();
-                                if (!num_output_interfaces)
-                                {
-                                    UserAudioStreamStop();
-                                }
-                            }
-                        }
-                        else if (sp.wIndex == INTERFACE_NUMBER_AUDIO_OUTPUT)
-                        {
-                            // out: 0 -> 1
-                            if (sp.wValue && !num_output_interfaces)
-                            {
-                                UserAudioOutputStreamStart();
-                                if (!num_input_interfaces)
-                                {
-                                    UserAudioStreamStart();
-                                }
-                            }
-                            // out: 1 -> 0
-                            else if (!sp.wValue && num_output_interfaces)
-                            {
-                                UserAudioOutputStreamStop();
-                                if (!num_input_interfaces)
-                                {
-                                    UserAudioStreamStop();
-                                }
-                            }
-                        }
-#elif (NUM_USB_CHAN_OUT > 0)
-                        if(sp.wIndex == INTERFACE_NUMBER_AUDIO_OUTPUT)
-                        {
-                            if(sp.wValue && (!g_interfaceAlt[INTERFACE_NUMBER_AUDIO_OUTPUT]))
-                            {
-                                /* if start and not currently running */
-                                UserAudioStreamStart();
-                                UserAudioOutputStreamStart();
-                            }
-                            else if (!sp.wValue && g_interfaceAlt[INTERFACE_NUMBER_AUDIO_OUTPUT])
-                            {
-                                /* if stop and currently running */
-                                UserAudioStreamStop();
-                                UserAudioOutputStreamStop();
-                            }
-                        }
-#elif (NUM_USB_CHAN_IN > 0)
-                        if(sp.wIndex == INTERFACE_NUMBER_AUDIO_INPUT)
-                        {
-                            if(sp.wValue && (!g_interfaceAlt[INTERFACE_NUMBER_AUDIO_INPUT]))
-                            {
-                                /* if start and not currently running */
-                                UserAudioStreamStart();
-                                UserAudioInputStreamStart();
-                            }
-                            else if (!sp.wValue && g_interfaceAlt[INTERFACE_NUMBER_AUDIO_INPUT])
-                            {
-                                /* if stop and currently running */
-                                UserAudioStreamStop();
-                                UserAudioInputStreamStop();
-                            }
-                        }
-#endif
-                    } /* if(sp.bRequest == SET_INTERFACE) */
-
-                    break; /* BMREQ_H2D_STANDARD_INT */
-
-                case USB_BMREQ_D2H_STANDARD_INT:
-
-                    switch(sp.bRequest)
-                    {
-#ifdef HID_CONTROLS
-                        case USB_GET_DESCRIPTOR:
-
-                            /* Check what inteface request is for */
-                            if(sp.wIndex == INTERFACE_NUMBER_HID)
-                            {
-                                /* High byte of wValue is descriptor type */
-                                unsigned descriptorType = sp.wValue & 0xff00;
-
-                                switch (descriptorType)
-                                {
-                                    case HID_HID:
-                                        /* Return HID Descriptor */
-                                         result = XUD_DoGetRequest(ep0_out, ep0_in, hidDescriptor,
-                                            sizeof(hidDescriptor), sp.wLength);
-                                        break;
-                                    case HID_REPORT:
-                                        /* Return HID report descriptor */
-                                        result = XUD_DoGetRequest(ep0_out, ep0_in, hidReportDescriptor,
-                                            sizeof(hidReportDescriptor), sp.wLength);
-                                    break;
-                                }
-                            }
-                            break;
-#endif
-                        default:
-                            break;
-                   }
-                   break;
-
-                /* Recipient: Device */
-                case USB_BMREQ_H2D_STANDARD_DEV:
-
-                    /* Inspect for actual request */
-                    switch( sp.bRequest )
-                    {
-                        /* Standard request: SetConfiguration */
-                        /* Overriding implementation in USB_StandardRequests */
-                        case USB_SET_CONFIGURATION:
-
-                            //if(g_current_config == 1)
-                            {
-                                /* Consider host active with valid driver at this point */
-                                UserHostActive(1);
-                            }
-
-                            /* We want to run USB_StandardsRequests() implementation also. Don't modify result
-                             * and don't call XUD_DoSetRequestStatus() */
-                            break;
-
-                        default:
-                            //Unknown device request"
-                            break;
-                    }
-                    break;
-
-                /* Audio Class 1.0 Sampling Freqency Requests go to Endpoint */
-                case USB_BMREQ_H2D_CLASS_EP:
-                case USB_BMREQ_D2H_CLASS_EP:
-                    {
-                        unsigned epNum = sp.wIndex & 0xff;
-
-                        if ((epNum == ENDPOINT_ADDRESS_OUT_AUDIO) || (epNum == ENDPOINT_ADDRESS_IN_AUDIO))
-				        {
-#if (AUDIO_CLASS == 2) && (AUDIO_CLASS_FALLBACK)
-                            if(g_curUsbSpeed == XUD_SPEED_FS)
-                            {
-                                result = AudioEndpointRequests_1(ep0_out, ep0_in, &sp, c_audioControl, c_mix_ctl, c_clk_ctl);
-                            }
-#elif (AUDIO_CLASS==1)
-                            result = AudioEndpointRequests_1(ep0_out, ep0_in, &sp, c_audioControl, c_mix_ctl, c_clk_ctl);
-#endif
-                        }
-
-                    }
-                    break;
-
-                case USB_BMREQ_H2D_CLASS_INT:
-                case USB_BMREQ_D2H_CLASS_INT:
-                    {
-                        unsigned interfaceNum = sp.wIndex & 0xff;
-					    //unsigned request = (sp.bmRequestType.Recipient ) | (sp.bmRequestType.Type << 5);
-
-                        /* TODO Check on return value retval =  */
-#if (XUA_DFU_EN == 1)
-                        unsigned DFU_IF = INTERFACE_NUMBER_DFU;
-
-                        /* DFU interface number changes based on which mode we are currently running in */
-                        if (DFU_mode_active)
-                        {
-                            DFU_IF = 0;
-                        }
-
-                        if (interfaceNum == DFU_IF)
-                        {
-                            int reset = 0;
-
-                            /* If running in application mode stop audio */
-                            /* Don't interupt audio for save and restore cmds */
-                            if ((DFU_IF == INTERFACE_NUMBER_DFU) && (sp.bRequest != XMOS_DFU_SAVESTATE) &&
-                                (sp.bRequest != XMOS_DFU_RESTORESTATE))
-                            {
-                                // Stop audio
-                                outuint(c_audioControl, SET_SAMPLE_FREQ);
-                                outuint(c_audioControl, AUDIO_STOP_FOR_DFU);
-                                // Handshake
-							    chkct(c_audioControl, XS1_CT_END);
-                            }
-
-                            /* This will return 1 if reset requested */
-                            result = DFUDeviceRequests(ep0_out, &ep0_in, &sp, null, g_interfaceAlt[sp.wIndex], dfuInterface, &reset);
-
-                            if(reset)
-                            {
-                                DFUDelay(50000000);
-                                device_reboot();
-                            }
-                        }
-#endif
-                        /* Check for:   - Audio CONTROL interface request - always 0, note we check for DFU first
-                         *              - Audio STREAMING interface request  (In or Out)
-                         *              - Audio endpoint request (Audio 1.0 Sampling freq requests are sent to the endpoint)
-                         */
-                        if(((interfaceNum == 0) || (interfaceNum == 1) || (interfaceNum == 2))
-#if (XUA_DFU_EN == 1)
-                                && !DFU_mode_active
-#endif
-                            )
-                        {
-#if (AUDIO_CLASS == 2) && (AUDIO_CLASS_FALLBACK)
-                            if(g_curUsbSpeed == XUD_SPEED_HS)
-                            {
-                                result = AudioClassRequests_2(ep0_out, ep0_in, &sp, c_audioControl, c_mix_ctl, c_clk_ctl);
-                            }
-                            else
-                            {
-                                result = AudioClassRequests_1(ep0_out, ep0_in, &sp, c_audioControl, c_mix_ctl, c_clk_ctl);
-                            }
-#elif (AUDIO_CLASS==2)
-                            result = AudioClassRequests_2(ep0_out, ep0_in, &sp, c_audioControl, c_mix_ctl, c_clk_ctl);
-#else
-                            result = AudioClassRequests_1(ep0_out, ep0_in, &sp, c_audioControl, c_mix_ctl, c_clk_ctl);
-#endif
-
-#ifdef VENDOR_AUDIO_REQS
-                            /* If result is ERR at this point, then request to audio interface not handled - handle vendor audio reqs */
-                            if(result == XUD_RES_ERR)
-                            {
-                                result = VendorAudioRequests(ep0_out, ep0_in, sp.bRequest,
-                            	    sp.wValue >> 8, sp.wValue & 0xff,
-                            	    sp.wIndex >> 8, sp.bmRequestType.Direction,
-                            	    c_audioControl, c_mix_ctl, c_clk_ctl);
-                            }
-#endif
-                        }
-                    }
-                    break;
-
-                default:
-                    break;
-            }
-
-        } /* if(result == XUD_RES_OKAY) */
-
-        {
-            if(result == XUD_RES_ERR)
-            {
-                /* Run vendor defined parsing/processing */
-                /* Note, an interface might seem ideal here but this *must* be executed on the same
-                 * core sure to shared memory depandancy */
-                result = VendorRequests(ep0_out, ep0_in, &sp VENDOR_REQUESTS_PARAMS_);
-            }
-        }
-
-        if(result == XUD_RES_ERR)
-        {
-#if (XUA_DFU_EN == 1) 
-            if (!DFU_mode_active)
-            {
-#endif
-#if (AUDIO_CLASS_FALLBACK) && (AUDIO_CLASS != 1)
-                /* Return Audio 2.0 Descriptors with Audio 1.0 as fallback */
-                result = USB_StandardRequests(ep0_out, ep0_in,
-                    (unsigned char*)&devDesc_Audio2, sizeof(devDesc_Audio2),
-                    (unsigned char*)&cfgDesc_Audio2, sizeof(cfgDesc_Audio2),
-                    (unsigned char*)&devDesc_Audio1, sizeof(devDesc_Audio1),
-                    cfgDesc_Audio1, sizeof(cfgDesc_Audio1),
-                    (char**)&g_strTable, sizeof(g_strTable)/sizeof(char *),
-                    &sp, g_curUsbSpeed);
-#elif FULL_SPEED_AUDIO_2
-                /* Return Audio 2.0 Descriptors for high_speed and full-speed */
-
-                /* Unfortunately we need to munge the descriptors a bit between full and high-speed */
-                if(g_curUsbSpeed == XUD_SPEED_HS)
-                {
-                    /* Modify Audio Class 2.0 Config descriptor for High-speed operation */
-#if (NUM_USB_CHAN_OUT > 0)
-                    cfgDesc_Audio2.Audio_CS_Control_Int.Audio_Out_InputTerminal.bNrChannels = NUM_USB_CHAN_OUT;
-#if (NUM_USB_CHAN_OUT > 0)
-                    cfgDesc_Audio2.Audio_Out_Format.bSubslotSize = HS_STREAM_FORMAT_OUTPUT_1_SUBSLOT_BYTES;
-                    cfgDesc_Audio2.Audio_Out_Format.bBitResolution = HS_STREAM_FORMAT_OUTPUT_1_RESOLUTION_BITS;
-                    cfgDesc_Audio2.Audio_Out_Endpoint.wMaxPacketSize = HS_STREAM_FORMAT_OUTPUT_1_MAXPACKETSIZE;
-                    cfgDesc_Audio2.Audio_Out_ClassStreamInterface.bNrChannels = NUM_USB_CHAN_OUT;
-#endif
-#if (OUTPUT_FORMAT_COUNT > 1)
-                    cfgDesc_Audio2.Audio_Out_Format_2.bSubslotSize = HS_STREAM_FORMAT_OUTPUT_2_SUBSLOT_BYTES;
-                    cfgDesc_Audio2.Audio_Out_Format_2.bBitResolution = HS_STREAM_FORMAT_OUTPUT_2_RESOLUTION_BITS;
-                    cfgDesc_Audio2.Audio_Out_Endpoint_2.wMaxPacketSize = HS_STREAM_FORMAT_OUTPUT_2_MAXPACKETSIZE;
-                    cfgDesc_Audio2.Audio_Out_ClassStreamInterface_2.bNrChannels = NUM_USB_CHAN_OUT;
-#endif
-
-#if (OUTPUT_FORMAT_COUNT > 2)
-                    cfgDesc_Audio2.Audio_Out_Format_3.bSubslotSize = HS_STREAM_FORMAT_OUTPUT_3_SUBSLOT_BYTES;
-                    cfgDesc_Audio2.Audio_Out_Format_3.bBitResolution = HS_STREAM_FORMAT_OUTPUT_3_RESOLUTION_BITS;
-                    cfgDesc_Audio2.Audio_Out_Endpoint_3.wMaxPacketSize = HS_STREAM_FORMAT_OUTPUT_3_MAXPACKETSIZE;
-                    cfgDesc_Audio2.Audio_Out_ClassStreamInterface_3.bNrChannels = NUM_USB_CHAN_OUT;
-#endif
-#endif
-#if (NUM_USB_CHAN_IN > 0)
-                    cfgDesc_Audio2.Audio_CS_Control_Int.Audio_In_InputTerminal.bNrChannels = NUM_USB_CHAN_IN;
-                    cfgDesc_Audio2.Audio_In_Format.bSubslotSize = HS_STREAM_FORMAT_INPUT_1_SUBSLOT_BYTES;
-                    cfgDesc_Audio2.Audio_In_Format.bBitResolution = HS_STREAM_FORMAT_INPUT_1_RESOLUTION_BITS;
-                    cfgDesc_Audio2.Audio_In_Endpoint.wMaxPacketSize = HS_STREAM_FORMAT_INPUT_1_MAXPACKETSIZE;
-                    cfgDesc_Audio2.Audio_In_ClassStreamInterface.bNrChannels = NUM_USB_CHAN_IN;
-#endif
-                }
-                else
-                {
-                    /* Modify Audio Class 2.0 Config descriptor for Full-speed operation */
-#if (NUM_USB_CHAN_OUT > 0)
-                    cfgDesc_Audio2.Audio_CS_Control_Int.Audio_Out_InputTerminal.bNrChannels = NUM_USB_CHAN_OUT_FS;
-#if (NUM_USB_CHAN_OUT > 0)
-                    cfgDesc_Audio2.Audio_Out_Format.bSubslotSize = FS_STREAM_FORMAT_OUTPUT_1_SUBSLOT_BYTES;
-                    cfgDesc_Audio2.Audio_Out_Format.bBitResolution = FS_STREAM_FORMAT_OUTPUT_1_RESOLUTION_BITS;
-                    cfgDesc_Audio2.Audio_Out_Endpoint.wMaxPacketSize = FS_STREAM_FORMAT_OUTPUT_1_MAXPACKETSIZE;
-                    cfgDesc_Audio2.Audio_Out_ClassStreamInterface.bNrChannels = NUM_USB_CHAN_OUT_FS;
-#endif
-#if (OUTPUT_FORMAT_COUNT > 1)
-                    cfgDesc_Audio2.Audio_Out_Format_2.bSubslotSize = FS_STREAM_FORMAT_OUTPUT_2_SUBSLOT_BYTES;
-                    cfgDesc_Audio2.Audio_Out_Format_2.bBitResolution = FS_STREAM_FORMAT_OUTPUT_2_RESOLUTION_BITS;
-                    cfgDesc_Audio2.Audio_Out_Endpoint_2.wMaxPacketSize = FS_STREAM_FORMAT_OUTPUT_2_MAXPACKETSIZE;
-                    cfgDesc_Audio2.Audio_Out_ClassStreamInterface_2.bNrChannels = NUM_USB_CHAN_OUT_FS;
-#endif
-
-#if (OUTPUT_FORMAT_COUNT > 2)
-                    cfgDesc_Audio2.Audio_Out_Format_3.bSubslotSize = FS_STREAM_FORMAT_OUTPUT_3_SUBSLOT_BYTES;
-                    cfgDesc_Audio2.Audio_Out_Format_3.bBitResolution = FS_STREAM_FORMAT_OUTPUT_3_RESOLUTION_BITS;
-                    cfgDesc_Audio2.Audio_Out_Endpoint_3.wMaxPacketSize = FS_STREAM_FORMAT_OUTPUT_3_MAXPACKETSIZE;
-                    cfgDesc_Audio2.Audio_Out_ClassStreamInterface_3.bNrChannels = NUM_USB_CHAN_OUT_FS;
-#endif
-#endif
-#if (NUM_USB_CHAN_IN > 0)
-                    cfgDesc_Audio2.Audio_CS_Control_Int.Audio_In_InputTerminal.bNrChannels = NUM_USB_CHAN_IN_FS;
-                    cfgDesc_Audio2.Audio_In_Format.bSubslotSize = FS_STREAM_FORMAT_INPUT_1_SUBSLOT_BYTES;
-                    cfgDesc_Audio2.Audio_In_Format.bBitResolution = FS_STREAM_FORMAT_INPUT_1_RESOLUTION_BITS;
-                    cfgDesc_Audio2.Audio_In_Endpoint.wMaxPacketSize = FS_STREAM_FORMAT_INPUT_1_MAXPACKETSIZE;
-                    cfgDesc_Audio2.Audio_In_ClassStreamInterface.bNrChannels = NUM_USB_CHAN_IN_FS;
-#endif
-                }
-
-                result = USB_StandardRequests(ep0_out, ep0_in,
-                    (unsigned char*)&devDesc_Audio2, sizeof(devDesc_Audio2),
-                    (unsigned char*)&cfgDesc_Audio2, sizeof(cfgDesc_Audio2),
-                    null, 0,
-                    null, 0,
-#ifdef __XC__
-                    g_strTable, sizeof(g_strTable), sp, null, g_curUsbSpeed);
-#else
-                    (char**)&g_strTable, sizeof(g_strTable)/sizeof(char *), &sp, g_curUsbSpeed);
-#endif
-#elif (AUDIO_CLASS == 1)
-                /* Return Audio 1.0 Descriptors in FS, should never be in HS! */
-                 result = USB_StandardRequests(ep0_out, ep0_in,
-                    null, 0,
-                    null, 0,
-                    (unsigned char*)&devDesc_Audio1, sizeof(devDesc_Audio1),
-                    cfgDesc_Audio1, sizeof(cfgDesc_Audio1),
-                    (char**)&g_strTable, sizeof(g_strTable)/sizeof(char *), &sp, g_curUsbSpeed);
-#else
-                /* Return Audio 2.0 Descriptors with Null device as fallback */
-                result = USB_StandardRequests(ep0_out, ep0_in,
-                    (unsigned char*)&devDesc_Audio2, sizeof(devDesc_Audio2),
-                    (unsigned char*)&cfgDesc_Audio2, sizeof(cfgDesc_Audio2),
-                    devDesc_Null, sizeof(devDesc_Null),
-                    cfgDesc_Null, sizeof(cfgDesc_Null),
-                    (char**)&g_strTable, sizeof(g_strTable)/sizeof(char *), &sp, g_curUsbSpeed);
-#endif
-#if (XUA_DFU_EN == 1)
-            }
-
-            else
-            {
-                /* Running in DFU mode - always return same descs for DFU whether HS or FS */
-                result = USB_StandardRequests(ep0_out, ep0_in,
-                    DFUdevDesc, sizeof(DFUdevDesc),
-                    DFUcfgDesc, sizeof(DFUcfgDesc),
-                    null, 0, /* Used same descriptors for full and high-speed */
-                    null, 0,
-                    (char**)&g_strTable, sizeof(g_strTable)/sizeof(char *), &sp, g_curUsbSpeed);
-            }
-#endif
-        }
-
-        if (result == XUD_RES_RST)
-        {
-#ifdef __XC__
-            g_curUsbSpeed = XUD_ResetEndpoint(ep0_out, ep0_in);
-#else
-            g_curUsbSpeed = XUD_ResetEndpoint(ep0_out, &ep0_in);
-#endif
-            g_currentConfig = 0;
-            g_curStreamAlt_Out = 0;
-            g_curStreamAlt_In = 0;
-
-#if (XUA_DFU_EN == 1)
-            if (DFUReportResetState(null))
-            {
-                if (!DFU_mode_active)
-                {
-                    DFU_mode_active = 1;
-                }
-            }
-            else
-            {
-                if (DFU_mode_active)
-                {
-                    DFU_mode_active = 0;
-
-                    /* Send reboot command */
-                    DFUDelay(5000000);
-                    device_reboot();
-                }
-            }
-#endif
-        }
+        XUA_Endpoint0_loop(result, sp, c_ep0_out, c_ep0_in, c_audioControl, c_mix_ctl, c_clk_ctl, c_EANativeTransport_ctrl, dfuInterface VENDOR_REQUESTS_PARAMS_);
     }
 }
 #endif /* XUA_USB_EN*/
