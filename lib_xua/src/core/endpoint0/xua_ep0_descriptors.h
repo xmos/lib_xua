@@ -20,13 +20,15 @@
 #include "iap2.h"                      /* Defines iAP EA Native Transport protocol name */
 #endif
 
+#define MAX_STRING_SIZE (32)
+
 #define APPEND_VENDOR_STR(x) VENDOR_STR" "#x
 
 #define APPEND_PRODUCT_STR_A2(x) PRODUCT_STR_A2 " "#x
 
 #define APPEND_PRODUCT_STR_A1(x) PRODUCT_STR_A1 " "#x
 
-#define STR_TABLE_ENTRY(name) char *name
+#define STR_TABLE_ENTRY(name) char name[MAX_STRING_SIZE]
 
 #define ISO_EP_ATTRIBUTES_ASYNCH                   0x05 //ISO, ASYNCH, DATA EP
 #define ISO_EP_ATTRIBUTES_ADAPTIVE                 0x09 //ISO, ADAPTIVE, DATA EP
@@ -327,6 +329,7 @@ StringDescTable_t g_strTable =
     .usbOutputTermStr_Audio2     = APPEND_PRODUCT_STR_A2(),
 #endif
 #if (AUDIO_CLASS_FALLBACK) || (AUDIO_CLASS == 1)
+    
     .productStr_Audio1           = PRODUCT_STR_A1,
     .outputInterfaceStr_Audio1   = APPEND_PRODUCT_STR_A1(),
     .inputInterfaceStr_Audio1    = APPEND_PRODUCT_STR_A1(),
@@ -2293,6 +2296,8 @@ unsigned char cfgDesc_Null[] =
  * To work around this we repeat MAX_FREQ_FS multiple times in some cases */
 
 #define MAX(a,b) (((a)>(b))?(a):(b))
+#define MIN(a,b) (((a)<(b))?(a):(b))
+
 const unsigned num_freqs_a1 = MAX(3, (0
 #if(MIN_FREQ <= 8000) && (MAX_FREQ_FS >= 8000)
     + 1

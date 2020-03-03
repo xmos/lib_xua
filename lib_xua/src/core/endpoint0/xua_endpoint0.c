@@ -8,7 +8,7 @@
 #include <safestring.h>
 #include <stddef.h>
 #include <stdint.h>
-
+#include <string.h>
 #include "xua.h"
 
 #if XUA_USB_EN 
@@ -216,6 +216,92 @@ void XUA_Endpoint0_setVendorId(unsigned short vid) {
 #else
     devDesc_Audio2.idVendor = vid;
 #endif // AUDIO_CLASS == 1}
+}
+#include "print.h"
+void copyCombinedStrings(char* string1, char* string2, char* string_buffer) {
+    uint32_t string_size = MIN(strlen(string1), MAX_STRING_SIZE);
+    memset(string_buffer, 0, MAX_STRING_SIZE);        
+    memcpy(string_buffer, string1, string_size);
+    string_size = MIN(strlen(string1)+1, MAX_STRING_SIZE);
+    if (string_size<MAX_STRING_SIZE) {
+        memcpy(string_buffer+strlen(string1), " ", 1);
+    } else {
+        return;
+    }
+    string_size = MIN(strlen(string1)+1+strlen(string2), MAX_STRING_SIZE);
+    if (string_size>MAX_STRING_SIZE) {
+        memcpy(string_buffer+strlen(string1)+1, string2, MAX_STRING_SIZE-strlen(string1)-1);
+    } else {
+        memcpy(string_buffer+strlen(string1)+1, string2, strlen(string2));    
+    }
+}
+
+void XUA_Endpoint0_setVendorStr(char* vendor_str) {
+    uint32_t string_size = MIN(strlen(vendor_str), MAX_STRING_SIZE);
+
+    memset(g_strTable.vendorStr, 0, MAX_STRING_SIZE);
+    memcpy(g_strTable.vendorStr, vendor_str, string_size);   
+#if (AUDIO_CLASS == 2)
+    copyCombinedStrings(g_strTable.clockSelectorStr, vendor_str, "Clock Selector");
+    copyCombinedStrings(g_strTable.internalClockSourceStr, vendor_str, "Internal Clock");
+#endif
+#if SPDIF_RX
+    copyCombinedStrings(g_strTable.spdifClockSourceStr, vendor_str, "S/PDIF Clock");
+#endif
+#if ADAT_RX
+    copyCombinedStrings(g_strTable.adatClockSourceStr, vendor_str, "ADAT Clock");    
+#endif
+#if (XUA_DFU_EN == 1)
+    copyCombinedStrings(g_strTable.dfuStr, vendor_str, "DFU");  
+#endif
+#ifdef USB_CONTROL_DESCS
+    copyCombinedStrings(g_strTable.ctrlStr, vendor_str, "Control");      
+#endif
+#ifdef MIDI
+    copyCombinedStrings(g_strTable.midiOutStr, vendor_str, "MIDI Out");      
+    copyCombinedStrings(g_strTable.midiInStr, vendor_str, "MIDI In");      
+#endif
+}
+
+void XUA_Endpoint0_setProductStr(char* product_str) {
+    uint32_t string_size = MIN(strlen(product_str), MAX_STRING_SIZE);
+#if (AUDIO_CLASS_FALLBACK) || (AUDIO_CLASS == 1)
+    memset(g_strTable.productStr_Audio1, 0, MAX_STRING_SIZE);
+    memset(g_strTable.outputInterfaceStr_Audio1, 0, MAX_STRING_SIZE);    
+    memset(g_strTable.inputInterfaceStr_Audio1, 0, MAX_STRING_SIZE);    
+    memset(g_strTable.usbInputTermStr_Audio1, 0, MAX_STRING_SIZE);    
+    memset(g_strTable.usbOutputTermStr_Audio1, 0, MAX_STRING_SIZE);    
+    
+    memcpy(g_strTable.productStr_Audio1, product_str, string_size);
+    memcpy(g_strTable.outputInterfaceStr_Audio1, product_str, string_size);
+    memcpy(g_strTable.inputInterfaceStr_Audio1, product_str, string_size);
+    memcpy(g_strTable.usbInputTermStr_Audio1, product_str, string_size);
+    memcpy(g_strTable.usbOutputTermStr_Audio1, product_str, string_size);
+#elif (AUDIO_CLASS == 2)
+    memset(g_strTable.productStr_Audio2, 0, MAX_STRING_SIZE);    
+    memset(g_strTable.outputInterfaceStr_Audio2, 0, MAX_STRING_SIZE);    
+    memset(g_strTable.inputInterfaceStr_Audio2, 0, MAX_STRING_SIZE);    
+    memset(g_strTable.usbInputTermStr_Audio2, 0, MAX_STRING_SIZE);  
+    memset(g_strTable.usbOutputTermStr_Audio2, 0, MAX_STRING_SIZE);  
+
+    memcpy(g_strTable.productStr_Audio1, product_str, string_size);    
+    memcpy(g_strTable.outputInterfaceStr_Audio2, product_str, string_size);
+    memcpy(g_strTable.inputInterfaceStr_Audio2, product_str, string_size);
+    memcpy(g_strTable.usbInputTermStr_Audio2, product_str, string_size);
+    memcpy(g_strTable.usbOutputTermStr_Audio2, product_str, string_size);
+#endif  
+}
+
+char* XUA_Endpoint0_getVendorStr() {
+    return g_strTable.vendorStr;
+}
+
+char* XUA_Endpoint0_getProductStr() {
+    #if (AUDIO_CLASS_FALLBACK) || (AUDIO_CLASS == 1)
+    return g_strTable.productStr_Audio1;
+    #elif (AUDIO_CLASS == 2)
+    return g_strTable.productStr_Audio2;    
+    #endif
 }
 
 void XUA_Endpoint0_setProductId(unsigned short pid) {

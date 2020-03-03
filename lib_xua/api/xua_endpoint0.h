@@ -40,6 +40,52 @@ void XUA_Endpoint0_setVendorId(unsigned short vid);
 */
 void XUA_Endpoint0_setProductId(unsigned short pid);
 
+
+/** Function to set the Vendor ID value
+ *
+ *  \param vid vendor ID value to set
+*/
+#ifdef __XC__
+extern "C" {
+#endif
+    void XUA_Endpoint0_setVendorStr(char* vendor_str);
+#ifdef __XC__
+}
+#endif
+
+#ifdef __XC__
+extern "C" {
+#endif
+    void XUA_Endpoint0_setProductStr(char* product_str);
+#ifdef __XC__
+}
+#endif
+
+/** Function to set the Vendor ID value
+ *
+ *  \param vid vendor ID value to set
+*/
+#ifdef __XC__
+extern "C" {
+#endif
+char* XUA_Endpoint0_getVendorStr();
+#ifdef __XC__
+}
+#endif
+
+/** Function to set the Product ID value
+ *
+ *  \param pid Product ID value to set
+*/
+#ifdef __XC__
+extern "C" {
+#endif
+char* XUA_Endpoint0_getProductStr();
+#ifdef __XC__
+}
+#endif
+
+
 /** Function to get the Vendor ID value
  *
  *  \return Vendor ID value
