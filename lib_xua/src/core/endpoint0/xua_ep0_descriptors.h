@@ -20,15 +20,18 @@
 #include "iap2.h"                      /* Defines iAP EA Native Transport protocol name */
 #endif
 
-#define MAX_STRING_SIZE (32)
-
 #define APPEND_VENDOR_STR(x) VENDOR_STR" "#x
 
 #define APPEND_PRODUCT_STR_A2(x) PRODUCT_STR_A2 " "#x
 
 #define APPEND_PRODUCT_STR_A1(x) PRODUCT_STR_A1 " "#x
 
-#define STR_TABLE_ENTRY(name) char name[MAX_STRING_SIZE]
+#define STR_TABLE_ENTRY(name) char * name
+
+// XUA_DESCR_EMPTY_STRING is used in the g_strTable to set the maximum size of the table entries
+#define XUA_DESCR_EMPTY_STRING "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+// The value below must match the length of XUA_DESCR_EMPTY_STRING.
+#define XUA_MAX_STR_LEN (32)
 
 #define ISO_EP_ATTRIBUTES_ASYNCH                   0x05 //ISO, ASYNCH, DATA EP
 #define ISO_EP_ATTRIBUTES_ADAPTIVE                 0x09 //ISO, ADAPTIVE, DATA EP
@@ -319,42 +322,42 @@ typedef struct
 StringDescTable_t g_strTable =
 {
     .langID                      = "\x09\x04", /* US English */
-    .vendorStr                   = VENDOR_STR,
+    .vendorStr                   = XUA_DESCR_EMPTY_STRING,//VENDOR_STR,
     .serialStr                   = "",
 #if (AUDIO_CLASS == 2)
-    .productStr_Audio2           = PRODUCT_STR_A2,
-    .outputInterfaceStr_Audio2   = APPEND_PRODUCT_STR_A2(),
-    .inputInterfaceStr_Audio2    = APPEND_PRODUCT_STR_A2(),
-    .usbInputTermStr_Audio2      = APPEND_PRODUCT_STR_A2(),
-    .usbOutputTermStr_Audio2     = APPEND_PRODUCT_STR_A2(),
+    .productStr_Audio2           = XUA_DESCR_EMPTY_STRING,
+    .outputInterfaceStr_Audio2   = XUA_DESCR_EMPTY_STRING,
+    .inputInterfaceStr_Audio2    = XUA_DESCR_EMPTY_STRING,
+    .usbInputTermStr_Audio2      = XUA_DESCR_EMPTY_STRING,
+    .usbOutputTermStr_Audio2     = XUA_DESCR_EMPTY_STRING,
 #endif
 #if (AUDIO_CLASS_FALLBACK) || (AUDIO_CLASS == 1)
-    
-    .productStr_Audio1           = PRODUCT_STR_A1,
-    .outputInterfaceStr_Audio1   = APPEND_PRODUCT_STR_A1(),
-    .inputInterfaceStr_Audio1    = APPEND_PRODUCT_STR_A1(),
-    .usbInputTermStr_Audio1      = APPEND_PRODUCT_STR_A1(),
-    .usbOutputTermStr_Audio1     = APPEND_PRODUCT_STR_A1(),
+
+    .productStr_Audio1           = XUA_DESCR_EMPTY_STRING,
+    .outputInterfaceStr_Audio1   = XUA_DESCR_EMPTY_STRING,
+    .inputInterfaceStr_Audio1    = XUA_DESCR_EMPTY_STRING,
+    .usbInputTermStr_Audio1      = XUA_DESCR_EMPTY_STRING,
+    .usbOutputTermStr_Audio1     = XUA_DESCR_EMPTY_STRING,
 #endif
 #if (AUDIO_CLASS == 2)
-    .clockSelectorStr            = APPEND_VENDOR_STR(Clock Selector),
-    .internalClockSourceStr      = APPEND_VENDOR_STR(Internal Clock),
+    .clockSelectorStr            = XUA_DESCR_EMPTY_STRING,
+    .internalClockSourceStr      = XUA_DESCR_EMPTY_STRING,
 #if SPDIF_RX
-    .spdifClockSourceStr         = APPEND_VENDOR_STR(S/PDIF Clock),
+    .spdifClockSourceStr         = XUA_DESCR_EMPTY_STRING,
 #endif
 #if ADAT_RX
-    .adatClockSourceStr          = APPEND_VENDOR_STR(ADAT Clock),
+    .adatClockSourceStr          = XUA_DESCR_EMPTY_STRING,
 #endif
 #endif
 #if (XUA_DFU_EN == 1)
-    .dfuStr                      = APPEND_VENDOR_STR(DFU),
+    .dfuStr                      = XUA_DESCR_EMPTY_STRING,
 #endif
 #ifdef USB_CONTROL_DESCS
-    .ctrlStr                      = APPEND_VENDOR_STR(Control),
+    .ctrlStr                      = XUA_DESCR_EMPTY_STRING,
 #endif
 #ifdef MIDI
-    .midiOutStr                   = APPEND_VENDOR_STR(MIDI Out),
-    .midiInStr                    = APPEND_VENDOR_STR(MIDI In),
+    .midiOutStr                   = XUA_DESCR_EMPTY_STRING,
+    .midiInStr                    = XUA_DESCR_EMPTY_STRING,
 #endif
 
     #include "chanstrings.h"
@@ -401,6 +404,12 @@ StringDescTable_t g_strTable =
     .iAP_EANativeTransport_InterfaceStr = IAP2_EA_NATIVE_TRANS_PROTOCOL_NAME,
 #endif
 };
+char g_vendor_str[XUA_MAX_STR_LEN] = VENDOR_STR;
+#if (AUDIO_CLASS == 2)
+char g_product_str[XUA_MAX_STR_LEN] = PRODUCT_STR_A2;
+#else
+char g_product_str[XUA_MAX_STR_LEN] = PRODUCT_STR_A1;
+#endif
 
 /***** Device Descriptors *****/
 
@@ -2378,13 +2387,13 @@ const unsigned num_freqs_a1 = MAX(3, (0
 	#define AS_FORMAT_TYPE_BYTES		(17)
 	#define USB_AS_IN_INTERFACE_DESCRIPTOR_OFFSET_SUB_FRAME		(18 + AC_TOTAL_LENGTH + (OUTPUT_INTERFACES_A1 * (49 + num_freqs_a1 * 3)) + (2*INTERFACE_DESCRIPTOR_BYTES) + (AS_INTERFACE_BYTES) + 5)
 	#define USB_AS_OUT_INTERFACE_DESCRIPTOR_OFFSET_SUB_FRAME	(18 + AC_TOTAL_LENGTH + (2*INTERFACE_DESCRIPTOR_BYTES) + (AS_INTERFACE_BYTES) + 5)
-	
+
 	#define USB_AS_IN_INTERFACE_DESCRIPTOR_OFFSET_FREQ	(18 + AC_TOTAL_LENGTH + (OUTPUT_INTERFACES_A1 * (49 + num_freqs_a1 * 3)) + (2*INTERFACE_DESCRIPTOR_BYTES) + (AS_INTERFACE_BYTES) + 8)
 	#define USB_AS_OUT_INTERFACE_DESCRIPTOR_OFFSET_FREQ	(18 + AC_TOTAL_LENGTH + (2*INTERFACE_DESCRIPTOR_BYTES) + (AS_INTERFACE_BYTES) + 8)
-	
+
 	#define USB_AS_IN_EP_DESCRIPTOR_OFFSET_MAXPACKETSIZE	(18 + AC_TOTAL_LENGTH + (OUTPUT_INTERFACES_A1 * (49 + num_freqs_a1 * 3)) + (2*INTERFACE_DESCRIPTOR_BYTES) + (AS_INTERFACE_BYTES) + (AS_FORMAT_TYPE_BYTES) + 4)
 	#define USB_AS_OUT_EP_DESCRIPTOR_OFFSET_MAXPACKETSIZE	(18 + AC_TOTAL_LENGTH + (2*INTERFACE_DESCRIPTOR_BYTES) + (AS_INTERFACE_BYTES) + (AS_FORMAT_TYPE_BYTES) + 4)
-		
+
 #endif
 
 #define CHARIFY_SR(x) (x & 0xff),((x & 0xff00)>> 8),((x & 0xff0000)>> 16)

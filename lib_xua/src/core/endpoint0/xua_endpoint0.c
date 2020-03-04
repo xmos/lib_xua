@@ -11,7 +11,7 @@
 #include <string.h>
 #include "xua.h"
 
-#if XUA_USB_EN 
+#if XUA_USB_EN
 #include "xud_device.h"          /* Standard descriptor requests */
 #include "dfu_types.h"
 #include "usbaudio20.h"          /* Defines from USB Audio 2.0 spec */
@@ -28,6 +28,11 @@
 #if DSD_CHANS_DAC > 0
 #include "dsd_support.h"
 #endif
+#define DEBUG_UNIT XUA_EP0
+#ifndef DEBUG_PRINT_ENABLE_XUA_EP0
+    #define DEBUG_PRINT_ENABLE_XUA_EP0 1
+#endif // DEBUG_PRINT_ENABLE_XUA_EP0
+#include "debug_print.h"
 
 #include "xua_usb_params_funcs.h"
 
@@ -217,79 +222,74 @@ void XUA_Endpoint0_setVendorId(unsigned short vid) {
     devDesc_Audio2.idVendor = vid;
 #endif // AUDIO_CLASS == 1}
 }
-#include "print.h"
-void copyCombinedStrings(char* string1, char* string2, char* string_buffer) {
-    uint32_t string_size = MIN(strlen(string1), MAX_STRING_SIZE);
-    memset(string_buffer, 0, MAX_STRING_SIZE);        
+void concatenateAndCopyStrings(char* string1, char* string2, char* string_buffer) {
+    uint32_t string_size = MIN(strlen(string1), XUA_MAX_STR_LEN-1);
+
+    memset(string_buffer, 0, XUA_MAX_STR_LEN);
     memcpy(string_buffer, string1, string_size);
-    string_size = MIN(strlen(string1)+1, MAX_STRING_SIZE);
-    if (string_size<MAX_STRING_SIZE) {
-        memcpy(string_buffer+strlen(string1), " ", 1);
-    } else {
+
+
+    if (string_size==XUA_MAX_STR_LEN-1) {
+        string_buffer[XUA_MAX_STR_LEN-1] = '\0';
         return;
     }
-    string_size = MIN(strlen(string1)+1+strlen(string2), MAX_STRING_SIZE);
-    if (string_size>MAX_STRING_SIZE) {
-        memcpy(string_buffer+strlen(string1)+1, string2, MAX_STRING_SIZE-strlen(string1)-1);
+    uint32_t total_string_size = MIN(strlen(string1)+strlen(string2), XUA_MAX_STR_LEN-1);
+    if (total_string_size==XUA_MAX_STR_LEN-1) {
+        string_size =  XUA_MAX_STR_LEN-1-strlen(string1);
     } else {
-        memcpy(string_buffer+strlen(string1)+1, string2, strlen(string2));    
+        string_size = strlen(string1);
     }
+    memcpy(string_buffer+strlen(string1), string2, string_size);
+    string_buffer[total_string_size] = '\0';
+}
+
+void XUA_Endpoint0_setStrTable() {
+    // update Vendor string
+    concatenateAndCopyStrings(g_vendor_str, "", g_strTable.vendorStr);
+#if (AUDIO_CLASS == 2)
+    concatenateAndCopyStrings(g_vendor_str, " Clock Selector", g_strTable.clockSelectorStr);
+    concatenateAndCopyStrings(g_vendor_str, " Internal Clock", g_strTable.internalClockSourceStr);
+#endif
+#if SPDIF_RX
+    concatenateAndCopyStrings(g_vendor_str, " S/PDIF Clock", g_strTable.spdifClockSourceStr);
+#endif
+#if ADAT_RX
+    concatenateAndCopyStrings(g_vendor_str, " ADAT Clock", g_strTable.adatClockSourceStr);
+#endif
+#if (XUA_DFU_EN == 1)
+    concatenateAndCopyStrings(g_vendor_str, " DFU", g_strTable.dfuStr);
+#endif
+#ifdef USB_CONTROL_DESCS
+    concatenateAndCopyStrings(g_vendor_str, " Control", g_strTable.ctrlStr);
+#endif
+#ifdef MIDI
+    concatenateAndCopyStrings(g_vendor_str, " MIDI Out", g_strTable.midiOutStr);
+    concatenateAndCopyStrings(g_vendor_str, " MIDI In", g_strTable.midiInStr);
+#endif
+    // update product string
+#if (AUDIO_CLASS_FALLBACK) || (AUDIO_CLASS == 1)
+    concatenateAndCopyStrings(g_product_str, "", g_strTable.productStr_Audio1);
+    concatenateAndCopyStrings(g_product_str, "", g_strTable.outputInterfaceStr_Audio1);
+    concatenateAndCopyStrings(g_product_str, "", g_strTable.inputInterfaceStr_Audio1);
+    concatenateAndCopyStrings(g_product_str, "", g_strTable.usbInputTermStr_Audio1);
+    concatenateAndCopyStrings(g_product_str, "", g_strTable.usbOutputTermStr_Audio1);
+#elif (AUDIO_CLASS == 2)
+    concatenateAndCopyStrings(g_product_str, "", g_strTable.productStr_Audio2);
+    concatenateAndCopyStrings(g_product_str, "", g_strTable.outputInterfaceStr_Audio2);
+    concatenateAndCopyStrings(g_product_str, "", g_strTable.inputInterfaceStr_Audio2);
+    concatenateAndCopyStrings(g_product_str, "", g_strTable.usbInputTermStr_Audio2);
+    concatenateAndCopyStrings(g_product_str, "", g_strTable.usbOutputTermStr_Audio2);
+#endif
 }
 
 void XUA_Endpoint0_setVendorStr(char* vendor_str) {
-    uint32_t string_size = MIN(strlen(vendor_str), MAX_STRING_SIZE);
-
-    memset(g_strTable.vendorStr, 0, MAX_STRING_SIZE);
-    memcpy(g_strTable.vendorStr, vendor_str, string_size);   
-#if (AUDIO_CLASS == 2)
-    copyCombinedStrings(g_strTable.clockSelectorStr, vendor_str, "Clock Selector");
-    copyCombinedStrings(g_strTable.internalClockSourceStr, vendor_str, "Internal Clock");
-#endif
-#if SPDIF_RX
-    copyCombinedStrings(g_strTable.spdifClockSourceStr, vendor_str, "S/PDIF Clock");
-#endif
-#if ADAT_RX
-    copyCombinedStrings(g_strTable.adatClockSourceStr, vendor_str, "ADAT Clock");    
-#endif
-#if (XUA_DFU_EN == 1)
-    copyCombinedStrings(g_strTable.dfuStr, vendor_str, "DFU");  
-#endif
-#ifdef USB_CONTROL_DESCS
-    copyCombinedStrings(g_strTable.ctrlStr, vendor_str, "Control");      
-#endif
-#ifdef MIDI
-    copyCombinedStrings(g_strTable.midiOutStr, vendor_str, "MIDI Out");      
-    copyCombinedStrings(g_strTable.midiInStr, vendor_str, "MIDI In");      
-#endif
+    debug_printf("XUA_Endpoint0_setVendorStr() with string %s", vendor_str);
+    concatenateAndCopyStrings(vendor_str, "", g_vendor_str);
 }
 
 void XUA_Endpoint0_setProductStr(char* product_str) {
-    uint32_t string_size = MIN(strlen(product_str), MAX_STRING_SIZE);
-#if (AUDIO_CLASS_FALLBACK) || (AUDIO_CLASS == 1)
-    memset(g_strTable.productStr_Audio1, 0, MAX_STRING_SIZE);
-    memset(g_strTable.outputInterfaceStr_Audio1, 0, MAX_STRING_SIZE);    
-    memset(g_strTable.inputInterfaceStr_Audio1, 0, MAX_STRING_SIZE);    
-    memset(g_strTable.usbInputTermStr_Audio1, 0, MAX_STRING_SIZE);    
-    memset(g_strTable.usbOutputTermStr_Audio1, 0, MAX_STRING_SIZE);    
-    
-    memcpy(g_strTable.productStr_Audio1, product_str, string_size);
-    memcpy(g_strTable.outputInterfaceStr_Audio1, product_str, string_size);
-    memcpy(g_strTable.inputInterfaceStr_Audio1, product_str, string_size);
-    memcpy(g_strTable.usbInputTermStr_Audio1, product_str, string_size);
-    memcpy(g_strTable.usbOutputTermStr_Audio1, product_str, string_size);
-#elif (AUDIO_CLASS == 2)
-    memset(g_strTable.productStr_Audio2, 0, MAX_STRING_SIZE);    
-    memset(g_strTable.outputInterfaceStr_Audio2, 0, MAX_STRING_SIZE);    
-    memset(g_strTable.inputInterfaceStr_Audio2, 0, MAX_STRING_SIZE);    
-    memset(g_strTable.usbInputTermStr_Audio2, 0, MAX_STRING_SIZE);  
-    memset(g_strTable.usbOutputTermStr_Audio2, 0, MAX_STRING_SIZE);  
-
-    memcpy(g_strTable.productStr_Audio1, product_str, string_size);    
-    memcpy(g_strTable.outputInterfaceStr_Audio2, product_str, string_size);
-    memcpy(g_strTable.inputInterfaceStr_Audio2, product_str, string_size);
-    memcpy(g_strTable.usbInputTermStr_Audio2, product_str, string_size);
-    memcpy(g_strTable.usbOutputTermStr_Audio2, product_str, string_size);
-#endif  
+    debug_printf("XUA_Endpoint0_setProductStr() with string %s", product_str);
+    concatenateAndCopyStrings(product_str, "", g_product_str);
 }
 
 char* XUA_Endpoint0_getVendorStr() {
@@ -300,7 +300,7 @@ char* XUA_Endpoint0_getProductStr() {
     #if (AUDIO_CLASS_FALLBACK) || (AUDIO_CLASS == 1)
     return g_strTable.productStr_Audio1;
     #elif (AUDIO_CLASS == 2)
-    return g_strTable.productStr_Audio2;    
+    return g_strTable.productStr_Audio2;
     #endif
 }
 
@@ -355,6 +355,8 @@ void XUA_Endpoint0_init(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioCont
 {
     ep0_out = XUD_InitEp(c_ep0_out);
     ep0_in  = XUD_InitEp(c_ep0_in);
+
+    XUA_Endpoint0_setStrTable();
 
 #if 0
     /* Dont need to init globals.. */
@@ -447,10 +449,10 @@ void XUA_Endpoint0_init(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioCont
 
     cfgDesc_Audio1[USB_AS_IN_INTERFACE_DESCRIPTOR_OFFSET_SUB_FRAME] = get_device_to_usb_bit_res() >> 3; 	//sub frame rate = bit rate /8
     cfgDesc_Audio1[USB_AS_IN_INTERFACE_DESCRIPTOR_OFFSET_SUB_FRAME + 1] = (get_device_to_usb_bit_res() & 0xff);		//bit resolution
-    
+
     cfgDesc_Audio1[USB_AS_OUT_INTERFACE_DESCRIPTOR_OFFSET_SUB_FRAME] = get_usb_to_device_bit_res() >> 3; 	//sub frame rate = bit rate /8
     cfgDesc_Audio1[USB_AS_OUT_INTERFACE_DESCRIPTOR_OFFSET_SUB_FRAME + 1] = (get_usb_to_device_bit_res() & 0xff);		//bit resolution
-    
+
     const unsigned num_of_usb_descriptor_freq=3;	//This should be =3 according to the comments "using a value of <=2 or > 7 for num_freqs_a1 causes enumeration issues on Windows" in xua_ep0_descriptors.h
     int i=0;
     for(i=0;i<num_of_usb_descriptor_freq;i++)
@@ -459,20 +461,20 @@ void XUA_Endpoint0_init(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioCont
         cfgDesc_Audio1[USB_AS_IN_INTERFACE_DESCRIPTOR_OFFSET_FREQ + 3*i + 1] = (get_device_to_usb_rate() & 0xff00)>> 8;
         cfgDesc_Audio1[USB_AS_IN_INTERFACE_DESCRIPTOR_OFFSET_FREQ + 3*i + 2] = (get_device_to_usb_rate() & 0xff0000)>> 16;
     }
-    
+
     for(i=0;i<num_of_usb_descriptor_freq;i++)
     {
         cfgDesc_Audio1[USB_AS_OUT_INTERFACE_DESCRIPTOR_OFFSET_FREQ + 3*i] = get_usb_to_device_rate() & 0xff;
         cfgDesc_Audio1[USB_AS_OUT_INTERFACE_DESCRIPTOR_OFFSET_FREQ + 3*i + 1] = (get_usb_to_device_rate() & 0xff00)>> 8;
         cfgDesc_Audio1[USB_AS_OUT_INTERFACE_DESCRIPTOR_OFFSET_FREQ + 3*i + 2] = (get_usb_to_device_rate() & 0xff0000)>> 16;
     }
-    
+
     cfgDesc_Audio1[USB_AS_IN_EP_DESCRIPTOR_OFFSET_MAXPACKETSIZE] = ((get_device_to_usb_bit_res() >> 3) * MAX_PACKET_SIZE_MULT_IN_FS) & 0xff; 	//max packet size
     cfgDesc_Audio1[USB_AS_IN_EP_DESCRIPTOR_OFFSET_MAXPACKETSIZE + 1] = (((get_device_to_usb_bit_res() >> 3)  * MAX_PACKET_SIZE_MULT_IN_FS) & 0xff00) >> 8;		//max packet size
-    
+
     cfgDesc_Audio1[USB_AS_OUT_EP_DESCRIPTOR_OFFSET_MAXPACKETSIZE] = ((get_usb_to_device_bit_res() >> 3) * MAX_PACKET_SIZE_MULT_OUT_FS) & 0xff; 	//max packet size
     cfgDesc_Audio1[USB_AS_OUT_EP_DESCRIPTOR_OFFSET_MAXPACKETSIZE + 1] = (((get_usb_to_device_bit_res() >> 3)  * MAX_PACKET_SIZE_MULT_OUT_FS) & 0xff00) >> 8;		//max packet size
-    
+
 #endif
 
 }
@@ -856,7 +858,7 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
 
     if(result == XUD_RES_ERR)
     {
-#if (XUA_DFU_EN == 1) 
+#if (XUA_DFU_EN == 1)
         if (!DFU_mode_active)
         {
 #endif
