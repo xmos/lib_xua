@@ -404,12 +404,6 @@ StringDescTable_t g_strTable =
     .iAP_EANativeTransport_InterfaceStr = IAP2_EA_NATIVE_TRANS_PROTOCOL_NAME,
 #endif
 };
-char g_vendor_str[XUA_MAX_STR_LEN] = VENDOR_STR;
-#if (AUDIO_CLASS == 2)
-char g_product_str[XUA_MAX_STR_LEN] = PRODUCT_STR_A2;
-#else
-char g_product_str[XUA_MAX_STR_LEN] = PRODUCT_STR_A1;
-#endif
 
 /***** Device Descriptors *****/
 

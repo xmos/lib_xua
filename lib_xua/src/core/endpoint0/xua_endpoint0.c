@@ -107,6 +107,13 @@ unsigned g_curStreamAlt_In = 0;
 /* Global variable for current USB bus speed (i.e. FS/HS) */
 XUD_BusSpeed_t g_curUsbSpeed = 0;
 
+/* Global variables for current USB Vendor and Product strings */
+char g_vendor_str[XUA_MAX_STR_LEN] = VENDOR_STR;
+#if (AUDIO_CLASS == 2)
+char g_product_str[XUA_MAX_STR_LEN] = PRODUCT_STR_A2;
+#else
+char g_product_str[XUA_MAX_STR_LEN] = PRODUCT_STR_A1;
+#endif
 
 /* Subslot */
 const unsigned g_subSlot_Out_HS[OUTPUT_FORMAT_COUNT]    = {HS_STREAM_FORMAT_OUTPUT_1_SUBSLOT_BYTES,
@@ -222,6 +229,7 @@ void XUA_Endpoint0_setVendorId(unsigned short vid) {
     devDesc_Audio2.idVendor = vid;
 #endif // AUDIO_CLASS == 1}
 }
+
 void concatenateAndCopyStrings(char* string1, char* string2, char* string_buffer) {
     uint32_t string_size = MIN(strlen(string1), XUA_MAX_STR_LEN-1);
 
@@ -244,7 +252,7 @@ void concatenateAndCopyStrings(char* string1, char* string2, char* string_buffer
 }
 
 void XUA_Endpoint0_setStrTable() {
-    // update Vendor string
+    // update Vendor strings
     concatenateAndCopyStrings(g_vendor_str, "", g_strTable.vendorStr);
 #if (AUDIO_CLASS == 2)
     concatenateAndCopyStrings(g_vendor_str, " Clock Selector", g_strTable.clockSelectorStr);
@@ -266,7 +274,7 @@ void XUA_Endpoint0_setStrTable() {
     concatenateAndCopyStrings(g_vendor_str, " MIDI Out", g_strTable.midiOutStr);
     concatenateAndCopyStrings(g_vendor_str, " MIDI In", g_strTable.midiInStr);
 #endif
-    // update product string
+    // update product strings
 #if (AUDIO_CLASS_FALLBACK) || (AUDIO_CLASS == 1)
     concatenateAndCopyStrings(g_product_str, "", g_strTable.productStr_Audio1);
     concatenateAndCopyStrings(g_product_str, "", g_strTable.outputInterfaceStr_Audio1);
