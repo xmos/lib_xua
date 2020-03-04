@@ -43,53 +43,52 @@ void XUA_Endpoint0_setProductId(unsigned short pid);
 
 /** Function to set the Vendor string
  *
- *  \param vendor_str vendor string to set
+ *  \param vendor_str Vendor string to set
 */
 #ifdef __XC__
-extern "C" {
-#endif
-    void XUA_Endpoint0_setVendorStr(char* vendor_str);
-#ifdef __XC__
-}
+void XUA_Endpoint0_setVendorStr(char * unsafe vendor_str);
+#else
+void XUA_Endpoint0_setVendorStr(char * vendor_str);
 #endif
 
 /** Function to set the Product string
  *
- *  \param product_str product string to set
+ *  \param product_str Product string to set
 */
 
 #ifdef __XC__
-extern "C" {
-#endif
-    void XUA_Endpoint0_setProductStr(char* product_str);
-#ifdef __XC__
-}
+void XUA_Endpoint0_setProductStr(char * unsafe product_str);
+#else
+void XUA_Endpoint0_setProductStr(char * product_str);
 #endif
 
-/** Function to set the Vendor ID value
+/** Function to set the BCD device
  *
- *  \param vid vendor ID value to set
-*/
-#ifdef __XC__
-extern "C" {
-#endif
-char* XUA_Endpoint0_getVendorStr();
-#ifdef __XC__
-}
-#endif
+ *  \param bcdDevice BCD device to set
 
-/** Function to set the Product ID value
+*/
+
+void XUA_Endpoint0_setBcdDevice(unsigned short bcdDevice);
+
+/** Function to get the Vendor string
  *
- *  \param pid Product ID value to set
+ *  \param vid vendor string
 */
 #ifdef __XC__
-extern "C" {
-#endif
-char* XUA_Endpoint0_getProductStr();
-#ifdef __XC__
-}
+char * unsafe XUA_Endpoint0_getVendorStr();
+#else
+char *  XUA_Endpoint0_getVendorStr(;
 #endif
 
+/** Function to get the Product string
+ *
+ *  \param pid Product string
+*/
+#ifdef __XC__
+char * unsafe XUA_Endpoint0_getProductStr();
+#else
+char *  XUA_Endpoint0_getProductStr(;
+#endif
 
 /** Function to get the Vendor string
  *
@@ -102,6 +101,12 @@ unsigned short XUA_Endpoint0_getVendorId();
  *  \return Product string
 */
 unsigned short XUA_Endpoint0_getProductId();
+
+/** Function to get the BCD device
+ *
+ *  \return BCD device
+*/
+unsigned short XUA_Endpoint0_getBcdDevice();
 
 #endif
 #endif
