@@ -231,24 +231,15 @@ void XUA_Endpoint0_setVendorId(unsigned short vid) {
 }
 
 void concatenateAndCopyStrings(char* string1, char* string2, char* string_buffer) {
-    uint32_t string_size = MIN(strlen(string1), XUA_MAX_STR_LEN-1);
-
-    memset(string_buffer, 0, XUA_MAX_STR_LEN);
-    memcpy(string_buffer, string1, string_size);
-
-
-    if (string_size==XUA_MAX_STR_LEN-1) {
-        string_buffer[XUA_MAX_STR_LEN-1] = '\0';
-        return;
-    }
+    uint32_t remaining_buffer_size = MIN(strlen(string1), XUA_MAX_STR_LEN-1);
+    strncpy(string_buffer, string1, remaining_buffer_size);
     uint32_t total_string_size = MIN(strlen(string1)+strlen(string2), XUA_MAX_STR_LEN-1);
     if (total_string_size==XUA_MAX_STR_LEN-1) {
-        string_size =  XUA_MAX_STR_LEN-1-strlen(string1);
+        remaining_buffer_size =  XUA_MAX_STR_LEN-1-strlen(string1);
     } else {
-        string_size = strlen(string1);
+        remaining_buffer_size = strlen(string1);
     }
-    memcpy(string_buffer+strlen(string1), string2, string_size);
-    string_buffer[total_string_size] = '\0';
+    strncat(string_buffer, string2, remaining_buffer_size);
 }
 
 void XUA_Endpoint0_setStrTable() {

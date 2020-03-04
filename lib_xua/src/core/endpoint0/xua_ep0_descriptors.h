@@ -28,8 +28,22 @@
 
 #define STR_TABLE_ENTRY(name) char * name
 
-// XUA_DESCR_EMPTY_STRING is used in the g_strTable to set the maximum size of the table entries
-#define XUA_DESCR_EMPTY_STRING "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+// The empty strings below are used in the g_strTable to set the maximum size of the table entries
+#define XUA_VENDOR_EMPTY_STRING "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+#define XUA_PRODUCT_EMPTY_STRING "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+#define XUA_OUTPUT_INTERFACE_EMPTY_STRING "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+#define XUA_INPUT_INTERFACE_EMPTY_STRING "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+#define XUA_INPUT_TERM_EMPTY_STRING "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+#define XUA_OUTPUT_TERM_EMPTY_STRING "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+#define XUA_CLOCK_SELECTOR_EMPTY_STRING "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+#define XUA_INTERNAL_CLOCK_SELECTOR_EMPTY_STRING "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+#define XUA_SPDIF_CLOCK_SOURCE_EMPTY_STRING "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+#define XUA_ADAT_CLOCK_SOURCE_EMPTY_STRING "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+#define XUA_DFU_EMPTY_STRING "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+#define XUA_CTRL_EMPTY_STRING "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+#define XUA_MIDI_OUT_EMPTY_STRING "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+#define XUA_MIDI_IN_EMPTY_STRING "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+
 // The value below must match the length of XUA_DESCR_EMPTY_STRING.
 #define XUA_MAX_STR_LEN (32)
 
@@ -322,42 +336,42 @@ typedef struct
 StringDescTable_t g_strTable =
 {
     .langID                      = "\x09\x04", /* US English */
-    .vendorStr                   = XUA_DESCR_EMPTY_STRING,//VENDOR_STR,
+    .vendorStr                   = XUA_VENDOR_EMPTY_STRING,
     .serialStr                   = "",
 #if (AUDIO_CLASS == 2)
-    .productStr_Audio2           = XUA_DESCR_EMPTY_STRING,
-    .outputInterfaceStr_Audio2   = XUA_DESCR_EMPTY_STRING,
-    .inputInterfaceStr_Audio2    = XUA_DESCR_EMPTY_STRING,
-    .usbInputTermStr_Audio2      = XUA_DESCR_EMPTY_STRING,
-    .usbOutputTermStr_Audio2     = XUA_DESCR_EMPTY_STRING,
+    .productStr_Audio2           = XUA_PRODUCT_EMPTY_STRING,
+    .outputInterfaceStr_Audio2   = XUA_OUTPUT_INTERFACE_EMPTY_STRING,
+    .inputInterfaceStr_Audio2    = XUA_INPUT_INTERFACE_EMPTY_STRING,
+    .usbInputTermStr_Audio2      = XUA_INPUT_TERM_EMPTY_STRING,
+    .usbOutputTermStr_Audio2     = XUA_OUTPUT_TERM_EMPTY_STRING,
 #endif
 #if (AUDIO_CLASS_FALLBACK) || (AUDIO_CLASS == 1)
 
-    .productStr_Audio1           = XUA_DESCR_EMPTY_STRING,
-    .outputInterfaceStr_Audio1   = XUA_DESCR_EMPTY_STRING,
-    .inputInterfaceStr_Audio1    = XUA_DESCR_EMPTY_STRING,
-    .usbInputTermStr_Audio1      = XUA_DESCR_EMPTY_STRING,
-    .usbOutputTermStr_Audio1     = XUA_DESCR_EMPTY_STRING,
+    .productStr_Audio1           = XUA_PRODUCT_EMPTY_STRING,
+    .outputInterfaceStr_Audio1   = XUA_OUTPUT_INTERFACE_EMPTY_STRING,
+    .inputInterfaceStr_Audio1    = XUA_INPUT_INTERFACE_EMPTY_STRING,
+    .usbInputTermStr_Audio1      = XUA_INPUT_TERM_EMPTY_STRING,
+    .usbOutputTermStr_Audio1     = XUA_OUTPUT_TERM_EMPTY_STRING,
 #endif
 #if (AUDIO_CLASS == 2)
-    .clockSelectorStr            = XUA_DESCR_EMPTY_STRING,
-    .internalClockSourceStr      = XUA_DESCR_EMPTY_STRING,
+    .clockSelectorStr            = XUA_CLOCK_SELECTOR_EMPTY_STRING,
+    .internalClockSourceStr      = XUA_INTERNAL_CLOCK_SELECTOR_EMPTY_STRING,
 #if SPDIF_RX
-    .spdifClockSourceStr         = XUA_DESCR_EMPTY_STRING,
+    .spdifClockSourceStr         = XUA_SPDIF_CLOCK_SOURCE_EMPTY_STRING,
 #endif
 #if ADAT_RX
-    .adatClockSourceStr          = XUA_DESCR_EMPTY_STRING,
+    .adatClockSourceStr          = XUA_ADAT_CLOCK_SOURCE_EMPTY_STRING,
 #endif
 #endif
 #if (XUA_DFU_EN == 1)
-    .dfuStr                      = XUA_DESCR_EMPTY_STRING,
+    .dfuStr                      = XUA_DFU_EMPTY_STRING,
 #endif
 #ifdef USB_CONTROL_DESCS
-    .ctrlStr                      = XUA_DESCR_EMPTY_STRING,
+    .ctrlStr                      = XUA_CTRL_EMPTY_STRING,
 #endif
 #ifdef MIDI
-    .midiOutStr                   = XUA_DESCR_EMPTY_STRING,
-    .midiInStr                    = XUA_DESCR_EMPTY_STRING,
+    .midiOutStr                   = XUA_MIDI_OUT_EMPTY_STRING,
+    .midiInStr                    = XUA_MIDI_IN_EMPTY_STRING,
 #endif
 
     #include "chanstrings.h"
