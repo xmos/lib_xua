@@ -71,6 +71,9 @@ extern void device_reboot(void);
 #if( 0 < HID_CONTROLS )
 #include "xua_hid.h"
 #endif
+#ifndef MIN
+#define MIN(a,b) (((a)<(b))?(a):(b))
+#endif
 
 unsigned int DFU_mode_active = 0;         // 0 - App active, 1 - DFU active
 
