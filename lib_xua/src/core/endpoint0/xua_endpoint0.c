@@ -30,7 +30,7 @@
 #endif
 #define DEBUG_UNIT XUA_EP0
 #ifndef DEBUG_PRINT_ENABLE_XUA_EP0
-    #define DEBUG_PRINT_ENABLE_XUA_EP0 1
+    #define DEBUG_PRINT_ENABLE_XUA_EP0 0
 #endif // DEBUG_PRINT_ENABLE_XUA_EP0
 #include "debug_print.h"
 

@@ -29,20 +29,16 @@
 #define STR_TABLE_ENTRY(name) char * name
 
 // The empty strings below are used in the g_strTable to set the maximum size of the table entries
-#define XUA_VENDOR_EMPTY_STRING "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
-#define XUA_PRODUCT_EMPTY_STRING "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
-#define XUA_OUTPUT_INTERFACE_EMPTY_STRING "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
-#define XUA_INPUT_INTERFACE_EMPTY_STRING "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
-#define XUA_INPUT_TERM_EMPTY_STRING "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
-#define XUA_OUTPUT_TERM_EMPTY_STRING "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
-#define XUA_CLOCK_SELECTOR_EMPTY_STRING "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
-#define XUA_INTERNAL_CLOCK_SELECTOR_EMPTY_STRING "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
-#define XUA_SPDIF_CLOCK_SOURCE_EMPTY_STRING "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
-#define XUA_ADAT_CLOCK_SOURCE_EMPTY_STRING "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
-#define XUA_DFU_EMPTY_STRING "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
-#define XUA_CTRL_EMPTY_STRING "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
-#define XUA_MIDI_OUT_EMPTY_STRING "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
-#define XUA_MIDI_IN_EMPTY_STRING "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+// The last char of the strings are different, so that the compiler allocates separate memory spaces
+#define XUA_VENDOR_EMPTY_STRING "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\01"
+#define XUA_PRODUCT_EMPTY_STRING "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\02"
+#define XUA_INTERNAL_CLOCK_SELECTOR_EMPTY_STRING "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\03"
+#define XUA_SPDIF_CLOCK_SOURCE_EMPTY_STRING "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\04"
+#define XUA_ADAT_CLOCK_SOURCE_EMPTY_STRING "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\05"
+#define XUA_DFU_EMPTY_STRING "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\06"
+#define XUA_CTRL_EMPTY_STRING "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\07"
+#define XUA_MIDI_OUT_EMPTY_STRING "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\08"
+#define XUA_MIDI_IN_EMPTY_STRING "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\09"
 
 // The value below must match the length of XUA_DESCR_EMPTY_STRING.
 #define XUA_MAX_STR_LEN (32)
@@ -340,18 +336,18 @@ StringDescTable_t g_strTable =
     .serialStr                   = "",
 #if (AUDIO_CLASS == 2)
     .productStr_Audio2           = XUA_PRODUCT_EMPTY_STRING,
-    .outputInterfaceStr_Audio2   = XUA_OUTPUT_INTERFACE_EMPTY_STRING,
-    .inputInterfaceStr_Audio2    = XUA_INPUT_INTERFACE_EMPTY_STRING,
-    .usbInputTermStr_Audio2      = XUA_INPUT_TERM_EMPTY_STRING,
-    .usbOutputTermStr_Audio2     = XUA_OUTPUT_TERM_EMPTY_STRING,
+    .outputInterfaceStr_Audio2   = XUA_PRODUCT_EMPTY_STRING,
+    .inputInterfaceStr_Audio2    = XUA_PRODUCT_EMPTY_STRING,
+    .usbInputTermStr_Audio2      = XUA_PRODUCT_EMPTY_STRING,
+    .usbOutputTermStr_Audio2     = XUA_PRODUCT_EMPTY_STRING,
 #endif
 #if (AUDIO_CLASS_FALLBACK) || (AUDIO_CLASS == 1)
 
     .productStr_Audio1           = XUA_PRODUCT_EMPTY_STRING,
-    .outputInterfaceStr_Audio1   = XUA_OUTPUT_INTERFACE_EMPTY_STRING,
-    .inputInterfaceStr_Audio1    = XUA_INPUT_INTERFACE_EMPTY_STRING,
-    .usbInputTermStr_Audio1      = XUA_INPUT_TERM_EMPTY_STRING,
-    .usbOutputTermStr_Audio1     = XUA_OUTPUT_TERM_EMPTY_STRING,
+    .outputInterfaceStr_Audio1   = XUA_PRODUCT_EMPTY_STRING,
+    .inputInterfaceStr_Audio1    = XUA_PRODUCT_EMPTY_STRING,
+    .usbInputTermStr_Audio1      = XUA_PRODUCT_EMPTY_STRING,
+    .usbOutputTermStr_Audio1     = XUA_PRODUCT_EMPTY_STRING,
 #endif
 #if (AUDIO_CLASS == 2)
     .clockSelectorStr            = XUA_CLOCK_SELECTOR_EMPTY_STRING,
