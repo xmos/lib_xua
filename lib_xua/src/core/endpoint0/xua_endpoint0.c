@@ -234,6 +234,8 @@ void XUA_Endpoint0_setVendorId(unsigned short vid) {
 }
 
 void concatenateAndCopyStrings(char* string1, char* string2, char* string_buffer) {
+    memset(string_buffer, '\0', strlen(string_buffer));
+
     uint32_t remaining_buffer_size = MIN(strlen(string1), XUA_MAX_STR_LEN-1);
     strncpy(string_buffer, string1, remaining_buffer_size);
     uint32_t total_string_size = MIN(strlen(string1)+strlen(string2), XUA_MAX_STR_LEN-1);
@@ -246,6 +248,7 @@ void concatenateAndCopyStrings(char* string1, char* string2, char* string_buffer
 }
 
 void XUA_Endpoint0_setStrTable() {
+
     // update Vendor strings
     concatenateAndCopyStrings(g_vendor_str, "", g_strTable.vendorStr);
 #if (AUDIO_CLASS == 2)

@@ -32,13 +32,14 @@
 // The last char of the strings are different, so that the compiler allocates separate memory spaces
 #define XUA_VENDOR_EMPTY_STRING "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\01"
 #define XUA_PRODUCT_EMPTY_STRING "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\02"
-#define XUA_INTERNAL_CLOCK_SELECTOR_EMPTY_STRING "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\03"
-#define XUA_SPDIF_CLOCK_SOURCE_EMPTY_STRING "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\04"
-#define XUA_ADAT_CLOCK_SOURCE_EMPTY_STRING "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\05"
-#define XUA_DFU_EMPTY_STRING "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\06"
-#define XUA_CTRL_EMPTY_STRING "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\07"
-#define XUA_MIDI_OUT_EMPTY_STRING "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\08"
-#define XUA_MIDI_IN_EMPTY_STRING "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\09"
+#define XUA_CLOCK_SELECTOR_EMPTY_STRING "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\03"
+#define XUA_INTERNAL_CLOCK_SELECTOR_EMPTY_STRING "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\04"
+#define XUA_SPDIF_CLOCK_SOURCE_EMPTY_STRING "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\05"
+#define XUA_ADAT_CLOCK_SOURCE_EMPTY_STRING "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\06"
+#define XUA_DFU_EMPTY_STRING "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\07"
+#define XUA_CTRL_EMPTY_STRING "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\08"
+#define XUA_MIDI_OUT_EMPTY_STRING "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\09"
+#define XUA_MIDI_IN_EMPTY_STRING "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0a"
 
 // The value below must match the length of XUA_DESCR_EMPTY_STRING.
 #define XUA_MAX_STR_LEN (32)
