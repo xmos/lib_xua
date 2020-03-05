@@ -26,7 +26,23 @@
 
 #define APPEND_PRODUCT_STR_A1(x) PRODUCT_STR_A1 " "#x
 
-#define STR_TABLE_ENTRY(name) char *name
+#define STR_TABLE_ENTRY(name) char * name
+
+// The empty strings below are used in the g_strTable to set the maximum size of the table entries
+// The last char of the strings are different, so that the compiler allocates separate memory spaces
+#define XUA_VENDOR_EMPTY_STRING "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\01"
+#define XUA_PRODUCT_EMPTY_STRING "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\02"
+#define XUA_CLOCK_SELECTOR_EMPTY_STRING "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\03"
+#define XUA_INTERNAL_CLOCK_SELECTOR_EMPTY_STRING "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\04"
+#define XUA_SPDIF_CLOCK_SOURCE_EMPTY_STRING "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\05"
+#define XUA_ADAT_CLOCK_SOURCE_EMPTY_STRING "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\06"
+#define XUA_DFU_EMPTY_STRING "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\07"
+#define XUA_CTRL_EMPTY_STRING "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\08"
+#define XUA_MIDI_OUT_EMPTY_STRING "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\09"
+#define XUA_MIDI_IN_EMPTY_STRING "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0a"
+
+// The value below must match the length of XUA_DESCR_EMPTY_STRING.
+#define XUA_MAX_STR_LEN (32)
 
 #define ISO_EP_ATTRIBUTES_ASYNCH                   0x05 //ISO, ASYNCH, DATA EP
 #define ISO_EP_ATTRIBUTES_ADAPTIVE                 0x09 //ISO, ADAPTIVE, DATA EP
@@ -317,41 +333,42 @@ typedef struct
 StringDescTable_t g_strTable =
 {
     .langID                      = "\x09\x04", /* US English */
-    .vendorStr                   = VENDOR_STR,
+    .vendorStr                   = XUA_VENDOR_EMPTY_STRING,
     .serialStr                   = "",
 #if (AUDIO_CLASS == 2)
-    .productStr_Audio2           = PRODUCT_STR_A2,
-    .outputInterfaceStr_Audio2   = APPEND_PRODUCT_STR_A2(),
-    .inputInterfaceStr_Audio2    = APPEND_PRODUCT_STR_A2(),
-    .usbInputTermStr_Audio2      = APPEND_PRODUCT_STR_A2(),
-    .usbOutputTermStr_Audio2     = APPEND_PRODUCT_STR_A2(),
+    .productStr_Audio2           = XUA_PRODUCT_EMPTY_STRING,
+    .outputInterfaceStr_Audio2   = XUA_PRODUCT_EMPTY_STRING,
+    .inputInterfaceStr_Audio2    = XUA_PRODUCT_EMPTY_STRING,
+    .usbInputTermStr_Audio2      = XUA_PRODUCT_EMPTY_STRING,
+    .usbOutputTermStr_Audio2     = XUA_PRODUCT_EMPTY_STRING,
 #endif
 #if (AUDIO_CLASS_FALLBACK) || (AUDIO_CLASS == 1)
-    .productStr_Audio1           = PRODUCT_STR_A1,
-    .outputInterfaceStr_Audio1   = APPEND_PRODUCT_STR_A1(),
-    .inputInterfaceStr_Audio1    = APPEND_PRODUCT_STR_A1(),
-    .usbInputTermStr_Audio1      = APPEND_PRODUCT_STR_A1(),
-    .usbOutputTermStr_Audio1     = APPEND_PRODUCT_STR_A1(),
+
+    .productStr_Audio1           = XUA_PRODUCT_EMPTY_STRING,
+    .outputInterfaceStr_Audio1   = XUA_PRODUCT_EMPTY_STRING,
+    .inputInterfaceStr_Audio1    = XUA_PRODUCT_EMPTY_STRING,
+    .usbInputTermStr_Audio1      = XUA_PRODUCT_EMPTY_STRING,
+    .usbOutputTermStr_Audio1     = XUA_PRODUCT_EMPTY_STRING,
 #endif
 #if (AUDIO_CLASS == 2)
-    .clockSelectorStr            = APPEND_VENDOR_STR(Clock Selector),
-    .internalClockSourceStr      = APPEND_VENDOR_STR(Internal Clock),
+    .clockSelectorStr            = XUA_CLOCK_SELECTOR_EMPTY_STRING,
+    .internalClockSourceStr      = XUA_INTERNAL_CLOCK_SELECTOR_EMPTY_STRING,
 #if SPDIF_RX
-    .spdifClockSourceStr         = APPEND_VENDOR_STR(S/PDIF Clock),
+    .spdifClockSourceStr         = XUA_SPDIF_CLOCK_SOURCE_EMPTY_STRING,
 #endif
 #if ADAT_RX
-    .adatClockSourceStr          = APPEND_VENDOR_STR(ADAT Clock),
+    .adatClockSourceStr          = XUA_ADAT_CLOCK_SOURCE_EMPTY_STRING,
 #endif
 #endif
 #if (XUA_DFU_EN == 1)
-    .dfuStr                      = APPEND_VENDOR_STR(DFU),
+    .dfuStr                      = XUA_DFU_EMPTY_STRING,
 #endif
 #ifdef USB_CONTROL_DESCS
-    .ctrlStr                      = APPEND_VENDOR_STR(Control),
+    .ctrlStr                      = XUA_CTRL_EMPTY_STRING,
 #endif
 #ifdef MIDI
-    .midiOutStr                   = APPEND_VENDOR_STR(MIDI Out),
-    .midiInStr                    = APPEND_VENDOR_STR(MIDI In),
+    .midiOutStr                   = XUA_MIDI_OUT_EMPTY_STRING,
+    .midiInStr                    = XUA_MIDI_IN_EMPTY_STRING,
 #endif
 
     #include "chanstrings.h"
@@ -2293,6 +2310,8 @@ unsigned char cfgDesc_Null[] =
  * To work around this we repeat MAX_FREQ_FS multiple times in some cases */
 
 #define MAX(a,b) (((a)>(b))?(a):(b))
+#define MIN(a,b) (((a)<(b))?(a):(b))
+
 const unsigned num_freqs_a1 = MAX(3, (0
 #if(MIN_FREQ <= 8000) && (MAX_FREQ_FS >= 8000)
     + 1
@@ -2373,13 +2392,13 @@ const unsigned num_freqs_a1 = MAX(3, (0
 	#define AS_FORMAT_TYPE_BYTES		(17)
 	#define USB_AS_IN_INTERFACE_DESCRIPTOR_OFFSET_SUB_FRAME		(18 + AC_TOTAL_LENGTH + (OUTPUT_INTERFACES_A1 * (49 + num_freqs_a1 * 3)) + (2*INTERFACE_DESCRIPTOR_BYTES) + (AS_INTERFACE_BYTES) + 5)
 	#define USB_AS_OUT_INTERFACE_DESCRIPTOR_OFFSET_SUB_FRAME	(18 + AC_TOTAL_LENGTH + (2*INTERFACE_DESCRIPTOR_BYTES) + (AS_INTERFACE_BYTES) + 5)
-	
+
 	#define USB_AS_IN_INTERFACE_DESCRIPTOR_OFFSET_FREQ	(18 + AC_TOTAL_LENGTH + (OUTPUT_INTERFACES_A1 * (49 + num_freqs_a1 * 3)) + (2*INTERFACE_DESCRIPTOR_BYTES) + (AS_INTERFACE_BYTES) + 8)
 	#define USB_AS_OUT_INTERFACE_DESCRIPTOR_OFFSET_FREQ	(18 + AC_TOTAL_LENGTH + (2*INTERFACE_DESCRIPTOR_BYTES) + (AS_INTERFACE_BYTES) + 8)
-	
+
 	#define USB_AS_IN_EP_DESCRIPTOR_OFFSET_MAXPACKETSIZE	(18 + AC_TOTAL_LENGTH + (OUTPUT_INTERFACES_A1 * (49 + num_freqs_a1 * 3)) + (2*INTERFACE_DESCRIPTOR_BYTES) + (AS_INTERFACE_BYTES) + (AS_FORMAT_TYPE_BYTES) + 4)
 	#define USB_AS_OUT_EP_DESCRIPTOR_OFFSET_MAXPACKETSIZE	(18 + AC_TOTAL_LENGTH + (2*INTERFACE_DESCRIPTOR_BYTES) + (AS_INTERFACE_BYTES) + (AS_FORMAT_TYPE_BYTES) + 4)
-		
+
 #endif
 
 #define CHARIFY_SR(x) (x & 0xff),((x & 0xff00)>> 8),((x & 0xff0000)>> 16)
