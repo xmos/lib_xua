@@ -1,7 +1,7 @@
 lib_xua Change Log
 ==================
 
-0.3.0
+1.0.0
 -----
 
   * ADDED:     UAC1 HID support with simulated Voice Command detection reported
@@ -20,7 +20,7 @@ lib_xua Change Log
   * CHANGE     HID report descriptor to use generic events instead of GPI
     events, to report Key-phrase detection as AC Search, and to report end-call
     detection as AC Stop
-  * ADDED:     Ability to read or modify vendor and product IDs
+  * ADDED:     Ability to read or modify vendor and product IDs and strings
   * ADDED:     Ability to read or modify bcdDevice
   * ADDED:     Override USB descriptor with sampling frequency and
     bit-resolution set at boot time.
