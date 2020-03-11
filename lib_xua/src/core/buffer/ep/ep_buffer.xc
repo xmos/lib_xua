@@ -182,6 +182,8 @@ void XUA_Buffer(
     }
 }
 
+// Allows us to externally modify masterClockFreq
+unsafe{volatile unsigned * unsafe masterClockFreq_ptr;}
 
 /**
  * Buffers data from audio endpoints
@@ -267,6 +269,8 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
     unsigned sampleFreq = DEFAULT_FREQ;
     unsigned masterClockFreq = DEFAULT_MCLK_FREQ;
     unsigned lastClock = 0;
+
+    unsafe{masterClockFreq_ptr = &masterClockFreq;}
 
     unsigned clocks = 0;
     long long clockcounter = 0;
