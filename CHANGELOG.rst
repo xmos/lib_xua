@@ -24,6 +24,7 @@ lib_xua Change Log
   * ADDED:     Ability to read or modify bcdDevice
   * ADDED:     Override USB descriptor with sampling frequency and
     bit-resolution set at boot time.
+  * ADDED:     Global pointer to allow external access to masterClockFreq
 
 0.2.1
 -----
