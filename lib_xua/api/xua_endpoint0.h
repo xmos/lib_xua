@@ -40,21 +40,73 @@ void XUA_Endpoint0_setVendorId(unsigned short vid);
 */
 void XUA_Endpoint0_setProductId(unsigned short pid);
 
-/** Function to get the Vendor ID value
+
+/** Function to set the Vendor string
  *
- *  \return Vendor ID value
+ *  \param vendor_str Vendor string to set
+*/
+#ifdef __XC__
+void XUA_Endpoint0_setVendorStr(char * unsafe vendor_str);
+#else
+void XUA_Endpoint0_setVendorStr(char * vendor_str);
+#endif
+
+/** Function to set the Product string
+ *
+ *  \param product_str Product string to set
+*/
+
+#ifdef __XC__
+void XUA_Endpoint0_setProductStr(char * unsafe product_str);
+#else
+void XUA_Endpoint0_setProductStr(char * product_str);
+#endif
+
+/** Function to set the BCD device
+ *
+ *  \param bcdDevice BCD device to set
+
+*/
+
+void XUA_Endpoint0_setBcdDevice(unsigned short bcdDevice);
+
+/** Function to get the Vendor string
+ *
+ *  \param vid vendor string
+*/
+#ifdef __XC__
+char * unsafe XUA_Endpoint0_getVendorStr();
+#else
+char *  XUA_Endpoint0_getVendorStr(;
+#endif
+
+/** Function to get the Product string
+ *
+ *  \param pid Product string
+*/
+#ifdef __XC__
+char * unsafe XUA_Endpoint0_getProductStr();
+#else
+char *  XUA_Endpoint0_getProductStr(;
+#endif
+
+/** Function to get the Vendor string
+ *
+ *  \return Vendor string
 */
 unsigned short XUA_Endpoint0_getVendorId();
 
-/** Function to get the Product ID value
+/** Function to get the Product string
  *
- *  \return Product ID value
+ *  \return Product string
 */
 unsigned short XUA_Endpoint0_getProductId();
 
+/** Function to get the BCD device
+ *
+ *  \return BCD device
+*/
 unsigned short XUA_Endpoint0_getBcdDevice();
-
-void XUA_Endpoint0_setBcdDevice(unsigned short bcdDevice);
 
 #endif
 #endif
