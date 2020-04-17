@@ -1,4 +1,4 @@
-VERSION = 1.0.0
+VERSION = 1.0.1
 
 DEPENDENT_MODULES = lib_logging(>=3.0.0) \
                     lib_xassert(>=4.0.0) \
