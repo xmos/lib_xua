@@ -1,6 +1,11 @@
 lib_xua Change Log
 ==================
 
+1.0.1
+-----
+
+  * FIXED:     Wrong size of vendor and product strings
+
 1.0.0
 -----
 

@@ -234,6 +234,8 @@ void XUA_Endpoint0_setVendorId(unsigned short vid) {
 }
 
 void concatenateAndCopyStrings(char* string1, char* string2, char* string_buffer) {
+    debug_printf("concatenateAndCopyStrings() for \"%s\" and \"%s\"\n", string1, string2);    
+        
     memset(string_buffer, '\0', strlen(string_buffer));
 
     uint32_t remaining_buffer_size = MIN(strlen(string1), XUA_MAX_STR_LEN-1);
@@ -242,9 +244,11 @@ void concatenateAndCopyStrings(char* string1, char* string2, char* string_buffer
     if (total_string_size==XUA_MAX_STR_LEN-1) {
         remaining_buffer_size =  XUA_MAX_STR_LEN-1-strlen(string1);
     } else {
-        remaining_buffer_size = strlen(string1);
+        remaining_buffer_size = strlen(string2);
     }
+
     strncat(string_buffer, string2, remaining_buffer_size);
+    debug_printf("concatenateAndCopyStrings() creates \"%s\"\n", string_buffer);
 }
 
 void XUA_Endpoint0_setStrTable() {
@@ -288,12 +292,12 @@ void XUA_Endpoint0_setStrTable() {
 }
 
 void XUA_Endpoint0_setVendorStr(char* vendor_str) {
-    debug_printf("XUA_Endpoint0_setVendorStr() with string %s", vendor_str);
+    debug_printf("XUA_Endpoint0_setVendorStr() with string %s\n", vendor_str);
     concatenateAndCopyStrings(vendor_str, "", g_vendor_str);
 }
 
 void XUA_Endpoint0_setProductStr(char* product_str) {
-    debug_printf("XUA_Endpoint0_setProductStr() with string %s", product_str);
+    debug_printf("XUA_Endpoint0_setProductStr() with string %s\n", product_str);
     concatenateAndCopyStrings(product_str, "", g_product_str);
 }
 
