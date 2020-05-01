@@ -1,4 +1,4 @@
-@Library('xmos_jenkins_shared_library@develop') _
+@Library('xmos_jenkins_shared_library@v0.12.1') _
 
 getApproval()
 
@@ -6,7 +6,7 @@ pipeline {
   agent none
   environment {
     REPO = 'lib_xua'
-    VIEW = "${env.JOB_NAME.contains('PR-') ? REPO+'_'+env.CHANGE_TARGET : REPO+'_'+env.BRANCH_NAME}"
+    VIEW = getViewName(REPO)
   }
   options {
     skipDefaultCheckout()
