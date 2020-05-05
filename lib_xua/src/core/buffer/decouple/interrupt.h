@@ -71,7 +71,7 @@
 
 //int ksp_enter, ksp_exit, r11_store;
 
-#ifndef __XS1A__
+#if defined(__XS2A__) || defined(__XS3A__)
 #define ISSUE_MODE_SINGLE ".issue_mode single\n"
 #define ISSUE_MODE_DUAL ".issue_mode dual\n"
 #else
