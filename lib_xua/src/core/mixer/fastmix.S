@@ -5,7 +5,7 @@
 #define MIX_INPUTS 18
 
 
-#if defined(__XS2A__)
+#ifndef(__XS1A__)
 
 #define DOMIX_TOP(i) \
 .cc_top doMix##i.function,doMix##i; \
