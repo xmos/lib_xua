@@ -4,7 +4,6 @@ lib_xua Change Log
 1.1.0
 -----
 
-
   * ADDED:     Ability to read or modify serial number string
 
 1.0.1
