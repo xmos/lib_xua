@@ -118,7 +118,8 @@ char g_product_str[XUA_MAX_STR_LEN] = PRODUCT_STR_A2;
 char g_product_str[XUA_MAX_STR_LEN] = PRODUCT_STR_A1;
 #endif
 
-char g_serial_str[XUA_MAX_STR_LEN] = "";
+/* Global variable for current USB Serial Number strings */
+char g_serial_str[XUA_MAX_STR_LEN] = SERIAL_STR;
 
 /* Subslot */
 const unsigned g_subSlot_Out_HS[OUTPUT_FORMAT_COUNT]    = {HS_STREAM_FORMAT_OUTPUT_1_SUBSLOT_BYTES,
