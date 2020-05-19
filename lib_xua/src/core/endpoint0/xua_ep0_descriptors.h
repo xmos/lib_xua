@@ -40,6 +40,7 @@
 #define XUA_CTRL_EMPTY_STRING "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\08"
 #define XUA_MIDI_OUT_EMPTY_STRING "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\09"
 #define XUA_MIDI_IN_EMPTY_STRING "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0a"
+#define XUA_SERIAL_EMPTY_STRING "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0b"
 
 // The value below must match the length of XUA_DESCR_EMPTY_STRING.
 #define XUA_MAX_STR_LEN (32)
@@ -334,7 +335,7 @@ StringDescTable_t g_strTable =
 {
     .langID                      = "\x09\x04", /* US English */
     .vendorStr                   = XUA_VENDOR_EMPTY_STRING,
-    .serialStr                   = "",
+    .serialStr                   = XUA_SERIAL_EMPTY_STRING,
 #if (AUDIO_CLASS == 2)
     .productStr_Audio2           = XUA_PRODUCT_EMPTY_STRING,
     .outputInterfaceStr_Audio2   = XUA_PRODUCT_EMPTY_STRING,

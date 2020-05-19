@@ -118,6 +118,8 @@ char g_product_str[XUA_MAX_STR_LEN] = PRODUCT_STR_A2;
 char g_product_str[XUA_MAX_STR_LEN] = PRODUCT_STR_A1;
 #endif
 
+char g_serial_str[XUA_MAX_STR_LEN] = "";
+
 /* Subslot */
 const unsigned g_subSlot_Out_HS[OUTPUT_FORMAT_COUNT]    = {HS_STREAM_FORMAT_OUTPUT_1_SUBSLOT_BYTES,
 #if(OUTPUT_FORMAT_COUNT > 1)
@@ -289,6 +291,9 @@ void XUA_Endpoint0_setStrTable() {
     concatenateAndCopyStrings(g_product_str, "", g_strTable.usbInputTermStr_Audio2);
     concatenateAndCopyStrings(g_product_str, "", g_strTable.usbOutputTermStr_Audio2);
 #endif
+    
+    // update Serial strings
+    concatenateAndCopyStrings(g_serial_str, "", g_strTable.serialStr);
 }
 
 void XUA_Endpoint0_setVendorStr(char* vendor_str) {
@@ -301,6 +306,11 @@ void XUA_Endpoint0_setProductStr(char* product_str) {
     concatenateAndCopyStrings(product_str, "", g_product_str);
 }
 
+void XUA_Endpoint0_setSerialStr(char* serial_str) {
+    debug_printf("XUA_Endpoint0_setSerialStr() with string %s\n", serial_str);
+    concatenateAndCopyStrings(serial_str, "", g_serial_str);
+}
+
 char* XUA_Endpoint0_getVendorStr() {
     return g_strTable.vendorStr;
 }
@@ -311,6 +321,10 @@ char* XUA_Endpoint0_getProductStr() {
     #elif (AUDIO_CLASS == 2)
     return g_strTable.productStr_Audio2;
     #endif
+}
+
+char* XUA_Endpoint0_getSerialStr() {
+    return g_strTable.serialStr;
 }
 
 void XUA_Endpoint0_setProductId(unsigned short pid) {
