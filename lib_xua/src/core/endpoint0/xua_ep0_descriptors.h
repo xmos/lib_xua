@@ -435,7 +435,7 @@ USB_Descriptor_Device_t devDesc_Audio1 =
     .bcdDevice                      = BCD_DEVICE,
     .iManufacturer                  = offsetof(StringDescTable_t, vendorStr)/sizeof(char *),
     .iProduct                       = offsetof(StringDescTable_t, productStr_Audio1)/sizeof(char *),
-    .iSerialNumber                  = 0,
+    .iSerialNumber                  = offsetof(StringDescTable_t, serialStr)/sizeof(char *),
     .bNumConfigurations             = 1
 };
 #endif
@@ -471,7 +471,7 @@ USB_Descriptor_Device_t devDesc_Audio2 =
     .bcdDevice                      = BCD_DEVICE,
     .iManufacturer                  = offsetof(StringDescTable_t, vendorStr)/sizeof(char *),
     .iProduct                       = offsetof(StringDescTable_t, productStr_Audio2)/sizeof(char *),
-    .iSerialNumber                  = 0,
+    .iSerialNumber                  = offsetof(StringDescTable_t, serialStr)/sizeof(char *),
     .bNumConfigurations             = 0x02  /* Set to 2 such that windows does not load composite driver */
 };
 
@@ -494,7 +494,7 @@ unsigned char devDesc_Null[] =
     (BCD_DEVICE >> 8),              /* 13 bcdDevice : Device release number */
     offsetof(StringDescTable_t, vendorStr)/sizeof(char *),
     offsetof(StringDescTable_t, productStr_Audio2)/sizeof(char *),
-    0,                              /* 16 iSerialNumber : Index of serial number decriptor */
+    offsetof(StringDescTable_t, serialStr)/sizeof(char *),  /* 16 iSerialNumber : Index of serial number decriptor */
     0x01                            /* 17 bNumConfigurations : Number of possible configs */
 };
 #endif
