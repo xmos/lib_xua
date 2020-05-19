@@ -87,7 +87,7 @@ void XUA_Endpoint0_setBcdDevice(unsigned short bcdDevice);
 #ifdef __XC__
 char * unsafe XUA_Endpoint0_getVendorStr();
 #else
-char *  XUA_Endpoint0_getVendorStr(;
+char *  XUA_Endpoint0_getVendorStr();
 #endif
 
 /** Function to get the Product string
@@ -97,7 +97,7 @@ char *  XUA_Endpoint0_getVendorStr(;
 #ifdef __XC__
 char * unsafe XUA_Endpoint0_getProductStr();
 #else
-char *  XUA_Endpoint0_getProductStr(;
+char *  XUA_Endpoint0_getProductStr();
 #endif
 
 /** Function to get the Serial Number string
@@ -107,7 +107,7 @@ char *  XUA_Endpoint0_getProductStr(;
 #ifdef __XC__
 char * unsafe XUA_Endpoint0_getSerialStr();
 #else
-char *  XUA_Endpoint0_getSerialStr(;
+char *  XUA_Endpoint0_getSerialStr();
 #endif
 
 /** Function to get the Vendor ID
