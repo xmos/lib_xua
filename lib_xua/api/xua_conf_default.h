@@ -443,6 +443,16 @@
 #endif
 
 /**
+ * @brief Serial Number String used by the device
+ *
+ * Default: ""
+ */
+#ifndef SERIAL_STR
+#define SERIAL_STR               ""
+#endif
+
+
+/**
  * @brief Vendor String used by the device. This is also pre-pended to various strings used by the design.
  *
  * Default: "XMOS"
