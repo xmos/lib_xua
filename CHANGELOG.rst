@@ -1,6 +1,11 @@
 lib_xua Change Log
 ==================
 
+1.1.1
+-----
+
+  * ADDED: DELETE-ME - Version bump placeholder for develop branch
+
 1.1.0
 -----
 
