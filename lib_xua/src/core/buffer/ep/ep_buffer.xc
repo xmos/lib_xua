@@ -38,8 +38,9 @@ extern unsigned int g_curSamFreqMultiplier;
 #endif
 
 
-/* Global var for speed.  Related to feedback. Used by input stream to determine IN packet size */
-unsigned g_speed;
+/* Initialise so we get a sensible packet size until we start properly calculating feedback in the SoF case */
+/* Without this, zero size packets fill the input FIFO and take time to clear out when feedback starts */
+unsigned g_speed = (AUDIO_CLASS == 2) ? (DEFAULT_FREQ/8000) << 16 : (DEFAULT_FREQ/1000) << 16;
 unsigned g_freqChange = 0;
 unsigned feedbackValid = 0;
 
