@@ -523,9 +523,6 @@ __builtin_unreachable();
                     GET_SHARED_GLOBAL(rdPtr, g_aud_to_host_rdptr);
                     asm volatile("ldw %0, %1[0]":"=r"(datalength):"r"(rdPtr));
 
-                    /* Handle startup case where zero length packets exist */
-                    if(!datalength) break;
-
                     /* Round up datalength */
                     datalength = ((datalength+3) & ~0x3) + 4;
 
