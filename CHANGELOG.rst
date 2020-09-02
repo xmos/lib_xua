@@ -1,6 +1,12 @@
 lib_xua Change Log
 ==================
 
+0.1.3
+-----
+
+  * RESOLVED: Zero length input packets generated before enumeration causing
+    I2S timing pushout at startup
+
 0.1.2
 -----
 
