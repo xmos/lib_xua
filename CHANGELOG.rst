@@ -4,7 +4,8 @@ lib_xua Change Log
 1.1.1
 -----
 
-  * ADDED: DELETE-ME - Version bump placeholder for develop branch
+  * RESOLVED: Zero length input packets generated before enumeration causing I2S
+    timing pushout at startup
 
 1.1.0
 -----
