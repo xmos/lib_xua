@@ -1,6 +1,11 @@
 lib_xua Change Log
 ==================
 
+0.1.5
+-----
+
+  * CHANGED: Update lib_xud dependency to v1.1.1
+
 0.1.4
 -----
 
