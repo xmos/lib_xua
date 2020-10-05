@@ -6,6 +6,7 @@ lib_xua Change Log
 
   * RESOLVED: Zero length input packets generated before enumeration causing I2S
     timing pushout at startup
+  * CHANGED: Pin Python package versions
 
 1.1.0
 -----
