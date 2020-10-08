@@ -1,6 +1,14 @@
 lib_xua Change Log
 ==================
 
+1.1.1
+-----
+
+  * RESOLVED: Zero length input packets generated before enumeration causing I2S
+    timing pushout at startup
+  * CHANGED: Pin Python package versions
+  * REMOVED: not necessary cpanfile
+
 1.1.0
 -----
 
