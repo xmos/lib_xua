@@ -1,4 +1,5 @@
 // Copyright (c) 2019, XMOS Ltd, All rights reserved
+#include <stdint.h>
 #include <xs1.h>
 #include "descriptor_defs.h"
 #include "hid.h"

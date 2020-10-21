@@ -45,6 +45,7 @@ INCLUDE_DIRS = $(EXPORT_INCLUDE_DIRS) \
                src/core/user/audiostream \
                src/core/user/hid \
                src/core/user/hostactive \
+               src/hid \
                src/midi
 
 SOURCE_DIRS = src/core \
