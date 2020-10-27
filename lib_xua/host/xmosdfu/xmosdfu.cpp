@@ -2,8 +2,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
 #ifdef _WIN32
 #include <windows.h>
+
+// Used for checking if a file is a directory
+#ifndef S_ISDIR
+#define S_ISDIR(mode)  (((mode) & S_IFMT) == S_IFDIR)
+#endif
+#define stat _stat
+#define fstat _fstat
+
 #else
 #include <unistd.h>
 
@@ -235,11 +244,25 @@ int write_dfu_image(char *file)
     unsigned int timeout = 0;
     unsigned char strIndex = 0;
     unsigned int dfuBlockCount = 0;
+    struct stat statbuf;
 
     inFile = fopen( file, "rb" );
     if( inFile == NULL )
     {
         fprintf(stderr,"Error: Failed to open input data file.\n");
+        return -1;
+    }
+
+    /* Check if file is a directory */
+    int status = fstat(fileno(inFile), &statbuf);
+    if (status != 0)
+    {
+        fprintf(stderr,"Error: Failed to get info on file.\n");
+        return -1;
+    }
+    if ( S_ISDIR(statbuf.st_mode) )
+    {
+        fprintf(stderr,"Error: Specified path is a directory.\n");
         return -1;
     }
 
