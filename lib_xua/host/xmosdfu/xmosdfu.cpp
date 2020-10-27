@@ -61,7 +61,7 @@ static int find_xmos_device(unsigned int id, unsigned int pid, unsigned int list
     libusb_device *dev;
     libusb_device **devs;
     int i = 0;
-    int found = 0;
+    unsigned int found = 0;
 
     size_t count = libusb_get_device_list(NULL, &devs);
     if ((int)count < 0)
@@ -205,7 +205,7 @@ int xmos_dfu_restore_state(unsigned int interface)
     return 0;
 }
 
-int dfu_download(unsigned int interface, unsigned int block_num, unsigned int size, unsigned char *data)
+unsigned int dfu_download(unsigned int interface, unsigned int block_num, unsigned int size, unsigned char *data)
 {
     //printf("... Downloading block number %d size %d\r", block_num, size);
     /* Returns actual data size transferred */
@@ -222,7 +222,7 @@ int dfu_upload(unsigned int interface, unsigned int block_num, unsigned int size
 
 int write_dfu_image(char *file)
 {
-    int i = 0;
+    unsigned int i = 0;
     FILE* inFile = NULL;
     int image_size = 0;
     unsigned int num_blocks = 0;
@@ -269,7 +269,7 @@ int write_dfu_image(char *file)
     {
         memset(block_data, 0x0, block_size);
         fread(block_data, 1, block_size, inFile);
-        int transferred = dfu_download(0, dfuBlockCount, block_size, block_data);
+        unsigned int transferred = dfu_download(0, dfuBlockCount, block_size, block_data);
         if(transferred != block_size)
         {
             /* Error */
@@ -344,7 +344,7 @@ int read_dfu_image(char *file)
 
 static void print_device_list(FILE *file, const char *indent)
 {
-    for (int i = 0; i < sizeof(pidList)/sizeof(pidList[0]); i++)
+    for (long unsigned int i = 0; i < sizeof(pidList)/sizeof(pidList[0]); i++)
     {
         fprintf(file, "%s%-30s (0x%0x)\n", indent, pidList[i].device_name, pidList[i].pid);
     }
@@ -381,7 +381,7 @@ static unsigned int select_pid(char *device_pid)
     }
 
     // Otherwise do a lookup of names
-    for (int i = 0; i < sizeof(pidList)/sizeof(pidList[0]); i++)
+    for (long unsigned int i = 0; i < sizeof(pidList)/sizeof(pidList[0]); i++)
     {
         if (strcmp(device_pid, pidList[i].device_name) == 0)
         {
