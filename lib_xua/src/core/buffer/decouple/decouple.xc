@@ -1,4 +1,4 @@
-// Copyright (c) 2011-2018, XMOS Ltd, All rights reserved
+// Copyright (c) 2011-2020, XMOS Ltd, All rights reserved
 #include "xua.h"
 
 #if XUA_USB_EN
@@ -7,15 +7,17 @@
 #include "interrupt.h"
 #include "xua_commands.h"
 #include "xud.h"
+#include "xua_usb_params_funcs.h"
 
 #ifdef NATIVE_DSD
 #include "usbaudio20.h"             /* Defines from the USB Audio 2.0 Specifications */
 #endif
 
-#ifdef HID_CONTROLS
+#if( 0 < HID_CONTROLS )
 #include "user_hid.h"
 #endif
 #define MAX(x,y) ((x)>(y) ? (x) : (y))
+
 
 /* TODO use SLOTSIZE to potentially save memory */
 /* Note we could improve on this, for one subslot is set to 4 */
@@ -136,6 +138,7 @@ unsigned unpackData = 0;
 unsigned packState = 0;
 unsigned packData = 0;
 
+
 /* Default to something sensible but the following are setup at stream start (unless UAC1 only..) */
 #if (AUDIO_CLASS == 2)
 unsigned g_curSubSlot_Out = HS_STREAM_FORMAT_OUTPUT_1_SUBSLOT_BYTES;
@@ -144,7 +147,6 @@ unsigned g_curSubSlot_In  = HS_STREAM_FORMAT_INPUT_1_SUBSLOT_BYTES;
 unsigned g_curSubSlot_Out = FS_STREAM_FORMAT_OUTPUT_1_SUBSLOT_BYTES;
 unsigned g_curSubSlot_In  = FS_STREAM_FORMAT_INPUT_1_SUBSLOT_BYTES;
 #endif
-
 
 /* IN packet size. Init to something sensible, but expect to be re-set before stream start */
 #if (AUDIO_CLASS==2)
@@ -158,6 +160,10 @@ int g_maxPacketSize = MAX_DEVICE_AUD_PACKET_SIZE_IN_FS;
 void handle_audio_request(chanend c_mix_out)
 {
     int space_left;
+#if(defined XUA_USB_DESCRIPTOR_OVERWRITE_RATE_RES)
+    g_curSubSlot_Out = get_usb_to_device_bit_res() >> 3;
+    g_curSubSlot_In = get_device_to_usb_bit_res() >> 3;
+#endif
 
     /* Input word that triggered interrupt and handshake back */
     unsigned underflowSample = inuint(c_mix_out);

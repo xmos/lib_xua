@@ -1,4 +1,4 @@
-// Copyright (c) 2011-2018, XMOS Ltd, All rights reserved
+// Copyright (c) 2011-2020, XMOS Ltd, All rights reserved
 #include "xua.h"
 #if XUA_USB_EN
 #include <xs1.h>
@@ -19,9 +19,9 @@
 #include "xud.h"
 #include "testct_byref.h"
 
-#ifdef HID_CONTROLS
+#if( 0 < HID_CONTROLS )
 #include "user_hid.h"
-unsigned char g_hidData[1] = {0};
+unsigned char g_hidData[HID_DATA_BYTES] = {0};
 #endif
 
 void GetADCCounts(unsigned samFreq, int &min, int &mid, int &max);
@@ -36,9 +36,10 @@ extern unsigned int g_curSamFreqMultiplier;
 #define SET_SHARED_GLOBAL0(x,y) SET_SHARED_GLOBAL(x,y)
 #endif
 
-
-/* Global var for speed.  Related to feedback. Used by input stream to determine IN packet size */
-unsigned g_speed;
+/* Initialise g_speed now so we get a sensible packet size until we start properly calculating feedback in the SoF case */
+/* Without this, zero size input packets fill the input FIFO and it takes a long time to clear out when feedback starts */
+/* This can cause a delay to the decouple ISR being serviced pushing our I2S timing. Initialising solves this */
+unsigned g_speed = (AUDIO_CLASS == 2) ? (DEFAULT_FREQ/8000) << 16 : (DEFAULT_FREQ/1000) << 16;
 unsigned g_freqChange = 0;
 unsigned feedbackValid = 0;
 
@@ -120,7 +121,7 @@ void XUA_Buffer(
             chanend c_sof,
             chanend c_aud_ctl,
             in port p_off_mclk
-#ifdef HID_CONTROLS
+#if( 0 < HID_CONTROLS )
             , chanend c_hid
 #endif
             , chanend c_aud
@@ -164,7 +165,7 @@ void XUA_Buffer(
                 c_clk_int,
 #endif
                 c_sof, c_aud_ctl, p_off_mclk
-#ifdef HID_CONTROLS
+#if( 0 < HID_CONTROLS )
                 , c_hid
 #endif
 #ifdef CHAN_BUFF_CTRL
@@ -182,6 +183,8 @@ void XUA_Buffer(
     }
 }
 
+// Allows us to externally modify masterClockFreq
+unsafe{volatile unsigned * unsafe masterClockFreq_ptr;}
 
 /**
  * Buffers data from audio endpoints
@@ -223,7 +226,7 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
             chanend c_sof,
             chanend c_aud_ctl,
             in port p_off_mclk
-#ifdef HID_CONTROLS
+#if( 0 < HID_CONTROLS )
             , chanend c_hid
 #endif
 #ifdef CHAN_BUFF_CTRL
@@ -260,13 +263,15 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
     XUD_ep ep_int = XUD_InitEp(c_ep_int);
 #endif
 
-#ifdef HID_CONTROLS
+#if( 0 < HID_CONTROLS )
     XUD_ep ep_hid = XUD_InitEp(c_hid);
 #endif
     unsigned u_tmp;
     unsigned sampleFreq = DEFAULT_FREQ;
     unsigned masterClockFreq = DEFAULT_MCLK_FREQ;
     unsigned lastClock = 0;
+
+    unsafe{masterClockFreq_ptr = &masterClockFreq;}
 
     unsigned clocks = 0;
     long long clockcounter = 0;
@@ -364,7 +369,7 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
 #endif
 #endif
 
-#ifdef HID_CONTROLS
+#if( 0 < HID_CONTROLS )
     XUD_SetReady_In(ep_hid, g_hidData, 1);
 #endif
 
@@ -875,12 +880,12 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
 #endif
 #endif
 
-#ifdef HID_CONTROLS
+#if( 0 < HID_CONTROLS )
             /* HID Report Data */
             case XUD_SetData_Select(c_hid, ep_hid, result):
             {
                 g_hidData[0]=0;
-                UserReadHIDButtons(g_hidData);
+                UserHIDGetData(g_hidData);
                 XUD_SetReady_In(ep_hid, g_hidData, 1);
             }
             break;

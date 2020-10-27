@@ -19,6 +19,7 @@
 .DS_Store
 test_results.csv
 _build*
+**/.venv/**
 
 # waf build files
 .lock-waf_*
@@ -26,3 +27,4 @@ _build*
 build/
 .build*
 *.pyc
+xscope.xmt

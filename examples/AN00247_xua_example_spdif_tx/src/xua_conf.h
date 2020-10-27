@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2018, XMOS Ltd, All rights reserved
+// Copyright (c) 2017-2019, XMOS Ltd, All rights reserved
 
 #ifndef _XUA_CONF_H_ 
 #define _XUA_CONF_H_
@@ -26,5 +26,6 @@
 #define AUDIO_CLASS_FALLBACK 0
 #define BCD_DEVICE 0x1234
 #define XUA_DFU_EN 0
+#define MIC_DUAL_ENABLED 0          // Use multi-threaded design
 
 #endif

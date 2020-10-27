@@ -1,4 +1,4 @@
-// Copyright (c) 2016-2018, XMOS Ltd, All rights reserved
+// Copyright (c) 2016-2019, XMOS Ltd, All rights reserved
 #ifndef __custom_defines_h__
 #define __custom_defines_h__
 
@@ -22,5 +22,7 @@
 #define AUDIO_CLASS_FALLBACK 0
 #define BCD_DEVICE 0x1234
 #define XUA_DFU_EN          0
+#define MIC_DUAL_ENABLED 1        //Use single thread, dual PDM mic
+#define XUA_MIC_FRAME_SIZE 240
 
 #endif // __custom_defines_h__
