@@ -10,8 +10,10 @@
 #ifndef S_ISDIR
 #define S_ISDIR(mode)  (((mode) & S_IFMT) == S_IFDIR)
 #endif
+// Aliases for Windows
 #define stat _stat
 #define fstat _fstat
+#define fileno _fileno
 
 #else
 #include <unistd.h>
