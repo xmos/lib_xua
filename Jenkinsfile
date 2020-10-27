@@ -84,6 +84,42 @@ pipeline {
             }
           }
         }
+        stage('Build Pi host app') {
+          agent {
+            label 'pi'
+          }
+          steps {
+            dir("${REPO}") {
+              checkout scm
+              dir("${REPO}/host/xmosdfu") {
+                sh 'make -f Makefile.Pi'
+              }
+            }
+          }
+          post {
+            cleanup {
+              xcoreCleanSandbox()
+            }
+          }
+        }
+        stage('Build Windows host app') {
+          agent {
+            label 'x86_64&&windows'
+          }
+          steps {
+            dir("${REPO}") {
+              checkout scm
+              dir("${REPO}/host/xmosdfu") {
+                runVS('nmake /f Makefile.Win32')
+              }
+            }
+          }
+          post {
+            cleanup {
+              xcoreCleanSandbox()
+            }
+          }
+        }
       }
     }
     stage('Update') {
