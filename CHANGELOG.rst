@@ -1,6 +1,12 @@
 lib_xua Change Log
 ==================
 
+1.2.0
+-----
+
+  * ADDED:     Makefile.Win32 for xmosdfu on Windows
+  * FIXED:     Bump default BCD device number to v1.2.0
+
 1.1.1
 -----
 
