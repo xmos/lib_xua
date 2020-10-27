@@ -607,5 +607,5 @@ int main(int argc, char **argv)
     libusb_close(devh);
     libusb_exit(NULL);
 
-    return 1;
+    return 0;
 }
