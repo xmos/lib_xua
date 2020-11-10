@@ -115,7 +115,7 @@ void XUA_PdmBuffer(streaming chanend c_ds_output[2], chanend c_audio)
         dc[1].mic_gain_compensation[2]=0;
         dc[1].mic_gain_compensation[3]=0;
         dc[1].channel_count = 4;
-        dc[0].async_interface_enabled = 0;
+        dc[1].async_interface_enabled = 0;
 
         mic_array_decimator_configure(c_ds_output, decimatorCount, dc);
 
