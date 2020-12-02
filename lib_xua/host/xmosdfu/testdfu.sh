@@ -73,42 +73,42 @@ system_profiler SPUSBDataType|grep -A10 "$device_grep_string" |grep Version
 
 echo "" 
 echo "*** DFU download new firmware 1 ***"
-$PROGDIR/xmosdfu $device_pid --download $update1
+$PROGDIR/bin/xmosdfu $device_pid --download $update1
 sleep 2
 echo "Version Read:"
 system_profiler SPUSBDataType|grep -A10 "$device_grep_string" |grep Version
 
 echo "" 
 echo "*** DFU download new firmware 2 ***"
-$PROGDIR/xmosdfu $device_pid --download $update2
+$PROGDIR/bin/xmosdfu $device_pid --download $update2
 sleep 2
 echo "Version Read:"
 system_profiler SPUSBDataType|grep -A10 "$device_grep_string" |grep Version
 
 echo "" 
 echo "*** DFU upload existing firmware ***"
-$PROGDIR/xmosdfu $device_pid --upload upload.bin
+$PROGDIR/bin/xmosdfu $device_pid --upload upload.bin
 sleep 2
 echo "Version Read:"
 system_profiler SPUSBDataType|grep -A10 "$device_grep_string" |grep Version
 
 echo "" 
 echo "*** DFU revert to factory ***"
-$PROGDIR/xmosdfu $device_pid --revertfactory 
+$PROGDIR/bin/xmosdfu $device_pid --revertfactory 
 sleep 2
 echo "Version Read:"
 system_profiler SPUSBDataType|grep -A10 "$device_grep_string" |grep Version
 
 echo "" 
 echo "*** DFU download uploaded firmware ***"
-$PROGDIR/xmosdfu $device_pid --download upload.bin
+$PROGDIR/bin/xmosdfu $device_pid --download upload.bin
 sleep 2
 echo "Version Read:"
 system_profiler SPUSBDataType|grep -A10 "$device_grep_string" |grep Version
 
 echo "" 
 echo "*** DFU revert to factory ***"
-$PROGDIR/xmosdfu $device_pid --revertfactory 
+$PROGDIR/bin/xmosdfu $device_pid --revertfactory 
 sleep 2
 echo "Version Read:"
 system_profiler SPUSBDataType|grep -A10 "$device_grep_string" |grep Version

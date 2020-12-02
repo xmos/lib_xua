@@ -1,7 +1,28 @@
-// Copyright (c) 2012-2018, XMOS Ltd, All rights reserved
+// Copyright (c) 2012-2020, XMOS Ltd, All rights reserved
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
+#ifdef _WIN32
+#include <windows.h>
+
+// Used for checking if a file is a directory
+#ifndef S_ISDIR
+#define S_ISDIR(mode)  (((mode) & S_IFMT) == S_IFDIR)
+#endif
+// Aliases for Windows
+#define stat _stat
+#define fstat _fstat
+#define fileno _fileno
+
+#else
+#include <unistd.h>
+
+void Sleep(unsigned milliseconds) {
+    usleep(milliseconds * 1000);
+}
+#endif
+
 #include "libusb.h"
 
 /* the device's vendor and product id */
@@ -51,7 +72,7 @@ static int find_xmos_device(unsigned int id, unsigned int pid, unsigned int list
     libusb_device *dev;
     libusb_device **devs;
     int i = 0;
-    int found = 0;
+    unsigned int found = 0;
 
     size_t count = libusb_get_device_list(NULL, &devs);
     if ((int)count < 0)
@@ -195,7 +216,7 @@ int xmos_dfu_restore_state(unsigned int interface)
     return 0;
 }
 
-int dfu_download(unsigned int interface, unsigned int block_num, unsigned int size, unsigned char *data)
+unsigned int dfu_download(unsigned int interface, unsigned int block_num, unsigned int size, unsigned char *data)
 {
     //printf("... Downloading block number %d size %d\r", block_num, size);
     /* Returns actual data size transferred */
@@ -212,7 +233,7 @@ int dfu_upload(unsigned int interface, unsigned int block_num, unsigned int size
 
 int write_dfu_image(char *file)
 {
-    int i = 0;
+    unsigned int i = 0;
     FILE* inFile = NULL;
     int image_size = 0;
     unsigned int num_blocks = 0;
@@ -225,11 +246,25 @@ int write_dfu_image(char *file)
     unsigned int timeout = 0;
     unsigned char strIndex = 0;
     unsigned int dfuBlockCount = 0;
+    struct stat statbuf;
 
     inFile = fopen( file, "rb" );
     if( inFile == NULL )
     {
         fprintf(stderr,"Error: Failed to open input data file.\n");
+        return -1;
+    }
+
+    /* Check if file is a directory */
+    int status = fstat(fileno(inFile), &statbuf);
+    if (status != 0)
+    {
+        fprintf(stderr,"Error: Failed to get info on file.\n");
+        return -1;
+    }
+    if ( S_ISDIR(statbuf.st_mode) )
+    {
+        fprintf(stderr,"Error: Specified path is a directory.\n");
         return -1;
     }
 
@@ -259,7 +294,7 @@ int write_dfu_image(char *file)
     {
         memset(block_data, 0x0, block_size);
         fread(block_data, 1, block_size, inFile);
-        int transferred = dfu_download(0, dfuBlockCount, block_size, block_data);
+        unsigned int transferred = dfu_download(0, dfuBlockCount, block_size, block_data);
         if(transferred != block_size)
         {
             /* Error */
@@ -334,7 +369,7 @@ int read_dfu_image(char *file)
 
 static void print_device_list(FILE *file, const char *indent)
 {
-    for (int i = 0; i < sizeof(pidList)/sizeof(pidList[0]); i++)
+    for (long unsigned int i = 0; i < sizeof(pidList)/sizeof(pidList[0]); i++)
     {
         fprintf(file, "%s%-30s (0x%0x)\n", indent, pidList[i].device_name, pidList[i].pid);
     }
@@ -371,7 +406,7 @@ static unsigned int select_pid(char *device_pid)
     }
 
     // Otherwise do a lookup of names
-    for (int i = 0; i < sizeof(pidList)/sizeof(pidList[0]); i++)
+    for (long unsigned int i = 0; i < sizeof(pidList)/sizeof(pidList[0]); i++)
     {
         if (strcmp(device_pid, pidList[i].device_name) == 0)
         {
@@ -501,7 +536,7 @@ int main(int argc, char **argv)
         printf("Waiting for device to restart and enter DFU mode...\n");
 
         // Wait for device to enter dfu mode and restart
-        system("sleep 20");
+        Sleep(20 * 1000);
 #endif
 
         // NOW IN DFU APPLICATION MODE
@@ -556,7 +591,7 @@ int main(int argc, char **argv)
             printf("... Reverting device to factory image\n");
             xmos_dfu_revertfactory();
             // Give device time to revert firmware
-            system("sleep 2");
+            Sleep(2 * 1000);
             xmos_dfu_resetfromdfu(XMOS_DFU_IF);
         }
         else
@@ -572,5 +607,5 @@ int main(int argc, char **argv)
     libusb_close(devh);
     libusb_exit(NULL);
 
-    return 1;
+    return 0;
 }
