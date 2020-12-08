@@ -1,4 +1,4 @@
-// Copyright (c) 2011-2018, XMOS Ltd, All rights reserved
+// Copyright (c) 2011-2020, XMOS Ltd, All rights reserved
 #ifndef __interrupt_h__
 #define __interrupt_h__
 
