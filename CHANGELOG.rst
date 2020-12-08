@@ -4,6 +4,7 @@ lib_xua Change Log
 1.2.0
 -----
 
+  * ADDED:     Updates for xcore.ai/XS3 compatibility
   * ADDED:     Makefile.Win32 for xmosdfu on Windows
   * FIXED:     Bump default BCD device number to v1.2.0
   * FIXED:     xmosdfu now fails with an error when given a directory (#119)
