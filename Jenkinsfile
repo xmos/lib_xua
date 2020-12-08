@@ -1,4 +1,4 @@
-@Library('xmos_jenkins_shared_library@v0.12.1') _
+@Library('xmos_jenkins_shared_library@v0.14.2') _
 
 getApproval()
 
@@ -76,6 +76,42 @@ pipeline {
             xcorePrepareSandbox("${VIEW}", "${REPO}")
             dir("${REPO}/${REPO}/host/xmosdfu") {
               sh 'make -f Makefile.OSX64'
+            }
+          }
+          post {
+            cleanup {
+              xcoreCleanSandbox()
+            }
+          }
+        }
+        stage('Build Pi host app') {
+          agent {
+            label 'pi'
+          }
+          steps {
+            dir("${REPO}") {
+              checkout scm
+              dir("${REPO}/host/xmosdfu") {
+                sh 'make -f Makefile.Pi'
+              }
+            }
+          }
+          post {
+            cleanup {
+              xcoreCleanSandbox()
+            }
+          }
+        }
+        stage('Build Windows host app') {
+          agent {
+            label 'x86_64&&windows'
+          }
+          steps {
+            dir("${REPO}") {
+              checkout scm
+              dir("${REPO}/host/xmosdfu") {
+                runVS('nmake /f Makefile.Win32')
+              }
             }
           }
           post {

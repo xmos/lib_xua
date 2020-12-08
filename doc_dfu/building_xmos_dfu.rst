@@ -39,3 +39,18 @@ Raspberry Pi
 A makefile is provided for Raspbian. libusb is required and can be installed using the ``apt-get`` command from previous Linux section.
 
 .. literalinclude:: Makefile.Pi
+
+Windows
+-------
+
+To build on Windows, you must first install Visual Studio 2019 Build Tools with
+C++ support. `This is available from Microsoft's website. <https://visualstudio.microsoft.com/downloads/#build-tools-for-visual-studio-2019>`_
+
+To build, open a Developer Command Prompt via the start menu and navigate to the
+xmosdfu folder.  The command to build is as follows:
+
+  ``nmake /f Makefile.Win32``
+
+This Makefile contains the following:
+
+.. literalinclude:: Makefile.Win32

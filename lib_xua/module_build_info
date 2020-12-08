@@ -1,4 +1,4 @@
-VERSION = 1.0.1
+VERSION = 1.2.0
 
 DEPENDENT_MODULES = lib_logging(>=3.0.0) \
                     lib_xassert(>=4.0.0) \
@@ -45,6 +45,7 @@ INCLUDE_DIRS = $(EXPORT_INCLUDE_DIRS) \
                src/core/user/audiostream \
                src/core/user/hid \
                src/core/user/hostactive \
+               src/hid \
                src/midi
 
 SOURCE_DIRS = src/core \
