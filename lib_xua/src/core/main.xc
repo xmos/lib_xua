@@ -1,4 +1,5 @@
-// Copyright (c) 2012-2019, XMOS Ltd, All rights reserved
+// Copyright 2012-2021 XMOS LIMITED.
+// This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
 #include "xua.h"                          /* Device specific defines */
 #ifndef EXCLUDE_USB_AUDIO_MAIN

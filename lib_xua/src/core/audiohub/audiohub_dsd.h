@@ -1,4 +1,5 @@
-// Copyright (c) 2018, XMOS Ltd, All rights reserved
+// Copyright 2018-2021 XMOS LIMITED.
+// This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
 #if (DSD_CHANS_DAC != 0)
 extern buffered out port:32 p_dsd_dac[DSD_CHANS_DAC];
