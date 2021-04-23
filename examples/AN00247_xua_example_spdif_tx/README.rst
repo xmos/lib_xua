@@ -2,15 +2,13 @@
 Using lib_xua with lib_spdif (transmit) 
 =======================================
 
-.. version:: 0.1.0
-
 Summary
 -------
 
-Required tools and libraries
-............................
+Software dependencies
+.....................
 
-.. appdeps::
+For a list of direct dependencies, look for USED_MODULES in the Makefile.
 
 Required hardware
 .................
