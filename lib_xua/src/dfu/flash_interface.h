@@ -1,4 +1,5 @@
-// Copyright (c) 2011-2018, XMOS Ltd, All rights reserved
+// Copyright 2011-2021 XMOS LIMITED.
+// This Software is subject to the terms of the XMOS Public Licence: Version 1.
 #ifndef _flash_interface_h_
 #define _flash_interface_h_
 

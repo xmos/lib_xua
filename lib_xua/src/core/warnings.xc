@@ -1,4 +1,5 @@
-// Copyright (c) 2013-2018, XMOS Ltd, All rights reserved
+// Copyright 2013-2021 XMOS LIMITED.
+// This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
 /*
 Warnings relating to configuration defines located in this XC source file rather than the devicedefines.h header file in order to avoid multiple warnings being issued when the devicedefines.h header file is included in multiple files.

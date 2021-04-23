@@ -1,4 +1,5 @@
-// Copyright (c) 2011-2020, XMOS Ltd, All rights reserved
+// Copyright 2011-2021 XMOS LIMITED.
+// This Software is subject to the terms of the XMOS Public Licence: Version 1.
 /*
  * @brief       Defines relating to device configuration and customisation of lib_xua
  * @author      Ross Owen, XMOS Limited

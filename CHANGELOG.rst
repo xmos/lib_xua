@@ -10,6 +10,7 @@ lib_xua Change Log
   * FIXED:     xmosdfu now fails with an error when given a directory (#119)
   * FIXED:     Compilation errors related to HID code
   * FIXED:     Runtime error when using mic array interface
+  * CHANGED:   Use XMOS Public Licence Version 1
 
 1.1.1
 -----

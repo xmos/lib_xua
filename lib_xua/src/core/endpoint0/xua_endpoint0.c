@@ -1,4 +1,5 @@
-// Copyright (c) 2011-2020, XMOS Ltd, All rights reserved
+// Copyright 2011-2021 XMOS LIMITED.
+// This Software is subject to the terms of the XMOS Public Licence: Version 1.
 /**
  * @brief   Implements endpoint zero for an USB Audio 1.0/2.0 device
  * @author  Ross Owen, XMOS Semiconductor

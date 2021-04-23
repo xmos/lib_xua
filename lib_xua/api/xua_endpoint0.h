@@ -1,4 +1,5 @@
-// Copyright (c) 2011-2020, XMOS Ltd, All rights reserved
+// Copyright 2011-2021 XMOS LIMITED.
+// This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
 #ifndef _XUA_ENDPOINT0_H_
 #define _XUA_ENDPOINT0_H_
