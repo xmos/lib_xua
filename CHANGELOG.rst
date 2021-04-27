@@ -11,6 +11,7 @@ lib_xua Change Log
   * FIXED:     Compilation errors related to HID code
   * FIXED:     Runtime error when using mic array interface
   * CHANGED:   Use XMOS Public Licence Version 1
+  * FIXED:     Automate HID Report Descriptor length in AC1 HID Descriptor
 
 1.1.1
 -----
