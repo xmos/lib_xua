@@ -87,7 +87,7 @@ typedef struct
 #if ADAT_RX
     STR_TABLE_ENTRY(adatClockSourceStr);          /* iClockSource for external S/PDIF clock */
 #endif
-#endif
+#endif // AUDIO_CLASS == 2
 #if (XUA_DFU_EN == 1)
     STR_TABLE_ENTRY(dfuStr);                      /* iInterface for DFU interface */
 #endif
@@ -361,7 +361,7 @@ StringDescTable_t g_strTable =
 #if ADAT_RX
     .adatClockSourceStr          = XUA_ADAT_CLOCK_SOURCE_EMPTY_STRING,
 #endif
-#endif
+#endif // AUDIO_CLASS == 2
 #if (XUA_DFU_EN == 1)
     .dfuStr                      = XUA_DFU_EMPTY_STRING,
 #endif
@@ -746,7 +746,7 @@ typedef struct
 #if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP)
     USB_Descriptor_Endpoint_t                   Audio_Out_Fb_Endpoint_2;
 #endif
-#endif
+#endif // OUTPUT_FORMAT_COUNT > 1
 #if (OUTPUT_FORMAT_COUNT > 2)
     USB_Descriptor_Interface_t                  Audio_Out_StreamInterface_Alt3;
     USB_Descriptor_Audio_Interface_AS_t         Audio_Out_ClassStreamInterface_3;
@@ -756,8 +756,8 @@ typedef struct
 #if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP)
     USB_Descriptor_Endpoint_t                   Audio_Out_Fb_Endpoint_3;
 #endif
-#endif
-#endif
+#endif // OUTPUT_FORMAT_COUNT > 2
+#endif // NUM_USB_CHAN_OUT > 0
 #if (NUM_USB_CHAN_IN > 0)
     /* Audio Streaming: Input stream */
     USB_Descriptor_Interface_t                  Audio_In_StreamInterface_Alt0;  /* Zero bandwith alternative */
@@ -780,7 +780,7 @@ typedef struct
     USB_Descriptor_Endpoint_t                   Audio_In_Endpoint_3;
     USB_Descriptor_Audio_Class_AS_Endpoint_t    Audio_In_ClassEndpoint_3;
 #endif
-#endif
+#endif // NUM_USB_CHAN_IN > 0
 #ifdef MIDI
     /* MIDI descriptors currently handled as a single block */
     unsigned char configDesc_Midi[MIDI_LENGTH];
@@ -804,7 +804,7 @@ typedef struct
     USB_Descriptor_Endpoint_t                   iAP_EANativeTransport_Out_Endpoint;
     USB_Descriptor_Endpoint_t                   iAP_EANativeTransport_In_Endpoint;
 #endif
-#endif
+#endif // IAP
 
 #if( 0 < HID_CONTROLS )
     USB_Descriptor_Interface_t                  HID_Interface;
@@ -1939,8 +1939,8 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
         .wLockDelay                    = 0x0008,
     },
 #endif /* (INPUT_FORMAT_COUNT > 2) */
-
 #endif /* #if(NUM_USB_CHAN_IN > 0) */
+
 #ifdef MIDI
 /* MIDI Descriptors */
 /* Table B-3: MIDI Adapter Standard AC Interface Descriptor */
@@ -2059,7 +2059,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
     0x01,                                 /* 3 bNumEmbMIDIJack : Number of embedded MIDI OUT Jacks. (field size 1 bytes) */
     0x03,                                 /* 4 BaAssocJackID(1) : ID of the Embedded MIDI OUT Jack. (field size 1 bytes) */
     },
-#endif
+#endif // MIDI
 
 #if (XUA_DFU_EN == 1)
     /* Standard DFU class Interface descriptor */
@@ -2506,7 +2506,7 @@ unsigned char cfgDesc_Audio1[] =
 #error NUM_USB_CHAN_OUT_FS > 8 currently supported
 #endif
     0x00,                                 /* String table index */
-#endif
+#endif // OUTPUT_VOLUME_CONTROL == 1
 
     /* CS_Interface Output Terminal Descriptor - Analogue out to speaker */
     0x09,
@@ -2521,7 +2521,7 @@ unsigned char cfgDesc_Audio1[] =
     0x01,                                 /* sourceID - IT */
 #endif
     0x00,                                 /* Unused */
-#endif
+#endif // NUM_USB_CHAN_OUT > 0
 
 #if (NUM_USB_CHAN_IN > 0)
 #define CHANNEL_CONFIG_IN (0xFF >> (8 - NUM_USB_CHAN_IN_FS))
@@ -2589,8 +2589,8 @@ unsigned char cfgDesc_Audio1[] =
 #error NUM_USB_CHAN_IN_FS > 8 currently supported
 #endif
     0x00,                                 /* String table index */
-#endif
-#endif
+#endif // INPUT_VOLUME_CONTROL == 1
+#endif // NUM_USB_CHAN_IN > 0
 
 #if (NUM_USB_CHAN_OUT > 0)
     /* Standard AS Interface Descriptor (4.5.1) */
@@ -2738,7 +2738,7 @@ unsigned char cfgDesc_Audio1[] =
     0x04,                                 /* bRefresh 2^x */
     0x0,                                  /* bSynchAddress */
 #endif
-#endif
+#endif // NUM_USB_CHAN_OUT > 0
 
 #if (NUM_USB_CHAN_IN > 0)
     /* Standard Interface Descriptor - Audio streaming IN */
@@ -2863,7 +2863,7 @@ unsigned char cfgDesc_Audio1[] =
     0x00,                                 /* Undefined */
     0x00, 0x00,                           /* Not used */
 #endif // XUA_ADAPTIVE
-#endif
+#endif // NUM_USB_CHAN_IN > 0
 
 #if (XUA_DFU_EN == 1) && (FORCE_UAC1_DFU == 1)
 
@@ -2925,8 +2925,8 @@ unsigned char cfgDesc_Audio1[] =
     0x00,                                 /* 4  bCountryCode */
     0x01,                                 /* 5  bNumDescriptors */
     0x22,                                 /* 6  bDescriptorType[0] (Report) */
-    0x2B,                                 /* 7  wDescriptorLength[0] */
-    0x00,                                 /* 8  wDescriptorLength[0] */
+    sizeof(hidReportDescriptor) & 0xff,   /* 7  wDescriptorLength[0] */
+    sizeof(hidReportDescriptor) >> 8,     /* 8  wDescriptorLength[0] */
 
     /* HID Endpoint descriptor (IN) */
     0x07,                                 /* 0  bLength */
@@ -2939,6 +2939,6 @@ unsigned char cfgDesc_Audio1[] =
 #endif
 
 };
+#endif // (AUDIO_CLASS_FALLBACK) || (AUDIO_CLASS == 1)
 #endif
-#endif
-#endif
+#endif // _DEVICE_DESCRIPTORS_
