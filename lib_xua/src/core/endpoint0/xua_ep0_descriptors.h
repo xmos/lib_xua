@@ -581,7 +581,7 @@ unsigned char devQualDesc_Null[] =
 #endif
 
 #if( 0 < HID_CONTROLS )
-unsigned char hidReportDescriptor[] = /* Voice Command usage as per request #HUTRR45 */
+unsigned char hidReportDescriptor[] =
 {
     0x05, 0x01,         /* Usage Page (Generic Desktop) */
     0x09, 0x06,         /* Usage (Keyboard) */
@@ -593,9 +593,11 @@ unsigned char hidReportDescriptor[] = /* Voice Command usage as per request #HUT
     0x81, 0x01,         /* Input (Cnst, Ary, Abs, No Wrap, Lin, Pref, No Nul) */
     0x95, 0x01,         /* Report Count (1) */
     0x25, 0x01,         /* Logical Maximum (1) */
-    0x05, 0x0C,         /* Usage Page (Consumer) */
-    0x0a, 0x21, 0x02,   /* Usage (AC Search) */
+    0x05, 0x07,         /* Usage Page (Key Codes) */
+    0x19, 0x17,         /* Usage Minimum (Keyboard t or T) */
+    0x29, 0x17,         /* Usage Maximum (Keyboard t or T) */
     0x81, 0x02,         /* Input (Data, Var, Abs, No Wrap, Lin, Pref, No Nul) */
+    0x05, 0x0C,         /* Usage Page (Consumer) */
     0x0a, 0x26, 0x02,   /* Usage (AC Stop) */
     0x81, 0x02,         /* Input (Data, Var, Abs, No Wrap, Lin, Pref, No Nul) */
     0x95, 0x02,         /* Report Count (2) */
