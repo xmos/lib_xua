@@ -1,4 +1,5 @@
-// Copyright (c) 2011-2018, XMOS Ltd, All rights reserved
+// Copyright 2011-2021 XMOS LIMITED.
+// This Software is subject to the terms of the XMOS Public Licence: Version 1.
 #include <xs1.h>
 #include <platform.h>
 #include <print.h>
@@ -61,7 +62,7 @@ unsigned int divide, unsigned curSamFreq)
     }
 #endif
 
-#if defined(__XS2A__)
+#if defined(__XS2A__) || defined(__XS3A__)
     unsafe
     {
         /* Clock bitclock clock block from master clock pin (divided) */

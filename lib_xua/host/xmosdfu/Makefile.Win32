@@ -1,0 +1,31 @@
+# Build tested with Visual Studio 2017 command prompt
+#
+# Run: nmake /f Makefile.Win32
+#
+# NOTE: To run xmosdfu on Windows, libusbK drivers must be installed on the DFU endpoint
+# We recommend using the third-party Zadig tool for this.
+
+COMMON_FLAGS = \
+	/D BECLEAR_HOST=1 \
+	/I libusb\Win32 \
+	/nologo \
+	/W4 \
+	/WX- \
+	/O2 \
+	/EHa \
+	/D _CRT_SECURE_NO_WARNINGS \
+	xmosdfu.cpp \
+
+all: xmosdfu
+
+xmosdfu:
+	if not exist bin mkdir bin
+	CL.exe \
+	$(COMMON_FLAGS) \
+	/Fe"bin\xmosdfu.exe" \
+	/link "libusb\Win32\libusb-1.0.lib""
+	copy libusb-1.0.dll bin
+	del *.obj
+
+clean:
+	rmdir /s /q bin

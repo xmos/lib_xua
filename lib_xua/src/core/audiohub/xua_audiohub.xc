@@ -1,4 +1,5 @@
-// Copyright (c) 2011-2018, XMOS Ltd, All rights reserved
+// Copyright 2011-2021 XMOS LIMITED.
+// This Software is subject to the terms of the XMOS Public Licence: Version 1.
 /**
  * @file xua_audiohub.xc
  * @brief XMOS USB 2.0 Audio Reference Design.  Audio Functions.
