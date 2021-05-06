@@ -1,4 +1,5 @@
-// Copyright (c) 2017-2018, XMOS Ltd, All rights reserved
+// Copyright 2017-2021 XMOS LIMITED.
+// This Software is subject to the terms of the XMOS Public Licence: Version 1.
 #ifndef CS4384_H_
 #define CS4384_H_
 

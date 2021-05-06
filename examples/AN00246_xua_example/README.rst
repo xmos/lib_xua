@@ -2,15 +2,13 @@
 Simple USB Audio Device using lib_xua
 =====================================
 
-.. version:: 0.1.0
-
 Summary
 -------
 
-Required tools and libraries
-............................
+Software dependencies
+.....................
 
-.. appdeps::
+For a list of direct dependencies, look for USED_MODULES in the Makefile.
 
 Required hardware
 .................

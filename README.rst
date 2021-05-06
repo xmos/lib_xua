@@ -49,7 +49,8 @@ Note, not all features may be supported at all sample frequencies, simultaneousl
 Software version and dependencies
 .................................
 
-.. libdeps::
+The CHANGELOG contains information about the current and previous versions.
+For a list of direct dependencies, look for DEPENDENT_MODULES in lib_xua/module_build_info.
 
 Related Application Notes
 .........................

@@ -1,5 +1,6 @@
 #!/usr/bin/env python
-# Copyright (c) 2018, XMOS Ltd, All rights reserved
+# Copyright 2018-2021 XMOS LIMITED.
+# This Software is subject to the terms of the XMOS Public Licence: Version 1.
 import xmostest
 
 def runtest_one_config(env, format, i2s_role, num_chans_in, num_chans_out, sample_rate):

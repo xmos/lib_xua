@@ -1,4 +1,5 @@
-// Copyright (c) 2011-2020, XMOS Ltd, All rights reserved
+// Copyright 2011-2021 XMOS LIMITED.
+// This Software is subject to the terms of the XMOS Public Licence: Version 1.
 /**
  * @brief   Implements endpoint zero for an USB Audio 1.0/2.0 device
  * @author  Ross Owen, XMOS Semiconductor
@@ -66,6 +67,22 @@
 #include "xua_dfu.h"
 #define DFU_IF_NUM INPUT_INTERFACES + OUTPUT_INTERFACES + MIDI_INTERFACES + 1
 extern void device_reboot(void);
+
+/* Windows core USB/device driver stack may not like device coming off bus for
+ * a very short period of less than 500ms. Enforce at least 500ms by stalling.
+ * This may not have the desired effect depending on whether 'off the bus'
+ * requires device terminations disabled (PHY off). In that case we would be
+ * better off doing the reboot to DFU and then delaying PHY initialisation
+ * instead. Suggest revisiting.
+ */
+#define DELAY_BEFORE_REBOOT_TO_DFU_MS     500
+
+/* Similarly to the delay before reboot to DFU mode, this delay is meant to
+ * avoid shocking the Windows software stack. Suggest revisiting to establish
+ * if 50 or 500 is needed.
+ */
+#define DELAY_BEFORE_REBOOT_FROM_DFU_MS   50
+
 #endif
 
 #if( 0 < HID_CONTROLS )
@@ -814,7 +831,7 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
 
                         if(reset)
                         {
-                            DFUDelay(50000000);
+                            DFUDelay(DELAY_BEFORE_REBOOT_TO_DFU_MS * 100000);
                             device_reboot();
                         }
                     }
@@ -1035,7 +1052,7 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
                 DFU_mode_active = 0;
 
                 /* Send reboot command */
-                DFUDelay(5000000);
+                DFUDelay(DELAY_BEFORE_REBOOT_FROM_DFU_MS * 100000);
                 device_reboot();
             }
         }

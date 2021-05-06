@@ -1,5 +1,6 @@
 #!/usr/bin/env python2.7
-# Copyright (c) 2018, XMOS Ltd, All rights reserved
+# Copyright 2018-2021 XMOS LIMITED.
+# This Software is subject to the terms of the XMOS Public Licence: Version 1.
 import xmostest
 import os.path
 
