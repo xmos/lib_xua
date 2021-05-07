@@ -10,8 +10,6 @@
 #ifndef _HID_DESCRIPTOR_CONTENTS_
 #define _HID_DESCRIPTOR_CONTENTS_
 
-#include "descriptor_defs.h"
-
 #if (AUDIO_CLASS == 1)
 
     /* HID descriptor */
