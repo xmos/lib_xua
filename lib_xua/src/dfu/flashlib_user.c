@@ -59,6 +59,9 @@ fl_PortHolderStruct p_flash =
 /* return 1 for opened ports successfully */
 int flash_cmd_enable_ports()
 {
+#if DFU_DEBUG
+    printstr("flash_cmd_enable_ports\n");
+#endif
     int result = 0;
 #ifdef QUAD_SPI_FLASH
     /* Ports not shared */
@@ -91,6 +94,10 @@ int flash_cmd_enable_ports()
 #ifdef DFU_FLASH_DEVICE
 #ifdef QUAD_SPI_FLASH
     result = fl_connectToDevice(&p_qflash, flash_devices, 1);
+#if DFU_DEBUG
+    printstr("fl_connectToDevice ");
+    printintln(result);
+#endif
 #else
     result = fl_connectToDevice(&p_flash, flash_devices, 1);
 #endif

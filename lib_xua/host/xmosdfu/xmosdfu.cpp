@@ -187,6 +187,7 @@ int dfu_getStatus(unsigned int interface, unsigned char *state, unsigned int *ti
     *timeout = (data[0] >> 8) & 0xffffff;
     *nextState = data[1] & 0xff;
     *strIndex = (data[1] >> 8) & 0xff;
+    printf("- get_data 6 state=%d timeout=%d next_state=%d\n", *state, *timeout, *nextState);
     return 0;
 }
 
@@ -221,6 +222,12 @@ unsigned int dfu_download(unsigned int interface, unsigned int block_num, unsign
 {
     //printf("... Downloading block number %d size %d\r", block_num, size);
     /* Returns actual data size transferred */
+    if (data == NULL) {
+      printf("+ download_block %d %d NULL\n", block_num, size);
+    }
+    else {
+      printf("+ download_block %d %d 0x%x 0x%x\n", block_num, size, data[0], data[size - 1]);
+    }
     unsigned int transfered = libusb_control_transfer(devh, DFU_REQUEST_TO_DEV, DFU_DNLOAD, block_num, interface, data, size, 0);
     return transfered;
 }

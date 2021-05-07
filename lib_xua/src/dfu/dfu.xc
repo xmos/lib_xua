@@ -4,6 +4,7 @@
 #if (XUA_DFU_EN== 1)
 #include <xs1.h>
 #include <platform.h>
+#include <print.h>
 
 #ifndef NO_USB
 #include "xud_device.h"
@@ -108,6 +109,9 @@ static int DFU_Detach(unsigned int timeout, chanend ?c_user_cmd, unsigned &DFU_s
 
 static int DFU_Dnload(unsigned int request_len, unsigned int block_num, const unsigned request_data[16], chanend ?c_user_cmd, int &return_data_len, unsigned &DFU_state)
 {
+#if DFU_DEBUG
+    printstr("DFU_Dnload\n");
+#endif
     unsigned int fromDfuIdle = 0;
     return_data_len = 0;
     int error;
@@ -163,6 +167,9 @@ static int DFU_Dnload(unsigned int request_len, unsigned int block_num, const un
         flash_cmd_write_page((cmd_data, unsigned char[]));
 
         DFU_state = STATE_DFU_MANIFEST_SYNC;
+#if DFU_DEBUG
+        printstr("DFU_state -> STATE_DFU_MANIFEST_SYNC\n");
+#endif
     }
     else
     {
@@ -196,6 +203,9 @@ static int DFU_Dnload(unsigned int request_len, unsigned int block_num, const un
         subPagesLeft--;
 
         DFU_state = STATE_DFU_DOWNLOAD_SYNC;
+#if DFU_DEBUG
+        printstr("DFU_state -> STATE_DFU_DOWNLOAD_SYNC\n");
+#endif
     }
 
     return 0;
@@ -263,6 +273,9 @@ static int DFU_Upload(unsigned int request_len, unsigned int block_num, unsigned
 
 static int DFU_GetStatus(unsigned int request_len, unsigned data_buffer[16], chanend ?c_user_cmd, unsigned &DFU_state)
 {
+#if DFU_DEBUG
+    printstr("DFU_GetStatus\n");
+#endif
     unsigned int timeout = 0;
 
     data_buffer[0] = timeout << 8 | (unsigned char)DFU_status;
@@ -279,6 +292,9 @@ static int DFU_GetStatus(unsigned int request_len, unsigned data_buffer[16], cha
             break;
         case STATE_DFU_DOWNLOAD_SYNC:
             DFU_state = STATE_DFU_DOWNLOAD_IDLE;
+#if DFU_DEBUG
+            printstr("DFU_state -> STATE_DFU_DOWNLOAD_IDLE\n");
+#endif
             break;
         case STATE_DFU_MANIFEST_SYNC:
             // Check if complete here
@@ -350,6 +366,9 @@ int DFUReportResetState(chanend ?c_user_cmd)
         unsigned int cmd_data[16];
         inDFU = 1;
         g_DFU_state = STATE_DFU_IDLE;
+#if DFU_DEBUG
+        printstr("DFU_state -> STATE_DFU_IDLE\n");
+#endif
         return inDFU;
     }
 
@@ -363,6 +382,9 @@ int DFUReportResetState(chanend ?c_user_cmd)
             if (currentTime - DFUTimerStart > DFUResetTimeout)
             {
                 g_DFU_state = STATE_APP_IDLE;
+#if DFU_DEBUG
+                printstr("DFU_state -> STATE_APP_IDLE (timeout)\n");
+#endif
                 inDFU = 0;
             }
             else
@@ -546,6 +568,9 @@ int DFUDeviceRequests(XUD_ep ep0_out, XUD_ep &?ep0_in, USB_SetupPacket_t &sp, ch
     unsigned int dfuState = g_DFU_state;
     int dfuResetOverride;
 
+#ifdef DFU_DEBUG
+    printstr("DFUDeviceRequests\n");
+#endif
     if(sp.bmRequestType.Direction == USB_BM_REQTYPE_DIRECTION_H2D)
     {
         // Host to device
