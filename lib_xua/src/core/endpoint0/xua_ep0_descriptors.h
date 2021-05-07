@@ -16,6 +16,7 @@
 #include "usbaudiocommon.h"
 #include "xud_device.h"
 #include "usbaudio20.h"                /* Defines from USB Audio 2.0 spec */
+#include "xua_hid_descriptor.h"
 
 #ifdef IAP_EA_NATIVE_TRANS
 #include "iap2.h"                      /* Defines iAP EA Native Transport protocol name */
@@ -810,7 +811,7 @@ typedef struct
 
 #if( 0 < HID_CONTROLS )
     USB_Descriptor_Interface_t                  HID_Interface;
-    unsigned char hidDesc[9];                   //TODO ideally we would have a struct for this.
+    USB_HID_Descriptor_t                        HID_Descriptor;
     USB_Descriptor_Endpoint_t                   HID_In_Endpoint;
 #endif
 
@@ -2206,60 +2207,24 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
 #endif /* IAP */
 
 #if( 0 < HID_CONTROLS )
-    .HID_Interface =
-    {
-        9,                                /* 0  bLength : Size of descriptor in Bytes */
-        4,                                /* 1  bDescriptorType (Interface: 0x04)*/
-        INTERFACE_NUMBER_HID,             /* 2  bInterfaceNumber : Number of interface */
-        0,                                /* 3  bAlternateSetting : Value used  alternate interfaces using SetInterface Request */
-        1,                                /* 4: bNumEndpoints : Number of endpoitns for this interface (excluding 0) */
-        3,                                /* 5: bInterfaceClass */
-        0,                                /* 6: bInterfaceSubClass - no boot device */
-        0,                                /* 7: bInterfaceProtocol*/
-        0,                                /* 8  iInterface */
-    },
-
-    {
-        9,                                /* 0  bLength : Size of descriptor in Bytes */
-        0x21,                             /* 1  bDescriptorType (HID) */
-        0x10,                             /* 2  bcdHID */
-        0x01,                             /* 3  bcdHID */
-        0,                                /* 4  bCountryCode */
-        1,                                /* 5  bNumDescriptors */
-        0x22,                             /* 6  bDescriptorType[0] (Report) */
-        sizeof(hidReportDescriptor) & 0xff,/* 7  wDescriptorLength[0] */
-        sizeof(hidReportDescriptor) >> 8,  /* 8  wDescriptorLength[0] */
-    },
-
-    .HID_In_Endpoint =
-    {
-        /* Endpoint descriptor (IN) */
-        0x7,                              /* 0  bLength */
-        5,                                /* 1  bDescriptorType */
-        ENDPOINT_ADDRESS_IN_HID,          /* 2  bEndpointAddress  */
-        3,                                /* 3  bmAttributes (INTERRUPT) */
-        64,                               /* 4  wMaxPacketSize */
-        ENDPOINT_INT_INTERVAL_IN_HID,     /* 6  bInterval */
-    }
+    #include "xua_hid_descriptors.h"
 #endif
 
 };
 #endif /* (AUDIO_CLASS == 2) */
 
 #if( 0 < HID_CONTROLS )
+#if (AUDIO_CLASS ==1 )
 unsigned char hidDescriptor[] =
 {
-    0x09,                                 /* 0  bLength : Size of descriptor in Bytes */
-    0x21,                                 /* 1  bDescriptorType (HID) */
-    0x10,                                 /* 2  bcdHID */
-    0x01,                                 /* 3  bcdHID */
-    0x00,                                 /* 4  bCountryCode */
-    0x01,                                 /* 5  bNumDescriptors */
-    0x22,                                 /* 6  bDescriptorType[0] (Report) */
-    sizeof(hidReportDescriptor) & 0xff,   /* 7  wDescriptorLength[0] */
-    sizeof(hidReportDescriptor) >> 8,     /* 8  wDescriptorLength[0] */
+    #include "xua_hid_descriptor_contents.h"
 };
+#elif (AUDIO_CLASS == 2)
+unsigned char* hidDescriptor = (unsigned char*) &cfgDesc_Audio2.HID_Descriptor;
+#else
+    #error "Unknown Audio Class"
 #endif
+#endif // 0 < HID_CONTROLS
 
 
 /* Configuration Descriptor for Null device */
@@ -2364,6 +2329,12 @@ const unsigned num_freqs_a1 = MAX(3, (0
 #endif
 
 #if( 0 < HID_CONTROLS )
+/*
+ * The value of HID_INTERFACE_BYTES must match the length of the descriptors defined in
+ * - xua_hid_descriptor_contents.h
+ * - xua_hid_endpoint_descriptor_contents.h and
+ * - xua_hid_interface_descriptor_contents.h
+ */
 #define HID_INTERFACE_BYTES   ( 9 + 9 + 7 )
 #define HID_INTERFACES_A1     1
 #else
@@ -2908,36 +2879,7 @@ unsigned char cfgDesc_Audio1[] =
 #endif
 
 #if( 0 < HID_CONTROLS )
-    /* HID interface descriptor */
-    0x09,                                 /* 0  bLength : Size of descriptor in Bytes */
-    0x04,                                 /* 1  bDescriptorType (Interface: 0x04)*/
-    INTERFACE_NUMBER_HID,                 /* 2  bInterfaceNumber : Number of interface */
-    0x00,                                 /* 3  bAlternateSetting : Value used  alternate interfaces using SetInterface Request */
-    0x01,                                 /* 4: bNumEndpoints : Number of endpoitns for this interface (excluding 0) */
-    0x03,                                 /* 5: bInterfaceClass */
-    0x00,                                 /* 6: bInterfaceSubClass - no boot device */
-    0x00,                                 /* 7: bInterfaceProtocol*/
-    0x00,                                 /* 8  iInterface */
-
-    /* HID descriptor */
-    0x09,                                 /* 0  bLength : Size of descriptor in Bytes */
-    0x21,                                 /* 1  bDescriptorType (HID) */
-    0x10,                                 /* 2  bcdHID */
-    0x01,                                 /* 3  bcdHID */
-    0x00,                                 /* 4  bCountryCode */
-    0x01,                                 /* 5  bNumDescriptors */
-    0x22,                                 /* 6  bDescriptorType[0] (Report) */
-    sizeof(hidReportDescriptor) & 0xff,   /* 7  wDescriptorLength[0] */
-    sizeof(hidReportDescriptor) >> 8,     /* 8  wDescriptorLength[0] */
-
-    /* HID Endpoint descriptor (IN) */
-    0x07,                                 /* 0  bLength */
-    0x05,                                 /* 1  bDescriptorType */
-    ENDPOINT_ADDRESS_IN_HID,              /* 2  bEndpointAddress  */
-    0x03,                                 /* 3  bmAttributes (INTERRUPT) */
-    0x40,                                 /* 4  wMaxPacketSize */
-    0x00,                                 /* 5  wMaxPacketSize */
-    ENDPOINT_INT_INTERVAL_IN_HID,         /* 6  bInterval */
+    #include "xua_hid_descriptors.h"
 #endif
 
 };
