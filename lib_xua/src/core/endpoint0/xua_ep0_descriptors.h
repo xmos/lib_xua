@@ -1942,7 +1942,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
         .wLockDelay                    = 0x0008,
     },
 #endif /* (INPUT_FORMAT_COUNT > 2) */
-#endif /* #if(NUM_USB_CHAN_IN > 0) */
+#endif /* (NUM_USB_CHAN_IN > 0) */
 
 #ifdef MIDI
 /* MIDI Descriptors */
