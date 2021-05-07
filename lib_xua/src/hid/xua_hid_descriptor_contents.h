@@ -7,9 +7,6 @@
  * This file lists the contents of the HID Endpoint descriptor returned during enumeration.
  */
 
-#ifndef _HID_DESCRIPTOR_CONTENTS_
-#define _HID_DESCRIPTOR_CONTENTS_
-
 #if (AUDIO_CLASS == 1)
 
     /* HID descriptor */
@@ -48,5 +45,3 @@
 #else
     #error "Unknown Audio Class"
 #endif
-    
-#endif // _HID_DESCRIPTOR_CONTENTS_

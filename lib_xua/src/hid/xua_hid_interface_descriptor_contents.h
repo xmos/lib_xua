@@ -7,9 +7,6 @@
  * This file lists the contents of the HID Interface descriptor returned during enumeration.
  */
 
-#ifndef _HID_INTERFACE_DESCRIPTOR_CONTENTS_
-#define _HID_INTERFACE_DESCRIPTOR_CONTENTS_
-
 #include "descriptor_defs.h"
 
 #if (AUDIO_CLASS == 1)
@@ -44,5 +41,3 @@
 #else
     #error "Unknown Audio Class"
 #endif
-
-#endif // _HID_INTERFACE_DESCRIPTOR_CONTENTS_
