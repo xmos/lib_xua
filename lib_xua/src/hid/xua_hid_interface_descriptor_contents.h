@@ -7,35 +7,49 @@
  * This file lists the contents of the HID Interface descriptor returned during enumeration.
  */
 
+#ifndef _HID_INTERFACE_DESCRIPTOR_CONTENTS_
+#define _HID_INTERFACE_DESCRIPTOR_CONTENTS_
+
 #include "descriptor_defs.h"
+
+#define HID_INTERFACE_DESCRIPTOR_LENGTH         0x09    /* Size of descriptor in Bytes */
+#define HID_INTERFACE_DESCRIPTOR_TYPE           0x04    /* Interface 0x04 */
+#define HID_INTERFACE_ALTERNATE_SETTING         0x00    /* Value used alternate interfaces using SetInterface Request */
+#define HID_INTERFACE_NUMBER_OF_ENDPOINTS       0x01    /* Number of endpoitns for this interface (excluding 0) */
+#define HID_INTERFACE_CLASS                     0x03
+#define HID_INTERFACE_SUBCLASS                  0x00    /* No boot device */
+#define HID_INTERFACE_PROTOCOL                  0x00
+#define HID_INTERFACE_STRING_DESCRIPTOR_INDEX   0x00
+
+#endif // _HID_INTERFACE_DESCRIPTOR_CONTENTS_
 
 #if (AUDIO_CLASS == 1)
 
     /* HID interface descriptor */
-    0x09,                                 /* 0  bLength : Size of descriptor in Bytes */
-    0x04,                                 /* 1  bDescriptorType (Interface: 0x04)*/
-    INTERFACE_NUMBER_HID,                 /* 2  bInterfaceNumber : Number of interface */
-    0x00,                                 /* 3  bAlternateSetting : Value used  alternate interfaces using SetInterface Request */
-    0x01,                                 /* 4: bNumEndpoints : Number of endpoitns for this interface (excluding 0) */
-    0x03,                                 /* 5: bInterfaceClass */
-    0x00,                                 /* 6: bInterfaceSubClass - no boot device */
-    0x00,                                 /* 7: bInterfaceProtocol*/
-    0x00,                                 /* 8  iInterface */
+    HID_INTERFACE_DESCRIPTOR_LENGTH,        /* 0  bLength */
+    HID_INTERFACE_DESCRIPTOR_TYPE,          /* 1  bDescriptorType */
+    INTERFACE_NUMBER_HID,                   /* 2  bInterfaceNumber : Number of interface */
+    HID_INTERFACE_ALTERNATE_SETTING,        /* 3  bAlternateSetting */
+    HID_INTERFACE_NUMBER_OF_ENDPOINTS,      /* 4: bNumEndpoints */
+    HID_INTERFACE_CLASS,                    /* 5: bInterfaceClass */
+    HID_INTERFACE_SUBCLASS,                 /* 6: bInterfaceSubClass */
+    HID_INTERFACE_PROTOCOL,                 /* 7: bInterfaceProtocol*/
+    HID_INTERFACE_STRING_DESCRIPTOR_INDEX,  /* 8  iInterface */
 
 #elif (AUDIO_CLASS == 2)
 
     .HID_Interface =
     {
         /* HID interface descriptor */
-        .bLength            = 0x09,
-        .bDescriptorType    = 0x04,
+        .bLength            = sizeof(USB_Descriptor_Interface_t),
+        .bDescriptorType    = HID_INTERFACE_DESCRIPTOR_TYPE,
         .bInterfaceNumber   = INTERFACE_NUMBER_HID,
-        .bAlternateSetting  = 0x00,                 /* alternate interfaces using SetInterface Request */
-        .bNumEndpoints      = 0x01,
-        .bInterfaceClass    = 0x03,
-        .bInterfaceSubClass = 0x00,                 /* no boot device */
-        .bInterfaceProtocol = 0x00,
-        .iInterface         = 0x00,
+        .bAlternateSetting  = HID_INTERFACE_ALTERNATE_SETTING,
+        .bNumEndpoints      = HID_INTERFACE_NUMBER_OF_ENDPOINTS,
+        .bInterfaceClass    = HID_INTERFACE_CLASS,
+        .bInterfaceSubClass = HID_INTERFACE_SUBCLASS,
+        .bInterfaceProtocol = HID_INTERFACE_PROTOCOL,
+        .iInterface         = HID_INTERFACE_STRING_DESCRIPTOR_INDEX,
     },
 
 #else

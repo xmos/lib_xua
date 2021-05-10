@@ -7,38 +7,55 @@
  * This file lists the contents of the HID Endpoint descriptor returned during enumeration.
  */
 
+#ifndef _HID_DESCRIPTOR_CONTENTS_
+#define _HID_DESCRIPTOR_CONTENTS_
+
+#include "xua_hid_descriptor.h"
+
+#define HID_DESCRIPTOR_LENGTH_0    0x09 /* Size of descriptor in Bytes */
+#define HID_DESCRIPTOR_TYPE_0      0x21 /* HID 0x21 */
+#define HID_BCD_VERSION_LO         0x10 /* HID class specification release */
+#define HID_BCD_VERSION_HI         0x01
+#define HID_COUNTRY_CODE           0x00 /* Country code of localized hardware */
+#define HID_NUM_DESCRIPTORS        0x01 /* Number of class descriptors */
+#define HID_DESCRIPTOR_TYPE_1      0x22 /* Type of 1st class descriptor, Report 0x22 */
+#define HID_DESCRIPTOR_LENGTH_1_LO sizeof(hidReportDescriptor) & 0xff
+#define HID_DESCRIPTOR_LENGTH_1_HI sizeof(hidReportDescriptor) >> 8
+
+#endif // _HID_DESCRIPTOR_CONTENTS_
+
 #if (AUDIO_CLASS == 1)
 
     /* HID descriptor */
-    0x09,                                 /* 0  bLength : Size of descriptor in Bytes */
-    0x21,                                 /* 1  bDescriptorType (HID) */
-    0x10,                                 /* 2  bcdHID */
-    0x01,                                 /* 3  bcdHID */
-    0x00,                                 /* 4  bCountryCode */
-    0x01,                                 /* 5  bNumDescriptors */
-    0x22,                                 /* 6  bDescriptorType[0] (Report) */
-    sizeof(hidReportDescriptor) & 0xff,   /* 7  wDescriptorLength[0] */
-    sizeof(hidReportDescriptor) >> 8,     /* 8  wDescriptorLength[0] */
+    HID_DESCRIPTOR_LENGTH_0,     /* 0  bLength */
+    HID_DESCRIPTOR_TYPE_0,       /* 1  bDescriptorType (HID) */
+    HID_BCD_VERSION_LO,          /* 2  bcdHID */
+    HID_BCD_VERSION_HI,          /* 3  bcdHID */
+    HID_COUNTRY_CODE,            /* 4  bCountryCode */
+    HID_NUM_DESCRIPTORS,         /* 5  bNumDescriptors */
+    HID_DESCRIPTOR_TYPE_1,       /* 6  bDescriptorType[0] */
+    HID_DESCRIPTOR_LENGTH_1_LO,  /* 7  wDescriptorLength[0] */
+    HID_DESCRIPTOR_LENGTH_1_HI,  /* 8  wDescriptorLength[0] */
 
 #elif (AUDIO_CLASS == 2)
 
     .HID_Descriptor =
     {
         /* HID descriptor */
-        .bLength            = 0x09,
-        .bDescriptorType0   = 0x21,
+        .bLength            = sizeof(USB_HID_Descriptor_t),
+        .bDescriptorType0   = HID_DESCRIPTOR_TYPE_0,
         .bcdHID             =
         {
-                              0x10,
-                              0x01,
+                              HID_BCD_VERSION_LO,
+                              HID_BCD_VERSION_HI,
         },
-        .bCountryCode       = 0x00,
-        .bNumDescriptors    = 0x01,
-        .bDescriptorType1   = 0x22,
+        .bCountryCode       = HID_COUNTRY_CODE,
+        .bNumDescriptors    = HID_NUM_DESCRIPTORS,
+        .bDescriptorType1   = HID_DESCRIPTOR_TYPE_1,
         .wDescriptorLength1 =
         {
-            sizeof(hidReportDescriptor) & 0xff,
-            sizeof(hidReportDescriptor) >> 8,
+                              HID_DESCRIPTOR_LENGTH_1_LO,
+                              HID_DESCRIPTOR_LENGTH_1_HI,
         },
     },
 
