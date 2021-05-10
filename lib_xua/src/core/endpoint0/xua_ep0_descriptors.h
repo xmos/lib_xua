@@ -15,7 +15,6 @@
 #include "usbaudio20.h"                /* Defines from the USB Audio 2.0 Specifications */
 #include "usbaudiocommon.h"
 #include "xud_device.h"
-#include "usbaudio20.h"                /* Defines from USB Audio 2.0 spec */
 #include "xua_hid_descriptor.h"
 
 #ifdef IAP_EA_NATIVE_TRANS
