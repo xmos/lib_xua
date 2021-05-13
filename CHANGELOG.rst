@@ -1,6 +1,11 @@
 lib_xua Change Log
 ==================
 
+1.3.0
+-----
+
+  * CHANGED:   Move HID descriptors to ease maintenance
+
 1.2.0
 -----
 
