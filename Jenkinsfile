@@ -29,7 +29,7 @@ pipeline {
         }
         stage('Legacy tests') {
           steps {
-            runXmostest("${REPO}", 'tests/legacy_tests')
+            runXmostest("${REPO}", 'legacy_tests')
           }
         }
         stage('xCORE builds') {
