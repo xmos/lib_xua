@@ -1,4 +1,5 @@
-// Copyright (c) 2011-2018, XMOS Ltd, All rights reserved
+// Copyright 2011-2021 XMOS LIMITED.
+// This Software is subject to the terms of the XMOS Public Licence: Version 1.
 #ifndef __interrupt_h__
 #define __interrupt_h__
 
@@ -71,7 +72,7 @@
 
 //int ksp_enter, ksp_exit, r11_store;
 
-#ifdef __XS2A__
+#if defined(__XS2A__) || defined(__XS3A__)
 #define ISSUE_MODE_SINGLE ".issue_mode single\n"
 #define ISSUE_MODE_DUAL ".issue_mode dual\n"
 #else

@@ -2,18 +2,16 @@
 Using lib_xua with lib_mic_array
 ================================
 
-.. version:: 0.1.0
-
 Summary
 -------
 
 This applicaition note describes how to use ``lib_mic_array`` in conjunction with ``lib_xua``
 to implement a USB Audio device with the ability to record from multiple PDM microphones.
 
-Required tools and libraries
-............................
+Software dependencies
+.....................
 
-.. appdeps::
+For a list of direct dependencies, look for USED_MODULES in the Makefile.
 
 Required hardware
 .................

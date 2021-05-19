@@ -1,4 +1,5 @@
-// Copyright (c) 2011-2019, XMOS Ltd, All rights reserved
+// Copyright 2011-2021 XMOS LIMITED.
+// This Software is subject to the terms of the XMOS Public Licence: Version 1.
 #include <xs1.h>
 #include <platform.h>
 #include <print.h>
@@ -74,7 +75,7 @@ void device_reboot(void)
         }
     }
 
-#ifdef __XS2A__
+#if defined(__XS2A__) || defined(__XS3A__)
     /* Reset all even tiles, starting from the remote ones */
     for(int tileNum = tileArrayLength-2;  tileNum>=0; tileNum-=2)
 #else
@@ -86,7 +87,7 @@ void device_reboot(void)
         tileId = get_tile_id(tile[tileNum]);
 
         /* Do not reboot local tile (or tiles residing on the same node) yet */
-#ifdef __XS2A__
+#if defined(__XS2A__) || defined(__XS3A__)
         if((localTileNum | 1) != (tileNum | 1))
 
 #else

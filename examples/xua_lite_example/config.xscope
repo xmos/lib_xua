@@ -1,3 +1,0 @@
-<xSCOPEconfig ioMode="basic" enabled="true">
-  <Probe name="Value" type="CONTINUOUS" datatype="INT" units="Value" enabled="true"/>
-</xSCOPEconfig>

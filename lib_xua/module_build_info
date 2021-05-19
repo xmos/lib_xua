@@ -1,37 +1,69 @@
-# You can set flags specifically for your module by using the MODULE_XCC_FLAGS
-# variable. So the following
-#
-#   MODULE_XCC_FLAGS = $(XCC_FLAGS) -O3
-#
-# specifies that everything in the modules should have the application
-# build flags with -O3 appended (so the files will build at
-# optimization level -O3).
-#
-# You can also set MODULE_XCC_C_FLAGS, MODULE_XCC_XC_FLAGS etc..
+VERSION = 1.2.0
 
-MODULE_XCC_FLAGS = $(XCC_FLAGS) -O3 -DREF_CLK_FREQ=100 -fasm-linenum -fcomment-asm
+DEPENDENT_MODULES = lib_logging(>=3.0.0) \
+                    lib_xassert(>=4.0.0) \
+                    lib_xud(>=1.0.0) \
+                    lib_spdif(>=4.0.0) \
+                    lib_mic_array(>=4.0.0)
+
+MODULE_XCC_FLAGS = $(XCC_FLAGS) \
+                   -O3 \
+                   -DREF_CLK_FREQ=100 \
+                   -fasm-linenum \
+                   -fcomment-asm
+
+# Core
+XCC_FLAGS_xua_endpoint0.c = $(MODULE_XCC_FLAGS) -Os -mno-dual-issue
+XCC_FLAGS_xua_ep0_uacreqs.xc = $(MODULE_XCC_FLAGS) -Os -mno-dual-issue
+XCC_FLAGS_dbcalc.xc = $(MODULE_XCC_FLAGS) -Os -mno-dual-issue
+XCC_FLAGS_audioports.c = $(MODULE_XCC_FLAGS) -Os -mno-dual-issue
+XCC_FLAGS_audioports.xc = $(MODULE_XCC_FLAGS) -Os -mno-dual-issue
+
+# DFU
+XCC_FLAGS_dfu.xc = $(MODULE_XCC_FLAGS) -Os -mno-dual-issue
+XCC_FLAGS_flash_interface.c = $(MODULE_XCC_FLAGS) -Os -mno-dual-issue
+XCC_FLAGS_flashlib_user.c = $(MODULE_XCC_FLAGS) -Os -mno-dual-issue
 
 OPTIONAL_HEADERS += xua_conf.h
 
-VERSION = 0.2.0
+EXPORT_INCLUDE_DIRS = api \
+                      src/core \
+                      src/core/audiohub \
+                      src/core/buffer/ep \
+                      src/core/endpoint0 \
+                      src/dfu
 
-DEPENDENT_MODULES = lib_logging(>=2.1.0) lib_xassert(>=2.0.0) lib_xud(>=0.1.0) lib_spdif(>=3.0.0)
+INCLUDE_DIRS = $(EXPORT_INCLUDE_DIRS) \
+               src/core/buffer/decouple \
+               src/core/clocking \
+               src/core/mixer \
+               src/core/pdm_mics \
+               src/core/ports \
+               src/core/support \
+               src/core/support/powersave \
+               src/core/user \
+               src/core/user/audiostream \
+               src/core/user/hid \
+               src/core/user/hostactive \
+               src/hid \
+               src/midi
 
-INCLUDE_DIRS = api src/*
+SOURCE_DIRS = src/core \
+              src/core/audiohub \
+              src/core/buffer/decouple \
+              src/core/buffer/ep \
+              src/core/clocking \
+              src/core/endpoint0 \
+              src/core/mixer \
+              src/core/pdm_mics \
+              src/core/ports \
+              src/core/support \
+              src/core/support/powersave \
+              src/core/user/audiostream \
+              src/core/user/hostactive \
+              src/core/xuduser \
+              src/dfu \
+              src/hid \
+              src/midi
 
-#ignore host dir
-SOURCE_DIRS = src/*
-
-# The following file specific flags are not automatically kept in sync with the wscript file
-# Core
 EXCLUDE_FILES += descriptors_2.rst
-XCC_FLAGS_xua_endpoint0.c = -Os -mno-dual-issue $(XCC_FLAGS)
-XCC_FLAGS_xua_ep0_uacreqs.xc = -Os -mno-dual-issue $(XCC_FLAGS)
-XCC_FLAGS_dbcalc.xc = -Os -mno-dual-issue $(XCC_FLAGS)
-XCC_FLAGS_audioports.c = -Os -mno-dual-issue $(XCC_FLAGS)
-XCC_FLAGS_audioports.xc = -Os -mno-dual-issue $(XCC_FLAGS)
-
-# DFU
-XCC_FLAGS_dfu.xc = -Os -mno-dual-issue $(XCC_FLAGS)
-XCC_FLAGS_flash_interface.c = -Os -mno-dual-issue $(XCC_FLAGS)
-XCC_FLAGS_flashlib_user.c = -Os -mno-dual-issue $(XCC_FLAGS)

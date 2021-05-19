@@ -1,4 +1,5 @@
-// Copyright (c) 2011-2018, XMOS Ltd, All rights reserved
+// Copyright 2011-2021 XMOS LIMITED.
+// This Software is subject to the terms of the XMOS Public Licence: Version 1.
 /*
  * @brief       Defines relating to device configuration and customisation of lib_xua
  * @author      Ross Owen, XMOS Limited
@@ -289,6 +290,13 @@
 #endif
 
 /**
+ * @brief Size of a frame of microphone data samples. Default: 1
+ */
+#ifndef XUA_MIC_FRAME_SIZE
+#define XUA_MIC_FRAME_SIZE      (1)
+#endif
+
+/**
  * @brief Enable MIDI functionality including buffering, descriptors etc. Default: DISABLED
  */
 #ifndef MIDI
@@ -425,10 +433,6 @@
 #define HID_CONTROLS       (0)
 #endif
 
-#if defined(HID_CONTROLS) && (HID_CONTROLS == 0)
-#undef HID_CONTROLS
-#endif
-
 /* @brief Defines whether XMOS device runs as master (i.e. drives LR and Bit clocks)
  *
  * 0: XMOS is I2S master. 1: CODEC is I2s master.
@@ -438,6 +442,16 @@
 #ifndef CODEC_MASTER
 #define CODEC_MASTER       (0)
 #endif
+
+/**
+ * @brief Serial Number String used by the device
+ *
+ * Default: ""
+ */
+#ifndef SERIAL_STR
+#define SERIAL_STR               ""
+#endif
+
 
 /**
  * @brief Vendor String used by the device. This is also pre-pended to various strings used by the design.
@@ -513,21 +527,21 @@
  * @brief Device firmware version number in Binary Coded Decimal format: 0xJJMN where JJ: major, M: minor, N: sub-minor version number.
  */
 #ifndef BCD_DEVICE_J
-#define BCD_DEVICE_J             (0)
+#define BCD_DEVICE_J             (1)
 #endif
 
 /**
  * @brief Device firmware version number in Binary Coded Decimal format: 0xJJMN where JJ: major, M: minor, N: sub-minor version number.
  */
 #ifndef BCD_DEVICE_M
-#define BCD_DEVICE_M             (1)
+#define BCD_DEVICE_M             (2)
 #endif
 
 /**
  * @brief Device firmware version number in Binary Coded Decimal format: 0xJJMN where JJ: major, M: minor, N: sub-minor version number.
  */
 #ifndef BCD_DEVICE_N
-#define BCD_DEVICE_N             (1)       
+#define BCD_DEVICE_N             (0)
 #endif
 
 /**
@@ -1177,7 +1191,7 @@ enum USBEndpointNumber_In
 #ifdef MIDI
     ENDPOINT_NUMBER_IN_MIDI,
 #endif
-#ifdef HID_CONTROLS
+#if( 0 < HID_CONTROLS )
     ENDPOINT_NUMBER_IN_HID,
 #endif
 #ifdef IAP
@@ -1442,6 +1456,12 @@ enum USBEndpointNumber_Out
 #error Bad DEFAULT_MCLK_FREQ
 #endif
 
+/* DFU functional descriptor wDetachTimeOut field (milliseconds)
+ * Time for device to wait for bus reset after DETACH request before reverting to idle state */
+#ifndef DFU_DETACH_TIME_OUT
+#define DFU_DETACH_TIME_OUT 250
+#endif
+
 #if ((MCLK_441 % MIN_FREQ) == 0)
 #define MIN_FREQ_44 MIN_FREQ
 #define MIN_FREQ_48 ((48000 * 512)/((44100 * 512)/MIN_FREQ))
@@ -1463,4 +1483,3 @@ enum USBEndpointNumber_Out
 #if (CODEC_MASTER == 1) && (DSD_CHANS_DAC != 0) 
 #error CODEC_MASTER with DSD is currently unsupported 
 #endif
-
