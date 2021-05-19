@@ -27,13 +27,64 @@ pipeline {
             xcoreLibraryChecks("${REPO}")
           }
         }
-        stage('Tests') {
+        stage('XS2 Tests') {
           failFast true
           parallel {
             stage('Legacy tests') {
               steps {
                 runXmostest("${REPO}", 'legacy_tests')
               }
+            }
+            stage('Unit tests') {
+              steps {
+                dir("${REPO}") {
+                  dir('tests') {
+                    dir('xua_unit_tests') {
+                      viewEnv() {
+                        withVenv {
+                          runWaf('.', "configure clean build --target=xcore200")
+                          runWaf('.', "configure clean build --target=xcoreai")
+                          stash name: 'xua_unit_tests', includes: 'bin/*xcoreai.xe, '
+                          runPython("TARGET=XCORE200 pytest -n 1")
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+        stage('xcore.ai Verification') {
+          agent {
+            label 'xcore.ai-explorer'
+          }
+          stages{
+            stage('Get View') {
+              steps {
+                xcorePrepareSandbox("${VIEW}", "${REPO}")
+              }
+            }
+            stage('Unit tests') {
+              steps {
+                dir("${REPO}") {
+                  dir('tests') {
+                    dir('xua_unit_tests') {
+                      viewEnv() {
+                        withVenv {
+                          unstash 'xua_unit_tests'
+                          runPython("TARGET=XCOREAI pytest -n 1 --junitxml pytest_result.xml")
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          } // stages
+          post {
+            cleanup {
+              cleanWs()
             }
           }
         }
