@@ -101,18 +101,6 @@ def add_single_issue_unity_runner_build_config(waf_conf, project_root_path,
                             unity_runner_build_flags + '-mno-dual-issue')
 
 
-def add_dual_issue_unity_runner_build_config(waf_conf, project_root_path,
-                                             unity_test_path,
-                                             unity_runner_build_flags, target):
-    """
-    Add a dual issue config to xwaf to build each Unity test runner into an
-    xCORE executable.
-    """
-    waf_conf.setenv(get_test_name(unity_test_path) + '_dual_issue' + '_' + target)
-    set_common_build_config(waf_conf, project_root_path, unity_test_path,
-                            unity_runner_build_flags + '-mdual-issue')
-
-
 def prepare_unity_test_for_build(waf_conf, project_root_path, unity_test_path,
                                  unity_runner_dir, unity_runner_suffix, target):
     generate_unity_runner(project_root_path, unity_test_path,
@@ -121,9 +109,6 @@ def prepare_unity_test_for_build(waf_conf, project_root_path, unity_test_path,
     add_single_issue_unity_runner_build_config(waf_conf, project_root_path,
                                                unity_test_path,
                                                runner_build_flags, target)
-    add_dual_issue_unity_runner_build_config(waf_conf, project_root_path,
-                                             unity_test_path,
-                                             runner_build_flags, target)
 
 
 
@@ -181,18 +166,6 @@ def create_waf_contexts(configs):
                     target = trgt
                     runner = test_name
 
-            # Dual issue test configurations
-            for ctx in (BuildContext, CleanContext):
-                raw_context = ctx.__name__.replace('Context', '').lower()
-
-                class di_tmp(ctx):
-                    cmd = raw_context + '_' + test_name + '_dual_issue' + '_' + trgt
-                    variant = test_name + '_dual_issue' + '_' + trgt
-                    source = test_name
-                    language = test_language
-                    target = trgt
-                    runner = test_name
-
 
 UNITY_TEST_DIR = 'src'
 UNITY_TEST_PREFIX = 'test_'
@@ -227,7 +200,6 @@ def build(bld):
         print('Adding test runners to build queue')
         for name in UNITY_TESTS:
             Options.commands.insert(0, 'build_' + name + '_single_issue' + '_' + trgt[0])
-            Options.commands.insert(0, 'build_' + name + '_dual_issue' + '_' + trgt[0])
         print('Build queue {}'.format(Options.commands))
     else:
         print('Building runner {}'.format(bld.runner))
