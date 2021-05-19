@@ -27,9 +27,9 @@ pipeline {
             xcoreLibraryChecks("${REPO}")
           }
         }
-        stage('Tests') {
+        stage('Legacy tests') {
           steps {
-            runXmostest("${REPO}", 'tests')
+            runXmostest("${REPO}", 'tests/legacy_tests')
           }
         }
         stage('xCORE builds') {
