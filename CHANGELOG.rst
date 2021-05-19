@@ -5,6 +5,7 @@ lib_xua Change Log
 -----
 
   * CHANGED:   Move HID descriptors to ease maintenance
+  * CHANGED:   Move legacy tests to separate directory
 
 1.2.0
 -----

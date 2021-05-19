@@ -28,8 +28,13 @@ pipeline {
           }
         }
         stage('Tests') {
-          steps {
-            runXmostest("${REPO}", 'tests')
+          failFast true
+          parallel {
+            stage('Legacy tests') {
+              steps {
+                runXmostest("${REPO}", 'legacy_tests')
+              }
+            }
           }
         }
         stage('xCORE builds') {
