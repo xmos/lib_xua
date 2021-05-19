@@ -27,9 +27,14 @@ pipeline {
             xcoreLibraryChecks("${REPO}")
           }
         }
-        stage('Legacy tests') {
-          steps {
-            runXmostest("${REPO}", 'tests/legacy_tests')
+        stage('Tests') {
+          failFast true
+          parallel {
+            stage('Legacy tests') {
+              steps {
+                runXmostest("${REPO}", 'legacy_tests')
+              }
+            }
           }
         }
         stage('xCORE builds') {
