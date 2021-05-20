@@ -3,11 +3,10 @@ import glob
 import os.path
 import subprocess
 import sys
-from waflib import Options, Errors
+from waflib import Options
 from waflib.Build import BuildContext, CleanContext
 
-#TARGETS = ['xcore200', 'xcoreai']
-TARGETS = ['xcore200'] # Target xcore200 only for the time being
+TARGETS = ['xcore200', 'xcoreai']
 
 def get_ruby():
     """
@@ -68,6 +67,7 @@ def generate_unity_runner(project_root_path, unity_test_path, unity_runner_dir,
     unity_runner_path = os.path.join(
         runner_path, get_test_name(unity_test_path) + unity_runner_suffix
         + '.' + 'c')
+
     try:
         subprocess.check_call([get_ruby(),
                                get_unity_runner_generator(project_root_path),
@@ -79,27 +79,18 @@ def generate_unity_runner(project_root_path, unity_test_path, unity_runner_dir,
         exit(1)  # TODO: Check this is the correct way to kill xwaf on error
 
 
-def set_common_build_config(waf_conf, project_root_path, unity_test_path,
-                            unity_runner_build_flags):
+def add_unity_runner_build_config(waf_conf, project_root_path, unity_test_path,
+                                  unity_runner_build_flags, target):
     """
-    Set the common xwaf config variables.
+    Add a config to xwaf to build each Unity test runner into an xCORE
+    executable.
     """
+    print(f"get_test_name(unity_test_path) = {get_test_name(unity_test_path)}. target = {target}")
+    waf_conf.setenv(get_test_name(unity_test_path) + '_' + target)
     waf_conf.load('xwaf.compiler_xcc')
     waf_conf.env.XCC_FLAGS = unity_runner_build_flags
     waf_conf.env.PROJECT_ROOT = project_root_path
     # TODO: can the xwaf boilerplate help here?
-
-
-def add_single_issue_unity_runner_build_config(waf_conf, project_root_path,
-                                               unity_test_path,
-                                               unity_runner_build_flags, target):
-    """
-    Add a single issue config to xwaf to build each Unity test runner into an
-    xCORE executable.
-    """
-    waf_conf.setenv(get_test_name(unity_test_path) + '_single_issue' + '_' + target)
-    set_common_build_config(waf_conf, project_root_path, unity_test_path,
-                            unity_runner_build_flags + '-mno-dual-issue')
 
 
 def prepare_unity_test_for_build(waf_conf, project_root_path, unity_test_path,
@@ -107,10 +98,8 @@ def prepare_unity_test_for_build(waf_conf, project_root_path, unity_test_path,
     generate_unity_runner(project_root_path, unity_test_path,
                           unity_runner_dir, unity_runner_suffix)
     runner_build_flags = ''  # Could extract flags from the test name
-    add_single_issue_unity_runner_build_config(waf_conf, project_root_path,
-                                               unity_test_path,
-                                               runner_build_flags, target)
-
+    add_unity_runner_build_config(waf_conf, project_root_path, unity_test_path,
+                                  runner_build_flags, target)
 
 
 def find_unity_test_paths(unity_test_dir, unity_test_prefix):
@@ -118,12 +107,8 @@ def find_unity_test_paths(unity_test_dir, unity_test_prefix):
     Return a list of all file paths with the unity_test_prefix found in the
     unity_test_dir.
     """
-    file_list = []
-    for root, dirs, files in os.walk(unity_test_dir):
-        for f in files:
-            if f.startswith(unity_test_prefix):
-                file_list.append(os.path.join(root,f))
-    return file_list
+    return glob.glob(os.path.join(unity_test_dir, unity_test_prefix+'*'))
+
 
 def find_unity_tests(unity_test_dir, unity_test_prefix):
     """
@@ -155,17 +140,19 @@ def generate_all_unity_runners(waf_conf, project_root_path,
 def create_waf_contexts(configs):
     for trgt in TARGETS:
         for test_name, test_language in configs.items():
-            # Single issue test configurations
+            print(f"test_name {test_name}, test_language {test_language}")
             for ctx in (BuildContext, CleanContext):
                 raw_context = ctx.__name__.replace('Context', '').lower()
 
-                class si_tmp(ctx):
-                    cmd = raw_context + '_' + test_name + '_single_issue' + '_' + trgt
-                    variant = test_name + '_single_issue' + '_' + trgt
-                    source = test_name
+                class tmp(ctx):
+                    cmd = raw_context + '_' + test_name + '_' + trgt
+                    variant = test_name + '_' + trgt
+                    #cmd = raw_context + '_' + test_name
+                    #variant = test_name
                     language = test_language
                     target = trgt
                     runner = test_name
+                    print(f"cmd {cmd}, variant {variant}, language {language}")
 
 
 UNITY_TEST_DIR = 'src'
@@ -177,8 +164,8 @@ UNITY_TESTS = find_unity_tests(UNITY_TEST_DIR, UNITY_TEST_PREFIX)
 create_waf_contexts(UNITY_TESTS)
 
 def options(opt):
-    opt.load('xwaf.xcommon')
     opt.add_option('--target', action='store', default='xcore200')
+    opt.load('xwaf.xcommon')
 
 def configure(conf):
     # TODO: move the call to generate_all_unity_runners() to build()
@@ -191,6 +178,7 @@ def configure(conf):
 
 def build(bld):
     if not bld.variant:
+        print('Adding test runners to build queue')
         trgt = [
             c for c in TARGETS if c == bld.options.target
         ]
@@ -198,34 +186,25 @@ def build(bld):
         if len(trgt) == 0:
             bld.fatal('specify a target with --target.\nAvailable targets: {}'.format(', '.join(TARGETS)))
             return
-        print('Adding test runners to build queue')
+
         for name in UNITY_TESTS:
-            Options.commands.insert(0, 'build_' + name + '_single_issue' + '_' + trgt[0])
+            Options.commands.insert(0, 'build_' + name + '_' + trgt[0])
+            #Options.commands.insert(0, 'build_' + name)
         print('Build queue {}'.format(Options.commands))
     else:
         print('Building runner {}'.format(bld.runner))
-        if(bld.target == 'xcoreai'):
-            bld.env.TARGET_ARCH = 'XCORE-AI-EXPLORER'
-        else:
-            bld.env.TARGET_ARCH = 'XCORE-200-EXPLORER'
-
         bld.env.XSCOPE = bld.path.find_resource('config.xscope')
-        # The issue mode for each build is set during the configure step,
-        # as the string bld.env.XCC_FLAGS. We append this to the list last to
-        # ensure it takes precedence over other flags set here.
-        bld.env.XCC_FLAGS = ['-O2', '-g', '-Wall', '-DUNITY_SUPPORT_64',
-                             '-DUNITY_INCLUDE_DOUBLE', bld.env.XCC_FLAGS]
 
-        depends_on = ['lib_xud', 'lib_xua', 'Unity']
-        include = ['.']
-        source = [
-            os.path.join(UNITY_TEST_DIR,
-                         '{}.{}'.format(bld.source, bld.language)),
-            os.path.join(UNITY_RUNNER_DIR,
-                         '{}{}.{}'.format(bld.source, UNITY_RUNNER_SUFFIX,
-                                          'c'))]
+        depends_on = ['lib_xua',
+                      'lib_xud',
+                      'lib_spdif',
+                      'lib_mic_array',
+                      'lib_logging',
+                      'lib_xassert',
+                      'Unity']
+
         makefile_opts = {}
-        makefile_opts['SOURCE_DIRS'] = [os.path.join('src',bld.runner), os.path.join('runners',bld.runner)]
+        makefile_opts['SOURCE_DIRS'] = ['src', os.path.join('runners',bld.runner)]
         if(bld.target == 'xcoreai'):
             print('TARGET XCOREAI')
             makefile_opts['TARGET'] = ['XCORE-AI-EXPLORER']
@@ -233,13 +212,29 @@ def build(bld):
             print('TARGET XCORE200')
             makefile_opts['TARGET'] = ['XCORE-200-EXPLORER']
 
-        makefile_opts['INCLUDE_DIRS'] = ['src']
-        makefile_opts['XCC_FLAGS'] = ['-O2', '-g', '-Wall', '-DUNITY_SUPPORT_64', '-DUNITY_INCLUDE_DOUBLE']
+        makefile_opts['INCLUDE_DIRS'] = ['src',
+                                         '../../lib_xua/src/core/pdm_mics',
+                                         '../../lib_xua/api',
+                                         '../../../lib_xud/lib_xud/src/user/class']
+
+        makefile_opts['XCC_FLAGS'] = ['-O2', '-g', '-Wall', '-DUNITY_SUPPORT_64', '-DUNITY_INCLUDE_DOUBLE', '-DXUD_CORE_CLOCK=600']
         makefile_opts['APP_NAME'] = [bld.variant]
         makefile_opts['USED_MODULES'] = depends_on
         makefile_opts['XCOMMON_MAKEFILE'] = ['Makefile.common']
         bld.do_xcommon(makefile_opts)
 
+
+def test(bld):
+    # Call pytest to run Unity tests inside axe or xsim
+    try:
+        test_output = subprocess.check_output(['pytest'])
+    except subprocess.CalledProcessError as e:
+        # pytest exits non-zero if an assertion fails
+        test_output = e.output
+    print(test_output)
+
+
+# TODO: ensure clean deletes the runners dir/
 def dist(ctx):
     ctx.load('xwaf.xcommon')
 

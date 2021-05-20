@@ -1,11 +1,14 @@
 # Copyright 2021 XMOS LIMITED.
 # This Software is subject to the terms of the XMOS Public Licence: Version 1.
+from __future__ import print_function
+from builtins import str
 import os.path
 import pytest
 import subprocess
 
 target = os.environ.get('TARGET', 'all_possible')
 print("target = ", target)
+
 def pytest_collect_file(parent, path):
     if(path.ext == ".xe"):
         if(target == 'all_possible'):
@@ -27,24 +30,9 @@ class UnityTestSource(pytest.File):
         # |-- runners/      <- Auto-generated buildable source of test binaries
         # |-- src/          <- Unity test functions
         # `-- wscript       <- Build system file used to generate/build runners
-        print("self.name = ",self.name)
-        #xe_name = ((os.path.basename(self.name)).split("."))[0] + ".xe"
-        #test_bin_path = os.path.join('bin', xe_name)
-        #
-        #test_root_dir_name = os.path.basename(os.path.dirname(__file__))
-        #test_src_path = os.path.basename(str(self.fspath))
-        #test_src_name = os.path.splitext(test_src_path)[0]
+        xe_name = ((os.path.basename(self.name)).split("."))[0] + ".xe"
+        test_bin_path = os.path.join('bin', xe_name)
 
-        #test_bin_name_si = os.path.join(
-        #    test_src_name + '_single_issue.xe')
-        #test_bin_path_si = os.path.join('bin',
-        #                                test_bin_name_si)
-        #yield UnityTestExecutable.from_parent(self, name=test_bin_path_si)
-
-        #test_bin_name_di = os.path.join(
-        #    test_src_name + '_dual_issue.xe')
-        #test_bin_path_di = os.path.join('bin',
-        #                                test_bin_name_di)
         yield UnityTestExecutable.from_parent(self, name=self.name)
 
 
@@ -83,7 +71,7 @@ class UnityTestExecutable(pytest.Item):
                 test_case = test_report[2]
                 result = test_report[3]
                 failure_reason = None
-                print('\n {}()'.format(test_case)),
+                print(('\n {}()'.format(test_case)), end=' ')
                 if result == 'PASS':
                     unity_pass = True
                     continue
