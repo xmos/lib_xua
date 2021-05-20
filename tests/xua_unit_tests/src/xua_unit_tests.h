@@ -8,6 +8,7 @@
 #ifdef __XC__
 
 #include <xs1.h>
+#include <platform.h>
 #include <xclib.h>
 
 #include "xua_conf.h"
