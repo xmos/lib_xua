@@ -11,11 +11,23 @@
 #ifndef _HID_REPORT_DESCRIPTOR_
 #define _HID_REPORT_DESCRIPTOR_
 
-#define HID_REPORT_ITEM_MAX_SIZE ( 2 )
+#define HID_REPORT_ITEM_HDR_SIZE_MASK   ( 0x03 )
+#define HID_REPORT_ITEM_HDR_SIZE_SHIFT  ( 0 )
 
-#define HID_STATUS_GOOD          ( 0 )
-#define HID_STATUS_BAD_HEADER    ( 1 )
-#define HID_STATUS_BAD_LOCATION  ( 2 )
+#define HID_REPORT_ITEM_HDR_TAG_MASK    ( 0xF0 )
+#define HID_REPORT_ITEM_HDR_TAG_SHIFT   ( 4 )
+
+#define HID_REPORT_ITEM_HDR_TYPE_MASK   ( 0x0C )
+#define HID_REPORT_ITEM_HDR_TYPE_SHIFT  ( 2 )
+
+#define HID_REPORT_ITEM_MAX_SIZE        ( 2 )
+
+#define HID_REPORT_ITEM_USAGE_TAG       ( 0 )
+#define HID_REPORT_ITEM_USAGE_TYPE      ( 2 )
+
+#define HID_STATUS_GOOD                 ( 0 )
+#define HID_STATUS_BAD_HEADER           ( 1 )
+#define HID_STATUS_BAD_LOCATION         ( 2 )
 
 /**
  * @brief USB HID Report Descriptor. Short Item

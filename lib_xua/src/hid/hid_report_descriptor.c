@@ -5,23 +5,11 @@
 #include <xs1.h>
 #include "xua_hid_report_descriptor.h"
 
-#define HID_REPORT_ITEM_HDR_SIZE_MASK  ( 0x03 )
-#define HID_REPORT_ITEM_HDR_SIZE_SHIFT ( 0 )
-
-#define HID_REPORT_ITEM_HDR_TAG_MASK   ( 0xF0 )
-#define HID_REPORT_ITEM_HDR_TAG_SHIFT  ( 4 )
-
-#define HID_REPORT_ITEM_HDR_TYPE_MASK  ( 0x0C )
-#define HID_REPORT_ITEM_HDR_TYPE_SHIFT ( 2 )
-
 #define HID_REPORT_ITEM_LOC_BIT_MASK   ( 0x70 )
 #define HID_REPORT_ITEM_LOC_BIT_SHIFT  ( 4 )
 
 #define HID_REPORT_ITEM_LOC_BYTE_MASK  ( 0x0F )
 #define HID_REPORT_ITEM_LOC_BYTE_SHIFT ( 0 )
-
-#define HID_REPORT_ITEM_USAGE_TAG      ( 0 )
-#define HID_REPORT_ITEM_USAGE_TYPE     ( 2 )
 
 #if 0
 /* Existing static report descriptor kept for reference */
@@ -289,7 +277,7 @@ void hidInitReportDescriptor( void )
 
 unsigned hidSetReportItem( const unsigned byte, const unsigned bit, const unsigned char header, const unsigned char data[] )
 {
-    unsigned retVal = 2;
+    unsigned retVal = HID_STATUS_BAD_LOCATION;
     unsigned bSize = hidGetItemSize( header );
     unsigned bTag  = hidGetItemTag ( header );
     unsigned bType = hidGetItemType( header );
@@ -297,7 +285,7 @@ unsigned hidSetReportItem( const unsigned byte, const unsigned bit, const unsign
     if(( HID_REPORT_ITEM_MAX_SIZE  <  bSize ) &&
        ( HID_REPORT_ITEM_USAGE_TAG == bTag  ) &&
        ( HID_REPORT_ITEM_USAGE_TAG == bType )) {
-        retVal = 1;
+        retVal = HID_STATUS_BAD_HEADER;
     } else {
         for( unsigned itemIdx = 0; itemIdx < sizeof hidConfigurableItems / sizeof( USB_HID_Short_Item_t ); ++itemIdx ) {
             USB_HID_Short_Item_t item = *hidConfigurableItems[ itemIdx ];
@@ -313,7 +301,7 @@ unsigned hidSetReportItem( const unsigned byte, const unsigned bit, const unsign
 
                 *hidConfigurableItems[ itemIdx ] = item;
                 hidReportDescriptorInitialised = 0;
-                retVal = 0;
+                retVal = HID_STATUS_GOOD;
             }
         }
     }
