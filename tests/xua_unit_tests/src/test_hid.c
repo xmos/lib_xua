@@ -10,3 +10,10 @@ void test_uninitialised_hidGetReportDescriptor()
     unsigned char* reportDescPtr = hidGetReportDescriptor();
     TEST_ASSERT_NULL( reportDescPtr );
 }
+
+void test_initialised_hidGetReportDescriptor()
+{
+    hidInitReportDescriptor();
+    unsigned char* reportDescPtr = hidGetReportDescriptor();
+    TEST_ASSERT_NOT_NULL( reportDescPtr );
+}
