@@ -213,8 +213,9 @@ def build(bld):
             makefile_opts['TARGET'] = ['XCORE-200-EXPLORER']
 
         makefile_opts['INCLUDE_DIRS'] = ['src',
-                                         '../../lib_xua/src/core/pdm_mics',
                                          '../../lib_xua/api',
+                                         '../../lib_xua/src/core/pdm_mics',
+                                         '../../lib_xua/src/hid',
                                          '../../../lib_xud/lib_xud/src/user/class']
 
         makefile_opts['XCC_FLAGS'] = ['-O2', '-g', '-Wall', '-DUNITY_SUPPORT_64', '-DUNITY_INCLUDE_DOUBLE', '-DXUD_CORE_CLOCK=600']
