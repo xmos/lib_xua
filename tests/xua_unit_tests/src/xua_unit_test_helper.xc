@@ -1,6 +1,13 @@
 // Copyright 2021 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
-#include "xua_unit_tests.h"
+#ifdef __XC__
+
+#include <xs1.h>
+#include <platform.h>
+#include <xclib.h>
+
+#endif // __XC__
+
 
 in port p_mclk_in                   = XS1_PORT_1D;
 
@@ -18,8 +25,4 @@ void AudioHwConfig(unsigned samFreq, unsigned mClk, unsigned dsdMode, unsigned s
 void AudioHwInit()
 {
     ; // nothing
-}
-
-void test_null(){
-    TEST_ASSERT_MESSAGE(1, "Success!");
 }
