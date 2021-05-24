@@ -17,6 +17,7 @@ static unsigned construct_usage_header( unsigned size )
     return header;
 }
 
+// Basic report descriptor tests
 void test_uninitialised_hidGetReportDescriptor( void )
 {
     unsigned char* reportDescPtr = hidGetReportDescriptor();
@@ -30,12 +31,43 @@ void test_initialised_hidGetReportDescriptor( void )
     TEST_ASSERT_NOT_NULL( reportDescPtr );
 }
 
-void test_bad_bit_hidSetReportItem( void )
+// Bit range tests
+void test_max_bit_hidSetReportItem( void )
+{
+    const unsigned bit = 7;
+    const unsigned byte = 1;    // Only byte 1 has bit 7 not reserved
+    const unsigned char header = construct_usage_header( 0 );
+
+    unsigned retVal = hidSetReportItem( byte, bit, header, NULL );
+    TEST_ASSERT_EQUAL_UINT( HID_STATUS_GOOD, retVal );
+}
+
+void test_min_bit_hidSetReportItem( void )
+{
+    const unsigned bit = 0;
+    const unsigned byte = 0;
+    const unsigned char header = construct_usage_header( 0 );
+
+    unsigned retVal = hidSetReportItem( byte, bit, header, NULL );
+    TEST_ASSERT_EQUAL_UINT( HID_STATUS_GOOD, retVal );
+}
+
+void test_overflow_bit_hidSetReportItem( void )
 {
     const unsigned bit = 8;
     const unsigned byte = 0;
     const unsigned char header = construct_usage_header( 0 );
 
     unsigned retVal = hidSetReportItem( byte, bit, header, NULL );
+    TEST_ASSERT_EQUAL_UINT( HID_STATUS_BAD_LOCATION, retVal );
+}
+
+void test_underflow_bit_hidSetReportItem( void )
+{
+    const int bit = -1;
+    const unsigned byte = 0;
+    const unsigned char header = construct_usage_header( 0 );
+
+    unsigned retVal = hidSetReportItem( byte, ( unsigned ) bit, header, NULL );
     TEST_ASSERT_EQUAL_UINT( HID_STATUS_BAD_LOCATION, retVal );
 }
