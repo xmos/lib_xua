@@ -32,6 +32,29 @@ void test_prepared_hidGetReportDescriptor( void )
     TEST_ASSERT_NOT_NULL( reportDescPtr );
 }
 
+// Configurable and non-configurable item tests
+void test_configurable_item_hidSetReportItem( void )
+{
+    const unsigned bit = 0;
+    const unsigned byte = 0;
+    const unsigned char data[ 1 ] = { 0x2C };   // Spacebar keycode
+    const unsigned char header = construct_usage_header( sizeof data / sizeof( unsigned char ));
+
+    unsigned retVal = hidSetReportItem( byte, bit, header, data );
+    TEST_ASSERT_EQUAL_UINT( HID_STATUS_GOOD, retVal );
+}
+
+void test_nonconfigurable_item_hidSetReportItem( void )
+{
+    const unsigned bit = 7; // Reserved bit
+    const unsigned byte = 0;
+    const unsigned char data[ 1 ] = { 0x2C };   // Spacebar keycode
+    const unsigned char header = construct_usage_header( sizeof data / sizeof( unsigned char ));
+
+    unsigned retVal = hidSetReportItem( byte, bit, header, data );
+    TEST_ASSERT_EQUAL_UINT( HID_STATUS_BAD_LOCATION, retVal );
+}
+
 // Bit range tests
 void test_max_bit_hidSetReportItem( void )
 {
@@ -206,4 +229,71 @@ void test_reserved_type_hidSetReportItem( void )
 
     unsigned retVal = hidSetReportItem( byte, bit, header, NULL );
     TEST_ASSERT_EQUAL_UINT( HID_STATUS_BAD_HEADER, retVal );
+}
+
+// Combined function tests
+void test_initial_modification_without_subsequent_preparation( void )
+{
+    const unsigned bit = 0;
+    const unsigned byte = 0;
+    const unsigned char data[ 1 ] = { 0x2C };   // Spacebar keycode
+    const unsigned char header = construct_usage_header( sizeof data / sizeof( unsigned char ));
+
+    unsigned retVal = hidSetReportItem( byte, bit, header, data );
+    TEST_ASSERT_EQUAL_UINT( HID_STATUS_GOOD, retVal );
+
+    unsigned char* reportDescPtr = hidGetReportDescriptor();
+    TEST_ASSERT_NULL( reportDescPtr );
+}
+
+void test_initial_modification_with_subsequent_preparation( void )
+{
+    const unsigned bit = 0;
+    const unsigned byte = 0;
+    const unsigned char data[ 1 ] = { 0x2C };   // Spacebar keycode
+    const unsigned char header = construct_usage_header( sizeof data / sizeof( unsigned char ));
+
+    unsigned retVal = hidSetReportItem( byte, bit, header, data );
+    TEST_ASSERT_EQUAL_UINT( HID_STATUS_GOOD, retVal );
+
+    hidPrepareReportDescriptor();
+    unsigned char* reportDescPtr = hidGetReportDescriptor();
+    TEST_ASSERT_NOT_NULL( reportDescPtr );
+}
+
+void test_modification_without_subsequent_preparation( void )
+{
+    hidPrepareReportDescriptor();
+    unsigned char* reportDescPtr = hidGetReportDescriptor();
+    TEST_ASSERT_NOT_NULL( reportDescPtr );
+
+    const unsigned bit = 0;
+    const unsigned byte = 0;
+    const unsigned char data[ 1 ] = { 0x2C };   // Spacebar keycode
+    const unsigned char header = construct_usage_header( sizeof data / sizeof( unsigned char ));
+
+    unsigned retVal = hidSetReportItem( byte, bit, header, data );
+    TEST_ASSERT_EQUAL_UINT( HID_STATUS_GOOD, retVal );
+
+    reportDescPtr = hidGetReportDescriptor();
+    TEST_ASSERT_NULL( reportDescPtr );
+}
+
+void test_modification_with_subsequent_preparation( void )
+{
+    hidPrepareReportDescriptor();
+    unsigned char* reportDescPtr = hidGetReportDescriptor();
+    TEST_ASSERT_NOT_NULL( reportDescPtr );
+
+    const unsigned bit = 0;
+    const unsigned byte = 0;
+    const unsigned char data[ 1 ] = { 0x2C };   // Spacebar keycode
+    const unsigned char header = construct_usage_header( sizeof data / sizeof( unsigned char ));
+
+    unsigned retVal = hidSetReportItem( byte, bit, header, data );
+    TEST_ASSERT_EQUAL_UINT( HID_STATUS_GOOD, retVal );
+
+    hidPrepareReportDescriptor();
+    reportDescPtr = hidGetReportDescriptor();
+    TEST_ASSERT_NOT_NULL( reportDescPtr );
 }
