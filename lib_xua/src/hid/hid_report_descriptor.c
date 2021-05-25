@@ -267,12 +267,14 @@ unsigned char* hidGetReportDescriptor( void )
 
 void hidPrepareReportDescriptor( void )
 {
-    unsigned char* ptr = hidReportDescriptor;
-    for( unsigned idx = 0; idx < sizeof hidReportDescriptorItems / sizeof( USB_HID_Short_Item_t ); ++idx ) {
-        ptr = hidTranslateItem( hidReportDescriptorItems[ idx ], ptr );
-    }
+    if( !hidReportDescriptorPrepared ) {
+        unsigned char* ptr = hidReportDescriptor;
+        for( unsigned idx = 0; idx < sizeof hidReportDescriptorItems / sizeof( USB_HID_Short_Item_t ); ++idx ) {
+            ptr = hidTranslateItem( hidReportDescriptorItems[ idx ], ptr );
+        }
 
-    hidReportDescriptorPrepared = 1;
+        hidReportDescriptorPrepared = 1;
+    }
 }
 
 unsigned hidSetReportItem( const unsigned byte, const unsigned bit, const unsigned char header, const unsigned char data[] )
