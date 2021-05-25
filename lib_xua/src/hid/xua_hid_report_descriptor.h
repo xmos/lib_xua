@@ -56,12 +56,23 @@ typedef struct
  * @brief Get the HID Report descriptor
  *
  * This function returns a pointer to the USB HID Report descriptor.
- * It returns NULL if the Report descriptor has not been initialised,
- *   i.e., no one has called \c hidInitReportDescriptor().
+ * It returns NULL if the Report descriptor has not been prepared,
+ *   i.e., no one has called \c hidPrepareReportDescriptor().
  *
  * @return A pointer to a list of unsigned char containing the Report descriptor
  */
 unsigned char* hidGetReportDescriptor( void );
+
+/**
+ * @brief Get the length of the HID Report descriptor
+ *
+ * This function returns the length of the USB HID Report descriptor.
+ * It returns zero if the Report descriptor has not been prepared,
+ *   i.e., no one has called \c hidPrepareReportDescriptor().
+ *
+ * @return The length of the Report descriptor in bytes
+ */
+size_t hidGetReportDescriptorLength( void );
 
 /**
  * @brief Prepare the USB HID Report descriptor

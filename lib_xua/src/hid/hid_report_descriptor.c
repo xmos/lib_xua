@@ -154,6 +154,7 @@ static const USB_HID_Short_Item_t* const hidReportDescriptorItems[] = {
                                            ( sizeof ( USB_HID_Short_Item_t ) - HID_REPORT_ITEM_LOCATION_SIZE ))
 
 static unsigned char hidReportDescriptor[ HID_REPORT_DESCRIPTOR_MAX_LENGTH ];
+static size_t hidReportDescriptorLength = 0;
 static unsigned hidReportDescriptorPrepared = 0;
 
 /**
@@ -216,12 +217,14 @@ static unsigned hidGetItemType( const unsigned char header );
  *
  * Parameters:
  *
- *  @param[in]     inPtr    A pointer to a \c USB_HID_Short_Item
- *  @param[in,out] outPtr   A pointer to the next available space in the raw byte buffer
+ *  @param[in]     inPtr        A pointer to a \c USB_HID_Short_Item
+ *  @param[in,out] outPtrPtr    A pointer to a pointer to the next available space in the raw
+ *                              byte buffer.  Passed as a pointer to a pointer to allow this
+ *                              function to return the updated pointer to the raw byte buffer.
  *
- * @return The updated \a outPtr
+ * @return The number of bytes placed in the raw byte buffer
  */
-static unsigned char* hidTranslateItem( const USB_HID_Short_Item_t* inPtr, unsigned char* outPtr );
+static size_t hidTranslateItem( const USB_HID_Short_Item_t* inPtr, unsigned char** outPtrPtr );
 
 
 static unsigned hidGetItemBitLocation( const unsigned char location )
@@ -265,12 +268,18 @@ unsigned char* hidGetReportDescriptor( void )
     return retVal;
 }
 
+size_t hidGetReportDescriptorLength( void )
+{
+    return ( hidReportDescriptorPrepared ) ? hidReportDescriptorLength : 0;
+}
+
 void hidPrepareReportDescriptor( void )
 {
     if( !hidReportDescriptorPrepared ) {
+        hidReportDescriptorLength = 0;
         unsigned char* ptr = hidReportDescriptor;
         for( unsigned idx = 0; idx < sizeof hidReportDescriptorItems / sizeof( USB_HID_Short_Item_t ); ++idx ) {
-            ptr = hidTranslateItem( hidReportDescriptorItems[ idx ], ptr );
+            hidReportDescriptorLength += hidTranslateItem( hidReportDescriptorItems[ idx ], &ptr );
         }
 
         hidReportDescriptorPrepared = 1;
@@ -311,14 +320,16 @@ unsigned hidSetReportItem( const unsigned byte, const unsigned bit, const unsign
     return retVal;
 }
 
-static unsigned char* hidTranslateItem( const USB_HID_Short_Item_t* inPtr, unsigned char* outPtr )
+static size_t hidTranslateItem( const USB_HID_Short_Item_t* inPtr, unsigned char** outPtrPtr )
 {
-    *outPtr++ = inPtr->header;
+    size_t count = 0;
+    *(*outPtrPtr)++ = inPtr->header;
 
     unsigned dataLength = hidGetItemSize( inPtr->header );
     for( unsigned idx = 0; idx < dataLength; ++idx ) {
-        *outPtr++ = inPtr->data[ idx ];
+        *(*outPtrPtr)++ = inPtr->data[ idx ];
+        ++count;
     }
 
-    return outPtr;
+    return count;
 }
