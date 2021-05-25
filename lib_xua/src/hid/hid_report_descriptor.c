@@ -239,7 +239,6 @@ static unsigned hidGetItemByteLocation( const unsigned char location )
 static unsigned hidGetItemSize( const unsigned char header )
 {
     unsigned bSize = ( header & HID_REPORT_ITEM_HDR_SIZE_MASK ) >> HID_REPORT_ITEM_HDR_SIZE_SHIFT;
-    assert( bSize <= HID_REPORT_ITEM_MAX_SIZE );
     return bSize;
 }
 
@@ -266,7 +265,7 @@ unsigned char* hidGetReportDescriptor( void )
     return retVal;
 }
 
-void hidPrerpareReportDescriptor( void )
+void hidPrepareReportDescriptor( void )
 {
     unsigned char* ptr = hidReportDescriptor;
     for( unsigned idx = 0; idx < sizeof hidReportDescriptorItems / sizeof( USB_HID_Short_Item_t ); ++idx ) {
@@ -283,9 +282,9 @@ unsigned hidSetReportItem( const unsigned byte, const unsigned bit, const unsign
     unsigned bTag  = hidGetItemTag ( header );
     unsigned bType = hidGetItemType( header );
 
-    if(( HID_REPORT_ITEM_MAX_SIZE  <  bSize ) &&
-       ( HID_REPORT_ITEM_USAGE_TAG == bTag  ) &&
-       ( HID_REPORT_ITEM_USAGE_TAG == bType )) {
+    if(( HID_REPORT_ITEM_MAX_SIZE   <  bSize ) ||
+       ( HID_REPORT_ITEM_USAGE_TAG  != bTag  ) ||
+       ( HID_REPORT_ITEM_USAGE_TYPE != bType )) {
         retVal = HID_STATUS_BAD_HEADER;
     } else {
         for( unsigned itemIdx = 0; itemIdx < sizeof hidConfigurableItems / sizeof( USB_HID_Short_Item_t ); ++itemIdx ) {

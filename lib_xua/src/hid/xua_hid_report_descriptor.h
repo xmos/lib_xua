@@ -75,6 +75,10 @@ void hidPrepareReportDescriptor( void );
 /**
  * @brief Modify a HID Report descriptor item
  *
+ * @warning This function does not check that the length of the \a data array matches the value of
+ *          the bSize field in the \a header.  For safe operation use a \a data array of at least
+ *          \c HID_REPORT_ITEM_MAX_SIZE bytes in length.
+ *
  * Parameters:
  *
  *  @param[in] byte     The byte position of the control within the HID Report

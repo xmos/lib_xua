@@ -1,6 +1,7 @@
 // Copyright 2021 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 #include <stddef.h>
+#include <stdio.h>
 
 #include "xua_unit_tests.h"
 #include "xua_hid_report_descriptor.h"
@@ -18,15 +19,15 @@ static unsigned construct_usage_header( unsigned size )
 }
 
 // Basic report descriptor tests
-void test_uninitialised_hidGetReportDescriptor( void )
+void test_unprepared_hidGetReportDescriptor( void )
 {
     unsigned char* reportDescPtr = hidGetReportDescriptor();
     TEST_ASSERT_NULL( reportDescPtr );
 }
 
-void test_initialised_hidGetReportDescriptor( void )
+void test_prepared_hidGetReportDescriptor( void )
 {
-    hidInitReportDescriptor();
+    hidPrepareReportDescriptor();
     unsigned char* reportDescPtr = hidGetReportDescriptor();
     TEST_ASSERT_NOT_NULL( reportDescPtr );
 }
@@ -111,4 +112,36 @@ void test_underflow_byte_hidSetReportItem( void )
 
     unsigned retVal = hidSetReportItem( ( unsigned ) byte, bit, header, NULL );
     TEST_ASSERT_EQUAL_UINT( HID_STATUS_BAD_LOCATION, retVal );
+}
+
+// Size range tests
+void test_max_size_hidSetReportItem( void )
+{
+    const unsigned bit = 0;
+    const unsigned byte = 0;
+    const unsigned char data[ HID_REPORT_ITEM_MAX_SIZE ] = { 0x00 };
+    const unsigned char header = construct_usage_header( HID_REPORT_ITEM_MAX_SIZE );
+
+    unsigned retVal = hidSetReportItem( byte, bit, header, data );
+    TEST_ASSERT_EQUAL_UINT( HID_STATUS_GOOD, retVal );
+}
+
+void test_min_size_hidSetReportItem( void )
+{
+    const unsigned bit = 0;
+    const unsigned byte = 0;
+    const unsigned char header = construct_usage_header( 0x00 );
+
+    unsigned retVal = hidSetReportItem( byte, bit, header, NULL );
+    TEST_ASSERT_EQUAL_UINT( HID_STATUS_GOOD, retVal );
+}
+
+void test_unsupported_size_hidSetReportItem( void )
+{
+    const unsigned bit = 0;
+    const unsigned byte = 0;
+    const unsigned char header = construct_usage_header( 0x03 );
+
+    unsigned retVal = hidSetReportItem( byte, bit, header, NULL );
+    TEST_ASSERT_EQUAL_UINT( HID_STATUS_BAD_HEADER, retVal );
 }
