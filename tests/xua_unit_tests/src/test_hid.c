@@ -145,3 +145,65 @@ void test_unsupported_size_hidSetReportItem( void )
     unsigned retVal = hidSetReportItem( byte, bit, header, NULL );
     TEST_ASSERT_EQUAL_UINT( HID_STATUS_BAD_HEADER, retVal );
 }
+
+// Header tag and type tests
+void test_bad_tag_hidSetReportItem( void )
+{
+    const unsigned bit = 0;
+    const unsigned byte = 0;
+    const unsigned char good_header = construct_usage_header( 0x00 );
+
+    for( unsigned tag = 0x01; tag <= 0x0F; ++tag ) {
+        unsigned char bad_header = good_header | (( 0x0F << HID_REPORT_ITEM_HDR_TAG_SHIFT ) & HID_REPORT_ITEM_HDR_TAG_MASK );
+        unsigned retVal = hidSetReportItem( byte, bit, bad_header, NULL );
+        TEST_ASSERT_EQUAL_UINT( HID_STATUS_BAD_HEADER, retVal );
+    }
+}
+
+void test_local_type_hidSetReportItem( void )
+{
+    const unsigned bit = 0;
+    const unsigned byte = 0;
+    const unsigned char header = ( construct_usage_header( 0x00 ) &
+                                 ~HID_REPORT_ITEM_HDR_TYPE_MASK ) |
+                                 (( 0x02 << HID_REPORT_ITEM_HDR_TYPE_SHIFT ) & HID_REPORT_ITEM_HDR_TYPE_MASK );
+
+    unsigned retVal = hidSetReportItem( byte, bit, header, NULL );
+    TEST_ASSERT_EQUAL_UINT( HID_STATUS_GOOD, retVal );
+}
+
+void test_global_type_hidSetReportItem( void )
+{
+    const unsigned bit = 0;
+    const unsigned byte = 0;
+    const unsigned char header = ( construct_usage_header( 0x00 ) &
+                                 ~HID_REPORT_ITEM_HDR_TYPE_MASK ) |
+                                 (( 0x01 << HID_REPORT_ITEM_HDR_TYPE_SHIFT ) & HID_REPORT_ITEM_HDR_TYPE_MASK );
+
+    unsigned retVal = hidSetReportItem( byte, bit, header, NULL );
+    TEST_ASSERT_EQUAL_UINT( HID_STATUS_BAD_HEADER, retVal );
+}
+
+void test_main_type_hidSetReportItem( void )
+{
+    const unsigned bit = 0;
+    const unsigned byte = 0;
+    const unsigned char header = ( construct_usage_header( 0x00 ) &
+                                 ~HID_REPORT_ITEM_HDR_TYPE_MASK ) |
+                                 (( 0x00 << HID_REPORT_ITEM_HDR_TYPE_SHIFT ) & HID_REPORT_ITEM_HDR_TYPE_MASK );
+
+    unsigned retVal = hidSetReportItem( byte, bit, header, NULL );
+    TEST_ASSERT_EQUAL_UINT( HID_STATUS_BAD_HEADER, retVal );
+}
+
+void test_reserved_type_hidSetReportItem( void )
+{
+    const unsigned bit = 0;
+    const unsigned byte = 0;
+    const unsigned char header = ( construct_usage_header( 0x00 ) &
+                                 ~HID_REPORT_ITEM_HDR_TYPE_MASK ) |
+                                 (( 0x03 << HID_REPORT_ITEM_HDR_TYPE_SHIFT ) & HID_REPORT_ITEM_HDR_TYPE_MASK );
+
+    unsigned retVal = hidSetReportItem( byte, bit, header, NULL );
+    TEST_ASSERT_EQUAL_UINT( HID_STATUS_BAD_HEADER, retVal );
+}
