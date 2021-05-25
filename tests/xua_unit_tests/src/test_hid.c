@@ -71,3 +71,44 @@ void test_underflow_bit_hidSetReportItem( void )
     unsigned retVal = hidSetReportItem( byte, ( unsigned ) bit, header, NULL );
     TEST_ASSERT_EQUAL_UINT( HID_STATUS_BAD_LOCATION, retVal );
 }
+
+// Byte range tests
+void test_max_byte_hidSetReportItem( void )
+{
+    const unsigned bit = 0;
+    const unsigned byte = 2;
+    const unsigned char header = construct_usage_header( 0 );
+
+    unsigned retVal = hidSetReportItem( byte, bit, header, NULL );
+    TEST_ASSERT_EQUAL_UINT( HID_STATUS_GOOD, retVal );
+}
+
+void test_min_byte_hidSetReportItem( void )
+{
+    const unsigned bit = 0;
+    const unsigned byte = 0;
+    const unsigned char header = construct_usage_header( 0 );
+
+    unsigned retVal = hidSetReportItem( byte, bit, header, NULL );
+    TEST_ASSERT_EQUAL_UINT( HID_STATUS_GOOD, retVal );
+}
+
+void test_overflow_byte_hidSetReportItem( void )
+{
+    const unsigned bit = 0;
+    const unsigned byte = 4;
+    const unsigned char header = construct_usage_header( 0 );
+
+    unsigned retVal = hidSetReportItem( byte, bit, header, NULL );
+    TEST_ASSERT_EQUAL_UINT( HID_STATUS_BAD_LOCATION, retVal );
+}
+
+void test_underflow_byte_hidSetReportItem( void )
+{
+    const unsigned bit = 0;
+    const int byte = -1;
+    const unsigned char header = construct_usage_header( 0 );
+
+    unsigned retVal = hidSetReportItem( ( unsigned ) byte, bit, header, NULL );
+    TEST_ASSERT_EQUAL_UINT( HID_STATUS_BAD_LOCATION, retVal );
+}
