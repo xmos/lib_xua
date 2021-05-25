@@ -64,6 +64,15 @@ typedef struct
 unsigned char* hidGetReportDescriptor( void );
 
 /**
+ * @brief Prepare the USB HID Report descriptor
+ *
+ * After preparation, \c hidGetReportDescriptor() returns a list suitablefor transmission over USB.
+ *
+ * Call this function after altering one or more Report Items using \c hidSetReportItem().
+ */
+void hidPrepareReportDescriptor( void );
+
+/**
  * @brief Modify a HID Report descriptor item
  *
  * Parameters:
@@ -81,15 +90,5 @@ unsigned char* hidGetReportDescriptor( void );
  *                                      of the HID Report
  */
 unsigned hidSetReportItem( const unsigned byte, const unsigned bit, const unsigned char header, const unsigned char data[] );
-
-/**
- * @brief Initialise the USB HID Report descriptor
- *
- * After initialisation, \c hidGetReportDescriptor() returns a list suitable
- * for transmission over USB.
- *
- * Call this function after altering one or more Report Items using \c hidSetReportItem().
- */
-void hidInitReportDescriptor( void );
 
 #endif // _HID_REPORT_DESCRIPTOR_
