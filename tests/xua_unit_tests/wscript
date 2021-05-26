@@ -218,7 +218,14 @@ def build(bld):
                                          '../../lib_xua/src/hid',
                                          '../../../lib_xud/lib_xud/src/user/class']
 
-        makefile_opts['XCC_FLAGS'] = ['-O2', '-g', '-Wall', '-DUNITY_SUPPORT_64', '-DUNITY_INCLUDE_DOUBLE', '-DXUD_CORE_CLOCK=600']
+        makefile_opts['XCC_FLAGS'] = ['-O2',
+                                      '-g',
+                                      '-Wall',
+                                      '-DUNITY_SUPPORT_64',
+                                      '-DUNITY_INCLUDE_DOUBLE',
+                                      '-DXUD_CORE_CLOCK=600',
+                                      '-DXUD_SERIES_SUPPORT=4']
+
         makefile_opts['APP_NAME'] = [bld.variant]
         makefile_opts['USED_MODULES'] = depends_on
         makefile_opts['XCOMMON_MAKEFILE'] = ['Makefile.common']
