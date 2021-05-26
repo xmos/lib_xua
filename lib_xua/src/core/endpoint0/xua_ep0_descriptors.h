@@ -2373,6 +2373,10 @@ const unsigned num_freqs_a1 = MAX(3, (0
 
 #endif
 
+#if( 0 < HID_CONTROLS )
+    #define USB_HID_DESCRIPTOR_OFFSET (18 + AC_TOTAL_LENGTH + (INPUT_INTERFACES_A1 * (49 + num_freqs_a1 * 3)) + (OUTPUT_INTERFACES_A1 * (49 + num_freqs_a1 * 3)) + CONTROL_INTERFACE_BYTES + DFU_INTERFACE_BYTES + INTERFACE_DESCRIPTOR_BYTES)
+#endif
+
 #define CHARIFY_SR(x) (x & 0xff),((x & 0xff00)>> 8),((x & 0xff0000)>> 16)
 
 #if (MIN_FREQ_FS < 12000) && (MAX_FREQ_FS > 48000)
