@@ -26,6 +26,11 @@ static unsigned construct_usage_header( unsigned size )
     return header;
 }
 
+void setUp( void )
+{
+    hidResetReportDescriptor();
+}
+
 // Basic report descriptor tests
 void test_unprepared_hidGetReportDescriptor( void )
 {
@@ -35,6 +40,23 @@ void test_unprepared_hidGetReportDescriptor( void )
 
 void test_prepared_hidGetReportDescriptor( void )
 {
+    hidPrepareReportDescriptor();
+    unsigned char* reportDescPtr = hidGetReportDescriptor();
+    TEST_ASSERT_NOT_NULL( reportDescPtr );
+}
+
+void test_reset_unprepared_hidGetReportDescriptor( void )
+{
+    hidPrepareReportDescriptor();
+    hidResetReportDescriptor();
+    unsigned char* reportDescPtr = hidGetReportDescriptor();
+    TEST_ASSERT_NULL( reportDescPtr );
+}
+
+void test_reset_prepared_hidGetReportDescriptor( void )
+{
+    hidPrepareReportDescriptor();
+    hidResetReportDescriptor();
     hidPrepareReportDescriptor();
     unsigned char* reportDescPtr = hidGetReportDescriptor();
     TEST_ASSERT_NOT_NULL( reportDescPtr );
@@ -276,6 +298,7 @@ void test_modification_without_subsequent_preparation( void )
     const unsigned char data[ 1 ] = { LOUDNESS_CONTROL };
     const unsigned char header = construct_usage_header( sizeof data / sizeof( unsigned char ));
 
+    hidResetReportDescriptor();
     unsigned retVal = hidSetReportItem( byte, bit, header, data );
     TEST_ASSERT_EQUAL_UINT( HID_STATUS_GOOD, retVal );
 
@@ -294,6 +317,7 @@ void test_modification_with_subsequent_preparation( void )
     const unsigned char data[ 1 ] = { LOUDNESS_CONTROL };
     const unsigned char header = construct_usage_header( sizeof data / sizeof( unsigned char ));
 
+    hidResetReportDescriptor();
     unsigned retVal = hidSetReportItem( byte, bit, header, data );
     TEST_ASSERT_EQUAL_UINT( HID_STATUS_GOOD, retVal );
 
