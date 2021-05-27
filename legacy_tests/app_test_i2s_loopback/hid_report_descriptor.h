@@ -5,9 +5,6 @@
 
 #include "xua_hid_report_descriptor.h"
 
-// Copyright 2021 XMOS LIMITED.
-// This Software is subject to the terms of the XMOS Public Licence: Version 1.
-
 #if 0
 /* Existing static report descriptor kept for reference */
 unsigned char hidReportDescriptor[] =
