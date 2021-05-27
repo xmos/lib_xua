@@ -5,19 +5,14 @@
 
 #include "xua_unit_tests.h"
 #include "xua_hid_report_descriptor.h"
+#include "hid_report_descriptor.h"
 
 #define HID_REPORT_ITEM_TYPE_GLOBAL     ( 0x01 )
 #define HID_REPORT_ITEM_TYPE_LOCAL      ( 0x02 )
 #define HID_REPORT_ITEM_TYPE_MAIN       ( 0x00 )
 #define HID_REPORT_ITEM_TYPE_RESERVED   ( 0x03 )
 
-#define MAX_VALID_BIT   ( 7 )
-#define MAX_VALID_BYTE  ( 2 )
-
-#define MIN_VALID_BIT   ( 0 )
-#define MIN_VALID_BYTE  ( 0 )
-
-#define SPACEBAR_KEY_CODE   ( 0x2C )
+#define LOUDNESS_CONTROL    ( 0xE7 )
 
 static unsigned construct_usage_header( unsigned size )
 {
@@ -50,7 +45,7 @@ void test_configurable_item_hidSetReportItem( void )
 {
     const unsigned bit = MIN_VALID_BIT;
     const unsigned byte = MIN_VALID_BYTE;
-    const unsigned char data[ 1 ] = { SPACEBAR_KEY_CODE };
+    const unsigned char data[ 1 ] = { LOUDNESS_CONTROL };
     const unsigned char header = construct_usage_header( sizeof data / sizeof( unsigned char ));
 
     unsigned retVal = hidSetReportItem( byte, bit, header, data );
@@ -59,9 +54,9 @@ void test_configurable_item_hidSetReportItem( void )
 
 void test_nonconfigurable_item_hidSetReportItem( void )
 {
-    const unsigned bit = 7;     // This bit and byte combination should not appear in the
-    const unsigned byte = 0;    // hidConfigurableItems list in hid_report_descriptors.c.
-    const unsigned char data[ 1 ] = { SPACEBAR_KEY_CODE };
+    const unsigned bit = MAX_VALID_BIT;     // This bit and byte combination should not appear in the
+    const unsigned byte = MIN_VALID_BYTE;    // hidConfigurableItems list in hid_report_descriptors.c.
+    const unsigned char data[ 1 ] = { LOUDNESS_CONTROL };
     const unsigned char header = construct_usage_header( sizeof data / sizeof( unsigned char ));
 
     unsigned retVal = hidSetReportItem( byte, bit, header, data );
@@ -71,8 +66,8 @@ void test_nonconfigurable_item_hidSetReportItem( void )
 // Bit range tests
 void test_max_bit_hidSetReportItem( void )
 {
-    const unsigned bit = MAX_VALID_BIT; // Only byte 1 has bit 7 not reserved,  See the
-    const unsigned byte = 1;            // hidConfigurableItems list in hid_report_descriptors.c.
+    const unsigned bit = MAX_VALID_BIT;     // Only byte 1 has bit 7 not reserved,  See the
+    const unsigned byte = MAX_VALID_BYTE;   // hidConfigurableItems list in hid_report_descriptors.c.
     const unsigned char header = construct_usage_header( 0 );
 
     unsigned retVal = hidSetReportItem( byte, bit, header, NULL );
@@ -245,7 +240,7 @@ void test_initial_modification_without_subsequent_preparation( void )
 {
     const unsigned bit = MIN_VALID_BIT;
     const unsigned byte = MIN_VALID_BYTE;
-    const unsigned char data[ 1 ] = { SPACEBAR_KEY_CODE };
+    const unsigned char data[ 1 ] = { LOUDNESS_CONTROL };
     const unsigned char header = construct_usage_header( sizeof data / sizeof( unsigned char ));
 
     unsigned retVal = hidSetReportItem( byte, bit, header, data );
@@ -259,7 +254,7 @@ void test_initial_modification_with_subsequent_preparation( void )
 {
     const unsigned bit = MIN_VALID_BIT;
     const unsigned byte = MIN_VALID_BYTE;
-    const unsigned char data[ 1 ] = { SPACEBAR_KEY_CODE };
+    const unsigned char data[ 1 ] = { LOUDNESS_CONTROL };
     const unsigned char header = construct_usage_header( sizeof data / sizeof( unsigned char ));
 
     unsigned retVal = hidSetReportItem( byte, bit, header, data );
@@ -278,7 +273,7 @@ void test_modification_without_subsequent_preparation( void )
 
     const unsigned bit = MIN_VALID_BIT;
     const unsigned byte = MIN_VALID_BYTE;
-    const unsigned char data[ 1 ] = { SPACEBAR_KEY_CODE };
+    const unsigned char data[ 1 ] = { LOUDNESS_CONTROL };
     const unsigned char header = construct_usage_header( sizeof data / sizeof( unsigned char ));
 
     unsigned retVal = hidSetReportItem( byte, bit, header, data );
@@ -296,7 +291,7 @@ void test_modification_with_subsequent_preparation( void )
 
     const unsigned bit = MIN_VALID_BIT;
     const unsigned byte = MIN_VALID_BYTE;
-    const unsigned char data[ 1 ] = { SPACEBAR_KEY_CODE };
+    const unsigned char data[ 1 ] = { LOUDNESS_CONTROL };
     const unsigned char header = construct_usage_header( sizeof data / sizeof( unsigned char ));
 
     unsigned retVal = hidSetReportItem( byte, bit, header, data );
