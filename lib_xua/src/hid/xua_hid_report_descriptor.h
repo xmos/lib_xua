@@ -4,7 +4,8 @@
 /**
  * @brief Human Interface Device (HID) Report descriptor
  *
- * This file defines the structure and default content of the HID Report descriptor.
+ * This file defines the structure of the HID Report descriptor and decalres
+ *   functions for manipulating it.
  * Document section numbers refer to the HID Device Class Definition, version 1.11.
  */
 
@@ -34,6 +35,7 @@
 #define HID_STATUS_GOOD                 ( 0 )
 #define HID_STATUS_BAD_HEADER           ( 1 )
 #define HID_STATUS_BAD_LOCATION         ( 2 )
+#define HID_STATUS_IN_USE               ( 3 )
 
 /**
  * @brief USB HID Report Descriptor. Short Item
@@ -84,10 +86,18 @@ size_t hidGetReportDescriptorLength( void );
  * @brief Prepare the USB HID Report descriptor
  *
  * After preparation, \c hidGetReportDescriptor() returns a list suitablefor transmission over USB.
- *
  * Call this function after altering one or more Report Items using \c hidSetReportItem().
  */
 void hidPrepareReportDescriptor( void );
+
+/**
+ * @brief Reset the USB HID Report descriptor
+ *
+ * After reset, \c hidGetReportDescriptor() returns NULL until a subsequent call to
+ *   \c hidPrepareReportDescriptor() occurs.
+ * Call this function before altering one or more Report Items using \c hidSetReportItem().
+ */
+void hidResetReportDescriptor( void );
 
 /**
  * @brief Modify a HID Report descriptor item
@@ -109,6 +119,7 @@ void hidPrepareReportDescriptor( void );
  *                                      a Tag or Type inconsistent with a Usage Item
  * @retval \c HID_STATUS_BAD_LOCATION   The \a bit or \a byte arguments specify a location outside
  *                                      of the HID Report
+ * @retval \c HID_STATUS_IN_USE         The Report descriptor is in use
  */
 unsigned hidSetReportItem( const unsigned byte, const unsigned bit, const unsigned char header, const unsigned char data[] );
 

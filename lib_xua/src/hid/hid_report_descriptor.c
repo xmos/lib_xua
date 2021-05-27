@@ -143,33 +143,41 @@ void hidPrepareReportDescriptor( void )
     }
 }
 
+void hidResetReportDescriptor( void )
+{
+    hidReportDescriptorPrepared = 0;
+}
+
 unsigned hidSetReportItem( const unsigned byte, const unsigned bit, const unsigned char header, const unsigned char data[] )
 {
-    unsigned retVal = HID_STATUS_BAD_LOCATION;
-    unsigned bSize = hidGetItemSize( header );
-    unsigned bTag  = hidGetItemTag ( header );
-    unsigned bType = hidGetItemType( header );
+    unsigned retVal = HID_STATUS_IN_USE;
 
-    if(( HID_REPORT_ITEM_MAX_SIZE   <  bSize ) ||
-       ( HID_REPORT_ITEM_USAGE_TAG  != bTag  ) ||
-       ( HID_REPORT_ITEM_USAGE_TYPE != bType )) {
-        retVal = HID_STATUS_BAD_HEADER;
-    } else {
-        for( unsigned itemIdx = 0; itemIdx < sizeof hidConfigurableItems / sizeof( USB_HID_Short_Item_t ); ++itemIdx ) {
-            USB_HID_Short_Item_t item = *hidConfigurableItems[ itemIdx ];
-            unsigned bBit  = hidGetItemBitLocation(  item.location );
-            unsigned bByte = hidGetItemByteLocation( item.location );
+    if( !hidReportDescriptorPrepared ) {
+        retVal = HID_STATUS_BAD_LOCATION;
+        unsigned bSize = hidGetItemSize( header );
+        unsigned bTag  = hidGetItemTag ( header );
+        unsigned bType = hidGetItemType( header );
 
-            if(( bit == bBit ) && ( byte == bByte )) {
-                item.header = header;
+        if(( HID_REPORT_ITEM_MAX_SIZE   <  bSize ) ||
+           ( HID_REPORT_ITEM_USAGE_TAG  != bTag  ) ||
+           ( HID_REPORT_ITEM_USAGE_TYPE != bType )) {
+            retVal = HID_STATUS_BAD_HEADER;
+        } else {
+            for( unsigned itemIdx = 0; itemIdx < sizeof hidConfigurableItems / sizeof( USB_HID_Short_Item_t ); ++itemIdx ) {
+                USB_HID_Short_Item_t item = *hidConfigurableItems[ itemIdx ];
+                unsigned bBit  = hidGetItemBitLocation(  item.location );
+                unsigned bByte = hidGetItemByteLocation( item.location );
 
-                for( unsigned dataIdx = 0; dataIdx < bSize; ++dataIdx ) {
-                    item.data[ dataIdx ] = data[ dataIdx ];
+                if(( bit == bBit ) && ( byte == bByte )) {
+                    item.header = header;
+
+                    for( unsigned dataIdx = 0; dataIdx < bSize; ++dataIdx ) {
+                        item.data[ dataIdx ] = data[ dataIdx ];
+                    }
+
+                    *hidConfigurableItems[ itemIdx ] = item;
+                    retVal = HID_STATUS_GOOD;
                 }
-
-                *hidConfigurableItems[ itemIdx ] = item;
-                hidReportDescriptorPrepared = 0;
-                retVal = HID_STATUS_GOOD;
             }
         }
     }
