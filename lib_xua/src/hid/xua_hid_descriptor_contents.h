@@ -12,15 +12,15 @@
 
 #include "xua_hid_descriptor.h"
 
-#define HID_DESCRIPTOR_LENGTH_0    0x09 /* Size of descriptor in Bytes */
-#define HID_DESCRIPTOR_TYPE_0      0x21 /* HID 0x21 */
-#define HID_BCD_VERSION_LO         0x10 /* HID class specification release */
-#define HID_BCD_VERSION_HI         0x01
-#define HID_COUNTRY_CODE           0x00 /* Country code of localized hardware */
-#define HID_NUM_DESCRIPTORS        0x01 /* Number of class descriptors */
-#define HID_DESCRIPTOR_TYPE_1      0x22 /* Type of 1st class descriptor, Report 0x22 */
-#define HID_DESCRIPTOR_LENGTH_1_LO sizeof(hidReportDescriptor) & 0xff
-#define HID_DESCRIPTOR_LENGTH_1_HI sizeof(hidReportDescriptor) >> 8
+#define HID_DESCRIPTOR_LENGTH_0    ( 0x09 ) /* Size of descriptor in Bytes */
+#define HID_DESCRIPTOR_TYPE_0      ( 0x21 ) /* HID 0x21 */
+#define HID_BCD_VERSION_LO         ( 0x10 ) /* HID class specification release */
+#define HID_BCD_VERSION_HI         ( 0x01 )
+#define HID_COUNTRY_CODE           ( 0x00 ) /* Country code of localized hardware */
+#define HID_NUM_DESCRIPTORS        ( 0x01 ) /* Number of class descriptors */
+#define HID_DESCRIPTOR_TYPE_1      ( 0x22 ) /* Type of 1st class descriptor, Report 0x22 */
+#define HID_DESCRIPTOR_LENGTH_1_LO ( 0x00 ) /* Length of 1st class descriptor, set to zero */
+#define HID_DESCRIPTOR_LENGTH_1_HI ( 0x00 ) /* since only pre-processor directives allowed here */
 
 #endif // _HID_DESCRIPTOR_CONTENTS_
 
