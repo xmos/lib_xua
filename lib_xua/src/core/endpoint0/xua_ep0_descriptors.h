@@ -580,33 +580,6 @@ unsigned char devQualDesc_Null[] =
     #define MIXER_LENGTH                (0)
 #endif
 
-#if( 0 < HID_CONTROLS )
-unsigned char hidReportDescriptor[] =
-{
-    0x05, 0x01,         /* Usage Page (Generic Desktop) */
-    0x09, 0x06,         /* Usage (Keyboard) */
-    0xa1, 0x01,         /* Collection (Application) */
-    0x75, 0x01,         /* Report Size (1) */
-    0x95, 0x04,         /* Report Count (4) */
-    0x15, 0x00,         /* Logical Minimum (0) */
-    0x25, 0x00,         /* Logical Maximum (0) */
-    0x81, 0x01,         /* Input (Cnst, Ary, Abs, No Wrap, Lin, Pref, No Nul) */
-    0x95, 0x01,         /* Report Count (1) */
-    0x25, 0x01,         /* Logical Maximum (1) */
-    0x05, 0x0C,         /* Usage Page (Consumer) */
-    0x0a, 0x21, 0x02,   /* Usage (AC Search) */
-    0x81, 0x02,         /* Input (Data, Var, Abs, No Wrap, Lin, Pref, No Nul) */
-    0x0a, 0x26, 0x02,   /* Usage (AC Stop) */
-    0x81, 0x02,         /* Input (Data, Var, Abs, No Wrap, Lin, Pref, No Nul) */
-    0x95, 0x02,         /* Report Count (2) */
-    0x05, 0x07,         /* Usage Page (Key Codes) */
-    0x19, 0x72,         /* Usage Minimum (Keyboard F23) */
-    0x29, 0x73,         /* Usage Maximum (Keyboard F24) */
-    0x81, 0x02,         /* Input (Data, Var, Abs, No Wrap, Lin, Pref, No Nul) */
-    0xc0                /* End collection (Application) */
-};
-#endif
-
 /* Max packet sizes:
  * Samples per channel. e.g (192000+7999/8000) = 24
  * Must allow 1 sample extra per chan (24 + 1) = 25
