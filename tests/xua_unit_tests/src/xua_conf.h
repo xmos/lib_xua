@@ -11,7 +11,7 @@
 #define MAX_FREQ 48000
 
 #define EXCLUDE_USB_AUDIO_MAIN
-#define NUM_PDM_MICS 0
+#define XUA_NUM_PDM_MICS 0
 
 #define PDM_TILE 2
 #define XUD_TILE 1

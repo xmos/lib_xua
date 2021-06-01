@@ -4,7 +4,7 @@
 #define __custom_defines_h__
 
 #define EXCLUDE_USB_AUDIO_MAIN
-#define NUM_PDM_MICS 0
+#define XUA_NUM_PDM_MICS 0
 #define XUD_TILE 1
 #define AUDIO_IO_TILE 0
 #define MIXER 0
