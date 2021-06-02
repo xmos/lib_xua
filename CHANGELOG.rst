@@ -6,6 +6,7 @@ lib_xua Change Log
 
   * CHANGED:   Move HID descriptors to ease maintenance
   * CHANGED:   Move legacy tests to separate directory
+  * CHANGED:   Replace unused GPI-specific HID event names with generic ones
 
 1.2.0
 -----
