@@ -12,11 +12,7 @@
  *  It defines a further 28 values for generic events.
  */
 typedef enum hidEventId_t {
-  HID_EVENT_ID_GPI0 = 0,
-  HID_EVENT_ID_GPI1,
-  HID_EVENT_ID_GPI2,
-  HID_EVENT_ID_GPI3,
-  HID_EVENT_ID_EVT0,
+  HID_EVENT_ID_EVT0 = 0,
   HID_EVENT_ID_EVT1,
   HID_EVENT_ID_EVT2,
   HID_EVENT_ID_EVT3,
@@ -44,6 +40,10 @@ typedef enum hidEventId_t {
   HID_EVENT_ID_EVT25,
   HID_EVENT_ID_EVT26,
   HID_EVENT_ID_EVT27,
+  HID_EVENT_ID_EVT28,
+  HID_EVENT_ID_EVT29,
+  HID_EVENT_ID_EVT30,
+  HID_EVENT_ID_EVT31,
   HID_EVENT_ID_INVALID = 0xffffffff,
 } hidEventId_t;
 
