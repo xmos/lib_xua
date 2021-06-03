@@ -7,6 +7,8 @@ lib_xua Change Log
   * CHANGED:   Move HID descriptors to ease maintenance
   * CHANGED:   Move legacy tests to separate directory
   * CHANGED:   Replace unused GPI-specific HID event names with generic ones
+  * ADDED:     Build default HID Report descriptor at boot-time
+  * ADDED:     Function to return length of HID Report
 
 1.2.0
 -----
@@ -19,7 +21,6 @@ lib_xua Change Log
   * FIXED:     Runtime error when using mic array interface
   * CHANGED:   Use XMOS Public Licence Version 1
   * FIXED:     Automate HID Report Descriptor length in AC1 HID Descriptor
-  * CHANGED:   Move HID descriptors to ease maintenance
 
 1.1.1
 -----

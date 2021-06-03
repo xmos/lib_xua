@@ -12,6 +12,9 @@
 #define MIN_VALID_BIT   ( 0 )
 #define MIN_VALID_BYTE  ( 0 )
 
+/*
+ * Define non-configurable items in the HID Report descriptor.
+ */
 static const USB_HID_Short_Item_t hidCollectionApplication  = { .header = 0xA1, .data = { 0x01, 0x00 }, .location = 0x00 };
 static const USB_HID_Short_Item_t hidCollectionEnd          = { .header = 0xC0, .data = { 0x00, 0x00 }, .location = 0x00 };
 static const USB_HID_Short_Item_t hidCollectionLogical      = { .header = 0xA1, .data = { 0x02, 0x00 }, .location = 0x00 };
@@ -32,17 +35,26 @@ static const USB_HID_Short_Item_t hidUsageConsumerControl   = { .header = 0x09, 
 
 static const USB_HID_Short_Item_t hidUsagePageConsumer      = { .header = 0x05, .data = { 0x0C, 0x00 }, .location = 0x00 };
 
+/*
+ * Define configurable items in the HID Report descriptor.
+ */
 static USB_HID_Short_Item_t hidUsageByte0Bit0   = { .header = 0x09, .data = { 0xE2, 0x00 }, .location = 0x00 }; // Mute
 
 static USB_HID_Short_Item_t hidUsageByte1Bit7   = { .header = 0x09, .data = { 0xEA, 0x00 }, .location = 0x71 }; // Vol-
 static USB_HID_Short_Item_t hidUsageByte1Bit0   = { .header = 0x09, .data = { 0xE9, 0x00 }, .location = 0x01 }; // Vol+
 
+/*
+ * List the configurable items in the HID Report descriptor.
+ */
 static USB_HID_Short_Item_t* const hidConfigurableItems[] = {
     &hidUsageByte0Bit0,
     &hidUsageByte1Bit0,
     &hidUsageByte1Bit7
 };
 
+/*
+ * List all items in the HID Report descriptor.
+ */
 static const USB_HID_Short_Item_t* const hidReportDescriptorItems[] = {
     &hidUsagePageConsumer,
     &hidUsageConsumerControl,
@@ -72,5 +84,11 @@ static const USB_HID_Short_Item_t* const hidReportDescriptorItems[] = {
         &hidCollectionEnd,
     &hidCollectionEnd
 };
+
+/*
+ * Define the length of the HID Report.
+ * This value must match the number of Report bytes defined by hidReportDescriptorItems.
+ */
+#define HID_REPORT_LENGTH   ( 2 )
 
 #endif // __hid_report_descriptor_h__

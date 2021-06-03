@@ -6,6 +6,10 @@
  *
  * This file defines the structure of the HID Report descriptor and decalres
  *   functions for manipulating it.
+ * Because the Report descriptor defines the length of the HID Report, this file
+ *   declares a function for obtaining the Report length as well.
+ * The using application has the responsibility to define the report descriptor
+ *   structure and default contents in their hid_report_descriptor.h file.
  * Document section numbers refer to the HID Device Class Definition, version 1.11.
  */
 
@@ -81,6 +85,17 @@ unsigned char* hidGetReportDescriptor( void );
  * @return The length of the Report descriptor in bytes
  */
 size_t hidGetReportDescriptorLength( void );
+
+/**
+ * @brief Get the length of the HID Report
+ *
+ * This function returns the length of the USB HID Report.
+ * It returns zero if the Report descriptor has not been prepared,
+ *   i.e., no one has called \c hidPrepareReportDescriptor().
+ *
+ * @return The length of the Report in bytes
+ */
+size_t hidGetReportLength( void );
 
 /**
  * @brief Prepare the USB HID Report descriptor

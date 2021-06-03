@@ -29,6 +29,9 @@ unsigned char hidReportDescriptor[] =
 };
 #endif
 
+/*
+ * Define non-configurable items in the HID Report descriptor.
+ */
 static const USB_HID_Short_Item_t hidCollectionApplication  = { .header = 0xA1, .data = { 0x01, 0x00 }, .location = 0x00 };
 static const USB_HID_Short_Item_t hidCollectionEnd          = { .header = 0xC0, .data = { 0x00, 0x00 }, .location = 0x00 };
 
@@ -47,6 +50,9 @@ static const USB_HID_Short_Item_t hidUsageConsumerControl   = { .header = 0x09, 
 
 static const USB_HID_Short_Item_t hidUsagePageConsumer      = { .header = 0x05, .data = { 0x0C, 0x00 }, .location = 0x00 };
 
+/*
+ * Define configurable items in the HID Report descriptor.
+ */
 static USB_HID_Short_Item_t hidUsageByte0Bit5   = { .header = 0x09, .data = { 0xE2, 0x00 }, .location = 0x50 }; // Mute
 static USB_HID_Short_Item_t hidUsageByte0Bit4   = { .header = 0x09, .data = { 0xEA, 0x00 }, .location = 0x40 }; // Vol-
 static USB_HID_Short_Item_t hidUsageByte0Bit3   = { .header = 0x09, .data = { 0xE9, 0x00 }, .location = 0x30 }; // Vol+
@@ -54,6 +60,9 @@ static USB_HID_Short_Item_t hidUsageByte0Bit2   = { .header = 0x09, .data = { 0x
 static USB_HID_Short_Item_t hidUsageByte0Bit1   = { .header = 0x09, .data = { 0xB5, 0x00 }, .location = 0x10 }; // Scan Next
 static USB_HID_Short_Item_t hidUsageByte0Bit0   = { .header = 0x09, .data = { 0xB0, 0x00 }, .location = 0x00 }; // Play
 
+/*
+ * List the configurable items in the HID Report descriptor.
+ */
 static USB_HID_Short_Item_t* const hidConfigurableItems[] = {
     &hidUsageByte0Bit0,
     &hidUsageByte0Bit1,
@@ -63,6 +72,9 @@ static USB_HID_Short_Item_t* const hidConfigurableItems[] = {
     &hidUsageByte0Bit5
 };
 
+/*
+ * List all items in the HID Report descriptor.
+ */
 static const USB_HID_Short_Item_t* const hidReportDescriptorItems[] = {
     &hidUsagePageConsumer,
     &hidUsageConsumerControl,
@@ -83,5 +95,11 @@ static const USB_HID_Short_Item_t* const hidReportDescriptorItems[] = {
         &hidInputConstArray,
     &hidCollectionEnd
 };
+
+/*
+ * Define the length of the HID Report.
+ * This value must match the number of Report bytes defined by hidReportDescriptorItems.
+ */
+#define HID_REPORT_LENGTH   ( 1 )
 
 #endif // __hid_report_descriptor_h__

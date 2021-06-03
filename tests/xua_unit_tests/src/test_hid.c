@@ -36,6 +36,9 @@ void test_unprepared_hidGetReportDescriptor( void )
 {
     unsigned char* reportDescPtr = hidGetReportDescriptor();
     TEST_ASSERT_NULL( reportDescPtr );
+
+    unsigned reportLength = hidGetReportLength();
+    TEST_ASSERT_EQUAL_UINT( 0, reportLength );
 }
 
 void test_prepared_hidGetReportDescriptor( void )
@@ -43,6 +46,9 @@ void test_prepared_hidGetReportDescriptor( void )
     hidPrepareReportDescriptor();
     unsigned char* reportDescPtr = hidGetReportDescriptor();
     TEST_ASSERT_NOT_NULL( reportDescPtr );
+
+    unsigned reportLength = hidGetReportLength();
+    TEST_ASSERT_EQUAL_UINT( HID_REPORT_LENGTH, reportLength );
 }
 
 void test_reset_unprepared_hidGetReportDescriptor( void )

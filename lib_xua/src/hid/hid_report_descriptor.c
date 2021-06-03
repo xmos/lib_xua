@@ -130,6 +130,11 @@ size_t hidGetReportDescriptorLength( void )
     return ( hidReportDescriptorPrepared ) ? hidReportDescriptorLength : 0;
 }
 
+size_t hidGetReportLength( void )
+{
+    return ( hidReportDescriptorPrepared ) ? HID_REPORT_LENGTH : 0;
+}
+
 void hidPrepareReportDescriptor( void )
 {
     if( !hidReportDescriptorPrepared ) {
