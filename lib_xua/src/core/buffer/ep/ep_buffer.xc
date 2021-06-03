@@ -22,7 +22,7 @@
 
 #if( 0 < HID_CONTROLS )
 #include "user_hid.h"
-unsigned char g_hidData[HID_DATA_BYTES] = {0};
+unsigned char g_hidData[HID_MAX_DATA_BYTES] = {0};
 #endif
 
 void GetADCCounts(unsigned samFreq, int &min, int &mid, int &max);
