@@ -6,8 +6,11 @@
 #include "xua_hid_report_descriptor.h"
 #include "hid_report_descriptor.h"
 
+#include <stdio.h>
+
 #define HID_REPORT_ITEM_LOCATION_SIZE ( 1 )
-#define HID_REPORT_DESCRIPTOR_MAX_LENGTH ( sizeof hidReportDescriptorItems / sizeof ( USB_HID_Short_Item_t ) * \
+#define HID_REPORT_DESCRIPTOR_ITEM_COUNT ( sizeof hidReportDescriptorItems / sizeof ( USB_HID_Short_Item_t* ))
+#define HID_REPORT_DESCRIPTOR_MAX_LENGTH ( HID_REPORT_DESCRIPTOR_ITEM_COUNT * \
                                            ( sizeof ( USB_HID_Short_Item_t ) - HID_REPORT_ITEM_LOCATION_SIZE ))
 
 static unsigned char hidReportDescriptor[ HID_REPORT_DESCRIPTOR_MAX_LENGTH ];
@@ -127,12 +130,15 @@ unsigned char* hidGetReportDescriptor( void )
 
 size_t hidGetReportDescriptorLength( void )
 {
-    return ( hidReportDescriptorPrepared ) ? hidReportDescriptorLength : 0;
+    size_t retVal = ( hidReportDescriptorPrepared ) ? hidReportDescriptorLength : 0;
+    return retVal;
 }
 
 size_t hidGetReportLength( void )
 {
-    return ( hidReportDescriptorPrepared ) ? HID_REPORT_LENGTH : 0;
+    size_t retVal = ( hidReportDescriptorPrepared ) ? HID_REPORT_LENGTH : 0;
+    printf( "hidGetReportLength: %d\n", retVal );
+    return retVal;
 }
 
 void hidPrepareReportDescriptor( void )
@@ -140,7 +146,7 @@ void hidPrepareReportDescriptor( void )
     if( !hidReportDescriptorPrepared ) {
         hidReportDescriptorLength = 0;
         unsigned char* ptr = hidReportDescriptor;
-        for( unsigned idx = 0; idx < sizeof hidReportDescriptorItems / sizeof( USB_HID_Short_Item_t ); ++idx ) {
+        for( unsigned idx = 0; idx < HID_REPORT_DESCRIPTOR_ITEM_COUNT; ++idx ) {
             hidReportDescriptorLength += hidTranslateItem( hidReportDescriptorItems[ idx ], &ptr );
         }
 
@@ -153,6 +159,7 @@ void hidResetReportDescriptor( void )
     hidReportDescriptorPrepared = 0;
 }
 
+#define HID_CONFIGURABLE_ITEM_COUNT ( sizeof hidConfigurableItems / sizeof ( USB_HID_Short_Item_t* ))
 unsigned hidSetReportItem( const unsigned byte, const unsigned bit, const unsigned char header, const unsigned char data[] )
 {
     unsigned retVal = HID_STATUS_IN_USE;
@@ -168,7 +175,7 @@ unsigned hidSetReportItem( const unsigned byte, const unsigned bit, const unsign
            ( HID_REPORT_ITEM_USAGE_TYPE != bType )) {
             retVal = HID_STATUS_BAD_HEADER;
         } else {
-            for( unsigned itemIdx = 0; itemIdx < sizeof hidConfigurableItems / sizeof( USB_HID_Short_Item_t ); ++itemIdx ) {
+            for( unsigned itemIdx = 0; itemIdx < HID_CONFIGURABLE_ITEM_COUNT; ++itemIdx ) {
                 USB_HID_Short_Item_t item = *hidConfigurableItems[ itemIdx ];
                 unsigned bBit  = hidGetItemBitLocation(  item.location );
                 unsigned bByte = hidGetItemByteLocation( item.location );
@@ -194,6 +201,7 @@ static size_t hidTranslateItem( const USB_HID_Short_Item_t* inPtr, unsigned char
 {
     size_t count = 0;
     *(*outPtrPtr)++ = inPtr->header;
+    ++count;
 
     unsigned dataLength = hidGetItemSize( inPtr->header );
     for( unsigned idx = 0; idx < dataLength; ++idx ) {
