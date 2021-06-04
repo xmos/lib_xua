@@ -71,9 +71,15 @@ typedef struct
  * It returns NULL if the Report descriptor has not been prepared,
  *   i.e., no one has called \c hidPrepareReportDescriptor().
  *
+ * @note An XC-callable version of this function has not been provided.
+ *       XC requires explicit declaration of the kind of pointer returned,
+ *       hence an XC implementation of the function.
+ *
  * @return A pointer to a list of unsigned char containing the Report descriptor
  */
+#if !defined(__XC__)
 unsigned char* hidGetReportDescriptor( void );
+#endif
 
 /**
  * @brief Get the length of the HID Report descriptor
