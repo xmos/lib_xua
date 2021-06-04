@@ -9,6 +9,7 @@ lib_xua Change Log
   * CHANGED:   Replace unused GPI-specific HID event names with generic ones
   * ADDED:     Build default HID Report descriptor at boot-time
   * ADDED:     Function to return length of HID Report
+  * CHANGED:   HID Report to return multiple bytes
 
 1.2.0
 -----
