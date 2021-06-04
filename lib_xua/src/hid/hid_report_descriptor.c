@@ -137,7 +137,6 @@ size_t hidGetReportDescriptorLength( void )
 size_t hidGetReportLength( void )
 {
     size_t retVal = ( hidReportDescriptorPrepared ) ? HID_REPORT_LENGTH : 0;
-    printf( "hidGetReportLength: %d\n", retVal );
     return retVal;
 }
 
