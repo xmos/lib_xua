@@ -4,7 +4,7 @@
 /**
  * @brief Human Interface Device (HID) Report descriptor
  *
- * This file defines the structure of the HID Report descriptor and decalres
+ * This file defines the structure of the HID Report descriptor and declares
  *   functions for manipulating it.
  * Because the Report descriptor defines the length of the HID Report, this file
  *   declares a function for obtaining the Report length as well.
@@ -106,7 +106,7 @@ size_t hidGetReportLength( void );
 /**
  * @brief Prepare the USB HID Report descriptor
  *
- * After preparation, \c hidGetReportDescriptor() returns a list suitablefor transmission over USB.
+ * After preparation, \c hidGetReportDescriptor() returns a list suitable for transmission over USB.
  * Call this function after altering one or more Report Items using \c hidSetReportItem().
  */
 void hidPrepareReportDescriptor( void );
