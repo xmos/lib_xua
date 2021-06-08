@@ -21,8 +21,9 @@
 #include "testct_byref.h"
 
 #if( 0 < HID_CONTROLS )
+#include "xua_hid_report_descriptor.h"
 #include "user_hid.h"
-unsigned char g_hidData[HID_DATA_BYTES] = {0};
+unsigned char g_hidData[HID_MAX_DATA_BYTES] = {0};
 #endif
 
 void GetADCCounts(unsigned samFreq, int &min, int &mid, int &max);
@@ -371,7 +372,10 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
 #endif
 
 #if( 0 < HID_CONTROLS )
-    XUD_SetReady_In(ep_hid, g_hidData, 1);
+    {
+        int hidDataLength = hidGetReportLength();
+        XUD_SetReady_In(ep_hid, g_hidData, hidDataLength);
+    }
 #endif
 
 #if (AUDIO_CLASS == 1)
@@ -885,9 +889,9 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
             /* HID Report Data */
             case XUD_SetData_Select(c_hid, ep_hid, result):
             {
-                g_hidData[0]=0;
+                int hidDataLength = hidGetReportLength();
                 UserHIDGetData(g_hidData);
-                XUD_SetReady_In(ep_hid, g_hidData, 1);
+                XUD_SetReady_In(ep_hid, g_hidData, hidDataLength);
             }
             break;
 #endif

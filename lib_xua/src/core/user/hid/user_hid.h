@@ -47,7 +47,7 @@ typedef enum hidEventId_t {
   HID_EVENT_ID_INVALID = 0xffffffff,
 } hidEventId_t;
 
-#define HID_DATA_BYTES 4
+#define HID_MAX_DATA_BYTES 4
 
 #if( 0 < HID_CONTROLS )
 
@@ -60,7 +60,7 @@ typedef enum hidEventId_t {
  *
  *  \param{out} hidData  The HID data
  */
-void UserHIDGetData( unsigned char hidData[ HID_DATA_BYTES ]);
+void UserHIDGetData( unsigned char hidData[ HID_MAX_DATA_BYTES ]);
 
 /**
  *	\brief  Initialize HID processing
@@ -70,17 +70,15 @@ void UserHIDInit( void );
 /**
  *  \brief  Record that a HID event has occurred
  *
- *  \param{in}  hidEventId        The identifier of an event which has occurred
- *  \param{in}  hidEventData      A list of data associated with the event
- *  \param{in}  hidEventDataSize  The length of the event data list
- *
- *  \note At present, this function only takes a single element of event data, i.e.
- *        hidEventDataSize must equal 1.
- *
- *  \note At present, this function treats the event data as a Boolean flag.
- *        Zero means False; all other values mean True.
+ *  \param{in}  hidEventId    The identifier of an event which has occurred.
+ *                            Each event corresponds to bit in the HID Report:
+ *                            Events 0- 7 to bits 0-7 of byte 0,
+ *                            Events 8-15 to bits 0-7 of byte 1, etc.
+ *  \param{in}  hidEventData  A Boolean indicating the state of the event:
+ *                            Zero = deasserted,
+ *                            Any other value = asserted.
  */
-void UserHIDRecordEvent( const hidEventId_t hidEventId, const int * hidEventData, const unsigned hidEventDataSize );
+void UserHIDRecordEvent( const hidEventId_t hidEventId, const unsigned hidEventData );
 
 #endif /* ( 0 < HID_CONTROLS ) */
 #endif /* __USER_HID_H__ */

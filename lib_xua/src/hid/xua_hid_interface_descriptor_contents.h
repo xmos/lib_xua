@@ -12,14 +12,14 @@
 
 #include "descriptor_defs.h"
 
-#define HID_INTERFACE_DESCRIPTOR_LENGTH         0x09    /* Size of descriptor in Bytes */
-#define HID_INTERFACE_DESCRIPTOR_TYPE           0x04    /* Interface 0x04 */
-#define HID_INTERFACE_ALTERNATE_SETTING         0x00    /* Value used alternate interfaces using SetInterface Request */
-#define HID_INTERFACE_NUMBER_OF_ENDPOINTS       0x01    /* Number of endpoitns for this interface (excluding 0) */
-#define HID_INTERFACE_CLASS                     0x03
-#define HID_INTERFACE_SUBCLASS                  0x00    /* No boot device */
-#define HID_INTERFACE_PROTOCOL                  0x00
-#define HID_INTERFACE_STRING_DESCRIPTOR_INDEX   0x00
+#define HID_INTERFACE_DESCRIPTOR_LENGTH         ( 0x09 )    /* Size of descriptor in Bytes */
+#define HID_INTERFACE_DESCRIPTOR_TYPE           ( 0x04 )    /* Interface 0x04 */
+#define HID_INTERFACE_ALTERNATE_SETTING         ( 0x00 )    /* Value used alternate interfaces using SetInterface Request */
+#define HID_INTERFACE_NUMBER_OF_ENDPOINTS       ( 0x01 )    /* Number of endpoitns for this interface (excluding 0) */
+#define HID_INTERFACE_CLASS                     ( 0x03 )
+#define HID_INTERFACE_SUBCLASS                  ( 0x00 )    /* No boot device */
+#define HID_INTERFACE_PROTOCOL                  ( 0x00 )
+#define HID_INTERFACE_STRING_DESCRIPTOR_INDEX   ( 0x00 )
 
 #endif // _HID_INTERFACE_DESCRIPTOR_CONTENTS_
 
