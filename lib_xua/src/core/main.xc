@@ -346,8 +346,7 @@ VENDOR_REQUESTS_PARAMS_DEC_
 
             /* USB Interface Core */
             XUD_Main(c_xud_out, ENDPOINT_COUNT_OUT, c_xud_in, ENDPOINT_COUNT_IN,
-                c_sof, epTypeTableOut, epTypeTableIn, p_usb_rst,
-                null, 0, usbSpeed, XUD_PWR_CFG);
+                c_sof, epTypeTableOut, epTypeTableIn, usbSpeed, XUD_PWR_CFG);
         }
 
         /* USB Packet buffering Core */
