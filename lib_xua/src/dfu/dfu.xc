@@ -5,7 +5,7 @@
 #include <xs1.h>
 #include <platform.h>
 
-#ifndef NO_USB
+#if XUA_USB_EN
 #include "xud_device.h"
 #include "dfu_types.h"
 #include "flash_interface.h"
@@ -581,6 +581,6 @@ int DFUDeviceRequests(XUD_ep ep0_out, XUD_ep &?ep0_in, USB_SetupPacket_t &sp, ch
     }
   	return returnVal;
 }
-#endif /* NO_USB */
+#endif /* XUA_USB_EN */
 
 #endif
