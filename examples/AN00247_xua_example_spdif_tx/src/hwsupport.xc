@@ -22,7 +22,6 @@ out port p_gpio = on tile[0]:XS1_PORT_8C;
 void AudioHwConfig(unsigned samFreq, unsigned mClk, unsigned dsdMode,
     unsigned sampRes_DAC, unsigned sampRes_ADC)
 {
-    unsigned char data[1] = {0};
 	unsigned char gpioVal = 0;
 
     /* Set master clock select appropriately and put ADC and DAC into reset */
