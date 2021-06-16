@@ -10,13 +10,9 @@
 //Normally we would enumerate the XUD_SERIES_SUPPORT possibilities using defines in
 //xud.h but we have hard coded them to remove dependancy of sc_xud
 
-#if (XUD_SERIES_SUPPORT == 4)
 #include "xs2_su_registers.h"
 #define XS2_SU_PERIPH_USB_ID 0x1
 #define PLL_MASK 0x3FFFFFFF
-#else
-#define PLL_MASK 0xFFFFFFFF
-#endif
 
 /* Note, this function is prototyped in xs1.h only from 13 tools onwards */
 unsigned get_tile_id(tileref);
