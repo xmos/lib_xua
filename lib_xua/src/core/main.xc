@@ -187,20 +187,20 @@ on tile[XUD_TILE] : clock    clk_spd_rx                     = CLKBLK_SPDIF_RX;
 #endif
 
 #if (XUA_NUM_PDM_MICS > 0)
-in port p_pdm_clk               = PORT_PDM_CLK;
+in port p_pdm_clk                                           = PORT_PDM_CLK;
 
-in buffered port:32 p_pdm_mics  = PORT_PDM_DATA;
+in buffered port:32 p_pdm_mics                              = PORT_PDM_DATA;
 #if (PDM_TILE != AUDIO_IO_TILE)
 /* If Mics and I2S are not the same tile we need a separate MCLK port */
-in port p_pdm_mclk              = PORT_PDM_MCLK;
+in port p_pdm_mclk                                          = PORT_PDM_MCLK;
 #endif
 #endif
 
 
 
-#if(XUD_SERIES_SUPPORT == XUD_L_SERIES) && (ADAT_RX)
+#if (defined(__XS2A__) && (ADAT_RX))
 /* Cannot use default clock (CLKBLK_REF) for ADAT RX since it is tied to the
-60MHz USB clock on G/L series parts. */
+60MHz USB clock on XS2 processors. */
 on tile[XUD_TILE] : clock    clk_adat_rx                    = CLKBLK_ADAT_RX;
 #endif
 
@@ -212,15 +212,14 @@ on tile[XUD_TILE] : clock clk_audio_mclk_usb                = CLKBLK_MCLK;      
 on tile[XUD_TILE] : in port p_mclk_in_usb                   = PORT_MCLK_IN_USB;
 #endif
 
-on tile[AUDIO_IO_TILE] : clock clk_audio_bclk            = CLKBLK_I2S_BIT;    /* Bit clock */
+on tile[AUDIO_IO_TILE] : clock clk_audio_bclk               = CLKBLK_I2S_BIT;    /* Bit clock */
 
 
 /* L/G Series needs a port to use for USB reset */
-#if (XUD_SERIES_SUPPORT != XUD_U_SERIES) && defined(PORT_USB_RESET)
+#if ((defined(__XS2A__) || defined (__XS3A__)) && defined(PORT_USB_RESET))
 /* This define is checked since it could be on a shift reg or similar */
 on tile[XUD_TILE] : out port p_usb_rst                      = PORT_USB_RESET;
 #else
-/* Reset port not required for U series due to built in Phy */
 #define p_usb_rst   null
 #endif
 
@@ -726,8 +725,8 @@ int main()
         {
             set_thread_fast_mode_on();
 
-#if(XUD_SERIES_SUPPORT == XUD_L_SERIES)
-            /* Can't use REF clock on L-series as this is usb clock */
+#if defined(__XS2A__)
+            /* Can't use REF clock as this is usb clock */
             set_port_clock(p_adat_rx, clk_adat_rx);
             start_clock(clk_adat_rx);
 #endif
