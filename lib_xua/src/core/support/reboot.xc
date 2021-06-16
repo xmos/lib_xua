@@ -5,11 +5,6 @@
 #include <print.h>
 #include <xs1_su.h>
 
-#define XS1_SU_PERIPH_USB_ID 0x1
-
-//Normally we would enumerate the XUD_SERIES_SUPPORT possibilities using defines in
-//xud.h but we have hard coded them to remove dependancy of sc_xud
-
 #include "xs2_su_registers.h"
 #define XS2_SU_PERIPH_USB_ID 0x1
 #define PLL_MASK 0x3FFFFFFF
