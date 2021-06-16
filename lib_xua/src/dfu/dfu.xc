@@ -11,13 +11,11 @@
 #include "flash_interface.h"
 #include "dfu_interface.h"
 
-#if (XUD_SERIES_SUPPORT==4)
-/* xCORE-200 */
+#if defined(__XS3A__)
+#define FLAG_ADDRESS 0xfffcc
+#elif defined(__XS2A__)
 /* Note range 0x7FFC8 - 0x7FFFF guarenteed to be untouched by tools */
 #define FLAG_ADDRESS 0x7ffcc
-#else
-/* Note range 0x1FFC8 - 0x1FFFF guarenteed to be untouched by tools */
-#define FLAG_ADDRESS 0x1ffcc
 #endif
 
 /* Store Flag to fixed address */
