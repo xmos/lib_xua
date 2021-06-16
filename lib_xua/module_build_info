@@ -40,7 +40,6 @@ INCLUDE_DIRS = $(EXPORT_INCLUDE_DIRS) \
                src/core/pdm_mics \
                src/core/ports \
                src/core/support \
-               src/core/support/powersave \
                src/core/user \
                src/core/user/audiostream \
                src/core/user/hid \
@@ -58,7 +57,6 @@ SOURCE_DIRS = src/core \
               src/core/pdm_mics \
               src/core/ports \
               src/core/support \
-              src/core/support/powersave \
               src/core/user/audiostream \
               src/core/user/hostactive \
               src/core/xuduser \
