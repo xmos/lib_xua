@@ -10,6 +10,10 @@ lib_xua Change Log
   * ADDED:     Build default HID Report descriptor at boot-time
   * ADDED:     Function to return length of HID Report
   * CHANGED:   HID Report to return multiple bytes
+  * CHANGED:   NO_USB conditional compilation switch with XUA_USB_EN
+  * REMOVED:   XS1 support
+  * CHANGED:   Clock blocks used for BCLK and MCLK
+  * REMOVED:   Arguments no longer supported by XUD_Main
 
 1.2.0
 -----
