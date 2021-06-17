@@ -3,7 +3,7 @@ TARGET = xk-audio-216-mc.xn
 USED_MODULES = lib_xua \
                module_i2c_shared module_i2c_single_port lib_logging 
 
-BUILD_FLAGS = -O0 -g -lflash -DXUD_SERIES_SUPPORT=4 -fxscope -save-temps -march=xs2a -DUSB_TILE=tile[1]
+BUILD_FLAGS = -O0 -g -lflash -DXUD_SERIES_SUPPORT=4 -DXUD_CORE_CLOCK=600 -fxscope -save-temps -march=xs2a -DUSB_TILE=tile[1]
 
 BUILD_FLAGS_i2s_master_2in_2out_48khz = $(BUILD_FLAGS) \
   -D ADAT_RX=0 -D ADAT_TX=0 -D SPDIF_RX=0 -D SPDIF_TX=0 -D MIDI=0 \
