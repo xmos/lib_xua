@@ -67,10 +67,10 @@ foreach( testsourcefile ${APP_SOURCES} )
         "${CMAKE_CURRENT_SOURCE_DIR}/../../../Unity/src"
     )
     set(APP_DEPENDENT_MODULES
-            "lib_xua(>=1.3.0)"
+            "lib_xua(>=2.0.0)"
             "lib_logging(>=3.0.0)"
             "lib_xassert(>=4.0.0)"
-            "lib_xud(>=1.0.0)"
+            "lib_xud(>=2.0.0)"
             "lib_spdif(>=4.0.0)"
             "lib_mic_array(>=4.0.0)"
         )

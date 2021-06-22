@@ -1,6 +1,12 @@
 lib_xua Change Log
 ==================
 
+2.0.0
+-----
+
+  * CHANGED:   HID event ID from list to bit and byte location in HID Report
+  * CHANGED:   Interface to UserHIDRecordEvent()
+
 1.3.0
 -----
 
