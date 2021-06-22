@@ -16,6 +16,8 @@
 #ifndef _HID_REPORT_DESCRIPTOR_
 #define _HID_REPORT_DESCRIPTOR_
 
+#include <stddef.h>
+
 #define HID_REPORT_ITEM_HDR_SIZE_MASK   ( 0x03 )
 #define HID_REPORT_ITEM_HDR_SIZE_SHIFT  ( 0 )
 

@@ -5,47 +5,17 @@
 #define __USER_HID_H__
 
 /**
- *  \brief  HID event identifiers
+ *  \brief  HID event
  *
- *  This enumeration defines a constant value for each HID event.
- *  It defines one value for each of the four GPI pins supported in the standard voice products.
- *  It defines a further 28 values for generic events.
+ *  This struct identifies the location within the HID Report for an event and
+ *  The value to report for that location.
+ *  It assumes only single bit flags within the HID Report.
  */
-typedef enum hidEventId_t {
-  HID_EVENT_ID_EVT0 = 0,
-  HID_EVENT_ID_EVT1,
-  HID_EVENT_ID_EVT2,
-  HID_EVENT_ID_EVT3,
-  HID_EVENT_ID_EVT4,
-  HID_EVENT_ID_EVT5,
-  HID_EVENT_ID_EVT6,
-  HID_EVENT_ID_EVT7,
-  HID_EVENT_ID_EVT8,
-  HID_EVENT_ID_EVT9,
-  HID_EVENT_ID_EVT10,
-  HID_EVENT_ID_EVT11,
-  HID_EVENT_ID_EVT12,
-  HID_EVENT_ID_EVT13,
-  HID_EVENT_ID_EVT14,
-  HID_EVENT_ID_EVT15,
-  HID_EVENT_ID_EVT16,
-  HID_EVENT_ID_EVT17,
-  HID_EVENT_ID_EVT18,
-  HID_EVENT_ID_EVT19,
-  HID_EVENT_ID_EVT20,
-  HID_EVENT_ID_EVT21,
-  HID_EVENT_ID_EVT22,
-  HID_EVENT_ID_EVT23,
-  HID_EVENT_ID_EVT24,
-  HID_EVENT_ID_EVT25,
-  HID_EVENT_ID_EVT26,
-  HID_EVENT_ID_EVT27,
-  HID_EVENT_ID_EVT28,
-  HID_EVENT_ID_EVT29,
-  HID_EVENT_ID_EVT30,
-  HID_EVENT_ID_EVT31,
-  HID_EVENT_ID_INVALID = 0xffffffff,
-} hidEventId_t;
+typedef struct hidEvent_t {
+  unsigned bit;
+  unsigned byte;
+  unsigned value;
+} hidEvent_t;
 
 #define HID_MAX_DATA_BYTES 4
 
@@ -70,15 +40,15 @@ void UserHIDInit( void );
 /**
  *  \brief  Record that a HID event has occurred
  *
- *  \param{in}  hidEventId    The identifier of an event which has occurred.
- *                            Each event corresponds to bit in the HID Report:
- *                            Events 0- 7 to bits 0-7 of byte 0,
- *                            Events 8-15 to bits 0-7 of byte 1, etc.
- *  \param{in}  hidEventData  A Boolean indicating the state of the event:
- *                            Zero = deasserted,
- *                            Any other value = asserted.
+ *  \param{in}  hidEvent      A list of events which have occurred.
+ *                            Each element specifies a bit and byte in the HID Report and the value for it.
+ *  \param{in}  hidEventCnt   The length of the \a hidEvent list.
+ *
+ *  \returns  A Boolean flag indicating the status of the operation
+ *  \retval   False No recording of the event(s) occurred
+ *  \retval   True  Recording of the event(s) occurred
  */
-void UserHIDRecordEvent( const hidEventId_t hidEventId, const unsigned hidEventData );
+unsigned UserHIDRecordEvent( const hidEvent_t hidEvent[], const unsigned hidEventCnt );
 
 #endif /* ( 0 < HID_CONTROLS ) */
 #endif /* __USER_HID_H__ */
