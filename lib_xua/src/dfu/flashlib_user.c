@@ -90,9 +90,9 @@ int flash_cmd_enable_ports()
 
 #ifdef DFU_FLASH_DEVICE
 #ifdef QUAD_SPI_FLASH
-    result = fl_connectToDevice(&p_qflash, flash_devices, 1);
+    result = fl_connectToDevice(&p_qflash, flash_devices, sizeof(flash_devices) / sizeof(fl_QuadDeviceSpec);
 #else
-    result = fl_connectToDevice(&p_flash, flash_devices, 1);
+    result = fl_connectToDevice(&p_flash, flash_devices, sizeof(flash_devices) / sizeof(fl_DeviceSpec);
 #endif
 #else
     /* Use default flash list */
