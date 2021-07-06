@@ -41,7 +41,8 @@
 #define HID_STATUS_GOOD                 ( 0 )
 #define HID_STATUS_BAD_HEADER           ( 1 )
 #define HID_STATUS_BAD_LOCATION         ( 2 )
-#define HID_STATUS_IN_USE               ( 3 )
+#define HID_STATUS_BAD_PAGE             ( 3 )
+#define HID_STATUS_IN_USE               ( 4 )
 
 /**
  * @brief USB HID Report Descriptor. Short Item
@@ -95,6 +96,24 @@ unsigned char* hidGetReportDescriptor( void );
 size_t hidGetReportDescriptorLength( void );
 
 /**
+ * @brief Get a HID Report descriptor item
+ *
+ * Parameters:
+ *
+ *  @param[in]  byte    The byte position of the control within the HID Report
+ *  @param[in]  bit     The bit position of the control within the \a byte
+ *  @param[out] page    The USB HID Usage Page code for the Item (see 5.5)
+ *  @param[out] header  The LSB of the Item containing the bSize, bType and bTag fields (see 6.2.2.2)
+ *  @param[out] data    A two element array containing data bytes for the Item
+ *
+ * @return A status value
+ * @retval \c HID_STATUS_GOOD           Item successfully returned
+ * @retval \c HID_STATUS_BAD_LOCATION   The \a bit or \a byte arguments specify a location outside
+ *                                      of the HID Report
+ */
+unsigned hidGetReportItem( const unsigned byte, const unsigned bit, unsigned char* const page, unsigned char* const header, unsigned char data[]);
+
+/**
  * @brief Get the length of the HID Report
  *
  * This function returns the length of the USB HID Report.
@@ -133,6 +152,7 @@ void hidResetReportDescriptor( void );
  *
  *  @param[in] byte     The byte position of the control within the HID Report
  *  @param[in] bit      The bit position of the control within the \a byte
+ *  @param[in] page     The USB HID Usage Page code for the Item (see 5.5)
  *  @param[in] header   The LSB of the Item containing the bSize, bType and bTag fields (see 6.2.2.2)
  *  @param[in] data     An array containing data bytes or NULL for an Item with no data
  *
@@ -142,8 +162,10 @@ void hidResetReportDescriptor( void );
  *                                      a Tag or Type inconsistent with a Usage Item
  * @retval \c HID_STATUS_BAD_LOCATION   The \a bit or \a byte arguments specify a location outside
  *                                      of the HID Report
+ * @retval \c HID_STATUS_BAD_PAGE       The \a byte argument specifies a location for controls from
+ *                                      a Usage Page other than the one given by the \a page parameter
  * @retval \c HID_STATUS_IN_USE         The Report descriptor is in use
  */
-unsigned hidSetReportItem( const unsigned byte, const unsigned bit, const unsigned char header, const unsigned char data[] );
+unsigned hidSetReportItem( const unsigned byte, const unsigned bit, const unsigned char page, const unsigned char header, const unsigned char data[]);
 
 #endif // _HID_REPORT_DESCRIPTOR_

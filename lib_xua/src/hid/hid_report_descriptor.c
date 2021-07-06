@@ -73,6 +73,17 @@ static unsigned hidGetItemTag( const unsigned char header );
 static unsigned hidGetItemType( const unsigned char header );
 
 /**
+ * @brief Get the Usage Page number for a given byte in the HID Report
+ *
+ * Parameters:
+ *
+ *  @param[in] byte  The byte location in the HID Report
+ *
+ * @return The USB HID Usage Page code or zero if the \a byte parameter is out-of-range
+ */
+static unsigned hidGetUsagePage( const unsigned byte );
+
+/**
  * @brief Translate an Item from the \c USB_HID_Short_Item format to raw bytes
  *
  * Parameters:
@@ -134,9 +145,45 @@ size_t hidGetReportDescriptorLength( void )
     return retVal;
 }
 
+#define HID_CONFIGURABLE_ITEM_COUNT ( sizeof hidConfigurableItems / sizeof ( USB_HID_Short_Item_t* ))
+unsigned hidGetReportItem(
+    const unsigned byte,
+    const unsigned bit,
+    unsigned char* const page,
+    unsigned char* const header,
+    unsigned char data[]
+)
+{
+    unsigned retVal = HID_STATUS_BAD_LOCATION;
+    for( unsigned itemIdx = 0; itemIdx < HID_CONFIGURABLE_ITEM_COUNT; ++itemIdx ) {
+        USB_HID_Short_Item_t item = *hidConfigurableItems[ itemIdx ];
+        unsigned bBit  = hidGetItemBitLocation(  item.location );
+        unsigned bByte = hidGetItemByteLocation( item.location );
+
+        if(( bit == bBit ) && ( byte == bByte )) {
+            *page = hidGetUsagePage( byte );
+            *header = item.header;
+
+            for( unsigned dataIdx = 0; dataIdx < HID_REPORT_ITEM_MAX_SIZE; ++data, ++dataIdx ) {
+                *data = item.data[ dataIdx ];
+            }
+
+            retVal = HID_STATUS_GOOD;
+            break;
+        }
+    }
+    return retVal;
+}
+
 size_t hidGetReportLength( void )
 {
     size_t retVal = ( hidReportDescriptorPrepared ) ? HID_REPORT_LENGTH : 0;
+    return retVal;
+}
+
+static unsigned hidGetUsagePage( const unsigned byte )
+{
+    unsigned retVal = ( byte < HID_REPORT_LENGTH ) ? hidUsagePages[ byte ]->data[ 0 ] : 0;
     return retVal;
 }
 
@@ -158,8 +205,13 @@ void hidResetReportDescriptor( void )
     hidReportDescriptorPrepared = 0;
 }
 
-#define HID_CONFIGURABLE_ITEM_COUNT ( sizeof hidConfigurableItems / sizeof ( USB_HID_Short_Item_t* ))
-unsigned hidSetReportItem( const unsigned byte, const unsigned bit, const unsigned char header, const unsigned char data[] )
+unsigned hidSetReportItem(
+    const unsigned byte,
+    const unsigned bit,
+    const unsigned char page,
+    const unsigned char header,
+    const unsigned char data[]
+)
 {
     unsigned retVal = HID_STATUS_IN_USE;
 
@@ -180,14 +232,22 @@ unsigned hidSetReportItem( const unsigned byte, const unsigned bit, const unsign
                 unsigned bByte = hidGetItemByteLocation( item.location );
 
                 if(( bit == bBit ) && ( byte == bByte )) {
-                    item.header = header;
+                    unsigned pg = hidGetUsagePage( byte );
 
-                    for( unsigned dataIdx = 0; dataIdx < bSize; ++dataIdx ) {
-                        item.data[ dataIdx ] = data[ dataIdx ];
+                    if( page == pg ) {
+                        item.header = header;
+
+                        for( unsigned dataIdx = 0; dataIdx < bSize; ++dataIdx ) {
+                            item.data[ dataIdx ] = data[ dataIdx ];
+                        }
+
+                        *hidConfigurableItems[ itemIdx ] = item;
+                        retVal = HID_STATUS_GOOD;
+                    } else {
+                        retVal = HID_STATUS_BAD_PAGE;
                     }
 
-                    *hidConfigurableItems[ itemIdx ] = item;
-                    retVal = HID_STATUS_GOOD;
+                    break;
                 }
             }
         }
