@@ -73,6 +73,13 @@ static USB_HID_Short_Item_t* const hidConfigurableItems[] = {
 };
 
 /*
+ * List Usage pages in the HID Report descriptor, one per byte.
+ */
+static const USB_HID_Short_Item_t* const hidUsagePages[] = {
+    &hidUsagePageConsumer
+};
+
+/*
  * List all items in the HID Report descriptor.
  */
 static const USB_HID_Short_Item_t* const hidReportDescriptorItems[] = {
