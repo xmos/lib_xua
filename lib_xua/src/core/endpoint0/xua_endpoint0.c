@@ -482,7 +482,7 @@ void XUA_Endpoint0_init(chanend c_ep0_out, chanend c_ep0_in, NULLABLE_RESOURCE(c
     /* Check if device has started in DFU mode */
     if (DFUReportResetState(null))
     {
-        assert(!isnull(c_audioControl) && msg("DFU not supported when c_audioControl is null"));
+        assert((c_audioControl != NULL) && msg("DFU not supported when c_audioControl is null"));
     
         /* Stop audio */
         outuint(c_audioControl, SET_SAMPLE_FREQ);
@@ -569,7 +569,7 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
                                 /* Only send change if we need to */
                                 if((sp.wValue > 0) && (g_curStreamAlt_Out != sp.wValue))
                                 {
-                                    assert(!isnull(c_audioControl) && msg("Format change not supported when c_audioControl is null"));
+                                    assert((c_audioControl != null) && msg("Format change not supported when c_audioControl is null"));
                                     g_curStreamAlt_Out = sp.wValue;
 
                                     /* Send format of data onto buffering */
@@ -605,7 +605,7 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
                                 /* Only send change if we need to */
                                 if((sp.wValue > 0) && (g_curStreamAlt_In != sp.wValue))
                                 {
-                                    assert(!isnull(c_audioControl) && msg("Format change not supported when c_audioControl is null"));
+                                    assert((c_audioControl != null) && msg("Format change not supported when c_audioControl is null"));
                                     g_curStreamAlt_In = sp.wValue;
 
                                     /* Send format of data onto buffering */
@@ -850,7 +850,7 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
                         if ((DFU_IF == INTERFACE_NUMBER_DFU) && (sp.bRequest != XMOS_DFU_SAVESTATE) &&
                             (sp.bRequest != XMOS_DFU_RESTORESTATE))
                         {
-                            assert(!isnull(c_audioControl) && msg("DFU not supported when c_audioControl is null"));
+                            assert((c_audioControl != null) && msg("DFU not supported when c_audioControl is null"));
                             // Stop audio
                             outuint(c_audioControl, SET_SAMPLE_FREQ);
                             outuint(c_audioControl, AUDIO_STOP_FOR_DFU);
