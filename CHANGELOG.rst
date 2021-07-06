@@ -7,6 +7,7 @@ lib_xua Change Log
   * CHANGED:   HID event ID from list to bit and byte location in HID Report
   * CHANGED:   Interface to UserHIDRecordEvent()
   * ADDED:     Support for multiple flash specs defined by DFU_FLASH_DEVICE
+  * ADDED:     Nullable c_aud_ctl chan-end optimisation for fixed rate devices
 
 1.3.0
 -----

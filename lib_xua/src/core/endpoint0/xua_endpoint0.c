@@ -10,6 +10,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
+#include <xassert.h>
 #include "xua.h"
 
 #if XUA_USB_EN
@@ -394,7 +395,7 @@ void XUA_Endpoint0_setBcdDevice(unsigned short bcd) {
 #endif // AUDIO_CLASS == 1}
 }
 
-void XUA_Endpoint0_init(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
+void XUA_Endpoint0_init(chanend c_ep0_out, chanend c_ep0_in, NULLABLE_RESOURCE(chanend, c_audioControl),
     chanend c_mix_ctl, chanend c_clk_ctl, chanend c_EANativeTransport_ctrl, CLIENT_INTERFACE(i_dfu, dfuInterface) VENDOR_REQUESTS_PARAMS_DEC_)
 {
     ep0_out = XUD_InitEp(c_ep0_out);
@@ -481,6 +482,8 @@ void XUA_Endpoint0_init(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioCont
     /* Check if device has started in DFU mode */
     if (DFUReportResetState(null))
     {
+        assert(!isnull(c_audioControl) && msg("DFU not supported when c_audioControl is null"));
+    
         /* Stop audio */
         outuint(c_audioControl, SET_SAMPLE_FREQ);
         outuint(c_audioControl, AUDIO_STOP_FOR_DFU);
@@ -539,7 +542,7 @@ void XUA_Endpoint0_init(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioCont
 
 }
 
-void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
+void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0_out, chanend c_ep0_in, NULLABLE_RESOURCE(chanend, c_audioControl),
     chanend c_mix_ctl, chanend c_clk_ctl, chanend c_EANativeTransport_ctrl, CLIENT_INTERFACE(i_dfu, dfuInterface) VENDOR_REQUESTS_PARAMS_DEC_)
 {
  if (result == XUD_RES_OKAY)
@@ -566,6 +569,7 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
                                 /* Only send change if we need to */
                                 if((sp.wValue > 0) && (g_curStreamAlt_Out != sp.wValue))
                                 {
+                                    assert(!isnull(c_audioControl) && msg("Format change not supported when c_audioControl is null"));
                                     g_curStreamAlt_Out = sp.wValue;
 
                                     /* Send format of data onto buffering */
@@ -601,6 +605,7 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
                                 /* Only send change if we need to */
                                 if((sp.wValue > 0) && (g_curStreamAlt_In != sp.wValue))
                                 {
+                                    assert(!isnull(c_audioControl) && msg("Format change not supported when c_audioControl is null"));
                                     g_curStreamAlt_In = sp.wValue;
 
                                     /* Send format of data onto buffering */
@@ -845,6 +850,7 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
                         if ((DFU_IF == INTERFACE_NUMBER_DFU) && (sp.bRequest != XMOS_DFU_SAVESTATE) &&
                             (sp.bRequest != XMOS_DFU_RESTORESTATE))
                         {
+                            assert(!isnull(c_audioControl) && msg("DFU not supported when c_audioControl is null"));
                             // Stop audio
                             outuint(c_audioControl, SET_SAMPLE_FREQ);
                             outuint(c_audioControl, AUDIO_STOP_FOR_DFU);
@@ -1087,7 +1093,7 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
 }
 
 /* Endpoint 0 function.  Handles all requests to the device */
-void XUA_Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
+void XUA_Endpoint0(chanend c_ep0_out, chanend c_ep0_in, NULLABLE_RESOURCE(chanend, c_audioControl),
     chanend c_mix_ctl, chanend c_clk_ctl, chanend c_EANativeTransport_ctrl, CLIENT_INTERFACE(i_dfu, dfuInterface) VENDOR_REQUESTS_PARAMS_DEC_)
 {
     USB_SetupPacket_t sp;
