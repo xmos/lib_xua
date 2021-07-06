@@ -4,6 +4,8 @@ lib_xua Change Log
 2.0.0
 -----
 
+  * ADDED:     Function to get a Report item description
+  * CHANGED:   Check HID Usage Page when changing a Report item description
   * CHANGED:   HID event ID from list to bit and byte location in HID Report
   * CHANGED:   Interface to UserHIDRecordEvent()
   * ADDED:     Support for multiple flash specs defined by DFU_FLASH_DEVICE
