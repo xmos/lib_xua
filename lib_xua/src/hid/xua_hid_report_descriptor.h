@@ -111,7 +111,11 @@ size_t hidGetReportDescriptorLength( void );
  * @retval \c HID_STATUS_BAD_LOCATION   The \a bit or \a byte arguments specify a location outside
  *                                      of the HID Report
  */
+#if defined(__XC__)
+unsigned hidGetReportItem( const unsigned byte, const unsigned bit, unsigned char* unsafe const page, unsigned char* unsafe const header, unsigned char* unsafe const data);
+#else
 unsigned hidGetReportItem( const unsigned byte, const unsigned bit, unsigned char* const page, unsigned char* const header, unsigned char data[]);
+#endif
 
 /**
  * @brief Get the length of the HID Report
