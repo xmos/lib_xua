@@ -1028,7 +1028,7 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
 #elif (AUDIO_CLASS == 1)
             /* Return Audio 1.0 Descriptors in FS, should never be in HS! */
              result = USB_StandardRequests(ep0_out, ep0_in,
-                null, 0,
+                (unsigned char*)&devDesc_Audio1, sizeof(devDesc_Audio1),
                 null, 0,
                 (unsigned char*)&devDesc_Audio1, sizeof(devDesc_Audio1),
                 cfgDesc_Audio1, sizeof(cfgDesc_Audio1),
