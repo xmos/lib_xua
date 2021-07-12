@@ -1280,6 +1280,14 @@ XUD_Result_t AudioClassRequests_1(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket
             buffer[0] = (VOLUME_RES_MIXER & 0xff);
             buffer[1] = (VOLUME_RES_MIXER >> 8);
             return XUD_DoGetRequest(ep0_out, ep0_in, buffer, 2, sp.wLength);
+
+        default:
+            printstr("UNHANDLED AudioClassRequests_1: 0x");printhexln(sp.bRequest);
+            printstr("sp.wValue: ");printintln(sp.wValue); 
+            unsigned datalength;
+            XUD_GetBuffer(ep0_out, buffer,  datalength);
+            return XUD_DoSetRequestStatus(ep0_in);
+            break;
     }
 #endif
     return XUD_RES_ERR;
