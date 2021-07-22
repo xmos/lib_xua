@@ -1,6 +1,30 @@
 lib_xua Change Log
 ==================
 
+2.0.0
+-----
+
+  * ADDED:     Function to get a Report item description
+  * CHANGED:   Check HID Usage Page when changing a Report item description
+  * CHANGED:   HID event ID from list to bit and byte location in HID Report
+  * CHANGED:   Interface to UserHIDRecordEvent()
+  * ADDED:     Support for multiple flash specs defined by DFU_FLASH_DEVICE
+  * ADDED:     Nullable c_aud_ctl chan-end optimisation for fixed rate devices
+
+1.3.0
+-----
+
+  * CHANGED:   Move HID descriptors to ease maintenance
+  * CHANGED:   Move legacy tests to separate directory
+  * CHANGED:   Replace unused GPI-specific HID event names with generic ones
+  * ADDED:     Build default HID Report descriptor at boot-time
+  * ADDED:     Function to return length of HID Report
+  * CHANGED:   HID Report to return multiple bytes
+  * CHANGED:   NO_USB conditional compilation switch with XUA_USB_EN
+  * REMOVED:   XS1 support
+  * CHANGED:   Clock blocks used for BCLK and MCLK
+  * REMOVED:   Arguments no longer supported by XUD_Main
+
 1.2.0
 -----
 

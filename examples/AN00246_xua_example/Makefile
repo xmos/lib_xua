@@ -3,8 +3,9 @@ APP_NAME = app_xua_simple
 TARGET = xk-audio-216-mc.xn
 
 # The flags passed to xcc when building the application
-XCC_FLAGS	= -fcomment-asm -Xmapper --map -Xmapper MAPFILE -O3 -report -fsubword-select -save-temps \
-			  -g -Wno-unused-function -Wno-timing -DXUD_SERIES_SUPPORT=XUD_X200_SERIES -DUSB_TILE=tile[1] -fxscope
+XCC_FLAGS	= -fcomment-asm -Xmapper --map -Xmapper MAPFILE -O3 -report -save-temps \
+			  -g -Wno-unused-function -Wno-timing -DXUD_SERIES_SUPPORT=XUD_X200_SERIES \
+			  -DXUD_CORE_CLOCK=600 -DUSB_TILE=tile[1] -fxscope
 			  
 #-DSDA_HIGH=2 -DSCL_HIGH=1 -fxscope
 

@@ -10,6 +10,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
+#include <xassert.h>
 #include "xua.h"
 
 #if XUA_USB_EN
@@ -23,18 +24,24 @@
 #include "vendorrequests.h"
 #include "xc_ptr.h"
 #include "xua_ep0_uacreqs.h"
+
 #if( 0 < HID_CONTROLS )
 #include "hid.h"
+#include "xua_hid.h"
+#include "xua_hid_report_descriptor.h"
 #endif
+
 #if DSD_CHANS_DAC > 0
 #include "dsd_support.h"
 #endif
+
 #define DEBUG_UNIT XUA_EP0
+
 #ifndef DEBUG_PRINT_ENABLE_XUA_EP0
     #define DEBUG_PRINT_ENABLE_XUA_EP0 0
 #endif // DEBUG_PRINT_ENABLE_XUA_EP0
-#include "debug_print.h"
 
+#include "debug_print.h"
 #include "xua_usb_params_funcs.h"
 
 #ifndef __XC__
@@ -51,7 +58,7 @@
 #if ((AUDIO_CLASS == 1) || (AUDIO_CLASS_FALLBACK)) && defined(DFU)
 #warning DFU will not be enabled in AUDIO 1.0 mode due to Windows requesting driver
 #endif
-#endif
+#endif // FORCE_UAC1_DFU
 
 /* MIDI not supported in Audio 1.0 mode */
 #if ((AUDIO_CLASS == 1) || (AUDIO_CLASS_FALLBACK)) && defined(MIDI)
@@ -85,9 +92,6 @@ extern void device_reboot(void);
 
 #endif
 
-#if( 0 < HID_CONTROLS )
-#include "xua_hid.h"
-#endif
 #ifndef MIN
 #define MIN(a,b) (((a)<(b))?(a):(b))
 #endif
@@ -391,7 +395,7 @@ void XUA_Endpoint0_setBcdDevice(unsigned short bcd) {
 #endif // AUDIO_CLASS == 1}
 }
 
-void XUA_Endpoint0_init(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
+void XUA_Endpoint0_init(chanend c_ep0_out, chanend c_ep0_in, NULLABLE_RESOURCE(chanend, c_audioControl),
     chanend c_mix_ctl, chanend c_clk_ctl, chanend c_EANativeTransport_ctrl, CLIENT_INTERFACE(i_dfu, dfuInterface) VENDOR_REQUESTS_PARAMS_DEC_)
 {
     ep0_out = XUD_InitEp(c_ep0_out);
@@ -478,6 +482,8 @@ void XUA_Endpoint0_init(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioCont
     /* Check if device has started in DFU mode */
     if (DFUReportResetState(null))
     {
+        assert((c_audioControl != NULL) && msg("DFU not supported when c_audioControl is null"));
+    
         /* Stop audio */
         outuint(c_audioControl, SET_SAMPLE_FREQ);
         outuint(c_audioControl, AUDIO_STOP_FOR_DFU);
@@ -518,9 +524,25 @@ void XUA_Endpoint0_init(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioCont
 
 #endif
 
+#if( 0 < HID_CONTROLS )
+    hidPrepareReportDescriptor();
+
+    size_t hidReportDescriptorLength = hidGetReportDescriptorLength();
+    unsigned char hidReportDescriptorLengthLo =  hidReportDescriptorLength & 0xFF;
+    unsigned char hidReportDescriptorLengthHi = (hidReportDescriptorLength & 0xFF00) >> 8;
+
+#if( AUDIO_CLASS == 1 )
+    cfgDesc_Audio1[USB_HID_DESCRIPTOR_OFFSET + HID_DESCRIPTOR_LENGTH_FIELD_OFFSET    ] = hidReportDescriptorLengthLo;
+    cfgDesc_Audio1[USB_HID_DESCRIPTOR_OFFSET + HID_DESCRIPTOR_LENGTH_FIELD_OFFSET + 1] = hidReportDescriptorLengthHi;
+#endif
+
+    hidDescriptor[HID_DESCRIPTOR_LENGTH_FIELD_OFFSET    ] = hidReportDescriptorLengthLo;
+    hidDescriptor[HID_DESCRIPTOR_LENGTH_FIELD_OFFSET + 1] = hidReportDescriptorLengthHi;
+#endif // 0 < HID_CONTROLS
+
 }
 
-void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
+void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0_out, chanend c_ep0_in, NULLABLE_RESOURCE(chanend, c_audioControl),
     chanend c_mix_ctl, chanend c_clk_ctl, chanend c_EANativeTransport_ctrl, CLIENT_INTERFACE(i_dfu, dfuInterface) VENDOR_REQUESTS_PARAMS_DEC_)
 {
  if (result == XUD_RES_OKAY)
@@ -547,6 +569,7 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
                                 /* Only send change if we need to */
                                 if((sp.wValue > 0) && (g_curStreamAlt_Out != sp.wValue))
                                 {
+                                    assert((c_audioControl != null) && msg("Format change not supported when c_audioControl is null"));
                                     g_curStreamAlt_Out = sp.wValue;
 
                                     /* Send format of data onto buffering */
@@ -582,6 +605,7 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
                                 /* Only send change if we need to */
                                 if((sp.wValue > 0) && (g_curStreamAlt_In != sp.wValue))
                                 {
+                                    assert((c_audioControl != null) && msg("Format change not supported when c_audioControl is null"));
                                     g_curStreamAlt_In = sp.wValue;
 
                                     /* Send format of data onto buffering */
@@ -729,15 +753,22 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
                             switch (descriptorType)
                             {
                                 case HID_HID:
-                                    /* Return HID Descriptor */
-                                     result = XUD_DoGetRequest(ep0_out, ep0_in, hidDescriptor,
-                                        sizeof(hidDescriptor), sp.wLength);
+                                    {
+                                        /* Return HID Descriptor */
+                                         result = XUD_DoGetRequest(ep0_out, ep0_in, hidDescriptor,
+                                            sizeof(hidDescriptor), sp.wLength);
+                                    }
                                     break;
                                 case HID_REPORT:
-                                    /* Return HID report descriptor */
-                                    result = XUD_DoGetRequest(ep0_out, ep0_in, hidReportDescriptor,
-                                        sizeof(hidReportDescriptor), sp.wLength);
-                                break;
+                                    {
+                                        /* Return HID report descriptor */
+                                        unsigned char* hidReportDescriptorPtr;
+                                        hidReportDescriptorPtr = hidGetReportDescriptor();
+                                        size_t hidReportDescriptorLength = hidGetReportDescriptorLength();
+                                        result = XUD_DoGetRequest(ep0_out, ep0_in, hidReportDescriptorPtr,
+                                            hidReportDescriptorLength, sp.wLength);
+                                    }
+                                    break;
                             }
                         }
                         break;
@@ -819,6 +850,7 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
                         if ((DFU_IF == INTERFACE_NUMBER_DFU) && (sp.bRequest != XMOS_DFU_SAVESTATE) &&
                             (sp.bRequest != XMOS_DFU_RESTORESTATE))
                         {
+                            assert((c_audioControl != null) && msg("DFU not supported when c_audioControl is null"));
                             // Stop audio
                             outuint(c_audioControl, SET_SAMPLE_FREQ);
                             outuint(c_audioControl, AUDIO_STOP_FOR_DFU);
@@ -1061,7 +1093,7 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
 }
 
 /* Endpoint 0 function.  Handles all requests to the device */
-void XUA_Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
+void XUA_Endpoint0(chanend c_ep0_out, chanend c_ep0_in, NULLABLE_RESOURCE(chanend, c_audioControl),
     chanend c_mix_ctl, chanend c_clk_ctl, chanend c_EANativeTransport_ctrl, CLIENT_INTERFACE(i_dfu, dfuInterface) VENDOR_REQUESTS_PARAMS_DEC_)
 {
     USB_SetupPacket_t sp;

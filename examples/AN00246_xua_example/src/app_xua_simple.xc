@@ -60,7 +60,6 @@ int main()
         /* Low level USB device layer core */ 
         on tile[1]: XUD_Main(c_ep_out, 2, c_ep_in, 2,
                       c_sof, epTypeTableOut, epTypeTableIn, 
-                      null, null, -1 , 
                       XUD_SPEED_HS, XUD_PWR_SELF);
         
         /* Endpoint 0 core from lib_xua */
