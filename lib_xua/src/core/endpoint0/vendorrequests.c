@@ -7,12 +7,12 @@
 #include "vendorrequests.h"
 
 int VendorAudioRequests(XUD_ep ep0_out, XUD_ep ep0_in, unsigned char bRequest, unsigned char cs, unsigned char cn,
-    unsigned short unitId, unsigned char direction, chanend c_audioControl,
+    unsigned short unitId, unsigned char direction, NULLABLE_RESOURCE(chanend, c_audioControl),
     NULLABLE_RESOURCE(chanend, c_mix_ctl),
     NULLABLE_RESOURCE(chanend, c_clk_ctL)) __attribute__ ((weak));
 
 int VendorAudioRequests(XUD_ep ep0_out, XUD_ep ep0_in, unsigned char bRequest, unsigned char cs, unsigned char cn,
-    unsigned short unitId, unsigned char direction, chanend c_audioControl,
+    unsigned short unitId, unsigned char direction, NULLABLE_RESOURCE(chanend, c_audioControl),
     NULLABLE_RESOURCE(chanend, c_mix_ctl),
     NULLABLE_RESOURCE(chanend, c_clk_ctL))
 {

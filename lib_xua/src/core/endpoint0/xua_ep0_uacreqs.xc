@@ -1285,4 +1285,4 @@ XUD_Result_t AudioClassRequests_1(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket
     return XUD_RES_ERR;
 }
 #endif
-#endif /* NO_USB */
+#endif /* XUA_USB_EN */

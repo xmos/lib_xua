@@ -5,19 +5,17 @@
 #include <xs1.h>
 #include <platform.h>
 
-#ifndef NO_USB
+#if XUA_USB_EN
 #include "xud_device.h"
 #include "dfu_types.h"
 #include "flash_interface.h"
 #include "dfu_interface.h"
 
-#if (XUD_SERIES_SUPPORT==4)
-/* xCORE-200 */
+#if defined(__XS3A__)
+#define FLAG_ADDRESS 0xfffcc
+#elif defined(__XS2A__)
 /* Note range 0x7FFC8 - 0x7FFFF guarenteed to be untouched by tools */
 #define FLAG_ADDRESS 0x7ffcc
-#else
-/* Note range 0x1FFC8 - 0x1FFFF guarenteed to be untouched by tools */
-#define FLAG_ADDRESS 0x1ffcc
 #endif
 
 /* Store Flag to fixed address */
@@ -581,6 +579,6 @@ int DFUDeviceRequests(XUD_ep ep0_out, XUD_ep &?ep0_in, USB_SetupPacket_t &sp, ch
     }
   	return returnVal;
 }
-#endif /* NO_USB */
+#endif /* XUA_USB_EN */
 
 #endif

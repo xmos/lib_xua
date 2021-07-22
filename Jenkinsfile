@@ -27,11 +27,70 @@ pipeline {
             xcoreLibraryChecks("${REPO}")
           }
         }
-        stage('Tests') {
-          steps {
-            runXmostest("${REPO}", 'tests')
+        stage('XS2 Tests') {
+          failFast true
+          parallel {
+            stage('Legacy tests') {
+              steps {
+                runXmostest("${REPO}", 'legacy_tests')
+              }
+            }
+            stage('Unit tests') {
+              steps {
+                dir("${REPO}") {
+                  dir('tests') {
+                    dir('xua_unit_tests') {
+                      withVenv {
+                        runWaf('.', "configure clean build --target=xcore200")
+//                        runWaf('.', "configure clean build --target=xcoreai")
+//                        stash name: 'xua_unit_tests', includes: 'bin/*xcoreai.xe, '
+                        viewEnv() {
+                          runPython("TARGET=XCORE200 pytest -n 1")
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
           }
         }
+//        stage('xcore.ai Verification') {
+//          agent {
+//            label 'xcore.ai-explorer'
+//          }
+//          options {
+//            skipDefaultCheckout()
+//          }
+//          stages{
+//            stage('Get View') {
+//              steps {
+//                xcorePrepareSandbox("${VIEW}", "${REPO}")
+//              }
+//            }
+//            stage('Unit tests') {
+//              steps {
+//                dir("${REPO}") {
+//                  dir('tests') {
+//                    dir('xua_unit_tests') {
+//                      withVenv {
+//                        unstash 'xua_unit_tests'
+//                        viewEnv() {
+//                          runPython("TARGET=XCOREAI pytest -s")
+//                        }
+//                      }
+//                    }
+//                  }
+//                }
+//              }
+//            }
+//          } // stages
+//          post {
+//            cleanup {
+//              cleanWs()
+//            }
+//          }
+//        }
         stage('xCORE builds') {
           steps {
             dir("${REPO}") {
