@@ -1,6 +1,11 @@
 lib_xua Change Log
 ==================
 
+2.0.1
+-----
+
+  * CHANGED:   Reverted dependency on lib_xud to v1.2.0 for use by XVF3510
+
 2.0.0
 -----
 
