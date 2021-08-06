@@ -1,6 +1,12 @@
 lib_xua Change Log
 ==================
 
+2.1.0
+-----
+
+  * CHANGED:   Updated clock blocks to support lib_xud v2.0.0
+  * CHANGED:   Updated dependency on lib_xud to v2.0.0 for use by XVF3600
+
 2.0.1
 -----
 
