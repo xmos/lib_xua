@@ -241,6 +241,10 @@ unsigned hidSetReportItem(
                             item.data[ dataIdx ] = data[ dataIdx ];
                         }
 
+                        for( unsigned dataIdx = bSize; dataIdx < HID_REPORT_ITEM_MAX_SIZE; ++dataIdx ) {
+                            item.data[ dataIdx ] = 0;
+                        }
+
                         *hidConfigurableItems[ itemIdx ] = item;
                         retVal = HID_STATUS_GOOD;
                     } else {
