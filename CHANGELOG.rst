@@ -1,6 +1,11 @@
 lib_xua Change Log
 ==================
 
+2.1.1
+-----
+
+  * CHANGED:   Setting of HID report items
+
 2.1.0
 -----
 
