@@ -430,10 +430,10 @@ void test_initial_modification_with_subsequent_verification_1( void )
 
     unsigned getRetVal = hidGetReportItem( byte, bit, &get_page, &get_header, get_data );
     TEST_ASSERT_EQUAL_UINT( HID_STATUS_GOOD, getRetVal );
-    TEST_ASSERT_EQUAL_UINT( get_page, set_page );
-    TEST_ASSERT_EQUAL_UINT( get_header, set_header );
-    TEST_ASSERT_EQUAL_UINT( get_data[ 0 ], set_data[ 0 ]);
-    TEST_ASSERT_EQUAL_UINT( get_data[ 1 ], 0 ); // Should be MSB of data from hidUsageByte0Bit0 in hid_report_descriptor.h
+    TEST_ASSERT_EQUAL_UINT( set_page, get_page );
+    TEST_ASSERT_EQUAL_UINT( set_header, get_header );
+    TEST_ASSERT_EQUAL_UINT( set_data[ 0 ], get_data[ 0 ]);
+    TEST_ASSERT_EQUAL_UINT( 0, get_data[ 1 ]); // Should be MSB of data from hidUsageByte0Bit0 in hid_report_descriptor.h
 }
 
 void test_initial_modification_with_subsequent_verification_2( void )
@@ -455,10 +455,10 @@ void test_initial_modification_with_subsequent_verification_2( void )
 
         unsigned getRetVal = hidGetReportItem( byte, bit, &get_page, &get_header, get_data );
         TEST_ASSERT_EQUAL_UINT( HID_STATUS_GOOD, getRetVal );
-        TEST_ASSERT_EQUAL_UINT( get_page, set_page );
-        TEST_ASSERT_EQUAL_UINT( get_header, set_header );
-        TEST_ASSERT_EQUAL_UINT( get_data[ 0 ], set_data[ 0 ]);
-        TEST_ASSERT_EQUAL_UINT( get_data[ 1 ], set_data[ 1 ]);
+        TEST_ASSERT_EQUAL_UINT( set_page, get_page );
+        TEST_ASSERT_EQUAL_UINT( set_header, get_header );
+        TEST_ASSERT_EQUAL_UINT( set_data[ 0 ], get_data[ 0 ]);
+        TEST_ASSERT_EQUAL_UINT( set_data[ 1 ], get_data[ 1 ]);
     }
 
     {
@@ -475,10 +475,10 @@ void test_initial_modification_with_subsequent_verification_2( void )
 
         unsigned getRetVal = hidGetReportItem( byte, bit, &get_page, &get_header, get_data );
         TEST_ASSERT_EQUAL_UINT( HID_STATUS_GOOD, getRetVal );
-        TEST_ASSERT_EQUAL_UINT( get_page, set_page );
-        TEST_ASSERT_EQUAL_UINT( get_header, set_header );
-        TEST_ASSERT_EQUAL_UINT( get_data[ 0 ], set_data[ 0 ]);
-        TEST_ASSERT_EQUAL_UINT( get_data[ 1 ], 0 ); // The call to hidSetReportItem with size 1 in the header should return the MSB to zero
+        TEST_ASSERT_EQUAL_UINT( set_page, get_page );
+        TEST_ASSERT_EQUAL_UINT( set_header, get_header );
+        TEST_ASSERT_EQUAL_UINT( set_data[ 0 ], get_data[ 0 ]);
+        TEST_ASSERT_EQUAL_UINT( 0, get_data[ 1 ]); // The call to hidSetReportItem with size 1 in the header should return the MSB to zero
     }
 }
 
