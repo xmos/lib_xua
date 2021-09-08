@@ -14,6 +14,7 @@
 
 #define CONSUMER_CONTROL_PAGE   ( 0x0C )
 #define LOUDNESS_CONTROL        ( 0xE7 )
+#define AL_CONTROL_PANEL        ( 0x019F )
 
 static unsigned construct_usage_header( unsigned size )
 {
@@ -411,7 +412,7 @@ void test_initial_modification_with_subsequent_preparation( void )
     TEST_ASSERT_NOT_NULL( reportDescPtr );
 }
 
-void test_initial_modification_with_subsequent_verification( void )
+void test_initial_modification_with_subsequent_verification_1( void )
 {
     const unsigned bit = MIN_VALID_BIT;
     const unsigned byte = MIN_VALID_BYTE;
@@ -429,10 +430,56 @@ void test_initial_modification_with_subsequent_verification( void )
 
     unsigned getRetVal = hidGetReportItem( byte, bit, &get_page, &get_header, get_data );
     TEST_ASSERT_EQUAL_UINT( HID_STATUS_GOOD, getRetVal );
-    TEST_ASSERT_EQUAL_UINT( get_page, set_page );
-    TEST_ASSERT_EQUAL_UINT( get_header, set_header );
-    TEST_ASSERT_EQUAL_UINT( get_data[ 0 ], set_data[ 0 ]);
-    TEST_ASSERT_EQUAL_UINT( get_data[ 1 ], set_data[ 1 ]);
+    TEST_ASSERT_EQUAL_UINT( set_page, get_page );
+    TEST_ASSERT_EQUAL_UINT( set_header, get_header );
+    TEST_ASSERT_EQUAL_UINT( set_data[ 0 ], get_data[ 0 ]);
+    TEST_ASSERT_EQUAL_UINT( 0, get_data[ 1 ]); // Should be MSB of data from hidUsageByte0Bit0 in hid_report_descriptor.h
+}
+
+void test_initial_modification_with_subsequent_verification_2( void )
+{
+    const unsigned bit = MIN_VALID_BIT;
+    const unsigned byte = MIN_VALID_BYTE;
+
+    {
+        unsigned char get_data[ HID_REPORT_ITEM_MAX_SIZE ] = { 0xFF, 0xFF };
+        unsigned char get_header = 0xFF;
+        unsigned char get_page = 0xFF;
+
+        const unsigned char set_data[ 2 ] = {( AL_CONTROL_PANEL & 0x00FF ), (( AL_CONTROL_PANEL & 0xFF00 ) >> 8 )};
+        const unsigned char set_header = construct_usage_header( sizeof set_data / sizeof( unsigned char ));
+        const unsigned char set_page = CONSUMER_CONTROL_PAGE;
+
+        unsigned setRetVal = hidSetReportItem( byte, bit, set_page, set_header, set_data );
+        TEST_ASSERT_EQUAL_UINT( HID_STATUS_GOOD, setRetVal );
+
+        unsigned getRetVal = hidGetReportItem( byte, bit, &get_page, &get_header, get_data );
+        TEST_ASSERT_EQUAL_UINT( HID_STATUS_GOOD, getRetVal );
+        TEST_ASSERT_EQUAL_UINT( set_page, get_page );
+        TEST_ASSERT_EQUAL_UINT( set_header, get_header );
+        TEST_ASSERT_EQUAL_UINT( set_data[ 0 ], get_data[ 0 ]);
+        TEST_ASSERT_EQUAL_UINT( set_data[ 1 ], get_data[ 1 ]);
+    }
+
+    {
+        unsigned char get_data[ HID_REPORT_ITEM_MAX_SIZE ] = { 0xFF, 0xFF };
+        unsigned char get_header = 0xFF;
+        unsigned char get_page = 0xFF;
+
+        const unsigned char set_data[ 1 ] = { LOUDNESS_CONTROL };
+        const unsigned char set_header = construct_usage_header( sizeof set_data / sizeof( unsigned char ));
+        const unsigned char set_page = CONSUMER_CONTROL_PAGE;
+
+        unsigned setRetVal = hidSetReportItem( byte, bit, set_page, set_header, set_data );
+        TEST_ASSERT_EQUAL_UINT( HID_STATUS_GOOD, setRetVal );
+
+        unsigned getRetVal = hidGetReportItem( byte, bit, &get_page, &get_header, get_data );
+        TEST_ASSERT_EQUAL_UINT( HID_STATUS_GOOD, getRetVal );
+        TEST_ASSERT_EQUAL_UINT( set_page, get_page );
+        TEST_ASSERT_EQUAL_UINT( set_header, get_header );
+        TEST_ASSERT_EQUAL_UINT( set_data[ 0 ], get_data[ 0 ]);
+        TEST_ASSERT_EQUAL_UINT( 0, get_data[ 1 ]); // The call to hidSetReportItem with size 1 in the header should return the MSB to zero
+    }
 }
 
 void test_modification_without_subsequent_preparation( void )
