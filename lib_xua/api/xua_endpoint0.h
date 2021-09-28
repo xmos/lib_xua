@@ -6,9 +6,10 @@
 
 #include "xua.h"
 #include "dfu_interface.h"
-#include "vendorrequests.h"
 
 #if __XC__
+#include "vendorrequests.h"
+
 /** Function implementing Endpoint 0 for enumeration, control and configuration
  *  of USB audio devices. It uses the descriptors defined in ``descriptors_2.h``.
  *
