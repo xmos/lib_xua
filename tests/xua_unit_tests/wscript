@@ -220,6 +220,7 @@ def build(bld):
 
         makefile_opts['XCC_FLAGS'] = ['-O2',
                                       '-g',
+                                      '-v',
                                       '-Wall',
                                       '-DUNITY_SUPPORT_64',
                                       '-DUNITY_INCLUDE_DOUBLE',
