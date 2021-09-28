@@ -4,7 +4,7 @@
 #ifndef __XUA_H__
 #define __XUA_H__
 
-#include "xs1.h"
+#include <xs1.h>
 #include "xua_conf_full.h"
 
 #if __XC__ || __STDC__
