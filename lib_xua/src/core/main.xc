@@ -443,7 +443,7 @@ void SpdifTxWrapper(chanend c_spdif_tx)
 }
 #endif
 
-void usb_audio_io(chanend ?c_aud_in, chanend ?c_adc,
+void usb_audio_io(chanend ?c_aud_in,
 #if (XUA_SPDIF_TX_EN) && (SPDIF_TX_TILE != AUDIO_IO_TILE)
     chanend c_spdif_tx,
 #endif
@@ -571,11 +571,6 @@ int main()
     chan c_ea_data;
 #endif
 #endif
-#ifdef SU1_ADC_ENABLE
-    chan c_adc;
-#else
-#define c_adc null
-#endif
 
 #ifdef MIXER
     chan c_mix_ctl;
@@ -659,7 +654,7 @@ int main()
 
         on tile[AUDIO_IO_TILE]: 
         {
-            usb_audio_io(c_mix_out, c_adc
+            usb_audio_io(c_mix_out
 #if (XUA_SPDIF_TX_EN) && (SPDIF_TX_TILE != AUDIO_IO_TILE)
                 , c_spdif_tx
 #endif
@@ -765,11 +760,6 @@ int main()
 #endif /*MIC_PROCESSING_USE_INTERFACE*/
 #endif /*XUA_NUM_PDM_MICS > 0*/
 #endif /*PDM_RECORD*/
-
-
-#ifdef SU1_ADC_ENABLE
-        xs1_su_adc_service(c_adc);
-#endif
     }
 
     return 0;

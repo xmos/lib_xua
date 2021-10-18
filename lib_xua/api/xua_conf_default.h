@@ -1244,10 +1244,6 @@ enum USBEndpointNumber_Out
 
 #define MAX_VOL                  (0x20000000)
 
-#if defined(SU1_ADC_ENABLE) && (SU1_ADC_ENABLE == 0)
-#undef SU1_ADC_ENABLE
-#endif
-
 #if defined(LEVEL_METER_LEDS) && !defined(LEVEL_UPDATE_RATE)
 #define LEVEL_UPDATE_RATE   400000
 #endif
