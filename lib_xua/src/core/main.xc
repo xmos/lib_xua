@@ -196,14 +196,6 @@ in port p_pdm_mclk                                          = PORT_PDM_MCLK;
 #endif
 #endif
 
-
-
-#if (defined(__XS2A__) && (ADAT_RX))
-/* Cannot use default clock (CLKBLK_REF) for ADAT RX since it is tied to the
-60MHz USB clock on XS2 processors. */
-on tile[XUD_TILE] : clock    clk_adat_rx                    = CLKBLK_ADAT_RX;
-#endif
-
 on tile[AUDIO_IO_TILE] : clock clk_audio_mclk               = CLKBLK_MCLK;       /* Master clock */
 
 #if(AUDIO_IO_TILE != XUD_TILE) && XUA_USB_EN
@@ -213,15 +205,6 @@ on tile[XUD_TILE] : in port p_mclk_in_usb                   = PORT_MCLK_IN_USB;
 #endif
 
 on tile[AUDIO_IO_TILE] : clock clk_audio_bclk               = CLKBLK_I2S_BIT;    /* Bit clock */
-
-
-/* L/G Series needs a port to use for USB reset */
-#if ((defined(__XS2A__) || defined (__XS3A__)) && defined(PORT_USB_RESET))
-/* This define is checked since it could be on a shift reg or similar */
-on tile[XUD_TILE] : out port p_usb_rst                      = PORT_USB_RESET;
-#else
-#define p_usb_rst   null
-#endif
 
 #ifdef IAP
 /* I2C ports - in a struct for use with module_i2c_shared & module_i2c_simple/module_i2c_single_port */
@@ -720,11 +703,6 @@ int main()
         {
             set_thread_fast_mode_on();
 
-#if defined(__XS2A__)
-            /* Can't use REF clock as this is usb clock */
-            set_port_clock(p_adat_rx, clk_adat_rx);
-            start_clock(clk_adat_rx);
-#endif
             while (1)
             {
 				adatReceiver48000(p_adat_rx, c_adat_rx);
