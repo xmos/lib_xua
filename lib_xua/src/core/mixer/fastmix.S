@@ -65,8 +65,6 @@ doMix##i##: ;\
           retsp     0x0; \
 
 
-
-
 #if(MAX_MIX_COUNT > 0)
 DOMIX_TOP(0)
 #include "repeat.h"
