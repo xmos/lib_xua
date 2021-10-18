@@ -38,8 +38,6 @@ void device_reboot(void)
     /* Disconnect from bus */
     unsigned data[] = {4};
     write_periph_32(usb_tile, XS2_SU_PERIPH_USB_ID, XS1_GLX_PER_UIFM_FUNC_CONTROL_NUM, 1, data);
-#elif defined(__XS3A__)
-    #warning Assuming that tile reset also resets USB in XS3 architectures
 #endif
 
     tileArrayLength = sizeof(tile)/sizeof(tileref);
