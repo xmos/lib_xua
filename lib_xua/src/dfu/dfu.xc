@@ -11,11 +11,12 @@
 #include "flash_interface.h"
 #include "dfu_interface.h"
 
-#if defined(__XS3A__)
-#define FLAG_ADDRESS 0xfffcc
-#elif defined(__XS2A__)
+#if defined(__XS2A__)
 /* Note range 0x7FFC8 - 0x7FFFF guarenteed to be untouched by tools */
 #define FLAG_ADDRESS 0x7ffcc
+#else
+/* Note range 0xFFFC8 - 0xFFFFF guarenteed to be untouched by tools */
+#define FLAG_ADDRESS 0xfffcc
 #endif
 
 /* Store Flag to fixed address */

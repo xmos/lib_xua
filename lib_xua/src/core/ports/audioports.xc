@@ -62,37 +62,12 @@ unsigned int divide, unsigned curSamFreq)
     }
 #endif
 
-#if defined(__XS2A__) || defined(__XS3A__)
     unsafe
     {
         /* Clock bitclock clock block from master clock pin (divided) */
         configure_clock_src_divide(clk_audio_bclk, (port) p_mclk_in, (divide/2));
         configure_port_clock_output(p_bclk, clk_audio_bclk);
     }
-#else
-    #error XS1 no longer supported in audio core 
-    /* For a divide of one (i.e. bitclock == master-clock) BClk is set to clock_output mode.
-     * In this mode it outputs an edge clock on every tick of itsassociated clock_block.
-     *
-     * For all other divides, BClk is clocked by the master clock and data
-     * will be output to p_bclk to generate the bit clock.
-     */
-    if (divide == 1) /* e.g. 176.4KHz from 11.2896 */
-    {
-        configure_port_clock_output(p_bclk, clk_audio_mclk);
-
-        /* Generate bit clock block straight from mclk */
-        configure_clock_src(clk_audio_bclk, p_mclk_in);
-    }
-    else
-    {
-        /* bit clock port from master clock clock-clock block */
-        configure_out_port_no_ready(p_bclk, clk_audio_mclk, 0);
-
-        /* Generate bit clock block from pin */
-        configure_clock_src(clk_audio_bclk, p_bclk);
-    }
-#endif
 
     if(!isnull(p_lrclk))
     {
