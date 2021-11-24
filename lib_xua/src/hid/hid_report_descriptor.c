@@ -77,11 +77,11 @@ static unsigned hidGetItemType( const unsigned char header );
  *
  * Parameters:
  *
- *  @param[in] byte  The byte location in the HID Report
+ *  @param[in] id   The HID Report ID for the Usage Page
  *
- * @return The USB HID Usage Page code or zero if the \a byte parameter is out-of-range
+ * @return The USB HID Usage Page code or zero if the \a id parameter is out-of-range
  */
-static unsigned hidGetUsagePage( const unsigned byte );
+static unsigned hidGetUsagePage( const unsigned id );
 
 /**
  * @brief Translate an Item from the \c USB_HID_Short_Item format to raw bytes
@@ -147,6 +147,7 @@ size_t hidGetReportDescriptorLength( void )
 
 #define HID_CONFIGURABLE_ITEM_COUNT ( sizeof hidConfigurableItems / sizeof ( USB_HID_Short_Item_t* ))
 unsigned hidGetReportItem(
+    const unsigned id,
     const unsigned byte,
     const unsigned bit,
     unsigned char* const page,
@@ -175,15 +176,21 @@ unsigned hidGetReportItem(
     return retVal;
 }
 
-size_t hidGetReportLength( void )
+size_t hidGetReportLength( const unsigned id )
 {
     size_t retVal = ( hidReportDescriptorPrepared ) ? HID_REPORT_LENGTH : 0;
     return retVal;
 }
 
-static unsigned hidGetUsagePage( const unsigned byte )
+static unsigned hidGetUsagePage( const unsigned id )
 {
-    unsigned retVal = ( byte < HID_REPORT_LENGTH ) ? hidUsagePages[ byte ]->data[ 0 ] : 0;
+    unsigned retVal = 0U;
+    for( unsigned idx = 0; idx < 1; ++idx) { // TODO Fix the upper limit!
+        if( id == hidUsagePages[ idx ]->id ) {
+            retVal = hidUsagePages[ idx ]->data[ 0 ];
+            break;
+        }
+    }
     return retVal;
 }
 
@@ -206,6 +213,7 @@ void hidResetReportDescriptor( void )
 }
 
 unsigned hidSetReportItem(
+    const unsigned id,
     const unsigned byte,
     const unsigned bit,
     const unsigned char page,

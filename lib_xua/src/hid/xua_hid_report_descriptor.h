@@ -40,9 +40,10 @@
 
 #define HID_STATUS_GOOD                 ( 0 )
 #define HID_STATUS_BAD_HEADER           ( 1 )
-#define HID_STATUS_BAD_LOCATION         ( 2 )
-#define HID_STATUS_BAD_PAGE             ( 3 )
-#define HID_STATUS_IN_USE               ( 4 )
+#define HID_STATUS_BAD_ID               ( 2 )
+#define HID_STATUS_BAD_LOCATION         ( 3 )
+#define HID_STATUS_BAD_PAGE             ( 4 )
+#define HID_STATUS_IN_USE               ( 5 )
 
 /**
  * @brief USB HID Report Descriptor. Short Item
@@ -57,6 +58,8 @@
  *              Format (bit range): bSize (0:1), bType (2:3), bTag (4:7)
  *   data     - a two byte array for holding the item's data
  *              The bSize field indicates which data bytes are in use
+ *   id       - a non-standard extension identifying the HID Report ID associated with
+ *              the item (see 5.6, 6.2.2.7, 8.1 and 8.2)
  *   location - a non-standard extension locating the item within the HID Report
  *              Format (bit range): iByte (0:3), iBit (4:6), Reserved (7)
  */
@@ -64,6 +67,7 @@ typedef struct
 {
     unsigned char header;
     unsigned char data[ HID_REPORT_ITEM_MAX_SIZE ];
+    unsigned char id;
     unsigned char location;
 } USB_HID_Short_Item_t;
 
@@ -100,6 +104,7 @@ size_t hidGetReportDescriptorLength( void );
  *
  * Parameters:
  *
+ *  @param[in]  id      The identifier for the HID Report (see 5.6, 6.2.2.7, 8.1 and 8.2)
  *  @param[in]  byte    The byte position of the control within the HID Report
  *  @param[in]  bit     The bit position of the control within the \a byte
  *  @param[out] page    The USB HID Usage Page code for the Item (see 5.5)
@@ -108,13 +113,26 @@ size_t hidGetReportDescriptorLength( void );
  *
  * @return A status value
  * @retval \c HID_STATUS_GOOD           Item successfully returned
+ * @retval \c HID_STATUS_BAD_ID         The \a id argument specifies a non-existant HID Report
  * @retval \c HID_STATUS_BAD_LOCATION   The \a bit or \a byte arguments specify a location outside
  *                                      of the HID Report
  */
 #if defined(__XC__)
-unsigned hidGetReportItem( const unsigned byte, const unsigned bit, unsigned char* unsafe const page, unsigned char* unsafe const header, unsigned char* unsafe const data);
+unsigned hidGetReportItem(
+    const unsigned id,
+    const unsigned byte,
+    const unsigned bit,
+    unsigned char* unsafe const page,
+    unsigned char* unsafe const header,
+    unsigned char* unsafe const data);
 #else
-unsigned hidGetReportItem( const unsigned byte, const unsigned bit, unsigned char* const page, unsigned char* const header, unsigned char data[]);
+unsigned hidGetReportItem(
+    const unsigned id,
+    const unsigned byte,
+    const unsigned bit,
+    unsigned char* const page,
+    unsigned char* const header,
+    unsigned char data[]);
 #endif
 
 /**
@@ -122,11 +140,16 @@ unsigned hidGetReportItem( const unsigned byte, const unsigned bit, unsigned cha
  *
  * This function returns the length of the USB HID Report.
  * It returns zero if the Report descriptor has not been prepared,
- *   i.e., no one has called \c hidPrepareReportDescriptor().
+ *   i.e., no one has called \c hidPrepareReportDescriptor(),
+ *   or if the \a id argument specifies a non-existent HID Report
+ *
+ * Parameters:
+ *
+ *  @param[in]  id  The identifier for the HID Report (see 5.6, 6.2.2.7, 8.1 and 8.2)
  *
  * @return The length of the Report in bytes
  */
-size_t hidGetReportLength( void );
+size_t hidGetReportLength( const unsigned id );
 
 /**
  * @brief Prepare the USB HID Report descriptor
@@ -154,6 +177,7 @@ void hidResetReportDescriptor( void );
  *
  * Parameters:
  *
+ *  @param[in]  id      The identifier for the HID Report (see 5.6, 6.2.2.7, 8.1 and 8.2)
  *  @param[in] byte     The byte position of the control within the HID Report
  *  @param[in] bit      The bit position of the control within the \a byte
  *  @param[in] page     The USB HID Usage Page code for the Item (see 5.5)
@@ -164,12 +188,19 @@ void hidResetReportDescriptor( void );
  * @retval \c HID_STATUS_GOOD           Item successfully updated
  * @retval \c HID_STATUS_BAD_HEADER     The Item header specified a data size greater than 2 or
  *                                      a Tag or Type inconsistent with a Usage Item
+ * @retval \c HID_STATUS_BAD_ID         The \a id argument specifies a non-existent HID Report
  * @retval \c HID_STATUS_BAD_LOCATION   The \a bit or \a byte arguments specify a location outside
  *                                      of the HID Report
  * @retval \c HID_STATUS_BAD_PAGE       The \a byte argument specifies a location for controls from
  *                                      a Usage Page other than the one given by the \a page parameter
  * @retval \c HID_STATUS_IN_USE         The Report descriptor is in use
  */
-unsigned hidSetReportItem( const unsigned byte, const unsigned bit, const unsigned char page, const unsigned char header, const unsigned char data[]);
+unsigned hidSetReportItem(
+    const unsigned id,
+    const unsigned byte,
+    const unsigned bit,
+    const unsigned char page,
+    const unsigned char header,
+    const unsigned char data[]);
 
 #endif // _HID_REPORT_DESCRIPTOR_

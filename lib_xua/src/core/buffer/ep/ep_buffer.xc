@@ -373,7 +373,7 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
 
 #if( 0 < HID_CONTROLS )
     {
-        int hidDataLength = hidGetReportLength();
+        int hidDataLength = hidGetReportLength(0); // TODO Replace argument with HID Report ID
         XUD_SetReady_In(ep_hid, g_hidData, hidDataLength);
     }
 #endif
@@ -889,8 +889,8 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
             /* HID Report Data */
             case XUD_SetData_Select(c_hid, ep_hid, result):
             {
-                int hidDataLength = hidGetReportLength();
-                UserHIDGetData(g_hidData);
+                int hidDataLength = hidGetReportLength(0);  // TODO Replace argument with HID Report ID
+                UserHIDGetData(0, g_hidData);  // TODO Replace 1st argument with HID Report ID
                 XUD_SetReady_In(ep_hid, g_hidData, hidDataLength);
             }
             break;
