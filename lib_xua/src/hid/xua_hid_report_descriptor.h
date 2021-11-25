@@ -18,35 +18,47 @@
 
 #include <stddef.h>
 
-#define HID_REPORT_ITEM_HDR_SIZE_MASK   ( 0x03 )
-#define HID_REPORT_ITEM_HDR_SIZE_SHIFT  ( 0 )
+#define HID_REPORT_ITEM_HDR_SIZE_MASK       ( 0x03 )
+#define HID_REPORT_ITEM_HDR_SIZE_SHIFT      ( 0 )
 
-#define HID_REPORT_ITEM_HDR_TAG_MASK    ( 0xF0 )
-#define HID_REPORT_ITEM_HDR_TAG_SHIFT   ( 4 )
+#define HID_REPORT_ITEM_HDR_TAG_MASK        ( 0xF0 )
+#define HID_REPORT_ITEM_HDR_TAG_SHIFT       ( 4 )
 
-#define HID_REPORT_ITEM_HDR_TYPE_MASK   ( 0x0C )
-#define HID_REPORT_ITEM_HDR_TYPE_SHIFT  ( 2 )
+#define HID_REPORT_ITEM_HDR_TYPE_MASK       ( 0x0C )
+#define HID_REPORT_ITEM_HDR_TYPE_SHIFT      ( 2 )
 
-#define HID_REPORT_ITEM_LOC_BIT_MASK    ( 0x70 )
-#define HID_REPORT_ITEM_LOC_BIT_SHIFT   ( 4 )
+#define HID_REPORT_ELEMENT_LOC_BIT_MASK     ( 0x0070 )
+#define HID_REPORT_ELEMENT_LOC_BIT_SHIFT    ( 4 )
 
-#define HID_REPORT_ITEM_LOC_BYTE_MASK   ( 0x0F )
-#define HID_REPORT_ITEM_LOC_BYTE_SHIFT  ( 0 )
+#define HID_REPORT_ELEMENT_LOC_BYTE_MASK    ( 0x000F )
+#define HID_REPORT_ELEMENT_LOC_BYTE_SHIFT   ( 0 )
 
-#define HID_REPORT_ITEM_MAX_SIZE        ( 2 )
+#define HID_REPORT_ELEMENT_LOC_ID_MASK      ( 0xF000 )
+#define HID_REPORT_ELEMENT_LOC_ID_SHIFT     ( 12 )
 
-#define HID_REPORT_ITEM_USAGE_TAG       ( 0 )
-#define HID_REPORT_ITEM_USAGE_TYPE      ( 2 )
+#define HID_REPORT_ELEMENT_LOC_LEN_MASK     ( 0x0F00 )
+#define HID_REPORT_ELEMENT_LOC_LEN_SHIFT    ( 8 )
 
-#define HID_STATUS_GOOD                 ( 0 )
-#define HID_STATUS_BAD_HEADER           ( 1 )
-#define HID_STATUS_BAD_ID               ( 2 )
-#define HID_STATUS_BAD_LOCATION         ( 3 )
-#define HID_STATUS_BAD_PAGE             ( 4 )
-#define HID_STATUS_IN_USE               ( 5 )
+#define HID_REPORT_ITEM_MAX_SIZE            ( 2 )
+
+#define HID_REPORT_ITEM_USAGE_TAG           ( 0 )
+#define HID_REPORT_ITEM_USAGE_TYPE          ( 2 )
+
+#define HID_REPORT_SET_LOC(id, len, byte, bit) (\
+    ((   id << HID_REPORT_ELEMENT_LOC_ID_SHIFT   ) & HID_REPORT_ELEMENT_LOC_ID_MASK   ) | \
+    ((  len << HID_REPORT_ELEMENT_LOC_LEN_SHIFT  ) & HID_REPORT_ELEMENT_LOC_LEN_MASK  ) | \
+    (( byte << HID_REPORT_ELEMENT_LOC_BYTE_SHIFT ) & HID_REPORT_ELEMENT_LOC_BYTE_MASK ) | \
+    ((  bit << HID_REPORT_ELEMENT_LOC_BIT_SHIFT  ) & HID_REPORT_ELEMENT_LOC_BIT_MASK  ))
+
+#define HID_STATUS_GOOD         ( 0 )
+#define HID_STATUS_BAD_HEADER   ( 1 )
+#define HID_STATUS_BAD_ID       ( 2 )
+#define HID_STATUS_BAD_LOCATION ( 3 )
+#define HID_STATUS_BAD_PAGE     ( 4 )
+#define HID_STATUS_IN_USE       ( 5 )
 
 /**
- * @brief USB HID Report Descriptor. Short Item
+ * @brief USB HID Report Descriptor Short Item
  *
  * @note
  * To reduce memory use, this type does not support Short Items with 4 data bytes.
@@ -67,9 +79,13 @@ typedef struct
 {
     unsigned char header;
     unsigned char data[ HID_REPORT_ITEM_MAX_SIZE ];
-    unsigned char id;
-    unsigned char location;
 } USB_HID_Short_Item_t;
+
+typedef struct
+{
+    USB_HID_Short_Item_t item;
+    unsigned short location;
+} USB_HID_Report_Element_t;
 
 /**
  * @brief Get the HID Report descriptor

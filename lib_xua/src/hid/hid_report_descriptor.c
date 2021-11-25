@@ -18,26 +18,37 @@ static size_t hidReportDescriptorLength = 0;
 static unsigned hidReportDescriptorPrepared = 0;
 
 /**
- * @brief Get the bit position from the location of an Item
+ * @brief Get the bit position from the location of a report element
  *
  * Parameters:
  *
- *  @param[in] location     The \c location field from a \c USB_HID_Short_Item
+ *  @param[in] location     The \c location field from a \c USB_HID_Report_Element_t
  *
- * @return The bit position of the Item
+ * @return The bit position of the report element
  */
-static unsigned hidGetItemBitLocation( const unsigned char header );
+static unsigned hidGetElementBitLocation( const unsigned short location );
 
 /**
- * @brief Get the byte position from the location of an Item
+ * @brief Get the byte position from the location of a report element
  *
  * Parameters:
  *
- *  @param[in] location     The \c location field from a \c USB_HID_Short_Item
+ *  @param[in] location     The \c location field from a \c USB_HID_Report_Element_t
  *
- * @return The byte position of the Item within the HID Report
+ * @return The byte position of the report element within the HID report
  */
-static unsigned hidGetItemByteLocation( const unsigned char header );
+static unsigned hidGetElementByteLocation( const unsigned short location );
+
+/**
+ * @brief Get the report identifier from the location of a report element
+ *
+ * Parameters:
+ *
+ *  @param[in] location     The \c location field from a \c USB_HID_Report_Element_t
+ *
+ * @return The report id of the report element within the HID report
+ */
+static unsigned hidGetElementReportId( const unsigned short location );
 
 /**
  * @brief Get the number of data bytes from the header of an Item
@@ -98,16 +109,22 @@ static unsigned hidGetUsagePage( const unsigned id );
 static size_t hidTranslateItem( const USB_HID_Short_Item_t* inPtr, unsigned char** outPtrPtr );
 
 
-static unsigned hidGetItemBitLocation( const unsigned char location )
+static unsigned hidGetElementBitLocation( const unsigned short location )
 {
-    unsigned bBit = ( location & HID_REPORT_ITEM_LOC_BIT_MASK ) >> HID_REPORT_ITEM_LOC_BIT_SHIFT;
+    unsigned bBit = ( location & HID_REPORT_ELEMENT_LOC_BIT_MASK ) >> HID_REPORT_ELEMENT_LOC_BIT_SHIFT;
     return bBit;
 }
 
-static unsigned hidGetItemByteLocation( const unsigned char location )
+static unsigned hidGetElementByteLocation( const unsigned short location )
 {
-    unsigned bByte = ( location & HID_REPORT_ITEM_LOC_BYTE_MASK ) >> HID_REPORT_ITEM_LOC_BYTE_SHIFT;
+    unsigned bByte = ( location & HID_REPORT_ELEMENT_LOC_BYTE_MASK ) >> HID_REPORT_ELEMENT_LOC_BYTE_SHIFT;
     return bByte;
+}
+
+static unsigned hidGetElementReportId( const unsigned short location )
+{
+    unsigned bReportId = ( location & HID_REPORT_ELEMENT_LOC_ID_MASK ) >> HID_REPORT_ELEMENT_LOC_ID_SHIFT;
+    return bReportId;
 }
 
 static unsigned hidGetItemSize( const unsigned char header )
@@ -145,7 +162,7 @@ size_t hidGetReportDescriptorLength( void )
     return retVal;
 }
 
-#define HID_CONFIGURABLE_ITEM_COUNT ( sizeof hidConfigurableItems / sizeof ( USB_HID_Short_Item_t* ))
+#define HID_CONFIGURABLE_ELEMENT_COUNT ( sizeof hidConfigurableElements / sizeof ( USB_HID_Report_Element_t* ))
 unsigned hidGetReportItem(
     const unsigned id,
     const unsigned byte,
@@ -156,17 +173,17 @@ unsigned hidGetReportItem(
 )
 {
     unsigned retVal = HID_STATUS_BAD_LOCATION;
-    for( unsigned itemIdx = 0; itemIdx < HID_CONFIGURABLE_ITEM_COUNT; ++itemIdx ) {
-        USB_HID_Short_Item_t item = *hidConfigurableItems[ itemIdx ];
-        unsigned bBit  = hidGetItemBitLocation(  item.location );
-        unsigned bByte = hidGetItemByteLocation( item.location );
+    for( unsigned elementIdx = 0; elementIdx < HID_CONFIGURABLE_ELEMENT_COUNT; ++elementIdx ) {
+        USB_HID_Report_Element_t element = *hidConfigurableElements[ elementIdx ];
+        unsigned bBit  = hidGetElementBitLocation(  element.location );
+        unsigned bByte = hidGetElementByteLocation( element.location );
 
-        if(( bit == bBit ) && ( byte == bByte )) {
+        if(( bit == bBit ) && ( byte == bByte )) {  // TODO Add check for Report ID
             *page = hidGetUsagePage( byte );
-            *header = item.header;
+            *header = element.item.header;
 
             for( unsigned dataIdx = 0; dataIdx < HID_REPORT_ITEM_MAX_SIZE; ++data, ++dataIdx ) {
-                *data = item.data[ dataIdx ];
+                *data = element.item.data[ dataIdx ];
             }
 
             retVal = HID_STATUS_GOOD;
@@ -186,8 +203,8 @@ static unsigned hidGetUsagePage( const unsigned id )
 {
     unsigned retVal = 0U;
     for( unsigned idx = 0; idx < 1; ++idx) { // TODO Fix the upper limit!
-        if( id == hidUsagePages[ idx ]->id ) {
-            retVal = hidUsagePages[ idx ]->data[ 0 ];
+        if( id == hidGetElementReportId( hidReports[ idx ]->location )) {
+            retVal = hidReports[ idx ]->item.data[ 0 ];
             break;
         }
     }
@@ -234,26 +251,26 @@ unsigned hidSetReportItem(
            ( HID_REPORT_ITEM_USAGE_TYPE != bType )) {
             retVal = HID_STATUS_BAD_HEADER;
         } else {
-            for( unsigned itemIdx = 0; itemIdx < HID_CONFIGURABLE_ITEM_COUNT; ++itemIdx ) {
-                USB_HID_Short_Item_t item = *hidConfigurableItems[ itemIdx ];
-                unsigned bBit  = hidGetItemBitLocation(  item.location );
-                unsigned bByte = hidGetItemByteLocation( item.location );
+            for( unsigned elementIdx = 0; elementIdx < HID_CONFIGURABLE_ELEMENT_COUNT; ++elementIdx ) {
+                USB_HID_Report_Element_t element = *hidConfigurableElements[ elementIdx ];
+                unsigned bBit  = hidGetElementBitLocation(  element.location );
+                unsigned bByte = hidGetElementByteLocation( element.location );
 
-                if(( bit == bBit ) && ( byte == bByte )) {
+                if(( bit == bBit ) && ( byte == bByte )) { // TODO Add check for Report ID
                     unsigned pg = hidGetUsagePage( byte );
 
                     if( page == pg ) {
-                        item.header = header;
+                        element.item.header = header;
 
                         for( unsigned dataIdx = 0; dataIdx < bSize; ++dataIdx ) {
-                            item.data[ dataIdx ] = data[ dataIdx ];
+                            element.item.data[ dataIdx ] = data[ dataIdx ];
                         }
 
                         for( unsigned dataIdx = bSize; dataIdx < HID_REPORT_ITEM_MAX_SIZE; ++dataIdx ) {
-                            item.data[ dataIdx ] = 0;
+                            element.item.data[ dataIdx ] = 0;
                         }
 
-                        *hidConfigurableItems[ itemIdx ] = item;
+                        *hidConfigurableElements[ elementIdx ] = element;
                         retVal = HID_STATUS_GOOD;
                     } else {
                         retVal = HID_STATUS_BAD_PAGE;
