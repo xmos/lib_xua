@@ -13,12 +13,14 @@
 #ifndef __USER_HID_H__
 #define __USER_HID_H__
 
+#include <stddef.h>
+
 /**
  *  \brief  HID event
  *
  *  This struct identifies:
- *  - the HID Report that reports an event,
- *  - the location within the HID Report for the event, and
+ *  - the HID Report that reports an event, i.e., the ID,
+ *  - the location within the HID Report for the event, i.e., the byte and bit, and
  *  - the value to report for that location (typically interpreted as a Boolean).
  *  It assumes only single bit flags within the HID Report.
  */
@@ -41,9 +43,17 @@ typedef struct hidEvent_t {
  *        this type.
  *
  *  \param[in]  id       The HID Report ID (see 5.6, 6.2.2.7, 8.1 and 8.2)
+ *                       Set to zero if the application provides only one HID Report
+ *                         which does not include a Report ID
  *  \param[out] hidData  The HID data
+ *                       If using Report IDs, this function places the Report ID in
+ *                         the first element; otherwise the first element holds the
+ *                         first byte of HID event data.
+ *
+ *  \returns  The length of the HID Report in the \a hidData argument
+ *  \retval   Zero means no new HID event data has been recorded for the given \a id
  */
-void UserHIDGetData( const unsigned id, unsigned char hidData[ HID_MAX_DATA_BYTES ]);
+size_t UserHIDGetData( const unsigned id, unsigned char hidData[ HID_MAX_DATA_BYTES ]);
 
 /**
  *  \brief  Get the upper limit of HID Report identifiers
@@ -67,13 +77,15 @@ void UserHIDInit( void );
  *  \param[in]  hidEvent      A list of events which have occurred.
  *                            Each element specifies a HID Report ID, a bit and byte
  *                              within the HID Report and the value for it.
+ *                            Set the Report ID to zero if not using Report IDs
+ *                              (see 5.6, 6.2.2.7, 8.1 and 8.2).
  *  \param[in]  hidEventCnt   The length of the \a hidEvent list.
  *
- *  \returns  A Boolean flag indicating the status of the operation
- *  \retval   False No recording of the event(s) occurred
- *  \retval   True  Recording of the event(s) occurred
+ *  \returns  The index of the first unrecorded event in \a hidEvent
+ *  \retval   Zero indicates no events were recorded
+ *  \retval   \a hidEventCnt indicates all events were recorded
  */
-unsigned UserHIDRecordEvent( const hidEvent_t hidEvent[], const unsigned hidEventCnt );
+size_t UserHIDRecordEvent( const hidEvent_t hidEvent[], const size_t hidEventCnt );
 
 /**
  *  \brief  Indicate if a HID Report ID has new data to report
