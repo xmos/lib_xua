@@ -215,7 +215,6 @@ unsigned hidGetReportItem(
     return retVal;
 }
 
-#define HID_REPORT_COUNT ( sizeof hidReports / sizeof ( USB_HID_Report_Element_t* ))
 size_t hidGetReportLength( const unsigned id )
 {
     size_t retVal = 0U;
