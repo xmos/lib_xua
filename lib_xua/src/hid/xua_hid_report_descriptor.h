@@ -116,6 +116,17 @@ unsigned char* hidGetReportDescriptor( void );
 size_t hidGetReportDescriptorLength( void );
 
 /**
+ *  \brief  Get the upper limit of HID Report identifiers
+ *
+ *  This function returns the upper limit of the HID Report identifiers.
+ *  The upper limit has a value one greater than the maximum HID Report identifier.
+ *  In the case that HID Report identifiers are not in use, this function returns the value 1.
+ *
+ *  \returns  The upper limit of HID Report identifiers
+ */
+unsigned hidGetReportIdLimit ( void );
+
+/**
  * @brief Get a HID Report descriptor item
  *
  * Parameters:

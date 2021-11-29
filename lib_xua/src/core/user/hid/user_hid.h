@@ -56,17 +56,6 @@ typedef struct hidEvent_t {
 size_t UserHIDGetData( const unsigned id, unsigned char hidData[ HID_MAX_DATA_BYTES ]);
 
 /**
- *  \brief  Get the upper limit of HID Report identifiers
- *
- *  This function returns the upper limit of the HID Report identifiers.
- *  The upper limit has a value one greater than the maximum HID Report identifier.
- *  In the case that HID Report identifiers are not in use, this function returns the value 1.
- *
- *  \returns  The upper limit of HID Report identifiers
- */
-unsigned UserHIDGetReportIdLimit ( void );
-
-/**
  *	\brief  Initialize HID processing
  */
 void UserHIDInit( void );

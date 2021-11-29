@@ -179,6 +179,10 @@ size_t hidGetReportDescriptorLength( void )
     return retVal;
 }
 
+unsigned hidGetReportIdLimit ( void ) {
+  return HID_REPORT_COUNT;
+}
+
 #define HID_CONFIGURABLE_ELEMENT_COUNT ( sizeof hidConfigurableElements / sizeof ( USB_HID_Report_Element_t* ))
 unsigned hidGetReportItem(
     const unsigned id,
