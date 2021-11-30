@@ -99,7 +99,8 @@ static unsigned hidGetItemType( const unsigned char header );
  *
  * Parameters:
  *
- *  @param[in] id   The HID Report ID for the Usage Page
+ *  @param[in] id   The HID Report ID for the Usage Page.
+ *                  A value of zero means the application does not use Report IDs.
  *
  * @return The USB HID Usage Page code or zero if the \a id parameter is out-of-range
  */
@@ -140,8 +141,8 @@ static unsigned hidGetElementReportId( const unsigned short location )
 
 static size_t hidGetElementReportLength( const unsigned short location )
 {
-    size_t bReportId = (size_t)( location & HID_REPORT_ELEMENT_LOC_LEN_MASK ) >> HID_REPORT_ELEMENT_LOC_LEN_SHIFT;
-    return bReportId;
+    size_t bReportLen = (size_t)( location & HID_REPORT_ELEMENT_LOC_LEN_MASK ) >> HID_REPORT_ELEMENT_LOC_LEN_SHIFT;
+    return bReportLen;
 }
 
 static unsigned hidGetItemSize( const unsigned char header )

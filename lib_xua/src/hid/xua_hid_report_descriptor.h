@@ -131,7 +131,8 @@ unsigned hidGetReportIdLimit ( void );
  *
  * Parameters:
  *
- *  @param[in]  id      The identifier for the HID Report (see 5.6, 6.2.2.7, 8.1 and 8.2)
+ *  @param[in]  id      The identifier for the HID Report (see 5.6, 6.2.2.7, 8.1 and 8.2).
+ *                      A value of zero means the application does not use Report IDs.
  *  @param[in]  byte    The byte position of the control within the HID Report
  *  @param[in]  bit     The bit position of the control within the \a byte
  *  @param[out] page    The USB HID Usage Page code for the Item (see 5.5)
@@ -173,6 +174,7 @@ unsigned hidGetReportItem(
  * Parameters:
  *
  *  @param[in]  id  The identifier for the HID Report (see 5.6, 6.2.2.7, 8.1 and 8.2)
+ *                  A value of zero means the application does not use Report IDs.
  *
  * @return The length of the Report in bytes
  */
@@ -205,6 +207,7 @@ void hidResetReportDescriptor( void );
  * Parameters:
  *
  *  @param[in]  id      The identifier for the HID Report (see 5.6, 6.2.2.7, 8.1 and 8.2)
+ *                      A value of zero means the application does not use Report IDs.
  *  @param[in] byte     The byte position of the control within the HID Report
  *  @param[in] bit      The bit position of the control within the \a byte
  *  @param[in] page     The USB HID Usage Page code for the Item (see 5.5)
