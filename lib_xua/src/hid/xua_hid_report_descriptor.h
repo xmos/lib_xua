@@ -88,6 +88,16 @@ typedef struct
 } USB_HID_Report_Element_t;
 
 /**
+ *  \brief Register that previously changed HID Report data has been sent
+ *         to the USB Host.
+ *
+ *  \param[in]  id  A HID Report ID.
+ *                  Zero clears the pending status of all Report IDs.
+ *                  Use zero if the application does not use Report IDs.
+ */
+void hidClearChangePending( const unsigned id );
+
+/**
  * @brief Get the HID Report descriptor
  *
  * This function returns a pointer to the USB HID Report descriptor.
@@ -181,6 +191,22 @@ unsigned hidGetReportItem(
 size_t hidGetReportLength( const unsigned id );
 
 /**
+ *  \brief Indicate if a change to the HID Report data has been received.
+ *
+ *  \param[in]  id  A HID Report ID.
+ *                  Zero reports the pending status of all Report IDs.
+ *                  Use zero if the application does not use Report IDs.
+ *
+ *  \returns  A Boolean indicating whether the given \a id has a changed
+ *              HID Report not yet sent to the USB Host.
+ *  \retval   True  The given \a id has changed HID Report data.
+ *                  For an \a id of zero, some HID Report has changed data.
+ *  \retval   False The given \a id does not have changed HID Report data.
+ *                  For an \a id of zero, no HID Report has changed data.
+ */
+unsigned hidIsChangePending( const unsigned id );
+
+/**
  * @brief Prepare the USB HID Report descriptor
  *
  * After preparation, \c hidGetReportDescriptor() returns a list suitable for transmission over USB.
@@ -196,6 +222,15 @@ void hidPrepareReportDescriptor( void );
  * Call this function before altering one or more Report Items using \c hidSetReportItem().
  */
 void hidResetReportDescriptor( void );
+
+/**
+ *  \brief Register that a change to the HID Report data has been received.
+ *
+ *  \param[in]  id  A HID Report ID.
+ *                  Zero reports the pending status of all Report IDs.
+ *                  Use zero if the application does not use Report IDs.
+ */
+void hidSetChangePending( const unsigned id );
 
 /**
  * @brief Modify a HID Report descriptor item

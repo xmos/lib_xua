@@ -13,9 +13,12 @@
 #define HID_REPORT_DESCRIPTOR_MAX_LENGTH ( HID_REPORT_DESCRIPTOR_ITEM_COUNT * \
                                            ( sizeof ( USB_HID_Short_Item_t ) - HID_REPORT_ITEM_LOCATION_SIZE ))
 
+static unsigned hidChangePending = 0U;
 static unsigned char hidReportDescriptor[ HID_REPORT_DESCRIPTOR_MAX_LENGTH ];
 static size_t hidReportDescriptorLength = 0U;
 static unsigned hidReportDescriptorPrepared = 0U;
+
+volatile unsigned* s_hidChangePendingPtr = &hidChangePending;
 
 /**
  * @brief Get the bit position from the location of a report element
@@ -120,6 +123,11 @@ static unsigned hidGetUsagePage( const unsigned id );
  */
 static size_t hidTranslateItem( const USB_HID_Short_Item_t* inPtr, unsigned char** outPtrPtr );
 
+
+void hidClearChangePending( void )
+{
+    s_hidChangePending = 0U;
+}
 
 static unsigned hidGetElementBitLocation( const unsigned short location )
 {
@@ -245,6 +253,11 @@ static unsigned hidGetUsagePage( const unsigned id )
     return retVal;
 }
 
+unsigned hidIsChangePending( void )
+{
+  return( s_hidChangePending != 0 );
+}
+
 void hidPrepareReportDescriptor( void )
 {
     if( !hidReportDescriptorPrepared ) {
@@ -262,6 +275,11 @@ void hidPrepareReportDescriptor( void )
 void hidResetReportDescriptor( void )
 {
     hidReportDescriptorPrepared = 0U;
+}
+
+void hidSetChangePending( void )
+{
+    s_hidChangePending = 1;
 }
 
 unsigned hidSetReportItem(
