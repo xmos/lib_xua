@@ -79,7 +79,8 @@ size_t UserHIDRecordEvent( const hidEvent_t hidEvent[], const size_t hidEventCnt
 /**
  *  \brief  Indicate if a HID Report ID has new data to report
  *
- *  \param[in]  id  A HID Report ID (see 5.6, 6.2.2.7, 8.1 and 8.2)
+ *  \param[in]  id  A HID Report ID (see 5.6, 6.2.2.7, 8.1 and 8.2).
+ *                  A value of zero means the application does not use Report IDs.
  *
  *  \returns  A Boolean flag indicating the status of the operation
  *  \retval   False The given \a id either does not have new data to report or lies
