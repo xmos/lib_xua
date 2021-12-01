@@ -14,9 +14,9 @@
                                            ( sizeof ( USB_HID_Short_Item_t ) - HID_REPORT_ITEM_LOCATION_SIZE ))
 
 static unsigned s_hidChangePending = 0U;
-static unsigned char hidReportDescriptor[ HID_REPORT_DESCRIPTOR_MAX_LENGTH ];
-static size_t hidReportDescriptorLength = 0U;
-static unsigned hidReportDescriptorPrepared = 0U;
+static unsigned char s_hidReportDescriptor[ HID_REPORT_DESCRIPTOR_MAX_LENGTH ];
+static size_t s_hidReportDescriptorLength = 0U;
+static unsigned s_hidReportDescriptorPrepared = 0U;
 
 volatile unsigned* s_hidChangePendingPtr = &hidChangePending;
 
@@ -175,8 +175,8 @@ unsigned char* hidGetReportDescriptor( void )
 {
     unsigned char* retVal = NULL;
 
-    if( hidReportDescriptorPrepared ) {
-        retVal = hidReportDescriptor;
+    if( s_hidReportDescriptorPrepared ) {
+        retVal = s_hidReportDescriptor;
     }
 
     return retVal;
@@ -184,7 +184,7 @@ unsigned char* hidGetReportDescriptor( void )
 
 size_t hidGetReportDescriptorLength( void )
 {
-    size_t retVal = ( hidReportDescriptorPrepared ) ? hidReportDescriptorLength : 0U;
+    size_t retVal = ( s_hidReportDescriptorPrepared ) ? s_hidReportDescriptorLength : 0U;
     return retVal;
 }
 
@@ -231,7 +231,7 @@ unsigned hidGetReportItem(
 size_t hidGetReportLength( const unsigned id )
 {
     size_t retVal = 0U;
-    if( hidReportDescriptorPrepared ) {
+    if( s_hidReportDescriptorPrepared ) {
         for( size_t idx = 0U; idx < HID_REPORT_COUNT; ++idx ) {
             if( id == hidGetElementReportId( hidReports[ idx ]->location )) {
                 retVal = hidGetElementReportLength( hidReports[ idx ]->location );
@@ -260,21 +260,21 @@ unsigned hidIsChangePending( const unsigned id )
 
 void hidPrepareReportDescriptor( void )
 {
-    if( !hidReportDescriptorPrepared ) {
-        hidReportDescriptorLength = 0U;
-        unsigned char* ptr = hidReportDescriptor;
+    if( !s_hidReportDescriptorPrepared ) {
+        s_hidReportDescriptorLength = 0U;
+        unsigned char* ptr = s_hidReportDescriptor;
 
         for( size_t idx = 0U; idx < HID_REPORT_DESCRIPTOR_ITEM_COUNT; ++idx ) {
-            hidReportDescriptorLength += hidTranslateItem( hidReportDescriptorItems[ idx ], &ptr );
+            s_hidReportDescriptorLength += hidTranslateItem( hidReportDescriptorItems[ idx ], &ptr );
         }
 
-        hidReportDescriptorPrepared = 1U;
+        s_hidReportDescriptorPrepared = 1U;
     }
 }
 
 void hidResetReportDescriptor( void )
 {
-    hidReportDescriptorPrepared = 0U;
+    s_hidReportDescriptorPrepared = 0U;
 }
 
 void hidSetChangePending( const unsigned id )
@@ -293,7 +293,7 @@ unsigned hidSetReportItem(
 {
     unsigned retVal = HID_STATUS_IN_USE;
 
-    if( !hidReportDescriptorPrepared ) {
+    if( !s_hidReportDescriptorPrepared ) {
         retVal = HID_STATUS_BAD_ID;
         unsigned bSize = hidGetItemSize( header );
         unsigned bTag  = hidGetItemTag ( header );
