@@ -13,7 +13,7 @@
 #define HID_REPORT_DESCRIPTOR_MAX_LENGTH ( HID_REPORT_DESCRIPTOR_ITEM_COUNT * \
                                            ( sizeof ( USB_HID_Short_Item_t ) - HID_REPORT_ITEM_LOCATION_SIZE ))
 
-static unsigned hidChangePending = 0U;
+static unsigned s_hidChangePending = 0U;
 static unsigned char hidReportDescriptor[ HID_REPORT_DESCRIPTOR_MAX_LENGTH ];
 static size_t hidReportDescriptorLength = 0U;
 static unsigned hidReportDescriptorPrepared = 0U;
@@ -124,7 +124,7 @@ static unsigned hidGetUsagePage( const unsigned id );
 static size_t hidTranslateItem( const USB_HID_Short_Item_t* inPtr, unsigned char** outPtrPtr );
 
 
-void hidClearChangePending( void )
+void hidClearChangePending( const unsigned id )
 {
     s_hidChangePending = 0U;
 }
@@ -253,7 +253,7 @@ static unsigned hidGetUsagePage( const unsigned id )
     return retVal;
 }
 
-unsigned hidIsChangePending( void )
+unsigned hidIsChangePending( const unsigned id )
 {
   return( s_hidChangePending != 0 );
 }
@@ -277,7 +277,7 @@ void hidResetReportDescriptor( void )
     hidReportDescriptorPrepared = 0U;
 }
 
-void hidSetChangePending( void )
+void hidSetChangePending( const unsigned id )
 {
     s_hidChangePending = 1;
 }
