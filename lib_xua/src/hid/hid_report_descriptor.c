@@ -13,7 +13,10 @@
 #define HID_REPORT_DESCRIPTOR_MAX_LENGTH ( HID_REPORT_DESCRIPTOR_ITEM_COUNT * \
                                            ( sizeof ( USB_HID_Short_Item_t ) - HID_REPORT_ITEM_LOCATION_SIZE ))
 
-static unsigned s_hidChangePending = 0U;
+/*
+ * Each element in s_hidChangePending corresponds to an element in hidReports.
+ */
+static unsigned s_hidChangePending[ HID_REPORT_COUNT ] = { 0U };
 static unsigned char s_hidReportDescriptor[ HID_REPORT_DESCRIPTOR_MAX_LENGTH ];
 static size_t s_hidReportDescriptorLength = 0U;
 static unsigned s_hidReportDescriptorPrepared = 0U;
@@ -126,7 +129,12 @@ static size_t hidTranslateItem( const USB_HID_Short_Item_t* inPtr, unsigned char
 
 void hidClearChangePending( const unsigned id )
 {
-    s_hidChangePending = 0U;
+    for( size_t idx = 0U; idx < HID_REPORT_COUNT; ++idx) {
+        if(( id == 0U ) || ( id == hidGetElementReportId( hidReports[ idx ]->location ))) {
+            s_hidChangePending[ idx ] = 0U;
+            break;
+        }
+    }
 }
 
 static unsigned hidGetElementBitLocation( const unsigned short location )
@@ -255,7 +263,16 @@ static unsigned hidGetUsagePage( const unsigned id )
 
 unsigned hidIsChangePending( const unsigned id )
 {
-  return( s_hidChangePending != 0 );
+    unsigned retVal = 0U;
+    for( size_t idx = 0U; idx < HID_REPORT_COUNT; ++idx) {
+        if( id == 0U ) {
+            retVal |= ( s_hidChangePending[ idx ] != 0U );
+        } else if( id == hidGetElementReportId( hidReports[ idx ]->location )) {
+            retVal  = ( s_hidChangePending[ idx ] != 0U );
+            break;
+        }
+    }
+  return retVal;
 }
 
 void hidPrepareReportDescriptor( void )
@@ -279,7 +296,12 @@ void hidResetReportDescriptor( void )
 
 void hidSetChangePending( const unsigned id )
 {
-    s_hidChangePending = 1;
+    for( size_t idx = 0U; idx < HID_REPORT_COUNT; ++idx) {
+        if( id == hidGetElementReportId( hidReports[ idx ]->location )) {
+            s_hidChangePending[ idx ] = 1U;
+            break;
+        }
+    }
 }
 
 unsigned hidSetReportItem(
