@@ -88,8 +88,28 @@ typedef struct
 } USB_HID_Report_Element_t;
 
 /**
- *  \brief Register that previously changed HID Report data has been sent
+ *  \brief Register that a previously changed HID Report data has been sent
  *         to the USB Host.
+ *
+ *  HID processing maintains a list of HID Reports with changed data not yet
+ *    reported to the USB Host.
+ *
+ *  Applications that have only one HID Report may or may not use a Report ID.
+ *  Applications that have more than one HID Report must use Report IDs.
+ *
+ *  For applications that do not use Report IDs, the list contains one element.
+ *  That element tracks whether or not an unreported change has occurred in the
+ *    HID data.
+ *  For applications that use Report IDs, the list contains one element per
+ *    Report ID.
+ *  Each element tracks unreported changes for the corresponding Report ID.
+ *
+ *  Calling this function for a given Report ID indicates that the changed
+ *    HID data has been reported to the USB Host.
+ *
+ *  \warning This function will fail silently if given a Report ID outside of
+ *    the supported range.
+ *  The supported range runs from zero inclusive to HID_REPORT_COUNT exclusive.
  *
  *  \param[in]  id  A HID Report ID.
  *                  Zero clears the pending status of all Report IDs.
@@ -193,6 +213,28 @@ size_t hidGetReportLength( const unsigned id );
 /**
  *  \brief Indicate if a change to the HID Report data has been received.
  *
+ *  HID processing maintains a list of HID Reports with changed data not yet
+ *    reported to the USB Host.
+ *
+ *  Applications that have only one HID Report may or may not use a Report ID.
+ *  Applications that have more than one HID Report must use Report IDs.
+ *
+ *  For applications that do not use Report IDs, the list contains one element.
+ *  That element tracks whether or not an unreported change has occurred in the
+ *    HID data.
+ *  For applications that use Report IDs, the list contains one element per
+ *    Report ID.
+ *  Each element tracks unreported changes for the corresponding Report ID.
+ *
+ *  Calling this function with a given Report ID returns an indication of
+ *   whether unreported HID data exists for that Report ID.
+ *
+ *  \warning This function will return zero if given a Report ID outside of
+ *    the supported range.
+ *  If not using Report IDs, the supported range consists of the value zero only.
+ *  If using Report IDs, the supported range runs from zero inclusive to
+ *    HID_REPORT_COUNT exclusive.
+ *
  *  \param[in]  id  A HID Report ID.
  *                  Zero reports the pending status of all Report IDs.
  *                  Use zero if the application does not use Report IDs.
@@ -226,8 +268,30 @@ void hidResetReportDescriptor( void );
 /**
  *  \brief Register that a change to the HID Report data has been received.
  *
+ *  HID processing maintains a list of HID Reports with changed data not yet
+ *    reported to the USB Host.
+ *
+ *  Applications that have only one HID Report may or may not use a Report ID.
+ *  Applications that have more than one HID Report must use Report IDs.
+ *
+ *  For applications that do not use Report IDs, the list contains one element.
+ *  That element tracks whether or not an unreported change has occurred in the
+ *    HID data.
+ *  For applications that use Report IDs, the list contains one element per
+ *    Report ID.
+ *  Each element tracks unreported changes for the corresponding Report ID.
+ *
+ *  Calling this function with a given Report ID indicates that the HID data
+ *    for that Report ID has changed and has not yet been reported to the USB
+ *    Host.
+ *
+ *  \warning This function will fail silently if given a Report ID outside of
+ *    the supported range.
+ *  If not using Report IDs, the supported range consists of the value zero only.
+ *  If using Report IDs, the supported range runs from one inclusive to
+ *    HID_REPORT_COUNT exclusive.
+ *
  *  \param[in]  id  A HID Report ID.
- *                  Zero reports the pending status of all Report IDs.
  *                  Use zero if the application does not use Report IDs.
  */
 void hidSetChangePending( const unsigned id );
