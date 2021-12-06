@@ -23,6 +23,7 @@
 #if( 0 < HID_CONTROLS )
 #include "xua_hid_report_descriptor.h"
 #include "user_hid.h"
+#include "xua_hid.h"
 unsigned char g_hidData[HID_MAX_DATA_BYTES] = {0};
 #endif
 
@@ -372,9 +373,21 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
 #endif
 
 #if( 0 < HID_CONTROLS )
+    UserHIDInit();
     {
-        int hidDataLength = hidGetReportLength(0); // TODO Replace argument with HID Report ID
-        XUD_SetReady_In(ep_hid, g_hidData, hidDataLength);
+        int hidReportLength = 0;
+        unsigned hidReportId;
+        while(0 == hidReportLength) {
+            for( hidReportId = 0U; hidReportId < hidGetReportIdLimit(); ++hidReportId) {
+                hidReportLength = (int) hidGetReportLength(hidReportId);
+                if(0 < hidReportLength) {
+                    break;
+                }
+            }
+        }
+
+        hidReportLength = (int) UserHIDGetData(hidReportId, g_hidData);
+        XUD_SetReady_In(ep_hid, g_hidData, hidReportLength);
     }
 #endif
 
@@ -887,11 +900,18 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
 
 #if( 0 < HID_CONTROLS )
             /* HID Report Data */
-            case XUD_SetData_Select(c_hid, ep_hid, result):
+            case hidIsChangePending(0U) || !HidIsSetIdleSilenced() => XUD_SetData_Select(c_hid, ep_hid, result):
             {
-                int hidDataLength = hidGetReportLength(0);  // TODO Replace argument with HID Report ID
-                UserHIDGetData(0, g_hidData);  // TODO Replace 1st argument with HID Report ID
-                XUD_SetReady_In(ep_hid, g_hidData, hidDataLength);
+                HidCaptureReportTime();
+                for(unsigned id = 0; id < hidGetReportIdLimit(); ++id) {
+                    if(hidIsChangePending(id)) {
+                        int hidDataLength = (int) UserHIDGetData(id, g_hidData);
+                        XUD_SetReady_In(ep_hid, g_hidData, hidDataLength);
+                        HidCalcNextReportTime();
+                        hidClearChangePending(id);
+                        break;
+                    }
+                }
             }
             break;
 #endif
