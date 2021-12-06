@@ -76,18 +76,5 @@ void UserHIDInit( void );
  */
 size_t UserHIDRecordEvent( const hidEvent_t hidEvent[], const size_t hidEventCnt );
 
-/**
- *  \brief  Indicate if a HID Report ID has new data to report
- *
- *  \param[in]  id  A HID Report ID (see 5.6, 6.2.2.7, 8.1 and 8.2).
- *                  A value of zero means the application does not use Report IDs.
- *
- *  \returns  A Boolean flag indicating the status of the operation
- *  \retval   False The given \a id either does not have new data to report or lies
- *              outside the range of supported HID Report identifiers
- *  \retval   True  The given \a id has new data to report to the USB Host
- */
-unsigned UserHIDReportChanged( const unsigned id );
-
 #endif /* ( 0 < HID_CONTROLS ) */
 #endif /* __USER_HID_H__ */
