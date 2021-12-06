@@ -21,8 +21,6 @@ static unsigned char s_hidReportDescriptor[ HID_REPORT_DESCRIPTOR_MAX_LENGTH ];
 static size_t s_hidReportDescriptorLength = 0U;
 static unsigned s_hidReportDescriptorPrepared = 0U;
 
-volatile unsigned* s_hidChangePendingPtr = &hidChangePending;
-
 /**
  * @brief Get the bit position from the location of a report element
  *
