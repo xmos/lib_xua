@@ -3,6 +3,7 @@
 #include <assert.h>
 #include <stddef.h>
 #include <xs1.h>
+#include "descriptor_defs.h"
 #include "xua_hid_report_descriptor.h"
 #include "hid_report_descriptor.h"
 
@@ -12,7 +13,6 @@
 #define HID_REPORT_DESCRIPTOR_ITEM_COUNT ( sizeof hidReportDescriptorItems / sizeof ( USB_HID_Short_Item_t* ))
 #define HID_REPORT_DESCRIPTOR_MAX_LENGTH ( HID_REPORT_DESCRIPTOR_ITEM_COUNT * \
                                            ( sizeof ( USB_HID_Short_Item_t ) - HID_REPORT_ITEM_LOCATION_SIZE ))
-
 /*
  * Each element in s_hidChangePending corresponds to an element in hidReports.
  */
@@ -20,6 +20,11 @@ static unsigned s_hidChangePending[ HID_REPORT_COUNT ] = { 0U };
 static unsigned char s_hidReportDescriptor[ HID_REPORT_DESCRIPTOR_MAX_LENGTH ];
 static size_t s_hidReportDescriptorLength = 0U;
 static unsigned s_hidReportDescriptorPrepared = 0U;
+
+static unsigned s_hidCurrentPeriod[ HID_REPORT_COUNT ] = { ENDPOINT_INT_INTERVAL_IN_HID * MS_IN_TICKS };
+static unsigned s_hidIdleActive[ HID_REPORT_COUNT ] = { 0U };
+static unsigned s_hidNextReportTime[ HID_REPORT_COUNT ] = { 0U };
+static unsigned s_hidReportTime[ HID_REPORT_COUNT ] = { 0U };
 
 /**
  * @brief Get the bit position from the location of a report element
@@ -125,6 +130,24 @@ static unsigned hidGetUsagePage( const unsigned id );
 static size_t hidTranslateItem( const USB_HID_Short_Item_t* inPtr, unsigned char** outPtrPtr );
 
 
+void hidCalcNextReportTime( const unsigned id )
+{
+    for( size_t idx = 0U; idx < HID_REPORT_COUNT; ++idx ) {
+        if( id == hidGetElementReportId( hidReports[ idx ]->location )) {
+            s_hidNextReportTime[ idx ] = s_hidReportTime[ idx ] + s_hidCurrentPeriod[ idx ];
+        }
+    }
+}
+
+void hidCaptureReportTime( const unsigned id, const unsigned time )
+{
+    for( size_t idx = 0U; idx < HID_REPORT_COUNT; ++idx ) {
+        if( id == hidGetElementReportId( hidReports[ idx ]->location )) {
+            s_hidNextReportTime[ idx ] = time;
+        }
+    }
+}
+
 void hidClearChangePending( const unsigned id )
 {
     for( size_t idx = 0U; idx < HID_REPORT_COUNT; ++idx) {
@@ -175,6 +198,17 @@ static unsigned hidGetItemType( const unsigned char header )
 {
     unsigned bType = ( header & HID_REPORT_ITEM_HDR_TYPE_MASK ) >> HID_REPORT_ITEM_HDR_TYPE_SHIFT;
     return bType;
+}
+
+unsigned hidGetNextReportTime( const unsigned id ) {
+    unsigned retVal = 0U;
+
+    for( size_t idx = 0U; idx < HID_REPORT_COUNT; ++idx ) {
+        if( id == hidGetElementReportId( hidReports[ idx ]->location )) {
+            retVal = s_hidNextReportTime[ idx ];
+        }
+    }
+    return retVal;
 }
 
 unsigned char* hidGetReportDescriptor( void )
@@ -247,6 +281,29 @@ size_t hidGetReportLength( const unsigned id )
     return retVal;
 }
 
+unsigned hidGetReportPeriod( const unsigned id )
+{
+    unsigned retVal = 0U;
+    for( size_t idx = 0U; idx < HID_REPORT_COUNT; ++idx) {
+        if( id == hidGetElementReportId( hidReports[ idx ]->location )) {
+            retVal = s_hidCurrentPeriod[ idx ];
+            break;
+        }
+    }
+    return retVal;
+}
+
+unsigned hidGetReportTime( const unsigned id ) {
+    unsigned retVal = 0U;
+
+    for( size_t idx = 0U; idx < HID_REPORT_COUNT; ++idx ) {
+        if( id == hidGetElementReportId( hidReports[ idx ]->location )) {
+            retVal = s_hidReportTime[ idx ];
+        }
+    }
+    return retVal;
+}
+
 static unsigned hidGetUsagePage( const unsigned id )
 {
     unsigned retVal = 0U;
@@ -267,6 +324,24 @@ unsigned hidIsChangePending( const unsigned id )
             retVal |= ( s_hidChangePending[ idx ] != 0U );
         } else if( id == hidGetElementReportId( hidReports[ idx ]->location )) {
             retVal  = ( s_hidChangePending[ idx ] != 0U );
+            break;
+        }
+    }
+  return retVal;
+}
+
+unsigned hidIsIdleActive( const unsigned id )
+{
+    unsigned retVal = 0U;
+    if( 0U == id ) {
+        retVal = 1U;
+    }
+
+    for( size_t idx = 0U; idx < HID_REPORT_COUNT; ++idx) {
+        if( id == 0U ) {
+            retVal &= ( s_hidIdleActive[ idx ] != 0U );
+        } else if( id == hidGetElementReportId( hidReports[ idx ]->location )) {
+            retVal  = ( s_hidIdleActive[ idx ] != 0U );
             break;
         }
     }
@@ -298,6 +373,25 @@ void hidSetChangePending( const unsigned id )
         if( id == hidGetElementReportId( hidReports[ idx ]->location )) {
             s_hidChangePending[ idx ] = 1U;
             break;
+        }
+    }
+}
+
+void hidSetIdle( const unsigned id, const unsigned state )
+{
+    for( size_t idx = 0U; idx < HID_REPORT_COUNT; ++idx) {
+        if( id == hidGetElementReportId( hidReports[ idx ]->location )) {
+            s_hidIdleActive[ idx ] = ( state != 0U );
+            break;
+        }
+    }
+}
+
+void hidSetNextReportTime( const unsigned id, const unsigned time )
+{
+    for( size_t idx = 0U; idx < HID_REPORT_COUNT; ++idx ) {
+        if( id == hidGetElementReportId( hidReports[ idx ]->location )) {
+            s_hidNextReportTime[ idx ] = time;
         }
     }
 }
@@ -359,6 +453,16 @@ unsigned hidSetReportItem(
     }
 
     return retVal;
+}
+
+void hidSetReportPeriod( const unsigned id, const unsigned period )
+{
+    for( size_t idx = 0U; idx < HID_REPORT_COUNT; ++idx) {
+        if( id == hidGetElementReportId( hidReports[ idx ]->location )) {
+            s_hidCurrentPeriod[ idx ] = period;
+            break;
+        }
+    }
 }
 
 static size_t hidTranslateItem( const USB_HID_Short_Item_t* inPtr, unsigned char** outPtrPtr )

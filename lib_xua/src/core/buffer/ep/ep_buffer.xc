@@ -900,14 +900,18 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
 
 #if( 0 < HID_CONTROLS )
             /* HID Report Data */
-            case hidIsChangePending(0U) || !HidIsSetIdleSilenced() => XUD_SetData_Select(c_hid, ep_hid, result):
+            case hidIsChangePending(0U) || !HidIsSetIdleSilenced(0U) => XUD_SetData_Select(c_hid, ep_hid, result):
             {
-                HidCaptureReportTime();
-                for(unsigned id = 0; id < hidGetReportIdLimit(); ++id) {
-                    if(hidIsChangePending(id)) {
+                timer tmr;
+                unsigned reportTime;
+                tmr :> reportTime;
+
+                for(unsigned id = 0U; id < hidGetReportIdLimit(); ++id) {
+                    if(0U == id || (hidIsChangePending(id) || !HidIsSetIdleSilenced(id))) {
+                        hidCaptureReportTime(id, reportTime);
                         int hidDataLength = (int) UserHIDGetData(id, g_hidData);
                         XUD_SetReady_In(ep_hid, g_hidData, hidDataLength);
-                        HidCalcNextReportTime();
+                        hidCalcNextReportTime(id);
                         hidClearChangePending(id);
                         break;
                     }

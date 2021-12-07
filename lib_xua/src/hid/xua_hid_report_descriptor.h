@@ -57,6 +57,8 @@
 #define HID_STATUS_BAD_PAGE     ( 4U )
 #define HID_STATUS_IN_USE       ( 5U )
 
+#define MS_IN_TICKS 100000U
+
 /**
  * @brief USB HID Report Descriptor Short Item
  *
@@ -194,6 +196,57 @@ unsigned hidGetReportItem(
 #endif
 
 /**
+ *  \brief Calculate the next time to respond with a HID Report.
+ *
+ *  If the USB Host has previously sent a valid HID Set_Idle request with
+ *    a duration of zero or greater than the default reporting interval,
+ *    the device sends HID Reports periodically or when the value of the
+ *    payload has changed.
+ *
+ *  This function calculates the time for sending the next periodic
+ *    HID Report.
+ *
+ * Parameters:
+ *
+ *  @param[in]  id  The identifier for the HID Report (see 5.6, 6.2.2.7, 8.1 and 8.2)
+ *                  A value of zero means the application does not use Report IDs.
+ */
+void hidCalcNextReportTime( const unsigned id );
+
+/**
+ *  \brief Capture the time of sending the current HID Report.
+ *
+ *  If the USB Host has previously sent a valid HID Set_Idle request with
+ *    a duration of zero or greater than the default reporting interval,
+ *    the device sends HID Reports periodically or when the value of the
+ *    payload has changed.
+ *
+ *  This function captures the time when the HID Report was sent so that
+ *    a subsequent call to HidCalNextReportTime() can calculate the time
+ *    to send the next periodic HID Report.
+ *
+ * Parameters:
+ *
+ *  @param[in]  id      The identifier for the HID Report (see 5.6, 6.2.2.7, 8.1 and 8.2)
+ *                      A value of zero means the application does not use Report IDs.
+ *
+ *  @param[in]  time    The time when the HID Report for the given \a id was sent.
+ */
+void hidCaptureReportTime( const unsigned id, const unsigned time );
+
+/**
+ * @brief Get the time to send the next HID Report time for the given \a id
+ *
+ * Parameters:
+ *
+ *  @param[in]  id  The identifier for the HID Report (see 5.6, 6.2.2.7, 8.1 and 8.2)
+ *                  A value of zero means the application does not use Report IDs.
+ *
+ *  @returns  The time at which to send the next HID Report for the given \a id
+ */
+unsigned hidGetNextReportTime( const unsigned id );
+
+/**
  * @brief Get the length of the HID Report
  *
  * This function returns the length of the USB HID Report.
@@ -209,6 +262,31 @@ unsigned hidGetReportItem(
  * @return The length of the Report in bytes
  */
 size_t hidGetReportLength( const unsigned id );
+
+/**
+ * @brief Get the HID Report period for the given \a id
+ *
+ * Parameters:
+ *
+ *  @param[in]  id  The identifier for the HID Report (see 5.6, 6.2.2.7, 8.1 and 8.2)
+ *                  A value of zero means the application does not use Report IDs.
+ *
+ *  @returns  The period for the given HID Report \a id in units of ms.
+ *            The value zero means the period is indefinite.
+ */
+unsigned hidGetReportPeriod( const unsigned id );
+
+/**
+ * @brief Get the HID Report time for the given \a id
+ *
+ * Parameters:
+ *
+ *  @param[in]  id      The identifier for the HID Report (see 5.6, 6.2.2.7, 8.1 and 8.2)
+ *                      A value of zero means the application does not use Report IDs.
+ *
+ *  @returns  The time of the last call to \c hidCaptureReportTime()
+ */
+unsigned hidGetReportTime( const unsigned id );
 
 /**
  *  \brief Indicate if a change to the HID Report data has been received.
@@ -247,6 +325,22 @@ size_t hidGetReportLength( const unsigned id );
  *                  For an \a id of zero, no HID Report has changed data.
  */
 unsigned hidIsChangePending( const unsigned id );
+
+/**
+ * @brief Indicate if the HID report for the given \a id is idle
+ *
+ * Parameters:
+ *
+ *  @param[in]  id  The identifier for the HID Report (see 5.6, 6.2.2.7, 8.1 and 8.2)
+ *                  A value of zero returns the collective Idle state.
+ *
+ *  \returns  A Boolean indicating whether the HID Report for the given \a id is idle.
+ *  \retval   True  The HID Report is idle.
+ *                  For an \a id of zero, all HID Reports are idle.
+ *  \retval   False The HID Report is not idle.
+ *                  For an \a id of zero, at least one HID Report is not idle.
+ */
+unsigned hidIsIdleActive( const unsigned id );
 
 /**
  * @brief Prepare the USB HID Report descriptor
@@ -297,6 +391,32 @@ void hidResetReportDescriptor( void );
 void hidSetChangePending( const unsigned id );
 
 /**
+ * @brief Set the HID Report Idle state for the given \a id
+ *
+ * Parameters:
+ *
+ *  @param[in]  id      The identifier for the HID Report (see 5.6, 6.2.2.7, 8.1 and 8.2)
+ *                      A value of zero means the application does not use Report IDs.
+ *
+ *  @param[in]  state   A Boolean indicating the Idle state
+ *                      If true, the HID Report for the given \a id is Idle, otherwise it
+ *                        is not Idle.
+ */
+void hidSetIdle( const unsigned id, const unsigned state );
+
+/**
+ * @brief Set the time to send the HID Report for the given \a id
+ *
+ * Parameters:
+ *
+ *  @param[in]  id      The identifier for the HID Report (see 5.6, 6.2.2.7, 8.1 and 8.2)
+ *                      A value of zero means the application does not use Report IDs.
+ *
+ *  @param[in]  time    The time to send the HID Report for the given \a id.
+ */
+void hidSetNextReportTime( const unsigned id, const unsigned time );
+
+/**
  * @brief Modify a HID Report descriptor item
  *
  * @warning This function does not check that the length of the \a data array matches the value of
@@ -331,5 +451,19 @@ unsigned hidSetReportItem(
     const unsigned char page,
     const unsigned char header,
     const unsigned char data[]);
+
+/**
+ * @brief Set the HID Report period for the given \a id
+ *
+ * Parameters:
+ *
+ *  @param[in]  id      The identifier for the HID Report (see 5.6, 6.2.2.7, 8.1 and 8.2)
+ *                      A value of zero means the application does not use Report IDs.
+ *
+ *  @param[in]  period  The period for sending the HID Report in units of ms.
+ *                      This period must be a multiple of 4 ms.
+ *                      Use zero to indicate an indefinite period.
+ */
+void hidSetReportPeriod( const unsigned id, const unsigned period );
 
 #endif // _HID_REPORT_DESCRIPTOR_
