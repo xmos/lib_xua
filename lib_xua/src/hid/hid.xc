@@ -88,7 +88,7 @@ unsigned HidIsSetIdleSilenced( void )
  */
 static unsigned HidCalcNewReportTime( const unsigned currentPeriod, const unsigned reportTime, const unsigned reportToSetIdleInterval, const unsigned newPeriod )
 {
-  unsigned nextReportTime = 0;
+  unsigned nextReportTime = 0U;
 
   if( HidFindSetIdleActivationPoint( currentPeriod, reportToSetIdleInterval )) {
     /* Activate immediately after sending the next HID Report */
