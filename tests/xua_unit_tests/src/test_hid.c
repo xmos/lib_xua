@@ -183,7 +183,7 @@ void test_configurable_item_hidSetReportItem( void )
 void test_nonconfigurable_item_hidSetReportItem( void )
 {
     const unsigned bit = MAX_VALID_BIT;     // This bit and byte combination should not appear in the
-    const unsigned byte = MIN_VALID_BYTE;    // hidConfigurableItems list in hid_report_descriptors.c.
+    const unsigned byte = MIN_VALID_BYTE;    // hidConfigurableElements list in hid_report_descriptors.c.
     const unsigned char data[ 1 ] = { LOUDNESS_CONTROL };
     const unsigned char header = construct_usage_header( sizeof data / sizeof( unsigned char ));
     const unsigned char page = CONSUMER_CONTROL_PAGE;
@@ -196,7 +196,7 @@ void test_nonconfigurable_item_hidSetReportItem( void )
 void test_max_bit_hidSetReportItem( void )
 {
     const unsigned bit = MAX_VALID_BIT;     // Only byte 1 has bit 7 not reserved,  See the
-    const unsigned byte = MAX_VALID_BYTE;   // hidConfigurableItems list in hid_report_descriptors.c.
+    const unsigned byte = MAX_VALID_BYTE;   // hidConfigurableElements list in hid_report_descriptors.c.
     const unsigned char header = construct_usage_header( 0 );
     const unsigned char page = CONSUMER_CONTROL_PAGE;
 
