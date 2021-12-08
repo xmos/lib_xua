@@ -143,7 +143,7 @@ void hidCaptureReportTime( const unsigned id, const unsigned time )
 {
     for( size_t idx = 0U; idx < HID_REPORT_COUNT; ++idx ) {
         if( id == hidGetElementReportId( hidReports[ idx ]->location )) {
-            s_hidNextReportTime[ idx ] = time;
+            s_hidReportTime[ idx ] = time;
         }
     }
 }
