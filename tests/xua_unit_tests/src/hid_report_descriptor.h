@@ -42,7 +42,7 @@ static const USB_HID_Short_Item_t hidUsageConsumerControl   = { .header = 0x09, 
  */
 static const USB_HID_Report_Element_t hidReportPageConsumer = {
     .item = { .header = 0x05, .data = { USB_HID_USAGE_PAGE_ID_CONSUMER, 0x00 }},
-    .location = HID_REPORT_SET_LOC( 0, 1, 0, 0 )
+    .location = HID_REPORT_SET_LOC( 0, 2, 0, 0 )
 };
 
 /*
@@ -123,6 +123,6 @@ static const USB_HID_Short_Item_t* const hidReportDescriptorItems[] = {
  * Due to XC not supporting designated initializers, this constant has a hard-coded value.
  * It must equal ( sizeof hidReports / sizeof ( USB_HID_Report_Element_t* ))
  */
-#define HID_REPORT_COUNT ( 3 )
+#define HID_REPORT_COUNT ( 1 )
 
 #endif // __hid_report_descriptor_h__
