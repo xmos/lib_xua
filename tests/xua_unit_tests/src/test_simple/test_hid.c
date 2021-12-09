@@ -348,7 +348,7 @@ void test_bad_tag_hidSetReportItem( void )
     const unsigned char page = CONSUMER_CONTROL_PAGE;
 
     for( unsigned tag = 0x01; tag <= 0x0F; ++tag ) {
-        unsigned char bad_header = good_header | (( 0x0F << HID_REPORT_ITEM_HDR_TAG_SHIFT ) & HID_REPORT_ITEM_HDR_TAG_MASK );
+        unsigned char bad_header = good_header | (( tag << HID_REPORT_ITEM_HDR_TAG_SHIFT ) & HID_REPORT_ITEM_HDR_TAG_MASK );
         unsigned retVal = hidSetReportItem( reportId, byte, bit, page, bad_header, NULL );
         TEST_ASSERT_EQUAL_UINT( HID_STATUS_BAD_HEADER, retVal );
     }

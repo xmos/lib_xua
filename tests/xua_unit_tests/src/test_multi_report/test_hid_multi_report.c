@@ -16,7 +16,9 @@
 #define CONSUMER_PAGE           ( 0x0C )
 #define TELEPHONY_DEVICE_PAGE   ( 0x0B )
 #define LOUDNESS_CONTROL        ( 0xE7 )
-#define AL_CONTROL_PANEL        ( 0x019F )
+#define PHONE_KEY_9             ( 0xB9 )
+#define KEYBOARD_X              ( 0x1B )
+#define PHONE_HOST_HOLD         ( 0x010A )
 
 static unsigned construct_usage_header( unsigned size )
 {
@@ -33,6 +35,19 @@ static unsigned construct_usage_header( unsigned size )
 void setUp( void )
 {
     hidResetReportDescriptor();
+}
+
+void test_print_report( void )
+{
+    hidPrepareReportDescriptor();
+    unsigned char* report = hidGetReportDescriptor();
+    size_t reportLen = hidGetReportDescriptorLength();
+
+    printf("ReportDescriptor:");
+    for (size_t i = 0; i < reportLen; i++) {
+        printf(" %02x", report[i]);
+    }
+    printf("\n");
 }
 
 // Basic report descriptor tests
@@ -342,246 +357,262 @@ void test_underflow_byte_hidGetReportItem( void )
     TEST_ASSERT_EQUAL_UINT( 0xD1, data[ 1 ]);
 }
 
-#if 0
-//here
-
 // Configurable and non-configurable item tests
-void xtest_configurable_item_hidSetReportItem( void )
+void test_configurable_item_hidSetReportItem( void )
 {
-    const unsigned reportId = 0;
-    const unsigned bit = MIN_VALID_BIT;
-    const unsigned byte = MIN_VALID_BYTE;
-    const unsigned char data[ 1 ] = { LOUDNESS_CONTROL };
-    const unsigned char header = construct_usage_header( sizeof data / sizeof( unsigned char ));
-    const unsigned char page = CONSUMER_PAGE;
+    const unsigned reportId = 1;
+    const unsigned bit = REPORT1_MIN_VALID_BIT;
+    const unsigned byte = REPORT1_MIN_VALID_BYTE;
+    unsigned char data[ 1 ] = { KEYBOARD_X };
+    unsigned char header = construct_usage_header( sizeof( data ) / sizeof( unsigned char ));
+    unsigned char page = KEYBOARD_PAGE;
 
     unsigned retVal = hidSetReportItem( reportId, byte, bit, page, header, data );
     TEST_ASSERT_EQUAL_UINT( HID_STATUS_GOOD, retVal );
+
+    retVal = hidGetReportItem( reportId, byte, bit, &page, &header, data );
+    TEST_ASSERT_EQUAL_UINT( HID_STATUS_GOOD, retVal );
+    TEST_ASSERT_EQUAL_UINT( KEYBOARD_PAGE, page );
+    TEST_ASSERT_EQUAL_UINT( 0x09, header );
+    TEST_ASSERT_EQUAL_UINT( KEYBOARD_X, data[ 0 ]);
+    TEST_ASSERT_EQUAL_UINT( 0x00, data[ 1 ]);
 }
 
-void xtest_nonconfigurable_item_hidSetReportItem( void )
+// Testing that the high byte of the report gets correctly cleared
+void test_configurable_item_hidSetReportItem_multibyte_orig( void )
 {
-    const unsigned reportId = 0;
-    const unsigned bit = MAX_VALID_BIT;     // This bit and byte combination should not appear in the
-    const unsigned byte = MIN_VALID_BYTE;    // hidConfigurableElements list in hid_report_descriptors.c.
-    const unsigned char data[ 1 ] = { LOUDNESS_CONTROL };
+    const unsigned reportId = 2;
+    const unsigned bit = 1;  // This byte&bit combo is originally set be 2 bytes long in the header
+    const unsigned byte = 0;
+    unsigned char data[ 1 ] = { LOUDNESS_CONTROL };
+    unsigned char header = construct_usage_header( sizeof( data ) / sizeof( unsigned char ));
+    unsigned char page = CONSUMER_PAGE;
+
+    unsigned retVal = hidSetReportItem( reportId, byte, bit, page, header, data );
+    TEST_ASSERT_EQUAL_UINT( HID_STATUS_GOOD, retVal );
+
+    retVal = hidGetReportItem( reportId, byte, bit, &page, &header, data );
+    TEST_ASSERT_EQUAL_UINT( HID_STATUS_GOOD, retVal );
+    TEST_ASSERT_EQUAL_UINT( CONSUMER_PAGE, page );
+    TEST_ASSERT_EQUAL_UINT( 0x09, header );
+    TEST_ASSERT_EQUAL_UINT( LOUDNESS_CONTROL, data[ 0 ]);
+    TEST_ASSERT_EQUAL_UINT( 0x00, data[ 1 ]);
+}
+
+void test_nonconfigurable_item_hidSetReportItem( void )
+{
+    const unsigned reportId = 1;
+    const unsigned bit = 1;     // This bit and byte combination should not appear in the
+    const unsigned byte = 0;    // hidConfigurableElements list in hid_report_descriptors.c.
+    const unsigned char data[ 1 ] = { KEYBOARD_X };
     const unsigned char header = construct_usage_header( sizeof data / sizeof( unsigned char ));
-    const unsigned char page = CONSUMER_PAGE;
+    const unsigned char page = KEYBOARD_PAGE;
 
     unsigned retVal = hidSetReportItem( reportId, byte, bit, page, header, data );
     TEST_ASSERT_EQUAL_UINT( HID_STATUS_BAD_LOCATION, retVal );
 }
 
 // Bit range tests
-void xtest_max_bit_hidSetReportItem( void )
+void test_max_bit_hidSetReportItem( void )
 {
-    const unsigned reportId = 0;
-    const unsigned bit = MAX_VALID_BIT;     // Only byte 1 has bit 7 not reserved,  See the
-    const unsigned byte = MAX_VALID_BYTE;   // hidConfigurableElements list in hid_report_descriptors.c.
     const unsigned char header = construct_usage_header( 0 );
-    const unsigned char page = CONSUMER_PAGE;
 
+    unsigned reportId = 1;
+    unsigned bit = REPORT1_MAX_VALID_BIT;  // See the hidConfigurableElements list in hid_report_descriptors.c.
+    unsigned byte = REPORT1_MAX_VALID_BYTE;
+    unsigned char page = KEYBOARD_PAGE;
     unsigned retVal = hidSetReportItem( reportId, byte, bit, page, header, NULL );
+    TEST_ASSERT_EQUAL_UINT( HID_STATUS_GOOD, retVal );
+
+    reportId = 2;
+    bit = REPORT2_MAX_VALID_BIT;
+    byte = REPORT2_MAX_VALID_BYTE;
+    page = CONSUMER_PAGE;
+    retVal = hidSetReportItem( reportId, byte, bit, page, header, NULL );
+    TEST_ASSERT_EQUAL_UINT( HID_STATUS_GOOD, retVal );
+
+    reportId = 3;
+    bit = REPORT3_MAX_VALID_BIT;
+    byte = REPORT3_MAX_VALID_BYTE;
+    page = TELEPHONY_DEVICE_PAGE;
+    retVal = hidSetReportItem( reportId, byte, bit, page, header, NULL );
     TEST_ASSERT_EQUAL_UINT( HID_STATUS_GOOD, retVal );
 }
 
-void xtest_min_bit_hidSetReportItem( void )
+void test_min_bit_hidSetReportItem( void )
 {
-    const unsigned reportId = 0;
-    const unsigned bit = MIN_VALID_BIT;
-    const unsigned byte = MIN_VALID_BYTE;
     const unsigned char header = construct_usage_header( 0 );
-    const unsigned char page = CONSUMER_PAGE;
 
+    unsigned reportId = 1;
+    unsigned bit = REPORT1_MIN_VALID_BIT;  // See the hidConfigurableElements list in hid_report_descriptors.c.
+    unsigned byte = REPORT1_MIN_VALID_BYTE;
+    unsigned char page = KEYBOARD_PAGE;
     unsigned retVal = hidSetReportItem( reportId, byte, bit, page, header, NULL );
+    TEST_ASSERT_EQUAL_UINT( HID_STATUS_GOOD, retVal );
+
+    reportId = 2;
+    bit = REPORT2_MIN_VALID_BIT;
+    byte = REPORT2_MIN_VALID_BYTE;
+    page = CONSUMER_PAGE;
+    retVal = hidSetReportItem( reportId, byte, bit, page, header, NULL );
+    TEST_ASSERT_EQUAL_UINT( HID_STATUS_GOOD, retVal );
+
+    reportId = 3;
+    bit = REPORT3_MIN_VALID_BIT;
+    byte = REPORT3_MIN_VALID_BYTE;
+    page = TELEPHONY_DEVICE_PAGE;
+    retVal = hidSetReportItem( reportId, byte, bit, page, header, NULL );
     TEST_ASSERT_EQUAL_UINT( HID_STATUS_GOOD, retVal );
 }
 
-void xtest_overflow_bit_hidSetReportItem( void )
+void test_overflow_bit_hidSetReportItem( void )
 {
-    const unsigned reportId = 0;
-    const unsigned bit = MAX_VALID_BIT + 1;
-    const unsigned byte = MIN_VALID_BYTE;
     const unsigned char header = construct_usage_header( 0 );
-    const unsigned char page = CONSUMER_PAGE;
 
+    unsigned reportId = 1;
+    unsigned bit = REPORT1_MAX_VALID_BIT + 1;  // See the hidConfigurableElements list in hid_report_descriptors.c.
+    unsigned byte = REPORT1_MAX_VALID_BYTE;
+    unsigned char page = KEYBOARD_PAGE;
     unsigned retVal = hidSetReportItem( reportId, byte, bit, page, header, NULL );
+    TEST_ASSERT_EQUAL_UINT( HID_STATUS_BAD_LOCATION, retVal );
+
+    reportId = 2;
+    bit = REPORT2_MAX_VALID_BIT + 1;
+    byte = REPORT2_MAX_VALID_BYTE;
+    page = CONSUMER_PAGE;
+    retVal = hidSetReportItem( reportId, byte, bit, page, header, NULL );
+    TEST_ASSERT_EQUAL_UINT( HID_STATUS_BAD_LOCATION, retVal );
+
+    reportId = 3;
+    bit = REPORT3_MAX_VALID_BIT + 1;
+    byte = REPORT3_MAX_VALID_BYTE;
+    page = TELEPHONY_DEVICE_PAGE;
+    retVal = hidSetReportItem( reportId, byte, bit, page, header, NULL );
     TEST_ASSERT_EQUAL_UINT( HID_STATUS_BAD_LOCATION, retVal );
 }
 
-void xtest_underflow_bit_hidSetReportItem( void )
+void test_underflow_bit_hidSetReportItem( void )
 {
-    const unsigned reportId = 0;
-    const int bit = MIN_VALID_BIT - 1;
-    const unsigned byte = MIN_VALID_BYTE;
     const unsigned char header = construct_usage_header( 0 );
-    const unsigned char page = CONSUMER_PAGE;
 
-    unsigned retVal = hidSetReportItem( reportId, byte, ( unsigned ) bit, page, header, NULL );
+    unsigned reportId = 1;
+    unsigned bit = REPORT1_MIN_VALID_BIT - 1;  // See the hidConfigurableElements list in hid_report_descriptors.c.
+    unsigned byte = REPORT1_MIN_VALID_BYTE;
+    unsigned char page = KEYBOARD_PAGE;
+    unsigned retVal = hidSetReportItem( reportId, byte, bit, page, header, NULL );
+    TEST_ASSERT_EQUAL_UINT( HID_STATUS_BAD_LOCATION, retVal );
+
+    reportId = 2;
+    bit = REPORT2_MIN_VALID_BIT - 1;
+    byte = REPORT2_MIN_VALID_BYTE;
+    page = CONSUMER_PAGE;
+    retVal = hidSetReportItem( reportId, byte, bit, page, header, NULL );
+    TEST_ASSERT_EQUAL_UINT( HID_STATUS_BAD_LOCATION, retVal );
+
+    reportId = 3;
+    bit = REPORT3_MIN_VALID_BIT - 1;
+    byte = REPORT3_MIN_VALID_BYTE;
+    page = TELEPHONY_DEVICE_PAGE;
+    retVal = hidSetReportItem( reportId, byte, bit, page, header, NULL );
     TEST_ASSERT_EQUAL_UINT( HID_STATUS_BAD_LOCATION, retVal );
 }
 
-// Byte range tests
-void xtest_max_byte_hidSetReportItem( void )
+void test_overflow_byte_hidSetReportItem( void )
 {
-    const unsigned reportId = 0;
-    const unsigned bit = MIN_VALID_BIT;
-    const unsigned byte = MAX_VALID_BYTE;
     const unsigned char header = construct_usage_header( 0 );
-    const unsigned char page = CONSUMER_PAGE;
 
+    unsigned reportId = 1;
+    unsigned bit = REPORT1_MAX_VALID_BIT;  // See the hidConfigurableElements list in hid_report_descriptors.c.
+    unsigned byte = REPORT1_MAX_VALID_BYTE + 1;
+    unsigned char page = KEYBOARD_PAGE;
     unsigned retVal = hidSetReportItem( reportId, byte, bit, page, header, NULL );
-    TEST_ASSERT_EQUAL_UINT( HID_STATUS_GOOD, retVal );
-}
+    TEST_ASSERT_EQUAL_UINT( HID_STATUS_BAD_LOCATION, retVal );
 
-void xtest_min_byte_hidSetReportItem( void )
-{
-    const unsigned reportId = 0;
-    const unsigned bit = MIN_VALID_BIT;
-    const unsigned byte = MIN_VALID_BYTE;
-    const unsigned char header = construct_usage_header( 0 );
-    const unsigned char page = CONSUMER_PAGE;
+    reportId = 2;
+    bit = REPORT2_MAX_VALID_BIT;
+    byte = REPORT2_MAX_VALID_BYTE + 1;
+    page = CONSUMER_PAGE;
+    retVal = hidSetReportItem( reportId, byte, bit, page, header, NULL );
+    TEST_ASSERT_EQUAL_UINT( HID_STATUS_BAD_LOCATION, retVal );
 
-    unsigned retVal = hidSetReportItem( reportId, byte, bit, page, header, NULL );
-    TEST_ASSERT_EQUAL_UINT( HID_STATUS_GOOD, retVal );
-}
-
-void xtest_overflow_byte_hidSetReportItem( void )
-{
-    const unsigned reportId = 0;
-    const unsigned bit = MIN_VALID_BIT;
-    const unsigned byte = MAX_VALID_BYTE + 1;
-    const unsigned char header = construct_usage_header( 0 );
-    const unsigned char page = CONSUMER_PAGE;
-
-    unsigned retVal = hidSetReportItem( reportId, byte, bit, page, header, NULL );
+    reportId = 3;
+    bit = REPORT3_MAX_VALID_BIT;
+    byte = REPORT3_MAX_VALID_BYTE + 1;
+    page = TELEPHONY_DEVICE_PAGE;
+    retVal = hidSetReportItem( reportId, byte, bit, page, header, NULL );
     TEST_ASSERT_EQUAL_UINT( HID_STATUS_BAD_LOCATION, retVal );
 }
 
-void xtest_underflow_byte_hidSetReportItem( void )
+void test_underflow_byte_hidSetReportItem( void )
 {
-    const unsigned reportId = 0;
-    const unsigned bit = MIN_VALID_BIT;
-    const int byte = MIN_VALID_BYTE - 1;
     const unsigned char header = construct_usage_header( 0 );
-    const unsigned char page = CONSUMER_PAGE;
 
-    unsigned retVal = hidSetReportItem( reportId,  ( unsigned ) byte, bit, page, header, NULL );
+    unsigned reportId = 1;
+    unsigned bit = REPORT1_MIN_VALID_BIT;  // See the hidConfigurableElements list in hid_report_descriptors.c.
+    unsigned byte = REPORT1_MIN_VALID_BYTE - 1;
+    unsigned char page = KEYBOARD_PAGE;
+    unsigned retVal = hidSetReportItem( reportId, byte, bit, page, header, NULL );
+    TEST_ASSERT_EQUAL_UINT( HID_STATUS_BAD_LOCATION, retVal );
+
+    reportId = 2;
+    bit = REPORT2_MIN_VALID_BIT;
+    byte = REPORT2_MIN_VALID_BYTE - 1;
+    page = CONSUMER_PAGE;
+    retVal = hidSetReportItem( reportId, byte, bit, page, header, NULL );
+    TEST_ASSERT_EQUAL_UINT( HID_STATUS_BAD_LOCATION, retVal );
+
+    reportId = 3;
+    bit = REPORT3_MIN_VALID_BIT;
+    byte = REPORT3_MIN_VALID_BYTE - 1;
+    page = TELEPHONY_DEVICE_PAGE;
+    retVal = hidSetReportItem( reportId, byte, bit, page, header, NULL );
     TEST_ASSERT_EQUAL_UINT( HID_STATUS_BAD_LOCATION, retVal );
 }
 
 // Size range tests
-void xtest_max_size_hidSetReportItem( void )
+void test_max_size_hidSetReportItem( void )
 {
-    const unsigned reportId = 0;
-    const unsigned bit = MIN_VALID_BIT;
-    const unsigned byte = MIN_VALID_BYTE;
+    const unsigned reportId = 1;
+    const unsigned bit = REPORT1_MIN_VALID_BIT;
+    const unsigned byte = REPORT1_MIN_VALID_BYTE;
     const unsigned char data[ HID_REPORT_ITEM_MAX_SIZE ] = { 0x00 };
     const unsigned char header = construct_usage_header( HID_REPORT_ITEM_MAX_SIZE );
-    const unsigned char page = CONSUMER_PAGE;
+    const unsigned char page = KEYBOARD_PAGE;
 
     unsigned retVal = hidSetReportItem( reportId, byte, bit, page, header, data );
     TEST_ASSERT_EQUAL_UINT( HID_STATUS_GOOD, retVal );
 }
 
-void xtest_min_size_hidSetReportItem( void )
+void test_min_size_hidSetReportItem( void )
 {
-    const unsigned reportId = 0;
-    const unsigned bit = MIN_VALID_BIT;
-    const unsigned byte = MIN_VALID_BYTE;
+    const unsigned reportId = 1;
+    const unsigned bit = REPORT1_MIN_VALID_BIT;
+    const unsigned byte = REPORT1_MIN_VALID_BYTE;
     const unsigned char header = construct_usage_header( 0x00 );
-    const unsigned char page = CONSUMER_PAGE;
+    const unsigned char page = KEYBOARD_PAGE;
 
     unsigned retVal = hidSetReportItem( reportId, byte, bit, page, header, NULL );
     TEST_ASSERT_EQUAL_UINT( HID_STATUS_GOOD, retVal );
 }
 
-void xtest_unsupported_size_hidSetReportItem( void )
+void test_unsupported_size_hidSetReportItem( void )
 {
     const unsigned reportId = 0;
-    const unsigned bit = MIN_VALID_BIT;
-    const unsigned byte = MIN_VALID_BYTE;
+    const unsigned bit = REPORT1_MIN_VALID_BIT;
+    const unsigned byte = REPORT1_MIN_VALID_BYTE;
     const unsigned char header = construct_usage_header( 0x03 );
-    const unsigned char page = CONSUMER_PAGE;
-
-    unsigned retVal = hidSetReportItem( reportId, byte, bit, page, header, NULL );
-    TEST_ASSERT_EQUAL_UINT( HID_STATUS_BAD_HEADER, retVal );
-}
-
-// Header tag and type tests
-void xtest_bad_tag_hidSetReportItem( void )
-{
-    const unsigned reportId = 0;
-    const unsigned bit = MIN_VALID_BIT;
-    const unsigned byte = MIN_VALID_BYTE;
-    const unsigned char good_header = construct_usage_header( 0x00 );
-    const unsigned char page = CONSUMER_PAGE;
-
-    for( unsigned tag = 0x01; tag <= 0x0F; ++tag ) {
-        unsigned char bad_header = good_header | (( 0x0F << HID_REPORT_ITEM_HDR_TAG_SHIFT ) & HID_REPORT_ITEM_HDR_TAG_MASK );
-        unsigned retVal = hidSetReportItem( reportId, byte, bit, page, bad_header, NULL );
-        TEST_ASSERT_EQUAL_UINT( HID_STATUS_BAD_HEADER, retVal );
-    }
-}
-
-void xtest_global_type_hidSetReportItem( void )
-{
-    const unsigned reportId = 0;
-    const unsigned bit = MIN_VALID_BIT;
-    const unsigned byte = MIN_VALID_BYTE;
-    const unsigned char header = ( construct_usage_header( 0x00 ) & ~HID_REPORT_ITEM_HDR_TYPE_MASK ) |
-        (( HID_REPORT_ITEM_TYPE_GLOBAL << HID_REPORT_ITEM_HDR_TYPE_SHIFT ) & HID_REPORT_ITEM_HDR_TYPE_MASK );
-    const unsigned char page = CONSUMER_PAGE;
-
-    unsigned retVal = hidSetReportItem( reportId, byte, bit, page, header, NULL );
-    TEST_ASSERT_EQUAL_UINT( HID_STATUS_BAD_HEADER, retVal );
-}
-
-void xtest_local_type_hidSetReportItem( void )
-{
-    const unsigned reportId = 0;
-    const unsigned bit = MIN_VALID_BIT;
-    const unsigned byte = MIN_VALID_BYTE;
-    const unsigned char header = ( construct_usage_header( 0x00 ) & ~HID_REPORT_ITEM_HDR_TYPE_MASK ) |
-        (( HID_REPORT_ITEM_TYPE_LOCAL << HID_REPORT_ITEM_HDR_TYPE_SHIFT ) & HID_REPORT_ITEM_HDR_TYPE_MASK );
-    const unsigned char page = CONSUMER_PAGE;
-
-    unsigned retVal = hidSetReportItem( reportId, byte, bit, page, header, NULL );
-    TEST_ASSERT_EQUAL_UINT( HID_STATUS_GOOD, retVal );
-}
-
-void xtest_main_type_hidSetReportItem( void )
-{
-    const unsigned reportId = 0;
-    const unsigned bit = MIN_VALID_BIT;
-    const unsigned byte = MIN_VALID_BYTE;
-    const unsigned char header = ( construct_usage_header( 0x00 ) & ~HID_REPORT_ITEM_HDR_TYPE_MASK ) |
-        (( HID_REPORT_ITEM_TYPE_MAIN << HID_REPORT_ITEM_HDR_TYPE_SHIFT ) & HID_REPORT_ITEM_HDR_TYPE_MASK );
-    const unsigned char page = CONSUMER_PAGE;
-
-    unsigned retVal = hidSetReportItem( reportId, byte, bit, page, header, NULL );
-    TEST_ASSERT_EQUAL_UINT( HID_STATUS_BAD_HEADER, retVal );
-}
-
-void xtest_reserved_type_hidSetReportItem( void )
-{
-    const unsigned reportId = 0;
-    const unsigned bit = MIN_VALID_BIT;
-    const unsigned byte = MIN_VALID_BYTE;
-    const unsigned char header = ( construct_usage_header( 0x00 ) & ~HID_REPORT_ITEM_HDR_TYPE_MASK ) |
-        (( HID_REPORT_ITEM_TYPE_RESERVED << HID_REPORT_ITEM_HDR_TYPE_SHIFT ) & HID_REPORT_ITEM_HDR_TYPE_MASK );
-    const unsigned char page = CONSUMER_PAGE;
+    const unsigned char page = KEYBOARD_PAGE;
 
     unsigned retVal = hidSetReportItem( reportId, byte, bit, page, header, NULL );
     TEST_ASSERT_EQUAL_UINT( HID_STATUS_BAD_HEADER, retVal );
 }
 
 // Combined function tests
-void xtest_initial_modification_without_subsequent_preparation( void )
+void test_initial_modification_without_subsequent_preparation( void )
 {
-    const unsigned reportId = 0;
-    const unsigned bit = MIN_VALID_BIT;
-    const unsigned byte = MIN_VALID_BYTE;
+    const unsigned reportId = 2;
+    const unsigned bit = REPORT2_MIN_VALID_BIT;
+    const unsigned byte = REPORT2_MIN_VALID_BYTE;
     const unsigned char data[ 1 ] = { LOUDNESS_CONTROL };
     const unsigned char header = construct_usage_header( sizeof data / sizeof( unsigned char ));
     const unsigned char page = CONSUMER_PAGE;
@@ -593,11 +624,11 @@ void xtest_initial_modification_without_subsequent_preparation( void )
     TEST_ASSERT_NULL( reportDescPtr );
 }
 
-void xtest_initial_modification_with_subsequent_preparation( void )
+void test_initial_modification_with_subsequent_preparation( void )
 {
-    const unsigned reportId = 0;
-    const unsigned bit = MIN_VALID_BIT;
-    const unsigned byte = MIN_VALID_BYTE;
+    const unsigned reportId = 2;
+    const unsigned bit = REPORT2_MIN_VALID_BIT;
+    const unsigned byte = REPORT2_MIN_VALID_BYTE;
     const unsigned char data[ 1 ] = { LOUDNESS_CONTROL };
     const unsigned char header = construct_usage_header( sizeof data / sizeof( unsigned char ));
     const unsigned char page = CONSUMER_PAGE;
@@ -610,11 +641,11 @@ void xtest_initial_modification_with_subsequent_preparation( void )
     TEST_ASSERT_NOT_NULL( reportDescPtr );
 }
 
-void xtest_initial_modification_with_subsequent_verification_1( void )
+void test_initial_modification_with_subsequent_verification_1( void )
 {
-    const unsigned reportId = 0;
-    const unsigned bit = MIN_VALID_BIT;
-    const unsigned byte = MIN_VALID_BYTE;
+    const unsigned reportId = 2;
+    const unsigned bit = REPORT2_MIN_VALID_BIT;
+    const unsigned byte = REPORT2_MIN_VALID_BYTE;
 
     unsigned char get_data[ HID_REPORT_ITEM_MAX_SIZE ] = { 0xFF, 0xFF };
     unsigned char get_header = 0xFF;
@@ -635,20 +666,20 @@ void xtest_initial_modification_with_subsequent_verification_1( void )
     TEST_ASSERT_EQUAL_UINT( 0, get_data[ 1 ]); // Should be MSB of data from hidUsageByte0Bit0 in hid_report_descriptor.h
 }
 
-void xtest_initial_modification_with_subsequent_verification_2( void )
+void test_initial_modification_with_subsequent_verification_2( void )
 {
-    const unsigned reportId = 0;
-    const unsigned bit = MIN_VALID_BIT;
-    const unsigned byte = MIN_VALID_BYTE;
+    const unsigned reportId = 3;
+    const unsigned bit = REPORT3_MIN_VALID_BIT;
+    const unsigned byte = REPORT3_MIN_VALID_BYTE;
 
     {
         unsigned char get_data[ HID_REPORT_ITEM_MAX_SIZE ] = { 0xFF, 0xFF };
         unsigned char get_header = 0xFF;
         unsigned char get_page = 0xFF;
 
-        const unsigned char set_data[ 2 ] = {( AL_CONTROL_PANEL & 0x00FF ), (( AL_CONTROL_PANEL & 0xFF00 ) >> 8 )};
+        const unsigned char set_data[ 2 ] = {( PHONE_HOST_HOLD & 0x00FF ), (( PHONE_HOST_HOLD & 0xFF00 ) >> 8 )};
         const unsigned char set_header = construct_usage_header( sizeof set_data / sizeof( unsigned char ));
-        const unsigned char set_page = CONSUMER_PAGE;
+        const unsigned char set_page = TELEPHONY_DEVICE_PAGE;
 
         unsigned setRetVal = hidSetReportItem( reportId, byte, bit, set_page, set_header, set_data );
         TEST_ASSERT_EQUAL_UINT( HID_STATUS_GOOD, setRetVal );
@@ -666,9 +697,9 @@ void xtest_initial_modification_with_subsequent_verification_2( void )
         unsigned char get_header = 0xFF;
         unsigned char get_page = 0xFF;
 
-        const unsigned char set_data[ 1 ] = { LOUDNESS_CONTROL };
+        const unsigned char set_data[ 1 ] = { PHONE_KEY_9 };
         const unsigned char set_header = construct_usage_header( sizeof set_data / sizeof( unsigned char ));
-        const unsigned char set_page = CONSUMER_PAGE;
+        const unsigned char set_page = TELEPHONY_DEVICE_PAGE;
 
         unsigned setRetVal = hidSetReportItem( reportId, byte, bit, set_page, set_header, set_data );
         TEST_ASSERT_EQUAL_UINT( HID_STATUS_GOOD, setRetVal );
@@ -681,48 +712,3 @@ void xtest_initial_modification_with_subsequent_verification_2( void )
         TEST_ASSERT_EQUAL_UINT( 0, get_data[ 1 ]); // The call to hidSetReportItem with size 1 in the header should return the MSB to zero
     }
 }
-
-void xtest_modification_without_subsequent_preparation( void )
-{
-    hidPrepareReportDescriptor();
-    unsigned char* reportDescPtr = hidGetReportDescriptor();
-    TEST_ASSERT_NOT_NULL( reportDescPtr );
-
-    const unsigned reportId = 0;
-    const unsigned bit = MIN_VALID_BIT;
-    const unsigned byte = MIN_VALID_BYTE;
-    const unsigned char data[ 1 ] = { LOUDNESS_CONTROL };
-    const unsigned char header = construct_usage_header( sizeof data / sizeof( unsigned char ));
-    const unsigned char page = CONSUMER_PAGE;
-
-    hidResetReportDescriptor();
-    unsigned retVal = hidSetReportItem( reportId, byte, bit, page, header, data );
-    TEST_ASSERT_EQUAL_UINT( HID_STATUS_GOOD, retVal );
-
-    reportDescPtr = hidGetReportDescriptor();
-    TEST_ASSERT_NULL( reportDescPtr );
-}
-
-void xtest_modification_with_subsequent_preparation( void )
-{
-    hidPrepareReportDescriptor();
-    unsigned char* reportDescPtr = hidGetReportDescriptor();
-    TEST_ASSERT_NOT_NULL( reportDescPtr );
-
-    const unsigned reportId = 0;
-    const unsigned bit = MIN_VALID_BIT;
-    const unsigned byte = MIN_VALID_BYTE;
-    const unsigned char data[ 1 ] = { LOUDNESS_CONTROL };
-    const unsigned char header = construct_usage_header( sizeof data / sizeof( unsigned char ));
-    const unsigned char page = CONSUMER_PAGE;
-
-    hidResetReportDescriptor();
-    unsigned retVal = hidSetReportItem( reportId, byte, bit, page, header, data );
-    TEST_ASSERT_EQUAL_UINT( HID_STATUS_GOOD, retVal );
-
-    hidPrepareReportDescriptor();
-    reportDescPtr = hidGetReportDescriptor();
-    TEST_ASSERT_NOT_NULL( reportDescPtr );
-}
-
-#endif

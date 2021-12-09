@@ -21,8 +21,8 @@
 #define REPORT3_MIN_VALID_BIT   ( 0 )
 #define REPORT3_MIN_VALID_BYTE  ( 0 )
 
-#define USB_HID_REPORT_ID_CONSUMER  ( 0x02 )
 #define USB_HID_REPORT_ID_KEYBOARD  ( 0x01 )
+#define USB_HID_REPORT_ID_CONSUMER  ( 0x02 )
 #define USB_HID_REPORT_ID_TELEPHONY ( 0x03 )
 
 #define USB_HID_USAGE_PAGE_ID_CONSUMER  ( 0x0C )
@@ -55,9 +55,9 @@ static const USB_HID_Short_Item_t hidUsageConsumerControl   = { .header = 0x09, 
  * Define the HID Report Descriptor Item, Usage Page, Report ID and length for each HID Report
  * For internal purposes, a report element with ID of 0 must be included if report IDs are not being used.
  */
-static const USB_HID_Short_Item_t hidReportId1  = { .header = 0x85, .data = { USB_HID_USAGE_PAGE_ID_KEYBOARD,  0x00 }};
-static const USB_HID_Short_Item_t hidReportId2  = { .header = 0x85, .data = { USB_HID_USAGE_PAGE_ID_CONSUMER,  0x00 }};
-static const USB_HID_Short_Item_t hidReportId3  = { .header = 0x85, .data = { USB_HID_USAGE_PAGE_ID_TELEPHONY, 0x00 }};
+static const USB_HID_Short_Item_t hidReportId1  = { .header = 0x85, .data = { USB_HID_REPORT_ID_KEYBOARD,  0x00 }};
+static const USB_HID_Short_Item_t hidReportId2  = { .header = 0x85, .data = { USB_HID_REPORT_ID_CONSUMER,  0x00 }};
+static const USB_HID_Short_Item_t hidReportId3  = { .header = 0x85, .data = { USB_HID_REPORT_ID_TELEPHONY, 0x00 }};
 
 static const USB_HID_Report_Element_t hidReportKeyboard     = {
     .item = { .header = 0x05, .data = { USB_HID_USAGE_PAGE_ID_KEYBOARD,  0x00 }},
