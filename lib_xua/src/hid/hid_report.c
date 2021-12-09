@@ -4,7 +4,7 @@
 #include <stddef.h>
 #include <xs1.h>
 #include "descriptor_defs.h"
-#include "xua_hid_report_descriptor.h"
+#include "xua_hid_report.h"
 #include "hid_report_descriptor.h"
 
 #include <stdio.h>

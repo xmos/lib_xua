@@ -21,7 +21,7 @@
 #include "testct_byref.h"
 
 #if( 0 < HID_CONTROLS )
-#include "xua_hid_report_descriptor.h"
+#include "xua_hid_report.h"
 #include "user_hid.h"
 #include "xua_hid.h"
 unsigned char g_hidData[HID_MAX_DATA_BYTES] = {0};

@@ -28,7 +28,7 @@
 #if( 0 < HID_CONTROLS )
 #include "hid.h"
 #include "xua_hid.h"
-#include "xua_hid_report_descriptor.h"
+#include "xua_hid_report.h"
 #endif
 
 #if DSD_CHANS_DAC > 0

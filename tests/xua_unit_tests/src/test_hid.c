@@ -4,7 +4,7 @@
 #include <stdio.h>
 
 #include "xua_unit_tests.h"
-#include "xua_hid_report_descriptor.h"
+#include "xua_hid_report.h"
 #include "hid_report_descriptor.h"
 
 #define HID_REPORT_ITEM_TYPE_GLOBAL     ( 0x01 )
