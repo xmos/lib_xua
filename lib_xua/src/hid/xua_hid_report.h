@@ -351,6 +351,13 @@ unsigned hidIsIdleActive( const unsigned id );
 void hidPrepareReportDescriptor( void );
 
 /**
+ * @brief Initialise the USB HID Report functionality
+ *
+ * Call this function before using any other functions in this API.
+ */
+void hidReportInit( void );
+
+/**
  * @brief Reset the USB HID Report descriptor
  *
  * After reset, \c hidGetReportDescriptor() returns NULL until a subsequent call to

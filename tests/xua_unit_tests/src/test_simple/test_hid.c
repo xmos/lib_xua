@@ -4,7 +4,7 @@
 #include <stdio.h>
 
 #include "xua_unit_tests.h"
-#include "xua_hid_report_descriptor.h"
+#include "xua_hid_report.h"
 
 // Test constants related to the report descriptor defined in hid_report_descriptor.h
 #define MAX_VALID_BIT   ( 7 )
@@ -59,6 +59,7 @@ void test_unprepared_hidGetReportDescriptor( void )
 void test_prepared_hidGetReportDescriptor( void )
 {
     const unsigned reportId = 0;
+    hidReportInit();
     hidPrepareReportDescriptor();
     unsigned char* reportDescPtr = hidGetReportDescriptor();
     TEST_ASSERT_NOT_NULL( reportDescPtr );
@@ -69,6 +70,7 @@ void test_prepared_hidGetReportDescriptor( void )
 
 void test_reset_unprepared_hidGetReportDescriptor( void )
 {
+    hidReportInit();
     hidPrepareReportDescriptor();
     hidResetReportDescriptor();
     unsigned char* reportDescPtr = hidGetReportDescriptor();
@@ -77,6 +79,7 @@ void test_reset_unprepared_hidGetReportDescriptor( void )
 
 void test_reset_prepared_hidGetReportDescriptor( void )
 {
+    hidReportInit();
     hidPrepareReportDescriptor();
     hidResetReportDescriptor();
     hidPrepareReportDescriptor();
@@ -450,6 +453,7 @@ void test_initial_modification_with_subsequent_preparation( void )
     const unsigned char header = construct_usage_header( sizeof data / sizeof( unsigned char ));
     const unsigned char page = CONSUMER_CONTROL_PAGE;
 
+    hidReportInit();
     unsigned retVal = hidSetReportItem( reportId, byte, bit, page, header, data );
     TEST_ASSERT_EQUAL_UINT( HID_STATUS_GOOD, retVal );
 
@@ -532,6 +536,7 @@ void test_initial_modification_with_subsequent_verification_2( void )
 
 void test_modification_without_subsequent_preparation( void )
 {
+    hidReportInit();
     hidPrepareReportDescriptor();
     unsigned char* reportDescPtr = hidGetReportDescriptor();
     TEST_ASSERT_NOT_NULL( reportDescPtr );
@@ -553,6 +558,7 @@ void test_modification_without_subsequent_preparation( void )
 
 void test_modification_with_subsequent_preparation( void )
 {
+    hidReportInit();
     hidPrepareReportDescriptor();
     unsigned char* reportDescPtr = hidGetReportDescriptor();
     TEST_ASSERT_NOT_NULL( reportDescPtr );

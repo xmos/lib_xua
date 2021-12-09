@@ -7,7 +7,7 @@
 #include "xud.h"
 #include "xud_std_requests.h"
 #include "xua_hid.h"
-#include "xua_hid_report_descriptor.h"
+#include "xua_hid_report.h"
 
 #if( 0 < HID_CONTROLS )
 static unsigned     HidCalcNewReportTime( const unsigned currentPeriod, const unsigned reportTime, const unsigned reportToSetIdleInterval, const unsigned newPeriod );

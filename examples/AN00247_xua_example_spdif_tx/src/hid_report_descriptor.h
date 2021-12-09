@@ -3,7 +3,7 @@
 #ifndef __hid_report_descriptor_h__
 #define __hid_report_descriptor_h__
 
-#include "xua_hid_report_descriptor.h"
+#include "xua_hid_report.h"
 
 #if 0
 /* Existing static report descriptor kept for reference */
