@@ -24,6 +24,7 @@
 
 #define HID_REPORT_LENGTH  ( 3 )
 #define HID_REPORT_COUNT ( 3 )
+#define HID_REPORTID_LIMIT ( 4 )
 
 // Constants from USB HID Usage Tables
 #define KEYBOARD_PAGE           ( 0x07 )
@@ -111,6 +112,12 @@ void test_reset_prepared_hidGetReportDescriptor( void )
     hidPrepareReportDescriptor();
     unsigned char* reportDescPtr = hidGetReportDescriptor();
     TEST_ASSERT_NOT_NULL( reportDescPtr );
+}
+
+void test_report_id_limit( void )
+{
+    unsigned reportIdLimit = hidGetReportIdLimit();
+    TEST_ASSERT_EQUAL_UINT( HID_REPORTID_LIMIT, reportIdLimit );
 }
 
 // Basic item tests

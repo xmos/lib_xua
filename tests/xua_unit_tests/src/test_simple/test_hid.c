@@ -13,17 +13,19 @@
 #define MIN_VALID_BIT   ( 0 )
 #define MIN_VALID_BYTE  ( 0 )
 
-#define HID_REPORT_LENGTH   ( 2 )
-#define HID_REPORT_COUNT ( 1 )
+#define HID_REPORT_LENGTH  ( 2 )
+#define HID_REPORT_COUNT   ( 1 )
+#define HID_REPORTID_LIMIT ( 1 )
 
 // Constants from the USB HID Usage Tables
 #define CONSUMER_CONTROL_PAGE   ( 0x0C )
 #define LOUDNESS_CONTROL        ( 0xE7 )
 #define AL_CONTROL_PANEL        ( 0x019F )
 
+// Constants from the USB Device Class Definition for HID
+#define HID_REPORT_ITEM_TYPE_MAIN       ( 0x00 )
 #define HID_REPORT_ITEM_TYPE_GLOBAL     ( 0x01 )
 #define HID_REPORT_ITEM_TYPE_LOCAL      ( 0x02 )
-#define HID_REPORT_ITEM_TYPE_MAIN       ( 0x00 )
 #define HID_REPORT_ITEM_TYPE_RESERVED   ( 0x03 )
 
 static unsigned construct_usage_header( unsigned size )
@@ -80,6 +82,12 @@ void test_reset_prepared_hidGetReportDescriptor( void )
     hidPrepareReportDescriptor();
     unsigned char* reportDescPtr = hidGetReportDescriptor();
     TEST_ASSERT_NOT_NULL( reportDescPtr );
+}
+
+void test_report_id_limit( void )
+{
+    unsigned reportIdLimit = hidGetReportIdLimit();
+    TEST_ASSERT_EQUAL_UINT( HID_REPORTID_LIMIT, reportIdLimit );
 }
 
 // Basic item tests
