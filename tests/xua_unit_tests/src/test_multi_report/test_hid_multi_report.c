@@ -5,13 +5,27 @@
 
 #include "xua_unit_tests.h"
 #include "xua_hid_report_descriptor.h"
-#include "hid_report_descriptor.h"
 
-#define HID_REPORT_ITEM_TYPE_GLOBAL     ( 0x01 )
-#define HID_REPORT_ITEM_TYPE_LOCAL      ( 0x02 )
-#define HID_REPORT_ITEM_TYPE_MAIN       ( 0x00 )
-#define HID_REPORT_ITEM_TYPE_RESERVED   ( 0x03 )
+// Test constants related to the report descriptor defined in hid_report_descriptor.h
+#define REPORT1_MAX_VALID_BIT   ( 3 )
+#define REPORT1_MAX_VALID_BYTE  ( 0 )
+#define REPORT1_MIN_VALID_BIT   ( 0 )
+#define REPORT1_MIN_VALID_BYTE  ( 0 )
 
+#define REPORT2_MAX_VALID_BIT   ( 7 )
+#define REPORT2_MAX_VALID_BYTE  ( 1 )
+#define REPORT2_MIN_VALID_BIT   ( 0 )
+#define REPORT2_MIN_VALID_BYTE  ( 0 )
+
+#define REPORT3_MAX_VALID_BIT   ( 1 )
+#define REPORT3_MAX_VALID_BYTE  ( 0 )
+#define REPORT3_MIN_VALID_BIT   ( 0 )
+#define REPORT3_MIN_VALID_BYTE  ( 0 )
+
+#define HID_REPORT_LENGTH  ( 3 )
+#define HID_REPORT_COUNT ( 3 )
+
+// Constants from USB HID Usage Tables
 #define KEYBOARD_PAGE           ( 0x07 )
 #define CONSUMER_PAGE           ( 0x0C )
 #define TELEPHONY_DEVICE_PAGE   ( 0x0B )

@@ -6,21 +6,6 @@
 
 #include "xua_hid_report_descriptor.h"
 
-#define REPORT1_MAX_VALID_BIT   ( 3 )
-#define REPORT1_MAX_VALID_BYTE  ( 0 )
-#define REPORT1_MIN_VALID_BIT   ( 0 )
-#define REPORT1_MIN_VALID_BYTE  ( 0 )
-
-#define REPORT2_MAX_VALID_BIT   ( 7 )
-#define REPORT2_MAX_VALID_BYTE  ( 1 )
-#define REPORT2_MIN_VALID_BIT   ( 0 )
-#define REPORT2_MIN_VALID_BYTE  ( 0 )
-
-#define REPORT3_MAX_VALID_BIT   ( 1 )
-#define REPORT3_MAX_VALID_BYTE  ( 0 )
-#define REPORT3_MIN_VALID_BIT   ( 0 )
-#define REPORT3_MIN_VALID_BYTE  ( 0 )
-
 #define USB_HID_REPORT_ID_KEYBOARD  ( 0x01 )
 #define USB_HID_REPORT_ID_CONSUMER  ( 0x02 )
 #define USB_HID_REPORT_ID_TELEPHONY ( 0x03 )
@@ -155,7 +140,7 @@ static USB_HID_Report_Element_t* const hidConfigurableElements[] = {
 };
 
 /*
- * List HID Reports, one per Report ID. This should be a usage page item with the relevant 
+ * List HID Reports, one per Report ID. This should be a usage page item with the locator filled out with ID and size
  * If not using report IDs - still have one with report ID 0
  */
 static const USB_HID_Report_Element_t* const hidReports[] = {
@@ -234,12 +219,6 @@ static const USB_HID_Short_Item_t* const hidReportDescriptorItems[] = {
         &hidCollectionEnd,
     &hidCollectionEnd
 };
-
-/*
- * Define the length of the HID Report.
- * This value must match the number of Report bytes defined by hidReportDescriptorItems.
- */
-#define HID_REPORT_LENGTH   ( 3 )
 
 /*
  * Define the number of HID Reports

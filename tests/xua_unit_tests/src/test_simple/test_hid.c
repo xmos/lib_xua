@@ -5,16 +5,26 @@
 
 #include "xua_unit_tests.h"
 #include "xua_hid_report_descriptor.h"
-#include "hid_report_descriptor.h"
+
+// Test constants related to the report descriptor defined in hid_report_descriptor.h
+#define MAX_VALID_BIT   ( 7 )
+#define MAX_VALID_BYTE  ( 1 )
+
+#define MIN_VALID_BIT   ( 0 )
+#define MIN_VALID_BYTE  ( 0 )
+
+#define HID_REPORT_LENGTH   ( 2 )
+#define HID_REPORT_COUNT ( 1 )
+
+// Constants from the USB HID Usage Tables
+#define CONSUMER_CONTROL_PAGE   ( 0x0C )
+#define LOUDNESS_CONTROL        ( 0xE7 )
+#define AL_CONTROL_PANEL        ( 0x019F )
 
 #define HID_REPORT_ITEM_TYPE_GLOBAL     ( 0x01 )
 #define HID_REPORT_ITEM_TYPE_LOCAL      ( 0x02 )
 #define HID_REPORT_ITEM_TYPE_MAIN       ( 0x00 )
 #define HID_REPORT_ITEM_TYPE_RESERVED   ( 0x03 )
-
-#define CONSUMER_CONTROL_PAGE   ( 0x0C )
-#define LOUDNESS_CONTROL        ( 0xE7 )
-#define AL_CONTROL_PANEL        ( 0x019F )
 
 static unsigned construct_usage_header( unsigned size )
 {

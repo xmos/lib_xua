@@ -6,12 +6,6 @@
 
 #include "xua_hid_report_descriptor.h"
 
-#define MAX_VALID_BIT   ( 7 )
-#define MAX_VALID_BYTE  ( 1 )
-
-#define MIN_VALID_BIT   ( 0 )
-#define MIN_VALID_BYTE  ( 0 )
-
 #define USB_HID_USAGE_PAGE_ID_CONSUMER  ( 0x0C )
 
 /*
@@ -111,12 +105,6 @@ static const USB_HID_Short_Item_t* const hidReportDescriptorItems[] = {
         &hidCollectionEnd,
     &hidCollectionEnd
 };
-
-/*
- * Define the length of the HID Report.
- * This value must match the number of Report bytes defined by hidReportDescriptorItems.
- */
-#define HID_REPORT_LENGTH   ( 2 )
 
 /*
  * Define the number of HID Reports
