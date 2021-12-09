@@ -525,6 +525,7 @@ void XUA_Endpoint0_init(chanend c_ep0_out, chanend c_ep0_in, NULLABLE_RESOURCE(c
 #endif
 
 #if( 0 < HID_CONTROLS )
+    hidReportInit();
     hidPrepareReportDescriptor();
 
     size_t hidReportDescriptorLength = hidGetReportDescriptorLength();

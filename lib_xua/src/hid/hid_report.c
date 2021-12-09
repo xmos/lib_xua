@@ -16,15 +16,15 @@
 /*
  * Each element in s_hidChangePending corresponds to an element in hidReports.
  */
-static unsigned s_hidChangePending[ HID_REPORT_COUNT ] = { 0U };
+static unsigned s_hidChangePending[ HID_REPORT_COUNT ];
 static unsigned char s_hidReportDescriptor[ HID_REPORT_DESCRIPTOR_MAX_LENGTH ];
-static size_t s_hidReportDescriptorLength = 0U;
-static unsigned s_hidReportDescriptorPrepared = 0U;
+static size_t s_hidReportDescriptorLength;
+static unsigned s_hidReportDescriptorPrepared;
 
-static unsigned s_hidCurrentPeriod[ HID_REPORT_COUNT ] = { ENDPOINT_INT_INTERVAL_IN_HID * MS_IN_TICKS };
-static unsigned s_hidIdleActive[ HID_REPORT_COUNT ] = { 0U };
-static unsigned s_hidNextReportTime[ HID_REPORT_COUNT ] = { 0U };
-static unsigned s_hidReportTime[ HID_REPORT_COUNT ] = { 0U };
+static unsigned s_hidCurrentPeriod[ HID_REPORT_COUNT ];
+static unsigned s_hidIdleActive[ HID_REPORT_COUNT ];
+static unsigned s_hidNextReportTime[ HID_REPORT_COUNT ];
+static unsigned s_hidReportTime[ HID_REPORT_COUNT ];
 
 /**
  * @brief Get the bit position from the location of a report element
@@ -359,6 +359,13 @@ void hidPrepareReportDescriptor( void )
         }
 
         s_hidReportDescriptorPrepared = 1U;
+    }
+}
+
+void hidReportInit( void )
+{
+    for( unsigned idx = 0U; idx < HID_REPORT_COUNT; ++idx ) {
+        s_hidCurrentPeriod[ idx ] = ENDPOINT_INT_INTERVAL_IN_HID * MS_IN_TICKS;
     }
 }
 
