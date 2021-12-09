@@ -4,7 +4,7 @@
 #ifndef __hid_report_descriptor_h__
 #define __hid_report_descriptor_h__
 
-#include "xua_hid_report_descriptor.h"
+#include "xua_hid_report.h"
 
 #define USB_HID_REPORT_ID_KEYBOARD  ( 0x01 )
 #define USB_HID_REPORT_ID_CONSUMER  ( 0x02 )

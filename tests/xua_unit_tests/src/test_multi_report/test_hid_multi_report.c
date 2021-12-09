@@ -4,7 +4,7 @@
 #include <stdio.h>
 
 #include "xua_unit_tests.h"
-#include "xua_hid_report_descriptor.h"
+#include "xua_hid_report.h"
 
 // Test constants related to the report descriptor defined in hid_report_descriptor.h
 #define REPORT1_MAX_VALID_BIT   ( 3 )
@@ -49,6 +49,7 @@ static unsigned construct_usage_header( unsigned size )
 
 void setUp( void )
 {
+    hidReportInit();
     hidResetReportDescriptor();
 }
 
