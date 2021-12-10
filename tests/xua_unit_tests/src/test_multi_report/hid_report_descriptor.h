@@ -14,104 +14,151 @@
  * Define non-configurable items in the HID Report descriptor.
  * (These are short items as the location field isn't relevant for them)
  */
-static const USB_HID_Short_Item_t hidCollectionApplication  = { .header = 0xA1, .data = { 0x01, 0x00 }};
-static const USB_HID_Short_Item_t hidCollectionEnd          = { .header = 0xC0, .data = { 0x00, 0x00 }};
-static const USB_HID_Short_Item_t hidCollectionLogical      = { .header = 0xA1, .data = { 0x02, 0x00 }};
+static const USB_HID_Short_Item_t hidCollectionApplication  = {
+    .header = HID_REPORT_SET_HEADER(1, HID_REPORT_ITEM_TYPE_MAIN, HID_REPORT_ITEM_TAG_COLLECTION),
+    .data = { 0x01, 0x00 } };
+static const USB_HID_Short_Item_t hidCollectionEnd          = {
+    .header = HID_REPORT_SET_HEADER(0, HID_REPORT_ITEM_TYPE_MAIN, HID_REPORT_ITEM_TAG_END_COLLECTION),
+    .data = { 0x00, 0x00 } };
+static const USB_HID_Short_Item_t hidCollectionLogical      = {
+    .header = HID_REPORT_SET_HEADER(1, HID_REPORT_ITEM_TYPE_MAIN, HID_REPORT_ITEM_TAG_COLLECTION),
+    .data = { 0x02, 0x00 } };
 
-static const USB_HID_Short_Item_t hidInputConstArray        = { .header = 0x81, .data = { 0x01, 0x00 }};
-static const USB_HID_Short_Item_t hidInputDataVar           = { .header = 0x81, .data = { 0x02, 0x00 }};
+static const USB_HID_Short_Item_t hidInputConstArray        = {
+    .header = HID_REPORT_SET_HEADER(1, HID_REPORT_ITEM_TYPE_MAIN, HID_REPORT_ITEM_TAG_INPUT),
+    .data = { 0x01, 0x00 } };
+static const USB_HID_Short_Item_t hidInputDataVar           = {
+    .header = HID_REPORT_SET_HEADER(1, HID_REPORT_ITEM_TYPE_MAIN, HID_REPORT_ITEM_TAG_INPUT),
+    .data = { 0x02, 0x00 } };
 
-static const USB_HID_Short_Item_t hidLogicalMaximum0        = { .header = 0x25, .data = { 0x00, 0x00 }};
-static const USB_HID_Short_Item_t hidLogicalMaximum1        = { .header = 0x25, .data = { 0x01, 0x00 }};
-static const USB_HID_Short_Item_t hidLogicalMinimum0        = { .header = 0x15, .data = { 0x00, 0x00 }};
+static const USB_HID_Short_Item_t hidLogicalMaximum0        = {
+    .header = HID_REPORT_SET_HEADER(1, HID_REPORT_ITEM_TYPE_GLOBAL, HID_REPORT_ITEM_TAG_LOGICAL_MAXIMUM),
+    .data = { 0x00, 0x00 } };
+static const USB_HID_Short_Item_t hidLogicalMaximum1        = {
+    .header = HID_REPORT_SET_HEADER(1, HID_REPORT_ITEM_TYPE_GLOBAL, HID_REPORT_ITEM_TAG_LOGICAL_MAXIMUM),
+    .data = { 0x01, 0x00 } };
+static const USB_HID_Short_Item_t hidLogicalMinimum0        = {
+    .header = HID_REPORT_SET_HEADER(1, HID_REPORT_ITEM_TYPE_GLOBAL, HID_REPORT_ITEM_TAG_LOGICAL_MINIMUM),
+    .data = { 0x00, 0x00 } };
 
-static const USB_HID_Short_Item_t hidReportCount1           = { .header = 0x95, .data = { 0x01, 0x00 }};
-static const USB_HID_Short_Item_t hidReportCount4           = { .header = 0x95, .data = { 0x04, 0x00 }};
-static const USB_HID_Short_Item_t hidReportCount6           = { .header = 0x95, .data = { 0x06, 0x00 }};
-static const USB_HID_Short_Item_t hidReportSize1            = { .header = 0x75, .data = { 0x01, 0x00 }};
+static const USB_HID_Short_Item_t hidReportCount1           = {
+    .header = HID_REPORT_SET_HEADER(1, HID_REPORT_ITEM_TYPE_GLOBAL, HID_REPORT_ITEM_TAG_REPORT_COUNT),
+    .data = { 0x01, 0x00 } };
+static const USB_HID_Short_Item_t hidReportCount4           = {
+    .header = HID_REPORT_SET_HEADER(1, HID_REPORT_ITEM_TYPE_GLOBAL, HID_REPORT_ITEM_TAG_REPORT_COUNT),
+    .data = { 0x04, 0x00 } };
+static const USB_HID_Short_Item_t hidReportCount6           = {
+    .header = HID_REPORT_SET_HEADER(1, HID_REPORT_ITEM_TYPE_GLOBAL, HID_REPORT_ITEM_TAG_REPORT_COUNT),
+    .data = { 0x06, 0x00 } };
+static const USB_HID_Short_Item_t hidReportSize1            = {
+    .header = HID_REPORT_SET_HEADER(1, HID_REPORT_ITEM_TYPE_GLOBAL, HID_REPORT_ITEM_TAG_REPORT_SIZE),
+    .data = { 0x01, 0x00 } };
 
-static const USB_HID_Short_Item_t hidUsageConsumerControl   = { .header = 0x09, .data = { 0x01, 0x00 }};
+static const USB_HID_Short_Item_t hidUsageConsumerControl   = {
+    .header = HID_REPORT_SET_HEADER(1, HID_REPORT_ITEM_TYPE_LOCAL, HID_REPORT_ITEM_TAG_USAGE),
+    .data = { 0x01, 0x00 } };
 
 /*
  * Define the HID Report Descriptor Item, Usage Page, Report ID and length for each HID Report
  * For internal purposes, a report element with ID of 0 must be included if report IDs are not being used.
  */
-static const USB_HID_Short_Item_t hidReportId1  = { .header = 0x85, .data = { USB_HID_REPORT_ID_KEYBOARD,  0x00 }};
-static const USB_HID_Short_Item_t hidReportId2  = { .header = 0x85, .data = { USB_HID_REPORT_ID_CONSUMER,  0x00 }};
-static const USB_HID_Short_Item_t hidReportId3  = { .header = 0x85, .data = { USB_HID_REPORT_ID_TELEPHONY, 0x00 }};
+static const USB_HID_Short_Item_t hidReportId1  = {
+    .header = HID_REPORT_SET_HEADER(1, HID_REPORT_ITEM_TYPE_GLOBAL, HID_REPORT_ITEM_TAG_REPORT_ID),
+    .data = { USB_HID_REPORT_ID_KEYBOARD,  0x00 } };
+static const USB_HID_Short_Item_t hidReportId2  = {
+    .header = HID_REPORT_SET_HEADER(1, HID_REPORT_ITEM_TYPE_GLOBAL, HID_REPORT_ITEM_TAG_REPORT_ID),
+    .data = { USB_HID_REPORT_ID_CONSUMER,  0x00 } };
+static const USB_HID_Short_Item_t hidReportId3  = {
+    .header = HID_REPORT_SET_HEADER(1, HID_REPORT_ITEM_TYPE_GLOBAL, HID_REPORT_ITEM_TAG_REPORT_ID),
+    .data = { USB_HID_REPORT_ID_TELEPHONY, 0x00 } };
 
 static const USB_HID_Report_Element_t hidReportKeyboard     = {
-    .item = { .header = 0x05, .data = { USB_HID_USAGE_PAGE_ID_KEYBOARD,  0x00 }},
+    .item.header = HID_REPORT_SET_HEADER(1, HID_REPORT_ITEM_TYPE_GLOBAL, HID_REPORT_ITEM_TAG_USAGE_PAGE),
+    .item.data = { USB_HID_USAGE_PAGE_ID_KEYBOARD,  0x00 },
     .location = HID_REPORT_SET_LOC( USB_HID_REPORT_ID_KEYBOARD, 1, 0, 0 )
 };
 
 static const USB_HID_Report_Element_t hidReportConsumer     = {
-    .item = { .header = 0x05, .data = { USB_HID_USAGE_PAGE_ID_CONSUMER, 0x00 }},
+    .item.header = HID_REPORT_SET_HEADER(1, HID_REPORT_ITEM_TYPE_GLOBAL, HID_REPORT_ITEM_TAG_USAGE_PAGE),
+    .item.data = { USB_HID_USAGE_PAGE_ID_CONSUMER, 0x00 },
     .location = HID_REPORT_SET_LOC( USB_HID_REPORT_ID_CONSUMER, 2, 0, 0 )
 };
 
 static const USB_HID_Report_Element_t hidReportTelephony    = {
-    .item = { .header = 0x05, .data = { USB_HID_USAGE_PAGE_ID_TELEPHONY_DEVICE, 0x00 }},
+    .item.header = HID_REPORT_SET_HEADER(1, HID_REPORT_ITEM_TYPE_GLOBAL, HID_REPORT_ITEM_TAG_USAGE_PAGE),
+    .item.data = { USB_HID_USAGE_PAGE_ID_TELEPHONY_DEVICE, 0x00 },
     .location = HID_REPORT_SET_LOC( USB_HID_REPORT_ID_TELEPHONY, 1, 0, 0 )
 };
 
 static USB_HID_Report_Element_t hidUsageReport1Byte0Bit0    = {
-    .item = { .header = 0x09, .data = { 0x17, 0x00 }},
+    .item.header = HID_REPORT_SET_HEADER(1, HID_REPORT_ITEM_TYPE_LOCAL, HID_REPORT_ITEM_TAG_USAGE),
+    .item.data = { 0x17, 0x00 },
     .location = HID_REPORT_SET_LOC( USB_HID_REPORT_ID_KEYBOARD, 0, 0, 0 )
 }; // 't'
 
 static USB_HID_Report_Element_t hidUsageReport1Byte0Bit2    = {
-    .item = { .header = 0x09, .data = { 0x72, 0x00 }},
+    .item.header = HID_REPORT_SET_HEADER(1, HID_REPORT_ITEM_TYPE_LOCAL, HID_REPORT_ITEM_TAG_USAGE),
+    .item.data = { 0x72, 0x00 },
     .location = HID_REPORT_SET_LOC( USB_HID_REPORT_ID_KEYBOARD, 0, 0, 2 )
 }; // F23
 
 static USB_HID_Report_Element_t hidUsageReport1Byte0Bit3    = {
-    .item = { .header = 0x09, .data = { 0x73, 0x00 }},
+    .item.header = HID_REPORT_SET_HEADER(1, HID_REPORT_ITEM_TYPE_LOCAL, HID_REPORT_ITEM_TAG_USAGE),
+    .item.data = { 0x73, 0x00 },
     .location = HID_REPORT_SET_LOC( USB_HID_REPORT_ID_KEYBOARD, 0, 0, 3 )
 }; // F24
 
 static USB_HID_Report_Element_t hidUsageReport2Byte0Bit0    = {
-    .item = { .header = 0x0A, .data = { 0x26, 0x02 }},
+    .item.header = HID_REPORT_SET_HEADER(2, HID_REPORT_ITEM_TYPE_LOCAL, HID_REPORT_ITEM_TAG_USAGE),
+    .item.data = { 0x26, 0x02 },
     .location = HID_REPORT_SET_LOC( USB_HID_REPORT_ID_CONSUMER, 0, 0, 0 )
 }; // AC Stop
 
 static USB_HID_Report_Element_t hidUsageReport2Byte0Bit1    = {
-    .item = { .header = 0x0A, .data = { 0x21, 0x02 }},
+    .item.header = HID_REPORT_SET_HEADER(2, HID_REPORT_ITEM_TYPE_LOCAL, HID_REPORT_ITEM_TAG_USAGE),
+    .item.data = { 0x21, 0x02 },
     .location = HID_REPORT_SET_LOC( USB_HID_REPORT_ID_CONSUMER, 0, 0, 1 )
 }; // AC Search
 
 static USB_HID_Report_Element_t hidUsageReport2Byte0Bit2    = {
-    .item = { .header = 0x09, .data = { 0xE2, 0x00 }},
+    .item.header = HID_REPORT_SET_HEADER(1, HID_REPORT_ITEM_TYPE_LOCAL, HID_REPORT_ITEM_TAG_USAGE),
+    .item.data = { 0xE2, 0x00 },
     .location = HID_REPORT_SET_LOC( USB_HID_REPORT_ID_CONSUMER, 0, 0, 2 )
 }; // Mute
 
 static USB_HID_Report_Element_t hidUsageReport2Byte0Bit4    = {
-    .item = { .header = 0x09, .data = { 0xCF, 0x00 }},
+    .item.header = HID_REPORT_SET_HEADER(1, HID_REPORT_ITEM_TYPE_LOCAL, HID_REPORT_ITEM_TAG_USAGE),
+    .item.data = { 0xCF, 0x00 },
     .location = HID_REPORT_SET_LOC( USB_HID_REPORT_ID_CONSUMER, 0, 0, 4 )
 }; // Voice Command
 
 static USB_HID_Report_Element_t hidUsageReport2Byte0Bit6    = {
-    .item = { .header = 0x09, .data = { 0xE9, 0x00 }},
+    .item.header = HID_REPORT_SET_HEADER(1, HID_REPORT_ITEM_TYPE_LOCAL, HID_REPORT_ITEM_TAG_USAGE),
+    .item.data = { 0xE9, 0x00 },
     .location = HID_REPORT_SET_LOC( USB_HID_REPORT_ID_CONSUMER, 0, 0, 6 )
 }; // Vol+
 
 static USB_HID_Report_Element_t hidUsageReport2Byte0Bit7    = {
-    .item = { .header = 0x09, .data = { 0xEA, 0x00 }},
+    .item.header = HID_REPORT_SET_HEADER(1, HID_REPORT_ITEM_TYPE_LOCAL, HID_REPORT_ITEM_TAG_USAGE),
+    .item.data = { 0xEA, 0x00 },
     .location = HID_REPORT_SET_LOC( USB_HID_REPORT_ID_CONSUMER, 0, 0, 7 )
 }; // Vol-
 
 static USB_HID_Report_Element_t hidUsageReport2Byte1Bit7    = {
-    .item = { .header = 0x09, .data = { 0xE5, 0x00 }},
+    .item.header = HID_REPORT_SET_HEADER(1, HID_REPORT_ITEM_TYPE_LOCAL, HID_REPORT_ITEM_TAG_USAGE),
+    .item.data = { 0xE5, 0x00 },
     .location = HID_REPORT_SET_LOC( USB_HID_REPORT_ID_CONSUMER, 0, 1, 7 )
 }; // Bass boost
 
 static USB_HID_Report_Element_t hidUsageReport3Byte0Bit0    = {
-    .item = { .header = 0x09, .data = { 0x20, 0x00 }},
+    .item.header = HID_REPORT_SET_HEADER(1, HID_REPORT_ITEM_TYPE_LOCAL, HID_REPORT_ITEM_TAG_USAGE),
+    .item.data = { 0x20, 0x00 },
     .location = HID_REPORT_SET_LOC( USB_HID_REPORT_ID_TELEPHONY, 0, 0, 0 )
 }; // Hook Switch
 
 static USB_HID_Report_Element_t hidUsageReport3Byte0Bit1    = {
-    .item = { .header = 0x09, .data = { 0x2F, 0x00 }},
+    .item.header = HID_REPORT_SET_HEADER(1, HID_REPORT_ITEM_TYPE_LOCAL, HID_REPORT_ITEM_TAG_USAGE),
+    .item.data = { 0x2F, 0x00 },
     .location = HID_REPORT_SET_LOC( USB_HID_REPORT_ID_TELEPHONY, 0, 0, 1 )
 }; // Phone Mute
 

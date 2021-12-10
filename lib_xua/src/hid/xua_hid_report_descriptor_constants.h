@@ -57,7 +57,7 @@
 #define HID_REPORT_ITEM_TAG_DELIMITER          ( 0x0A )
 
 // Constants from HID Usage Tables
-// Usage page IDs
+// Usage page IDs (incomplete)
 #define USB_HID_USAGE_PAGE_ID_KEYBOARD         ( 0x07 )
 #define USB_HID_USAGE_PAGE_ID_TELEPHONY_DEVICE ( 0x0B )
 #define USB_HID_USAGE_PAGE_ID_CONSUMER         ( 0x0C )
