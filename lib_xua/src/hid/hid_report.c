@@ -494,3 +494,165 @@ static size_t hidTranslateItem( const USB_HID_Short_Item_t* inPtr, unsigned char
 
     return count;
 }
+
+struct HID_validation_info {
+    int collectionOpenedCount;
+    int reportCount;
+
+    int currentReportIdx;
+    int currentConfigurableElementIdx;
+
+    unsigned char reportIds[HID_REPORT_COUNT];
+    unsigned char reportUsagePage[HID_REPORT_COUNT];
+
+    unsigned current_bit_size;
+    unsigned current_bit_count;
+    unsigned current_bit_offset;
+};
+
+static unsigned hidValidateInfoStructReportIDs( struct HID_validation_info *info ) {
+    if ( info->reportCount != HID_REPORT_COUNT) {
+        if ( !( info->reportCount == 0 && HID_REPORT_COUNT == 1 ) ) {
+            // (Only if report IDs are being used)
+            printf("Error: The number of actual reports does not match HID_REPORT_COUNT.\n");
+            return HID_STATUS_BAD_REPORT_DESCRIPTOR;
+        }
+    }
+    for ( size_t idx1 = 0; idx1 < HID_REPORT_COUNT; ++idx1 ) {
+        for ( size_t idx2 = idx1 + 1; idx2 < HID_REPORT_COUNT; ++idx2 ) {
+            if ( info->reportIds[idx1] == info->reportIds[idx2] ) {
+                printf("Error: Duplicate report ID 0x%02x.\n", info->reportIds[idx1]);
+                return HID_STATUS_BAD_REPORT_DESCRIPTOR;
+            }
+        }
+    }
+    for ( size_t idx = 0; idx < HID_REPORT_COUNT; ++idx ) {
+        if ( info->reportIds[idx] != hidGetElementReportId( hidReports[idx]->location ) ) {
+            printf("Error: Report ID in descriptor does not match report ID in hidReports.\n");
+            return HID_STATUS_BAD_REPORT_DESCRIPTOR;
+        }
+        if ( info->reportCount && info->reportIds[idx] == 0 ) {
+            printf("Error: Report ID 0 is invalid.\n");
+            return HID_STATUS_BAD_REPORT_DESCRIPTOR;
+        }
+    }
+    return HID_STATUS_GOOD;
+}
+
+static unsigned hidValidateInfoStructReportLength( struct HID_validation_info *info ) {
+    if ( info->current_bit_offset % 8 ) {
+        printf("Error: HID Report not byte aligned (%d bits).\n", info->current_bit_offset);
+        return HID_STATUS_BAD_REPORT_DESCRIPTOR;
+    }
+    if ( ( info->current_bit_offset / 8 ) != hidGetElementReportLength( hidReports[info->currentReportIdx]->location ) ) {
+        printf("Error: Actual report length does not match value in location field %d != %d.\n",
+            ( info->current_bit_offset / 8 ),
+            hidGetElementReportLength( hidReports[info->currentReportIdx]->location ));
+        return HID_STATUS_BAD_REPORT_DESCRIPTOR;
+    }
+    return HID_STATUS_GOOD;
+}
+
+static unsigned hidValidateInfoStructCollections( struct HID_validation_info *info ) {
+    if ( info->collectionOpenedCount ) {
+        printf("Error: Collections not equally opened and closed.\n");
+        return HID_STATUS_BAD_REPORT_DESCRIPTOR;
+    }
+    return HID_STATUS_GOOD;
+}
+
+static unsigned hidValidateInfoStruct( struct HID_validation_info *info ) {
+    unsigned status = hidValidateInfoStructCollections( info );
+    if( status == HID_STATUS_GOOD ) {
+        status = hidValidateInfoStructReportIDs( info );
+    }
+    if( status == HID_STATUS_GOOD ) {
+        status = hidValidateInfoStructReportLength( info );
+    }
+    return status;
+}
+
+
+unsigned hidReportValidate( void )
+{
+    struct HID_validation_info info = {};
+    unsigned status = HID_STATUS_GOOD;
+
+    // Fill in the validation info struct
+    for ( size_t idx = 0; idx < HID_REPORT_DESCRIPTOR_ITEM_COUNT; ++idx ) {
+        const USB_HID_Short_Item_t *item = hidReportDescriptorItems[idx];
+        unsigned bTag  = hidGetItemTag ( item->header );
+        unsigned bType = hidGetItemType( item->header );
+
+        if ( bTag == HID_REPORT_ITEM_TAG_COLLECTION && bType == HID_REPORT_ITEM_TYPE_MAIN ) {
+            info.collectionOpenedCount += 1;
+        }
+        if ( bTag == HID_REPORT_ITEM_TAG_END_COLLECTION && bType == HID_REPORT_ITEM_TYPE_MAIN ) {
+            info.collectionOpenedCount -= 1;
+            if ( info.collectionOpenedCount < 0 ) {
+                break;
+            }
+        }
+        if ( bTag == HID_REPORT_ITEM_TAG_REPORT_ID && bType == HID_REPORT_ITEM_TYPE_GLOBAL ) {
+            if ( info.reportCount == 0 ) {
+                if ( info.current_bit_offset ) {
+                    printf("Error: Some elements not associated with report ID.\n");
+                    return HID_STATUS_BAD_REPORT_DESCRIPTOR;
+                }
+                info.reportUsagePage[0] = 0;
+            } else {
+                status = hidValidateInfoStructReportLength( &info );
+                if(status) {
+                    return status;
+                }
+            }
+
+            info.reportIds[info.reportCount] = item->data[0];
+            info.currentReportIdx = info.reportCount;
+            info.reportCount += 1;
+            info.current_bit_offset = 0;
+            if ( info.reportCount > HID_REPORT_COUNT ) {
+                break;
+            }
+        }
+        if ( bTag == HID_REPORT_ITEM_TAG_USAGE_PAGE && bType == HID_REPORT_ITEM_TYPE_GLOBAL ) {
+            if ( info.reportUsagePage[info.currentReportIdx] ) {
+                printf("Error: Multiple usage pages per report ID not supported by this implementation.\n");
+                return HID_STATUS_BAD_REPORT_DESCRIPTOR;
+            }
+            info.reportUsagePage[info.currentReportIdx] = item->data[0];
+        }
+        if ( bTag == HID_REPORT_ITEM_TAG_USAGE && bType == HID_REPORT_ITEM_TYPE_LOCAL ) {
+            if ( ( info.currentConfigurableElementIdx < HID_CONFIGURABLE_ELEMENT_COUNT ) &&
+                 ( &(hidConfigurableElements[info.currentConfigurableElementIdx]->item) == item ) ) {
+                USB_HID_Report_Element_t *element = hidConfigurableElements[info.currentConfigurableElementIdx];
+                unsigned bBit = hidGetElementBitLocation( element->location );
+                unsigned bByte = hidGetElementByteLocation( element->location );
+                unsigned bReportId = hidGetElementReportId( element->location );
+
+                if ( bBit != ( info.current_bit_offset % 8 ) || bByte != ( info.current_bit_offset / 8 ) ) {
+                    printf("Error: Locator bit/byte setting incorrect for configurable element index %d.\n", info.currentConfigurableElementIdx);
+                    return HID_STATUS_BAD_REPORT_DESCRIPTOR;
+                }
+                if ( bReportId != info.reportIds[info.currentReportIdx] ) {
+                    printf("Error: Locator report ID setting incorrect for configurable element index %d.\n", info.currentConfigurableElementIdx);
+                    return HID_STATUS_BAD_REPORT_DESCRIPTOR;
+                }
+
+                info.currentConfigurableElementIdx += 1;
+            }
+        }
+        if ( bTag == HID_REPORT_ITEM_TAG_REPORT_SIZE && bType == HID_REPORT_ITEM_TYPE_GLOBAL ) {
+            info.current_bit_size = item->data[0];
+        }
+        if ( bTag == HID_REPORT_ITEM_TAG_REPORT_COUNT && bType == HID_REPORT_ITEM_TYPE_GLOBAL ) {
+            info.current_bit_count = item->data[0];
+        }
+        if ( bTag == HID_REPORT_ITEM_TAG_INPUT && bType == HID_REPORT_ITEM_TYPE_MAIN ) {
+            info.current_bit_offset += (info.current_bit_size * info.current_bit_count);
+        }
+    }
+
+    status = hidValidateInfoStruct( &info );
+    return status;
+}

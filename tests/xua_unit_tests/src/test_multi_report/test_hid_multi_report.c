@@ -66,6 +66,11 @@ void test_print_report( void )
     printf("\n");
 }
 
+void test_validate_report( void ) {
+    unsigned retVal = hidReportValidate();
+    TEST_ASSERT_EQUAL_UINT( HID_STATUS_GOOD, retVal );
+}
+
 // Basic report descriptor tests
 void test_unprepared_hidGetReportDescriptor( void )
 {

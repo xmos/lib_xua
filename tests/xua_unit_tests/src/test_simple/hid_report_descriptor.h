@@ -127,6 +127,7 @@ static const USB_HID_Short_Item_t* const hidReportDescriptorItems[] = {
             &hidLogicalMaximum0,
             &hidReportCount6,
             &hidInputConstArray,
+            &hidReportCount1,
             &hidLogicalMaximum1,
             &(hidUsageByte1Bit7.item),
             &hidInputDataVar,

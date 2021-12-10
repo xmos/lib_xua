@@ -46,12 +46,6 @@
 #define HID_REPORT_ITEM_USAGE_TAG           ( 0U )
 #define HID_REPORT_ITEM_USAGE_TYPE          ( 2U )
 
-// Constants from the USB Device Class Definition for HID
-#define HID_REPORT_ITEM_TYPE_MAIN       ( 0x00 )
-#define HID_REPORT_ITEM_TYPE_GLOBAL     ( 0x01 )
-#define HID_REPORT_ITEM_TYPE_LOCAL      ( 0x02 )
-#define HID_REPORT_ITEM_TYPE_RESERVED   ( 0x03 )
-
 /**
  * @brief Helper macro to configure the location field of USB_HID_Report_Element_t.
  * 
@@ -79,12 +73,13 @@
     (( type << HID_REPORT_ITEM_HDR_TYPE_SHIFT) & HID_REPORT_ITEM_HDR_TYPE_MASK ) |\
     (( tag  << HID_REPORT_ITEM_HDR_TAG_SHIFT ) & HID_REPORT_ITEM_HDR_TAG_MASK ) )
 
-#define HID_STATUS_GOOD         ( 0U )
-#define HID_STATUS_BAD_HEADER   ( 1U )
-#define HID_STATUS_BAD_ID       ( 2U )
-#define HID_STATUS_BAD_LOCATION ( 3U )
-#define HID_STATUS_BAD_PAGE     ( 4U )
-#define HID_STATUS_IN_USE       ( 5U )
+#define HID_STATUS_GOOD                  ( 0U )
+#define HID_STATUS_BAD_HEADER            ( 1U )
+#define HID_STATUS_BAD_ID                ( 2U )
+#define HID_STATUS_BAD_LOCATION          ( 3U )
+#define HID_STATUS_BAD_PAGE              ( 4U )
+#define HID_STATUS_IN_USE                ( 5U )
+#define HID_STATUS_BAD_REPORT_DESCRIPTOR ( 6U )
 
 #define MS_IN_TICKS 100000U
 
@@ -501,5 +496,8 @@ unsigned hidSetReportItem(
  *                      Use zero to indicate an indefinite period.
  */
 void hidSetReportPeriod( const unsigned id, const unsigned period );
+
+//TODO: DOcument
+unsigned hidReportValidate( void );
 
 #endif // _XUA_HID_REPORT_
