@@ -30,7 +30,6 @@ unsigned char hidReportDescriptor[] =
 #endif
 
 #define USB_HID_REPORT_ID_CONSUMER     ( 0x02 )
-#define USB_HID_USAGE_PAGE_ID_CONSUMER ( 0x02 )
 
 /*
  * Define non-configurable items in the HID Report descriptor.

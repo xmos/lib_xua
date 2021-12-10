@@ -13,10 +13,12 @@
  * Document section numbers refer to the HID Device Class Definition, version 1.11.
  */
 
-#ifndef _HID_REPORT_DESCRIPTOR_
-#define _HID_REPORT_DESCRIPTOR_
+#ifndef _XUA_HID_REPORT_
+#define _XUA_HID_REPORT_
 
 #include <stddef.h>
+
+#include "xua_hid_report_descriptor_constants.h"
 
 #define HID_REPORT_ITEM_HDR_SIZE_MASK       ( 0x03 )
 #define HID_REPORT_ITEM_HDR_SIZE_SHIFT      ( 0U )
@@ -44,11 +46,38 @@
 #define HID_REPORT_ITEM_USAGE_TAG           ( 0U )
 #define HID_REPORT_ITEM_USAGE_TYPE          ( 2U )
 
+// Constants from the USB Device Class Definition for HID
+#define HID_REPORT_ITEM_TYPE_MAIN       ( 0x00 )
+#define HID_REPORT_ITEM_TYPE_GLOBAL     ( 0x01 )
+#define HID_REPORT_ITEM_TYPE_LOCAL      ( 0x02 )
+#define HID_REPORT_ITEM_TYPE_RESERVED   ( 0x03 )
+
+/**
+ * @brief Helper macro to configure the location field of USB_HID_Report_Element_t.
+ * 
+ * @param id   The report ID that this element is within.
+ * @param len  (only relevant for the usage_page elements in hidReports) The length
+ *             of the report under this report ID.
+ * @param byte The byte location of this element in the report.
+ * @param bit  The bit location (within the byte) of this element in the report.
+ */
 #define HID_REPORT_SET_LOC(id, len, byte, bit) (\
     ((   id << HID_REPORT_ELEMENT_LOC_ID_SHIFT   ) & HID_REPORT_ELEMENT_LOC_ID_MASK   ) | \
     ((  len << HID_REPORT_ELEMENT_LOC_LEN_SHIFT  ) & HID_REPORT_ELEMENT_LOC_LEN_MASK  ) | \
     (( byte << HID_REPORT_ELEMENT_LOC_BYTE_SHIFT ) & HID_REPORT_ELEMENT_LOC_BYTE_MASK ) | \
     ((  bit << HID_REPORT_ELEMENT_LOC_BIT_SHIFT  ) & HID_REPORT_ELEMENT_LOC_BIT_MASK  ))
+
+/**
+ * @brief Helper macro to configure the header field of USB_HID_Short_Item_t
+ * 
+ * @param size The size of the report descriptor item (valid values: 0, 1, 2)
+ * @param type The type of the report descriptor item
+ * @param tag  The tag
+ */
+#define HID_REPORT_SET_HEADER(size, type, tag) (\
+    (( size << HID_REPORT_ITEM_HDR_SIZE_SHIFT) & HID_REPORT_ITEM_HDR_SIZE_MASK ) |\
+    (( type << HID_REPORT_ITEM_HDR_TYPE_SHIFT) & HID_REPORT_ITEM_HDR_TYPE_MASK ) |\
+    (( tag  << HID_REPORT_ITEM_HDR_TAG_SHIFT ) & HID_REPORT_ITEM_HDR_TAG_SHIFT ) )
 
 #define HID_STATUS_GOOD         ( 0U )
 #define HID_STATUS_BAD_HEADER   ( 1U )
@@ -473,4 +502,4 @@ unsigned hidSetReportItem(
  */
 void hidSetReportPeriod( const unsigned id, const unsigned period );
 
-#endif // _HID_REPORT_DESCRIPTOR_
+#endif // _XUA_HID_REPORT_

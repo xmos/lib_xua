@@ -10,10 +10,6 @@
 #define USB_HID_REPORT_ID_CONSUMER  ( 0x02 )
 #define USB_HID_REPORT_ID_TELEPHONY ( 0x03 )
 
-#define USB_HID_USAGE_PAGE_ID_CONSUMER  ( 0x0C )
-#define USB_HID_USAGE_PAGE_ID_KEYBOARD  ( 0x07 )
-#define USB_HID_USAGE_PAGE_ID_TELEPHONY ( 0x0B )
-
 /*
  * Define non-configurable items in the HID Report descriptor.
  * (These are short items as the location field isn't relevant for them)
@@ -55,7 +51,7 @@ static const USB_HID_Report_Element_t hidReportConsumer     = {
 };
 
 static const USB_HID_Report_Element_t hidReportTelephony    = {
-    .item = { .header = 0x05, .data = { USB_HID_USAGE_PAGE_ID_TELEPHONY, 0x00 }},
+    .item = { .header = 0x05, .data = { USB_HID_USAGE_PAGE_ID_TELEPHONY_DEVICE, 0x00 }},
     .location = HID_REPORT_SET_LOC( USB_HID_REPORT_ID_TELEPHONY, 1, 0, 0 )
 };
 

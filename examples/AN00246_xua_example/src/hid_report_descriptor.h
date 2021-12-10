@@ -32,33 +32,58 @@ unsigned char hidReportDescriptor[] =
 /*
  * Define non-configurable items in the HID Report descriptor.
  */
-static const USB_HID_Short_Item_t hidCollectionApplication  = { .header = 0xA1, .data = { 0x01, 0x00 }, .location = 0x00 };
-static const USB_HID_Short_Item_t hidCollectionEnd          = { .header = 0xC0, .data = { 0x00, 0x00 }, .location = 0x00 };
+static const USB_HID_Short_Item_t hidCollectionApplication  = { .header = 0xA1, .data = { 0x01, 0x00 } };
+static const USB_HID_Short_Item_t hidCollectionEnd          = { .header = 0xC0, .data = { 0x00, 0x00 } };
 
-static const USB_HID_Short_Item_t hidInputConstArray        = { .header = 0x81, .data = { 0x01, 0x00 }, .location = 0x00 };
-static const USB_HID_Short_Item_t hidInputDataVar           = { .header = 0x81, .data = { 0x02, 0x00 }, .location = 0x00 };
+static const USB_HID_Short_Item_t hidInputConstArray        = { .header = 0x81, .data = { 0x01, 0x00 } };
+static const USB_HID_Short_Item_t hidInputDataVar           = { .header = 0x81, .data = { 0x02, 0x00 } };
 
-static const USB_HID_Short_Item_t hidLogicalMaximum0        = { .header = 0x25, .data = { 0x00, 0x00 }, .location = 0x00 };
-static const USB_HID_Short_Item_t hidLogicalMaximum1        = { .header = 0x25, .data = { 0x01, 0x00 }, .location = 0x00 };
-static const USB_HID_Short_Item_t hidLogicalMinimum0        = { .header = 0x15, .data = { 0x00, 0x00 }, .location = 0x00 };
+static const USB_HID_Short_Item_t hidLogicalMaximum0        = { .header = 0x25, .data = { 0x00, 0x00 } };
+static const USB_HID_Short_Item_t hidLogicalMaximum1        = { .header = 0x25, .data = { 0x01, 0x00 } };
+static const USB_HID_Short_Item_t hidLogicalMinimum0        = { .header = 0x15, .data = { 0x00, 0x00 } };
 
-static const USB_HID_Short_Item_t hidReportCount2           = { .header = 0x95, .data = { 0x02, 0x00 }, .location = 0x00 };
-static const USB_HID_Short_Item_t hidReportCount6           = { .header = 0x95, .data = { 0x06, 0x00 }, .location = 0x00 };
-static const USB_HID_Short_Item_t hidReportSize1            = { .header = 0x75, .data = { 0x01, 0x00 }, .location = 0x00 };
+static const USB_HID_Short_Item_t hidReportCount2           = { .header = 0x95, .data = { 0x02, 0x00 } };
+static const USB_HID_Short_Item_t hidReportCount6           = { .header = 0x95, .data = { 0x06, 0x00 } };
+static const USB_HID_Short_Item_t hidReportSize1            = { .header = 0x75, .data = { 0x01, 0x00 } };
 
-static const USB_HID_Short_Item_t hidUsageConsumerControl   = { .header = 0x09, .data = { 0x01, 0x00 }, .location = 0x00 };
+static const USB_HID_Short_Item_t hidUsageConsumerControl   = { .header = 0x09, .data = { 0x01, 0x00 } };
 
-static const USB_HID_Short_Item_t hidUsagePageConsumer      = { .header = 0x05, .data = { 0x0C, 0x00 }, .location = 0x00 };
+/*
+ * Define the HID Report Descriptor Item, Usage Page, Report ID and length for each HID Report
+ * For internal purposes, a report element with ID of 0 must be included if report IDs are not being used.
+ */
+static const USB_HID_Report_Element_t hidReportPageConsumer = {
+    .item = { .header = 0x05, .data = { USB_HID_USAGE_PAGE_ID_CONSUMER, 0x00 }},
+    .location = HID_REPORT_SET_LOC( 0, 2, 0, 0 )
+};
 
 /*
  * Define configurable items in the HID Report descriptor.
  */
-static USB_HID_Short_Item_t hidUsageByte0Bit5   = { .header = 0x09, .data = { 0xE2, 0x00 }, .location = 0x50 }; // Mute
-static USB_HID_Short_Item_t hidUsageByte0Bit4   = { .header = 0x09, .data = { 0xEA, 0x00 }, .location = 0x40 }; // Vol-
-static USB_HID_Short_Item_t hidUsageByte0Bit3   = { .header = 0x09, .data = { 0xE9, 0x00 }, .location = 0x30 }; // Vol+
-static USB_HID_Short_Item_t hidUsageByte0Bit2   = { .header = 0x09, .data = { 0xB6, 0x00 }, .location = 0x20 }; // Scan Prev
-static USB_HID_Short_Item_t hidUsageByte0Bit1   = { .header = 0x09, .data = { 0xB5, 0x00 }, .location = 0x10 }; // Scan Next
-static USB_HID_Short_Item_t hidUsageByte0Bit0   = { .header = 0x09, .data = { 0xB0, 0x00 }, .location = 0x00 }; // Play
+static USB_HID_Report_Element_t hidUsageByte0Bit5   = {
+     .item = { .header = 0x09, .data = { 0xE2, 0x00 }},
+     .location = HID_REPORT_SET_LOC(0, 0, 0, 5)
+}; // Mute
+static USB_HID_Report_Element_t hidUsageByte0Bit4   = {
+     .item = { .header = 0x09, .data = { 0xEA, 0x00 }},
+     .location = HID_REPORT_SET_LOC(0, 0, 0, 4)
+}; // Vol-
+static USB_HID_Report_Element_t hidUsageByte0Bit3   = {
+     .item = { .header = 0x09, .data = { 0xE9, 0x00 }},
+     .location = HID_REPORT_SET_LOC(0, 0, 0, 3)
+}; // Vol+
+static USB_HID_Report_Element_t hidUsageByte0Bit2   = {
+     .item = { .header = 0x09, .data = { 0xB6, 0x00 }},
+     .location = HID_REPORT_SET_LOC(0, 0, 0, 2)
+}; // Scan Prev
+static USB_HID_Report_Element_t hidUsageByte0Bit1   = {
+     .item = { .header = 0x09, .data = { 0xB5, 0x00 }},
+     .location = HID_REPORT_SET_LOC(0, 0, 0, 1)
+}; // Scan Next
+static USB_HID_Report_Element_t hidUsageByte0Bit0   = {
+     .item = { .header = 0x09, .data = { 0xB0, 0x00 }},
+     .location = HID_REPORT_SET_LOC(0, 0, 0, 0)
+}; // Play
 
 /*
  * List the configurable items in the HID Report descriptor.

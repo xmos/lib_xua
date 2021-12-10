@@ -22,12 +22,6 @@
 #define LOUDNESS_CONTROL        ( 0xE7 )
 #define AL_CONTROL_PANEL        ( 0x019F )
 
-// Constants from the USB Device Class Definition for HID
-#define HID_REPORT_ITEM_TYPE_MAIN       ( 0x00 )
-#define HID_REPORT_ITEM_TYPE_GLOBAL     ( 0x01 )
-#define HID_REPORT_ITEM_TYPE_LOCAL      ( 0x02 )
-#define HID_REPORT_ITEM_TYPE_RESERVED   ( 0x03 )
-
 static unsigned construct_usage_header( unsigned size )
 {
     unsigned header = 0x00;

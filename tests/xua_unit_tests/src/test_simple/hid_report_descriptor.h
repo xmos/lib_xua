@@ -6,8 +6,6 @@
 
 #include "xua_hid_report.h"
 
-#define USB_HID_USAGE_PAGE_ID_CONSUMER  ( 0x0C )
-
 /*
  * Define non-configurable items in the HID Report descriptor.
  * (These are short items as the location field isn't relevant for them)
