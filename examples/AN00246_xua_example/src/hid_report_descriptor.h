@@ -32,21 +32,43 @@ unsigned char hidReportDescriptor[] =
 /*
  * Define non-configurable items in the HID Report descriptor.
  */
-static const USB_HID_Short_Item_t hidCollectionApplication  = { .header = HID_REPORT_SET_HEADER(1, HID_REPORT_ITEM_TYPE_MAIN, HID_REPORT_ITEM_TAG_COLLECTION), .data = { 0x01, 0x00 } };
-static const USB_HID_Short_Item_t hidCollectionEnd          = { .header = HID_REPORT_SET_HEADER(0, HID_REPORT_ITEM_TYPE_MAIN, HID_REPORT_ITEM_TAG_END_COLLECTION), .data = { 0x00, 0x00 } };
+static const USB_HID_Short_Item_t hidCollectionApplication  = {
+    .header = HID_REPORT_SET_HEADER(1, HID_REPORT_ITEM_TYPE_MAIN, HID_REPORT_ITEM_TAG_COLLECTION),
+    .data = { 0x01, 0x00 } };
+static const USB_HID_Short_Item_t hidCollectionEnd          = {
+    .header = HID_REPORT_SET_HEADER(0, HID_REPORT_ITEM_TYPE_MAIN, HID_REPORT_ITEM_TAG_END_COLLECTION),
+    .data = { 0x00, 0x00 } };
 
-static const USB_HID_Short_Item_t hidInputConstArray        = { .header = HID_REPORT_SET_HEADER(1, HID_REPORT_ITEM_TYPE_MAIN, HID_REPORT_ITEM_TAG_INPUT), .data = { 0x01, 0x00 } };
-static const USB_HID_Short_Item_t hidInputDataVar           = { .header = HID_REPORT_SET_HEADER(1, HID_REPORT_ITEM_TYPE_MAIN, HID_REPORT_ITEM_TAG_INPUT), .data = { 0x02, 0x00 } };
+static const USB_HID_Short_Item_t hidInputConstArray        = {
+    .header = HID_REPORT_SET_HEADER(1, HID_REPORT_ITEM_TYPE_MAIN, HID_REPORT_ITEM_TAG_INPUT),
+    .data = { 0x01, 0x00 } };
+static const USB_HID_Short_Item_t hidInputDataVar           = {
+    .header = HID_REPORT_SET_HEADER(1, HID_REPORT_ITEM_TYPE_MAIN, HID_REPORT_ITEM_TAG_INPUT),
+    .data = { 0x02, 0x00 } };
 
-static const USB_HID_Short_Item_t hidLogicalMaximum0        = { .header = HID_REPORT_SET_HEADER(1, HID_REPORT_ITEM_TYPE_GLOBAL, HID_REPORT_ITEM_TAG_LOGICAL_MAXIMUM), .data = { 0x00, 0x00 } };
-static const USB_HID_Short_Item_t hidLogicalMaximum1        = { .header = HID_REPORT_SET_HEADER(1, HID_REPORT_ITEM_TYPE_GLOBAL, HID_REPORT_ITEM_TAG_LOGICAL_MAXIMUM), .data = { 0x01, 0x00 } };
-static const USB_HID_Short_Item_t hidLogicalMinimum0        = { .header = HID_REPORT_SET_HEADER(1, HID_REPORT_ITEM_TYPE_GLOBAL, HID_REPORT_ITEM_TAG_LOGICAL_MINIMUM), .data = { 0x00, 0x00 } };
+static const USB_HID_Short_Item_t hidLogicalMaximum0        = {
+    .header = HID_REPORT_SET_HEADER(1, HID_REPORT_ITEM_TYPE_GLOBAL, HID_REPORT_ITEM_TAG_LOGICAL_MAXIMUM),
+    .data = { 0x00, 0x00 } };
+static const USB_HID_Short_Item_t hidLogicalMaximum1        = {
+    .header = HID_REPORT_SET_HEADER(1, HID_REPORT_ITEM_TYPE_GLOBAL, HID_REPORT_ITEM_TAG_LOGICAL_MAXIMUM),
+    .data = { 0x01, 0x00 } };
+static const USB_HID_Short_Item_t hidLogicalMinimum0        = {
+    .header = HID_REPORT_SET_HEADER(1, HID_REPORT_ITEM_TYPE_GLOBAL, HID_REPORT_ITEM_TAG_LOGICAL_MINIMUM),
+    .data = { 0x00, 0x00 } };
 
-static const USB_HID_Short_Item_t hidReportCount2           = { .header = HID_REPORT_SET_HEADER(1, HID_REPORT_ITEM_TYPE_GLOBAL, HID_REPORT_ITEM_TAG_REPORT_COUNT), .data = { 0x02, 0x00 } };
-static const USB_HID_Short_Item_t hidReportCount6           = { .header = HID_REPORT_SET_HEADER(1, HID_REPORT_ITEM_TYPE_GLOBAL, HID_REPORT_ITEM_TAG_REPORT_COUNT), .data = { 0x06, 0x00 } };
-static const USB_HID_Short_Item_t hidReportSize1            = { .header = HID_REPORT_SET_HEADER(1, HID_REPORT_ITEM_TYPE_GLOBAL, HID_REPORT_ITEM_TAG_REPORT_SIZE), .data = { 0x01, 0x00 } };
+static const USB_HID_Short_Item_t hidReportCount2           = {
+    .header = HID_REPORT_SET_HEADER(1, HID_REPORT_ITEM_TYPE_GLOBAL, HID_REPORT_ITEM_TAG_REPORT_COUNT),
+    .data = { 0x02, 0x00 } };
+static const USB_HID_Short_Item_t hidReportCount6           = {
+    .header = HID_REPORT_SET_HEADER(1, HID_REPORT_ITEM_TYPE_GLOBAL, HID_REPORT_ITEM_TAG_REPORT_COUNT),
+    .data = { 0x06, 0x00 } };
+static const USB_HID_Short_Item_t hidReportSize1            = {
+    .header = HID_REPORT_SET_HEADER(1, HID_REPORT_ITEM_TYPE_GLOBAL, HID_REPORT_ITEM_TAG_REPORT_SIZE),
+    .data = { 0x01, 0x00 } };
 
-static const USB_HID_Short_Item_t hidUsageConsumerControl   = { .header = HID_REPORT_SET_HEADER(1, HID_REPORT_ITEM_TYPE_LOCAL, HID_REPORT_ITEM_TAG_USAGE), .data = { 0x01, 0x00 } };
+static const USB_HID_Short_Item_t hidUsageConsumerControl   = {
+    .header = HID_REPORT_SET_HEADER(1, HID_REPORT_ITEM_TYPE_LOCAL, HID_REPORT_ITEM_TAG_USAGE),
+    .data = { 0x01, 0x00 } };
 
 /*
  * Define the HID Report Descriptor Item, Usage Page, Report ID and length for each HID Report
@@ -93,9 +115,9 @@ static USB_HID_Report_Element_t hidUsageByte0Bit0   = {
 }; // Play
 
 /*
- * List the configurable items in the HID Report descriptor.
+ * List the configurable elements in the HID Report descriptor.
  */
-static USB_HID_Short_Item_t* const hidConfigurableItems[] = {
+static USB_HID_Report_Element_t* const hidConfigurableElements[] = {
     &hidUsageByte0Bit0,
     &hidUsageByte0Bit1,
     &hidUsageByte0Bit2,
@@ -105,27 +127,28 @@ static USB_HID_Short_Item_t* const hidConfigurableItems[] = {
 };
 
 /*
- * List Usage pages in the HID Report descriptor, one per byte.
+ * List HID Reports, one per Report ID. This should be a usage page item with the relevant 
+ * If not using report IDs - still have one with report ID 0
  */
-static const USB_HID_Short_Item_t* const hidUsagePages[] = {
-    &hidUsagePageConsumer
+static const USB_HID_Report_Element_t* const hidReports[] = {
+    &hidReportPageConsumer
 };
 
 /*
  * List all items in the HID Report descriptor.
  */
 static const USB_HID_Short_Item_t* const hidReportDescriptorItems[] = {
-    &hidUsagePageConsumer,
+    &(hidReportPageConsumer.item),
     &hidUsageConsumerControl,
     &hidCollectionApplication,
         &hidLogicalMinimum0,
         &hidLogicalMaximum1,
-        &hidUsageByte0Bit0,
-        &hidUsageByte0Bit1,
-        &hidUsageByte0Bit2,
-        &hidUsageByte0Bit3,
-        &hidUsageByte0Bit4,
-        &hidUsageByte0Bit5,
+        &(hidUsageByte0Bit0.item),
+        &(hidUsageByte0Bit1.item),
+        &(hidUsageByte0Bit2.item),
+        &(hidUsageByte0Bit3.item),
+        &(hidUsageByte0Bit4.item),
+        &(hidUsageByte0Bit5.item),
         &hidReportSize1,
         &hidReportCount6,
         &hidInputDataVar,
@@ -136,9 +159,10 @@ static const USB_HID_Short_Item_t* const hidReportDescriptorItems[] = {
 };
 
 /*
- * Define the length of the HID Report.
- * This value must match the number of Report bytes defined by hidReportDescriptorItems.
+ * Define the number of HID Reports
+ * Due to XC not supporting designated initializers, this constant has a hard-coded value.
+ * It must equal ( sizeof hidReports / sizeof ( USB_HID_Report_Element_t* ))
  */
-#define HID_REPORT_LENGTH   ( 1 )
+#define HID_REPORT_COUNT ( 1 )
 
 #endif // __hid_report_descriptor_h__
