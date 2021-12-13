@@ -497,7 +497,20 @@ unsigned hidSetReportItem(
  */
 void hidSetReportPeriod( const unsigned id, const unsigned period );
 
-//TODO: DOcument
+/**
+ * @brief Development function: Validate the contents of hid_report_descriptor.h for common errors, printing
+ * error messages if any issues were found.
+ * 
+ * This function is intended for use when developing the contents of hid_report_descriptor.h, which is static,
+ * so shouldn't be required for use in a production application.
+ * 
+ * @return Validation result
+ * @retval HID_STATUS_GOOD                    The validation found no issues with the data structures defined
+ *                                            in hid_report_descriptor.h
+ * @retval HID_STATUS_BAD_REPORT_DESCRIPTOR   The validation encountered an issue with the data structures
+ *                                            defined in hid_report_descriptor.h . More information is
+ *                                            provided in the printed messages.
+ */
 unsigned hidReportValidate( void );
 
 #endif // _XUA_HID_REPORT_

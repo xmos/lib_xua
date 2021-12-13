@@ -495,6 +495,8 @@ static size_t hidTranslateItem( const USB_HID_Short_Item_t* inPtr, unsigned char
     return count;
 }
 
+// hid_report_descriptor.h validation functions for development purposes
+
 struct HID_validation_info {
     int collectionOpenedCount;
     int reportCount;
@@ -503,14 +505,20 @@ struct HID_validation_info {
     int currentConfigurableElementIdx;
 
     unsigned char reportIds[HID_REPORT_COUNT];
-    unsigned char reportUsagePage[HID_REPORT_COUNT];
+    unsigned reportUsagePage[HID_REPORT_COUNT];
 
     unsigned current_bit_size;
     unsigned current_bit_count;
     unsigned current_bit_offset;
 };
 
-static unsigned hidValidateInfoStructReportIDs( struct HID_validation_info *info ) {
+/**
+ * @brief Validation step for hidReportValidate, checking the info struct to ensure correctness of Report IDs
+ * 
+ * @param info The info struct that has been built by hidReportValidate to check
+ * @return unsigned HID_STATUS value
+ */
+static unsigned hidReportValidateInfoStructReportIDs( struct HID_validation_info *info ) {
     if ( info->reportCount != HID_REPORT_COUNT) {
         if ( !( info->reportCount == 0 && HID_REPORT_COUNT == 1 ) ) {
             // (Only if report IDs are being used)
@@ -539,7 +547,13 @@ static unsigned hidValidateInfoStructReportIDs( struct HID_validation_info *info
     return HID_STATUS_GOOD;
 }
 
-static unsigned hidValidateInfoStructReportLength( struct HID_validation_info *info ) {
+/**
+ * @brief Validation step for hidReportValidate, checking reports are the correct length specified in their location field
+ * 
+ * @param info The info struct that has been built by hidReportValidate to check
+ * @return unsigned HID_STATUS value
+ */
+static unsigned hidReportValidateInfoStructReportLength( struct HID_validation_info *info ) {
     if ( info->current_bit_offset % 8 ) {
         printf("Error: HID Report not byte aligned (%d bits).\n", info->current_bit_offset);
         return HID_STATUS_BAD_REPORT_DESCRIPTOR;
@@ -553,7 +567,13 @@ static unsigned hidValidateInfoStructReportLength( struct HID_validation_info *i
     return HID_STATUS_GOOD;
 }
 
-static unsigned hidValidateInfoStructCollections( struct HID_validation_info *info ) {
+/**
+ * @brief Validation step for hidReportValidate, collections are correctly opened and closed
+ * 
+ * @param info The info struct that has been built by hidReportValidate to check
+ * @return unsigned HID_STATUS value
+ */
+static unsigned hidReportValidateInfoStructCollections( struct HID_validation_info *info ) {
     if ( info->collectionOpenedCount ) {
         printf("Error: Collections not equally opened and closed.\n");
         return HID_STATUS_BAD_REPORT_DESCRIPTOR;
@@ -561,24 +581,126 @@ static unsigned hidValidateInfoStructCollections( struct HID_validation_info *in
     return HID_STATUS_GOOD;
 }
 
-static unsigned hidValidateInfoStruct( struct HID_validation_info *info ) {
-    unsigned status = hidValidateInfoStructCollections( info );
+/**
+ * @brief Validation step for hidReportValidate, High level - Checks the summarised information in the info struct by calling
+ * the subroutines for checking.
+ * 
+ * @param info The info struct that has been built by hidReportValidate to check
+ * @return unsigned HID_STATUS value
+ */
+static unsigned hidReportValidateInfoStruct( struct HID_validation_info *info ) {
+    unsigned status = hidReportValidateInfoStructCollections( info );
     if( status == HID_STATUS_GOOD ) {
-        status = hidValidateInfoStructReportIDs( info );
+        status = hidReportValidateInfoStructReportIDs( info );
     }
     if( status == HID_STATUS_GOOD ) {
-        status = hidValidateInfoStructReportLength( info );
+        status = hidReportValidateInfoStructReportLength( info );
     }
     return status;
 }
 
+/**
+ * @brief Preparation step for hidReportValidate, Adds a report ID field into the information struct for validation
+ * 
+ * @param info The info struct being built by hidReportValidate
+ * @param item The ReportId item being added
+ * @return unsigned HID_STATUS value
+ */
+static unsigned hidReportValidateAddReportId( struct HID_validation_info *info, const USB_HID_Short_Item_t *item ) {
+    if ( info->reportCount == 0 ) {
+        if ( info->current_bit_offset ) {
+            printf("Error: Some elements not associated with report ID.\n");
+            return HID_STATUS_BAD_REPORT_DESCRIPTOR;
+        }
+        info->reportUsagePage[0] = 0;
+    } else {
+        unsigned status = hidReportValidateInfoStructReportLength( info );
+        if ( status ) {
+            return status;
+        }
+    }
+
+    if ( hidGetItemSize(item->header) != 1 ) {
+        printf("Error: ReportId field has invalid length %d (expected 1)", hidGetItemSize(item->header));
+        return HID_STATUS_BAD_REPORT_DESCRIPTOR;
+    }
+
+    info->reportIds[info->reportCount] = item->data[0];
+    info->currentReportIdx = info->reportCount;
+    info->reportCount += 1;
+    info->current_bit_offset = 0;
+    if ( info->reportCount > HID_REPORT_COUNT ) {
+        printf("Error: HID_REPORT_COUNT does not match number of report IDs in descriptor.\n");
+        return HID_STATUS_BAD_REPORT_DESCRIPTOR;
+    }
+
+    return HID_STATUS_GOOD;
+}
+
+/**
+ * @brief Preparation step for hidReportValidate, Adds a Usage Page field into the information struct for validation
+ * 
+ * @param info The info struct being built by hidReportValidate
+ * @param item The UsagePage item being added
+ * @return unsigned HID_STATUS value
+ */
+static unsigned hidReportValidateAddUsagePageItem( struct HID_validation_info *info, const USB_HID_Short_Item_t *item ) {
+    if ( info->reportUsagePage[info->currentReportIdx] ) {
+        printf("Error: Multiple usage pages per report ID not supported by this implementation.\n");
+        return HID_STATUS_BAD_REPORT_DESCRIPTOR;
+    }
+
+    switch (hidGetItemSize(item->header)){
+    case 1:
+        info->reportUsagePage[info->currentReportIdx] = item->data[0];
+        break;
+    case 2:
+        info->reportUsagePage[info->currentReportIdx] = ((unsigned) item->data[1] << 8) + item->data[0];
+        break;
+    default:
+        printf("Error: Invalid size for UsagePage report descriptor item.");
+        return HID_STATUS_BAD_REPORT_DESCRIPTOR;
+    }
+
+    return HID_STATUS_GOOD;
+}
+
+/**
+ * @brief Preparation step for hidReportValidate, Adds a Usage field into the information struct for validation
+ * 
+ * @param info The info struct being built by hidReportValidate
+ * @param item The Usage item being added
+ * @return unsigned HID_STATUS value
+ */
+static unsigned hidReportValidateAddUsageItem( struct HID_validation_info *info, const USB_HID_Short_Item_t *item) {
+    if ( ( info->currentConfigurableElementIdx < HID_CONFIGURABLE_ELEMENT_COUNT ) &&
+         ( &(hidConfigurableElements[info->currentConfigurableElementIdx]->item) == item ) ) {
+
+        USB_HID_Report_Element_t *element = hidConfigurableElements[info->currentConfigurableElementIdx];
+        unsigned bBit = hidGetElementBitLocation( element->location );
+        unsigned bByte = hidGetElementByteLocation( element->location );
+        unsigned bReportId = hidGetElementReportId( element->location );
+
+        if ( bBit != ( info->current_bit_offset % 8 ) || bByte != ( info->current_bit_offset / 8 ) ) {
+            printf("Error: Locator bit/byte setting incorrect for configurable element index %d.\n", info->currentConfigurableElementIdx);
+            return HID_STATUS_BAD_REPORT_DESCRIPTOR;
+        }
+        if ( bReportId != info->reportIds[info->currentReportIdx] ) {
+            printf("Error: Locator report ID setting incorrect for configurable element index %d.\n", info->currentConfigurableElementIdx);
+            return HID_STATUS_BAD_REPORT_DESCRIPTOR;
+        }
+
+        info->currentConfigurableElementIdx += 1;
+    }
+    return HID_STATUS_GOOD;
+}
 
 unsigned hidReportValidate( void )
 {
     struct HID_validation_info info = {};
     unsigned status = HID_STATUS_GOOD;
 
-    // Fill in the validation info struct
+    // Fill in the validation info struct by iterating through the hid report items
     for ( size_t idx = 0; idx < HID_REPORT_DESCRIPTOR_ITEM_COUNT; ++idx ) {
         const USB_HID_Short_Item_t *item = hidReportDescriptorItems[idx];
         unsigned bTag  = hidGetItemTag ( item->header );
@@ -593,55 +715,6 @@ unsigned hidReportValidate( void )
                 break;
             }
         }
-        if ( bTag == HID_REPORT_ITEM_TAG_REPORT_ID && bType == HID_REPORT_ITEM_TYPE_GLOBAL ) {
-            if ( info.reportCount == 0 ) {
-                if ( info.current_bit_offset ) {
-                    printf("Error: Some elements not associated with report ID.\n");
-                    return HID_STATUS_BAD_REPORT_DESCRIPTOR;
-                }
-                info.reportUsagePage[0] = 0;
-            } else {
-                status = hidValidateInfoStructReportLength( &info );
-                if(status) {
-                    return status;
-                }
-            }
-
-            info.reportIds[info.reportCount] = item->data[0];
-            info.currentReportIdx = info.reportCount;
-            info.reportCount += 1;
-            info.current_bit_offset = 0;
-            if ( info.reportCount > HID_REPORT_COUNT ) {
-                break;
-            }
-        }
-        if ( bTag == HID_REPORT_ITEM_TAG_USAGE_PAGE && bType == HID_REPORT_ITEM_TYPE_GLOBAL ) {
-            if ( info.reportUsagePage[info.currentReportIdx] ) {
-                printf("Error: Multiple usage pages per report ID not supported by this implementation.\n");
-                return HID_STATUS_BAD_REPORT_DESCRIPTOR;
-            }
-            info.reportUsagePage[info.currentReportIdx] = item->data[0];
-        }
-        if ( bTag == HID_REPORT_ITEM_TAG_USAGE && bType == HID_REPORT_ITEM_TYPE_LOCAL ) {
-            if ( ( info.currentConfigurableElementIdx < HID_CONFIGURABLE_ELEMENT_COUNT ) &&
-                 ( &(hidConfigurableElements[info.currentConfigurableElementIdx]->item) == item ) ) {
-                USB_HID_Report_Element_t *element = hidConfigurableElements[info.currentConfigurableElementIdx];
-                unsigned bBit = hidGetElementBitLocation( element->location );
-                unsigned bByte = hidGetElementByteLocation( element->location );
-                unsigned bReportId = hidGetElementReportId( element->location );
-
-                if ( bBit != ( info.current_bit_offset % 8 ) || bByte != ( info.current_bit_offset / 8 ) ) {
-                    printf("Error: Locator bit/byte setting incorrect for configurable element index %d.\n", info.currentConfigurableElementIdx);
-                    return HID_STATUS_BAD_REPORT_DESCRIPTOR;
-                }
-                if ( bReportId != info.reportIds[info.currentReportIdx] ) {
-                    printf("Error: Locator report ID setting incorrect for configurable element index %d.\n", info.currentConfigurableElementIdx);
-                    return HID_STATUS_BAD_REPORT_DESCRIPTOR;
-                }
-
-                info.currentConfigurableElementIdx += 1;
-            }
-        }
         if ( bTag == HID_REPORT_ITEM_TAG_REPORT_SIZE && bType == HID_REPORT_ITEM_TYPE_GLOBAL ) {
             info.current_bit_size = item->data[0];
         }
@@ -651,8 +724,29 @@ unsigned hidReportValidate( void )
         if ( bTag == HID_REPORT_ITEM_TAG_INPUT && bType == HID_REPORT_ITEM_TYPE_MAIN ) {
             info.current_bit_offset += (info.current_bit_size * info.current_bit_count);
         }
+        if ( bTag == HID_REPORT_ITEM_TAG_REPORT_ID && bType == HID_REPORT_ITEM_TYPE_GLOBAL ) {
+            status = hidReportValidateAddReportId( &info, item );
+            if ( status ) {
+                break;
+            }
+        }
+        if ( bTag == HID_REPORT_ITEM_TAG_USAGE_PAGE && bType == HID_REPORT_ITEM_TYPE_GLOBAL ) {
+            status = hidReportValidateAddUsagePageItem( &info, item );
+            if ( status ) {
+                break;
+            }
+        }
+        if ( bTag == HID_REPORT_ITEM_TAG_USAGE && bType == HID_REPORT_ITEM_TYPE_LOCAL ) {
+            status = hidReportValidateAddUsageItem( &info, item );
+            if ( status ) {
+                break;
+            }
+        }
     }
 
-    status = hidValidateInfoStruct( &info );
-    return status;
+    if(status) {
+        return status;
+    } else {
+        return hidReportValidateInfoStruct( &info );
+    }
 }
