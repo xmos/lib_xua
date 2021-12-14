@@ -739,3 +739,55 @@ void test_initial_modification_with_subsequent_verification_2( void )
         TEST_ASSERT_EQUAL_UINT( 0, get_data[ 1 ]); // The call to hidSetReportItem with size 1 in the header should return the MSB to zero
     }
 }
+
+//setIdle functionality tests
+void test_set_idle( void )
+{
+    unsigned reportIdAll = 0;
+    unsigned reportId = 1;
+    unsigned reportId2 = 2;
+
+    unsigned setIdle = hidIsIdleActive( reportId );
+    TEST_ASSERT_EQUAL_UINT( 0, setIdle );
+
+    setIdle = hidIsIdleActive( reportId2 );
+    TEST_ASSERT_EQUAL_UINT( 0, setIdle );
+
+    setIdle = hidIsIdleActive( reportIdAll );
+    TEST_ASSERT_EQUAL_UINT( 0, setIdle );
+
+    hidSetIdle( reportId, 1 );
+    setIdle = hidIsIdleActive( reportId );
+    TEST_ASSERT_EQUAL_UINT( 1, setIdle );
+
+    setIdle = hidIsIdleActive( reportIdAll );
+    TEST_ASSERT_EQUAL_UINT( 0, setIdle );
+
+    setIdle = hidIsIdleActive( reportId2 );
+    TEST_ASSERT_EQUAL_UINT( 0, setIdle );
+}
+
+void test_set_all_idle( void )
+{
+    unsigned reportIdAll = 0;
+    unsigned reportId = 1;
+    unsigned reportId2 = 2;
+
+    unsigned setIdle = hidIsIdleActive( reportId );
+    TEST_ASSERT_EQUAL_UINT( 0, setIdle );
+
+    setIdle = hidIsIdleActive( reportId2 );
+    TEST_ASSERT_EQUAL_UINT( 0, setIdle );
+
+    setIdle = hidIsIdleActive( reportIdAll );
+    TEST_ASSERT_EQUAL_UINT( 0, setIdle );
+
+    for ( reportId = 1; reportId <= HID_REPORT_COUNT; ++reportId ) {
+        hidSetIdle( reportId, 1 );
+        setIdle = hidIsIdleActive( reportId );
+        TEST_ASSERT_EQUAL_UINT( 1, setIdle );
+    }
+
+    setIdle = hidIsIdleActive( reportIdAll );
+    TEST_ASSERT_EQUAL_UINT( 1, setIdle );
+}

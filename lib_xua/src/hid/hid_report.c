@@ -375,6 +375,7 @@ void hidReportInit( void )
     for( unsigned idx = 0U; idx < HID_REPORT_COUNT; ++idx ) {
         s_hidCurrentPeriod[ idx ] = ENDPOINT_INT_INTERVAL_IN_HID * MS_IN_TICKS;
     }
+    memset( s_hidIdleActive, 0, sizeof( s_hidIdleActive ) );
 }
 
 void hidResetReportDescriptor( void )
@@ -497,19 +498,22 @@ static size_t hidTranslateItem( const USB_HID_Short_Item_t* inPtr, unsigned char
 
 // hid_report_descriptor.h validation functions for development purposes
 
+/**
+ * @brief Internal HID Report Descriptor validation state
+ */
 struct HID_validation_info {
-    int collectionOpenedCount;
-    int reportCount;
+    int collectionOpenedCount; //!< Current count of open collections (to track that they are all closed)
+    int reportCount; //!< Current count of defined reports (to count them)
 
-    int currentReportIdx;
-    int currentConfigurableElementIdx;
+    int currentReportIdx; //!< Index of current report in hidReports array
+    int currentConfigurableElementIdx; //!< Index of current configurable element in hidConfigurableElements array
 
-    unsigned char reportIds[HID_REPORT_COUNT];
-    unsigned reportUsagePage[HID_REPORT_COUNT];
+    unsigned char reportIds[HID_REPORT_COUNT]; // Array of report IDs (for general validation & duplication detection)
+    unsigned reportUsagePage[HID_REPORT_COUNT]; // Array of the usage page for each report (for general validation)
 
-    unsigned current_bit_size;
-    unsigned current_bit_count;
-    unsigned current_bit_offset;
+    unsigned current_bit_size;  // State tracker for the current set report bit width (todo: should technically be a stack)
+    unsigned current_bit_count;  // State tracker for the current set report count (todo: should technically be a stack)
+    unsigned current_bit_offset; // Current bit offset into this report (for location validation)
 };
 
 /**
@@ -621,7 +625,7 @@ static unsigned hidReportValidateAddReportId( struct HID_validation_info *info, 
     }
 
     if ( hidGetItemSize(item->header) != 1 ) {
-        printf("Error: ReportId field has invalid length %d (expected 1)", hidGetItemSize(item->header));
+        printf("Error: ReportId field has invalid length %d (expected 1)\n", hidGetItemSize(item->header));
         return HID_STATUS_BAD_REPORT_DESCRIPTOR;
     }
 
@@ -658,7 +662,7 @@ static unsigned hidReportValidateAddUsagePageItem( struct HID_validation_info *i
         info->reportUsagePage[info->currentReportIdx] = ((unsigned) item->data[1] << 8) + item->data[0];
         break;
     default:
-        printf("Error: Invalid size for UsagePage report descriptor item.");
+        printf("Error: Invalid size for UsagePage report descriptor item.\n");
         return HID_STATUS_BAD_REPORT_DESCRIPTOR;
     }
 
@@ -709,38 +713,34 @@ unsigned hidReportValidate( void )
         if ( bTag == HID_REPORT_ITEM_TAG_COLLECTION && bType == HID_REPORT_ITEM_TYPE_MAIN ) {
             info.collectionOpenedCount += 1;
         }
-        if ( bTag == HID_REPORT_ITEM_TAG_END_COLLECTION && bType == HID_REPORT_ITEM_TYPE_MAIN ) {
+        else if ( bTag == HID_REPORT_ITEM_TAG_END_COLLECTION && bType == HID_REPORT_ITEM_TYPE_MAIN ) {
             info.collectionOpenedCount -= 1;
             if ( info.collectionOpenedCount < 0 ) {
-                break;
+                printf("Error: Collection closed while there is no collection open.\n");
+                status = HID_STATUS_BAD_REPORT_DESCRIPTOR;
             }
         }
-        if ( bTag == HID_REPORT_ITEM_TAG_REPORT_SIZE && bType == HID_REPORT_ITEM_TYPE_GLOBAL ) {
-            info.current_bit_size = item->data[0];
-        }
-        if ( bTag == HID_REPORT_ITEM_TAG_REPORT_COUNT && bType == HID_REPORT_ITEM_TYPE_GLOBAL ) {
-            info.current_bit_count = item->data[0];
-        }
-        if ( bTag == HID_REPORT_ITEM_TAG_INPUT && bType == HID_REPORT_ITEM_TYPE_MAIN ) {
+        else if ( bTag == HID_REPORT_ITEM_TAG_INPUT && bType == HID_REPORT_ITEM_TYPE_MAIN ) {
             info.current_bit_offset += (info.current_bit_size * info.current_bit_count);
         }
-        if ( bTag == HID_REPORT_ITEM_TAG_REPORT_ID && bType == HID_REPORT_ITEM_TYPE_GLOBAL ) {
+        else if ( bTag == HID_REPORT_ITEM_TAG_REPORT_SIZE && bType == HID_REPORT_ITEM_TYPE_GLOBAL ) {
+            info.current_bit_size = item->data[0];
+        }
+        else if ( bTag == HID_REPORT_ITEM_TAG_REPORT_COUNT && bType == HID_REPORT_ITEM_TYPE_GLOBAL ) {
+            info.current_bit_count = item->data[0];
+        }
+        else if ( bTag == HID_REPORT_ITEM_TAG_REPORT_ID && bType == HID_REPORT_ITEM_TYPE_GLOBAL ) {
             status = hidReportValidateAddReportId( &info, item );
-            if ( status ) {
-                break;
-            }
         }
-        if ( bTag == HID_REPORT_ITEM_TAG_USAGE_PAGE && bType == HID_REPORT_ITEM_TYPE_GLOBAL ) {
+        else if ( bTag == HID_REPORT_ITEM_TAG_USAGE_PAGE && bType == HID_REPORT_ITEM_TYPE_GLOBAL ) {
             status = hidReportValidateAddUsagePageItem( &info, item );
-            if ( status ) {
-                break;
-            }
         }
-        if ( bTag == HID_REPORT_ITEM_TAG_USAGE && bType == HID_REPORT_ITEM_TYPE_LOCAL ) {
+        else if ( bTag == HID_REPORT_ITEM_TAG_USAGE && bType == HID_REPORT_ITEM_TYPE_LOCAL ) {
             status = hidReportValidateAddUsageItem( &info, item );
-            if ( status ) {
-                break;
-            }
+        }
+
+        if ( status ) {
+            break;
         }
     }
 

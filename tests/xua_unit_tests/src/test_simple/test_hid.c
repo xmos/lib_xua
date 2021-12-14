@@ -573,3 +573,16 @@ void test_modification_with_subsequent_preparation( void )
     reportDescPtr = hidGetReportDescriptor();
     TEST_ASSERT_NOT_NULL( reportDescPtr );
 }
+
+//setIdle functionality tests
+void test_set_idle( void )
+{
+    unsigned reportId = 0;
+
+    unsigned setIdle = hidIsIdleActive( reportId );
+    TEST_ASSERT_EQUAL_UINT( 0, setIdle );
+
+    hidSetIdle( reportId, 1 );
+    setIdle = hidIsIdleActive( reportId );
+    TEST_ASSERT_EQUAL_UINT( 1, setIdle );
+}
