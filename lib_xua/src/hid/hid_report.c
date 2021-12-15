@@ -2,12 +2,14 @@
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 #include <assert.h>
 #include <stddef.h>
+#include <stdio.h>
+#include <string.h>
 #include <xs1.h>
+
 #include "descriptor_defs.h"
 #include "xua_hid_report.h"
 #include "hid_report_descriptor.h"
 
-#include <stdio.h>
 
 #define HID_REPORT_ITEM_LOCATION_SIZE ( 1 )
 #define HID_REPORT_DESCRIPTOR_ITEM_COUNT ( sizeof hidReportDescriptorItems / sizeof ( USB_HID_Short_Item_t* ))
@@ -376,6 +378,7 @@ void hidReportInit( void )
         s_hidCurrentPeriod[ idx ] = ENDPOINT_INT_INTERVAL_IN_HID * MS_IN_TICKS;
     }
     memset( s_hidIdleActive, 0, sizeof( s_hidIdleActive ) );
+    memset( s_hidChangePending, 0, sizeof( s_hidChangePending ) );
 }
 
 void hidResetReportDescriptor( void )

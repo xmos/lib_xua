@@ -586,3 +586,38 @@ void test_set_idle( void )
     setIdle = hidIsIdleActive( reportId );
     TEST_ASSERT_EQUAL_UINT( 1, setIdle );
 }
+
+void test_change_pending( void )
+{
+    unsigned reportId = 0;
+
+    unsigned changePending = hidIsChangePending( reportId );
+    TEST_ASSERT_EQUAL_UINT( 0, changePending );
+
+    hidSetChangePending( reportId );
+    changePending = hidIsChangePending( reportId );
+    TEST_ASSERT_EQUAL_UINT( 1, changePending );
+
+    hidClearChangePending( reportId );
+    changePending = hidIsChangePending( reportId );
+    TEST_ASSERT_EQUAL_UINT( 0, changePending );
+}
+
+void test_report_time( void )
+{
+    unsigned reportTime = 123;
+    unsigned reportPeriod = 10;
+
+    hidSetReportPeriod(0, reportPeriod);
+    hidCaptureReportTime(0, reportTime);
+    reportTime = hidGetReportTime(0);
+    reportPeriod = hidGetReportPeriod(0);
+
+    TEST_ASSERT_EQUAL_UINT(123, reportTime);
+    TEST_ASSERT_EQUAL_UINT(10, reportPeriod);
+
+    hidCalcNextReportTime(0);
+
+    unsigned nextReportTime = hidGetNextReportTime(0);
+    TEST_ASSERT_EQUAL_UINT(133, nextReportTime);
+}

@@ -133,9 +133,8 @@ typedef struct
  *  Calling this function for a given Report ID indicates that the changed
  *    HID data has been reported to the USB Host.
  *
- *  \warning This function will fail silently if given a Report ID outside of
- *    the supported range.
- *  The supported range runs from zero inclusive to HID_REPORT_COUNT exclusive.
+ *  \warning This function will fail silently if given an id that is not
+ *    either the value zero, or a Report ID that is in use.
  *
  *  \param[in]  id  A HID Report ID.
  *                  Zero clears the pending status of all Report IDs.
@@ -259,7 +258,7 @@ void hidCalcNextReportTime( const unsigned id );
 void hidCaptureReportTime( const unsigned id, const unsigned time );
 
 /**
- * @brief Get the time to send the next HID Report time for the given \a id
+ * @brief Get the time to send the next HID Report for the given \a id
  *
  * Parameters:
  *
@@ -331,11 +330,8 @@ unsigned hidGetReportTime( const unsigned id );
  *  Calling this function with a given Report ID returns an indication of
  *   whether unreported HID data exists for that Report ID.
  *
- *  \warning This function will return zero if given a Report ID outside of
- *    the supported range.
- *  If not using Report IDs, the supported range consists of the value zero only.
- *  If using Report IDs, the supported range runs from zero inclusive to
- *    HID_REPORT_COUNT exclusive.
+ *  \warning This function will return zero if given an id that is not
+ *    either the value zero, or a Report ID that is in use.
  *
  *  \param[in]  id  A HID Report ID.
  *                  Zero reports the pending status of all Report IDs.
@@ -410,11 +406,8 @@ void hidResetReportDescriptor( void );
  *    for that Report ID has changed and has not yet been reported to the USB
  *    Host.
  *
- *  \warning This function will fail silently if given a Report ID outside of
- *    the supported range.
- *  If not using Report IDs, the supported range consists of the value zero only.
- *  If using Report IDs, the supported range runs from one inclusive to
- *    HID_REPORT_COUNT exclusive.
+ *  \warning This function will fail silently if given an id that is not
+ *    either the value zero, or a Report ID that is in use.
  *
  *  \param[in]  id  A HID Report ID.
  *                  Use zero if the application does not use Report IDs.

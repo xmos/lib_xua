@@ -53,19 +53,6 @@ void setUp( void )
     hidResetReportDescriptor();
 }
 
-void test_print_report( void )
-{
-    hidPrepareReportDescriptor();
-    unsigned char* report = hidGetReportDescriptor();
-    size_t reportLen = hidGetReportDescriptorLength();
-
-    printf("ReportDescriptor:");
-    for (size_t i = 0; i < reportLen; i++) {
-        printf(" %02x", report[i]);
-    }
-    printf("\n");
-}
-
 void test_validate_report( void ) {
     unsigned retVal = hidReportValidate();
     TEST_ASSERT_EQUAL_UINT( HID_STATUS_GOOD, retVal );
@@ -740,7 +727,7 @@ void test_initial_modification_with_subsequent_verification_2( void )
     }
 }
 
-//setIdle functionality tests
+//setIdle and associated timing functionality tests
 void test_set_idle( void )
 {
     unsigned reportIdAll = 0;
@@ -776,7 +763,7 @@ void test_set_all_idle( void )
     unsigned setIdle = hidIsIdleActive( reportId );
     TEST_ASSERT_EQUAL_UINT( 0, setIdle );
 
-    setIdle = hidIsIdleActive( reportId2 );
+    setIdle = hidIsIdleActive( reportId2 ); 
     TEST_ASSERT_EQUAL_UINT( 0, setIdle );
 
     setIdle = hidIsIdleActive( reportIdAll );
@@ -790,4 +777,94 @@ void test_set_all_idle( void )
 
     setIdle = hidIsIdleActive( reportIdAll );
     TEST_ASSERT_EQUAL_UINT( 1, setIdle );
+}
+
+void test_change_pending( void )
+{
+    unsigned reportIdAll = 0;
+    unsigned reportId = 1;
+    unsigned reportId2 = 2;
+
+    unsigned changePending = hidIsChangePending( reportId );
+    TEST_ASSERT_EQUAL_UINT( 0, changePending );
+
+    changePending = hidIsChangePending( reportId2 );
+    TEST_ASSERT_EQUAL_UINT( 0, changePending );
+
+    changePending = hidIsChangePending( reportIdAll );
+    TEST_ASSERT_EQUAL_UINT( 0, changePending );
+
+    hidSetChangePending( reportId );
+    changePending = hidIsChangePending( reportId );
+    TEST_ASSERT_EQUAL_UINT( 1, changePending );
+
+    changePending = hidIsChangePending( reportIdAll );
+    TEST_ASSERT_EQUAL_UINT( 1, changePending );
+
+    changePending = hidIsChangePending( reportId2 );
+    TEST_ASSERT_EQUAL_UINT( 0, changePending );
+}
+
+void test_change_pending_all( void )
+{
+    unsigned reportIdAll = 0;
+    unsigned reportId = 1;
+
+    unsigned changePending = hidIsChangePending( reportId );
+    TEST_ASSERT_EQUAL_UINT( 0, changePending );
+
+    changePending = hidIsChangePending( reportIdAll );
+    TEST_ASSERT_EQUAL_UINT( 0, changePending );
+
+    for ( reportId = 1; reportId <= HID_REPORT_COUNT; ++reportId ) {
+        hidSetChangePending( reportId );
+        changePending = hidIsChangePending( reportId );
+        TEST_ASSERT_EQUAL_UINT( 1, changePending );
+    }
+
+    changePending = hidIsChangePending( reportIdAll );
+    TEST_ASSERT_EQUAL_UINT( 1, changePending );
+}
+
+void test_report_time( void )
+{
+    unsigned reportTime1 = 123;
+    unsigned reportTime2 = 456;
+
+    hidCaptureReportTime(1, reportTime1);
+    hidCaptureReportTime(2, reportTime2);
+    reportTime1 = hidGetReportTime(1);
+    reportTime2 = hidGetReportTime(2);
+
+    TEST_ASSERT_EQUAL_UINT(123, reportTime1);
+    TEST_ASSERT_EQUAL_UINT(456, reportTime2);
+}
+
+void test_report_time_calc( void )
+{
+    unsigned reportTime1 = 123;
+    unsigned reportTime2 = 456;
+    unsigned reportPeriod1 = 10;
+    unsigned reportPeriod2 = 5;
+
+    hidCaptureReportTime(1, reportTime1);
+    hidCaptureReportTime(2, reportTime2);
+    hidSetReportPeriod(1, reportPeriod1);
+    hidSetReportPeriod(2, reportPeriod2);
+    reportTime1 = hidGetReportTime(1);
+    reportTime2 = hidGetReportTime(2);
+    reportPeriod1 = hidGetReportPeriod(1);
+    reportPeriod2 = hidGetReportPeriod(2);
+
+    TEST_ASSERT_EQUAL_UINT(123, reportTime1);
+    TEST_ASSERT_EQUAL_UINT(456, reportTime2);
+    TEST_ASSERT_EQUAL_UINT(10, reportPeriod1);
+    TEST_ASSERT_EQUAL_UINT(5, reportPeriod2);
+
+    hidCalcNextReportTime(1);
+    hidCalcNextReportTime(2);
+    unsigned nextReportTime1 = hidGetNextReportTime(1);
+    unsigned nextReportTime2 = hidGetNextReportTime(2);
+    TEST_ASSERT_EQUAL_UINT( reportTime1 + reportPeriod1, nextReportTime1 );
+    TEST_ASSERT_EQUAL_UINT( reportTime2 + reportPeriod2, nextReportTime2 );
 }
