@@ -58,6 +58,11 @@ void test_validate_report( void ) {
     TEST_ASSERT_EQUAL_UINT( HID_STATUS_GOOD, retVal );
 }
 
+void test_reportid_in_use( void ) {
+    unsigned reportIdInUse = hidIsReportIdInUse();
+    TEST_ASSERT_EQUAL_UINT( 1, reportIdInUse );
+}
+
 // Basic report descriptor tests
 void test_unprepared_hidGetReportDescriptor( void )
 {

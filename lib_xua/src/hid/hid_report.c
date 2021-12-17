@@ -242,6 +242,13 @@ unsigned hidGetReportIdLimit ( void ) {
     return retVal;
 }
 
+unsigned hidIsReportIdInUse ( void ) {
+    if ( hidGetElementReportId( hidReports[ 0 ]->location ) ) {
+        return 1;
+    }
+    return 0;
+}
+
 #define HID_CONFIGURABLE_ELEMENT_COUNT ( sizeof hidConfigurableElements / sizeof ( USB_HID_Report_Element_t* ))
 unsigned hidGetReportItem(
     const unsigned id,
