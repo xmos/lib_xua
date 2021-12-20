@@ -375,18 +375,12 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
 #if( 0 < HID_CONTROLS )
     UserHIDInit();
     {
-        int hidReportLength = 0;
-        unsigned hidReportId;
-        while(0 == hidReportLength) {
-            for( hidReportId = 0U; hidReportId < hidGetReportIdLimit(); ++hidReportId) {
-                hidReportLength = (int) hidGetReportLength(hidReportId);
-                if(0 < hidReportLength) {
-                    break;
-                }
-            }
-        }
+        while (!hidIsReportDescriptorPrepared())
+            ;
 
-        hidReportLength = (int) UserHIDGetData(hidReportId, g_hidData);
+        /* Get data from the last report, which which we can prep XUD*/
+        int hidReportLength = (int) UserHIDGetData(hidGetReportIdLimit() - 1, g_hidData); 
+
         XUD_SetReady_In(ep_hid, g_hidData, hidReportLength);
     }
 #endif
