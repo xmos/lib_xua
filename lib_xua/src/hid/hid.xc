@@ -39,7 +39,7 @@ unsigned HidIsSetIdleSilenced( const unsigned id )
 {
   unsigned isSilenced = hidIsIdleActive( id );
 
-  if( isSilenced ) {
+  if( !isSilenced ) {
     unsigned currentTime;
     // Use inline assembly to access the time without creating a side-effect.
     // The mapper complains if the time comes from an XC timer because this function is called in the guard of a select case.
