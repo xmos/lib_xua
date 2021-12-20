@@ -50,6 +50,16 @@ void test_reportid_in_use( void ) {
     TEST_ASSERT_EQUAL_UINT( 0, reportIdInUse );
 }
 
+void test_get_next_valid_report_id( void ) {
+    unsigned reportId = 0U;
+
+    reportId = hidGetNextValidReportId(reportId);
+    TEST_ASSERT_EQUAL_UINT( 0, reportIdInUse );
+
+    reportId = hidGetNextValidReportId(reportId);
+    TEST_ASSERT_EQUAL_UINT( 0, reportIdInUse );
+}
+
 // Basic report descriptor tests
 void test_unprepared_hidGetReportDescriptor( void )
 {

@@ -204,6 +204,17 @@ unsigned hidGetReportIdLimit ( void );
 unsigned hidIsReportIdInUse ( void );
 
 /**
+ * @brief Get the next valid report ID - iterator style.
+ * 
+ * This function will loop around and start returning the first report ID again once it has
+ * returned all valid report IDs.
+ * 
+ * @param idPrev The previous returned id, or 0 if this is the first call
+ * @return unsigned The next valid report ID.
+ */
+unsigned hidGetNextValidReportId ( unsigned idPrev );
+
+/**
  * @brief Get a HID Report descriptor item
  *
  * Parameters:

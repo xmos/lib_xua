@@ -254,6 +254,20 @@ unsigned hidIsReportIdInUse ( void ) {
     return 0;
 }
 
+unsigned hidGetNextValidReportId ( unsigned idPrev ) {
+    size_t retIndex = 0;
+
+    for( size_t idx = 0U; idx < HID_REPORT_COUNT; ++idx ) {
+        unsigned reportId = hidGetElementReportId( hidReports[ idx ]->location );
+        if( reportId == idPrev ) {
+            retIndex = (idx + 1) % HID_REPORT_COUNT;
+            break;
+        }
+    }
+
+    return hidGetElementReportId( hidReports[ retIndex ]->location );
+}
+
 #define HID_CONFIGURABLE_ELEMENT_COUNT ( sizeof hidConfigurableElements / sizeof ( USB_HID_Report_Element_t* ))
 unsigned hidGetReportItem(
     const unsigned id,
@@ -342,8 +356,8 @@ unsigned hidIsChangePending( const unsigned id )
 {
     unsigned retVal = 0U;
     for( size_t idx = 0U; idx < HID_REPORT_COUNT; ++idx) {
-        if( id == 0U ) {
-            retVal |= ( s_hidChangePending[ idx ] != 0U );
+        if( id == 0U && s_hidChangePending[ idx ] != 0U ) {
+            retVal = 1;
         } else if( id == hidGetElementReportId( hidReports[ idx ]->location )) {
             retVal  = ( s_hidChangePending[ idx ] != 0U );
             break;
