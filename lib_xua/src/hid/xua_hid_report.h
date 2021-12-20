@@ -143,6 +143,15 @@ typedef struct
 void hidClearChangePending( const unsigned id );
 
 /**
+ * @brief Indicate if the HID Report descriptor has been prepared
+ *
+ *  \returns  A Boolean indicating whether the HID Report descriptor has been prepared.
+ *  \retval   True  The HID Report descriptor has been prepared.
+ *  \retval   False The HID Report has not been prepared.
+ */
+ unsigned hidIsReportDescriptorPrepared( void );
+
+/**
  * @brief Get the HID Report descriptor
  *
  * This function returns a pointer to the USB HID Report descriptor.

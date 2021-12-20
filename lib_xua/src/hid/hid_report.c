@@ -213,6 +213,11 @@ unsigned hidGetNextReportTime( const unsigned id ) {
     return retVal;
 }
 
+unsigned hidIsReportDescriptorPrepared( void )
+{
+    return s_hidReportDescriptorPrepared;
+}
+
 unsigned char* hidGetReportDescriptor( void )
 {
     unsigned char* retVal = NULL;
