@@ -147,7 +147,7 @@ void hidClearChangePending( const unsigned id );
  *
  *  \returns  A Boolean indicating whether the HID Report descriptor has been prepared.
  *  \retval   True  The HID Report descriptor has been prepared.
- *  \retval   False The HID Report has not been prepared.
+ *  \retval   False The HID Report descriptor has not been prepared.
  */
  unsigned hidIsReportDescriptorPrepared( void );
 
