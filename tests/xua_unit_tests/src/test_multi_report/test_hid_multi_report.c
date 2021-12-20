@@ -67,16 +67,16 @@ void test_get_next_valid_report_id( void ) {
     unsigned reportId = 0U;
 
     reportId = hidGetNextValidReportId(reportId);
-    TEST_ASSERT_EQUAL_UINT( 1, reportIdInUse );
+    TEST_ASSERT_EQUAL_UINT( 1, reportId );
 
     reportId = hidGetNextValidReportId(reportId);
-    TEST_ASSERT_EQUAL_UINT( 2, reportIdInUse );
+    TEST_ASSERT_EQUAL_UINT( 2, reportId );
 
     reportId = hidGetNextValidReportId(reportId);
-    TEST_ASSERT_EQUAL_UINT( 3, reportIdInUse );
+    TEST_ASSERT_EQUAL_UINT( 3, reportId );
 
     reportId = hidGetNextValidReportId(reportId);
-    TEST_ASSERT_EQUAL_UINT( 1, reportIdInUse );
+    TEST_ASSERT_EQUAL_UINT( 1, reportId );
 }
 
 // Basic report descriptor tests
