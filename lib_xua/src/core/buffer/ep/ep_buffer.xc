@@ -381,7 +381,7 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
         /* Get the last report - we don't really care which it is, so long as there's some data we can grab. */
         int hidReportLength = (int) UserHIDGetData(hidGetReportIdLimit() - 1, g_hidData); 
 
-        XUD_SetReady_In(ep_hid, g_hidData, hidReportLength)
+        XUD_SetReady_In(ep_hid, g_hidData, hidReportLength);
     }
 #endif
 
