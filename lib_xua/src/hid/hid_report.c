@@ -678,6 +678,10 @@ static unsigned hidReportValidateAddReportId( struct HID_validation_info *info, 
  * @return unsigned HID_STATUS value
  */
 static unsigned hidReportValidateAddUsagePageItem( struct HID_validation_info *info, const USB_HID_Short_Item_t *item ) {
+
+    if ( info->collectionOpenedCount == 0 ) {
+        return HID_STATUS_GOOD;
+    }
     if ( info->reportUsagePage[info->currentReportIdx] ) {
         printf("Error: Multiple usage pages per report ID not supported by this implementation.\n");
         return HID_STATUS_BAD_REPORT_DESCRIPTOR;
