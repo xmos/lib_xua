@@ -58,6 +58,7 @@
 
 // Constants from HID Usage Tables
 // Usage page IDs (incomplete)
+#define USB_HID_USAGE_PAGE_ID_GENERIC_DESKTOP  ( 0x01 )
 #define USB_HID_USAGE_PAGE_ID_KEYBOARD         ( 0x07 )
 #define USB_HID_USAGE_PAGE_ID_TELEPHONY_DEVICE ( 0x0B )
 #define USB_HID_USAGE_PAGE_ID_CONSUMER         ( 0x0C )

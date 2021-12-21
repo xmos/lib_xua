@@ -152,12 +152,17 @@ void hidCaptureReportTime( const unsigned id, const unsigned time )
 
 void hidClearChangePending( const unsigned id )
 {
+    printf("ccp%d", id);
     for( size_t idx = 0U; idx < HID_REPORT_COUNT; ++idx) {
         if(( id == 0U ) || ( id == hidGetElementReportId( hidReports[ idx ]->location ))) {
+            if( !s_hidChangePending[ idx ] )
+                printf("<already>");
             s_hidChangePending[ idx ] = 0U;
+            printf("y");
             break;
         }
     }
+    printf("\n");
 }
 
 static unsigned hidGetElementBitLocation( const unsigned short location )
@@ -416,6 +421,7 @@ void hidSetChangePending( const unsigned id )
 {
     for( size_t idx = 0U; idx < HID_REPORT_COUNT; ++idx) {
         if( id == hidGetElementReportId( hidReports[ idx ]->location )) {
+            printf("Set cp idx %d\n", idx);
             s_hidChangePending[ idx ] = 1U;
             break;
         }
