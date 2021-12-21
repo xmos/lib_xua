@@ -21,8 +21,9 @@
 #include "testct_byref.h"
 
 #if( 0 < HID_CONTROLS )
-#include "xua_hid_report_descriptor.h"
+#include "xua_hid_report.h"
 #include "user_hid.h"
+#include "xua_hid.h"
 unsigned char g_hidData[HID_MAX_DATA_BYTES] = {0};
 #endif
 
@@ -372,9 +373,15 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
 #endif
 
 #if( 0 < HID_CONTROLS )
+    UserHIDInit();
     {
-        int hidDataLength = hidGetReportLength();
-        XUD_SetReady_In(ep_hid, g_hidData, hidDataLength);
+        while (!hidIsReportDescriptorPrepared())
+            ;
+
+        /* Get the last report - we don't really care which it is, so long as there's some data we can grab. */
+        int hidReportLength = (int) UserHIDGetData(hidGetReportIdLimit() - 1, g_hidData); 
+
+        XUD_SetReady_In(ep_hid, g_hidData, hidReportLength);
     }
 #endif
 
@@ -887,11 +894,22 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
 
 #if( 0 < HID_CONTROLS )
             /* HID Report Data */
-            case XUD_SetData_Select(c_hid, ep_hid, result):
+            case hidIsChangePending(0U) || !HidIsSetIdleSilenced(0U) => XUD_SetData_Select(c_hid, ep_hid, result):
             {
-                int hidDataLength = hidGetReportLength();
-                UserHIDGetData(g_hidData);
-                XUD_SetReady_In(ep_hid, g_hidData, hidDataLength);
+                timer tmr;
+                unsigned reportTime;
+                tmr :> reportTime;
+
+                for(unsigned id = 0U; id < hidGetReportIdLimit(); ++id) {
+                    if(0U == id || (hidIsChangePending(id) || !HidIsSetIdleSilenced(id))) {
+                        hidCaptureReportTime(id, reportTime);
+                        int hidDataLength = (int) UserHIDGetData(id, g_hidData);
+                        XUD_SetReady_In(ep_hid, g_hidData, hidDataLength);
+                        hidCalcNextReportTime(id);
+                        hidClearChangePending(id);
+                        break;
+                    }
+                }
             }
             break;
 #endif
