@@ -139,7 +139,7 @@ static unsigned HidFindSetIdleActivationPoint( const unsigned currentPeriod, con
 static void HidUpdateReportPeriod( unsigned reportId, unsigned reportDuration ) {
   unsigned currentPeriod = hidGetReportPeriod( reportId );
 
-  hidSetIdle( reportId, ( 0U == duration ) || ( ENDPOINT_INT_INTERVAL_IN_HID < duration ));
+  hidSetIdle( reportId, ( 0U == reportDuration ) || ( ENDPOINT_INT_INTERVAL_IN_HID < reportDuration ));
 
   if( hidIsIdleActive( reportId )) {
     unsigned reportTime = hidGetReportTime( reportId );
