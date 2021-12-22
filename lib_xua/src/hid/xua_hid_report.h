@@ -204,6 +204,20 @@ unsigned hidGetReportIdLimit ( void );
 unsigned hidIsReportIdInUse ( void );
 
 /**
+ * @brief Is the provided report ID valid for passing to other functions.
+ * 
+ * e.g If Report IDs are not in use, then only 0 will return true.
+ * e.g If Report IDs are in use, then 0 will return false and the report IDs that
+ *     are in use will return true when passed to thsi function.
+ * 
+ * @param id  The ID to check
+ * @return boolean
+ * @retval 0 The report ID is not valid, other functions may fail silently
+ * @retval 1 The report ID is valid and can be used as the argument to other functions
+ */
+unsigned hidIsReportIdValid ( unsigned id );
+
+/**
  * @brief Get the next valid report ID - iterator style.
  * 
  * This function will loop around and start returning the first report ID again once it has

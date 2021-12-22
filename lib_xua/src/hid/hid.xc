@@ -130,6 +130,31 @@ static unsigned HidFindSetIdleActivationPoint( const unsigned currentPeriod, con
 }
 
 /**
+ *  \brief Configure a hid report's next report time and idle status based on a setidle request
+ *
+ *  \param[in]  reportId -- The report ID to modify
+ *  \param[in]  reportDuration  -- The duration of the setidle request
+ *
+ */
+static void HidUpdateReportPeriod( unsigned reportId, unsigned reportDuration ) {
+  unsigned currentPeriod = hidGetReportPeriod( reportId );
+
+  hidSetIdle( reportId, ( 0U == duration ) || ( ENDPOINT_INT_INTERVAL_IN_HID < duration ));
+
+  if( hidIsIdleActive( reportId )) {
+    unsigned reportTime = hidGetReportTime( reportId );
+    unsigned reportToSetIdleInterval = HidCalcReportToSetIdleInterval( reportTime );
+    unsigned nextReportTime = HidCalcNewReportTime( currentPeriod, reportTime, reportToSetIdleInterval, reportDuration * MS_IN_TICKS );
+    hidSetNextReportTime( reportId, nextReportTime );
+    currentPeriod = reportDuration * MS_IN_TICKS;
+  } else {
+    currentPeriod = ENDPOINT_INT_INTERVAL_IN_HID * MS_IN_TICKS;
+  }
+
+  hidSetReportPeriod( reportId, currentPeriod );
+}
+
+/**
  *  \brief Process a Set Idle request
  *
  *  \param[in]  c_ep0_out -- the channel that carries data from Endpoint 0
@@ -166,22 +191,24 @@ static XUD_Result_t HidProcessSetIdleRequest( XUD_ep c_ep0_out, XUD_ep c_ep0_in,
 
       Any Interface value other than INTERFACE_NUMBER_HID indicates an error by the USB Host.
    */
-  if(( 0U == reportId ) && ( INTERFACE_NUMBER_HID == interfaceNum )) {
-    hidSetIdle( reportId, ( 0U == duration ) || ( ENDPOINT_INT_INTERVAL_IN_HID < duration ));
+  if( INTERFACE_NUMBER_HID == interfaceNum ) {
+    if( hidIsReportIdValid( reportId ) ) {
+      HidUpdateReportPeriod( reportId, duration );
 
-    unsigned currentPeriod = hidGetReportPeriod( reportId );
-    if( hidIsIdleActive( reportId )) {
-      unsigned reportTime = hidGetReportTime( reportId );
-      unsigned reportToSetIdleInterval = HidCalcReportToSetIdleInterval( reportTime );
-      unsigned nextReportTime = HidCalcNewReportTime( currentPeriod, reportTime, reportToSetIdleInterval, duration * MS_IN_TICKS );
-      hidSetNextReportTime( reportId, nextReportTime );
-      currentPeriod = duration * MS_IN_TICKS;
-    } else {
-      currentPeriod = ENDPOINT_INT_INTERVAL_IN_HID * MS_IN_TICKS;
+      result = XUD_DoSetRequestStatus( c_ep0_in );
     }
+    else if ( reportId == 0U ) {
+      // Wildcard request - set all report IDs to idle
+      unsigned startReportId = hidGetNextValidReportId(reportId);
 
-    hidSetReportPeriod( reportId, currentPeriod );
-    result = XUD_DoSetRequestStatus( c_ep0_in );
+      reportId = startReportId;
+      do {
+        HidUpdateReportPeriod( reportId, duration );
+        reportId = hidGetNextValidReportId( reportId );
+      } while( reportId != startReportId);
+
+      result = XUD_DoSetRequestStatus( c_ep0_in );
+    }
   }
 
   return result;

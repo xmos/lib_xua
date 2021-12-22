@@ -254,6 +254,20 @@ unsigned hidIsReportIdInUse ( void ) {
     return 0;
 }
 
+unsigned hidIsReportIdValid ( unsigned id ) {
+    size_t retVal = 0;
+
+    for( size_t idx = 0U; idx < HID_REPORT_COUNT; ++idx ) {
+        unsigned reportId = hidGetElementReportId( hidReports[ idx ]->location );
+        if( reportId == id ) {
+            retVal = 1;
+            break;
+        }
+    }
+
+    return retVal;
+}
+
 unsigned hidGetNextValidReportId ( unsigned idPrev ) {
     size_t retIndex = 0;
 

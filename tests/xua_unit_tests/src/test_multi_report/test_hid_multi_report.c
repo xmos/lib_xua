@@ -79,6 +79,30 @@ void test_get_next_valid_report_id( void ) {
     TEST_ASSERT_EQUAL_UINT( 1, reportId );
 }
 
+void test_is_report_id_valid( void ) {
+    unsigned isValid = 0;
+
+    unsigned reportId = 0;
+    isValid = hidIsReportIdValid( reportId );
+    TEST_ASSERT_EQUAL_UINT( 0, isValid );
+
+    reportId = 1;
+    isValid = hidIsReportIdValid( reportId );
+    TEST_ASSERT_EQUAL_UINT( 1, isValid );
+
+    reportId = 2;
+    isValid = hidIsReportIdValid( reportId );
+    TEST_ASSERT_EQUAL_UINT( 1, isValid );
+
+    reportId = 3;
+    isValid = hidIsReportIdValid( reportId );
+    TEST_ASSERT_EQUAL_UINT( 1, isValid );
+
+    reportId = 4;
+    isValid = hidIsReportIdValid( reportId );
+    TEST_ASSERT_EQUAL_UINT( 0, isValid );
+}
+
 // Basic report descriptor tests
 void test_unprepared_hidGetReportDescriptor( void )
 {
