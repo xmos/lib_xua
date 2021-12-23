@@ -20,9 +20,7 @@ static const USB_HID_Short_Item_t hidCollectionApplication  = {
 static const USB_HID_Short_Item_t hidCollectionEnd          = {
     .header = HID_REPORT_SET_HEADER(0, HID_REPORT_ITEM_TYPE_MAIN, HID_REPORT_ITEM_TAG_END_COLLECTION),
     .data = { 0x00, 0x00 } };
-static const USB_HID_Short_Item_t hidCollectionLogical      = {
-    .header = HID_REPORT_SET_HEADER(1, HID_REPORT_ITEM_TYPE_MAIN, HID_REPORT_ITEM_TAG_COLLECTION),
-    .data = { 0x02, 0x00 } };
+
 
 static const USB_HID_Short_Item_t hidInputConstArray        = {
     .header = HID_REPORT_SET_HEADER(1, HID_REPORT_ITEM_TYPE_MAIN, HID_REPORT_ITEM_TAG_INPUT),
@@ -57,9 +55,25 @@ static const USB_HID_Short_Item_t hidReportSize1            = {
     .header = HID_REPORT_SET_HEADER(1, HID_REPORT_ITEM_TYPE_GLOBAL, HID_REPORT_ITEM_TAG_REPORT_SIZE),
     .data = { 0x01, 0x00 } };
 
-static const USB_HID_Short_Item_t hidUsageConsumerControl   = {
+static const USB_HID_Short_Item_t hidUsagePageGenericDesktop  = {
+    .header = HID_REPORT_SET_HEADER(1, HID_REPORT_ITEM_TYPE_GLOBAL, HID_REPORT_ITEM_TAG_USAGE_PAGE),
+    .data = { USB_HID_USAGE_PAGE_ID_GENERIC_DESKTOP, 0x00 }};
+static const USB_HID_Short_Item_t hidUsagePageConsumerControl = {
+    .header = HID_REPORT_SET_HEADER(1, HID_REPORT_ITEM_TYPE_GLOBAL, HID_REPORT_ITEM_TAG_USAGE_PAGE),
+    .data = { USB_HID_USAGE_PAGE_ID_CONSUMER, 0x00 }};
+static const USB_HID_Short_Item_t hidUsagePageTelephony       = {
+    .header = HID_REPORT_SET_HEADER(1, HID_REPORT_ITEM_TYPE_GLOBAL, HID_REPORT_ITEM_TAG_USAGE_PAGE),
+    .data = { USB_HID_USAGE_PAGE_ID_TELEPHONY_DEVICE, 0x00 }};
+
+static const USB_HID_Short_Item_t hidUsageKeyboard            = {
     .header = HID_REPORT_SET_HEADER(1, HID_REPORT_ITEM_TYPE_LOCAL, HID_REPORT_ITEM_TAG_USAGE),
-    .data = { 0x01, 0x00 } };
+    .data = { 0x06, 0x00 }};
+static const USB_HID_Short_Item_t hidUsageConsumerControl     = {
+    .header = HID_REPORT_SET_HEADER(1, HID_REPORT_ITEM_TYPE_LOCAL, HID_REPORT_ITEM_TAG_USAGE),
+    .data = { 0x01, 0x00 }};
+static const USB_HID_Short_Item_t hidUsageTelephonyHeadset    = {
+    .header = HID_REPORT_SET_HEADER(1, HID_REPORT_ITEM_TYPE_LOCAL, HID_REPORT_ITEM_TAG_USAGE),
+    .data = { 0x05, 0x00 }};
 
 /*
  * Define the HID Report Descriptor Item, Usage Page, Report ID and length for each HID Report
@@ -93,6 +107,9 @@ static const USB_HID_Report_Element_t hidReportTelephony    = {
     .location = HID_REPORT_SET_LOC( USB_HID_REPORT_ID_TELEPHONY, 1, 0, 0 )
 };
 
+/*
+ * Define configurable elements in the HID Report descriptor.
+ */
 static USB_HID_Report_Element_t hidUsageReport1Byte0Bit0    = {
     .item.header = HID_REPORT_SET_HEADER(1, HID_REPORT_ITEM_TYPE_LOCAL, HID_REPORT_ITEM_TAG_USAGE),
     .item.data = { 0x17, 0x00 },
@@ -199,72 +216,74 @@ static const USB_HID_Report_Element_t* const hidReports[] = {
  * List all items in the HID Report descriptor.
  */
 static const USB_HID_Short_Item_t* const hidReportDescriptorItems[] = {
-    &(hidReportConsumer.item),
+    &hidUsagePageGenericDesktop,
+    &hidUsageKeyboard,
+    &hidReportSize1,
+    &hidLogicalMinimum0,
+    &hidCollectionApplication,      // Report 1
+        &hidReportId1,
+        &(hidReportKeyboard.item),
+        &hidLogicalMaximum1,
+        &hidReportCount1,
+        &(hidUsageReport1Byte0Bit0.item),
+        &hidInputDataVar,
+        &hidLogicalMaximum0,
+        &hidInputConstArray,
+        &hidLogicalMaximum1,
+        &(hidUsageReport1Byte0Bit2.item),
+        &hidInputDataVar,
+        &(hidUsageReport1Byte0Bit3.item),
+        &hidInputDataVar,
+        &hidLogicalMaximum0,
+        &hidReportCount4,
+        &hidInputConstArray,
+    &hidCollectionEnd,
+    &hidUsagePageConsumerControl,
     &hidUsageConsumerControl,
-    &hidCollectionApplication,
-        &hidReportSize1,
-        &hidLogicalMinimum0,
-        &hidCollectionLogical,      // Report 1
-            &hidReportId1,
-            &(hidReportKeyboard.item),
-            &hidLogicalMaximum1,
-            &hidReportCount1,
-            &(hidUsageReport1Byte0Bit0.item),
-            &hidInputDataVar,
-            &hidLogicalMaximum0,
-            &hidInputConstArray,
-            &hidLogicalMaximum1,
-            &(hidUsageReport1Byte0Bit2.item),
-            &hidInputDataVar,
-            &(hidUsageReport1Byte0Bit3.item),
-            &hidInputDataVar,
-            &hidLogicalMaximum0,
-            &hidReportCount4,
-            &hidInputConstArray,
-        &hidCollectionEnd,
-        &hidCollectionLogical,      // Report 2
-            &hidReportId2,
-            &(hidReportConsumer.item),
-            &hidLogicalMaximum1,
-            &hidReportCount1,
-            &(hidUsageReport2Byte0Bit0.item),
-            &hidInputDataVar,
-            &(hidUsageReport2Byte0Bit1.item),
-            &hidInputDataVar,
-            &(hidUsageReport2Byte0Bit2.item),
-            &hidInputDataVar,
-            &hidLogicalMaximum0,
-            &hidInputConstArray,
-            &hidLogicalMaximum1,
-            &(hidUsageReport2Byte0Bit4.item),
-            &hidInputDataVar,
-            &hidLogicalMaximum0,
-            &hidInputConstArray,
-            &hidLogicalMaximum1,
-            &(hidUsageReport2Byte0Bit6.item),
-            &hidInputDataVar,
-            &(hidUsageReport2Byte0Bit7.item),
-            &hidInputDataVar,
-            &hidLogicalMaximum0,
-            &hidReportCount7,
-            &hidInputConstArray,
-            &hidLogicalMaximum1,
-            &hidReportCount1,
-            &(hidUsageReport2Byte1Bit7.item),
-            &hidInputDataVar,
-        &hidCollectionEnd,
-        &hidCollectionLogical,      // Report 3
-            &hidReportId3,
-            &(hidReportTelephony.item),
-            &(hidUsageReport3Byte0Bit0.item),
-            &hidInputDataVar,
-            &(hidUsageReport3Byte0Bit1.item),
-            &hidInputDataVar,
-            &hidLogicalMaximum0,
-            &hidReportCount6,
-            &hidInputConstArray,
-        &hidCollectionEnd,
-    &hidCollectionEnd
+    &hidCollectionApplication,      // Report 2
+        &hidReportId2,
+        &(hidReportConsumer.item),
+        &hidLogicalMaximum1,
+        &hidReportCount1,
+        &(hidUsageReport2Byte0Bit0.item),
+        &hidInputDataVar,
+        &(hidUsageReport2Byte0Bit1.item),
+        &hidInputDataVar,
+        &(hidUsageReport2Byte0Bit2.item),
+        &hidInputDataVar,
+        &hidLogicalMaximum0,
+        &hidInputConstArray,
+        &hidLogicalMaximum1,
+        &(hidUsageReport2Byte0Bit4.item),
+        &hidInputDataVar,
+        &hidLogicalMaximum0,
+        &hidInputConstArray,
+        &hidLogicalMaximum1,
+        &(hidUsageReport2Byte0Bit6.item),
+        &hidInputDataVar,
+        &(hidUsageReport2Byte0Bit7.item),
+        &hidInputDataVar,
+        &hidLogicalMaximum0,
+        &hidReportCount7,
+        &hidInputConstArray,
+        &hidLogicalMaximum1,
+        &hidReportCount1,
+        &(hidUsageReport2Byte1Bit7.item),
+        &hidInputDataVar,
+    &hidCollectionEnd,
+    &hidUsagePageTelephony,
+    &hidUsageTelephonyHeadset,
+    &hidCollectionApplication,      // Report 3
+        &hidReportId3,
+        &(hidReportTelephony.item),
+        &(hidUsageReport3Byte0Bit0.item),
+        &hidInputDataVar,
+        &(hidUsageReport3Byte0Bit1.item),
+        &hidInputDataVar,
+        &hidLogicalMaximum0,
+        &hidReportCount6,
+        &hidInputConstArray,
+    &hidCollectionEnd,
 };
 
 /*
