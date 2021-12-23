@@ -20,6 +20,8 @@
 test_results.csv
 _build*
 **/.venv/**
+**/.vscode/**
+**.egg-info
 
 # waf build files
 .lock-waf_*

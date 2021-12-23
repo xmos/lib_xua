@@ -28,7 +28,7 @@
 #if( 0 < HID_CONTROLS )
 #include "hid.h"
 #include "xua_hid.h"
-#include "xua_hid_report_descriptor.h"
+#include "xua_hid_report.h"
 #endif
 
 #if DSD_CHANS_DAC > 0
@@ -525,6 +525,7 @@ void XUA_Endpoint0_init(chanend c_ep0_out, chanend c_ep0_in, NULLABLE_RESOURCE(c
 #endif
 
 #if( 0 < HID_CONTROLS )
+    hidReportInit();
     hidPrepareReportDescriptor();
 
     size_t hidReportDescriptorLength = hidGetReportDescriptorLength();

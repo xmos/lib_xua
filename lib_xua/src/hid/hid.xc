@@ -7,37 +7,14 @@
 #include "xud.h"
 #include "xud_std_requests.h"
 #include "xua_hid.h"
+#include "xua_hid_report.h"
 
 #if( 0 < HID_CONTROLS )
-#define MS_IN_TICKS 100000U
-
-static unsigned s_hidChangePending = 0U;
-static unsigned s_hidCurrentPeriod = ENDPOINT_INT_INTERVAL_IN_HID * MS_IN_TICKS;
-static unsigned s_hidIdleActive = 0U;
-static unsigned s_hidIndefiniteDuration = 0U;
-static unsigned s_hidNextReportTime = 0U;
-static unsigned s_hidReportTime = 0U;
-
-unsafe {
-  volatile unsigned * unsafe s_hidChangePendingPtr = &s_hidChangePending;
-}
-
 static unsigned     HidCalcNewReportTime( const unsigned currentPeriod, const unsigned reportTime, const unsigned reportToSetIdleInterval, const unsigned newPeriod );
 static unsigned     HidCalcReportToSetIdleInterval( const unsigned reportTime );
 static unsigned     HidFindSetIdleActivationPoint( const unsigned currentPeriod, const unsigned timeWithinPeriod );
 static XUD_Result_t HidProcessSetIdleRequest( XUD_ep c_ep0_out, XUD_ep c_ep0_in, USB_SetupPacket_t &sp );
 static unsigned     HidTimeDiff( const unsigned earlierTime, const unsigned laterTime );
-
-void HidCalcNextReportTime( void )
-{
-  s_hidNextReportTime = s_hidReportTime + s_hidCurrentPeriod;
-}
-
-void HidCaptureReportTime( void )
-{
-  timer tmr;
-  tmr :> s_hidReportTime;
-}
 
 XUD_Result_t HidInterfaceClassRequests(
   XUD_ep c_ep0_out,
@@ -58,39 +35,20 @@ XUD_Result_t HidInterfaceClassRequests(
   return result;
 }
 
-void HidClearChangePending( void )
+unsigned HidIsSetIdleSilenced( const unsigned id )
 {
-  unsafe {
-    *s_hidChangePendingPtr = 0U;
-  }
-}
+  unsigned isSilenced = hidIsIdleActive( id );
 
-unsigned HidIsChangePending( void )
-{
-  return( s_hidChangePending != 0 );
-}
-
-unsigned HidIsSetIdleSilenced( void )
-{
-  unsigned isSilenced = s_hidIdleActive;
-
-  if( s_hidIdleActive ) {
+  if( !isSilenced ) {
     unsigned currentTime;
     // Use inline assembly to access the time without creating a side-effect.
     // The mapper complains if the time comes from an XC timer because this function is called in the guard of a select case.
     // Appearently the use of a timer creates a side-effect that prohibits the operation of the select functionality.
     asm volatile( "gettime %0" : "=r" ( currentTime ));
-    isSilenced = ( s_hidIndefiniteDuration || ( timeafter( s_hidNextReportTime, currentTime )));
+    isSilenced = ( 0U == hidGetReportPeriod( id ) || ( timeafter( hidGetNextReportTime( id ), currentTime )));
   }
 
   return isSilenced;
-}
-
-void HidSetChangePending( void )
-{
-  unsafe {
-    *s_hidChangePendingPtr = 1;
-  }
 }
 
 /**
@@ -112,7 +70,7 @@ void HidSetChangePending( void )
  */
 static unsigned HidCalcNewReportTime( const unsigned currentPeriod, const unsigned reportTime, const unsigned reportToSetIdleInterval, const unsigned newPeriod )
 {
-  unsigned nextReportTime = 0;
+  unsigned nextReportTime = 0U;
 
   if( HidFindSetIdleActivationPoint( currentPeriod, reportToSetIdleInterval )) {
     /* Activate immediately after sending the next HID Report */
@@ -172,6 +130,31 @@ static unsigned HidFindSetIdleActivationPoint( const unsigned currentPeriod, con
 }
 
 /**
+ *  \brief Configure a hid report's next report time and idle status based on a setidle request
+ *
+ *  \param[in]  reportId -- The report ID to modify
+ *  \param[in]  reportDuration  -- The duration of the setidle request
+ *
+ */
+static void HidUpdateReportPeriod( unsigned reportId, unsigned reportDuration ) {
+  unsigned currentPeriod = hidGetReportPeriod( reportId );
+
+  hidSetIdle( reportId, ( 0U == reportDuration ) || ( ENDPOINT_INT_INTERVAL_IN_HID < reportDuration ));
+
+  if( hidIsIdleActive( reportId )) {
+    unsigned reportTime = hidGetReportTime( reportId );
+    unsigned reportToSetIdleInterval = HidCalcReportToSetIdleInterval( reportTime );
+    unsigned nextReportTime = HidCalcNewReportTime( currentPeriod, reportTime, reportToSetIdleInterval, reportDuration * MS_IN_TICKS );
+    hidSetNextReportTime( reportId, nextReportTime );
+    currentPeriod = reportDuration * MS_IN_TICKS;
+  } else {
+    currentPeriod = ENDPOINT_INT_INTERVAL_IN_HID * MS_IN_TICKS;
+  }
+
+  hidSetReportPeriod( reportId, currentPeriod );
+}
+
+/**
  *  \brief Process a Set Idle request
  *
  *  \param[in]  c_ep0_out -- the channel that carries data from Endpoint 0
@@ -208,20 +191,24 @@ static XUD_Result_t HidProcessSetIdleRequest( XUD_ep c_ep0_out, XUD_ep c_ep0_in,
 
       Any Interface value other than INTERFACE_NUMBER_HID indicates an error by the USB Host.
    */
-  if(( 0U == reportId ) && ( INTERFACE_NUMBER_HID == interfaceNum )) {
-    s_hidIdleActive = (( 0U == duration ) || ( ENDPOINT_INT_INTERVAL_IN_HID < duration ));
+  if( INTERFACE_NUMBER_HID == interfaceNum ) {
+    if( hidIsReportIdValid( reportId ) ) {
+      HidUpdateReportPeriod( reportId, duration );
 
-    if( s_hidIdleActive ) {
-      unsigned reportToSetIdleInterval = HidCalcReportToSetIdleInterval( s_hidReportTime );
-      s_hidNextReportTime = HidCalcNewReportTime( s_hidCurrentPeriod, s_hidReportTime, reportToSetIdleInterval, duration * MS_IN_TICKS );
-      s_hidCurrentPeriod = duration * MS_IN_TICKS;
-      s_hidIndefiniteDuration = ( 0U == duration );
-    } else {
-      s_hidCurrentPeriod = ENDPOINT_INT_INTERVAL_IN_HID * MS_IN_TICKS;
-      s_hidIndefiniteDuration = 0U;
+      result = XUD_DoSetRequestStatus( c_ep0_in );
     }
+    else if ( reportId == 0U ) {
+      // Wildcard request - set all report IDs to idle
+      unsigned startReportId = hidGetNextValidReportId(reportId);
 
-    result = XUD_DoSetRequestStatus( c_ep0_in );
+      reportId = startReportId;
+      do {
+        HidUpdateReportPeriod( reportId, duration );
+        reportId = hidGetNextValidReportId( reportId );
+      } while( reportId != startReportId);
+
+      result = XUD_DoSetRequestStatus( c_ep0_in );
+    }
   }
 
   return result;

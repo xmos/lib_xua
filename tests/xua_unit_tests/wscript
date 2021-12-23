@@ -95,6 +95,7 @@ def add_unity_runner_build_config(waf_conf, project_root_path, unity_test_path,
 
 def prepare_unity_test_for_build(waf_conf, project_root_path, unity_test_path,
                                  unity_runner_dir, unity_runner_suffix, target):
+    print("unity_test_path: " + str(unity_test_path))
     generate_unity_runner(project_root_path, unity_test_path,
                           unity_runner_dir, unity_runner_suffix)
     runner_build_flags = ''  # Could extract flags from the test name
@@ -107,7 +108,12 @@ def find_unity_test_paths(unity_test_dir, unity_test_prefix):
     Return a list of all file paths with the unity_test_prefix found in the
     unity_test_dir.
     """
-    return glob.glob(os.path.join(unity_test_dir, unity_test_prefix+'*'))
+    file_list = []
+    for root, dirs, files in os.walk(unity_test_dir):
+        for f in files:
+            if f.startswith(unity_test_prefix):
+                file_list.append(os.path.join(root,f))
+    return file_list
 
 
 def find_unity_tests(unity_test_dir, unity_test_prefix):
@@ -116,7 +122,7 @@ def find_unity_tests(unity_test_dir, unity_test_prefix):
     unity_test_prefix found in the unity_test_dir.
     """
     unity_test_paths = find_unity_test_paths(unity_test_dir, unity_test_prefix)
-    return {get_test_name(path): get_file_type(path)
+    return {get_test_name(path): {"language": get_file_type(path), "dir": os.path.dirname(path)}
             for path in unity_test_paths}
 
 
@@ -139,8 +145,8 @@ def generate_all_unity_runners(waf_conf, project_root_path,
 # TODO: can the xwaf boilerplate help here?
 def create_waf_contexts(configs):
     for trgt in TARGETS:
-        for test_name, test_language in configs.items():
-            print(f"test_name {test_name}, test_language {test_language}")
+        for test_name, params in configs.items():
+            print(f"test_name {test_name}, test_language {params['language']}")
             for ctx in (BuildContext, CleanContext):
                 raw_context = ctx.__name__.replace('Context', '').lower()
 
@@ -149,9 +155,10 @@ def create_waf_contexts(configs):
                     variant = test_name + '_' + trgt
                     #cmd = raw_context + '_' + test_name
                     #variant = test_name
-                    language = test_language
+                    language = params["language"]
                     target = trgt
                     runner = test_name
+                    directory = params["dir"]
                     print(f"cmd {cmd}, variant {variant}, language {language}")
 
 
@@ -160,6 +167,8 @@ UNITY_TEST_PREFIX = 'test_'
 UNITY_RUNNER_DIR = 'runners'
 UNITY_RUNNER_SUFFIX = '_Runner'
 UNITY_TESTS = find_unity_tests(UNITY_TEST_DIR, UNITY_TEST_PREFIX)
+
+print("UNITY_TESTS: " + str(UNITY_TESTS))
 
 create_waf_contexts(UNITY_TESTS)
 
@@ -174,7 +183,6 @@ def configure(conf):
                                UNITY_TEST_DIR, UNITY_TEST_PREFIX,
                                UNITY_RUNNER_DIR, UNITY_RUNNER_SUFFIX)
     conf.load('xwaf.xcommon')
-
 
 def build(bld):
     if not bld.variant:
@@ -204,7 +212,7 @@ def build(bld):
                       'Unity']
 
         makefile_opts = {}
-        makefile_opts['SOURCE_DIRS'] = ['src', os.path.join('runners',bld.runner)]
+        makefile_opts['SOURCE_DIRS'] = ['src', bld.directory, os.path.join('runners',bld.runner)]
         if(bld.target == 'xcoreai'):
             print('TARGET XCOREAI')
             makefile_opts['TARGET'] = ['XCORE-AI-EXPLORER']
@@ -213,6 +221,7 @@ def build(bld):
             makefile_opts['TARGET'] = ['XCORE-200-EXPLORER']
 
         makefile_opts['INCLUDE_DIRS'] = ['src',
+                                         bld.directory,
                                          '../../lib_xua/api',
                                          '../../lib_xua/src/core/pdm_mics',
                                          '../../lib_xua/src/hid',

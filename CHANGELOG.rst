@@ -1,6 +1,15 @@
 lib_xua Change Log
 ==================
 
+3.0.0
+-----
+
+  * ADDED:     Support for HID Report IDs
+  * REMOVED:   Support for HID Reports containing controls from mixed Usage
+    pages
+  * CHANGED:   Renamed the HID API file xua_hid_report_descriptor.h to
+    xua_hid_report.h
+
 2.1.1
 -----
 
