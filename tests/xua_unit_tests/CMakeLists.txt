@@ -79,12 +79,10 @@ foreach( testsourcefile ${APP_SOURCES} )
     set_target_properties(${ITEM_NAME} PROPERTIES OUTPUT_NAME ${ITEM_NAME}.xe)
     target_compile_options(${ITEM_NAME} PRIVATE ${APP_COMPILER_FLAGS})
 
-
-
-       target_include_directories(${ITEM_NAME}
-          PRIVATE ${APP_INCLUDES}
-          PRIVATE ${XUA_INCLUDES_ALL}
-        )
+    target_include_directories(${ITEM_NAME}
+        PRIVATE ${APP_INCLUDES}
+        PRIVATE ${XUA_INCLUDES_ALL}
+    )
 
     target_sources(${ITEM_NAME}
             PRIVATE ${APP_SRCS}
