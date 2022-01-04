@@ -508,7 +508,6 @@ unsigned hidSetReportItem(
     const unsigned char data[]
 )
 {
-    hwlock_acquire(hidStaticVarLock);
     unsigned retVal = HID_STATUS_IN_USE;
 
     if( !s_hidReportDescriptorPrepared ) {
@@ -555,8 +554,6 @@ unsigned hidSetReportItem(
             }
         }
     }
-
-    hwlock_release(hidStaticVarLock);
     return retVal;
 }
 
