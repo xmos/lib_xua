@@ -21,7 +21,6 @@
  */
 
 hwlock_t hidStaticVarLock;
-hidStaticVarLock = hwlock_alloc();
 
 static unsigned s_hidChangePending[ HID_REPORT_COUNT ];
 static unsigned char s_hidReportDescriptor[ HID_REPORT_DESCRIPTOR_MAX_LENGTH ];
@@ -447,6 +446,8 @@ void hidPrepareReportDescriptor( void )
 
 void hidReportInit( void )
 {
+    hidStaticVarLock = hwlock_alloc();
+
     hwlock_acquire(hidStaticVarLock);
     for( unsigned idx = 0U; idx < HID_REPORT_COUNT; ++idx ) {
         s_hidCurrentPeriod[ idx ] = ENDPOINT_INT_INTERVAL_IN_HID * MS_IN_TICKS;
