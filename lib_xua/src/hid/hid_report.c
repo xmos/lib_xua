@@ -228,9 +228,7 @@ unsigned hidGetNextReportTime( const unsigned id )
 
 unsigned hidIsReportDescriptorPrepared( void )
 {
-    hwlock_acquire(hidStaticVarLock);
     return s_hidReportDescriptorPrepared;
-    hwlock_release(hidStaticVarLock);
 }
 
 unsigned char* hidGetReportDescriptor( void )
