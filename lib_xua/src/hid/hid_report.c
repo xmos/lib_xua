@@ -20,7 +20,8 @@
  * Each element in s_hidChangePending corresponds to an element in hidReports.
  */
 
-hwlock_t hidStaticVarLock = hwlock_alloc();
+hwlock_t hidStaticVarLock;
+hidStaticVarLock = hwlock_alloc();
 
 static unsigned s_hidChangePending[ HID_REPORT_COUNT ];
 static unsigned char s_hidReportDescriptor[ HID_REPORT_DESCRIPTOR_MAX_LENGTH ];
