@@ -392,6 +392,10 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
 #endif
 #endif
 
+    timer tmr;
+    unsigned loopTime;
+    tmr :> loopTime;
+
     while(1)
     {
         XUD_Result_t result;
@@ -894,14 +898,13 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
 
 #if( 0 < HID_CONTROLS )
             /* HID Report Data */
-            case (hidIsChangePending(0U) || !HidIsSetIdleSilenced(0U)) => XUD_SetData_Select(c_hid, ep_hid, result):
+            case (hidIsChangePending(0U) || !HidIsSetIdleSilenced(0U, loopTime)) => XUD_SetData_Select(c_hid, ep_hid, result):
             {
-                timer tmr;
                 unsigned reportTime;
                 tmr :> reportTime;
 
                 for(unsigned id = hidIsReportIdInUse(); id < hidGetReportIdLimit(); ++id) {
-                    if(0U == id || (hidIsChangePending(id) || !HidIsSetIdleSilenced(id))) {
+                    if(0U == id || (hidIsChangePending(id) || !HidIsSetIdleSilenced(id, reportTime))) {
                         hidCaptureReportTime(id, reportTime);
                         int hidDataLength = (int) UserHIDGetData(id, g_hidData);
                         XUD_SetReady_In(ep_hid, g_hidData, hidDataLength);
@@ -1122,6 +1125,7 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
 
         }
 
+        tmr :> loopTime;
     }
 }
 #endif /* XUA_USB_EN */

@@ -41,6 +41,6 @@ XUD_Result_t HidInterfaceClassRequests(
  *  \retval   1 -- Do not send the HID Report
  *  \retval   0 -- Send the HID Report
  */
-unsigned HidIsSetIdleSilenced( const unsigned id );
+unsigned HidIsSetIdleSilenced( const unsigned id, const unsigned currentTime );
 
 #endif // __XUA_HID_H__
