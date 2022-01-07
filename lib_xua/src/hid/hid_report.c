@@ -228,14 +228,6 @@ unsigned hidGetNextReportTime( const unsigned id )
     return retVal;
 }
 
-unsigned hidIsReportDescriptorPrepared( void )
-{
-    swlock_acquire(hidStaticVarLock);
-    unsigned retVal = s_hidReportDescriptorPrepared;
-    swlock_release(hidStaticVarLock);
-    return retVal;
-}
-
 unsigned char* hidGetReportDescriptor( void )
 {
     unsigned char* retVal = NULL;
@@ -267,32 +259,6 @@ unsigned hidGetReportIdLimit ( void ) {
             retVal = reportId + 1;
         }
     }
-    swlock_release(hidStaticVarLock);
-    return retVal;
-}
-
-unsigned hidIsReportIdInUse ( void ) {
-    swlock_acquire(hidStaticVarLock);
-    if ( hidGetElementReportId( hidReports[ 0 ]->location ) ) {
-        swlock_release(hidStaticVarLock);
-        return 1;
-    }
-    swlock_release(hidStaticVarLock);
-    return 0;
-}
-
-unsigned hidIsReportIdValid ( unsigned id ) {
-    size_t retVal = 0;
-
-    swlock_acquire(hidStaticVarLock);
-    for( size_t idx = 0U; idx < HID_REPORT_COUNT; ++idx ) {
-        unsigned reportId = hidGetElementReportId( hidReports[ idx ]->location );
-        if( reportId == id ) {
-            retVal = 1;
-            break;
-        }
-    }
-
     swlock_release(hidStaticVarLock);
     return retVal;
 }
@@ -447,6 +413,40 @@ unsigned hidIsIdleActive( const unsigned id )
             break;
         }
     }
+    swlock_release(hidStaticVarLock);
+    return retVal;
+}
+
+unsigned hidIsReportDescriptorPrepared( void )
+{
+    swlock_acquire(hidStaticVarLock);
+    unsigned retVal = s_hidReportDescriptorPrepared;
+    swlock_release(hidStaticVarLock);
+    return retVal;
+}
+
+unsigned hidIsReportIdInUse ( void ) {
+    swlock_acquire(hidStaticVarLock);
+    if ( hidGetElementReportId( hidReports[ 0 ]->location ) ) {
+        swlock_release(hidStaticVarLock);
+        return 1;
+    }
+    swlock_release(hidStaticVarLock);
+    return 0;
+}
+
+unsigned hidIsReportIdValid ( unsigned id ) {
+    size_t retVal = 0;
+
+    swlock_acquire(hidStaticVarLock);
+    for( size_t idx = 0U; idx < HID_REPORT_COUNT; ++idx ) {
+        unsigned reportId = hidGetElementReportId( hidReports[ idx ]->location );
+        if( reportId == id ) {
+            retVal = 1;
+            break;
+        }
+    }
+
     swlock_release(hidStaticVarLock);
     return retVal;
 }
