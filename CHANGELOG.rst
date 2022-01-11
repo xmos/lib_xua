@@ -10,6 +10,10 @@ lib_xua Change Log
   * CHANGED:   Renamed the HID API file xua_hid_report_descriptor.h to
     xua_hid_report.h
 
+  * Changes to dependencies:
+
+    - lib_locks: Added dependency 2.1.0
+
 2.1.1
 -----
 
