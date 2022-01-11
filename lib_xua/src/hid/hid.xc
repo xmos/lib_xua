@@ -151,8 +151,6 @@ static void HidUpdateReportPeriod( unsigned reportId, unsigned reportDuration ) 
     unsigned nextReportTime = HidCalcNewReportTime( currentPeriod, reportTime, reportToSetIdleInterval, reportDuration * MS_IN_TICKS );
     hidSetNextReportTime( reportId, nextReportTime );
     currentPeriod = reportDuration * MS_IN_TICKS;
-  } else {
-    currentPeriod = ENDPOINT_INT_INTERVAL_IN_HID * MS_IN_TICKS * HID_REPORT_COUNT;
   }
 
   hidSetReportPeriod( reportId, currentPeriod );
