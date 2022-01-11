@@ -114,6 +114,19 @@ typedef struct
 } USB_HID_Report_Element_t;
 
 /**
+ * @brief Does the application use Report IDs?
+ * 
+ * If the application is not using Report IDs, then the id value that is passed around
+ * everywhere can just be zero. Otherwise zero is an invalid ID that has a special meaning
+ * in some cases (read the documentation for each function).
+ * 
+ * @return Boolean
+ * @retval 1 Report IDs are in use
+ * @retval 0 Report IDs are not in use
+ */
+unsigned hidAreReportIdsInUse ( void );
+
+/**
  *  \brief Register that a previously changed HID Report data has been sent
  *         to the USB Host.
  *
@@ -189,19 +202,6 @@ size_t hidGetReportDescriptorLength( void );
  *  \returns  The upper limit of HID Report identifiers
  */
 unsigned hidGetReportIdLimit ( void );
-
-/**
- * @brief Does the application use Report IDs?
- * 
- * If the application is not using Report IDs, then the id value that is passed around
- * everywhere can just be zero. Otherwise zero is an invalid ID that has a special meaning
- * in some cases (read the documentation for each function).
- * 
- * @return Boolean
- * @retval 1 Report IDs are in use
- * @retval 0 Report IDs are not in use
- */
-unsigned hidIsReportIdInUse ( void );
 
 /**
  * @brief Is the provided report ID valid for passing to other functions.
