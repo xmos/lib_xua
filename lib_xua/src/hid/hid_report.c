@@ -23,7 +23,6 @@ swlock_t hidStaticVarLock = SWLOCK_INITIAL_VALUE;
  * Each element in s_hidChangePending corresponds to an element in hidReports.
  */
 
-
 static unsigned s_hidChangePending[ HID_REPORT_COUNT ];
 static unsigned char s_hidReportDescriptor[ HID_REPORT_DESCRIPTOR_MAX_LENGTH ];
 static size_t s_hidReportDescriptorLength;
@@ -214,16 +213,39 @@ static unsigned hidGetItemType( const unsigned char header )
     return bType;
 }
 
-unsigned hidGetNextReportTime( const unsigned id ) 
+unsigned hidGetNextReportTime( const unsigned id )
 {
     swlock_acquire(hidStaticVarLock);
-    unsigned retVal = 0U;
+    unsigned retVal = (id == 0U) ? s_hidNextReportTime[0] : 0U;
 
     for( size_t idx = 0U; idx < HID_REPORT_COUNT; ++idx ) {
-        if( id == hidGetElementReportId( hidReports[ idx ]->location )) {
+        if (id == 0U)
+        {
+            unsigned nextReportTime = s_hidNextReportTime[ idx ];
+            retVal = (nextReportTime < retVal) ? nextReportTime : retVal;
+        } else if( id == hidGetElementReportId( hidReports[ idx ]->location )) {
             retVal = s_hidNextReportTime[ idx ];
         }
     }
+    swlock_release(hidStaticVarLock);
+    return retVal;
+}
+
+//unsigned hidGetNextReportTime( const unsigned id ) {
+//    unsigned retVal = 0U;
+//
+//    for( size_t idx = 0U; idx < HID_REPORT_COUNT; ++idx ) {
+//        if( id == hidGetElementReportId( hidReports[ idx ]->location )) {
+//            retVal = s_hidNextReportTime[ idx ];
+//        }
+//    }
+//    return retVal;
+//}
+
+unsigned hidIsReportDescriptorPrepared( void )
+{
+    swlock_acquire(hidStaticVarLock);
+    unsigned retVal = s_hidReportDescriptorPrepared;
     swlock_release(hidStaticVarLock);
     return retVal;
 }
@@ -265,7 +287,6 @@ unsigned hidGetReportIdLimit ( void ) {
 
 unsigned hidGetNextValidReportId ( unsigned idPrev ) {
     size_t retIndex = 0;
-
     swlock_acquire(hidStaticVarLock);
     for( size_t idx = 0U; idx < HID_REPORT_COUNT; ++idx ) {
         unsigned reportId = hidGetElementReportId( hidReports[ idx ]->location );
@@ -471,7 +492,7 @@ void hidReportInit( void )
 {
     swlock_acquire(hidStaticVarLock);
     for( unsigned idx = 0U; idx < HID_REPORT_COUNT; ++idx ) {
-        s_hidCurrentPeriod[ idx ] = ENDPOINT_INT_INTERVAL_IN_HID * MS_IN_TICKS;
+        s_hidCurrentPeriod[ idx ] = ENDPOINT_INT_INTERVAL_IN_HID * MS_IN_TICKS * HID_REPORT_COUNT;
     }
     memset( s_hidIdleActive, 0, sizeof( s_hidIdleActive ) );
     memset( s_hidChangePending, 0, sizeof( s_hidChangePending ) );
@@ -529,6 +550,13 @@ unsigned hidSetReportItem(
     const unsigned char data[]
 )
 {
+
+    if (!lockAllocated)
+    {
+        hidStaticVarLock = hwlock_alloc();
+        lockAllocated = 1;
+    }
+
     unsigned retVal = HID_STATUS_IN_USE;
 
     if( !s_hidReportDescriptorPrepared ) {
