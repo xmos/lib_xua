@@ -124,7 +124,7 @@ typedef struct
  * @retval 1 Report IDs are in use
  * @retval 0 Report IDs are not in use
  */
-unsigned hidAreReportIdsInUse ( void );
+unsigned hidIsReportIdInUse ( void );
 
 /**
  *  \brief Register that a previously changed HID Report data has been sent

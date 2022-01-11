@@ -901,7 +901,7 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
                 unsigned reportTime;
                 tmr :> reportTime;
 
-                for(unsigned id = hidAreReportIdsInUse(); id < hidGetReportIdLimit(); ++id) {
+                for(unsigned id = hidIsReportIdInUse(); id < hidGetReportIdLimit(); ++id) {
                     if(0U == id || (hidIsChangePending(id) || !HidIsSetIdleSilenced(id))) {
                         hidCaptureReportTime(id, reportTime);
                         int hidDataLength = (int) UserHIDGetData(id, g_hidData);
