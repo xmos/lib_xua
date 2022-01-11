@@ -807,6 +807,7 @@ void test_set_all_idle( void )
         hidSetIdle( reportId, 1 );
         setIdle = hidIsIdleActive( reportId );
         TEST_ASSERT_EQUAL_UINT( 1, setIdle );
+    }
 }
 
 void test_change_pending( void )
