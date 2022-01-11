@@ -136,6 +136,9 @@ static unsigned hidGetUsagePage( const unsigned id );
  */
 static size_t hidTranslateItem( const USB_HID_Short_Item_t* inPtr, unsigned char** outPtrPtr );
 
+unsigned hidAreReportIdsInUse ( void ) {
+    return !hidIsReportIdInUse(0U);
+}
 
 void hidCalcNextReportTime( const unsigned id )
 {
@@ -213,34 +216,18 @@ static unsigned hidGetItemType( const unsigned char header )
     return bType;
 }
 
-unsigned hidGetNextReportTime( const unsigned id )
-{
+unsigned hidGetNextReportTime( const unsigned id ) {
     swlock_acquire(&hidStaticVarLock);
-    unsigned retVal = (id == 0U) ? s_hidNextReportTime[0] : 0U;
+    unsigned retVal = 0U;
 
-    for( size_t idx = 0U; idx < HID_REPORT_COUNT; ++idx ) {
-        if (id == 0U)
-        {
-            unsigned nextReportTime = s_hidNextReportTime[ idx ];
-            retVal = (nextReportTime < retVal) ? nextReportTime : retVal;
-        } else if( id == hidGetElementReportId( hidReports[ idx ]->location )) {
+    for ( size_t idx = 0U; idx < HID_REPORT_COUNT; ++idx ) {
+        if( id == hidGetElementReportId( hidReports[ idx ]->location )) {
             retVal = s_hidNextReportTime[ idx ];
         }
-    }
+     }
     swlock_release(&hidStaticVarLock);
     return retVal;
 }
-
-//unsigned hidGetNextReportTime( const unsigned id ) {
-//    unsigned retVal = 0U;
-//
-//    for( size_t idx = 0U; idx < HID_REPORT_COUNT; ++idx ) {
-//        if( id == hidGetElementReportId( hidReports[ idx ]->location )) {
-//            retVal = s_hidNextReportTime[ idx ];
-//        }
-//    }
-//    return retVal;
-//}
 
 unsigned char* hidGetReportDescriptor( void )
 {
@@ -398,9 +385,7 @@ unsigned hidIsChangePending( const unsigned id )
     swlock_acquire(&hidStaticVarLock);
 
     for( size_t idx = 0U; idx < HID_REPORT_COUNT; ++idx) {
-        if( id == 0U && s_hidChangePending[ idx ] != 0U ) {
-            retVal = 1;
-        } else if( id == hidGetElementReportId( hidReports[ idx ]->location )) {
+        if( id == hidGetElementReportId( hidReports[ idx ]->location )) {
             retVal  = ( s_hidChangePending[ idx ] != 0U );
             break;
         }
@@ -413,15 +398,10 @@ unsigned hidIsChangePending( const unsigned id )
 unsigned hidIsIdleActive( const unsigned id )
 {
     unsigned retVal = 0U;
-    if( 0U == id ) {
-        retVal = 1U;
-    }
 
     swlock_acquire(&hidStaticVarLock);
     for( size_t idx = 0U; idx < HID_REPORT_COUNT; ++idx) {
-        if( id == 0U ) {
-            retVal &= ( s_hidIdleActive[ idx ] != 0U );
-        } else if( id == hidGetElementReportId( hidReports[ idx ]->location )) {
+        if( id == hidGetElementReportId( hidReports[ idx ]->location )) {
             retVal  = ( s_hidIdleActive[ idx ] != 0U );
             break;
         }
@@ -436,16 +416,6 @@ unsigned hidIsReportDescriptorPrepared( void )
     unsigned retVal = s_hidReportDescriptorPrepared;
     swlock_release(&hidStaticVarLock);
     return retVal;
-}
-
-unsigned hidIsReportIdInUse ( void ) {
-    swlock_acquire(&hidStaticVarLock);
-    if ( hidGetElementReportId( hidReports[ 0 ]->location ) ) {
-        swlock_release(&hidStaticVarLock);
-        return 1;
-    }
-    swlock_release(&hidStaticVarLock);
-    return 0;
 }
 
 unsigned hidIsReportIdValid ( unsigned id ) {
