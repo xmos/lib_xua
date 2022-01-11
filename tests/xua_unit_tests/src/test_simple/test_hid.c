@@ -46,7 +46,7 @@ void test_validate_report( void ) {
 }
 
 void test_reportid_in_use( void ) {
-    unsigned reportIdInUse = hidIsReportIdInUse();
+    unsigned reportIdInUse = hidAreReportIdsInUse();
     TEST_ASSERT_EQUAL_UINT( 0, reportIdInUse );
 }
 
