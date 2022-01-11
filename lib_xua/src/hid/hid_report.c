@@ -137,7 +137,7 @@ static unsigned hidGetUsagePage( const unsigned id );
 static size_t hidTranslateItem( const USB_HID_Short_Item_t* inPtr, unsigned char** outPtrPtr );
 
 unsigned hidAreReportIdsInUse ( void ) {
-    return !hidIsReportIdInUse(0U);
+    return !hidIsReportIdValid(0U);
 }
 
 void hidCalcNextReportTime( const unsigned id )
