@@ -392,6 +392,8 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
 #endif
 #endif
 
+    timer tmr;
+
     while(1)
     {
         XUD_Result_t result;
@@ -896,7 +898,6 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
             /* HID Report Data */
             case (hidIsChangePending(0U) || !HidIsSetIdleSilenced(0U)) => XUD_SetData_Select(c_hid, ep_hid, result):
             {
-                timer tmr;
                 unsigned reportTime;
                 tmr :> reportTime;
 
@@ -1121,7 +1122,6 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
 
 
         }
-
     }
 }
 #endif /* XUA_USB_EN */
