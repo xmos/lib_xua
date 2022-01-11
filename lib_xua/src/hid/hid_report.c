@@ -242,14 +242,6 @@ unsigned hidGetNextReportTime( const unsigned id )
 //    return retVal;
 //}
 
-unsigned hidIsReportDescriptorPrepared( void )
-{
-    swlock_acquire(&hidStaticVarLock);
-    unsigned retVal = s_hidReportDescriptorPrepared;
-    swlock_release(&hidStaticVarLock);
-    return retVal;
-}
-
 unsigned char* hidGetReportDescriptor( void )
 {
     unsigned char* retVal = NULL;
@@ -550,13 +542,6 @@ unsigned hidSetReportItem(
     const unsigned char data[]
 )
 {
-
-    if (!lockAllocated)
-    {
-        &hidStaticVarLock = hwlock_alloc();
-        lockAllocated = 1;
-    }
-
     unsigned retVal = HID_STATUS_IN_USE;
 
     if( !s_hidReportDescriptorPrepared ) {
