@@ -9,6 +9,10 @@
 #include "xua_hid.h"
 #include "xua_hid_report.h"
 
+#define DEBUG_UNIT HID_XC
+#define DEBUG_PRINT_ENABLE_HID_XC 1
+#include "debug_print.h"
+
 #if( 0 < HID_CONTROLS )
 static unsigned     HidCalcNewReportTime( const unsigned currentPeriod, const unsigned reportTime, const unsigned reportToSetIdleInterval, const unsigned newPeriod );
 static unsigned     HidCalcReportToSetIdleInterval( const unsigned reportTime );
@@ -42,8 +46,12 @@ unsigned HidIsSetIdleSilenced( const unsigned id )
     // The mapper complains if the time comes from an XC timer because this function is called in the guard of a select case.
     // Appearently the use of a timer creates a side-effect that prohibits the operation of the select functionality.
     asm volatile( "gettime %0" : "=r" ( currentTime ));
-
-    unsigned isSilenced = timeafter(hidGetNextReportTime( id ), currentTime);
+    unsigned nextTime = hidGetNextReportTime( id );
+    unsigned isSilenced = timeafter(nextTime, currentTime);
+    if (!isSilenced)
+    {
+        debug_printf("%d\n", nextTime);
+    }
 
     // Calling hidGetReportPeriod with an ID of 0 is meaningless if we are using
     // report IDs.
