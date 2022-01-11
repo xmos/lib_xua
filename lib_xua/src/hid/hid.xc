@@ -37,19 +37,39 @@ XUD_Result_t HidInterfaceClassRequests(
 
 unsigned HidIsSetIdleSilenced( const unsigned id )
 {
-  unsigned isSilenced = hidIsIdleActive( id );
-
-  if( !isSilenced ) {
     unsigned currentTime;
     // Use inline assembly to access the time without creating a side-effect.
     // The mapper complains if the time comes from an XC timer because this function is called in the guard of a select case.
     // Appearently the use of a timer creates a side-effect that prohibits the operation of the select functionality.
     asm volatile( "gettime %0" : "=r" ( currentTime ));
-    isSilenced = ( 0U == hidGetReportPeriod( id ) || ( timeafter( hidGetNextReportTime( id ), currentTime )));
-  }
 
-  return isSilenced;
+    unsigned isSilenced = timeafter(hidGetNextReportTime( id ), currentTime);
+
+    // Calling hidGetReportPeriod with an ID of 0 is meaningless if we are using
+    // report IDs.
+    if (!hidIsReportIdInUse() || (id != 0))
+    {
+        isSilenced |= ( 0U == hidGetReportPeriod( id ) );
+    }
+  
+    return isSilenced;
 }
+
+//unsigned HidIsSetIdleSilenced( const unsigned id )
+//{
+//  unsigned isSilenced = hidIsIdleActive( id );
+//
+//  if( !isSilenced ) {
+//    unsigned currentTime;
+//    // Use inline assembly to access the time without creating a side-effect.
+//    // The mapper complains if the time comes from an XC timer because this function is called in the guard of a select case.
+//    // Appearently the use of a timer creates a side-effect that prohibits the operation of the select functionality.
+//    asm volatile( "gettime %0" : "=r" ( currentTime ));
+//    isSilenced = ( 0U == hidGetReportPeriod( id ) || ( timeafter( hidGetNextReportTime( id ), currentTime )));
+//  }
+//
+//  return isSilenced;
+//}
 
 /**
  * \brief Calculate the timer value for sending the next HID Report.
