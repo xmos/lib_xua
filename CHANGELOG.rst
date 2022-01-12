@@ -1,6 +1,12 @@
 lib_xua Change Log
 ==================
 
+3.1.0
+-----
+
+  * CHANGED:   Removed logic from HID API functions allowing a Report ID of 0
+    to be used as "all/any" Report.  
+
 3.0.0
 -----
 
