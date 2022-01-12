@@ -10,7 +10,7 @@
 #include "xua_hid_report.h"
 
 #define DEBUG_UNIT HID_XC
-#define DEBUG_PRINT_ENABLE_HID_XC 1
+#define DEBUG_PRINT_ENABLE_HID_XC 0
 #include "debug_print.h"
 
 #if( 0 < HID_CONTROLS )
