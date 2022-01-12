@@ -6,8 +6,7 @@ pipeline {
   agent none
   environment {
     REPO = 'lib_xua'
-    VIEW = 'lib_xua_test_locks'
-    // VIEW = getViewName(REPO)
+    VIEW = getViewName(REPO)
   }
   options {
     skipDefaultCheckout()
