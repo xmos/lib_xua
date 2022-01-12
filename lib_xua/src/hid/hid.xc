@@ -59,8 +59,8 @@ unsigned HidIsSetIdleSilenced( const unsigned id )
  * \brief Calculate the timer value for sending the next HID Report.
  *
  *  With regard to Section 7.2.4 Set_Idle Request of the USB Device Class Definition for Human
- *    Interface Devices (HID) Version 1.11, I've interpreted 'currently executing period' and
- *    'current period' to mean the previously established Set Idle duration if one has been
+ *    Interface Devices (HID) Version 1.11, 'currently executing period' and 'current period' have
+ *    been interpreted to mean the previously established Set Idle duration if one has been
  *    established or the polling interval from the HID Report Descriptor if a Set Idle duration
  *    has not been established.
  *
