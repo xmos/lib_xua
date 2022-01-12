@@ -207,6 +207,7 @@ def build(bld):
                       'lib_xud',
                       'lib_spdif',
                       'lib_mic_array',
+                      'lib_locks',
                       'lib_logging',
                       'lib_xassert',
                       'Unity']
