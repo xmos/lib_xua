@@ -209,7 +209,7 @@ def build(bld):
                       'lib_mic_array',
                       'lib_logging',
                       'lib_xassert',
-                      'sc_utils',
+                      'sc_util',
                       'Unity']
 
         makefile_opts = {}
