@@ -373,15 +373,13 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
 #endif
 
 #if( 0 < HID_CONTROLS )
-    UserHIDInit();
 
     while (!hidIsReportDescriptorPrepared())
         ;
 
-    /* Get the a report - we don't really care which it is, so long as there's some data we can grab. */
-    int hidReportLength = (int) UserHIDGetData(hidGetNextValidReportId(0), g_hidData); 
-
-    XUD_SetReady_In(ep_hid, g_hidData, hidReportLength);
+    UserHIDInit();
+    unsigned hid_ready_flag = 0U;
+    unsigned hid_ready_id = 0U;
 
 #endif
 
@@ -759,169 +757,160 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
 #endif
 
 #ifdef MIDI
-        case XUD_GetData_Select(c_midi_from_host, ep_midi_from_host, length, result):
+            case XUD_GetData_Select(c_midi_from_host, ep_midi_from_host, length, result):
 
-            if((result == XUD_RES_OKAY) && (length > 0))
-            {
-                /* Get buffer data from host - MIDI OUT from host always into a single buffer */
-                midi_data_remaining_to_device = length;
-
-                midi_from_host_rdptr = midi_from_host_buffer;
-
-                if (midi_data_remaining_to_device)
+                if((result == XUD_RES_OKAY) && (length > 0))
                 {
-                    read_via_xc_ptr(datum, midi_from_host_rdptr);
-                    outuint(c_midi, datum);
-                    midi_from_host_rdptr += 4;
-                    midi_data_remaining_to_device -= 4;
-                }
-            }
-            break;
+                    /* Get buffer data from host - MIDI OUT from host always into a single buffer */
+                    midi_data_remaining_to_device = length;
 
-        /* MIDI IN to host */
-        case XUD_SetData_Select(c_midi_to_host, ep_midi_to_host, result):
+                    midi_from_host_rdptr = midi_from_host_buffer;
 
-            /* The buffer has been sent to the host, so we can ack the midi thread */
-            if (midi_data_collected_from_device != 0)
-            {
-                /* Swap the collecting and sending buffer */
-                swap(midi_to_host_buffer_being_collected, midi_to_host_buffer_being_sent);
-
-                /* Request to send packet */
-                XUD_SetReady_InPtr(ep_midi_to_host, midi_to_host_buffer_being_sent, midi_data_collected_from_device);
-
-                /* Mark as waiting for host to poll us */
-                midi_waiting_on_send_to_host = 1;
-                /* Reset the collected data count */
-                midi_data_collected_from_device = 0;
-            }
-            else
-            {
-                midi_waiting_on_send_to_host = 0;
-            }
-          break;
-#endif
-
-#ifdef IAP
-        /* IAP OUT from host. Datalength writen to tmp */
-        case XUD_GetData_Select(c_iap_from_host, ep_iap_from_host, length, result):
-
-            if((result == XUD_RES_OKAY) && (length > 0))
-            {
-                iap_data_remaining_to_device = length;
-
-                if(iap_data_remaining_to_device)
-                {
-                    // Send length first so iAP thread knows how much data to expect
-                    // Don't expect ack from this to make it simpler
-                    outuint(c_iap, iap_data_remaining_to_device);
-
-                    /* Send out first byte in buffer */
-                    datum_iap = iap_from_host_buffer[0];
-                    outuint(c_iap, datum_iap);
-
-                    /* Set read ptr to next byte in buffer */
-                    iap_from_host_rdptr = 1;
-                    iap_data_remaining_to_device -= 1;
-                }
-            }
-            break;
-
-        /* IAP IN to host */
-        case XUD_SetData_Select(c_iap_to_host, ep_iap_to_host, result):
-
-            if(result == XUD_RES_RST)
-            {
-                XUD_ResetEndpoint(ep_iap_to_host, null);
-#ifdef IAP_INT_EP
-                XUD_ResetEndpoint(ep_iap_to_host_int, null);
-#endif
-                iap_send_reset(c_iap);
-                iap_draining_chan = 1; // Drain c_iap until a reset is sent back
-                iap_data_collected_from_device = 0;
-                iap_data_remaining_to_device = -1;
-                iap_expected_data_length = 0;
-                iap_from_host_rdptr = 0;
-            }
-            else
-            {
-                /* Send out an iAP packet to host, ACK last msg from iAP to let it know we can move on..*/
-                iap_send_ack(c_iap);
-            }
-            break;  /* IAP IN to host */
-
-#ifdef IAP_INT_EP
-        case XUD_SetData_Select(c_iap_to_host_int, ep_iap_to_host_int, result):
-
-            /* Do nothing.. */
-            /* Note, could get a reset notification here, but deal with it in the case above */
-            break;
-#endif
-
-#ifdef IAP_EA_NATIVE_TRANS
-        /* iAP EA Native Transport OUT from host */
-        case XUD_GetData_Select(c_iap_ea_native_out, ep_iap_ea_native_out, iap_ea_native_rx_length, result):
-            if ((result == XUD_RES_OKAY) && iap_ea_native_rx_length > 0)
-            {
-                // Notify EA Protocol user code we have iOS app data from XUD
-                iAP2_EANativeTransport_writeToChan_start(c_iap_ea_native_data, EA_NATIVE_SEND_DATA);
-            }
-            break;
-
-        /* iAP EA Native Transport IN to host */
-        case XUD_SetData_Select(c_iap_ea_native_in, ep_iap_ea_native_in, result):
-            switch (result)
-            {
-                case XUD_RES_RST:
-                    XUD_ResetEndpoint(ep_iap_ea_native_in, null);
-                    // Notify user code of USB reset to allow any state to be cleared
-                    iAP2_EANativeTransport_writeToChan_start(c_iap_ea_native_data, EA_NATIVE_SEND_CONTROL);
-                    // Set up the control flag to send to EA Protocol user code when it responds
-                    iap_ea_native_control_flag = EA_NATIVE_RESET;
-                    iap_ea_native_control_to_send = 1;
-                    break;
-
-                case XUD_RES_OKAY: // EA Protocol user data successfully passed to XUD
-                    // Notify user code
-                    iAP2_EANativeTransport_writeToChan_start(c_iap_ea_native_data, EA_NATIVE_SEND_CONTROL);
-                    // Set up the control flag to send to EA Protocol user code when it responds
-                    iap_ea_native_control_flag = EA_NATIVE_DATA_SENT;
-                    iap_ea_native_control_to_send = 1;
-                    break;
-            }
-            break;
-            //::
-#endif
-#endif
-
-#if( 0 < HID_CONTROLS )
-            /* HID Report Data */
-            case (hidIsChangePending(0U) || !HidIsSetIdleSilenced(0U)) => XUD_SetData_Select(c_hid, ep_hid, result):
-            {
-                unsigned reportTime;
-                tmr :> reportTime;
-
-                for(unsigned id = hidIsReportIdInUse(); id < hidGetReportIdLimit(); ++id) {
-                    if(0U == id || (hidIsChangePending(id) || !HidIsSetIdleSilenced(id))) {
-                        hidCaptureReportTime(id, reportTime);
-                        int hidDataLength = (int) UserHIDGetData(id, g_hidData);
-                        XUD_SetReady_In(ep_hid, g_hidData, hidDataLength);
-                        hidCalcNextReportTime(id);
-                        hidClearChangePending(id);
-                        break;
+                    if (midi_data_remaining_to_device)
+                    {
+                        read_via_xc_ptr(datum, midi_from_host_rdptr);
+                        outuint(c_midi, datum);
+                        midi_from_host_rdptr += 4;
+                        midi_data_remaining_to_device -= 4;
                     }
                 }
-            }
-            break;
-#endif
+                break;
 
-#ifdef MIDI
-            /* Received word from MIDI thread - Check for ACK or Data */
+            /* MIDI IN to host */
+            case XUD_SetData_Select(c_midi_to_host, ep_midi_to_host, result):
+
+                /* The buffer has been sent to the host, so we can ack the midi thread */
+                if (midi_data_collected_from_device != 0)
+                {
+                    /* Swap the collecting and sending buffer */
+                    swap(midi_to_host_buffer_being_collected, midi_to_host_buffer_being_sent);
+
+                    /* Request to send packet */
+                    XUD_SetReady_InPtr(ep_midi_to_host, midi_to_host_buffer_being_sent, midi_data_collected_from_device);
+
+                    /* Mark as waiting for host to poll us */
+                    midi_waiting_on_send_to_host = 1;
+                    /* Reset the collected data count */
+                    midi_data_collected_from_device = 0;
+                }
+                else
+                {
+                    midi_waiting_on_send_to_host = 0;
+                }
+            break;
+    #endif
+
+    #ifdef IAP
+            /* IAP OUT from host. Datalength writen to tmp */
+            case XUD_GetData_Select(c_iap_from_host, ep_iap_from_host, length, result):
+
+                if((result == XUD_RES_OKAY) && (length > 0))
+                {
+                    iap_data_remaining_to_device = length;
+
+                    if(iap_data_remaining_to_device)
+                    {
+                        // Send length first so iAP thread knows how much data to expect
+                        // Don't expect ack from this to make it simpler
+                        outuint(c_iap, iap_data_remaining_to_device);
+
+                        /* Send out first byte in buffer */
+                        datum_iap = iap_from_host_buffer[0];
+                        outuint(c_iap, datum_iap);
+
+                        /* Set read ptr to next byte in buffer */
+                        iap_from_host_rdptr = 1;
+                        iap_data_remaining_to_device -= 1;
+                    }
+                }
+                break;
+
+            /* IAP IN to host */
+            case XUD_SetData_Select(c_iap_to_host, ep_iap_to_host, result):
+
+                if(result == XUD_RES_RST)
+                {
+                    XUD_ResetEndpoint(ep_iap_to_host, null);
+    #ifdef IAP_INT_EP
+                    XUD_ResetEndpoint(ep_iap_to_host_int, null);
+    #endif
+                    iap_send_reset(c_iap);
+                    iap_draining_chan = 1; // Drain c_iap until a reset is sent back
+                    iap_data_collected_from_device = 0;
+                    iap_data_remaining_to_device = -1;
+                    iap_expected_data_length = 0;
+                    iap_from_host_rdptr = 0;
+                }
+                else
+                {
+                    /* Send out an iAP packet to host, ACK last msg from iAP to let it know we can move on..*/
+                    iap_send_ack(c_iap);
+                }
+                break;  /* IAP IN to host */
+
+    #ifdef IAP_INT_EP
+            case XUD_SetData_Select(c_iap_to_host_int, ep_iap_to_host_int, result):
+
+                /* Do nothing.. */
+                /* Note, could get a reset notification here, but deal with it in the case above */
+                break;
+    #endif
+
+    #ifdef IAP_EA_NATIVE_TRANS
+            /* iAP EA Native Transport OUT from host */
+            case XUD_GetData_Select(c_iap_ea_native_out, ep_iap_ea_native_out, iap_ea_native_rx_length, result):
+                if ((result == XUD_RES_OKAY) && iap_ea_native_rx_length > 0)
+                {
+                    // Notify EA Protocol user code we have iOS app data from XUD
+                    iAP2_EANativeTransport_writeToChan_start(c_iap_ea_native_data, EA_NATIVE_SEND_DATA);
+                }
+                break;
+
+            /* iAP EA Native Transport IN to host */
+            case XUD_SetData_Select(c_iap_ea_native_in, ep_iap_ea_native_in, result):
+                switch (result)
+                {
+                    case XUD_RES_RST:
+                        XUD_ResetEndpoint(ep_iap_ea_native_in, null);
+                        // Notify user code of USB reset to allow any state to be cleared
+                        iAP2_EANativeTransport_writeToChan_start(c_iap_ea_native_data, EA_NATIVE_SEND_CONTROL);
+                        // Set up the control flag to send to EA Protocol user code when it responds
+                        iap_ea_native_control_flag = EA_NATIVE_RESET;
+                        iap_ea_native_control_to_send = 1;
+                        break;
+
+                    case XUD_RES_OKAY: // EA Protocol user data successfully passed to XUD
+                        // Notify user code
+                        iAP2_EANativeTransport_writeToChan_start(c_iap_ea_native_data, EA_NATIVE_SEND_CONTROL);
+                        // Set up the control flag to send to EA Protocol user code when it responds
+                        iap_ea_native_control_flag = EA_NATIVE_DATA_SENT;
+                        iap_ea_native_control_to_send = 1;
+                        break;
+                }
+                break;
+                //::
+    #endif
+    #endif
+
+    #if( 0 < HID_CONTROLS )
+                /* HID Report Data */
+            case XUD_SetData_Select(c_hid, ep_hid, result):
+                hid_ready_flag = 0U;
+                unsigned reportTime;
+                tmr :> reportTime;
+                hidCaptureReportTime(hid_ready_id, reportTime);
+                hidCalcNextReportTime(hid_ready_id);
+                hidClearChangePending(hid_ready_id);
+            break;
+    #endif
+
+    #ifdef MIDI
+                /* Received word from MIDI thread - Check for ACK or Data */
             case midi_get_ack_or_data(c_midi, is_ack, datum):
                 if (is_ack)
                 {
                     /* An ack from the midi/uart thread means it has accepted some data we sent it
-                     * we are okay to send another word */
+                        * we are okay to send another word */
                     if (midi_data_remaining_to_device <= 0)
                     {
                         /* We have read an entire packet - Mark ready to receive another */
@@ -966,9 +955,9 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
                     }
                 }
                 break;
-#endif  /* ifdef MIDI */
+    #endif  /* ifdef MIDI */
 
-#ifdef IAP
+    #ifdef IAP
             /* Received word from iap thread - Check for ACK or Data */
             case iap_get_ack_or_reset_or_data(c_iap, is_ack_iap, is_reset, datum_iap):
 
@@ -986,7 +975,7 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
                     if (is_ack_iap)
                     {
                         /* An ack from the iap/uart thread means it has accepted some data we sent it
-                         * we are okay to send another word */
+                            * we are okay to send another word */
                         if (iap_data_remaining_to_device == 0)
                         {
                             /* We have read an entire packet - Mark ready to receive another */
@@ -1019,7 +1008,7 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
                             }
                             else
                             {
-                               // Too many events from device - drop
+                                // Too many events from device - drop
                             }
 
                             /* Once we have the whole message, sent it to host */
@@ -1027,16 +1016,16 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
                             if (iap_data_collected_from_device == iap_expected_data_length)
                             {
                                 XUD_Result_t result1 = XUD_RES_OKAY, result2;
-#ifdef IAP_INT_EP
+    #ifdef IAP_INT_EP
                                 result1 = XUD_SetReady_In(ep_iap_to_host_int, gc_zero_buffer, 0);
-#endif
+    #endif
                                 result2 = XUD_SetReady_In(ep_iap_to_host, iap_to_host_buffer, iap_data_collected_from_device);
 
                                 if((result1 == XUD_RES_RST) || (result2 == XUD_RES_RST))
                                 {
-#ifdef IAP_INT_EP
+    #ifdef IAP_INT_EP
                                     XUD_ResetEndpoint(ep_iap_to_host_int, null);
-#endif
+    #endif
                                     XUD_ResetEndpoint(ep_iap_to_host, null);
                                     iap_send_reset(c_iap);
                                     iap_draining_chan = 1; // Drain c_iap until a reset is sent back
@@ -1057,7 +1046,7 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
                 }
                 break;
 
-# if IAP_EA_NATIVE_TRANS
+    # if IAP_EA_NATIVE_TRANS
             /* Change of EA Native Transport interface setting */
             case inuint_byref(c_iap_ea_native_ctrl, iap_ea_native_interface_alt_setting):
                 /* Handshake */
@@ -1108,12 +1097,32 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
 
                     case EA_NATIVE_SEND_DATA: // Unsolicited data from user core for IN ep
                         iAP2_EANativeTransport_readFromChan_data(c_iap_ea_native_data,
-                                                                 iap_ea_native_tx_buffer,
-                                                                 iap_ea_native_tx_length);
+                                                                    iap_ea_native_tx_buffer,
+                                                                    iap_ea_native_tx_length);
                         // Mark the IN EP as ready now we have all the data
                         XUD_SetReady_In(ep_iap_ea_native_in, iap_ea_native_tx_buffer, iap_ea_native_tx_length);
                         break;
                 }
+                break;
+
+            default:
+#if ( 0 < HID_CONTROLS )
+                if (!hid_ready_flag)
+                {
+                    for (unsigned id = hidIsReportIdInUse(); id < hidGetReportIdLimit(); id++)
+                    {
+                        if ( hidIsChangePending(id) || !HidIsSetIdleSilenced(id) )
+                        {
+                            int hidDataLength = (int) UserHIDGetData(id, g_hidData);
+                            XUD_SetReady_In(ep_hid, g_hidData, hidDataLength);
+
+                            hid_ready_id = id;
+                            hid_ready_flag = 1U;
+                            break;
+                        }
+                    }
+                }
+#endif
                 break;
                 //::
 #endif
