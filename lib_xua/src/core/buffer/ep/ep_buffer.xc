@@ -752,8 +752,8 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
 
                 /* Sync with decouple thread */
                 SET_SHARED_GLOBAL0(g_aud_from_host_flag, 1);
-             }
                 break;
+             }
 #endif
 
 #ifdef MIDI
