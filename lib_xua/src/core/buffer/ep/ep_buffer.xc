@@ -93,7 +93,7 @@ unsigned int fb_clocks[4];
 void XUA_Buffer(
             register chanend c_aud_out, 
 #if (NUM_USB_CHAN_IN > 0)
-	        register chanend c_aud_in,
+            register chanend c_aud_in,
 #endif
 #if (NUM_USB_CHAN_IN == 0) || defined (UAC_FORCE_FEEDBACK_EP)
             chanend c_aud_fb,
@@ -198,7 +198,7 @@ unsafe{volatile unsigned * unsafe masterClockFreq_ptr;}
  */
 void XUA_Buffer_Ep(register chanend c_aud_out, 
 #if (NUM_USB_CHAN_IN > 0)
-	register chanend c_aud_in,
+    register chanend c_aud_in,
 #endif
 #if (NUM_USB_CHAN_IN == 0) || defined (UAC_FORCE_FEEDBACK_EP)
     chanend c_aud_fb,
@@ -448,9 +448,9 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
                         if(receivedSampleFreq != AUDIO_STOP_FOR_DFU)
                         {
                             sampleFreq = receivedSampleFreq;
-   #ifdef FB_TOLERANCE_TEST
+#ifdef FB_TOLERANCE_TEST
                             expected_fb = ((sampleFreq * 0x2000) / frameTime);
-   #endif
+#endif
                             /* Reset FB */
                             /* Note, Endpoint 0 will hold off host for a sufficient period to allow our feedback
                              * to stabilise (i.e. sofCount == 128 to fire) */
@@ -711,7 +711,7 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
 #endif
                     sofCount++;
                 }
-            break;
+                break;
 
 #if (NUM_USB_CHAN_IN > 0)
             /* Sent audio packet DEVICE -> HOST */
@@ -720,7 +720,7 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
                 /* Inform stream that buffer sent */
                 SET_SHARED_GLOBAL0(g_aud_to_host_flag, bufferIn+1);
             }
-            break;
+                break;
 #endif
 
 #if (NUM_USB_CHAN_OUT > 0)
@@ -741,7 +741,7 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
                     XUD_SetReady_In(ep_aud_fb, (fb_clocks, unsigned char[]), 3);
                 }
             }
-            break;
+                break;
 #endif
             /* Received Audio packet HOST -> DEVICE. Datalength written to length */
             case XUD_GetData_Select(c_aud_out, ep_aud_out, length, result):
@@ -797,10 +797,10 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
                 {
                     midi_waiting_on_send_to_host = 0;
                 }
-            break;
-    #endif
+                break;
+#endif
 
-    #ifdef IAP
+#ifdef IAP
             /* IAP OUT from host. Datalength writen to tmp */
             case XUD_GetData_Select(c_iap_from_host, ep_iap_from_host, length, result):
 
@@ -831,9 +831,9 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
                 if(result == XUD_RES_RST)
                 {
                     XUD_ResetEndpoint(ep_iap_to_host, null);
-    #ifdef IAP_INT_EP
+#ifdef IAP_INT_EP
                     XUD_ResetEndpoint(ep_iap_to_host_int, null);
-    #endif
+#endif
                     iap_send_reset(c_iap);
                     iap_draining_chan = 1; // Drain c_iap until a reset is sent back
                     iap_data_collected_from_device = 0;
@@ -848,15 +848,15 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
                 }
                 break;  /* IAP IN to host */
 
-    #ifdef IAP_INT_EP
+#ifdef IAP_INT_EP
             case XUD_SetData_Select(c_iap_to_host_int, ep_iap_to_host_int, result):
 
                 /* Do nothing.. */
                 /* Note, could get a reset notification here, but deal with it in the case above */
                 break;
-    #endif
+#endif
 
-    #ifdef IAP_EA_NATIVE_TRANS
+#ifdef IAP_EA_NATIVE_TRANS
             /* iAP EA Native Transport OUT from host */
             case XUD_GetData_Select(c_iap_ea_native_out, ep_iap_ea_native_out, iap_ea_native_rx_length, result):
                 if ((result == XUD_RES_OKAY) && iap_ea_native_rx_length > 0)
@@ -889,10 +889,10 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
                 }
                 break;
                 //::
-    #endif
-    #endif
+#endif
+#endif
 
-    #if( 0 < HID_CONTROLS )
+#if( 0 < HID_CONTROLS )
                 /* HID Report Data */
             case XUD_SetData_Select(c_hid, ep_hid, result):
                 hid_ready_flag = 0U;
@@ -901,10 +901,10 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
                 hidCaptureReportTime(hid_ready_id, reportTime);
                 hidCalcNextReportTime(hid_ready_id);
                 hidClearChangePending(hid_ready_id);
-            break;
-    #endif
+                break;
+#endif
 
-    #ifdef MIDI
+#ifdef MIDI
                 /* Received word from MIDI thread - Check for ACK or Data */
             case midi_get_ack_or_data(c_midi, is_ack, datum):
                 if (is_ack)
@@ -955,9 +955,9 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
                     }
                 }
                 break;
-    #endif  /* ifdef MIDI */
+#endif  /* ifdef MIDI */
 
-    #ifdef IAP
+#ifdef IAP
             /* Received word from iap thread - Check for ACK or Data */
             case iap_get_ack_or_reset_or_data(c_iap, is_ack_iap, is_reset, datum_iap):
 
@@ -1016,16 +1016,16 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
                             if (iap_data_collected_from_device == iap_expected_data_length)
                             {
                                 XUD_Result_t result1 = XUD_RES_OKAY, result2;
-    #ifdef IAP_INT_EP
+#ifdef IAP_INT_EP
                                 result1 = XUD_SetReady_In(ep_iap_to_host_int, gc_zero_buffer, 0);
-    #endif
+#endif
                                 result2 = XUD_SetReady_In(ep_iap_to_host, iap_to_host_buffer, iap_data_collected_from_device);
 
                                 if((result1 == XUD_RES_RST) || (result2 == XUD_RES_RST))
                                 {
-    #ifdef IAP_INT_EP
+#ifdef IAP_INT_EP
                                     XUD_ResetEndpoint(ep_iap_to_host_int, null);
-    #endif
+#endif
                                     XUD_ResetEndpoint(ep_iap_to_host, null);
                                     iap_send_reset(c_iap);
                                     iap_draining_chan = 1; // Drain c_iap until a reset is sent back
@@ -1097,8 +1097,8 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
 
                     case EA_NATIVE_SEND_DATA: // Unsolicited data from user core for IN ep
                         iAP2_EANativeTransport_readFromChan_data(c_iap_ea_native_data,
-                                                                    iap_ea_native_tx_buffer,
-                                                                    iap_ea_native_tx_length);
+                                                                 iap_ea_native_tx_buffer,
+                                                                 iap_ea_native_tx_length);
                         // Mark the IN EP as ready now we have all the data
                         XUD_SetReady_In(ep_iap_ea_native_in, iap_ea_native_tx_buffer, iap_ea_native_tx_length);
                         break;
