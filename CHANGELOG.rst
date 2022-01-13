@@ -1,6 +1,12 @@
 lib_xua Change Log
 ==================
 
+3.1.0
+-----
+
+  * CHANGED:   Removed logic from HID API functions allowing a Report ID of 0 to
+    be used as "all/any" Report
+
 3.0.0
 -----
 
@@ -9,6 +15,10 @@ lib_xua Change Log
     pages
   * CHANGED:   Renamed the HID API file xua_hid_report_descriptor.h to
     xua_hid_report.h
+
+  * Changes to dependencies:
+
+    - lib_locks: Added dependency 2.1.0
 
 2.1.1
 -----
