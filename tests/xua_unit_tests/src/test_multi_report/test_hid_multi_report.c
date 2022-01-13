@@ -1,4 +1,4 @@
-// Copyright 2021 XMOS LIMITED.
+// Copyright 2021-2022 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 #include <stddef.h>
 #include <stdio.h>
@@ -775,7 +775,6 @@ void test_initial_modification_with_subsequent_verification_2( void )
 //setIdle and associated timing functionality tests
 void test_set_idle( void )
 {
-    unsigned reportIdAll = 0;
     unsigned reportId = 1;
     unsigned reportId2 = 2;
 
@@ -785,15 +784,9 @@ void test_set_idle( void )
     setIdle = hidIsIdleActive( reportId2 );
     TEST_ASSERT_EQUAL_UINT( 0, setIdle );
 
-    setIdle = hidIsIdleActive( reportIdAll );
-    TEST_ASSERT_EQUAL_UINT( 0, setIdle );
-
     hidSetIdle( reportId, 1 );
     setIdle = hidIsIdleActive( reportId );
     TEST_ASSERT_EQUAL_UINT( 1, setIdle );
-
-    setIdle = hidIsIdleActive( reportIdAll );
-    TEST_ASSERT_EQUAL_UINT( 0, setIdle );
 
     setIdle = hidIsIdleActive( reportId2 );
     TEST_ASSERT_EQUAL_UINT( 0, setIdle );
@@ -801,7 +794,6 @@ void test_set_idle( void )
 
 void test_set_all_idle( void )
 {
-    unsigned reportIdAll = 0;
     unsigned reportId = 1;
     unsigned reportId2 = 2;
 
@@ -811,22 +803,15 @@ void test_set_all_idle( void )
     setIdle = hidIsIdleActive( reportId2 ); 
     TEST_ASSERT_EQUAL_UINT( 0, setIdle );
 
-    setIdle = hidIsIdleActive( reportIdAll );
-    TEST_ASSERT_EQUAL_UINT( 0, setIdle );
-
     for ( reportId = 1; reportId <= HID_REPORT_COUNT; ++reportId ) {
         hidSetIdle( reportId, 1 );
         setIdle = hidIsIdleActive( reportId );
         TEST_ASSERT_EQUAL_UINT( 1, setIdle );
     }
-
-    setIdle = hidIsIdleActive( reportIdAll );
-    TEST_ASSERT_EQUAL_UINT( 1, setIdle );
 }
 
 void test_change_pending( void )
 {
-    unsigned reportIdAll = 0;
     unsigned reportId = 1;
     unsigned reportId2 = 2;
 
@@ -836,14 +821,8 @@ void test_change_pending( void )
     changePending = hidIsChangePending( reportId2 );
     TEST_ASSERT_EQUAL_UINT( 0, changePending );
 
-    changePending = hidIsChangePending( reportIdAll );
-    TEST_ASSERT_EQUAL_UINT( 0, changePending );
-
     hidSetChangePending( reportId );
     changePending = hidIsChangePending( reportId );
-    TEST_ASSERT_EQUAL_UINT( 1, changePending );
-
-    changePending = hidIsChangePending( reportIdAll );
     TEST_ASSERT_EQUAL_UINT( 1, changePending );
 
     changePending = hidIsChangePending( reportId2 );
@@ -852,13 +831,9 @@ void test_change_pending( void )
 
 void test_change_pending_all( void )
 {
-    unsigned reportIdAll = 0;
     unsigned reportId = 1;
 
     unsigned changePending = hidIsChangePending( reportId );
-    TEST_ASSERT_EQUAL_UINT( 0, changePending );
-
-    changePending = hidIsChangePending( reportIdAll );
     TEST_ASSERT_EQUAL_UINT( 0, changePending );
 
     for ( reportId = 1; reportId <= HID_REPORT_COUNT; ++reportId ) {
@@ -866,9 +841,6 @@ void test_change_pending_all( void )
         changePending = hidIsChangePending( reportId );
         TEST_ASSERT_EQUAL_UINT( 1, changePending );
     }
-
-    changePending = hidIsChangePending( reportIdAll );
-    TEST_ASSERT_EQUAL_UINT( 1, changePending );
 }
 
 void test_report_time( void )

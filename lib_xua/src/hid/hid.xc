@@ -1,4 +1,4 @@
-// Copyright 2019-2021 XMOS LIMITED.
+// Copyright 2019-2022 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 #include <stdint.h>
 #include <xs1.h>
@@ -8,6 +8,10 @@
 #include "xud_std_requests.h"
 #include "xua_hid.h"
 #include "xua_hid_report.h"
+
+#define DEBUG_UNIT HID_XC
+#define DEBUG_PRINT_ENABLE_HID_XC 0
+#include "debug_print.h"
 
 #if( 0 < HID_CONTROLS )
 static unsigned     HidCalcNewReportTime( const unsigned currentPeriod, const unsigned reportTime, const unsigned reportToSetIdleInterval, const unsigned newPeriod );
@@ -37,26 +41,26 @@ XUD_Result_t HidInterfaceClassRequests(
 
 unsigned HidIsSetIdleSilenced( const unsigned id )
 {
-  unsigned isSilenced = hidIsIdleActive( id );
+ unsigned isSilenced = hidIsIdleActive( id );
 
-  if( !isSilenced ) {
-    unsigned currentTime;
-    // Use inline assembly to access the time without creating a side-effect.
-    // The mapper complains if the time comes from an XC timer because this function is called in the guard of a select case.
-    // Appearently the use of a timer creates a side-effect that prohibits the operation of the select functionality.
-    asm volatile( "gettime %0" : "=r" ( currentTime ));
-    isSilenced = ( 0U == hidGetReportPeriod( id ) || ( timeafter( hidGetNextReportTime( id ), currentTime )));
-  }
+ if( !isSilenced ) {
+   unsigned currentTime;
+   // Use inline assembly to access the time without creating a side-effect.
+   // The mapper complains if the time comes from an XC timer because this function is called in the guard of a select case.
+   // Appearently the use of a timer creates a side-effect that prohibits the operation of the select functionality.
+   asm volatile( "gettime %0" : "=r" ( currentTime ));
+   isSilenced = ( 0U == hidGetReportPeriod( id ) || ( timeafter( hidGetNextReportTime( id ), currentTime )));
+ }
 
-  return isSilenced;
+ return isSilenced;
 }
 
 /**
  * \brief Calculate the timer value for sending the next HID Report.
  *
  *  With regard to Section 7.2.4 Set_Idle Request of the USB Device Class Definition for Human
- *    Interface Devices (HID) Version 1.11, I've interpreted 'currently executing period' and
- *    'current period' to mean the previously established Set Idle duration if one has been
+ *    Interface Devices (HID) Version 1.11, 'currently executing period' and 'current period' have
+ *    been interpreted to mean the previously established Set Idle duration if one has been
  *    established or the polling interval from the HID Report Descriptor if a Set Idle duration
  *    has not been established.
  *
@@ -147,8 +151,6 @@ static void HidUpdateReportPeriod( unsigned reportId, unsigned reportDuration ) 
     unsigned nextReportTime = HidCalcNewReportTime( currentPeriod, reportTime, reportToSetIdleInterval, reportDuration * MS_IN_TICKS );
     hidSetNextReportTime( reportId, nextReportTime );
     currentPeriod = reportDuration * MS_IN_TICKS;
-  } else {
-    currentPeriod = ENDPOINT_INT_INTERVAL_IN_HID * MS_IN_TICKS;
   }
 
   hidSetReportPeriod( reportId, currentPeriod );

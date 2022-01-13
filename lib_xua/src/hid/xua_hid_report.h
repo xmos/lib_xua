@@ -1,4 +1,4 @@
-// Copyright 2021 XMOS LIMITED.
+// Copyright 2021-2022 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
 /**
@@ -114,6 +114,45 @@ typedef struct
 } USB_HID_Report_Element_t;
 
 /**
+ *  \brief Calculate the next time to respond with a HID Report.
+ *
+ *  If the USB Host has previously sent a valid HID Set_Idle request with
+ *    a duration of zero or greater than the default reporting interval,
+ *    the device sends HID Reports periodically or when the value of the
+ *    payload has changed.
+ *
+ *  This function calculates the time for sending the next periodic
+ *    HID Report.
+ *
+ * Parameters:
+ *
+ *  @param[in]  id  The identifier for the HID Report (see 5.6, 6.2.2.7, 8.1 and 8.2)
+ *                  A value of zero means the application does not use Report IDs.
+ */
+void hidCalcNextReportTime( const unsigned id );
+
+/**
+ *  \brief Capture the time of sending the current HID Report.
+ *
+ *  If the USB Host has previously sent a valid HID Set_Idle request with
+ *    a duration of zero or greater than the default reporting interval,
+ *    the device sends HID Reports periodically or when the value of the
+ *    payload has changed.
+ *
+ *  This function captures the time when the HID Report was sent so that
+ *    a subsequent call to HidCalNextReportTime() can calculate the time
+ *    to send the next periodic HID Report.
+ *
+ * Parameters:
+ *
+ *  @param[in]  id      The identifier for the HID Report (see 5.6, 6.2.2.7, 8.1 and 8.2)
+ *                      A value of zero means the application does not use Report IDs.
+ *
+ *  @param[in]  time    The time when the HID Report for the given \a id was sent.
+ */
+void hidCaptureReportTime( const unsigned id, const unsigned time );
+
+/**
  *  \brief Register that a previously changed HID Report data has been sent
  *         to the USB Host.
  *
@@ -134,22 +173,24 @@ typedef struct
  *    HID data has been reported to the USB Host.
  *
  *  \warning This function will fail silently if given an id that is not
- *    either the value zero, or a Report ID that is in use.
+ *    either the value zero (in the case that Report IDs are not in use), 
+ *    or a Report ID that is in use.
  *
  *  \param[in]  id  A HID Report ID.
- *                  Zero clears the pending status of all Report IDs.
  *                  Use zero if the application does not use Report IDs.
  */
 void hidClearChangePending( const unsigned id );
 
 /**
- * @brief Indicate if the HID Report descriptor has been prepared
- *
- *  \returns  A Boolean indicating whether the HID Report descriptor has been prepared.
- *  \retval   True  The HID Report descriptor has been prepared.
- *  \retval   False The HID Report descriptor has not been prepared.
+ * @brief Get the next valid report ID - iterator style.
+ * 
+ * This function will loop around and start returning the first report ID again once it has
+ * returned all valid report IDs.
+ * 
+ * @param idPrev The previous returned id, or 0 if this is the first call
+ * @return unsigned The next valid report ID.
  */
- unsigned hidIsReportDescriptorPrepared( void );
+unsigned hidGetNextValidReportId ( unsigned idPrev );
 
 /**
  * @brief Get the HID Report descriptor
@@ -191,44 +232,6 @@ size_t hidGetReportDescriptorLength( void );
 unsigned hidGetReportIdLimit ( void );
 
 /**
- * @brief Does the application use Report IDs?
- * 
- * If the application is not using Report IDs, then the id value that is passed around
- * everywhere can just be zero. Otherwise zero is an invalid ID that has a special meaning
- * in some cases (read the documentation for each function).
- * 
- * @return Boolean
- * @retval 1 Report IDs are in use
- * @retval 0 Report IDs are not in use
- */
-unsigned hidIsReportIdInUse ( void );
-
-/**
- * @brief Is the provided report ID valid for passing to other functions.
- * 
- * e.g If Report IDs are not in use, then only 0 will return true.
- * e.g If Report IDs are in use, then 0 will return false and the report IDs that
- *     are in use will return true when passed to thsi function.
- * 
- * @param id  The ID to check
- * @return boolean
- * @retval 0 The report ID is not valid, other functions may fail silently
- * @retval 1 The report ID is valid and can be used as the argument to other functions
- */
-unsigned hidIsReportIdValid ( unsigned id );
-
-/**
- * @brief Get the next valid report ID - iterator style.
- * 
- * This function will loop around and start returning the first report ID again once it has
- * returned all valid report IDs.
- * 
- * @param idPrev The previous returned id, or 0 if this is the first call
- * @return unsigned The next valid report ID.
- */
-unsigned hidGetNextValidReportId ( unsigned idPrev );
-
-/**
  * @brief Get a HID Report descriptor item
  *
  * Parameters:
@@ -264,45 +267,6 @@ unsigned hidGetReportItem(
     unsigned char* const header,
     unsigned char data[]);
 #endif
-
-/**
- *  \brief Calculate the next time to respond with a HID Report.
- *
- *  If the USB Host has previously sent a valid HID Set_Idle request with
- *    a duration of zero or greater than the default reporting interval,
- *    the device sends HID Reports periodically or when the value of the
- *    payload has changed.
- *
- *  This function calculates the time for sending the next periodic
- *    HID Report.
- *
- * Parameters:
- *
- *  @param[in]  id  The identifier for the HID Report (see 5.6, 6.2.2.7, 8.1 and 8.2)
- *                  A value of zero means the application does not use Report IDs.
- */
-void hidCalcNextReportTime( const unsigned id );
-
-/**
- *  \brief Capture the time of sending the current HID Report.
- *
- *  If the USB Host has previously sent a valid HID Set_Idle request with
- *    a duration of zero or greater than the default reporting interval,
- *    the device sends HID Reports periodically or when the value of the
- *    payload has changed.
- *
- *  This function captures the time when the HID Report was sent so that
- *    a subsequent call to HidCalNextReportTime() can calculate the time
- *    to send the next periodic HID Report.
- *
- * Parameters:
- *
- *  @param[in]  id      The identifier for the HID Report (see 5.6, 6.2.2.7, 8.1 and 8.2)
- *                      A value of zero means the application does not use Report IDs.
- *
- *  @param[in]  time    The time when the HID Report for the given \a id was sent.
- */
-void hidCaptureReportTime( const unsigned id, const unsigned time );
 
 /**
  * @brief Get the time to send the next HID Report for the given \a id
@@ -378,18 +342,16 @@ unsigned hidGetReportTime( const unsigned id );
  *   whether unreported HID data exists for that Report ID.
  *
  *  \warning This function will return zero if given an id that is not
- *    either the value zero, or a Report ID that is in use.
+ *    either the value zero (in the case that Report IDs are not in use), 
+ *    or a Report ID that is in use.
  *
  *  \param[in]  id  A HID Report ID.
- *                  Zero reports the pending status of all Report IDs.
  *                  Use zero if the application does not use Report IDs.
  *
  *  \returns  A Boolean indicating whether the given \a id has a changed
  *              HID Report not yet sent to the USB Host.
  *  \retval   True  The given \a id has changed HID Report data.
- *                  For an \a id of zero, some HID Report has changed data.
  *  \retval   False The given \a id does not have changed HID Report data.
- *                  For an \a id of zero, no HID Report has changed data.
  */
 unsigned hidIsChangePending( const unsigned id );
 
@@ -399,15 +361,47 @@ unsigned hidIsChangePending( const unsigned id );
  * Parameters:
  *
  *  @param[in]  id  The identifier for the HID Report (see 5.6, 6.2.2.7, 8.1 and 8.2)
- *                  A value of zero returns the collective Idle state.
  *
  *  \returns  A Boolean indicating whether the HID Report for the given \a id is idle.
  *  \retval   True  The HID Report is idle.
- *                  For an \a id of zero, all HID Reports are idle.
  *  \retval   False The HID Report is not idle.
- *                  For an \a id of zero, at least one HID Report is not idle.
  */
 unsigned hidIsIdleActive( const unsigned id );
+
+/**
+ * @brief Indicate if the HID Report descriptor has been prepared
+ *
+ *  \returns  A Boolean indicating whether the HID Report descriptor has been prepared.
+ *  \retval   True  The HID Report descriptor has been prepared.
+ *  \retval   False The HID Report descriptor has not been prepared.
+ */
+ unsigned hidIsReportDescriptorPrepared( void );
+
+/**
+ * @brief Does the application use Report IDs?
+ * 
+ * If the application is not using Report IDs, then the id value that is passed around
+ * everywhere can just be zero. Otherwise zero is an invalid ID.
+ * 
+ * @return Boolean
+ * @retval 1 Report IDs are in use
+ * @retval 0 Report IDs are not in use
+ */
+unsigned hidIsReportIdInUse ( void );
+
+/**
+ * @brief Is the provided report ID valid for passing to other functions.
+ * 
+ * e.g If Report IDs are not in use, then only 0 will return true.
+ * e.g If Report IDs are in use, then 0 will return false and the report IDs that
+ *     are in use will return true when passed to this function.
+ * 
+ * @param id  The ID to check
+ * @return boolean
+ * @retval 0 The report ID is not valid, other functions may fail silently
+ * @retval 1 The report ID is valid and can be used as the argument to other functions
+ */
+unsigned hidIsReportIdValid ( unsigned id );
 
 /**
  * @brief Prepare the USB HID Report descriptor
@@ -454,7 +448,8 @@ void hidResetReportDescriptor( void );
  *    Host.
  *
  *  \warning This function will fail silently if given an id that is not
- *    either the value zero, or a Report ID that is in use.
+ *    either the value zero (in the case that Report IDs are not in use), 
+ *    or a Report ID that is in use.
  *
  *  \param[in]  id  A HID Report ID.
  *                  Use zero if the application does not use Report IDs.
