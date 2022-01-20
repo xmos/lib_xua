@@ -33,6 +33,10 @@ Key features of the various applications in this repository are as follows
 
 - ADAT input
 
+- I2S slave & master modes
+
+- TDM slave & master modes
+
 - MIDI input/output (Compliant to USB Class Specification for MIDI devices)
 
 - DSD output (Native and DoP mode) at DSD64 and DSD128 rates
