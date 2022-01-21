@@ -33,7 +33,7 @@ Key features of the various applications in this repository are as follows
 
 - ADAT input
 
-- Synchrnonisation to external digital streams i.e. S/PDIF or ADAT
+- Synchronisation to external digital streams i.e. S/PDIF or ADAT
 
 - I2S slave & master modes
 
