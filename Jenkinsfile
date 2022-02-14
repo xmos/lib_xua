@@ -6,7 +6,7 @@ pipeline {
   agent none
   environment {
     REPO = 'lib_xua'
-    VIEW = getViewName(REPO)
+    VIEW = 'lib_xua_with_sc_util'
   }
   options {
     skipDefaultCheckout()
