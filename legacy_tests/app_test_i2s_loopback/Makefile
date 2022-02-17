@@ -1,4 +1,3 @@
-# Copyright (c) 2016, XMOS Ltd, All rights reserved
 TARGET = xk-audio-216-mc.xn
 USED_MODULES = lib_xua lib_i2c lib_logging
 
