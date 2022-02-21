@@ -1,6 +1,11 @@
 lib_xua Change Log
 ==================
 
+UNRELEASED
+----------
+
+  * CHANGED:   Exclude HID Report functions unless the HID feature is enabled
+
 3.1.0
 -----
 
