@@ -14,7 +14,7 @@ pipeline {
   stages {
     stage('Basic tests') {
       agent {
-        label 'x86_64'
+        label 'x86_64 && linux'
       }
       stages {
         stage('Get view') {
@@ -183,7 +183,7 @@ pipeline {
     }
     stage('Update') {
       agent {
-        label 'x86_64'
+        label 'x86_64 && linux'
       }
       steps {
         updateViewfiles()
