@@ -49,6 +49,7 @@ foreach( testsourcefile ${APP_SOURCES} )
             "-fxscope"
             "-target=XCORE-AI-EXPLORER"
             "${CMAKE_CURRENT_SOURCE_DIR}/config.xscope"
+            "-DHID_CONTROLS=1"
             "-DUNITY_SUPPORT_64"
             "-DUNITY_INCLUDE_DOUBLE"
             )

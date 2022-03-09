@@ -747,29 +747,32 @@ void XUA_Buffer_Decouple(chanend c_mix_out
                 inuint(c_mix_out);
                 outct(c_mix_out, SET_SAMPLE_FREQ);
                 outuint(c_mix_out, sampFreq);
-
-                inUnderflow = 1;
-                SET_SHARED_GLOBAL(g_aud_to_host_rdptr, aud_to_host_fifo_start);
-                SET_SHARED_GLOBAL(g_aud_to_host_wrptr, aud_to_host_fifo_start);
-                SET_SHARED_GLOBAL(g_aud_to_host_dptr,aud_to_host_fifo_start+4);
-
-                /* Set buffer to send back to zeros buffer */
-                SET_SHARED_GLOBAL(g_aud_to_host_buffer, g_aud_to_host_zeros);
-
-                /* Update size of zeros buffer (and sampsToWrite) */
-                SetupZerosSendBuffer(aud_to_host_usb_ep, sampFreq, g_curSubSlot_In);
-
-                /* Reset OUT buffer state */
-                outUnderflow = 1;
-                SET_SHARED_GLOBAL(g_aud_from_host_rdptr, aud_from_host_fifo_start);
-                SET_SHARED_GLOBAL(g_aud_from_host_wrptr, aud_from_host_fifo_start);
-                SET_SHARED_GLOBAL(aud_data_remaining_to_device, 0);
-
-                if(outOverflow)
+                
+                if(sampFreq != AUDIO_STOP_FOR_DFU)
                 {
-                    /* If we were previously in overflow we wont have marked as ready */
-                    XUD_SetReady_OutPtr(aud_from_host_usb_ep, aud_from_host_fifo_start+4);
-                    outOverflow = 0;
+                    inUnderflow = 1;
+                    SET_SHARED_GLOBAL(g_aud_to_host_rdptr, aud_to_host_fifo_start);
+                    SET_SHARED_GLOBAL(g_aud_to_host_wrptr, aud_to_host_fifo_start);
+                    SET_SHARED_GLOBAL(g_aud_to_host_dptr,aud_to_host_fifo_start+4);
+
+                    /* Set buffer to send back to zeros buffer */
+                    SET_SHARED_GLOBAL(g_aud_to_host_buffer, g_aud_to_host_zeros);
+
+                    /* Update size of zeros buffer (and sampsToWrite) */
+                    SetupZerosSendBuffer(aud_to_host_usb_ep, sampFreq, g_curSubSlot_In);
+
+                    /* Reset OUT buffer state */
+                    outUnderflow = 1;
+                    SET_SHARED_GLOBAL(g_aud_from_host_rdptr, aud_from_host_fifo_start);
+                    SET_SHARED_GLOBAL(g_aud_from_host_wrptr, aud_from_host_fifo_start);
+                    SET_SHARED_GLOBAL(aud_data_remaining_to_device, 0);
+
+                    if(outOverflow)
+                    {
+                        /* If we were previously in overflow we wont have marked as ready */
+                        XUD_SetReady_OutPtr(aud_from_host_usb_ep, aud_from_host_fifo_start+4);
+                        outOverflow = 0;
+                    }
                 }
 
                 /* Wait for handshake back and pass back up */
@@ -780,7 +783,8 @@ void XUA_Buffer_Decouple(chanend c_mix_out
 
                 ENABLE_INTERRUPTS();
 
-                speedRem = 0;
+                if(sampFreq != AUDIO_STOP_FOR_DFU)
+                    speedRem = 0;
                 continue;
             }
 #if (AUDIO_CLASS == 2)

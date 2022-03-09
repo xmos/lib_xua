@@ -5,6 +5,8 @@ UNRELEASED
 ----------
 
   * CHANGED:   Updated tests to use lib_locks (was legacy module_locks)
+  * CHANGED:   Exclude HID Report functions unless the HID feature is enabled
+  * FIXED:     Incorrect conditional compilation of HID report code
 
   * Changes to dependencies:
 

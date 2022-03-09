@@ -1,4 +1,4 @@
-// Copyright 2011-2021 XMOS LIMITED.
+// Copyright 2011-2022 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 /**
  * @brief   Implements relevant requests from the USB Audio 2.0 Specification
@@ -1280,6 +1280,9 @@ XUD_Result_t AudioClassRequests_1(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket
             buffer[0] = (VOLUME_RES_MIXER & 0xff);
             buffer[1] = (VOLUME_RES_MIXER >> 8);
             return XUD_DoGetRequest(ep0_out, ep0_in, buffer, 2, sp.wLength);
+
+        default:
+            break;
     }
 #endif
     return XUD_RES_ERR;
