@@ -14,7 +14,7 @@ pipeline {
   stages {
     stage('Basic tests') {
       agent {
-        label 'x86_64&&brew'
+        label 'x86_64 && linux'
       }
       stages {
         stage('Get view') {
@@ -113,7 +113,7 @@ pipeline {
       parallel {
         stage('Build Linux host app') {
           agent {
-            label 'x86_64&&brew&&linux'
+            label 'x86_64&&linux'
           }
           steps {
             xcorePrepareSandbox("${VIEW}", "${REPO}")
@@ -129,7 +129,7 @@ pipeline {
         }
         stage('Build Mac host app') {
           agent {
-            label 'x86_64&&brew&&macOS'
+            label 'x86_64&&macOS'
           }
           steps {
             xcorePrepareSandbox("${VIEW}", "${REPO}")
@@ -183,7 +183,7 @@ pipeline {
     }
     stage('Update') {
       agent {
-        label 'x86_64&&brew'
+        label 'x86_64 && linux'
       }
       steps {
         updateViewfiles()
