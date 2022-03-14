@@ -5,10 +5,8 @@ TARGET = xk-audio-216-mc.xn
 # The flags passed to xcc when building the application
 XCC_FLAGS	= -fcomment-asm -Xmapper --map -Xmapper MAPFILE -O3 -report -save-temps \
 			  -g -Wno-unused-function -Wno-timing -DXUD_SERIES_SUPPORT=XUD_X200_SERIES \
-			  -DXUD_CORE_CLOCK=600 -DUSB_TILE=tile[1] -fxscope
+			  -DXUD_CORE_CLOCK=600 -DUSB_TILE=tile[1] -fxscope -DUAC_FORCE_FEEDBACK_EP=0
 			  
-#-DSDA_HIGH=2 -DSCL_HIGH=1 -fxscope
-
 # The USED_MODULES variable lists other module used by the application. These
 # modules will extend the SOURCE_DIRS, INCLUDE_DIRS and LIB_DIRS variables.
 # Modules are expected to be in the directory above the BASE_DIR directory.
