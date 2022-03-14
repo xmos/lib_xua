@@ -1171,6 +1171,10 @@
 #endif
 #endif
 
+/* Always enable explicit feedback EP, even when input stream is present */
+#ifndef UAC_FORCE_FEEDBACK_EP
+#define UAC_FORCE_FEEDBACK_EP       (1)
+#endif
 
 #if (defined(UAC_FORCE_FEEDBACK_EP) && UAC_FORCE_FEEDBACK_EP == 0)
 #undef UAC_FORCE_FEEDBACK_EP
