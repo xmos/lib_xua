@@ -83,7 +83,7 @@
 /**
  * @brief Number of DSD output channels. Default: 0 (disabled)
  */
-#if defined(DSD_CHANS_DAC)
+#if defined(DSD_CHANS_DAC) && (DSD_CHANS_DAC != 0)
     #if defined(NATIVE_DSD) && (NATIVE_DSD == 0)
         #undef NATIVE_DSD
     #else
