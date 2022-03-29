@@ -1,4 +1,4 @@
-// Copyright 2011-2021 XMOS LIMITED.
+// Copyright 2011-2022 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 /*
  * @brief       Defines relating to device configuration and customisation of lib_xua
@@ -83,7 +83,7 @@
 /**
  * @brief Number of DSD output channels. Default: 0 (disabled)
  */
-#if defined(DSD_CHANS_DAC)
+#if defined(DSD_CHANS_DAC) && (DSD_CHANS_DAC != 0)
     #if defined(NATIVE_DSD) && (NATIVE_DSD == 0)
         #undef NATIVE_DSD
     #else
@@ -1171,6 +1171,10 @@
 #endif
 #endif
 
+/* Always enable explicit feedback EP, even when input stream is present */
+#ifndef UAC_FORCE_FEEDBACK_EP
+#define UAC_FORCE_FEEDBACK_EP       (1)
+#endif
 
 #if (defined(UAC_FORCE_FEEDBACK_EP) && UAC_FORCE_FEEDBACK_EP == 0)
 #undef UAC_FORCE_FEEDBACK_EP
