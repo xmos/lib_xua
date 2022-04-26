@@ -1284,7 +1284,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
             .bSourceID                 = FU_USBIN, /* 7  bSourceID Connect to analog input feature unit*/
 #else
 
-            .bSourceID                 = ID_IT_USB,/* 7  bSourceID Connect to analog input term */
+            .bSourceID                 = ID_IT_AUD,/* 7  bSourceID Connect to analog input term */
 #endif
             .bCSourceID                = ID_CLKSEL,
             .bmControls                = 0x0000,
