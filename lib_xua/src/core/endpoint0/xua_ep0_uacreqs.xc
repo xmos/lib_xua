@@ -1095,7 +1095,7 @@ int AudioEndpointRequests_1(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp
                 /* Check Control Selector */
                 unsigned short controlSelector = sp.wValue>>8;
 
-                if((result != XUD_GetBuffer(ep0_out, (buffer, unsigned char[]), length)) != XUD_RES_OKAY)
+                if((result = XUD_GetBuffer(ep0_out, (buffer, unsigned char[]), length)) != XUD_RES_OKAY)
                 {
                     return result;
                 }
