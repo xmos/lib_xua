@@ -252,6 +252,9 @@ static inline void GetSamplesFromHost(chanend c)
 #pragma unsafe arrays
 static inline void GiveSamplesToDevice(chanend c, xc_ptr ptr, xc_ptr multOut)
 {
+#if(NUM_USB_CHAN_OUT == 0)
+    outuint(c, 0);
+#else
     {
 #pragma loop unroll
         for (int i=0; i<NUM_USB_CHAN_OUT; i++)
@@ -297,6 +300,7 @@ static inline void GiveSamplesToDevice(chanend c, xc_ptr ptr, xc_ptr multOut)
 #endif
         }
     }
+#endif
 }
 
 #pragma unsafe arrays
@@ -603,9 +607,6 @@ static void mixer1(chanend c_host, chanend c_mix_ctl, chanend c_mixer2)
             }
 #else       /* IF MAX_MIX_COUNT > 0 */
             /* No mixes, this thread runs on its own doing just volume */
-#if(NUM_USB_CHAN_OUT == 0)
-            outuint(c_mixer2, 0);
-#endif
             GiveSamplesToDevice(c_mixer2, samples_to_device_map, multOut);
             GetSamplesFromDevice(c_mixer2);
             GetSamplesFromHost(c_host);
