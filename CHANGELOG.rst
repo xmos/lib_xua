@@ -8,6 +8,7 @@ UNRELEASED
   * CHANGED:   Exclude HID Report functions unless the HID feature is enabled
   * CHANGED:   Explicit feedback EP enabled by default (see UAC_FORCE_FEEDBACK_EP)
   * FIXED:     Incorrect conditional compilation of HID report code
+  * FIXED:     Overwrite output channel descriptors only if output channels are defined
 
   * Changes to dependencies:
 
