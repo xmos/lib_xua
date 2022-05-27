@@ -8,7 +8,8 @@ UNRELEASED
   * CHANGED:   Exclude HID Report functions unless the HID feature is enabled
   * CHANGED:   Explicit feedback EP enabled by default (see UAC_FORCE_FEEDBACK_EP)
   * FIXED:     Incorrect conditional compilation of HID report code
-  * FIXED:     Overwrite output channel descriptors only if output channels are defined
+  * FIXED:     Input/output descriptors writen when input/output not enabled. (Audio
+  class 1.0 mode using XUA_USB_DESCRIPTOR_OVERWRITE_RATE_RES)
 
   * Changes to dependencies:
 
