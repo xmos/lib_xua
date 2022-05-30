@@ -1,12 +1,13 @@
 lib_xua Change Log
 ==================
 
-UNRELEASED
-----------
+3.2.0
+-----
 
   * CHANGED:   Updated tests to use lib_locks (was legacy module_locks)
   * CHANGED:   Exclude HID Report functions unless the HID feature is enabled
-  * CHANGED:   Explicit feedback EP enabled by default (see UAC_FORCE_FEEDBACK_EP)
+  * CHANGED:   Explicit feedback EP enabled by default (see
+    UAC_FORCE_FEEDBACK_EP)
   * FIXED:     Incorrect conditional compilation of HID report code
 
   * Changes to dependencies:
