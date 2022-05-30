@@ -16,7 +16,7 @@ lib_xua Change Log
 
     - lib_locks: Added dependency 2.1.0
 
-    - lib_logging: 3.0.0 -> 3.1.0
+    - lib_logging: 3.0.0 -> 3.1.1
 
     - lib_mic_array: 4.0.0 -> 4.3.0
 
@@ -24,7 +24,7 @@ lib_xua Change Log
 
     - lib_xassert: 4.0.0 -> 4.1.0
 
-    - lib_xud: 2.0.0 -> 2.0.2
+    - lib_xud: 2.0.0 -> 2.2.0
 
 3.1.0
 -----
