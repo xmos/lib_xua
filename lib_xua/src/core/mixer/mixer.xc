@@ -1,7 +1,5 @@
-// Copyright 2011-2021 XMOS LIMITED.
+// Copyright 2011-2022 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
-
-
 #include <xs1.h>
 #include <print.h>
 #include "xua.h"
@@ -14,7 +12,6 @@
 
 /* FAST_MIXER has a bit of a nasty implentation but is more effcient */
 #define FAST_MIXER 1
-
 
 //#ifdef OUT_VOLUME_IN_MIXER
 static unsigned int multOut_array[NUM_USB_CHAN_OUT + 1];
