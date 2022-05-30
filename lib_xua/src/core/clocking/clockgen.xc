@@ -1,4 +1,4 @@
-// Copyright 2011-2021 XMOS LIMITED.
+// Copyright 2011-2022 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
 #include <xs1.h>
@@ -665,7 +665,7 @@ void clockGen (streaming chanend ?c_spdif_rx, chanend ?c_adat_rx, out port p, ch
                                     /* Inspect for if we need to produce an edge */
                                     if ((adatCounters.receivedSamples >= adatCounters.samplesPerTick))
                                     {
-                                        /* Check edge is about right... S/PDIF may have changed freq... */
+                                        /* Check edge is about right... ADAT may have changed freq... */
                                         if (timeafter(adatReceivedTime, (timeLastEdge + LOCAL_CLOCK_INCREMENT - LOCAL_CLOCK_MARGIN)))
                                         {
                                             /* Record edge time */

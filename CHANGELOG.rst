@@ -9,6 +9,8 @@ lib_xua Change Log
   * CHANGED:   Explicit feedback EP enabled by default (see
     UAC_FORCE_FEEDBACK_EP)
   * FIXED:     Incorrect conditional compilation of HID report code
+  * FIXED:     Input/output descriptors written when input/output not enabled. (Audio
+  class 1.0 mode using XUA_USB_DESCRIPTOR_OVERWRITE_RATE_RES)
 
   * Changes to dependencies:
 

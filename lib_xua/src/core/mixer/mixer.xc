@@ -1,7 +1,5 @@
-// Copyright 2011-2021 XMOS LIMITED.
+// Copyright 2011-2022 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
-
-
 #include <xs1.h>
 #include <print.h>
 #include "xua.h"
@@ -14,7 +12,6 @@
 
 /* FAST_MIXER has a bit of a nasty implentation but is more effcient */
 #define FAST_MIXER 1
-
 
 //#ifdef OUT_VOLUME_IN_MIXER
 static unsigned int multOut_array[NUM_USB_CHAN_OUT + 1];
@@ -252,51 +249,53 @@ static inline void GetSamplesFromHost(chanend c)
 #pragma unsafe arrays
 static inline void GiveSamplesToDevice(chanend c, xc_ptr ptr, xc_ptr multOut)
 {
-    {
+#if(NUM_USB_CHAN_OUT == 0)
+    outuint(c, 0);
+#else
 #pragma loop unroll
-        for (int i=0; i<NUM_USB_CHAN_OUT; i++)
-        {
-            int sample, x;
+    for (int i=0; i<NUM_USB_CHAN_OUT; i++)
+    {
+        int sample, x;
 #if defined(OUT_VOLUME_IN_MIXER) && defined(OUT_VOLUME_AFTER_MIX)
-            int mult;
-            int h;
-            unsigned l;
+        int mult;
+        int h;
+        unsigned l;
 #endif
-            int index;
+        int index;
 
 #if MAX_MIX_COUNT > 0
-            /* If mixer turned on sort out the channel mapping */
+        /* If mixer turned on sort out the channel mapping */
 
-            /* Read pointer to sample from the map */
-            read_via_xc_ptr_indexed(index, ptr, i);
+        /* Read pointer to sample from the map */
+        read_via_xc_ptr_indexed(index, ptr, i);
 
-            /* Read the actual sample value */
-            read_via_xc_ptr_indexed(sample, samples, index);
+        /* Read the actual sample value */
+        read_via_xc_ptr_indexed(sample, samples, index);
 #else
-            unsafe
-            {
-                /* Read the actual sample value */
-                sample = ptr_samples[i];
-            }
+        unsafe
+        {
+            /* Read the actual sample value */
+            sample = ptr_samples[i];
+        }
 #endif
 
 #if defined(OUT_VOLUME_IN_MIXER) && defined(OUT_VOLUME_AFTER_MIX)
-            /* Do volume control processing */
+        /* Do volume control processing */
 #warning OUT Vols in mixer, AFTER mix & map
-            read_via_xc_ptr_indexed(mult, multOut, i);
-            {h, l} = macs(mult, sample, 0, 0);
-            h<<=3;              // Shift used to be done in audio thread but now done here incase of 32bit support
+        read_via_xc_ptr_indexed(mult, multOut, i);
+        {h, l} = macs(mult, sample, 0, 0);
+        h<<=3;              // Shift used to be done in audio thread but now done here incase of 32bit support
 #error
 #if (STREAM_FORMAT_OUTPUT_RESOLUTION_32BIT_USED == 1)
-            h |= (l >>29)& 0x7; // Note: This step is not required if we assume sample depth is 24bit (rather than 32bit)
-                            // Note: We need all 32bits for Native DSD
+        h |= (l >>29)& 0x7; // Note: This step is not required if we assume sample depth is 24bit (rather than 32bit)
+                        // Note: We need all 32bits for Native DSD
 #endif
-            outuint(c, h);
+        outuint(c, h);
 #else
-            outuint(c, sample);
+        outuint(c, sample);
 #endif
-        }
     }
+#endif
 }
 
 #pragma unsafe arrays
@@ -603,9 +602,6 @@ static void mixer1(chanend c_host, chanend c_mix_ctl, chanend c_mixer2)
             }
 #else       /* IF MAX_MIX_COUNT > 0 */
             /* No mixes, this thread runs on its own doing just volume */
-#if(NUM_USB_CHAN_OUT == 0)
-            outuint(c_mixer2, 0);
-#endif
             GiveSamplesToDevice(c_mixer2, samples_to_device_map, multOut);
             GetSamplesFromDevice(c_mixer2);
             GetSamplesFromHost(c_host);
