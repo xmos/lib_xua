@@ -36,4 +36,3 @@ Older versions of Windows are not guaranteed to operate as expected. Devices are
 
 
 
-.. include:: ../../../CHANGELOG.rst
