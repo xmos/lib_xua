@@ -366,7 +366,7 @@ static void mixer1(chanend c_host, chanend c_mix_ctl, chanend c_mixer2)
         /* Forward on Request for data to decouple thread */
         outuint(c_host, request);
 
-#if (MAX_MIX_COUNT > 0) 
+#if (MAX_MIX_COUNT > 0)
         /* Sync */
         outuint(c_mixer2, 0);
 #endif
@@ -543,8 +543,8 @@ static void mixer1(chanend c_host, chanend c_mix_ctl, chanend c_mixer2)
             /* Sync with mixer 2 (once it has swapped samples with audiohub) */
             outuint(c_mixer2, 0);
             inuint(c_mixer2);
-           
-            /* Do the mixing */ 
+
+            /* Do the mixing */
 #ifdef FAST_MIXER
             mixed = doMix0(samples, mix_mult_slice(0));
 #else
@@ -673,8 +673,8 @@ static void mixer2(chanend c_mixer1, chanend c_audio)
         {
             GiveSamplesToDevice(c_audio, samples_to_device_map, multOut);
             GetSamplesFromDevice(c_audio);
-           
-            /* Sync with mixer 1 (once it has swapped samples with the buffering sub-system) */ 
+
+            /* Sync with mixer 1 (once it has swapped samples with the buffering sub-system) */
             inuint(c_mixer1);
             outuint(c_mixer1, 0);
 
@@ -693,7 +693,7 @@ static void mixer2(chanend c_mixer1, chanend c_audio)
 #endif
 #endif
 
-            
+
 #if (MAX_FREQ > 96000)
             /* Fewer mixes when running higher than 96kHz */
             if (!mixer2_mix2_flag)

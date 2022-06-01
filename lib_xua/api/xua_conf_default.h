@@ -57,8 +57,8 @@
 #define PDM_TILE        AUDIO_IO_TILE
 #endif
 
-/** 
- * @brief Disable USB functionalty just leaving AudioHub 
+/**
+ * @brief Disable USB functionalty just leaving AudioHub
  */
 #ifndef XUA_USB_EN
 #define XUA_USB_EN      1
@@ -1201,7 +1201,7 @@ enum USBEndpointNumber_Out
 #endif
 
 #ifndef XUA_ENDPOINT_COUNT_CUSTOM_IN
-#define XUA_ENDPOINT_COUNT_CUSTOM_IN   0 
+#define XUA_ENDPOINT_COUNT_CUSTOM_IN   0
 #endif
 
 #define ENDPOINT_COUNT_IN  (XUA_ENDPOINT_COUNT_IN + XUA_ENDPOINT_COUNT_CUSTOM_IN)
@@ -1449,6 +1449,6 @@ enum USBEndpointNumber_Out
     #define _XUA_CLK_DIR out
 #endif
 
-#if (CODEC_MASTER == 1) && (DSD_CHANS_DAC != 0) 
-#error CODEC_MASTER with DSD is currently unsupported 
+#if (CODEC_MASTER == 1) && (DSD_CHANS_DAC != 0)
+#error CODEC_MASTER with DSD is currently unsupported
 #endif

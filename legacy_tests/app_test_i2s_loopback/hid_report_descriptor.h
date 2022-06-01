@@ -82,35 +82,35 @@ static const USB_HID_Report_Element_t hidReportPageConsumer     = {
 /*
  * Define configurable items in the HID Report descriptor.
  */
-static USB_HID_Report_Element_t hidUsageByte0Bit5   = { 
-    .item.header = HID_REPORT_SET_HEADER(1, HID_REPORT_ITEM_TYPE_LOCAL, HID_REPORT_ITEM_TAG_USAGE), 
-    .item.data = { 0xE2, 0x00 }, 
-    .location = HID_REPORT_SET_LOC( 0, 0, 0, 5 ) 
+static USB_HID_Report_Element_t hidUsageByte0Bit5   = {
+    .item.header = HID_REPORT_SET_HEADER(1, HID_REPORT_ITEM_TYPE_LOCAL, HID_REPORT_ITEM_TAG_USAGE),
+    .item.data = { 0xE2, 0x00 },
+    .location = HID_REPORT_SET_LOC( 0, 0, 0, 5 )
 }; // Mute
-static USB_HID_Report_Element_t hidUsageByte0Bit4   = { 
-    .item.header = HID_REPORT_SET_HEADER(1, HID_REPORT_ITEM_TYPE_LOCAL, HID_REPORT_ITEM_TAG_USAGE), 
-    .item.data = { 0xEA, 0x00 }, 
-    .location = HID_REPORT_SET_LOC( 0, 0, 0, 4 ) 
+static USB_HID_Report_Element_t hidUsageByte0Bit4   = {
+    .item.header = HID_REPORT_SET_HEADER(1, HID_REPORT_ITEM_TYPE_LOCAL, HID_REPORT_ITEM_TAG_USAGE),
+    .item.data = { 0xEA, 0x00 },
+    .location = HID_REPORT_SET_LOC( 0, 0, 0, 4 )
 }; // Vol-
-static USB_HID_Report_Element_t hidUsageByte0Bit3   = { 
-    .item.header = HID_REPORT_SET_HEADER(1, HID_REPORT_ITEM_TYPE_LOCAL, HID_REPORT_ITEM_TAG_USAGE), 
-    .item.data = { 0xE9, 0x00 }, 
-    .location = HID_REPORT_SET_LOC( 0, 0, 0, 3 ) 
+static USB_HID_Report_Element_t hidUsageByte0Bit3   = {
+    .item.header = HID_REPORT_SET_HEADER(1, HID_REPORT_ITEM_TYPE_LOCAL, HID_REPORT_ITEM_TAG_USAGE),
+    .item.data = { 0xE9, 0x00 },
+    .location = HID_REPORT_SET_LOC( 0, 0, 0, 3 )
 }; // Vol+
-static USB_HID_Report_Element_t hidUsageByte0Bit2   = { 
-    .item.header = HID_REPORT_SET_HEADER(1, HID_REPORT_ITEM_TYPE_LOCAL, HID_REPORT_ITEM_TAG_USAGE), 
-    .item.data = { 0xB6, 0x00 }, 
-    .location = HID_REPORT_SET_LOC( 0, 0, 0, 2 ) 
+static USB_HID_Report_Element_t hidUsageByte0Bit2   = {
+    .item.header = HID_REPORT_SET_HEADER(1, HID_REPORT_ITEM_TYPE_LOCAL, HID_REPORT_ITEM_TAG_USAGE),
+    .item.data = { 0xB6, 0x00 },
+    .location = HID_REPORT_SET_LOC( 0, 0, 0, 2 )
 }; // Scan Prev
-static USB_HID_Report_Element_t hidUsageByte0Bit1   = { 
-    .item.header = HID_REPORT_SET_HEADER(1, HID_REPORT_ITEM_TYPE_LOCAL, HID_REPORT_ITEM_TAG_USAGE), 
-    .item.data = { 0xB5, 0x00 }, 
-    .location = HID_REPORT_SET_LOC( 0, 0, 0, 1 ) 
+static USB_HID_Report_Element_t hidUsageByte0Bit1   = {
+    .item.header = HID_REPORT_SET_HEADER(1, HID_REPORT_ITEM_TYPE_LOCAL, HID_REPORT_ITEM_TAG_USAGE),
+    .item.data = { 0xB5, 0x00 },
+    .location = HID_REPORT_SET_LOC( 0, 0, 0, 1 )
 }; // Scan Next
-static USB_HID_Report_Element_t hidUsageByte0Bit0   = { 
-    .item.header = HID_REPORT_SET_HEADER(1, HID_REPORT_ITEM_TYPE_LOCAL, HID_REPORT_ITEM_TAG_USAGE), 
-    .item.data = { 0xB0, 0x00 }, 
-    .location = HID_REPORT_SET_LOC( 0, 0, 0, 0 ) 
+static USB_HID_Report_Element_t hidUsageByte0Bit0   = {
+    .item.header = HID_REPORT_SET_HEADER(1, HID_REPORT_ITEM_TYPE_LOCAL, HID_REPORT_ITEM_TAG_USAGE),
+    .item.data = { 0xB0, 0x00 },
+    .location = HID_REPORT_SET_LOC( 0, 0, 0, 0 )
 }; // Play
 
 /*
@@ -126,7 +126,7 @@ static USB_HID_Report_Element_t* const hidConfigurableElements[] = {
 };
 
 /*
- * List HID Reports, one per Report ID. This should be a usage page item with the relevant 
+ * List HID Reports, one per Report ID. This should be a usage page item with the relevant
  * If not using report IDs - still have one with report ID 0
  */
 static const USB_HID_Report_Element_t* const hidReports[] = {

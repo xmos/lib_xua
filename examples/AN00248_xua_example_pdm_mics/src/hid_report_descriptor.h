@@ -127,7 +127,7 @@ static USB_HID_Report_Element_t* const hidConfigurableElements[] = {
 };
 
 /*
- * List HID Reports, one per Report ID. This should be a usage page item with the relevant 
+ * List HID Reports, one per Report ID. This should be a usage page item with the relevant
  * If not using report IDs - still have one with report ID 0
  */
 static const USB_HID_Report_Element_t* const hidReports[] = {

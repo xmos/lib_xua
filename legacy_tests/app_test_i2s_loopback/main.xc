@@ -81,7 +81,7 @@ buffered out port:32 p_bclk        = PORT_I2S_BCLK;     /* I2S L/R-clock */
 in port p_mclk_in                   = PORT_MCLK_IN;
 
 /* Clock-block declarations */
-clock clk_audio_bclk                = on tile[AUDIO_IO_TILE]: XS1_CLKBLK_1;   /* Bit clock */    
+clock clk_audio_bclk                = on tile[AUDIO_IO_TILE]: XS1_CLKBLK_1;   /* Bit clock */
 clock clk_audio_mclk                = on tile[AUDIO_IO_TILE]: XS1_CLKBLK_2;   /* Master clock */
 
 #ifdef SIMULATION
@@ -189,14 +189,14 @@ void checker(chanend c_checker, int disable)
 
 #ifdef SIMULATION
 
-out port p_mclk_gen       = on tile[AUDIO_IO_TILE] :  XS1_PORT_1A; 
+out port p_mclk_gen       = on tile[AUDIO_IO_TILE] :  XS1_PORT_1A;
 clock clk_audio_mclk_gen  = on tile[AUDIO_IO_TILE] : XS1_CLKBLK_3;
 void master_mode_clk_setup(void);
 
 #if CODEC_MASTER
-out port  p_bclk_gen      = on tile[AUDIO_IO_TILE] : XS1_PORT_1B;  
+out port  p_bclk_gen      = on tile[AUDIO_IO_TILE] : XS1_PORT_1B;
 clock clk_audio_bclk_gen  = on tile[AUDIO_IO_TILE] : XS1_CLKBLK_4;
-out port  p_lrclk_gen     = on tile[AUDIO_IO_TILE] : XS1_PORT_1C; 
+out port  p_lrclk_gen     = on tile[AUDIO_IO_TILE] : XS1_PORT_1C;
 clock clk_audio_lrclk_gen = on tile[AUDIO_IO_TILE] : XS1_CLKBLK_5;
 void slave_mode_clk_setup(const unsigned samFreq, const unsigned chans_per_frame);
 #endif
@@ -214,11 +214,11 @@ int main(void)
     chan c_checker;
     chan c_out;
 
-    par 
+    par
     {
-        on tile[AUDIO_IO_TILE]: 
-        { 
-            par 
+        on tile[AUDIO_IO_TILE]:
+        {
+            par
             {
                 XUA_AudioHub(c_out, clk_audio_mclk, clk_audio_bclk, p_mclk_in, p_lrclk, p_bclk, p_i2s_dac, p_i2s_adc);
                 generator(c_checker, c_out);

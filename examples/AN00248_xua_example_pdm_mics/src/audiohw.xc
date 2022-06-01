@@ -16,7 +16,7 @@ void AudioHwInit()
     /* DAC in reset */
     p_gpio <: 0;
 
-    return;    
+    return;
 }
 
 /* Configures the external audio hardware for the required sample frequency */

@@ -8,7 +8,7 @@
  * This includes constants from:
  *  - Device Class Definition for Human Interface Devices, version 1.11
  *  - HID Usage Tables for Universal Serial Bus, version 1.22
- * 
+ *
  * This file is incomplete, but can be expanded with new constants as necessary.
  */
 

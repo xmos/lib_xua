@@ -50,7 +50,7 @@ void AudioHwConfig2(unsigned samFreq, unsigned mClk, unsigned dsdMode, unsigned 
     delay_microseconds(20000);
 
 	/* Take ADC out of reset */
-	gpioVal |= P_GPIO_ADC_RST_N;        
+	gpioVal |= P_GPIO_ADC_RST_N;
 	p_gpio <: gpioVal;
 
 	/* Configure ADC for I2S slave mode via I2C */
@@ -58,7 +58,7 @@ void AudioHwConfig2(unsigned samFreq, unsigned mClk, unsigned dsdMode, unsigned 
 	dif = 0x01;   	/* I2S */
 	mode = 0x03;    /* Slave mode all speeds */
 
-	/* Reg 0x01: (GCTL) Global Mode Control Register 
+	/* Reg 0x01: (GCTL) Global Mode Control Register
 	* Bit[7]: CP-EN: Manages control-port mode
 	* Bit[6]: CLKMODE: Setting puts part in 384x mode
 	* Bit[5:4]: MDIV[1:0]: Set to 01 for /2
@@ -91,7 +91,7 @@ void AudioHwConfig2(unsigned samFreq, unsigned mClk, unsigned dsdMode, unsigned 
 	 * bit[0] : Power Down (PDN)               : Powered down
 	 */
 	DAC_REGWRITE(CS4384_MODE_CTRL, 0b11000001);
-	
+
     /* PCM Control (Address: 0x03) */
 	/* bit[7:4] : Digital Interface Format (DIF) : 0b0001 for I2S up to 24bit
 	 * bit[3:2] : Reserved

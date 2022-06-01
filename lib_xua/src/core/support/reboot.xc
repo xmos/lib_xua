@@ -22,7 +22,7 @@ static void reset_tile(unsigned const tileId)
     read_sswitch_reg(tileId, 6, pllVal);
     pllVal &= PLL_MASK;
     write_sswitch_reg_no_ack(tileId, 6, pllVal);
-}        
+}
 
 /* Reboots XMOS device by writing to the PLL config register
  * Note - resetting is per *node* not tile
@@ -42,12 +42,12 @@ void device_reboot(void)
 
     tileArrayLength = sizeof(tile)/sizeof(tileref);
 
-    /* Note - we could be in trouble if this doesn't return 0/1 since 
+    /* Note - we could be in trouble if this doesn't return 0/1 since
      * this code doesn't properly handle any network topology other than a
-     * simple line 
+     * simple line
      */
     /* Find tile index of the local tile ID */
-    for(int tileNum = 0;  tileNum<tileArrayLength; tileNum++) 
+    for(int tileNum = 0;  tileNum<tileArrayLength; tileNum++)
     {
         if (get_tile_id(tile[tileNum]) == localTileId)
         {

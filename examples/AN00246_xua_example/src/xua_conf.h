@@ -1,7 +1,7 @@
 // Copyright 2017-2021 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
-#ifndef _XUA_CONF_H_ 
+#ifndef _XUA_CONF_H_
 #define _XUA_CONF_H_
 
 #define NUM_USB_CHAN_OUT      2     /* Number of channels from host to device */
@@ -19,7 +19,7 @@
 #define VENDOR_ID       0x20B1
 #define PRODUCT_STR_A2  "XUA Example"
 #define PRODUCT_STR_A1  "XUA Example"
-#define PID_AUDIO_1     1   
+#define PID_AUDIO_1     1
 #define PID_AUDIO_2     2
 #define XUA_DFU_EN      0           /* Disable DFU (for simplicity of example */
 #define MIC_DUAL_ENABLED 0          // Use multi-threaded design

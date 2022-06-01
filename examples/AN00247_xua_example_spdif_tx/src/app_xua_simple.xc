@@ -3,7 +3,7 @@
 
 /* A very simple *example* of a USB audio application (and as such is un-verified for production)
  *
- * It uses the main blocks from the lib_xua 
+ * It uses the main blocks from the lib_xua
  *
  * - S/PDIF output only
  * - No DFU
@@ -51,7 +51,7 @@ int main()
 
     /* Channel for audio data between buffering cores and AudioHub/IO core */
     chan c_aud;
-    
+
     /* Channel for communicating control messages from EP0 to the rest of the device (via the buffering cores) */
     chan c_aud_ctl;
 
@@ -60,9 +60,9 @@ int main()
 
     par
     {
-        /* Low level USB device layer core */ 
+        /* Low level USB device layer core */
         on tile[1]: XUD_Main(c_ep_out, 2, c_ep_in, 2, c_sof, epTypeTableOut, epTypeTableIn, XUD_SPEED_HS, XUD_PWR_SELF);
-        
+
         /* Endpoint 0 core from lib_xua */
         /* Note, since we are not using many features we pass in null for quite a few params.. */
         on tile[1]: XUA_Endpoint0(c_ep_out[0], c_ep_in[0], c_aud_ctl, null, null, null, null);
@@ -70,7 +70,7 @@ int main()
         /* Buffering cores - handles audio data to/from EP's and gives/gets data to/from the audio I/O core */
         /* Note, this spawns two cores */
         on tile[1]: {
-                        
+
                         /* Connect master-clock clock-block to clock-block pin */
                         set_clock_src(clk_audio_mclk_usb, p_mclk_in_usb);           /* Clock clock-block from mclk pin */
                         set_port_clock(p_for_mclk_count, clk_audio_mclk_usb);       /* Clock the "count" port from the clock block */
@@ -78,28 +78,28 @@ int main()
 
                         XUA_Buffer(c_ep_out[1], c_ep_in[1], c_sof, c_aud_ctl, p_for_mclk_count, c_aud);
                     }
-        
+
         /* AudioHub() (I2S) and S/SPDIF Tx are on the same tile */
         on tile[0]: {
 
                         /* Setup S/PDIF tx port from clock etc - note we do this before par to avoid parallel usage */
                         spdif_tx_port_config(p_spdif_tx, clk_spdif_tx, p_mclk_in, 7);
-        
+
                         par
                         {
                             while(1)
                             {
                                 /* Run the S/PDIF transmitter task */
-                                spdif_tx(p_spdif_tx, c_spdif_tx);   
+                                spdif_tx(p_spdif_tx, c_spdif_tx);
                             }
-                        
+
                             /* AudioHub/IO core does most of the audio IO i.e. I2S (also serves as a hub for all audio) */
                             /* Note, since we are not using I2S we pass in null for LR and Bit clock ports and the I2S dataline ports */
                             XUA_AudioHub(c_aud, clk_audio_mclk, null, p_mclk_in, null, null, null, null, c_spdif_tx);
                         }
                     }
     }
-    
+
     return 0;
 }
 

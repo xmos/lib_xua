@@ -48,7 +48,7 @@
 
 /**
  * @brief Helper macro to configure the location field of USB_HID_Report_Element_t.
- * 
+ *
  * @param id   The report ID that this element is within.
  * @param len  (only relevant for the usage_page elements in hidReports) The length
  *             of the report under this report ID.
@@ -63,7 +63,7 @@
 
 /**
  * @brief Helper macro to configure the header field of USB_HID_Short_Item_t
- * 
+ *
  * @param size The size of the report descriptor item (valid values: 0, 1, 2)
  * @param type The type of the report descriptor item
  * @param tag  The tag
@@ -173,7 +173,7 @@ void hidCaptureReportTime( const unsigned id, const unsigned time );
  *    HID data has been reported to the USB Host.
  *
  *  \warning This function will fail silently if given an id that is not
- *    either the value zero (in the case that Report IDs are not in use), 
+ *    either the value zero (in the case that Report IDs are not in use),
  *    or a Report ID that is in use.
  *
  *  \param[in]  id  A HID Report ID.
@@ -183,10 +183,10 @@ void hidClearChangePending( const unsigned id );
 
 /**
  * @brief Get the next valid report ID - iterator style.
- * 
+ *
  * This function will loop around and start returning the first report ID again once it has
  * returned all valid report IDs.
- * 
+ *
  * @param idPrev The previous returned id, or 0 if this is the first call
  * @return unsigned The next valid report ID.
  */
@@ -342,7 +342,7 @@ unsigned hidGetReportTime( const unsigned id );
  *   whether unreported HID data exists for that Report ID.
  *
  *  \warning This function will return zero if given an id that is not
- *    either the value zero (in the case that Report IDs are not in use), 
+ *    either the value zero (in the case that Report IDs are not in use),
  *    or a Report ID that is in use.
  *
  *  \param[in]  id  A HID Report ID.
@@ -379,10 +379,10 @@ unsigned hidIsIdleActive( const unsigned id );
 
 /**
  * @brief Does the application use Report IDs?
- * 
+ *
  * If the application is not using Report IDs, then the id value that is passed around
  * everywhere can just be zero. Otherwise zero is an invalid ID.
- * 
+ *
  * @return Boolean
  * @retval 1 Report IDs are in use
  * @retval 0 Report IDs are not in use
@@ -391,11 +391,11 @@ unsigned hidIsReportIdInUse ( void );
 
 /**
  * @brief Is the provided report ID valid for passing to other functions.
- * 
+ *
  * e.g If Report IDs are not in use, then only 0 will return true.
  * e.g If Report IDs are in use, then 0 will return false and the report IDs that
  *     are in use will return true when passed to this function.
- * 
+ *
  * @param id  The ID to check
  * @return boolean
  * @retval 0 The report ID is not valid, other functions may fail silently
@@ -448,7 +448,7 @@ void hidResetReportDescriptor( void );
  *    Host.
  *
  *  \warning This function will fail silently if given an id that is not
- *    either the value zero (in the case that Report IDs are not in use), 
+ *    either the value zero (in the case that Report IDs are not in use),
  *    or a Report ID that is in use.
  *
  *  \param[in]  id  A HID Report ID.
@@ -535,10 +535,10 @@ void hidSetReportPeriod( const unsigned id, const unsigned period );
 /**
  * @brief Development function: Validate the contents of hid_report_descriptor.h for common errors, printing
  * error messages if any issues were found.
- * 
+ *
  * This function is intended for use when developing the contents of hid_report_descriptor.h, which is static,
  * so shouldn't be required for use in a production application.
- * 
+ *
  * @return Validation result
  * @retval HID_STATUS_GOOD                    The validation found no issues with the data structures defined
  *                                            in hid_report_descriptor.h

@@ -351,7 +351,7 @@ unsigned hidGetReportPeriod( const unsigned id )
     return retVal;
 }
 
-unsigned hidGetReportTime( const unsigned id ) 
+unsigned hidGetReportTime( const unsigned id )
 {
     swlock_acquire(&hidStaticVarLock);
     unsigned retVal = 0U;
@@ -618,7 +618,7 @@ struct HID_validation_info {
 
 /**
  * @brief Validation step for hidReportValidate, checking the info struct to ensure correctness of Report IDs
- * 
+ *
  * @param info The info struct that has been built by hidReportValidate to check
  * @return unsigned HID_STATUS value
  */
@@ -653,7 +653,7 @@ static unsigned hidReportValidateInfoStructReportIDs( struct HID_validation_info
 
 /**
  * @brief Validation step for hidReportValidate, checking reports are the correct length specified in their location field
- * 
+ *
  * @param info The info struct that has been built by hidReportValidate to check
  * @return unsigned HID_STATUS value
  */
@@ -673,7 +673,7 @@ static unsigned hidReportValidateInfoStructReportLength( struct HID_validation_i
 
 /**
  * @brief Validation step for hidReportValidate, collections are correctly opened and closed
- * 
+ *
  * @param info The info struct that has been built by hidReportValidate to check
  * @return unsigned HID_STATUS value
  */
@@ -688,7 +688,7 @@ static unsigned hidReportValidateInfoStructCollections( struct HID_validation_in
 /**
  * @brief Validation step for hidReportValidate, High level - Checks the summarised information in the info struct by calling
  * the subroutines for checking.
- * 
+ *
  * @param info The info struct that has been built by hidReportValidate to check
  * @return unsigned HID_STATUS value
  */
@@ -705,7 +705,7 @@ static unsigned hidReportValidateInfoStruct( struct HID_validation_info *info ) 
 
 /**
  * @brief Preparation step for hidReportValidate, Adds a report ID field into the information struct for validation
- * 
+ *
  * @param info The info struct being built by hidReportValidate
  * @param item The ReportId item being added
  * @return unsigned HID_STATUS value
@@ -743,7 +743,7 @@ static unsigned hidReportValidateAddReportId( struct HID_validation_info *info, 
 
 /**
  * @brief Preparation step for hidReportValidate, Adds a Usage Page field into the information struct for validation
- * 
+ *
  * @param info The info struct being built by hidReportValidate
  * @param item The UsagePage item being added
  * @return unsigned HID_STATUS value
@@ -775,7 +775,7 @@ static unsigned hidReportValidateAddUsagePageItem( struct HID_validation_info *i
 
 /**
  * @brief Preparation step for hidReportValidate, Adds a Usage field into the information struct for validation
- * 
+ *
  * @param info The info struct being built by hidReportValidate
  * @param item The Usage item being added
  * @return unsigned HID_STATUS value

@@ -91,7 +91,7 @@ unsigned int fb_clocks[4];
 #define FB_TOLERANCE 0x100
 
 void XUA_Buffer(
-            register chanend c_aud_out, 
+            register chanend c_aud_out,
 #if (NUM_USB_CHAN_IN > 0)
             register chanend c_aud_in,
 #endif
@@ -196,7 +196,7 @@ unsafe{volatile unsigned * unsafe masterClockFreq_ptr;}
  * @param   c_aud_fb      chanend for feeback to xud
  * @return  void
  */
-void XUA_Buffer_Ep(register chanend c_aud_out, 
+void XUA_Buffer_Ep(register chanend c_aud_out,
 #if (NUM_USB_CHAN_IN > 0)
     register chanend c_aud_in,
 #endif
@@ -566,7 +566,7 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
                 {
                     unsigned usb_speed;
                     GET_SHARED_GLOBAL(usb_speed, g_curUsbSpeed);
-                   
+
 #if FB_USE_REF_CLOCK
                     unsigned long long feedbackMul = 64ULL;
 
@@ -642,7 +642,7 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
                         clockcounter = 0;
                     }
 #else
- 
+
                     /* Assuming 48kHz from a 24.576 master clock (0.0407uS period)
                      * MCLK ticks per SOF = 125uS / 0.0407 = 3072 MCLK ticks per SOF.
                      * expected Feedback is 48000/8000 = 6 samples. so 0x60000 in 16:16 format.

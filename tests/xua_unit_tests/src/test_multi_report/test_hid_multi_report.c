@@ -800,7 +800,7 @@ void test_set_all_idle( void )
     unsigned setIdle = hidIsIdleActive( reportId );
     TEST_ASSERT_EQUAL_UINT( 0, setIdle );
 
-    setIdle = hidIsIdleActive( reportId2 ); 
+    setIdle = hidIsIdleActive( reportId2 );
     TEST_ASSERT_EQUAL_UINT( 0, setIdle );
 
     for ( reportId = 1; reportId <= HID_REPORT_COUNT; ++reportId ) {

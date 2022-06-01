@@ -73,7 +73,7 @@ void InitPorts_master(unsigned divide, buffered _XUA_CLK_DIR port:32 p_lrclk, bu
 #endif
 }
 
-#else 
+#else
 
 void InitPorts_slave(unsigned divide, buffered _XUA_CLK_DIR port:32 p_lrclk, buffered _XUA_CLK_DIR port:32 p_bclk, buffered out port:32 (&?p_i2s_dac)[I2S_WIRES_DAC], buffered in port:32  (&?p_i2s_adc)[I2S_WIRES_ADC])
 {

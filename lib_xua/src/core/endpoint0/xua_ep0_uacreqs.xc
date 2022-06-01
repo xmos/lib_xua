@@ -341,7 +341,7 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
 
                                         setG_curSamFreqMultiplier(g_curSamFreq/(newMasterClock/512));
 #endif
-#if ADAT_RX 
+#if ADAT_RX
                                         /* Configure ADAT SMUX based on sample rate */
                                         outuint(c_clk_ctl, SET_SMUX);
                                         if(g_curSamFreq < 88200)

@@ -747,7 +747,7 @@ void XUA_Buffer_Decouple(chanend c_mix_out
                 inuint(c_mix_out);
                 outct(c_mix_out, SET_SAMPLE_FREQ);
                 outuint(c_mix_out, sampFreq);
-                
+
                 if(sampFreq != AUDIO_STOP_FOR_DFU)
                 {
                     inUnderflow = 1;

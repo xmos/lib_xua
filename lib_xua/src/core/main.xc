@@ -134,7 +134,7 @@ on tile[AUDIO_IO_TILE] : buffered out port:32 p_bclk        = PORT_I2S_BCLK;
 
 on tile[AUDIO_IO_TILE] :  in port p_mclk_in                 = PORT_MCLK_IN;
 
-#if XUA_USB_EN 
+#if XUA_USB_EN
 on tile[XUD_TILE] : in port p_for_mclk_count                = PORT_MCLK_COUNT;
 #endif
 
@@ -635,7 +635,7 @@ int main()
 #endif /* XUA_USB_EN */
         }
 
-        on tile[AUDIO_IO_TILE]: 
+        on tile[AUDIO_IO_TILE]:
         {
             usb_audio_io(c_mix_out
 #if (XUA_SPDIF_TX_EN) && (SPDIF_TX_TILE != AUDIO_IO_TILE)
@@ -721,11 +721,11 @@ int main()
 #endif
 
 #ifndef PDM_RECORD
-#if (XUA_NUM_PDM_MICS > 0) 
+#if (XUA_NUM_PDM_MICS > 0)
 #if (PDM_TILE != AUDIO_IO_TILE)
         /* PDM Mics running on a separate to AudioHub */
         on stdcore[PDM_TILE]:
-        { 
+        {
             xua_pdm_mic_config(p_pdm_mclk, p_pdm_clk, p_pdm_mics, clk_pdm);
             xua_pdm_mic(c_ds_output, p_pdm_mics);
         }

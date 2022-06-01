@@ -37,13 +37,13 @@
  *  \param c_dig            channel connected to the clockGen() thread for
  *                          receiving/transmitting samples
  */
-void XUA_AudioHub(chanend ?c_aud, 
-    clock ?clk_audio_mclk, 
-    clock ?clk_audio_bclk, 
+void XUA_AudioHub(chanend ?c_aud,
+    clock ?clk_audio_mclk,
+    clock ?clk_audio_bclk,
     in port p_mclk_in,
     buffered _XUA_CLK_DIR port:32 ?p_lrclk,
     buffered _XUA_CLK_DIR port:32 ?p_bclk,
-    buffered out port:32 (&?p_i2s_dac)[I2S_WIRES_DAC], 
+    buffered out port:32 (&?p_i2s_dac)[I2S_WIRES_DAC],
     buffered in port:32  (&?p_i2s_adc)[I2S_WIRES_ADC]
 #if (XUA_SPDIF_TX_EN) //&& (SPDIF_TX_TILE != AUDIO_IO_TILE)
     , chanend c_spdif_tx

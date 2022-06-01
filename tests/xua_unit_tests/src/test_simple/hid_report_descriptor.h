@@ -59,7 +59,7 @@ static const USB_HID_Short_Item_t hidUsageConsumerControl   = {
  * For internal purposes, a report element with ID of 0 must be included if report IDs are not being used.
  */
 static const USB_HID_Report_Element_t hidReportPageConsumer = {
-    .item.header = HID_REPORT_SET_HEADER(1, HID_REPORT_ITEM_TYPE_GLOBAL, HID_REPORT_ITEM_TAG_USAGE_PAGE), 
+    .item.header = HID_REPORT_SET_HEADER(1, HID_REPORT_ITEM_TYPE_GLOBAL, HID_REPORT_ITEM_TAG_USAGE_PAGE),
     .item.data = { USB_HID_USAGE_PAGE_ID_CONSUMER, 0x00 },
     .location = HID_REPORT_SET_LOC( 0, 2, 0, 0 )
 };
@@ -94,7 +94,7 @@ static USB_HID_Report_Element_t* const hidConfigurableElements[] = {
 };
 
 /*
- * List HID Reports, one per Report ID. This should be a usage page item with the relevant 
+ * List HID Reports, one per Report ID. This should be a usage page item with the relevant
  * If not using report IDs - still have one with report ID 0
  */
 static const USB_HID_Report_Element_t* const hidReports[] = {

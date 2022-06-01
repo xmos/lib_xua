@@ -258,8 +258,8 @@ void XUA_Endpoint0_setVendorId(unsigned short vid) {
 }
 
 void concatenateAndCopyStrings(char* string1, char* string2, char* string_buffer) {
-    debug_printf("concatenateAndCopyStrings() for \"%s\" and \"%s\"\n", string1, string2);    
-        
+    debug_printf("concatenateAndCopyStrings() for \"%s\" and \"%s\"\n", string1, string2);
+
     memset(string_buffer, '\0', strlen(string_buffer));
 
     uint32_t remaining_buffer_size = MIN(strlen(string1), XUA_MAX_STR_LEN-1);
@@ -313,7 +313,7 @@ void XUA_Endpoint0_setStrTable() {
     concatenateAndCopyStrings(g_product_str, "", g_strTable.usbInputTermStr_Audio2);
     concatenateAndCopyStrings(g_product_str, "", g_strTable.usbOutputTermStr_Audio2);
 #endif
-    
+
     // update Serial strings
     concatenateAndCopyStrings(g_serial_str, "", g_strTable.serialStr);
 }
@@ -483,7 +483,7 @@ void XUA_Endpoint0_init(chanend c_ep0_out, chanend c_ep0_in, NULLABLE_RESOURCE(c
     if (DFUReportResetState(null))
     {
         assert((c_audioControl != NULL) && msg("DFU not supported when c_audioControl is null"));
-    
+
         /* Stop audio */
         outuint(c_audioControl, SET_SAMPLE_FREQ);
         outuint(c_audioControl, AUDIO_STOP_FOR_DFU);

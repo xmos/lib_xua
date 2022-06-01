@@ -32,7 +32,7 @@
 
 #if (XUA_NUM_PDM_MICS > 0)
 #include "xua_pdm_mic.h"
-#endif 
+#endif
 
 #if (AUD_TO_USB_RATIO > 1)
 #include "src.h"
@@ -76,7 +76,7 @@ void InitPorts_slave
 #else
 void InitPorts_master
 #endif
-(unsigned divide, buffered _XUA_CLK_DIR port:32 p_lrclk, buffered _XUA_CLK_DIR port:32 p_bclk, buffered out port:32 (&?p_i2s_dac)[I2S_WIRES_DAC], 
+(unsigned divide, buffered _XUA_CLK_DIR port:32 p_lrclk, buffered _XUA_CLK_DIR port:32 p_bclk, buffered out port:32 (&?p_i2s_dac)[I2S_WIRES_DAC],
     buffered in port:32  (&?p_i2s_adc)[I2S_WIRES_ADC]);
 
 
@@ -164,7 +164,7 @@ static inline int HandleSampleClock(int frameCount, buffered _XUA_CLK_DIR port:3
     if(I2S_MODE_TDM)
     {
         /* Only check for the rising edge of frame sync being in the right place because falling edge timing not specified */
-        if (frameCount == 1) 
+        if (frameCount == 1)
         {
             lrval &= 0xc0000000;                 // Mask off last two (MSB) frame clock bits which are the most recently sampled
             syncError += (lrval != 0x80000000);  // We need MSB = 1 and MSB-1 = 0 to signify rising edge
@@ -177,12 +177,12 @@ static inline int HandleSampleClock(int frameCount, buffered _XUA_CLK_DIR port:3
     }
     else
     {
-        if(frameCount == 0) 
+        if(frameCount == 0)
             syncError += (lrval != 0x80000000);
         else
             syncError += (lrval != 0x7FFFFFFF);
     }
- 
+
     return syncError;
 
 #else
@@ -200,7 +200,7 @@ static inline int HandleSampleClock(int frameCount, buffered _XUA_CLK_DIR port:3
         else
             p_lrclk <: 0x7fffffff;
     }
-    
+
     return 0;
 #endif
 
@@ -219,7 +219,7 @@ unsigned static AudioHub_MainLoop(chanend ?c_out, chanend ?c_spd_out
 #if (XUA_NUM_PDM_MICS > 0)
     , chanend c_pdm_pcm
 #endif
-    , buffered _XUA_CLK_DIR port:32 ?p_lrclk, 
+    , buffered _XUA_CLK_DIR port:32 ?p_lrclk,
     buffered _XUA_CLK_DIR port:32 ?p_bclk,
     buffered out port:32 (&?p_i2s_dac)[I2S_WIRES_DAC],
     buffered in port:32  (&?p_i2s_adc)[I2S_WIRES_ADC]
@@ -322,14 +322,14 @@ unsigned static AudioHub_MainLoop(chanend ?c_out, chanend ?c_spd_out
             InitPorts_master(divide, p_lrclk, p_bclk, p_i2s_dac, p_i2s_adc);
 #endif
         }
-        
+
         /* Note we always expect syncError to be 0 when we are master */
         while(!syncError)
         {
 #if (DSD_CHANS_DAC != 0) && (NUM_USB_CHAN_OUT > 0)
-            if(dsdMode == DSD_MODE_NATIVE) 
+            if(dsdMode == DSD_MODE_NATIVE)
                 DoDsdNative(samplesOut, dsdSample_l, dsdSample_r, divide);
-            else if(dsdMode == DSD_MODE_DOP) 
+            else if(dsdMode == DSD_MODE_DOP)
                 DoDsdDop(everyOther, samplesOut, dsdSample_l, dsdSample_r, divide);
             else
 #endif
@@ -471,7 +471,7 @@ unsigned static AudioHub_MainLoop(chanend ?c_out, chanend ?c_spd_out
 #endif
             }
 
-           frameCount++; 
+           frameCount++;
 
 #if (I2S_CHANS_ADC != 0)
                 index = 0;
@@ -663,7 +663,7 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
     in port p_mclk_in,
     buffered _XUA_CLK_DIR port:32 ?p_lrclk,
     buffered _XUA_CLK_DIR port:32 ?p_bclk,
-    buffered out port:32 (&?p_i2s_dac)[I2S_WIRES_DAC], 
+    buffered out port:32 (&?p_i2s_dac)[I2S_WIRES_DAC],
     buffered in port:32  (&?p_i2s_adc)[I2S_WIRES_ADC]
 #if (XUA_SPDIF_TX_EN) //&& (SPDIF_TX_TILE != AUDIO_IO_TILE)
     , chanend c_spdif_out
@@ -717,7 +717,7 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
     start_clock(clk_mst_spd);
 #endif
 #endif
-    
+
     /* Perform required CODEC/ADC/DAC initialisation */
     AudioHwInit();
 

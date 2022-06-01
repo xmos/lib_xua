@@ -22,7 +22,7 @@ void AudioHwInit()
 
 
 extern clock clk_audio_mclk_gen;
-extern out port p_mclk_gen; 
+extern out port p_mclk_gen;
 void master_mode_clk_setup(void)
 {
   configure_clock_rate(clk_audio_mclk_gen, 25, 1); // Slighly faster than typical MCLK of 24.576MHz
@@ -35,17 +35,17 @@ void master_mode_clk_setup(void)
 
 
 #if CODEC_MASTER
-extern out port  p_bclk_gen;  
+extern out port  p_bclk_gen;
 extern clock clk_audio_bclk_gen;
-extern out port  p_lrclk_gen; 
+extern out port  p_lrclk_gen;
 extern clock clk_audio_lrclk_gen;
 
 void slave_mode_clk_setup(const unsigned samFreq, const unsigned chans_per_frame){
   const unsigned data_bits = 32;
   const unsigned mclk_freq = 24576000;
 
-  const unsigned mclk_bclk_ratio = mclk_freq / (chans_per_frame * samFreq * data_bits); 
-  const unsigned bclk_lrclk_ratio = (chans_per_frame * data_bits); // 48.828Hz  LRCLK 
+  const unsigned mclk_bclk_ratio = mclk_freq / (chans_per_frame * samFreq * data_bits);
+  const unsigned bclk_lrclk_ratio = (chans_per_frame * data_bits); // 48.828Hz  LRCLK
 
   //bclk
   configure_clock_src_divide(clk_audio_bclk_gen, p_mclk_gen, mclk_bclk_ratio/2);
