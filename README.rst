@@ -1,6 +1,8 @@
 lib_xua
 =======
 
+:Latest release: 3.2.0rc0
+
 :Scope: General Use
 
 Summary
@@ -53,7 +55,6 @@ Key features of the various applications in this repository are as follows
 
 Note, not all features may be supported at all sample frequencies, simultaneously or on all devices.  Some features also require specific host driver support.
 
-
 Software version and dependencies
 .................................
 
@@ -68,3 +69,15 @@ The following application notes use this library:
     * AN000246 - Simple USB Audio Device using lib_xua
     * AN000247 - Using lib_xua with lib_spdif (transmit)
     * AN000248 - Using lib_xua with lib_mic_array
+
+Required software (dependencies)
+================================
+
+  * lib_logging (git@github.com:xmos/lib_logging.git)
+  * lib_xassert (git@github.com:xmos/lib_xassert.git)
+  * lib_xud (git@github.com:xmos/lib_xud.git)
+  * lib_spdif (git@github.com:xmos/lib_spdif.git)
+  * lib_mic_array (git@github.com:xmos/lib_mic_array.git)
+  * lib_dsp (git@github.com:xmos/lib_dsp)
+  * lib_locks (git@github.com:xmos/lib_locks.git)
+
