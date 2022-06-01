@@ -1,6 +1,8 @@
 lib_xua
 =======
 
+:Scope: General Use
+
 Summary
 -------
 
