@@ -1104,6 +1104,9 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
                         break;
                 }
                 break;
+#endif  // if IAP_EA_NATIVE_TRANS
+
+#endif  // ifdef IAP
 
             default:
 #if ( 0 < HID_CONTROLS )
@@ -1125,9 +1128,6 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
 #endif
                 break;
                 //::
-#endif
-
-#endif
 
 
         }

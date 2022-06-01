@@ -1,5 +1,8 @@
 // Copyright 2021-2022 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
+#include "xua_conf_full.h"
+#if( 0 < HID_CONTROLS )
+
 #include <assert.h>
 #include <stddef.h>
 #include <stdio.h>
@@ -851,3 +854,5 @@ unsigned hidReportValidate( void )
         return hidReportValidateInfoStruct( &info );
     }
 }
+
+#endif // ( 0 < HID_CONTROLS )

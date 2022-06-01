@@ -1,7 +1,5 @@
-# Copyright (c) 2016, XMOS Ltd, All rights reserved
 TARGET = xk-audio-216-mc.xn
-USED_MODULES = lib_xua \
-               module_i2c_shared module_i2c_single_port lib_logging 
+USED_MODULES = lib_xua lib_i2c lib_logging
 
 BUILD_FLAGS = -O0 -g -lflash -DXUD_SERIES_SUPPORT=4 -DXUD_CORE_CLOCK=600 -fxscope -save-temps -march=xs2a -DUSB_TILE=tile[1]
 

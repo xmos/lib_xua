@@ -1,6 +1,8 @@
 lib_xua
 =======
 
+:Scope: General Use
+
 Summary
 -------
 
@@ -32,6 +34,12 @@ Key features of the various applications in this repository are as follows
 - ADAT output
 
 - ADAT input
+
+- Synchronisation to external digital streams i.e. S/PDIF or ADAT
+
+- I2S slave & master modes
+
+- TDM slave & master modes
 
 - MIDI input/output (Compliant to USB Class Specification for MIDI devices)
 

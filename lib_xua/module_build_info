@@ -1,11 +1,11 @@
-VERSION = 3.1.0
+VERSION = 3.2.0
 
-DEPENDENT_MODULES = lib_logging(>=3.0.0) \
-                    lib_xassert(>=4.0.0) \
-                    lib_xud(>=2.0.1) \
+DEPENDENT_MODULES = lib_logging(>=3.1.0) \
+                    lib_xassert(>=4.1.0) \
+                    lib_xud(>=2.0.2) \
                     lib_spdif(>=4.0.0) \
                     lib_mic_array(>=4.0.0) \
-                    lib_locks(>=2.0.3)
+                    lib_locks(>=2.1.0)
 
 MODULE_XCC_FLAGS = $(XCC_FLAGS) \
                    -O3 \

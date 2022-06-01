@@ -1,4 +1,4 @@
-// Copyright 2017-2021 XMOS LIMITED.
+// Copyright 2017-2022 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 #ifndef __XUA_CONF_FULL_H__
 #define __XUA_CONF_FULL_H__
@@ -8,7 +8,5 @@
 #endif
 
 #include "xua_conf_default.h"
-
-
 
 #endif

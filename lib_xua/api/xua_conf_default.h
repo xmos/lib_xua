@@ -1,4 +1,4 @@
-// Copyright 2011-2021 XMOS LIMITED.
+// Copyright 2011-2022 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 /*
  * @brief       Defines relating to device configuration and customisation of lib_xua
@@ -83,7 +83,7 @@
 /**
  * @brief Number of DSD output channels. Default: 0 (disabled)
  */
-#if defined(DSD_CHANS_DAC)
+#if defined(DSD_CHANS_DAC) && (DSD_CHANS_DAC != 0)
     #if defined(NATIVE_DSD) && (NATIVE_DSD == 0)
         #undef NATIVE_DSD
     #else
@@ -1140,37 +1140,10 @@
 #endif
 #endif
 
-/* IAP */
-#if defined(IAP) && (IAP == 0)
-#undef IAP
+/* Always enable explicit feedback EP, even when input stream is present */
+#ifndef UAC_FORCE_FEEDBACK_EP
+#define UAC_FORCE_FEEDBACK_EP       (1)
 #endif
-
-/* IAP Interrupt endpoint */
-#if defined(IAP_INT_EP) && (IAP_INT_EP == 0)
-#undef IAP_INT_EP
-#endif
-
-/* IAP EA Native Transport */
-#if defined(IAP_EA_NATIVE_TRANS) && (IAP_EA_NATIVE_TRANS == 0)
-#undef IAP_EA_NATIVE_TRANS
-#endif
-
-#if defined(IAP_EA_NATIVE_TRANS) || defined(__DOXYGEN__)
-/**
- * @brief Number of supported EA Native Interface Alternative settings.
- *
- * Only 1 supported
- */
-#ifndef IAP_EA_NATIVE_TRANS_ALT_COUNT
-    #define IAP_EA_NATIVE_TRANS_ALT_COUNT 1
-#endif
-
-#if (IAP_EA_NATIVE_TRANS_ALT_COUNT > 1)
-    /* Only 1 supported */
-    #error
-#endif
-#endif
-
 
 #if (defined(UAC_FORCE_FEEDBACK_EP) && UAC_FORCE_FEEDBACK_EP == 0)
 #undef UAC_FORCE_FEEDBACK_EP
