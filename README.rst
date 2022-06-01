@@ -1,7 +1,8 @@
 lib_xua
 =======
 
-:Latest release: 3.2.0rc0
+:Latest release: 3.2.0rc1
+
 
 :Scope: General Use
 
@@ -73,11 +74,11 @@ The following application notes use this library:
 Required software (dependencies)
 ================================
 
-  * lib_logging (git@github.com:xmos/lib_logging.git)
-  * lib_xassert (git@github.com:xmos/lib_xassert.git)
-  * lib_xud (git@github.com:xmos/lib_xud.git)
-  * lib_spdif (git@github.com:xmos/lib_spdif.git)
-  * lib_mic_array (git@github.com:xmos/lib_mic_array.git)
-  * lib_dsp (git@github.com:xmos/lib_dsp)
   * lib_locks (git@github.com:xmos/lib_locks.git)
+  * lib_logging (git@github.com:xmos/lib_logging)
+  * lib_mic_array (git@github.com:xmos/lib_mic_array.git)
+  * lib_xassert (git@github.com:xmos/lib_xassert)
+  * lib_dsp (git@github.com:xmos/lib_dsp)
+  * lib_spdif (git@github.com:xmos/lib_spdif)
+  * lib_xud (git@github.com:xmos/lib_xud)
 
