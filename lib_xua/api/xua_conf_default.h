@@ -1460,3 +1460,9 @@ enum USBEndpointNumber_Out
 #ifndef XUA_SYNCMODE
 #define XUA_SYNCMODE XUA_SYNCMODE_ASYNC
 #endif
+
+#if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
+    #if (SPDIF_RX || ADAT_RX)
+        #error "Digital input streams not supported in Sync mode"
+    #endif
+#endif

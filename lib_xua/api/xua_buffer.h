@@ -38,20 +38,6 @@ void XUA_Buffer(
             chanend c_midi_to_host,
 			chanend c_midi,
 #endif
-#ifdef IAP
-            chanend c_iap_from_host,
-            chanend c_iap_to_host,
-#ifdef IAP_INT_EP
-            chanend c_iap_to_host_int,
-#endif
-            chanend c_iap,
-#ifdef IAP_EA_NATIVE_TRANS
-            chanend c_iap_ea_native_out,
-            chanend c_iap_ea_native_in,
-            chanend c_iap_ea_native_ctrl,
-            chanend c_iap_ea_native_data,
-#endif
-#endif
 #if (SPDIF_RX) || (ADAT_RX)
             chanend ?c_int,
             chanend ?c_clk_int,
@@ -59,10 +45,13 @@ void XUA_Buffer(
             chanend c_sof,
             chanend c_aud_ctl,
             in port p_off_mclk
-#if( 0 < HID_CONTROLS )
+#if (HID_CONTROLS )
             , chanend c_hid
 #endif
             , chanend c_aud
+#if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
+            , out port p_sync
+#endif
         );
 
 void XUA_Buffer_Ep(chanend c_aud_out,
@@ -77,20 +66,6 @@ void XUA_Buffer_Ep(chanend c_aud_out,
             chanend c_midi_to_host,
 			chanend c_midi,
 #endif
-#ifdef IAP
-            chanend c_iap_from_host,
-            chanend c_iap_to_host,
-#ifdef IAP_INT_EP
-            chanend c_iap_to_host_int,
-#endif
-            chanend c_iap,
-#ifdef IAP_EA_NATIVE_TRANS
-            chanend c_iap_ea_native_out,
-            chanend c_iap_ea_native_in,
-            chanend c_iap_ea_native_ctrl,
-            chanend c_iap_ea_native_data,
-#endif
-#endif
 #if (SPDIF_RX) || (ADAT_RX)
             chanend ?c_int,
             chanend ?c_clk_int,
@@ -98,11 +73,14 @@ void XUA_Buffer_Ep(chanend c_aud_out,
             chanend c_sof,
             chanend c_aud_ctl,
             in port p_off_mclk
-#if( 0 < HID_CONTROLS )
+#if (HID_CONTROLS)
             , chanend c_hid
 #endif
 #ifdef CHAN_BUFF_CTRL
             , chanend c_buff_ctrl
+#endif
+#if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
+            , out port p_sync
 #endif
         );
 

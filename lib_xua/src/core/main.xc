@@ -154,7 +154,12 @@ on stdcore[XUD_TILE] : buffered in port:32 p_adat_rx        = PORT_ADAT_IN;
 on tile[XUD_TILE] : buffered in port:4 p_spdif_rx           = PORT_SPDIF_IN;
 #endif
 
-#if (SPDIF_RX == 1) || (ADAT_RX)
+#if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
+/* Reference to external clock multiplier */
+on tile[XUD_TILE] : out port p_pll_clk                      = PORT_PLL_REF;
+#endif
+
+#if (SPDIF_RX) || (ADAT_RX) 
 /* Reference to external clock multiplier */
 on tile[AUDIO_IO_TILE] : out port p_pll_clk                 = PORT_PLL_REF;
 #endif
@@ -280,20 +285,17 @@ void xscope_user_init()
 /* Core USB Audio functions - must be called on the Tile connected to the USB Phy */
 void usb_audio_core(chanend c_mix_out
 #ifdef MIDI
-, chanend c_midi
+    , chanend c_midi
 #endif
-#ifdef IAP
-, chanend c_iap
-#ifdef IAP_EA_NATIVE_TRANS
-, chanend c_ea_data
+ #ifdef MIXER
+    , chanend c_mix_ctl
 #endif
+    , chanend ?c_clk_int
+    , chanend ?c_clk_ctl
+    , client interface i_dfu ?dfuInterface
+#if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
+    , out port p_sync
 #endif
-#ifdef MIXER
-, chanend c_mix_ctl
-#endif
-, chanend ?c_clk_int
-, chanend ?c_clk_ctl
-, client interface i_dfu ?dfuInterface
 VENDOR_REQUESTS_PARAMS_DEC_
 )
 {
@@ -362,33 +364,22 @@ VENDOR_REQUESTS_PARAMS_DEC_
                 c_xud_in[ENDPOINT_NUMBER_IN_MIDI],          /* MIDI In */  // 4
                 c_midi,
 #endif
-#ifdef IAP
-                c_xud_out[ENDPOINT_NUMBER_OUT_IAP],   /* iAP Out */
-                c_xud_in[ENDPOINT_NUMBER_IN_IAP],     /* iAP In */
-#ifdef IAP_INT_EP
-                c_xud_in[ENDPOINT_NUMBER_IN_IAP_INT], /* iAP Interrupt In */
-#endif
-                c_iap,
-#ifdef IAP_EA_NATIVE_TRANS
-                c_xud_out[ENDPOINT_NUMBER_OUT_IAP_EA_NATIVE_TRANS],
-                c_xud_in[ENDPOINT_NUMBER_IN_IAP_EA_NATIVE_TRANS],
-                c_EANativeTransport_ctrl,
-                c_ea_data,
-#endif
-#endif
 #if (SPDIF_RX) || (ADAT_RX)
                 /* Audio Interrupt - only used for interrupts on external clock change */
                 c_xud_in[ENDPOINT_NUMBER_IN_INTERRUPT],
                 c_clk_int,
 #endif
                 c_sof, c_aud_ctl, p_for_mclk_count
-#if( 0 < HID_CONTROLS )
+#if (HID_CONTROLS)
                 , c_xud_in[ENDPOINT_NUMBER_IN_HID]
 #endif
 #ifdef CHAN_BUFF_CTRL
                 , c_buff_ctrl
 #endif
                 , c_mix_out
+#if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
+                , p_sync
+#endif
             );
             //:
         }
@@ -629,6 +620,9 @@ int main()
                 , c_mix_ctl
 #endif
                 , c_clk_int, c_clk_ctl, dfuInterface
+#if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
+                , p_pll_clk
+#endif
                 VENDOR_REQUESTS_PARAMS_
 
             );

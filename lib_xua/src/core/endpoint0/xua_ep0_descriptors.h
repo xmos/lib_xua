@@ -2690,7 +2690,6 @@ unsigned char cfgDesc_Audio1[] =
     0x00,                                 /* bRefresh */
 #if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP) && (XUA_SYNCMODE == XUA_SYNCMODE_ASYNC)
     ENDPOINT_ADDRESS_IN_FEEDBACK,         /* bSynchAdddress - address of EP used to communicate sync info */
-#error
 #else                                     /* Bi-directional in/out device */
     #if (XUA_SYNCMODE == XUA_SYNCMODE_ASYNC)
         ENDPOINT_ADDRESS_IN_AUDIO,
