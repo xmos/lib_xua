@@ -520,7 +520,7 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
                 static unsigned syncPinVal = 0;
 
                 framesPerSec = (usbSpeed == XUD_SPEED_HS) ? 8000 : 1000;
-                float float_clocks = sampleFreq/framesPerSec ;
+                float float_clocks = (float) sampleFreq/framesPerSec ;
 
                 clocks = (unsigned) (float_clocks * (1 << 16));
                 asm volatile("stw %0, dp[g_speed]"::"r"(clocks));
