@@ -154,14 +154,9 @@ on stdcore[XUD_TILE] : buffered in port:32 p_adat_rx        = PORT_ADAT_IN;
 on tile[XUD_TILE] : buffered in port:4 p_spdif_rx           = PORT_SPDIF_IN;
 #endif
 
-#if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
+#if (SPDIF_RX) || (ADAT_RX) || (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
 /* Reference to external clock multiplier */
-on tile[XUD_TILE] : out port p_pll_clk                      = PORT_PLL_REF;
-#endif
-
-#if (SPDIF_RX) || (ADAT_RX) 
-/* Reference to external clock multiplier */
-on tile[AUDIO_IO_TILE] : out port p_pll_clk                 = PORT_PLL_REF;
+on tile[PLL_REF_TILE] : out port p_pll_ref                  = PORT_PLL_REF;
 #endif
 
 #ifdef MIDI
@@ -294,7 +289,7 @@ void usb_audio_core(chanend c_mix_out
     , chanend ?c_clk_ctl
     , client interface i_dfu ?dfuInterface
 #if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
-    , out port p_sync
+    , client interface sync_if i_sync
 #endif
 VENDOR_REQUESTS_PARAMS_DEC_
 )
@@ -378,7 +373,7 @@ VENDOR_REQUESTS_PARAMS_DEC_
 #endif
                 , c_mix_out
 #if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
-                , p_sync
+                , i_sync
 #endif
             );
             //:
@@ -510,7 +505,7 @@ void usb_audio_io(chanend ?c_aud_in,
         {
             thread_speed();
 
-            clockGen(c_spdif_rx, c_adat_rx, p_pll_clk, c_dig_rx, c_clk_ctl, c_clk_int);
+            clockGen(c_spdif_rx, c_adat_rx, p_pll_ref, c_dig_rx, c_clk_ctl, c_clk_int);
         }
 #endif
 
@@ -589,12 +584,20 @@ int main()
 #endif
 #endif
 
+#if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
+    interface sync_if i_sync;
+#endif
+
     USER_MAIN_DECLARATIONS
 
     par
     {
         USER_MAIN_CORES
 
+#if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
+        on tile[PLL_REF_TILE]: PllRefPinTask(i_sync, p_pll_ref);
+
+#endif
         on tile[XUD_TILE]:
         par
         {
@@ -621,7 +624,7 @@ int main()
 #endif
                 , c_clk_int, c_clk_ctl, dfuInterface
 #if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
-                , p_pll_clk
+                , i_sync
 #endif
                 VENDOR_REQUESTS_PARAMS_
 

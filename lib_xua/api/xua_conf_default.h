@@ -11,8 +11,6 @@
     #include "xua_conf.h"
 #endif
 
-
-
 /* Default tile arrangement */
 
 /**
@@ -55,6 +53,13 @@
  */
 #ifndef PDM_TILE
 #define PDM_TILE        AUDIO_IO_TILE
+#endif
+
+/**
+ * @brief Location (tile) of reference signal to CS2100. Default: AUDIO_IO_TILE
+ */
+#ifndef PLL_REF_TILE
+#define PLL_REF_TILE    AUDIO_IO_TILE
 #endif
 
 /**

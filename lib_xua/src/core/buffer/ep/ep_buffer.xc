@@ -115,7 +115,7 @@ void XUA_Buffer(
 #endif
     , chanend c_aud
 #if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
-    , out port p_sync
+    , client interface sync_if i_sync
 #endif
 )
 {
@@ -150,7 +150,7 @@ void XUA_Buffer(
                 , c_buff_ctrl
 #endif
 #if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
-                , p_sync
+                , i_sync
 #endif
             );
 
@@ -200,7 +200,7 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
     , chanend c_buff_ctrl
 #endif
 #if XUA_SYNCMODE == XUA_SYNCMODE_SYNC
-    , out port p_sync
+    , client interface sync_if i_sync
 #endif
     )
 {
@@ -510,7 +510,7 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
             /* SOF notification from XUD_Manager() */
             case inuint_byref(c_sof, u_tmp):
 #if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
-                /* This really could (shoud) be done in decouple. However, for a quick demo this is okay
+                /* This really could (should) be done in decouple. However, for a quick demo this is okay
                  * Decouple expects a 16:16 number in fixed point stored in the global g_speed */
             
                 unsigned usbSpeed;
@@ -528,8 +528,8 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
                 sofCount += 1000;
                 if (sofCount == framesPerSec)
                 {
-                    p_sync <: syncPinVal;
-                    syncPinVal = ~syncPinVal;
+                    /* Port is accessed via interface to allow flexibilty with location */
+                    i_sync.toggle();
                     sofCount = 0;
                 }
 #else

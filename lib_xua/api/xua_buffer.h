@@ -6,6 +6,7 @@
 #if __XC__
 
 #include "xua.h"
+#include "clocking.h"
 
 /** USB Audio Buffering Core.
  *
@@ -50,7 +51,7 @@ void XUA_Buffer(
 #endif
             , chanend c_aud
 #if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
-            , out port p_sync
+            , client interface sync_if i_sync
 #endif
         );
 
@@ -80,7 +81,7 @@ void XUA_Buffer_Ep(chanend c_aud_out,
             , chanend c_buff_ctrl
 #endif
 #if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
-            , out port p_sync
+            , client interface sync_if i_sync
 #endif
         );
 
@@ -94,7 +95,5 @@ void XUA_Buffer_Decouple(chanend c_audio_out
      , chanend c_buff_ctrl
 #endif
 );
-
 #endif
-
 #endif

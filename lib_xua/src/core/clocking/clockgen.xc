@@ -7,6 +7,7 @@
 
 #include "xua.h"
 #include "xua_commands.h"
+#include "clocking.h"
 
 #if (SPDIF_RX)
 #include "spdif.h"
@@ -37,6 +38,24 @@ static int clockFreq[NUM_CLOCKS];                           /* Store current clo
 static int clockValid[NUM_CLOCKS];                          /* Store current validity of each clock unit */
 static int clockInt[NUM_CLOCKS];                            /* Interupt flag for clocks */
 static int clockId[NUM_CLOCKS];
+
+[[combinable]]
+void PllRefPinTask(server interface sync_if i_sync, out port p_sync)
+{
+    static unsigned pinVal= 0;
+    p_sync <: pinVal;
+
+    while(1)
+    {
+        select
+        {
+            case i_sync.toggle():
+                pinVal = ~pinVal;
+                 p_sync <: pinVal;
+                break;
+        }
+    }
+}
 
 
 #if (SPDIF_RX) || (ADAT_RX)
