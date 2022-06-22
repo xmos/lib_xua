@@ -1573,7 +1573,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
         .bmAttributes                   = ISO_EP_IMPL_ATTRIBUTES_ASYNC,    /* Feedback data endpoint */
     #endif
 #elif (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
-        .bmAttributes                   = ISO_EP_ATTRIBUTES_ASYNC,         /* Iso, Sync, data endpoint */
+        .bmAttributes                   = ISO_EP_ATTRIBUTES_SYNC,          /* Iso, Sync, data endpoint */
 #else
     #error "Bad XUA_SYNCMODE"
 #endif
@@ -1665,7 +1665,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
         .bmAttributes                   = ISO_EP_IMPL_ATTRIBUTES_ASYNC,    /* Feedback data endpoint */
     #endif
 #elif (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
-        .bmAttributes                   = ISO_EP_ATTRIBUTES_ASYNC,         /* Iso, Sync, data endpoint */
+        .bmAttributes                   = ISO_EP_ATTRIBUTES_SYNC,          /* Iso, Sync, data endpoint */
 #else
     #error "Bad XUA_SYNCMODE"
 #endif
@@ -1770,7 +1770,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
         .bmAttributes                   = ISO_EP_IMPL_ATTRIBUTES_ASYNC,    /* Feedback data endpoint */
     #endif
 #elif (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
-        .bmAttributes                   = ISO_EP_ATTRIBUTES_ASYNC,         /* Iso, Sync, data endpoint */
+        .bmAttributes                   = ISO_EP_ATTRIBUTES_SYNC,          /* Iso, Sync, data endpoint */
 #else
     #error "Bad XUA_SYNCMODE"
 #endif
@@ -1846,7 +1846,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
         .bmAttributes                   = ISO_EP_IMPL_ATTRIBUTES_ASYNC,    /* Feedback data endpoint */
     #endif
 #elif (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
-        .bmAttributes                   = ISO_EP_ATTRIBUTES_ASYNC,         /* Iso, Sync, data endpoint */
+        .bmAttributes                   = ISO_EP_ATTRIBUTES_SYNC,          /* Iso, Sync, data endpoint */
 #else
     #error "Bad XUA_SYNCMODE"
 #endif
@@ -1923,7 +1923,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
         .bmAttributes                   = ISO_EP_IMPL_ATTRIBUTES_ASYNC,    /* Feedback data endpoint */
     #endif
 #elif (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
-        .bmAttributes                   = ISO_EP_ATTRIBUTES_ASYNC,         /* Iso, Sync, data endpoint */
+        .bmAttributes                   = ISO_EP_ATTRIBUTES_SYNC,         /* Iso, Sync, data endpoint */
 #else
     #error "Bad XUA_SYNCMODE"
 #endif
