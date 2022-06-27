@@ -4,6 +4,18 @@
 #ifndef _CLOCKING_H_
 #define _CLOCKING_H_
 
+
+
+interface sync_if
+{
+    void toggle();
+    void init();
+    void toggle_timed(int relative);
+};
+
+[[combinable]]
+void PllRefPinTask(server interface sync_if i_sync, out port p_sync);
+
 /** Clock generation and digital audio I/O handling.
  *
  *  \param c_spdif_rx channel connected to S/PDIF receive thread
@@ -15,14 +27,10 @@
  *  \param c_clk_int channel connected to the decouple() thread for clock
                      interrupts
  */
-void clockGen (streaming chanend ?c_spdif_rx, chanend ?c_adat_rx, out port p, chanend c_audio, chanend c_clk_ctl, chanend c_clk_int);
-
-interface sync_if
-{
-    void toggle();
-};
-
-[[combinable]]
-void PllRefPinTask(server interface sync_if i_sync, out port p_sync);
+#if (AUDIO_IO_TILE == PLL_REF_TILE)
+void clockGen(streaming chanend ?c_spdif_rx, chanend ?c_adat_rx, client interface out port p_pll_ref, chanend c_audio, chanend c_clk_ctl, chanend c_clk_int);
+#else
+void clockGen(streaming chanend ?c_spdif_rx, chanend ?c_adat_rx, client interface sync_if i_sync, chanend c_audio, chanend c_clk_ctl, chanend c_clk_int);
+#endif
 #endif
 
