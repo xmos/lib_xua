@@ -39,7 +39,7 @@ void XUA_Buffer(
             chanend c_midi_to_host,
 			chanend c_midi,
 #endif
-#if (SPDIF_RX) || (ADAT_RX)
+#if (XUA_SPDIF_RX_EN) || (ADAT_RX)
             chanend ?c_int,
             chanend ?c_clk_int,
 #endif
@@ -67,7 +67,7 @@ void XUA_Buffer_Ep(chanend c_aud_out,
             chanend c_midi_to_host,
 			chanend c_midi,
 #endif
-#if (SPDIF_RX) || (ADAT_RX)
+#if (XUA_SPDIF_RX_EN) || (ADAT_RX)
             chanend ?c_int,
             chanend ?c_clk_int,
 #endif

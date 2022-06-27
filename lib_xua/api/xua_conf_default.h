@@ -359,8 +359,8 @@
 /**
  * @brief Enables SPDIF Rx. Default: 0 (Disabled)
  */
-#ifndef SPDIF_RX
-#define SPDIF_RX              (0)
+#ifndef XUA_SPDIF_RX_EN
+#define XUA_SPDIF_RX_EN       (0)
 #endif
 
 /**
@@ -376,9 +376,9 @@
  *
  * Default: NONE (Must be defined by app when SPDIF_RX enabled)
  */
-#if (SPDIF_RX) || defined (__DOXYGEN__)
+#if (XUA_SPDIF_RX_EN) || defined (__DOXYGEN__)
 #ifndef SPDIF_RX_INDEX
-    #error SPDIF_RX_INDEX not defined and SPDIF_RX defined
+    #error SPDIF_RX_INDEX not defined and XUA_SPDIF_RX_EN defined
     #define SPDIF_RX_INDEX 0 /* Default define for doxygen */
 #endif
 #endif
@@ -1163,7 +1163,7 @@ enum USBEndpointNumber_In
     ENDPOINT_NUMBER_IN_FEEDBACK,
 #endif
     ENDPOINT_NUMBER_IN_AUDIO,
-#if (SPDIF_RX) || (ADAT_RX)
+#if (XUA_SPDIF_RX_EN) || (ADAT_RX)
     ENDPOINT_NUMBER_IN_INTERRUPT,   /* Audio interrupt/status EP */
 #endif
 #ifdef MIDI
@@ -1237,9 +1237,9 @@ enum USBEndpointNumber_Out
 #endif
 
 /* Length of clock unit/clock-selector units */
-#if (SPDIF_RX) && (ADAT_RX)
+#if (XUA_SPDIF_RX_EN) && (ADAT_RX)
 #define NUM_CLOCKS               (3)
-#elif (SPDIF_RX) || (ADAT_RX)
+#elif (XUA_SPDIF_RX_EN) || (ADAT_RX)
 #define NUM_CLOCKS               (2)
 #else
 #define NUM_CLOCKS               (1)
@@ -1467,7 +1467,7 @@ enum USBEndpointNumber_Out
 #endif
 
 #if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
-    #if (SPDIF_RX || ADAT_RX)
+    #if (XUA_SPDIF_RX_EN|| ADAT_RX)
         #error "Digital input streams not supported in Sync mode"
     #endif
 #endif
