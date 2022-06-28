@@ -115,7 +115,7 @@ void XUA_Buffer(
 #endif
     , chanend c_aud
 #if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
-    , client interface sync_if i_sync
+    , client interface pll_ref_if i_pll_ref
 #endif
 )
 {
@@ -150,7 +150,7 @@ void XUA_Buffer(
                 , c_buff_ctrl
 #endif
 #if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
-                , i_sync
+                , i_pll_ref
 #endif
             );
 
@@ -200,7 +200,7 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
     , chanend c_buff_ctrl
 #endif
 #if XUA_SYNCMODE == XUA_SYNCMODE_SYNC
-    , client interface sync_if i_sync
+    , client interface pll_ref_if i_pll_ref
 #endif
     )
 {
@@ -529,7 +529,7 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
                 if (sofCount == framesPerSec)
                 {
                     /* Port is accessed via interface to allow flexibilty with location */
-                    i_sync.toggle();
+                    i_pll_ref.toggle();
                     sofCount = 0;
                 }
 #else

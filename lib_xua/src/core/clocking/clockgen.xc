@@ -39,8 +39,8 @@ static int clockValid[NUM_CLOCKS];                          /* Store current val
 static int clockInt[NUM_CLOCKS];                            /* Interupt flag for clocks */
 static int clockId[NUM_CLOCKS];
 
-[[combinable]]
-void PllRefPinTask(server interface sync_if i_sync, out port p_pll_ref)
+[[distributable]]
+void PllRefPinTask(server interface pll_ref_if i_pll_ref, out port p_pll_ref)
 {
     static unsigned pinVal= 0;
     static unsigned short pinTime = 0;
@@ -49,18 +49,18 @@ void PllRefPinTask(server interface sync_if i_sync, out port p_pll_ref)
     {
         select
         {
-            case i_sync.toggle():
+            case i_pll_ref.toggle():
                 pinVal = ~pinVal;
                  p_pll_ref <: pinVal;
                 break;
             
-            case i_sync.init():
+            case i_pll_ref.init():
                 p_pll_ref <: pinVal @ pinTime;
                 pinTime += (unsigned short)(LOCAL_CLOCK_INCREMENT - (LOCAL_CLOCK_INCREMENT/2));
                 p_pll_ref @ pinTime <: pinVal;
                 break;
 
-            case i_sync.toggle_timed(int relative):
+            case i_pll_ref.toggle_timed(int relative):
                 
                 if (!relative)
                 {   
@@ -241,10 +241,11 @@ extern int samples_to_host_inputs_buff[NUM_USB_CHAN_IN];
 int VendorAudCoreReqs(unsigned cmd, chanend c);
 
 #pragma unsafe arrays
-#if (AUDIO_IO_TILE == PLL_REF_TILE)
+//#if (AUDIO_IO_TILE == PLL_REF_TILE)
+#if 0
 void clockGen (streaming chanend ?c_spdif_rx, chanend ?c_adat_rx, out port p, chanend c_dig_rx, chanend c_clk_ctl, chanend c_clk_int)
 #else
-void clockGen (streaming chanend ?c_spdif_rx, chanend ?c_adat_rx, client interface sync_if i_sync, chanend c_dig_rx, chanend c_clk_ctl, chanend c_clk_int)
+void clockGen (streaming chanend ?c_spdif_rx, chanend ?c_adat_rx, client interface pll_ref_if i_pll_ref, chanend c_dig_rx, chanend c_clk_ctl, chanend c_clk_int)
 #endif
 {
     timer t_local;
@@ -355,16 +356,9 @@ void clockGen (streaming chanend ?c_spdif_rx, chanend ?c_adat_rx, client interfa
     outuint(c_dig_rx, 1);
 #endif
 
-#if (AUDIO_IO_TILE == PLL_REF_TILE)
     /* Initial ref clock output and get timestamp */
-    p <: pinVal @ pinTime;
-    pinTime += (unsigned short)(LOCAL_CLOCK_INCREMENT - (LOCAL_CLOCK_INCREMENT/2));
-    p @ pinTime <: pinVal;
-#else
-    /* TODO ideally always use interface */
-    i_sync.init();
-#endif
-
+    i_pll_ref.init();
+    
     while(1)
     {
         select
@@ -486,15 +480,8 @@ void clockGen (streaming chanend ?c_spdif_rx, chanend ?c_adat_rx, client interfa
             /* Generate local clock from timer */
             case t_local when timerafter(timeNextEdge) :> void:
 
-#if (AUDIO_IO_TILE == PLL_REF_TILE)
                 /* Setup next local clock edge */
-                pinTime += (short) LOCAL_CLOCK_INCREMENT;
-                pinVal = !pinVal;
-                p @ pinTime <: pinVal;
-#else
-                /* TODO ideally always use interface */
-                i_sync.toggle_timed(0);
-#endif
+                i_pll_ref.toggle_timed(0);
 
                 /* Record time of edge */
                 timeLastEdge = timeNextEdge;
@@ -623,16 +610,8 @@ void clockGen (streaming chanend ?c_spdif_rx, chanend ?c_adat_rx, client interfa
                             /* Setup for next edge */
                             timeNextEdge = spdifReceivedTime + LOCAL_CLOCK_INCREMENT + LOCAL_CLOCK_MARGIN;
 
-#if (AUDIO_IO_TILE == PLL_REF_TILE)
                             /* Toggle edge */
-                            p <: pinVal @ pinTime;
-                            pinTime += (short) LOCAL_CLOCK_INCREMENT;
-                            pinVal = !pinVal;
-                            p @ pinTime <: pinVal;
-#else
-                            i_sync.toggle_timed(1);
-
-#endif
+                            i_pll_ref.toggle_timed(1);
 
                             /* Reset counters */
                             spdifCounters.receivedSamples = 0;
@@ -737,15 +716,9 @@ void clockGen (streaming chanend ?c_spdif_rx, chanend ?c_adat_rx, client interfa
                                             /* Setup for next edge */
                                             timeNextEdge = adatReceivedTime + LOCAL_CLOCK_INCREMENT + LOCAL_CLOCK_MARGIN;
 
-#if (AUDIO_IO_TILE == PLL_REF_TILE)
                                             /* Toggle edge */
-                                            p <: pinVal @ pinTime;
-                                            pinTime += LOCAL_CLOCK_INCREMENT;
-                                            pinVal = !pinVal;
-                                            p @ pinTime <: pinVal;
-#else
-                                            i_sync.toggle_timed(1);
-#endif
+                                            i_pll_ref.toggle_timed(1);
+                                            
                                             /* Reset counters */
                                             adatCounters.receivedSamples = 0;
 
