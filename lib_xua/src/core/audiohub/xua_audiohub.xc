@@ -161,7 +161,7 @@ static inline int HandleSampleClock(int frameCount, buffered _XUA_CLK_DIR port:3
     unsigned lrval = 0;
     p_lrclk :> lrval;
 
-    if(I2S_MODE_TDM)
+    if(XUA_PCM_FORMAT == XUA_PCM_FORMAT_TDM)
     {
         /* Only check for the rising edge of frame sync being in the right place because falling edge timing not specified */
         if (frameCount == 1)
@@ -186,7 +186,7 @@ static inline int HandleSampleClock(int frameCount, buffered _XUA_CLK_DIR port:3
     return syncError;
 
 #else
-    if(I2S_MODE_TDM)
+    if(XUA_PCM_FORMAT == XUA_PCM_FORMAT_TDM)
     {
         if(frameCount == (I2S_CHANS_PER_FRAME-1))
             p_lrclk <: 0x80000000;
@@ -553,7 +553,7 @@ unsigned static AudioHub_MainLoop(chanend ?c_out, chanend ?c_spd_out
             }
 #endif
 
-#if I2S_MODE_TDM
+#if (XUA_PCM_FORMAT == XUA_PCM_FORMAT_TDM)
             /* Increase frameCount by 2 since we have output two channels (per data line) */
             frameCount+=1;
             if(frameCount == I2S_CHANS_PER_FRAME)
@@ -724,7 +724,7 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
     while(1)
     {
         /* Calculate what master clock we should be using */
-        if ((MCLK_441 % curSamFreq) == 0)
+        if (((MCLK_441) % curSamFreq) == 0)
         {
             mClk = MCLK_441;
 #ifdef ADAT_TX
@@ -733,7 +733,7 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
             adatMultiple = mClk / 44100;
 #endif
         }
-        else if ((MCLK_48 % curSamFreq) == 0)
+        else if (((MCLK_48) % curSamFreq) == 0)
         {
             mClk = MCLK_48;
 #ifdef ADAT_TX
@@ -746,7 +746,7 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
         /* Calculate master clock to bit clock (or DSD clock) divide for current sample freq
          * e.g. 11.289600 / (176400 * 64)  = 1 */
         {
-#if I2S_MODE_TDM
+#if (XUA_PCM_FORMAT == XUA_PCM_FORMAT_TDM)
             /* I2S has 32 bits per sample. *8 as 8 channels */
             unsigned numBits = 256;
 #else

@@ -98,20 +98,25 @@
     #define DSD_CHANS_DAC        0
 #endif
 
+#define XUA_PCM_FORMAT_I2S      (0)
+#define XUA_PCM_FORMAT_TDM      (1)
 
-/* TODO not required */
-#ifndef I2S_MODE_TDM
-#define I2S_MODE_TDM 0
+#ifdef XUA_PCM_FORMAT
+    #if (XUA_PCM_FORMAT != XUA_PCM_FORMAT_I2S) && (XUA_PCM_FORMAT != XUA_PCM_FORMAT_TDM)
+        #error Bad value for XUA_PCM_FORMAT
+    #endif
+#else
+    #define XUA_PCM_FORMAT        XUA_PCM_FORMAT_I2S
 #endif
 
 /**
  * @brief Channels per I2S frame. *
  *
- * Default: 2 i.e standard stereo I2S (8 if using TDM i.e. I2S_MODE_TDM).
+ * Default: 2 i.e standard stereo I2S (8 if using TDM i.e. XUA_PCM_FORMAT_TDM).
  *
  **/
 #ifndef I2S_CHANS_PER_FRAME
-    #if (I2S_MODE_TDM == 1)
+    #if (XUA_PCM_FORMAT == XUA_PCM_FORMAT_TDM)
         #define I2S_CHANS_PER_FRAME 8
     #else
         #define I2S_CHANS_PER_FRAME 2
@@ -188,7 +193,7 @@
  */
 #if (I2S_DOWNSAMPLE_MONO_IN == 1)
     #define I2S_DOWNSAMPLE_CHANS_IN (I2S_CHANS_ADC / 2)
-    #if ((I2S_DOWNSAMPLE_FACTOR_IN > 1) && (I2S_MODE_TDM == 1))
+    #if ((I2S_DOWNSAMPLE_FACTOR_IN > 1) && (XUA_PCM_FORMAT == XUA_PCM_FORMAT_TDM))
         #error Mono I2S input downsampling is not avaliable in TDM mode
     #endif
 #else
