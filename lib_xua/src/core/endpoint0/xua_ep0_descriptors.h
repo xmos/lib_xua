@@ -10,12 +10,13 @@
 #define _DEVICE_DESCRIPTORS_
 
 #include <stddef.h>
-#include "xua.h"             /* Device specific define */
+#include "xua.h"                       /* Device specific define */
 #include "descriptor_defs.h"
 #include "usbaudio20.h"                /* Defines from the USB Audio 2.0 Specifications */
 #include "usbaudiocommon.h"
 #include "xud_device.h"
 #include "xua_hid_descriptor.h"
+#include "xud.h"
 
 #define APPEND_VENDOR_STR(x) VENDOR_STR" "#x
 
