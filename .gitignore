@@ -23,6 +23,7 @@ _build*
 **/.vscode/**
 **.egg-info
 *.pdf
+*/logs/*
 
 # waf build files
 .lock-waf_*

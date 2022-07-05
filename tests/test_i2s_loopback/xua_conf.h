@@ -1,17 +1,24 @@
-// Copyright 2016-2021 XMOS LIMITED.
+// Copyright 2016-2022 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
-#ifndef __custom_defines_h__
-#define __custom_defines_h__
+#ifndef _XUA_CONF_H_
+#define _XUA_CONF_H_
 
 #define EXCLUDE_USB_AUDIO_MAIN
 #define XUA_NUM_PDM_MICS 0
 #define XUD_TILE 1
 #define AUDIO_IO_TILE 0
 #define MIXER 0
+
+#ifndef MCLK_441
 #define MCLK_441 (512 * 44100)
+#endif
+
+#ifndef MCLK_48
 #define MCLK_48 (512 * 48000)
-#define MIN_FREQ 44100
-#define MAX_FREQ 192000
+#endif
+
+#define MIN_FREQ (44100)
+#define MAX_FREQ (192000)
 #define SPDIF_TX_INDEX 0
 #define VENDOR_STR "XMOS"
 #define VENDOR_ID 0x20B1
@@ -26,4 +33,4 @@
 #define MIC_DUAL_ENABLED 1        //Use single thread, dual PDM mic
 #define XUA_MIC_FRAME_SIZE 240
 
-#endif // __custom_defines_h__
+#endif
