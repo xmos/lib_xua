@@ -85,7 +85,7 @@ void InitPorts_slave(unsigned divide, buffered _XUA_CLK_DIR port:32 p_lrclk, buf
     p_lrclk when pinseq(1) :> void;
     p_lrclk when pinseq(0) :> void;
     p_lrclk when pinseq(1) :> void;
-#if I2S_MODE_TDM
+#if (XUA_PCM_FORMAT == XUA_PCM_FORMAT_TDM)
     p_lrclk when pinseq(0) :> void;
     p_lrclk when pinseq(1) :> void @ tmp;
 #else

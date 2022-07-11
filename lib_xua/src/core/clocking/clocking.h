@@ -4,25 +4,27 @@
 #ifndef _CLOCKING_H_
 #define _CLOCKING_H_
 
+interface pll_ref_if
+{
+    void toggle();
+    void init();
+    void toggle_timed(int relative);
+};
+
+[[distributable]]
+void PllRefPinTask(server interface pll_ref_if i_pll_ref, out port p_sync);
+
 /** Clock generation and digital audio I/O handling.
  *
  *  \param c_spdif_rx channel connected to S/PDIF receive thread
  *  \param c_adat_rx channel connect to ADAT receive thread
- *  \param p port to output clock signal to drive external frequency synthesizer
+ *  \param i_pll_ref interface to taslk that outputs clock signal to drive external frequency synthesizer
  *  \param c_audio channel connected to the audio() thread
  *  \param c_clk_ctl channel connected to Endpoint0() for configuration of the
  *                   clock
  *  \param c_clk_int channel connected to the decouple() thread for clock
                      interrupts
  */
-void clockGen (streaming chanend ?c_spdif_rx, chanend ?c_adat_rx, out port p, chanend c_audio, chanend c_clk_ctl, chanend c_clk_int);
-
-interface sync_if
-{
-    void toggle();
-};
-
-[[combinable]]
-void PllRefPinTask(server interface sync_if i_sync, out port p_sync);
+void clockGen(streaming chanend ?c_spdif_rx, chanend ?c_adat_rx, client interface pll_ref_if i_pll_ref, chanend c_audio, chanend c_clk_ctl, chanend c_clk_int);
 #endif
 

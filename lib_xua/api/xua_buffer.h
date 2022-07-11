@@ -39,7 +39,7 @@ void XUA_Buffer(
             chanend c_midi_to_host,
 			chanend c_midi,
 #endif
-#if (SPDIF_RX) || (ADAT_RX)
+#if (XUA_SPDIF_RX_EN) || (ADAT_RX)
             chanend ?c_int,
             chanend ?c_clk_int,
 #endif
@@ -51,7 +51,7 @@ void XUA_Buffer(
 #endif
             , chanend c_aud
 #if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
-            , client interface sync_if i_sync
+            , client interface pll_ref_if i_pll_ref
 #endif
         );
 
@@ -67,7 +67,7 @@ void XUA_Buffer_Ep(chanend c_aud_out,
             chanend c_midi_to_host,
 			chanend c_midi,
 #endif
-#if (SPDIF_RX) || (ADAT_RX)
+#if (XUA_SPDIF_RX_EN) || (ADAT_RX)
             chanend ?c_int,
             chanend ?c_clk_int,
 #endif
@@ -81,7 +81,7 @@ void XUA_Buffer_Ep(chanend c_aud_out,
             , chanend c_buff_ctrl
 #endif
 #if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
-            , client interface sync_if i_sync
+            , client interface pll_ref_if i_pll_ref
 #endif
         );
 

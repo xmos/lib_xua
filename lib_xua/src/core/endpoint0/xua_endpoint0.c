@@ -284,7 +284,7 @@ void XUA_Endpoint0_setStrTable() {
     concatenateAndCopyStrings(g_vendor_str, " Clock Selector", g_strTable.clockSelectorStr);
     concatenateAndCopyStrings(g_vendor_str, " Internal Clock", g_strTable.internalClockSourceStr);
 #endif
-#if SPDIF_RX
+#if (XUA_SPDIF_RX_EN)
     concatenateAndCopyStrings(g_vendor_str, " S/PDIF Clock", g_strTable.spdifClockSourceStr);
 #endif
 #if ADAT_RX

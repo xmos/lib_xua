@@ -46,7 +46,7 @@ unsigned g_speed = (AUDIO_CLASS == 2) ? (DEFAULT_FREQ/8000) << 16 : (DEFAULT_FRE
 unsigned g_freqChange = 0;
 unsigned feedbackValid = 0;
 
-#if defined (SPDIF_RX) || defined (ADAT_RX)
+#if (XUA_SPDIF_RX_EN || ADAT_RX)
 /* When digital Rx enabled we enable an interrupt EP to inform host about changes in clock validity */
 /* Interrupt EP report data */
 unsigned char g_intData[8] =
@@ -103,7 +103,7 @@ void XUA_Buffer(
     chanend c_midi_to_host,
     chanend c_midi,
 #endif
-#if (SPDIF_RX) || (ADAT_RX)
+#if (XUA_SPDIF_RX_EN) || (ADAT_RX)
     chanend ?c_ep_int,
     chanend ?c_clk_int,
 #endif
@@ -115,7 +115,7 @@ void XUA_Buffer(
 #endif
     , chanend c_aud
 #if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
-    , client interface sync_if i_sync
+    , client interface pll_ref_if i_pll_ref
 #endif
 )
 {
@@ -137,7 +137,7 @@ void XUA_Buffer(
                 c_midi_to_host,           /* MIDI In */  // 4
                 c_midi,
 #endif
-#if (SPDIF_RX) || (ADAT_RX)
+#if (XUA_SPDIF_RX_EN || ADAT_RX)
                 /* Audio Interrupt - only used for interrupts on external clock change */
                 c_ep_int,
                 c_clk_int,
@@ -150,7 +150,7 @@ void XUA_Buffer(
                 , c_buff_ctrl
 #endif
 #if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
-                , i_sync
+                , i_pll_ref
 #endif
             );
 
@@ -186,7 +186,7 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
     chanend c_midi_to_host,
     chanend c_midi,
 #endif
-#if (SPDIF_RX) || (ADAT_RX)
+#if (XUA_SPDIF_RX_EN || ADAT_RX)
     chanend ?c_ep_int,
     chanend ?c_clk_int,
 #endif
@@ -200,7 +200,7 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
     , chanend c_buff_ctrl
 #endif
 #if XUA_SYNCMODE == XUA_SYNCMODE_SYNC
-    , client interface sync_if i_sync
+    , client interface pll_ref_if i_pll_ref
 #endif
     )
 {
@@ -229,7 +229,7 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
     XUD_ep ep_iap_ea_native_in = XUD_InitEp(c_iap_ea_native_in);
 #endif
 #endif
-#if (SPDIF_RX) || (ADAT_RX)
+#if (XUA_SPDIF_RX_EN || ADAT_RX)
     XUD_ep ep_int = XUD_InitEp(c_ep_int);
 #endif
 
@@ -367,7 +367,7 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
         /* Wait for response from XUD and service relevant EP */
         select
         {
-#if (SPDIF_RX) || (ADAT_RX)
+#if (XUA_SPDIF_RX_EN || ADAT_RX)
             /* Clocking thread wants to produce an interrupt... */
             case inuint_byref(c_clk_int, u_tmp):
                 chkct(c_clk_int, XS1_CT_END);
@@ -529,7 +529,7 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
                 if (sofCount == framesPerSec)
                 {
                     /* Port is accessed via interface to allow flexibilty with location */
-                    i_sync.toggle();
+                    i_pll_ref.toggle();
                     sofCount = 0;
                 }
 #else

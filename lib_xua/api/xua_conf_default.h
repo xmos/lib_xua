@@ -98,20 +98,25 @@
     #define DSD_CHANS_DAC        0
 #endif
 
+#define XUA_PCM_FORMAT_I2S      (0)
+#define XUA_PCM_FORMAT_TDM      (1)
 
-/* TODO not required */
-#ifndef I2S_MODE_TDM
-#define I2S_MODE_TDM 0
+#ifdef XUA_PCM_FORMAT
+    #if (XUA_PCM_FORMAT != XUA_PCM_FORMAT_I2S) && (XUA_PCM_FORMAT != XUA_PCM_FORMAT_TDM)
+        #error Bad value for XUA_PCM_FORMAT
+    #endif
+#else
+    #define XUA_PCM_FORMAT        XUA_PCM_FORMAT_I2S
 #endif
 
 /**
  * @brief Channels per I2S frame. *
  *
- * Default: 2 i.e standard stereo I2S (8 if using TDM i.e. I2S_MODE_TDM).
+ * Default: 2 i.e standard stereo I2S (8 if using TDM i.e. XUA_PCM_FORMAT_TDM).
  *
  **/
 #ifndef I2S_CHANS_PER_FRAME
-    #if (I2S_MODE_TDM == 1)
+    #if (XUA_PCM_FORMAT == XUA_PCM_FORMAT_TDM)
         #define I2S_CHANS_PER_FRAME 8
     #else
         #define I2S_CHANS_PER_FRAME 2
@@ -188,7 +193,7 @@
  */
 #if (I2S_DOWNSAMPLE_MONO_IN == 1)
     #define I2S_DOWNSAMPLE_CHANS_IN (I2S_CHANS_ADC / 2)
-    #if ((I2S_DOWNSAMPLE_FACTOR_IN > 1) && (I2S_MODE_TDM == 1))
+    #if ((I2S_DOWNSAMPLE_FACTOR_IN > 1) && (XUA_PCM_FORMAT == XUA_PCM_FORMAT_TDM))
         #error Mono I2S input downsampling is not avaliable in TDM mode
     #endif
 #else
@@ -359,8 +364,8 @@
 /**
  * @brief Enables SPDIF Rx. Default: 0 (Disabled)
  */
-#ifndef SPDIF_RX
-#define SPDIF_RX              (0)
+#ifndef XUA_SPDIF_RX_EN
+#define XUA_SPDIF_RX_EN       (0)
 #endif
 
 /**
@@ -376,9 +381,9 @@
  *
  * Default: NONE (Must be defined by app when SPDIF_RX enabled)
  */
-#if (SPDIF_RX) || defined (__DOXYGEN__)
+#if (XUA_SPDIF_RX_EN) || defined (__DOXYGEN__)
 #ifndef SPDIF_RX_INDEX
-    #error SPDIF_RX_INDEX not defined and SPDIF_RX defined
+    #error SPDIF_RX_INDEX not defined and XUA_SPDIF_RX_EN defined
     #define SPDIF_RX_INDEX 0 /* Default define for doxygen */
 #endif
 #endif
@@ -1163,7 +1168,7 @@ enum USBEndpointNumber_In
     ENDPOINT_NUMBER_IN_FEEDBACK,
 #endif
     ENDPOINT_NUMBER_IN_AUDIO,
-#if (SPDIF_RX) || (ADAT_RX)
+#if (XUA_SPDIF_RX_EN) || (ADAT_RX)
     ENDPOINT_NUMBER_IN_INTERRUPT,   /* Audio interrupt/status EP */
 #endif
 #ifdef MIDI
@@ -1237,9 +1242,9 @@ enum USBEndpointNumber_Out
 #endif
 
 /* Length of clock unit/clock-selector units */
-#if (SPDIF_RX) && (ADAT_RX)
+#if (XUA_SPDIF_RX_EN) && (ADAT_RX)
 #define NUM_CLOCKS               (3)
-#elif (SPDIF_RX) || (ADAT_RX)
+#elif (XUA_SPDIF_RX_EN) || (ADAT_RX)
 #define NUM_CLOCKS               (2)
 #else
 #define NUM_CLOCKS               (1)
@@ -1467,7 +1472,7 @@ enum USBEndpointNumber_Out
 #endif
 
 #if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
-    #if (SPDIF_RX || ADAT_RX)
+    #if (XUA_SPDIF_RX_EN|| ADAT_RX)
         #error "Digital input streams not supported in Sync mode"
     #endif
 #endif
