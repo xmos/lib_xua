@@ -91,43 +91,32 @@ unsigned int fb_clocks[4];
 #define FB_TOLERANCE 0x100
 
 void XUA_Buffer(
-            register chanend c_aud_out,
+    register chanend c_aud_out,
 #if (NUM_USB_CHAN_IN > 0)
-            register chanend c_aud_in,
+    register chanend c_aud_in,
 #endif
 #if (NUM_USB_CHAN_IN == 0) || defined (UAC_FORCE_FEEDBACK_EP)
-            chanend c_aud_fb,
+    chanend c_aud_fb,
 #endif
 #ifdef MIDI
-            chanend c_midi_from_host,
-            chanend c_midi_to_host,
-            chanend c_midi,
-#endif
-#ifdef IAP
-            chanend c_iap_from_host,
-            chanend c_iap_to_host,
-#ifdef IAP_INT_EP
-            chanend c_iap_to_host_int,
-#endif
-            chanend c_iap,
-#ifdef IAP_EA_NATIVE_TRANS
-            chanend c_iap_ea_native_out,
-            chanend c_iap_ea_native_in,
-            chanend c_iap_ea_native_ctrl,
-            chanend c_iap_ea_native_data,
-#endif
+    chanend c_midi_from_host,
+    chanend c_midi_to_host,
+    chanend c_midi,
 #endif
 #if (SPDIF_RX) || (ADAT_RX)
-            chanend ?c_ep_int,
-            chanend ?c_clk_int,
+    chanend ?c_ep_int,
+    chanend ?c_clk_int,
 #endif
-            chanend c_sof,
-            chanend c_aud_ctl,
-            in port p_off_mclk
-#if( 0 < HID_CONTROLS )
-            , chanend c_hid
+    chanend c_sof,
+    chanend c_aud_ctl,
+    in port p_off_mclk
+#if (HID_CONTROLS )
+    , chanend c_hid
 #endif
-            , chanend c_aud
+    , chanend c_aud
+#if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
+    , client interface sync_if i_sync
+#endif
 )
 {
 #ifdef CHAN_BUFF_CTRL
@@ -148,20 +137,6 @@ void XUA_Buffer(
                 c_midi_to_host,           /* MIDI In */  // 4
                 c_midi,
 #endif
-#ifdef IAP
-                c_iap_from_host,          /* iAP Out */
-                c_iap_to_host,            /* iAP In */
-#ifdef IAP_INT_EP
-                c_iap_to_host_int,        /* iAP Interrupt In */
-#endif
-                c_iap,
-#ifdef IAP_EA_NATIVE_TRANS
-                c_iap_ea_native_out,
-                c_iap_ea_native_in,
-                c_EANativeTransport_ctrl,
-                c_ea_data,
-#endif
-#endif
 #if (SPDIF_RX) || (ADAT_RX)
                 /* Audio Interrupt - only used for interrupts on external clock change */
                 c_ep_int,
@@ -173,6 +148,9 @@ void XUA_Buffer(
 #endif
 #ifdef CHAN_BUFF_CTRL
                 , c_buff_ctrl
+#endif
+#if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
+                , i_sync
 #endif
             );
 
@@ -204,38 +182,27 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
     chanend c_aud_fb,
 #endif
 #ifdef MIDI
-            chanend c_midi_from_host,
-            chanend c_midi_to_host,
-            chanend c_midi,
-#endif
-#ifdef IAP
-            chanend c_iap_from_host,
-            chanend c_iap_to_host,
-#ifdef IAP_INT_EP
-            chanend c_iap_to_host_int,
-#endif
-            chanend c_iap,
-#ifdef IAP_EA_NATIVE_TRANS
-            chanend c_iap_ea_native_out,
-            chanend c_iap_ea_native_in,
-            chanend c_iap_ea_native_ctrl,
-            chanend c_iap_ea_native_data,
-#endif
+    chanend c_midi_from_host,
+    chanend c_midi_to_host,
+    chanend c_midi,
 #endif
 #if (SPDIF_RX) || (ADAT_RX)
-            chanend ?c_ep_int,
-            chanend ?c_clk_int,
+    chanend ?c_ep_int,
+    chanend ?c_clk_int,
 #endif
-            chanend c_sof,
-            chanend c_aud_ctl,
-            in port p_off_mclk
-#if( 0 < HID_CONTROLS )
-            , chanend c_hid
+    chanend c_sof,
+    chanend c_aud_ctl,
+    in port p_off_mclk
+#if(HID_CONTROLS)
+    , chanend c_hid
 #endif
 #ifdef CHAN_BUFF_CTRL
-            , chanend c_buff_ctrl
+    , chanend c_buff_ctrl
 #endif
-            )
+#if XUA_SYNCMODE == XUA_SYNCMODE_SYNC
+    , client interface sync_if i_sync
+#endif
+    )
 {
     XUD_ep ep_aud_out = XUD_InitEp(c_aud_out);
 
@@ -542,6 +509,30 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
 
             /* SOF notification from XUD_Manager() */
             case inuint_byref(c_sof, u_tmp):
+#if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
+                /* This really could (should) be done in decouple. However, for a quick demo this is okay
+                 * Decouple expects a 16:16 number in fixed point stored in the global g_speed */
+            
+                unsigned usbSpeed;
+                int framesPerSec;
+                GET_SHARED_GLOBAL(usbSpeed, g_curUsbSpeed);
+                static int sofCount = 0;
+                static unsigned syncPinVal = 0;
+
+                framesPerSec = (usbSpeed == XUD_SPEED_HS) ? 8000 : 1000;
+                float float_clocks = (float) sampleFreq/framesPerSec ;
+
+                clocks = (unsigned) (float_clocks * (1 << 16));
+                asm volatile("stw %0, dp[g_speed]"::"r"(clocks));
+
+                sofCount += 1000;
+                if (sofCount == framesPerSec)
+                {
+                    /* Port is accessed via interface to allow flexibilty with location */
+                    i_sync.toggle();
+                    sofCount = 0;
+                }
+#else
 
                 /* NOTE our feedback will be wrong for a couple of SOF's after a SF change due to
                  * lastClock being incorrect */
@@ -711,7 +702,8 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
 #endif
                     sofCount++;
                 }
-                break;
+#endif
+            break;
 
 #if (NUM_USB_CHAN_IN > 0)
             /* Sent audio packet DEVICE -> HOST */
@@ -724,7 +716,7 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
 #endif
 
 #if (NUM_USB_CHAN_OUT > 0)
-#if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP)
+#if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP) && (XUA_SYNCMODE == XUA_SYNCMODE_ASYNC)
             /* Feedback Pipe */
             case XUD_SetData_Select(c_aud_fb, ep_aud_fb, result):
             {

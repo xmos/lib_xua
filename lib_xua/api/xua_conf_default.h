@@ -11,8 +11,6 @@
     #include "xua_conf.h"
 #endif
 
-
-
 /* Default tile arrangement */
 
 /**
@@ -55,6 +53,13 @@
  */
 #ifndef PDM_TILE
 #define PDM_TILE        AUDIO_IO_TILE
+#endif
+
+/**
+ * @brief Location (tile) of reference signal to CS2100. Default: AUDIO_IO_TILE
+ */
+#ifndef PLL_REF_TILE
+#define PLL_REF_TILE    AUDIO_IO_TILE
 #endif
 
 /**
@@ -1451,4 +1456,18 @@ enum USBEndpointNumber_Out
 
 #if (CODEC_MASTER == 1) && (DSD_CHANS_DAC != 0)
 #error CODEC_MASTER with DSD is currently unsupported
+#endif
+
+#define XUA_SYNCMODE_ASYNC (1) // USB_ENDPOINT_SYNCTYPE_ASYNC
+#define XUA_SYNCMODE_ADAPT (2) // USB_ENDPOINT_SYNCTYPE_ADAPT
+#define XUA_SYNCMODE_SYNC  (3) // USB_ENDPOINT_SYNCTYPE_SYNC
+
+#ifndef XUA_SYNCMODE
+#define XUA_SYNCMODE XUA_SYNCMODE_ASYNC
+#endif
+
+#if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
+    #if (SPDIF_RX || ADAT_RX)
+        #error "Digital input streams not supported in Sync mode"
+    #endif
 #endif

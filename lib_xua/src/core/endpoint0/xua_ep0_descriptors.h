@@ -10,16 +10,13 @@
 #define _DEVICE_DESCRIPTORS_
 
 #include <stddef.h>
-#include "xua.h"             /* Device specific define */
+#include "xua.h"                       /* Device specific define */
 #include "descriptor_defs.h"
 #include "usbaudio20.h"                /* Defines from the USB Audio 2.0 Specifications */
 #include "usbaudiocommon.h"
 #include "xud_device.h"
 #include "xua_hid_descriptor.h"
-
-#ifdef IAP_EA_NATIVE_TRANS
-#include "iap2.h"                      /* Defines iAP EA Native Transport protocol name */
-#endif
+#include "xud.h"
 
 #define APPEND_VENDOR_STR(x) VENDOR_STR" "#x
 
@@ -46,14 +43,25 @@
 // The value below must match the length of XUA_DESCR_EMPTY_STRING.
 #define XUA_MAX_STR_LEN (32)
 
-#define ISO_EP_ATTRIBUTES_ASYNCH                   0x05 //ISO, ASYNCH, DATA EP
-#define ISO_EP_ATTRIBUTES_ADAPTIVE                 0x09 //ISO, ADAPTIVE, DATA EP
-#define ISO_EP_IMPL_ATTRIBUTES_ASYNCH              0x25 //ISO, ASYNCH, IMPLICIT FB DATA EP
-#define ISO_EP_IMPL_ATTRIBUTES_ADAPTIVE            0x29 //ISO, ADAPTIVE, IMPLICIT FB DATA EP
+#define ISO_EP_ATTRIBUTES_ASYNC                    ((USB_ENDPOINT_TRANSTYPE_ISO << USB_ENDPOINT_TRANSTYPE_SHIFT)\
+                                                    | (USB_ENDPOINT_SYNCTYPE_ASYNC << USB_ENDPOINT_SYNCTYPE_SHIFT)\
+                                                    | (USB_ENDPOINT_USAGETYPE_DATA << USB_ENDPOINT_USAGETYPE_SHIFT))
+                                                  
+#define ISO_EP_ATTRIBUTES_ADAPTIVE                 ((USB_ENDPOINT_TRANSTYPE_ISO << USB_ENDPOINT_TRANSTYPE_SHIFT)\
+                                                    | (USB_ENDPOINT_SYNCTYPE_ADAPT << USB_ENDPOINT_SYNCTYPE_SHIFT)\
+                                                    | (USB_ENDPOINT_USAGETYPE_DATA << USB_ENDPOINT_USAGETYPE_SHIFT))
 
-#if (defined(XUA_ADAPTIVE) && (XUA_ADAPTIVE == 0))
-#undef XUA_ADAPTIVE
-#endif
+#define ISO_EP_ATTRIBUTES_SYNC                     ((USB_ENDPOINT_TRANSTYPE_ISO << USB_ENDPOINT_TRANSTYPE_SHIFT)\
+                                                    | (USB_ENDPOINT_SYNCTYPE_SYNC << USB_ENDPOINT_SYNCTYPE_SHIFT)\
+                                                    | (USB_ENDPOINT_USAGETYPE_DATA << USB_ENDPOINT_USAGETYPE_SHIFT))
+
+#define ISO_EP_IMPL_ATTRIBUTES_ASYNC               ((USB_ENDPOINT_TRANSTYPE_ISO << USB_ENDPOINT_TRANSTYPE_SHIFT)\
+                                                    | (USB_ENDPOINT_SYNCTYPE_ASYNC << USB_ENDPOINT_SYNCTYPE_SHIFT)\
+                                                    | (USB_ENDPOINT_USAGETYPE_IMPLICIT << USB_ENDPOINT_USAGETYPE_SHIFT))
+
+#define ISO_EP_IMPL_ATTRIBUTES_ADAPT               ((USB_ENDPOINT_TRANSTYPE_ISO << USB_ENDPOINT_TRANSTYPE_SHIFT)\
+                                                    | (USB_ENDPOINT_SYNCTYPE_ADAPT << USB_ENDPOINT_SYNCTYPE_SHIFT)\
+                                                    | (USB_ENDPOINT_USAGETYPE_IMPLICIT << USB_ENDPOINT_USAGETYPE_SHIFT))
 
 #if __STDC__
 typedef struct
@@ -707,7 +715,7 @@ typedef struct
     USB_Descriptor_Audio_Format_Type1_t         Audio_Out_Format;
     USB_Descriptor_Endpoint_t                   Audio_Out_Endpoint;
     USB_Descriptor_Audio_Class_AS_Endpoint_t    Audio_Out_ClassEndpoint;
-#if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP)
+#if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP) && (XUA_SYNCMODE == XUA_SYNCMODE_ASYNC)
     USB_Descriptor_Endpoint_t                   Audio_Out_Fb_Endpoint;
 #endif
 #if (OUTPUT_FORMAT_COUNT > 1)
@@ -716,7 +724,7 @@ typedef struct
     USB_Descriptor_Audio_Format_Type1_t         Audio_Out_Format_2;
     USB_Descriptor_Endpoint_t                   Audio_Out_Endpoint_2;
     USB_Descriptor_Audio_Class_AS_Endpoint_t    Audio_Out_ClassEndpoint_2;
-#if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP)
+#if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP) && (XUA_SYNCMODE == XUA_SYNCMODE_ASYNC)
     USB_Descriptor_Endpoint_t                   Audio_Out_Fb_Endpoint_2;
 #endif
 #endif // OUTPUT_FORMAT_COUNT > 1
@@ -726,7 +734,7 @@ typedef struct
     USB_Descriptor_Audio_Format_Type1_t         Audio_Out_Format_3;
     USB_Descriptor_Endpoint_t                   Audio_Out_Endpoint_3;
     USB_Descriptor_Audio_Class_AS_Endpoint_t    Audio_Out_ClassEndpoint_3;
-#if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP)
+#if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP) && (XUA_SYNCMODE == XUA_SYNCMODE_ASYNC)
     USB_Descriptor_Endpoint_t                   Audio_Out_Fb_Endpoint_3;
 #endif
 #endif // OUTPUT_FORMAT_COUNT > 2
@@ -1424,7 +1432,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
         USB_DESCTYPE_INTERFACE,           /* 1  bDescriptorType: INTERFACE */
         INTERFACE_NUMBER_AUDIO_OUTPUT,    /* 2  bInterfaceNumber: Number of interface */
         1,                                /* 3  bAlternateSetting */
-#if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP)
+#if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP) && (XUA_SYNCMODE == XUA_SYNCMODE_ASYNC)
         2,                                /* 4  bNumEndpoints */
 #else
         1,                                /* 4  bNumEndpoints */
@@ -1467,14 +1475,18 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
         .bLength                        = sizeof(USB_Descriptor_Endpoint_t),
         .bDescriptorType                = USB_DESCTYPE_ENDPOINT,
         .bEndpointAddress               = ENDPOINT_ADDRESS_OUT_AUDIO,
-#ifdef XUA_ADAPTIVE
+#if (XUA_SYNCMODE == XUA_SYNCMODE_ADAPT)
         .bmAttributes                   = ISO_EP_ATTRIBUTES_ADAPTIVE,
-#else
+#elif (XUA_SYNCMODE == XUA_SYNCMODE_ASYNC)
         #if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP)
-        .bmAttributes                   = ISO_EP_ATTRIBUTES_ASYNCH, /* Iso, async, data endpoint */
+        .bmAttributes                   = ISO_EP_ATTRIBUTES_ASYNC,         /* Iso, async, data endpoint */
         #else
-        .bmAttributes                   = ISO_EP_IMPL_ATTRIBUTES_ASYNCH,        /* Feedback data endpoint */
+        .bmAttributes                   = ISO_EP_IMPL_ATTRIBUTES_ASYNC,    /* Feedback data endpoint */
         #endif
+#elif (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
+        .bmAttributes                   = ISO_EP_ATTRIBUTES_SYNC,
+#else
+    #error "Bad XUA_SYNCMODE" 
 #endif
         .wMaxPacketSize                 = HS_STREAM_FORMAT_OUTPUT_1_MAXPACKETSIZE,
         .bInterval                      = 1,
@@ -1492,7 +1504,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
         0x0008,                           /* 6:7 bLockDelay */
     },
 
-#if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP)
+#if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP) && (XUA_SYNCMODE == XUA_SYNCMODE_ASYNC)
     .Audio_Out_Fb_Endpoint =
     {
         .bLength            = 0x07,
@@ -1511,7 +1523,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
         USB_DESCTYPE_INTERFACE,           /* 1  bDescriptorType: INTERFACE */
         INTERFACE_NUMBER_AUDIO_OUTPUT,    /* 2  bInterfaceNumber: Number of interface */
         2,                                /* 3  bAlternateSetting */
-#if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP)
+#if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP) && (XUA_SYNCMODE == XUA_SYNCMODE_ASYNC)
         2,                                /* 4  bNumEndpoints */
 #else
         1,                                /* 4  bNumEndpoints */
@@ -1553,14 +1565,18 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
         .bLength                        = sizeof(USB_Descriptor_Endpoint_t),
         .bDescriptorType                = USB_DESCTYPE_ENDPOINT,
         .bEndpointAddress               = ENDPOINT_ADDRESS_OUT_AUDIO,
-#ifdef XUA_ADAPTIVE
+#if (XUA_SYNCMODE == XUA_SYNCMODE_ADAPT)
         .bmAttributes                   = ISO_EP_ATTRIBUTES_ADAPTIVE,
+#elif (XUA_SYNCMODE == XUA_SYNCMODE_ASYNC)
+    #if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP)
+        .bmAttributes                   = ISO_EP_ATTRIBUTES_ASYNC,         /* Iso, Async, data endpoint */
+    #else
+        .bmAttributes                   = ISO_EP_IMPL_ATTRIBUTES_ASYNC,    /* Feedback data endpoint */
+    #endif
+#elif (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
+        .bmAttributes                   = ISO_EP_ATTRIBUTES_SYNC,          /* Iso, Sync, data endpoint */
 #else
-        #if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP)
-        .bmAttributes                   = ISO_EP_ATTRIBUTES_ASYNCH, /* Iso, async, data endpoint */
-        #else
-        .bmAttributes                   = ISO_EP_IMPL_ATTRIBUTES_ASYNCH,        /* Feedback data endpoint */
-        #endif
+    #error "Bad XUA_SYNCMODE"
 #endif
         .wMaxPacketSize                 = HS_STREAM_FORMAT_OUTPUT_2_MAXPACKETSIZE,
         .bInterval                      = 1,
@@ -1578,7 +1594,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
         0x0008,                           /* 6:7 bLockDelay */
     },
 
-#if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP)
+#if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP) && (XUA_SYNCMODE == XUA_SYNCMODE_ASYNC)
     .Audio_Out_Fb_Endpoint_2 =
     {
         0x07,                             /* 0  bLength: 7 */
@@ -1598,7 +1614,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
         USB_DESCTYPE_INTERFACE,           /* 1  bDescriptorType: INTERFACE */
         INTERFACE_NUMBER_AUDIO_OUTPUT,    /* 2  bInterfaceNumber: Number of interface */
         3,                                /* 3  bAlternateSetting */
-#if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP)
+#if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP) && (XUA_SYNCMODE == XUA_SYNCMODE_ASYNC)
         2,                                /* 4  bNumEndpoints */
 #else
         1,                                /* 4  bNumEndpoints */
@@ -1641,14 +1657,18 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
         .bLength                       = 0x07,
         .bDescriptorType               = USB_DESCTYPE_ENDPOINT,
         .bEndpointAddress              = ENDPOINT_ADDRESS_OUT_AUDIO,
-#ifdef XUA_ADAPTIVE
-        .bmAttributes                  = ISO_EP_ATTRIBUTES_ADAPTIVE,
+#if (XUA_SYNCMODE == XUA_SYNCMODE_ADAPT)
+        .bmAttributes                   = ISO_EP_ATTRIBUTES_ADAPTIVE,
+#elif (XUA_SYNCMODE == XUA_SYNCMODE_ASYNC)
+    #if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP)
+        .bmAttributes                   = ISO_EP_ATTRIBUTES_ASYNC,         /* Iso, Async, data endpoint */
+    #else
+        .bmAttributes                   = ISO_EP_IMPL_ATTRIBUTES_ASYNC,    /* Feedback data endpoint */
+    #endif
+#elif (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
+        .bmAttributes                   = ISO_EP_ATTRIBUTES_SYNC,          /* Iso, Sync, data endpoint */
 #else
-        #if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP)
-        .bmAttributes                  = ISO_EP_ATTRIBUTES_ASYNCH, /* Iso, async, data endpoint */
-        #else
-        .bmAttributes                  = ISO_EP_IMPL_ATTRIBUTES_ASYNCH,        /* Feedback data endpoint */
-        #endif
+    #error "Bad XUA_SYNCMODE"
 #endif
         .wMaxPacketSize                = HS_STREAM_FORMAT_OUTPUT_3_MAXPACKETSIZE,
         .bInterval                     = 1,
@@ -1666,7 +1686,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
         .wLockDelay                    = 0x0008,
     },
 
-#if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP)
+#if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP) && (XUA_SYNCMODE == XUA_SYNCMODE_ASYNC)
     .Audio_Out_Fb_Endpoint_3 =
     {
         .bLength                       = 0x07,
@@ -1742,14 +1762,18 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
         .bLength                       = 0x07,
         .bDescriptorType               = USB_DESCTYPE_ENDPOINT,
         .bEndpointAddress              = ENDPOINT_ADDRESS_IN_AUDIO,
-#ifdef XUA_ADAPTIVE
-        .bmAttributes                  = ISO_EP_ATTRIBUTES_ADAPTIVE,
+#if (XUA_SYNCMODE == XUA_SYNCMODE_ADAPT)
+        .bmAttributes                   = ISO_EP_ATTRIBUTES_ADAPTIVE,
+#elif (XUA_SYNCMODE == XUA_SYNCMODE_ASYNC)
+    #if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP)
+        .bmAttributes                   = ISO_EP_ATTRIBUTES_ASYNC,         /* Iso, Async, data endpoint */
+    #else
+        .bmAttributes                   = ISO_EP_IMPL_ATTRIBUTES_ASYNC,    /* Feedback data endpoint */
+    #endif
+#elif (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
+        .bmAttributes                   = ISO_EP_ATTRIBUTES_SYNC,          /* Iso, Sync, data endpoint */
 #else
-        #if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP)
-        .bmAttributes                  = ISO_EP_ATTRIBUTES_ASYNCH, /* Iso, async, data endpoint */
-        #else
-        .bmAttributes                  = ISO_EP_IMPL_ATTRIBUTES_ASYNCH,        /* Feedback data endpoint */
-        #endif
+    #error "Bad XUA_SYNCMODE"
 #endif
         .wMaxPacketSize                = HS_STREAM_FORMAT_INPUT_1_MAXPACKETSIZE,
         .bInterval                     = 0x01,
@@ -1814,14 +1838,18 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
         .bLength                       = 0x07,
         .bDescriptorType               = USB_DESCTYPE_ENDPOINT,
         .bEndpointAddress              = ENDPOINT_ADDRESS_IN_AUDIO,
-#ifdef XUA_ADAPTIVE
-        .bmAttributes                  = ISO_EP_ATTRIBUTES_ADAPTIVE,
+#if (XUA_SYNCMODE == XUA_SYNCMODE_ADAPT)
+        .bmAttributes                   = ISO_EP_ATTRIBUTES_ADAPTIVE,
+#elif (XUA_SYNCMODE == XUA_SYNCMODE_ASYNC)
+    #if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP)
+        .bmAttributes                   = ISO_EP_ATTRIBUTES_ASYNC,         /* Iso, Async, data endpoint */
+    #else
+        .bmAttributes                   = ISO_EP_IMPL_ATTRIBUTES_ASYNC,    /* Feedback data endpoint */
+    #endif
+#elif (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
+        .bmAttributes                   = ISO_EP_ATTRIBUTES_SYNC,          /* Iso, Sync, data endpoint */
 #else
-        #if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP)
-        .bmAttributes                  = ISO_EP_ATTRIBUTES_ASYNCH, /* Iso, async, data endpoint */
-        #else
-        .bmAttributes                  = ISO_EP_IMPL_ATTRIBUTES_ASYNCH,        /* Feedback data endpoint */
-        #endif
+    #error "Bad XUA_SYNCMODE"
 #endif
         .wMaxPacketSize                = HS_STREAM_FORMAT_INPUT_2_MAXPACKETSIZE,
         .bInterval                     = 0x01,
@@ -1887,14 +1915,18 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
         .bLength                       = 0x07,
         .bDescriptorType               = USB_DESCTYPE_ENDPOINT,
         .bEndpointAddress              = ENDPOINT_ADDRESS_IN_AUDIO,
-#ifdef XUA_ADAPTIVE
-        .bmAttributes                  = ISO_EP_ATTRIBUTES_ADAPTIVE,
+#if (XUA_SYNCMODE == XUA_SYNCMODE_ADAPT)
+        .bmAttributes                   = ISO_EP_ATTRIBUTES_ADAPTIVE,
+#elif (XUA_SYNCMODE == XUA_SYNCMODE_ASYNC)
+    #if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP)
+        .bmAttributes                   = ISO_EP_ATTRIBUTES_ASYNC,         /* Iso, Async, data endpoint */
+    #else
+        .bmAttributes                   = ISO_EP_IMPL_ATTRIBUTES_ASYNC,    /* Feedback data endpoint */
+    #endif
+#elif (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
+        .bmAttributes                   = ISO_EP_ATTRIBUTES_SYNC,         /* Iso, Sync, data endpoint */
 #else
-        #if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP)
-        .bmAttributes                  = ISO_EP_ATTRIBUTES_ASYNCH, /* Iso, async, data endpoint */
-        #else
-        .bmAttributes                  = ISO_EP_IMPL_ATTRIBUTES_ASYNCH,        /* Feedback data endpoint */
-        #endif
+    #error "Bad XUA_SYNCMODE"
 #endif
         .wMaxPacketSize                = HS_STREAM_FORMAT_INPUT_3_MAXPACKETSIZE,
         .bInterval                     = 0x01,
@@ -2325,7 +2357,7 @@ const unsigned num_freqs_a1 = MAX(3, (0
 /* Note, this is different that INTERFACE_COUNT since we dont support items such as MIDI, iAP etc in UAC1 mode */
 #define NUM_INTERFACES_A1           (1 + INPUT_INTERFACES_A1 + OUTPUT_INTERFACES_A1 + NUM_CONTROL_USB_INTERFACES + DFU_INTERFACES_A1 + HID_INTERFACES_A1)
 
-#if ((NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP))
+#if ((NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP)) && (XUA_SYNCMODE == XUA_SYNCMODE_ASYNC)
 #define CFG_TOTAL_LENGTH_A1         (18 + AC_TOTAL_LENGTH + (INPUT_INTERFACES_A1 * (49 + num_freqs_a1 * 3)) + (OUTPUT_INTERFACES_A1 * (58 + num_freqs_a1 * 3)) + CONTROL_INTERFACE_BYTES + DFU_INTERFACE_BYTES + HID_INTERFACE_BYTES)
 #else
 #define CFG_TOTAL_LENGTH_A1         (18 + AC_TOTAL_LENGTH + (INPUT_INTERFACES_A1 * (49 + num_freqs_a1 * 3)) + (OUTPUT_INTERFACES_A1 * (49 + num_freqs_a1 * 3)) + CONTROL_INTERFACE_BYTES + DFU_INTERFACE_BYTES + HID_INTERFACE_BYTES)
@@ -2557,7 +2589,7 @@ unsigned char cfgDesc_Audio1[] =
     0x04,                                 /* INTERFACE */
     0x01,                                 /* bInterfaceNumber */
     0x01,                                 /* bAlternateSetting */
-#if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP)
+#if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP) && (XUA_SYNCMODE == XUA_SYNCMODE_ASYNC)
     0x02,                                 /* bNumEndpoints 2: audio EP and feedback EP */
 #else
     0x01,                                 /* bNumEndpoints */
@@ -2640,27 +2672,31 @@ unsigned char cfgDesc_Audio1[] =
     0x09,
     0x05,                                 /* ENDPOINT */
     ENDPOINT_ADDRESS_OUT_AUDIO,           /* endpointAddress - D7, direction (0 OUT, 1 IN). D6..4 reserved (0). D3..0 endpoint no. */
-#ifdef XUA_ADAPTIVE
+#if (XUA_SYNCMODE == XUA_SYNCMODE_ADAPT)
     ISO_EP_ATTRIBUTES_ADAPTIVE,
-#else
+#elif (XUA_SYNCMODE == XUA_SYNCMODE_ASYNC)
     #if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP)
-    ISO_EP_ATTRIBUTES_ASYNCH, /* Iso, async, data endpoint */
+    ISO_EP_ATTRIBUTES_ASYNC,              /* Iso, async, data endpoint */
     #else
-    ISO_EP_IMPL_ATTRIBUTES_ASYNCH,        /* Feedback data endpoint */
+    ISO_EP_IMPL_ATTRIBUTES_ASYNC,         /* Feedback data endpoint */
     #endif
+#elif (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
+    ISO_EP_ATTRIBUTES_SYNC,               /* Iso, sync, data endpoint */
+#else
+#error "Unsupported XUA_SYNCMODE"
 #endif
     (FS_STREAM_FORMAT_OUTPUT_1_MAXPACKETSIZE&0xff),      /* 4  wMaxPacketSize (Typically 294 bytes)*/
     (FS_STREAM_FORMAT_OUTPUT_1_MAXPACKETSIZE&0xff00)>>8, /* 5  wMaxPacketSize */
     0x01,                                 /* bInterval */
     0x00,                                 /* bRefresh */
-#if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP)
+#if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP) && (XUA_SYNCMODE == XUA_SYNCMODE_ASYNC)
     ENDPOINT_ADDRESS_IN_FEEDBACK,         /* bSynchAdddress - address of EP used to communicate sync info */
-#else /* Bi-directional in/out device */
-#ifdef XUA_ADAPTIVE
-    0, /* OUT */
-#else
-    ENDPOINT_ADDRESS_IN_AUDIO,
-#endif
+#else                                     /* Bi-directional in/out device */
+    #if (XUA_SYNCMODE == XUA_SYNCMODE_ASYNC)
+        ENDPOINT_ADDRESS_IN_AUDIO,
+    #else
+        0,                                /* Unused */
+    #endif
 #endif
 
     /* CS_Endpoint Descriptor ?? */
@@ -2669,13 +2705,13 @@ unsigned char cfgDesc_Audio1[] =
     0x01,                                 /* subtype - GENERAL */
     0x01,                                 /* attributes. D[0]: sample freq ctrl. */
     0x02,                                 /* bLockDelayUnits */
-#ifdef XUA_ADAPTIVE
+#if (XUA_SYNCMODE == XUA_SYNCMODE_ADAPT)
     0x08, 0x00,                           /* bLockDelay */
 #else
     0x00, 0x00,                           /* Not used */
 #endif
 
-#if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP)
+#if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP) && (XUA_SYNCMODE == XUA_SYNCMODE_ASYNC)
     /* Feedback EP */
     0x09,
     0x05,                                 /* bDescriptorType: ENDPOINT */
@@ -2784,14 +2820,18 @@ unsigned char cfgDesc_Audio1[] =
     0x09,
     0x05,                                 /* ENDPOINT */
     ENDPOINT_ADDRESS_IN_AUDIO,            /* EndpointAddress */
-#ifdef XUA_ADAPTIVE
+#if (XUA_SYNCMODE == XUA_SYNCMODE_ADAPT)
     ISO_EP_ATTRIBUTES_ADAPTIVE,
-#else
+#elif (XUA_SYNCMODE == XUA_SYNCMODE_ASYNC)
     #if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP)
-    ISO_EP_ATTRIBUTES_ASYNCH, /* Iso, async, data endpoint */
+    ISO_EP_ATTRIBUTES_ASYNC,              /* Iso, async, data endpoint */
     #else
-    ISO_EP_IMPL_ATTRIBUTES_ASYNCH,        /* Feedback data endpoint */
+    ISO_EP_IMPL_ATTRIBUTES_ASYNC,         /* Feedback data endpoint */
     #endif
+#elif (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
+    ISO_EP_ATTRIBUTES_SYNC,               /* Iso, sync, data endpoint */
+#else
+#error "Unsupported XUA_SYNCMODE"
 #endif
     FS_STREAM_FORMAT_INPUT_1_MAXPACKETSIZE&0xff,        /* 4  wMaxPacketSize (Typically 294 bytes)*/
     (FS_STREAM_FORMAT_INPUT_1_MAXPACKETSIZE&0xff00)>>8, /* 5  wMaxPacketSize */
@@ -2804,13 +2844,13 @@ unsigned char cfgDesc_Audio1[] =
     0x25,                                 /* CS_ENDPOINT */
     0x01,                                 /* Subtype - GENERAL */
     0x01,                                 /* Attributes. D[0]: sample freq ctrl. */
-#ifdef XUA_ADAPTIVE
+#if (XUA_SYNCMODE == XUA_SYNCMODE_ADAPT)
     0x02,                                 /* Lock Delay units PCM samples*/
     0x08, 0x00,                           /* No lock delay */
 #else
     0x00,                                 /* Undefined */
     0x00, 0x00,                           /* Not used */
-#endif // XUA_ADAPTIVE
+#endif
 #endif // NUM_USB_CHAN_IN > 0
 
 #if (XUA_DFU_EN == 1) && (FORCE_UAC1_DFU == 1)

@@ -10,6 +10,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
+#include <xclib.h>
 #include <xassert.h>
 #include "xua.h"
 
@@ -482,7 +483,7 @@ void XUA_Endpoint0_init(chanend c_ep0_out, chanend c_ep0_in, NULLABLE_RESOURCE(c
     /* Check if device has started in DFU mode */
     if (DFUReportResetState(null))
     {
-        assert((c_audioControl != NULL) && msg("DFU not supported when c_audioControl is null"));
+        assert(((unsigned)c_audioControl != 0) && msg("DFU not supported when c_audioControl is null"));
 
         /* Stop audio */
         outuint(c_audioControl, SET_SAMPLE_FREQ);

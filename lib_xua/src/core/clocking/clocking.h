@@ -1,4 +1,4 @@
-// Copyright 2011-2021 XMOS LIMITED.
+// Copyright 2011-2022 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
 #ifndef _CLOCKING_H_
@@ -16,5 +16,13 @@
                      interrupts
  */
 void clockGen (streaming chanend ?c_spdif_rx, chanend ?c_adat_rx, out port p, chanend c_audio, chanend c_clk_ctl, chanend c_clk_int);
+
+interface sync_if
+{
+    void toggle();
+};
+
+[[combinable]]
+void PllRefPinTask(server interface sync_if i_sync, out port p_sync);
 #endif
 
