@@ -10,12 +10,13 @@
 #define _DEVICE_DESCRIPTORS_
 
 #include <stddef.h>
-#include "xua.h"             /* Device specific define */
+#include "xua.h"                       /* Device specific define */
 #include "descriptor_defs.h"
 #include "usbaudio20.h"                /* Defines from the USB Audio 2.0 Specifications */
 #include "usbaudiocommon.h"
 #include "xud_device.h"
 #include "xua_hid_descriptor.h"
+#include "xud.h"
 
 #define APPEND_VENDOR_STR(x) VENDOR_STR" "#x
 
@@ -2682,7 +2683,7 @@ unsigned char cfgDesc_Audio1[] =
 #elif (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
     ISO_EP_ATTRIBUTES_SYNC,               /* Iso, sync, data endpoint */
 #else
-#error "Bad XUD_SYNCMODE"
+#error "Unsupported XUA_SYNCMODE"
 #endif
     (FS_STREAM_FORMAT_OUTPUT_1_MAXPACKETSIZE&0xff),      /* 4  wMaxPacketSize (Typically 294 bytes)*/
     (FS_STREAM_FORMAT_OUTPUT_1_MAXPACKETSIZE&0xff00)>>8, /* 5  wMaxPacketSize */
@@ -2830,7 +2831,7 @@ unsigned char cfgDesc_Audio1[] =
 #elif (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
     ISO_EP_ATTRIBUTES_SYNC,               /* Iso, sync, data endpoint */
 #else
-#error "Bad XUD_SYNCMODE"
+#error "Unsupported XUA_SYNCMODE"
 #endif
     FS_STREAM_FORMAT_INPUT_1_MAXPACKETSIZE&0xff,        /* 4  wMaxPacketSize (Typically 294 bytes)*/
     (FS_STREAM_FORMAT_INPUT_1_MAXPACKETSIZE&0xff00)>>8, /* 5  wMaxPacketSize */

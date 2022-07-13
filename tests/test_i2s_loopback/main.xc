@@ -203,7 +203,7 @@ void slave_mode_clk_setup(const unsigned samFreq, const unsigned chans_per_frame
 
 #endif
 
-#if XUA_PCM_FORMAT == XUA_PCM_FORMAT_TDM
+#if (XUA_PCM_FORMAT == XUA_PCM_FORMAT_TDM)
 const int i2s_tdm_mode = 8;
 #else
 const int i2s_tdm_mode = 2;
