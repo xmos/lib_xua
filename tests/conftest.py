@@ -1,7 +1,8 @@
 import pytest
 
+
 def pytest_addoption(parser):
-    parser.addoption("--enabletracing", action="store_true", default=False, help="Enable xsim tracing")
+    pass
 
 
 @pytest.fixture
