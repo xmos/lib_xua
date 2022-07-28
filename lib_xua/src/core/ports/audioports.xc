@@ -1,4 +1,4 @@
-// Copyright 2011-2021 XMOS LIMITED.
+// Copyright 2011-2022 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 #include <xs1.h>
 #include <platform.h>
@@ -6,11 +6,9 @@
 #include "xua.h"
 #include "audioports.h"
 
-
-
-extern in port p_mclk_in;
+//extern in port p_mclk_in;
 extern clock    clk_audio_mclk;
-extern clock    clk_audio_bclk;
+//extern clock    clk_audio_bclk;
 
 void ConfigAudioPorts(
 #if (I2S_CHANS_DAC != 0) || (DSD_CHANS_DAC != 0)
@@ -32,7 +30,7 @@ void ConfigAudioPorts(
         in port p_bclk,
 #endif
 #endif
-unsigned int divide, unsigned curSamFreq)
+        in port p_mclk_in, clock clk_audio_bclk, unsigned int divide, unsigned curSamFreq)
 {
 #if (I2S_CHANS_DAC != 0) || (I2S_CHANS_ADC != 0)
 

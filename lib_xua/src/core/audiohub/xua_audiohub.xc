@@ -789,12 +789,11 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
                 null,
                 p_dsd_clk,
 #endif
-                divide, curSamFreq, dsdMode);
+                p_mclk_in, clk_audio_bclk, divide, curSamFreq, dsdMode);
         }
         else
 #endif
         {
-
             ConfigAudioPortsWrapper(
 #if (I2S_CHANS_DAC != 0)
                 p_i2s_dac,
@@ -813,7 +812,7 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
                 p_bclk,
 #endif
 #endif
-            divide, curSamFreq, dsdMode);
+            p_mclk_in, clk_audio_bclk, divide, curSamFreq, dsdMode);
 }
 
 
