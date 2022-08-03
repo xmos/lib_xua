@@ -490,20 +490,14 @@ void clockGen (streaming chanend ?c_spdif_rx, chanend ?c_adat_rx, client interfa
                 timeNextClockDetection = timeNextEdge + (LOCAL_CLOCK_INCREMENT/2);
                 timeNextEdge += LOCAL_CLOCK_INCREMENT;
 
-                /* If we are in an external clock mode and this fire, then clock invalid */
-
+                /* If we are in an external clock mode and this fire, then clock invalid 
+                 * reset counters in case we are moved to digital clock - we want a well timed 
+                 * first edge */
 #if (XUA_SPDIF_RX_EN)
-               // if(clkMode == CLOCK_SPDIF)
-                {
-                    /* We must have lost valid S/PDIF stream, reset counters, so we dont produce a double edge */
-                    spdifCounters.receivedSamples = 0;
-                }
+                spdifCounters.receivedSamples = 0;
 #endif
 #if ADAT_RX
-                //if(clkMode == CLOCK_ADAT)
-                {
-                    adatCounters.receivedSamples = 0;
-                }
+                adatCounters.receivedSamples = 0;
 #endif
 
 #ifdef CLOCK_VALIDITY_CALL
