@@ -42,7 +42,7 @@ def do_test(test_file, options, capfd):
     return result
 
 
-def test_sync(test_file, options, capfd):
+def test_sync_clk_basic(test_file, options, capfd):
 
     result = do_test(test_file, options, capfd)
 

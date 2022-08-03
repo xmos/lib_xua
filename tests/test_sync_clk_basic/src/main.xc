@@ -15,13 +15,17 @@
 
 out port p_pll_ref               = XS1_PORT_1A; 
 in port p_off_mclk               = XS1_PORT_1M;
-in port p_pll_loop               = XS1_PORT_1B;
+in port p_pll_loop               = XS1_PORT_1B; /* Note, this is externally looped back using the loopback plugin */
 
 /* Purely for debug/viewing on VCD */
 out port p_test                  = XS1_PORT_1C;
 
 /* To speed this test up we divide all delays by 10. This is also the case for the delays in the clock generation code */
 #define SOF_PERIOD_TICKS   (12500/10)
+
+#ifndef MISSING_SOFS
+#define MISSING SOFS (8)
+#endif
 
 void exit(int);
 
@@ -74,11 +78,13 @@ void fake_xud(chanend c_out[], chanend c_in[], chanend c_sof)
  
     SetupEndpoints(c_out, EP_COUNT_OUT, c_in, EP_COUNT_IN, epTypeTableOut, epTypeTableIn);
 
-    driveSofs(c_sof, 24);
+    driveSofs(c_sof, 32);
      
     p_test <: 0;
+    
     /* Sim missing SOFs */   
-    delay(SOF_PERIOD_TICKS*8);
+    delay(SOF_PERIOD_TICKS*MISSING_SOFS);
+    
     p_test <: 1;
     
     driveSofs(c_sof, 16);
@@ -112,6 +118,7 @@ void checker()
    
         int period = t1-t0;
 
+        /* Check the period of the reference clock we are generating */
         if(period > (EXPECTED_PERIOD + MARGIN))
         {
             printstr("Period too long: ");
