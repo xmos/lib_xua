@@ -357,8 +357,12 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
 #endif
 
 #if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
-#define LOCAL_CLOCK_INCREMENT       100000  /* 500Hz */
-#define LOCAL_CLOCK_MARGIN          1000
+#ifndef LOCAL_CLOCK_INCREMENT
+#define LOCAL_CLOCK_INCREMENT       (100000)  /* 500Hz */
+#endif
+#ifndef LOCAL_CLOCK_MARGIN
+#define LOCAL_CLOCK_MARGIN          (1000)
+#endif
     int sofClockValid = 0;
     timer t_sofCheck;
     unsigned timeLastEdge;
@@ -510,6 +514,7 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
                     SET_SHARED_GLOBAL(g_freqChange_flag, cmd);  /* Set Flag */
                 }
                 break;
+            }
 #if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
             case t_sofCheck when timerafter(timeNextEdge) :> void:
                 i_pll_ref.toggle();
@@ -517,8 +522,6 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
                 timeNextEdge += LOCAL_CLOCK_INCREMENT;
                 break;
 #endif
-
-            }
 
             #define MASK_16_13            (7)   /* Bits that should not be transmitted as part of feedback */
             #define MASK_16_10            (127) /* For Audio 1.0 we use a mask 1 bit longer than expected to avoid Windows LSB issues */
