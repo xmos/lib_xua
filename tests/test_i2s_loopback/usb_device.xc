@@ -1,14 +1,19 @@
-// Copyright 2016-2021 XMOS LIMITED.
+// Copyright 2018-2022 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
-#ifndef __usb_device_h__
-#define __usb_device_h__
-
+#if 0
 #include <xs1.h>
 #include <xccompat.h>
 #include "usb_std_requests.h"
 #include "xud.h"
+#include "usb_device.h"
 
-XUD_Result_t USB_GetSetupPacket(XUD_ep ep_out, XUD_ep ep_in, REFERENCE_PARAM(USB_SetupPacket_t, sp));
+unsigned char g_currentConfig = 0;
+unsigned char g_interfaceAlt[16];
+
+XUD_Result_t USB_GetSetupPacket(XUD_ep ep_out, XUD_ep ep_in, REFERENCE_PARAM(USB_SetupPacket_t, sp))
+{
+  return XUD_RES_OKAY;
+}
 
 XUD_Result_t USB_StandardRequests(XUD_ep ep_out, XUD_ep ep_in,
     NULLABLE_ARRAY_OF(unsigned char, devDesc_hs), int devDescLength_hs,
@@ -20,6 +25,9 @@ XUD_Result_t USB_StandardRequests(XUD_ep ep_out, XUD_ep ep_in,
 #else
     char * strDescs[],
 #endif
-    int strDescsLength, REFERENCE_PARAM(USB_SetupPacket_t, sp), XUD_BusSpeed_t usbBusSpeed);
+    int strDescsLength, REFERENCE_PARAM(USB_SetupPacket_t, sp), XUD_BusSpeed_t usbBusSpeed)
+{
+  return XUD_RES_OKAY;
+}
 
-#endif // __usb_device_h__
+#endif

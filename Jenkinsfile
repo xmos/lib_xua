@@ -27,15 +27,21 @@ pipeline {
             xcoreLibraryChecks("${REPO}")
           }
         }
-        stage('XS2 Tests') {
+        stage('Testing') {
           failFast true
           parallel {
-            stage('Legacy tests') {
+            stage('Tests') {
               steps {
-                runXmostest("${REPO}", 'legacy_tests')
+                dir("${REPO}/tests"){
+                  viewEnv(){
+                    withVenv{
+                      runPytest('--numprocesses=4')
+                    }
+                  }
+                }
               }
             }
-            stage('Unit tests') {
+            stage('Unity tests') {
               steps {
                 dir("${REPO}") {
                   dir('tests') {
