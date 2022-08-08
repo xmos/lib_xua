@@ -42,21 +42,21 @@ Includes
 This application requires the system header that defines XMOS xCORE specific
 defines for declaring and initialising hardware:
 
-.. literalinclude:: app_xua_simple.xc
+.. literalinclude:: app_xua_spdiftx.xc
    :start-on: include <xs1.h>
    :end-before: include "xua.h"
 
 The XUA library functions are defined in ``xua.h``. This header must
 be included in your code to use the library. 
 
-.. literalinclude:: app_xua_simple.xc
+.. literalinclude:: app_xua_spdiftx.xc
    :start-on: include "xua.h"
    :end-on: include "xud_device.h"
 
 The application uses the S/PDIF transmitter from ``lib_spdif``. This header
 must be included in your code.
 
-.. literalinclude:: app_xua_simple.xc
+.. literalinclude:: app_xua_spdiftx.xc
    :start-on: /* From lib_spdif 
    :end-on: include "spdif.h"
 
@@ -74,7 +74,7 @@ using ``lib_xua`` requires the follow pins:
 On an xCORE the pins are controlled by ``ports``. The application therefore declares a 
 port for the master clock input signal.
 
-.. literalinclude:: app_xua_simple.xc
+.. literalinclude:: app_xua_spdiftx.xc
    :start-on: /* Lib_xua port declaration
    :end-on: in port p_mclk_in
 
@@ -84,13 +84,13 @@ clock is required since USB and S/PDIF do not reside of the same tiles on the ex
 
 These ports are declared as follows:
 
-.. literalinclude:: app_xua_simple.xc
+.. literalinclude:: app_xua_spdiftx.xc
    :start-on: /* Resources for USB feedback
    :end-on: in port p_mclk_in_usb
 
 In addition to ``port`` resources two clock-block resources are also required:
 
-.. literalinclude:: app_xua_simple.xc
+.. literalinclude:: app_xua_spdiftx.xc
    :start-on: /* Clock-block
    :end-on: clock clk_audio_mclk_usb
 
@@ -103,14 +103,14 @@ Allocating hardware resources for lib_spdif
 
 The S/PDIF transmitter requires a single (buffered) 1-bit port:
 
-.. literalinclude:: app_xua_simple.xc
+.. literalinclude:: app_xua_spdiftx.xc
    :start-on: /* Lib_spdif port 
    :end-on: buffered out port 
 
 This port must be clocked from the audio master clock. This application note chooses to declare
 an extra clock-block as follows:
 
-.. literalinclude:: app_xua_simple.xc
+.. literalinclude:: app_xua_spdiftx.xc
    :start-on: clock clk_spdif_tx
    :end-before: /* Lib_xua
 
@@ -128,7 +128,7 @@ For a simple application the following endpoints are required:
 
 These are declared as follows:
 
-.. literalinclude:: app_xua_simple.xc
+.. literalinclude:: app_xua_spdiftx.xc
    :start-on: /* Endpoint type tables
    :end-on: XUD_EpType epTypeTableIn
 
@@ -164,14 +164,14 @@ The ``main()`` function sets up the tasks in the application.
 Various channels are required in order to allow the required tasks to communicate. 
 These must first be declared:
 
-.. literalinclude:: app_xua_simple.xc
+.. literalinclude:: app_xua_spdiftx.xc
    :start-on: /* Channels for lib_xud
    :end-on: chan c_spdif_tx
 
 The rest of the ``main()`` function starts all of the tasks in parallel
 using the xC ``par`` construct:
 
-.. literalinclude:: app_xua_simple.xc
+.. literalinclude:: app_xua_spdiftx.xc
    :start-on: par
    :end-before: return 0
 
@@ -188,9 +188,10 @@ This is because of the "shared" nature of ``p_mclk_in`` and avoids a parallel us
 Demo Hardware Setup
 -------------------
 
-To run the demo, connect a USB cable to power the xCORE.ai MC Audio board 
-and plug the xTAG to the board and connect the xTAG USB cable to your
-development machine.
+To run the demo, use a USB cable to connect the on-board xTAG debug adapter (marked DEBUG) to your development computer. 
+Use another USB cable to connect the USB receptacle marked USB DEVICE to the device you wish to play audio from. 
+
+A device capable of receiving an S/PDIF signal (ie. a speaker) should be connected to COAX TX. 
 
 .. figure:: images/hw_setup.*
    :width: 80%
@@ -269,7 +270,7 @@ Full source code listing
 Source code for main.xc
 .......................
 
-.. literalinclude:: app_xua_simple.xc
+.. literalinclude:: app_xua_spdiftx.xc
   :largelisting:
 
 |newpage|

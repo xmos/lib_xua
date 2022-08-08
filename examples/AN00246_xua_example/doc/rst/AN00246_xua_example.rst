@@ -157,9 +157,10 @@ implentation e.g. master clock frequencies and must be defined.  Please see the 
 Demo Hardware Setup
 -------------------
 
-To run the demo, connect a USB cable to power the xCORE.ai Multichannel Audio board 
-and plug the xTAG to the board and connect the xTAG USB cable to your
-development machine.
+To run the demo, use a USB cable to connect the on-board xTAG debug adapter (marked DEBUG) to your development computer. 
+Use another USB cable to connect the USB receptacle marked USB DEVICE to the device you wish to play audio from. 
+
+Plug a device capable of receiving analogue audio (i.e. a amplified speaker) to the 3.5mm jack marked OUT 1/2.
 
 .. figure:: images/hw_setup.*
    :width: 80%
