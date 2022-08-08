@@ -32,7 +32,13 @@ pipeline {
           parallel {
             stage('Legacy tests') {
               steps {
-                runXmostest("${REPO}", 'legacy_tests')
+                dir("${REPO}/tests"){
+                  viewEnv(){
+                    withVenv{
+                      runPytest('--numprocesses=4')
+                    }
+                  }
+                }
               }
             }
             stage('Unit tests') {
