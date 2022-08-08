@@ -1,3 +1,5 @@
+# Copyright 2022 XMOS LIMITED.
+# This Software is subject to the terms of the XMOS Public Licence: Version 1.
 import pytest
 from test_sync_clk_basic import do_test
 from test_sync_clk_basic import test_file
