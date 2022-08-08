@@ -20,9 +20,9 @@
 #include "spdif.h"
 
 /* Lib_spdif port declarations. Note, the defines come from the xn file */
-buffered out port:32 p_spdif_tx     = PORT_SPDIF_OUT;             /* SPDIF transmit port */
+buffered out port:32 p_spdif_tx     = PORT_COAX_OUT;             /* SPDIF transmit port */
 
-clock clk_spdif_tx                  = on tile[0]: XS1_CLKBLK_4;   /* Clock block for S/PDIF transmit */
+clock clk_spdif_tx                  = on tile[1]: XS1_CLKBLK_4;   /* Clock block for S/PDIF transmit */
 
 /* Lib_xua port declarations. Note, the defines come from the xn file */
 in port p_mclk_in                   = PORT_MCLK_IN;      /* Master clock for the audio IO tile */
@@ -32,13 +32,16 @@ in port p_for_mclk_count            = PORT_MCLK_COUNT;   /* Extra port for count
 in port p_mclk_in_usb               = PORT_MCLK_IN_USB;  /* Extra master clock input for the USB tile */
 
 /* Clock-block declarations */
-clock clk_audio_mclk                = on tile[0]: XS1_CLKBLK_5;   /* Master clock */
-clock clk_audio_mclk_usb            = on tile[1]: XS1_CLKBLK_1;   /* Master clock for USB tile */
+clock clk_audio_mclk                = on tile[1]: XS1_CLKBLK_5;   /* Master clock */
+clock clk_audio_mclk_usb            = on tile[0]: XS1_CLKBLK_1;   /* Master clock for USB tile */
 
 /* Endpoint type tables - informs XUD what the transfer types for each Endpoint in use and also
  * if the endpoint wishes to be informed of USB bus resets */
 XUD_EpType epTypeTableOut[]   = {XUD_EPTYPE_CTL | XUD_STATUS_ENABLE, XUD_EPTYPE_ISO};
 XUD_EpType epTypeTableIn[]    = {XUD_EPTYPE_CTL | XUD_STATUS_ENABLE, XUD_EPTYPE_ISO};
+
+/* From hwsupport.h */
+void ctrlPort();
 
 int main()
 {
@@ -61,15 +64,15 @@ int main()
     par
     {
         /* Low level USB device layer core */
-        on tile[1]: XUD_Main(c_ep_out, 2, c_ep_in, 2, c_sof, epTypeTableOut, epTypeTableIn, XUD_SPEED_HS, XUD_PWR_SELF);
+        on tile[0]: XUD_Main(c_ep_out, 2, c_ep_in, 2, c_sof, epTypeTableOut, epTypeTableIn, XUD_SPEED_HS, XUD_PWR_SELF);
 
         /* Endpoint 0 core from lib_xua */
         /* Note, since we are not using many features we pass in null for quite a few params.. */
-        on tile[1]: XUA_Endpoint0(c_ep_out[0], c_ep_in[0], c_aud_ctl, null, null, null, null);
+        on tile[0]: XUA_Endpoint0(c_ep_out[0], c_ep_in[0], c_aud_ctl, null, null, null, null);
 
         /* Buffering cores - handles audio data to/from EP's and gives/gets data to/from the audio I/O core */
         /* Note, this spawns two cores */
-        on tile[1]: {
+        on tile[0]: {
 
                         /* Connect master-clock clock-block to clock-block pin */
                         set_clock_src(clk_audio_mclk_usb, p_mclk_in_usb);           /* Clock clock-block from mclk pin */
@@ -80,10 +83,12 @@ int main()
                     }
 
         /* AudioHub() (I2S) and S/SPDIF Tx are on the same tile */
-        on tile[0]: {
+        on tile[1]: {
 
                         /* Setup S/PDIF tx port from clock etc - note we do this before par to avoid parallel usage */
                         spdif_tx_port_config(p_spdif_tx, clk_spdif_tx, p_mclk_in, 7);
+
+                        start_clock(clk_spdif_tx);
 
                         par
                         {
@@ -98,6 +103,8 @@ int main()
                             XUA_AudioHub(c_aud, clk_audio_mclk, null, p_mclk_in, null, null, null, null, c_spdif_tx);
                         }
                     }
+
+        on tile[0]: ctrlPort();
     }
 
     return 0;

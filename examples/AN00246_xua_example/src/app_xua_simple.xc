@@ -5,7 +5,7 @@
  *
  * It uses the main blocks from the lib_xua
  *
- * - 2 in/ 2 out I2S only
+ * - 2 channels out I2S only
  * - No DFU
  * - I2S only
  *
