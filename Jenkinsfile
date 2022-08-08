@@ -27,10 +27,10 @@ pipeline {
             xcoreLibraryChecks("${REPO}")
           }
         }
-        stage('XS2 Tests') {
+        stage('Testing') {
           failFast true
           parallel {
-            stage('Legacy tests') {
+            stage('Tests') {
               steps {
                 dir("${REPO}/tests"){
                   viewEnv(){
@@ -41,7 +41,7 @@ pipeline {
                 }
               }
             }
-            stage('Unit tests') {
+            stage('Unity tests') {
               steps {
                 dir("${REPO}") {
                   dir('tests') {
