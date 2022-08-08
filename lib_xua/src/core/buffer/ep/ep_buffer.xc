@@ -3,8 +3,7 @@
 #include "xua.h"
 #if XUA_USB_EN
 #include <xs1.h>
-#include <print.h>
-
+#include <stdint.h>
 
 #ifdef MIDI
 #include "usb_midi.h"
@@ -357,7 +356,21 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
 #endif
 #endif
 
-    timer tmr;
+#if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
+#ifndef LOCAL_CLOCK_INCREMENT
+#define LOCAL_CLOCK_INCREMENT       (100000)  /* 500Hz */
+#endif
+#ifndef LOCAL_CLOCK_MARGIN
+#define LOCAL_CLOCK_MARGIN          (1000)
+#endif
+    int sofClockValid = 0;
+    timer t_sofCheck;
+    unsigned timeLastEdge;
+    unsigned timeNextEdge;
+    t_sofCheck :> timeLastEdge;
+    timeNextEdge + LOCAL_CLOCK_INCREMENT;
+    i_pll_ref.toggle();
+#endif
 
     while(1)
     {
@@ -502,6 +515,13 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
                 }
                 break;
             }
+#if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
+            case t_sofCheck when timerafter(timeNextEdge) :> void:
+                i_pll_ref.toggle();
+                timeLastEdge = timeNextEdge;
+                timeNextEdge += LOCAL_CLOCK_INCREMENT;
+                break;
+#endif
 
             #define MASK_16_13            (7)   /* Bits that should not be transmitted as part of feedback */
             #define MASK_16_10            (127) /* For Audio 1.0 we use a mask 1 bit longer than expected to avoid Windows LSB issues */
@@ -517,12 +537,11 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
                 int framesPerSec;
                 GET_SHARED_GLOBAL(usbSpeed, g_curUsbSpeed);
                 static int sofCount = 0;
-                static unsigned syncPinVal = 0;
 
                 framesPerSec = (usbSpeed == XUD_SPEED_HS) ? 8000 : 1000;
-                float float_clocks = (float) sampleFreq/framesPerSec ;
 
-                clocks = (unsigned) (float_clocks * (1 << 16));
+                clocks =  ((int64_t) sampleFreq << 16) / framesPerSec;
+
                 asm volatile("stw %0, dp[g_speed]"::"r"(clocks));
 
                 sofCount += 1000;
@@ -530,7 +549,9 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
                 {
                     /* Port is accessed via interface to allow flexibilty with location */
                     i_pll_ref.toggle();
+                    t_sofCheck :> timeLastEdge;
                     sofCount = 0;
+                    timeNextEdge = timeLastEdge + LOCAL_CLOCK_INCREMENT + LOCAL_CLOCK_MARGIN;
                 }
 #else
 
@@ -889,6 +910,7 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
             case XUD_SetData_Select(c_hid, ep_hid, result):
                 hid_ready_flag = 0U;
                 unsigned reportTime;
+                timer tmr;
                 tmr :> reportTime;
                 hidCaptureReportTime(hid_ready_id, reportTime);
                 hidCalcNextReportTime(hid_ready_id);
