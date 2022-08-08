@@ -41,7 +41,7 @@
 
 /*** BUFFER SIZES ***/
 
-#define BUFFER_PACKET_COUNT 3  /* How many packets too allow for in buffer - minimum is 3! */
+#define BUFFER_PACKET_COUNT 4  /* How many packets too allow for in buffer - minimum is 4 */
 
 #define BUFF_SIZE_OUT_HS    MAX_DEVICE_AUD_PACKET_SIZE_OUT_HS * BUFFER_PACKET_COUNT
 #define BUFF_SIZE_OUT_FS    MAX_DEVICE_AUD_PACKET_SIZE_OUT_FS * BUFFER_PACKET_COUNT
@@ -95,7 +95,7 @@ int buffer_aud_ctl_chan = 0;
 unsigned g_aud_from_host_flag = 0;
 unsigned g_aud_from_host_info;
 unsigned g_freqChange_flag = 0;
-unsigned g_freqChange_sampFreq;
+unsigned g_freqChange_sampFreq = DEFAULT_FREQ;
 
 /* Global vars for sharing stream format change between buffer and decouple (save a channel) */
 unsigned g_formatChange_SubSlot;
@@ -520,7 +520,13 @@ __builtin_unreachable();
                 /* In pipe has filled its buffer - we need to overflow
                  * Accept the packet, and throw away the oldest in the buffer */
 
-                /* Keep throwing away packets until buffer is at a nice level.. */
+                unsigned sampFreq;
+                GET_SHARED_GLOBAL(sampFreq, g_freqChange_sampFreq);
+                int min, mid, max;
+                GetADCCounts(sampFreq, min, mid, max);
+                unsigned max_pkt_size = ((max * g_curSubSlot_In * g_numUsbChan_In + 3) & ~0x3) + 4;
+
+                /* Keep throwing away packets until buffer contains two packets */
                 do
                 {
                     unsigned rdPtr;
@@ -544,7 +550,7 @@ __builtin_unreachable();
                     space_left += datalength;
                     SET_SHARED_GLOBAL(g_aud_to_host_rdptr, rdPtr);
 
-                } while(space_left < (BUFF_SIZE_IN/2));
+                } while(space_left < (BUFF_SIZE_IN - 2 * max_pkt_size));
             }
 
             sampsToWrite = totalSampsToWrite;
