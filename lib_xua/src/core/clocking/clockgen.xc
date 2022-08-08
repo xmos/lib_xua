@@ -250,11 +250,6 @@ void clockGen (streaming chanend ?c_spdif_rx, chanend ?c_adat_rx, client interfa
 {
     timer t_local;
     unsigned timeNextEdge, timeLastEdge, timeNextClockDetection;
-
-#if (AUDIO_IO_TILE == PLL_REF_TILE)
-    unsigned pinVal = 0;
-    unsigned short  pinTime;
-#endif
     unsigned clkMode = CLOCK_INTERNAL;              /* Current clocking mode in operation */
     unsigned tmp;
 
