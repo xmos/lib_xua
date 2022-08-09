@@ -1,52 +1,56 @@
-// Copyright 2016-2021 XMOS LIMITED.
+// Copyright 2017-2022 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
-
+#include <xs1.h>
 #include <platform.h>
-#include <timer.h>
-
 #include "xua.h"
+#include "../../shared/apppll.h"
 
-/* General output port bit definitions */
-#define P_GPIO_DSD_MODE         (1 << 0) /* DSD mode select 0 = 8i/8o I2S, 1 = 8o DSD*/
-#define P_GPIO_DAC_RST_N        (1 << 1)
-#define P_GPIO_USB_SEL0         (1 << 2)
-#define P_GPIO_USB_SEL1         (1 << 3)
-#define P_GPIO_VBUS_EN          (1 << 4)
-#define P_GPIO_PLL_SEL          (1 << 5) /* 1 = CS2100, 0 = Phaselink clock source */
-#define P_GPIO_ADC_RST_N        (1 << 6)
-#define P_GPIO_MCLK_FSEL        (1 << 7) /* Select frequency on Phaselink clock. 0 = 24.576MHz for 48k, 1 = 22.5792MHz for 44.1k.*/
+on tile[0]: out port p_ctrl = XS1_PORT_8D;
 
+/* p_ctrl:
+ * [0:3] - Unused 
+ * [4]   - EN_3v3_N
+ * [5]   - EN_3v3A
+ * [6]   - EXT_PLL_SEL (CS2100:0, SI: 1)
+ * [7]   - MCLK_DIR    (Out:0, In: 1)
+ */
+#define EXT_PLL_SEL__MCLK_DIR    (0x80)
 
-out port p_gpio = on tile[0]:XS1_PORT_8C;
-
-void AudioHwConfig(unsigned samFreq, unsigned mClk, unsigned dsdMode,
-    unsigned sampRes_DAC, unsigned sampRes_ADC)
+/* Note, this runs on Tile[0] */
+void ctrlPort()
 {
-	unsigned char gpioVal = 0;
-
-    /* Set master clock select appropriately and put ADC and DAC into reset */
-    if (mClk == MCLK_441)
+    // Drive control port to turn on 3V3 and set MCLK_DIR
+    // Note, "soft-start" to reduce current spike
+    // Note, 3v3_EN is inverted
+    for (int i = 0; i < 30; i++)
     {
-		gpioVal =  P_GPIO_USB_SEL0 | P_GPIO_USB_SEL1;
+        p_ctrl <: EXT_PLL_SEL__MCLK_DIR | 0x30; /* 3v3: off, 3v3A: on */
+        delay_microseconds(5);
+        p_ctrl <: EXT_PLL_SEL__MCLK_DIR | 0x20; /* 3v3: on, 3v3A: on */
+        delay_microseconds(5);
     }
-    else
-    {
-		gpioVal = P_GPIO_USB_SEL0 | P_GPIO_USB_SEL1 | P_GPIO_MCLK_FSEL;
-    }
-
-    /* Note, DAC and ADC held in reset */
-	p_gpio <: gpioVal;
-
-    /* Allow MCLK to settle */
-    delay_microseconds(20000);
-
-    return;
 }
 
+/* Configures the external audio hardware at startup. Note this runs on Tile[1] */
 void AudioHwInit()
 {
-    /* Set USB Mux to micro-b */
-    /* ADC and DAC in reset */
-    p_gpio <: P_GPIO_USB_SEL0 | P_GPIO_USB_SEL1;
+    /* Wait for power supply to come up */
+    delay_milliseconds(100);
+
+    /* Use xCORE Secondary PLL to generate *fixed* master clock */
+    AppPllEnable_SampleRate(DEFAULT_FREQ);
+
+    delay_milliseconds(100);
+
+	/* DAC setup: For basic I2S input we don't need any register setup. DACs will clock auto detect etc.
+     * It holds DAC in reset until it gets clocks anyway.
+	 * Note, this example doesn't use the ADC's
+	 */
+}
+
+/* Configures the external audio hardware for the required sample frequency */
+void AudioHwConfig(unsigned samFreq, unsigned mClk, unsigned dsdMode, unsigned sampRes_DAC, unsigned sampRes_ADC)
+{
+    AppPllEnable_SampleRate(samFreq);
 }
 

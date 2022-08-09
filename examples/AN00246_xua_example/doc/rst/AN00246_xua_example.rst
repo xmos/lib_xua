@@ -11,7 +11,7 @@ Introduction
 The XMOS USB Audio (XUA) library provides an implemention of USB Audio Class versions 1.0 and 2.0.
 
 This application note demonstrates the implementation of a basic USB Audio Device on 
-the xCORE-200 MC Audio board.
+the xCORE.ai Multichannel (MC) Audio board (XK-AUDIO-316-MC).
 
 
 The Makefile
@@ -26,14 +26,10 @@ The Makefile also includes::
 
   USED_MODULES = .. lib_xud ..
 
-``lib_xud`` library requires some flags for correct operation. Firstly the 
+``lib_xud`` library requires some flags for correct operation. Namely the 
 tile on which ``lib_xud`` will be execute, for example::
 
-    XCC_FLAGS = .. -DUSB_TILE=tile[1] ..
-
-Secondly, the architecture of the target device, for example::
-
-  XCC_FLAGS = .. -DXUD_SERIES_SUPPORT=XUD_X200_SERIES ..
+    XCC_FLAGS = .. -DUSB_TILE=tile[0] ..
 
 Includes
 ........
@@ -52,23 +48,22 @@ be included in your code to use the library.
    :start-on: include "xua.h"
    :end-on: include "xud_device.h"
 
-Allocating hardware resources
+Allocating Hardware Resources
 .............................
 
-A basic implementation of a USB Audio device (i.e. simple stereo input and output via I2S)
+A basic implementation of a USB Audio device (i.e. simple stereo output via I2S)
 using ``lib_xua`` requires the follow pins:
 
     - I2S Bit Clock (from xCORE to DAC)
     - I2S L/R clock (from xCORE to DAC)
     - I2S Data line (from xCORE to DAC)
-    - I2S Data line (from ADC to xCORE)
     - Audio Master clock (from clock source to xCORE)
 
 .. note::
 
     This application note assumes xCORE is I2S bus master
 
-On an xCORE the pins are controlled by ``ports``. The application therefore declares various ``ports``
+In the xCORE architecture the I/O pins are controlled and accessed by ``ports``. The application therefore declares various ``ports``
 for this purpose:
 
 .. literalinclude:: app_xua_simple.xc
@@ -76,8 +71,8 @@ for this purpose:
    :end-on: in port p_mclk_in
 
 ``lib_xua`` also requires two ports for internally calculating USB feedback. Please refer to 
-the ``lib_xua`` library documentation for further details.  The additonal input port for the master
-clock is required since USB and S/PDIF do not reside of the same tiles on the example hardware.
+the ``lib_xua`` library documentation for further details.  The additional input port for the master
+clock is required since USB and S/PDIF do not reside of the same tiles on the xCORE.ai MC Audio Board.
 
 These ports are declared as follows:
 
@@ -95,11 +90,11 @@ Again, for the same reasoning as the master-clock ports, two master-clock clock-
 - one on each tile.
 
 
-Other declarations
+Other Declarations
 ..................
 
 ``lib_xua`` currently requires the manual declaration of tables for the endpoint types for
-``lib_xud`` and the calling the main XUD funtion in a par (``XUD_Main()``).
+``lib_xud`` and the calling the main XUD function in a par (``XUD_Main()``).
 
 For a simple application the following endpoints are required:
 
@@ -112,12 +107,12 @@ These are declared as follows:
    :start-on: /* Endpoint type tables
    :end-on: XUD_EpType epTypeTableIn
 
-The application main() function
+The Application main() Function
 -------------------------------
 
 The ``main()`` function sets up the tasks in the application.
 
-Various channels are required in order to allow the required tasks to communcate. 
+Various channels are required in order to allow the required tasks to communicate. 
 These must first be declared:
 
 .. literalinclude:: app_xua_simple.xc
@@ -133,6 +128,9 @@ using the xC ``par`` construct:
 
 This code starts the low-level USB task, an Endpoint 0 task, an Audio buffering task and a task to handle 
 the audio I/O (i.e. I2S signalling).
+
+It also runs a small function ``ctrlPort()`` that simply writes some values to an I/O port to configure some external 
+hardware (it enables analogue power supplies and correctly routes the master clock) and then closes.
 
 Configuration 
 .............
@@ -162,9 +160,10 @@ implentation e.g. master clock frequencies and must be defined.  Please see the 
 Demo Hardware Setup
 -------------------
 
-To run the demo, connect a USB cable to power the xCORE-200 MC Audio board 
-and plug the xTAG to the board and connect the xTAG USB cable to your
-development machine.
+To run the demo, use a USB cable to connect the on-board xTAG debug adapter (marked ``DEBUG``) to your development computer. 
+Use another USB cable to connect the USB receptacle marked ``USB DEVICE`` to the device you wish to play audio from. 
+
+Plug a device capable of receiving analogue audio (i.e. an amplified speaker) to the 3.5mm jack marked ``OUT 1/2``.
 
 .. figure:: images/hw_setup.*
    :width: 80%
@@ -173,40 +172,27 @@ development machine.
 
 |newpage|
 
-Launching the demo application
+Launching the Demo Application
 ------------------------------
 
-Once the demo example has been built either from the command line using xmake or
-via the build mechanism of xTIMEcomposer studio it can be executed on the xCORE-200
-MC Audio board.
+Once the demo example has been built from the command line using ``xmake`` 
+it can be executed on the xCORE.ai MC Audio Board.
 
 Once built there will be a ``bin/`` directory within the project which contains
 the binary for the xCORE device. The xCORE binary has a XMOS standard .xe extension.
 
-Launching from the command line
+Launching from the Command Line
 ...............................
 
 From the command line you use the ``xrun`` tool to download and run the code
 on the xCORE device::
 
-  xrun --xscope bin/app_xua_simple.xe
+  xrun ./bin/app_xua_simple.xe
 
 Once this command has executed the application will be running on the
-xCORE-200 MC Audio Board
+xCORE.ai MC Audio Board
 
-Launching from xTIMEcomposer Studio
-...................................
-
-From xTIMEcomposer Studio use the run mechanism to download code to xCORE device.
-Select the xCORE binary from the ``bin/`` directory, right click and go to Run
-Configurations. Double click on xCORE application to create a new run configuration,
-enable the xSCOPE I/O mode in the dialog box and then
-select Run.
-
-Once this command has executed the application will be running on the
-xCORE-200 MC Audio board.
-
-Running the application
+Running the Application
 .......................
 
 Once running the device will be detected as a USB Audio device - note, Windows operating 
@@ -237,11 +223,11 @@ References
 
 |newpage|
 
-Full source code listing
+Full Source Code Listing
 ------------------------
 
-Source code for main.xc
-.......................
+Source Code for app_xua_simple.xc
+.................................
 
 .. literalinclude:: app_xua_simple.xc
   :largelisting:
