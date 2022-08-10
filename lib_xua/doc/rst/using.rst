@@ -1,11 +1,11 @@
-Using lib_xud
+Using lib_xua
 -------------
 
-This sections describes the basic usage of `lib_xud`. It provides a guide on how to program the USB Audio Devices using `lib_xud`.
+This sections describes the basic usage of `lib_xua`. It provides a guide on how to program USB Audio Devices using `lib_xua`.
 
 Reviewing application note AN00246 is highly recommended at this point.
 
-Library structure
+Library Structure
 ~~~~~~~~~~~~~~~~~
 
 The code is split into several directories.
@@ -18,13 +18,15 @@ The code is split into several directories.
    - MIDI I/O code
  * - dfu
    - Device Firmware Upgrade code
+ * - hid
+   - Human Interface Device code
 
 
 Note, the midi and dfu directories are potential candidates for separate libs in their own right.
 
 
-Including in a project
-~~~~~~~~~~~~~~~~~~~~~~
+Using in a Project
+~~~~~~~~~~~~~~~~~~
 
 All `lib_xua` functions can be accessed via the ``xua.h`` header filer::
 
@@ -35,7 +37,7 @@ It is also required to add ``lib_xua`` to the ``USED_MODULES`` field of your app
   USED_MODULES = .. lib_xua ...
 
 
-Core hardware resources
+Core Hardware Resources
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 The user must declare and initialise relevant hardware resources (globally) and pass them to the relevant function of `lib_xua`.
@@ -43,8 +45,11 @@ The user must declare and initialise relevant hardware resources (globally) and 
 As an absolute minimum the following resources are required:
 
 - A 1-bit port for audio master clock input  
-- A n-bit port for internal feedback calculation (typically a free, unused port is used e.g. `16B`)
 - A clock-block, which will be clocked from the master clock input port
+
+When using the default asynchronous mode of operation an additional port is required:
+
+- A n-bit port for internal feedback calculation (typically a free, unused port is used e.g. `16B`)
 
 Example declaration of these resources might look as follows::
 
@@ -54,7 +59,7 @@ Example declaration of these resources might look as follows::
 
 .. note::
 
-    The `PORT_MCLK_IN` and `PORT_MCLK_COUNT` defintions are derived from the projects XN file 
+    The `PORT_MCLK_IN` and `PORT_MCLK_COUNT` definitions are derived from the projects XN file 
 
 
 The ``XUA_AudioHub()`` function requires an audio master clock input to clock the physical audio I/O. Less obvious is the reasoning for the ``XUA_Buffer()`` 
@@ -69,11 +74,11 @@ Due to the above, if the ``XUD_AudioHub()`` and ``XUA_Buffer()`` cores must resi
     in port p_mclk_in_usb               = PORT_MCLK_IN_USB;  /* Extra master clock input for the USB tile */
 
 Whilst the hardware resources described in this section satisfy the basic requirements for the operation (or build) of `lib_xua` projects typically also needs some additional audio I/O, 
-I2S or SPDIF for example. 
+I2S or S/PDIF for example. 
 
 These should be passed into the various cores as required - see API and Features sections.
 
-Running the core components
+Running the Core Components
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 In their most basic form the core components can be run as follows::
@@ -81,7 +86,7 @@ In their most basic form the core components can be run as follows::
     par
     {
         /* Endpoint 0 core from lib_xua */
-        XUA_Endpoint0(c_ep_out[0], c_ep_in[0], c_aud_ctl, null, null, null, null);
+        XUA_Endpoint0(c_ep_out[0], c_ep_in[0], c_aud_ctl, ...);
 
         /* Buffering cores - handles audio data to/from EP's and gives/gets data to/from the audio I/O core */
         /* Note, this spawns two cores */
@@ -130,8 +135,8 @@ Additionally the required communication channels must also be declared::
 This section provides enough information to implement a skeleton program for a USB Audio device. When running the xCORE device will present itself as a USB Audio Class device on the bus.
 
 
-Configuring XUA
-~~~~~~~~~~~~~~~
+Configuring lib_xua
+~~~~~~~~~~~~~~~~~~~
 
 Configuration of the various build time options of ``lib_xua`` is done via the optional header `xua_conf.h`. Such build time options include audio class version, sample rates, channel counts etc. 
 Please see the API section for full listings.
@@ -150,18 +155,18 @@ The build system will automatically include the `xua_conf.h` header file as appr
     #endif
 
 
-User functions
+User Functions
 ~~~~~~~~~~~~~~
 
-To enable custom functionality, such as configuring external audio hardware, custom functionality on stream start/stop etc various user overridable functions are provided (see API section for full listings). The default implementations are empty. 
+To enable custom functionality, such as configuring external audio hardware, custom functionality on stream start/stop etc various functions can be overridden by the user. (see API section for full listings). The default implementations are empty. 
 
 
-Codeless programming model
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+"Codeless" Programming Model
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Whilst it is possible to code a USB Audio device using the building blocks provided by `lib_xua` it is realised that this might not be desirable for some classes of customers or product.
 
-For instance, some users may not have a large software development experience and simply want to customise some basic settings such as strings, sample-rates, channel-counts etc. Others may want to fully customise the implementation - adding additional functionality such as adding DSD or possibly only using a subset of the functions provided - just ``XUA_AudioHub``, for example.
+For instance, some users may not have a large software development experience and simply want to customise some basic settings such as strings, sample-rates, channel-counts etc. Others may want to fully customise the implementation - adding additional functionality such as adding DSP or possibly only using a subset of the functions provided - just ``XUA_AudioHub``, for example.
 
 In addition, the large number of supported features can lead to a large number of tasks, hardware resources, communication channels etc, requiring quite a lot of code to be authored for each product.
 
@@ -172,5 +177,4 @@ Using this development model the user simply must include a ``xua_conf.h`` with 
 This model also provides the benefit of a known-good, full codebase as a basis for a product. 
 
 This behaviour described in this section is the default behaviour of `lib_xua`, to disable this please set ``EXCLUDE_USB_AUDIO_MAIN`` to 1 in the application makefile or ``xua_conf.h``.
-
 

@@ -30,7 +30,7 @@ Older versions of Windows are not guaranteed to operate as expected. Devices are
     Hardware Platforms <hw>
     Software Overview <sw>
     Using lib_xua <using>
-    Features <feat>
+    Features & Options <feat>
     Software Detail <sw_detail>
     Known Issues <issues>
 

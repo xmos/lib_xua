@@ -1,3 +1,6 @@
+
+|newpage|
+
 S/PDIF Transmit
 ...............
 
@@ -79,6 +82,7 @@ The following protocol is used on the channel:
   * - ``...``
     -
 
+This communication is wrapped up in the API functions provided by ``lib_spdif``.
 
 
 Output stream structure
@@ -126,15 +130,15 @@ indicates sampling frequency as shown in :ref:`usb_audio_spdif_sample_bits`.
   * - Frequency (kHz)
     - n
   * - 44.1
-    - 0
+    - 0x0
   * - 48
-    - 2
+    - 0x2
   * - 88.2
-    - 8
+    - 0x8
   * - 96
-    - A
+    - 0xA
   * - 176.4
-    - C
+    - 0xC
   * - 192
-    - E
+    - 0xE
 

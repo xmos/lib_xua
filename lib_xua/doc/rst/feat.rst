@@ -6,7 +6,7 @@ The previous sections describes only the basic core set of ``lib_xua`` details o
 
 Where something must be defined, it is recommened this is done in `xua_conf.h` but could also be done in the application Makefile.
 
-For each feature steps are listed for if calling ``lib_xua`` functions manually - if using the "codeless" programming model then these steps informational only. 
+For each feature steps are listed for if calling ``lib_xua`` functions manually - if using the "codeless" programming model then these steps are informational only. 
 Each section also includes a sub-section on enabling the feature using the "codeless" model.
 
 For full details of all options please see the API section
@@ -18,14 +18,14 @@ I2S/TDM is typically fundamental to most products and is built into the ``XUA_Au
 
 In order to enable I2S on must declare an array of ports for the data-lines (one for each direction)::
 
-    /* Port declarations. Note, the defines come from the xn file */
-    buffered out port:32 p_i2s_dac[]    = {PORT_I2S_DAC0};   /* I2S Data-line(s) */
-    buffered in port:32 p_i2s_adc[]    	= {PORT_I2S_ADC0};   /* I2S Data-line(s) */
+    /* Port declarations. Note, the defines come from the XN file */
+    buffered out port:32 p_i2s_dac[] = {PORT_I2S_DAC0}; /* I2S Data-line(s) */
+    buffered in port:32 p_i2s_adc[]  = {PORT_I2S_ADC0}; /* I2S Data-line(s) */
 
 Ports for the sample and bit clocks are also required::
 
-    buffered out port:32 p_lrclk        = PORT_I2S_LRCLK;    /* I2S Bit-clock */
-    buffered out port:32 p_bclk         = PORT_I2S_BCLK;     /* I2S L/R-clock */
+    buffered out port:32 p_lrclk        = PORT_I2S_LRCLK; /* I2S Bit-clock */
+    buffered out port:32 p_bclk         = PORT_I2S_BCLK;  /* I2S L/R-clock */
 
 .. note::
 
@@ -36,13 +36,16 @@ These ports must then be passed to the ``XUA_AudioHub()`` task appropriately.
 I2S functionality also requires two clock-blocks, one for bit and sample clock e.g.::
 
     /* Clock-block declarations */
-    clock clk_audio_bclk                = on tile[0]: XS1_CLKBLK_4;   /* Bit clock */
-    clock clk_audio_mclk                = on tile[0]: XS1_CLKBLK_5;   /* Master clock */
+    clock clk_audio_bclk = on tile[0]: XS1_CLKBLK_4; /* Bit clock */
+    clock clk_audio_mclk = on tile[0]: XS1_CLKBLK_5; /* Master clock */
 
 These hardware resources must be passed into the call to ``XUA_AudioHub()``::
 
-    /* AudioHub/IO core does most of the audio IO i.e. I2S (also serves as a hub for all audio) */
-    on tile[0]: XUA_AudioHub(c_aud, clk_audio_mclk, clk_audio_bclk, p_mclk_in, p_lrclk, p_bclk);
+    /* AudioHub/IO core does most of the audio IO i.e. I2S (also serves 
+     * as a hub for all audio) */
+
+    on tile[0]: XUA_AudioHub(c_aud, clk_audio_mclk, clk_audio_bclk, p_mclk_in, 
+        p_lrclk, p_bclk, p_i2s_dac, p_i2s_adc);
 
 
 Codeless Programming Model
@@ -75,7 +78,7 @@ The channel should be declared a normal::
 
 In order to use the S/PDIF transmmiter with ``lib_xua`` hardware resources must be declared e.g::
 
-    buffered out port:32 p_spdif_tx         = PORT_SPDIF_OUT;     /* SPDIF transmit port */
+    buffered out port:32 p_spdif_tx = PORT_SPDIF_OUT;     /* SPDIF transmit port */
 
 This port should be clocked from the master-clock, ``lib_spdif`` provides a helper function for setting up the port::
 
@@ -95,9 +98,12 @@ For example::
             spdif_tx(p_spdif_tx2, c_spdif_tx);   
         }
     
-        /* AudioHub/IO core does most of the audio IO i.e. I2S (also serves as a hub for all audio) */
-        /* Note, since we are not using I2S we pass in null for LR and Bit clock ports and the I2S dataline ports */
-        XUA_AudioHub(c_aud, clk_audio_mclk, null, p_mclk_in, null, null, null, null, c_spdif_tx);
+        /* AudioHub/IO core does most of the audio IO i.e. I2S (also serves as 
+         * a hub for all audio).
+         * Note, since we are not using I2S we pass in null for LR and Bit 
+         * clock ports and the I2S dataline ports */
+        XUA_AudioHub(c_aud, clk_audio_mclk, null, p_mclk_in, null, null, 
+            null, null, c_spdif_tx);
     }
 
 For further details please see the documentation, application notes and examples provided for ``lib_spdif``.
