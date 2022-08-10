@@ -1,5 +1,4 @@
-@Library('xmos_jenkins_shared_library@v0.18.0') _
-
+@Library('xmos_jenkins_shared_library@feature/always_use_withtools') _
 getApproval()
 
 pipeline {
