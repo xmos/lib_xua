@@ -5,7 +5,7 @@
 
 #if __XC__
 
-#include "xua.h"
+#include "xua_clocking.h" /* Required for pll_ref_if */
 
 /** USB Audio Buffering Core(s).
  *
