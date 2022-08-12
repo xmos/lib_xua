@@ -15,9 +15,6 @@
 #include "dbcalc.h"
 #include "xua_commands.h"
 #include "xc_ptr.h"
-#ifdef MIXER
-#include "mixer.h"
-#endif
 
 #define CS_XU_MIXSEL (0x06)
 

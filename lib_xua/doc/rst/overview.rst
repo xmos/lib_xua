@@ -1,5 +1,5 @@
-USB Audio Solution Overview
----------------------------
+Overview
+--------
 
 
 .. table::

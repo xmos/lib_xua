@@ -28,13 +28,6 @@
 #endif
 
 /**
- * @brief Location (tile) of IAP. Default: AUDIO_IO_TILE
- */
-#ifndef IAP_TILE
-#define IAP_TILE        AUDIO_IO_TILE
-#endif
-
-/**
  * @brief Location (tile) of MIDI I/O. Default: AUDIO_IO_TILE
  */
 #ifndef MIDI_TILE
@@ -443,7 +436,8 @@
 #define HID_CONTROLS       (0)
 #endif
 
-/* @brief Defines whether XMOS device runs as master (i.e. drives LR and Bit clocks)
+/**
+ * @brief Defines whether XMOS device runs as master (i.e. drives LR and Bit clocks)
  *
  * 0: XMOS is I2S master. 1: CODEC is I2s master.
  *

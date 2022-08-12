@@ -5,15 +5,6 @@
 #include <xs1.h>
 #include <stdint.h>
 
-#ifdef MIDI
-#include "usb_midi.h"
-#endif
-#ifdef IAP
-#include "iap.h"
-#ifdef IAP_EA_NATIVE_TRANS
-#include "iap2_ea_nativetransport.h"
-#endif
-#endif
 #include "xc_ptr.h"
 #include "xua_commands.h"
 #include "xud.h"

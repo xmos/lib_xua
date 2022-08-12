@@ -8,12 +8,12 @@ lib_xua
 Summary
 -------
 
-This repository contains shared components for use in the XMOS USB Audio Refererence Designs.
+lib_xua contains shared components for use in the XMOS USB Audio (XUA) Refererence Designs.
 
 These components enable the development of USB Audio devices on the XMOS xCORE architecture.
 
 Features
-........
+~~~~~~~~
 
 Key features of the various applications in this repository are as follows
 
@@ -54,13 +54,21 @@ Key features of the various applications in this repository are as follows
 Note, not all features may be supported at all sample frequencies, simultaneously or on all devices.  
 Some features may also require specific host driver support.
 
-Software version and dependencies
-.................................
+Host System Requirements
+~~~~~~~~~~~~~~~~~~~~~~~~
 
-The CHANGELOG contains information about the current and previous versions.
+USB Audio devices built using `lib_xua` have the following host system requirements.
+
+- Mac OSX version 10.6 or later
+
+- Windows Vista, 7, 8 or 10 with Thesycon Audio Class 2.0 driver for Windows (Tested against version 3.20). Please contact XMOS for details.
+ 
+- Windows Vista, 7, 8 or 10 with built-in USB Audio Class 1.0 driver.
+
+Older versions of Windows are not guaranteed to operate as expected. Devices are also expected to operate with various Linux distributions including mobile variants.
 
 Related Application Notes
-.........................
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The following application notes use this library:
 
@@ -68,14 +76,14 @@ The following application notes use this library:
     * AN000247 - Using lib_xua with lib_spdif (transmit)
     * AN000248 - Using lib_xua with lib_mic_array
 
-Required software (dependencies)
-================================
+Required Software (dependencies)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  * lib_logging (git@github.com:xmos/lib_logging.git)
-  * lib_xassert (git@github.com:xmos/lib_xassert.git)
-  * lib_xud (git@github.com:xmos/lib_xud.git)
-  * lib_spdif (git@github.com:xmos/lib_spdif.git)
-  * lib_mic_array (git@github.com:xmos/lib_mic_array.git)
-  * lib_dsp (git@github.com:xmos/lib_dsp)
-  * lib_locks (git@github.com:xmos/lib_locks.git)
+  * lib_logging (https://github.com:xmos/lib_logging)
+  * lib_xassert (https://github.com:xmos/lib_xassert)
+  * lib_xud (https://github.com:xmos/lib_xud)
+  * lib_spdif (https://github.com:xmos/lib_spdif)
+  * lib_mic_array (https://github.com:xmos/lib_mic_array)
+  * lib_dsp (https://github.com:xmos/lib_dsp)
+  * lib_locks (https://github.com:xmos/lib_locks)
 

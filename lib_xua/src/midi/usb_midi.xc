@@ -4,7 +4,7 @@
 #include <xclib.h>
 #include <print.h>
 #include <stdint.h>
-#include "usb_midi.h"
+#include "xua_midi.h"
 #include "midiinparse.h"
 #include "midioutparse.h"
 #include "queue.h"
@@ -58,16 +58,18 @@ timer iAPTimer;
 
 void usb_midi(
 #if (MIDI_RX_PORT_WIDTH == 4)
-buffered in port:4 ?p_midi_in,
+    buffered in port:4 ?p_midi_in,
 #else
-buffered in port:1 ?p_midi_in,
+    buffered in port:1 ?p_midi_in,
 #endif
     port ?p_midi_out,
-            clock ?clk_midi,
-            chanend ?c_midi,
-            unsigned cable_number,
-            chanend ?c_iap, chanend ?c_i2c, // iOS stuff
-            port ?p_scl, port ?p_sda
+    clock ?clk_midi,
+    chanend ?c_midi,
+    unsigned cable_number
+#ifdef IAP
+    , chanend ?c_iap, chanend ?c_i2c,
+    port ?p_scl, port ?p_sda
+#endif
 )
 {
     unsigned symbol = 0x0; // Symbol in progress of being sent out

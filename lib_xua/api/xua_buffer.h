@@ -6,24 +6,25 @@
 #if __XC__
 
 #include "xua.h"
-#include "clocking.h"
 
-/** USB Audio Buffering Core.
+/** USB Audio Buffering Core(s).
  *
- *  This function buffers USB audio data between the XUD layer and the decouple
- *  thread. Most of the chanend parameters to the function should be connected to
- *  XUD_Manager()
+ *  This function buffers USB audio data between the XUD and the audio subsystem.
+ *  Most of the chanend parameters to the function should be connected to
+ *  XUD_Manager().  The uses two cores.
  *
- *  \param c_aud_out Audio OUT endpoint channel connected to the XUD
- *  \param c_aud_in  Audio IN endpoint channel connected to the XUD
- *  \param c_aud_fb  Audio feedback endpoint channel connected to the XUD
- *  \param c_midi_from_host  MIDI OUT endpoint channel connected to the XUD
- *  \param c_midi_to_host  MIDI IN endpoint channel connected to the XUD
- *  \param c_int  Audio clocking interrupt endpoint channel connected to the XUD
- *  \param c_clk_int Optional chanend connected to the clockGen() thread if present
- *  \param c_sof  Start of frame channel connected to the XUD
- *  \param c_aud_ctl Audio control channel connected to  Endpoint0()
- *  \param p_off_mclk A port that is clocked of the MCLK input (not the MCLK input itself)
+ *  \param c_aud_out          Audio OUT endpoint channel connected to the XUD
+ *  \param c_aud_in           Audio IN endpoint channel connected to the XUD
+ *  \param c_aud_fb           Audio feedback endpoint channel connected to the XUD
+ *  \param c_midi_from_host   MIDI OUT endpoint channel connected to the XUD
+ *  \param c_midi_to_host     MIDI IN endpoint channel connected to the XUD
+ *  \param c_midi             Channel connected to MIDI core
+ *  \param c_int              Audio clocking interrupt endpoint channel connected to the XUD
+ *  \param c_clk_int          Optional chanend connected to the clockGen() thread if present
+ *  \param c_sof              Start of frame channel connected to the XUD
+ *  \param c_aud_ctl          Audio control channel connected to  Endpoint0()
+ *  \param p_off_mclk         A port that is clocked of the MCLK input (not the MCLK input itself)
+ *  \param c_aud              Channel connected to XUA_AudioHub() core
  */
 
 void XUA_Buffer(
@@ -34,12 +35,12 @@ void XUA_Buffer(
 #if (NUM_USB_CHAN_IN == 0) || defined (UAC_FORCE_FEEDBACK_EP)
             chanend c_aud_fb,
 #endif
-#ifdef MIDI
+#if defined(MIDI) || defined(__DOXYGEN__)
             chanend c_midi_from_host,
             chanend c_midi_to_host,
 			chanend c_midi,
 #endif
-#if (XUA_SPDIF_RX_EN) || (ADAT_RX)
+#if (XUA_SPDIF_RX_EN) || (ADAT_RX) || defined(__DOXYGEN__)
             chanend ?c_int,
             chanend ?c_clk_int,
 #endif

@@ -1,34 +1,36 @@
-// Copyright 2011-2021 XMOS LIMITED.
+// Copyright 2011-2022 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
-#ifndef __usb_midi_h__
-#define __usb_midi_h__
+#ifndef _XUA_MIDI_H_
+#define _XUA_MIDI_H_
 
 #include "xua.h"
 
-/** USB MIDI I/O thread.
+/** USB MIDI I/O task.
  *
- *  This function passes MIDI data from USB to UART I/O.
+ *  This function passes MIDI data between XUA_Buffer and MIDI UART I/O.
  *
- *  \param p_midi_in 1-bit input port for MIDI
- *  \param p_midi_out 1-bit output port for MIDI
- *  \param clk_midi clock block used for clockin the UART; should have
- *                  a rate of 100MHz
- *  \param c_midi chanend connected to the decouple() thread
- *  \param cable_number the cable number of the MIDI implementation.
+ *  \param p_midi_in    1-bit input port for MIDI
+ *  \param p_midi_out   1-bit output port for MIDI
+ *  \param clk_midi     Clock block used for clockin the UART; should have
+ *                      a rate of 100MHz
+ *  \param c_midi       Chanend connected to the decouple() thread
+ *  \param cable_number The cable number of the MIDI implementation.
  *                      This should be set to 0.
  **/
 void usb_midi(
 #if (MIDI_RX_PORT_WIDTH == 4)
-buffered in port:4 ?p_midi_in,
+    buffered in port:4 ?p_midi_in,
 #else
-buffered in port:1 ?p_midi_in,
+    buffered in port:1 ?p_midi_in,
 #endif
     port ?p_midi_out,
     clock ?clk_midi,
     chanend ?c_midi,
-    unsigned cable_number,
-    chanend ?c_iap, chanend ?c_i2c, // iOS stuff
+    unsigned cable_number
+#ifdef IAP
+    , chanend ?c_iap, chanend ?c_i2c, // iOS stuff
     port ?p_scl, port ?p_sda
+#endif
 );
 
 #define MAX_USB_MIDI_PACKET_SIZE 1024
@@ -72,4 +74,4 @@ INLINE void midi_send_ack(chanend c) {
 #define MIDI_RATE           (31250)
 #define MIDI_BITTIME        (XS1_TIMER_MHZ * 1000000 / MIDI_RATE)
 #define MIDI_BITTIME_2      (MIDI_BITTIME>>1)
-#endif // __usb_midi_h__
+#endif // _XUA_MIDI_H_
