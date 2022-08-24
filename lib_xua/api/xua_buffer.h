@@ -25,14 +25,14 @@
  *  \param c_aud_ctl          Audio control channel connected to  Endpoint0()
  *  \param p_off_mclk         A port that is clocked of the MCLK input (not the MCLK input itself)
  *  \param c_aud              Channel connected to XUA_AudioHub() core
+ *  \param i_pll_ref          Interface to task that toggles reference pin to CS2100
  */
-
 void XUA_Buffer(
             chanend c_aud_out,
-#if (NUM_USB_CHAN_IN > 0)
+#if (NUM_USB_CHAN_IN > 0) || defined(__DOXYGEN__)
             chanend c_aud_in,
 #endif
-#if (NUM_USB_CHAN_IN == 0) || defined (UAC_FORCE_FEEDBACK_EP)
+#if (NUM_USB_CHAN_IN == 0) || defined (UAC_FORCE_FEEDBACK_EP) 
             chanend c_aud_fb,
 #endif
 #if defined(MIDI) || defined(__DOXYGEN__)
@@ -51,13 +51,13 @@ void XUA_Buffer(
             , chanend c_hid
 #endif
             , chanend c_aud
-#if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
+#if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC) || defined(__DOXYGEN__)
             , client interface pll_ref_if i_pll_ref
 #endif
         );
 
 void XUA_Buffer_Ep(chanend c_aud_out,
-#if (NUM_USB_CHAN_IN > 0)
+#if (NUM_USB_CHAN_IN > 0) || defined(__DOXYGEN__)
             chanend c_aud_in,
 #endif
 #if (NUM_USB_CHAN_IN == 0) || defined (UAC_FORCE_FEEDBACK_EP)
@@ -81,7 +81,7 @@ void XUA_Buffer_Ep(chanend c_aud_out,
 #ifdef CHAN_BUFF_CTRL
             , chanend c_buff_ctrl
 #endif
-#if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
+#if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC) || defined(__DOXYGEN__)
             , client interface pll_ref_if i_pll_ref
 #endif
         );

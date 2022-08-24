@@ -24,12 +24,8 @@ static unsigned makeSymbol(unsigned data)
 
 #define RATE 31250
 
-#ifndef MIDI_SHIFT_TX
-#define MIDI_SHIFT_TX 0
-#endif
-
-static unsigned bit_time =  XS1_TIMER_MHZ * 1000000 / (unsigned) RATE;
-static unsigned bit_time_2 =  (XS1_TIMER_MHZ * 1000000 / (unsigned) RATE) / 2;
+static const unsigned bit_time =  XS1_TIMER_MHZ * 1000000 / (unsigned) RATE;
+static const unsigned bit_time_2 =  (XS1_TIMER_MHZ * 1000000 / (unsigned) RATE) / 2;
 
 // For debugging
 int mr_count = 0; // MIDI received (from HOST)
@@ -243,7 +239,6 @@ void usb_midi(
                 }
 
                 p_midi_out <: (1<<MIDI_SHIFT_TX) @ txPT;
-                //              printstr("mout1\n");
                 t :> txT;
                 txT += bit_time;
                 txPT += bit_time;
@@ -255,7 +250,6 @@ void usb_midi(
                 txT += bit_time; // Should this be after the output otherwise be double the length of the high before the start bit
                 txPT += bit_time;
                 p_midi_out @ txPT <: ((symbol & 1)<<MIDI_SHIFT_TX);
-                //            printstr("mout2\n");
                 symbol >>= 1;
                 if (symbol == 0)
                 {
@@ -276,10 +270,8 @@ void usb_midi(
             if (is_ack)
             {
                 // have we got more data to send
-                //printstr("ack\n");
                 if (!queue_is_empty(midi_to_host_fifo))
                 {
-                    //printstr("uart->decouple\n");
                     outuint(c_midi, queue_pop_word(midi_to_host_fifo, midi_to_host_fifo_arr));
                     th_count++;
                 }

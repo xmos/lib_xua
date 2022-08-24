@@ -5,6 +5,10 @@
 
 #include "xua.h"
 
+#ifndef MIDI_SHIFT_TX
+#define MIDI_SHIFT_TX      (0)
+#endif
+
 /** USB MIDI I/O task.
  *
  *  This function passes MIDI data between XUA_Buffer and MIDI UART I/O.
