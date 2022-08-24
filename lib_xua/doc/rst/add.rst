@@ -1,6 +1,6 @@
 
-Features & Options
-------------------
+Additional Features
+-------------------
 
 The previous sections describes only the basic core set of ``lib_xua`` details on enabling additional features e.g. S/PDIF are discussed in this section.
 
@@ -15,7 +15,6 @@ For full details of all options please see the API section
 .. toctree::
 
     S/PDIF Transmit <feat_spdif_tx>
-    I2S/TDM <feat_i2s>
 
 
 

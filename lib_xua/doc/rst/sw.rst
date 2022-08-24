@@ -16,5 +16,6 @@ This section examines the implementation of the various components that make up 
     sw_adat_rx
     sw_midi
     sw_pdm
+    sw_hid
     sw_resource
 

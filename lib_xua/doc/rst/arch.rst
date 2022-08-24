@@ -4,7 +4,7 @@
 Software Architecture
 ---------------------
 
-This section describes the software architecture of a USB Audio device implemented using `lib_xua`, its dependencies and other supporting libraries.
+This section describes the required software architecture of a USB Audio device implemented using `lib_xua`, its dependencies and other supporting libraries.
 
 `lib_xua` provides fundamental building blocks for producing USB Audio products on XMOS devices. Every system is required to have the components from `lib_xua` listed in :ref:`usb_audio_shared_components`.
 

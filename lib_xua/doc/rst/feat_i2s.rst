@@ -35,8 +35,8 @@ These hardware resources must be passed into the call to ``XUA_AudioHub()``::
         p_lrclk, p_bclk, p_i2s_dac, p_i2s_adc);
 
 
-Codeless Programming Model
-..........................
+Related Defines
+................
 
 All ports and hardware resources are already fully declared, one must simply set the following:
 

@@ -1,0 +1,40 @@
+|newpage|
+
+Code Location
+~~~~~~~~~~~~~
+
+When designing a system there is a choice as to which hardware resources to use for each interface.
+In a multi-tile system he codebase needs to know which tiles to use for these hardware resources and associated code.
+
+A series of defines is used to allow the programmer to easily move code between tiles.
+
+Arguably the most important are ``AUDIO_IO_TILE`` and ``XUD_TILE``. 
+
+.. _opt_location_defines:
+
+.. list-table:: Tile defines
+   :header-rows: 1
+   :widths: 20 80 20
+
+   * - Define
+     - Description
+     - Default
+   * - ``AUDIO_IO_TILE``
+     - Tile on which I2S, ADAT Rx, S/PDIF Rx & mixer resides
+     - ``0``
+   * - ``XUD_TILE``
+     - Tile on which USB resides, including buffering for all USB interfaces/endppoints
+     - ``0`` 
+   * - ``MIDI_TILE``
+     - Tile on which MIDI resides
+     - Same as ``AUDIO_IO_TILE``
+   * - ``SPDIF_TX_TILE``
+     - Tile on which S/PDIF Tx resides
+     - Same as ``AUDIO_IO_TILE``
+   * - ``PDM_TILE``
+     - Tile on which PDM microphones resides
+     - Same as ``AUDIO_IO_TILE``
+   * - ``PLL_REF_TILE``
+     - Tile on which reference signal to CS2100 resides
+     - Same as ``AUDIO_IO_TILE``
+

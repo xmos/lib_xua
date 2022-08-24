@@ -157,7 +157,7 @@ Upon receiving the change of sample frequency request, the audio
 core stops the I2S/TDM interface and calls the CODEC/port configuration 
 functions. 
 
-Once this is complete, the I2S/TDM interface (i.e. the main look in AudioHub) is restarted at the new frequency.
+Once this is complete, the I2S/TDM interface (i.e. the main loop in AudioHub) is restarted at the new frequency.
 
 
 
