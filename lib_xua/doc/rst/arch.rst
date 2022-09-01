@@ -57,9 +57,11 @@ In addition :ref:`usb_audio_optional_components` shows optional components that 
  * - MIDI
    - Outputs and inputs MIDI over a serial UART interface.
 
-`lib_xua` also provides optional support for integrating with the following eternal dependencies:
+`lib_xua` also provides optional support for integrating with the following external dependencies listed in :ref:`usb_audio_external_components`
 
-.. list-table:: Optional Components
+.. _usb_audio_external_components:
+
+.. list-table:: External Components
  :header-rows: 1
  :widths: 40 60
 

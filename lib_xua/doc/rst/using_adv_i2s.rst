@@ -1,3 +1,5 @@
+|newpage|
+
 I2S/TDM
 ~~~~~~~
 
@@ -16,7 +18,7 @@ Ports for the sample and bit clocks are also required::
 
 .. note::
 
-    All of these ports must be buffered, width 32. Based on whether the xCORE is bus slave/master the ports must be declared as input/output respectively
+    All of these ports must be 1-bit ports, 32-bit buffed. Based on whether the xCORE is bus slave/master the ports must be declared as input/output respectively
 
 These ports must then be passed to the ``XUA_AudioHub()`` task appropriately.
 
@@ -34,14 +36,3 @@ These hardware resources must be passed into the call to ``XUA_AudioHub()``::
     on tile[0]: XUA_AudioHub(c_aud, clk_audio_mclk, clk_audio_bclk, p_mclk_in, 
         p_lrclk, p_bclk, p_i2s_dac, p_i2s_adc);
 
-
-Related Defines
-................
-
-All ports and hardware resources are already fully declared, one must simply set the following:
-
-    * `I2S_CHANS_DAC` must be set to the desired number of output channels via I2S
-    * `I2S_CHANS_ADC` must be set to the desired number of input channels via I2S
-    * `AUDIO_IO_TILE` must be set to the tile where the physical I2S connections reside 
-    
-For configuration options, master vs slave, TDM etc please see the API section.

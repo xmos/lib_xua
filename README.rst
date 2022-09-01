@@ -8,14 +8,14 @@ lib_xua
 Summary
 -------
 
-lib_xua contains shared components for use in the XMOS USB Audio (XUA) Refererence Designs.
+lib_xua contains shared components for use in the XMOS USB Audio (XUA) Reference Designs.
 
 These components enable the development of USB Audio devices on the XMOS xCORE architecture.
 
 Features
 ~~~~~~~~
 
-Key features of the various applications in this repository are as follows
+Key features of the various components in this repository are as follows
 
 - USB Audio Class 1.0/2.0 Compliant
 
@@ -23,7 +23,7 @@ Key features of the various applications in this repository are as follows
 
 - Support for the following sample frequencies: 8, 11.025, 12, 16, 32, 44.1, 48, 88.2, 96, 176.4, 192, 352.8, 384kHz
 
-- Input/output master and individual channel volume/mute controls
+- Volume/mute controls for input/output (for both master and individual channels)
 
 - Support for dynamically selectable output audio formats (e.g. resolution)
 
@@ -37,7 +37,7 @@ Key features of the various applications in this repository are as follows
 
 - ADAT input
 
-- Synchronisation to external digital streams i.e. S/PDIF or ADAT
+- Synchronisation to external digital streams i.e. S/PDIF or ADAT (when in asynchronous mode)
 
 - I2S slave & master modes
 

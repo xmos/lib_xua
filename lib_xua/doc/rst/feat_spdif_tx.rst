@@ -13,7 +13,7 @@ The channel should be declared a normal::
     chan c_spdif_tx
 
 
-In order to use the S/PDIF transmitter with ``lib_xua`` hardware resources must be declared e.g::
+In order to use the S/PDIF transmitter with ``lib_xua`` a 1-bit port must be declared e.g::
 
     buffered out port:32 p_spdif_tx = PORT_SPDIF_OUT;     /* SPDIF transmit port */
 
@@ -45,13 +45,3 @@ For example::
 
 For further details please see the documentation, application notes and examples provided for ``lib_spdif``.
 
-Codeless Programming Model
-..........................
-
-If using the codeless programming method one must simply ensure the following:
-
-    * `PORT_SPDIF_OUT` is correctly defined in the XN file
-    * `XUA_SPDIF_TX_EN` should be defined as non-zero
-    * `SPDIF_TX_TILE` is correctly defined (note, this defaults to `AUDIO_IO_TILE`)
-
-For further configuration options please see the API section.

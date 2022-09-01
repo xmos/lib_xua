@@ -2,20 +2,16 @@
 Features & Options
 ------------------
 
-The previous sections describes only the basic core set of ``lib_xua`` details on enabling additional features e.g. S/PDIF are discussed in this section.
+The previous section describes the use of core functionality contained within ``lib_xua``
+This seciton details enabling additional features with supported external dependencies, for example, 
+``lib_xua`` can provide S/PDIF output though the used of ``lib_spdif``
 
 Where something must be defined, it is recommended this is done in `xua_conf.h` but could also be done in the application Makefile.
-
-For each feature steps are listed for if calling ``lib_xua`` functions manually - if using the "codeless" programming model then these steps are informational only. 
-Each section also includes a sub-section on enabling the feature using the "codeless" model.
-
-For full details of all options please see the API section
-
 
 .. toctree::
 
     S/PDIF Transmit <feat_spdif_tx>
-    I2S/TDM <feat_i2s>
+    S/PDIF Receive <feat_spdif_rx>
 
 
 

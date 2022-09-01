@@ -4,11 +4,12 @@ Code Location
 ~~~~~~~~~~~~~
 
 When designing a system there is a choice as to which hardware resources to use for each interface.
-In a multi-tile system he codebase needs to know which tiles to use for these hardware resources and associated code.
+In a multi-tile system the codebase needs to be informed as to which tiles to use for these hardware
+resources and associated code.
 
-A series of defines is used to allow the programmer to easily move code between tiles.
-
-Arguably the most important are ``AUDIO_IO_TILE`` and ``XUD_TILE``. 
+A series of defines are used to allow the programmer to easily move code between tiles. Arguably the 
+most important of these are ``AUDIO_IO_TILE`` and ``XUD_TILE``. ::ref:'opt_location_defines` shows a 
+full listing of these ``TILE`` defines.
 
 .. _opt_location_defines:
 
@@ -38,3 +39,6 @@ Arguably the most important are ``AUDIO_IO_TILE`` and ``XUD_TILE``.
      - Tile on which reference signal to CS2100 resides
      - Same as ``AUDIO_IO_TILE``
 
+.. note:: 
+    
+    It should be ensured that the relevant port defines in the application XN file match the code location defines

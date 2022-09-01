@@ -3,12 +3,12 @@
 USB Audio Class Version
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-The XMOS USB Audio framework supports USB Audio Class versions 1.0 and 2.0.
+The codebase supports USB Audio Class versions 1.0 and 2.0.
 
 USB Audio Class 2.0 offers many improvements over USB Audio Class 1.0, most notable is the complete
 support for high-speed operation.  This means that Audio Class devices are no longer limited to 
 full-speed operation allowing greater channel counts, sample frequencies and sample bit-depths. 
-Additional improvement, amongst others, include: 
+Additional improvements, amongst others, include: 
 
 - Added support for multiple clock domains, clock description and clock control
 
@@ -63,10 +63,28 @@ Due to bandwidth limitations of full-speed USB the following sample-frequency re
 -  Sample rate is limited to a maximum of 96kHz if only input *or* output is enabled.
 
   
-Codeless Programming Model
-..........................
+Related Defines
+................
 
-In order to correctly set the USB Audio Class version ensure that: 
+:ref:`opt_audio_class_defines` descibes the defines that effect audio class selection.
 
-    * `AUDIO_CLASS` is set to 2 or 1 as appropriate 
-    * `AUDIO_CLASS_FALLBACK` set to a non-zero value if fallback functionality is required.
+.. _opt_audio_class_defines:
+
+.. list-table:: Audio Class defines
+   :header-rows: 1
+   :widths: 20 80 20
+
+   * - Define
+     - Description
+     - Default
+   * - ``AUDIO_CLASS``
+     - Audio Class version (1 or 2)
+     - N/A (*must* be defined) 
+   * - ``AUDIO_CLASS_FALLBACK``
+     - Enable audio class fallback functionalty 
+     - ``0`` (disabled) 
+
+.. note:: 
+
+    Enabling USB Audio Class fallback functionality may have USB Compliance implications 
+

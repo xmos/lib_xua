@@ -2,17 +2,18 @@
 Strings and ID's
 ~~~~~~~~~~~~~~~~
 
-The codebase includes various strings and ID's that should be customised to match the product requirements. These are listed below.
+The codebase includes various strings and ID's that should be customised to match the product requirements. 
+These are listed in ::ref:`opt_stings_defines`.
 
-The Vendor ID (VID) should be acquired from the USB Implementers Forum (www.usb.org). Under no circumstances should XMOS's or any other companies
-VID be used without their express permission.
+The Vendor ID (VID) should be acquired from the USB Implementers Forum (www.usb.org). Under no circumstances 
+should the XMOS VID or any other VID be used without express permission.
 
 The VID and Product ID (PID) pair must be unique to each product, otherwise driver incompatibilities may arise.
 
 
 .. _opt_strings_defines:
 
-.. list-table:: String Defines
+.. list-table:: String & ID defines
    :header-rows: 1
    :widths: 20 80 20
 
