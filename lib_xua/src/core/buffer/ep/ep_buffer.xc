@@ -119,6 +119,7 @@ void XUA_Buffer(
 )
 {
 #ifdef CHAN_BUFF_CTRL
+#warning Using channel to control buffering - this may reduce performance but improve power consumption
     chan c_buff_ctrl;
 #endif
 
