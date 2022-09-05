@@ -46,7 +46,7 @@
 static unsigned samplesOut[MAX(NUM_USB_CHAN_OUT, I2S_CHANS_DAC)];
 
 /* Two buffers for ADC data to allow for DAC and ADC I2S ports being offset */
-#define IN_CHAN_COUNT (I2S_CHANS_ADC + XUA_NUM_PDM_MICS + (8*ADAT_RX) + (2*XUA_SPDIF_RX_EN))
+#define IN_CHAN_COUNT (I2S_CHANS_ADC + XUA_NUM_PDM_MICS + (8*XUA_ADAT_RX_EN) + (2*XUA_SPDIF_RX_EN))
 
 static unsigned samplesIn[2][MAX(NUM_USB_CHAN_IN, IN_CHAN_COUNT)];
 
@@ -213,7 +213,7 @@ unsigned static AudioHub_MainLoop(chanend ?c_out, chanend ?c_spd_out
     , unsigned adatSmuxMode
 #endif
     , unsigned divide, unsigned curSamFreq
-#if (XUA_SPDIF_RX_EN || ADAT_RX)
+#if (XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
     , chanend c_dig_rx
 #endif
 #if (XUA_NUM_PDM_MICS > 0)
@@ -418,7 +418,7 @@ unsigned static AudioHub_MainLoop(chanend ?c_out, chanend ?c_spd_out
             if(frameCount == 0)
             {
 
-#if (XUA_SPDIF_RX_EN || ADAT_RX)
+#if (XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
                 /* Sync with clockgen */
                 inuint(c_dig_rx);
 
@@ -428,7 +428,7 @@ unsigned static AudioHub_MainLoop(chanend ?c_out, chanend ?c_spd_out
                 asm("ldw %0, dp[g_digData]"  :"=r"(samplesIn[readBuffNo][SPDIF_RX_INDEX + 0]));
                 asm("ldw %0, dp[g_digData+4]":"=r"(samplesIn[readBuffNo][SPDIF_RX_INDEX + 1]));
 #endif
-#if (ADAT_RX)
+#if (XUA_ADAT_RX_EN)
                 asm("ldw %0, dp[g_digData+8]" :"=r"(samplesIn[readBuffNo][ADAT_RX_INDEX]));
                 asm("ldw %0, dp[g_digData+12]":"=r"(samplesIn[readBuffNo][ADAT_RX_INDEX + 1]));
                 asm("ldw %0, dp[g_digData+16]":"=r"(samplesIn[readBuffNo][ADAT_RX_INDEX + 2]));
@@ -439,7 +439,7 @@ unsigned static AudioHub_MainLoop(chanend ?c_out, chanend ?c_spd_out
                 asm("ldw %0, dp[g_digData+36]":"=r"(samplesIn[readBuffNo][ADAT_RX_INDEX + 7]));
 #endif
 
-#if (XUA_SPDIF_RX_EN || ADAT_RX)
+#if (XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
                 /* Request digital data (with prefill) */
                 outuint(c_dig_rx, 0);
 #endif
@@ -668,7 +668,7 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
 #if (XUA_SPDIF_TX_EN) //&& (SPDIF_TX_TILE != AUDIO_IO_TILE)
     , chanend c_spdif_out
 #endif
-#if (ADAT_RX || XUA_SPDIF_RX_EN)
+#if (XUA_ADAT_RX_EN || XUA_SPDIF_RX_EN)
     , chanend c_dig_rx
 #endif
 #if (XUD_TILE != 0) && (AUDIO_IO_TILE == 0) && (XUA_DFU_EN == 1)
@@ -904,7 +904,7 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
                    , adatSmuxMode
 #endif
                    , divide, curSamFreq
-#if (ADAT_RX || XUA_SPDIF_RX_EN)
+#if (XUA_ADAT_RX_EN || XUA_SPDIF_RX_EN)
                    , c_dig_rx
 #endif
 #if (XUA_NUM_PDM_MICS > 0)
