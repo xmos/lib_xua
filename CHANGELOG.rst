@@ -1,6 +1,14 @@
 lib_xua Change Log
 ==================
 
+UNRELEASED
+----------
+
+  * FIXED:     Insufficient buffering of input packets
+  * CHANGED:   Define ADAT_RX renamed to XUA_ADAT_RX_EN
+  * CHANGED:   Define ADAT_TX renamed to XUA_ADAT_TX_EN
+  * CHANGED:   Define SPDIF_RX renamed to XUA_SPDIF_RX_EN
+
 3.2.0
 -----
 
@@ -11,7 +19,6 @@ lib_xua Change Log
   * FIXED:     Incorrect conditional compilation of HID report code
   * FIXED:     Input/output descriptors written when input/output not enabled.
     (Audio class 1.0 mode using XUA_USB_DESCRIPTOR_OVERWRITE_RATE_RES)
-  * FIXED:     Insufficient buffering of input packets
 
   * Changes to dependencies:
 

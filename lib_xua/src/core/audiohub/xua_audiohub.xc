@@ -23,7 +23,7 @@
 #if (XUA_SPDIF_TX_EN)
 #include "spdif.h"
 #endif
-#ifdef ADAT_TX
+#if (XUA_ADAT_TX_EN)
 #include "adat_tx.h"
 #ifndef ADAT_TX_USE_SHARED_BUFF
 #error Designed for ADAT tx shared buffer mode ONLY
@@ -63,11 +63,11 @@ static unsigned samplesIn[2][MAX(NUM_USB_CHAN_IN, IN_CHAN_COUNT)];
 #pragma xta command "set required - 2000 ns"
 #endif
 
-#ifdef ADAT_TX
+#if (XUA_ADAT_TX_EN)
 extern buffered out port:32 p_adat_tx;
 #endif
 
-#if defined(ADAT_TX)
+#if (XUA_ADAT_TX_EN)
 extern clock    clk_mst_spd;
 #endif
 
@@ -86,7 +86,7 @@ unsigned dsdMode = DSD_MODE_OFF;
 #include "audiohub_dsd.h"
 #endif
 
-#ifdef ADAT_TX
+#if (XUA_ADAT_TX_EN)
 #include "audiohub_adat.h"
 #endif
 
@@ -208,7 +208,7 @@ static inline int HandleSampleClock(int frameCount, buffered _XUA_CLK_DIR port:3
 
 #pragma unsafe arrays
 unsigned static AudioHub_MainLoop(chanend ?c_out, chanend ?c_spd_out
-#ifdef ADAT_TX
+#if (XUA_ADAT_TX_EN)
     , chanend c_adat_out
     , unsigned adatSmuxMode
 #endif
@@ -238,7 +238,7 @@ unsigned static AudioHub_MainLoop(chanend ?c_out, chanend ?c_spd_out
 #endif
     unsigned underflowWord = 0;
 
-#ifdef ADAT_TX
+#if (XUA_ADAT_TX_EN)
     adatCounter = 0;
 #endif
 
@@ -296,7 +296,7 @@ unsigned static AudioHub_MainLoop(chanend ?c_out, chanend ?c_spd_out
     // Reinitialise user state before entering the main loop
     UserBufferManagementInit();
 
-#ifdef ADAT_TX
+#if (XUA_ADAT_TX_EN)
     unsafe{
     //TransferAdatTxSamples(c_adat_out, samplesOut, adatSmuxMode, 0);
     volatile unsigned * unsafe samplePtr = &samplesOut[ADAT_TX_INDEX];
@@ -411,7 +411,7 @@ unsigned static AudioHub_MainLoop(chanend ?c_out, chanend ?c_spd_out
                 }
 #endif // (I2S_CHANS_DAC != 0)
 
-#ifdef ADAT_TX
+#if (XUA_ADAT_TX_EN)
                  TransferAdatTxSamples(c_adat_out, samplesOut, adatSmuxMode, 1);
 #endif
 
@@ -679,12 +679,11 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
 #endif
 )
 {
-#ifdef ADAT_TX
+#if (XUA_ADAT_TX_EN)
     chan c_adat_out;
     unsigned adatSmuxMode = 0;
     unsigned adatMultiple = 0;
 #endif
-
     unsigned curSamFreq = DEFAULT_FREQ * AUD_TO_USB_RATIO;
     unsigned curSamRes_DAC = STREAM_FORMAT_OUTPUT_1_RESOLUTION_BITS; /* Default to something reasonable */
     unsigned curSamRes_ADC = STREAM_FORMAT_INPUT_1_RESOLUTION_BITS; /* Default to something reasonable - note, currently this never changes*/
@@ -708,7 +707,7 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
     }
 #endif
 
-#ifdef ADAT_TX
+#if (XUA_ADAT_TX_EN)
     /* Share SPDIF clk blk */
     configure_clock_src(clk_mst_spd, p_mclk_in);
     configure_out_port_no_ready(p_adat_tx, clk_mst_spd, 0);
@@ -727,7 +726,7 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
         if (((MCLK_441) % curSamFreq) == 0)
         {
             mClk = MCLK_441;
-#ifdef ADAT_TX
+#if (XUA_ADAT_TX_EN)
             /* Calculate ADAT SMUX mode (1, 2, 4) */
             adatSmuxMode = curSamFreq / 44100;
             adatMultiple = mClk / 44100;
@@ -736,7 +735,7 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
         else if (((MCLK_48) % curSamFreq) == 0)
         {
             mClk = MCLK_48;
-#ifdef ADAT_TX
+#if (XUA_ADAT_TX_EN)
             /* Calculate ADAT SMUX mode (1, 2, 4) */
             adatSmuxMode = curSamFreq / 48000;
             adatMultiple = mClk / 48000;
@@ -860,7 +859,7 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
         par
         {
 
-#ifdef ADAT_TX
+#if (XUA_ADAT_TX_EN)
             {
                 set_thread_fast_mode_on();
                 adat_tx_port(c_adat_out, p_adat_tx);
@@ -879,7 +878,7 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
                 c_pdm_in <: curSamFreq / AUD_TO_MICS_RATIO;
 #endif
 
-#ifdef ADAT_TX
+#if (XUA_ADAT_TX_EN)
                 // Configure ADAT parameters ...
                 //
                 // adat_oversampling =  256 for MCLK = 12M288 or 11M2896
@@ -899,7 +898,7 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
 #else
                    , null
 #endif
-#ifdef ADAT_TX
+#if (XUA_ADAT_TX_EN)
                    , c_adat_out
                    , adatSmuxMode
 #endif
@@ -964,7 +963,7 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
                 c_pdm_in <: 0;
 #endif
 
-#ifdef ADAT_TX
+#if (XUA_ADAT_TX_EN)
 #ifdef ADAT_TX_USE_SHARED_BUFF
                 /* Take out-standing handshake from ADAT core */
                 inuint(c_adat_out);

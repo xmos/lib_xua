@@ -138,11 +138,11 @@ on tile[AUDIO_IO_TILE] :  in port p_mclk_in                 = PORT_MCLK_IN;
 on tile[XUD_TILE] : in port p_for_mclk_count                = PORT_MCLK_COUNT;
 #endif
 
-#if (XUA_SPDIF_TX_EN == 1)
+#if (XUA_SPDIF_TX_EN)
 on tile[SPDIF_TX_TILE] : buffered out port:32 p_spdif_tx    = PORT_SPDIF_OUT;
 #endif
 
-#ifdef ADAT_TX
+#if (XUA_ADAT_TX_EN)
 on stdcore[AUDIO_IO_TILE] : buffered out port:32 p_adat_tx  = PORT_ADAT_OUT;
 #endif
 
@@ -178,7 +178,7 @@ clock clk_pdm                                               = on tile[PDM_TILE]:
 on tile[MIDI_TILE] : clock    clk_midi                      = CLKBLK_MIDI;
 #endif
 
-#if XUA_SPDIF_TX_EN || defined(ADAT_TX)
+#if (XUA_SPDIF_TX_EN || XUA_ADAT_TX_EN)
 on tile[SPDIF_TX_TILE] : clock    clk_mst_spd               = CLKBLK_SPDIF_TX;
 #endif
 
