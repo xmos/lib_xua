@@ -287,7 +287,7 @@ void XUA_Endpoint0_setStrTable() {
 #if (XUA_SPDIF_RX_EN)
     concatenateAndCopyStrings(g_vendor_str, " S/PDIF Clock", g_strTable.spdifClockSourceStr);
 #endif
-#if ADAT_RX
+#if (XUA_ADAT_RX_EN)
     concatenateAndCopyStrings(g_vendor_str, " ADAT Clock", g_strTable.adatClockSourceStr);
 #endif
 #if (XUA_DFU_EN == 1)
