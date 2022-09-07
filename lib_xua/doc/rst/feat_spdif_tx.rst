@@ -8,7 +8,7 @@ S/PDIF Transmit
 The S/PDIF transmitter core takes PCM audio samples via a channel and outputs them in S/PDIF format to a port.
 Samples are provided to the S/PDIF transmitter task from the ``XUA_AudioHub()`` task.
 
-The channel should be declared a normal::
+The channel should be declared as normal::
 
     chan c_spdif_tx
 
@@ -19,7 +19,7 @@ In order to use the S/PDIF transmitter with ``lib_xua`` a 1-bit port must be dec
 
 This port should be clocked from the master-clock, ``lib_spdif`` provides a helper function for setting up the port::
 
-    spdif_tx_port_config(p_spdif_tx2, clk_audio_mclk, p_mclk_in, delay);
+    spdif_tx_port_config(p_spdif_tx, clk_audio_mclk, p_mclk_in, delay);
 
 .. note:: If sharing the master-clock port and clockblock with ``XUA_AudioHub()`` (or any other task) then this setup
           should be done before running the tasks in a ``par`` statement.
@@ -32,7 +32,7 @@ For example::
         while(1)
         {
             /* Run the S/PDIF transmitter task */
-            spdif_tx(p_spdif_tx2, c_spdif_tx);   
+            spdif_tx(p_spdif_tx, c_spdif_tx);   
         }
     
         /* AudioHub/IO core does most of the audio IO i.e. I2S (also serves as 

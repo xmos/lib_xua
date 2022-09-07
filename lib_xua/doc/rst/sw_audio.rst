@@ -89,7 +89,7 @@ with BCLK then being used to clock data in (SDIN) and data out (SDOUT) of the ex
     - 12.288 
     - 2
 
-For xCORE-200 devices the master clock must be supplied by an exter/nal source e.g. clock generator,
+For xCORE-200 devices the master clock must be supplied by an external source e.g. clock generator,
 fixed oscillators, PLL etc. xCORE.ai devices may use the integrated secondary PLL. 
 
 Two master clock frequencies to support 44.1kHz and 48kHz audio frequencies (e.g. 11.2896/22.5792MHz

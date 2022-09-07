@@ -34,7 +34,7 @@ before receiving it as a parameter. The following code satisfies this requiremen
         XUA_Buffer(c_ep_out[1], c_ep_in[1], c_sof, c_aud_ctl, p_for_mclk_count, c_aud);
     }
 
-.. note:: Keeping this configuration outside of ``XUA_Buffer()`` means the possibllty of sharing the 
+.. note:: Keeping this configuration outside of ``XUA_Buffer()`` means the possibility of sharing the 
    ``p_mclk_in_usb`` port with additional components is not precluded
 
 For USB connectivity a call to ``XUD_Main()`` (from ``lib_xud``) must also be made::

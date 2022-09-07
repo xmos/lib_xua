@@ -22,10 +22,10 @@ The defines in :ref:`opt_channel_defines` set the channel counts exposed to the 
      - Description
      - Default
    * - ``NUM_USB_CHAN_OUT``
-     - Number of output channels the device advertises to the usb host 
+     - Number of output channels the device advertises to the USB host 
      - N/A (must be defined) 
-   * - ``NUM_USB_CHAN_OUT``
-     - Number of output channels the device advertises to the usb host 
+   * - ``NUM_USB_CHAN_IN``
+     - Number of input channels the device advertises to the USB host 
      - N/A (must be defined) 
 
 Sample rates ranges are set by the defines in :ref:`opt_channel_sr_defines`. The codebase will 

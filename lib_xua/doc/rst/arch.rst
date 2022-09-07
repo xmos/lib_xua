@@ -21,7 +21,7 @@ This section describes the required software architecture of a USB Audio device 
      enumeration and control of the device including DFU related requests.
  * - Endpoint buffer
    - Buffers endpoint data packets to and from the host. Manages delivery of audio packets between the endpoint buffer
-     component and the audio components. It can also handle volume control processing.Note, this currently utlises two cores
+     component and the audio components. It can also handle volume control processing. Note, this currently utilises two cores
  * - AudioHub
    - Handles audio I/O over I2S and manages audio data
      to/from other digital audio I/O components.

@@ -47,7 +47,7 @@ The USB Audio design "over-rides" some of the requests handled by ``USB_Standard
 
 Class Requests
 ~~~~~~~~~~~~~~
-Before making the call to ``USB_StandardRequests()`` the setup packet is parsed for Class requests. These are handled in functions such as ``AudioClassRequests_2()``, ``AudioClassRequests_2``, ``DFUDeviceRequests()`` etc depending on the type of request.
+Before making the call to ``USB_StandardRequests()`` the setup packet is parsed for Class requests. These are handled in functions such as ``AudioClassRequests_1()``, ``AudioClassRequests_2``, ``DFUDeviceRequests()`` etc depending on the type of request.
 
 Any device specific requests are handled - in this case Audio Class, MIDI class, DFU requests etc.  
 
@@ -67,7 +67,7 @@ Audio Request: Set Sample Rate
 
 The ``AudioClassRequests_2()`` function parses the passed ``USB_SetupPacket_t`` structure for a ``CUR`` request of type ``SAM_FREQ_CONTROL`` to a Clock Unit in the devices topology (as described in the devices descriptors).
 
-The new sample frequency is extracted and passed via channel to the rest of the design - through the buffering code and eventually to the Audio Hub (I2S) core.  The ``AudioClassRequests_2()`` function waits for a handshake to propagate back though the system before signalling to the host that the request has completed successfully. Note, during this time the USB library is NAKing the host essentially holding off further traffic/requests until the sample-rate change is fully complete.
+The new sample frequency is extracted and passed via channel to the rest of the design - through the buffering code and eventually to the Audio Hub (I2S) core.  The ``AudioClassRequests_2()`` function waits for a handshake to propagate back through the system before signalling to the host that the request has completed successfully. Note, during this time the USB library is NAKing the host essentially holding off further traffic/requests until the sample-rate change is fully complete.
 
 .. _usb_audio_sec_audio-requ-volume: 
 

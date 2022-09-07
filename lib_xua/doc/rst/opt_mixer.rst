@@ -3,7 +3,7 @@
 Mixer
 ~~~~~
 
-The codebase supports audio mixing functionalty with highly flexible routing options. 
+The codebase supports audio mixing functionality with highly flexible routing options. 
 
 Essentially the mixer is capable of performing 8 separate mixes with up to 18 inputs at sample rates 
 up to 96kHz and 2 mixes with up to 18 inputs at higher sample rates. 

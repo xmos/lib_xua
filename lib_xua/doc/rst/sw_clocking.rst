@@ -20,7 +20,7 @@ Logic CS2100 device for this purpose. Other devices may be supported via code mo
 .. note::
    
     It is expected that in a future release  the secondary PLL in xCORE.ai devices, coupled with
-    associated sofware changes, will be capable of replacing the CS2100 part for most designs.
+    associated software changes, will be capable of replacing the CS2100 part for most designs.
 
 The Clock Recovery core (Clock Gen) is responsible for generating the reference frequency 
 to the CS2100 device. This, in turn, generates the master clock used over the whole design.
