@@ -298,10 +298,6 @@ VENDOR_REQUESTS_PARAMS_DEC_
     chan c_xud_out[ENDPOINT_COUNT_OUT];              /* Endpoint channels for XUD */
     chan c_xud_in[ENDPOINT_COUNT_IN];
     chan c_aud_ctl;
-#ifdef CHAN_BUFF_CTRL
-#warning Using channel to control buffering - this may reduce performance but improve power consumption
-    chan c_buff_ctrl;
-#endif
 
 #ifndef MIXER
 #define c_mix_ctl null
@@ -367,9 +363,6 @@ VENDOR_REQUESTS_PARAMS_DEC_
                 c_sof, c_aud_ctl, p_for_mclk_count
 #if (HID_CONTROLS)
                 , c_xud_in[ENDPOINT_NUMBER_IN_HID]
-#endif
-#ifdef CHAN_BUFF_CTRL
-                , c_buff_ctrl
 #endif
                 , c_mix_out
 #if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
