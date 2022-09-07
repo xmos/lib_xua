@@ -34,7 +34,7 @@
 #include "SpdifReceive.h"
 #endif
 
-#if ADAT_RX
+#if (XUA_ADAT_RX_EN)
 #include "adat_rx.h"
 #endif
 
@@ -129,15 +129,15 @@ on tile[AUDIO_IO_TILE] :  in port p_mclk_in                 = PORT_MCLK_IN;
 on tile[XUD_TILE] : in port p_for_mclk_count                = PORT_MCLK_COUNT;
 #endif
 
-#if (XUA_SPDIF_TX_EN == 1)
+#if (XUA_SPDIF_TX_EN)
 on tile[SPDIF_TX_TILE] : buffered out port:32 p_spdif_tx    = PORT_SPDIF_OUT;
 #endif
 
-#ifdef ADAT_TX
+#if (XUA_ADAT_TX_EN)
 on stdcore[AUDIO_IO_TILE] : buffered out port:32 p_adat_tx  = PORT_ADAT_OUT;
 #endif
 
-#if ADAT_RX
+#if (XUA_ADAT_RX_EN)
 on stdcore[XUD_TILE] : buffered in port:32 p_adat_rx        = PORT_ADAT_IN;
 #endif
 
@@ -145,7 +145,7 @@ on stdcore[XUD_TILE] : buffered in port:32 p_adat_rx        = PORT_ADAT_IN;
 on tile[XUD_TILE] : buffered in port:4 p_spdif_rx           = PORT_SPDIF_IN;
 #endif
 
-#if (XUA_SPDIF_RX_EN) || (ADAT_RX) || (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
+#if (XUA_SPDIF_RX_EN) || (XUA_ADAT_RX_EN) || (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
 /* Reference to external clock multiplier */
 on tile[PLL_REF_TILE] : out port p_pll_ref                  = PORT_PLL_REF;
 #endif
@@ -169,7 +169,7 @@ clock clk_pdm                                               = on tile[PDM_TILE]:
 on tile[MIDI_TILE] : clock    clk_midi                      = CLKBLK_MIDI;
 #endif
 
-#if XUA_SPDIF_TX_EN || defined(ADAT_TX)
+#if (XUA_SPDIF_TX_EN || XUA_ADAT_TX_EN)
 on tile[SPDIF_TX_TILE] : clock    clk_mst_spd               = CLKBLK_SPDIF_TX;
 #endif
 
@@ -227,7 +227,7 @@ XUD_EpType epTypeTableIn[ENDPOINT_COUNT_IN] = { XUD_EPTYPE_CTL | XUD_STATUS_ENAB
 #if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP)
                                             XUD_EPTYPE_ISO,    /* Async feedback endpoint */
 #endif
-#if (XUA_SPDIF_RX_EN || ADAT_RX)
+#if (XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
                                             XUD_EPTYPE_BUL,
 #endif
 #ifdef MIDI
@@ -289,10 +289,6 @@ VENDOR_REQUESTS_PARAMS_DEC_
     chan c_xud_out[ENDPOINT_COUNT_OUT];              /* Endpoint channels for XUD */
     chan c_xud_in[ENDPOINT_COUNT_IN];
     chan c_aud_ctl;
-#ifdef CHAN_BUFF_CTRL
-#warning Using channel to control buffering - this may reduce performance but improve power consumption
-    chan c_buff_ctrl;
-#endif
 
 #ifndef MIXER
 #define c_mix_ctl null
@@ -350,7 +346,7 @@ VENDOR_REQUESTS_PARAMS_DEC_
                 c_xud_in[ENDPOINT_NUMBER_IN_MIDI],          /* MIDI In */  // 4
                 c_midi,
 #endif
-#if (XUA_SPDIF_RX_EN || ADAT_RX)
+#if (XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
                 /* Audio Interrupt - only used for interrupts on external clock change */
                 c_xud_in[ENDPOINT_NUMBER_IN_INTERRUPT],
                 c_clk_int,
@@ -358,9 +354,6 @@ VENDOR_REQUESTS_PARAMS_DEC_
                 c_sof, c_aud_ctl, p_for_mclk_count
 #if (HID_CONTROLS)
                 , c_xud_in[ENDPOINT_NUMBER_IN_HID]
-#endif
-#ifdef CHAN_BUFF_CTRL
-                , c_buff_ctrl
 #endif
                 , c_mix_out
 #if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
@@ -423,7 +416,7 @@ void usb_audio_io(chanend ?c_aud_in,
 #endif
     , chanend c_pdm_pcm
 #endif
-#if (XUA_SPDIF_RX_EN || ADAT_RX)
+#if (XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
     , client interface pll_ref_if i_pll_ref
 #endif
 )
@@ -432,7 +425,7 @@ void usb_audio_io(chanend ?c_aud_in,
     chan c_mix_out;
 #endif
 
-#if (XUA_SPDIF_RX_EN || ADAT_RX)
+#if (XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
     chan c_dig_rx;
 #else
     #define c_dig_rx null
@@ -479,7 +472,7 @@ void usb_audio_io(chanend ?c_aud_in,
 #if (XUA_SPDIF_TX_EN) //&& (SPDIF_TX_TILE != AUDIO_IO_TILE)
                 , c_spdif_tx
 #endif
-#if (XUA_SPDIF_RX_EN || ADAT_RX)
+#if (XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
                 , c_dig_rx
 #endif
 #if (XUD_TILE != 0) && (AUDIO_IO_TILE == 0) && (XUA_DFU_EN == 1)
@@ -495,7 +488,7 @@ void usb_audio_io(chanend ?c_aud_in,
         xua_pdm_mic(c_ds_output, p_pdm_mics);
 #endif
 
-#if (XUA_SPDIF_RX_EN || ADAT_RX)
+#if (XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
         {
             /* ClockGen must currently run on same tile as AudioHub due to shared memory buffer 
              * However, due to the use of an interface the pll reference signal port can be on another tile 
@@ -547,7 +540,7 @@ int main()
 #define c_spdif_rx null
 #endif
 
-#if ADAT_RX
+#if (XUA_ADAT_RX_EN)
     chan c_adat_rx;
 #else
 #define c_adat_rx null
@@ -557,7 +550,7 @@ int main()
     chan c_spdif_tx;
 #endif
 
-#if (XUA_SPDIF_RX_EN || ADAT_RX)
+#if (XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
     chan c_clk_ctl;
     chan c_clk_int;
 #else
@@ -579,7 +572,7 @@ int main()
 #endif
 #endif
 
-#if ((XUA_SYNCMODE == XUA_SYNCMODE_SYNC) || XUA_SPDIF_RX_EN || ADAT_RX)
+#if ((XUA_SYNCMODE == XUA_SYNCMODE_SYNC) || XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
     interface pll_ref_if i_pll_ref;
 #endif
 
@@ -589,7 +582,7 @@ int main()
     {
         USER_MAIN_CORES
 
-#if ((XUA_SYNCMODE == XUA_SYNCMODE_SYNC) || XUA_SPDIF_RX_EN || ADAT_RX)
+#if ((XUA_SYNCMODE == XUA_SYNCMODE_SYNC) || XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
         on tile[PLL_REF_TILE]: PllRefPinTask(i_pll_ref, p_pll_ref);
 #endif
         on tile[XUD_TILE]:
@@ -645,7 +638,7 @@ int main()
 #endif
                 , c_pdm_pcm
 #endif
-#if (XUA_SPDIF_RX_EN || ADAT_RX)
+#if (XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
                 , i_pll_ref
 #endif
             );
@@ -692,7 +685,7 @@ int main()
         }
 #endif
 
-#if (ADAT_RX)
+#if (XUA_ADAT_RX_EN)
         on stdcore[XUD_TILE] :
         {
             set_thread_fast_mode_on();

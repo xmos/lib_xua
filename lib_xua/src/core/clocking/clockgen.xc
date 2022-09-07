@@ -81,7 +81,7 @@ void PllRefPinTask(server interface pll_ref_if i_pll_ref, out port p_pll_ref)
 }
 
 
-#if (XUA_SPDIF_RX_EN) || (ADAT_RX)
+#if (XUA_SPDIF_RX_EN) || (XUA_ADAT_RX_EN)
 static int abs(int x)
 {
     if (x < 0) return -x;
@@ -116,7 +116,7 @@ static void outInterrupt(chanend c_interruptControl, int value)
 void VendorClockValidity(int valid);
 #endif
 
-#if (XUA_SPDIF_RX_EN || ADAT_RX)
+#if (XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
 static inline void setClockValidity(chanend c_interruptControl, int clkIndex, int valid, int currentClkMode)
 {
     if (clockValid[clkIndex] != valid)
@@ -125,7 +125,7 @@ static inline void setClockValidity(chanend c_interruptControl, int clkIndex, in
         outInterrupt(c_interruptControl, clockId[clkIndex]);
 
 #ifdef CLOCK_VALIDITY_CALL
-#if ADAT_RX
+#if (XUA_ADAT_RX_EN)
         if (currentClkMode == CLOCK_ADAT && clkIndex == CLOCK_ADAT_INDEX)
         {
             VendorClockValidity(valid);
@@ -250,11 +250,6 @@ void clockGen (streaming chanend ?c_spdif_rx, chanend ?c_adat_rx, client interfa
 {
     timer t_local;
     unsigned timeNextEdge, timeLastEdge, timeNextClockDetection;
-
-#if (AUDIO_IO_TILE == PLL_REF_TILE)
-    unsigned pinVal = 0;
-    unsigned short  pinTime;
-#endif
     unsigned clkMode = CLOCK_INTERNAL;              /* Current clocking mode in operation */
     unsigned tmp;
 
@@ -266,7 +261,7 @@ void clockGen (streaming chanend ?c_spdif_rx, chanend ?c_adat_rx, client interfa
     unsigned levelTime;
 #endif
 
-#if (XUA_SPDIF_RX_EN || ADAT_RX)
+#if (XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
     timer t_external;
 #endif
 
@@ -284,7 +279,7 @@ void clockGen (streaming chanend ?c_spdif_rx, chanend ?c_adat_rx, client interfa
     unsigned spdifLeft = 0;
 #endif
 
-#if ADAT_RX
+#if (XUA_ADAT_RX_EN)
     /* ADAT buffer state */
     int adatSamples[MAX_ADAT_SAMPLES];
     int adatWr = 0;
@@ -316,7 +311,7 @@ void clockGen (streaming chanend ?c_spdif_rx, chanend ?c_adat_rx, client interfa
     clockId[CLOCK_INTERNAL_INDEX] = ID_CLKSRC_INT;
     clockValid[CLOCK_INTERNAL_INDEX] = 0;
     clockInt[CLOCK_INTERNAL_INDEX] = 0;
-#if  ADAT_RX
+#if (XUA_ADAT_RX_EN)
     clockFreq[CLOCK_ADAT_INDEX] = 0;
     clockInt[CLOCK_ADAT_INDEX] = 0;
     clockValid[CLOCK_ADAT_INDEX] = 0;
@@ -331,7 +326,7 @@ void clockGen (streaming chanend ?c_spdif_rx, chanend ?c_adat_rx, client interfa
     spdifCounters.samplesPerTick = 0;
 #endif
 
-#if ADAT_RX
+#if (XUA_ADAT_RX_EN)
     adatCounters.receivedSamples = 0;
     adatCounters.samples = 0;
     adatCounters.savedSamples = 0;
@@ -351,7 +346,7 @@ void clockGen (streaming chanend ?c_spdif_rx, chanend ?c_adat_rx, client interfa
     levelTime+= LEVEL_UPDATE_RATE;
 #endif
 
-#if (XUA_SPDIF_RX_EN) || (ADAT_RX)
+#if (XUA_SPDIF_RX_EN) || (XUA_ADAT_RX_EN)
     /* Fill channel */
     outuint(c_dig_rx, 1);
 #endif
@@ -428,7 +423,7 @@ void clockGen (streaming chanend ?c_spdif_rx, chanend ?c_adat_rx, client interfa
                             case CLOCK_INTERNAL:
                                 VendorClockValidity(1);
                                 break;
-#if ADAT_RX
+#if (XUA_ADAT_RX_EN)
                             case CLOCK_ADAT:
                                 VendorClockValidity(clockValid[CLOCK_ADAT_INDEX]);
                                 break;
@@ -459,7 +454,7 @@ void clockGen (streaming chanend ?c_spdif_rx, chanend ?c_adat_rx, client interfa
 
                     case SET_SMUX:
                         smux = inuint(c_clk_ctl);
-#if ADAT_RX
+#if (XUA_ADAT_RX_EN)
                         adatRd = 0; /* Reset adat FIFO */
                         adatWr = 0;
                         adatSamps = 0;
@@ -496,7 +491,7 @@ void clockGen (streaming chanend ?c_spdif_rx, chanend ?c_adat_rx, client interfa
 #if (XUA_SPDIF_RX_EN)
                 spdifCounters.receivedSamples = 0;
 #endif
-#if ADAT_RX
+#if (XUA_ADAT_RX_EN)
                 adatCounters.receivedSamples = 0;
 #endif
 
@@ -510,18 +505,18 @@ void clockGen (streaming chanend ?c_spdif_rx, chanend ?c_adat_rx, client interfa
                 break;
 
 
-#if (XUA_SPDIF_RX_EN || ADAT_RX)
+#if (XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
             case t_external when timerafter(timeNextClockDetection) :> void:
 
                 timeNextClockDetection += (LOCAL_CLOCK_INCREMENT);
-#if  (XUA_SPDIF_RX_EN)
+#if (XUA_SPDIF_RX_EN)
                 tmp = spdifCounters.samplesPerTick;
 
                 /* Returns 1 if valid clock found */
                 tmp = validSamples(spdifCounters, CLOCK_SPDIF_INDEX);
                 setClockValidity(c_clk_int, CLOCK_SPDIF_INDEX, tmp, clkMode);
 #endif
-#if ADAT_RX
+#if (XUA_ADAT_RX_EN)
                 tmp = validSamples(adatCounters, CLOCK_ADAT_INDEX);
                 setClockValidity(c_clk_int, CLOCK_ADAT_INDEX, tmp, clkMode);
 #endif
@@ -614,7 +609,7 @@ void clockGen (streaming chanend ?c_spdif_rx, chanend ?c_adat_rx, client interfa
                 }
                 break;
 #endif
-#if ADAT_RX
+#if (XUA_ADAT_RX_EN)
                 /* receive sample from ADAT rx thread (streaming channel with CT_END) */
                 case inuint_byref(c_adat_rx, tmp):
                     /* record time of sample */
@@ -727,7 +722,7 @@ void clockGen (streaming chanend ?c_spdif_rx, chanend ?c_adat_rx, client interfa
 #endif
 
 
-#if (XUA_SPDIF_RX_EN || ADAT_RX)
+#if (XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
 			/* Mixer requests data */
 			case inuint_byref(c_dig_rx, tmp):
 #if (XUA_SPDIF_RX_EN)
@@ -768,7 +763,7 @@ void clockGen (streaming chanend ?c_spdif_rx, chanend ?c_adat_rx, client interfa
                     }
 
 #endif
-#if ADAT_RX
+#if (XUA_ADAT_RX_EN)
                 if (adatUnderflow)
                 {
                     /* ADAT underflowing, send out zero samples */

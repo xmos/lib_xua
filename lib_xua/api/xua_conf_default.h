@@ -364,8 +364,8 @@
 /**
  * @brief Enables ADAT Rx. Default: 0 (Disabled)
  */
-#ifndef ADAT_RX
-#define ADAT_RX               (0)
+#ifndef XUA_ADAT_RX_EN
+#define XUA_ADAT_RX_EN        (0)
 #endif
 
 /**
@@ -385,11 +385,11 @@
  * @brief ADAT Rx first channel index. defines which channels ADAT will be input on.
  * Note, indexed from 0.
  *
- * Default: NONE (Must be defined by app when ADAT_RX enabled)
+ * Default: NONE (Must be defined by app when XUA_ADAT_RX_EN is true)
  */
-#if (ADAT_RX) || defined(__DOXYGEN__)
+#if (XUA_ADAT_RX_EN) || defined(__DOXYGEN__)
 #ifndef ADAT_RX_INDEX
-    #error ADAT_RX_INDEX not defined and ADAT_RX defined
+    #error ADAT_RX_INDEX not defined and XUA_ADAT_RX_EN is true
     #define ADAT_RX_INDEX (0) /* Default define for doxygen */
 #endif
 
@@ -398,7 +398,7 @@
 #endif
 #endif
 
-#if ADAT_RX
+#if (XUA_ADAT_RX_EN)
 
 /* Setup input stream formats for ADAT */
 #if(MAX_FREQ > 96000)
@@ -1181,7 +1181,7 @@ enum USBEndpointNumber_In
     ENDPOINT_NUMBER_IN_FEEDBACK,
 #endif
     ENDPOINT_NUMBER_IN_AUDIO,
-#if (XUA_SPDIF_RX_EN) || (ADAT_RX)
+#if (XUA_SPDIF_RX_EN) || (XUA_ADAT_RX_EN)
     ENDPOINT_NUMBER_IN_INTERRUPT,   /* Audio interrupt/status EP */
 #endif
 #ifdef MIDI
@@ -1252,9 +1252,9 @@ enum USBEndpointNumber_Out
 #endif
 
 /* Length of clock unit/clock-selector units */
-#if (XUA_SPDIF_RX_EN) && (ADAT_RX)
+#if (XUA_SPDIF_RX_EN) && (XUA_ADAT_RX_EN)
 #define NUM_CLOCKS               (3)
-#elif (XUA_SPDIF_RX_EN) || (ADAT_RX)
+#elif (XUA_SPDIF_RX_EN) || (XUA_ADAT_RX_EN)
 #define NUM_CLOCKS               (2)
 #else
 #define NUM_CLOCKS               (1)
@@ -1472,5 +1472,4 @@ enum USBEndpointNumber_Out
 #if (CODEC_MASTER == 1) && (DSD_CHANS_DAC != 0)
 #error CODEC_MASTER with DSD is currently unsupported
 #endif
-
 

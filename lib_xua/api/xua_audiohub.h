@@ -50,7 +50,7 @@ void XUA_AudioHub(chanend ?c_aud,
 #if (XUA_SPDIF_TX_EN) || defined(__DOXYGEN__)
     , chanend c_spdif_tx
 #endif
-#if (XUA_SPDIF_RX_EN || ADAT_RX) || defined(__DOXYGEN__)
+#if (XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN || defined(__DOXYGEN__))
     , chanend c_dig
 #endif
 #if (XUD_TILE != 0) && (AUDIO_IO_TILE == 0) && (XUA_DFU_EN == 1)

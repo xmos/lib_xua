@@ -92,7 +92,7 @@ typedef struct
 #if XUA_SPDIF_RX_EN
     STR_TABLE_ENTRY(spdifClockSourceStr);         /* iClockSource for external S/PDIF clock */
 #endif
-#if ADAT_RX
+#if (XUA_ADAT_RX_EN)
     STR_TABLE_ENTRY(adatClockSourceStr);          /* iClockSource for external S/PDIF clock */
 #endif
 #endif // AUDIO_CLASS == 2
@@ -363,10 +363,10 @@ StringDescTable_t g_strTable =
 #if (AUDIO_CLASS == 2)
     .clockSelectorStr            = XUA_CLOCK_SELECTOR_EMPTY_STRING,
     .internalClockSourceStr      = XUA_INTERNAL_CLOCK_SELECTOR_EMPTY_STRING,
-#if XUA_SPDIF_RX_EN
+#if (XUA_SPDIF_RX_EN)
     .spdifClockSourceStr         = XUA_SPDIF_CLOCK_SOURCE_EMPTY_STRING,
 #endif
-#if ADAT_RX
+#if (XUA_ADAT_RX_EN)
     .adatClockSourceStr          = XUA_ADAT_CLOCK_SOURCE_EMPTY_STRING,
 #endif
 #endif // AUDIO_CLASS == 2
@@ -656,10 +656,10 @@ typedef struct
     /* Class Specific Audio Control Interface Header Descriptor */
     UAC_Descriptor_Interface_AC_t               Audio_ClassControlInterface;
     USB_Descriptor_Audio_ClockSource_t          Audio_ClockSource;
-#if XUA_SPDIF_RX_EN
+#if (XUA_SPDIF_RX_EN)
     USB_Descriptor_Audio_ClockSource_t          Audio_ClockSource_SPDIF;
 #endif
-#if ADAT_RX
+#if (XUA_ADAT_RX_EN)
     USB_Descriptor_Audio_ClockSource_t          Audio_ClockSource_ADAT;
 #endif
     USB_Descriptor_Audio_ClockSelector_t        Audio_ClockSelector;
@@ -691,7 +691,7 @@ typedef struct
     // USB_Descriptor_Audio_MixerUnit_t          Audio_MixerUnit;
     unsigned char configDesc_MixerUnit[MIXER_LENGTH];
 #endif
-#if (XUA_SPDIF_RX_EN) || (ADAT_RX)
+#if (XUA_SPDIF_RX_EN) || (XUA_ADAT_RX_EN)
     /* Interrupt EP */
     USB_Descriptor_Endpoint_t                   Audio_Int_Endpoint;
 #endif
@@ -833,7 +833,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
         .bDescriptorType               = USB_DESCTYPE_INTERFACE,
         .bInterfaceNumber              = INTERFACE_NUMBER_AUDIO_CONTROL,
         .bAlternateSetting             = 0x00,                     /* Must be 0 */
-#if (XUA_SPDIF_RX_EN) || (ADAT_RX)
+#if (XUA_SPDIF_RX_EN) || (XUA_ADAT_RX_EN)
         .bNumEndpoints                 = 0x01,                    /* 0 or 1 if optional interrupt endpoint is present */
 #else
         .bNumEndpoints                 = 0x00,
@@ -904,7 +904,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
         },
 #endif
 
-#if ADAT_RX
+#if (XUA_ADAT_RX_EN)
          /* Clock Source Descriptor (4.7.2.1) */
         .Audio_ClockSource_ADAT =
         {
@@ -938,11 +938,11 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
             .bClockID                  = ID_CLKSEL,
             .bNrPins                   = NUM_CLOCKS,
             .baCSourceId[0]            = ID_CLKSRC_INT,             /* baCSourceID */
-#if XUA_SPDIF_RX_EN
+#if (XUA_SPDIF_RX_EN)
             ID_CLKSRC_SPDIF,           /* baCSourceID */
 
 #endif
-#if ADAT_RX
+#if (XUA_ADAT_RX_EN)
             ID_CLKSRC_ADAT,            /* baCSourceID */
 #endif
             .bmControl                 = 0x03,
@@ -1394,7 +1394,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
         },
 #endif /* defined(MIXER) && (MAX_MIX_COUNT > 0) */
 
-#if (XUA_SPDIF_RX_EN) || (ADAT_RX)
+#if (XUA_SPDIF_RX_EN) || (XUA_ADAT_RX_EN)
         /* Standard AS Interrupt Endpoint Descriptor (4.8.2.1): */
         .Audio_Int_Endpoint =
         {

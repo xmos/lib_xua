@@ -1,4 +1,4 @@
-// Copyright 2018-2021 XMOS LIMITED.
+// Copyright 2018-2022 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
 unsigned adatCounter = 0;
@@ -11,7 +11,7 @@ static inline void TransferAdatTxSamples(chanend c_adat_out, const unsigned samp
     /* Do some re-arranging for SMUX.. */
     unsafe
     {
-        unsigned * unsafe samplesFromHostAdat = &samplesFromHost[ADAT_TX_INDEX];
+        unsigned * unsafe samplesFromHostAdat = (unsigned * unsafe) &samplesFromHost[ADAT_TX_INDEX];
 
         /* Note, when smux == 1 this loop just does a straight 1:1 copy */
         //if(smux != 1)
@@ -38,7 +38,7 @@ static inline void TransferAdatTxSamples(chanend c_adat_out, const unsigned samp
             inuint(c_adat_out);
 
             /* Send buffer pointer over to ADAT core */
-            volatile unsigned * unsafe samplePtr = &adatSamples;
+            volatile unsigned * unsafe samplePtr = (unsigned * unsafe) &adatSamples;
             outuint(c_adat_out, (unsigned) samplePtr);
         }
 #else

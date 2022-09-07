@@ -36,14 +36,10 @@ The Makefile therefore also includes this lib::
 
   USED_MODULES = .. lib_xud ..
 
-``lib_xud`` library requires some flags for correct operation. Firstly the 
+``lib_xud`` library requires some flags for correct operation. Namely the 
 tile on which ``lib_xud`` will be executed, for example::
 
     XCC_FLAGS = .. -DUSB_TILE=tile[1] ..
-
-Secondly, the architecture of the target device, for example::
-
-  XCC_FLAGS = .. -DXUD_SERIES_SUPPORT=XUD_X200_SERIES ..
 
 Includes
 --------
@@ -228,7 +224,7 @@ The ``mic_array_pdm_rx()`` task expects the PDM microphone port to be clocked fr
 Demo Hardware Setup
 -------------------
 
-To run the demo, connect a USB cable to power the xCORE-200 MC Audio board 
+To run the demo, connect a USB cable to power the xCORE-200 Array Microphone board 
 and plug the xTAG to the board and connect the xTAG USB cable to your
 development machine.
 
@@ -244,7 +240,7 @@ Launching the demo application
 
 Once the demo example has been built either from the command line using xmake or
 via the build mechanism of xTIMEcomposer studio it can be executed on the xCORE-200
-MC Audio board.
+Array Microphone board.
 
 Once built there will be a ``bin/`` directory within the project which contains
 the binary for the xCORE device. The xCORE binary has a XMOS standard .xe extension.
@@ -258,7 +254,7 @@ on the xCORE device::
   xrun --xscope bin/app_xua_simple.xe
 
 Once this command has executed the application will be running on the
-xCORE-200 MC Audio Board
+xCORE-200 Array Microphone board
 
 Launching from xTIMEcomposer Studio
 ...................................
@@ -270,7 +266,7 @@ enable the xSCOPE I/O mode in the dialog box and then
 select Run.
 
 Once this command has executed the application will be running on the
-xCORE-200 MC Audio board.
+xCORE-200 Array Microphone board.
 
 Running the application
 .......................
