@@ -67,7 +67,7 @@ S/PDIF
 ADAT
 ....
 
-.. doxygendefine:: ADAT_RX
+.. doxygendefine:: XUA_ADAT_RX_EN
 .. doxygendefine:: ADAT_RX_INDEX
 
 PDM Microphones
