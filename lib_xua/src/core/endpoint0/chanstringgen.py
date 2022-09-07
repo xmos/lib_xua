@@ -21,7 +21,7 @@ def genstrings(outputChanCount, chanString, portString, structureString, adc_dac
             \"SPDIF 2\"\n\
         #endif\n\
     #endif\n\
-    #if (({i} < ADAT_{p}_INDEX+8+1) && ({i} > ADAT_{p}_INDEX)) && (ADAT_{p})\n\
+    #if (({i} < ADAT_{p}_INDEX+8+1) && ({i} > ADAT_{p}_INDEX)) && (XUA_ADAT_{p}_EN)\n\
         #if (({i} < SPDIF_{p}_INDEX+2+1) && ({i} > SPDIF_{p}_INDEX)) && (XUA_SPDIF_{p}_EN) || ({i} < I2S_CHANS_{adcdac}+1)\n\
         \"/\"\n\
         #endif\n\
