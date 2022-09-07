@@ -4,10 +4,15 @@ lib_xua Change Log
 UNRELEASED
 ----------
 
-  * FIXED:     Insufficient buffering of input packets
   * CHANGED:   Define ADAT_RX renamed to XUA_ADAT_RX_EN
   * CHANGED:   Define ADAT_TX renamed to XUA_ADAT_TX_EN
   * CHANGED:   Define SPDIF_RX renamed to XUA_SPDIF_RX_EN
+  * FIXED:     Intermittent underflow at MAX_FREQ on input stream start due to
+    insufficient packet buffering
+
+  * Changes to dependencies:
+
+    - lib_xud: 2.1.0 -> 2.2.0
 
 3.2.0
 -----
