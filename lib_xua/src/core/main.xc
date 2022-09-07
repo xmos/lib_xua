@@ -665,7 +665,7 @@ int main()
         on tile[MIDI_TILE]:
         {
             thread_speed();
-            usb_midi(p_midi_rx, p_midi_tx, clk_midi, c_midi, 0, null, null, null, null);
+            usb_midi(p_midi_rx, p_midi_tx, clk_midi, c_midi, 0);
         }
 #endif
 #if defined(IAP)
