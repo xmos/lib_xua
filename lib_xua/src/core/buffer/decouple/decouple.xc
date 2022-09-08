@@ -14,11 +14,10 @@
 #include "usbaudio20.h"             /* Defines from the USB Audio 2.0 Specifications */
 #endif
 
-#if( 0 < HID_CONTROLS )
+#if (HID_CONTROLS)
 #include "user_hid.h"
 #endif
 #define MAX(x,y) ((x)>(y) ? (x) : (y))
-
 
 /* TODO use SLOTSIZE to potentially save memory */
 /* Note we could improve on this, for one subslot is set to 4 */
@@ -65,13 +64,22 @@ unsigned int multIn[NUM_USB_CHAN_IN + 1];
 static xc_ptr p_multIn;
 #endif
 
-/* Number of channels to/from the USB bus - initialised to HS Audio 2.0 */
-#if (AUDIO_CLASS == 1)
-unsigned g_numUsbChan_In = NUM_USB_CHAN_IN_FS;
-unsigned g_numUsbChan_Out = NUM_USB_CHAN_OUT_FS;
+#if (AUDIO_CLASS == 2)
+int g_numUsbChan_In = NUM_USB_CHAN_IN; /* Number of channels to/from the USB bus - initialised to HS for UAC2.0 */
+int g_numUsbChan_Out = NUM_USB_CHAN_OUT;
+int g_curSubSlot_Out = HS_STREAM_FORMAT_OUTPUT_1_SUBSLOT_BYTES;
+int g_curSubSlot_In  = HS_STREAM_FORMAT_INPUT_1_SUBSLOT_BYTES;
+int sampsToWrite = DEFAULT_FREQ/8000;  /* HS assumed here. Expect to be junked during a overflow before stream start */
+int totalSampsToWrite = DEFAULT_FREQ/8000;
+int g_maxPacketSize = MAX_DEVICE_AUD_PACKET_SIZE_IN_HS; /* IN packet size. Init to something sensible, but expect to be re-set before stream start */
 #else
-unsigned g_numUsbChan_In = NUM_USB_CHAN_IN;
-unsigned g_numUsbChan_Out = NUM_USB_CHAN_OUT;
+int g_numUsbChan_In = NUM_USB_CHAN_IN_FS; /* Number of channels to/from the USB bus - initialised to FS for UAC1.0 */
+int g_numUsbChan_Out = NUM_USB_CHAN_OUT_FS;
+int g_curSubSlot_Out = FS_STREAM_FORMAT_OUTPUT_1_SUBSLOT_BYTES;
+int g_curSubSlot_In  = FS_STREAM_FORMAT_INPUT_1_SUBSLOT_BYTES;
+int sampsToWrite = DEFAULT_FREQ/1000;  /* FS assumed here. Expect to be junked during a overflow before stream start */
+int totalSampsToWrite = DEFAULT_FREQ/1000;
+int g_maxPacketSize = MAX_DEVICE_AUD_PACKET_SIZE_IN_FS;  /* IN packet size. Init to something sensible, but expect to be re-set before stream start */
 #endif
 
 /* Circular audio buffers */
@@ -116,13 +124,7 @@ xc_ptr g_aud_to_host_wrptr;
 xc_ptr g_aud_to_host_dptr;
 xc_ptr g_aud_to_host_rdptr;
 xc_ptr g_aud_to_host_zeros;
-#if (AUDIO_CLASS == 2)
-int sampsToWrite = DEFAULT_FREQ/8000;  /* HS assumed here. Expect to be junked during a overflow before stream start */
-int totalSampsToWrite = DEFAULT_FREQ/8000;
-#else
-int sampsToWrite = DEFAULT_FREQ/1000;  /* HS assumed here. Expect to be junked during a overflow before stream start */
-int totalSampsToWrite = DEFAULT_FREQ/1000;
-#endif
+
 int aud_data_remaining_to_device = 0;
 
 /* Audio over/under flow flags */
@@ -139,22 +141,7 @@ unsigned unpackData = 0;
 unsigned packState = 0;
 unsigned packData = 0;
 
-
 /* Default to something sensible but the following are setup at stream start (unless UAC1 only..) */
-#if (AUDIO_CLASS == 2)
-unsigned g_curSubSlot_Out = HS_STREAM_FORMAT_OUTPUT_1_SUBSLOT_BYTES;
-unsigned g_curSubSlot_In  = HS_STREAM_FORMAT_INPUT_1_SUBSLOT_BYTES;
-#else
-unsigned g_curSubSlot_Out = FS_STREAM_FORMAT_OUTPUT_1_SUBSLOT_BYTES;
-unsigned g_curSubSlot_In  = FS_STREAM_FORMAT_INPUT_1_SUBSLOT_BYTES;
-#endif
-
-/* IN packet size. Init to something sensible, but expect to be re-set before stream start */
-#if (AUDIO_CLASS==2)
-int g_maxPacketSize = MAX_DEVICE_AUD_PACKET_SIZE_IN_HS;
-#else
-int g_maxPacketSize = MAX_DEVICE_AUD_PACKET_SIZE_IN_FS;
-#endif
 
 #pragma select handler
 #pragma unsafe arrays
@@ -470,7 +457,7 @@ __builtin_unreachable();
             packState = 0;
 
             /* Write last packet length into FIFO */
-            unsigned datasize = totalSampsToWrite * g_curSubSlot_In * g_numUsbChan_In;
+            int datasize = totalSampsToWrite * g_curSubSlot_In * g_numUsbChan_In;
 
             write_via_xc_ptr(g_aud_to_host_wrptr, datasize);
 
@@ -520,11 +507,11 @@ __builtin_unreachable();
                 /* In pipe has filled its buffer - we need to overflow
                  * Accept the packet, and throw away the oldest in the buffer */
 
-                unsigned sampFreq;
+                int sampFreq;
                 GET_SHARED_GLOBAL(sampFreq, g_freqChange_sampFreq);
                 int min, mid, max;
                 GetADCCounts(sampFreq, min, mid, max);
-                unsigned max_pkt_size = ((max * g_curSubSlot_In * g_numUsbChan_In + 3) & ~0x3) + 4;
+                int max_pkt_size = ((max * g_curSubSlot_In * g_numUsbChan_In + 3) & ~0x3) + 4;
 
                 /* Keep throwing away packets until buffer contains two packets */
                 do
@@ -532,7 +519,7 @@ __builtin_unreachable();
                     unsigned rdPtr;
 
                     /* Read length of packet in buffer at read pointer */
-                    unsigned datalength;
+                    int datalength;
 
                     GET_SHARED_GLOBAL(rdPtr, g_aud_to_host_rdptr);
                     asm volatile("ldw %0, %1[0]":"=r"(datalength):"r"(rdPtr));
