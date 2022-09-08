@@ -68,7 +68,7 @@ static xc_ptr p_multIn;
 int g_numUsbChan_In = NUM_USB_CHAN_IN; /* Number of channels to/from the USB bus - initialised to HS for UAC2.0 */
 int g_numUsbChan_Out = NUM_USB_CHAN_OUT;
 int g_curSubSlot_Out = HS_STREAM_FORMAT_OUTPUT_1_SUBSLOT_BYTES;
-unsigned g_curSubSlot_In  = HS_STREAM_FORMAT_INPUT_1_SUBSLOT_BYTES;
+int g_curSubSlot_In  = HS_STREAM_FORMAT_INPUT_1_SUBSLOT_BYTES;
 int sampsToWrite = DEFAULT_FREQ/8000;  /* HS assumed here. Expect to be junked during a overflow before stream start */
 int totalSampsToWrite = DEFAULT_FREQ/8000;
 int g_maxPacketSize = MAX_DEVICE_AUD_PACKET_SIZE_IN_HS; /* IN packet size. Init to something sensible, but expect to be re-set before stream start */
@@ -76,7 +76,7 @@ int g_maxPacketSize = MAX_DEVICE_AUD_PACKET_SIZE_IN_HS; /* IN packet size. Init 
 int g_numUsbChan_In = NUM_USB_CHAN_IN_FS; /* Number of channels to/from the USB bus - initialised to FS for UAC1.0 */
 int g_numUsbChan_Out = NUM_USB_CHAN_OUT_FS;
 int g_curSubSlot_Out = FS_STREAM_FORMAT_OUTPUT_1_SUBSLOT_BYTES;
-unsigned g_curSubSlot_In  = FS_STREAM_FORMAT_INPUT_1_SUBSLOT_BYTES;
+int g_curSubSlot_In  = FS_STREAM_FORMAT_INPUT_1_SUBSLOT_BYTES;
 int sampsToWrite = DEFAULT_FREQ/1000;  /* FS assumed here. Expect to be junked during a overflow before stream start */
 int totalSampsToWrite = DEFAULT_FREQ/1000;
 int g_maxPacketSize = MAX_DEVICE_AUD_PACKET_SIZE_IN_FS;  /* IN packet size. Init to something sensible, but expect to be re-set before stream start */
@@ -149,6 +149,7 @@ void handle_audio_request(chanend c_mix_out)
 {
     int space_left;
 #if(defined XUA_USB_DESCRIPTOR_OVERWRITE_RATE_RES)
+    #error
     g_curSubSlot_Out = get_usb_to_device_bit_res() >> 3;
     g_curSubSlot_In = get_device_to_usb_bit_res() >> 3;
 #endif
@@ -502,7 +503,7 @@ __builtin_unreachable();
                 space_left = aud_to_host_fifo_end - g_aud_to_host_wrptr;
             }
 
-            if((space_left < (totalSampsToWrite * g_numUsbChan_In * g_curSubSlot_In + 4)))
+            if((space_left < (totalSampsToWrite * g_numUsbChan_In * (unsigned) g_curSubSlot_In + 4)))
             {
                 /* In pipe has filled its buffer - we need to overflow
                  * Accept the packet, and throw away the oldest in the buffer */
