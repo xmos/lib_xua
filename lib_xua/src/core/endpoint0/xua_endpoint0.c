@@ -130,7 +130,11 @@ unsigned g_curStreamAlt_Out = 0;
 unsigned g_curStreamAlt_In = 0;
 
 /* Global variable for current USB bus speed (i.e. FS/HS) */
-XUD_BusSpeed_t g_curUsbSpeed = 0;
+#if (AUDIO_CLASS == 2)
+XUD_BusSpeed_t g_curUsbSpeed = XUD_SPEED_HS;
+#else
+XUD_BusSpeed_t g_curUsbSpeed = XUD_SPEED_FS;
+#endif
 
 /* Global variables for current USB Vendor and Product strings */
 char g_vendor_str[XUA_MAX_STR_LEN] = VENDOR_STR;
