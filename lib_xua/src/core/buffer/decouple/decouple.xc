@@ -2,6 +2,9 @@
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 #include "xua.h"
 
+#define XASSERT_UNIT DECOUPLE
+#include "xassert.h"
+
 #if XUA_USB_EN
 #include <xs1.h>
 #include "xc_ptr.h"
@@ -503,6 +506,8 @@ __builtin_unreachable();
                 space_left = aud_to_host_fifo_end - g_aud_to_host_wrptr;
             }
 
+            assert(space_left > 0 && msg("space_left expected to be positive"));
+
             if((space_left < (totalSampsToWrite * g_numUsbChan_In * (unsigned) g_curSubSlot_In + 4)))
             {
                 /* In pipe has filled its buffer - we need to overflow
@@ -537,6 +542,8 @@ __builtin_unreachable();
 
                     space_left += datalength;
                     SET_SHARED_GLOBAL(g_aud_to_host_rdptr, rdPtr);
+
+                    assert(rdPtr < aud_to_host_fifo_end && msg("rdPtr must be within buffer"));
 
                 } while(space_left < (BUFF_SIZE_IN - 2 * max_pkt_size));
             }
