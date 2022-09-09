@@ -1,5 +1,13 @@
 VERSION = 3.2.0
 
+DEBUG ?= 0
+
+ifeq ($(DEBUG),1)
+DEBUG_FLAGS = -g -DXASSERT_ENABLE_ASSERTIONS_DECOUPLE=1
+else
+DEBUG_FLAGS = -DXASSERT_DISABLE_ASSERTIONS_DECOUPLE=1
+endif
+
 DEPENDENT_MODULES = lib_locks(>=2.1.0) \
                     lib_logging(>=3.1.1) \
                     lib_mic_array(>=4.5.0) \
@@ -11,7 +19,8 @@ MODULE_XCC_FLAGS = $(XCC_FLAGS) \
                    -O3 \
                    -DREF_CLK_FREQ=100 \
                    -fasm-linenum \
-                   -fcomment-asm
+                   -fcomment-asm \
+                    $(DEBUG_FLAGS)
 
 # Core
 XCC_FLAGS_xua_endpoint0.c = $(MODULE_XCC_FLAGS) -Os -mno-dual-issue
