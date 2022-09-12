@@ -2,6 +2,9 @@
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 #include "xua.h"
 
+#define XASSERT_UNIT DECOUPLE
+#include "xassert.h"
+
 #if XUA_USB_EN
 #include <xs1.h>
 #include "xc_ptr.h"
@@ -149,6 +152,7 @@ void handle_audio_request(chanend c_mix_out)
 {
     int space_left;
 #if(defined XUA_USB_DESCRIPTOR_OVERWRITE_RATE_RES)
+    #error
     g_curSubSlot_Out = get_usb_to_device_bit_res() >> 3;
     g_curSubSlot_In = get_device_to_usb_bit_res() >> 3;
 #endif
@@ -502,7 +506,9 @@ __builtin_unreachable();
                 space_left = aud_to_host_fifo_end - g_aud_to_host_wrptr;
             }
 
-            if((space_left < (totalSampsToWrite * g_numUsbChan_In * g_curSubSlot_In + 4)))
+            assert(space_left > 0 && msg("space_left expected to be positive"));
+
+            if((space_left < (totalSampsToWrite * g_numUsbChan_In * (unsigned) g_curSubSlot_In + 4)))
             {
                 /* In pipe has filled its buffer - we need to overflow
                  * Accept the packet, and throw away the oldest in the buffer */
@@ -511,7 +517,8 @@ __builtin_unreachable();
                 GET_SHARED_GLOBAL(sampFreq, g_freqChange_sampFreq);
                 int min, mid, max;
                 GetADCCounts(sampFreq, min, mid, max);
-                unsigned max_pkt_size = ((max * g_curSubSlot_In * g_numUsbChan_In + 3) & ~0x3) + 4;
+                
+                const int max_pkt_size = ((max * g_curSubSlot_In * g_numUsbChan_In + 3) & ~0x3) + 4;
 
                 /* Keep throwing away packets until buffer contains two packets */
                 do
@@ -536,6 +543,8 @@ __builtin_unreachable();
 
                     space_left += datalength;
                     SET_SHARED_GLOBAL(g_aud_to_host_rdptr, rdPtr);
+
+                    assert(rdPtr < aud_to_host_fifo_end && msg("rdPtr must be within buffer"));
 
                 } while(space_left < (BUFF_SIZE_IN - 2 * max_pkt_size));
             }
