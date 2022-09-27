@@ -35,10 +35,15 @@ void ConfigAudioPorts(
 #if (I2S_CHANS_DAC != 0) || (I2S_CHANS_ADC != 0)
 
 #if (CODEC_MASTER == 0)
+#ifdef __XS3A__
+  	/* Increase drive strength of clock ports to 8mA */
+	asm volatile ("setc res[%0], %1" :: "r" (p_bclk), "r" (0x200006));
+	asm volatile ("setc res[%0], %1" :: "r" (p_lrclk), "r" (0x200006));
+#endif
+
     /* Note this call to stop_clock() will pause forever if the port clocking the clock-block is not low.
      * deliver() should return with this being the case */
     stop_clock(clk_audio_bclk);
-
 
     if(!isnull(p_lrclk))
     {
@@ -73,26 +78,13 @@ void ConfigAudioPorts(
         configure_out_port_no_ready(p_lrclk, clk_audio_bclk, 0);
     }
 
-#if (I2S_CHANS_DAC != 0)
-    /* Clock I2S output data ports from clock block */
-    for(int i = 0; i < numPortsDac; i++)
-    {
-        configure_out_port_no_ready(p_i2s_dac[i], clk_audio_bclk, 0);
-    }
-#endif
+	if(XUA_PCM_FORMAT == XUA_PCM_FORMAT_TDM)
+	{
+    	for(int i = 0; i < I2S_WIRES_ADC; i++)
+			set_port_sample_delay(p_i2s_adc[i]);
+	}
 
-#if (I2S_CHANS_ADC != 0)
-    /* Clock I2S input data ports from clock block */
-    for(int i = 0; i < numPortsAdc; i++)
-    {
-        configure_in_port_no_ready(p_i2s_adc[i], clk_audio_bclk);
-    }
-#endif
-
-    /* Start clock blocks ticking */
-    start_clock(clk_audio_bclk);
-
-#else /* CODEC_MASTER */
+#elif (CODEC_MASTER)
 
     /* Stop bit and master clock blocks */
     stop_clock(clk_audio_bclk);
@@ -100,8 +92,9 @@ void ConfigAudioPorts(
     /* Clock bclk clock-block from bclk pin */
     configure_clock_src(clk_audio_bclk, p_bclk);
 
+    configure_in_port_no_ready(p_lrclk, clk_audio_bclk);
 
-    /* Do some clocking shifting to get data in the valid window */
+ 	/* Do some clocking shifting to get data in the valid window */
     /* E.g. Only shift when running at 88.2+ kHz TDM slave */
     int bClkDelay_fall = 0;
     if(curSamFreq * I2S_CHANS_PER_FRAME * 32 >= 20000000)
@@ -111,6 +104,9 @@ void ConfigAudioPorts(
     }
 
     set_clock_fall_delay(clk_audio_bclk, bClkDelay_fall);
+
+#endif
+
 
 #if (I2S_CHANS_DAC != 0)
      /* Clock I2S output data ports from b-clock clock block */
@@ -128,10 +124,9 @@ void ConfigAudioPorts(
     }
 #endif
 
-    configure_in_port_no_ready(p_lrclk, clk_audio_bclk);
-
+    /* Start clock blocks ticking */
     start_clock(clk_audio_bclk);
-#endif
-#endif
+
+#endif //#if (I2S_CHANS_DAC != 0) || (I2S_CHANS_ADC != 0)
 }
 
