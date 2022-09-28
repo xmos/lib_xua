@@ -9,6 +9,7 @@ UNRELEASED
   * CHANGED:   Define SPDIF_RX renamed to XUA_SPDIF_RX_EN
   * FIXED:     Intermittent underflow at MAX_FREQ on input stream start due to
     insufficient packet buffering
+  * FIXED:     Decouple buffer accounting to avoid corruption of samples
 
   * Changes to dependencies:
 

@@ -100,7 +100,6 @@ XUD_ep aud_to_host_usb_ep = 0;
 
 /* Shared global audio buffering variables */
 unsigned g_aud_from_host_buffer;
-unsigned g_aud_to_host_buffer;
 unsigned g_aud_to_host_flag = 0;
 int buffer_aud_ctl_chan = 0;
 unsigned g_aud_from_host_flag = 0;
@@ -126,7 +125,7 @@ xc_ptr aud_to_host_fifo_end;
 xc_ptr g_aud_to_host_wrptr;
 xc_ptr g_aud_to_host_dptr;
 xc_ptr g_aud_to_host_rdptr;
-xc_ptr g_aud_to_host_zeros;
+int g_aud_to_host_fill_level;
 
 int aud_data_remaining_to_device = 0;
 
@@ -150,9 +149,7 @@ unsigned packData = 0;
 #pragma unsafe arrays
 void handle_audio_request(chanend c_mix_out)
 {
-    int space_left;
 #if(defined XUA_USB_DESCRIPTOR_OVERWRITE_RATE_RES)
-    #error
     g_curSubSlot_Out = get_usb_to_device_bit_res() >> 3;
     g_curSubSlot_In = get_device_to_usb_bit_res() >> 3;
 #endif
@@ -323,6 +320,9 @@ __builtin_unreachable();
 #endif
 
     {
+        int dPtr;
+        GET_SHARED_GLOBAL(dPtr, g_aud_to_host_dptr);
+
         /* Store samples from mixer into sample buffer */
         switch(g_curSubSlot_In)
         {
@@ -349,8 +349,8 @@ __builtin_unreachable();
                     sample = sample << 3;
 #endif
 #endif
-                    write_short_via_xc_ptr(g_aud_to_host_dptr, sample>>16);
-                    g_aud_to_host_dptr+=2;
+                    write_short_via_xc_ptr(dPtr, sample>>16);
+                    dPtr+=2;
                 }
                 break;
 
@@ -359,7 +359,6 @@ __builtin_unreachable();
 #if (STREAM_FORMAT_INPUT_SUBSLOT_4_USED == 0)
 __builtin_unreachable();
 #endif
-                unsigned ptr = g_aud_to_host_dptr;
 
                 for(int i = 0; i < g_numUsbChan_In; i++)
                 {
@@ -382,12 +381,9 @@ __builtin_unreachable();
 #endif
 #endif
                     /* Write into fifo */
-                    write_via_xc_ptr(ptr, sample);
-                    ptr+=4;
+                    write_via_xc_ptr(dPtr, sample);
+                    dPtr+=4;
                 }
-
-                /* Update global pointer */
-                g_aud_to_host_dptr = ptr;
 
                 break;
             }
@@ -417,21 +413,21 @@ __builtin_unreachable();
                             break;
                         case 1:
                             packData = (packData >> 8) | ((sample & 0xff00)<<16);
-                            write_via_xc_ptr(g_aud_to_host_dptr, packData);
-                            g_aud_to_host_dptr+=4;
-                            write_via_xc_ptr(g_aud_to_host_dptr, sample>>16);
+                            write_via_xc_ptr(dPtr, packData);
+                            dPtr+=4;
+                            write_via_xc_ptr(dPtr, sample>>16);
                             packData = sample;
                             break;
                         case 2:
                             packData = (packData>>16) | ((sample & 0xffff00) << 8);
-                            write_via_xc_ptr(g_aud_to_host_dptr, packData);
-                            g_aud_to_host_dptr+=4;
+                            write_via_xc_ptr(dPtr, packData);
+                            dPtr+=4;
                             packData = sample;
                             break;
                         case 3:
                             packData = (packData >> 24) | (sample & 0xffffff00);
-                            write_via_xc_ptr(g_aud_to_host_dptr, packData);
-                            g_aud_to_host_dptr+=4;
+                            write_via_xc_ptr(dPtr, packData);
+                            dPtr+=4;
                             break;
                     }
                     packState++;
@@ -442,6 +438,8 @@ __builtin_unreachable();
                 __builtin_unreachable();
                break;
         }
+
+        SET_SHARED_GLOBAL(g_aud_to_host_dptr, dPtr);
 
         /* Input any remaining channels - past this thread we always operate on max channel count */
         for(int i = 0; i < NUM_USB_CHAN_IN - g_numUsbChan_In; i++)
@@ -457,27 +455,35 @@ __builtin_unreachable();
         /* Total samps to write could start at 0 (i.e. no MCLK) so need to check for < 0) */
         if (sampsToWrite <= 0)
         {
-            int speed;
+            int speed, wrPtr;
             packState = 0;
 
             /* Write last packet length into FIFO */
             int datasize = totalSampsToWrite * g_curSubSlot_In * g_numUsbChan_In;
 
-            write_via_xc_ptr(g_aud_to_host_wrptr, datasize);
+            GET_SHARED_GLOBAL(wrPtr, g_aud_to_host_wrptr);
+            write_via_xc_ptr(wrPtr, datasize);
 
             /* Round up to nearest word - note, not needed for slotsize == 4! */
             datasize = (datasize+3) & (~0x3);
+            assert(datasize >= 0);
+            assert(datasize <= g_maxPacketSize);
 
             /* Move wr ptr on by old packet length */
-            g_aud_to_host_wrptr += 4+datasize;
+            wrPtr += 4+datasize;
+            int fillLevel;
+            GET_SHARED_GLOBAL(fillLevel, g_aud_to_host_fill_level);
+            fillLevel += 4+datasize;
+            assert(fillLevel <= BUFF_SIZE_IN);
 
             /* Do wrap */
-            if (g_aud_to_host_wrptr >= aud_to_host_fifo_end)
+            if (wrPtr >= aud_to_host_fifo_end)
             {
-                g_aud_to_host_wrptr = aud_to_host_fifo_start;
+                wrPtr = aud_to_host_fifo_start;
             }
 
-            g_aud_to_host_dptr = g_aud_to_host_wrptr + 4;
+            SET_SHARED_GLOBAL(g_aud_to_host_wrptr, wrPtr);
+            SET_SHARED_GLOBAL(g_aud_to_host_dptr, wrPtr + 4);
 
             /* Now calculate new packet length...
              * First get feedback val (ideally this would be syncronised)
@@ -497,18 +503,10 @@ __builtin_unreachable();
                 totalSampsToWrite = 0;
             }
 
-            /* Calc slots left in fifo */
-            space_left = g_aud_to_host_rdptr - g_aud_to_host_wrptr;
-
-            /* Mod and special case */
-            if ((space_left <= 0) && (g_aud_to_host_rdptr == aud_to_host_fifo_start))
-            {
-                space_left = aud_to_host_fifo_end - g_aud_to_host_wrptr;
-            }
-
-            assert(space_left > 0 && msg("space_left expected to be positive"));
-
-            if((space_left < (totalSampsToWrite * g_numUsbChan_In * (unsigned) g_curSubSlot_In + 4)))
+            /* Must allow space for at least one sample per channel, as these are written at the beginning of
+             * the interrupt handler even if totalSampsToWrite is zero (will be overwritten by a later packet). */
+            int spaceRequired = MAX(totalSampsToWrite, 1) * g_numUsbChan_In * g_curSubSlot_In + 4;
+            if (spaceRequired > BUFF_SIZE_IN - fillLevel)
             {
                 /* In pipe has filled its buffer - we need to overflow
                  * Accept the packet, and throw away the oldest in the buffer */
@@ -518,36 +516,40 @@ __builtin_unreachable();
                 int min, mid, max;
                 GetADCCounts(sampFreq, min, mid, max);
                 const int max_pkt_size = ((max * g_curSubSlot_In * g_numUsbChan_In + 3) & ~0x3) + 4;
+                int rdPtr;
+                GET_SHARED_GLOBAL(rdPtr, g_aud_to_host_rdptr);
 
                 /* Keep throwing away packets until buffer contains two packets */
                 do
                 {
-                    unsigned rdPtr;
+                    int wrPtr;
+                    GET_SHARED_GLOBAL(wrPtr, g_aud_to_host_wrptr);
 
                     /* Read length of packet in buffer at read pointer */
                     int datalength;
-
-                    GET_SHARED_GLOBAL(rdPtr, g_aud_to_host_rdptr);
                     asm volatile("ldw %0, %1[0]":"=r"(datalength):"r"(rdPtr));
 
                     /* Round up datalength */
                     datalength = ((datalength+3) & ~0x3) + 4;
+                    assert(datalength >= 4);
+                    assert(fillLevel >= datalength);
 
                     /* Move read pointer on by length */
+                    fillLevel -= datalength;
                     rdPtr += datalength;
                     if (rdPtr >= aud_to_host_fifo_end)
                     {
                         rdPtr = aud_to_host_fifo_start;
                     }
 
-                    space_left += datalength;
-                    SET_SHARED_GLOBAL(g_aud_to_host_rdptr, rdPtr);
-
                     assert(rdPtr < aud_to_host_fifo_end && msg("rdPtr must be within buffer"));
 
-                } while(space_left < (BUFF_SIZE_IN - 2 * max_pkt_size));
+                } while (fillLevel > 2 * max_pkt_size);
+
+                SET_SHARED_GLOBAL(g_aud_to_host_rdptr, rdPtr);
             }
 
+            SET_SHARED_GLOBAL(g_aud_to_host_fill_level, fillLevel);
             sampsToWrite = totalSampsToWrite;
         }
     }
@@ -587,9 +589,10 @@ __builtin_unreachable();
 }
 
 /* Mark Endpoint (IN) ready with an appropriately sized zero buffer */
-static inline void SetupZerosSendBuffer(XUD_ep aud_to_host_usb_ep, unsigned sampFreq, unsigned slotSize)
+static inline void SetupZerosSendBuffer(XUD_ep aud_to_host_usb_ep, unsigned sampFreq, unsigned slotSize,
+                                        xc_ptr aud_to_host_zeros)
 {
-    int min, mid, max, p;
+    int min, mid, max;
     GetADCCounts(sampFreq, min, mid, max);
 
     /* Set IN stream packet size to something sensible. We expect the buffer to
@@ -599,7 +602,7 @@ static inline void SetupZerosSendBuffer(XUD_ep aud_to_host_usb_ep, unsigned samp
 
     mid *= g_numUsbChan_In * slotSize;
 
-    asm volatile("stw %0, %1[0]"::"r"(mid),"r"(g_aud_to_host_zeros));
+    asm volatile("stw %0, %1[0]"::"r"(mid),"r"(aud_to_host_zeros));
 
 #if XUA_DEBUG_BUFFER
     printstr("SetupZerosSendBuffer\n");
@@ -614,11 +617,7 @@ static inline void SetupZerosSendBuffer(XUD_ep aud_to_host_usb_ep, unsigned samp
     /* Mark EP ready with the zero buffer. Note this will simply update the packet size
     * if it is already ready */
 
-    /* g_aud_to_host_buffer is already set to g_aud_to_host_zeros */
-
-    GET_SHARED_GLOBAL(p, g_aud_to_host_buffer);
-
-    XUD_SetReady_InPtr(aud_to_host_usb_ep, p+4, mid);
+    XUD_SetReady_InPtr(aud_to_host_usb_ep, aud_to_host_zeros+4, mid);
 }
 
 #pragma unsafe arrays
@@ -653,18 +652,20 @@ void XUA_Buffer_Decouple(chanend c_mix_out
 
     t = array_to_xc_ptr(audioBuffIn);
 
+    int aud_to_host_buffer;
     aud_to_host_fifo_start = t;
     aud_to_host_fifo_end = aud_to_host_fifo_start + BUFF_SIZE_IN;
-    g_aud_to_host_wrptr = aud_to_host_fifo_start;
-    g_aud_to_host_rdptr = aud_to_host_fifo_start;
-    g_aud_to_host_dptr = aud_to_host_fifo_start + 4;
+    SET_SHARED_GLOBAL(g_aud_to_host_wrptr, aud_to_host_fifo_start);
+    SET_SHARED_GLOBAL(g_aud_to_host_rdptr, aud_to_host_fifo_start);
+    SET_SHARED_GLOBAL(g_aud_to_host_dptr, aud_to_host_fifo_start + 4);
+    SET_SHARED_GLOBAL(g_aud_to_host_fill_level, 0);
 
     /* Setup pointer to In stream 0 buffer. Note, length will be innited to 0
      * However, this should be over-written on first stream start (assuming host
        properly sends a SetInterface() before streaming. In any case we will send
        0 length packets, which is reasonable behaviour */
     t = array_to_xc_ptr(inZeroBuff);
-    g_aud_to_host_zeros = t;
+    xc_ptr aud_to_host_zeros = t;
 
     /* Init vol mult tables */
 #if !defined(OUT_VOLUME_IN_MIXER) && (OUTPUT_VOLUME_CONTROL == 1)
@@ -716,8 +717,7 @@ void XUA_Buffer_Decouple(chanend c_mix_out
 #if (AUDIO_CLASS == 1)
     /* For UAC1 we know we only run at FS */
     /* Set buffer back to zeros buffer */
-    SET_SHARED_GLOBAL(g_aud_to_host_buffer, g_aud_to_host_zeros);
-    SetupZerosSendBuffer(aud_to_host_usb_ep, sampFreq, g_curSubSlot_In);
+    SetupZerosSendBuffer(aud_to_host_usb_ep, sampFreq, g_curSubSlot_In, aud_to_host_zeros);
 #endif
 #endif
 
@@ -755,12 +755,13 @@ void XUA_Buffer_Decouple(chanend c_mix_out
                     SET_SHARED_GLOBAL(g_aud_to_host_rdptr, aud_to_host_fifo_start);
                     SET_SHARED_GLOBAL(g_aud_to_host_wrptr, aud_to_host_fifo_start);
                     SET_SHARED_GLOBAL(g_aud_to_host_dptr,aud_to_host_fifo_start+4);
+                    SET_SHARED_GLOBAL(g_aud_to_host_fill_level, 0);
 
                     /* Set buffer to send back to zeros buffer */
-                    SET_SHARED_GLOBAL(g_aud_to_host_buffer, g_aud_to_host_zeros);
+                    aud_to_host_buffer = aud_to_host_zeros;
 
                     /* Update size of zeros buffer (and sampsToWrite) */
-                    SetupZerosSendBuffer(aud_to_host_usb_ep, sampFreq, g_curSubSlot_In);
+                    SetupZerosSendBuffer(aud_to_host_usb_ep, sampFreq, g_curSubSlot_In, aud_to_host_zeros);
 
                     /* Reset OUT buffer state */
                     outUnderflow = 1;
@@ -809,12 +810,13 @@ void XUA_Buffer_Decouple(chanend c_mix_out
                 SET_SHARED_GLOBAL(g_aud_to_host_rdptr, aud_to_host_fifo_start);
                 SET_SHARED_GLOBAL(g_aud_to_host_wrptr,aud_to_host_fifo_start);
                 SET_SHARED_GLOBAL(g_aud_to_host_dptr,aud_to_host_fifo_start+4);
+                SET_SHARED_GLOBAL(g_aud_to_host_fill_level, 0);
 
                 /* Set buffer back to zeros buffer */
-                SET_SHARED_GLOBAL(g_aud_to_host_buffer, g_aud_to_host_zeros);
+                aud_to_host_buffer = aud_to_host_zeros;
 
                 /* Update size of zeros buffer (and sampsToWrite) */
-                SetupZerosSendBuffer(aud_to_host_usb_ep, sampFreq, g_curSubSlot_In);
+                SetupZerosSendBuffer(aud_to_host_usb_ep, sampFreq, g_curSubSlot_In, aud_to_host_zeros);
 
                 GET_SHARED_GLOBAL(usbSpeed, g_curUsbSpeed);
                 if (usbSpeed == XUD_SPEED_HS)
@@ -977,28 +979,26 @@ void XUA_Buffer_Decouple(chanend c_mix_out
                 /* Reset flag */
                 SET_SHARED_GLOBAL(g_aud_to_host_flag, 0);
 
+                DISABLE_INTERRUPTS();
+
                 if (inUnderflow)
                 {
-                    int aud_to_host_wrptr;
-                    int aud_to_host_rdptr;
-                    int fill_level;
-                    GET_SHARED_GLOBAL(aud_to_host_wrptr, g_aud_to_host_wrptr);
-                    GET_SHARED_GLOBAL(aud_to_host_rdptr, g_aud_to_host_rdptr);
+                    int fillLevel;
+                    GET_SHARED_GLOBAL(fillLevel, g_aud_to_host_fill_level);
+                    assert(fillLevel >= 0);
+                    assert(fillLevel <= BUFF_SIZE_IN);
 
                     /* Check if we have come out of underflow */
-                    fill_level = aud_to_host_wrptr - aud_to_host_rdptr;
-
-                    if (fill_level < 0)
-                        fill_level += BUFF_SIZE_IN;
-
-                    if (fill_level >= IN_BUFFER_PREFILL)
+                    if (fillLevel >= IN_BUFFER_PREFILL)
                     {
+                        int aud_to_host_rdptr;
+                        GET_SHARED_GLOBAL(aud_to_host_rdptr, g_aud_to_host_rdptr);
                         inUnderflow = 0;
-                        SET_SHARED_GLOBAL(g_aud_to_host_buffer, aud_to_host_rdptr);
+                        aud_to_host_buffer = aud_to_host_rdptr;
                     }
                     else
                     {
-                        SET_SHARED_GLOBAL(g_aud_to_host_buffer, g_aud_to_host_zeros);
+                        aud_to_host_buffer = aud_to_host_zeros;
                     }
                 }
                 else
@@ -1007,37 +1007,49 @@ void XUA_Buffer_Decouple(chanend c_mix_out
                     int datalength;
                     int aud_to_host_wrptr;
                     int aud_to_host_rdptr;
+                    int fillLevel;
                     GET_SHARED_GLOBAL(aud_to_host_wrptr, g_aud_to_host_wrptr);
                     GET_SHARED_GLOBAL(aud_to_host_rdptr, g_aud_to_host_rdptr);
+                    GET_SHARED_GLOBAL(fillLevel, g_aud_to_host_fill_level);
 
                     /* Read datalength and round to nearest word */
                     read_via_xc_ptr(datalength, aud_to_host_rdptr);
-                    aud_to_host_rdptr = aud_to_host_rdptr + ((datalength+3)&~0x3) + 4;
+                    datalength = ((datalength + 3) & ~0x3) + 4;
+                    assert(datalength >= 4);
+                    assert(fillLevel >= datalength);
+
+                    aud_to_host_rdptr += datalength;
+                    fillLevel -= datalength;
+
                     if (aud_to_host_rdptr >= aud_to_host_fifo_end)
                     {
                         aud_to_host_rdptr = aud_to_host_fifo_start;
                     }
                     SET_SHARED_GLOBAL(g_aud_to_host_rdptr, aud_to_host_rdptr);
+                    SET_SHARED_GLOBAL(g_aud_to_host_fill_level, fillLevel);
 
                     /* Check for read pointer hitting write pointer - underflow */
-                    if (aud_to_host_rdptr != aud_to_host_wrptr)
+                    if (fillLevel != 0)
                     {
-                        SET_SHARED_GLOBAL(g_aud_to_host_buffer, aud_to_host_rdptr);
+                        aud_to_host_buffer = aud_to_host_rdptr;
                     }
                     else
                     {
+                        assert(aud_to_host_rdptr == aud_to_host_wrptr);
                         inUnderflow = 1;
-                        SET_SHARED_GLOBAL(g_aud_to_host_buffer, g_aud_to_host_zeros);
+                        aud_to_host_buffer = aud_to_host_zeros;
                     }
                 }
 
                 /* Request to send packet */
                 {
-                    int p, len;
-                    GET_SHARED_GLOBAL(p, g_aud_to_host_buffer);
-                    asm volatile("ldw %0, %1[0]":"=r"(len):"r"(p));
-                    XUD_SetReady_InPtr(aud_to_host_usb_ep, p+4, len);
+                    int len;
+                    asm volatile("ldw %0, %1[0]":"=r"(len):"r"(aud_to_host_buffer));
+                    XUD_SetReady_InPtr(aud_to_host_usb_ep, aud_to_host_buffer+4, len);
                 }
+
+                ENABLE_INTERRUPTS();
+
                 continue;
             }
         }
