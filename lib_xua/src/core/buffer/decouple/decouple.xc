@@ -150,7 +150,6 @@ unsigned packData = 0;
 void handle_audio_request(chanend c_mix_out)
 {
 #if(defined XUA_USB_DESCRIPTOR_OVERWRITE_RATE_RES)
-    #error
     g_curSubSlot_Out = get_usb_to_device_bit_res() >> 3;
     g_curSubSlot_In = get_device_to_usb_bit_res() >> 3;
 #endif
