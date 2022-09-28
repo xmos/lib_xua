@@ -78,11 +78,13 @@ void ConfigAudioPorts(
         configure_out_port_no_ready(p_lrclk, clk_audio_bclk, 0);
     }
 
-	if(XUA_PCM_FORMAT == XUA_PCM_FORMAT_TDM)
-	{
-    	for(int i = 0; i < I2S_WIRES_ADC; i++)
-			set_port_sample_delay(p_i2s_adc[i]);
-	}
+    if(XUA_PCM_FORMAT == XUA_PCM_FORMAT_TDM)
+    {
+        for(int i = 0; i < I2S_WIRES_ADC; i++)
+        {
+            set_port_sample_delay(p_i2s_adc[i]);
+        }
+    }
 
 #elif (CODEC_MASTER)
 

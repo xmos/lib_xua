@@ -52,10 +52,10 @@ void InitPorts_master(unsigned divide, buffered _XUA_CLK_DIR port:32 p_lrclk, bu
         }
 #endif
 
-		if(XUA_PCM_FORMAT == XUA_PCM_FORMAT_TDM)
-        	p_lrclk @ tmp <: 0x80000000;
+        if(XUA_PCM_FORMAT == XUA_PCM_FORMAT_TDM)
+            p_lrclk @ tmp <: 0x80000000;
         else
-			p_lrclk @ tmp <: 0x7FFFFFFF;
+            p_lrclk @ tmp <: 0x7FFFFFFF;
 
 #if (I2S_CHANS_ADC != 0)
         for(int i = 0; i < I2S_WIRES_ADC; i++)
