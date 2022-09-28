@@ -51,7 +51,12 @@ def do_test(
     ]
 
     result = Pyxsim.run_on_simulator(
-        binary, simthreads=[], tester=tester, simargs=simargs, capfd=capfd
+        binary,
+        tester=tester,
+        simargs=simargs,
+        capfd=capfd,
+        instTracing=options.enabletracing,
+        vcdTracing=options.enablevcdtracing,
     )
 
     return result
@@ -60,12 +65,15 @@ def do_test(
 @pytest.mark.parametrize("i2s_role", ["master", "slave"])
 @pytest.mark.parametrize("pcm_format", ["i2s", "tdm"])
 @pytest.mark.parametrize("channel_count", [2, 8, 16])
-@pytest.mark.parametrize("sample_rate", ["48khz", "192khz"])
+@pytest.mark.parametrize("sample_rate", ["48khz", "96khz", "192khz"])
 def test_i2s_loopback(
     i2s_role, pcm_format, channel_count, sample_rate, test_file, options, capfd
 ):
 
     if pcm_format == "i2s" and channel_count == 16:
+        pytest.skip("Invalid parameter combination")
+
+    if pcm_format == "i2s" and sample_rate not in ["48khz", "192khz"]:
         pytest.skip("Invalid parameter combination")
 
     if pcm_format == "tdm" and channel_count == 2:
