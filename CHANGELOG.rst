@@ -12,6 +12,7 @@ UNRELEASED
   * CHANGED:   Improved startup behaviour of TDM clocks
   * FIXED:     Intermittent underflow at MAX_FREQ on input stream start due to
     insufficient packet buffering
+  * FIXED:     Decouple buffer accounting to avoid corruption of samples
 
   * Changes to dependencies:
 
