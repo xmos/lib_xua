@@ -7,6 +7,9 @@ UNRELEASED
   * CHANGED:   Define ADAT_RX renamed to XUA_ADAT_RX_EN
   * CHANGED:   Define ADAT_TX renamed to XUA_ADAT_TX_EN
   * CHANGED:   Define SPDIF_RX renamed to XUA_SPDIF_RX_EN
+  * CHANGED:   Drive strength of I2S clock lines upped to 8mA on xCORE.ai
+  * CHANGED:   ADC datalines sampled on falling edge of clock in TDM mode
+  * CHANGED:   Improved startup behaviour of TDM clocks
   * FIXED:     Intermittent underflow at MAX_FREQ on input stream start due to
     insufficient packet buffering
   * FIXED:     Decouple buffer accounting to avoid corruption of samples

@@ -52,7 +52,10 @@ void InitPorts_master(unsigned divide, buffered _XUA_CLK_DIR port:32 p_lrclk, bu
         }
 #endif
 
-        p_lrclk @ tmp <: 0x7FFFFFFF;
+        if(XUA_PCM_FORMAT == XUA_PCM_FORMAT_TDM)
+            p_lrclk @ tmp <: 0x80000000;
+        else
+            p_lrclk @ tmp <: 0x7FFFFFFF;
 
 #if (I2S_CHANS_ADC != 0)
         for(int i = 0; i < I2S_WIRES_ADC; i++)
@@ -72,9 +75,7 @@ void InitPorts_master(unsigned divide, buffered _XUA_CLK_DIR port:32 p_lrclk, bu
     }
 #endif
 }
-
 #else
-
 void InitPorts_slave(unsigned divide, buffered _XUA_CLK_DIR port:32 p_lrclk, buffered _XUA_CLK_DIR port:32 p_bclk, buffered out port:32 (&?p_i2s_dac)[I2S_WIRES_DAC], buffered in port:32  (&?p_i2s_adc)[I2S_WIRES_ADC])
 {
 #if (I2S_CHANS_ADC != 0 || I2S_CHANS_DAC != 0)
