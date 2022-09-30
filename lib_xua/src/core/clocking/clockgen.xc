@@ -7,7 +7,7 @@
 
 #include "xua.h"
 #include "xua_commands.h"
-#include "clocking.h"
+#include "xua_clocking.h"
 
 #if (XUA_SPDIF_RX_EN)
 #include "spdif.h"

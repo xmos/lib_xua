@@ -24,17 +24,10 @@
 #endif
 
 #include "uac_hwresources.h"
-#ifdef MIDI
-#include "usb_midi.h"
-#endif
 
 #ifdef IAP
 #include "i2c_shared.h"
 #include "iap.h"
-#endif
-
-#ifdef MIXER
-#include "mixer.h"
 #endif
 
 #if (XUA_SPDIF_RX_EN)
@@ -44,8 +37,6 @@
 #if (XUA_ADAT_RX_EN)
 #include "adat_rx.h"
 #endif
-
-#include "clocking.h"
 
 #if (XUA_NUM_PDM_MICS > 0)
 #include "xua_pdm_mic.h"
@@ -674,7 +665,7 @@ int main()
         on tile[MIDI_TILE]:
         {
             thread_speed();
-            usb_midi(p_midi_rx, p_midi_tx, clk_midi, c_midi, 0, null, null, null, null);
+            usb_midi(p_midi_rx, p_midi_tx, clk_midi, c_midi, 0);
         }
 #endif
 #if defined(IAP)

@@ -3,7 +3,6 @@
 #include <xs1.h>
 #include <print.h>
 #include "xua.h"
-#include "mixer.h"
 #include "xc_ptr.h"
 #include "xua_commands.h"
 #include "dbcalc.h"

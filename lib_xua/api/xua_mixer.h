@@ -1,7 +1,7 @@
-// Copyright 2011-2021 XMOS LIMITED.
+// Copyright 2011-2022 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
-#ifndef __mixer_h__
-#define __mixer_h__
+#ifndef _XUA_MIXER_H_
+#define _XUA_MIXER_H_
 
 enum mix_ctl_cmd {
   SET_SAMPLES_TO_HOST_MAP,

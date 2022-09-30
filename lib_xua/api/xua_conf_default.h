@@ -17,21 +17,14 @@
  * @brief Location (tile) of audio I/O. Default: 0
  */
 #ifndef AUDIO_IO_TILE
-#define AUDIO_IO_TILE   0
+#define AUDIO_IO_TILE   (0)
 #endif
 
 /**
  * @brief Location (tile) of audio I/O. Default: 0
  */
 #ifndef XUD_TILE
-#define XUD_TILE        0
-#endif
-
-/**
- * @brief Location (tile) of IAP. Default: AUDIO_IO_TILE
- */
-#ifndef IAP_TILE
-#define IAP_TILE        AUDIO_IO_TILE
+#define XUD_TILE        (0)
 #endif
 
 /**
@@ -66,7 +59,7 @@
  * @brief Disable USB functionalty just leaving AudioHub
  */
 #ifndef XUA_USB_EN
-#define XUA_USB_EN      1
+#define XUA_USB_EN      (1)
 #endif
 
 /**
@@ -438,7 +431,8 @@
 #define HID_CONTROLS       (0)
 #endif
 
-/* @brief Defines whether XMOS device runs as master (i.e. drives LR and Bit clocks)
+/**
+ * @brief Defines whether XMOS device runs as master (i.e. drives LR and Bit clocks)
  *
  * 0: XMOS is I2S master. 1: CODEC is I2s master.
  *
@@ -456,7 +450,6 @@
 #ifndef SERIAL_STR
 #define SERIAL_STR               ""
 #endif
-
 
 /**
  * @brief Vendor String used by the device. This is also pre-pended to various strings used by the design.
@@ -1154,6 +1147,26 @@
 #undef UAC_FORCE_FEEDBACK_EP
 #endif
 
+/* Synchronisation defines */ 
+#define XUA_SYNCMODE_ASYNC (1) // USB_ENDPOINT_SYNCTYPE_ASYNC
+#define XUA_SYNCMODE_ADAPT (2) // USB_ENDPOINT_SYNCTYPE_ADAPT
+#define XUA_SYNCMODE_SYNC  (3) // USB_ENDPOINT_SYNCTYPE_SYNC
+
+#ifndef XUA_SYNCMODE
+#define XUA_SYNCMODE XUA_SYNCMODE_ASYNC
+#endif
+
+#if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
+    #if (XUA_SPDIF_RX_EN|| ADAT_RX)
+        #error "Digital input streams not supported in Sync mode"
+    #endif
+#endif
+
+
+/*********************************************************/
+/*** Internal defines below here. NOT FOR MODIFICATION ***/
+/*********************************************************/
+
 #ifndef __ASSEMBLER__
 /* Endpoint addresses enums */
 enum USBEndpointNumber_In
@@ -1200,40 +1213,37 @@ enum USBEndpointNumber_Out
     XUA_ENDPOINT_COUNT_OUT          /* End marker */
 };
 
-
 #ifndef XUA_ENDPOINT_COUNT_CUSTOM_OUT
-#define XUA_ENDPOINT_COUNT_CUSTOM_OUT   0
+#define XUA_ENDPOINT_COUNT_CUSTOM_OUT     (0)
 #endif
 
 #ifndef XUA_ENDPOINT_COUNT_CUSTOM_IN
-#define XUA_ENDPOINT_COUNT_CUSTOM_IN   0
+#define XUA_ENDPOINT_COUNT_CUSTOM_IN      (0)
 #endif
 
-#define ENDPOINT_COUNT_IN  (XUA_ENDPOINT_COUNT_IN + XUA_ENDPOINT_COUNT_CUSTOM_IN)
-#define ENDPOINT_COUNT_OUT (XUA_ENDPOINT_COUNT_OUT + XUA_ENDPOINT_COUNT_CUSTOM_OUT)
+#define ENDPOINT_COUNT_IN                 (XUA_ENDPOINT_COUNT_IN + XUA_ENDPOINT_COUNT_CUSTOM_IN)
+#define ENDPOINT_COUNT_OUT                (XUA_ENDPOINT_COUNT_OUT + XUA_ENDPOINT_COUNT_CUSTOM_OUT)
 
-#endif
+#endif /* __ASSEMBLER__ */
 
-/*** Internal defines below here. NOT FOR MODIFICATION ***/
+#define AUDIO_STOP_FOR_DFU                (0x12345678)
+#define AUDIO_START_FROM_DFU              (0x87654321)
+#define AUDIO_REBOOT_FROM_DFU             (0xa5a5a5a5)
 
-#define AUDIO_STOP_FOR_DFU       (0x12345678)
-#define AUDIO_START_FROM_DFU     (0x87654321)
-#define AUDIO_REBOOT_FROM_DFU    (0xa5a5a5a5)
-
-#define MAX_VOL                  (0x20000000)
+#define MAX_VOL                           (0x20000000)
 
 #if defined(LEVEL_METER_LEDS) && !defined(LEVEL_UPDATE_RATE)
-#define LEVEL_UPDATE_RATE   400000
+#define LEVEL_UPDATE_RATE                 (400000)
 #endif
 
 /* The number of clock ticks to wait for the audio feeback to stabalise
  * Note, feedback always counts 128 SOFs (16ms @ HS, 128ms @ FS) */
 #ifndef FEEDBACK_STABILITY_DELAY_HS
-#define FEEDBACK_STABILITY_DELAY_HS     (2000000)
+#define FEEDBACK_STABILITY_DELAY_HS       (2000000)
 #endif
 
 #ifndef FEEDBACK_STABILITY_DELAY_FS
-#define FEEDBACK_STABILITY_DELAY_FS     (20000000)
+#define FEEDBACK_STABILITY_DELAY_FS       (20000000)
 #endif
 
 /* Length of clock unit/clock-selector units */
@@ -1458,16 +1468,3 @@ enum USBEndpointNumber_Out
 #error CODEC_MASTER with DSD is currently unsupported
 #endif
 
-#define XUA_SYNCMODE_ASYNC (1) // USB_ENDPOINT_SYNCTYPE_ASYNC
-#define XUA_SYNCMODE_ADAPT (2) // USB_ENDPOINT_SYNCTYPE_ADAPT
-#define XUA_SYNCMODE_SYNC  (3) // USB_ENDPOINT_SYNCTYPE_SYNC
-
-#ifndef XUA_SYNCMODE
-#define XUA_SYNCMODE XUA_SYNCMODE_ASYNC
-#endif
-
-#if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
-    #if (XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
-        #error "Digital input streams not supported in Sync mode"
-    #endif
-#endif

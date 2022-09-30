@@ -4,6 +4,8 @@
 #ifndef _CLOCKING_H_
 #define _CLOCKING_H_
 
+#include <xs1.h>
+
 interface pll_ref_if
 {
     void toggle();

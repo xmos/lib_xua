@@ -3,50 +3,53 @@
 Digital Mixer
 -------------
 
-The mixer core(s) take outgoing audio from the decoupler core and incoming
-audio from the audio driver core. It then applies the volume to each
-channel and passes incoming audio on to the decoupler and outgoing
-audio to the audio driver. The volume update is achieved using the
-built-in 32bit to 64bit signed multiply-accumulate function
-(``macs``). The mixer is implemented in the file 
-``mixer.xc``.
+The Mixer core(s) take outgoing audio from the Decouple core and incoming audio from the Audio Hub
+core. It then applies the volume to each channel and passes incoming audio on to Decouple and outgoing
+audio to Audio Hub. The volume update is achieved using the built-in 32bit to 64bit signed 
+multiply-accumulate function (``macs``). The mixer is implemented in the file ``mixer.xc``.
 
-The mixer takes two cores and can perform eight mixes with
-up to 18 inputs at sample rates up to 96kHz and two mixes with up to 18
-inputs at higher sample rates. The component automatically moves
-down to two mixes when switching to a higher rate.
+The mixer takes (up to) two cores and can perform eight mixes with up to 18 inputs at sample rates 
+up to 96kHz and two mixes with up to 18 inputs at higher sample rates. The component automatically 
+reverts to generating two mixes when running at the higher rate.
 
 The mixer can take inputs from either:
 
-   * The USB outputs from the host---these samples come from the decoupler core.
-   * The inputs from the audio interface on the device---these
-     samples come from the audio driver.
+   * The USB outputs from the host---these samples come from the Decouple core.
+   * The inputs from the audio interfaces on the device---these samples come from the Audio Hub core
+     and includes samples from digital input streams.
 
-Since the sum of these inputs may be more then the 18 possible mix
-inputs to each mixer, there is a mapping from all the
-possible inputs to the mixer inputs.
+Since the sum of these inputs may be more then the 18 possible mix inputs to each mixer, there is a
+mapping from all the possible inputs to the mixer inputs.
 
-After the mix occurs, the final outputs are created. There are two
-output destinations:
+After the mix occurs, the final outputs are created. There are two possible output destinations
+for each mix.
 
-   * The USB inputs to the host---these samples are sent to the decoupler core.
+   * The USB inputs to the host---these samples are sent to the Decouple core.
 
-   * The outputs to the audio interface on the device---these samples
-     are sent to the audio driver.
+   * The outputs to the audio interface on the device---these samples are sent to the Audio Hub
+     core
 
-For each possible output, a mapping exists to tell the mixer what its
-source is. The possible sources are the USB outputs from the host, the
-inputs for the audio interface or the outputs from the mixer units.
+For each possible output from the device, a mapping exists to inform the mixer what it's source is. 
+The possible sources are the output from the USB host, the inputs from the Audio Hub core or the
+outputs from the mixes.
 
-As mentioned in :ref:`usb_audio_sec_audio-requ-volume`, the mixer can also
-handle volume setting. If the mixer is configured to handle volume but
-the number of mixes is set to zero (so the component is solely doing
-volume setting) then the component will use only one core.
+Essentially the mixer/router can be configured such that any device input can be used as an input to
+any mix or routed directly to any device output. Additionally, any device output can be derived from
+any mixer output or any device input.  
+
+As mentioned in :ref:`usb_audio_sec_audio-requ-volume`, the mixer can also handle processing or
+volume controls. If the mixer is configured to handle volume but the number of mixes is set to zero
+(such that the core is solely doing volume setting) then the component will use only one core. This
+is sometimes a useful configuration for large channel count devices.
 
 Control
 ~~~~~~~
 
-The mixers can receive the following control commands from the Endpoint 0 core via a channel: 
+The mixers can receive the control commands from the host via USB Control Requests to Endpoint 0.
+The Endpoint 0 core relays these to the Mixer cores(s) via a channel (``c_mix_ctl``). These commands
+are described in :ref:`table_mixer_commands`.
+
+.. _table_mixer_commands:
 
 .. list-table:: Mixer Component Commands
  :header-rows: 1
@@ -79,46 +82,49 @@ Host Control
 ~~~~~~~~~~~~
 
 The mixer can be controlled from a host PC by sending requests to Endpoint 0. XMOS provides a simple 
-command line based sample application demonstrating how the mixer can be controlled. 
+command line based sample application demonstrating how the mixer can be controlled. This is
+intended as an example of how you might add mixer control to your own control application. It is not
+intended to be exposed to end users. 
 
 For details, consult the README file in the host_usb_mixer_control directory.
 
-The main requirements of this control are to
+The main requirements of this control utility are to
 
   * Set the mapping of input channels into the mixer
-  * Set the coefficients for each mixer output of each input
+  * Set the coefficients for each mixer output for each input
   * Set the mapping for physical outputs which can either come
     directly from the inputs or via the mixer.
 
-There is enough flexibility within this configuration that there will often
-be multiple ways of creating the required solution.
+.. note::
 
-Whilst using the XMOS Host control example application, consider setting the
-mixer to perform a loop-back from analogue inputs 1 and 2 to analogue
-outputs 1 and 2. 
+    The flexibility within this configuration space us such that there is often multiple ways
+    of producing the desired result.  Product developers may only want to expose a subset of this
+    functionality to their end users.
 
-First consider the inputs to the mixer::
+Whilst using the XMOS Host control example application, consider the example of setting the
+mixer to perform a loop-back from analogue inputs 1 and 2 to analogue outputs 1 and 2. 
 
-  ./xmos_mixer --display-aud-channel-map 0
-
-displays which channels are mapped to which mixer inputs::
-
-  ./xmos_mixer --display-aud-channel-map-sources 0
-
-displays which channels could possibly be mapped to mixer inputs. Notice
-that analogue inputs 1 and 2 are on mixer inputs 10 and 11.
-
-Now examine the audio output mapping::
+Firstly consider the inputs to the mixer. The following will displays which channels are mapped 
+to which mixer inputs:: 
 
   ./xmos_mixer --display-aud-channel-map 0
 
-displays which channels are mapped to which outputs. By default all
+The following command will displays which channels could possibly be mapped to mixer inputs. Notice
+that analogue inputs 1 and 2 are on mixer inputs 10 and 11::
+
+./xmos_mixer --display-aud-channel-map-sources 0
+
+Now examine the audio output mapping using the following command::
+
+  ./xmos_mixer --display-aud-channel-map 0
+
+This displays which channels are mapped to which outputs. By default all
 of these bypass the mixer. We can also see what all the possible
-mappings are::
+mappings are with the following command::
 
   ./xmos_mixer --display-aud-channel-map-sources 0
 
-So now map the first two mixer outputs to physical outputs 1 and 2::
+We will now map the first two mixer outputs to physical outputs 1 and 2::
 
   ./xmos_mixer --set-aud-channel-map 0 26
   ./xmos_mixer --set-aud-channel-map 1 27
@@ -127,13 +133,12 @@ You can confirm the effect of this by re-checking the map::
 
   ./xmos_mixer --display-aud-channel-map 0
 
-This now makes analogue outputs 1 and 2 come from the mixer, rather
-than directly from USB. However the mixer is still mapped to pass
-the USB channels through to the outputs, so there will still be no
-functional change yet.
+This now derives analogue outputs 1 and 2 from the mixer, rather than directly from USB. However,
+since the mixer is still mapped to pass the USB channels through to the outputs there will be no
+functional change.
 
 The mixer nodes need to be individually set. They can be displayed
-with::
+with the following command::
 
   ./xmos_mixer --display-mixer-nodes 0
 
@@ -150,32 +155,25 @@ At the same time, the original mixer outputs can be muted::
 
 Now audio inputs on analogue 1/2 should be heard on outputs 1/2. 
 
-As mentioned above, the flexibility of the mixer is such that there
-will be multiple ways to create a particular mix. Another option to
-create the same routing would be to change the mixer sources such that
-mixer 1/2 outputs come from the analogue inputs. 
+As mentioned above, the flexibility of the mixer is such that there will be multiple ways to create
+a particular mix. Another option to create the same routing would be to change the mixer sources
+such that mixer 1/2 outputs come from the analogue inputs. 
 
-To demonstrate this, firstly undo the changes above::
+To demonstrate this, firstly undo the changes above (or simply reset the device)::
 
   ./xmos_mixer --set-value 0 80 -inf
   ./xmos_mixer --set-value 0 89 -inf
   ./xmos_mixer --set-value 0 0 0
   ./xmos_mixer --set-value 0 9 0
 
-The mixer should now have the default values. The sources for mixer
-1/2 can now be changed::
+The mixer should now have the default values. The sources for mixer 1/2 can now be changed::
 
   ./xmos_mixer --set-mixer-source 0 0 10
   ./xmos_mixer --set-mixer-source 0 1 11
 
-If you rerun::
-
-  ./xmos_mixer --display-mixer-nodes 0
-
-the first column now has AUD - Analogue 1 and 2 rather than DAW (Digital Audio Workstation i.e. the
-host) - Analogue 1 and 2 confirming the new mapping. Again, by playing audio into analogue inputs 
-1/2 this can be heard looped through to analogue outputs 1/2.
-
-
-
+If you re-run the following command then the first column now has "AUD - Analogue 1 and 2" rather
+than "DAW (Digital Audio Workstation i.e. the host) - Analogue 1 and 2" confirming the new mapping. 
+Again, by playing audio into analogue inputs 1/2 this can be heard looped through to analogue outputs 1/2::
+  
+    ./xmos_mixer --display-mixer-nodes 0
 

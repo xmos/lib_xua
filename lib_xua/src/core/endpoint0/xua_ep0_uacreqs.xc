@@ -15,9 +15,6 @@
 #include "dbcalc.h"
 #include "xua_commands.h"
 #include "xc_ptr.h"
-#ifdef MIXER
-#include "mixer.h"
-#endif
 
 #define CS_XU_MIXSEL (0x06)
 
@@ -321,7 +318,7 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
                                     int newSampleRate = buffer[0];
 
                                     /* Instruct audio thread to change sample freq (if change required) */
-                                    if(newSampleRate != g_curSamFreq)
+                                    //if(newSampleRate != g_curSamFreq)
                                     {
                                         int newMasterClock;
 
@@ -374,7 +371,7 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
                                 }
 #endif /* MAX_FREQ != MIN_FREQ */
                                 /* Send 0 Length as status stage */
-                                XUD_DoSetRequestStatus(ep0_in);
+                                int x = XUD_DoSetRequestStatus(ep0_in);
                             }
                             /* Direction: Device-to-host: Send Current Sample Freq */
                             else
