@@ -7,8 +7,8 @@ I2S/TDM is typically fundamental to most products and is built into the ``XUA_Au
 
 The defines in :ref:`opt_i2s_defines` effect the I2S implementation. 
 
+.. tabularcolumns:: lp{5cm}l
 .. _opt_i2s_defines:
-
 .. list-table:: I2S defines
    :header-rows: 1
    :widths: 20 80 20

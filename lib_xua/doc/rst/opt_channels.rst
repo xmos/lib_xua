@@ -12,8 +12,8 @@ to 10 channels for a device running at 192kHz with 32bit sample depth.
 
 The defines in :ref:`opt_channel_defines` set the channel counts exposed to the USB host.
 
+.. tabularcolumns:: lp{5cm}l
 .. _opt_channel_defines:
-
 .. list-table:: Channel count defines
    :header-rows: 1
    :widths: 20 80 20
@@ -32,8 +32,8 @@ Sample rates ranges are set by the defines in :ref:`opt_channel_sr_defines`. The
 automatically populate the device sample rate list with popular frequencies between the min and 
 max values. All values are in Hz:
 
+.. tabularcolumns:: lp{5cm}l
 .. _opt_channel_sr_defines:
-
 .. list-table:: Sample rate defines
    :header-rows: 1
    :widths: 20 80 20
@@ -56,6 +56,7 @@ The codebase requires knowledge of the two master clock frequencies that will be
 master-clock port(s). One for 44.1kHz, 88.2kHz etc and one for 48kHz, 96kHz etc.  These are set
 using defines in :ref:`opt_channel_mc_defines`. All values are in Hz.
 
+.. tabularcolumns:: lp{5cm}l
 .. _opt_channel_mc_defines:
 .. list-table:: Master clock rate defines
    :header-rows: 1

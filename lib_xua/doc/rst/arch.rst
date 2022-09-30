@@ -8,8 +8,8 @@ This section describes the required software architecture of a USB Audio device 
 
 `lib_xua` provides fundamental building blocks for producing USB Audio products on XMOS devices. Every system is required to have the components from `lib_xua` listed in :ref:`usb_audio_shared_components`.
 
+.. tabularcolumns:: lp{5cm}l
 .. _usb_audio_shared_components:
-
 .. list-table:: Required XUA Components
  :header-rows: 1
  :widths: 40 60
@@ -28,6 +28,7 @@ This section describes the required software architecture of a USB Audio device 
     
 In addition low-level USB I/0 is required and is provided by the external dependency `lib_xud`
 
+.. tabularcolumns:: lp{5cm}l
 .. list-table:: Additional Components Required
  :header-rows: 1
  :widths: 100 60
@@ -39,8 +40,8 @@ In addition low-level USB I/0 is required and is provided by the external depend
 
 In addition :ref:`usb_audio_optional_components` shows optional components that can be added/enabled from within `lib_xua`
 
+.. tabularcolumns:: lp{5cm}l
 .. _usb_audio_optional_components:
-
 .. list-table:: Optional Components
  :header-rows: 1
  :widths: 40 60
@@ -59,8 +60,8 @@ In addition :ref:`usb_audio_optional_components` shows optional components that 
 
 `lib_xua` also provides optional support for integrating with the following external dependencies listed in :ref:`usb_audio_external_components`
 
+.. tabularcolumns:: lp{5cm}l
 .. _usb_audio_external_components:
-
 .. list-table:: External Components
  :header-rows: 1
  :widths: 40 60

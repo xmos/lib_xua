@@ -10,6 +10,7 @@ should the XMOS VID or any other VID be used without express permission.
 
 The VID and Product ID (PID) pair must be unique to each product, otherwise driver incompatibilities may arise.
 
+.. tabularcolumns:: lp{5cm}l
 
 .. _opt_strings_defines:
 

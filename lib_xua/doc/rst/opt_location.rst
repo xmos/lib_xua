@@ -8,11 +8,11 @@ In a multi-tile system the codebase needs to be informed as to which tiles to us
 resources and associated code.
 
 A series of defines are used to allow the programmer to easily move code between tiles. Arguably the 
-most important of these are ``AUDIO_IO_TILE`` and ``XUD_TILE``. ::ref:'opt_location_defines` shows a 
+most important of these are ``AUDIO_IO_TILE`` and ``XUD_TILE``. :ref:`opt_location_defines` shows a 
 full listing of these ``TILE`` defines.
 
+.. tabularcolumns:: lp{5cm}l
 .. _opt_location_defines:
-
 .. list-table:: Tile defines
    :header-rows: 1
    :widths: 20 80 20
