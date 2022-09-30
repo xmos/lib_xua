@@ -122,7 +122,6 @@ static inline unsigned DoSampleTransfer(chanend ?c_out, const int readBuffNo, co
             if(dsdMode == DSD_MODE_DOP)
                 dsdMode = DSD_MODE_OFF;
 #endif
-#pragma xta endpoint "received_command"
                 return command;
         }
         else

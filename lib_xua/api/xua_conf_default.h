@@ -336,13 +336,8 @@
 /**
  * @brief Enables ADAT Tx. Default: 0 (Disabled)
  */
-#ifndef ADAT_TX
-#define ADAT_TX               (0)
-#endif
-
-/* Tidy up old ADAT usage */
-#if defined(ADAT_TX) && (ADAT_TX == 0)
-#undef ADAT_TX
+#ifndef XUA_ADAT_TX_EN
+#define XUA_ADAT_TX_EN           (0)
 #endif
 
 /**
