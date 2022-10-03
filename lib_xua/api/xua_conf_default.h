@@ -960,7 +960,7 @@
 #define XUA_POWERMODE_SELF          (0)
 #define XUA_POWERMODE_BUS           (1)
 /**
- * @brief Report as self or bus powerwed device. This affects descriptors
+ * @brief Report as self or bus powered device. This affects descriptors
  * and XUD usage and is important for USB compliance
  *
  * Default: XUA_POWERMODE_BUS
