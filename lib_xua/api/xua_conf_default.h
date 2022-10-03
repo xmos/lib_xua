@@ -982,7 +982,7 @@
 #else
     /* Default to taking 500mA from the bus in bus-powered mode */
     #ifndef _XUA_BMAX_POWER
-        #define XUA_BMAX_POWER      (250)
+        #define _XUA_BMAX_POWER      (250)
     #endif
 #endif
 
