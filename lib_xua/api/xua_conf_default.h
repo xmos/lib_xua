@@ -957,43 +957,32 @@
 
 /* Power */
 
+#define XUA_POWERMODE_SELF          (0)
+#define XUA_POWERMODE_BUS           (1)
 /**
- * @brief Report as self to the host when enabled, else reports as bus-powered. This affects descriptors
- * and XUD usage.
+ * @brief Report as self or bus powerwed device. This affects descriptors
+ * and XUD usage and is important for USB compliance
  *
- * Default: 0 (Disabled)
+ * Default: XUA_POWERMODE_BUS
  */
-#ifndef SELF_POWERED
-#define SELF_POWERED                (0)
-#endif
-
-/* Tidy-up historical ifndef usage */
-#if defined(SELF_POWERED) && (SELF_POWERED==0)
-#undef SELF_POWERED
+#ifndef XUA_POWERMODE
+#define XUA_POWERMODE               XUA_POWERMODE_BUS                
 #endif
 
 /**
  * @brief Power drawn from the host (in mA x 2)
  *
- * Default: 0 when SELF_POWERED enabled else 250 (500mA)
+ * Default: 0 when self-powered, else 250 (500mA)
  */
-#ifdef SELF_POWERED
+#if (XUA_POWERMODE == XUA_POWERMODE_SELF)
     /* Default to taking no power from the bus in self-powered mode */
-    #ifndef BMAX_POWER
-        #define BMAX_POWER 0
+    #ifndef _XUA_BMAX_POWER
+        #define _XUA_BMAX_POWER     (0)
     #endif
 #else
     /* Default to taking 500mA from the bus in bus-powered mode */
-    #ifndef BMAX_POWER
-        #define BMAX_POWER 250
-    #endif
-#endif
-
-#ifndef XUD_PWR_CFG
-    #ifdef SELF_POWERED
-        #define XUD_PWR_CFG XUD_PWR_SELF
-    #else
-        #define XUD_PWR_CFG XUD_PWR_BUS
+    #ifndef _XUA_BMAX_POWER
+        #define XUA_BMAX_POWER      (250)
     #endif
 #endif
 
