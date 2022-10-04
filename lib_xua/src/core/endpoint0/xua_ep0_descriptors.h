@@ -806,12 +806,12 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
         .bNumInterfaces             = INTERFACE_COUNT,
         .bConfigurationValue        = 0x01,
         .iConfiguration             = 0x00,
-#ifdef SELF_POWERED
+#if (XUA_POWERMODE == XUA_POWERMODE_SELF)
         .bmAttributes               = 192,
 #else
         .bmAttributes               = 128,
 #endif
-        .bMaxPower                  = BMAX_POWER,
+        .bMaxPower                  = _XUA_BMAX_POWER,
     },
 
     .Audio_InterfaceAssociation =
@@ -2239,12 +2239,12 @@ unsigned char cfgDesc_Null[] =
     0x01,                                 /* 4  bNumInterface: Number of interfaces*/
     0x01,                                 /* 5  bConfigurationValue */
     0x00,                                 /* 6  iConfiguration */
-#ifdef SELF_POWERED
+#if (XUA_POWERMODE == XUA_POWERMODE_SELF)
     192,                                  /* 7  bmAttributes */
 #else
     128,
 #endif
-    BMAX_POWER,                           /* 8  bMaxPower */
+    _XUA_BMAX_POWER,                           /* 8  bMaxPower */
 
     0x09,                                 /* 0 bLength : Size of this descriptor, in bytes. (field size 1 bytes) */
     0x04,                                 /* 1 bDescriptorType : INTERFACE descriptor. (field size 1 bytes) */
@@ -2399,12 +2399,12 @@ unsigned char cfgDesc_Audio1[] =
     NUM_INTERFACES_A1,                    /* numInterfaces - we dont support MIDI in audio 1.0 mode*/
     0x01,                                 /* ID of this configuration */
     0x00,                                 /* Unused */
-#ifdef SELF_POWERED
+#if (XUA_POWERMODE == XUA_POWERMODE_SELF)
     192,                                  /* 7  bmAttributes */
 #else
     128,                                  /* 7  bmAttributes */
 #endif
-    BMAX_POWER,                           /* 8  bMaxPower */
+    _XUA_BMAX_POWER,                           /* 8  bMaxPower */
 
     /* Standard AC interface descriptor */
     0x09,
