@@ -310,9 +310,11 @@ VENDOR_REQUESTS_PARAMS_DEC_
             /* Run UAC2.0 at high-speed, UAC1.0 at full-speed */
             unsigned usbSpeed = (AUDIO_CLASS == 2) ? XUD_SPEED_HS : XUD_SPEED_FS;
 
+            unsigned xudPwrCfg = (XUA_POWERMODE == XUA_POWERMODE_SELF) ? XUD_PWR_SELF : XUD_PWR_BUS;
+            
             /* USB interface core */
             XUD_Main(c_xud_out, ENDPOINT_COUNT_OUT, c_xud_in, ENDPOINT_COUNT_IN,
-                c_sof, epTypeTableOut, epTypeTableIn, usbSpeed, XUD_PWR_CFG);
+                c_sof, epTypeTableOut, epTypeTableIn, usbSpeed, xudPwrCfg);
         }
 
         {
