@@ -230,8 +230,11 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
     unsigned u_tmp;
     unsigned sampleFreq = DEFAULT_FREQ;
     unsigned masterClockFreq = DEFAULT_MCLK_FREQ;
-    unsigned lastClock = 0;
 
+#if (XUA_SYNCMODE == XUA_SYNCMODE_ASYNC)
+    unsigned lastClock = 0;
+    unsigned freqChange = 0;
+#endif
     unsafe{masterClockFreq_ptr = &masterClockFreq;}
 
     unsigned clocks = 0;
@@ -245,7 +248,6 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
     unsigned bufferIn = 1;
 #endif
     unsigned sofCount = 0;
-    unsigned freqChange = 0;
 
     unsigned mod_from_last_time = 0;
 #ifdef FB_TOLERANCE_TEST
@@ -355,7 +357,6 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
 #ifndef LOCAL_CLOCK_MARGIN
 #define LOCAL_CLOCK_MARGIN          (1000)
 #endif
-    int sofClockValid = 0;
     timer t_sofCheck;
     unsigned timeLastEdge;
     unsigned timeNextEdge;

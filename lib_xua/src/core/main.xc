@@ -310,12 +310,11 @@ VENDOR_REQUESTS_PARAMS_DEC_
             /* Run UAC2.0 at high-speed, UAC1.0 at full-speed */
             unsigned usbSpeed = (AUDIO_CLASS == 2) ? XUD_SPEED_HS : XUD_SPEED_FS;
 
-            /* USB Interface Core */
+            /* USB interface core */
             XUD_Main(c_xud_out, ENDPOINT_COUNT_OUT, c_xud_in, ENDPOINT_COUNT_IN,
                 c_sof, epTypeTableOut, epTypeTableIn, usbSpeed, XUD_PWR_CFG);
         }
 
-        /* USB Packet buffering Core */
         {
             unsigned x;
             thread_speed();
@@ -332,7 +331,7 @@ VENDOR_REQUESTS_PARAMS_DEC_
             asm("ldw %0, dp[clk_audio_mclk]":"=r"(x));
             asm("setclk res[%0], %1"::"r"(p_for_mclk_count), "r"(x));
 #endif
-            //:buffer
+            /* Endpoint & audio buffering cores */
             XUA_Buffer(c_xud_out[ENDPOINT_NUMBER_OUT_AUDIO],/* Audio Out*/
 #if (NUM_USB_CHAN_IN > 0)
 
@@ -460,7 +459,7 @@ void usb_audio_io(chanend ?c_aud_in,
         }
 #endif
 
-        /* Audio I/O Core (pars additional S/PDIF TX Core) */
+        /* Audio I/O core (pars additional S/PDIF TX Core) */
         {
             thread_speed();
 #ifdef MIXER
@@ -596,6 +595,7 @@ int main()
 #endif
 #endif
 #if XUA_USB_EN
+            /* Core USB audio task, buffering, USB etc */
             usb_audio_core(c_mix_out
 #ifdef MIDI
                 , c_midi
@@ -621,6 +621,7 @@ int main()
 
         on tile[AUDIO_IO_TILE]:
         {
+            /* Audio I/O task, includes mixing etc */
             usb_audio_io(c_mix_out
 #if (XUA_SPDIF_TX_EN) && (SPDIF_TX_TILE != AUDIO_IO_TILE)
                 , c_spdif_tx
@@ -643,6 +644,7 @@ int main()
 #endif
             );
         }
+        //:
 
 #if (XUA_SPDIF_TX_EN) && (SPDIF_TX_TILE != AUDIO_IO_TILE)
         on tile[SPDIF_TX_TILE]:
