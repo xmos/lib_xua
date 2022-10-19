@@ -546,7 +546,7 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
                     sofCount = 0;
                     timeNextEdge = timeLastEdge + LOCAL_CLOCK_INCREMENT + LOCAL_CLOCK_MARGIN;
                 }
-#else
+#elif (XUA_SYNCMODE == XUA_SYNC_MODE_ASYNC)
 
                 /* NOTE our feedback will be wrong for a couple of SOF's after a SF change due to
                  * lastClock being incorrect */
