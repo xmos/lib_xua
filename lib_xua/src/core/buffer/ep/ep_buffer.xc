@@ -525,7 +525,6 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
 #if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
                 /* This really could (should) be done in decouple. However, for a quick demo this is okay
                  * Decouple expects a 16:16 number in fixed point stored in the global g_speed */
-            
                 unsigned usbSpeed;
                 int framesPerSec;
                 GET_SHARED_GLOBAL(usbSpeed, g_curUsbSpeed);
@@ -546,7 +545,7 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
                     sofCount = 0;
                     timeNextEdge = timeLastEdge + LOCAL_CLOCK_INCREMENT + LOCAL_CLOCK_MARGIN;
                 }
-#elif (XUA_SYNCMODE == XUA_SYNC_MODE_ASYNC)
+#elif (XUA_SYNCMODE == XUA_SYNCMODE_ASYNC)
 
                 /* NOTE our feedback will be wrong for a couple of SOF's after a SF change due to
                  * lastClock being incorrect */
