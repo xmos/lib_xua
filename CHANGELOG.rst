@@ -3,7 +3,8 @@ lib_xua Change Log
 
 3.3.0
 -----
-
+ 
+  * ADDED:     Support for Synchronous mode (see XUA_SYNCMODE)
   * CHANGED:   Define ADAT_RX renamed to XUA_ADAT_RX_EN
   * CHANGED:   Define ADAT_TX renamed to XUA_ADAT_TX_EN
   * CHANGED:   Define SPDIF_RX renamed to XUA_SPDIF_RX_EN
