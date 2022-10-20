@@ -1,8 +1,8 @@
 lib_xua Change Log
 ==================
 
-UNRELEASED
-----------
+3.3.0
+-----
 
   * CHANGED:   Define ADAT_RX renamed to XUA_ADAT_RX_EN
   * CHANGED:   Define ADAT_TX renamed to XUA_ADAT_TX_EN
