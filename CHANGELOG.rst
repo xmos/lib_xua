@@ -18,7 +18,9 @@ lib_xua Change Log
 
   * Changes to dependencies:
 
-    - lib_xud: 2.1.0 -> 2.2.0
+    - lib_adat: Added dependency 1.0.1
+
+    - lib_xud: 2.1.0 -> 2.2.1
 
 3.2.0
 -----
