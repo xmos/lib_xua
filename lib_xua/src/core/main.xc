@@ -311,7 +311,7 @@ VENDOR_REQUESTS_PARAMS_DEC_
             unsigned usbSpeed = (AUDIO_CLASS == 2) ? XUD_SPEED_HS : XUD_SPEED_FS;
 
             unsigned xudPwrCfg = (XUA_POWERMODE == XUA_POWERMODE_SELF) ? XUD_PWR_SELF : XUD_PWR_BUS;
-            
+
             /* USB interface core */
             XUD_Main(c_xud_out, ENDPOINT_COUNT_OUT, c_xud_in, ENDPOINT_COUNT_IN,
                 c_sof, epTypeTableOut, epTypeTableIn, usbSpeed, xudPwrCfg);
@@ -491,8 +491,8 @@ void usb_audio_io(chanend ?c_aud_in,
 
 #if (XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
         {
-            /* ClockGen must currently run on same tile as AudioHub due to shared memory buffer 
-             * However, due to the use of an interface the pll reference signal port can be on another tile 
+            /* ClockGen must currently run on same tile as AudioHub due to shared memory buffer
+             * However, due to the use of an interface the pll reference signal port can be on another tile
              */
             thread_speed();
             clockGen(c_spdif_rx, c_adat_rx, i_pll_ref, c_dig_rx, c_clk_ctl, c_clk_int);

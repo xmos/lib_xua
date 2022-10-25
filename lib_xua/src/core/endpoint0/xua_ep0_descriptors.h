@@ -46,7 +46,7 @@
 #define ISO_EP_ATTRIBUTES_ASYNC                    ((USB_ENDPOINT_TRANSTYPE_ISO << USB_ENDPOINT_TRANSTYPE_SHIFT)\
                                                     | (USB_ENDPOINT_SYNCTYPE_ASYNC << USB_ENDPOINT_SYNCTYPE_SHIFT)\
                                                     | (USB_ENDPOINT_USAGETYPE_DATA << USB_ENDPOINT_USAGETYPE_SHIFT))
-                                                  
+
 #define ISO_EP_ATTRIBUTES_ADAPTIVE                 ((USB_ENDPOINT_TRANSTYPE_ISO << USB_ENDPOINT_TRANSTYPE_SHIFT)\
                                                     | (USB_ENDPOINT_SYNCTYPE_ADAPT << USB_ENDPOINT_SYNCTYPE_SHIFT)\
                                                     | (USB_ENDPOINT_USAGETYPE_DATA << USB_ENDPOINT_USAGETYPE_SHIFT))
@@ -1486,7 +1486,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
 #elif (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
         .bmAttributes                   = ISO_EP_ATTRIBUTES_SYNC,
 #else
-    #error "Bad XUA_SYNCMODE" 
+    #error "Bad XUA_SYNCMODE"
 #endif
         .wMaxPacketSize                 = HS_STREAM_FORMAT_OUTPUT_1_MAXPACKETSIZE,
         .bInterval                      = 1,

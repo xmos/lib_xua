@@ -53,7 +53,7 @@ void PllRefPinTask(server interface pll_ref_if i_pll_ref, out port p_pll_ref)
                 pinVal = ~pinVal;
                  p_pll_ref <: pinVal;
                 break;
-            
+
             case i_pll_ref.init():
                 p_pll_ref <: pinVal @ pinTime;
                 pinTime += (unsigned short)(LOCAL_CLOCK_INCREMENT - (LOCAL_CLOCK_INCREMENT/2));
@@ -61,9 +61,9 @@ void PllRefPinTask(server interface pll_ref_if i_pll_ref, out port p_pll_ref)
                 break;
 
             case i_pll_ref.toggle_timed(int relative):
-                
+
                 if (!relative)
-                {   
+                {
                     pinTime += (short) LOCAL_CLOCK_INCREMENT;
                     pinVal = !pinVal;
                     p_pll_ref @ pinTime <: pinVal;
@@ -353,7 +353,7 @@ void clockGen (streaming chanend ?c_spdif_rx, chanend ?c_adat_rx, client interfa
 
     /* Initial ref clock output and get timestamp */
     i_pll_ref.init();
-    
+
     while(1)
     {
         select
@@ -485,8 +485,8 @@ void clockGen (streaming chanend ?c_spdif_rx, chanend ?c_adat_rx, client interfa
                 timeNextClockDetection = timeNextEdge + (LOCAL_CLOCK_INCREMENT/2);
                 timeNextEdge += LOCAL_CLOCK_INCREMENT;
 
-                /* If we are in an external clock mode and this fire, then clock invalid 
-                 * reset counters in case we are moved to digital clock - we want a well timed 
+                /* If we are in an external clock mode and this fire, then clock invalid
+                 * reset counters in case we are moved to digital clock - we want a well timed
                  * first edge */
 #if (XUA_SPDIF_RX_EN)
                 spdifCounters.receivedSamples = 0;
@@ -707,7 +707,7 @@ void clockGen (streaming chanend ?c_spdif_rx, chanend ?c_adat_rx, client interfa
 
                                             /* Toggle edge */
                                             i_pll_ref.toggle_timed(1);
-                                            
+
                                             /* Reset counters */
                                             adatCounters.receivedSamples = 0;
 

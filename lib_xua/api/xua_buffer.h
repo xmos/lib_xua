@@ -32,7 +32,7 @@ void XUA_Buffer(
 #if (NUM_USB_CHAN_IN > 0) || defined(__DOXYGEN__)
             chanend c_aud_in,
 #endif
-#if (NUM_USB_CHAN_IN == 0) || defined (UAC_FORCE_FEEDBACK_EP) 
+#if (NUM_USB_CHAN_IN == 0) || defined (UAC_FORCE_FEEDBACK_EP)
             chanend c_aud_fb,
 #endif
 #if defined(MIDI) || defined(__DOXYGEN__)

@@ -8,7 +8,7 @@
 on tile[0]: out port p_ctrl = XS1_PORT_8D;
 
 /* p_ctrl:
- * [0:3] - Unused 
+ * [0:3] - Unused
  * [4]   - EN_3v3_N
  * [5]   - EN_3v3A
  * [6]   - EXT_PLL_SEL (CS2100:0, SI: 1)

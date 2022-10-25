@@ -966,7 +966,7 @@
  * Default: XUA_POWERMODE_BUS
  */
 #ifndef XUA_POWERMODE
-#define XUA_POWERMODE               XUA_POWERMODE_BUS                
+#define XUA_POWERMODE               XUA_POWERMODE_BUS
 #endif
 
 /**
@@ -1136,7 +1136,7 @@
 #undef UAC_FORCE_FEEDBACK_EP
 #endif
 
-/* Synchronisation defines */ 
+/* Synchronisation defines */
 #define XUA_SYNCMODE_ASYNC (1) // USB_ENDPOINT_SYNCTYPE_ASYNC
 #define XUA_SYNCMODE_ADAPT (2) // USB_ENDPOINT_SYNCTYPE_ADAPT
 #define XUA_SYNCMODE_SYNC  (3) // USB_ENDPOINT_SYNCTYPE_SYNC

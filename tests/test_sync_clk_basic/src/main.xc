@@ -2,8 +2,8 @@
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
 /* Simple test to ensure reference clock to CS2100 device continues when SOF clock not available
- * Note, this test uses "nice" numbers (i.e. MISSIG_SOFS %8 == 0) and therefore doesn't check 
- * for a graceful change over from internal to SOF clock 
+ * Note, this test uses "nice" numbers (i.e. MISSIG_SOFS %8 == 0) and therefore doesn't check
+ * for a graceful change over from internal to SOF clock
  */
 
 #include "platform.h"
@@ -14,7 +14,7 @@
 #define EP_COUNT_IN        (3)
 #define EP_COUNT_OUT       (3)
 
-out port p_pll_ref         = XS1_PORT_1A; 
+out port p_pll_ref         = XS1_PORT_1A;
 in port p_off_mclk         = XS1_PORT_1M;
 in port p_pll_loop         = XS1_PORT_1B; /* Note, this is externally looped back using the loopback plugin */
 
@@ -49,7 +49,7 @@ void delay(unsigned d)
     unsigned time;
     t :> time;
     t when timerafter(time + d) :> int x;
-}  
+}
 
 /* From lib_xud */
 void SetupEndpoints(chanend c_ep_out[], int noEpOut, chanend c_ep_in[], int noEpIn, XUD_EpType epTypeTableOut[], XUD_EpType epTypeTableIn[]);
@@ -80,41 +80,41 @@ void fake_xud(chanend c_out[], chanend c_in[], chanend c_sof)
 {
     timer t;
     unsigned time;
-  
 
-    /* Makes traces a bit nicer to look at */ 
+
+    /* Makes traces a bit nicer to look at */
     t :> time;
     t when timerafter(SOF_PERIOD_TICKS * 2) :> int x;
-    
+
     p_test0 <: 1;
-   
+
     /* Endpoint type tables */
     XUD_EpType epTypeTableOut[EP_COUNT_OUT] = {XUD_EPTYPE_CTL, XUD_EPTYPE_ISO, XUD_EPTYPE_DIS};
     XUD_EpType epTypeTableIn[EP_COUNT_IN] =   {XUD_EPTYPE_CTL, XUD_EPTYPE_ISO, XUD_EPTYPE_ISO};
- 
+
     SetupEndpoints(c_out, EP_COUNT_OUT, c_in, EP_COUNT_IN, epTypeTableOut, epTypeTableIn);
 
     driveSofs(c_sof, 32/SOF_DIVIDE);
-     
+
     p_test0 <: 0;
-    
-    /* Sim missing SOFs */   
+
+    /* Sim missing SOFs */
     delay(MISSING_SOF_PERIOD);
-    
+
     p_test0 <: 1;
-    
+
     driveSofs(c_sof, 16/SOF_DIVIDE);
-    
+
     p_test0 <: 0;
-    
+
     delay(MISSING_SOF_PERIOD);
-    
+
     p_test0 <: 1;
-    
+
     driveSofs(c_sof, 16/SOF_DIVIDE);
-    
+
     p_test0 <: 0;
-    
+
 }
 
 extern XUD_BusSpeed_t g_curUsbSpeed;
@@ -124,7 +124,7 @@ extern XUD_BusSpeed_t g_curUsbSpeed;
 
 void checker()
 {
-    timer t; 
+    timer t;
     unsigned t0, t1;
     unsigned x = 0;
     int fail = 0;
@@ -141,7 +141,7 @@ void checker()
         t :> t0;
         p_pll_loop when pinsneq(x) :>  x;
         t :> t1;
-   
+
         int period = t1-t0;
 
         /* Check the period of the reference clock we are generating */
@@ -190,7 +190,7 @@ int main()
         }
 
         fake_xud(c_out, c_in, c_sof);
-    
+
         checker();
     }
 }

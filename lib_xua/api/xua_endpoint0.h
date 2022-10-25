@@ -22,15 +22,15 @@
  *                      present
  *  \param c_clk_ctl    Optional chanend to be connected to the clockgen core if
  *                      present
- *  \param dfuInterface Interface to DFU task (this task must be run on a tile 
- *                      connected to boot flash. 
+ *  \param dfuInterface Interface to DFU task (this task must be run on a tile
+ *                      connected to boot flash.
  *  \param c_EANativeTransport_ctrl Optional chanend to be connected to EA Native
  *                                  endpoint manager if present
  */
-void XUA_Endpoint0(chanend c_ep0_out, 
+void XUA_Endpoint0(chanend c_ep0_out,
                     chanend c_ep0_in, chanend ?c_audioCtrl,
-                    chanend ?c_mix_ctl, chanend ?c_clk_ctl, 
-                    chanend ?c_EANativeTransport_ctrl, 
+                    chanend ?c_mix_ctl, chanend ?c_clk_ctl,
+                    chanend ?c_EANativeTransport_ctrl,
                     client interface i_dfu ?dfuInterface
 #if !defined(__DOXYGEN__)
                     VENDOR_REQUESTS_PARAMS_DEC_

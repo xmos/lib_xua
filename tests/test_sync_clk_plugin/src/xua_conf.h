@@ -9,7 +9,7 @@
 #define I2S_CHANS_ADC           (2)
 
 #define XUA_SYNCMODE           XUA_SYNCMODE_SYNC
-#define UAC_FORCE_FEEDBACK_EP   (0) 
+#define UAC_FORCE_FEEDBACK_EP   (0)
 
 #define EXCLUDE_USB_AUDIO_MAIN
 #define XUA_NUM_PDM_MICS 0
