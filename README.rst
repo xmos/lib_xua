@@ -1,7 +1,8 @@
 lib_xua
 =======
 
-:Latest release: 3.2.0rc0
+:Latest release: 3.2.0rc1
+
 
 :Scope: General Use
 
@@ -86,4 +87,5 @@ Required Software (dependencies)
   * lib_mic_array (https://github.com:xmos/lib_mic_array)
   * lib_dsp (https://github.com:xmos/lib_dsp)
   * lib_locks (https://github.com:xmos/lib_locks)
+
 
