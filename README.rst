@@ -1,7 +1,7 @@
 lib_xua
 =======
 
-:Latest release: 3.2.0rc1
+:Latest release: 3.3.0
 
 
 :Scope: General Use
@@ -77,15 +77,19 @@ The following application notes use this library:
     * AN000247 - Using lib_xua with lib_spdif (transmit)
     * AN000248 - Using lib_xua with lib_mic_array
 
-Required Software (dependencies)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Required software (dependencies)
+================================
 
-  * lib_logging (https://github.com:xmos/lib_logging)
-  * lib_xassert (https://github.com:xmos/lib_xassert)
-  * lib_xud (https://github.com:xmos/lib_xud)
-  * lib_spdif (https://github.com:xmos/lib_spdif)
-  * lib_mic_array (https://github.com:xmos/lib_mic_array)
-  * lib_dsp (https://github.com:xmos/lib_dsp)
-  * lib_locks (https://github.com:xmos/lib_locks)
-
+  * lib_locks (git@github.com:xmos/lib_locks.git)
+  * lib_logging (git@github.com:xmos/lib_logging.git)
+  * lib_mic_array (git@github.com:xmos/lib_mic_array.git)
+  * lib_xassert (git@github.com:xmos/lib_xassert.git)
+  * lib_dsp (git@github.com:xmos/lib_dsp)
+  * lib_i2c (git@github.com:xmos/lib_i2c.git)
+  * lib_i2s (git@github.com:xmos/lib_i2s.git)
+  * lib_gpio (git@github.com:xmos/lib_gpio.git)
+  * lib_mic_array_board_support (git@github.com:xmos/lib_mic_array_board_support.git)
+  * lib_spdif (git@github.com:xmos/lib_spdif.git)
+  * lib_xud (git@github.com:xmos/lib_xud.git)
+  * lib_adat (git@github.com:xmos/lib_adat)
 
