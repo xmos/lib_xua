@@ -1,6 +1,15 @@
 lib_xua Change Log
 ==================
 
+3.3.1
+-----
+
+  * CHANGED:  Documentation updates
+
+  * Changes to dependencies:
+
+    - lib_spdif: 4.1.0 -> 4.2.1
+
 3.3.0
 -----
 

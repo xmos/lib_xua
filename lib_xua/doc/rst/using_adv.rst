@@ -1,7 +1,7 @@
 .. _sec_advanced_usage:
 
 Advanced Usage
---------------
+**************
 
 Whilst it is possible to program USB Audio devices using ``lib_xua`` by only setting defines 
 (see :ref:`sec_basic_usage_codeless`) some developers may want to code a USB Audio device from

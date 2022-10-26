@@ -3,7 +3,7 @@
 .. _sec_opt_audio_formats:
 
 Audio Stream Formats
-~~~~~~~~~~~~~~~~~~~~
+====================
 
 The design currently supports up to three different stream formats for playback, selectable at
 run time.  This is implemented using standard Alternative Settings to the Audio Streaming interfaces. 
@@ -32,7 +32,7 @@ By default the design exposes two sets of Alternative Settings for the playback 
 24-bit playback. When DSD is enabled an additional (32-bit) alternative is exposed.
     
 Audio Subslot
-.............
+-------------
 
 An audio subslot holds a single audio sample. See `USB Device Class Definition for Audio Data Formats 
 <http://www.usb.org/developers/devclass_docs/Audio2.0_final.zip>`_ for full details. 
@@ -73,7 +73,7 @@ Values other than 4 may be used for the following reasons:
 
 
 Audio Sample Resolution
-.......................
+-----------------------
 
 An audio sample is represented using a number of bits (`bBitResolution`) less than or equal to the number
 of total bits available in the audio subslot i.e. `bBitResolution` <= `bSubslotSize` * 8).  The design 
@@ -99,7 +99,7 @@ supports values 16, 24 and 32.
 
 
 Audio Format
-............
+------------
 
 The design supports two audio formats, PCM and, when "Native" DSD is enabled, Direct Stream Digital (DSD).
 A DSD capable DAC is required for the latter.
@@ -121,7 +121,6 @@ The following options are supported:
     * UAC_FORMAT_TYPEI_RAW_DATA
     
     * UAC_FORMAT_TYPEI_PCM
-
 
 .. note::
 

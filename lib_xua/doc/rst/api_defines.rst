@@ -2,7 +2,7 @@
 .. _sec_api_defines:
 
 Configuration Defines
----------------------
+=====================
 
 An application using the USB audio framework needs to have defines set for configuration.
 Defaults for these defines are found in ``xua_conf_default.h``.
@@ -13,7 +13,7 @@ for a relevant build configuration.
 This section fully documents all of the settable defines and their default values (where appropriate).  
 
 Code Location (tile)
-~~~~~~~~~~~~~~~~~~~~
+--------------------
 
 .. doxygendefine:: AUDIO_IO_TILE
 .. doxygendefine:: XUD_TILE
@@ -23,7 +23,7 @@ Code Location (tile)
 .. doxygendefine:: PLL_REF_TILE
 
 Channel Counts
-~~~~~~~~~~~~~~
+--------------
 
 .. doxygendefine:: NUM_USB_CHAN_OUT 
 .. doxygendefine:: NUM_USB_CHAN_IN 
@@ -31,7 +31,7 @@ Channel Counts
 .. doxygendefine:: I2S_CHANS_ADC 
 
 Frequencies and Clocks 
-~~~~~~~~~~~~~~~~~~~~~~
+----------------------
 
 .. doxygendefine:: MAX_FREQ
 .. doxygendefine:: MIN_FREQ
@@ -40,24 +40,24 @@ Frequencies and Clocks
 .. doxygendefine:: MCLK_48
 
 Audio Class
-~~~~~~~~~~~
+-----------
 
 .. doxygendefine:: AUDIO_CLASS
 .. doxygendefine:: AUDIO_CLASS_FALLBACK
 .. doxygendefine:: FULL_SPEED_AUDIO_2
 
 
-System Feature Configuration
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Feature Configuration
+---------------------
 
 MIDI
-....
+^^^^
 
 .. doxygendefine:: MIDI
 .. doxygendefine:: MIDI_RX_PORT_WIDTH
 
 S/PDIF
-......
+^^^^^^
 
 .. doxygendefine:: XUA_SPDIF_TX_EN
 .. doxygendefine:: SPDIF_TX_INDEX
@@ -65,37 +65,37 @@ S/PDIF
 .. doxygendefine:: SPDIF_RX_INDEX
 
 ADAT
-....
+^^^^
 
 .. doxygendefine:: XUA_ADAT_RX_EN
 .. doxygendefine:: ADAT_RX_INDEX
 
 PDM Microphones
-...............
+^^^^^^^^^^^^^^^
 
 .. doxygendefine:: XUA_NUM_PDM_MICS
 
 DFU
-...
+^^^
 
 .. doxygendefine:: XUA_DFU_EN
 
 .. .. doxygendefine:: DFU_FLASH_DEVICE
 
 HID
-...
+^^^
 
 .. doxygendefine:: HID_CONTROLS
 
 
 CODEC Interface
-...............
+^^^^^^^^^^^^^^^
 
 .. doxygendefine:: CODEC_MASTER
 
 
 USB Device Configuration
-~~~~~~~~~~~~~~~~~~~~~~~~
+------------------------
 
 .. doxygendefine:: VENDOR_STR
 .. doxygendefine:: VENDOR_ID
@@ -108,10 +108,10 @@ USB Device Configuration
 
 
 Stream Formats
-~~~~~~~~~~~~~~
+--------------
 
 Output/Playback
-...............
+^^^^^^^^^^^^^^^
 
 .. doxygendefine:: OUTPUT_FORMAT_COUNT
 
@@ -132,7 +132,8 @@ Output/Playback
 .. doxygendefine:: STREAM_FORMAT_OUTPUT_3_DATAFORMAT
 
 Input/Recording
-...............
+^^^^^^^^^^^^^^^
+
 .. doxygendefine:: INPUT_FORMAT_COUNT
 
 .. doxygendefine:: STREAM_FORMAT_INPUT_1_RESOLUTION_BITS
@@ -144,7 +145,7 @@ Input/Recording
 .. doxygendefine:: STREAM_FORMAT_INPUT_1_DATAFORMAT
 
 Volume Control
-~~~~~~~~~~~~~~
+--------------
 
 .. doxygendefine:: OUTPUT_VOLUME_CONTROL
 .. doxygendefine:: INPUT_VOLUME_CONTROL
@@ -152,8 +153,8 @@ Volume Control
 .. doxygendefine:: MAX_VOLUME
 .. doxygendefine:: VOLUME_RES
 
-Mixing Parameters
-~~~~~~~~~~~~~~~~~
+Mixing
+------
 
 .. doxygendefine:: MIXER
 .. doxygendefine:: MAX_MIX_COUNT
@@ -163,8 +164,7 @@ Mixing Parameters
 .. doxygendefine:: VOLUME_RES_MIXER
 
 Power
-~~~~~
+-----
 
-.. doxygendefine:: SELF_POWERED
-.. doxygendefine:: BMAX_POWER
+.. doxygendefine:: XUA_POWERMODE
 

@@ -4,7 +4,7 @@
 .. _usb_audio_sec_clock_recovery:
 
 External Clock Recovery (Clock Gen)
------------------------------------
+===================================
 
 To provide an audio master clock an application may use selectable oscillators, clock 
 generation IC or, in the case of xCORE.ai devices, integrated secondary PLL, to generate fixed 
@@ -14,7 +14,7 @@ It may also use an external PLL/Clock Multiplier to generate a master clock base
 the xCORE.
 
 Using an external PLL/Clock Multiplier allows an Asynchronous mode design to lock to an external
-clock source from a digital stream (e.g. S/PDIF or ADAT input).  The code-base supports the Cirrus
+clock source from a digital stream (e.g. S/PDIF or ADAT input).  The codebase supports the Cirrus
 Logic CS2100 device for this purpose. Other devices may be supported via code modification.
 
 .. note::

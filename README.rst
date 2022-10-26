@@ -1,5 +1,5 @@
 lib_xua
-=======
+#######
 
 :Latest release: 3.3.0
 
@@ -7,14 +7,14 @@ lib_xua
 :Scope: General Use
 
 Summary
--------
+*******
 
 lib_xua contains shared components for use in the XMOS USB Audio (XUA) Reference Designs.
 
 These components enable the development of USB Audio devices on the XMOS xCORE architecture.
 
 Features
-~~~~~~~~
+========
 
 Key features of the various components in this repository are as follows
 
@@ -56,7 +56,7 @@ Note, not all features may be supported at all sample frequencies, simultaneousl
 Some features may also require specific host driver support.
 
 Host System Requirements
-~~~~~~~~~~~~~~~~~~~~~~~~
+========================
 
 USB Audio devices built using `lib_xua` have the following host system requirements.
 
@@ -69,27 +69,27 @@ USB Audio devices built using `lib_xua` have the following host system requireme
 Older versions of Windows are not guaranteed to operate as expected. Devices are also expected to operate with various Linux distributions including mobile variants.
 
 Related Application Notes
-~~~~~~~~~~~~~~~~~~~~~~~~~
+=========================
 
 The following application notes use this library:
 
-    * AN000246 - Simple USB Audio Device using lib_xua
-    * AN000247 - Using lib_xua with lib_spdif (transmit)
-    * AN000248 - Using lib_xua with lib_mic_array
+  * AN000246 - Simple USB Audio Device using lib_xua
+  * AN000247 - Using lib_xua with lib_spdif (transmit)
+  * AN000248 - Using lib_xua with lib_mic_array
 
-Required software (dependencies)
+Required Software (dependencies)
 ================================
 
-  * lib_locks (git@github.com:xmos/lib_locks.git)
-  * lib_logging (git@github.com:xmos/lib_logging.git)
-  * lib_mic_array (git@github.com:xmos/lib_mic_array.git)
-  * lib_xassert (git@github.com:xmos/lib_xassert.git)
-  * lib_dsp (git@github.com:xmos/lib_dsp)
-  * lib_i2c (git@github.com:xmos/lib_i2c.git)
-  * lib_i2s (git@github.com:xmos/lib_i2s.git)
-  * lib_gpio (git@github.com:xmos/lib_gpio.git)
-  * lib_mic_array_board_support (git@github.com:xmos/lib_mic_array_board_support.git)
-  * lib_spdif (git@github.com:xmos/lib_spdif.git)
-  * lib_xud (git@github.com:xmos/lib_xud.git)
-  * lib_adat (git@github.com:xmos/lib_adat)
+  * lib_locks (www.github.com/xmos/lib_locks)
+  * lib_logging (www.github.com/xmos/lib_logging)
+  * lib_mic_array (www.github.com/xmos/lib_mic_array)
+  * lib_xassert (www.github.com/xmos/lib_xassert)
+  * lib_dsp (www.github.com/xmos/lib_dsp)
+  * lib_i2c (www.github.com/xmos/lib_i2c)
+  * lib_i2s (www.github.com/xmos/lib_i2s)
+  * lib_gpio (www.github.com/xmos/lib_gpio)
+  * lib_mic_array_board_support (www.github.com/xmos/lib_mic_array_board_support)
+  * lib_spdif (www.github.com/xmos/lib_spdif)
+  * lib_xud (www.github.com/xmos/lib_xud)
+  * lib_adat (www.github.com/xmos/lib_adat)
 

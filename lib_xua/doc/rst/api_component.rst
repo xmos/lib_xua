@@ -1,7 +1,7 @@
 .. _sec_api_component:
 
 Component API
--------------
+=============
 
 The following functions can be called from the top level main of an
 application and implement the various components described in

@@ -1,6 +1,6 @@
 
 S/PDIF Transmit
-~~~~~~~~~~~~~~~
+===============
 
 ``lib_xua`` supports the development of devices with S/PDIF transmit functionality through the use of 
 ``lib_spdif``. The XMOS S/PDIF transmitter runs in a single core and supports rates up to 192kHz.

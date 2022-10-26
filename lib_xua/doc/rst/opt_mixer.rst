@@ -1,7 +1,7 @@
 |newpage|
 
 Mixer
-~~~~~
+=====
 
 The codebase supports audio mixing functionality with highly flexible routing options. 
 

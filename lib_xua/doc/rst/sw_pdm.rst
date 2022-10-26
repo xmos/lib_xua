@@ -1,7 +1,7 @@
 |newpage|
 
 PDM Microphones
----------------
+===============
 
 The XMOS USB Audio Reference Design firmware is capable of integrating with PDM microphones.
 The PDM stream from the microphones is converted to PCM and output to the host via USB. 
@@ -46,9 +46,8 @@ After the decimation to the output sample-rate various other steps take place e.
 and compensation etc. Please refer to the documentation provided with  ``lib_mic_array`` for further
 implementation detail and complete feature set. 
 
-
 PDM Microphone Hardware Characteristics
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+---------------------------------------
 
 The PDM microphones require a *clock input* and provide the PDM signal on a *data output*. All of
 the PDM microphones must share the same clock signal (buffered on the PCB as appropriate), and 
@@ -78,7 +77,7 @@ divide down 12.288 MHz master clock. Or, if clock accuracy is not important, the
 reference can be divided down to provide an approximate clock.
 
 Usage & Integration
-~~~~~~~~~~~~~~~~~~~
+-------------------
 
 A PDM microphone wrapper is called from ``main()`` and takes one channel argument connecting it to the rest of the system:
 
@@ -113,3 +112,4 @@ sends the frame of audio back over this channel.
 
 Note, it is assumed that the system shares a global master-clock, therefore no additional buffering or rate-matching/conversion
 is required.
+

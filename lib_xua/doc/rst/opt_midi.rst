@@ -2,7 +2,7 @@
 |newpage|
 
 MIDI
-~~~~
+====
 
 The codebase supports MIDI input/output over USB as per `Universal Serial Bus Device Class Definition for MIDI Devices <https://www.usb.org/sites/default/files/midi10.pdf>`_.
 

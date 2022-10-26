@@ -1,12 +1,12 @@
 
 Basic Usage
------------
+***********
 
 This sections describes the basic usage of `lib_xua` and provides a guide on how to program USB Audio Devices.
 
 
 Library Structure
-~~~~~~~~~~~~~~~~~
+=================
 
 The code is split into several directories.
 
@@ -26,7 +26,7 @@ Note, the midi and dfu directories are potential candidates for separate libs in
 
 
 Using in a Project
-~~~~~~~~~~~~~~~~~~
+==================
 
 All `lib_xua` functions can be accessed via the ``xua.h`` header file::
 
@@ -39,7 +39,7 @@ It is also required to add ``lib_xua`` to the ``USED_MODULES`` field of your app
 .. _sec_basic_usage_codeless:
 
 "Codeless" Programming Model
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+============================
 
 Whilst it is possible to code a USB Audio device using the building blocks provided by `lib_xua` 
 it is realised that this might not be desirable for many classes of customers or products.
@@ -71,7 +71,7 @@ set ``EXCLUDE_USB_AUDIO_MAIN`` to 1 in the application makefile or ``xua_conf.h`
 ::ref:`sec_advanced_usage`.
 
 Configuring lib_xua
-~~~~~~~~~~~~~~~~~~~
+===================
 
 Configuration of the various build time options of ``lib_xua`` is done via the optional header `xua_conf.h`. 
 To allow the build scripts to locate this file it should reside somewhere in the application `src` directory.
@@ -93,9 +93,8 @@ should continue to include `xua.h` as previously directed. A simple example is s
 
     #endif
 
-
 User Functions
-~~~~~~~~~~~~~~
+==============
 
 To enable custom functionality, such as configuring external audio hardware, bespoke behaviour on
 stream start/stop etc, various functions can be overridden by the user. (see ::ref:`sec_api` for 

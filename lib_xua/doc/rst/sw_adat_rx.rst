@@ -1,7 +1,7 @@
 |newpage|
 
 ADAT Receive
-------------
+============
 
 The ADAT receive component receives up to eight channels of audio at a sample rate
 of 44.1kHz or 48kHz. The API for calling the receiver functions is

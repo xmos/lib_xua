@@ -1,7 +1,7 @@
 |newpage|
 
 Code Location
-~~~~~~~~~~~~~
+=============
 
 When designing a system there is a choice as to which hardware resources to use for each interface.
 In a multi-tile system the codebase needs to be informed as to which tiles to use for these hardware

@@ -1,10 +1,9 @@
 |newpage|
 
 Other Options
-~~~~~~~~~~~~~
+=============
 
 There are a few other, lesser used, options available.
-
 
 .. _opt_other_defines:
 

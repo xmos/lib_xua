@@ -1,7 +1,7 @@
 |newpage|
 
 USB Audio Class Version
-~~~~~~~~~~~~~~~~~~~~~~~
+=======================
 
 The codebase supports USB Audio Class versions 1.0 and 2.0.
 
@@ -15,22 +15,22 @@ Additional improvements, amongst others, include:
 - Extensive support for interrupts to inform the host about dynamic changes that occur to different entities such as Clocks etc
 
 Driver Support
-..............
+--------------
 
 Audio Class 1.0 
-+++++++++++++++
+^^^^^^^^^^^^^^^
 
 Audio Class 1.0 is fully supported in Apple OSX.  Audio Class 1.0 is fully supported in all modern Microsoft Windows operating systems (i.e. Windows XP and later). 
 
 Audio Class 2.0
-+++++++++++++++
+^^^^^^^^^^^^^^^
 
 Audio Class 2.0 is fully supported in Apple OSX since version 10.6.4.  Starting with Windows 10, release 1703, a USB Audio 2.0 driver is shipped with Windows. 
 
 Third party Windows drivers are also available, however, documentation of these is beyond the scope of this document, please contact XMOS for further details.
 
 Audio Class 1.0 Mode and Fall-back
-..................................
+----------------------------------
 
 The default for XMOS USB Audio applications is to run as a high-speed Audio Class 2.0
 device. However, some products may prefer to run in Audio Class 1.0 mode, this is normally to 
@@ -64,7 +64,7 @@ Due to bandwidth limitations of full-speed USB the following sample-frequency re
 
   
 Related Defines
-................
+---------------
 
 :ref:`opt_audio_class_defines` descibes the defines that effect audio class selection.
 

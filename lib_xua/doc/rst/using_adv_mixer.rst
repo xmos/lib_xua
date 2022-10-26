@@ -1,7 +1,7 @@
 |newpage|
 
 Mixer
-~~~~~
+=====
 
 Since the mixer has no I/O the instantiation is straight forward. Communication wises, the mixer cores are inserted 
 between the `AudioHub` and Buffering core(s)
