@@ -14,7 +14,7 @@ It may also use an external PLL/Clock Multiplier to generate a master clock base
 the xCORE.
 
 Using an external PLL/Clock Multiplier allows an Asynchronous mode design to lock to an external
-clock source from a digital stream (e.g. S/PDIF or ADAT input).  The code=base supports the Cirrus
+clock source from a digital stream (e.g. S/PDIF or ADAT input).  The codebase supports the Cirrus
 Logic CS2100 device for this purpose. Other devices may be supported via code modification.
 
 .. note::
@@ -56,5 +56,5 @@ Class 2.0 status/interrupt endpoint feature.
 .. note::
 
    When running in Synchronous mode external digital input streams are currently not supported.
-   Such a feature would require sample=rate conversion to covert from the S/PDIF or ADAT clock
+   Such a feature would require sample-rate conversion to covert from the S/PDIF or ADAT clock
    domain to the USB host clock domain. As such this core is not used in a Synchronous mode device.

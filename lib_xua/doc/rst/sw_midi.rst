@@ -9,5 +9,5 @@ over UART. Similarly, incoming 8-bit MIDI messages are aggregated into 32-bit US
 passed on to the Endpoint Buffer core. The MIDI core is implemented in the file ``usb_midi.xc``.
 
 The Endpoint Buffer core implements the two Bulk endpoints (one In and one Out) as well as interacting 
-with small, shared=memory, FIFOs for each endpoint.
+with small, shared-memory, FIFOs for each endpoint.
 
