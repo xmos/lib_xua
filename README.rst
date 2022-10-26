@@ -1,7 +1,7 @@
 lib_xua
 #######
 
-:Latest release: 3.3.0
+:Latest release: 3.3.1
 
 
 :Scope: General Use
