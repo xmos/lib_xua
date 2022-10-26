@@ -24,7 +24,7 @@ pipeline {
         }
         stage('Library checks') {
           steps {
-            xcoreLibraryChecks("${REPO}")
+            xcoreLibraryChecks("${REPO}", false)
           }
         }
         stage('Testing') {
