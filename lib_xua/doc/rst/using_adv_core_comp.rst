@@ -1,5 +1,5 @@
 Running the Core Components
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
+===========================
 
 In their most basic form the core components can be run as follows::
 

@@ -1,8 +1,8 @@
 
-Features & Options
-------------------
+Additional Features
+*******************
 
-The previous section describes the use of core functionality contained within ``lib_xua``
+The previous chapter describes the use of core functionality contained within ``lib_xua``
 This seciton details enabling additional features with supported external dependencies, for example, 
 ``lib_xua`` can provide S/PDIF output though the used of ``lib_spdif``
 

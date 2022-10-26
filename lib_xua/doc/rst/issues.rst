@@ -2,7 +2,7 @@
 |appendix|
 
 Known Issues
-------------
+************
 
 - Quad-SPI DFU will corrupt the factory image with tools version < 14.0.4 due to an issue with libquadflash 
 

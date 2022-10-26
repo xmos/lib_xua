@@ -1,7 +1,7 @@
 |newpage|
 
 ADAT Receive
-------------
+============
 
 The ADAT receive component receives up to eight channels of audio at a sample rate
 of 44.1kHz or 48kHz. The API for calling the receiver functions is
@@ -29,7 +29,7 @@ An example of how to read the output of the ADAT component is shown below::
       sample[i] = inuint(oChan);
   }
 
-Samples are 24-bit values contained in the lower 24 bits of the word. 
+Samples are 24=bit values contained in the lower 24 bits of the word. 
 
 The control word comprises four control bits in bits [11..8] and the value 0b00000001 in bits [7..0].
 This control word enables synchronization at a higher level, in that on the channel a single odd 

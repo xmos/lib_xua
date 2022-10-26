@@ -2,7 +2,7 @@
 .. _usb_audio_sec_architecture:
 
 Software Architecture
----------------------
+*********************
 
 This section describes the required software architecture of a USB Audio device implemented using `lib_xua`, its dependencies and other supporting libraries.
 

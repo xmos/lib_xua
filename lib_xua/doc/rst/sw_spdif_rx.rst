@@ -1,7 +1,7 @@
 |newpage|
 
 S/PDIF Receive
----------------
+==============
 
 XMOS devices can support S/PDIF receive up to 192kHz - see ``lib_spdif`` for full specifications.  
 
@@ -45,7 +45,7 @@ The tag has one of three values:
 See S/PDIF, IEC 60958-3:2006, specification for further details on format, user bits etc.
 
 Usage and Integration
-+++++++++++++++++++++
+---------------------
 
 Since S/PDIF is a digital steam the devices master clock must be synchronised to it. This is typically
 done with an external device. See `Clock Recovery` (:ref:`usb_audio_sec_clock_recovery`).

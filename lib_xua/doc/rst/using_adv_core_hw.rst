@@ -1,5 +1,5 @@
 Core Hardware Resources
-~~~~~~~~~~~~~~~~~~~~~~~
+=======================
 
 The user must declare and initialise relevant hardware resources (globally) and pass them to the
 relevant function of `lib_xua`.

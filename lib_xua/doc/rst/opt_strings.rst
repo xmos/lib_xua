@@ -1,6 +1,6 @@
 
 Strings and ID's
-~~~~~~~~~~~~~~~~
+================
 
 The codebase includes various strings and ID's that should be customised to match the product requirements. 
 These are listed in ::ref:`opt_strings_defines`.

@@ -2,7 +2,7 @@
 |newpage|
 
 Synchronisation
-~~~~~~~~~~~~~~~
+===============
 
 The codebase supports "Synchronous" and "Asynchronous" modes for USB transfer as defined by the 
 USB specification(s).

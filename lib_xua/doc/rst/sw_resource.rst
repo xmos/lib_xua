@@ -3,7 +3,7 @@
 .. _usb_audio_sec_resource_usage:
 
 Resource Usage
---------------
+==============
 
 The following table details the resource usage of each component of the reference design software.
 Note, memory usage is approximate and varies based on device used, compiler settings etc.
@@ -50,3 +50,4 @@ Note, memory usage is approximate and varies based on device used, compiler sett
 
    Unlike other interfaces, since the USB PHY is internal the USB ports are a fixed set of ports
    and cannot be modified.  See ``lib_xud`` documentation for full details.
+

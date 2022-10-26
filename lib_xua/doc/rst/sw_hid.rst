@@ -1,5 +1,5 @@
 Audio Controls via Human Interface Device (HID)
-------------------------------------------------
+===============================================
 
 The design supports simple audio controls such as play/pause, volume up/down etc via the USB Human
 Interface Device Class Specification.

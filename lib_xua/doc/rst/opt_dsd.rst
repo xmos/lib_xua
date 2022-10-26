@@ -1,7 +1,7 @@
 |newpage|
 
 Direct Stream Digital (DSD)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
+===========================
 
 Direct Stream Digital (DSD) is used for digitally encoding audio signals on Super Audio CDs (SACD).
 It uses pulse-density modulation (PDM) encoding.
@@ -48,7 +48,7 @@ If only DoP functionality is desired the Native implementation can be disabled w
 
 
 DSD over PCM (DoP)
-..................
+------------------
 
 DoP support follows the method described in the `DoP Open Standard 1.1 
 <http://dsd-guide.com/sites/default/files/white-papers/DoP_openStandard_1v1.pdf>`_. 
@@ -81,14 +81,14 @@ of rate.
     DoP requires bit-perfect transmission - therefore any audio/volume processing will break the stream.
 
 "Native" vs DoP
-~~~~~~~~~~~~~~~
+---------------
 
 Since the DoP specification requires header bytes this eats into the data bandwidth. The "Native" implementation
 has no such overhead and can therefore transfer the same DSD rate and half the effective PCM rate of DoP.
 Such a property may be desired when upporting DSD128 without exposing a 352.8kHz PCM rate, for example.
 
 Ports
-.....
+-----
 
 The codebase expects 1-bit ports to be defined in the application XN file for the DSD data and  
 clock lines for example::

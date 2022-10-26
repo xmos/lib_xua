@@ -1,7 +1,7 @@
 |newpage|
 
 PDM Microphones
-~~~~~~~~~~~~~~~
+===============
 
 The codebase supports input from up to 8 PDM microphones. 
 

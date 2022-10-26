@@ -2,7 +2,7 @@
 |newpage|
 
 S/PDIF Transmit
-...............
+===============
 
 ``lib_xua`` supports the development of devices with S/PDIF transmit throught the use of ``lib_spdif``.
 The XMOS S/SPDIF transmitter component runs in a single core and supports sample-rates upto 192kHz.
@@ -21,7 +21,7 @@ bits) and transmitted in biphase-mark encoding (BMC) with respect to an *externa
 Note that a minor change to the ``SpdifTransmitPortConfig`` function would enable *internal* master
 clock generation (e.g. when clock source is already locked to desired audio clock).
 
-..  list-table:: S/PDIF Capabilities
+.. list-table:: S/PDIF Capabilities
    
    * - **Sample frequencies**   
      - 44.1, 48, 88.2, 96, 176.4, 192 kHz
@@ -31,7 +31,7 @@ clock generation (e.g. when clock source is already locked to desired audio cloc
      - ``lib_spdif``
 
 Clocking
-++++++++
+--------
 
 .. only:: latex
 
@@ -54,7 +54,7 @@ This resamples the master clock to its clock domain (oscillator), which introduc
 A typical jitter-reduction scheme is an external D-type flip-flop clocked from the master clock (as shown in the preceding diagram).
 
 Usage
-+++++
+-----
 
 The interface to the S/PDIF transmitter core is via a normal channel with streaming built-ins
 (``outuint``, ``inuint``). Data format should be 24-bit left-aligned in a 32-bit word: ``0x12345600``
@@ -84,9 +84,8 @@ The following protocol is used on the channel:
 
 This communication is wrapped up in the API functions provided by ``lib_spdif``.
 
-
-Output stream structure
-+++++++++++++++++++++++
+Output Stream Structure
+-----------------------
 
 The stream is composed of words with the following structure shown in
 :ref:`usb_audio_spdif_stream_structure`. The channel status bits are

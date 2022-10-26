@@ -1,7 +1,7 @@
 |newpage|
 
 I2S/TDM
-~~~~~~~
+=======
 
 I2S/TDM is typically fundamental to most products and is built into the ``XUA_AudioHub()`` core.
 

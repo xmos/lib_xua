@@ -3,7 +3,7 @@
 .. _usb_audio_sec_audio:
 
 Audio Hub
-.........
+=========
 
 The Audio Hub task performs many functions. It receives and transmits samples from/to the Decoupler
 or Mixer core over a channel.
@@ -96,9 +96,8 @@ Two master clock frequencies to support 44.1kHz and 48kHz audio frequencies (e.g
 and 12.288/24.576MHz respectively).  This master clock input is then provided to the external audio
 hardware and the xCORE device. 
 
-
 Port Configuration (xCORE Master)
-+++++++++++++++++++++++++++++++++
+---------------------------------
 
 The default software configuration is xCORE is I2S master.  That is, the XMOS device provides the BCLK and LRCLK signals to the external audio hardware
 
@@ -143,7 +142,7 @@ before the data (as required by the I2S standard) and alternates between high an
 and right channels of audio.
 
 Changing Audio Sample Frequency
-+++++++++++++++++++++++++++++++
+-------------------------------
 
 .. _usb_audio_sec_chang-audio-sample:
 
@@ -158,6 +157,4 @@ core stops the I2S/TDM interface and calls the CODEC/port configuration
 functions. 
 
 Once this is complete, the I2S/TDM interface (i.e. the main loop in AudioHub) is restarted at the new frequency.
-
-
 

@@ -2,8 +2,7 @@
 .. include:: ../../../README.rst
 
 About This Document
-~~~~~~~~~~~~~~~~~~~
-
+===================
 
 This document describes the structure of ``lib_xua``, its use and resources required. It also covers some implementation detail.
 
@@ -18,7 +17,7 @@ the XMOS tool chain and XC language.
     Options <opt>
     Advanced Usage <using_adv>
     Additional Features <feat>
-    Software Detail <sw>
+    Implementation Detail <sw>
     API <api>
     Known Issues <issues>
 

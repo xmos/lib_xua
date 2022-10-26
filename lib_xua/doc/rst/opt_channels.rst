@@ -1,7 +1,7 @@
 |newpage|
 
 Channel Counts and Sample Rates
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+===============================
 
 The codebase is fully configurable in relation to channel counts and sample rates.
 Practical limitations of these are normally based on USB packet size restrictions and I/O

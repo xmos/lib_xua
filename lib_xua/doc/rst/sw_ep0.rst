@@ -3,14 +3,14 @@
 .. _usb_audio_sec_usb:
 
 Endpoint 0: Management and Control
-..................................
+==================================
 
 All USB devices must support a mandatory control endpoint, Endpoint 0.  This controls the management tasks of the USB device.
 
 These tasks can be generally split into enumeration, audio configuration and firmware upgrade requests.
 
 Enumeration
-~~~~~~~~~~~
+-----------
 
 When the device is first attached to a host, enumeration occurs.  This process involves the host interrogating the device as to its functionality. The device does this by presenting several interfaces to the host via a set of descriptors.
 
@@ -41,12 +41,13 @@ The function may also return ``XUD_RES_RST`` if a bus-reset has been issued onto
 Since the ``USB_StandardRequests()`` function STALLs an unknown request, the endpoint 0 code must first parse the ``USB_SetupPacket_t`` structure to handle device specific requests and then call ``USB_StandardRequests()`` as required.
 
 Over-riding Standard Requests
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+-----------------------------
 
 The USB Audio design "over-rides" some of the requests handled by ``USB_StandardRequests()``, for example it uses the SET_INTERFACE request to indicate if the host is streaming audio to the device.  In this case the setup packet is parsed, the relevant action taken, the ``USB_StandardRequests()`` is still called to handle the response to the host.
 
 Class Requests
-~~~~~~~~~~~~~~
+--------------
+
 Before making the call to ``USB_StandardRequests()`` the setup packet is parsed for Class requests. These are handled in functions such as ``AudioClassRequests_1()``, ``AudioClassRequests_2``, ``DFUDeviceRequests()`` etc depending on the type of request.
 
 Any device specific requests are handled - in this case Audio Class, MIDI class, DFU requests etc.  
@@ -54,7 +55,7 @@ Any device specific requests are handled - in this case Audio Class, MIDI class,
 Some of the common Audio Class requests and their associated behaviour will now be examined. 
 
 Audio Requests
-++++++++++++++
+^^^^^^^^^^^^^^
 
 When the host issues an audio request (e.g. sample rate or volume change), it sends a command to Endpoint 0. Like all requests this is returned from ``USB_GetSetupPacket()``. After some parsing (namely as Class Request to an Audio Interface) the request is handled by either the ``AudioClassRequests_1()`` or ``AudioClassRequests_2()`` function (based on whether the device is running in Audio Class 1.0 or 2.0 mode).
 
@@ -63,7 +64,7 @@ Note, Audio Class 1.0 Sample rate changes are send to the relevant endpoint, rat
 The ``AudioClassRequests_X()`` functions further parses the request in order to ascertain the correct audio operation to execute.
 
 Audio Request: Set Sample Rate
-++++++++++++++++++++++++++++++
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The ``AudioClassRequests_2()`` function parses the passed ``USB_SetupPacket_t`` structure for a ``CUR`` request of type ``SAM_FREQ_CONTROL`` to a Clock Unit in the devices topology (as described in the devices descriptors).
 
@@ -72,7 +73,7 @@ The new sample frequency is extracted and passed via channel to the rest of the 
 .. _usb_audio_sec_audio-requ-volume: 
 
 Audio Request: Volume Control
-+++++++++++++++++++++++++++++
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 When the host requests a volume change, it
 sends an audio interface request to Endpoint 0. An array is
@@ -102,10 +103,10 @@ to the mixer to change the volume. Mixer commands
 are described in :ref:`usb_audio_sec_mixer`.
 
 Audio Endpoints (Endpoint Buffer and Decoupler)
-...............................................
+===============================================
 
 Endpoint Buffer
-~~~~~~~~~~~~~~~
+---------------
 
 All endpoints other that Endpoint 0 are handled in one core. This
 core is implemented in the file ``ep_buffer.xc``. This core communicates directly with the XUD library. 
@@ -114,7 +115,7 @@ The USB buffer core is also responsible for feedback calculation based on USB St
 (SOF) notification and reads from the port counter of a port connected to the master clock.
 
 Decouple
-~~~~~~~~
+--------
 
 The decoupler supplies the USB buffering core with buffers to
 transmit/receive audio data to/from the host. It marshals these buffers into
@@ -125,14 +126,13 @@ matching the audio rate to the USB packet rate). The decoupler is
 implemented in the file ``decouple.xc``.
 
 Audio Buffering Scheme
-~~~~~~~~~~~~~~~~~~~~~~~
+----------------------
 
 This scheme is executed by co-operation between the buffering
 core, the decouple core and the XUD library.
 
 For data going from the device to the host the following scheme is
 used:
-
 
 #. The Decouple core receives samples from the Audio Hub core and
    puts them into a FIFO. This FIFO is split into packets when data is
@@ -152,10 +152,8 @@ used:
    Decouple core that the buffer has been sent and the Decouple core
    moves the read pointer of the FIFO.
 
-
 For data going from the host to the device the following scheme is
 used:
-
 
 #. The Decouple core passes a pointer to the Endpoint Buffer core
    pointing into a FIFO of data and signals to the XUD library that
@@ -171,9 +169,8 @@ used:
 #. Upon request from the Audio Hub core, the Decouple core sends
    samples to the Audio Hub core by reading samples out of the FIFO.
 
-
 Decoupler/Audio Core interaction
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+--------------------------------
 
 To meet timing requirements of the audio system (i.e Audio Hub/Mixer), the Decoupler
 core must respond to requests from the audio system to
@@ -199,7 +196,6 @@ in channel count sized chunks (i.e. ``NUM_USB_CHAN_OUT`` and
 
 The complete communication scheme is shown in the table below (for non sample
 frequency change case):
-
 
 .. table::  Decouple/Audio System Channel Communication
 
@@ -242,7 +238,7 @@ frequency change case):
     (this is especially advantageous in the DSD over PCM (DoP) case) 
 
 Asynchronous Feedback
-+++++++++++++++++++++
+---------------------
 
 When built to operate in Asynchronous mode the device uses a feedback endpoint to report the rate at which
 audio is output/input to/from external audio interfaces/devices. This feedback is in accordance with
@@ -265,7 +261,7 @@ sent to the host. In practice this an explicit feedback endpoint is normally use
 in Microsoft Windows operating systems (see ``UAC_FORCE_FEEDBACK_EP``).
 
 USB Rate Control
-++++++++++++++++
+----------------
 
 .. _usb_audio_sec_usb-rate-control: 
 
