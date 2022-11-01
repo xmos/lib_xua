@@ -38,7 +38,6 @@ void InitPorts_master(unsigned divide, buffered _XUA_CLK_DIR port:32 p_lrclk, bu
         }
 #endif
 
-#pragma xta endpoint "divide_1"
         unsigned tmp;
         p_lrclk <: 0 @ tmp;
         tmp += 100;

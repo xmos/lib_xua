@@ -84,8 +84,8 @@ void ConfigAudioPorts(
     {
         for(int i = 0; i < I2S_WIRES_ADC; i++)
         {
-            set_port_sample_delay(p_i2s_adc[i]);
-            set_pad_delay(p_i2s_adc[i], 4);
+            //set_port_sample_delay(p_i2s_adc[i]);
+            //set_pad_delay(p_i2s_adc[i], 4);
         }
     }
 #endif
@@ -110,9 +110,7 @@ void ConfigAudioPorts(
     }
 
     set_clock_fall_delay(clk_audio_bclk, bClkDelay_fall);
-
 #endif
-
 
 #if (I2S_CHANS_DAC != 0)
      /* Clock I2S output data ports from b-clock clock block */
