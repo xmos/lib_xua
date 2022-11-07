@@ -84,8 +84,8 @@ void ConfigAudioPorts(
     {
         for(int i = 0; i < I2S_WIRES_ADC; i++)
         {
-            //set_port_sample_delay(p_i2s_adc[i]);
-            //set_pad_delay(p_i2s_adc[i], 4);
+            set_port_sample_delay(p_i2s_adc[i]);
+            set_pad_delay(p_i2s_adc[i], 4);
         }
     }
 #endif
