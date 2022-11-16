@@ -588,6 +588,7 @@ __builtin_unreachable();
     }
 }
 
+#if (NUM_USB_CHAN_IN > 0)
 /* Mark Endpoint (IN) ready with an appropriately sized zero buffer */
 static inline void SetupZerosSendBuffer(XUD_ep aud_to_host_usb_ep, unsigned sampFreq, unsigned slotSize,
                                         xc_ptr aud_to_host_zeros)
@@ -619,6 +620,7 @@ static inline void SetupZerosSendBuffer(XUD_ep aud_to_host_usb_ep, unsigned samp
 
     XUD_SetReady_InPtr(aud_to_host_usb_ep, aud_to_host_zeros+4, mid);
 }
+#endif
 
 #pragma unsafe arrays
 void XUA_Buffer_Decouple(chanend c_mix_out
@@ -760,8 +762,10 @@ void XUA_Buffer_Decouple(chanend c_mix_out
                     /* Set buffer to send back to zeros buffer */
                     aud_to_host_buffer = aud_to_host_zeros;
 
+#if (NUM_USB_CHAN_IN > 0)
                     /* Update size of zeros buffer (and sampsToWrite) */
                     SetupZerosSendBuffer(aud_to_host_usb_ep, sampFreq, g_curSubSlot_In, aud_to_host_zeros);
+#endif
 
                     /* Reset OUT buffer state */
                     outUnderflow = 1;
@@ -815,8 +819,10 @@ void XUA_Buffer_Decouple(chanend c_mix_out
                 /* Set buffer back to zeros buffer */
                 aud_to_host_buffer = aud_to_host_zeros;
 
+#if (NUM_USB_CHAN_IN > 0)
                 /* Update size of zeros buffer (and sampsToWrite) */
                 SetupZerosSendBuffer(aud_to_host_usb_ep, sampFreq, g_curSubSlot_In, aud_to_host_zeros);
+#endif
 
                 GET_SHARED_GLOBAL(usbSpeed, g_curUsbSpeed);
                 if (usbSpeed == XUD_SPEED_HS)

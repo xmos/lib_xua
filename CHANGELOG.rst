@@ -1,6 +1,11 @@
 lib_xua Change Log
 ==================
 
+UNRELEASED
+----------
+
+  * FIXED: Exception on startup when USB input disabled
+
 3.3.1
 -----
 
