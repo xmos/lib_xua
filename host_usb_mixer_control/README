@@ -59,7 +59,7 @@ Get the weight value in the mixer. The second argument should
 correspond to the values shown by the --display-unit command. Values
 can range from -127db to +128db with the special value -inf for mute.
 
-    --set-mixer-souces  mixer_id, dst_channel_id, src_channel_id
+    --set-mixer-source  mixer_id, dst_channel_id, src_channel_id
 
 Allows the selection of the mixer inputs.  Sets mixer input (dst) to src
 

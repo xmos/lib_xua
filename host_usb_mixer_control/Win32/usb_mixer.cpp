@@ -4,14 +4,6 @@
 #include "usb_mixer.h"
 #include "global.h"
 
-
-//########## Thesycon .dll ##########
-// libwn.h pulls in windows.h
-#include "libwn.h"
-// TUSBAUDIO driver API
-#include "tusbaudioapi.h"
-#include "TUsbAudioApiDll.h"
-
 //driver interface
 TUsbAudioApiDll gDrvApi;
 

@@ -51,9 +51,11 @@
 // version defs
 //#include "version.h"
 
-
+// libwn.h pulls in windows.h
+#include "libwn.h"
 // TUSBAUDIO driver API
 #include "tusbaudioapi.h"
+#include "TUsbAudioApiDll.h"
 
 
 #endif  // __global_h__
