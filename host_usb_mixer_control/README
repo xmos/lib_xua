@@ -8,13 +8,13 @@ DEVICE IN channels 1..6,9..10 and produces 8 outputs: Mixer Output
 
 Before the mixer there is an unit that allows the selection of the 18 mixer inputs
 from all the possible device inputs (DAW and physical audio).  This is 
-an extention unit with id 50 in the descriptors
+an extension unit with id 50 in the descriptors
 
 After the mixer unit there is are channel map units for each output terminal:
 Each of these outputs can select a source from one of 28 channels sources: USB OUT
 channels 1..10, DEVICE IN channels 1..10 and Mixer Output 1..8
 
-The channel map units are extention unit with init ids 51 and 52. This unit
+The channel map units are extension unit with init ids 51 and 52. This unit
 lets you implement arbitrary routings including loopbacks.
 
 The mixer is control on MAC OS X via the command line utility
@@ -23,9 +23,9 @@ libusb-1.0.0.dylib in the dynamic library load path. Sourcing the
 setup.sh script will do this. Source code for the application is
 provided as a guide on how to communicate with the device.
 
-Here are the commands for the mixer application (note that the usb
+Here are the commands for the mixer application (note that the USB
 audio reference design has only one unit so the mixer_id argument
-should alway be 0):
+should always be 0):
 
      --display-info
 
