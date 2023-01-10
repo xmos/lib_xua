@@ -32,7 +32,6 @@ extern unsigned int mutesIn[];
 
 /* Mixer settings */
 #ifdef MIXER
-extern unsigned char mixer1Crossbar[];
 extern short mixer1Weights[];
 
 /* Device channel mapping */
