@@ -265,6 +265,32 @@ static void updateVol(int unitID, int channel, chanend ?c_mix_ctl)
 }
 #endif
 
+void UpdateMixerOutputRouting(chanend c_mix_ctl, unsigned map, unsigned dst, unsigned src)
+{ 
+    outuint(c_mix_ctl, map);
+    outuint(c_mix_ctl, dst);
+    outuint(c_mix_ctl, src);
+    outct(c_mix_ctl, XS1_CT_END);
+}
+
+void UpdateMixMap(chanend c_mix_ctl, int mix, int input, int src)
+{
+    outuint(c_mix_ctl, SET_MIX_MAP);
+    outuint(c_mix_ctl, mix);                 /* Mix bus */
+    outuint(c_mix_ctl, input);               /* Mixer input (cn) */
+    outuint(c_mix_ctl, src);                 /* Source (mixSel[cn]) */
+    outct(c_mix_ctl, XS1_CT_END);
+}
+
+void UpdateMixerWeight(chanend c_mix_ctl, int mix, int index, unsigned val)
+{ 
+    outuint(c_mix_ctl, SET_MIX_MULT);
+    outuint(c_mix_ctl, mix);
+    outuint(c_mix_ctl, index);
+    outuint(c_mix_ctl, val);
+    outct(c_mix_ctl, XS1_CT_END);
+}
+
 /* Handles the audio class specific requests
  * returns:     XUD_RES_OKAY if request dealt with successfully without error,
  *              XUD_RES_RST for device reset
@@ -651,10 +677,12 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
                         {
                             if (c < NUM_USB_CHAN_OUT)
                             {
-                                outuint(c_mix_ctl, SET_SAMPLES_TO_DEVICE_MAP);
-                                outuint(c_mix_ctl, c);
-                                outuint(c_mix_ctl, channelMapAud[c]);
-                                outct(c_mix_ctl, XS1_CT_END);
+                                //outuint(c_mix_ctl, SET_SAMPLES_TO_DEVICE_MAP);
+                                //outuint(c_mix_ctl, c);
+                                //outuint(c_mix_ctl, channelMapAud[c]);
+                                //outct(c_mix_ctl, XS1_CT_END);
+                                UpdateMixerOutputRouting(c_mix_ctl, SET_SAMPLES_TO_DEVICE_MAP, c, channelMapAud[c]);
+
                                 /* Send 0 Length as status stage */
                                 return XUD_DoSetRequestStatus(ep0_in);
                             }
@@ -689,10 +717,12 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
                         {
                             if (!isnull(c_mix_ctl))
                             {
-                                outuint(c_mix_ctl, SET_SAMPLES_TO_HOST_MAP);
-                                outuint(c_mix_ctl, c);
-                                outuint(c_mix_ctl, channelMapUsb[c]);
-                                outct(c_mix_ctl, XS1_CT_END);
+                                //outuint(c_mix_ctl, SET_SAMPLES_TO_HOST_MAP);
+                                //outuint(c_mix_ctl, c);
+                                //outuint(c_mix_ctl, channelMapUsb[c]);
+                                //outct(c_mix_ctl, XS1_CT_END);
+                                UpdateMixerOutputRouting(c_mix_ctl, SET_SAMPLES_TO_HOST_MAP, c, channelMapUsb[c]);
+
                                 return XUD_DoSetRequestStatus(ep0_in);
                             }
                         }
@@ -744,21 +774,23 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
                                         /* Update all mix maps */
                                         for (int i = 0; i < MAX_MIX_COUNT; i++)
                                         {
-                                            outuint(c_mix_ctl, SET_MIX_MAP);
-                                            outuint(c_mix_ctl, i);                  /* Mix bus */
-                                            outuint(c_mix_ctl, cn);                 /* Mixer input */
-                                            outuint(c_mix_ctl, (int) mixSel[cn]);   /* Source */
-                                            outct(c_mix_ctl, XS1_CT_END);
+                                            //outuint(c_mix_ctl, SET_MIX_MAP);
+                                            //outuint(c_mix_ctl, i);                  /* Mix bus */
+                                            //outuint(c_mix_ctl, cn);                 /* Mixer input */
+                                            //outuint(c_mix_ctl, (int) mixSel[cn]);   /* Source */
+                                            //outct(c_mix_ctl, XS1_CT_END);
+                                            UpdateMixMap(c_mix_ctl, i, cn, (int) mixSel[cn]);
                                         }
                                     }
                                     else
                                     {
                                         /* Update relevant mix map */
-                                        outuint(c_mix_ctl, SET_MIX_MAP);          /* Command */
-                                        outuint(c_mix_ctl, (cs-1));               /* Mix bus */
-                                        outuint(c_mix_ctl, cn);                   /* Mixer input */
-                                        outuint(c_mix_ctl, (int) mixSel[cs][cn]); /* Source */
-                                        outct(c_mix_ctl, XS1_CT_END);             /* Wait for handshake back */
+                                        //outuint(c_mix_ctl, SET_MIX_MAP);          /* Command */
+                                        //outuint(c_mix_ctl, (cs-1));               /* Mix bus */
+                                        //outuint(c_mix_ctl, cn);                   /* Mixer input */
+                                        //outuint(c_mix_ctl, (int) mixSel[cs][cn]); /* Source */
+                                        //outct(c_mix_ctl, XS1_CT_END);             /* Wait for handshake back */
+                                        UpdateMixMap(c_mix_ctl, cs-1, cn, (int) mixSel[cs][cn]);
                                     }
 
                                     return XUD_DoSetRequestStatus(ep0_in);
@@ -810,11 +842,12 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
                         }
                         if (!isnull(c_mix_ctl))
                         {
-                             outuint(c_mix_ctl, SET_MIX_MULT);
-                             outuint(c_mix_ctl, (sp.wValue & 0xff) % 8);
-                             outuint(c_mix_ctl, (sp.wValue & 0xff) / 8);
-                             outuint(c_mix_ctl, volume);
-                             outct(c_mix_ctl, XS1_CT_END);
+                             //outuint(c_mix_ctl, SET_MIX_MULT);
+                             //outuint(c_mix_ctl, (sp.wValue & 0xff) % 8);
+                             //outuint(c_mix_ctl, (sp.wValue & 0xff) / 8);
+                             //outuint(c_mix_ctl, volume);
+                             //outct(c_mix_ctl, XS1_CT_END);
+                             UpdateMixerWeight(c_mix_ctl, (sp.wValue & 0xff) % 8, (sp.wValue & 0xff) / 8, volume);
                         }
 
                         /* Send 0 Length as status stage */
