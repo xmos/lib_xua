@@ -356,9 +356,9 @@ void CheckBlock(unsigned samplesOut[], uint32_t expectedOut[], size_t len)
 }
 
 /* From xua_audiohub.xc */
-unsigned DoSampleTransfer(chanend ?c_out, const int readBuffNo, const unsigned underflowWord);
 extern unsigned samplesOut[NUM_USB_CHAN_OUT];
 extern unsigned samplesIn[2][NUM_USB_CHAN_IN];
+#include "xua_audiohub_st.h"
 
 int Fake_XUA_AudioHub(chanend c_mix_aud, chanend c_stim)
 {  

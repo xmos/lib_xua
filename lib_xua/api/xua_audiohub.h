@@ -1,9 +1,9 @@
 // Copyright 2011-2022 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
-#ifndef __XUA_AUDIOHUB_H__
-#define __XUA_AUDIOHUB_H__
+#ifndef _XUA_AUDIOHUB_H_
+#define _XUA_AUDIOHUB_H_
 
-#if __XC__
+#ifdef __XC__
 
 #include "xccompat.h"
 #include "xs1.h"
@@ -80,4 +80,4 @@ void UserBufferManagementInit();
 
 void UserBufferManagement(unsigned sampsFromUsbToAudio[], unsigned sampsFromAudioToUsb[]);
 
-#endif // __XUA_AUDIOHUB_H__
+#endif // _XUA_AUDIOHUB_H_
