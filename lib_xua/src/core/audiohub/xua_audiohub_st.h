@@ -1,3 +1,5 @@
+extern unsigned DoSampleTransfer(chanend ?c_out, const int readBuffNo, const unsigned underflowWord);
+
 #pragma unsafe arrays
 inline unsigned DoSampleTransfer(chanend ?c_out, const int readBuffNo, const unsigned underflowWord)
 {
