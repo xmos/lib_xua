@@ -1,4 +1,4 @@
-// Copyright 2011-2022 XMOS LIMITED.
+// Copyright 2011-2023 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 /**
  * @file xua_audiohub.xc
@@ -89,7 +89,6 @@ unsigned dsdMode = DSD_MODE_OFF;
 #if (XUA_ADAT_TX_EN)
 #include "audiohub_adat.h"
 #endif
-
 #include "xua_audiohub_st.h"
 
 static inline int HandleSampleClock(int frameCount, buffered _XUA_CLK_DIR port:32 p_lrclk)
