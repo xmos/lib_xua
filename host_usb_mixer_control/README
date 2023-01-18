@@ -27,6 +27,9 @@ Here are the commands for the mixer application (note that the USB
 audio reference design has only one unit so the mixer_id argument
 should always be 0):
 
+     --help
+
+
      --display-info
 
 Show information about the device.
@@ -94,6 +97,15 @@ Show audio output channel map i.e. for each DAW output to host, what the source 
      --display-daw-channel-map-sources  
 
 Show the DAW output channel map sources.
+
+     --get-mixer-levels-input
+
+     --get-mixer-levels-output
+
+     --vendor-audio-request-get   bRequest, ControlSelector, ChannelNumber, UnitId
+
+     --vendor-audio-request-set   bRequest, ControlSelector, ChannelNumber, UnitId, Data[0], Data[1],...
+
 
 
 

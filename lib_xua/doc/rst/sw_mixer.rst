@@ -87,6 +87,9 @@ intended as an example of how you might add mixer control to your own control ap
 intended to be exposed to end users. 
 
 For details, consult the README file in the host_usb_mixer_control directory.
+A list of arguments can also be seen with::
+
+  $ ./xmos_mixer --help
 
 The main requirements of this control utility are to
 
