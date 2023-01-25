@@ -419,7 +419,6 @@ void usage_error()
 
 int main (int argc, char **argv) {
 
-    printf("I'm running\n");
   unsigned int mixer_index = 0;
   unsigned int result = 0;
 
