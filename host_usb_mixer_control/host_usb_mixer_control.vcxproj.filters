@@ -15,18 +15,18 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Win32\global.h">
+    <ClInclude Include="usb_mixer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="usb_mixer.h">
+    <ClInclude Include="Win\global.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Win32\usb_mixer.cpp">
+    <ClCompile Include="mixer_app.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="mixer_app.cpp">
+    <ClCompile Include="Win\usb_mixer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
