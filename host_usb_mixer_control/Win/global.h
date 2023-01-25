@@ -1,6 +1,22 @@
-// Copyright 2022-2023 XMOS LIMITED.
-// This Software is subject to the terms of the XMOS Public Licence: Version 1.
-                                
+/**
+ * Module:  host_usb_mixer_control
+ * Version: 1v0
+ * Build:   d94b0511afe40ece896637f88c6379f9b6f9f603
+ * File:    global.h
+ *
+ * The copyrights, all other intellectual and industrial 
+ * property rights are retained by XMOS and/or its licensors. 
+ * Terms and conditions covering the use of this code can
+ * be found in the Xmos End User License Agreement.
+ *
+ * Copyright XMOS Ltd 2010
+ *
+ * In the case where this code is a modification of existing code
+ * under a separate license, the separate license terms are shown
+ * below. The modifications to the code are still covered by the 
+ * copyright notice above.
+ *
+ **/                                   
 /************************************************************************
  *
  *  Module:       global.h

@@ -1,5 +1,3 @@
-// Copyright 2022-2023 XMOS LIMITED.
-// This Software is subject to the terms of the XMOS Public Licence: Version 1.
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -418,6 +416,7 @@ void usage_error()
 
 int main (int argc, char **argv) {
 
+    printf("I'm running\n");
   unsigned int mixer_index = 0;
   unsigned int result = 0;
 
