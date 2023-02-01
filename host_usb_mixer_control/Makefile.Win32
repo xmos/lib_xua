@@ -1,0 +1,4 @@
+THESYCON_DIR = C:\Program/ Files\Thesycon\XMOSinternalUsbAudio_v5.50.0_eval_2022-11-17_SDK
+
+all:
+	cl -o xmos_mixer.exe -I. -I Win32 -I $(THESYCON_DIR)\source\tusbaudioapi_inc -I $(THESYCON_DIR)\source\libwn_min mixer_app.cpp Win32\usb_mixer.cpp $(THESYCON_DIR)\lib\release\x64\tusbaudioapi.lib
