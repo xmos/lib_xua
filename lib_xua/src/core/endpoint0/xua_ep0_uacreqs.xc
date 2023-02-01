@@ -677,10 +677,6 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
                         {
                             if (c < NUM_USB_CHAN_OUT)
                             {
-                                //outuint(c_mix_ctl, SET_SAMPLES_TO_DEVICE_MAP);
-                                //outuint(c_mix_ctl, c);
-                                //outuint(c_mix_ctl, channelMapAud[c]);
-                                //outct(c_mix_ctl, XS1_CT_END);
                                 UpdateMixerOutputRouting(c_mix_ctl, SET_SAMPLES_TO_DEVICE_MAP, c, channelMapAud[c]);
 
                                 /* Send 0 Length as status stage */
@@ -717,10 +713,6 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
                         {
                             if (!isnull(c_mix_ctl))
                             {
-                                //outuint(c_mix_ctl, SET_SAMPLES_TO_HOST_MAP);
-                                //outuint(c_mix_ctl, c);
-                                //outuint(c_mix_ctl, channelMapUsb[c]);
-                                //outct(c_mix_ctl, XS1_CT_END);
                                 UpdateMixerOutputRouting(c_mix_ctl, SET_SAMPLES_TO_HOST_MAP, c, channelMapUsb[c]);
 
                                 return XUD_DoSetRequestStatus(ep0_in);
@@ -774,22 +766,15 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
                                         /* Update all mix maps */
                                         for (int i = 0; i < MAX_MIX_COUNT; i++)
                                         {
-                                            //outuint(c_mix_ctl, SET_MIX_MAP);
-                                            //outuint(c_mix_ctl, i);                  /* Mix bus */
-                                            //outuint(c_mix_ctl, cn);                 /* Mixer input */
-                                            //outuint(c_mix_ctl, (int) mixSel[cn]);   /* Source */
-                                            //outct(c_mix_ctl, XS1_CT_END);
+                                            /* i : Mix bus */
+                                            /* cn: Mixer input */
+                                            /* mixSel[i][cn]): Source */
                                             UpdateMixMap(c_mix_ctl, i, cn, (int) mixSel[cn]);
                                         }
                                     }
                                     else
                                     {
                                         /* Update relevant mix map */
-                                        //outuint(c_mix_ctl, SET_MIX_MAP);          /* Command */
-                                        //outuint(c_mix_ctl, (cs-1));               /* Mix bus */
-                                        //outuint(c_mix_ctl, cn);                   /* Mixer input */
-                                        //outuint(c_mix_ctl, (int) mixSel[cs][cn]); /* Source */
-                                        //outct(c_mix_ctl, XS1_CT_END);             /* Wait for handshake back */
                                         UpdateMixMap(c_mix_ctl, cs-1, cn, (int) mixSel[cs][cn]);
                                     }
 
@@ -838,7 +823,7 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
                         }
                         else
                         {
-                            volume = db_to_mult(mixer1Weights[sp.wValue & 0xff], 8, 25);
+                            volume = db_to_mult(mixer1Weights[sp.wValue & 0xff], XUA_MIXER_DB_FRAC_BITS, XUA_MIXER_MULT_FRAC_BITS);
                         }
                         if (!isnull(c_mix_ctl))
                         {

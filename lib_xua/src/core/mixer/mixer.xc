@@ -1,7 +1,9 @@
-// Copyright 2011-2022 XMOS LIMITED.
+// Copyright 2011-2023 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
+#define XASSERT_UNIT MIXER
+#include "xassert.h"
+
 #include <xs1.h>
-#include <print.h>
 #include "xua.h"
 #include "xc_ptr.h"
 #include "xua_commands.h"
@@ -36,14 +38,11 @@ static unsigned abs(int x)
 #endif
 
 static int samples_array[NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + MAX_MIX_COUNT + 1]; /* One larger for an "off" channel for mixer sources" */
-xc_ptr samples;
 
 unsafe
 {
    static int volatile * const unsafe ptr_samples = samples_array;
 }
-
-int savedsamples2[NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + MAX_MIX_COUNT];
 
 int samples_to_host_map_array[NUM_USB_CHAN_IN];
 xc_ptr samples_to_host_map;
@@ -77,18 +76,6 @@ static int samples_from_host_streams[NUM_USB_CHAN_OUT]; /* Peak samples for audi
 static int samples_mixer_outputs[MAX_MIX_COUNT];        /* Peak samples out of the mixer */
 xc_ptr samples_mixer_outputs_ptr;
 
-#if 0
-#pragma xta command "add exclusion mixer1_rate_change"
-#pragma xta command "analyse path mixer1_req mixer1_req"
-#pragma xta command "set required - 10400 ns"             /* 96kHz */
-#endif
-
-#if 0
-#pragma xta command "add exclusion mixer2_rate_change"
-#pragma xta command "analyse path mixer2_req mixer2_req"
-#pragma xta command "set required - 10400 ns"             /* 96kHz */
-#endif
-
 #if defined (LEVEL_METER_LEDS) || defined (LEVEL_METER_HOST)
 static inline void ComputeMixerLevel(int sample, int i)
 {
@@ -110,20 +97,20 @@ static inline void ComputeMixerLevel(int sample, int i)
 #endif
 #ifdef FAST_MIXER
 void setPtr(int src, int dst, int mix);
-int doMix0(xc_ptr samples, xc_ptr mult);
-int doMix1(xc_ptr samples, xc_ptr mult);
-int doMix2(xc_ptr samples, xc_ptr mult);
-int doMix3(xc_ptr samples, xc_ptr mult);
-int doMix4(xc_ptr samples, xc_ptr mult);
-int doMix5(xc_ptr samples, xc_ptr mult);
-int doMix6(xc_ptr samples, xc_ptr mult);
-int doMix7(xc_ptr samples, xc_ptr mult);
-int doMix8(xc_ptr samples, xc_ptr mult);
+int doMix0(int * unsafe samples, xc_ptr mult);
+int doMix1(int * unsafe samples, xc_ptr mult);
+int doMix2(int * unsafe samples, xc_ptr mult);
+int doMix3(int * unsafe samples, xc_ptr mult);
+int doMix4(int * unsafe samples, xc_ptr mult);
+int doMix5(int * unsafe samples, xc_ptr mult);
+int doMix6(int * unsafe samples, xc_ptr mult);
+int doMix7(int * unsafe samples, xc_ptr mult);
+int doMix8(int * unsafe samples, xc_ptr mult);
 #else
 /* DO NOT inline, causes 10.4.2 tools to add extra loads in loop */
 /* At 18 x 12dB we could get 64 x bigger */
 #pragma unsafe arrays
-static inline int doMix(xc_ptr samples, xc_ptr ptr, xc_ptr mult)
+static inline int doMix(xc_ptr samples, xc_ptr mixMapSlice, xc_ptr mixMultSlice)
 {
     int h=0;
     int l=0;
@@ -132,18 +119,17 @@ static inline int doMix(xc_ptr samples, xc_ptr ptr, xc_ptr mult)
 #pragma loop unroll
     for (int i=0; i<MIX_INPUTS; i++)
     {
-      int sample;
-      int index;
-      int m;
-      read_via_xc_ptr_indexed(index, ptr, i);
-      read_via_xc_ptr_indexed(sample,samples,index);
-      read_via_xc_ptr_indexed(m, mult, i);
-      {h,l} = macs(sample, m, h, l);
+        int sample;
+        int source;
+        int weight;
+        read_via_xc_ptr_indexed(source, mixMapSlice, i);
+        read_via_xc_ptr_indexed(sample, samples, source);
+        read_via_xc_ptr_indexed(weight, mixMultSlice, i);
+        {h,l} = macs(sample, weight, h, l);
     }
 
-#if 1
     /* Perform saturation */
-    l = sext(h, 25);
+    l = sext(h, XUA_MIXER_MULT_FRAC_BITS);
 
     if(l != h)
     {
@@ -152,7 +138,6 @@ static inline int doMix(xc_ptr samples, xc_ptr ptr, xc_ptr mult)
         else
             h = (0x7fffff00>>7);
     }
-#endif
     return h<<7;
 }
 #endif
@@ -179,7 +164,6 @@ static inline void GiveSamplesToHost(chanend c, xc_ptr ptr, xc_ptr multIn)
 #endif
         unsafe
         {
-            //read_via_xc_ptr_indexed(sample,samples,index);
             sample = ptr_samples[index];
         }
 
@@ -269,7 +253,12 @@ static inline void GiveSamplesToDevice(chanend c, xc_ptr ptr, xc_ptr multOut)
         read_via_xc_ptr_indexed(index, ptr, i);
 
         /* Read the actual sample value */
-        read_via_xc_ptr_indexed(sample, samples, index);
+        //read_via_xc_ptr_indexed(sample, samples, index);
+        unsafe
+        {
+            /* Read the actual sample value */
+            sample = ptr_samples[index];
+        }
 #else
         unsafe
         {
@@ -284,7 +273,6 @@ static inline void GiveSamplesToDevice(chanend c, xc_ptr ptr, xc_ptr multOut)
         read_via_xc_ptr_indexed(mult, multOut, i);
         {h, l} = macs(mult, sample, 0, 0);
         h<<=3;              // Shift used to be done in audio thread but now done here incase of 32bit support
-#error
 #if (STREAM_FORMAT_OUTPUT_RESOLUTION_32BIT_USED == 1)
         h |= (l >>29)& 0x7; // Note: This step is not required if we assume sample depth is 24bit (rather than 32bit)
                         // Note: We need all 32bits for Native DSD
@@ -307,7 +295,7 @@ static inline void GetSamplesFromDevice(chanend c)
 #endif
 
 #pragma loop unroll
-    for (int i=0;i<NUM_USB_CHAN_IN;i++)
+    for (int i=0; i<NUM_USB_CHAN_IN; i++)
     {
         int sample;
         int x;
@@ -334,12 +322,13 @@ static inline void GetSamplesFromDevice(chanend c)
         /* Do the multiply */
         {h, l} = macs(mult, sample, 0, 0);
         h <<=3;
-        write_via_xc_ptr_indexed(samples_array, NUM_USB_CHAN_OUT+i, h);
+        write_via_xc_ptr_indexed(samples_array, XUA_MIXER_OFFSET_IN+i, h);
 #else
         /* No volume processing */
         unsafe
         {
-            ptr_samples[NUM_USB_CHAN_OUT + i] = sample;
+            assert((XUA_MIXER_OFFSET_IN + i) < (NUM_USB_CHAN_IN + NUM_USB_CHAN_OUT));
+            ptr_samples[XUA_MIXER_OFFSET_IN + i] = sample;
         }
 #endif
   }
@@ -394,12 +383,19 @@ static void mixer1(chanend c_host, chanend c_mix_ctl, chanend c_mixer2)
                         break;
 
                     case SET_MIX_MULT:
+                        
                         mix = inuint(c_mix_ctl);
                         index = inuint(c_mix_ctl);
                         val = inuint(c_mix_ctl);
                         inct(c_mix_ctl);
 
-                        write_word_to_mix_mult(mix, index, val);
+                        if((index < MIX_INPUTS) && (mix < MAX_MIX_COUNT))
+                        {
+                            write_word_to_mix_mult(mix, index, val);
+                        }
+                        
+                        assert((index < MIX_INPUTS) && (mix < MAX_MIX_COUNT) && msg("Mix mult index out of range"));
+                       
                         break;
 
                     case SET_MIX_MAP:
@@ -520,9 +516,8 @@ static void mixer1(chanend c_host, chanend c_mix_ctl, chanend c_mixer2)
 
 #pragma loop unroll
             /* Reset the mix values back to 0 */
-            for (int i=0;i<MAX_MIX_COUNT;i++)
+            for (int i=0; i<MAX_MIX_COUNT; i++)
             {
-                //write_via_xc_ptr_indexed(samples, (NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + i), 0);
                 unsafe
                 {
                     ptr_samples[NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + i] = 0;
@@ -544,13 +539,15 @@ static void mixer1(chanend c_host, chanend c_mix_ctl, chanend c_mixer2)
             inuint(c_mixer2);
 
             /* Do the mixing */
+            unsafe
+            {
 #ifdef FAST_MIXER
-            mixed = doMix0(samples, mix_mult_slice(0));
+                mixed = doMix0(ptr_samples, mix_mult_slice(0));
 #else
-            mixed = doMix(samples, mix_map_slice(0),mix_mult_slice(0));
+                mixed = doMix(ptr_samples, mix_map_slice(0), mix_mult_slice(0));
 #endif
-            write_via_xc_ptr_indexed(samples_array, (NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + 0), mixed);
-
+                ptr_samples[XUA_MIXER_OFFSET_MIX + 0] = mixed;
+            }
 #if defined (LEVEL_METER_HOST) || defined(LEVEL_METER_LEDS)
             ComputeMixerLevel(mixed, 0);
 #endif
@@ -559,14 +556,16 @@ static void mixer1(chanend c_host, chanend c_mix_ctl, chanend c_mixer2)
             if (!mixer1_mix2_flag)
 #endif
             {
-
 #if MAX_MIX_COUNT > 2
+                unsafe
+                {
 #ifdef FAST_MIXER
-                mixed = doMix2(samples, mix_mult_slice(2));
+                    mixed = doMix2(ptr_samples, mix_mult_slice(2));
 #else
-                mixed = doMix(samples, mix_map_slice(2),mix_mult_slice(2));
+                    mixed = doMix(ptr_samples, mix_map_slice(2), mix_mult_slice(2));
 #endif
-                write_via_xc_ptr_indexed(samples_array, (NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + 2), mixed);
+                    ptr_samples[XUA_MIXER_OFFSET_MIX + 2] = mixed;
+                }
 
 #if defined (LEVEL_METER_HOST) || defined(LEVEL_METER_LEDS)
                 ComputeMixerLevel(mixed, 2);
@@ -574,26 +573,30 @@ static void mixer1(chanend c_host, chanend c_mix_ctl, chanend c_mixer2)
 #endif
 
 #if MAX_MIX_COUNT > 4
+                unsafe
+                {
 #ifdef FAST_MIXER
-                mixed = doMix4(samples, mix_mult_slice(4));
+                    mixed = doMix4(ptr_samples, mix_mult_slice(4));
 #else
-                mixed = doMix(samples, mix_map_slice(4),mix_mult_slice(4));
+                    mixed = doMix(samples, mix_map_slice(4), mix_mult_slice(4));
 #endif
-                write_via_xc_ptr_indexed(samples_array, (NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + 4), mixed);
-
+                    ptr_samples[XUA_MIXER_OFFSET_MIX + 4] = mixed;
+                }
 #if defined (LEVEL_METER_HOST) || defined(LEVEL_METER_LEDS)
                 ComputeMixerLevel(mixed, 4);
 #endif
 #endif
 
 #if MAX_MIX_COUNT > 6
+                unsafe
+                {
 #ifdef FAST_MIXER
-                mixed = doMix6(samples, mix_mult_slice(6));
+                    mixed = doMix6(ptr_samples, mix_mult_slice(6));
 #else
-                mixed = doMix(samples, mix_map_slice(6),mix_mult_slice(6));
+                    mixed = doMix(samples, mix_map_slice(6), mix_mult_slice(6));
 #endif
-                write_via_xc_ptr_indexed(samples, (NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + 6), mixed);
-
+                    ptr_samples[XUA_MIXER_OFFSET_MIX + 6] = mixed;
+                }
 #if defined (LEVEL_METER_HOST) || defined(LEVEL_METER_LEDS)
                 ComputeMixerLevel(mixed, 6);
 #endif
@@ -661,7 +664,10 @@ static void mixer2(chanend c_mixer1, chanend c_audio)
 
             for (int i=0;i<MAX_MIX_COUNT;i++)
             {
-                write_via_xc_ptr_indexed(samples, (NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + i), 0);
+                unsafe
+                {
+                    ptr_samples[NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + i] = 0;
+                }
             }
 
             /* Wait for handshake and pass on */
@@ -679,19 +685,19 @@ static void mixer2(chanend c_mixer1, chanend c_audio)
 
             /* Do the mixing */
 #if MAX_MIX_COUNT > 1
+            unsafe
+            {
 #ifdef FAST_MIXER
-            mixed = doMix1(samples, mix_mult_slice(1));
+                mixed = doMix1(ptr_samples, mix_mult_slice(1));
 #else
-            mixed = doMix(samples, mix_map_slice(1),mix_mult_slice(1));
+                mixed = doMix(samples, mix_map_slice(1), mix_mult_slice(1));
 #endif
-
-            write_via_xc_ptr_indexed(samples, (NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + 1), mixed);
-
+                ptr_samples[NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + 1] = mixed;
+            }
 #if defined (LEVEL_METER_HOST) || defined(LEVEL_METER_LEDS)
             ComputeMixerLevel(mixed, 1);
 #endif
 #endif
-
 
 #if (MAX_FREQ > 96000)
             /* Fewer mixes when running higher than 96kHz */
@@ -699,40 +705,45 @@ static void mixer2(chanend c_mixer1, chanend c_audio)
 #endif
             {
 #if MAX_MIX_COUNT > 3
+                unsafe
+                {
 #ifdef FAST_MIXER
-                mixed = doMix3(samples, mix_mult_slice(3));
+                    mixed = doMix3(ptr_samples, mix_mult_slice(3));
 #else
-                mixed = doMix(samples, mix_map_slice(3),mix_mult_slice(3));
+                    mixed = doMix(samples, mix_map_slice(3), mix_mult_slice(3));
 #endif
-
-                write_via_xc_ptr_indexed(samples, (NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + 3), mixed);
-
+                    ptr_samples[NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + 3] = mixed;
+                }
 #if defined (LEVEL_METER_HOST) || defined(LEVEL_METER_LEDS)
                 ComputeMixerLevel(mixed, 3);
 #endif
 #endif
 
 #if MAX_MIX_COUNT > 5
+                unsafe
+                {
 #ifdef FAST_MIXER
-                mixed = doMix5(samples, mix_mult_slice(5));
+                    mixed = doMix5(ptr_samples, mix_mult_slice(5));
 #else
-                mixed = doMix(samples, mix_map_slice(5),mix_mult_slice(5));
+                    mixed = doMix(samples, mix_map_slice(5), mix_mult_slice(5));
 #endif
-                write_via_xc_ptr_indexed(samples, NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + 5, mixed);
-
+                    ptr_samples[NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + 5] = mixed;
+                }
 #if defined (LEVEL_METER_HOST) || defined(LEVEL_METER_LEDS)
                 ComputeMixerLevel(mixed, 5);
 #endif
 #endif
 
 #if MAX_MIX_COUNT > 7
+                unsafe
+                {
 #ifdef FAST_MIXER
-                mixed = doMix7(samples, mix_mult_slice(7));
+                    mixed = doMix7(ptr_samples, mix_mult_slice(7));
 #else
-                mixed = doMix(samples, mix_map_slice(7),mix_mult_slice(7));
+                    mixed = doMix(samples, mix_map_slice(7), mix_mult_slice(7));
 #endif
-
-                write_via_xc_ptr_indexed(samples,  NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + 7, mixed);
+                    ptr_samples[NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + 7] = mixed;
+                }
 #if defined (LEVEL_METER_HOST) || defined(LEVEL_METER_LEDS)
                 ComputeMixerLevel(mixed, 7);
 #endif
@@ -751,7 +762,7 @@ void mixer(chanend c_mix_in, chanend c_mix_out, chanend c_mix_ctl)
     multOut = array_to_xc_ptr((multOut_array,unsigned[]));
     multIn = array_to_xc_ptr((multIn_array,unsigned[]));
 
-    samples = array_to_xc_ptr((samples_array,unsigned[]));
+    //samples = array_to_xc_ptr((samples_array,unsigned[]));
     samples_to_host_map = array_to_xc_ptr((samples_to_host_map_array,unsigned[]));
     samples_to_device_map = array_to_xc_ptr((samples_to_device_map_array,unsigned[]));
 
@@ -770,7 +781,6 @@ void mixer(chanend c_mix_in, chanend c_mix_out, chanend c_mix_ctl)
 
     for (int i=0;i<NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + MAX_MIX_COUNT;i++)
     unsafe {
-        //write_via_xc_ptr_indexed(samples,i,0);
         ptr_samples[i] = 0;
     }
 
@@ -779,7 +789,7 @@ void mixer(chanend c_mix_in, chanend c_mix_out, chanend c_mix_ctl)
         for (int i=0;i<NUM_USB_CHAN_OUT;i++)
         {
             //samples_to_device_map_array[i] = i;
-            asm("stw %0, %1[%2]":: "r"(i), "r"(samples_to_device_map), "r"(i));
+            asm("stw %0, %1[%2]":: "r"(i), "r"(samples_to_device_map), "r"(XUA_MIXER_OFFSET_OUT+i));
         }
     }
 
@@ -799,7 +809,7 @@ void mixer(chanend c_mix_in, chanend c_mix_out, chanend c_mix_ctl)
 
     for (int i=0;i<NUM_USB_CHAN_IN;i++)
     {
-      write_via_xc_ptr_indexed(samples_to_host_map, i, NUM_USB_CHAN_OUT + i);
+      write_via_xc_ptr_indexed(samples_to_host_map, i, XUA_MIXER_OFFSET_IN + i);
     }
 
 #if MAX_MIX_COUNT> 0
@@ -809,7 +819,7 @@ void mixer(chanend c_mix_in, chanend c_mix_out, chanend c_mix_ctl)
 #ifndef FAST_MIXER
           write_word_to_mix_map(i,j, j < 16 ? j : j + 2);
 #endif
-          write_word_to_mix_mult(i,j, i==j ? db_to_mult(0, 8, 25) : 0);
+          write_word_to_mix_mult(i,j, i==j ? db_to_mult(0, XUA_MIXER_DB_FRAC_BITS, XUA_MIXER_MULT_FRAC_BITS) : 0);
         }
 #endif
 
