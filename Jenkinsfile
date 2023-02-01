@@ -149,8 +149,8 @@ pipeline {
               }
               dir("host_usb_mixer_control") {
                   runVS('msbuild host_usb_mixer_control.vcxproj /property:Configuration=Release /property:Platform=x64')
-                  runVS('mkdir Win/x64')
-                  runVS('move bin/Release/x64/host_usb_mixer_control.exe Win/x64/xmos_mixer.exe')
+                  sh 'mkdir Win/x64'
+                  sh 'mv bin/Release/x64/host_usb_mixer_control.exe Win/x64/xmos_mixer.exe'
                   archiveArtifacts artifacts: "Win/x64/xmos_mixer.exe", fingerprint: true
               }
             }
