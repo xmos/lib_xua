@@ -148,12 +148,10 @@ pipeline {
                 runVS('nmake /f Makefile.Win32')
               }
               dir("host_usb_mixer_control") {
-                  println "Stage running on:"
-                  println env.NODE_NAME
-                  runVS('msbuild host_usb_mixer_control.vcxproj /property:Configuration=Release')
-                  runVS('mkdir WIN/x86')
-                  runVS('ren bin/Release/x64/host_usb_mixer_control.exe WIN/x64/xmos_mixer.exe')
-                  archiveArtifacts artifacts: "WIN/x64/xmos_mixer.exe", fingerprint: true
+                  runVS('msbuild host_usb_mixer_control.vcxproj /property:Configuration=Release /property:Platform=x64')
+                  runVS('mkdir Win/x64')
+                  runVS('move bin/Release/x64/host_usb_mixer_control.exe Win/x64/xmos_mixer.exe')
+                  archiveArtifacts artifacts: "Win/x64/xmos_mixer.exe", fingerprint: true
               }
             }
           }
