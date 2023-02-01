@@ -87,6 +87,9 @@ intended as an example of how you might add mixer control to your own control ap
 intended to be exposed to end users. 
 
 For details, consult the README file in the host_usb_mixer_control directory.
+A list of arguments can also be seen with::
+
+  $ ./xmos_mixer --help
 
 The main requirements of this control utility are to
 
@@ -102,78 +105,147 @@ The main requirements of this control utility are to
     functionality to their end users.
 
 Whilst using the XMOS Host control example application, consider the example of setting the
-mixer to perform a loop-back from analogue inputs 1 and 2 to analogue outputs 1 and 2. 
+mixer to perform a loop-back from analogue inputs 1 & 2 to analogue outputs 1 & 2. 
 
-Firstly consider the inputs to the mixer. The following will displays which channels are mapped 
-to which mixer inputs:: 
+.. note::
 
-  ./xmos_mixer --display-aud-channel-map 0
+    The command outputs shown are examples; the actual output will depend on the mixer configuration.
 
-The following command will displays which channels could possibly be mapped to mixer inputs. Notice
-that analogue inputs 1 and 2 are on mixer inputs 10 and 11::
+The following will show the index for each device output along with which channel is currently mapped to it.
+In this example the analogue outputs 1 & 2 are 0 & 1 respectively:: 
 
-./xmos_mixer --display-aud-channel-map-sources 0
+  $ ./xmos_mixer --display-aud-channel-map
 
-Now examine the audio output mapping using the following command::
+    Audio Output Channel Map
+    ------------------------
+  
+  0 (DEVICE OUT - Analogue 1) source is  0 (DAW OUT - Analogue 1)
+  1 (DEVICE OUT - Analogue 2) source is  1 (DAW OUT - Analogue 2)
+  2 (DEVICE OUT - SPDIF 1) source is  2 (DAW OUT - SPDIF 1)
+  3 (DEVICE OUT - SPDIF 2) source is  3 (DAW OUT - SPDIF 2)
+  $ _
 
-  ./xmos_mixer --display-aud-channel-map 0
+The DAW Output Map can be seen with::
 
-This displays which channels are mapped to which outputs. By default all
-of these bypass the mixer. We can also see what all the possible
-mappings are with the following command::
+  $ ./xmos_mixer --display-daw-channel-map
 
-  ./xmos_mixer --display-aud-channel-map-sources 0
+    DAW Output To Host Channel Map
+    ------------------------
+  
+  0 (DEVICE IN - Analogue 1) source is  4 (DEVICE IN - Analogue 1)
+  1 (DEVICE IN - Analogue 2) source is  5 (DEVICE IN - Analogue 2)
+  $ _
 
-We will now map the first two mixer outputs to physical outputs 1 and 2::
+.. note::
 
-  ./xmos_mixer --set-aud-channel-map 0 26
-  ./xmos_mixer --set-aud-channel-map 1 27
+    In both cases, by default, these bypass the mixer.
+
+The following command will list the channels which can be mapped to the device outputs from the 
+Audio Output Channel Map. Note that, in this example, analogue inputs 1 & 2 are source 4 & 5 and 
+Mix 1 & 2 are source 6 & 7::
+
+  $ ./xmos_mixer --display-aud-channel-map-sources
+
+    Audio Output Channel Map Source List
+    ------------------------------------
+
+  0 (DAW OUT - Analogue 1)
+  1 (DAW OUT - Analogue 2)
+  2 (DAW OUT - SPDIF 1)
+  3 (DAW OUT - SPDIF 2)
+  4 (DEVICE IN - Analogue 1)
+  5 (DEVICE IN - Analogue 2)
+  6 (MIX - Mix 1)
+  7 (MIX - Mix 2)
+  $ _
+
+Using the indices from the previous commands, we will now re-map the first two mixer channels (Mix 1 & Mix 2) to device outputs 1 & 2::
+
+  $ ./xmos_mixer --set-aud-channel-map 0 6
+  $ ./xmos_mixer --set-aud-channel-map 1 7
+  $ _
 
 You can confirm the effect of this by re-checking the map::
 
-  ./xmos_mixer --display-aud-channel-map 0
+  $ ./xmos_mixer --display-aud-channel-map
 
-This now derives analogue outputs 1 and 2 from the mixer, rather than directly from USB. However,
-since the mixer is still mapped to pass the USB channels through to the outputs there will be no
+    Audio Output Channel Map
+    ------------------------
+  
+  0 (DEVICE OUT - Analogue 1) source is  6 (MIX - Mix 1)
+  1 (DEVICE OUT - Analogue 2) source is  7 (MIX - Mix 2)
+  2 (DEVICE OUT - SPDIF 1) source is  2 (DAW OUT - SPDIF 1)
+  3 (DEVICE OUT - SPDIF 2) source is  3 (DAW OUT - SPDIF 2)
+  $ _
+
+This now derives analogue outputs 1 & 2 from the mixer, rather than directly from USB. However,
+since the mixer is mapped, by default, to just pass the USB channels through to the outputs there will be no
 functional change.
 
-The mixer nodes need to be individually set. They can be displayed
+
+.. note::
+
+  The USB audio reference design has only one unit so the mixer_id argument should always be 0.
+
+The mixer nodes need to be individually set. The nodes in mixer_id 0 can be displayed
 with the following command::
 
-  ./xmos_mixer --display-mixer-nodes 0
+  $ ./xmos_mixer --display-mixer-nodes 0
 
-To get the audio from the analogue inputs to outputs 1 and 2, nodes 80
-and 89 need to be set::
+    Mixer Values (0)
+    ----------------
 
-  ./xmos_mixer --set-value 0 80 0
-  ./xmos_mixer --set-value 0 89 0
+                         Mixer outputs
+                                  1              2
+    DAW - Analogue 1       0:[0000.000]   1:[  -inf  ]
+    DAW - Analogue 2       2:[  -inf  ]   3:[0000.000]
+    DAW - SPDIF 1          4:[  -inf  ]   5:[  -inf  ]
+    DAW - SPDIF 2          6:[  -inf  ]   7:[  -inf  ]
+    AUD - Analogue 1       8:[  -inf  ]   9:[  -inf  ]
+    AUD - Analogue 2      10:[  -inf  ]  11:[  -inf  ]
+  $ _
+
+With mixer outputs 1 & 2 mapped to device outputs analogue 1 & 2; to get the audio from the analogue inputs to device 
+outputs mixer_id 0 node 8 and node 11 need to be set to 0db::
+
+  $ ./xmos_mixer --set-value 0 8 0
+  $ ./xmos_mixer --set-value 0 11 0
+  $ _
 
 At the same time, the original mixer outputs can be muted::
 
-  ./xmos_mixer --set-value 0 0 -inf
-  ./xmos_mixer --set-value 0 9 -inf
+  $ ./xmos_mixer --set-value 0 0 -inf
+  $ ./xmos_mixer --set-value 0 3 -inf
+  $ _
 
-Now audio inputs on analogue 1/2 should be heard on outputs 1/2. 
+Now audio inputs on analogue 1 and 2 should be heard on outputs 1 and 2 respectively. 
 
-As mentioned above, the flexibility of the mixer is such that there will be multiple ways to create
-a particular mix. Another option to create the same routing would be to change the mixer sources
-such that mixer 1/2 outputs come from the analogue inputs. 
+.. As mentioned above, the flexibility of the mixer is such that there will be multiple ways to create
+.. a particular mix. Another option to create the same routing would be to change the mixer sources
+.. such that mixer outputs 1 and 2 come from the analogue inputs 1 and 2. 
 
-To demonstrate this, firstly undo the changes above (or simply reset the device)::
+.. To demonstrate this, firstly undo the changes above (or simply reset the device)::
 
-  ./xmos_mixer --set-value 0 80 -inf
-  ./xmos_mixer --set-value 0 89 -inf
-  ./xmos_mixer --set-value 0 0 0
-  ./xmos_mixer --set-value 0 9 0
+..   $ ./xmos_mixer --set-value 0 8 -inf
+..   $ ./xmos_mixer --set-value 0 11 -inf
+..   $ ./xmos_mixer --set-value 0 0 0
+..   $ ./xmos_mixer --set-value 0 3 0
+..   $ _
 
-The mixer should now have the default values. The sources for mixer 1/2 can now be changed::
+.. The mixer should now have the default values. The sources for mixer 0 output 1 and 2 can now be changed 
+.. using indices from the Audio Output Channel Map Source List::
 
-  ./xmos_mixer --set-mixer-source 0 0 10
-  ./xmos_mixer --set-mixer-source 0 1 11
+..   $ ./xmos_mixer --set-mixer-source 0 0 4
 
-If you re-run the following command then the first column now has "AUD - Analogue 1 and 2" rather
-than "DAW (Digital Audio Workstation i.e. the host) - Analogue 1 and 2" confirming the new mapping. 
-Again, by playing audio into analogue inputs 1/2 this can be heard looped through to analogue outputs 1/2::
+..      Set mixer(0) input 0 to device input 4 (AUD - Analogue 1)
+..   $ ./xmos_mixer --set-mixer-source 0 1 5
+
+..      Set mixer(0) input 1 to device input 5 (AUD - Analogue 2)
+..   $ _
+
+.. If you re-run the following command then the first column now has "AUD - Analogue 1 and 2" rather
+.. than "DAW (Digital Audio Workstation i.e. the host) - Analogue 1 and 2" confirming the new mapping. 
+.. Again, by playing audio into analogue inputs 1/2 this can be heard looped through to analogue outputs 1/2::
   
-    ./xmos_mixer --display-mixer-nodes 0
+..   $ ./xmos_mixer --display-mixer-nodes 0
 
