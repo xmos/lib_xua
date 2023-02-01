@@ -1,2 +1,2 @@
 all:
-	g++ -g -o xmos_mixer OSX/usb_mixer.cpp mixer_app.cpp -I. -IOSX OSX/libusb-1.0.0.dylib -m64
+	g++ -g -o xmos_mixer OSX/usb_mixer.cpp mixer_app.cpp -I. -IOSX OSX/libusb-1.0.0.dylib -arch x86_64
