@@ -37,6 +37,8 @@ static unsigned abs(int x)
 }
 #endif
 
+static const int SOURCE_COUNT = NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + MAX_MIX_COUNT + 1;
+
 static int samples_array[NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + MAX_MIX_COUNT + 1]; /* One larger for an "off" channel for mixer sources" */
 
 unsafe
@@ -253,7 +255,6 @@ static inline void GiveSamplesToDevice(chanend c, xc_ptr ptr, xc_ptr multOut)
         read_via_xc_ptr_indexed(index, ptr, i);
 
         /* Read the actual sample value */
-        //read_via_xc_ptr_indexed(sample, samples, index);
         unsafe
         {
             /* Read the actual sample value */
@@ -347,7 +348,6 @@ static void mixer1(chanend c_host, chanend c_mix_ctl, chanend c_mixer2)
 
     while (1)
     {
-#pragma xta endpoint "mixer1_req"
         /* Request from audio()/mixer2() */
         request = inuint(c_mixer2);
 
@@ -383,7 +383,6 @@ static void mixer1(chanend c_host, chanend c_mix_ctl, chanend c_mixer2)
                         break;
 
                     case SET_MIX_MULT:
-                        
                         mix = inuint(c_mix_ctl);
                         index = inuint(c_mix_ctl);
                         val = inuint(c_mix_ctl);
@@ -394,22 +393,34 @@ static void mixer1(chanend c_host, chanend c_mix_ctl, chanend c_mixer2)
                             write_word_to_mix_mult(mix, index, val);
                         }
                         
-                        assert((index < MIX_INPUTS) && (mix < MAX_MIX_COUNT) && msg("Mix mult index out of range"));
+                        assert((mix < MAX_MIX_COUNT) && msg("Mix mult mix out of range"));
+                        assert((index < MIX_INPUTS) && msg("Mix mult index out of range"));
                        
                         break;
 
                     case SET_MIX_MAP:
-                        mix = inuint(c_mix_ctl);
-                        index = inuint(c_mix_ctl); /* mixer input */
-                        val = inuint(c_mix_ctl);   /* source */
-                        inct(c_mix_ctl);
+                        {
+                            unsigned mix = inuint(c_mix_ctl);
+                            unsigned input = inuint(c_mix_ctl);     /* mixer input */
+                            unsigned source = inuint(c_mix_ctl);    /* source */
+                            inct(c_mix_ctl);
+
+                            assert((mix < MAX_MIX_COUNT) && msg("Mix map mix out of range"));
+                            assert((input < MIX_INPUTS) && msg("Mix map index out of range"));
+                            assert((source < SOURCE_COUNT) && msg("Mix map source out of range"));
+
+                            if((input << MIX_INPUTS) && (mix < MAX_MIX_COUNT) && (source < SOURCE_COUNT))
+                            {
 #ifdef FAST_MIXER
-                        setPtr(index, val, mix);
+                                setPtr(index, val, mix);
 #else
-                        write_word_to_mix_map(mix, index, val);
+                                write_word_to_mix_map(mix, input, source);
 #endif
+                            }
+                        }
                         break;
 #endif /* if MAX_MIX_COUNT > 0 */
+
 #ifdef IN_VOLUME_IN_MIXER
                     case SET_MIX_IN_VOL:
                         index = inuint(c_mix_ctl);
@@ -487,7 +498,6 @@ static void mixer1(chanend c_host, chanend c_mix_ctl, chanend c_mixer2)
         if(testct(c_host))
         {
             int sampFreq;
-#pragma xta endpoint "mixer1_rate_change"
             unsigned command = inct(c_host);
 
             switch(command)
@@ -624,7 +634,6 @@ static void mixer2(chanend c_mixer1, chanend c_audio)
 
     while (1)
     {
-#pragma xta endpoint "mixer2_req"
         request = inuint(c_audio);
 
         /* Forward the request on */
@@ -636,7 +645,6 @@ static void mixer2(chanend c_mixer1, chanend c_audio)
         if(testct(c_mixer1))
         {
             int sampFreq;
-#pragma xta endpoint "mixer2_rate_change"
             unsigned command = inct(c_mixer1);
 
             switch(command)
