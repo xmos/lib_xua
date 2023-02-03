@@ -4,7 +4,10 @@ lib_xua Change Log
 UNRELEASED
 ----------
 
-  * FIXED: Exception on startup when USB input disabled
+  * ADDED:     Unit tests for mixer functionalty 
+  * ADDED:     Host mixer control applicatons (for Win/macOS)
+  * CHANGED:   Small tidies to mixer implementation 
+  * FIXED:     Exception on startup when USB input disabled
 
 3.3.1
 -----
