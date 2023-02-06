@@ -381,7 +381,7 @@ static void mixer1(chanend c_host, chanend c_mix_ctl, chanend c_mixer2)
 #endif
         /* Between request to decouple and response ~ 400nS latency for interrupt to fire */
 
-#if (MIX_MIX_COUNT > 0) || (IN_VOLUME_IN_MIXER) || (OUT_VOLUME_IN_MIXER) || defined (LEVEL_METER_HOST) || defined(LEVEL_METER_LEDS)
+#if (MAX_MIX_COUNT > 0) || (IN_VOLUME_IN_MIXER) || (OUT_VOLUME_IN_MIXER) || defined (LEVEL_METER_HOST) || defined(LEVEL_METER_LEDS)
         select
         {
             case inuint_byref(c_mix_ctl, cmd):
