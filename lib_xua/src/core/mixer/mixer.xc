@@ -109,7 +109,7 @@ int doMix7(volatile int * const unsafe samples, xc_ptr mult);
 /* DO NOT inline, causes 10.4.2 tools to add extra loads in loop */
 /* At 18 x 12dB we could get 64 x bigger */
 #pragma unsafe arrays
-static inline int doMix(xc_ptr samples, xc_ptr ptr, xc_ptr mult)
+static inline int doMix(volatile int * unsafe samples, xc_ptr ptr, xc_ptr mult)
 {
     int h=0;
     int l=0;
@@ -117,14 +117,14 @@ static inline int doMix(xc_ptr samples, xc_ptr ptr, xc_ptr mult)
 /* By breaking up the loop we keep things in the encoding for ldw (0-11) */
 #pragma loop unroll
     for (int i=0; i<MIX_INPUTS; i++)
-    {
-      int sample;
-      int source;
-      int weight;
-      read_via_xc_ptr_indexed(source, ptr, i);
-      read_via_xc_ptr_indexed(sample, samples, index);
-      read_via_xc_ptr_indexed(weight, mult, i);
-      {h,l} = macs(sample, weight, h, l);
+    unsafe{
+        int sample;
+        int source;
+        int weight;
+        read_via_xc_ptr_indexed(source, ptr, i);
+        sample = samples[source];
+        read_via_xc_ptr_indexed(weight, mult, i);
+        {h,l} = macs(sample, weight, h, l);
     }
 
     /* Perform saturation */
@@ -549,7 +549,7 @@ static void mixer1(chanend c_host, chanend c_mix_ctl, chanend c_mixer2)
 #ifdef FAST_MIXER
             mixed = doMix0(ptr_samples, mix_mult_slice(0));
 #else
-            mixed = doMix(ptr_samples, mix_map_slice(0),mix_mult_slice(0));
+            mixed = doMix(ptr_samples, mix_map_slice(0), mix_mult_slice(0));
 #endif
             unsafe
             {
@@ -571,7 +571,7 @@ static void mixer1(chanend c_host, chanend c_mix_ctl, chanend c_mixer2)
 #ifdef FAST_MIXER
                     mixed = doMix2(ptr_samples, mix_mult_slice(2));
 #else
-                    mixed = doMix(samples, mix_map_slice(2),mix_mult_slice(2));
+                    mixed = doMix(ptr_samples, mix_map_slice(2), mix_mult_slice(2));
 #endif
                     ptr_samples[NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + 2] = mixed;
                 }
@@ -586,7 +586,7 @@ static void mixer1(chanend c_host, chanend c_mix_ctl, chanend c_mixer2)
 #ifdef FAST_MIXER
                     mixed = doMix4(ptr_samples, mix_mult_slice(4));
 #else
-                    mixed = doMix(samples, mix_map_slice(4), mix_mult_slice(4));
+                    mixed = doMix(ptr_samples, mix_map_slice(4), mix_mult_slice(4));
 #endif
                     ptr_samples[XUA_MIXER_OFFSET_MIX + 4] = mixed;
                 }
@@ -601,7 +601,7 @@ static void mixer1(chanend c_host, chanend c_mix_ctl, chanend c_mixer2)
 #ifdef FAST_MIXER
                     mixed = doMix6(ptr_samples, mix_mult_slice(6));
 #else
-                    mixed = doMix(samples, mix_map_slice(6), mix_mult_slice(6));
+                    mixed = doMix(ptr_samples, mix_map_slice(6), mix_mult_slice(6));
 #endif
                     ptr_samples[XUA_MIXER_OFFSET_MIX + 6] = mixed;
                 }
@@ -693,7 +693,7 @@ static void mixer2(chanend c_mixer1, chanend c_audio)
 #ifdef FAST_MIXER
                 mixed = doMix1(ptr_samples, mix_mult_slice(1));
 #else
-                mixed = doMix(samples, mix_map_slice(1), mix_mult_slice(1));
+                mixed = doMix(ptr_samples, mix_map_slice(1), mix_mult_slice(1));
 #endif
                 ptr_samples[NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + 1] = mixed;
             }
@@ -713,7 +713,7 @@ static void mixer2(chanend c_mixer1, chanend c_audio)
 #ifdef FAST_MIXER
                     mixed = doMix3(ptr_samples, mix_mult_slice(3));
 #else
-                    mixed = doMix(samples, mix_map_slice(3),mix_mult_slice(3));
+                    mixed = doMix(ptr_samples, mix_map_slice(3), mix_mult_slice(3));
 #endif
                     ptr_samples[NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + 3] = mixed;
                 }
@@ -728,7 +728,7 @@ static void mixer2(chanend c_mixer1, chanend c_audio)
 #ifdef FAST_MIXER
                 mixed = doMix5(ptr_samples, mix_mult_slice(5));
 #else
-                mixed = doMix(samples, mix_map_slice(5),mix_mult_slice(5));
+                mixed = doMix(ptr_samples, mix_map_slice(5), mix_mult_slice(5));
 #endif
                 ptr_samples[NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + 5] = mixed;
             
@@ -744,7 +744,7 @@ static void mixer2(chanend c_mixer1, chanend c_audio)
 #ifdef FAST_MIXER
                     mixed = doMix7(ptr_samples, mix_mult_slice(7));
 #else
-                    mixed = doMix(samples, mix_map_slice(7),mix_mult_slice(7));
+                    mixed = doMix(ptr_samples, mix_map_slice(7), mix_mult_slice(7));
 #endif
                     ptr_samples[NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + 7] = mixed;
                 }
