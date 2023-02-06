@@ -290,7 +290,7 @@ VENDOR_REQUESTS_PARAMS_DEC_
     chan c_xud_in[ENDPOINT_COUNT_IN];
     chan c_aud_ctl;
 
-#if (MIXER)
+#if (!MIXER)
 #define c_mix_ctl null
 #endif
 
