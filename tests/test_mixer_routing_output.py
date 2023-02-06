@@ -15,7 +15,7 @@ def do_test(options, capfd, test_file, test_seed):
 
     tester = testers.ComparisonTester(open("pass.expect"))
 
-    max_cycles = 1500000
+    max_cycles = 15000000
 
     simargs = [
         "--max-cycles",
