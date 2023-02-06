@@ -31,7 +31,7 @@ extern int volsIn[];
 extern unsigned int mutesIn[];
 
 /* Mixer settings */
-#ifdef MIXER
+#if (MIXER)
 extern short mixer1Weights[];
 
 /* Device channel mapping */
@@ -132,10 +132,10 @@ static unsigned longMul(unsigned a, unsigned b, int prec)
 static void updateMasterVol( int unitID, chanend ?c_mix_ctl)
 {
     int x;
-#ifndef OUT_VOLUME_IN_MIXER
+#if (OUT_VOLUME_IN_MIXER == 0)
     xc_ptr p_multOut = array_to_xc_ptr(multOut);
 #endif
-#ifndef IN_VOLUME_IN_MIXER
+#if (IN_VOLUME_IN_MIXER == 0)
     xc_ptr p_multIn = array_to_xc_ptr(multIn);
 #endif
     switch( unitID)
@@ -152,7 +152,7 @@ static void updateMasterVol( int unitID, chanend ?c_mix_ctl)
 
                     x = longMul(master_vol, vol, 29) * !mutesOut[0] * !mutesOut[i];
 
-#ifdef OUT_VOLUME_IN_MIXER
+#if (OUT_VOLUME_IN_MIXER)
                     if (!isnull(c_mix_ctl))
                     {
                         outuint(c_mix_ctl, SET_MIX_OUT_VOL);
@@ -178,7 +178,7 @@ static void updateMasterVol( int unitID, chanend ?c_mix_ctl)
 
                     x = longMul(master_vol, vol, 29) * !mutesIn[0] * !mutesIn[i];
 
-#ifdef IN_VOLUME_IN_MIXER
+#if (IN_VOLUME_IN_MIXER)
                     if (!isnull(c_mix_ctl))
                     {
                         outuint(c_mix_ctl, SET_MIX_IN_VOL);
@@ -201,10 +201,10 @@ static void updateMasterVol( int unitID, chanend ?c_mix_ctl)
 static void updateVol(int unitID, int channel, chanend ?c_mix_ctl)
 {
     int x;
-#ifndef OUT_VOLUME_IN_MIXER
+#if (OUT_VOLUME_IN_MIXER == 0)
     xc_ptr p_multOut = array_to_xc_ptr(multOut);
 #endif
-#ifndef IN_VOLUME_IN_MIXER
+#if (IN_VOLUME_IN_MIXER == 0)
     xc_ptr p_multIn = array_to_xc_ptr(multIn);
 #endif
     /* Check for master volume update */
@@ -225,7 +225,7 @@ static void updateVol(int unitID, int channel, chanend ?c_mix_ctl)
 
                 x = longMul(master_vol, vol, 29) * !mutesOut[0] * !mutesOut[channel];
 
-#ifdef OUT_VOLUME_IN_MIXER
+#if (OUT_VOLUME_IN_MIXER)
                 if (!isnull(c_mix_ctl))
                 {
                     outuint(c_mix_ctl, SET_MIX_OUT_VOL);
@@ -243,11 +243,11 @@ static void updateVol(int unitID, int channel, chanend ?c_mix_ctl)
                 /* Calc multipliers with 29 fractional bits from a db value with 8 fractional bits */
                 /* 0x8000 is a special value representing -inf (i.e. mute) */
                 unsigned master_vol = volsIn[0] == 0x8000 ? 0 : db_to_mult(volsIn[0], 8, 29);
-                 unsigned vol = volsIn[channel] == 0x8000 ? 0 : db_to_mult(volsIn[channel], 8, 29);
+                unsigned vol = volsIn[channel] == 0x8000 ? 0 : db_to_mult(volsIn[channel], 8, 29);
 
                 x = longMul(master_vol, vol, 29) * !mutesIn[0] * !mutesIn[channel];
 
-#ifdef IN_VOLUME_IN_MIXER
+#if (IN_VOLUME_IN_MIXER)
                 if (!isnull(c_mix_ctl))
                 {
                     outuint(c_mix_ctl, SET_MIX_IN_VOL);
@@ -657,7 +657,7 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
                     break; /* FU_USBIN */
 #endif
 
-#if defined(MIXER) && (MAX_MIX_COUNT > 0)
+#if ((MIXER) && (MAX_MIX_COUNT > 0))
                 case ID_XU_OUT:
                 {
                     if(sp.bmRequestType.Direction == USB_BM_REQTYPE_DIRECTION_H2D) /* Direction: Host-to-device */
@@ -974,7 +974,7 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
                     }
                     break;
 
-#ifdef MIXER
+#if (MIXER)
                 /* Mixer Unit */
                 case ID_MIXER_1:
                     storeShort((buffer, unsigned char[]), 0, 1);
@@ -994,7 +994,7 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
             break; /* case: RANGE */
         }
 
-#if defined (MIXER) && (MAX_MIX_COUNT > 0)
+#if ((MIXER) && (MAX_MIX_COUNT > 0))
         case MEM:   /* Memory Requests (5.2.7.1) */
 
             unitID = sp.wIndex >> 8;

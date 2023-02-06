@@ -1,4 +1,4 @@
-// Copyright 2018-2021 XMOS LIMITED.
+// Copyright 2018-2023 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
 #define MAX_MIX_COUNT 8

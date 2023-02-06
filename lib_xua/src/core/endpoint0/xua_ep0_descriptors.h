@@ -308,28 +308,28 @@ typedef struct
 #error NUM_USB_CHAN > 32
 #endif
 
-#if defined(MIXER) && (MAX_MIX_COUNT > 0)
+#if (MIXER) && (MAX_MIX_COUNT > 0)
     STR_TABLE_ENTRY(mixOutStr_1);
 #endif
-#if defined(MIXER) && (MAX_MIX_COUNT > 1)
+#if (MIXER) && (MAX_MIX_COUNT > 1)
     STR_TABLE_ENTRY(mixOutStr_2);
 #endif
-#if defined(MIXER) && (MAX_MIX_COUNT > 2)
+#if (MIXER) && (MAX_MIX_COUNT > 2)
     STR_TABLE_ENTRY(mixOutStr_3);
 #endif
-#if defined(MIXER) && (MAX_MIX_COUNT > 3)
+#if (MIXER) && (MAX_MIX_COUNT > 3)
     STR_TABLE_ENTRY(mixOutStr_4);
 #endif
-#if defined(MIXER) && (MAX_MIX_COUNT > 4)
+#if (MIXER) && (MAX_MIX_COUNT > 4)
     STR_TABLE_ENTRY(mixOutStr_5);
 #endif
-#if defined(MIXER) && (MAX_MIX_COUNT > 5)
+#if (MIXER) && (MAX_MIX_COUNT > 5)
     STR_TABLE_ENTRY(mixOutStr_6);
 #endif
-#if defined(MIXER) && (MAX_MIX_COUNT > 6)
+#if (MIXER) && (MAX_MIX_COUNT > 6)
     STR_TABLE_ENTRY(mixOutStr_7);
 #endif
-#if defined(MIXER) && (MAX_MIX_COUNT > 7)
+#if (MIXER) && (MAX_MIX_COUNT > 7)
     STR_TABLE_ENTRY(mixOutStr_8);
 #endif
 #ifdef IAP
@@ -391,31 +391,31 @@ StringDescTable_t g_strTable =
 #error NUM_USB_CHAN_IN > 32
 #endif
 
-#if defined(MIXER) && (MAX_MIX_COUNT > 0)
+#if (MIXER) && (MAX_MIX_COUNT > 0)
     .mixOutStr_1                 = "Mix 1",
 #endif
-#if defined(MIXER) && (MAX_MIX_COUNT > 1)
+#if (MIXER) && (MAX_MIX_COUNT > 1)
     .mixOutStr_2                 = "Mix 2",
 #endif
-#if defined(MIXER) && (MAX_MIX_COUNT > 2)
+#if (MIXER) && (MAX_MIX_COUNT > 2)
     .mixOutStr_3                 = "Mix 3",
 #endif
-#if defined(MIXER) && (MAX_MIX_COUNT > 3)
+#if (MIXER) && (MAX_MIX_COUNT > 3)
     .mixOutStr_4                 = "Mix 4",
 #endif
-#if defined(MIXER) && (MAX_MIX_COUNT > 4)
+#if (MIXER) && (MAX_MIX_COUNT > 4)
     .mixOutStr_5                 = "Mix 5",
 #endif
-#if defined(MIXER) && (MAX_MIX_COUNT > 5)
+#if (MIXER) && (MAX_MIX_COUNT > 5)
     .mixOutStr_6                 = "Mix 6",
 #endif
-#if defined(MIXER) && (MAX_MIX_COUNT > 6)
+#if (MIXER) && (MAX_MIX_COUNT > 6)
     .mixOutStr_7                 = "Mix 7",
 #endif
-#if defined(MIXER) && (MAX_MIX_COUNT > 7)
+#if (MIXER) && (MAX_MIX_COUNT > 7)
     .mixOutStr_8                 = "Mix 8",
 #endif
-#if defined(MIXER) && (MAX_MIX_COUNT > 8)
+#if (MIXER) && (MAX_MIX_COUNT > 8)
 #error
 #endif
 #ifdef IAP
@@ -558,7 +558,7 @@ unsigned char devQualDesc_Null[] =
 };
 
 
-#if defined(MIXER) && !defined(AUDIO_PATH_XUS) && (MAX_MIX_COUNT > 0)
+#if (MIXER) && !defined(AUDIO_PATH_XUS) && (MAX_MIX_COUNT > 0)
 //#warning Extension units on the audio path are required for mixer.  Enabling them now.
 #define AUDIO_PATH_XUS
 #endif
@@ -575,7 +575,7 @@ unsigned char devQualDesc_Null[] =
 #define DFU_LENGTH                  (0)
 #endif
 
-#ifdef MIXER
+#if (MIXER)
     #define MIX_BMCONTROLS_LEN_TMP      ((MAX_MIX_COUNT * MIX_INPUTS) / 8)
 
     #if ((MAX_MIX_COUNT * MIX_INPUTS)%8)==0
@@ -666,7 +666,7 @@ typedef struct
 #if (NUM_USB_CHAN_OUT > 0)
     /* Output path */
     USB_Descriptor_Audio_InputTerminal_t        Audio_Out_InputTerminal;
-#if defined(MIXER) && (MAX_MIX_COUNT > 0)
+#if (MIXER) && (MAX_MIX_COUNT > 0)
     USB_Descriptor_Audio_ExtensionUnit_t        Audio_Out_ExtensionUnit;
 #endif
 #if(OUTPUT_VOLUME_CONTROL == 1)
@@ -677,7 +677,7 @@ typedef struct
 #if (NUM_USB_CHAN_IN > 0)
     /* Input path */
     USB_Descriptor_Audio_InputTerminal_t        Audio_In_InputTerminal;
-#if defined(MIXER) && (MAX_MIX_COUNT > 0)
+#if (MIXER) && (MAX_MIX_COUNT > 0)
     USB_Descriptor_Audio_ExtensionUnit_t        Audio_In_ExtensionUnit;
 #endif
 #if(INPUT_VOLUME_CONTROL == 1)
@@ -685,7 +685,7 @@ typedef struct
 #endif
     USB_Descriptor_Audio_OutputTerminal_t       Audio_In_OutputTerminal;
 #endif
-#if defined(MIXER) && (MAX_MIX_COUNT > 0)
+#if (MIXER) && (MAX_MIX_COUNT > 0)
     USB_Descriptor_Audio_ExtensionUnit2_t       Audio_Mix_ExtensionUnit;
     // Currently no struct for mixer unit
     // USB_Descriptor_Audio_MixerUnit_t          Audio_MixerUnit;
@@ -1168,7 +1168,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
             UAC_CS_DESCTYPE_INTERFACE,    /* 1  bDescriptorType: CS_INTERFACE */
             UAC_CS_AC_INTERFACE_SUBTYPE_FEATURE_UNIT, /* 2  bDescriptorSubType: FEATURE_UNIT */
             FU_USBIN,                     /* 3  bUnitID */
-#if defined(MIXER) && (MAX_MIX_COUNT > 0)
+#if (MIXER) && (MAX_MIX_COUNT > 0)
             ID_XU_IN,                     /* 4  bSourceID */
 #else
             ID_IT_AUD,                    /* 4  bSourceID */
@@ -1300,7 +1300,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
         },
 #endif /* (NUM_USB_CHAN_IN > 0) */
 
-#if defined(MIXER) && (MAX_MIX_COUNT > 0)
+#if (MIXER) && (MAX_MIX_COUNT > 0)
         /* Extension Unit Descriptor (4.7.2.12) */
         .Audio_Mix_ExtensionUnit =
         {
@@ -1392,7 +1392,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
             0x00,                         /* bmControls */
             0                             /* Mixer unit string descriptor index */
         },
-#endif /* defined(MIXER) && (MAX_MIX_COUNT > 0) */
+#endif /* (MIXER) && (MAX_MIX_COUNT > 0) */
 
 #if (XUA_SPDIF_RX_EN) || (XUA_ADAT_RX_EN)
         /* Standard AS Interrupt Endpoint Descriptor (4.8.2.1): */

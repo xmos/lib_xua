@@ -106,7 +106,7 @@ unsigned int mutesOut[NUM_USB_CHAN_OUT + 1];
 int volsIn[NUM_USB_CHAN_IN + 1];
 unsigned int mutesIn[NUM_USB_CHAN_IN + 1];
 
-#ifdef MIXER
+#if (MIXER)
 short mixer1Weights[MIX_INPUTS * MAX_MIX_COUNT];
 
 //unsigned char channelMap[NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + MAX_MIX_COUNT];
@@ -429,7 +429,7 @@ void XUA_Endpoint0_init(chanend c_ep0_out, chanend c_ep0_in, NULLABLE_RESOURCE(c
 #endif
     VendorRequests_Init(VENDOR_REQUESTS_PARAMS);
 
-#ifdef MIXER
+#if (MIXER)
     /* Set up mixer default state */
     for (int i = 0; i < MIX_INPUTS * MAX_MIX_COUNT; i++)
     {
