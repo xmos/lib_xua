@@ -180,7 +180,10 @@ static inline void GiveSamplesToHost(chanend c, volatile int * unsafe hostMap)
             sample = ptr_samples[hostMap[i]];
         }
 #else
-        sample = ptr_sample[i + NUM_USB_CHAN_OUT];
+        unsafe
+        {
+            sample = ptr_samples[i + NUM_USB_CHAN_OUT];
+        }
 #endif
 
 #if (IN_VOLUME_IN_MIXER && IN_VOLUME_AFTER_MIX)
@@ -376,8 +379,9 @@ static void mixer1(chanend c_host, chanend c_mix_ctl, chanend c_mixer2)
         /* Sync */
         outuint(c_mixer2, 0);
 #endif
-
         /* Between request to decouple and response ~ 400nS latency for interrupt to fire */
+
+#if (MIX_MIX_COUNT > 0) || (IN_VOLUME_IN_MIXER) || (OUT_VOLUME_IN_MIXER) || defined (LEVEL_METER_HOST) || defined(LEVEL_METER_LEDS)
         select
         {
             case inuint_byref(c_mix_ctl, cmd):
@@ -448,6 +452,7 @@ static void mixer1(chanend c_host, chanend c_mix_ctl, chanend c_mixer2)
                         }
                         break;
 #endif /* if MAX_MIX_COUNT > 0 */
+
 #if (IN_VOLUME_IN_MIXER)
                     case SET_MIX_IN_VOL:
                         index = inuint(c_mix_ctl);
@@ -484,42 +489,6 @@ static void mixer1(chanend c_host, chanend c_mix_ctl, chanend c_mixer2)
                         outct(c_mix_ctl, XS1_CT_END);
                         samples_from_host_streams[index] = 0;
                         break;
-                    case GET_INPUT_LEVELS:
-                        index = inuint(c_mix_ctl);
-                        chkct(c_mix_ctl, XS1_CT_END);
-#ifdef LEVEL_METER_LEDS
-                        /* Level LEDS process reseting samples_to_host_inputs
-                         * Other side makes sure we don't miss a peak */
-                        //val = samples_to_host_inputs_buff[index];
-                        //samples_to_host_inputs_buff[index] = 0;
-                        /* Access funcs used to avoid disjointness check */
-                        read_via_xc_ptr_indexed(val, samples_to_host_inputs_buff_ptr, index);
-                        write_via_xc_ptr_indexed(samples_to_host_inputs_buff_ptr, index, 0);
-#else
-                        /* We dont have a level LEDs process, so reset ourselves */
-                        //val = samples_to_host_inputs[index];
-                        //samples_to_host_inputs[index] = 0;
-                        /* Access funcs used to avoid disjointness check */
-                        read_via_xc_ptr_indexed(val, samples_to_host_inputs_ptr, index);
-                        write_via_xc_ptr_indexed(samples_to_host_inputs_ptr, index, 0);
-#endif
-                        outuint(c_mix_ctl, val);
-                        outct(c_mix_ctl, XS1_CT_END);
-                        break;
-
-#if (MAX_MIX_COUNT > 0)
-                    /* Peak samples of the mixer outputs */
-                    case GET_OUTPUT_LEVELS:
-                        index = inuint(c_mix_ctl);
-                        chkct(c_mix_ctl, XS1_CT_END);
-                        read_via_xc_ptr_indexed(val, samples_mixer_outputs, index);
-                        write_via_xc_ptr_indexed(samples_mixer_outputs, index, 0);
-                        //val = samples_mixer_outputs[index];
-                        //samples_mixer_outputs[index] = 0;
-                        outuint(c_mix_ctl, val);
-                        outct(c_mix_ctl, XS1_CT_END);
-                        break;
-#endif
 #endif
                 }
                 break;
@@ -527,8 +496,8 @@ static void mixer1(chanend c_host, chanend c_mix_ctl, chanend c_mixer2)
             default:
                 /* Select default */
                 break;
-        }
-
+        } // select
+#endif
 
         /* Get response from decouple */
         if(testct(c_host))
@@ -654,7 +623,7 @@ static void mixer1(chanend c_host, chanend c_mix_ctl, chanend c_mixer2)
             GiveSamplesToDevice(c_mixer2, samples_to_device_map);
             GetSamplesFromDevice(c_mixer2);
             GetSamplesFromHost(c_host);
-            GiveSamplesToHost(c_host, samples_to_host_map, multIn);
+            GiveSamplesToHost(c_host, samples_to_host_map);
 #endif
         }
     }
