@@ -364,7 +364,9 @@ static void mixer1(chanend c_host, chanend c_mix_ctl, chanend c_mixer2)
 #if (MAX_MIX_COUNT > 0)
     int mixed;
 #endif
+#if (MAX_MIX_COUNT > 0) || (IN_VOLUME_IN_MIXER) || (OUT_VOLUME_IN_MIXER) || defined (LEVEL_METER_HOST) || defined(LEVEL_METER_LEDS)
     unsigned cmd;
+#endif
     unsigned request = 0;
 
     while (1)
