@@ -106,6 +106,12 @@ pipeline {
             dir("${REPO}/${REPO}/host/xmosdfu") {
               sh 'make -f Makefile.OSX64'
             }
+            dir("${REPO}/host_usb_mixer_control") {
+                sh 'make -f Makefile.OSX'
+                sh 'mkdir OSX/x86'
+                sh 'mv xmos_mixer OSX/x86/xmos_mixer'
+                archiveArtifacts artifacts: "OSX/x86/xmos_mixer", fingerprint: true
+            }
           }
           post {
             cleanup {
@@ -140,6 +146,12 @@ pipeline {
               checkout scm
               dir("${REPO}/host/xmosdfu") {
                 runVS('nmake /f Makefile.Win32')
+              }
+              dir("host_usb_mixer_control") {
+                  runVS('msbuild host_usb_mixer_control.vcxproj /property:Configuration=Release /property:Platform=x64')
+                  sh 'mkdir Win/x64'
+                  sh 'mv bin/Release/x64/host_usb_mixer_control.exe Win/x64/xmos_mixer.exe'
+                  archiveArtifacts artifacts: "Win/x64/xmos_mixer.exe", fingerprint: true
               }
             }
           }
