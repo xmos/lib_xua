@@ -811,17 +811,20 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
                             {
                                 return result;
                             }
-
-                            mixer1Weights[cn] = (buffer, unsigned char[])[0] | (buffer, unsigned char[])[1] << 8;
-
-                            if (mixer1Weights[cn] != 0x8000)
+                            
+                            if(cn < sizeof(mixer1Weights)/sizeof(mixer1Weights[0]))
                             {
-                                weightMult = db_to_mult(mixer1Weights[cn], XUA_MIXER_DB_FRAC_BITS, XUA_MIXER_MULT_FRAC_BITS);
-                            }
+                                mixer1Weights[cn] = (buffer, unsigned char[])[0] | (buffer, unsigned char[])[1] << 8;
 
-                            if (!isnull(c_mix_ctl))
-                            {
-                                 UpdateMixerWeight(c_mix_ctl, (cn) % 8, (cn) / 8, weightMult);
+                                if (mixer1Weights[cn] != 0x8000)
+                                {
+                                    weightMult = db_to_mult(mixer1Weights[cn], XUA_MIXER_DB_FRAC_BITS, XUA_MIXER_MULT_FRAC_BITS);
+                                }
+
+                                if (!isnull(c_mix_ctl))
+                                {
+                                     UpdateMixerWeight(c_mix_ctl, (cn) % 8, (cn) / 8, weightMult);
+                                }
                             }
 
                             /* Send 0 Length as status stage */
@@ -829,7 +832,13 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
                         }
                         else
                         {
-                            short weight = mixer1Weights[cn];
+                            short weight = 0x8000;
+                            
+                            if(cn < sizeof(mixer1Weights)/sizeof(mixer1Weights[0]))
+                            {
+                                weight = mixer1Weights[cn];
+                            }
+                            
                             (buffer, unsigned char[])[0] = weight & 0xff;
                             (buffer, unsigned char[])[1] = (weight >> 8) & 0xff;
 
