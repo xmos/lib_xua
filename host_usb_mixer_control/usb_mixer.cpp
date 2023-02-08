@@ -14,7 +14,7 @@
     TUsbAudioApiDll gDrvApi;
 #endif
 
-/ TODO we dont really need to store mixer input strings
+// TODO we dont really need to store mixer input strings
 // Currently res, max, min dont get populated
 
 #define XMOS_VID 0x20b1
@@ -122,6 +122,12 @@ typedef struct {
 
 
 } usb_mixer_handle;
+
+#if defined(__APPLE__)
+typedef unsigned char   char_style;
+#elif defined(_WIN32)
+typedef char            char_style;
+#endif
 
 static usb_mixer_handle *usb_mixers = NULL;
 
@@ -375,6 +381,9 @@ int addStrings(const unsigned char *data, int length, int mixer_index, int id, i
 
     /* Find this unit in the descs */
     currentUnitPtr = findUnit(data, length, id);
+#if defined(_WIN32)
+    TUsbAudioStatus st;
+#endif
                 
     if(currentUnitPtr != NULL)
     {
@@ -399,7 +408,7 @@ int addStrings(const unsigned char *data, int length, int mixer_index, int id, i
 #endif
             for(int i = 0; i < *(currentUnitPtr+OFFSET_IT_BNRCHANNELS); i++)
             {
-                unsigned char mixer_input_name[USB_MIXER_MAX_NAME_LEN];
+                char_style mixer_input_name[USB_MIXER_MAX_NAME_LEN];
 #if defined(__APPLE__)
                 memset(mixer_input_name, 0 ,USB_MIXER_MAX_NAME_LEN);
 #elif defined(_WIN32)
@@ -434,7 +443,7 @@ int addStrings(const unsigned char *data, int length, int mixer_index, int id, i
                 libusb_get_string_descriptor_ascii(devh, iChannelNames+i, mixer_input_name, 
                     USB_MIXER_MAX_NAME_LEN - strlen(usb_mixers->usb_mixSel[mixer_index].inputStrings[chanCount]));
 #elif defined(_WIN32)
-                st = gDrvApi.TUSBAUDIO_GetUsbStringDescriptorString(h, iChannelNames + i, 0, mixer_input_name_wchar, USB_MIXER_MAX_NAME_LEN - strlen(usb_mixers->usb_mixSel[mixer_index].inputStrings[chanCount]));
+                st = gDrvApi.TUSBAUDIO_GetUsbStringDescriptorString(devh, iChannelNames + i, 0, mixer_input_name_wchar, USB_MIXER_MAX_NAME_LEN - strlen(usb_mixers->usb_mixSel[mixer_index].inputStrings[chanCount]));
                 if (TSTATUS_SUCCESS != st) {
                     return USB_MIXER_FAILURE;
                 }
@@ -664,7 +673,7 @@ static int get_mixer_info(const unsigned char *data, int length, unsigned int mi
             usb_mixers->usb_mixSel[mixer_index].numOutputs = chansIn;
 
             /* Set up mixer output names */
-            unsigned char mixer_output_name[USB_MIXER_MAX_NAME_LEN];
+            char_style mixer_output_name[USB_MIXER_MAX_NAME_LEN];
             unsigned int iChannelNames =  *(interfaces + 10 + bNrInPins);
 #if defined(_WIN32)
             WCHAR mixer_output_name_wchar[USB_MIXER_MAX_NAME_LEN];
@@ -679,7 +688,7 @@ static int get_mixer_info(const unsigned char *data, int length, unsigned int mi
                 libusb_get_string_descriptor_ascii(devh, iChannelNames+i, mixer_output_name, 
                   USB_MIXER_MAX_NAME_LEN - strlen(usb_mixers->usb_mixSel[mixer_index].inputStrings[i]));
 #elif defined(_WIN32)
-                TUsbAudioStatus st = gDrvApi.TUSBAUDIO_GetUsbStringDescriptorString(h, iChannelNames + i, 0, mixer_output_name, USB_MIXER_MAX_NAME_LEN - strlen(usb_mixers->usb_mixSel[mixer_index].inputStrings[i]));
+                TUsbAudioStatus st = gDrvApi.TUSBAUDIO_GetUsbStringDescriptorString(devh, iChannelNames + i, 0, mixer_output_name_wchar, USB_MIXER_MAX_NAME_LEN - strlen(usb_mixers->usb_mixSel[mixer_index].inputStrings[i]));
                 if (TSTATUS_SUCCESS != st) {
                     return USB_MIXER_FAILURE;
                 }
@@ -771,7 +780,7 @@ static int find_xmos_device(unsigned int id)
         unsigned int numBytes = 0;
         unsigned char descBuffer[64 * 1024];
 
-        st = gDrvApi.TUSBAUDIO_GetUsbConfigDescriptor(h, descBuffer, 64 * 1024, &numBytes);
+        st = gDrvApi.TUSBAUDIO_GetUsbConfigDescriptor(devh, descBuffer, 64 * 1024, &numBytes);
         if (TSTATUS_SUCCESS != st) {
             return USB_MIXER_FAILURE;
         }
@@ -1078,4 +1087,3 @@ int usb_get_usb_channel_map_num_inputs()
 {
     return usb_mixers->usbChannelMap.numInputs;
 }
-
