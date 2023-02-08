@@ -19,4 +19,3 @@ USED_MODULES = lib_xua lib_xud lib_mic_array
 
 XMOS_MAKE_PATH ?= ../..
 include $(XMOS_MAKE_PATH)/xcommon/module_xcommon/build/Makefile.common
-

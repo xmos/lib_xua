@@ -176,7 +176,6 @@ void display_available_mixer_sources(int mixIndex)
     }
 }
 
-
 /* Gets the current mixer inputs from the device an displays them */
 void display_mixer_sources(int mixerIndex)
 {
@@ -191,7 +190,7 @@ void display_mixer_sources(int mixerIndex)
     for(int i = 0; i < usb_mixsel_get_output_count(mixerIndex); i++)
     {
         int inputChan = (int)usb_mixsel_get_state(mixerIndex, i);
-        char *str = usb_mixer_get_input_name(mixerIndex,i);
+        char *str = usb_mixer_get_input_name(mixerIndex,inputChan);
         printf("    Mixer input %d: Source chan id: %d (%s)\n", i, inputChan, str);
     }
 }
@@ -565,27 +564,26 @@ int main (int argc, char **argv) {
     {
         display_daw_channel_map_sources();
     }
+    else if (strcmp(argv[1], "--set-aud-channel-map") == 0) 
+    { 
+        unsigned int dst = 0;
+        unsigned int src = 0;
+        if (argc != 4) 
+        {
+            usage_error();
+            return -1;
+        }
+        dst = atoi(argv[2]);
+        src = atoi(argv[3]);
 
-
-  else if (strcmp(argv[1], "--set-aud-channel-map") == 0) 
-  { 
-    unsigned int dst = 0;
-    unsigned int src = 0;
-    if (argc < 4) {
-        usage_error();
-        return -1;
-    }
-    dst = atoi(argv[2]);
-    src = atoi(argv[3]);
-
-    usb_set_aud_channel_map(dst, src);
-  }
-
+        usb_set_aud_channel_map(dst, src);
+    } 
   else if (strcmp(argv[1], "--set-daw-channel-map") == 0) 
   { 
     unsigned int dst = 0;
     unsigned int src = 0;
-    if (argc < 4) {
+    if (argc != 4) 
+    {
         usage_error();
         return -1;
     }
@@ -593,8 +591,6 @@ int main (int argc, char **argv) {
     src = atoi(argv[3]);
 
     usb_set_usb_channel_map(dst, src);
-
-
   }
   else if(strcmp(argv[1], "--get-mixer-levels-input") == 0 || 
     strcmp(argv[1],"--get-mixer-levels-output") == 0) 

@@ -1,4 +1,4 @@
-// Copyright 2018-2021 XMOS LIMITED.
+// Copyright 2018-2023 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
 #define MAX_MIX_COUNT 8
@@ -6,7 +6,7 @@
 
 #define DOMIX_TOP(i) \
 .cc_top doMix##i.function,doMix##i; \
-          .align    4 ;\
+          .align    16 ;\
 .globl doMix##i ;\
 .type doMix##i, @function ;\
 .globl doMix##i##.nstackwords ;\
@@ -124,7 +124,7 @@ DOMIX_BOT(7)
 #undef BODY
 #define N MAX_MIX_COUNT
 .cc_top setPtr.function,setPtr;
-.align    4 ;
+.align    16 ;
 .globl setPtr;
 .type setPtr, @function
 .globl setPtr.nstackwords;

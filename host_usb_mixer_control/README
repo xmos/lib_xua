@@ -1,4 +1,4 @@
-The XMOS USB Audio L2 Reference Design contains an 18x8 mixer unit
+The XMOS USB Audio Reference Design, by default, contains an 18x8 mixer unit
 (note that at sample rates above 96Khz only the first two outputs are
 enabled).
 
@@ -28,7 +28,6 @@ audio reference design has only one unit so the mixer_id argument
 should always be 0):
 
      --help
-
 
      --display-info
 
@@ -105,11 +104,4 @@ Show the DAW output channel map sources.
      --vendor-audio-request-get   bRequest, ControlSelector, ChannelNumber, UnitId
 
      --vendor-audio-request-set   bRequest, ControlSelector, ChannelNumber, UnitId, Data[0], Data[1],...
-
-
-
-
-
-
-
  
