@@ -659,72 +659,67 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
 
 #if ((MIXER) && (MAX_MIX_COUNT > 0))
                 case ID_XU_OUT:
-                {
-                    if(sp.bmRequestType.Direction == USB_BM_REQTYPE_DIRECTION_H2D) /* Direction: Host-to-device */
                     {
-                        unsigned volume = 0;
-                        int c = sp.wValue & 0xff;
-
-
-                        if((result = XUD_GetBuffer(ep0_out, (buffer, unsigned char[]), datalength)) != XUD_RES_OKAY)
+                        int dst = sp.wValue & 0xff;
+                        
+                        if(sp.bmRequestType.Direction == USB_BM_REQTYPE_DIRECTION_H2D) /* Direction: Host-to-device */
                         {
-                            return result;
-                        }
-
-                        channelMapAud[c] = (buffer, unsigned char[])[0] | (buffer, unsigned char[])[1] << 8;
-
-                        if (!isnull(c_mix_ctl))
-                        {
-                            if (c < NUM_USB_CHAN_OUT)
+                            if((result = XUD_GetBuffer(ep0_out, (buffer, unsigned char[]), datalength)) != XUD_RES_OKAY)
                             {
-                                UpdateMixerOutputRouting(c_mix_ctl, SET_SAMPLES_TO_DEVICE_MAP, c, channelMapAud[c]);
-
-                                /* Send 0 Length as status stage */
-                                return XUD_DoSetRequestStatus(ep0_in);
+                                return result;
                             }
+
+                            if (dst < NUM_USB_CHAN_OUT)
+                            {
+                                channelMapAud[dst] = (buffer, unsigned char[])[0] | (buffer, unsigned char[])[1] << 8;
+
+                                if (!isnull(c_mix_ctl))
+                                {
+                                    UpdateMixerOutputRouting(c_mix_ctl, SET_SAMPLES_TO_DEVICE_MAP, dst, channelMapAud[dst]);
+                                }
+                            }
+                            
+                            /* Send 0 Length as status stage */
+                            return XUD_DoSetRequestStatus(ep0_in);
                         }
-
+                        else
+                        {
+                            (buffer, unsigned char[])[0] = channelMapAud[dst];
+                            (buffer, unsigned char[])[1] = 0;
+                            return XUD_DoGetRequest(ep0_out, ep0_in, (buffer, unsigned char[]), sp.wLength,  sp.wLength);
+                        }
                     }
-                    else
-                    {
-                        (buffer, unsigned char[])[0] = channelMapAud[sp.wValue & 0xff];
-                        (buffer, unsigned char[])[1] = 0;
-
-                        return XUD_DoGetRequest(ep0_out, ep0_in, (buffer, unsigned char[]), sp.wLength,  sp.wLength);
-                    }
-
-                }
                     break;
 
                 case ID_XU_IN:
-                    if(sp.bmRequestType.Direction == USB_BM_REQTYPE_DIRECTION_H2D) /* Direction: Host-to-device */
                     {
-                        unsigned volume = 0;
-                        int c = sp.wValue & 0xff;
-
-                        if((result = XUD_GetBuffer(ep0_out, (buffer, unsigned char[]), datalength)) != XUD_RES_OKAY)
+                        int dst = sp.wValue & 0xff;
+                    
+                        if(sp.bmRequestType.Direction == USB_BM_REQTYPE_DIRECTION_H2D) /* Direction: Host-to-device */
                         {
-                            return result;
-                        }
-
-                        channelMapUsb[c] = (buffer, unsigned char[])[0] | (buffer, unsigned char[])[1] << 8;
-
-                        if (c < NUM_USB_CHAN_IN)
-                        {
-                            if (!isnull(c_mix_ctl))
+                            if((result = XUD_GetBuffer(ep0_out, (buffer, unsigned char[]), datalength)) != XUD_RES_OKAY)
                             {
-                                UpdateMixerOutputRouting(c_mix_ctl, SET_SAMPLES_TO_HOST_MAP, c, channelMapUsb[c]);
-
-                                return XUD_DoSetRequestStatus(ep0_in);
+                                return result;
                             }
+
+                            if (dst < NUM_USB_CHAN_IN)
+                            {
+                                channelMapUsb[dst] = (buffer, unsigned char[])[0] | (buffer, unsigned char[])[1] << 8;
+                                
+                                if (!isnull(c_mix_ctl))
+                                {
+                                    UpdateMixerOutputRouting(c_mix_ctl, SET_SAMPLES_TO_HOST_MAP, dst, channelMapUsb[dst]);
+                                }
+                            }
+                            return XUD_DoSetRequestStatus(ep0_in);
                         }
-                    }
-                    else
-                    {
-                        /* Direction: Device-to-host */
-                        (buffer, unsigned char[])[0] = channelMapUsb[sp.wValue & 0xff];
-                        (buffer, unsigned char[])[1] = 0;
-                        return XUD_DoGetRequest(ep0_out, ep0_in, (buffer, unsigned char[]), sp.wLength,  sp.wLength);
+                        else
+                        {
+                            /* Direction: Device-to-host */
+                            (buffer, unsigned char[])[0] = channelMapUsb[dst];
+                            (buffer, unsigned char[])[1] = 0;
+                            return XUD_DoGetRequest(ep0_out, ep0_in, (buffer, unsigned char[]), sp.wLength,  sp.wLength);
+                        }
                     }
                     break;
 
@@ -751,14 +746,12 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
                                 /* cs now contains mix number */
                                 if(cs < (MAX_MIX_COUNT + 1))
                                 {
+                                    int source = (buffer, unsigned char[])[0];
+
                                     /* Check for "off" - update local state */
-                                    if((buffer, unsigned char[])[0] == 0xFF)
+                                    if(source == 0xFF)
                                     {
-                                        mixSel[cs][cn] = (NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + MAX_MIX_COUNT);
-                                    }
-                                    else
-                                    {
-                                        mixSel[cs][cn] = (buffer, unsigned char[])[0];
+                                        source = (NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + MAX_MIX_COUNT);
                                     }
 
                                     if(cs == 0)
@@ -768,14 +761,15 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
                                         {
                                             /* i : Mix bus */
                                             /* cn: Mixer input */
-                                            /* mixSel[i][cn]): Source */
-                                            UpdateMixMap(c_mix_ctl, i, cn, (int) mixSel[cn]);
+                                            mixSel[i][cn] = source;
+                                            UpdateMixMap(c_mix_ctl, i, cn, mixSel[i][cn]);
                                         }
                                     }
                                     else
                                     {
                                         /* Update relevant mix map */
-                                        UpdateMixMap(c_mix_ctl, cs-1, cn, (int) mixSel[cs][cn]);
+                                        mixSel[cn-1][cn] = source;
+                                        UpdateMixMap(c_mix_ctl, cs-1, cn, mixSel[cs-1][cn]);
                                     }
 
                                     return XUD_DoSetRequestStatus(ep0_in);
