@@ -30,9 +30,9 @@ extern unsigned int mutesOut[];
 extern int volsIn[];
 extern unsigned int mutesIn[];
 
-/* Mixer settings */
 #if (MIXER)
-extern short mixer1Weights[];
+/* Mixer weights */
+extern short mixer1Weights[MIX_INPUTS * MAX_MIX_COUNT];
 
 /* Device channel mapping */
 extern unsigned char channelMapAud[NUM_USB_CHAN_OUT];
