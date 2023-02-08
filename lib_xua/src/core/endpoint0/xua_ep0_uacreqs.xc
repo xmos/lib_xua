@@ -768,7 +768,7 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
                                     else
                                     {
                                         /* Update relevant mix map */
-                                        mixSel[cn-1][cn] = source;
+                                        mixSel[cs-1][cn] = source;
                                         UpdateMixMap(c_mix_ctl, cs-1, cn, mixSel[cs-1][cn]);
                                     }
 
