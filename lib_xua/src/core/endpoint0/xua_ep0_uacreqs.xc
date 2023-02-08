@@ -726,7 +726,7 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
                 case ID_XU_MIXSEL:
                 {
                     int cs = sp.wValue >> 8;    /* Control Selector */
-                    int cn = sp.wValue & 0xff;  /* Channel number */
+                    int cn = sp.wValue & 0xff;  /* Channel Number */
 
                     /* Check for Get or Set */
                     if(sp.bmRequestType.Direction == USB_BM_REQTYPE_DIRECTION_H2D)
@@ -739,7 +739,7 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
 
                         if(datalength > 0)
                         {
-                            /* cn bounds check for safety..*/
+                            /* CN bounds check for safety..*/
                             if(cn < MIX_INPUTS)
                             {
                                 //if(cs == CS_XU_MIXSEL)
@@ -839,8 +839,7 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
                                 weight = mixer1Weights[cn];
                             }
                             
-                            (buffer, unsigned char[])[0] = weight & 0xff;
-                            (buffer, unsigned char[])[1] = (weight >> 8) & 0xff;
+                            storeShort((buffer, unsigned char[]), 0, weight);
 
                             return XUD_DoGetRequest(ep0_out, ep0_in, (buffer, unsigned char[]), sp.wLength,  sp.wLength);
                         }
@@ -934,7 +933,6 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
                                     num_freqs++;
                                 }
 #endif
-
                                 storeShort((buffer, unsigned char[]), 0, num_freqs);
 
                                 return XUD_DoGetRequest(ep0_out, ep0_in, (buffer, unsigned char[]), i, sp.wLength);
@@ -982,7 +980,6 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
                     return XUD_DoGetRequest(ep0_out, ep0_in, (buffer, unsigned char[]), sp.wLength, sp.wLength);
                     break;
 #endif
-
                 default:
                     /* Unknown Unit ID in Range Request selector for FU */
                     break;
