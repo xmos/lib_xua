@@ -1,4 +1,4 @@
-// Copyright 2011-2022 XMOS LIMITED.
+// Copyright 2011-2023 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 /*
  * @brief       Defines relating to device configuration and customisation of lib_xua
@@ -997,17 +997,12 @@
 #define MIXER              (0)
 #endif
 
-/* Tidy up old ifndef usage */
-#if defined(MIXER) && (MIXER == 0)
-#undef MIXER
-#endif
-
 /**
  * @brief Number of seperate mixes to perform
  *
  * Default: 8 if MIXER enabled, else 0
  */
-#ifdef MIXER
+#if (MIXER)
     #ifndef MAX_MIX_COUNT
     	#define MAX_MIX_COUNT          (8)
     #endif
@@ -1087,44 +1082,24 @@
 #define VOLUME_RES_MIXER            (0x100)
 #endif
 
-/* Handle out volume control in the mixer */
-#if defined(OUT_VOLUME_IN_MIXER) && (OUT_VOLUME_IN_MIXER==0)
-#undef OUT_VOLUME_IN_MIXER
-#else
-#if defined(MIXER)
-// Disabled by default
-//#define OUT_VOLUME_IN_MIXER
-#endif
+/* Handle out volume control in the mixer - disabled by default */
+#ifndef OUT_VOLUME_IN_MIXER
+#define OUT_VOLUME_IN_MIXER         (0)
 #endif
 
-/* Apply out volume controls after the mix */
-#if defined(OUT_VOLUME_AFTER_MIX) && (OUT_VOLUME_AFTER_MIX==0)
-#undef OUT_VOLUME_AFTER_MIX
-#else
-#if defined(MIXER) && defined(OUT_VOLUME_IN_MIXER)
-// Enabled by default
-#define OUT_VOLUME_AFTER_MIX
-#endif
+/* Apply out volume controls after the mix. Only relevant when OUT_VOLUME_IN_MIXER enabled. Enabled by default */
+#ifndef OUT_VOLUME_AFTER_MIX
+#define OUT_VOLUME_AFTER_MIX        (1)
 #endif
 
-/* Handle in volume control in the mixer */
-#if defined(IN_VOLUME_IN_MIXER) && (IN_VOLUME_IN_MIXER==0)
-#undef IN_VOLUME_IN_MIXER
-#else
-#if defined(MIXER)
-/* Disabled by default */
-//#define IN_VOLUME_IN_MIXER
-#endif
+/* Handle in volume control in the mixer - disabled by default */
+#ifndef IN_VOLUME_IN_MIXER 
+#define IN_VOLUME_IN_MIXER          (0)
 #endif
 
-/* Apply in volume controls after the mix */
-#if defined(IN_VOLUME_AFTER_MIX) && (IN_VOLUME_AFTER_MIX==0)
-#undef IN_VOLUME_AFTER_MIX
-#else
-#if defined(MIXER) && defined(IN_VOLUME_IN_MIXER)
-// Enabled by default
-#define IN_VOLUME_AFTER_MIX
-#endif
+/* Apply in volume controls after the mix. Only relebant when IN_VOLUMNE_IN MIXER enabled. Enabled by default */
+#ifndef IN_VOLUME_AFTER_MIX 
+#define IN_VOLUME_AFTER_MIX         (1)
 #endif
 
 /* Always enable explicit feedback EP, even when input stream is present */

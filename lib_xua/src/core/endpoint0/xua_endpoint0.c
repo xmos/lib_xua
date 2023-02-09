@@ -1,4 +1,4 @@
-// Copyright 2011-2022 XMOS LIMITED.
+// Copyright 2011-2023 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 /**
  * @brief   Implements endpoint zero for an USB Audio 1.0/2.0 device
@@ -106,13 +106,17 @@ unsigned int mutesOut[NUM_USB_CHAN_OUT + 1];
 int volsIn[NUM_USB_CHAN_IN + 1];
 unsigned int mutesIn[NUM_USB_CHAN_IN + 1];
 
-#ifdef MIXER
-unsigned char mixer1Crossbar[18];
-short mixer1Weights[18*8];
+#if (MIXER)
+short mixer1Weights[MIX_INPUTS * MAX_MIX_COUNT];
 
-unsigned char channelMap[NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + MAX_MIX_COUNT];
+//unsigned char channelMap[NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + MAX_MIX_COUNT];
+/* Mapping of channels to output audio interfaces */
 unsigned char channelMapAud[NUM_USB_CHAN_OUT];
+
+/* Mapping of channels to USB host */
 unsigned char channelMapUsb[NUM_USB_CHAN_IN];
+
+/* Mapping of channels to Mixer(s) */
 unsigned char mixSel[MAX_MIX_COUNT][MIX_INPUTS];
 #endif
 
@@ -425,14 +429,15 @@ void XUA_Endpoint0_init(chanend c_ep0_out, chanend c_ep0_in, NULLABLE_RESOURCE(c
 #endif
     VendorRequests_Init(VENDOR_REQUESTS_PARAMS);
 
-#ifdef MIXER
+#if (MIXER)
     /* Set up mixer default state */
-    for (int i = 0; i < 18*8; i++)
+    for (int i = 0; i < MIX_INPUTS * MAX_MIX_COUNT; i++)
     {
         mixer1Weights[i] = 0x8001; //-inf
     }
 
     /* Configure default connections */
+    // TODO this should be a loop using defines.
     mixer1Weights[0] = 0;
     mixer1Weights[9] = 0;
     mixer1Weights[18] = 0;
@@ -454,20 +459,6 @@ void XUA_Endpoint0_init(chanend c_ep0_out, chanend c_ep0_in, NULLABLE_RESOURCE(c
     for(int i = 0; i < NUM_USB_CHAN_IN; i++)
     {
        channelMapUsb[i] = i + NUM_USB_CHAN_OUT;
-    }
-#endif
-
-    /* Set up channel mapping default */
-    for (int i = 0; i < NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN; i++)
-    {
-        channelMap[i] = i;
-    }
-
-#if MAX_MIX_COUNT > 0
-    /* Mixer outputs mapping defaults */
-    for (int i = 0; i < MAX_MIX_COUNT; i++)
-    {
-        channelMap[NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + i] = i;
     }
 #endif
 

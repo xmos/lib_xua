@@ -140,33 +140,33 @@ int usb_audio_class_get(unsigned char bRequest, unsigned char cs, unsigned char 
                           bRequest, 
                           (cs<<8) | cn, /* wValue */
                           (unitID & 0xff) << 8 | 0x0,
-                          data, 
-			  wLength, 
-		          0);
+                          data,
+                          wLength,
+                          0);
 }
 
 /* Issue a generic control/class SET request to a specific unit in the Audio Interface */
 int usb_audio_class_set(unsigned char bRequest, unsigned char cs, unsigned char cn, unsigned short unitID, unsigned short wLength, unsigned char *data)
 {
-  return libusb_control_transfer(devh, 
-                          USB_REQUEST_TO_DEV, 
+    return libusb_control_transfer(devh,
+                          USB_REQUEST_TO_DEV,
                           bRequest, 
-                          (cs<<8) | cn, /* wValue */
+                          (cs<<8) | cn,            /* wValue */
                           (unitID & 0xff) << 8 | 0x0,
-                          data, 
-			  wLength, 
-		          0);
+                          data,
+                          wLength,
+                          0);
 }
 
 /* Note, this never get cached in an object since it can change on the device side */
 int usb_mixer_mem_get(unsigned int mixer, unsigned offset, unsigned char *data)
 {
-  return libusb_control_transfer(devh, 
-			  USB_REQUEST_FROM_DEV, 	/* nRequest */
-                          MEM, 				/* bRequest */
-                          offset, 			/* wValue */
-                          (usb_mixers->usb_mixer[mixer].id & 0xff) << 8 | 0x0, /* wIndex */ 
-			  data, 64, 0);
+    return libusb_control_transfer(devh,
+                          USB_REQUEST_FROM_DEV,    /* nRequest */
+                          MEM,                     /* bRequest */
+                          offset,                  /* wValue */
+                          (usb_mixers->usb_mixer[mixer].id & 0xff) << 8 | 0x0, /* wIndex */
+                          data, 64, 0);
 }
 
 static const unsigned char *find_input_term_unit_by_id(const unsigned char *data, int length, int id) 
@@ -251,9 +251,9 @@ static int get_num_mixer_units(const unsigned char *data, int length) {
 
 static double dev_get_mixer_value(unsigned int mixer, unsigned int nodeId)
 {
-    // MU_MIXER_CONTROL 0x01
     short data;
-    usb_audio_class_get(CUR, 0x01<<8,  nodeId,  usb_mixers->usb_mixer[mixer].id, 2,(unsigned char *) &data);
+    unsigned char cs = 0; /* Device doesnt use CS for getting/setting mixer weights */
+    usb_audio_class_get(CUR, cs,  nodeId,  usb_mixers->usb_mixer[mixer].id, 2,(unsigned char *) &data);
     return ((double) data / 256);
 }
 
@@ -436,8 +436,17 @@ int addStrings(const unsigned char *data, int length, int mixer_index, int id, i
 /* Returns the source of an mix sel output */
 static unsigned char get_mixsel_value(unsigned int mixer, unsigned int channel)
 {
+    
+    unsigned char bRequest = CUR;
+    //unsigned cs = CS_XU_SEL;
+    unsigned char cs = 1; /* Note, currently the host app configures all mix sel's indentically, so if we get one they all should match */
+    unsigned char cn = channel;
+    unsigned short unitId = usb_mixers->usb_mixSel[mixer].id;
+    unsigned short wLength = 1;
     unsigned char data[64];
-    usb_audio_class_get(CUR, CS_XU_SEL, channel, usb_mixers->usb_mixSel[mixer].id, 1, (unsigned char *)data);
+    
+    usb_audio_class_get(CUR, cs, cn, unitId, wLength, (unsigned char *)data);
+    
     return data[0];
 }
 
@@ -783,25 +792,27 @@ int usb_mixer_get_layout(unsigned int mixer, unsigned int *inputs, unsigned int 
 /* MixSel getters and setters */
 char *usb_mixsel_get_input_string(unsigned int mixer, unsigned int input) 
 {
-  return usb_mixers->usb_mixSel[mixer].inputStrings[input];
+    return usb_mixers->usb_mixSel[mixer].inputStrings[input];
 }
 
 int usb_mixsel_get_input_count(unsigned int mixer)
 {
-  return usb_mixers->usb_mixSel[mixer].numInputs;
+    return usb_mixers->usb_mixSel[mixer].numInputs;
 }
 
 int usb_mixsel_get_output_count(unsigned int mixer)
 {
-  return usb_mixers->usb_mixSel[mixer].numOutputs;
+    return usb_mixers->usb_mixSel[mixer].numOutputs;
 }
 
-char *usb_mixer_get_input_name(unsigned int mixer, unsigned int input) {
-  return usb_mixers->usb_mixer[mixer].input_names[input];
+char *usb_mixer_get_input_name(unsigned int mixer, unsigned int input) 
+{
+    return usb_mixers->usb_mixer[mixer].input_names[input];
 }
 
-char *usb_mixer_get_output_name(unsigned int mixer, unsigned int output) {
-  return usb_mixers->usb_mixer[mixer].output_names[output];
+char *usb_mixer_get_output_name(unsigned int mixer, unsigned int output) 
+{
+    return usb_mixers->usb_mixer[mixer].output_names[output];
 }
 
 unsigned char usb_mixsel_get_state(unsigned int mixer, unsigned int channel)
@@ -811,13 +822,19 @@ unsigned char usb_mixsel_get_state(unsigned int mixer, unsigned int channel)
 
 void usb_mixsel_set_state(unsigned int mixer, unsigned int dst, unsigned int src)
 {
-    // write to device
-    usb_audio_class_set(CUR, CS_XU_SEL, dst, usb_mixers->usb_mixSel[mixer].id, 1, (unsigned char *)&src);
+    // Write to device
+    // Note, we are updating inputs to all mixers here with a hard-coded 0, though the device allows
+    // for separate input mapping per mixer
+    unsigned bRequest = CUR; 
+    unsigned cs = 0;
+    unsigned cn = usb_mixers->usb_mixSel[mixer].id;
+    unsigned wLength = 1;
+    usb_audio_class_set(CUR, 0, dst, usb_mixers->usb_mixSel[mixer].id, wLength, (unsigned char *)&src);
 
-    // update object state
+    // Update object state
     usb_mixers->usb_mixSel[mixer].state[dst] = src;
 
-    // update local object strings 
+    // Update local object strings 
     // TODO we don't really need to store strings since we can look them up...*/
     strcpy(usb_mixers->usb_mixer[mixer].input_names[dst], usb_mixers->usb_mixSel[mixer].inputStrings[src]);
 }
@@ -852,8 +869,10 @@ int usb_mixer_set_value(unsigned int mixer, unsigned int nodeId, double val)
 
         /* write to device */
         short value = (short) (val * 256);
-        
-        usb_audio_class_set(CUR, 1, 1<<8 | nodeId & 0xff, usb_mixers->usb_mixer[mixer].id,  2, (unsigned char *)&value);
+       
+        unsigned char cs = 0; /* Device doesnt use CS for setting/getting mixer nodes */ 
+        unsigned char cn = nodeId & 0xff;
+        usb_audio_class_set(CUR, cs, cn, usb_mixers->usb_mixer[mixer].id,  2, (unsigned char *)&value);
         
     }
     return 0;
