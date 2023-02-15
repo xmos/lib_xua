@@ -308,9 +308,9 @@ static int get_num_mixer_units(const unsigned char *data, int length) {
 
 static double dev_get_mixer_value(unsigned int mixer, unsigned int nodeId)
 {
-    // MU_MIXER_CONTROL 0x01
     short data;
-    usb_audio_class_get(CUR, ((unsigned char) (0x01<<8)),  nodeId,  usb_mixers->usb_mixer[mixer].id, 2,(unsigned char *) &data);
+    unsigned char cs = 0; /* Device doesnt use CS for getting/setting mixer weights */
+    usb_audio_class_get(CUR, cs,  nodeId,  usb_mixers->usb_mixer[mixer].id, 2,(unsigned char *) &data);
     return ((double) data / 256);
 }
 
@@ -534,7 +534,7 @@ static int get_mixer_info(const unsigned char *data, int length, unsigned int mi
     //const unsigned char *current_input_term_unit_ptr = NULL;
     //int current_input_term_unit_index = 0;
     //const unsigned char *current_feature_unit_ptr = NULL;
-    int devChanInputCount = 0; 
+    int devChanInputCount = 0;
 
     while (interface_len) 
     {
@@ -999,8 +999,10 @@ int usb_mixer_set_value(unsigned int mixer, unsigned int nodeId, double val)
 
         /* write to device */
         short value = (short) (val * 256);
-        
-        usb_audio_class_set(CUR, 1, 1<<8 | nodeId & 0xff, usb_mixers->usb_mixer[mixer].id,  2, (unsigned char *)&value);
+       
+        unsigned char cs = 0; /* Device doesnt use CS for setting/getting mixer nodes */ 
+        unsigned char cn = nodeId & 0xff;
+        usb_audio_class_set(CUR, cs, cn, usb_mixers->usb_mixer[mixer].id,  2, (unsigned char *)&value);
         
     }
     return 0;
