@@ -1093,7 +1093,7 @@
 #endif
 
 /* Handle in volume control in the mixer - disabled by default */
-#ifdef IN_VOLUNE_IN_MIXER 
+#ifndef IN_VOLUME_IN_MIXER 
 #define IN_VOLUME_IN_MIXER          (0)
 #endif
 

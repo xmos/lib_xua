@@ -30,9 +30,9 @@ extern unsigned int mutesOut[];
 extern int volsIn[];
 extern unsigned int mutesIn[];
 
-/* Mixer settings */
 #if (MIXER)
-extern short mixer1Weights[];
+/* Mixer weights */
+extern short mixer1Weights[MIX_INPUTS * MAX_MIX_COUNT];
 
 /* Device channel mapping */
 extern unsigned char channelMapAud[NUM_USB_CHAN_OUT];
@@ -282,12 +282,12 @@ void UpdateMixMap(chanend c_mix_ctl, int mix, int input, int src)
     outct(c_mix_ctl, XS1_CT_END);
 }
 
-void UpdateMixerWeight(chanend c_mix_ctl, int mix, int index, unsigned val)
+void UpdateMixerWeight(chanend c_mix_ctl, int mix, int index, unsigned mult)
 { 
     outuint(c_mix_ctl, SET_MIX_MULT);
     outuint(c_mix_ctl, mix);
     outuint(c_mix_ctl, index);
-    outuint(c_mix_ctl, val);
+    outuint(c_mix_ctl, mult);
     outct(c_mix_ctl, XS1_CT_END);
 }
 
@@ -726,7 +726,7 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
                 case ID_XU_MIXSEL:
                 {
                     int cs = sp.wValue >> 8;    /* Control Selector */
-                    int cn = sp.wValue & 0xff;  /* Channel number */
+                    int cn = sp.wValue & 0xff;  /* Channel Number */
 
                     /* Check for Get or Set */
                     if(sp.bmRequestType.Direction == USB_BM_REQTYPE_DIRECTION_H2D)
@@ -739,7 +739,7 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
 
                         if(datalength > 0)
                         {
-                            /* cn bounds check for safety..*/
+                            /* CN bounds check for safety..*/
                             if(cn < MIX_INPUTS)
                             {
                                 //if(cs == CS_XU_MIXSEL)
@@ -768,7 +768,7 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
                                     else
                                     {
                                         /* Update relevant mix map */
-                                        mixSel[cn-1][cn] = source;
+                                        mixSel[cs-1][cn] = source;
                                         UpdateMixMap(c_mix_ctl, cs-1, cn, mixSel[cs-1][cn]);
                                     }
 
@@ -798,50 +798,53 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
                 }
 
                 case ID_MIXER_1:
-
-                    if(sp.bmRequestType.Direction == USB_BM_REQTYPE_DIRECTION_H2D) /* Direction: Host-to-device */
                     {
-                        unsigned volume = 0;
-
-                        /* Expect OUT here with mute */
-                        if((result = XUD_GetBuffer(ep0_out, (buffer, unsigned char[]), datalength)) != XUD_RES_OKAY)
+                        int cs = sp.wValue >> 8;    /* Control Selector - currently unused */
+                        int cn = sp.wValue & 0xff;  /* Channel number - used for mixer node index */
+                        
+                        if(sp.bmRequestType.Direction == USB_BM_REQTYPE_DIRECTION_H2D) /* Direction: Host-to-device */
                         {
-                            return result;
-                        }
+                            unsigned weightMult = 0;
 
-                        mixer1Weights[sp.wValue & 0xff] = (buffer, unsigned char[])[0] | (buffer, unsigned char[])[1] << 8;
+                            /* Expect OUT here with weight */
+                            if((result = XUD_GetBuffer(ep0_out, (buffer, unsigned char[]), datalength)) != XUD_RES_OKAY)
+                            {
+                                return result;
+                            }
+                            
+                            if(cn < sizeof(mixer1Weights)/sizeof(mixer1Weights[0]))
+                            {
+                                mixer1Weights[cn] = (buffer, unsigned char[])[0] | (buffer, unsigned char[])[1] << 8;
 
-                        if (mixer1Weights[sp.wValue & 0xff] == 0x8000)
-                        {
-                            volume = 0;
+                                if (mixer1Weights[cn] != 0x8000)
+                                {
+                                    weightMult = db_to_mult(mixer1Weights[cn], XUA_MIXER_DB_FRAC_BITS, XUA_MIXER_MULT_FRAC_BITS);
+                                }
+
+                                if (!isnull(c_mix_ctl))
+                                {
+                                     UpdateMixerWeight(c_mix_ctl, (cn) % 8, (cn) / 8, weightMult);
+                                }
+                            }
+
+                            /* Send 0 Length as status stage */
+                            return XUD_DoSetRequestStatus(ep0_in);
                         }
                         else
                         {
-                            volume = db_to_mult(mixer1Weights[sp.wValue & 0xff], XUA_MIXER_DB_FRAC_BITS, XUA_MIXER_MULT_FRAC_BITS);
-                        }
-                        if (!isnull(c_mix_ctl))
-                        {
-                             //outuint(c_mix_ctl, SET_MIX_MULT);
-                             //outuint(c_mix_ctl, (sp.wValue & 0xff) % 8);
-                             //outuint(c_mix_ctl, (sp.wValue & 0xff) / 8);
-                             //outuint(c_mix_ctl, volume);
-                             //outct(c_mix_ctl, XS1_CT_END);
-                             UpdateMixerWeight(c_mix_ctl, (sp.wValue & 0xff) % 8, (sp.wValue & 0xff) / 8, volume);
-                        }
+                            short weight = 0x8000;
+                            
+                            if(cn < sizeof(mixer1Weights)/sizeof(mixer1Weights[0]))
+                            {
+                                weight = mixer1Weights[cn];
+                            }
+                            
+                            storeShort((buffer, unsigned char[]), 0, weight);
 
-                        /* Send 0 Length as status stage */
-                        return XUD_DoSetRequestStatus(ep0_in);
-                    }
-                    else
-                    {
-                        short weight = mixer1Weights[sp.wValue & 0xff];
-                        (buffer, unsigned char[])[0] = weight & 0xff;
-                        (buffer, unsigned char[])[1] = (weight >> 8) & 0xff;
-
-                        return XUD_DoGetRequest(ep0_out, ep0_in, (buffer, unsigned char[]), sp.wLength,  sp.wLength);
+                            return XUD_DoGetRequest(ep0_out, ep0_in, (buffer, unsigned char[]), sp.wLength,  sp.wLength);
+                        }
                     }
                     break;
-
 #endif
                 default:
                     /* We dont have a unit with this ID! */
@@ -930,7 +933,6 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
                                     num_freqs++;
                                 }
 #endif
-
                                 storeShort((buffer, unsigned char[]), 0, num_freqs);
 
                                 return XUD_DoGetRequest(ep0_out, ep0_in, (buffer, unsigned char[]), i, sp.wLength);
@@ -978,7 +980,6 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
                     return XUD_DoGetRequest(ep0_out, ep0_in, (buffer, unsigned char[]), sp.wLength, sp.wLength);
                     break;
 #endif
-
                 default:
                     /* Unknown Unit ID in Range Request selector for FU */
                     break;
@@ -1118,13 +1119,10 @@ int AudioEndpointRequests_1(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp
 
                         if(newSampleRate != g_curSamFreq)
                         {
-                            int curSamFreq44100Family;
-                            int curSamFreq48000Family;
-
                             /* Windows Audio Class driver has a nice habbit of sending invalid SF's (e.g. 48001Hz)
                              * when under stress.  Lets double check it here and ignore if not valid. */
-                            curSamFreq48000Family = MCLK_48 % newSampleRate  == 0;
-                            curSamFreq44100Family = MCLK_441 % newSampleRate == 0;
+                            int curSamFreq48000Family = MCLK_48 % newSampleRate  == 0;
+                            int curSamFreq44100Family = MCLK_441 % newSampleRate == 0;
 
                             if(curSamFreq48000Family || curSamFreq44100Family)
                             {

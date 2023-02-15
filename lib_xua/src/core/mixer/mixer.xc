@@ -125,15 +125,12 @@ int doMix5(volatile int * const unsafe samples, volatile int * const unsafe mult
 int doMix6(volatile int * const unsafe samples, volatile int * const unsafe mult);
 int doMix7(volatile int * const unsafe samples, volatile int * const unsafe mult);
 #else
-/* DO NOT inline, causes 10.4.2 tools to add extra loads in loop */
-/* At 18 x 12dB we could get 64 x bigger */
 #pragma unsafe arrays
 static inline int doMix(volatile int * unsafe samples, volatile int * unsafe const mixMap, volatile int * const unsafe mult)
 {
     int h=0;
     int l=0;
 
-/* By breaking up the loop we keep things in the encoding for ldw (0-11) */
 #pragma loop unroll
     for (int i=0; i<MIX_INPUTS; i++)
     unsafe{
