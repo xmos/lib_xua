@@ -238,10 +238,9 @@ static inline void GetSamplesFromHost(chanend c)
             h |= (l >>29)& 0x7; // Note: This step is not required if we assume sample depth is 24bit (rather than 32bit)
                                 // Note: We need all 32bits for Native DSD
 #endif
-            write_via_xc_ptr_indexed(samples_array, i, h);
-#else
-            ptr_samples[i] = sample;
+            sample = h;
 #endif
+            ptr_samples[i] = sample;
         }
     }
 #endif
@@ -332,7 +331,7 @@ static inline void GetSamplesFromDevice(chanend c)
 #endif
 
 #if (IN_VOLUME_IN_MIXER && IN_VOLUME_AFTER_MIX)
-        /* Read relevant multiplier */
+        /* Volume processing - read relevant multiplier */
         unsafe
         {
             mult = multIn[i];
@@ -340,17 +339,15 @@ static inline void GetSamplesFromDevice(chanend c)
 
         /* Do the multiply */
         {h, l} = macs(mult, sample, 0, 0);
-        h <<=3;
-        write_via_xc_ptr_indexed(samples_array, XUA_MIXER_OFFSET_IN+i, h);
-#else
-        /* No volume processing */
+        h <<= 3;
+        sample = h;
+#endif
         unsafe
         {
             assert((XUA_MIXER_OFFSET_IN + i) < (NUM_USB_CHAN_IN + NUM_USB_CHAN_OUT));
             ptr_samples[XUA_MIXER_OFFSET_IN + i] = sample;
         }
-#endif
-  }
+    }
 }
 
 static int mixer1_mix2_flag = (DEFAULT_FREQ > 96000);
