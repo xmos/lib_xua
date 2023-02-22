@@ -1,4 +1,4 @@
-!if [set SDKPath=C:\Program^ Files\XMOS\tusbaudiosdk]
+!if [set SDKPath=C:\Program/ Files\XMOS\tusbaudiosdk]
 !endif
 
 all:
