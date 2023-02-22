@@ -24,7 +24,7 @@
     <ProjectGuid>{84eacf4f-e405-4909-b440-a04a84a3f8c8}</ProjectGuid>
     <RootNamespace>
     </RootNamespace>
-    <SDKPath>C:\Program Files\XMOS\tusbaudiosdk</SDKPath>
+    <SDKPath Condition="'$(SDKPath)' == ''">C:\Program^ Files\XMOS\tusbaudiosdk</SDKPath>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -169,7 +169,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="mixer_app.cpp" />
-    <ClCompile Include="usb_mixer.cpp" />
+    <ClCompile Include="Win\usb_mixer.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
