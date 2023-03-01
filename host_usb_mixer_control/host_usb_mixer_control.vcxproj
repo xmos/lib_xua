@@ -169,7 +169,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="mixer_app.cpp" />
-    <ClCompile Include="Win\usb_mixer.cpp" />
+    <ClCompile Include="usb_mixer.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
