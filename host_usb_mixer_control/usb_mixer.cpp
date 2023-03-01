@@ -220,52 +220,6 @@ int usb_mixer_mem_get(unsigned int mixer, unsigned offset, unsigned char *data)
 #endif
 }
 
-//############# Never Called ##########
-// static const unsigned char *find_input_term_unit_by_id(const unsigned char *data, int length, int id) 
-// {
-//     const unsigned char *interface_data = data;
-//     while (length) 
-//     {
-//         const unsigned char *interface_len = interface_data;
-//         int sub_type = *(interface_len + 2);
-//         if (sub_type == USB_INPUT_TERM_TYPE) 
-//         {
-//             int unit_id = *(interface_len + 3);
-//             if (unit_id == id) 
-//             {
-//                 return interface_len;
-//             }
-//         }
-//         interface_data+=*interface_len;
-//         length -= *interface_len;
-//     }
-//     return NULL;
-// }
-
-
-
-//############# Never Called ##########
-// static const unsigned char *find_connected_feature_unit_by_id(const unsigned char *data, int length, int id) {
-//   const unsigned char *interface_data = data;
-//   while (length)
-//   {
-//         const unsigned char *interface_len = interface_data;
-//         int sub_type = *(interface_len + 2);
-//         if (sub_type == USB_FEATURE_UNIT_TYPE)
-//         {
-//             //int unit_id = *(interface_len + 3);
-//             int src_unit_id = *(interface_len + 4);
-//             if (src_unit_id == id)
-//             {
-//                 return interface_len;
-//             }
-//         }
-//         interface_data+=*interface_len;
-//         length -= *interface_len;
-//     }
-//     return NULL;
-// }
-
 static const unsigned char *findUnit(const unsigned char *descs, int length, int id)
 {
     const unsigned char *interface_data = descs;

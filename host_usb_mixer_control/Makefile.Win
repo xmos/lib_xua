@@ -1,4 +1,5 @@
-THESYCON_DIR = C:\Program/ Files\Thesycon\XMOSinternalUsbAudio_v5.50.0_eval_2022-11-17_SDK
+!if [set SDKPath=C:\Program^ Files\XMOS\tusbaudiosdk]
+!endif
 
 all:
 	msbuild host_usb_mixer_control.vcxproj /property:Configuration=Release /property:Platform=x64

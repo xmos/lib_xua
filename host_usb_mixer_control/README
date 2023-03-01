@@ -2,6 +2,16 @@ The XMOS USB Audio Reference Design, by default, contains an 18x8 mixer unit
 (note that at sample rates above 96Khz only the first two outputs are
 enabled).
 
+----WINDOWS REQUIREMENTS----
+Building the mixer on Windows requires the tusbaudio SDK from Thesycon. The
+default location for the SDK is C:\Program Files\XMOS\tusbaudiosdk\
+If it can be found on a different path then this can be changed in
+Makefile.Win.
+
+The mixer app on windows makes use of a USB dynamic library, also from Thesycon.
+If required please contact thesycon.de for support.
+----------------------------
+
 This unit takes input takes 18 inputs:  USB OUT channels 1..10 and
 DEVICE IN channels 1..6,9..10 and produces 8 outputs: Mixer Output
 1..8
@@ -17,7 +27,7 @@ channels 1..10, DEVICE IN channels 1..10 and Mixer Output 1..8
 The channel map units are extension unit with init ids 51 and 52. This unit
 lets you implement arbitrary routings including loopbacks.
 
-The mixer is control on MAC OS X via the command line utility
+The mixer is controlled on macOS via the command line utility
 xmos_mixer. Running this application requires having the
 libusb-1.0.0.dylib in the dynamic library load path. Sourcing the
 setup.sh script will do this. Source code for the application is

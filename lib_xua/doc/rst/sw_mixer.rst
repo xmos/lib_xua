@@ -220,32 +220,32 @@ At the same time, the original mixer outputs can be muted::
 
 Now audio inputs on analogue 1 and 2 should be heard on outputs 1 and 2 respectively. 
 
-.. As mentioned above, the flexibility of the mixer is such that there will be multiple ways to create
-.. a particular mix. Another option to create the same routing would be to change the mixer sources
-.. such that mixer outputs 1 and 2 come from the analogue inputs 1 and 2. 
+As mentioned above, the flexibility of the mixer is such that there will be multiple ways to create
+a particular mix. Another option to create the same routing would be to change the mixer sources
+such that mixer outputs 1 and 2 come from the analogue inputs 1 and 2. 
 
-.. To demonstrate this, firstly undo the changes above (or simply reset the device)::
+To demonstrate this, firstly undo the changes above (or simply reset the device)::
 
-..   $ ./xmos_mixer --set-value 0 8 -inf
-..   $ ./xmos_mixer --set-value 0 11 -inf
-..   $ ./xmos_mixer --set-value 0 0 0
-..   $ ./xmos_mixer --set-value 0 3 0
-..   $ _
+  $ ./xmos_mixer --set-value 0 8 -inf
+  $ ./xmos_mixer --set-value 0 11 -inf
+  $ ./xmos_mixer --set-value 0 0 0
+  $ ./xmos_mixer --set-value 0 3 0
+  $ _
 
-.. The mixer should now have the default values. The sources for mixer 0 output 1 and 2 can now be changed 
-.. using indices from the Audio Output Channel Map Source List::
+The mixer should now have the default values. The sources for mixer 0 output 1 and 2 can now be changed 
+using indices from the Audio Output Channel Map Source List::
 
-..   $ ./xmos_mixer --set-mixer-source 0 0 4
+  $ ./xmos_mixer --set-mixer-source 0 0 4
 
-..      Set mixer(0) input 0 to device input 4 (AUD - Analogue 1)
-..   $ ./xmos_mixer --set-mixer-source 0 1 5
+     Set mixer(0) input 0 to device input 4 (AUD - Analogue 1)
+  $ ./xmos_mixer --set-mixer-source 0 1 5
 
-..      Set mixer(0) input 1 to device input 5 (AUD - Analogue 2)
-..   $ _
+     Set mixer(0) input 1 to device input 5 (AUD - Analogue 2)
+  $ _
 
-.. If you re-run the following command then the first column now has "AUD - Analogue 1 and 2" rather
-.. than "DAW (Digital Audio Workstation i.e. the host) - Analogue 1 and 2" confirming the new mapping. 
-.. Again, by playing audio into analogue inputs 1/2 this can be heard looped through to analogue outputs 1/2::
+If you re-run the following command then the first column now has "AUD - Analogue 1 and 2" rather
+than "DAW (Digital Audio Workstation i.e. the host) - Analogue 1 and 2" confirming the new mapping. 
+Again, by playing audio into analogue inputs 1/2 this can be heard looped through to analogue outputs 1/2::
   
-..   $ ./xmos_mixer --display-mixer-nodes 0
+  $ ./xmos_mixer --display-mixer-nodes 0
 
