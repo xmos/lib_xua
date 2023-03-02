@@ -307,7 +307,6 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
     /* Inspect request, NOTE: these are class specific requests */
     switch( sp.bRequest )
     {
-
         /* CUR Request*/
         case CUR:
         {
@@ -668,7 +667,7 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
                             {
                                 return result;
                             }
-
+        
                             if (dst < NUM_USB_CHAN_OUT)
                             {
                                 channelMapAud[dst] = (buffer, unsigned char[])[0] | (buffer, unsigned char[])[1] << 8;
@@ -1137,7 +1136,7 @@ int AudioEndpointRequests_1(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp
 
                                 /* Allow time for the change - feedback to stabilise */
                                 FeedbackStabilityDelay();
-                                                            }
+                            }
                         }
                         return XUD_SetBuffer(ep0_in, (buffer, unsigned char[]), 0);
                     }

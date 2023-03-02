@@ -13,14 +13,14 @@
 #include "spdif.h"
 #endif
 
-#define LOCAL_CLOCK_INCREMENT       166667
-#define LOCAL_CLOCK_MARGIN          1666
+#define LOCAL_CLOCK_INCREMENT       (166667)
+#define LOCAL_CLOCK_MARGIN          (1666)
 
-#define MAX_SAMPLES                 64                      /* Must be power of 2 */
+#define MAX_SAMPLES                 (64)                    /* Must be power of 2 */
 #define MAX_SPDIF_SAMPLES           (2 * MAX_SAMPLES)       /* Must be power of 2 */
 #define MAX_ADAT_SAMPLES            (8 * MAX_SAMPLES)       /* Must be power of 2 */
 
-#define SPDIF_FRAME_ERRORS_THRESH	40
+#define SPDIF_FRAME_ERRORS_THRESH	(40)
 
 unsigned g_digData[10];
 
@@ -241,12 +241,7 @@ extern int samples_to_host_inputs_buff[NUM_USB_CHAN_IN];
 int VendorAudCoreReqs(unsigned cmd, chanend c);
 
 #pragma unsafe arrays
-//#if (AUDIO_IO_TILE == PLL_REF_TILE)
-#if 0
-void clockGen (streaming chanend ?c_spdif_rx, chanend ?c_adat_rx, out port p, chanend c_dig_rx, chanend c_clk_ctl, chanend c_clk_int)
-#else
 void clockGen (streaming chanend ?c_spdif_rx, chanend ?c_adat_rx, client interface pll_ref_if i_pll_ref, chanend c_dig_rx, chanend c_clk_ctl, chanend c_clk_int)
-#endif
 {
     timer t_local;
     unsigned timeNextEdge, timeLastEdge, timeNextClockDetection;
@@ -723,7 +718,7 @@ void clockGen (streaming chanend ?c_spdif_rx, chanend ?c_adat_rx, client interfa
 
 
 #if (XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
-			/* Mixer requests data */
+			/* AudioHub requests data */
 			case inuint_byref(c_dig_rx, tmp):
 #if (XUA_SPDIF_RX_EN)
                     if(spdifUnderflow)
