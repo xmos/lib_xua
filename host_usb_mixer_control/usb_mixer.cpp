@@ -650,7 +650,7 @@ static int find_xmos_device(unsigned int id)
     libusb_device **devs;
 
     libusb_get_device_list(NULL, &devs);
-    while ((dev = devs[i++]) != NULL) 
+    while ((dev = devs[i]) != NULL) 
     {
         struct libusb_device_descriptor desc;
         libusb_get_device_descriptor(dev, &desc);
@@ -663,6 +663,7 @@ static int find_xmos_device(unsigned int id)
                 id = i;
             }
         }
+        i++;
     }
     if (found == -1) {
         fprintf(stderr, "ERROR :: No device detected\n");
@@ -703,7 +704,7 @@ static int find_xmos_device(unsigned int id)
     {
 #if defined(__APPLE__)
         libusb_config_descriptor *config_desc = NULL;
-        libusb_get_active_config_descriptor(dev, &config_desc);
+        libusb_get_active_config_descriptor(devs[id], &config_desc);
         if (config_desc != NULL) 
         {
             //unsigned int num_mixers_found = 0;
