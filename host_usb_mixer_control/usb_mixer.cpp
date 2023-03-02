@@ -18,15 +18,7 @@
 // Currently res, max, min dont get populated
 
 #define XMOS_VID 0x20b1
-uint16_t XMOS_PID[] = {
-    0x0002,     //L1_AUDIO2
-    0x0003,     //L1_AUDIO1
-    0x0004,     //L2_AUDIO2
-    0x000E,     //xk_216_AUDIO2
-    0x000F,     //xk_216_AUDIO1
-    0x0016,     //xk_316_AUDIO2
-    0x0017,     //xk_316_AUDIO1
-};
+#define XMOS_DEBUG_PID 0xF7D1
 
 #define USB_REQUEST_TO_DEV 0x21 /* D7 	Data direction: 0 (Host to device)
                                  * D6:5	Type: 01 (Class)
@@ -136,16 +128,6 @@ static usb_mixer_handle *usb_mixers = NULL;
 #elif defined(_WIN32)
     static TUsbAudioHandle devh;
 #endif
-
-bool is_supported_device(uint16_t pid)
-{
-    for(uint16_t id : XMOS_PID)
-    {
-        if (pid == id) return true;
-    }
-    fprintf(stderr, "ERROR :: Device not supported\n");
-    return false;
-}
 
 /* Issue a generic control/class GET request to a specific unit in the Audio Interface */
 int usb_audio_class_get(unsigned char bRequest, unsigned char cs, unsigned char cn, unsigned short unitID, unsigned short wLength, unsigned char *data)
@@ -662,31 +644,46 @@ static int get_mixer_info(const unsigned char *data, int length, unsigned int mi
 static int find_xmos_device(unsigned int id) 
 {
     int i = 0;
-    int found = 0;
+    int found = -1;
 #if defined(__APPLE__)
     libusb_device *dev;
     libusb_device **devs;
 
     libusb_get_device_list(NULL, &devs);
-    while ((dev = devs[i++]) != NULL) 
+    while ((dev = devs[i]) != NULL) 
     {
         struct libusb_device_descriptor desc;
         libusb_get_device_descriptor(dev, &desc);
         // printf("VID = 0x%x, PID = 0x%x\n", desc.idVendor, desc.idProduct);
-        if (desc.idVendor == XMOS_VID && is_supported_device(desc.idProduct))
+        if (desc.idVendor == XMOS_VID && desc.idProduct < XMOS_DEBUG_PID)
         {
-            if (found == id) 
-            {
-                break;
-            }
             found++;
+            if (found == id)
+            {
+                id = i;
+            }
         }
+        i++;
     }
+    if (found == -1) {
+        fprintf(stderr, "ERROR :: No device detected\n");
+        return USB_MIXER_FAILURE;
+    }
+    else if (found > 0) {
+        fprintf(stderr, "ERROR :: Multiple devices detected\n");
+        return USB_MIXER_FAILURE;
+    }
+
 #elif defined(_WIN32)
     TUsbAudioStatus st;
 
     unsigned int devcnt = gDrvApi.TUSBAUDIO_GetDeviceCount();
-    if (0 == devcnt) {
+    if (devcnt == 0) {
+        fprintf(stderr, "ERROR :: No device detected\n");
+        return USB_MIXER_FAILURE;
+    }
+    else if (devcnt > 1) {
+        fprintf(stderr, "ERROR :: Multiple devices detected\n");
         return USB_MIXER_FAILURE;
     }
 
@@ -694,7 +691,7 @@ static int find_xmos_device(unsigned int id)
 #endif
     if (
 #if defined(__APPLE__)
-    libusb_open(dev, &devh) < 0
+    libusb_open(devs[id], &devh) < 0
 #elif defined(_WIN32)
     TSTATUS_SUCCESS != st
 #endif
@@ -707,7 +704,7 @@ static int find_xmos_device(unsigned int id)
     {
 #if defined(__APPLE__)
         libusb_config_descriptor *config_desc = NULL;
-        libusb_get_active_config_descriptor(dev, &config_desc);
+        libusb_get_active_config_descriptor(devs[id], &config_desc);
         if (config_desc != NULL) 
         {
             //unsigned int num_mixers_found = 0;
