@@ -129,7 +129,7 @@ static unsigned longMul(unsigned a, unsigned b, int prec)
 }
 
 /* Update master volume i.e. i.e update weights for all channels */
-static void updateMasterVol( int unitID, chanend ?c_mix_ctl)
+static void updateMasterVol(int unitID, chanend ?c_mix_ctl)
 {
     int x;
 #if (OUT_VOLUME_IN_MIXER == 0)
@@ -138,7 +138,7 @@ static void updateMasterVol( int unitID, chanend ?c_mix_ctl)
 #if (IN_VOLUME_IN_MIXER == 0)
     xc_ptr p_multIn = array_to_xc_ptr(multIn);
 #endif
-    switch( unitID)
+    switch(unitID)
     {
         case FU_USBOUT:
             {
@@ -789,7 +789,7 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
                             if((cs > 0) && (cs < (MAX_MIX_COUNT+1)))
                             {
                                 (buffer, unsigned char[])[0] = mixSel[cs-1][cn];
-                                return XUD_DoGetRequest(ep0_out, ep0_in, (buffer, unsigned char[]), 1, 1 );
+                                return XUD_DoGetRequest(ep0_out, ep0_in, (buffer, unsigned char[]), 1, 1);
                             }
                         }
                     }

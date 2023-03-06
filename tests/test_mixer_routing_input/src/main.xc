@@ -197,9 +197,9 @@ void stim(chanend c_stim_ah, chanend c_stim_de, chanend c_mix_ctl)
         unsigned input = random_get_random_number(rg) % MIX_INPUTS;
 
         /* Note, we don't currently support a mix input dervived from another mix 
-        * This is not trivial to test since the current mixer implementation only allows for one 
-        * config update per "trigger" 
-        */
+         * This is not trivial to test since the current mixer implementation only allows for one 
+         * config update per "trigger" 
+         */
         unsigned src = random_get_random_number(rg) % NUM_USB_CHAN_IN + NUM_USB_CHAN_OUT; 
         
         debug_printf("Iteration: %d\n", testIter);

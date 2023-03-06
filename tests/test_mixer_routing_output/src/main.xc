@@ -146,8 +146,8 @@ void stim(chanend c_stim_ah, chanend c_stim_de, chanend c_mix_ctl)
     {
         /* Make a random update to the routing - route a random source to a random destination */
         unsigned map = testCmd[random_get_random_number(rg) % (sizeof(testCmd)/sizeof(testCmd[0]))];
-        unsigned dst = random_get_random_number(rg)  % CHANNEL_MAP_AUD_SIZE; // TODO this should be CHANNEL_MAP_USB_SIZE for SET_SAMPLES_TO_HOST_MAP
-        unsigned src = random_get_random_number(rg) % NUM_USB_CHAN_OUT;  
+        unsigned dst = random_get_random_number(rg) % CHANNEL_MAP_AUD_SIZE; // TODO this should be CHANNEL_MAP_USB_SIZE for SET_SAMPLES_TO_HOST_MAP
+        unsigned src = random_get_random_number(rg) % (NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + MAX_MIX_COUNT);  
 
         switch(map)
         {

@@ -19,9 +19,8 @@
 
 #include "./../test_mixer_routing_output/src/mixer_test_shared.h"
 
-/* Device channel mapping */
-extern unsigned char channelMapAud[NUM_USB_CHAN_OUT];
-extern unsigned char channelMapUsb[NUM_USB_CHAN_IN];
+/* Mixer input mapping - from xua_endpoint0.c */
+extern unsigned char mixSel[MAX_MIX_COUNT][MIX_INPUTS];
 
 /* From xua_ep0_uacreqs.xc */
 int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, chanend ?c_audioControl, chanend ?c_mix_ctl, chanend ?c_clk_ctl);
@@ -60,7 +59,6 @@ void Fake_Endpoint0(chanend c_mix_ctl)
 {
     XUD_ep ep0_out;  /* Never initialised but not used */
     XUD_ep ep0_in;   /* Never initialised but not used */
-    unsigned unitIds[] = {ID_XU_OUT, ID_XU_IN};
     USB_SetupPacket_t sp;   
     
     random_generator_t rg = random_create_generator_from_seed(TEST_SEED);
@@ -72,43 +70,27 @@ void Fake_Endpoint0(chanend c_mix_ctl)
 
     for(int testIter = 0; testIter < TEST_ITERATIONS; testIter++)
     {
-        int unitId = unitIds[random_get_random_number(rg) % (sizeof(unitIds)/sizeof(unitIds[0]))];
-        unsigned dst = random_get_random_number(rg);
-        
-        /* Note, we don't currently support a mix input derived from another mix
-        * This is not trivial to test since the current mixer implementation only allows for one
-        * config update per "trigger"
-        */
-        int src = random_get_random_number(rg) % NUM_USB_CHAN_IN + NUM_USB_CHAN_OUT;
+        int unitId = ID_XU_MIXSEL;
+        unsigned mix = (random_get_random_number(rg) % (MAX_MIX_COUNT + 1)); // Mixs indexed from 1
+        unsigned input = random_get_random_number(rg) % MIX_INPUTS;
 
-        switch(unitId)
-        {
-            case ID_XU_OUT:
-                dst %= CHANNEL_MAP_AUD_SIZE;
-                debug_printf("Mapping output to AudioIF: %d", dst);
-                debug_printf(" from %d", src);
-                PrintSourceString(src);
-                debug_printf("\n");
-                break;
+        /* Note, we don't currently support a mix input dervived from another mix 
+         * This is not trivial to test since the current mixer implementation only allows for one 
+         * config update per "trigger" 
+         */
+        unsigned src = random_get_random_number(rg) % (NUM_USB_CHAN_IN + NUM_USB_CHAN_OUT);
 
-            case ID_XU_IN:
-                dst %= CHANNEL_MAP_USB_SIZE;
-                debug_printf("Mapping output to Host : %d", dst);
-                debug_printf(" from %d", src);
-                PrintSourceString(src);
-                debug_printf("\n");
-                break;
-
-            default:
-                printstr("ERROR: Bad cmd in stim(): ");
-                printintln(unitId);
-              break;
-        }
+        debug_printf("Mapping mix %d input %d", mix, input);
+        debug_printf(" from %d", src);
+        PrintSourceString(src);
+        debug_printf("\n");
 
         /* Create Control request data for routing change */
+        int cs = mix;
+        int cn = input;
         sp.bmRequestType.Direction = USB_BM_REQTYPE_DIRECTION_H2D;
         sp.bRequest = CUR; 
-        sp.wValue = dst & 0xff; 
+        sp.wValue = cn | (cs << 8); 
         sp.wIndex = (unitId << 8);
         sp.wLength = 1;
 
@@ -125,32 +107,29 @@ void Fake_Endpoint0(chanend c_mix_ctl)
          * Going forward we might wish to enhance the mixer API such that it can be tested as black box.
          * This would require the addition of "GET" API over than ctrl channel 
          */
-        switch(unitId)
+
+        sp.bmRequestType.Direction = USB_BM_REQTYPE_DIRECTION_D2H;
+        
+        if(mix == 0)
         {
-            case ID_XU_OUT:
-                assert(g_src == channelMapAud[dst]);
-                unsafe
-                {
-                    assert(g_src == samples_to_device_map[dst]);
-                }
-                break;
+            /* If mix is 0 then we need to check that all mixers have been updated */
+            for(int i = 0; i < MAX_MIX_COUNT; i++)
+            {
+                assert(g_src == mixSel[i][cn]);
 
-            case ID_XU_IN:
-                assert(g_src == channelMapUsb[dst]);
-                unsafe
-                {
-                    assert(g_src == samples_to_host_map[dst]);
-                }
-                break;
-
-            default:
-                assert(0);
-                break;
+                /* Need to read back from each mixer individually */
+                sp.wValue = cn | ((i + 1)<< 8);
+                AudioClassRequests_2(ep0_out, ep0_in, sp, null, c_mix_ctl, null);
+            }
+        }
+        else
+        {
+            assert(g_src == mixSel[cs-1][cn]);
+            
+            /* Test read back. Note, the checking is in our overridden implementation of XUD_SetBuffer_EpMax*/
+            AudioClassRequests_2(ep0_out, ep0_in, sp, null, c_mix_ctl, null);
         }
 
-        /* Test read back. Note, the checking is our overridded implementation of XUD_SetBuffer_EpMax*/
-        sp.bmRequestType.Direction = USB_BM_REQTYPE_DIRECTION_D2H;
-        AudioClassRequests_2(ep0_out, ep0_in, sp, null, c_mix_ctl, null);
     }
 
     printstrln("PASS");
