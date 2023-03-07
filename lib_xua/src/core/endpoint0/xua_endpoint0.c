@@ -266,6 +266,7 @@ void XUA_Endpoint0_setVendorId(unsigned short vid) {
 #endif // AUDIO_CLASS == 1}
 }
 
+#if (MIXER)
 void InitLocalMixerState()
 {
     for (int i = 0; i < MIX_INPUTS * MAX_MIX_COUNT; i++)
@@ -306,6 +307,7 @@ void InitLocalMixerState()
             mixSel[j][i] = i;
         }
 }
+#endif
 
 void concatenateAndCopyStrings(char* string1, char* string2, char* string_buffer) {
     debug_printf("concatenateAndCopyStrings() for \"%s\" and \"%s\"\n", string1, string2);
