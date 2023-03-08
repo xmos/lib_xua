@@ -114,7 +114,7 @@ void Fake_Endpoint0(chanend c_mix_ctl)
 
         g_src = src; /* This will get picked up by out implementation of XUD_GetBuffer */
         
-        /* Call the function used by Endpoint0 to parse the control data and update the mixer output routing */
+        /* Call the function used by Endpoint0() to parse the control data and update the mixer output routing */
         AudioClassRequests_2(ep0_out, ep0_in, sp, null, c_mix_ctl, null);
 
         /* Note, there is a race risk here. This could be resolved by adding a handshake to UpdateMixerOutputRouting() etc */
@@ -122,8 +122,8 @@ void Fake_Endpoint0(chanend c_mix_ctl)
         /* Now check the mixer setting have been modified as expected. To do this we inspect "internal"
          * mixer and endpoint 0 state.
          *
-         * Going forward we might wish to enhance the mixer API such that it can be tested as black box.
-         * This would require the addition of "GET" API over than ctrl channel 
+         * Going forward we might wish to enhance the mixer API such that it can be tested as a black box.
+         * This would require the addition of "GET" API over it's ctrl channel 
          */
         switch(unitId)
         {
@@ -148,7 +148,7 @@ void Fake_Endpoint0(chanend c_mix_ctl)
                 break;
         }
 
-        /* Test read back. Note, the checking is our overridded implementation of XUD_SetBuffer_EpMax*/
+        /* Test read back. Note, the checking is our overridden implementation of XUD_SetBuffer_EpMax*/
         sp.bmRequestType.Direction = USB_BM_REQTYPE_DIRECTION_D2H;
         AudioClassRequests_2(ep0_out, ep0_in, sp, null, c_mix_ctl, null);
     }

@@ -104,8 +104,8 @@ void Fake_Endpoint0(chanend c_mix_ctl)
         /* Now check the mixer setting have been modified as expected. To do this we inspect "internal"
          * mixer and endpoint 0 state.
          *
-         * Going forward we might wish to enhance the mixer API such that it can be tested as black box.
-         * This would require the addition of "GET" API over than ctrl channel 
+         * Going forward we might wish to enhance the mixer API such that it can be tested as a black box.
+         * This would require the addition of "GET" API over it's ctrl channel 
          */
 
         sp.bmRequestType.Direction = USB_BM_REQTYPE_DIRECTION_D2H;
