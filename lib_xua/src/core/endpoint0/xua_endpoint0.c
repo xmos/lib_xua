@@ -266,6 +266,49 @@ void XUA_Endpoint0_setVendorId(unsigned short vid) {
 #endif // AUDIO_CLASS == 1}
 }
 
+#if (MIXER)
+void InitLocalMixerState()
+{
+    for (int i = 0; i < MIX_INPUTS * MAX_MIX_COUNT; i++)
+    {
+        mixer1Weights[i] = 0x8001; //-inf
+    }
+
+    /* Configure default connections */
+    // TODO this should be a loop using defines.
+    mixer1Weights[0] = 0;
+    mixer1Weights[9] = 0;
+    mixer1Weights[18] = 0;
+    mixer1Weights[27] = 0;
+    mixer1Weights[36] = 0;
+    mixer1Weights[45] = 0;
+    mixer1Weights[54] = 0;
+    mixer1Weights[63] = 0;
+
+#if NUM_USB_CHAN_OUT > 0
+    /* Setup up audio output channel mapping */
+    for(int i = 0; i < NUM_USB_CHAN_OUT; i++)
+    {
+       channelMapAud[i] = i;
+    }
+#endif
+
+#if NUM_USB_CHAN_IN > 0
+    for(int i = 0; i < NUM_USB_CHAN_IN; i++)
+    {
+       channelMapUsb[i] = i + NUM_USB_CHAN_OUT;
+    }
+#endif
+
+    /* Init mixer inputs */
+    for(int j = 0; j < MAX_MIX_COUNT; j++)
+        for(int i = 0; i < MIX_INPUTS; i++)
+        {
+            mixSel[j][i] = i;
+        }
+}
+#endif
+
 void concatenateAndCopyStrings(char* string1, char* string2, char* string_buffer) {
     debug_printf("concatenateAndCopyStrings() for \"%s\" and \"%s\"\n", string1, string2);
 
@@ -412,62 +455,11 @@ void XUA_Endpoint0_init(chanend c_ep0_out, chanend c_ep0_in, NULLABLE_RESOURCE(c
 
     XUA_Endpoint0_setStrTable();
 
-#if 0
-    /* Dont need to init globals.. */
-    /* Init tables for volumes (+ 1 for master) */
-    for(int i = 0; i < NUM_USB_CHAN_OUT + 1; i++)
-    {
-        volsOut[i] = 0;
-        mutesOut[i] = 0;
-    }
-
-    for(int i = 0; i < NUM_USB_CHAN_IN + 1; i++)
-    {
-        volsIn[i] = 0;
-        mutesIn[i] = 0;
-    }
-#endif
     VendorRequests_Init(VENDOR_REQUESTS_PARAMS);
 
 #if (MIXER)
     /* Set up mixer default state */
-    for (int i = 0; i < MIX_INPUTS * MAX_MIX_COUNT; i++)
-    {
-        mixer1Weights[i] = 0x8001; //-inf
-    }
-
-    /* Configure default connections */
-    // TODO this should be a loop using defines.
-    mixer1Weights[0] = 0;
-    mixer1Weights[9] = 0;
-    mixer1Weights[18] = 0;
-    mixer1Weights[27] = 0;
-    mixer1Weights[36] = 0;
-    mixer1Weights[45] = 0;
-    mixer1Weights[54] = 0;
-    mixer1Weights[63] = 0;
-
-#if NUM_USB_CHAN_OUT > 0
-    /* Setup up audio output channel mapping */
-    for(int i = 0; i < NUM_USB_CHAN_OUT; i++)
-    {
-       channelMapAud[i] = i;
-    }
-#endif
-
-#if NUM_USB_CHAN_IN > 0
-    for(int i = 0; i < NUM_USB_CHAN_IN; i++)
-    {
-       channelMapUsb[i] = i + NUM_USB_CHAN_OUT;
-    }
-#endif
-
-    /* Init mixer inputs */
-    for(int j = 0; j < MAX_MIX_COUNT; j++)
-        for(int i = 0; i < MIX_INPUTS; i++)
-        {
-            mixSel[j][i] = i;
-        }
+    InitLocalMixerState();
 #endif
 
 #ifdef VENDOR_AUDIO_REQS
@@ -519,7 +511,6 @@ void XUA_Endpoint0_init(chanend c_ep0_out, chanend c_ep0_in, NULLABLE_RESOURCE(c
         cfgDesc_Audio1[USB_AS_OUT_INTERFACE_DESCRIPTOR_OFFSET_FREQ + 3*i + 1] = (get_usb_to_device_rate() & 0xff00)>> 8;
         cfgDesc_Audio1[USB_AS_OUT_INTERFACE_DESCRIPTOR_OFFSET_FREQ + 3*i + 2] = (get_usb_to_device_rate() & 0xff0000)>> 16;
     }
-
 
     cfgDesc_Audio1[USB_AS_OUT_EP_DESCRIPTOR_OFFSET_MAXPACKETSIZE] = ((get_usb_to_device_bit_res() >> 3) * MAX_PACKET_SIZE_MULT_OUT_FS) & 0xff; //max packet size
     cfgDesc_Audio1[USB_AS_OUT_EP_DESCRIPTOR_OFFSET_MAXPACKETSIZE + 1] = (((get_usb_to_device_bit_res() >> 3)  * MAX_PACKET_SIZE_MULT_OUT_FS) & 0xff00) >> 8; //max packet size

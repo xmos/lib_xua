@@ -381,9 +381,8 @@ unsigned static AudioHub_MainLoop(chanend ?c_out, chanend ?c_spd_out
                 outuint(c_dig_rx, 0);
 #endif
 #if (XUA_SPDIF_TX_EN) && (NUM_USB_CHAN_OUT > 0)
-                outuint(c_spd_out, samplesOut[SPDIF_TX_INDEX]);  /* Forward sample to S/PDIF Tx thread */
-                unsigned sample = samplesOut[SPDIF_TX_INDEX + 1];
-                outuint(c_spd_out, sample);                      /* Forward sample to S/PDIF Tx thread */
+                outuint(c_spd_out, samplesOut[SPDIF_TX_INDEX]);  /* Forward samples to S/PDIF Tx thread */
+                outuint(c_spd_out, samplesOut[SPDIF_TX_INDEX + 1]);
 #endif
 
 #if (XUA_NUM_PDM_MICS > 0)

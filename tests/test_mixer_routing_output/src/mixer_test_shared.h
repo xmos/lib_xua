@@ -11,6 +11,8 @@
  */
 #define CHANNEL_MAP_AUD_SIZE NUM_USB_CHAN_OUT
 
+#define CHANNEL_MAP_USB_SIZE NUM_USB_CHAN_IN
+
 /* Number of channel sources, the channel ordering is as follows
  * i.e. 
  * [0:NUM_USB_CHAN_OUT-1] : Channels from USB Host

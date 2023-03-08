@@ -17,6 +17,7 @@ _build*
 .DS_Store
 *.*~
 *.swp
+*.swn
 *~
 *.swo
 
