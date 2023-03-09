@@ -395,7 +395,7 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
                                 }
 #endif /* MAX_FREQ != MIN_FREQ */
                                 /* Send 0 Length as status stage */
-                                int x = XUD_DoSetRequestStatus(ep0_in);
+                                return XUD_DoSetRequestStatus(ep0_in);
                             }
                             /* Direction: Device-to-host: Send Current Sample Freq */
                             else
