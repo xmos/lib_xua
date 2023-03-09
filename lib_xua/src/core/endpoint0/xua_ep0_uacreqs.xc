@@ -342,7 +342,7 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
                                     int newSampleRate = buffer[0];
 
                                     /* Instruct audio thread to change sample freq (if change required) */
-                                    //if(newSampleRate != g_curSamFreq)
+                                    if(newSampleRate != g_curSamFreq)
                                     {
                                         int newMasterClock;
 
