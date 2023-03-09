@@ -1,8 +1,15 @@
 // Copyright 2018-2023 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
-#define MAX_MIX_COUNT 8
-#define MIX_INPUTS 18
+#include "xua.h"
+
+#ifndef MAX_MIX_COUNT
+#error
+#endif
+
+#ifndef MIX_INPUTS
+#error 
+#endif
 
 #define DOMIX_TOP(i) \
 .cc_top doMix##i.function,doMix##i; \
