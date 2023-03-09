@@ -7,14 +7,14 @@
 
 #include "xua_conf_full.h"
 
-#if __XC__ || __STDC__
+#ifndef __ASSEMBLER__
     #include "xua_audiohub.h"
     #include "xua_endpoint0.h"
     #include "xua_buffer.h"
     #include "xua_mixer.h"
 #endif
 
-#if __XC__
+#ifdef __XC__
     #include "xua_clocking.h"
     #include "xua_midi.h"
     #if XUA_NUM_PDM_MICS > 0
