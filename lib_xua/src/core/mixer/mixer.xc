@@ -7,18 +7,17 @@
 #include "xua.h"
 #include "xua_commands.h"
 #include "dbcalc.h"
-#include "print.h"
 
-#if defined (LEVEL_METER_HOST) || defined(LEVEL_METER_LEDS)
+/* FAST_MIXER has a bit of a nasty implentation but is more efficient */
+#ifndef FAST_MIXER
+#define FAST_MIXER   (1)
+#endif
+
+#if defined (LEVEL_METER_HOST) || defined(LEVEL_METER_LEDS) || !FAST_MIXER
 #include "xc_ptr.h"
 #endif 
 
 #if (MIXER)
-
-/* FAST_MIXER has a bit of a nasty implentation but is more effcient */
-#ifndef FAST_MIXER
-#define FAST_MIXER   (1)
-#endif
 
 #if (OUT_VOLUME_IN_MIXER) 
 static unsigned int multOut_array[NUM_USB_CHAN_OUT + 1];
@@ -140,6 +139,8 @@ static inline int doMix(volatile int * unsafe samples, volatile int * unsafe con
         read_via_xc_ptr_indexed(source, mixMap, i);
         sample = samples[source];
         read_via_xc_ptr_indexed(weight, mult, i);
+
+
         {h,l} = macs(sample, weight, h, l);
     }
 
@@ -212,7 +213,7 @@ static inline void GetSamplesFromHost(chanend c)
         for (int i=0; i<NUM_USB_CHAN_OUT; i++)
         unsafe {
             int sample, x;
-#if (OUT_VOLUME_IN_MIXER && OUT_VOLUME_AFTER_MIX)
+#if (OUT_VOLUME_IN_MIXER && !OUT_VOLUME_AFTER_MIX)
             int mult;
             int h;
             unsigned l;
@@ -229,7 +230,7 @@ static inline void GetSamplesFromHost(chanend c)
             }
 #endif
 
-#if (OUT_VOLUME_IN_MIXER && OUT_VOLUME_AFTER_MIX)
+#if (OUT_VOLUME_IN_MIXER && !OUT_VOLUME_AFTER_MIX)
 #warning OUT Vols in mixer, BEFORE mix & map
             mult = multOut[i];
             {h, l} = macs(mult, sample, 0, 0);
@@ -524,7 +525,7 @@ static void mixer1(chanend c_host, chanend c_mix_ctl, chanend c_mixer2)
 
         /* Get response from decouple */
         if(testct(c_host))
-        {
+        {  
             int sampFreq;
             unsigned command = inct(c_host);
 

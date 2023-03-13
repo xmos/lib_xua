@@ -1082,9 +1082,9 @@
 #define VOLUME_RES_MIXER            (0x100)
 #endif
 
-/* Handle out volume control in the mixer - disabled by default */
+/* Handle out volume control in the mixer - enabled by default */
 #ifndef OUT_VOLUME_IN_MIXER
-#define OUT_VOLUME_IN_MIXER         (0)
+#define OUT_VOLUME_IN_MIXER         (1)
 #endif
 
 /* Apply out volume controls after the mix. Only relevant when OUT_VOLUME_IN_MIXER enabled. Enabled by default */
@@ -1294,9 +1294,9 @@ enum USBEndpointNumber_Out
 /* Some defines that allow us to remove unused code */
 
 /* Useful for dropping lower part of macs in volume processing... */
-#if (FS_STREAM_FORMAT_OUTPUT_1_RESOLUTION_BITS > 24) || (FS_STREAM_FORMAT_OUTPUT_2_RESOLUTION_BITS > 24) || \
-    (FS_STREAM_FORMAT_OUTPUT_3_RESOLUTION_BITS > 24) || (HS_STREAM_FORMAT_OUTPUT_1_RESOLUTION_BITS > 24)  || \
-    (HS_STREAM_FORMAT_OUTPUT_2_RESOLUTION_BITS > 24) || (HS_STREAM_FORMAT_OUTPUT_3_RESOLUTION_BITS > 24)
+#if (FS_STREAM_FORMAT_OUTPUT_1_RESOLUTION_BITS > 24) || (HS_STREAM_FORMAT_OUTPUT_2_RESOLUTION_BITS > 24) || \
+    (((FS_STREAM_FORMAT_OUTPUT_2_RESOLUTION_BITS > 24) || (HS_STREAM_FORMAT_OUTPUT_2_RESOLUTION_BITS > 24)) && (OUTPUT_FORMAT_COUNT > 1)) || \
+    (((FS_STREAM_FORMAT_OUTPUT_3_RESOLUTION_BITS > 24) || (HS_STREAM_FORMAT_OUTPUT_3_RESOLUTION_BITS > 24)) && (OUTPUT_FORMAT_COUNT > 2))
     #define STREAM_FORMAT_OUTPUT_RESOLUTION_32BIT_USED 1
 #else
     #define STREAM_FORMAT_OUTPUT_RESOLUTION_32BIT_USED 0
