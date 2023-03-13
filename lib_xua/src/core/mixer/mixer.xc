@@ -7,7 +7,6 @@
 #include "xua.h"
 #include "xua_commands.h"
 #include "dbcalc.h"
-#include "print.h"
 
 #if defined (LEVEL_METER_HOST) || defined(LEVEL_METER_LEDS)
 #include "xc_ptr.h"

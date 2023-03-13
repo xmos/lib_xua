@@ -1082,9 +1082,9 @@
 #define VOLUME_RES_MIXER            (0x100)
 #endif
 
-/* Handle out volume control in the mixer - disabled by default */
+/* Handle out volume control in the mixer - enabled by default */
 #ifndef OUT_VOLUME_IN_MIXER
-#define OUT_VOLUME_IN_MIXER         (0)
+#define OUT_VOLUME_IN_MIXER         (1)
 #endif
 
 /* Apply out volume controls after the mix. Only relevant when OUT_VOLUME_IN_MIXER enabled. Enabled by default */
