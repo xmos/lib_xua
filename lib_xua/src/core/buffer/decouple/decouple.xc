@@ -67,6 +67,7 @@ unsigned int multIn[NUM_USB_CHAN_IN + 1];
 static xc_ptr p_multIn;
 #endif
 
+/* Default to something sensible but the following are setup at stream start (unless UAC1 only..) */
 #if (AUDIO_CLASS == 2)
 int g_numUsbChan_In = NUM_USB_CHAN_IN; /* Number of channels to/from the USB bus - initialised to HS for UAC2.0 */
 int g_numUsbChan_Out = NUM_USB_CHAN_OUT;
@@ -143,7 +144,66 @@ unsigned unpackData = 0;
 unsigned packState = 0;
 unsigned packData = 0;
 
-/* Default to something sensible but the following are setup at stream start (unless UAC1 only..) */
+static inline void SendSamples4(chanend c_mix_out)
+{
+    /* Doing this checking allows us to unroll */
+    if(g_numUsbChan_Out == NUM_USB_CHAN_OUT)
+    {
+        /* Buffering not underflow condition send out some samples...*/
+#pragma loop unroll
+        for(int i = 0; i < NUM_USB_CHAN_OUT; i++)
+        {
+            int sample;
+            int mult;
+            int h;
+            unsigned l;
+
+            read_via_xc_ptr(sample, g_aud_from_host_rdptr);
+            g_aud_from_host_rdptr+=4;
+
+#if (OUTPUT_VOLUME_CONTROL == 1) && (!OUT_VOLUME_IN_MIXER)
+            asm volatile("ldw %0, %1[%2]":"=r"(mult):"r"(p_multOut),"r"(i));
+            {h, l} = macs(mult, sample, 0, 0);
+            h <<= 3;
+#if (STREAM_FORMAT_OUTPUT_RESOLUTION_32BIT_USED == 1)
+            h |= (l >>29) & 0x7; // Note: This step is not required if we assume sample depth is 24bit (rather than 32bit)
+                                 // Note: We need all 32bits for Native DSD
+#endif
+            outuint(c_mix_out, h);
+#else
+            outuint(c_mix_out, sample);
+#endif
+        }
+    }
+    else
+    {
+#pragma loop unroll
+        for(int i = 0; i < NUM_USB_CHAN_OUT_FS; i++)
+        {
+            int sample;
+            int mult;
+            int h;
+            unsigned l;
+
+            read_via_xc_ptr(sample, g_aud_from_host_rdptr);
+            g_aud_from_host_rdptr+=4;
+
+#if (OUTPUT_VOLUME_CONTROL == 1) && (!OUT_VOLUME_IN_MIXER)
+            asm volatile("ldw %0, %1[%2]":"=r"(mult):"r"(p_multOut),"r"(i));
+            {h, l} = macs(mult, sample, 0, 0);
+            h <<= 3;
+#if (STREAM_FORMAT_OUTPUT_RESOLUTION_32BIT_USED == 1)
+            h |= (l >>29) & 0x7; // Note: This step is not required if we assume sample depth is 24bit (rather than 32bit)
+                                 // Note: We need all 32bits for Native DSD
+#endif
+            outuint(c_mix_out, h);
+#else
+            outuint(c_mix_out, sample);
+#endif
+        }
+    }
+}
+
 
 #pragma select handler
 #pragma unsafe arrays
@@ -223,41 +283,17 @@ __builtin_unreachable();
 __builtin_unreachable();
 #endif
                 /* Buffering not underflow condition send out some samples...*/
-                for(int i = 0; i < g_numUsbChan_Out; i++)
-                {
-#pragma xta endpoint "mixer_request"
-                    int sample;
-                    int mult;
-                    int h;
-                    unsigned l;
-
-                    read_via_xc_ptr(sample, g_aud_from_host_rdptr);
-                    g_aud_from_host_rdptr+=4;
-
-#if (OUTPUT_VOLUME_CONTROL == 1) && (!OUT_VOLUME_IN_MIXER)
-                    asm volatile("ldw %0, %1[%2]":"=r"(mult):"r"(p_multOut),"r"(i));
-                    {h, l} = macs(mult, sample, 0, 0);
-                    h <<= 3;
-#if (STREAM_FORMAT_OUTPUT_RESOLUTION_32BIT_USED == 1)
-                    h |= (l >>29)& 0x7; // Note: This step is not required if we assume sample depth is 24bit (rather than 32bit)
-                                        // Note: We need all 32bits for Native DSD
-#endif
-                    outuint(c_mix_out, h);
-#else
-                    outuint(c_mix_out, sample);
-#endif
-                }
-
+                SendSamples4(c_mix_out);
                 break;
 
             case 3:
 #if (STREAM_FORMAT_OUTPUT_SUBSLOT_3_USED == 0)
 __builtin_unreachable();
 #endif
-                /* Buffering not underflow condition send out some samples...*/
+                /* Note, in this case the unpacking of data is more of an overhead than the loop overhead 
+                 * so we do not currently make attempts to unroll */
                 for(int i = 0; i < g_numUsbChan_Out; i++)
                 {
-#pragma xta endpoint "mixer_request"
                     int sample;
                     int mult;
                     int h;
