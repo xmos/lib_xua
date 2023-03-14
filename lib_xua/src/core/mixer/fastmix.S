@@ -11,6 +11,8 @@
 #error 
 #endif
 
+#if (MAX_MIX_COUNT > 0)
+
 #define DOMIX_TOP(i) \
 .cc_top doMix##i.function,doMix##i; \
           .align    16 ;\
@@ -180,5 +182,5 @@ setPtr_go:
 #undef N
 #undef BODY
 
-
+#endif
 
