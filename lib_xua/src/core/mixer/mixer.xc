@@ -361,6 +361,7 @@ static void mixer1(chanend c_host, chanend c_mix_ctl, chanend c_mixer2)
 #endif
 #if (MAX_MIX_COUNT > 0) || (IN_VOLUME_IN_MIXER) || (OUT_VOLUME_IN_MIXER) || defined (LEVEL_METER_HOST) || defined(LEVEL_METER_LEDS)
     unsigned cmd;
+    unsigned char ct;
 #endif
     unsigned request = 0;
 
@@ -381,9 +382,18 @@ static void mixer1(chanend c_host, chanend c_mix_ctl, chanend c_mixer2)
 #if (MAX_MIX_COUNT > 0) || (IN_VOLUME_IN_MIXER) || (OUT_VOLUME_IN_MIXER) || defined (LEVEL_METER_HOST) || defined(LEVEL_METER_LEDS)
         select
         {
-            case inuint_byref(c_mix_ctl, cmd):
+            /* Check if EP0 intends to send us a control command */
+            case inct_byref(c_mix_ctl, ct):
             {
                 int mix, index, val;
+                
+                /* Handshake back to tell EP0 we are ready for an update */
+                outct(c_mix_ctl, XS1_CT_END);
+
+                /* Receive command from EP0 */
+                cmd = inuint(c_mix_ctl);
+
+                /* Interpret control command */
                 switch (cmd)
                 {
 #if (MAX_MIX_COUNT > 0)
