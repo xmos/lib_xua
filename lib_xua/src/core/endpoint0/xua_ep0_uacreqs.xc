@@ -155,6 +155,8 @@ static void updateMasterVol(int unitID, chanend ?c_mix_ctl)
 #if (OUT_VOLUME_IN_MIXER)
                     if (!isnull(c_mix_ctl))
                     {
+                        outct(c_mix_ctl, XS1_CT_END);
+                        inct(c_mix_ctl);
                         outuint(c_mix_ctl, SET_MIX_OUT_VOL);
                         outuint(c_mix_ctl, i-1);
                         outuint(c_mix_ctl, x);
@@ -181,6 +183,8 @@ static void updateMasterVol(int unitID, chanend ?c_mix_ctl)
 #if (IN_VOLUME_IN_MIXER)
                     if (!isnull(c_mix_ctl))
                     {
+                        outct(c_mix_ctl, XS1_CT_END);
+                        inct(c_mix_ctl);
                         outuint(c_mix_ctl, SET_MIX_IN_VOL);
                         outuint(c_mix_ctl, i-1);
                         outuint(c_mix_ctl, x);
@@ -228,6 +232,8 @@ static void updateVol(int unitID, int channel, chanend ?c_mix_ctl)
 #if (OUT_VOLUME_IN_MIXER)
                 if (!isnull(c_mix_ctl))
                 {
+                    outct(c_mix_ctl, XS1_CT_END);
+                    inct(c_mix_ctl);
                     outuint(c_mix_ctl, SET_MIX_OUT_VOL);
                     outuint(c_mix_ctl, channel-1);
                     outuint(c_mix_ctl, x);
@@ -250,6 +256,8 @@ static void updateVol(int unitID, int channel, chanend ?c_mix_ctl)
 #if (IN_VOLUME_IN_MIXER)
                 if (!isnull(c_mix_ctl))
                 {
+                    outct(c_mix_ctl, XS1_CT_END);
+                    inct(c_mix_ctl);
                     outuint(c_mix_ctl, SET_MIX_IN_VOL);
                     outuint(c_mix_ctl, channel-1);
                     outuint(c_mix_ctl, x);
@@ -267,6 +275,8 @@ static void updateVol(int unitID, int channel, chanend ?c_mix_ctl)
 
 void UpdateMixerOutputRouting(chanend c_mix_ctl, unsigned map, unsigned dst, unsigned src)
 { 
+    outct(c_mix_ctl, XS1_CT_END);
+    inct(c_mix_ctl);
     outuint(c_mix_ctl, map);
     outuint(c_mix_ctl, dst);
     outuint(c_mix_ctl, src);
@@ -275,6 +285,8 @@ void UpdateMixerOutputRouting(chanend c_mix_ctl, unsigned map, unsigned dst, uns
 
 void UpdateMixMap(chanend c_mix_ctl, int mix, int input, int src)
 {
+    outct(c_mix_ctl, XS1_CT_END);
+    inct(c_mix_ctl);
     outuint(c_mix_ctl, SET_MIX_MAP);
     outuint(c_mix_ctl, mix);                 /* Mix bus */
     outuint(c_mix_ctl, input);               /* Mixer input (cn) */
@@ -284,6 +296,8 @@ void UpdateMixMap(chanend c_mix_ctl, int mix, int input, int src)
 
 void UpdateMixerWeight(chanend c_mix_ctl, int mix, int index, unsigned mult)
 { 
+    outct(c_mix_ctl, XS1_CT_END);
+    inct(c_mix_ctl);
     outuint(c_mix_ctl, SET_MIX_MULT);
     outuint(c_mix_ctl, mix);
     outuint(c_mix_ctl, index);
@@ -561,7 +575,7 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
                                     if ((sp.wValue & 0xff) <= NUM_USB_CHAN_OUT)
                                     {
                                         volsOut[ sp.wValue&0xff ] = (buffer, unsigned char[])[0] | (((int) (signed char) (buffer, unsigned char[])[1]) << 8);
-                                        updateVol( unitID, ( sp.wValue & 0xff ), c_mix_ctl );
+                                        updateVol( unitID, ( sp.wValue & 0xff ), c_mix_ctl);
                                         return XUD_DoSetRequestStatus(ep0_in);
                                     }
                                 }
@@ -570,7 +584,7 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
                                     if ((sp.wValue & 0xff) <= NUM_USB_CHAN_IN)
                                     {
                                         volsIn[ sp.wValue&0xff ] = (buffer, unsigned char[])[0] | (((int) (signed char) (buffer, unsigned char[])[1]) << 8);
-                                        updateVol( unitID, ( sp.wValue & 0xff ), c_mix_ctl );
+                                        updateVol( unitID, ( sp.wValue & 0xff ), c_mix_ctl);
                                         return XUD_DoSetRequestStatus(ep0_in);
                                     }
                                 }
@@ -1014,6 +1028,8 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
                                     {
                                         if (!isnull(c_mix_ctl))
                                         {
+                                            outct(c_mix_ctl, XS1_CT_END);
+                                            inct(c_mix_ctl);
                                             outuint(c_mix_ctl, GET_STREAM_LEVELS);
                                             outuint(c_mix_ctl, i);
                                             outct(c_mix_ctl, XS1_CT_END);
@@ -1029,6 +1045,8 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
                                     {
                                         if (!isnull(c_mix_ctl))
                                         {
+                                            outct(c_mix_ctl, XS1_CT_END);
+                                            inct(c_mix_ctl);
                                             outuint(c_mix_ctl, GET_INPUT_LEVELS);
                                             outuint(c_mix_ctl, (i - NUM_USB_CHAN_OUT));
                                             outct(c_mix_ctl, XS1_CT_END);
@@ -1051,6 +1069,8 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
                                 {
                                     if (!isnull(c_mix_ctl))
                                     {
+                                        outct(c_mix_ctl, XS1_CT_END);
+                                        inct(c_mix_ctl);
                                         outuint(c_mix_ctl, GET_OUTPUT_LEVELS);
                                         outuint(c_mix_ctl, i);
                                         outct(c_mix_ctl, XS1_CT_END);
@@ -1198,12 +1218,12 @@ XUD_Result_t AudioClassRequests_1(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket
                         {
                             case FU_USBOUT:
                                 volsOut[ sp.wValue & 0xff ] = buffer[0] | (((int) (signed char) buffer[1]) << 8);
-                                updateVol( unitID, ( sp.wValue & 0xff ), c_mix_ctl );
+                                updateVol( unitID, ( sp.wValue & 0xff ), c_mix_ctl);
                                 return XUD_DoSetRequestStatus(ep0_in);
 
                             case FU_USBIN:
                                 volsIn[ sp.wValue & 0xff ] = buffer[0] | (((int) (signed char) buffer[1]) << 8);
-                                updateVol( unitID, ( sp.wValue & 0xff ), c_mix_ctl );
+                                updateVol( unitID, ( sp.wValue & 0xff ), c_mix_ctl);
                                 return XUD_DoSetRequestStatus(ep0_in);
                         }
                     }
@@ -1217,12 +1237,12 @@ XUD_Result_t AudioClassRequests_1(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket
                         {
                             case FU_USBOUT:
                                 mutesOut[ sp.wValue & 0xff ] = buffer[0];
-                                updateVol( unitID, ( sp.wValue & 0xff ), c_mix_ctl );
+                                updateVol( unitID, ( sp.wValue & 0xff ), c_mix_ctl);
                                 return XUD_DoSetRequestStatus(ep0_in);
 
                             case FU_USBIN:
                                 mutesIn[ sp.wValue & 0xff ] = buffer[0];
-                                updateVol( unitID, ( sp.wValue & 0xff ), c_mix_ctl );
+                                updateVol( unitID, ( sp.wValue & 0xff ), c_mix_ctl);
                                 return XUD_DoSetRequestStatus(ep0_in);
                         }
                     }
