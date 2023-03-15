@@ -1,7 +1,8 @@
 lib_xua
 #######
 
-:Latest release: 3.3.1
+:Version: 3.4.0
+:Vendor: XMOS
 
 
 :Scope: General Use
@@ -85,11 +86,17 @@ Required Software (dependencies)
   * lib_mic_array (www.github.com/xmos/lib_mic_array)
   * lib_xassert (www.github.com/xmos/lib_xassert)
   * lib_dsp (www.github.com/xmos/lib_dsp)
-  * lib_i2c (www.github.com/xmos/lib_i2c)
-  * lib_i2s (www.github.com/xmos/lib_i2s)
-  * lib_gpio (www.github.com/xmos/lib_gpio)
-  * lib_mic_array_board_support (www.github.com/xmos/lib_mic_array_board_support)
   * lib_spdif (www.github.com/xmos/lib_spdif)
   * lib_xud (www.github.com/xmos/lib_xud)
   * lib_adat (www.github.com/xmos/lib_adat)
+
+Documentation
+=============
+
+You can find the documentation for this software in the /doc directory of the package.
+
+Support
+=======
+
+This package is supported by XMOS Ltd. Issues can be raised against the software at: http://www.xmos.com/support
 
