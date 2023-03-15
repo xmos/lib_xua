@@ -1,13 +1,24 @@
 lib_xua Change Log
 ==================
 
-UNRELEASED
-----------
+3.4.0
+-----
 
-  * ADDED:     Unit tests for mixer functionalty 
-  * ADDED:     Host mixer control applicatons (for Win/macOS)
-  * CHANGED:   Small tidies to mixer implementation 
+  * ADDED:     Unit tests for mixer functionality
+  * ADDED:     Host mixer control applications (for Win/macOS)
+  * CHANGED:   Small tidies to mixer implementation
+  * CHANGED:   Improved mixer control channel communication protocol to avoid
+    deadlock situations
+  * CHANGED:   By default, output volume processing occurs in mixer task, if
+    present. Previously occurred in decouple task
+  * CHANGED:   Some optimisations in sample transfer from decouple task
   * FIXED:     Exception on startup when USB input disabled
+  * FIXED:     Full 32bit volume processing only applied when required
+  * FIXED:     Setting OUT_VOLUME_AFTER_MIX to zero now has the expected effect
+
+  * Changes to dependencies:
+
+    - lib_xud: 2.2.1 -> 2.2.2
 
 3.3.1
 -----
