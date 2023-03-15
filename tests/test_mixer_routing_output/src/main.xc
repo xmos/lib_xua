@@ -1,7 +1,7 @@
 // Copyright 2022-2023 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
-/* Tests that routing of mixer outputs behaves as expected 
+/* Tests that routing of mixer outputs behaves as expected
  *
  * "Outputs" from the device are to the USB host of one of the various audio interaces supported.
 
@@ -18,7 +18,7 @@
  * each of the M mixer units is as follows:
  *
  *   MIXER[0]:
- *    USB_FROM_HOST[0]  -> MIXER[0].INPUT[0] 
+ *    USB_FROM_HOST[0]  -> MIXER[0].INPUT[0]
  *    USB_FROM_HOST[1]  -> MIXER[0].INPUT[1]
  *    ...
       USB_TO_HOST[0]    -> MIXER[0].INPUT[NUM_USB_CHAN_OUT]
@@ -26,7 +26,7 @@
       ...
 
  *   MIXER[MAX_MIX_COUNT-1]:
- *    USB_FROM_HOST[0]  -> MIXER[MAX_MIX_COUNT-1].INPUT[0] 
+ *    USB_FROM_HOST[0]  -> MIXER[MAX_MIX_COUNT-1].INPUT[0]
  *    USB_FROM_HOST[1]  -> MIXER[MAX_MIX_COUNT-1].INPUT[1]
  *   ...
  *
@@ -47,7 +47,7 @@
 #include "assert.h"
 #include "random.h"
 
-#ifndef TEST_ITERATIONS 
+#ifndef TEST_ITERATIONS
 #define TEST_ITERATIONS (100)
 #endif
 
@@ -72,7 +72,7 @@ void UpdateModel(uint32_t modelOut[CHANNEL_MAP_AUD_SIZE], uint32_t modelMixerOut
         src -= NUM_USB_CHAN_OUT;
         SET_CHANNEL(sample, src);
     }
-    else 
+    else
     {
         SET_SOURCE(sample, SRC_HOST);
         SET_CHANNEL(sample, src);
@@ -83,19 +83,19 @@ void UpdateModel(uint32_t modelOut[CHANNEL_MAP_AUD_SIZE], uint32_t modelMixerOut
         case SET_SAMPLES_TO_DEVICE_MAP:
             modelOut[dst] = sample;
             break;
-        
+
         case SET_SAMPLES_TO_HOST_MAP:
             modelIn[dst] = sample;
             break;
-        
+
         default:
             assert(0);
             break;
     }
 }
 
-/* This task configures the routing and maintains a model of the expected routing output 
- * it provides this to the Fake AudioHub and Fake Decouple tasks such that they can self check 
+/* This task configures the routing and maintains a model of the expected routing output
+ * it provides this to the Fake AudioHub and Fake Decouple tasks such that they can self check
  */
 void stim(chanend c_stim_ah, chanend c_stim_de, chanend c_mix_ctl)
 {
@@ -147,7 +147,7 @@ void stim(chanend c_stim_ah, chanend c_stim_de, chanend c_mix_ctl)
         /* Make a random update to the routing - route a random source to a random destination */
         unsigned map = testCmd[random_get_random_number(rg) % (sizeof(testCmd)/sizeof(testCmd[0]))];
         unsigned dst = random_get_random_number(rg) % CHANNEL_MAP_AUD_SIZE; // TODO this should be CHANNEL_MAP_USB_SIZE for SET_SAMPLES_TO_HOST_MAP
-        unsigned src = random_get_random_number(rg) % (NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + MAX_MIX_COUNT);  
+        unsigned src = random_get_random_number(rg) % (NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + MAX_MIX_COUNT);
 
         switch(map)
         {
@@ -160,7 +160,7 @@ void stim(chanend c_stim_ah, chanend c_stim_de, chanend c_mix_ctl)
 
                 /* Update the mixer */
                 SendTrigger(c_stim_ah, 1);
-                UpdateMixerOutputRouting(c_mix_ctl, map, dst, src); 
+                UpdateMixerOutputRouting(c_mix_ctl, map, dst, src);
                 break;
 
             case SET_SAMPLES_TO_HOST_MAP:
@@ -169,10 +169,10 @@ void stim(chanend c_stim_ah, chanend c_stim_de, chanend c_mix_ctl)
                 debug_printf(" from %d", src);
                 PrintSourceString(src);
                 debug_printf("\n");
-        
+
                 /* Update the mixer */
                 SendTrigger(c_stim_ah, 1);
-                UpdateMixerOutputRouting(c_mix_ctl, map, dst, src); 
+                UpdateMixerOutputRouting(c_mix_ctl, map, dst, src);
                 break;
 
             default:
@@ -191,10 +191,10 @@ void stim(chanend c_stim_ah, chanend c_stim_de, chanend c_mix_ctl)
     /* Send kill messages to Fake AudioHub & Fake Decouple */
     outct(c_stim_ah, XS1_CT_END);
     inct(c_stim_ah);
-    
+
     outct(c_stim_de, XS1_CT_END);
     inct(c_stim_de);
-    
+
     printstrln("PASS");
     exit(0);
 }
@@ -211,7 +211,7 @@ int main()
     {
         Fake_XUA_Buffer_Decouple(c_dec_mix, c_stim_de);
         Fake_XUA_AudioHub(c_mix_aud, c_stim_ah);
-        
+
         /* Mixer from lib_xua */
         mixer(c_dec_mix, c_mix_aud, c_mix_ctl);
 

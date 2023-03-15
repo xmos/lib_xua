@@ -59,8 +59,8 @@ void Fake_Endpoint0(chanend c_mix_ctl)
 {
     XUD_ep ep0_out;  /* Never initialised but not used */
     XUD_ep ep0_in;   /* Never initialised but not used */
-    USB_SetupPacket_t sp;   
-    
+    USB_SetupPacket_t sp;
+
     random_generator_t rg = random_create_generator_from_seed(TEST_SEED);
 
     InitLocalMixerState();
@@ -74,9 +74,9 @@ void Fake_Endpoint0(chanend c_mix_ctl)
         unsigned mix = (random_get_random_number(rg) % (MAX_MIX_COUNT + 1)); // Mixs indexed from 1
         unsigned input = random_get_random_number(rg) % MIX_INPUTS;
 
-        /* Note, we don't currently support a mix input dervived from another mix 
-         * This is not trivial to test since the current mixer implementation only allows for one 
-         * config update per "trigger" 
+        /* Note, we don't currently support a mix input dervived from another mix
+         * This is not trivial to test since the current mixer implementation only allows for one
+         * config update per "trigger"
          */
         unsigned src = random_get_random_number(rg) % (NUM_USB_CHAN_IN + NUM_USB_CHAN_OUT);
 
@@ -89,13 +89,13 @@ void Fake_Endpoint0(chanend c_mix_ctl)
         int cs = mix;
         int cn = input;
         sp.bmRequestType.Direction = USB_BM_REQTYPE_DIRECTION_H2D;
-        sp.bRequest = CUR; 
-        sp.wValue = cn | (cs << 8); 
+        sp.bRequest = CUR;
+        sp.wValue = cn | (cs << 8);
         sp.wIndex = (unitId << 8);
         sp.wLength = 1;
 
         g_src = src; /* This will get picked up by out implementation of XUD_GetBuffer */
-        
+
         /* Call the function used by Endpoint0 to parse the control data and update the mixer output routing */
         AudioClassRequests_2(ep0_out, ep0_in, sp, null, c_mix_ctl, null);
 
@@ -105,11 +105,11 @@ void Fake_Endpoint0(chanend c_mix_ctl)
          * mixer and endpoint 0 state.
          *
          * Going forward we might wish to enhance the mixer API such that it can be tested as a black box.
-         * This would require the addition of "GET" API over it's ctrl channel 
+         * This would require the addition of "GET" API over it's ctrl channel
          */
 
         sp.bmRequestType.Direction = USB_BM_REQTYPE_DIRECTION_D2H;
-        
+
         if(mix == 0)
         {
             /* If mix is 0 then we need to check that all mixers have been updated */
@@ -125,7 +125,7 @@ void Fake_Endpoint0(chanend c_mix_ctl)
         else
         {
             assert(g_src == mixSel[cs-1][cn]);
-            
+
             /* Test read back. Note, the checking is in our overridden implementation of XUD_SetBuffer_EpMax*/
             AudioClassRequests_2(ep0_out, ep0_in, sp, null, c_mix_ctl, null);
         }
@@ -134,10 +134,10 @@ void Fake_Endpoint0(chanend c_mix_ctl)
 
     printstrln("PASS");
     exit(0);
-}  
+}
 
 void Fake_XUA_AudioHub_CtrlTest(chanend c_mix_aud)
-{  
+{
     int readBuffNo = 0;
     unsigned underflowWord = 0;
 
@@ -149,7 +149,7 @@ void Fake_XUA_AudioHub_CtrlTest(chanend c_mix_aud)
 }
 
 void Fake_XUA_Buffer_Decouple_CtrlTest(chanend c_dec_mix)
-{  
+{
     unsigned samplesIn[NUM_USB_CHAN_IN];
     unsigned underflowSample;
 
@@ -169,7 +169,7 @@ void Fake_XUA_Buffer_Decouple_CtrlTest(chanend c_dec_mix)
                 {
                     samplesIn[i] = inuint(c_dec_mix);
                 }
-                
+
                 break;
         }
     }
@@ -183,7 +183,7 @@ int main()
 
     par
     {
-        /* We need "fake" versions of the AudioHub and Decouple to keep the mixer running and taking updates via 
+        /* We need "fake" versions of the AudioHub and Decouple to keep the mixer running and taking updates via
          * it's control channel */
         Fake_XUA_Buffer_Decouple_CtrlTest(c_dec_mix);
         Fake_XUA_AudioHub_CtrlTest(c_mix_aud);

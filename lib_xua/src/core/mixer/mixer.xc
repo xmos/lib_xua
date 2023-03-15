@@ -15,13 +15,13 @@
 
 #if defined (LEVEL_METER_HOST) || defined(LEVEL_METER_LEDS) || !FAST_MIXER
 #include "xc_ptr.h"
-#endif 
+#endif
 
 #if (MIXER)
 
-#if (OUT_VOLUME_IN_MIXER) 
+#if (OUT_VOLUME_IN_MIXER)
 static unsigned int multOut_array[NUM_USB_CHAN_OUT + 1];
-unsafe 
+unsafe
 {
     int volatile * unsafe multOut = multOut_array;
 }
@@ -29,11 +29,11 @@ unsafe
 
 #if (IN_VOLUME_IN_MIXER)
 static unsigned int multIn_array[NUM_USB_CHAN_IN + 1];
-unsafe 
+unsafe
 {
     int volatile * unsafe multIn = multIn_array;
 }
-#endif 
+#endif
 
 #if defined (LEVEL_METER_LEDS) || defined (LEVEL_METER_HOST)
 static unsigned abs(int x)
@@ -73,7 +73,7 @@ unsafe
     int volatile * const unsafe mix_mult = mix_mult_array;
 #if (FAST_MIXER == 0)
     int volatile * const unsafe mix_map = mix_map_array;
-#endif 
+#endif
 }
 
 #define slice(a, i) (a + i * MIX_INPUTS)
@@ -186,13 +186,13 @@ static inline void GiveSamplesToHost(chanend c, volatile int * unsafe hostMap)
 
 #if (IN_VOLUME_IN_MIXER && IN_VOLUME_AFTER_MIX)
 #warning IN Vols in mixer, AFTER mix & map
-            
+
         unsafe
         {
             mult = multIn[i];
         }
         {h, l} = macs(mult, sample, 0, 0);
-        
+
         //h <<= 3 done on other side */
 
         outuint(c, h);
@@ -386,7 +386,7 @@ static void mixer1(chanend c_host, chanend c_mix_ctl, chanend c_mixer2)
             case inct_byref(c_mix_ctl, ct):
             {
                 int mix, index, val;
-                
+
                 /* Handshake back to tell EP0 we are ready for an update */
                 outct(c_mix_ctl, XS1_CT_END);
 
@@ -402,7 +402,7 @@ static void mixer1(chanend c_host, chanend c_mix_ctl, chanend c_mixer2)
                             int dst = inuint(c_mix_ctl);
                             int src = inuint(c_mix_ctl);
                             inct(c_mix_ctl);
-                            
+
                             assert((dst < NUM_USB_CHAN_IN) && msg("Host map destination out of range"));
                             assert((src < SOURCE_COUNT) && msg("Host map source out of range"));
 
@@ -421,7 +421,7 @@ static void mixer1(chanend c_host, chanend c_mix_ctl, chanend c_mixer2)
                             int dst = inuint(c_mix_ctl);
                             int src = inuint(c_mix_ctl);
                             inct(c_mix_ctl);
-                            
+
                             assert((dst < NUM_USB_CHAN_OUT) && msg("Device map destination out of range"));
                             assert((src < SOURCE_COUNT) && msg("Device map source out of range"));
 
@@ -443,7 +443,7 @@ static void mixer1(chanend c_host, chanend c_mix_ctl, chanend c_mixer2)
 
                         assert((mix < MAX_MIX_COUNT) && msg("Mix mult mix out of range"));
                         assert((index < MIX_INPUTS) && msg("Mix mult index out of range"));
-                        
+
                         if((index < MIX_INPUTS) && (mix < MAX_MIX_COUNT))
                         {
                             unsafe
@@ -473,7 +473,7 @@ static void mixer1(chanend c_host, chanend c_mix_ctl, chanend c_mixer2)
                                 {
                                     mix_map[(mix * MIX_INPUTS) + input] = source;
                                 }
-#endif   
+#endif
                             }
                         }
                         break;
@@ -484,7 +484,7 @@ static void mixer1(chanend c_host, chanend c_mix_ctl, chanend c_mixer2)
                         index = inuint(c_mix_ctl);
                         val = inuint(c_mix_ctl);
                         inct(c_mix_ctl);
-                        
+
                         assert((index  < (NUM_USB_CHAN_IN + 1)) && msg("In volume index out of range"));
 
                         if(index < NUM_USB_CHAN_IN + 1)
@@ -501,7 +501,7 @@ static void mixer1(chanend c_host, chanend c_mix_ctl, chanend c_mixer2)
                         index = inuint(c_mix_ctl);
                         val = inuint(c_mix_ctl);
                         inct(c_mix_ctl);
-                        
+
                         assert((index  < (NUM_USB_CHAN_OUT + 1)) && msg("Out volume index out of range"));
 
                         if(index < NUM_USB_CHAN_OUT + 1)
@@ -535,7 +535,7 @@ static void mixer1(chanend c_host, chanend c_mix_ctl, chanend c_mixer2)
 
         /* Get response from decouple */
         if(testct(c_host))
-        {  
+        {
             int sampFreq;
             unsigned command = inct(c_host);
 
@@ -773,7 +773,7 @@ static void mixer2(chanend c_mixer1, chanend c_audio)
                     mixed = doMix(ptr_samples, slice(mix_map, 5), slice(mix_mult, 5));
 #endif
                     ptr_samples[NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + 5] = mixed;
-            
+
                 }
 #if defined (LEVEL_METER_HOST) || defined(LEVEL_METER_LEDS)
                 ComputeMixerLevel(mixed, 5);

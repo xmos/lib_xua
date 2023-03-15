@@ -8,7 +8,7 @@
 #endif
 
 #ifndef MIX_INPUTS
-#error 
+#error
 #endif
 
 #if (MAX_MIX_COUNT > 0)

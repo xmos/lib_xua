@@ -1093,12 +1093,12 @@
 #endif
 
 /* Handle in volume control in the mixer - disabled by default */
-#ifndef IN_VOLUME_IN_MIXER 
+#ifndef IN_VOLUME_IN_MIXER
 #define IN_VOLUME_IN_MIXER          (0)
 #endif
 
 /* Apply in volume controls after the mix. Only relebant when IN_VOLUMNE_IN MIXER enabled. Enabled by default */
-#ifndef IN_VOLUME_AFTER_MIX 
+#ifndef IN_VOLUME_AFTER_MIX
 #define IN_VOLUME_AFTER_MIX         (1)
 #endif
 

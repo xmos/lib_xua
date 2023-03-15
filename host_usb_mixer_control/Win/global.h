@@ -7,12 +7,12 @@
  *  Description:
  *     APP global includes, constants, declarations, etc.
  *
- *  Author(s):   
+ *  Author(s):
  *    Udo Eberhardt
- *                
+ *
  *  Companies:
  *    Thesycon GmbH, Germany      http://www.thesycon.de
- *                
+ *
  ************************************************************************/
 
 #ifndef __global_h__

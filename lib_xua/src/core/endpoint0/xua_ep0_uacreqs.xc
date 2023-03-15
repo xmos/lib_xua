@@ -274,7 +274,7 @@ static void updateVol(int unitID, int channel, chanend ?c_mix_ctl)
 #endif
 
 void UpdateMixerOutputRouting(chanend c_mix_ctl, unsigned map, unsigned dst, unsigned src)
-{ 
+{
     outct(c_mix_ctl, XS1_CT_END);
     inct(c_mix_ctl);
     outuint(c_mix_ctl, map);
@@ -295,7 +295,7 @@ void UpdateMixMap(chanend c_mix_ctl, int mix, int input, int src)
 }
 
 void UpdateMixerWeight(chanend c_mix_ctl, int mix, int index, unsigned mult)
-{ 
+{
     outct(c_mix_ctl, XS1_CT_END);
     inct(c_mix_ctl);
     outuint(c_mix_ctl, SET_MIX_MULT);
@@ -674,14 +674,14 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
                 case ID_XU_OUT:
                     {
                         int dst = sp.wValue & 0xff;
-                        
+
                         if(sp.bmRequestType.Direction == USB_BM_REQTYPE_DIRECTION_H2D) /* Direction: Host-to-device */
                         {
                             if((result = XUD_GetBuffer(ep0_out, (buffer, unsigned char[]), datalength)) != XUD_RES_OKAY)
                             {
                                 return result;
                             }
-        
+
                             if (dst < NUM_USB_CHAN_OUT)
                             {
                                 channelMapAud[dst] = (buffer, unsigned char[])[0] | (buffer, unsigned char[])[1] << 8;
@@ -691,7 +691,7 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
                                     UpdateMixerOutputRouting(c_mix_ctl, SET_SAMPLES_TO_DEVICE_MAP, dst, channelMapAud[dst]);
                                 }
                             }
-                            
+
                             /* Send 0 Length as status stage */
                             return XUD_DoSetRequestStatus(ep0_in);
                         }
@@ -707,7 +707,7 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
                 case ID_XU_IN:
                     {
                         int dst = sp.wValue & 0xff;
-                    
+
                         if(sp.bmRequestType.Direction == USB_BM_REQTYPE_DIRECTION_H2D) /* Direction: Host-to-device */
                         {
                             if((result = XUD_GetBuffer(ep0_out, (buffer, unsigned char[]), datalength)) != XUD_RES_OKAY)
@@ -718,7 +718,7 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
                             if (dst < NUM_USB_CHAN_IN)
                             {
                                 channelMapUsb[dst] = (buffer, unsigned char[])[0] | (buffer, unsigned char[])[1] << 8;
-                                
+
                                 if (!isnull(c_mix_ctl))
                                 {
                                     UpdateMixerOutputRouting(c_mix_ctl, SET_SAMPLES_TO_HOST_MAP, dst, channelMapUsb[dst]);
@@ -814,7 +814,7 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
                     {
                         int cs = sp.wValue >> 8;    /* Control Selector - currently unused */
                         int cn = sp.wValue & 0xff;  /* Channel number - used for mixer node index */
-                        
+
                         if(sp.bmRequestType.Direction == USB_BM_REQTYPE_DIRECTION_H2D) /* Direction: Host-to-device */
                         {
                             unsigned weightMult = 0;
@@ -824,7 +824,7 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
                             {
                                 return result;
                             }
-                            
+
                             if(cn < sizeof(mixer1Weights)/sizeof(mixer1Weights[0]))
                             {
                                 mixer1Weights[cn] = (buffer, unsigned char[])[0] | (buffer, unsigned char[])[1] << 8;
@@ -846,12 +846,12 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
                         else
                         {
                             short weight = 0x8000;
-                            
+
                             if(cn < sizeof(mixer1Weights)/sizeof(mixer1Weights[0]))
                             {
                                 weight = mixer1Weights[cn];
                             }
-                            
+
                             storeShort((buffer, unsigned char[]), 0, weight);
 
                             return XUD_DoGetRequest(ep0_out, ep0_in, (buffer, unsigned char[]), sp.wLength,  sp.wLength);

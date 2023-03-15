@@ -290,7 +290,7 @@ __builtin_unreachable();
 #if (STREAM_FORMAT_OUTPUT_SUBSLOT_3_USED == 0)
 __builtin_unreachable();
 #endif
-                /* Note, in this case the unpacking of data is more of an overhead than the loop overhead 
+                /* Note, in this case the unpacking of data is more of an overhead than the loop overhead
                  * so we do not currently make attempts to unroll */
                 for(int i = 0; i < g_numUsbChan_Out; i++)
                 {
