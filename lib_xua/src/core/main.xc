@@ -31,7 +31,7 @@
 #endif
 
 #if (XUA_SPDIF_RX_EN)
-#include "SpdifReceive.h"
+#include "spdif.h"
 #endif
 
 #if (XUA_ADAT_RX_EN)
