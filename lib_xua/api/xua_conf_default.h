@@ -1194,7 +1194,8 @@ enum USBEndpointNumber_Out
 #define AUDIO_START_FROM_DFU              (0x87654321)
 #define AUDIO_REBOOT_FROM_DFU             (0xa5a5a5a5)
 
-#define MAX_VOL                           (0x20000000)
+/* Result of db_to_mult(MAX_VOLUME, 8, 29) */
+#define MAX_VOLUME_MULT                   (0x20000000)
 
 #if defined(LEVEL_METER_LEDS) && !defined(LEVEL_UPDATE_RATE)
 #define LEVEL_UPDATE_RATE                 (400000)

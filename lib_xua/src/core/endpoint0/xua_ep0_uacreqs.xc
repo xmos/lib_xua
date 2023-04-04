@@ -14,16 +14,20 @@
 #include "usbaudio10.h"
 #include "dbcalc.h"
 #include "xua_commands.h"
-#include "xc_ptr.h"
 
 #define CS_XU_MIXSEL (0x06)
 
+/* From decouple.xc */
+#if (OUT_VOLUME_IN_MIXER == 0) && (OUTPUT_VOLUME_CONTROL == 1)
 extern unsigned int multOut[NUM_USB_CHAN_OUT + 1];
+#endif
+#if (IN_VOLUME_IN_MIXER == 0) && (INPUT_VOLUME_CONTROL == 1)
 extern unsigned int multIn[NUM_USB_CHAN_IN + 1];
+#endif
 
 extern int interfaceAlt[];
 
-/* Global volume and mute tables */
+/* Global volume and mute tables - from xua_endpoint0.c */
 extern int volsOut[];
 extern unsigned int mutesOut[];
 
@@ -101,20 +105,6 @@ void FeedbackStabilityDelay()
     t when timerafter(time + delay):> void;
 }
 
-#if 0
-/* Original feedback implementation */
-unsafe
-{
-    unsigned * unsafe curSamFreqMultiplier = &g_curSamFreqMultiplier;
-
-static void setG_curSamFreqMultiplier(unsigned x)
-{
-   // asm(" stw %0, dp[g_curSamFreqMultiplier]" :: "r"(x));
-    *curSamFreqMultiplier = x;
-}
-}
-#endif
-
 #if (OUTPUT_VOLUME_CONTROL == 1) || (INPUT_VOLUME_CONTROL == 1)
 static unsigned longMul(unsigned a, unsigned b, int prec)
 {
@@ -131,13 +121,6 @@ static unsigned longMul(unsigned a, unsigned b, int prec)
 /* Update master volume i.e. i.e update weights for all channels */
 static void updateMasterVol(int unitID, chanend ?c_mix_ctl)
 {
-    int x;
-#if (OUT_VOLUME_IN_MIXER == 0)
-    xc_ptr p_multOut = array_to_xc_ptr(multOut);
-#endif
-#if (IN_VOLUME_IN_MIXER == 0)
-    xc_ptr p_multIn = array_to_xc_ptr(multIn);
-#endif
     switch(unitID)
     {
         case FU_USBOUT:
@@ -150,7 +133,7 @@ static void updateMasterVol(int unitID, chanend ?c_mix_ctl)
                     /* 0x8000 is a special value representing -inf (i.e. mute) */
                     unsigned vol = volsOut[i] == 0x8000 ? 0 : db_to_mult(volsOut[i], 8, 29);
 
-                    x = longMul(master_vol, vol, 29) * !mutesOut[0] * !mutesOut[i];
+                    int x = longMul(master_vol, vol, 29) * !mutesOut[0] * !mutesOut[i];
 
 #if (OUT_VOLUME_IN_MIXER)
                     if (!isnull(c_mix_ctl))
@@ -162,8 +145,12 @@ static void updateMasterVol(int unitID, chanend ?c_mix_ctl)
                         outuint(c_mix_ctl, x);
                         outct(c_mix_ctl, XS1_CT_END);
                     }
-#else
-                    asm("stw %0, %1[%2]"::"r"(x),"r"(p_multOut),"r"(i-1));
+#else 
+                    unsafe
+                    {
+                        unsigned int * unsafe multOutPtr = multOut;
+                        multOutPtr[i-1] = x;
+                    }
 #endif
                 }
             }
@@ -178,7 +165,7 @@ static void updateMasterVol(int unitID, chanend ?c_mix_ctl)
                     /* 0x8000 is a special value representing -inf (i.e. mute) */
                     unsigned vol = volsIn[i] == 0x8000 ? 0 : db_to_mult(volsIn[i], 8, 29);
 
-                    x = longMul(master_vol, vol, 29) * !mutesIn[0] * !mutesIn[i];
+                    int x = longMul(master_vol, vol, 29) * !mutesIn[0] * !mutesIn[i];
 
 #if (IN_VOLUME_IN_MIXER)
                     if (!isnull(c_mix_ctl))
@@ -191,7 +178,11 @@ static void updateMasterVol(int unitID, chanend ?c_mix_ctl)
                         outct(c_mix_ctl, XS1_CT_END);
                     }
 #else
-                    asm("stw %0, %1[%2]"::"r"(x),"r"(p_multIn),"r"(i-1));
+                    unsafe
+                    {
+                        unsigned int * unsafe multInPtr = multIn;
+                        multInPtr[i-1] = x;
+                    }
 #endif
                 }
             }
@@ -205,12 +196,6 @@ static void updateMasterVol(int unitID, chanend ?c_mix_ctl)
 static void updateVol(int unitID, int channel, chanend ?c_mix_ctl)
 {
     int x;
-#if (OUT_VOLUME_IN_MIXER == 0)
-    xc_ptr p_multOut = array_to_xc_ptr(multOut);
-#endif
-#if (IN_VOLUME_IN_MIXER == 0)
-    xc_ptr p_multIn = array_to_xc_ptr(multIn);
-#endif
     /* Check for master volume update */
     if (channel == 0)
     {
@@ -240,7 +225,11 @@ static void updateVol(int unitID, int channel, chanend ?c_mix_ctl)
                     outct(c_mix_ctl, XS1_CT_END);
                 }
 #else
-                asm("stw %0, %1[%2]"::"r"(x),"r"(p_multOut),"r"(channel-1));
+                unsafe
+                {
+                    unsigned int * unsafe multOutPtr = multOut;
+                    multOutPtr[channel-1] = x;
+                }
 #endif
                 break;
             }
@@ -264,7 +253,11 @@ static void updateVol(int unitID, int channel, chanend ?c_mix_ctl)
                     outct(c_mix_ctl, XS1_CT_END);
                 }
 #else
-                asm("stw %0, %1[%2]"::"r"(x),"r"(p_multIn),"r"(channel-1));
+                unsafe
+                {
+                    unsigned int * unsafe multInPtr = multIn;
+                    multInPtr[channel-1] = x;
+                }
 #endif
                 break;
             }
