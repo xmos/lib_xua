@@ -43,7 +43,7 @@
 
 /*** BUFFER SIZES ***/
 
-#define BUFFER_PACKET_COUNT 4  /* How many packets too allow for in buffer - minimum is 4 */
+#define BUFFER_PACKET_COUNT (4)    /* How many packets too allow for in buffer - minimum is 4 */
 
 #define BUFF_SIZE_OUT_HS    MAX_DEVICE_AUD_PACKET_SIZE_OUT_HS * BUFFER_PACKET_COUNT
 #define BUFF_SIZE_OUT_FS    MAX_DEVICE_AUD_PACKET_SIZE_OUT_FS * BUFFER_PACKET_COUNT
@@ -55,16 +55,22 @@
 #define BUFF_SIZE_IN        MAX(BUFF_SIZE_IN_HS, BUFF_SIZE_IN_FS)
 
 #define OUT_BUFFER_PREFILL  (MAX(MAX_DEVICE_AUD_PACKET_SIZE_OUT_HS, MAX_DEVICE_AUD_PACKET_SIZE_OUT_FS))
-#define IN_BUFFER_PREFILL  (MAX(MAX_DEVICE_AUD_PACKET_SIZE_IN_HS, MAX_DEVICE_AUD_PACKET_SIZE_IN_FS)*2)
+#define IN_BUFFER_PREFILL   (MAX(MAX_DEVICE_AUD_PACKET_SIZE_IN_HS, MAX_DEVICE_AUD_PACKET_SIZE_IN_FS)*2)
 
 /* Volume and mute tables */
 #if (OUT_VOLUME_IN_MIXER == 0) && (OUTPUT_VOLUME_CONTROL == 1)
 unsigned int multOut[NUM_USB_CHAN_OUT + 1];
-static xc_ptr p_multOut;
+unsafe
+{
+    unsigned int volatile * unsafe multOutPtr = multOut;
+}
 #endif
 #if (IN_VOLUME_IN_MIXER == 0) && (INPUT_VOLUME_CONTROL == 1)
 unsigned int multIn[NUM_USB_CHAN_IN + 1];
-static xc_ptr p_multIn;
+unsafe
+{
+    unsigned int volatile * unsafe multInPtr = multIn;
+}
 #endif
 
 /* Default to something sensible but the following are setup at stream start (unless UAC1 only..) */
@@ -162,7 +168,10 @@ static inline void SendSamples4(chanend c_mix_out)
             g_aud_from_host_rdptr+=4;
 
 #if (OUTPUT_VOLUME_CONTROL == 1) && (!OUT_VOLUME_IN_MIXER)
-            asm volatile("ldw %0, %1[%2]":"=r"(mult):"r"(p_multOut),"r"(i));
+            unsafe
+            {
+                mult = multOutPtr[i];
+            }
             {h, l} = macs(mult, sample, 0, 0);
             h <<= 3;
 #if (STREAM_FORMAT_OUTPUT_RESOLUTION_32BIT_USED == 1)
@@ -189,7 +198,10 @@ static inline void SendSamples4(chanend c_mix_out)
             g_aud_from_host_rdptr+=4;
 
 #if (OUTPUT_VOLUME_CONTROL == 1) && (!OUT_VOLUME_IN_MIXER)
-            asm volatile("ldw %0, %1[%2]":"=r"(mult):"r"(p_multOut),"r"(i));
+            unsafe
+            {
+                mult = multOutPtr[i];
+            }
             {h, l} = macs(mult, sample, 0, 0);
             h <<= 3;
 #if (STREAM_FORMAT_OUTPUT_RESOLUTION_32BIT_USED == 1)
@@ -267,7 +279,10 @@ __builtin_unreachable();
                     sample <<= 16;
 
 #if (OUTPUT_VOLUME_CONTROL == 1) && (!OUT_VOLUME_IN_MIXER)
-                    asm volatile("ldw %0, %1[%2]":"=r"(mult):"r"(p_multOut),"r"(i));
+                    unsafe
+                    {
+                        mult = multOutPtr[i];
+                    }
                     {h, l} = macs(mult, sample, 0, 0);
                     /* Note, in 2 byte subslot mode - ignore lower result of macs */
                     h <<= 3;
@@ -326,17 +341,18 @@ __builtin_unreachable();
                     unpackState++;
 
 #if (OUTPUT_VOLUME_CONTROL == 1) && (!OUT_VOLUME_IN_MIXER)
-                    asm volatile("ldw %0, %1[%2]":"=r"(mult):"r"(p_multOut),"r"(i));
+                    unsafe
+                    {
+                        mult = multOutPtr[i];
+                    }
                     {h, l} = macs(mult, sample, 0, 0);
                     h <<= 3;
                     outuint(c_mix_out, h);
 #else
                     outuint(c_mix_out, sample);
-
 #endif
                 }
                 break;
-
 
             default:
                 __builtin_unreachable();
@@ -376,7 +392,10 @@ __builtin_unreachable();
                     int mult;
                     int h;
                     unsigned l;
-                    asm volatile("ldw %0, %1[%2]":"=r"(mult):"r"(p_multIn),"r"(i));
+                    unsafe
+                    {
+                        mult = multInPtr[i];                        
+                    }
                     {h, l} = macs(mult, sample, 0, 0);
                     sample = h << 3;
 
@@ -406,7 +425,10 @@ __builtin_unreachable();
                     int mult;
                     int h;
                     unsigned l;
-                    asm volatile("ldw %0, %1[%2]":"=r"(mult):"r"(p_multIn),"r"(i));
+                    unsafe
+                    {
+                        mult = multInPtr[i];                        
+                    }
                     {h, l} = macs(mult, sample, 0, 0);
                     sample = h << 3;
 #if (STREAM_FORMAT_INPUT_RESOLUTION_32BIT_USED == 1)
@@ -437,7 +459,10 @@ __builtin_unreachable();
                     int mult;
                     int h;
                     unsigned l;
-                    asm volatile("ldw %0, %1[%2]":"=r"(mult):"r"(p_multIn),"r"(i));
+                    unsafe
+                    {
+                        mult = multInPtr[i];                        
+                    }
                     {h, l} = macs(mult, sample, 0, 0);
                     sample = h << 3;
 #endif
@@ -676,13 +701,6 @@ void XUA_Buffer_Decouple(chanend c_mix_out
 
     int t = array_to_xc_ptr(outAudioBuff);
 
-#if (!OUT_VOLUME_IN_MIXER) && (OUTPUT_VOLUME_CONTROL == 1)
-    p_multOut = array_to_xc_ptr(multOut);
-#endif
-#if (!IN_VOLUME_IN_MIXER) && (INPUT_VOLUME_CONTROL == 1)
-    p_multIn = array_to_xc_ptr(multIn);
-#endif
-
     aud_from_host_fifo_start = t;
     aud_from_host_fifo_end = aud_from_host_fifo_start + BUFF_SIZE_OUT;
     g_aud_from_host_wrptr = aud_from_host_fifo_start;
@@ -708,15 +726,15 @@ void XUA_Buffer_Decouple(chanend c_mix_out
     /* Init vol mult tables */
 #if (OUT_VOLUME_IN_MIXER == 0) && (OUTPUT_VOLUME_CONTROL == 1)
     for (int i = 0; i < NUM_USB_CHAN_OUT + 1; i++)
-    {
-        asm volatile("stw %0, %1[%2]"::"r"(MAX_VOL),"r"(p_multOut),"r"(i));
+    unsafe{
+        multOutPtr[i] = MAX_VOLUME_MULT;
     }
 #endif
 
 #if (IN_VOLUME_IN_MIXER == 0) && (INPUT_VOLUME_CONTROL == 1)
     for (int i = 0; i < NUM_USB_CHAN_IN + 1; i++)
-    {
-        asm volatile("stw %0, %1[%2]"::"r"(MAX_VOL),"r"(p_multIn),"r"(i));
+    unsafe{
+        multInPtr[i] = MAX_VOLUME_MULT;
     }
 #endif
 

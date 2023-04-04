@@ -23,7 +23,7 @@
 static unsigned int multOut_array[NUM_USB_CHAN_OUT + 1];
 unsafe
 {
-    int volatile * unsafe multOut = multOut_array;
+    unsigned int volatile * unsafe multOut = multOut_array;
 }
 #endif
 
@@ -31,7 +31,7 @@ unsafe
 static unsigned int multIn_array[NUM_USB_CHAN_IN + 1];
 unsafe
 {
-    int volatile * unsafe multIn = multIn_array;
+    unsigned int volatile * unsafe multIn = multIn_array;
 }
 #endif
 
@@ -827,14 +827,14 @@ void mixer(chanend c_mix_in, chanend c_mix_out, chanend c_mix_ctl)
 #if (OUT_VOLUME_IN_MIXER)
     for (int i=0; i<NUM_USB_CHAN_OUT; i++)
     unsafe{
-        multOut[i] = MAX_VOL;
+        multOut[i] = MAX_VOLUME_MULT;
     }
 #endif
 
 #if (IN_VOLUME_IN_MIXER)
     for (int i=0; i<NUM_USB_CHAN_IN; i++)
     unsafe{
-        multIn[i] = MAX_VOL;
+        multIn[i] = MAX_VOLUME_MULT;
     }
 #endif
 
