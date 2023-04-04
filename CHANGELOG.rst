@@ -1,6 +1,11 @@
 lib_xua Change Log
 ==================
 
+UNRELEASED
+----------
+
+  * FIXED:     Memory corruption during initialisation of mixer weights
+
 3.4.0
 -----
 

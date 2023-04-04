@@ -275,15 +275,10 @@ void InitLocalMixerState()
     }
 
     /* Configure default connections */
-    // TODO this should be a loop using defines.
-    mixer1Weights[0] = 0;
-    mixer1Weights[9] = 0;
-    mixer1Weights[18] = 0;
-    mixer1Weights[27] = 0;
-    mixer1Weights[36] = 0;
-    mixer1Weights[45] = 0;
-    mixer1Weights[54] = 0;
-    mixer1Weights[63] = 0;
+    for (int i = 0; i < MAX_MIX_COUNT; i++)
+    {
+        mixer1Weights[(i * MAX_MIX_COUNT) + i] = 0;
+    }
 
 #if NUM_USB_CHAN_OUT > 0
     /* Setup up audio output channel mapping */
