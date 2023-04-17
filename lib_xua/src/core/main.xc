@@ -228,7 +228,7 @@ XUD_EpType epTypeTableIn[ENDPOINT_COUNT_IN] = { XUD_EPTYPE_CTL | XUD_STATUS_ENAB
                                             XUD_EPTYPE_ISO,    /* Async feedback endpoint */
 #endif
 #if (XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
-                                            XUD_EPTYPE_BUL,
+                                            XUD_EPTYPE_INT,
 #endif
 #ifdef MIDI
                                             XUD_EPTYPE_BUL,
