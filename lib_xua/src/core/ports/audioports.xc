@@ -1,4 +1,4 @@
-// Copyright 2011-2022 XMOS LIMITED.
+// Copyright 2011-2023 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 #include <xs1.h>
 #include <platform.h>
@@ -6,9 +6,7 @@
 #include "xua.h"
 #include "audioports.h"
 
-//extern in port p_mclk_in;
 extern clock    clk_audio_mclk;
-//extern clock    clk_audio_bclk;
 
 void ConfigAudioPorts(
 #if (I2S_CHANS_DAC != 0) || (DSD_CHANS_DAC != 0)
@@ -58,7 +56,7 @@ void ConfigAudioPorts(
     }
 #endif
 
-#if (I2S_CHANS_DAC != 0)
+#if (I2S_CHANS_DAC != 0)|| (DSD_CHANS_DAC != 0)
     for(int i = 0; i < numPortsDac; i++)
     {
         clearbuf(p_i2s_dac[i]);
@@ -82,7 +80,7 @@ void ConfigAudioPorts(
     /* Some adustments for timing. Sample ADC lines on negative edge and add some delay */
     if(XUA_PCM_FORMAT == XUA_PCM_FORMAT_TDM)
     {
-        for(int i = 0; i < I2S_WIRES_ADC; i++)
+        for(int i = 0; i < numPortsAdc; i++)
         {
             set_port_sample_delay(p_i2s_adc[i]);
             set_pad_delay(p_i2s_adc[i], 4);
@@ -91,7 +89,6 @@ void ConfigAudioPorts(
 #endif
 
 #elif (CODEC_MASTER)
-
     /* Stop bit and master clock blocks */
     stop_clock(clk_audio_bclk);
 
@@ -112,9 +109,9 @@ void ConfigAudioPorts(
     set_clock_fall_delay(clk_audio_bclk, bClkDelay_fall);
 #endif
 
-#if (I2S_CHANS_DAC != 0)
-     /* Clock I2S output data ports from b-clock clock block */
-    for(int i = 0; i < I2S_WIRES_DAC; i++)
+#if (I2S_CHANS_DAC != 0) || (DSD_CHANS_DAC != 0)
+     /* Clock I2S/DSD output data ports from b-clock clock block */
+    for(int i = 0; i < numPortsDac; i++)
     {
         configure_out_port_no_ready(p_i2s_dac[i], clk_audio_bclk, 0);
     }
@@ -122,7 +119,7 @@ void ConfigAudioPorts(
 
 #if (I2S_CHANS_ADC != 0)
     /* Clock I2S input data ports from clock block */
-    for(int i = 0; i < I2S_WIRES_ADC; i++)
+    for(int i = 0; i < numPortsAdc; i++)
     {
         configure_in_port_no_ready(p_i2s_adc[i], clk_audio_bclk);
     }
