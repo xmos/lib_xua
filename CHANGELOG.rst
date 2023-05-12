@@ -5,6 +5,7 @@ UNRELEASED
 ----------
 
   * FIXED:     Memory corruption during initialisation of mixer weights
+  * FIXED:     Exception when entering DSD mode
 
 3.4.0
 -----
