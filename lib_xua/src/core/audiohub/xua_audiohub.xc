@@ -701,17 +701,16 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
                 numBits = 32;
             }
 #endif
-            divide = mClk / ( curSamFreq * numBits);
+            divide = mClk / (curSamFreq * numBits);
 
             /* TODO; we should catch and handle the case when divide is 0. Currently design will lock up */
        }
 
-
 #if (DSD_CHANS_DAC > 0)
         if(dsdMode)
         {
-        /* Configure audio ports */
-        ConfigAudioPortsWrapper(
+            /* Configure audio ports */
+            ConfigAudioPortsWrapper(
 #if (I2S_CHANS_DAC != 0) || (DSD_CHANS_DAC != 0)
                 p_dsd_dac,
                 DSD_CHANS_DAC,
@@ -724,7 +723,7 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
                 null,
                 p_dsd_clk,
 #endif
-                p_mclk_in, clk_audio_bclk, divide, curSamFreq, dsdMode);
+                p_mclk_in, clk_audio_bclk, divide, curSamFreq);
         }
         else
 #endif
@@ -747,9 +746,8 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
                 p_bclk,
 #endif
 #endif
-            p_mclk_in, clk_audio_bclk, divide, curSamFreq, dsdMode);
-}
-
+            p_mclk_in, clk_audio_bclk, divide, curSamFreq);
+        }
 
         {
             unsigned curFreq = curSamFreq;

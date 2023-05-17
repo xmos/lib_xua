@@ -31,7 +31,7 @@
 #endif
 
 #if (XUA_SPDIF_RX_EN)
-#include "SpdifReceive.h"
+#include "spdif.h"
 #endif
 
 #if (XUA_ADAT_RX_EN)
@@ -142,7 +142,7 @@ on stdcore[XUD_TILE] : buffered in port:32 p_adat_rx        = PORT_ADAT_IN;
 #endif
 
 #if (XUA_SPDIF_RX_EN)
-on tile[XUD_TILE] : buffered in port:4 p_spdif_rx           = PORT_SPDIF_IN;
+on tile[XUD_TILE] : in port p_spdif_rx                      = PORT_SPDIF_IN;
 #endif
 
 #if (XUA_SPDIF_RX_EN) || (XUA_ADAT_RX_EN) || (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
@@ -228,7 +228,7 @@ XUD_EpType epTypeTableIn[ENDPOINT_COUNT_IN] = { XUD_EPTYPE_CTL | XUD_STATUS_ENAB
                                             XUD_EPTYPE_ISO,    /* Async feedback endpoint */
 #endif
 #if (XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
-                                            XUD_EPTYPE_BUL,
+                                            XUD_EPTYPE_INT,
 #endif
 #ifdef MIDI
                                             XUD_EPTYPE_BUL,
@@ -685,7 +685,7 @@ int main()
         on tile[XUD_TILE]:
         {
             thread_speed();
-            SpdifReceive(p_spdif_rx, c_spdif_rx, 1, clk_spd_rx);
+            spdif_rx(c_spdif_rx,p_spdif_rx,clk_spd_rx,192000);
         }
 #endif
 

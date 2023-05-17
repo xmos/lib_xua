@@ -20,11 +20,11 @@ Finally, a channel for the output samples must be declared, note, this should be
 
 The S/PDIF receiver should be called on the appropriate tile::
 
-    SpdifReceive(p_spdif_rx, c_spdif_rx, 1, clk_spd_rx);
+    spdif_rx(c_spdif_rx,p_spdif_rx,clk_spd_rx,192000);
 
 .. note:: 
 
-    It is recomended to use the value 1 for the ``initial_divider`` parameter
+    It is recomended to use the value 192000 for the ``sample_freq_estimate`` parameter
 
 With the steps above an S/PDIF stream can be captured by the xCORE. To be functionally useful the audio
 master clock must be able to synchronise to this external digital stream. Additionally, the host can be 
