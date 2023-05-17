@@ -52,7 +52,7 @@ static inline void DoDsdDop(int &everyOther, unsigned samplesOut[], unsigned &ds
 /* When DSD is enabled and streaming is standard PCM, this function checks for a series of DoP markers in the upper byte.
    If found it will exit deliver() with the command to restart in DoP mode.
    When in DoP mode, this function will check for a single absence of the DoP marker and exit deliver() with the command
-   to restart in I2S mode. */
+   to restart in I2S/PCM mode. */
 static inline int DoDsdDopCheck(unsigned &dsdMode, int &dsdCount, unsigned curSamFreq, unsigned samplesOut[], unsigned &dsdMarker)
 {
     /* Check for DSD - note we only move into DoP mode if valid DoP Freq */

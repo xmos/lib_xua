@@ -1,9 +1,11 @@
-// Copyright 2013-2021 XMOS LIMITED.
+// Copyright 2013-2023 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
-#if XUA_USB_EN
 #include "xua.h"
+#if XUA_USB_EN
 #include "hostactive.h"
 #include "audiostream.h"
+
+/* Implementations over-riding empty versions in lib_xud/sec/core/XUD_User.c */
 
 void XUD_UserSuspend(void) __attribute__ ((weak));
 void XUD_UserSuspend(void)
