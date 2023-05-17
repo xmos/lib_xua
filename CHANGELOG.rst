@@ -5,7 +5,8 @@ UNRELEASED
 ----------
 
   * FIXED:     Memory corruption during initialisation of mixer weights
-  * FIXED:     Exception when entering DSD mode
+  * FIXED:     UserHostActive() not being called as expected (#326)
+  * FIXED;     Exception when entering DSD mode
 
 3.4.0
 -----
