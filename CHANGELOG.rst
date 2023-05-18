@@ -4,9 +4,9 @@ lib_xua Change Log
 UNRELEASED
 ----------
 
-  * FIXED:     Memory corruption due erroneous initialisation of mixer weights when not in use (#152)
+  * FIXED:     Memory corruption due to erroneous initialisation of mixer weights when not in use (#152) 
   * FIXED:     UserHostActive() not being called as expected (#326)
-  * FIXED;     Exception when entering DSD mode (#327)
+  * FIXED:     Exception when entering DSD mode
 
 3.4.0
 -----
