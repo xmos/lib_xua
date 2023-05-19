@@ -1,4 +1,4 @@
-@Library('xmos_jenkins_shared_library@v0.21.0') _
+@Library('xmos_jenkins_shared_library@v0.24.0') _
 
 getApproval()
 
@@ -145,10 +145,14 @@ pipeline {
             dir("${REPO}") {
               checkout scm
               dir("${REPO}/host/xmosdfu") {
-                runVS('nmake /f Makefile.Win32')
+                withVS("vcvars32.bat") {
+                  bat "nmake /f Makefile.Win32"
+                }
               }
               dir("host_usb_mixer_control") {
-                  runVS('msbuild host_usb_mixer_control.vcxproj /property:Configuration=Release /property:Platform=x64')
+                  withVS() {
+                    bat 'msbuild host_usb_mixer_control.vcxproj /property:Configuration=Release /property:Platform=x64'
+                  }
                   sh 'mkdir Win/x64'
                   sh 'mv bin/Release/x64/host_usb_mixer_control.exe Win/x64/xmos_mixer.exe'
                   archiveArtifacts artifacts: "Win/x64/xmos_mixer.exe", fingerprint: true
