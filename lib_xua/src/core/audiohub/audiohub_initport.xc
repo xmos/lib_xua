@@ -12,7 +12,7 @@ extern buffered out port:32 p_dsd_clk;
 extern unsigned dsdMode;
 
 #if !CODEC_MASTER
-void InitPorts_master(unsigned divide, buffered _XUA_CLK_DIR port:32 p_lrclk, buffered _XUA_CLK_DIR port:32 p_bclk, buffered out port:32 (&?p_i2s_dac)[I2S_WIRES_DAC], buffered in port:32  (&?p_i2s_adc)[I2S_WIRES_ADC])
+void InitPorts_master(buffered _XUA_CLK_DIR port:32 p_lrclk, buffered _XUA_CLK_DIR port:32 p_bclk, buffered out port:32 (&?p_i2s_dac)[I2S_WIRES_DAC], buffered in port:32  (&?p_i2s_adc)[I2S_WIRES_ADC])
 {
 #if (DSD_CHANS_DAC > 0)
     if(dsdMode == DSD_MODE_OFF)
@@ -92,7 +92,7 @@ void InitPorts_master(unsigned divide, buffered _XUA_CLK_DIR port:32 p_lrclk, bu
 #endif
 }
 #else
-void InitPorts_slave(unsigned divide, buffered _XUA_CLK_DIR port:32 p_lrclk, buffered _XUA_CLK_DIR port:32 p_bclk, buffered out port:32 (&?p_i2s_dac)[I2S_WIRES_DAC], buffered in port:32  (&?p_i2s_adc)[I2S_WIRES_ADC])
+void InitPorts_slave(buffered _XUA_CLK_DIR port:32 p_lrclk, buffered _XUA_CLK_DIR port:32 p_bclk, buffered out port:32 (&?p_i2s_dac)[I2S_WIRES_DAC], buffered in port:32  (&?p_i2s_adc)[I2S_WIRES_ADC])
 {
 #if (I2S_CHANS_ADC != 0 || I2S_CHANS_DAC != 0)
     unsigned tmp;
