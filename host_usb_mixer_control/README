@@ -1,0 +1,117 @@
+The XMOS USB Audio Reference Design, by default, contains an 18x8 mixer unit
+(note that at sample rates above 96Khz only the first two outputs are
+enabled).
+
+----WINDOWS REQUIREMENTS----
+Building the mixer on Windows requires the tusbaudio SDK from Thesycon. The
+default location for the SDK is C:\Program Files\XMOS\tusbaudiosdk\
+If it can be found on a different path then this can be changed in
+Makefile.Win.
+
+The mixer app on windows makes use of a USB dynamic library, also from Thesycon.
+If required please contact thesycon.de for support.
+----------------------------
+
+This unit takes input takes 18 inputs:  USB OUT channels 1..10 and
+DEVICE IN channels 1..6,9..10 and produces 8 outputs: Mixer Output
+1..8
+
+Before the mixer there is an unit that allows the selection of the 18 mixer inputs
+from all the possible device inputs (DAW and physical audio).  This is 
+an extension unit with id 50 in the descriptors
+
+After the mixer unit there is are channel map units for each output terminal:
+Each of these outputs can select a source from one of 28 channels sources: USB OUT
+channels 1..10, DEVICE IN channels 1..10 and Mixer Output 1..8
+
+The channel map units are extension unit with init ids 51 and 52. This unit
+lets you implement arbitrary routings including loopbacks.
+
+The mixer is controlled on macOS via the command line utility
+xmos_mixer. Running this application requires having the
+libusb-1.0.0.dylib in the dynamic library load path. Sourcing the
+setup.sh script will do this. Source code for the application is
+provided as a guide on how to communicate with the device.
+
+Here are the commands for the mixer application (note that the USB
+audio reference design has only one unit so the mixer_id argument
+should always be 0):
+
+     --help
+
+     --display-info
+
+Show information about the device.
+
+     --display-mixer-nodes   mixer_id
+
+Display all the weights of all the mixer nodes (and their id) of a particular mixer.
+
+     --display-min     mixer_id
+
+Display the minimum allowable weights of a particular mixer.
+
+     --display-max     mixer_id
+
+Display the maximum allowable weights of a particular mixer.
+
+     --display-res     mixer_id
+
+Display the resolution of a particular mixer.
+
+     --set-value       mixer_id  mixer_unit  value
+
+Set the weight value in the mixer. The second argument should
+correspond to the values shown by the --display-unit command. Values
+can range from -127db to +128db with the special value -inf for mute.
+
+     --get-value       mixer_id  mixer_unit
+
+Get the weight value in the mixer. The second argument should
+correspond to the values shown by the --display-unit command. Values
+can range from -127db to +128db with the special value -inf for mute.
+
+    --set-mixer-source  mixer_id, dst_channel_id, src_channel_id
+
+Allows the selection of the mixer inputs.  Sets mixer input (dst) to src
+
+    --display-current-mixer-sources  mixer_id
+
+Displays the current inputs to a particular mixer
+
+    --display-available-mixer-sources  mixer_id
+
+Displays all the input channels available that can be fed into the inputs of a particular mixer
+
+    --set-aud-channel-map dst src
+
+Sets a channel map value for the device audio output
+
+     --display-aud-channel-map          
+
+Show audio output channel map i.e. for each audio output of the device what the source is.
+
+     --display-aud-channel-map-sources  
+
+Show the available audio output channel map sources.
+
+    --set-daw-channel-map dst src
+
+Sets a channel map value for the DAW output to the host
+
+     --display-daw-channel-map          
+
+Show audio output channel map i.e. for each DAW output to host, what the source is.
+
+     --display-daw-channel-map-sources  
+
+Show the DAW output channel map sources.
+
+     --get-mixer-levels-input
+
+     --get-mixer-levels-output
+
+     --vendor-audio-request-get   bRequest, ControlSelector, ChannelNumber, UnitId
+
+     --vendor-audio-request-set   bRequest, ControlSelector, ChannelNumber, UnitId, Data[0], Data[1],...
+ 

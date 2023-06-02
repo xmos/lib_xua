@@ -12,11 +12,11 @@
 
 #include "descriptor_defs.h"
 
-#define HID_ENDPOINT_DESCRIPTOR_LENGTH          0x07    /* Size of descriptor in Bytes */
-#define HID_ENDPOINT_DESCRIPTOR_TYPE            0x05    /* Endpoint 0x05 */
-#define HID_ENDPOINT_ATTRIBUTES                 0x03    /* Interrupt */
-#define HID_ENDPOINT_DESCRIPTOR_PACKET_SIZE_LO  0x40
-#define HID_ENDPOINT_DESCRIPTOR_PACKET_SIZE_HI  0x00
+#define HID_ENDPOINT_DESCRIPTOR_LENGTH          ( 0x07 )    /* Size of descriptor in Bytes */
+#define HID_ENDPOINT_DESCRIPTOR_TYPE            ( 0x05 )    /* Endpoint 0x05 */
+#define HID_ENDPOINT_ATTRIBUTES                 ( 0x03 )    /* Interrupt */
+#define HID_ENDPOINT_DESCRIPTOR_PACKET_SIZE_LO  ( 0x40 )
+#define HID_ENDPOINT_DESCRIPTOR_PACKET_SIZE_HI  ( 0x00 )
 
 #endif // _HID_ENDPOINT_DESCRIPTOR_CONTENTS_
 

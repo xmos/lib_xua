@@ -11,6 +11,8 @@
 #ifndef _HID_DESCRIPTOR_
 #define _HID_DESCRIPTOR_
 
+#define HID_DESCRIPTOR_LENGTH_FIELD_OFFSET ( 7 )
+
 /* USB HID Descriptor (section 6.2.1) */
 typedef struct
 {

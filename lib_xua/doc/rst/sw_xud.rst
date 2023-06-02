@@ -1,6 +1,8 @@
 
+|newpage|
+
 XMOS USB Device (XUD) Library
-.............................
+=============================
 
 All low level communication with the USB host is handled by the XMOS USB Device (XUD) library - `lib_xud`
 

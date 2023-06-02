@@ -1,16 +1,21 @@
-// Copyright 2018-2021 XMOS LIMITED.
+// Copyright 2018-2023 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
-//#include "devicedefines.h"
 
-#define MAX_MIX_COUNT 8
-#define MIX_INPUTS 18
+#include "xua.h"
 
+#ifndef MAX_MIX_COUNT
+#error
+#endif
 
-#if defined(__XS2A__) || defined(__XS3A__)
+#ifndef MIX_INPUTS
+#error
+#endif
+
+#if (MAX_MIX_COUNT > 0)
 
 #define DOMIX_TOP(i) \
 .cc_top doMix##i.function,doMix##i; \
-          .align    4 ;\
+          .align    16 ;\
 .globl doMix##i ;\
 .type doMix##i, @function ;\
 .globl doMix##i##.nstackwords ;\
@@ -50,52 +55,6 @@ doMix##i##: ;\
 .size doMix##i, .-doMix##i; \
 .cc_bottom doMix##i##.function;
 
-#else
-
-
-#define DOMIX_TOP(i) \
-.cc_top doMix##i.function,doMix##i; \
-          .align    4 ;\
-.globl doMix##i ;\
-.type doMix##i, @function ;\
-.globl doMix##i##.nstackwords ;\
-.globl doMix##i##.maxthreads ; \
-.globl doMix##i##.maxtimers ; \
-.globl doMix##i##.maxchanends ; \
-.globl doMix##i##.maxsync ;\
-.linkset doMix##i##.locnoside, 1; \
-.linkset doMix##i##.locnochandec, 1;\
-.linkset doMix##i##.nstackwords, 0 ;\
-.linkset doMix##i##.maxchanends, 0 ;\
-.linkset doMix##i##.maxtimers, 0 ;\
-.linkset doMix##i##.maxthreads, 1; \
-doMix##i##: ;\
-          set       cp, r0; \
-          set       dp, r1; \
-          lsub      r0, r1, r0, r0, r0;\
-          .label_##i##:
-
-#define DOMIX_BOT(i) \
-         ldap      r11, _dp; \
-          set       dp, r11;\
-          ldap      r11, _cp;\
-          set       cp, r11;\
-\
-          mov       r0, r1;\
-          ldc       r2, 0x19;\
-          sext      r0, r2;\
-          eq        r0, r0, r1;\
-          bf        r0, .L20; \
-\
-          shl       r0, r1, 0x7;\
-          retsp     0x0;\
-\
-\
-.size doMix##i, .-doMix##i; \
-.cc_bottom doMix##i##.function;
-
-#endif
-
 #define N MIX_INPUTS
 #define BODY(i) \
           ldw       r2,cp[i]; \
@@ -113,8 +72,6 @@ doMix##i##: ;\
 .L16:\
           ldw       r0, cp[.LC1];\
           retsp     0x0; \
-
-
 
 
 #if(MAX_MIX_COUNT > 0)
@@ -176,7 +133,7 @@ DOMIX_BOT(7)
 #undef BODY
 #define N MAX_MIX_COUNT
 .cc_top setPtr.function,setPtr;
-.align    4 ;
+.align    16 ;
 .globl setPtr;
 .type setPtr, @function
 .globl setPtr.nstackwords;
@@ -225,5 +182,5 @@ setPtr_go:
 #undef N
 #undef BODY
 
-
+#endif
 

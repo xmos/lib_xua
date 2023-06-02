@@ -1,4 +1,4 @@
-// Copyright 2011-2021 XMOS LIMITED.
+// Copyright 2011-2023 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 /*
  * @brief       Defines relating to device configuration and customisation of lib_xua
@@ -11,29 +11,20 @@
     #include "xua_conf.h"
 #endif
 
-
-
 /* Default tile arrangement */
 
 /**
  * @brief Location (tile) of audio I/O. Default: 0
  */
 #ifndef AUDIO_IO_TILE
-#define AUDIO_IO_TILE   0
+#define AUDIO_IO_TILE   (0)
 #endif
 
 /**
  * @brief Location (tile) of audio I/O. Default: 0
  */
 #ifndef XUD_TILE
-#define XUD_TILE        0
-#endif
-
-/**
- * @brief Location (tile) of IAP. Default: AUDIO_IO_TILE
- */
-#ifndef IAP_TILE
-#define IAP_TILE        AUDIO_IO_TILE
+#define XUD_TILE        (0)
 #endif
 
 /**
@@ -57,11 +48,18 @@
 #define PDM_TILE        AUDIO_IO_TILE
 #endif
 
-/** 
- * @brief Disable USB functionalty just leaving AudioHub 
+/**
+ * @brief Location (tile) of reference signal to CS2100. Default: AUDIO_IO_TILE
+ */
+#ifndef PLL_REF_TILE
+#define PLL_REF_TILE    AUDIO_IO_TILE
+#endif
+
+/**
+ * @brief Disable USB functionalty just leaving AudioHub
  */
 #ifndef XUA_USB_EN
-#define XUA_USB_EN      1
+#define XUA_USB_EN      (1)
 #endif
 
 /**
@@ -83,7 +81,7 @@
 /**
  * @brief Number of DSD output channels. Default: 0 (disabled)
  */
-#if defined(DSD_CHANS_DAC)
+#if defined(DSD_CHANS_DAC) && (DSD_CHANS_DAC != 0)
     #if defined(NATIVE_DSD) && (NATIVE_DSD == 0)
         #undef NATIVE_DSD
     #else
@@ -93,20 +91,25 @@
     #define DSD_CHANS_DAC        0
 #endif
 
+#define XUA_PCM_FORMAT_I2S      (0)
+#define XUA_PCM_FORMAT_TDM      (1)
 
-/* TODO not required */
-#ifndef I2S_MODE_TDM
-#define I2S_MODE_TDM 0
+#ifdef XUA_PCM_FORMAT
+    #if (XUA_PCM_FORMAT != XUA_PCM_FORMAT_I2S) && (XUA_PCM_FORMAT != XUA_PCM_FORMAT_TDM)
+        #error Bad value for XUA_PCM_FORMAT
+    #endif
+#else
+    #define XUA_PCM_FORMAT        XUA_PCM_FORMAT_I2S
 #endif
 
 /**
  * @brief Channels per I2S frame. *
  *
- * Default: 2 i.e standard stereo I2S (8 if using TDM i.e. I2S_MODE_TDM).
+ * Default: 2 i.e standard stereo I2S (8 if using TDM i.e. XUA_PCM_FORMAT_TDM).
  *
  **/
 #ifndef I2S_CHANS_PER_FRAME
-    #if (I2S_MODE_TDM == 1)
+    #if (XUA_PCM_FORMAT == XUA_PCM_FORMAT_TDM)
         #define I2S_CHANS_PER_FRAME 8
     #else
         #define I2S_CHANS_PER_FRAME 2
@@ -183,7 +186,7 @@
  */
 #if (I2S_DOWNSAMPLE_MONO_IN == 1)
     #define I2S_DOWNSAMPLE_CHANS_IN (I2S_CHANS_ADC / 2)
-    #if ((I2S_DOWNSAMPLE_FACTOR_IN > 1) && (I2S_MODE_TDM == 1))
+    #if ((I2S_DOWNSAMPLE_FACTOR_IN > 1) && (XUA_PCM_FORMAT == XUA_PCM_FORMAT_TDM))
         #error Mono I2S input downsampling is not avaliable in TDM mode
     #endif
 #else
@@ -333,13 +336,8 @@
 /**
  * @brief Enables ADAT Tx. Default: 0 (Disabled)
  */
-#ifndef ADAT_TX
-#define ADAT_TX               (0)
-#endif
-
-/* Tidy up old SPDIF usage */
-#if defined(ADAT_TX) && (ADAT_TX == 0)
-#undef ADAT_TX
+#ifndef XUA_ADAT_TX_EN
+#define XUA_ADAT_TX_EN           (0)
 #endif
 
 /**
@@ -354,15 +352,15 @@
 /**
  * @brief Enables SPDIF Rx. Default: 0 (Disabled)
  */
-#ifndef SPDIF_RX
-#define SPDIF_RX              (0)
+#ifndef XUA_SPDIF_RX_EN
+#define XUA_SPDIF_RX_EN       (0)
 #endif
 
 /**
  * @brief Enables ADAT Rx. Default: 0 (Disabled)
  */
-#ifndef ADAT_RX
-#define ADAT_RX               (0)
+#ifndef XUA_ADAT_RX_EN
+#define XUA_ADAT_RX_EN        (0)
 #endif
 
 /**
@@ -371,9 +369,9 @@
  *
  * Default: NONE (Must be defined by app when SPDIF_RX enabled)
  */
-#if (SPDIF_RX) || defined (__DOXYGEN__)
+#if (XUA_SPDIF_RX_EN) || defined (__DOXYGEN__)
 #ifndef SPDIF_RX_INDEX
-    #error SPDIF_RX_INDEX not defined and SPDIF_RX defined
+    #error SPDIF_RX_INDEX not defined and XUA_SPDIF_RX_EN defined
     #define SPDIF_RX_INDEX 0 /* Default define for doxygen */
 #endif
 #endif
@@ -382,11 +380,11 @@
  * @brief ADAT Rx first channel index. defines which channels ADAT will be input on.
  * Note, indexed from 0.
  *
- * Default: NONE (Must be defined by app when ADAT_RX enabled)
+ * Default: NONE (Must be defined by app when XUA_ADAT_RX_EN is true)
  */
-#if (ADAT_RX) || defined(__DOXYGEN__)
+#if (XUA_ADAT_RX_EN) || defined(__DOXYGEN__)
 #ifndef ADAT_RX_INDEX
-    #error ADAT_RX_INDEX not defined and ADAT_RX defined
+    #error ADAT_RX_INDEX not defined and XUA_ADAT_RX_EN is true
     #define ADAT_RX_INDEX (0) /* Default define for doxygen */
 #endif
 
@@ -395,7 +393,7 @@
 #endif
 #endif
 
-#if ADAT_RX
+#if (XUA_ADAT_RX_EN)
 
 /* Setup input stream formats for ADAT */
 #if(MAX_FREQ > 96000)
@@ -433,7 +431,8 @@
 #define HID_CONTROLS       (0)
 #endif
 
-/* @brief Defines whether XMOS device runs as master (i.e. drives LR and Bit clocks)
+/**
+ * @brief Defines whether XMOS device runs as master (i.e. drives LR and Bit clocks)
  *
  * 0: XMOS is I2S master. 1: CODEC is I2s master.
  *
@@ -451,7 +450,6 @@
 #ifndef SERIAL_STR
 #define SERIAL_STR               ""
 #endif
-
 
 /**
  * @brief Vendor String used by the device. This is also pre-pended to various strings used by the design.
@@ -959,43 +957,32 @@
 
 /* Power */
 
+#define XUA_POWERMODE_SELF          (0)
+#define XUA_POWERMODE_BUS           (1)
 /**
- * @brief Report as self to the host when enabled, else reports as bus-powered. This affects descriptors
- * and XUD usage.
+ * @brief Report as self or bus powered device. This affects descriptors
+ * and XUD usage and is important for USB compliance
  *
- * Default: 0 (Disabled)
+ * Default: XUA_POWERMODE_BUS
  */
-#ifndef SELF_POWERED
-#define SELF_POWERED                (0)
-#endif
-
-/* Tidy-up historical ifndef usage */
-#if defined(SELF_POWERED) && (SELF_POWERED==0)
-#undef SELF_POWERED
+#ifndef XUA_POWERMODE
+#define XUA_POWERMODE               XUA_POWERMODE_BUS
 #endif
 
 /**
  * @brief Power drawn from the host (in mA x 2)
  *
- * Default: 0 when SELF_POWERED enabled else 250 (500mA)
+ * Default: 0 when self-powered, else 250 (500mA)
  */
-#ifdef SELF_POWERED
+#if (XUA_POWERMODE == XUA_POWERMODE_SELF)
     /* Default to taking no power from the bus in self-powered mode */
-    #ifndef BMAX_POWER
-        #define BMAX_POWER 0
+    #ifndef _XUA_BMAX_POWER
+        #define _XUA_BMAX_POWER     (0)
     #endif
 #else
     /* Default to taking 500mA from the bus in bus-powered mode */
-    #ifndef BMAX_POWER
-        #define BMAX_POWER 250
-    #endif
-#endif
-
-#ifndef XUD_PWR_CFG
-    #ifdef SELF_POWERED
-        #define XUD_PWR_CFG XUD_PWR_SELF
-    #else
-        #define XUD_PWR_CFG XUD_PWR_BUS
+    #ifndef _XUA_BMAX_POWER
+        #define _XUA_BMAX_POWER      (250)
     #endif
 #endif
 
@@ -1010,17 +997,12 @@
 #define MIXER              (0)
 #endif
 
-/* Tidy up old ifndef usage */
-#if defined(MIXER) && (MIXER == 0)
-#undef MIXER
-#endif
-
 /**
  * @brief Number of seperate mixes to perform
  *
  * Default: 8 if MIXER enabled, else 0
  */
-#ifdef MIXER
+#if (MIXER)
     #ifndef MAX_MIX_COUNT
     	#define MAX_MIX_COUNT          (8)
     #endif
@@ -1100,81 +1082,54 @@
 #define VOLUME_RES_MIXER            (0x100)
 #endif
 
-/* Handle out volume control in the mixer */
-#if defined(OUT_VOLUME_IN_MIXER) && (OUT_VOLUME_IN_MIXER==0)
-#undef OUT_VOLUME_IN_MIXER
-#else
-#if defined(MIXER)
-// Disabled by default
-//#define OUT_VOLUME_IN_MIXER
-#endif
+/* Handle out volume control in the mixer - enabled by default */
+#ifndef OUT_VOLUME_IN_MIXER
+#define OUT_VOLUME_IN_MIXER         (1)
 #endif
 
-/* Apply out volume controls after the mix */
-#if defined(OUT_VOLUME_AFTER_MIX) && (OUT_VOLUME_AFTER_MIX==0)
-#undef OUT_VOLUME_AFTER_MIX
-#else
-#if defined(MIXER) && defined(OUT_VOLUME_IN_MIXER)
-// Enabled by default
-#define OUT_VOLUME_AFTER_MIX
-#endif
+/* Apply out volume controls after the mix. Only relevant when OUT_VOLUME_IN_MIXER enabled. Enabled by default */
+#ifndef OUT_VOLUME_AFTER_MIX
+#define OUT_VOLUME_AFTER_MIX        (1)
 #endif
 
-/* Handle in volume control in the mixer */
-#if defined(IN_VOLUME_IN_MIXER) && (IN_VOLUME_IN_MIXER==0)
-#undef IN_VOLUME_IN_MIXER
-#else
-#if defined(MIXER)
-/* Disabled by default */
-//#define IN_VOLUME_IN_MIXER
-#endif
+/* Handle in volume control in the mixer - disabled by default */
+#ifndef IN_VOLUME_IN_MIXER
+#define IN_VOLUME_IN_MIXER          (0)
 #endif
 
-/* Apply in volume controls after the mix */
-#if defined(IN_VOLUME_AFTER_MIX) && (IN_VOLUME_AFTER_MIX==0)
-#undef IN_VOLUME_AFTER_MIX
-#else
-#if defined(MIXER) && defined(IN_VOLUME_IN_MIXER)
-// Enabled by default
-#define IN_VOLUME_AFTER_MIX
-#endif
+/* Apply in volume controls after the mix. Only relebant when IN_VOLUMNE_IN MIXER enabled. Enabled by default */
+#ifndef IN_VOLUME_AFTER_MIX
+#define IN_VOLUME_AFTER_MIX         (1)
 #endif
 
-/* IAP */
-#if defined(IAP) && (IAP == 0)
-#undef IAP
+/* Always enable explicit feedback EP, even when input stream is present */
+#ifndef UAC_FORCE_FEEDBACK_EP
+#define UAC_FORCE_FEEDBACK_EP       (1)
 #endif
-
-/* IAP Interrupt endpoint */
-#if defined(IAP_INT_EP) && (IAP_INT_EP == 0)
-#undef IAP_INT_EP
-#endif
-
-/* IAP EA Native Transport */
-#if defined(IAP_EA_NATIVE_TRANS) && (IAP_EA_NATIVE_TRANS == 0)
-#undef IAP_EA_NATIVE_TRANS
-#endif
-
-#if defined(IAP_EA_NATIVE_TRANS) || defined(__DOXYGEN__)
-/**
- * @brief Number of supported EA Native Interface Alternative settings.
- *
- * Only 1 supported
- */
-#ifndef IAP_EA_NATIVE_TRANS_ALT_COUNT
-    #define IAP_EA_NATIVE_TRANS_ALT_COUNT 1
-#endif
-
-#if (IAP_EA_NATIVE_TRANS_ALT_COUNT > 1)
-    /* Only 1 supported */
-    #error
-#endif
-#endif
-
 
 #if (defined(UAC_FORCE_FEEDBACK_EP) && UAC_FORCE_FEEDBACK_EP == 0)
 #undef UAC_FORCE_FEEDBACK_EP
 #endif
+
+/* Synchronisation defines */
+#define XUA_SYNCMODE_ASYNC (1) // USB_ENDPOINT_SYNCTYPE_ASYNC
+#define XUA_SYNCMODE_ADAPT (2) // USB_ENDPOINT_SYNCTYPE_ADAPT
+#define XUA_SYNCMODE_SYNC  (3) // USB_ENDPOINT_SYNCTYPE_SYNC
+
+#ifndef XUA_SYNCMODE
+#define XUA_SYNCMODE XUA_SYNCMODE_ASYNC
+#endif
+
+#if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
+    #if (XUA_SPDIF_RX_EN|| ADAT_RX)
+        #error "Digital input streams not supported in Sync mode"
+    #endif
+#endif
+
+
+/*********************************************************/
+/*** Internal defines below here. NOT FOR MODIFICATION ***/
+/*********************************************************/
 
 #ifndef __ASSEMBLER__
 /* Endpoint addresses enums */
@@ -1185,7 +1140,7 @@ enum USBEndpointNumber_In
     ENDPOINT_NUMBER_IN_FEEDBACK,
 #endif
     ENDPOINT_NUMBER_IN_AUDIO,
-#if (SPDIF_RX) || (ADAT_RX)
+#if (XUA_SPDIF_RX_EN) || (XUA_ADAT_RX_EN)
     ENDPOINT_NUMBER_IN_INTERRUPT,   /* Audio interrupt/status EP */
 #endif
 #ifdef MIDI
@@ -1222,50 +1177,44 @@ enum USBEndpointNumber_Out
     XUA_ENDPOINT_COUNT_OUT          /* End marker */
 };
 
-
 #ifndef XUA_ENDPOINT_COUNT_CUSTOM_OUT
-#define XUA_ENDPOINT_COUNT_CUSTOM_OUT   0
+#define XUA_ENDPOINT_COUNT_CUSTOM_OUT     (0)
 #endif
 
 #ifndef XUA_ENDPOINT_COUNT_CUSTOM_IN
-#define XUA_ENDPOINT_COUNT_CUSTOM_IN   0 
+#define XUA_ENDPOINT_COUNT_CUSTOM_IN      (0)
 #endif
 
-#define ENDPOINT_COUNT_IN  (XUA_ENDPOINT_COUNT_IN + XUA_ENDPOINT_COUNT_CUSTOM_IN)
-#define ENDPOINT_COUNT_OUT (XUA_ENDPOINT_COUNT_OUT + XUA_ENDPOINT_COUNT_CUSTOM_OUT)
+#define ENDPOINT_COUNT_IN                 (XUA_ENDPOINT_COUNT_IN + XUA_ENDPOINT_COUNT_CUSTOM_IN)
+#define ENDPOINT_COUNT_OUT                (XUA_ENDPOINT_COUNT_OUT + XUA_ENDPOINT_COUNT_CUSTOM_OUT)
 
-#endif
+#endif /* __ASSEMBLER__ */
 
-/*** Internal defines below here. NOT FOR MODIFICATION ***/
+#define AUDIO_STOP_FOR_DFU                (0x12345678)
+#define AUDIO_START_FROM_DFU              (0x87654321)
+#define AUDIO_REBOOT_FROM_DFU             (0xa5a5a5a5)
 
-#define AUDIO_STOP_FOR_DFU       (0x12345678)
-#define AUDIO_START_FROM_DFU     (0x87654321)
-#define AUDIO_REBOOT_FROM_DFU    (0xa5a5a5a5)
-
-#define MAX_VOL                  (0x20000000)
-
-#if defined(SU1_ADC_ENABLE) && (SU1_ADC_ENABLE == 0)
-#undef SU1_ADC_ENABLE
-#endif
+/* Result of db_to_mult(MAX_VOLUME, 8, 29) */
+#define MAX_VOLUME_MULT                   (0x20000000)
 
 #if defined(LEVEL_METER_LEDS) && !defined(LEVEL_UPDATE_RATE)
-#define LEVEL_UPDATE_RATE   400000
+#define LEVEL_UPDATE_RATE                 (400000)
 #endif
 
 /* The number of clock ticks to wait for the audio feeback to stabalise
  * Note, feedback always counts 128 SOFs (16ms @ HS, 128ms @ FS) */
 #ifndef FEEDBACK_STABILITY_DELAY_HS
-#define FEEDBACK_STABILITY_DELAY_HS     (2000000)
+#define FEEDBACK_STABILITY_DELAY_HS       (2000000)
 #endif
 
 #ifndef FEEDBACK_STABILITY_DELAY_FS
-#define FEEDBACK_STABILITY_DELAY_FS     (20000000)
+#define FEEDBACK_STABILITY_DELAY_FS       (20000000)
 #endif
 
 /* Length of clock unit/clock-selector units */
-#if (SPDIF_RX) && (ADAT_RX)
+#if (XUA_SPDIF_RX_EN) && (XUA_ADAT_RX_EN)
 #define NUM_CLOCKS               (3)
-#elif (SPDIF_RX) || (ADAT_RX)
+#elif (XUA_SPDIF_RX_EN) || (XUA_ADAT_RX_EN)
 #define NUM_CLOCKS               (2)
 #else
 #define NUM_CLOCKS               (1)
@@ -1346,9 +1295,9 @@ enum USBEndpointNumber_Out
 /* Some defines that allow us to remove unused code */
 
 /* Useful for dropping lower part of macs in volume processing... */
-#if (FS_STREAM_FORMAT_OUTPUT_1_RESOLUTION_BITS > 24) || (FS_STREAM_FORMAT_OUTPUT_2_RESOLUTION_BITS > 24) || \
-    (FS_STREAM_FORMAT_OUTPUT_3_RESOLUTION_BITS > 24) || (HS_STREAM_FORMAT_OUTPUT_1_RESOLUTION_BITS > 24)  || \
-    (HS_STREAM_FORMAT_OUTPUT_2_RESOLUTION_BITS > 24) || (HS_STREAM_FORMAT_OUTPUT_3_RESOLUTION_BITS > 24)
+#if (FS_STREAM_FORMAT_OUTPUT_1_RESOLUTION_BITS > 24) || (HS_STREAM_FORMAT_OUTPUT_2_RESOLUTION_BITS > 24) || \
+    (((FS_STREAM_FORMAT_OUTPUT_2_RESOLUTION_BITS > 24) || (HS_STREAM_FORMAT_OUTPUT_2_RESOLUTION_BITS > 24)) && (OUTPUT_FORMAT_COUNT > 1)) || \
+    (((FS_STREAM_FORMAT_OUTPUT_3_RESOLUTION_BITS > 24) || (HS_STREAM_FORMAT_OUTPUT_3_RESOLUTION_BITS > 24)) && (OUTPUT_FORMAT_COUNT > 2))
     #define STREAM_FORMAT_OUTPUT_RESOLUTION_32BIT_USED 1
 #else
     #define STREAM_FORMAT_OUTPUT_RESOLUTION_32BIT_USED 0
@@ -1480,6 +1429,7 @@ enum USBEndpointNumber_Out
     #define _XUA_CLK_DIR out
 #endif
 
-#if (CODEC_MASTER == 1) && (DSD_CHANS_DAC != 0) 
-#error CODEC_MASTER with DSD is currently unsupported 
+#if (CODEC_MASTER == 1) && (DSD_CHANS_DAC != 0)
+#error CODEC_MASTER with DSD is currently unsupported
 #endif
+

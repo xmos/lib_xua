@@ -1,0 +1,260 @@
+from __future__ import print_function
+import glob
+import os.path
+import subprocess
+import sys
+from waflib import Options
+from waflib.Build import BuildContext, CleanContext
+
+TARGETS = ['xcore200', 'xcoreai']
+
+def get_ruby():
+    """
+    Check ruby is avaliable and return the command to invoke it.
+    """
+    interpreter_name = 'ruby'
+    try:
+        dev_null = open(os.devnull, 'w')
+        # Call the version command to check the interpreter can be run
+        subprocess.check_call([interpreter_name, '--version'],
+                              stdout=dev_null,
+                              close_fds=True)
+    except OSError as e:
+        print("Failed to run Ruby interpreter: {}".format(e), file=sys.stderr)
+        exit(1)  # TODO: Check this is the correct way to kill xwaf on error
+
+    return interpreter_name
+
+
+def get_unity_runner_generator(project_root_path):
+    """
+    Check the Unity generate_test_runner script is avaliable, and return the
+    path to it.
+    """
+    unity_runner_generator = os.path.join(
+        project_root_path, 'Unity', 'auto', 'generate_test_runner.rb')
+    if not os.path.exists(unity_runner_generator):
+        print("Unity repo not found in workspace", file=sys.stderr)
+        exit(1)  # TODO: Check this is the correct way to kill xwaf on error
+    return unity_runner_generator
+
+
+def get_test_name(test_path):
+    """
+    Return the test name by removing the extension from the filename.
+    """
+    return os.path.splitext(os.path.basename(test_path))[0]
+
+
+def get_file_type(filename):
+    """
+    Return the extension from the filename.
+    """
+    return filename.rsplit('.')[-1:][0]
+
+
+def generate_unity_runner(project_root_path, unity_test_path, unity_runner_dir,
+                          unity_runner_suffix):
+    """
+    Invoke the Unity runner generation script for the given test file, and
+    return the path to the generated file. The output directory will be created
+    if it does not already exist.
+    """
+    runner_path = os.path.join(os.path.join(unity_runner_dir, get_test_name(unity_test_path)))
+    if not os.path.exists(runner_path):
+        os.makedirs(runner_path)
+
+    unity_runner_path = os.path.join(
+        runner_path, get_test_name(unity_test_path) + unity_runner_suffix
+        + '.' + 'c')
+
+    try:
+        subprocess.check_call([get_ruby(),
+                               get_unity_runner_generator(project_root_path),
+                               unity_test_path,
+                               unity_runner_path])
+    except OSError as e:
+        print("Ruby generator failed for {}\n\t{}".format(unity_test_path, e),
+              file=sys.stderr)
+        exit(1)  # TODO: Check this is the correct way to kill xwaf on error
+
+
+def add_unity_runner_build_config(waf_conf, project_root_path, unity_test_path,
+                                  unity_runner_build_flags, target):
+    """
+    Add a config to xwaf to build each Unity test runner into an xCORE
+    executable.
+    """
+    print(f"get_test_name(unity_test_path) = {get_test_name(unity_test_path)}. target = {target}")
+    waf_conf.setenv(get_test_name(unity_test_path) + '_' + target)
+    waf_conf.load('xwaf.compiler_xcc')
+    waf_conf.env.XCC_FLAGS = unity_runner_build_flags
+    waf_conf.env.PROJECT_ROOT = project_root_path
+    # TODO: can the xwaf boilerplate help here?
+
+
+def prepare_unity_test_for_build(waf_conf, project_root_path, unity_test_path,
+                                 unity_runner_dir, unity_runner_suffix, target):
+    print("unity_test_path: " + str(unity_test_path))
+    generate_unity_runner(project_root_path, unity_test_path,
+                          unity_runner_dir, unity_runner_suffix)
+    runner_build_flags = ''  # Could extract flags from the test name
+    add_unity_runner_build_config(waf_conf, project_root_path, unity_test_path,
+                                  runner_build_flags, target)
+
+
+def find_unity_test_paths(unity_test_dir, unity_test_prefix):
+    """
+    Return a list of all file paths with the unity_test_prefix found in the
+    unity_test_dir.
+    """
+    file_list = []
+    for root, dirs, files in os.walk(unity_test_dir):
+        for f in files:
+            if f.startswith(unity_test_prefix):
+                file_list.append(os.path.join(root,f))
+    return file_list
+
+
+def find_unity_tests(unity_test_dir, unity_test_prefix):
+    """
+    Return a dictionary of all {test names, test language} pairs with the
+    unity_test_prefix found in the unity_test_dir.
+    """
+    unity_test_paths = find_unity_test_paths(unity_test_dir, unity_test_prefix)
+    return {get_test_name(path): {"language": get_file_type(path), "dir": os.path.dirname(path)}
+            for path in unity_test_paths}
+
+
+def generate_all_unity_runners(waf_conf, project_root_path,
+                               unity_test_dir, unity_test_prefix,
+                               unity_runner_dir, unity_runner_suffix):
+    """
+    Generate a runner and a build config for each test file in the
+    unity_test_dir.
+    """
+    # FIXME: pass unity_tests in?
+    unity_test_paths = find_unity_test_paths(unity_test_dir, unity_test_prefix)
+    for trgt in TARGETS:
+        for unity_test_path in unity_test_paths:
+            prepare_unity_test_for_build(waf_conf, project_root_path,
+                                         unity_test_path,
+                                         unity_runner_dir, unity_runner_suffix, trgt)
+
+
+# TODO: can the xwaf boilerplate help here?
+def create_waf_contexts(configs):
+    for trgt in TARGETS:
+        for test_name, params in configs.items():
+            print(f"test_name {test_name}, test_language {params['language']}")
+            for ctx in (BuildContext, CleanContext):
+                raw_context = ctx.__name__.replace('Context', '').lower()
+
+                class tmp(ctx):
+                    cmd = raw_context + '_' + test_name + '_' + trgt
+                    variant = test_name + '_' + trgt
+                    #cmd = raw_context + '_' + test_name
+                    #variant = test_name
+                    language = params["language"]
+                    target = trgt
+                    runner = test_name
+                    directory = params["dir"]
+                    print(f"cmd {cmd}, variant {variant}, language {language}")
+
+
+UNITY_TEST_DIR = 'src'
+UNITY_TEST_PREFIX = 'test_'
+UNITY_RUNNER_DIR = 'runners'
+UNITY_RUNNER_SUFFIX = '_Runner'
+UNITY_TESTS = find_unity_tests(UNITY_TEST_DIR, UNITY_TEST_PREFIX)
+
+print("UNITY_TESTS: " + str(UNITY_TESTS))
+
+create_waf_contexts(UNITY_TESTS)
+
+def options(opt):
+    opt.add_option('--target', action='store', default='xcore200')
+    opt.load('xwaf.xcommon')
+
+def configure(conf):
+    # TODO: move the call to generate_all_unity_runners() to build()
+    project_root = os.path.join('..', '..', '..')
+    generate_all_unity_runners(conf, project_root,
+                               UNITY_TEST_DIR, UNITY_TEST_PREFIX,
+                               UNITY_RUNNER_DIR, UNITY_RUNNER_SUFFIX)
+    conf.load('xwaf.xcommon')
+
+def build(bld):
+    if not bld.variant:
+        print('Adding test runners to build queue')
+        trgt = [
+            c for c in TARGETS if c == bld.options.target
+        ]
+
+        if len(trgt) == 0:
+            bld.fatal('specify a target with --target.\nAvailable targets: {}'.format(', '.join(TARGETS)))
+            return
+
+        for name in UNITY_TESTS:
+            Options.commands.insert(0, 'build_' + name + '_' + trgt[0])
+            #Options.commands.insert(0, 'build_' + name)
+        print('Build queue {}'.format(Options.commands))
+    else:
+        print('Building runner {}'.format(bld.runner))
+        bld.env.XSCOPE = bld.path.find_resource('config.xscope')
+
+        depends_on = ['lib_xua',
+                      'lib_xud',
+                      'lib_spdif',
+                      'lib_mic_array',
+                      'lib_logging',
+                      'lib_xassert',
+                      'Unity']
+
+        makefile_opts = {}
+        makefile_opts['SOURCE_DIRS'] = ['src', bld.directory, os.path.join('runners',bld.runner)]
+        if(bld.target == 'xcoreai'):
+            print('TARGET XCOREAI')
+            makefile_opts['TARGET'] = ['XCORE-AI-EXPLORER']
+        else:
+            print('TARGET XCORE200')
+            makefile_opts['TARGET'] = ['XCORE-200-EXPLORER']
+
+        makefile_opts['INCLUDE_DIRS'] = ['src',
+                                         bld.directory,
+                                         '../../lib_xua/api',
+                                         '../../lib_xua/src/core/pdm_mics',
+                                         '../../lib_xua/src/hid',
+                                         '../../../lib_xud/lib_xud/src/user/class']
+
+        makefile_opts['XCC_FLAGS'] = ['-O2',
+                                      '-g',
+                                      '-Wall',
+                                      '-DHID_CONTROLS=1',
+                                      '-DUNITY_SUPPORT_64',
+                                      '-DUNITY_INCLUDE_DOUBLE',
+                                      '-DXUD_CORE_CLOCK=600',
+                                      '-DXUD_SERIES_SUPPORT=4']
+
+        makefile_opts['APP_NAME'] = [bld.variant]
+        makefile_opts['USED_MODULES'] = depends_on
+        makefile_opts['XCOMMON_MAKEFILE'] = ['Makefile.common']
+        bld.do_xcommon(makefile_opts)
+
+
+def test(bld):
+    # Call pytest to run Unity tests inside axe or xsim
+    try:
+        test_output = subprocess.check_output(['pytest'])
+    except subprocess.CalledProcessError as e:
+        # pytest exits non-zero if an assertion fails
+        test_output = e.output
+    print(test_output)
+
+
+# TODO: ensure clean deletes the runners dir/
+def dist(ctx):
+    ctx.load('xwaf.xcommon')
+
+def distcheck(ctx):
+    ctx.load('xwaf.xcommon')

@@ -1,4 +1,4 @@
-// Copyright 2018-2021 XMOS LIMITED.
+// Copyright 2018-2023 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
 #if (DSD_CHANS_DAC != 0)
@@ -28,7 +28,7 @@ static inline void DoDsdNative(unsigned samplesOut[], unsigned &dsdSample_l, uns
     asm volatile("out res[%0], %1"::"r"(p_dsd_dac[1]),"r"(dsdSample_r));
 }
 
-/* This function performs the DOP loop and collects 16b of DSD per loop 
+/* This function performs the DOP loop and collects 16b of DSD per loop
    and outputs a 32b word into the port buffer every other cycle. */
 static inline void DoDsdDop(int &everyOther, unsigned samplesOut[], unsigned &dsdSample_l, unsigned &dsdSample_r, unsigned divide)
 {
@@ -38,7 +38,7 @@ static inline void DoDsdDop(int &everyOther, unsigned samplesOut[], unsigned &ds
         dsdSample_r = ((samplesOut[1] & 0xffff00) << 8);
         everyOther = 1;
     }
-    else 
+    else
     {
         everyOther = 0;
         dsdSample_l =  dsdSample_l | ((samplesOut[0] & 0xffff00) >> 8);
@@ -52,7 +52,7 @@ static inline void DoDsdDop(int &everyOther, unsigned samplesOut[], unsigned &ds
 /* When DSD is enabled and streaming is standard PCM, this function checks for a series of DoP markers in the upper byte.
    If found it will exit deliver() with the command to restart in DoP mode.
    When in DoP mode, this function will check for a single absence of the DoP marker and exit deliver() with the command
-   to restart in I2S mode. */
+   to restart in I2S/PCM mode. */
 static inline int DoDsdDopCheck(unsigned &dsdMode, int &dsdCount, unsigned curSamFreq, unsigned samplesOut[], unsigned &dsdMarker)
 {
     /* Check for DSD - note we only move into DoP mode if valid DoP Freq */
@@ -77,7 +77,7 @@ static inline int DoDsdDopCheck(unsigned &dsdMode, int &dsdCount, unsigned curSa
             dsdMarker = DSD_MARKER_2;
         }
     }
-    else if(dsdMode == DSD_MODE_DOP) 
+    else if(dsdMode == DSD_MODE_DOP)
     {
         /* If we are running in DOP mode, check if we need to come out */
         if((DSD_MASK(samplesOut[0]) != DSD_MARKER_1) && (DSD_MASK(samplesOut[1]) != DSD_MARKER_1))

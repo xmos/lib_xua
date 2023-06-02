@@ -1,4 +1,4 @@
-// Copyright 2018-2021 XMOS LIMITED.
+// Copyright 2018-2022 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 #include "xua.h"
 
@@ -38,7 +38,6 @@ void InitPorts_master(unsigned divide, buffered _XUA_CLK_DIR port:32 p_lrclk, bu
         }
 #endif
 
-#pragma xta endpoint "divide_1"
         unsigned tmp;
         #ifdef N_BITS_I2S
         tmp = partout_timestamped(p_lrclk, N_BITS_I2S, 0);
@@ -59,13 +58,17 @@ void InitPorts_master(unsigned divide, buffered _XUA_CLK_DIR port:32 p_lrclk, bu
             #endif
         }
 #endif
+        unsigned lrClkVal = 0x7FFFFFFF;
+        if(XUA_PCM_FORMAT == XUA_PCM_FORMAT_TDM)
+        {
+            lrclkVal = 0x80000000;
+        }
 
         #ifdef N_BITS_I2S
-        partout_timed(p_lrclk, N_BITS_I2S, 0x7FFFFFFF, tmp);
+        partout_timed(p_lrclk, N_BITS_I2S, lrClkVal, tmp);
         #else
-        p_lrclk @ tmp <: 0x7FFFFFFF;
+        p_lrclk @ tmp <: lrClkVal;
         #endif
-
 
 #if (I2S_CHANS_ADC != 0)
         for(int i = 0; i < I2S_WIRES_ADC; i++)
@@ -88,9 +91,7 @@ void InitPorts_master(unsigned divide, buffered _XUA_CLK_DIR port:32 p_lrclk, bu
     }
 #endif
 }
-
-#else 
-
+#else
 void InitPorts_slave(unsigned divide, buffered _XUA_CLK_DIR port:32 p_lrclk, buffered _XUA_CLK_DIR port:32 p_bclk, buffered out port:32 (&?p_i2s_dac)[I2S_WIRES_DAC], buffered in port:32  (&?p_i2s_adc)[I2S_WIRES_ADC])
 {
 #if (I2S_CHANS_ADC != 0 || I2S_CHANS_DAC != 0)
@@ -101,7 +102,7 @@ void InitPorts_slave(unsigned divide, buffered _XUA_CLK_DIR port:32 p_lrclk, buf
     p_lrclk when pinseq(1) :> void;
     p_lrclk when pinseq(0) :> void;
     p_lrclk when pinseq(1) :> void;
-#if I2S_MODE_TDM
+#if (XUA_PCM_FORMAT == XUA_PCM_FORMAT_TDM)
     p_lrclk when pinseq(0) :> void;
     p_lrclk when pinseq(1) :> void @ tmp;
 #else

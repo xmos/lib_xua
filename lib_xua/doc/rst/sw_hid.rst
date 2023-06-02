@@ -1,5 +1,5 @@
 Audio Controls via Human Interface Device (HID)
-------------------------------------------------
+===============================================
 
 The design supports simple audio controls such as play/pause, volume up/down etc via the USB Human
 Interface Device Class Specification.
@@ -45,4 +45,3 @@ On each HID report request from the host the function ``Vendor_ReadHidButtons(un
 
 Since the ``Vendor_ReadHidButtons()`` function is called from the ``buffer`` logical core, care should be taken not to add to much execution time to this function since this could cause issues with servicing other endpoints.
 
-For a full example please see the HID section in :ref:`usb_audio_sec_l1_audio_sw`.

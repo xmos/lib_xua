@@ -1,1 +1,0 @@
-SOURCE_INCLUDE_DIRS=../lib_xua/host/xmosdfu

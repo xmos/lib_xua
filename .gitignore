@@ -1,25 +1,25 @@
-*.log
-*.dSYM
-*/.build_*/*
-*/bin/*
-*.o
+# XMOS bin files
 *.xe
-*.vcd
-*.swo
+*.bin
+*/bin/*
+
+# XMOS temp files
+.build*
+*.a
+_build*
+*.i
 *.s
 *.xi
-*.i
-*.bin
-*~
-*.a
-*.swp
-*.*~
-*.pyc
-.build*
+*.o
+*/.build_*/*
+
+# Temp files
 .DS_Store
-test_results.csv
-_build*
-**/.venv/**
+*.*~
+*.swp
+*.swn
+*~
+*.swo
 
 # waf build files
 .lock-waf_*
@@ -28,3 +28,23 @@ build/
 .build*
 *.pyc
 xscope.xmt
+
+# Traces
+*.gtkw
+*.vcd
+
+# Host binaries 
+host_usb_mixer_control/xmos_mixer
+
+# Documentation build
+*.pdf
+
+# Misc
+*.log
+*.dSYM
+*.vcd
+*.pyc
+**/.venv/**
+**/.vscode/**
+**.egg-info
+*tests/logs/*

@@ -1,25 +1,31 @@
 lib_xua
-=======
+#######
+
+:Version: 3.4.0
+:Vendor: XMOS
+
+
+:Scope: General Use
 
 Summary
--------
+*******
 
-USB Audio Shared Components for use in the XMOS USB Audio Refererence Designs.
+lib_xua contains shared components for use in the XMOS USB Audio (XUA) Reference Designs.
 
-This library enables the development of USB Audio devices on the XMOS xCORE architecture.
+These components enable the development of USB Audio devices on the XMOS xCORE architecture.
 
 Features
-........
+========
 
-Key features of the various applications in this repository are as follows
+Key features of the various components in this repository are as follows
 
 - USB Audio Class 1.0/2.0 Compliant
 
-- Fully Asynchronous operation
+- Fully Asynchronous operation (synchronous mode as an option)
 
 - Support for the following sample frequencies: 8, 11.025, 12, 16, 32, 44.1, 48, 88.2, 96, 176.4, 192, 352.8, 384kHz
 
-- Input/output channel and individual volume/mute controls supported
+- Volume/mute controls for input/output (for both master and individual channels)
 
 - Support for dynamically selectable output audio formats (e.g. resolution)
 
@@ -33,30 +39,64 @@ Key features of the various applications in this repository are as follows
 
 - ADAT input
 
+- Synchronisation to external digital streams i.e. S/PDIF or ADAT (when in asynchronous mode)
+
+- I2S slave & master modes
+
+- TDM slave & master modes
+
 - MIDI input/output (Compliant to USB Class Specification for MIDI devices)
 
-- DSD output (Native and DoP mode) at DSD64 and DSD128 rates
+- DSD output ("native" and DoP mode) at DSD64 and DSD128 rates
 
 - Mixer with flexible routing
 
-- Simple playback controls via Human Interface Device (HID)
+- Simple playback controls via USB Human Interface Device (HID) Class
 
-- Support for operation with Apple devices (requires software module sc_mfi for MFI licensees only - please contact XMOS)
+Note, not all features may be supported at all sample frequencies, simultaneously or on all devices.  
+Some features may also require specific host driver support.
 
-Note, not all features may be supported at all sample frequencies, simultaneously or on all devices.  Some features also require specific host driver support.
+Host System Requirements
+========================
 
+USB Audio devices built using `lib_xua` have the following host system requirements.
 
-Software version and dependencies
-.................................
+- Mac OSX version 10.6 or later
 
-The CHANGELOG contains information about the current and previous versions.
-For a list of direct dependencies, look for DEPENDENT_MODULES in lib_xua/module_build_info.
+- Windows Vista, 7, 8 or 10 with Thesycon Audio Class 2.0 driver for Windows (Tested against version 3.20). Please contact XMOS for details.
+ 
+- Windows Vista, 7, 8 or 10 with built-in USB Audio Class 1.0 driver.
+
+Older versions of Windows are not guaranteed to operate as expected. Devices are also expected to operate with various Linux distributions including mobile variants.
 
 Related Application Notes
-.........................
+=========================
 
 The following application notes use this library:
 
-    * AN000246 - Simple USB Audio Device using lib_xua
-    * AN000247 - Using lib_xua with lib_spdif (transmit)
-    * AN000248 - Using lib_xua with lib_mic_array
+  * AN000246 - Simple USB Audio Device using lib_xua
+  * AN000247 - Using lib_xua with lib_spdif (transmit)
+  * AN000248 - Using lib_xua with lib_mic_array
+
+Required Software (dependencies)
+================================
+
+  * lib_locks (www.github.com/xmos/lib_locks)
+  * lib_logging (www.github.com/xmos/lib_logging)
+  * lib_mic_array (www.github.com/xmos/lib_mic_array)
+  * lib_xassert (www.github.com/xmos/lib_xassert)
+  * lib_dsp (www.github.com/xmos/lib_dsp)
+  * lib_spdif (www.github.com/xmos/lib_spdif)
+  * lib_xud (www.github.com/xmos/lib_xud)
+  * lib_adat (www.github.com/xmos/lib_adat)
+
+Documentation
+=============
+
+You can find the documentation for this software in the /doc directory of the package.
+
+Support
+=======
+
+This package is supported by XMOS Ltd. Issues can be raised against the software at: http://www.xmos.com/support
+

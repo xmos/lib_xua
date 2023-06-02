@@ -1,4 +1,4 @@
-// Copyright 2017-2021 XMOS LIMITED.
+// Copyright 2017-2022 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
 #include <xs1.h>
@@ -16,7 +16,7 @@ void AudioHwInit()
     /* DAC in reset */
     p_gpio <: 0;
 
-    return;    
+    return;
 }
 
 /* Configures the external audio hardware for the required sample frequency */

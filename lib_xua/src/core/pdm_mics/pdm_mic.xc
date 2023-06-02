@@ -1,4 +1,4 @@
-// Copyright 2015-2021 XMOS LIMITED.
+// Copyright 2015-2022 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
 #include "xua.h"
@@ -22,7 +22,7 @@
 #define MAX_DECIMATION_FACTOR (96000/(MIN_FREQ/AUD_TO_MICS_RATIO))
 
 /* Build time sized microphone delay line */
-#ifndef MIC_BUFFER_DEPTH 
+#ifndef MIC_BUFFER_DEPTH
 #define MIC_BUFFER_DEPTH 1
 #endif
 
@@ -229,7 +229,7 @@ void xua_pdm_mic_config(in port p_pdm_mclk, in port p_pdm_clk, buffered in port:
     unsigned micDiv = MCLK_48/3072000;
 
     configure_clock_src_divide(clk_pdm, p_pdm_mclk, micDiv/2);
-    
+
     configure_port_clock_output(p_pdm_clk, clk_pdm);
     configure_in_port(p_pdm_mics, clk_pdm);
     start_clock(clk_pdm);
@@ -243,7 +243,7 @@ void xua_pdm_mic(streaming chanend c_ds_output[2], buffered in port:32 p_pdm_mic
 #else
     #define c_4x_pdm_mic_1 null
 #endif
-  
+
     par
     {
         mic_array_pdm_rx(p_pdm_mics, c_4x_pdm_mic_0, c_4x_pdm_mic_1);

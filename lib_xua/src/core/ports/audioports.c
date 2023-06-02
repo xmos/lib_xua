@@ -1,4 +1,4 @@
-// Copyright 2013-2021 XMOS LIMITED.
+// Copyright 2013-2023 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
 #include <xs1.h>
@@ -6,21 +6,20 @@
 #include <platform.h>
 #undef __ASSEMBLER__
 #include "audioports.h"
-#include <xccompat.h>
 #include "xua.h"
 
 /* Note since DSD ports could be reused for I2S ports we do all the setup manually in C */
-#if DSD_CHANS_DAC > 0
+#if (DSD_CHANS_DAC > 0)
 port p_dsd_dac[DSD_CHANS_DAC] = {
                 PORT_DSD_DAC0,
 #endif
-#if DSD_CHANS_DAC > 1
+#if (DSD_CHANS_DAC > 1)
                 PORT_DSD_DAC1,
 #endif
-#if DSD_CHANS_DAC > 2
+#if (DSD_CHANS_DAC > 2)
 #error > 2 DSD chans currently not supported
 #endif
-#if DSD_CHANS_DAC > 0
+#if (DSD_CHANS_DAC > 0)
                 };
 port p_dsd_clk = PORT_DSD_CLK;
 #endif
@@ -46,7 +45,7 @@ void ConfigAudioPortsWrapper(
                 port p_lrclk,
                 port p_bclk,
 #endif
-unsigned int divide, unsigned curSamFreq, unsigned int dsdMode)
+                port p_mclk_in, clock clk_audio_bclk, unsigned int divide, unsigned curSamFreq)
 {
         ConfigAudioPorts(
 #if (I2S_CHANS_DAC != 0) || (DSD_CHANS_DAC != 0)
@@ -61,6 +60,6 @@ unsigned int divide, unsigned curSamFreq, unsigned int dsdMode)
                 p_lrclk,
                 p_bclk,
 #endif
-                divide, curSamFreq);
+                p_mclk_in, clk_audio_bclk, divide, curSamFreq);
 }
 

@@ -1,33 +1,41 @@
-// Copyright 2011-2021 XMOS LIMITED.
+// Copyright 2011-2022 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
 #ifndef _XUA_ENDPOINT0_H_
 #define _XUA_ENDPOINT0_H_
 
-#include "xua.h"
 #include "dfu_interface.h"
 #include "vendorrequests.h"
 
 #if __XC__
 /** Function implementing Endpoint 0 for enumeration, control and configuration
- *  of USB audio devices. It uses the descriptors defined in ``descriptors_2.h``.
+ *  of USB audio devices. It uses the descriptors defined in ``xua_ep0_descriptors.h``.
  *
- *  \param c_ep0_out Chanend connected to the XUD_Manager() out endpoint array
- *  \param c_ep0_in Chanend connected to the XUD_Manager() in endpoint array
- *  \param c_audioCtrl Chanend connected to the decouple thread for control
- *                     audio (sample rate changes etc.)
- *  \param c_mix_ctl Optional chanend to be connected to the mixer thread if
- *                   present
- *  \param c_clk_ctl Optional chanend to be connected to the clockgen thread if
- *                   present.
- *  \param c_usb_test Optional chanend to be connected to XUD if test modes required.
- *
+ *  \param c_ep0_out    Chanend connected to the XUD_Manager() out endpoint array
+ *  \param c_ep0_in     Chanend connected to the XUD_Manager() in endpoint array
+ *  \param c_audioCtrl  Chanend connected to the decouple thread for control
+ *                      audio (sample rate changes etc.). Note when nulled, the
+ *                      audio device only supports single sample rate/format and
+ *                      DFU is not supported either since this channel is used
+ *                      to carry messages about format, rate and DFU state
+ *  \param c_mix_ctl    Optional chanend to be connected to the mixer core(s) if
+ *                      present
+ *  \param c_clk_ctl    Optional chanend to be connected to the clockgen core if
+ *                      present
+ *  \param dfuInterface Interface to DFU task (this task must be run on a tile
+ *                      connected to boot flash.
  *  \param c_EANativeTransport_ctrl Optional chanend to be connected to EA Native
  *                                  endpoint manager if present
  */
-void XUA_Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioCtrl,
-        chanend ?c_mix_ctl,chanend ?c_clk_ctl, chanend ?c_EANativeTransport_ctr, client interface i_dfu ?dfuInterface
-         VENDOR_REQUESTS_PARAMS_DEC_);
+void XUA_Endpoint0(chanend c_ep0_out,
+                    chanend c_ep0_in, chanend ?c_audioCtrl,
+                    chanend ?c_mix_ctl, chanend ?c_clk_ctl,
+                    chanend ?c_EANativeTransport_ctrl,
+                    client interface i_dfu ?dfuInterface
+#if !defined(__DOXYGEN__)
+                    VENDOR_REQUESTS_PARAMS_DEC_
+#endif
+);
 
 /** Function to set the Vendor ID value
  *

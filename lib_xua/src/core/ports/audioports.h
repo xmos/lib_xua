@@ -1,9 +1,12 @@
-// Copyright 2011-2021 XMOS LIMITED.
+// Copyright 2011-2023 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 #ifndef _AUDIOPORTS_H_
 #define _AUDIOPORTS_H_
 
 #include <xccompat.h>
+#ifdef __STDC__
+typedef unsigned clock;
+#endif
 #include "xua.h"
 
 #ifdef __XC__
@@ -28,7 +31,7 @@ void ConfigAudioPorts(
                 in port p_bclk,
 #endif
 #endif
-                unsigned int divide, unsigned int curSamFreq);
+                in port p_mclk_in, clock clk_audio_bclk, unsigned int divide, unsigned int curSamFreq);
 #else
 
 void ConfigAudioPorts(
@@ -51,7 +54,7 @@ void ConfigAudioPorts(
                 port p_bclk,
 #endif
 #endif
-                unsigned int divide, unsigned int curSamFreq);
+                port p_mclk_in, clock clk_audio_bclk, unsigned int divide, unsigned int curSamFreq);
 
 
 #endif /* __XC__*/
@@ -76,7 +79,7 @@ void ConfigAudioPortsWrapper(
                 buffered in port:32 p_bclk,
 #endif
 #endif
-                unsigned int divide, unsigned curSamFreq, unsigned int dsdMode);
+                in port p_mclk_in, clock clk_audio_bclk, unsigned int divide, unsigned curSamFreq);
 #else
 
 void ConfigAudioPortsWrapper(
@@ -92,7 +95,7 @@ void ConfigAudioPortsWrapper(
                 port p_lrclk,
                 port p_bclk,
 #endif
-                unsigned int divide, unsigned curSamFreq, unsigned int dsdMode);
+                port p_mclk_in, clock clk_audio_bclk, unsigned int divide, unsigned curSamFreq);
 
 
 #endif /* __XC__*/

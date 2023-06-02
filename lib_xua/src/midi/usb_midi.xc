@@ -1,10 +1,10 @@
-// Copyright 2011-2021 XMOS LIMITED.
+// Copyright 2011-2022 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 #include <xs1.h>
 #include <xclib.h>
 #include <print.h>
 #include <stdint.h>
-#include "usb_midi.h"
+#include "xua_midi.h"
 #include "midiinparse.h"
 #include "midioutparse.h"
 #include "queue.h"
@@ -24,12 +24,8 @@ static unsigned makeSymbol(unsigned data)
 
 #define RATE 31250
 
-#ifndef MIDI_SHIFT_TX
-#define MIDI_SHIFT_TX 0
-#endif
-
-static unsigned bit_time =  XS1_TIMER_MHZ * 1000000 / (unsigned) RATE;
-static unsigned bit_time_2 =  (XS1_TIMER_MHZ * 1000000 / (unsigned) RATE) / 2;
+static const unsigned bit_time =  XS1_TIMER_MHZ * 1000000 / (unsigned) RATE;
+static const unsigned bit_time_2 =  (XS1_TIMER_MHZ * 1000000 / (unsigned) RATE) / 2;
 
 // For debugging
 int mr_count = 0; // MIDI received (from HOST)
@@ -58,16 +54,18 @@ timer iAPTimer;
 
 void usb_midi(
 #if (MIDI_RX_PORT_WIDTH == 4)
-buffered in port:4 ?p_midi_in,
+    buffered in port:4 ?p_midi_in,
 #else
-buffered in port:1 ?p_midi_in,
+    buffered in port:1 ?p_midi_in,
 #endif
     port ?p_midi_out,
-            clock ?clk_midi,
-            chanend ?c_midi,
-            unsigned cable_number,
-            chanend ?c_iap, chanend ?c_i2c, // iOS stuff
-            port ?p_scl, port ?p_sda
+    clock ?clk_midi,
+    chanend ?c_midi,
+    unsigned cable_number
+#ifdef IAP
+    , chanend ?c_iap, chanend ?c_i2c,
+    port ?p_scl, port ?p_sda
+#endif
 )
 {
     unsigned symbol = 0x0; // Symbol in progress of being sent out
@@ -241,7 +239,6 @@ buffered in port:1 ?p_midi_in,
                 }
 
                 p_midi_out <: (1<<MIDI_SHIFT_TX) @ txPT;
-                //              printstr("mout1\n");
                 t :> txT;
                 txT += bit_time;
                 txPT += bit_time;
@@ -253,7 +250,6 @@ buffered in port:1 ?p_midi_in,
                 txT += bit_time; // Should this be after the output otherwise be double the length of the high before the start bit
                 txPT += bit_time;
                 p_midi_out @ txPT <: ((symbol & 1)<<MIDI_SHIFT_TX);
-                //            printstr("mout2\n");
                 symbol >>= 1;
                 if (symbol == 0)
                 {
@@ -274,10 +270,8 @@ buffered in port:1 ?p_midi_in,
             if (is_ack)
             {
                 // have we got more data to send
-                //printstr("ack\n");
                 if (!queue_is_empty(midi_to_host_fifo))
                 {
-                    //printstr("uart->decouple\n");
                     outuint(c_midi, queue_pop_word(midi_to_host_fifo, midi_to_host_fifo_arr));
                     th_count++;
                 }

@@ -1,4 +1,4 @@
-// Copyright 2011-2021 XMOS LIMITED.
+// Copyright 2011-2023 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 /**
  * @brief   Implements endpoint zero for an USB Audio 1.0/2.0 device
@@ -10,6 +10,8 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
+#include <xclib.h>
+#include <xassert.h>
 #include "xua.h"
 
 #if XUA_USB_EN
@@ -23,18 +25,24 @@
 #include "vendorrequests.h"
 #include "xc_ptr.h"
 #include "xua_ep0_uacreqs.h"
+
 #if( 0 < HID_CONTROLS )
 #include "hid.h"
+#include "xua_hid.h"
+#include "xua_hid_report.h"
 #endif
+
 #if DSD_CHANS_DAC > 0
 #include "dsd_support.h"
 #endif
+
 #define DEBUG_UNIT XUA_EP0
+
 #ifndef DEBUG_PRINT_ENABLE_XUA_EP0
     #define DEBUG_PRINT_ENABLE_XUA_EP0 0
 #endif // DEBUG_PRINT_ENABLE_XUA_EP0
-#include "debug_print.h"
 
+#include "debug_print.h"
 #include "xua_usb_params_funcs.h"
 
 #ifndef __XC__
@@ -51,7 +59,7 @@
 #if ((AUDIO_CLASS == 1) || (AUDIO_CLASS_FALLBACK)) && defined(DFU)
 #warning DFU will not be enabled in AUDIO 1.0 mode due to Windows requesting driver
 #endif
-#endif
+#endif // FORCE_UAC1_DFU
 
 /* MIDI not supported in Audio 1.0 mode */
 #if ((AUDIO_CLASS == 1) || (AUDIO_CLASS_FALLBACK)) && defined(MIDI)
@@ -85,9 +93,6 @@ extern void device_reboot(void);
 
 #endif
 
-#if( 0 < HID_CONTROLS )
-#include "xua_hid.h"
-#endif
 #ifndef MIN
 #define MIN(a,b) (((a)<(b))?(a):(b))
 #endif
@@ -101,13 +106,17 @@ unsigned int mutesOut[NUM_USB_CHAN_OUT + 1];
 int volsIn[NUM_USB_CHAN_IN + 1];
 unsigned int mutesIn[NUM_USB_CHAN_IN + 1];
 
-#ifdef MIXER
-unsigned char mixer1Crossbar[18];
-short mixer1Weights[18*8];
+#if (MIXER)
+short mixer1Weights[MIX_INPUTS * MAX_MIX_COUNT];
 
-unsigned char channelMap[NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + MAX_MIX_COUNT];
+//unsigned char channelMap[NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + MAX_MIX_COUNT];
+/* Mapping of channels to output audio interfaces */
 unsigned char channelMapAud[NUM_USB_CHAN_OUT];
+
+/* Mapping of channels to USB host */
 unsigned char channelMapUsb[NUM_USB_CHAN_IN];
+
+/* Mapping of channels to Mixer(s) */
 unsigned char mixSel[MAX_MIX_COUNT][MIX_INPUTS];
 #endif
 
@@ -125,7 +134,11 @@ unsigned g_curStreamAlt_Out = 0;
 unsigned g_curStreamAlt_In = 0;
 
 /* Global variable for current USB bus speed (i.e. FS/HS) */
-XUD_BusSpeed_t g_curUsbSpeed = 0;
+#if (AUDIO_CLASS == 2)
+XUD_BusSpeed_t g_curUsbSpeed = XUD_SPEED_HS;
+#else
+XUD_BusSpeed_t g_curUsbSpeed = XUD_SPEED_FS;
+#endif
 
 /* Global variables for current USB Vendor and Product strings */
 char g_vendor_str[XUA_MAX_STR_LEN] = VENDOR_STR;
@@ -253,9 +266,47 @@ void XUA_Endpoint0_setVendorId(unsigned short vid) {
 #endif // AUDIO_CLASS == 1}
 }
 
+#if (MIXER)
+void InitLocalMixerState()
+{
+    for (int i = 0; i < MIX_INPUTS * MAX_MIX_COUNT; i++)
+    {
+        mixer1Weights[i] = 0x8001; //-inf
+    }
+
+    /* Configure default connections */
+    for (int i = 0; i < MAX_MIX_COUNT; i++)
+    {
+        mixer1Weights[(i * MAX_MIX_COUNT) + i] = 0;
+    }
+
+#if NUM_USB_CHAN_OUT > 0
+    /* Setup up audio output channel mapping */
+    for(int i = 0; i < NUM_USB_CHAN_OUT; i++)
+    {
+       channelMapAud[i] = i;
+    }
+#endif
+
+#if NUM_USB_CHAN_IN > 0
+    for(int i = 0; i < NUM_USB_CHAN_IN; i++)
+    {
+       channelMapUsb[i] = i + NUM_USB_CHAN_OUT;
+    }
+#endif
+
+    /* Init mixer inputs */
+    for(int j = 0; j < MAX_MIX_COUNT; j++)
+        for(int i = 0; i < MIX_INPUTS; i++)
+        {
+            mixSel[j][i] = i;
+        }
+}
+#endif
+
 void concatenateAndCopyStrings(char* string1, char* string2, char* string_buffer) {
-    debug_printf("concatenateAndCopyStrings() for \"%s\" and \"%s\"\n", string1, string2);    
-        
+    debug_printf("concatenateAndCopyStrings() for \"%s\" and \"%s\"\n", string1, string2);
+
     memset(string_buffer, '\0', strlen(string_buffer));
 
     uint32_t remaining_buffer_size = MIN(strlen(string1), XUA_MAX_STR_LEN-1);
@@ -279,10 +330,10 @@ void XUA_Endpoint0_setStrTable() {
     concatenateAndCopyStrings(g_vendor_str, " Clock Selector", g_strTable.clockSelectorStr);
     concatenateAndCopyStrings(g_vendor_str, " Internal Clock", g_strTable.internalClockSourceStr);
 #endif
-#if SPDIF_RX
+#if (XUA_SPDIF_RX_EN)
     concatenateAndCopyStrings(g_vendor_str, " S/PDIF Clock", g_strTable.spdifClockSourceStr);
 #endif
-#if ADAT_RX
+#if (XUA_ADAT_RX_EN)
     concatenateAndCopyStrings(g_vendor_str, " ADAT Clock", g_strTable.adatClockSourceStr);
 #endif
 #if (XUA_DFU_EN == 1)
@@ -309,7 +360,7 @@ void XUA_Endpoint0_setStrTable() {
     concatenateAndCopyStrings(g_product_str, "", g_strTable.usbInputTermStr_Audio2);
     concatenateAndCopyStrings(g_product_str, "", g_strTable.usbOutputTermStr_Audio2);
 #endif
-    
+
     // update Serial strings
     concatenateAndCopyStrings(g_serial_str, "", g_strTable.serialStr);
 }
@@ -391,7 +442,7 @@ void XUA_Endpoint0_setBcdDevice(unsigned short bcd) {
 #endif // AUDIO_CLASS == 1}
 }
 
-void XUA_Endpoint0_init(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
+void XUA_Endpoint0_init(chanend c_ep0_out, chanend c_ep0_in, NULLABLE_RESOURCE(chanend, c_audioControl),
     chanend c_mix_ctl, chanend c_clk_ctl, chanend c_EANativeTransport_ctrl, CLIENT_INTERFACE(i_dfu, dfuInterface) VENDOR_REQUESTS_PARAMS_DEC_)
 {
     ep0_out = XUD_InitEp(c_ep0_out);
@@ -399,75 +450,11 @@ void XUA_Endpoint0_init(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioCont
 
     XUA_Endpoint0_setStrTable();
 
-#if 0
-    /* Dont need to init globals.. */
-    /* Init tables for volumes (+ 1 for master) */
-    for(int i = 0; i < NUM_USB_CHAN_OUT + 1; i++)
-    {
-        volsOut[i] = 0;
-        mutesOut[i] = 0;
-    }
-
-    for(int i = 0; i < NUM_USB_CHAN_IN + 1; i++)
-    {
-        volsIn[i] = 0;
-        mutesIn[i] = 0;
-    }
-#endif
     VendorRequests_Init(VENDOR_REQUESTS_PARAMS);
 
-#ifdef MIXER
+#if (MIXER)
     /* Set up mixer default state */
-    for (int i = 0; i < 18*8; i++)
-    {
-        mixer1Weights[i] = 0x8001; //-inf
-    }
-
-    /* Configure default connections */
-    mixer1Weights[0] = 0;
-    mixer1Weights[9] = 0;
-    mixer1Weights[18] = 0;
-    mixer1Weights[27] = 0;
-    mixer1Weights[36] = 0;
-    mixer1Weights[45] = 0;
-    mixer1Weights[54] = 0;
-    mixer1Weights[63] = 0;
-
-#if NUM_USB_CHAN_OUT > 0
-    /* Setup up audio output channel mapping */
-    for(int i = 0; i < NUM_USB_CHAN_OUT; i++)
-    {
-       channelMapAud[i] = i;
-    }
-#endif
-
-#if NUM_USB_CHAN_IN > 0
-    for(int i = 0; i < NUM_USB_CHAN_IN; i++)
-    {
-       channelMapUsb[i] = i + NUM_USB_CHAN_OUT;
-    }
-#endif
-
-    /* Set up channel mapping default */
-    for (int i = 0; i < NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN; i++)
-    {
-        channelMap[i] = i;
-    }
-
-#if MAX_MIX_COUNT > 0
-    /* Mixer outputs mapping defaults */
-    for (int i = 0; i < MAX_MIX_COUNT; i++)
-    {
-        channelMap[NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + i] = i;
-    }
-#endif
-
-    /* Init mixer inputs */
-    for(int j = 0; j < MAX_MIX_COUNT; j++)
-        for(int i = 0; i < MIX_INPUTS; i++)
-        {
-            mixSel[j][i] = i;
-        }
+    InitLocalMixerState();
 #endif
 
 #ifdef VENDOR_AUDIO_REQS
@@ -478,6 +465,8 @@ void XUA_Endpoint0_init(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioCont
     /* Check if device has started in DFU mode */
     if (DFUReportResetState(null))
     {
+        assert(((unsigned)c_audioControl != 0) && msg("DFU not supported when c_audioControl is null"));
+
         /* Stop audio */
         outuint(c_audioControl, SET_SAMPLE_FREQ);
         outuint(c_audioControl, AUDIO_STOP_FOR_DFU);
@@ -486,41 +475,64 @@ void XUA_Endpoint0_init(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioCont
     }
 #endif
 
-#ifdef XUA_USB_DESCRIPTOR_OVERWRITE_RATE_RES	//change USB descriptor frequencies and bit resolution values here
+#ifdef XUA_USB_DESCRIPTOR_OVERWRITE_RATE_RES //change USB descriptor frequencies and bit resolution values here
 
-    cfgDesc_Audio1[USB_AS_IN_INTERFACE_DESCRIPTOR_OFFSET_SUB_FRAME] = get_device_to_usb_bit_res() >> 3; 	//sub frame rate = bit rate /8
-    cfgDesc_Audio1[USB_AS_IN_INTERFACE_DESCRIPTOR_OFFSET_SUB_FRAME + 1] = (get_device_to_usb_bit_res() & 0xff);		//bit resolution
+    const int num_of_usb_descriptor_freq = 3; //This should be =3 according to the comments "using a value of <=2 or > 7 for num_freqs_a1 causes enumeration issues on Windows" in xua_ep0_descriptors.h
 
-    cfgDesc_Audio1[USB_AS_OUT_INTERFACE_DESCRIPTOR_OFFSET_SUB_FRAME] = get_usb_to_device_bit_res() >> 3; 	//sub frame rate = bit rate /8
-    cfgDesc_Audio1[USB_AS_OUT_INTERFACE_DESCRIPTOR_OFFSET_SUB_FRAME + 1] = (get_usb_to_device_bit_res() & 0xff);		//bit resolution
+#if( 0 < NUM_USB_CHAN_IN )
 
-    const unsigned num_of_usb_descriptor_freq=3;	//This should be =3 according to the comments "using a value of <=2 or > 7 for num_freqs_a1 causes enumeration issues on Windows" in xua_ep0_descriptors.h
-    int i=0;
-    for(i=0;i<num_of_usb_descriptor_freq;i++)
+    cfgDesc_Audio1[USB_AS_IN_INTERFACE_DESCRIPTOR_OFFSET_SUB_FRAME] = get_device_to_usb_bit_res() >> 3; //sub frame rate = bit rate /8
+    cfgDesc_Audio1[USB_AS_IN_INTERFACE_DESCRIPTOR_OFFSET_SUB_FRAME + 1] = (get_device_to_usb_bit_res() & 0xff); //bit resolution
+
+    for(int i=0;i<num_of_usb_descriptor_freq;i++)
     {
         cfgDesc_Audio1[USB_AS_IN_INTERFACE_DESCRIPTOR_OFFSET_FREQ + 3*i] = get_device_to_usb_rate() & 0xff;
         cfgDesc_Audio1[USB_AS_IN_INTERFACE_DESCRIPTOR_OFFSET_FREQ + 3*i + 1] = (get_device_to_usb_rate() & 0xff00)>> 8;
         cfgDesc_Audio1[USB_AS_IN_INTERFACE_DESCRIPTOR_OFFSET_FREQ + 3*i + 2] = (get_device_to_usb_rate() & 0xff0000)>> 16;
     }
+    cfgDesc_Audio1[USB_AS_IN_EP_DESCRIPTOR_OFFSET_MAXPACKETSIZE] = ((get_device_to_usb_bit_res() >> 3) * MAX_PACKET_SIZE_MULT_IN_FS) & 0xff; //max packet size
+    cfgDesc_Audio1[USB_AS_IN_EP_DESCRIPTOR_OFFSET_MAXPACKETSIZE + 1] = (((get_device_to_usb_bit_res() >> 3)  * MAX_PACKET_SIZE_MULT_IN_FS) & 0xff00) >> 8; //max packet size
 
-    for(i=0;i<num_of_usb_descriptor_freq;i++)
+#endif // NUM_USB_CHAN_IN
+
+#if( 0 < NUM_USB_CHAN_OUT )
+
+    cfgDesc_Audio1[USB_AS_OUT_INTERFACE_DESCRIPTOR_OFFSET_SUB_FRAME] = get_usb_to_device_bit_res() >> 3; //sub frame rate = bit rate /8
+    cfgDesc_Audio1[USB_AS_OUT_INTERFACE_DESCRIPTOR_OFFSET_SUB_FRAME + 1] = (get_usb_to_device_bit_res() & 0xff); //bit resolution
+
+    for(int i=0;i<num_of_usb_descriptor_freq;i++)
     {
         cfgDesc_Audio1[USB_AS_OUT_INTERFACE_DESCRIPTOR_OFFSET_FREQ + 3*i] = get_usb_to_device_rate() & 0xff;
         cfgDesc_Audio1[USB_AS_OUT_INTERFACE_DESCRIPTOR_OFFSET_FREQ + 3*i + 1] = (get_usb_to_device_rate() & 0xff00)>> 8;
         cfgDesc_Audio1[USB_AS_OUT_INTERFACE_DESCRIPTOR_OFFSET_FREQ + 3*i + 2] = (get_usb_to_device_rate() & 0xff0000)>> 16;
     }
 
-    cfgDesc_Audio1[USB_AS_IN_EP_DESCRIPTOR_OFFSET_MAXPACKETSIZE] = ((get_device_to_usb_bit_res() >> 3) * MAX_PACKET_SIZE_MULT_IN_FS) & 0xff; 	//max packet size
-    cfgDesc_Audio1[USB_AS_IN_EP_DESCRIPTOR_OFFSET_MAXPACKETSIZE + 1] = (((get_device_to_usb_bit_res() >> 3)  * MAX_PACKET_SIZE_MULT_IN_FS) & 0xff00) >> 8;		//max packet size
+    cfgDesc_Audio1[USB_AS_OUT_EP_DESCRIPTOR_OFFSET_MAXPACKETSIZE] = ((get_usb_to_device_bit_res() >> 3) * MAX_PACKET_SIZE_MULT_OUT_FS) & 0xff; //max packet size
+    cfgDesc_Audio1[USB_AS_OUT_EP_DESCRIPTOR_OFFSET_MAXPACKETSIZE + 1] = (((get_usb_to_device_bit_res() >> 3)  * MAX_PACKET_SIZE_MULT_OUT_FS) & 0xff00) >> 8; //max packet size
+#endif // NUM_USB_CHAN_OUT
 
-    cfgDesc_Audio1[USB_AS_OUT_EP_DESCRIPTOR_OFFSET_MAXPACKETSIZE] = ((get_usb_to_device_bit_res() >> 3) * MAX_PACKET_SIZE_MULT_OUT_FS) & 0xff; 	//max packet size
-    cfgDesc_Audio1[USB_AS_OUT_EP_DESCRIPTOR_OFFSET_MAXPACKETSIZE + 1] = (((get_usb_to_device_bit_res() >> 3)  * MAX_PACKET_SIZE_MULT_OUT_FS) & 0xff00) >> 8;		//max packet size
+#endif // XUA_USB_DESCRIPTOR_OVERWRITE_RATE_RES
 
+#if( 0 < HID_CONTROLS )
+    hidReportInit();
+    hidPrepareReportDescriptor();
+
+    size_t hidReportDescriptorLength = hidGetReportDescriptorLength();
+    unsigned char hidReportDescriptorLengthLo =  hidReportDescriptorLength & 0xFF;
+    unsigned char hidReportDescriptorLengthHi = (hidReportDescriptorLength & 0xFF00) >> 8;
+
+#if( AUDIO_CLASS == 1 )
+    cfgDesc_Audio1[USB_HID_DESCRIPTOR_OFFSET + HID_DESCRIPTOR_LENGTH_FIELD_OFFSET    ] = hidReportDescriptorLengthLo;
+    cfgDesc_Audio1[USB_HID_DESCRIPTOR_OFFSET + HID_DESCRIPTOR_LENGTH_FIELD_OFFSET + 1] = hidReportDescriptorLengthHi;
 #endif
+
+    hidDescriptor[HID_DESCRIPTOR_LENGTH_FIELD_OFFSET    ] = hidReportDescriptorLengthLo;
+    hidDescriptor[HID_DESCRIPTOR_LENGTH_FIELD_OFFSET + 1] = hidReportDescriptorLengthHi;
+#endif // 0 < HID_CONTROLS
 
 }
 
-void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
+void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0_out, chanend c_ep0_in, NULLABLE_RESOURCE(chanend, c_audioControl),
     chanend c_mix_ctl, chanend c_clk_ctl, chanend c_EANativeTransport_ctrl, CLIENT_INTERFACE(i_dfu, dfuInterface) VENDOR_REQUESTS_PARAMS_DEC_)
 {
  if (result == XUD_RES_OKAY)
@@ -547,6 +559,7 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
                                 /* Only send change if we need to */
                                 if((sp.wValue > 0) && (g_curStreamAlt_Out != sp.wValue))
                                 {
+                                    assert((c_audioControl != null) && msg("Format change not supported when c_audioControl is null"));
                                     g_curStreamAlt_Out = sp.wValue;
 
                                     /* Send format of data onto buffering */
@@ -582,6 +595,7 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
                                 /* Only send change if we need to */
                                 if((sp.wValue > 0) && (g_curStreamAlt_In != sp.wValue))
                                 {
+                                    assert((c_audioControl != null) && msg("Format change not supported when c_audioControl is null"));
                                     g_curStreamAlt_In = sp.wValue;
 
                                     /* Send format of data onto buffering */
@@ -729,15 +743,22 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
                             switch (descriptorType)
                             {
                                 case HID_HID:
-                                    /* Return HID Descriptor */
-                                     result = XUD_DoGetRequest(ep0_out, ep0_in, hidDescriptor,
-                                        sizeof(hidDescriptor), sp.wLength);
+                                    {
+                                        /* Return HID Descriptor */
+                                         result = XUD_DoGetRequest(ep0_out, ep0_in, hidDescriptor,
+                                            sizeof(hidDescriptor), sp.wLength);
+                                    }
                                     break;
                                 case HID_REPORT:
-                                    /* Return HID report descriptor */
-                                    result = XUD_DoGetRequest(ep0_out, ep0_in, hidReportDescriptor,
-                                        sizeof(hidReportDescriptor), sp.wLength);
-                                break;
+                                    {
+                                        /* Return HID report descriptor */
+                                        unsigned char* hidReportDescriptorPtr;
+                                        hidReportDescriptorPtr = hidGetReportDescriptor();
+                                        size_t hidReportDescriptorLength = hidGetReportDescriptorLength();
+                                        result = XUD_DoGetRequest(ep0_out, ep0_in, hidReportDescriptorPtr,
+                                            hidReportDescriptorLength, sp.wLength);
+                                    }
+                                    break;
                             }
                         }
                         break;
@@ -819,6 +840,7 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
                         if ((DFU_IF == INTERFACE_NUMBER_DFU) && (sp.bRequest != XMOS_DFU_SAVESTATE) &&
                             (sp.bRequest != XMOS_DFU_RESTORESTATE))
                         {
+                            assert((c_audioControl != null) && msg("DFU not supported when c_audioControl is null"));
                             // Stop audio
                             outuint(c_audioControl, SET_SAMPLE_FREQ);
                             outuint(c_audioControl, AUDIO_STOP_FOR_DFU);
@@ -1061,7 +1083,7 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
 }
 
 /* Endpoint 0 function.  Handles all requests to the device */
-void XUA_Endpoint0(chanend c_ep0_out, chanend c_ep0_in, chanend c_audioControl,
+void XUA_Endpoint0(chanend c_ep0_out, chanend c_ep0_in, NULLABLE_RESOURCE(chanend, c_audioControl),
     chanend c_mix_ctl, chanend c_clk_ctl, chanend c_EANativeTransport_ctrl, CLIENT_INTERFACE(i_dfu, dfuInterface) VENDOR_REQUESTS_PARAMS_DEC_)
 {
     USB_SetupPacket_t sp;
