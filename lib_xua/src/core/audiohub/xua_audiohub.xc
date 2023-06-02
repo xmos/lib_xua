@@ -135,6 +135,7 @@ static inline int HandleSampleClock(int frameCount, buffered _XUA_CLK_DIR port:3
         }
         #endif
         else
+        {
         #ifdef N_BITS_I2S
             if ((lrval | (~lrval_mask)) != 0x7FFFFFFF)
             {

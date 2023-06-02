@@ -61,7 +61,7 @@ void InitPorts_master(unsigned divide, buffered _XUA_CLK_DIR port:32 p_lrclk, bu
         unsigned lrClkVal = 0x7FFFFFFF;
         if(XUA_PCM_FORMAT == XUA_PCM_FORMAT_TDM)
         {
-            lrclkVal = 0x80000000;
+            lrClkVal = 0x80000000;
         }
 
         #ifdef N_BITS_I2S
