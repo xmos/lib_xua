@@ -39,11 +39,12 @@ void InitPorts_master(buffered _XUA_CLK_DIR port:32 p_lrclk, buffered _XUA_CLK_D
 #endif
 
         unsigned tmp;
-        #ifdef N_BITS_I2S
-        tmp = partout_timestamped(p_lrclk, N_BITS_I2S, 0);
-        #else
-        p_lrclk <: 0 @ tmp;
-        #endif
+       
+        if(XUA_I2S_N_BITS == 32)
+            p_lrclk <: 0 @ tmp;
+        else
+            tmp = partout_timestamped(p_lrclk, XUA_I2S_N_BITS, 0);
+        
         tmp += 100;
 
         /* Since BCLK is free-running, setup outputs/inputs at a known point in the future */
@@ -51,11 +52,10 @@ void InitPorts_master(buffered _XUA_CLK_DIR port:32 p_lrclk, buffered _XUA_CLK_D
 #pragma loop unroll
         for(int i = 0; i < I2S_WIRES_DAC; i++)
         {
-            #ifdef N_BITS_I2S
-            partout_timed(p_i2s_dac[i], N_BITS_I2S, 0, tmp);
-            #else
-            p_i2s_dac[i] @ tmp <: 0;
-            #endif
+            if(XUA_I2S_N_BITS == 32)
+                p_i2s_dac[i] @ tmp <: 0;
+            else
+                partout_timed(p_i2s_dac[i], XUA_I2S_N_BITS, 0, tmp);
         }
 #endif
         unsigned lrClkVal = 0x7FFFFFFF;
@@ -64,19 +64,18 @@ void InitPorts_master(buffered _XUA_CLK_DIR port:32 p_lrclk, buffered _XUA_CLK_D
             lrClkVal = 0x80000000;
         }
 
-        #ifdef N_BITS_I2S
-        partout_timed(p_lrclk, N_BITS_I2S, lrClkVal, tmp);
-        #else
-        p_lrclk @ tmp <: lrClkVal;
-        #endif
+        if(XUA_I2S_N_BITS == 32)
+            p_lrclk @ tmp <: lrClkVal;
+        else
+            partout_timed(p_lrclk, XUA_I2S_N_BITS, lrClkVal, tmp);
 
 #if (I2S_CHANS_ADC != 0)
         for(int i = 0; i < I2S_WIRES_ADC; i++)
         {
             asm("setpt res[%0], %1"::"r"(p_i2s_adc[i]),"r"(tmp-1));
-            #ifdef N_BITS_I2S
-            set_port_shift_count(p_i2s_adc[i], N_BITS_I2S);
-            #endif
+            
+            if(XUA_I2S_N_BITS != 32)
+                set_port_shift_count(p_i2s_adc[i], XUA_I2S_N_BITS);
         }
 #endif
 #endif /* (I2S_CHANS_ADC != 0 || I2S_CHANS_DAC != 0) */
@@ -109,11 +108,7 @@ void InitPorts_slave(buffered _XUA_CLK_DIR port:32 p_lrclk, buffered _XUA_CLK_DI
     p_lrclk when pinseq(0) :> void @ tmp;
 #endif
 
-    #ifdef N_BITS_I2S
-    tmp += (I2S_CHANS_PER_FRAME * N_BITS_I2S) - N_BITS_I2S + 1 ;
-    #else
-    tmp += (I2S_CHANS_PER_FRAME * 32) - 32 + 1 ;
-    #endif
+    tmp += (I2S_CHANS_PER_FRAME * XUA_I2S_N_BITS) - XUA_I2S_N_BITS + 1 ;
     /* E.g. 2 * 32 - 32 + 1 = 33 for stereo */
     /* E.g. 8 * 32 - 32 + 1 = 225 for 8 chan TDM */
 
@@ -121,11 +116,10 @@ void InitPorts_slave(buffered _XUA_CLK_DIR port:32 p_lrclk, buffered _XUA_CLK_DI
 #pragma loop unroll
     for(int i = 0; i < I2S_WIRES_DAC; i++)
     {
-        #ifdef N_BITS_I2S
-        partout_timed(p_i2s_dac[i], N_BITS_I2S, 0, tmp-1);
-        #else
-        p_i2s_dac[i] @ tmp <: 0;
-        #endif
+        if(XUA_I2S_N_BITS == 32)
+            p_i2s_dac[i] @ tmp <: 0;
+        else
+            partout_timed(p_i2s_dac[i], XUA_I2S_N_BITS, 0, tmp-1);
     }
 #endif
 
@@ -133,17 +127,15 @@ void InitPorts_slave(buffered _XUA_CLK_DIR port:32 p_lrclk, buffered _XUA_CLK_DI
 #pragma loop unroll
     for(int i = 0; i < I2S_WIRES_ADC; i++)
     {
-       asm("setpt res[%0], %1"::"r"(p_i2s_adc[i]),"r"(tmp-1));
-       #ifdef N_BITS_I2S
-       set_port_shift_count(p_i2s_adc[i], N_BITS_I2S);
-       #endif
+        asm("setpt res[%0], %1"::"r"(p_i2s_adc[i]),"r"(tmp-1));
+        if(XUA_I2S_N_BITS != 32) 
+            set_port_shift_count(p_i2s_adc[i], XUA_I2S_N_BITS);
     }
 #endif
 
     asm("setpt res[%0], %1"::"r"(p_lrclk),"r"(tmp-1));
-    #ifdef N_BITS_I2S
-    set_port_shift_count(p_lrclk, N_BITS_I2S);
-    #endif
+    if(XUA_I2S_N_BITS != 32) 
+        set_port_shift_count(p_lrclk, XUA_I2S_N_BITS);
 #endif /* (I2S_CHANS_ADC != 0 || I2S_CHANS_DAC != 0) */
 }
 #endif
