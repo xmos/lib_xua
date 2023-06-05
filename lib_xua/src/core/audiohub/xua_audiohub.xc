@@ -85,11 +85,10 @@ static inline int HandleSampleClock(int frameCount, buffered _XUA_CLK_DIR port:3
 #if CODEC_MASTER
     unsigned syncError = 0;
     unsigned lrval = 0;
-    const unsigned lrval_mask = 0;
+    const unsigned lrval_mask = (0xffffffff << (32 - XUA_I2S_N_BITS));
     
     if(XUA_I2S_N_BITS != 32)
     {
-        lrval_mask = (0xffffffff << (32 - XUA_I2S_N_BITS));
         asm volatile("in %0, res[%1]":"=r"(lrval):"r"(p_lrclk):"memory");
         set_port_shift_count(p_lrclk, XUA_I2S_N_BITS);
     }
@@ -124,9 +123,9 @@ static inline int HandleSampleClock(int frameCount, buffered _XUA_CLK_DIR port:3
         else
         {
             if(frameCount == 0)
-                syncError = ((lrval & lrval_mask) != 0x80000000)
+                syncError = ((lrval & lrval_mask) != 0x80000000);
             else
-                syncError = ((lrval | (~lrval_mask)) != 0x7FFFFFFF)
+                syncError = ((lrval | (~lrval_mask)) != 0x7FFFFFFF);
         }
     }
 
