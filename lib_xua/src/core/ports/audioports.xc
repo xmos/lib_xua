@@ -100,7 +100,7 @@ void ConfigAudioPorts(
  	/* Do some clocking shifting to get data in the valid window */
     /* E.g. Only shift when running at 88.2+ kHz TDM slave */
     int bClkDelay_fall = 0;
-    if(curSamFreq * I2S_CHANS_PER_FRAME * 32 >= 20000000)
+    if(curSamFreq * I2S_CHANS_PER_FRAME * XUA_I2S_N_BITS >= 20000000)
     {
         /* 18 * 2ns = 36ns. This results in a -4ns (36 - 40) shift at 96KHz and -8ns (36 - 44) at 88.4KHz */
         bClkDelay_fall = 18;
