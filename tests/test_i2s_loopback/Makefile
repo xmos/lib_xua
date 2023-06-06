@@ -37,7 +37,8 @@ XCC_FLAGS_simulation_${pcm_format}_${i2s_role}_$(channel_count)in_$(channel_coun
    -DNUM_USB_CHAN_OUT=${channel_count} \
    -DI2S_CHANS_DAC=${channel_count} \
    -DI2S_CHANS_ADC=${channel_count} \
-   -DDEFAULT_FREQ=${sample_rate}
+   -DDEFAULT_FREQ=${sample_rate} \
+   -DXUA_I2S_N_BITS=${word_length}
 
 XMOS_MAKE_PATH ?= ../..
 -include $(XMOS_MAKE_PATH)/xcommon/module_xcommon/build/Makefile.common
