@@ -1,4 +1,4 @@
-// Copyright 2016-2022 XMOS LIMITED.
+// Copyright 2016-2023 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 #ifdef SIMULATION
 
@@ -61,5 +61,4 @@ void slave_mode_clk_setup(const unsigned samFreq, const unsigned chans_per_frame
   master_mode_clk_setup();
 }
 #endif
-
 #endif
