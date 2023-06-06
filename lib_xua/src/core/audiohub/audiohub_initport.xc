@@ -1,7 +1,6 @@
-// Copyright 2018-2022 XMOS LIMITED.
+// Copyright 2018-2023 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 #include "xua.h"
-
 #include "dsd_support.h"
 
 #if (DSD_CHANS_DAC != 0)
