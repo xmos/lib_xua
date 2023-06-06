@@ -1,4 +1,4 @@
-// Copyright 2016-2022 XMOS LIMITED.
+// Copyright 2016-2023 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 #include <platform.h>
 #include <stdlib.h>
@@ -92,9 +92,10 @@ clock clk_audio_mclk                = on tile[AUDIO_IO_TILE]: XS1_CLKBLK_2;   /*
 #define TOTAL_TEST_FRAMES (5 * DEFAULT_FREQ)
 #endif
 
-#define SAMPLE(frame_count, channel_num) (((frame_count) << 8) | ((channel_num) & 0xFF))
-#define SAMPLE_FRAME_NUM(test_word) ((test_word) >> 8)
-#define SAMPLE_CHANNEL_NUM(test_word) ((test_word) & 0xFF)
+#define SHIFT (16) /* Note, we shift samples up such that we can test down to 16bit I2S */
+#define SAMPLE(frame_count, channel_num) ((((frame_count) << 8) | ((channel_num) & 0xFF))<<SHIFT)
+#define SAMPLE_FRAME_NUM(test_word) ((test_word>>SHIFT) >> 8)
+#define SAMPLE_CHANNEL_NUM(test_word) ((test_word>>SHIFT) & 0xFF)
 
 void generator(chanend c_checker, chanend c_out)
 {
@@ -104,7 +105,6 @@ void generator(chanend c_checker, chanend c_out)
   int i;
 
   frame_count = 0;
-
 
   while (1) {
     underflow_word = inuint(c_out);
