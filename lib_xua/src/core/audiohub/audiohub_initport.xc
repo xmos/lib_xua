@@ -107,7 +107,7 @@ void InitPorts_slave(buffered _XUA_CLK_DIR port:32 p_lrclk, buffered _XUA_CLK_DI
     p_lrclk when pinseq(0) :> void @ tmp;
 #endif
 
-    tmp += (I2S_CHANS_PER_FRAME * XUA_I2S_N_BITS) - XUA_I2S_N_BITS + 1 ;
+    tmp += ((I2S_CHANS_PER_FRAME * XUA_I2S_N_BITS) - XUA_I2S_N_BITS + 1) ;
     /* E.g. 2 * 32 - 32 + 1 = 33 for stereo */
     /* E.g. 8 * 32 - 32 + 1 = 225 for 8 chan TDM */
 
@@ -118,7 +118,7 @@ void InitPorts_slave(buffered _XUA_CLK_DIR port:32 p_lrclk, buffered _XUA_CLK_DI
         if(XUA_I2S_N_BITS == 32)
             p_i2s_dac[i] @ tmp <: 0;
         else
-            partout_timed(p_i2s_dac[i], XUA_I2S_N_BITS, 0, tmp-1);
+            partout_timed(p_i2s_dac[i], XUA_I2S_N_BITS, 0, tmp);
     }
 #endif
 

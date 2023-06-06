@@ -9,7 +9,6 @@
 #define DEBUG_UNIT MAIN
 #include "debug_print.h"
 
-
 /* Port declarations. Note, the defines come from the xn file */
 #if I2S_WIRES_DAC > 0
 on tile[AUDIO_IO_TILE] : buffered out port:32 p_i2s_dac[I2S_WIRES_DAC] =
