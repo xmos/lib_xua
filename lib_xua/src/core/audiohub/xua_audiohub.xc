@@ -448,7 +448,7 @@ unsigned static AudioHub_MainLoop(chanend ?c_out, chanend ?c_spd_out
                     if(XUA_I2S_N_BITS != 32)
                     {
                         set_port_shift_count(p_i2s_adc[index], XUA_I2S_N_BITS);
-                        sample = bitrev(sample) << (32 - XUA_I2S_N_BITS);
+                        sample <<= (32 - XUA_I2S_N_BITS);
                     }
                     index++;
 
