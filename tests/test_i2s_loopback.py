@@ -11,16 +11,21 @@ import sys
 def test_file(request):
     return str(request.node.fspath)
 
-
 def do_test(
-    pcm_format, i2s_role, channel_count, sample_rate, test_file, options, capfd
+    pcm_format, i2s_role, channel_count, sample_rate, word_length, test_file, options, capfd
 ):
 
     build_options = []
     output = []
     testname, _ = os.path.splitext(os.path.basename(test_file))
 
-    desc = f"simulation_{pcm_format}_{i2s_role}_{channel_count}in_{channel_count}out_{sample_rate}"
+    build_options += [f"pcm_format={pcm_format}"]
+    build_options += [f"i2s_role={i2s_role}"]
+    build_options += [f"channel_count={channel_count}"]
+    build_options += [f"sample_rate={sample_rate}"]
+    build_options += [f"word_length={word_length}"]
+
+    desc = f"simulation_{pcm_format}_{i2s_role}_{channel_count}in_{channel_count}out_{sample_rate}_{word_length}bit"
     binary = f"{testname}/bin/{desc}/{testname}_{desc}.xe"
 
     tester = testers.ComparisonTester(open("pass.expect"))
@@ -52,6 +57,7 @@ def do_test(
 
     result = Pyxsim.run_on_simulator(
         binary,
+        build_options=build_options,
         tester=tester,
         simargs=simargs,
         capfd=capfd,
@@ -65,25 +71,26 @@ def do_test(
 @pytest.mark.parametrize("i2s_role", ["master", "slave"])
 @pytest.mark.parametrize("pcm_format", ["i2s", "tdm"])
 @pytest.mark.parametrize("channel_count", [2, 8, 16])
-@pytest.mark.parametrize("sample_rate", ["48khz", "96khz", "192khz"])
+@pytest.mark.parametrize("word_length", [32]) # I2S world length in bits
+@pytest.mark.parametrize("sample_rate", [48000, 96000, 192000])
 def test_i2s_loopback(
-    i2s_role, pcm_format, channel_count, sample_rate, test_file, options, capfd
+    i2s_role, pcm_format, channel_count, sample_rate, word_length, test_file, options, capfd
 ):
 
     if pcm_format == "i2s" and channel_count == 16:
         pytest.skip("Invalid parameter combination")
 
-    if pcm_format == "i2s" and sample_rate not in ["48khz", "192khz"]:
+    if pcm_format == "i2s" and sample_rate not in [48000, 192000]:
         pytest.skip("Invalid parameter combination")
 
     if pcm_format == "tdm" and channel_count == 2:
         pytest.skip("Invalid parameter combination")
 
-    if pcm_format == "tdm" and sample_rate == "192khz":
+    if pcm_format == "tdm" and sample_rate == 192000:
         pytest.skip("Invalid parameter combination")
 
     result = do_test(
-        pcm_format, i2s_role, channel_count, sample_rate, test_file, options, capfd
+        pcm_format, i2s_role, channel_count, sample_rate, word_length, test_file, options, capfd
     )
 
     assert result
