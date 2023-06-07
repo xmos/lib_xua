@@ -29,7 +29,7 @@ The defines in :ref:`opt_i2s_defines` effect the I2S implementation.
      - Sets if xCORE is I2S master or slave
      - ``0`` (xCORE is master)
    * - ``XUA_I2S_N_BITS``
-     - I2S/TDM word length (16, 24 or 32bit supported)
+     - I2S/TDM word length (16, 32-bit supported)
      - ``32``
 
 The I2S code expects that the ports required for I2S (master clock, LR-clock, bit-clock and data lines) are be defined in the application XN file in the relevant `Tile``.  

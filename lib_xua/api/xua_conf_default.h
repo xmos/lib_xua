@@ -198,7 +198,7 @@
 #endif
 
 /**
- * @brief Number of bits per channel for I2S/TDM. Supported values: 16/24/32-bit.
+ * @brief Number of bits per channel for I2S/TDM. Supported values: 16/32-bit.
  *
  * Default: 32 bits
  */
@@ -206,8 +206,8 @@
 #define XUA_I2S_N_BITS (32)
 #endif
 
-#if (XUA_I2S_N_BITS != 16) && (XUA_I2S_N_BITS != 24) && (XUA_I2S_N_BITS != 32)
-#error Unsupported value for XUA_I2S_N_BITS (only values 16/24/32 supported)
+#if (XUA_I2S_N_BITS != 16) && (XUA_I2S_N_BITS != 32)
+#error Unsupported value for XUA_I2S_N_BITS (only values 16/32 supported)
 #endif
 
 /**
