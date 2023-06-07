@@ -202,6 +202,9 @@
 #define XUA_I2S_N_BITS (32)
 #endif
 
+#if (XUA_I2S_N_BITS != 16) && (XUA_I2S_N_BITS != 24) && (XUA_I2S_N_BITS != 32)
+#error Unsupported value for XUA_I2S_N_BITS (only values 16/24/32 supported)
+#endif
 
 /**
  * @brief Max supported sample frequency for device (Hz). Default: 192000
