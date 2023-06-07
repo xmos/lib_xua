@@ -50,6 +50,15 @@ Audio Class
 Feature Configuration
 ---------------------
 
+I2S/TDM
+^^^^^^^
+
+.. doxygendefine:: I2S_CHANS_DAC
+.. doxygendefine:: I2S_CHANS_ADC
+.. doxygendefine:: CODEC_MASTER
+.. doxygendefine:: XUA_I2S_N_BITS
+.. doxygendefine:: XUA_PCM_FORMAT
+
 MIDI
 ^^^^
 

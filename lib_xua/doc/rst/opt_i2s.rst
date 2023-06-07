@@ -23,11 +23,14 @@ The defines in :ref:`opt_i2s_defines` effect the I2S implementation.
      - The desired number of input channels via I2S (0 for disabled)
      - N/A (Must be defined)
    * - ``XUA_PCM_FORMAT``
-     - Enabled either TDM or I2S mode
+     - Enables either TDM or I2S mode
      - ``XUA_PCM_FORMAT_I2S``
    * - ``CODEC_MASTER``
-     - Sets is xCORE is I2S master or slave
+     - Sets if xCORE is I2S master or slave
      - ``0`` (xCORE is master)
+   * - ``XUA_I2S_N_BITS``
+     - I2S/TDM word length (16, 24 or 32bit supported)
+     - ``32``
 
 The I2S code expects that the ports required for I2S (master clock, LR-clock, bit-clock and data lines) are be defined in the application XN file in the relevant `Tile``.  
 For example::
@@ -42,8 +45,16 @@ For example::
         <Port Location="XS1_PORT_1G"  Name="PORT_I2S_ADC1"/>
     </Tile>
 
-All of the I2S related ports must be 1-bit ports.
+All of the I2S/TDM related ports must be 1-bit ports.
 
 .. note:: 
 
-    TDM mode allows 8 channels (rather than 2) to be supplied on each dataline.
+    TDM mode allows 8 channels (rather than 2) to be supplied on each data-line.
+
+.. note:: 
+
+    Data output/input is in "I2S" format, rather than, say "left-justified" or "right-justified" formats. 
+    I2S format specifies a single bit-clock delay after the LR-clock transition before sample-data is driven/received.
+    This also applies to TDM mode. TDM support in ADC/DAC hardware is quite varied, an "offset" value may need to be programmed into 
+    the external device for compatible operation.
+
