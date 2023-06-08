@@ -93,7 +93,11 @@
 
 #define XUA_PCM_FORMAT_I2S      (0)
 #define XUA_PCM_FORMAT_TDM      (1)
-
+/**
+ * @brief Format of PCM audio interface. Should be set to XUA_PCM_FORMAT_I2S or XUA_PCM_FORMAT_TDM
+ *
+ * Default: XUA_PCM_FORMAT_I2S
+ */
 #ifdef XUA_PCM_FORMAT
     #if (XUA_PCM_FORMAT != XUA_PCM_FORMAT_I2S) && (XUA_PCM_FORMAT != XUA_PCM_FORMAT_TDM)
         #error Bad value for XUA_PCM_FORMAT
@@ -191,6 +195,19 @@
     #endif
 #else
     #define I2S_DOWNSAMPLE_CHANS_IN I2S_CHANS_ADC
+#endif
+
+/**
+ * @brief Number of bits per channel for I2S/TDM. Supported values: 16/32-bit.
+ *
+ * Default: 32 bits
+ */
+#ifndef XUA_I2S_N_BITS
+#define XUA_I2S_N_BITS (32)
+#endif
+
+#if (XUA_I2S_N_BITS != 16) && (XUA_I2S_N_BITS != 32)
+#error Unsupported value for XUA_I2S_N_BITS (only values 16/32 supported)
 #endif
 
 /**

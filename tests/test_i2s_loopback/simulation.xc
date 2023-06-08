@@ -1,4 +1,4 @@
-// Copyright 2016-2022 XMOS LIMITED.
+// Copyright 2016-2023 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 #ifdef SIMULATION
 
@@ -41,7 +41,7 @@ extern out port  p_lrclk_gen;
 extern clock clk_audio_lrclk_gen;
 
 void slave_mode_clk_setup(const unsigned samFreq, const unsigned chans_per_frame){
-  const unsigned data_bits = 32;
+  const unsigned data_bits = XUA_I2S_N_BITS;
   const unsigned mclk_freq = 24576000;
 
   const unsigned mclk_bclk_ratio = mclk_freq / (chans_per_frame * samFreq * data_bits);
@@ -61,5 +61,4 @@ void slave_mode_clk_setup(const unsigned samFreq, const unsigned chans_per_frame
   master_mode_clk_setup();
 }
 #endif
-
 #endif

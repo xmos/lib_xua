@@ -4,9 +4,10 @@ lib_xua Change Log
 UNRELEASED
 ----------
 
+  * ADDED:     Configurable word-length for I2S/TDM via XUA_I2S_N_BITS 
   * FIXED:     Memory corruption due to erroneous initialisation of mixer weights when not in use (#152) 
   * FIXED:     UserHostActive() not being called as expected (#326)
-  * FIXED:     Exception when entering DSD mode
+  * FIXED:     Exception when entering DSD mode (#327)
 
 3.4.0
 -----

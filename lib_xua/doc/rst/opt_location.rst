@@ -21,7 +21,7 @@ full listing of these ``TILE`` defines.
      - Description
      - Default
    * - ``AUDIO_IO_TILE``
-     - Tile on which I2S, ADAT Rx, S/PDIF Rx & mixer resides
+     - Tile on which I2S/TDM, ADAT Rx, S/PDIF Rx & mixer resides
      - ``0``
    * - ``XUD_TILE``
      - Tile on which USB resides, including buffering for all USB interfaces/endppoints
