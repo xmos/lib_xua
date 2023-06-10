@@ -26,7 +26,7 @@
 #include "xc_ptr.h"
 #include "xua_ep0_uacreqs.h"
 
-#if( 0 < HID_CONTROLS )
+#if XUA_OR_STATIC_HID_ENABLED
 #include "hid.h"
 #include "xua_hid.h"
 #include "xua_hid_report.h"
@@ -442,6 +442,15 @@ void XUA_Endpoint0_setBcdDevice(unsigned short bcd) {
 #endif // AUDIO_CLASS == 1}
 }
 
+#if defined(__static_hid_report_h_exists__)
+#define hidReportDescriptorLength (sizeof(hidReportDescriptorPtr))
+static unsigned char hidReportDescriptorPtr[] = {
+#include "static_hid_report.h"
+};
+#endif
+
+
+
 void XUA_Endpoint0_init(chanend c_ep0_out, chanend c_ep0_in, NULLABLE_RESOURCE(chanend, c_audioControl),
     chanend c_mix_ctl, chanend c_clk_ctl, chanend c_EANativeTransport_ctrl, CLIENT_INTERFACE(i_dfu, dfuInterface) VENDOR_REQUESTS_PARAMS_DEC_)
 {
@@ -513,11 +522,13 @@ void XUA_Endpoint0_init(chanend c_ep0_out, chanend c_ep0_in, NULLABLE_RESOURCE(c
 
 #endif // XUA_USB_DESCRIPTOR_OVERWRITE_RATE_RES
 
-#if( 0 < HID_CONTROLS )
+#if XUA_OR_STATIC_HID_ENABLED
+#if XUA_HID_ENABLED
     hidReportInit();
     hidPrepareReportDescriptor();
 
     size_t hidReportDescriptorLength = hidGetReportDescriptorLength();
+#endif
     unsigned char hidReportDescriptorLengthLo =  hidReportDescriptorLength & 0xFF;
     unsigned char hidReportDescriptorLengthHi = (hidReportDescriptorLength & 0xFF00) >> 8;
 
@@ -528,6 +539,7 @@ void XUA_Endpoint0_init(chanend c_ep0_out, chanend c_ep0_in, NULLABLE_RESOURCE(c
 
     hidDescriptor[HID_DESCRIPTOR_LENGTH_FIELD_OFFSET    ] = hidReportDescriptorLengthLo;
     hidDescriptor[HID_DESCRIPTOR_LENGTH_FIELD_OFFSET + 1] = hidReportDescriptorLengthHi;
+
 #endif // 0 < HID_CONTROLS
 
 }
@@ -731,7 +743,7 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
 
                 switch(sp.bRequest)
                 {
-#if( 0 < HID_CONTROLS )
+#if XUA_OR_STATIC_HID_ENABLED
                     case USB_GET_DESCRIPTOR:
 
                         /* Check what inteface request is for */
@@ -746,15 +758,17 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
                                     {
                                         /* Return HID Descriptor */
                                          result = XUD_DoGetRequest(ep0_out, ep0_in, hidDescriptor,
-                                            sizeof(hidDescriptor), sp.wLength);
+                                            hidDescriptor[0], sp.wLength);
                                     }
                                     break;
                                 case HID_REPORT:
                                     {
                                         /* Return HID report descriptor */
+#if XUA_HID_ENABLED
                                         unsigned char* hidReportDescriptorPtr;
                                         hidReportDescriptorPtr = hidGetReportDescriptor();
                                         size_t hidReportDescriptorLength = hidGetReportDescriptorLength();
+#endif
                                         result = XUD_DoGetRequest(ep0_out, ep0_in, hidReportDescriptorPtr,
                                             hidReportDescriptorLength, sp.wLength);
                                     }
@@ -858,7 +872,7 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
                         }
                     }
 #endif
-#if( 0 < HID_CONTROLS )
+#if XUA_HID_ENABLED
                     if (interfaceNum == INTERFACE_NUMBER_HID)
                     {
                         result = HidInterfaceClassRequests(ep0_out, ep0_in, &sp);

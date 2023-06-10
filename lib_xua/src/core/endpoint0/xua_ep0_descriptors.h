@@ -787,10 +787,13 @@ typedef struct
 #endif
 #endif // IAP
 
-#if( 0 < HID_CONTROLS )
+#if XUA_OR_STATIC_HID_ENABLED
     USB_Descriptor_Interface_t                  HID_Interface;
     USB_HID_Descriptor_t                        HID_Descriptor;
     USB_Descriptor_Endpoint_t                   HID_In_Endpoint;
+#if HID_OUT_REQUIRED
+    USB_Descriptor_Endpoint_t                   HID_Out_Endpoint;
+#endif
 #endif
 
 }__attribute__((packed)) USB_Config_Descriptor_Audio2_t;
@@ -2208,14 +2211,14 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
 #endif
 #endif /* IAP */
 
-#if( 0 < HID_CONTROLS )
+#if XUA_OR_STATIC_HID_ENABLED
     #include "xua_hid_descriptors.h"
 #endif
 
 };
 #endif /* (AUDIO_CLASS == 2) */
 
-#if( 0 < HID_CONTROLS )
+#if XUA_OR_STATIC_HID_ENABLED
 #if (AUDIO_CLASS ==1 )
 unsigned char hidDescriptor[] =
 {
@@ -2330,14 +2333,14 @@ const unsigned num_freqs_a1 = MAX(3, (0
 #define DFU_INTERFACES_A1     0
 #endif
 
-#if( 0 < HID_CONTROLS )
+#if XUA_OR_STATIC_HID_ENABLED
 /*
  * The value of HID_INTERFACE_BYTES must match the length of the descriptors defined in
  * - xua_hid_descriptor_contents.h
  * - xua_hid_endpoint_descriptor_contents.h and
  * - xua_hid_interface_descriptor_contents.h
  */
-#define HID_INTERFACE_BYTES   ( 9 + 9 + 7 )
+#define HID_INTERFACE_BYTES   ( 9 + 9 + (7 * (1 + HID_OUT_REQUIRED))) // always IN
 #define HID_INTERFACES_A1     1
 #else
 #define HID_INTERFACE_BYTES   0
@@ -2379,7 +2382,7 @@ const unsigned num_freqs_a1 = MAX(3, (0
 
 #endif
 
-#if( 0 < HID_CONTROLS )
+#if XUA_OR_STATIC_HID_ENABLED
     #define USB_HID_DESCRIPTOR_OFFSET (18 + AC_TOTAL_LENGTH + (INPUT_INTERFACES_A1 * (49 + num_freqs_a1 * 3)) + (OUTPUT_INTERFACES_A1 * (49 + num_freqs_a1 * 3)) + CONTROL_INTERFACE_BYTES + DFU_INTERFACE_BYTES + INTERFACE_DESCRIPTOR_BYTES)
 #endif
 
@@ -2893,7 +2896,7 @@ unsigned char cfgDesc_Audio1[] =
     offsetof(StringDescTable_t, ctrlStr)/sizeof(char *), /* 8 iInterface */
 #endif
 
-#if( 0 < HID_CONTROLS )
+#if XUA_OR_STATIC_HID_ENABLED
     #include "xua_hid_descriptors.h"
 #endif
 

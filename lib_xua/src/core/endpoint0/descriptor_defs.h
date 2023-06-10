@@ -33,6 +33,7 @@
 #define ENDPOINT_ADDRESS_OUT_MIDI                 (ENDPOINT_NUMBER_OUT_MIDI)
 #define ENDPOINT_ADDRESS_OUT_IAP                  (ENDPOINT_NUMBER_OUT_IAP)
 #define ENDPOINT_ADDRESS_OUT_IAP_EA_NATIVE_TRANS  (ENDPOINT_NUMBER_OUT_IAP_EA_NATIVE_TRANS)
+#define ENDPOINT_ADDRESS_OUT_HID                  (ENDPOINT_NUMBER_OUT_HID)
 
 /* Interface numbers enum */
 enum USBInterfaceNumber
@@ -60,7 +61,7 @@ enum USBInterfaceNumber
     INTERFACE_NUMBER_IAP_EA_NATIVE_TRANS,
 #endif
 #endif
-#if( 0 < HID_CONTROLS )
+#if XUA_OR_STATIC_HID_ENABLED
     INTERFACE_NUMBER_HID,
 #endif
     INTERFACE_COUNT          /* End marker */
@@ -68,6 +69,10 @@ enum USBInterfaceNumber
 
 #ifndef ENDPOINT_INT_INTERVAL_IN_HID
 #define ENDPOINT_INT_INTERVAL_IN_HID 0x08
+#endif
+
+#ifndef ENDPOINT_INT_INTERVAL_OUT_HID
+#define ENDPOINT_INT_INTERVAL_OUT_HID 0x08
 #endif
 
 #endif

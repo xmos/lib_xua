@@ -13,7 +13,7 @@
 #define DEBUG_PRINT_ENABLE_HID_XC 0
 #include "debug_print.h"
 
-#if( 0 < HID_CONTROLS )
+#if XUA_HID_ENABLED
 static unsigned     HidCalcNewReportTime( const unsigned currentPeriod, const unsigned reportTime, const unsigned reportToSetIdleInterval, const unsigned newPeriod );
 static unsigned     HidCalcReportToSetIdleInterval( const unsigned reportTime );
 static unsigned     HidFindSetIdleActivationPoint( const unsigned currentPeriod, const unsigned timeWithinPeriod );
