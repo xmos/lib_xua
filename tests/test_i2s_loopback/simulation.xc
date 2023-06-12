@@ -1,6 +1,7 @@
 // Copyright 2016-2023 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 #ifdef SIMULATION
+#include "xua.h"
 
 #include <platform.h>
 #include <print.h>
@@ -45,7 +46,7 @@ void slave_mode_clk_setup(const unsigned samFreq, const unsigned chans_per_frame
   const unsigned mclk_freq = 24576000;
 
   const unsigned mclk_bclk_ratio = mclk_freq / (chans_per_frame * samFreq * data_bits);
-  const unsigned bclk_lrclk_ratio = (chans_per_frame * data_bits); // 48.828Hz  LRCLK
+  const unsigned bclk_lrclk_ratio = (chans_per_frame * data_bits + (data_bits * XUA_I2S_DUMMY_SAMPS)); // 48.828Hz  LRCLK
 
   //bclk
   configure_clock_src_divide(clk_audio_bclk_gen, p_mclk_gen, mclk_bclk_ratio/2);

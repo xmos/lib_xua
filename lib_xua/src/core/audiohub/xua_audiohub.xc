@@ -80,6 +80,14 @@ unsigned dsdMode = DSD_MODE_OFF;
 #endif
 #include "xua_audiohub_st.h"
 
+static inline void PortOutput(buffered out port:32 p, int bits, int value)
+{
+    if(bits == 32)
+        p <: value;
+    else
+        partout(p, bits, value);
+}
+
 static inline int HandleSampleClock(int frameCount, buffered _XUA_CLK_DIR port:32 p_lrclk)
 {
 #if CODEC_MASTER
@@ -286,6 +294,19 @@ unsigned static AudioHub_MainLoop(chanend ?c_out, chanend ?c_spd_out
             else
 #endif
             {
+
+#if XUA_I2S_DUMMY_SAMPS  
+            if(frameCount == 0)
+            {  
+                for(int j = 0; j < XUA_I2S_DUMMY_SAMPS; j++)
+                    for(int i = 0; i < I2S_WIRES_DAC; i++)
+                    {
+                        PortOutput(p_i2s_dac[i], XUA_I2S_N_BITS, 0);
+                    }
+            }
+#endif
+
+
 #if (I2S_CHANS_ADC != 0)
 #if (AUD_TO_USB_RATIO > 1)
                 if (0 == audioToUsbRatioCounter)
@@ -475,6 +496,25 @@ unsigned static AudioHub_MainLoop(chanend ?c_out, chanend ?c_spd_out
 #else
                     samplesIn[buffIndex][chanIndex] = sample;
 #endif /* (AUD_TO_USB_RATIO > 1) && !I2S_DOWNSAMPLE_MONO_IN */
+                }
+#endif
+
+#if XUA_I2S_DUMMY_SAMPS
+                if(frameCount == 1)
+                {
+                    int dummyBits;
+                    for(int j = 0; j < XUA_I2S_DUMMY_SAMPS; j++)
+                    {
+                        for(int i = 0; i < I2S_WIRES_ADC; i++)
+                        {
+                            asm volatile("in %0, res[%1]" : "=r"(dummyBits)  : "r"(p_i2s_adc[i]));
+                            if(XUA_I2S_N_BITS)
+                                set_port_shift_count(p_i2s_adc[i], XUA_I2S_N_BITS);
+                        }
+                        asm volatile("in %0, res[%1]" : "=r"(dummyBits)  : "r"(p_lrclk));
+                        if(XUA_I2S_N_BITS)
+                            set_port_shift_count(p_lrclk, XUA_I2S_N_BITS);
+                    }
                 }
 #endif
 

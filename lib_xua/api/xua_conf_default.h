@@ -197,6 +197,10 @@
     #define I2S_DOWNSAMPLE_CHANS_IN I2S_CHANS_ADC
 #endif
 
+#ifndef XUA_I2S_DUMMY_SAMPS
+#define XUA_I2S_DUMMY_SAMPS      (1)
+#endif
+
 /**
  * @brief Number of bits per channel for I2S/TDM. Supported values: 16/32-bit.
  *
