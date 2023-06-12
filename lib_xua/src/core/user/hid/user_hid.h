@@ -34,7 +34,7 @@ typedef struct hidEvent_t {
 #define HID_MAX_DATA_BYTES ( 4 )
 #define HID_EVENT_INVALID_ID ( 0x100 )
 
-#if XUA_HID_REQUIRED
+#if XUA_HID_ENABLED
 
 /**
  *  \brief  Get the data for the next HID Report
