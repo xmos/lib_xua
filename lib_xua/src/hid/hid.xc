@@ -1,4 +1,4 @@
-// Copyright 2019-2022 XMOS LIMITED.
+// Copyright 2019-2023 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 #include <stdint.h>
 #include <xs1.h>
