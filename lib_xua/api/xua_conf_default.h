@@ -198,7 +198,7 @@
 #endif
 
 #ifndef XUA_I2S_DUMMY_SAMPS
-#define XUA_I2S_DUMMY_SAMPS      (1)
+#define XUA_I2S_DUMMY_SAMPS      (0)
 #endif
 
 /**
