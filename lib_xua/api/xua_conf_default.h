@@ -215,6 +215,19 @@
 #endif
 
 /**
+ * @brief Number of bits per channel for I2S/TDM. Supported values: 16/32-bit.
+ *
+ * Default: 32 bits
+ */
+#ifndef XUA_I2S_N_BITS
+#define XUA_I2S_N_BITS (32)
+#endif
+
+#if (XUA_I2S_N_BITS != 16) && (XUA_I2S_N_BITS != 32)
+#error Unsupported value for XUA_I2S_N_BITS (only values 16/32 supported)
+#endif
+
+/**
  * @brief Max supported sample frequency for device (Hz). Default: 192000
  */
 #ifndef MAX_FREQ
