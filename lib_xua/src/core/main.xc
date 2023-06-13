@@ -213,6 +213,9 @@ XUD_EpType epTypeTableOut[ENDPOINT_COUNT_OUT] = { XUD_EPTYPE_CTL | XUD_STATUS_EN
 #ifdef MIDI
                                             XUD_EPTYPE_BUL,    /* MIDI */
 #endif
+#if HID_OUT_REQUIRED
+                                            XUD_EPTYPE_INT,
+#endif
 #ifdef IAP
                                             XUD_EPTYPE_BUL,    /* iAP */
 #ifdef IAP_EA_NATIVE_TRANS
@@ -233,7 +236,7 @@ XUD_EpType epTypeTableIn[ENDPOINT_COUNT_IN] = { XUD_EPTYPE_CTL | XUD_STATUS_ENAB
 #ifdef MIDI
                                             XUD_EPTYPE_BUL,
 #endif
-#if( 0 < HID_CONTROLS )
+#if XUA_OR_STATIC_HID_ENABLED
                                             XUD_EPTYPE_INT,
 #endif
 #ifdef IAP
@@ -266,115 +269,6 @@ void xscope_user_init()
     xscope_config_io(XSCOPE_IO_BASIC);
 }
 #endif
-
-#if XUA_USB_EN
-/* Core USB Audio functions - must be called on the Tile connected to the USB Phy */
-void usb_audio_core(chanend c_mix_out
-#ifdef MIDI
-    , chanend c_midi
-#endif
-#if (MIXER)
-    , chanend c_mix_ctl
-#endif
-    , chanend ?c_clk_int
-    , chanend ?c_clk_ctl
-    , client interface i_dfu ?dfuInterface
-#if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
-    , client interface pll_ref_if i_pll_ref
-#endif
-VENDOR_REQUESTS_PARAMS_DEC_
-)
-{
-    chan c_sof;
-    chan c_xud_out[ENDPOINT_COUNT_OUT];              /* Endpoint channels for XUD */
-    chan c_xud_in[ENDPOINT_COUNT_IN];
-    chan c_aud_ctl;
-
-#if (!MIXER)
-#define c_mix_ctl null
-#endif
-
-#ifdef IAP_EA_NATIVE_TRANS
-    chan c_EANativeTransport_ctrl;
-#else
-#define c_EANativeTransport_ctrl null
-#endif
-
-    par
-    {
-        {
-#ifdef XUD_PRIORITY_HIGH
-            set_core_high_priority_on();
-#endif
-
-            /* Run UAC2.0 at high-speed, UAC1.0 at full-speed */
-            unsigned usbSpeed = (AUDIO_CLASS == 2) ? XUD_SPEED_HS : XUD_SPEED_FS;
-
-            unsigned xudPwrCfg = (XUA_POWERMODE == XUA_POWERMODE_SELF) ? XUD_PWR_SELF : XUD_PWR_BUS;
-
-            /* USB interface core */
-            XUD_Main(c_xud_out, ENDPOINT_COUNT_OUT, c_xud_in, ENDPOINT_COUNT_IN,
-                c_sof, epTypeTableOut, epTypeTableIn, usbSpeed, xudPwrCfg);
-        }
-
-        {
-            unsigned x;
-            thread_speed();
-
-            /* Attach mclk count port to mclk clock-block (for feedback) */
-            //set_port_clock(p_for_mclk_count, clk_audio_mclk);
-#if(AUDIO_IO_TILE != XUD_TILE)
-            set_clock_src(clk_audio_mclk_usb, p_mclk_in_usb);
-            set_port_clock(p_for_mclk_count, clk_audio_mclk_usb);
-            start_clock(clk_audio_mclk_usb);
-#else
-            /* Clock port from same clock-block as I2S */
-            /* TODO remove asm() */
-            asm("ldw %0, dp[clk_audio_mclk]":"=r"(x));
-            asm("setclk res[%0], %1"::"r"(p_for_mclk_count), "r"(x));
-#endif
-            /* Endpoint & audio buffering cores */
-            XUA_Buffer(c_xud_out[ENDPOINT_NUMBER_OUT_AUDIO],/* Audio Out*/
-#if (NUM_USB_CHAN_IN > 0)
-
-                c_xud_in[ENDPOINT_NUMBER_IN_AUDIO],         /* Audio In */
-#endif
-#if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP)
-                c_xud_in[ENDPOINT_NUMBER_IN_FEEDBACK],      /* Audio FB */
-#endif
-#ifdef MIDI
-                c_xud_out[ENDPOINT_NUMBER_OUT_MIDI],        /* MIDI Out */ // 2
-                c_xud_in[ENDPOINT_NUMBER_IN_MIDI],          /* MIDI In */  // 4
-                c_midi,
-#endif
-#if (XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
-                /* Audio Interrupt - only used for interrupts on external clock change */
-                c_xud_in[ENDPOINT_NUMBER_IN_INTERRUPT],
-                c_clk_int,
-#endif
-                c_sof, c_aud_ctl, p_for_mclk_count
-#if (HID_CONTROLS)
-                , c_xud_in[ENDPOINT_NUMBER_IN_HID]
-#endif
-                , c_mix_out
-#if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
-                , i_pll_ref
-#endif
-            );
-            //:
-        }
-
-        /* Endpoint 0 Core */
-        {
-            thread_speed();
-            XUA_Endpoint0( c_xud_out[0], c_xud_in[0], c_aud_ctl, c_mix_ctl, c_clk_ctl, c_EANativeTransport_ctrl, dfuInterface VENDOR_REQUESTS_PARAMS_);
-        }
-
-        //:
-    }
-}
-#endif /* XUA_USB_EN */
-
 
 #if (XUA_SPDIF_TX_EN) && (SPDIF_TX_TILE != AUDIO_IO_TILE)
 void SpdifTxWrapper(chanend c_spdif_tx)
@@ -576,6 +470,20 @@ int main()
 #if ((XUA_SYNCMODE == XUA_SYNCMODE_SYNC) || XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
     interface pll_ref_if i_pll_ref;
 #endif
+    chan c_sof;
+    chan c_xud_out[ENDPOINT_COUNT_OUT];              /* Endpoint channels for XUD */
+    chan c_xud_in[ENDPOINT_COUNT_IN];
+    chan c_aud_ctl;
+
+#if (!MIXER)
+#define c_mix_ctl null
+#endif
+
+#ifdef IAP_EA_NATIVE_TRANS
+    chan c_EANativeTransport_ctrl;
+#else
+#define c_EANativeTransport_ctrl null
+#endif
 
     USER_MAIN_DECLARATIONS
 
@@ -597,27 +505,77 @@ int main()
 #endif
 #endif
 #if XUA_USB_EN
-            /* Core USB audio task, buffering, USB etc */
-            usb_audio_core(c_mix_out
-#ifdef MIDI
-                , c_midi
-#endif
-#ifdef IAP
-                , c_iap
-#ifdef IAP_EA_NATIVE_TRANS
-                , c_ea_data
-#endif
-#endif
-#if (MIXER)
-                , c_mix_ctl
-#endif
-                , c_clk_int, c_clk_ctl, dfuInterface
-#if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
-                , i_pll_ref
-#endif
-                VENDOR_REQUESTS_PARAMS_
 
-            );
+            /* Core USB task, buffering, USB etc */
+            {
+#ifdef XUD_PRIORITY_HIGH
+                set_core_high_priority_on();
+#endif
+
+                /* Run UAC2.0 at high-speed, UAC1.0 at full-speed */
+                unsigned usbSpeed = (AUDIO_CLASS == 2) ? XUD_SPEED_HS : XUD_SPEED_FS;
+
+                unsigned xudPwrCfg = (XUA_POWERMODE == XUA_POWERMODE_SELF) ? XUD_PWR_SELF : XUD_PWR_BUS;
+
+                /* USB interface core */
+                XUD_Main(c_xud_out, ENDPOINT_COUNT_OUT, c_xud_in, ENDPOINT_COUNT_IN,
+                         c_sof, epTypeTableOut, epTypeTableIn, usbSpeed, xudPwrCfg);
+            }
+
+            /* Core USB audio task, buffering, USB etc */
+            {
+                unsigned x;
+                thread_speed();
+
+                /* Attach mclk count port to mclk clock-block (for feedback) */
+                //set_port_clock(p_for_mclk_count, clk_audio_mclk);
+#if(AUDIO_IO_TILE != XUD_TILE)
+                set_clock_src(clk_audio_mclk_usb, p_mclk_in_usb);
+                set_port_clock(p_for_mclk_count, clk_audio_mclk_usb);
+                start_clock(clk_audio_mclk_usb);
+#else
+                /* Clock port from same clock-block as I2S */
+                /* TODO remove asm() */
+                asm("ldw %0, dp[clk_audio_mclk]":"=r"(x));
+                asm("setclk res[%0], %1"::"r"(p_for_mclk_count), "r"(x));
+#endif
+                /* Endpoint & audio buffering cores */
+                XUA_Buffer(c_xud_out[ENDPOINT_NUMBER_OUT_AUDIO],/* Audio Out*/
+#if (NUM_USB_CHAN_IN > 0)
+
+                           c_xud_in[ENDPOINT_NUMBER_IN_AUDIO],         /* Audio In */
+#endif
+#if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP)
+                           c_xud_in[ENDPOINT_NUMBER_IN_FEEDBACK],      /* Audio FB */
+#endif
+#ifdef MIDI
+                           c_xud_out[ENDPOINT_NUMBER_OUT_MIDI],        /* MIDI Out */ // 2
+                           c_xud_in[ENDPOINT_NUMBER_IN_MIDI],          /* MIDI In */  // 4
+                           c_midi,
+#endif
+#if (XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
+                           /* Audio Interrupt - only used for interrupts on external clock change */
+                           c_xud_in[ENDPOINT_NUMBER_IN_INTERRUPT],
+                           c_clk_int,
+#endif
+                           c_sof, c_aud_ctl, p_for_mclk_count
+#if (XUA_HID_ENABLED)
+                           , c_xud_in[ENDPOINT_NUMBER_IN_HID]
+#endif
+                           , c_mix_out
+#if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
+                           , i_pll_ref
+#endif
+                    );
+                //:
+            }
+
+            /* Endpoint 0 Core */
+            {
+                thread_speed();
+                XUA_Endpoint0( c_xud_out[0], c_xud_in[0], c_aud_ctl, c_mix_ctl, c_clk_ctl, c_EANativeTransport_ctrl, dfuInterface VENDOR_REQUESTS_PARAMS_);
+            }
+
 #endif /* XUA_USB_EN */
         }
 

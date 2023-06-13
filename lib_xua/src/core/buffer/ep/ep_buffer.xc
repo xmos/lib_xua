@@ -1,4 +1,4 @@
-// Copyright 2011-2022 XMOS LIMITED.
+// Copyright 2011-2023 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 #include "xua.h"
 #if XUA_USB_EN
@@ -10,7 +10,7 @@
 #include "xud.h"
 #include "testct_byref.h"
 
-#if( 0 < HID_CONTROLS )
+#if XUA_HID_ENABLED
 #include "xua_hid_report.h"
 #include "user_hid.h"
 #include "xua_hid.h"
@@ -134,7 +134,7 @@ void XUA_Buffer(
                 c_clk_int,
 #endif
                 c_sof, c_aud_ctl, p_off_mclk
-#if( 0 < HID_CONTROLS )
+#if XUA_HID_ENABLED
                 , c_hid
 #endif
 #ifdef CHAN_BUFF_CTRL
@@ -224,7 +224,7 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
     XUD_ep ep_int = XUD_InitEp(c_ep_int);
 #endif
 
-#if( 0 < HID_CONTROLS )
+#if XUA_HID_ENABLED
     XUD_ep ep_hid = XUD_InitEp(c_hid);
 #endif
     unsigned u_tmp;
@@ -332,7 +332,7 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
 #endif
 #endif
 
-#if( 0 < HID_CONTROLS )
+#if XUA_HID_ENABLED
 
     while (!hidIsReportDescriptorPrepared())
         ;
@@ -897,7 +897,7 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
 #endif
 #endif
 
-#if( 0 < HID_CONTROLS )
+#if XUA_HID_ENABLED
                 /* HID Report Data */
             case XUD_SetData_Select(c_hid, ep_hid, result):
                 hid_ready_flag = 0U;

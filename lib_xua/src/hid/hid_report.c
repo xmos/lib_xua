@@ -1,7 +1,7 @@
-// Copyright 2021-2022 XMOS LIMITED.
+// Copyright 2021-2023 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 #include "xua_conf_full.h"
-#if( 0 < HID_CONTROLS )
+#if XUA_HID_ENABLED
 
 #include <assert.h>
 #include <stddef.h>

@@ -449,6 +449,40 @@
 #endif
 
 /**
+ * HID may be required in two forms: the built-in XUA-HID reports, or a
+ * user-provided static HID. Some sections of code are always needed, they
+ * are enclosed in XUA_OR_STATIC_HID_ENABLED; code specific to XUA-HID
+ * reports are enclosed in XUA_HID_ENABLED.
+ *
+ * HID_CONTROLS implies that the XUA_HID is used, and hence defines both.
+ * In order to roll your own, do not enable HID_CONTROLS, but instead
+ * create a file static_hid_report.h that contains the static descriptor.
+ *
+ * You must also supply your own function to deal with the HID endpoint(s)
+ * in this case.
+ */
+#if( 0 < HID_CONTROLS )
+#define   XUA_HID_ENABLED            (1)
+#define   XUA_OR_STATIC_HID_ENABLED  (1)
+#endif
+
+
+#if defined(__static_hid_report_h_exists__)
+#define   XUA_OR_STATIC_HID_ENABLED  (1)
+#endif
+
+/**
+ * @brief Enable a HID OUT endpoint. Only use this if you supply your own HID control.
+ *
+ * 1 for enabled, 0 for disabled.
+ *
+ * Default 0 (Disabled)
+ */
+#ifndef HID_OUT_REQUIRED
+#define HID_OUT_REQUIRED       (0)
+#endif
+
+/**
  * @brief Defines whether XMOS device runs as master (i.e. drives LR and Bit clocks)
  *
  * 0: XMOS is I2S master. 1: CODEC is I2s master.
@@ -1163,7 +1197,7 @@ enum USBEndpointNumber_In
 #ifdef MIDI
     ENDPOINT_NUMBER_IN_MIDI,
 #endif
-#if( 0 < HID_CONTROLS )
+#if XUA_OR_STATIC_HID_ENABLED
     ENDPOINT_NUMBER_IN_HID,
 #endif
 #ifdef IAP
@@ -1190,6 +1224,9 @@ enum USBEndpointNumber_Out
 #ifdef IAP_EA_NATIVE_TRANS
     ENDPOINT_NUMBER_OUT_IAP_EA_NATIVE_TRANS,
 #endif
+#endif
+#if XUA_OR_STATIC_HID_ENABLED && HID_OUT_REQUIRED
+    ENDPOINT_NUMBER_OUT_HID,
 #endif
     XUA_ENDPOINT_COUNT_OUT          /* End marker */
 };
