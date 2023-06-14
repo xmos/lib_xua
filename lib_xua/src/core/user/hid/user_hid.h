@@ -61,21 +61,5 @@ size_t UserHIDGetData( const unsigned id, unsigned char hidData[ HID_MAX_DATA_BY
  */
 void UserHIDInit( void );
 
-/**
- *  \brief  Record that a HID event has occurred
- *
- *  \param[in]  hidEvent      A list of events which have occurred.
- *                            Each element specifies a HID Report ID, a bit and byte
- *                              within the HID Report and the value for it.
- *                            Set the Report ID to zero if not using Report IDs
- *                              (see 5.6, 6.2.2.7, 8.1 and 8.2).
- *  \param[in]  hidEventCnt   The length of the \a hidEvent list.
- *
- *  \returns  The index of the first unrecorded event in \a hidEvent
- *  \retval   Zero indicates no events were recorded
- *  \retval   \a hidEventCnt indicates all events were recorded
- */
-size_t UserHIDRecordEvent( const hidEvent_t hidEvent[], const size_t hidEventCnt );
-
 #endif /* ( 0 < HID_CONTROLS ) */
 #endif /* __USER_HID_H__ */
