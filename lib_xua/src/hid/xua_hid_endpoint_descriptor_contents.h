@@ -1,4 +1,4 @@
-// Copyright 2021 XMOS LIMITED.
+// Copyright 2021-2023 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
 /**
@@ -31,6 +31,19 @@
     HID_ENDPOINT_DESCRIPTOR_PACKET_SIZE_HI, /* 5  wMaxPacketSize */
     ENDPOINT_INT_INTERVAL_IN_HID,           /* 6  bInterval */
 
+#if (HID_OUT_REQUIRED)
+
+    /* HID Endpoint descriptor (OUT) */
+    HID_ENDPOINT_DESCRIPTOR_LENGTH,         /* 0  bLength */
+    HID_ENDPOINT_DESCRIPTOR_TYPE,           /* 1  bDescriptorType */
+    ENDPOINT_ADDRESS_OUT_HID,               /* 2  bEndpointAddress  */
+    HID_ENDPOINT_ATTRIBUTES,                /* 3  bmAttributes (INTERRUPT) */
+    HID_ENDPOINT_DESCRIPTOR_PACKET_SIZE_LO, /* 4  wMaxPacketSize */
+    HID_ENDPOINT_DESCRIPTOR_PACKET_SIZE_HI, /* 5  wMaxPacketSize */
+    ENDPOINT_INT_INTERVAL_OUT_HID,          /* 6  bInterval */
+
+#endif
+
 #elif (AUDIO_CLASS == 2)
 
     .HID_In_Endpoint =
@@ -43,6 +56,21 @@
         .wMaxPacketSize     = HID_ENDPOINT_DESCRIPTOR_PACKET_SIZE_LO,
         .bInterval          = ENDPOINT_INT_INTERVAL_IN_HID,
     },
+
+#if (HID_OUT_REQUIRED)
+
+    .HID_Out_Endpoint =
+    {
+        /* Endpoint descriptor (OUT) */
+        .bLength            = sizeof(USB_Descriptor_Endpoint_t),
+        .bDescriptorType    = HID_ENDPOINT_DESCRIPTOR_TYPE,
+        .bEndpointAddress   = ENDPOINT_ADDRESS_OUT_HID,
+        .bmAttributes       = HID_ENDPOINT_ATTRIBUTES,
+        .wMaxPacketSize     = HID_ENDPOINT_DESCRIPTOR_PACKET_SIZE_LO,
+        .bInterval          = ENDPOINT_INT_INTERVAL_OUT_HID,
+    },
+
+#endif
 
 #else
     #error "Unknown Audio Class"

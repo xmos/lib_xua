@@ -11,7 +11,7 @@ endif
 DEPENDENT_MODULES = lib_locks(>=2.1.0) \
                     lib_logging(>=3.1.1) \
                     lib_mic_array(>=4.5.0) \
-                    lib_spdif(>=4.2.1) \
+                    lib_spdif(>=5.0.0) \
                     lib_xassert(>=4.1.0) \
                     lib_xud(>=2.2.3) \
                     lib_adat(>=1.0.0)
@@ -35,7 +35,7 @@ XCC_FLAGS_dfu.xc = $(MODULE_XCC_FLAGS) -Os -mno-dual-issue
 XCC_FLAGS_flash_interface.c = $(MODULE_XCC_FLAGS) -Os -mno-dual-issue
 XCC_FLAGS_flashlib_user.c = $(MODULE_XCC_FLAGS) -Os -mno-dual-issue
 
-OPTIONAL_HEADERS += xua_conf.h
+OPTIONAL_HEADERS += xua_conf.h static_hid_report.h
 
 EXPORT_INCLUDE_DIRS = api \
                       src/core \

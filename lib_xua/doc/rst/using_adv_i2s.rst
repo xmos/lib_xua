@@ -5,7 +5,7 @@ I2S/TDM
 
 I2S/TDM is typically fundamental to most products and is built into the ``XUA_AudioHub()`` core.
 
-In order to enable I2S on must declare an array of ports for the data-lines (one for each direction)::
+In order to enable I2S/TDM on must declare an array of ports for the data-lines (one for each direction)::
 
     /* Port declarations. Note, the defines come from the XN file */
     buffered out port:32 p_i2s_dac[] = {PORT_I2S_DAC0}; /* I2S Data-line(s) */
@@ -22,7 +22,7 @@ Ports for the sample and bit clocks are also required::
 
 These ports must then be passed to the ``XUA_AudioHub()`` task appropriately.
 
-I2S functionality also requires two clock-blocks, one for bit and sample clock e.g.::
+I2S/TDM functionality also requires two clock-blocks, one for bit-clock and another for the master clock e.g.::
 
     /* Clock-block declarations */
     clock clk_audio_bclk = on tile[0]: XS1_CLKBLK_4; /* Bit clock */

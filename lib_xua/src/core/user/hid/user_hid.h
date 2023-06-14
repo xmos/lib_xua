@@ -1,4 +1,4 @@
-// Copyright 2013-2021 XMOS LIMITED.
+// Copyright 2013-2023 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
 /**
@@ -34,7 +34,7 @@ typedef struct hidEvent_t {
 #define HID_MAX_DATA_BYTES ( 4 )
 #define HID_EVENT_INVALID_ID ( 0x100 )
 
-#if( 0 < HID_CONTROLS )
+#if XUA_HID_ENABLED
 
 /**
  *  \brief  Get the data for the next HID Report
