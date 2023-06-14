@@ -8,6 +8,8 @@ lib_xua Change Log
   * ADDED:     Support for statically defined custom HID descriptor
   * CHANGED:   Rearranged main() such that adding custom code that uses lib_xud
     is possible
+  * CHANGED:   bNumConfigurations changed from 2 to 1, removing a work-around to
+    stop old Windows versions loading the composite driver
   * FIXED:     Memory corruption due to erroneous initialisation of mixer
     weights when not in use (#152)
   * FIXED:     UserHostActive() not being called as expected (#326)
