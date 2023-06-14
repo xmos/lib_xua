@@ -481,7 +481,7 @@ USB_Descriptor_Device_t devDesc_Audio2 =
     .iManufacturer                  = offsetof(StringDescTable_t, vendorStr)/sizeof(char *),
     .iProduct                       = offsetof(StringDescTable_t, productStr_Audio2)/sizeof(char *),
     .iSerialNumber                  = offsetof(StringDescTable_t, serialStr)/sizeof(char *),
-    .bNumConfigurations             = 0x02  /* Set to 2 such that windows does not load composite driver */
+    .bNumConfigurations             = 0x01
 };
 
 /* Device Descriptor for Null Device */
