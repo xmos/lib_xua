@@ -1,10 +1,8 @@
 lib_xua
 #######
 
-:Version: 3.4.0
+:Version: 3.5.0
 :Vendor: XMOS
-
-
 :Scope: General Use
 
 Summary
@@ -41,9 +39,9 @@ Key features of the various components in this repository are as follows
 
 - Synchronisation to external digital streams i.e. S/PDIF or ADAT (when in asynchronous mode)
 
-- I2S slave & master modes
+- I2S (slave/master modes with configurable word-length)
 
-- TDM slave & master modes
+- TDM (slave/master modes with configurable word-length)
 
 - MIDI input/output (Compliant to USB Class Specification for MIDI devices)
 
@@ -52,6 +50,8 @@ Key features of the various components in this repository are as follows
 - Mixer with flexible routing
 
 - Simple playback controls via USB Human Interface Device (HID) Class
+
+- Support for adding custom HID interfaces
 
 Note, not all features may be supported at all sample frequencies, simultaneously or on all devices.  
 Some features may also require specific host driver support.

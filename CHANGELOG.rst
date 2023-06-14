@@ -1,13 +1,23 @@
 lib_xua Change Log
 ==================
 
-UNRELEASED
-----------
+3.5.0
+-----
 
-  * ADDED:     Configurable word-length for I2S/TDM via XUA_I2S_N_BITS 
-  * FIXED:     Memory corruption due to erroneous initialisation of mixer weights when not in use (#152) 
+  * ADDED:     Configurable word-length for I2S/TDM via XUA_I2S_N_BITS
+  * ADDED:     Support for statically defined custom HID descriptor
+  * CHANGED:   Rearranged main() such that adding custom code that uses lib_xud
+    is possible
+  * FIXED:     Memory corruption due to erroneous initialisation of mixer
+    weights when not in use (#152)
   * FIXED:     UserHostActive() not being called as expected (#326)
   * FIXED:     Exception when entering DSD mode (#327)
+
+  * Changes to dependencies:
+
+    - lib_spdif: 4.2.1 -> 5.0.0
+
+    - lib_xud: 2.2.2 -> 2.2.3
 
 3.4.0
 -----
