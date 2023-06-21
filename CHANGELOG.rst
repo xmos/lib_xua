@@ -6,6 +6,10 @@ lib_xua Change Log
 
   * FIXED:     Respect I2S_CHANS_PER_FRAME when calculating bit-clock rates
 
+  * Changes to dependencies:
+
+    - lib_spdif: 5.0.0 -> 5.0.1
+
 3.5.0
 -----
 
