@@ -1,8 +1,9 @@
 lib_xua
 #######
 
-:Version: 3.5.0
+:Version: 3.5.1
 :Vendor: XMOS
+
 
 :Scope: General Use
 
