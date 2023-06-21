@@ -1,6 +1,11 @@
 lib_xua Change Log
 ==================
 
+3.5.1
+-----
+
+  * FIXED:     Respect I2S_CHANS_PER_FRAME when calculating bit-clock rates
+
 3.5.0
 -----
 
