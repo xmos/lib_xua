@@ -715,13 +715,7 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
         /* Calculate master clock to bit clock (or DSD clock) divide for current sample freq
          * e.g. 11.289600 / (176400 * 64)  = 1 */
         {
-            unsigned numBits = XUA_I2S_N_BITS * 2;
-
-            if(XUA_PCM_FORMAT == XUA_PCM_FORMAT_TDM)
-            {
-                /* TDM has 8 channels */
-                numBits *= 4;
-            }
+            unsigned numBits = XUA_I2S_N_BITS * I2S_CHANS_PER_FRAME;
 
 #if (DSD_CHANS_DAC > 0)
             if(dsdMode == DSD_MODE_DOP)
