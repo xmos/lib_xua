@@ -687,6 +687,12 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
 #endif
 #endif
 
+#if (XUA_USE_APP_PLL)
+    /* Use xCORE.ai Secondary PLL to generate master clock
+     * This could be "fixed" for async mode or adjusted if in sync mode */
+    AppPllEnable(tile[AUDIO_IO_TILE], DEFAULT_MCLK);
+#endif
+
     /* Perform required CODEC/ADC/DAC initialisation */
     AudioHwInit();
 
@@ -798,6 +804,11 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
                 curFreq *= 16;
             }
 #endif
+
+#if (XUA_USE_APP_PLL)
+            AppPllEnable(tile[AUDIO_IO_TILE], mClk);
+#endif
+
             /* Configure Clocking/CODEC/DAC/ADC for SampleFreq/MClk */
             AudioHwConfig(curFreq, mClk, dsdMode, curSamRes_DAC, curSamRes_ADC);
         }

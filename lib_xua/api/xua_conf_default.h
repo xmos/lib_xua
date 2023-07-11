@@ -11,7 +11,9 @@
     #include "xua_conf.h"
 #endif
 
-/* Default tile arrangement */
+/*
+ * Tile arrangement defines
+ */
 
 /**
  * @brief Location (tile) of audio I/O. Default: 0
@@ -55,12 +57,9 @@
 #define PLL_REF_TILE    AUDIO_IO_TILE
 #endif
 
-/**
- * @brief Disable USB functionalty just leaving AudioHub
+/*
+ * Channel based defines
  */
-#ifndef XUA_USB_EN
-#define XUA_USB_EN      (1)
-#endif
 
 /**
  * @brief Number of input channels (device to host). Default: NONE (Must be defined by app)
@@ -79,7 +78,18 @@
 #endif
 
 /**
- * @brief Number of DSD output channels. Default: 0 (disabled)
+ * @brief Number of PDM microphones in the design.
+ *
+ * Default: 0
+ */
+#ifndef XUA_NUM_PDM_MICS
+#define XUA_NUM_PDM_MICS         (0)
+#endif
+
+/**
+ * @brief Number of DSD output channels.
+ *
+ * Default: 0 (disabled)
  */
 #if defined(DSD_CHANS_DAC) && (DSD_CHANS_DAC != 0)
     #if defined(NATIVE_DSD) && (NATIVE_DSD == 0)
@@ -90,6 +100,34 @@
 #else
     #define DSD_CHANS_DAC        0
 #endif
+
+/**
+ * @brief Number of I2S channesl to DAC/CODEC. Must be a multiple of 2.
+ *
+ * Default: NONE (Must be defined by app)
+ */
+#ifndef I2S_CHANS_DAC
+    #error I2S_CHANS_DAC not defined
+    #define I2S_CHANS_DAC 2          /* Define anyway for doxygen */
+#else
+#define I2S_WIRES_DAC            (I2S_CHANS_DAC / I2S_CHANS_PER_FRAME)
+#endif
+
+/**
+ * @brief Number of I2S channels from ADC/CODEC. Must be a multiple of 2.
+ *
+ * Default: NONE (Must be defined by app)
+ */
+#ifndef I2S_CHANS_ADC
+    #error I2S_CHANS_ADC not defined
+    #define I2S_CHANS_ADC 2      /* Define anyway for doxygen */
+#else
+#define I2S_WIRES_ADC            (I2S_CHANS_ADC / I2S_CHANS_PER_FRAME)
+#endif
+
+/*
+ * Defines relating to the interface to external audio hardware i.e. DAC/ADC
+ */
 
 #define XUA_PCM_FORMAT_I2S      (0)
 #define XUA_PCM_FORMAT_TDM      (1)
@@ -120,30 +158,17 @@
     #endif
 #endif
 
-
 /**
- * @brief Number of IS2 channesl to DAC/CODEC. Must be a multiple of 2.
+ * @brief Number of bits per channel for I2S/TDM. Supported values: 16/32-bit.
  *
- * Default: NONE (Must be defined by app)
+ * Default: 32 bits
  */
-#ifndef I2S_CHANS_DAC
-    #error I2S_CHANS_DAC not defined
-    #define I2S_CHANS_DAC 2          /* Define anyway for doxygen */
-#else
-#define I2S_WIRES_DAC            (I2S_CHANS_DAC / I2S_CHANS_PER_FRAME)
+#ifndef XUA_I2S_N_BITS
+#define XUA_I2S_N_BITS           (32)
 #endif
 
-
-/**
- * @brief Number of I2S channels from ADC/CODEC. Must be a multiple of 2.
- *
- * Default: NONE (Must be defined by app)
- */
-#ifndef I2S_CHANS_ADC
-    #error I2S_CHANS_ADC not defined
-    #define I2S_CHANS_ADC 2      /* Define anyway for doxygen */
-#else
-#define I2S_WIRES_ADC            (I2S_CHANS_ADC / I2S_CHANS_PER_FRAME)
+#if (XUA_I2S_N_BITS != 16) && (XUA_I2S_N_BITS != 32)
+#error Unsupported value for XUA_I2S_N_BITS (only values 16/32 supported)
 #endif
 
 /**
@@ -197,18 +222,9 @@
     #define I2S_DOWNSAMPLE_CHANS_IN I2S_CHANS_ADC
 #endif
 
-/**
- * @brief Number of bits per channel for I2S/TDM. Supported values: 16/32-bit.
- *
- * Default: 32 bits
+/*
+ * Clocking related defines
  */
-#ifndef XUA_I2S_N_BITS
-#define XUA_I2S_N_BITS (32)
-#endif
-
-#if (XUA_I2S_N_BITS != 16) && (XUA_I2S_N_BITS != 32)
-#error Unsupported value for XUA_I2S_N_BITS (only values 16/32 supported)
-#endif
 
 /**
  * @brief Max supported sample frequency for device (Hz). Default: 192000
@@ -241,26 +257,64 @@
 #endif
 
 /**
+ * @brief Enable/disable the use of the secondary/application PLL for generating master-clock.
+ *        Only available on xcore.ai devices.
+ *
+ * Default: Enabled (for xcore.ai devices)
+ */
+#ifndef XUA_USE_APP_PLL
+    #if defined(__XS3A__)
+        #if (XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
+            /* Currently must use an external CS2100 device for syncing to external digital streams */
+            #define XUA_USE_APP_PLL        (0)
+        #else
+            #define XUA_USE_APP_PLL        (1)
+        #endif
+    #else
+        #define XUA_USE_APP_PLL            (0)
+    #endif
+#endif
+
+/**
  * @brief Default device sample frequency. A safe default should be used. Default: MIN_FREQ
  */
 #ifndef DEFAULT_FREQ
 #define DEFAULT_FREQ             (MIN_FREQ)
 #endif
 
-/* Audio Class Defines */
+#define DEFAULT_MCLK       (((DEFAULT_FREQ % 7350) == 0) ? MCLK_441 : MCLK_48)
 
 /**
- * @brief USB Audio Class Version. Default: 2 (Audio Class version 2.0)
+ * @brief Defines whether XMOS device runs as master (i.e. drives LR and Bit clocks)
+ *
+ * 0: XMOS is I2S master. 1: CODEC is I2s master.
+ *
+ * Default: 0 (XMOS is master)
+ */
+#ifndef CODEC_MASTER
+#define CODEC_MASTER       (0)
+#endif
+
+/*
+ * Audio Class defines
+ */
+
+/**
+ * @brief USB Audio Class Version
+ *
+ * Default: 2 (Audio Class version 2.0)
  */
 #ifndef AUDIO_CLASS
-#define AUDIO_CLASS 2
+#define AUDIO_CLASS              (2)
 #endif
 
 /**
- * @brief Whether or not to fall back to Audio Class 1.0 in USB Full-speed. Default: 0 (Disabled)
+ * @brief Enable/disable fall back to Audio Class 1.0 in USB Full-speed.
+ *
+ * Default: Disabled
  */
 #ifndef AUDIO_CLASS_FALLBACK
-#define AUDIO_CLASS_FALLBACK  0     /* Default to not falling back to UAC 1 */
+#define AUDIO_CLASS_FALLBACK     (0)
 #endif
 
 /**
@@ -289,14 +343,17 @@
 #error AUDIO_CLASS set to 1 and FULL_SPEED_AUDIO_2 enabled!
 #endif
 
-
-/* Feature defines */
+/*
+ * Feature defines
+ */
 
 /**
- * @brief Number of PDM microphones in the design. Default: None
+ * @brief Disable USB functionalty just leaving AudioHub
+ *
+ * Default: Enabled
  */
-#ifndef XUA_NUM_PDM_MICS
-#define XUA_NUM_PDM_MICS            (0)
+#ifndef XUA_USB_EN
+#define XUA_USB_EN               (1)
 #endif
 
 /**
@@ -480,17 +537,6 @@
  */
 #ifndef HID_OUT_REQUIRED
 #define HID_OUT_REQUIRED       (0)
-#endif
-
-/**
- * @brief Defines whether XMOS device runs as master (i.e. drives LR and Bit clocks)
- *
- * 0: XMOS is I2S master. 1: CODEC is I2s master.
- *
- * Default: 0 (XMOS is master)
- */
-#ifndef CODEC_MASTER
-#define CODEC_MASTER       (0)
 #endif
 
 /**
