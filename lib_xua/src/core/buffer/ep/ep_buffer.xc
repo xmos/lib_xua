@@ -247,7 +247,7 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
 #if (NUM_USB_CHAN_IN > 0)
     unsigned bufferIn = 1;
 #endif
-    unsigned sofCount = 0;
+    int sofCount = 0;
     int pllUpdate = 0;
 
     unsigned mod_from_last_time = 0;
