@@ -84,9 +84,9 @@ void AudioHwConfig_UnMute(void);
  *
  * \param dsdMode       DSD mode, DSD_MODE_NATIVE, DSD_MODE_DOP or DSD_MODE_OFF
  *
- * \param sampReq_DAC   Playback sample resolution (in bits)
+ * \param sampRes_DAC   Playback sample resolution (in bits)
  *
- * \param sampReq_ADC   Record sample resolution (in bits)
+ * \param sampRes_ADC   Record sample resolution (in bits)
  */
 void AudioHwConfig(unsigned samFreq, unsigned mClk, unsigned dsdMode, unsigned sampRes_DAC, unsigned sampRes_ADC);
 
