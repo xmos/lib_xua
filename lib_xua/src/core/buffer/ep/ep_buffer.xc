@@ -247,7 +247,8 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
 #if (NUM_USB_CHAN_IN > 0)
     unsigned bufferIn = 1;
 #endif
-    unsigned sofCount = 0;
+    int sofCount = 0;
+    int pllUpdate = 0;
 
     unsigned mod_from_last_time = 0;
 #ifdef FB_TOLERANCE_TEST
@@ -363,6 +364,12 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
     t_sofCheck :> timeLastEdge;
     timeNextEdge + LOCAL_CLOCK_INCREMENT;
     i_pll_ref.toggle();
+
+#if (XUA_USE_APP_PLL)
+    struct PllSettings pllSettings;
+    AppPllGetSettings(DEFAULT_MCLK, pllSettings);
+#endif
+
 #endif
 
     while(1)
@@ -427,7 +434,8 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
                             /* Reset FB */
                             /* Note, Endpoint 0 will hold off host for a sufficient period to allow our feedback
                              * to stabilise (i.e. sofCount == 128 to fire) */
-                            sofCount = 1;
+                            sofCount = 0;
+                            pllUpdate = 0;
                             clocks = 0;
                             clockcounter = 0;
                             mod_from_last_time = 0;
@@ -449,6 +457,10 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
                             {
                                 masterClockFreq = MCLK_441;
                             }
+
+#if (XUA_USE_APP_PLL && (XUA_SYNCMODE == XUA_SYNCMODE_SYNC))
+                            AppPllGetSettings(masterClockFreq, pllSettings);
+#endif
                         }
 #endif
                         /* Ideally we want to wait for handshake (and pass back up) here.  But we cannot keep this
@@ -528,7 +540,6 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
                 unsigned usbSpeed;
                 int framesPerSec;
                 GET_SHARED_GLOBAL(usbSpeed, g_curUsbSpeed);
-                static int sofCount = 0;
 
                 framesPerSec = (usbSpeed == XUD_SPEED_HS) ? 8000 : 1000;
 
@@ -544,7 +555,21 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
                     t_sofCheck :> timeLastEdge;
                     sofCount = 0;
                     timeNextEdge = timeLastEdge + LOCAL_CLOCK_INCREMENT + LOCAL_CLOCK_MARGIN;
+                    pllUpdate++;
                 }
+#if (XUA_USE_APP_PLL)
+                // Update PLL @ 100Hz
+                if(pllUpdate == 10)
+                {
+                    pllUpdate = 0;
+                    unsigned short mclk_pt;
+                    asm volatile("getts %0, res[%1]" : "=r" (mclk_pt) : "r" (p_off_mclk));
+
+                    // TODO on a change of SR we don't want to run this before audiohub has set the PLL to the new freq
+                    AppPllUpdate(tile[XUD_TILE], mclk_pt, pllSettings);
+                }
+#endif
+
 #elif (XUA_SYNCMODE == XUA_SYNCMODE_ASYNC)
 
                 /* NOTE our feedback will be wrong for a couple of SOF's after a SF change due to

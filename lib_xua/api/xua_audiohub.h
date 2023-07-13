@@ -63,16 +63,32 @@ void XUA_AudioHub(chanend ?c_aud,
 
 void SpdifTxWrapper(chanend c_spdif_tx);
 
-/* These functions must be implemented for the CODEC/ADC/DAC arrangement of a specific design */
+/* The 4 functions below should implemented for the external audio haardware arrangement of a specific design.
+ * Note, default (empty) implementations of these are provided in audiohub_user.c
+ */
 
-/* Any required clocking and CODEC initialisation - run once at start up */
-/* TODO Provide default implementation of this */
-void AudioHwInit();
+/** User code for any required audio hardwarte initialisation - run once at start up */
+void AudioHwInit(void);
 
-/* Configure audio hardware (clocking, CODECs etc) for a specific mClk/Sample frquency - run on every sample frequency change */
-/* TODO Provide default implementation of this */
-void AudioHwConfig(unsigned samFreq, unsigned mClk, unsigned dsdMode,
-        unsigned sampRes_DAC, unsigned sampRes_ADC);
+/** User code to mute audio hardware before a sample rate change - run every sample frequency change */
+void AudioHwConfig_Mute(void);
+
+/** User code to un-mute audio hardware after a sample rate change - run every sample frequency change */
+void AudioHwConfig_UnMute(void);
+
+/** User code Configure audio hardware (clocking, CODECs etc) for a specific mClk/Sample frquency - run on every sample frequency change
+ *
+ * \param samFreq       The new sample frequency (in Hz)
+ *
+ * \param mclk          The new master clock frequency (in Hz)
+ *
+ * \param dsdMode       DSD mode, DSD_MODE_NATIVE, DSD_MODE_DOP or DSD_MODE_OFF
+ *
+ * \param sampRes_DAC   Playback sample resolution (in bits)
+ *
+ * \param sampRes_ADC   Record sample resolution (in bits)
+ */
+void AudioHwConfig(unsigned samFreq, unsigned mClk, unsigned dsdMode, unsigned sampRes_DAC, unsigned sampRes_ADC);
 
 #endif // __XC__
 

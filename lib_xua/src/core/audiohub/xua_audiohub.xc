@@ -86,7 +86,7 @@ static inline int HandleSampleClock(int frameCount, buffered _XUA_CLK_DIR port:3
     unsigned syncError = 0;
     unsigned lrval = 0;
     const unsigned lrval_mask = (0xffffffff << (32 - XUA_I2S_N_BITS));
-    
+
     if(XUA_I2S_N_BITS != 32)
     {
         asm volatile("in %0, res[%1]":"=r"(lrval):"r"(p_lrclk):"memory");
@@ -306,7 +306,7 @@ unsigned static AudioHub_MainLoop(chanend ?c_out, chanend ?c_spd_out
                     // Manual IN instruction since compiler generates an extra setc per IN (bug #15256)
                     unsigned sample;
                     asm volatile("in %0, res[%1]" : "=r"(sample)  : "r"(p_i2s_adc[index]));
-                    
+
                     sample = bitrev(sample);
                     if(XUA_I2S_N_BITS != 32)
                     {
@@ -687,6 +687,12 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
 #endif
 #endif
 
+#if (XUA_USE_APP_PLL)
+    /* Use xCORE.ai Secondary PLL to generate master clock
+     * This could be "fixed" for async mode or adjusted if in sync mode */
+    AppPllEnable(tile[AUDIO_IO_TILE], DEFAULT_MCLK);
+#endif
+
     /* Perform required CODEC/ADC/DAC initialisation */
     AudioHwInit();
 
@@ -798,8 +804,19 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
                 curFreq *= 16;
             }
 #endif
-            /* Configure Clocking/CODEC/DAC/ADC for SampleFreq/MClk */
+
+            /* User should mute audio hardware */
+            AudioHwConfig_Mute();
+
+#if (XUA_USE_APP_PLL)
+            AppPllEnable(tile[AUDIO_IO_TILE], mClk);
+#endif
+
+            /* User code should configure audio harware for SampleFreq/MClk etc */
             AudioHwConfig(curFreq, mClk, dsdMode, curSamRes_DAC, curSamRes_ADC);
+
+            /* User should unmute audio hardware */
+            AudioHwConfig_UnMute();
         }
 
         if(!firstRun)
