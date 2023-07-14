@@ -63,47 +63,28 @@ void XUA_AudioHub(chanend ?c_aud,
 
 void SpdifTxWrapper(chanend c_spdif_tx);
 
-/* The 4 functions below should implemented for the external audio haardware arrangement of a specific design.
- * Note, default (empty) implementations of these are provided in audiohub_user.c
- */
-
-/** This function is called when the device starts up and should contain user code to perform any required audio hardware initialisation */
-void AudioHwInit(void);
-
-
-
-/** This function is called when on sample rate change and should contain user code to configure audio hardware
- *  (clocking, CODECs etc) for a specific mClk/Sample frequency
- *
- * \param samFreq       The new sample frequency (in Hz)
- *
- * \param mClk          The new master clock frequency (in Hz)
- *
- * \param dsdMode       DSD mode, DSD_MODE_NATIVE, DSD_MODE_DOP or DSD_MODE_OFF
- *
- * \param sampRes_DAC   Playback sample resolution (in bits)
- *
- * \param sampRes_ADC   Record sample resolution (in bits)
- */
-void AudioHwConfig(unsigned samFreq, unsigned mClk, unsigned dsdMode, unsigned sampRes_DAC, unsigned sampRes_ADC);
-
-/** This function is called before AudioHwConfig() and should contain user code to mute audio hardware before a
- *  sample rate change in order to reduced audible pops/clicks
- *
- *  Note, if using the application PLL of a xcore.ai device this function will be called before the master-clock is
- *  changed
- */
-void AudioHwConfig_Mute(void);
-
-/** This function is called after AudioHwConfig() and should contain user code to un-mute audio hardware after a
- *  sample rate change
- */
-void AudioHwConfig_UnMute(void);
-
 #endif // __XC__
 
-void UserBufferManagementInit();
-
+/**
+ * @brief   User buffer management code
+ *
+ * This function is called at the sample rate of the USB Audio stack (e.g,. 48 kHz) and between the two parameter arrays
+ * contain a full multi-channel audio-frame. The first array carries all the data that has been received from the USB host
+ * and is to be presented to the audio interfaces. The second array carries all the data received from the interfaces and
+ * is to be presented to the USB host. The user can chose to intercept and overwrite the samples stored in these arrays.
+ *
+ * \param sampsFromUsbToAudio    Samples received from USB host and to be presented to audio interfaces
+ *
+ * \param sampsFromAudioToUsb    Samples received from the audio interfaces and to be presented to the USB host
+*/
 void UserBufferManagement(unsigned sampsFromUsbToAudio[], unsigned sampsFromAudioToUsb[]);
+
+/**
+ * @brief   User buffer managment init code
+ *
+ * This function is called once, before the first call to UserBufferManagement(), and can be used to initialise any
+ * related user state
+ */
+void UserBufferManagementInit();
 
 #endif // _XUA_AUDIOHUB_H_

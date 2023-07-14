@@ -17,8 +17,9 @@
 #include <string.h>
 #include <xassert.h>
 
-
 #include "xua.h"
+
+#include "audiohw.h"
 
 #include "audioports.h"
 #include "mic_array_conf.h"
