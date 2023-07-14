@@ -81,7 +81,7 @@ void XUA_Buffer_Ep(chanend c_aud_out,
 #ifdef CHAN_BUFF_CTRL
             , chanend c_buff_ctrl
 #endif
-#if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC) || defined(__DOXYGEN__)
+#if ((XUA_SYNCMODE == XUA_SYNCMODE_SYNC) && !XUA_USE_APP_PLL) || defined(__DOXYGEN__)
             , client interface pll_ref_if i_pll_ref
 #endif
         );

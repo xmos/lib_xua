@@ -358,16 +358,17 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
 #ifndef LOCAL_CLOCK_MARGIN
 #define LOCAL_CLOCK_MARGIN          (1000)
 #endif
+
+#if (XUA_USE_APP_PLL)
+    struct PllSettings pllSettings;
+    AppPllGetSettings(DEFAULT_MCLK, pllSettings);
+#else
     timer t_sofCheck;
     unsigned timeLastEdge;
     unsigned timeNextEdge;
     t_sofCheck :> timeLastEdge;
     timeNextEdge + LOCAL_CLOCK_INCREMENT;
     i_pll_ref.toggle();
-
-#if (XUA_USE_APP_PLL)
-    struct PllSettings pllSettings;
-    AppPllGetSettings(DEFAULT_MCLK, pllSettings);
 #endif
 
 #endif
@@ -520,7 +521,7 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
                 }
                 break;
             }
-#if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
+#if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC) && (!XUA_USE_APP_PLL)
             case t_sofCheck when timerafter(timeNextEdge) :> void:
                 i_pll_ref.toggle();
                 timeLastEdge = timeNextEdge;
@@ -550,12 +551,14 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
                 sofCount += 1000;
                 if (sofCount == framesPerSec)
                 {
+                    sofCount = 0;
+                    pllUpdate++;
+#if (!XUA_USE_APP_PLL)
                     /* Port is accessed via interface to allow flexibilty with location */
                     i_pll_ref.toggle();
                     t_sofCheck :> timeLastEdge;
-                    sofCount = 0;
                     timeNextEdge = timeLastEdge + LOCAL_CLOCK_INCREMENT + LOCAL_CLOCK_MARGIN;
-                    pllUpdate++;
+#endif
                 }
 #if (XUA_USE_APP_PLL)
                 // Update PLL @ 100Hz
@@ -671,7 +674,6 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
                         clockcounter = 0;
                     }
 #else
-
                     /* Assuming 48kHz from a 24.576 master clock (0.0407uS period)
                      * MCLK ticks per SOF = 125uS / 0.0407 = 3072 MCLK ticks per SOF.
                      * expected Feedback is 48000/8000 = 6 samples. so 0x60000 in 16:16 format.
@@ -922,8 +924,8 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
 #endif
 #endif
 
-#if XUA_HID_ENABLED
-                /* HID Report Data */
+#if (XUA_HID_ENABLED)
+            /* HID Report Data */
             case XUD_SetData_Select(c_hid, ep_hid, result):
                 hid_ready_flag = 0U;
                 unsigned reportTime;
@@ -936,7 +938,7 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
 #endif
 
 #ifdef MIDI
-                /* Received word from MIDI thread - Check for ACK or Data */
+            /* Received word from MIDI thread - Check for ACK or Data */
             case midi_get_ack_or_data(c_midi, is_ack, datum):
                 if (is_ack)
                 {

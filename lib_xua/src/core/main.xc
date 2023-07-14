@@ -145,7 +145,7 @@ on stdcore[XUD_TILE] : buffered in port:32 p_adat_rx        = PORT_ADAT_IN;
 on tile[XUD_TILE] : in port p_spdif_rx                      = PORT_SPDIF_IN;
 #endif
 
-#if (XUA_SPDIF_RX_EN) || (XUA_ADAT_RX_EN) || (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
+#if (XUA_SPDIF_RX_EN) || (XUA_ADAT_RX_EN) || ((XUA_SYNCMODE == XUA_SYNCMODE_SYNC) && (!XUA_USE_APP_PLL))
 /* Reference to external clock multiplier */
 on tile[PLL_REF_TILE] : out port p_pll_ref                  = PORT_PLL_REF;
 #endif
@@ -467,7 +467,7 @@ int main()
 #endif
 #endif
 
-#if ((XUA_SYNCMODE == XUA_SYNCMODE_SYNC) || XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
+#if (((XUA_SYNCMODE == XUA_SYNCMODE_SYNC) && !XUA_USE_APP_PLL) || XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
     interface pll_ref_if i_pll_ref;
 #endif
     chan c_sof;
@@ -491,7 +491,7 @@ int main()
     {
         USER_MAIN_CORES
 
-#if ((XUA_SYNCMODE == XUA_SYNCMODE_SYNC) || XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
+#if (((XUA_SYNCMODE == XUA_SYNCMODE_SYNC) && XYA_USE_APP_PLL) || XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
         on tile[PLL_REF_TILE]: PllRefPinTask(i_pll_ref, p_pll_ref);
 #endif
         on tile[XUD_TILE]:
@@ -563,7 +563,7 @@ int main()
                            , c_xud_in[ENDPOINT_NUMBER_IN_HID]
 #endif
                            , c_mix_out
-#if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
+#if ((XUA_SYNCMODE == XUA_SYNCMODE_SYNC) && (!XUA_USE_APP_PLL))
                            , i_pll_ref
 #endif
                     );
