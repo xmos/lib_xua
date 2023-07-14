@@ -67,20 +67,17 @@ void SpdifTxWrapper(chanend c_spdif_tx);
  * Note, default (empty) implementations of these are provided in audiohub_user.c
  */
 
-/** User code for any required audio hardwarte initialisation - run once at start up */
+/** This function is called when the device starts up and should contain user code to perform any required audio hardware initialisation */
 void AudioHwInit(void);
 
-/** User code to mute audio hardware before a sample rate change - run every sample frequency change */
-void AudioHwConfig_Mute(void);
 
-/** User code to un-mute audio hardware after a sample rate change - run every sample frequency change */
-void AudioHwConfig_UnMute(void);
 
-/** User code Configure audio hardware (clocking, CODECs etc) for a specific mClk/Sample frquency - run on every sample frequency change
+/** This function is called when on sample rate change and should contain user code to configure audio hardware
+ *  (clocking, CODECs etc) for a specific mClk/Sample frequency
  *
  * \param samFreq       The new sample frequency (in Hz)
  *
- * \param mclk          The new master clock frequency (in Hz)
+ * \param mClk          The new master clock frequency (in Hz)
  *
  * \param dsdMode       DSD mode, DSD_MODE_NATIVE, DSD_MODE_DOP or DSD_MODE_OFF
  *
@@ -89,6 +86,19 @@ void AudioHwConfig_UnMute(void);
  * \param sampRes_ADC   Record sample resolution (in bits)
  */
 void AudioHwConfig(unsigned samFreq, unsigned mClk, unsigned dsdMode, unsigned sampRes_DAC, unsigned sampRes_ADC);
+
+/** This function is called before AudioHwConfig() and should contain user code to mute audio hardware before a
+ *  sample rate change in order to reduced audible pops/clicks
+ *
+ *  Note, if using the application PLL of a xcore.ai device this function will be called before the master-clock is
+ *  changed
+ */
+void AudioHwConfig_Mute(void);
+
+/** This function is called after AudioHwConfig() and should contain user code to un-mute audio hardware after a
+ *  sample rate change
+ */
+void AudioHwConfig_UnMute(void);
 
 #endif // __XC__
 
