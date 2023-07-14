@@ -1,10 +1,19 @@
-Required User Function Definitions
-==================================
+|newpage|
 
-The following functions need to be defined by an application using `lib_xua`.
+User Function Definitions
+=========================
+
+The following functions can be defined by an application using `lib_xua`.
+
+.. note:: Default, empty, implementations of these functions are provided in `lib_xua`. These are marked
+   as weak symbols so the application can simply define its own version of them.
 
 External Audio Hardware Configuration Functions
 -----------------------------------------------
+
+The following functions can be optionally used by the design to configure external audio hardware.
+As a minimum, in most applications, it is expected that a implementation of `AudioHwConfig()` will need
+to be provided.
 
 .. doxygenfunction:: AudioHwInit
 .. doxygenfunction:: AudioHwConfig
@@ -12,38 +21,29 @@ External Audio Hardware Configuration Functions
 .. doxygenfunction:: AudioHwConfig_UnMute
 
 
-Audio Streaming Functions
--------------------------
+Audio Stream Start/Stop Functions
+---------------------------------
 
 The following functions can be optionally used by the design. They can be useful for mute lines etc.
 
-.. c:function:: void AudioStreamStart(void)
+.. doxygenfunction:: UserAudioStreamStart
+.. doxygenfunction:: UserAudioStreamStop
+.. doxygenfunction:: UserAudioInputStreamStart
+.. doxygenfunction:: UserAudioInputStreamStop
+.. doxygenfunction:: UserAudioOutputStreamStart
+.. doxygenfunction:: UserAudioOutputStreamStop
 
-  This function is called when the audio stream from device to host
-  starts.
-
-.. c:function:: void AudioStreamStop(void)
-
-  This function is called when the audio stream from device to host stops.
-
-Host Active
------------
+Host Active Functions
+---------------------
 
 The following function can be used to signal that the device is connected to a valid host.
 
-This is called on a change in state.
-
-.. c:function:: void AudioStreamStart(int active)
-
-   :param active: Indicates if the host is active or not. 1 for active else 0.
-
+.. doxygenfunction:: UserHostActive
 
 HID Controls
 ------------
 
 The following function is called when the device wishes to read physical user input (buttons etc).
+The function should write relevant HID bits into this array. The bit ordering and functionality is defined by the HID report descriptor used.
 
-.. c:function:: void UserReadHIDButtons(unsigned char hidData[])
-
-    :param hidData: The function should write relevant HID bits into this array. The bit ordering and functionality is defined by the HID report descriptor used.
-
+.. doxygenfunction:: UserHIDGetData

@@ -518,11 +518,10 @@
  * You must also supply your own function to deal with the HID endpoint(s)
  * in this case.
  */
-#if( 0 < HID_CONTROLS )
+#if (HID_CONTROLS) || defined (__DOXYGEN__)
 #define   XUA_HID_ENABLED            (1)
 #define   XUA_OR_STATIC_HID_ENABLED  (1)
 #endif
-
 
 #if defined(__static_hid_report_h_exists__)
 #define   XUA_OR_STATIC_HID_ENABLED  (1)

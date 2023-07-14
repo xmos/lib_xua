@@ -1,30 +1,51 @@
-// Copyright 2011-2021 XMOS LIMITED.
+// Copyright 2011-2023 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 #ifndef _AUDIOSTREAM_H_
 #define _AUDIOSTREAM_H_
 
-/* Functions that handle functions that must occur on stream start/stop e.g. DAC mute/un-mute
- *
- * THESE NEED IMPLEMENTING FOR A SPECIFIC DESIGN
- *
- * */
+/* Functions that handle functionality that occur on stream start/stop e.g. DAC mute/un-mute.
+ * They should be implemented for the external audio hardware arrangement of a specific design.
+ */
 
-/* Any actions required for stream start e.g. DAC un-mute - run every stream start */
+/**
+ * @brief   User stream start code
+ *
+ * User code to perform any actions required at every stream start - either input or output
+ */
 void UserAudioStreamStart(void);
 
-/* Any actions required on stream stop e.g. DAC mute - run every steam stop  */
+/**
+ * @brief   User stream stop code
+ *
+ * User code to perform any actions required on every stream stop - either input or output*/
 void UserAudioStreamStop(void);
 
-/* Any actions required on input stream start */
+/**
+ * @brief   User input stream stop code
+ *
+ * User code to perform any actions required on input stream start i.e. device to host
+ */
 void UserAudioInputStreamStart(void);
 
-/* Any actions required on input stream stop */
+/**
+ * @brief   User input stream stop code
+ *
+ * User code to perform any actions required on input stream stop i.e. device to host
+ */
 void UserAudioInputStreamStop(void);
 
-/* Any actions required on output stream start */
+/**
+ * @brief   User output stream start code
+ *
+ * User code to perform any actions required on output stream start i.e. host to device
+ */
 void UserAudioOutputStreamStart(void);
 
-/* Any actions required on output stream stop */
+/**
+ * @brief   User output stream stop code
+ *
+ * User code to perfrom any actions required on output stream stop i.e. host to device
+ */
 void UserAudioOutputStreamStop(void);
 
 #endif
