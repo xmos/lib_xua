@@ -104,7 +104,7 @@ void XUA_Buffer(
     , chanend c_hid
 #endif
     , chanend c_aud
-#if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
+#if ((XUA_SYNCMODE == XUA_SYNCMODE_SYNC) && !XUA_USE_APP_PLL)
     , client interface pll_ref_if i_pll_ref
 #endif
 )
@@ -140,7 +140,7 @@ void XUA_Buffer(
 #ifdef CHAN_BUFF_CTRL
                 , c_buff_ctrl
 #endif
-#if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
+#if ((XUA_SYNCMODE == XUA_SYNCMODE_SYNC) && !XUA_USE_APP_PLL)
                 , i_pll_ref
 #endif
             );
@@ -190,7 +190,7 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
 #ifdef CHAN_BUFF_CTRL
     , chanend c_buff_ctrl
 #endif
-#if XUA_SYNCMODE == XUA_SYNCMODE_SYNC
+#if ((XUA_SYNCMODE == XUA_SYNCMODE_SYNC) && !XUA_USE_APP_PLL)
     , client interface pll_ref_if i_pll_ref
 #endif
     )

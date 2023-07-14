@@ -1,7 +1,7 @@
-// Copyright 2011-2022 XMOS LIMITED.
+// Copyright 2011-2023 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
-#ifndef __XUA_BUFFER_H__
-#define __XUA_BUFFER_H__
+#ifndef _XUA_BUFFER_H_
+#define _XUA_BUFFER_H_
 
 #if __XC__
 
@@ -51,7 +51,7 @@ void XUA_Buffer(
             , chanend c_hid
 #endif
             , chanend c_aud
-#if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC) || defined(__DOXYGEN__)
+#if ((XUA_SYNCMODE == XUA_SYNCMODE_SYNC) && !XUA_USE_APP_PLL) || defined(__DOXYGEN__)
             , client interface pll_ref_if i_pll_ref
 #endif
         );
