@@ -227,21 +227,27 @@
  */
 
 /**
- * @brief Max supported sample frequency for device (Hz). Default: 192000
+ * @brief Max supported sample frequency for device (Hz).
+ *
+ * Default: 192000Hz
  */
 #ifndef MAX_FREQ
 #define MAX_FREQ                 (192000)
 #endif
 
 /**
- * @brief Min supported sample frequency for device (Hz). Default 44100
+ * @brief Min supported sample frequency for device (Hz).
+ *
+ * Default: 44100Hz
  */
 #ifndef MIN_FREQ
 #define MIN_FREQ                 (44100)
 #endif
 
 /**
- * @brief Master clock defines for 44100 rates (in Hz). Default: NONE (Must be defined by app)
+ * @brief Master clock defines for 44100 rates (in Hz).
+ *
+ * Default: NONE (Must be defined by app)
  */
 #ifndef MCLK_441
     #error MCLK_441 not defined
@@ -249,7 +255,9 @@
 #endif
 
 /**
- * @brief Master clock defines for 48000 rates (in Hz). Default: NONE (Must be defined by app)
+ * @brief Master clock defines for 48000 rates (in Hz).
+ *
+ * Default: NONE (Must be defined by app)
  */
 #ifndef MCLK_48
     #error MCLK_48 not defined
@@ -257,7 +265,7 @@
 #endif
 
 /**
- * @brief Enable/disable the use of the secondary/application PLL for generating master-clock.
+ * @brief Enable/disable the use of the secondary/application PLL for generating master-clocks.
  *        Only available on xcore.ai devices.
  *
  * Default: Enabled (for xcore.ai devices)
@@ -276,7 +284,9 @@
 #endif
 
 /**
- * @brief Default device sample frequency. A safe default should be used. Default: MIN_FREQ
+ * @brief Default device sample frequency. A safe default should be used.
+ *
+ * Default: MIN_FREQ
  */
 #ifndef DEFAULT_FREQ
 #define DEFAULT_FREQ             (MIN_FREQ)
