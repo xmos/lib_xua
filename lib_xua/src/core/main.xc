@@ -314,6 +314,9 @@ void usb_audio_io(chanend ?c_aud_in,
 #if (XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
     , client interface pll_ref_if i_pll_ref
 #endif
+#if (XUA_USE_APP_PLL)
+    , client interface SoftPll_if i_softPll
+#endif
 )
 {
 #if (MIXER)
@@ -364,6 +367,9 @@ void usb_audio_io(chanend ?c_aud_in,
 #define AUDIO_CHANNEL c_aud_in
 #endif
             XUA_AudioHub(AUDIO_CHANNEL, clk_audio_mclk, clk_audio_bclk, p_mclk_in, p_lrclk, p_bclk, p_i2s_dac, p_i2s_adc
+#if (XUA_USE_APP_PLL)
+                , i_softPll
+#endif
 #if (XUA_SPDIF_TX_EN) //&& (SPDIF_TX_TILE != AUDIO_IO_TILE)
                 , c_spdif_tx
 #endif
@@ -470,6 +476,11 @@ int main()
 #if (((XUA_SYNCMODE == XUA_SYNCMODE_SYNC) && !XUA_USE_APP_PLL) || XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
     interface pll_ref_if i_pll_ref;
 #endif
+
+#if (XUA_USE_APP_PLL)
+    interface SoftPll_if i_softPll;
+    chan c_swpll_update;
+#endif
     chan c_sof;
     chan c_xud_out[ENDPOINT_COUNT_OUT];              /* Endpoint channels for XUD */
     chan c_xud_in[ENDPOINT_COUNT_IN];
@@ -522,6 +533,10 @@ int main()
                          c_sof, epTypeTableOut, epTypeTableIn, usbSpeed, xudPwrCfg);
             }
 
+#if (XUA_USE_APP_PLL)
+            //XUA_SoftPll(tile[0], i_softPll, c_swpll_update);
+#endif
+
             /* Core USB audio task, buffering, USB etc */
             {
                 unsigned x;
@@ -563,8 +578,12 @@ int main()
                            , c_xud_in[ENDPOINT_NUMBER_IN_HID]
 #endif
                            , c_mix_out
-#if ((XUA_SYNCMODE == XUA_SYNCMODE_SYNC) && (!XUA_USE_APP_PLL))
+#if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
+    #if (!XUA_USE_APP_PLL)
                            , i_pll_ref
+    #else
+                           , c_swpll_update
+    #endif
 #endif
                     );
                 //:
@@ -579,6 +598,7 @@ int main()
 #endif /* XUA_USB_EN */
         }
 
+        on tile[AUDIO_IO_TILE]: XUA_SoftPll(tile[0], i_softPll, c_swpll_update);
         on tile[AUDIO_IO_TILE]:
         {
             /* Audio I/O task, includes mixing etc */
@@ -601,6 +621,9 @@ int main()
 #endif
 #if (XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
                 , i_pll_ref
+#endif
+#if (XUA_USE_APP_PLL)
+                , i_softPll
 #endif
             );
         }

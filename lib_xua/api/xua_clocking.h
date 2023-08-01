@@ -31,18 +31,35 @@ void PllRefPinTask(server interface pll_ref_if i_pll_ref, out port p_sync);
 void clockGen(streaming chanend ?c_spdif_rx, chanend ?c_adat_rx, client interface pll_ref_if i_pll_ref, chanend c_audio, chanend c_clk_ctl, chanend c_clk_int);
 
 #if (XUA_USE_APP_PLL)
-struct PllSettings
+struct SoftPllState
 {
     // Count we expect on MCLK port timer at SW PLL check point.
     // Note, we expect wrapping so this is essentiually a modulus
-    unsigned adder;
-    unsigned fracIdx;
-    int firstUpdate;
+    unsigned expectedClkMod;
+    unsigned initialSetting;
+    unsigned setting;
+    unsigned firstUpdate;
+
+    unsigned ds_in;
+    int ds_fb;
+    int ds_x1;
+    int ds_x2;
 };
 
 void AppPllEnable(tileref tile, int mclkFreq_hz);
-void AppPllGetSettings(int clkFreq_hz, struct PllSettings &pllSettings);
-void AppPllUpdate(tileref tile, unsigned short mclk_pt, struct PllSettings &pllSettings);
+void AppPllGetSettings(int clkFreq_hz, struct SoftPllState &pllState);
+void AppPllUpdate(tileref tile, unsigned short mclk_pt, struct SoftPllState &pllState);
+
+interface SoftPll_if
+{
+    void init(int mclk_hz);
+};
+
+#if (XUA_SYNCMODE == XUA_SYNCMODE_ASYNC)
+[[distributable]]
+#endif
+void XUA_SoftPll(tileref tile, server interface SoftPll_if i_softPll, chanend c_update);
+
 #endif
 #endif
 

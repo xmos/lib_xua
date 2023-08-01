@@ -10,6 +10,9 @@
 #include "xud.h"
 #include "testct_byref.h"
 
+on tile[0] : out port p_test = XS1_PORT_1A;
+int tog = 0;
+
 #if XUA_HID_ENABLED
 #include "xua_hid_report.h"
 #include "user_hid.h"
@@ -104,8 +107,12 @@ void XUA_Buffer(
     , chanend c_hid
 #endif
     , chanend c_aud
-#if ((XUA_SYNCMODE == XUA_SYNCMODE_SYNC) && !XUA_USE_APP_PLL)
+#if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
+    #if(XUA_USE_APP_PLL)
+    , chanend c_swpll_update
+    #else
     , client interface pll_ref_if i_pll_ref
+    #endif
 #endif
 )
 {
@@ -140,8 +147,12 @@ void XUA_Buffer(
 #ifdef CHAN_BUFF_CTRL
                 , c_buff_ctrl
 #endif
-#if ((XUA_SYNCMODE == XUA_SYNCMODE_SYNC) && !XUA_USE_APP_PLL)
-                , i_pll_ref
+#if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
+    #if(XUA_USE_APP_PLL)
+               , c_swpll_update
+    #else
+               , i_pll_ref
+    #endif
 #endif
             );
 
@@ -190,8 +201,12 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
 #ifdef CHAN_BUFF_CTRL
     , chanend c_buff_ctrl
 #endif
-#if ((XUA_SYNCMODE == XUA_SYNCMODE_SYNC) && !XUA_USE_APP_PLL)
+#if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
+    #if (XUA_USE_APP_PLL)
+    , chanend c_swpll_update
+    #else
     , client interface pll_ref_if i_pll_ref
+    #endif
 #endif
     )
 {
@@ -295,7 +310,6 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
     unsigned iap_ea_native_interface_alt_setting = 0;
     unsigned iap_ea_native_control_to_send = 0;
     unsigned iap_ea_native_incoming = 0;
-
 #endif
 #endif
 
@@ -359,10 +373,7 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
 #define LOCAL_CLOCK_MARGIN          (1000)
 #endif
 
-#if (XUA_USE_APP_PLL)
-    struct PllSettings pllSettings;
-    AppPllGetSettings(DEFAULT_MCLK, pllSettings);
-#else
+#if (!XUA_USE_APP_PLL)
     timer t_sofCheck;
     unsigned timeLastEdge;
     unsigned timeNextEdge;
@@ -458,10 +469,6 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
                             {
                                 masterClockFreq = MCLK_441;
                             }
-
-#if (XUA_USE_APP_PLL && (XUA_SYNCMODE == XUA_SYNCMODE_SYNC))
-                            AppPllGetSettings(masterClockFreq, pllSettings);
-#endif
                         }
 #endif
                         /* Ideally we want to wait for handshake (and pass back up) here.  But we cannot keep this
@@ -515,7 +522,7 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
                     }
 #endif
                     /* Pass on sample freq change to decouple() via global flag (saves a chanend) */
-                    /* Note: freqChange flags now used to communicate other commands also */
+                    /* Note: freqChange_flag now used to communicate other commands also */
                     SET_SHARED_GLOBAL0(g_freqChange, cmd);                /* Set command */
                     SET_SHARED_GLOBAL(g_freqChange_flag, cmd);  /* Set Flag */
                 }
@@ -567,9 +574,10 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
                     pllUpdate = 0;
                     unsigned short mclk_pt;
                     asm volatile("getts %0, res[%1]" : "=r" (mclk_pt) : "r" (p_off_mclk));
-
-                    // TODO on a change of SR we don't want to run this before audiohub has set the PLL to the new freq
-                    AppPllUpdate(tile[XUD_TILE], mclk_pt, pllSettings);
+                    outuint(c_swpll_update, mclk_pt);
+                    outct(c_swpll_update, XS1_CT_END);
+                    p_test <: tog;
+                    tog = !tog;
                 }
 #endif
 
