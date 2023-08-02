@@ -10,9 +10,6 @@
 #include "xud.h"
 #include "testct_byref.h"
 
-on tile[0] : out port p_test = XS1_PORT_1A;
-int tog = 0;
-
 #if XUA_HID_ENABLED
 #include "xua_hid_report.h"
 #include "user_hid.h"
@@ -576,8 +573,6 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
                     asm volatile("getts %0, res[%1]" : "=r" (mclk_pt) : "r" (p_off_mclk));
                     outuint(c_swpll_update, mclk_pt);
                     outct(c_swpll_update, XS1_CT_END);
-                    p_test <: tog;
-                    tog = !tog;
                 }
 #endif
 

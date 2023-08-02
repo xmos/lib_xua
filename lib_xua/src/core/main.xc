@@ -598,7 +598,9 @@ int main()
 #endif /* XUA_USB_EN */
         }
 
+#if(XUA_USE_APP_PLL)
         on tile[AUDIO_IO_TILE]: XUA_SoftPll(tile[0], i_softPll, c_swpll_update);
+#endif
         on tile[AUDIO_IO_TILE]:
         {
             /* Audio I/O task, includes mixing etc */

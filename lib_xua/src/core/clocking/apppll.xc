@@ -292,16 +292,18 @@ int SoftPllUpdate(tileref tile, unsigned short mclk_pt, unsigned short mclk_pt_l
 #endif
 void XUA_SoftPll(tileref tile, server interface SoftPll_if i_softPll, chanend c_update)
 {
+#if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
     unsigned ds_out;
     timer tmr;
     int time;
     unsigned mclk_pt;
     unsigned short mclk_pt_last;
+    tmr :> time;
+#endif
     struct SoftPllState pllState;
     int running = 0;
     int firstUpdate = 1;
 
-    tmr :> time;
 
     while(1)
     {
@@ -347,7 +349,7 @@ void XUA_SoftPll(tileref tile, server interface SoftPll_if i_softPll, chanend c_
             default :
                 break;
 
-     }
+        }
 
         // Second order, Single bit delta sigma - mod2
         pllState.ds_x1 += pllState.ds_in - pllState.ds_fb;
