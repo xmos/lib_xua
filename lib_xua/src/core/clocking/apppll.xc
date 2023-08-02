@@ -292,7 +292,7 @@ int SoftPllUpdate(tileref tile, unsigned short mclk_pt, unsigned short mclk_pt_l
 #endif
 void XUA_SoftPll(tileref tile, server interface SoftPll_if i_softPll, chanend c_update)
 {
-#if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
+#if (XUA_SYNCMODE != XUA_SYNCMODE_ASYNC)
     unsigned ds_out;
     timer tmr;
     int time;
@@ -303,7 +303,6 @@ void XUA_SoftPll(tileref tile, server interface SoftPll_if i_softPll, chanend c_
     struct SoftPllState pllState;
     int running = 0;
     int firstUpdate = 1;
-
 
     while(1)
     {
