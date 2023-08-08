@@ -41,9 +41,9 @@ struct SoftPllState
     unsigned firstUpdate;
 
     unsigned ds_in;
-    int ds_fb;
     int ds_x1;
     int ds_x2;
+    int ds_x3;
 };
 
 void AppPllEnable(tileref tile, int mclkFreq_hz);

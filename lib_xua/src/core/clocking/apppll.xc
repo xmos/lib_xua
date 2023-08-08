@@ -19,35 +19,70 @@
  * App PLL settings used for syncing to external clocks
  */
 
-// Found solution: IN 24.000MHz, OUT 24.575758MHz, VCO 3244.00MHz, RD  3, FD  405.500 (m =   1, n =   2), OD  3, FOD   11, ERR -9.864ppm
-#define APP_PLL_CTL_SYNC_24M         (0x09019402)
-#define APP_PLL_DIV_SYNC_24M         (0x8000000A)
-#define APP_PLL_FRAC_SYNC_24M        (0x80000001)
+// Define the PLL settings to generate the required frequencies.
+// All settings allow greater than +-1000ppm lock range.
+// Comment out the following line for 2us update.
 
-// Fout = (Fin/3)*divider/(2*2*3*11) = (fin/396) * divider = (24/396) * divider. = 2/33 * divider.
-// Total freq tune range = ((406/405) - 1) * 1000000 ppm = 2469ppm.
-// Step size: 2469/2^20 ~= 2.4ppb.
-// Setting of 0 (0x000000) => Divide of 405. Output freq = (2/33) * 405 = 24.545MHz. This is -1244ppm from ideal 24.576MHz.
-// Setting of 1 (0xFFFFFF) => Divide of 406. Output freq = (2/33) * 406 = 24.606MHz. This is +1223ppm from ideal 24.576MHz.
+//#define FAST_FRAC_REG_WRITE
 
-// To achieve frequency f, Fraction Setting = ((33/2)*f) - 405
-// So to achieve 24.576MHz, Fraction Setting = (16.5*24.576) - 405 = 0.504
-// Numerical input = round((Fraction setting * 2^20) = 0.504 * 1048576 = 528482 = 0x81062.
+// OPTION 1 - 1us register update rate - Lowest jitter
+// 10ps jitter 100Hz-40kHz. Low freq noise floor -100dBc
 
-// Found solution: IN 24.000MHz, OUT 22.579365MHz, VCO 3251.43MHz, RD  3, FD  406.429 (m =   3, n =   7), OD  6, FOD    6, ERR 7.311ppm
-#define APP_PLL_CTL_SYNC_22M        (0x0A819502)
+#ifdef FAST_FRAC_REG_WRITE
+
+#define FRAC_REG_WRITE_DLY          (100)
+
+// Found solution: IN 24.000MHz, OUT 22.578947MHz, VCO 3251.37MHz, RD  1, FD  135.474 (m =   9, n =  19), OD  6, FOD    6, ERR -11.189ppm
+#define APP_PLL_CTL_SYNC_22M        (0x0A808600)
 #define APP_PLL_DIV_SYNC_22M        (0x80000005)
-#define APP_PLL_FRAC_SYNC_22M       (0x80000206)
+#define APP_PLL_FRAC_SYNC_22M       (0x80000812)
+#define APP_PLL_MOD_INIT_22M        (498283)
 
-// Fout = (Fin/3)*divider/(2*2*3*11) = (fin/396) * divider = (24/396) * divider. = 2/33 * divider.
-// Total freq tune range = ((406/405) - 1) * 1000000 ppm = 2469ppm.
-// Step size: 2469/2^20 ~= 2.4ppb.
-// Setting of 0 (0x000000) => Divide of 405. Output freq = (2/33) * 405 = 24.545MHz. This is -1244ppm from ideal 24.576MHz.
-// Setting of 1 (0xFFFFFF) => Divide of 406. Output freq = (2/33) * 406 = 24.606MHz. This is +1223ppm from ideal 24.576MHz.
+// Fout = Fin*divider/(2*2*6*6) = (fin/144) * divider = (24/144) * divider. = 1/6 * divider.
+// To achieve frequency f, Fraction Setting = (6*f) - 135
+// So to achieve 22.5792MHz, Fraction Setting = (6*22.5792) - 135 = 0.4752
+// Numerical input = round((Fraction setting * 2^20) = 0.4752 * 1048576 = 498283
 
-// To achieve frequency f, Fraction Setting = ((33/2)*f) - 405
-// So to achieve 24.576MHz, Fraction Setting = (16.5*24.576) - 405 = 0.504
-// Numerical input = round((Fraction setting * 2^20) = 0.504 * 1048576 = 528482 = 0x81062.
+//Found solution: IN 24.000MHz, OUT 24.575758MHz, VCO 3538.91MHz, RD  1, FD  147.455 (m =   5, n =  11), OD  6, FOD    6, ERR -9.864ppm
+#define APP_PLL_CTL_SYNC_24M        (0x0A809200)
+#define APP_PLL_DIV_SYNC_24M        (0x80000005)
+#define APP_PLL_FRAC_SYNC_24M       (0x8000040A)
+#define APP_PLL_MOD_INIT_24M        (478151)
+
+// Fout = Fin*divider/(2*2*6*6) = (fin/144) * divider = (24/144) * divider. = 1/6 * divider.
+// To achieve frequency f, Fraction Setting = (6*f) - 147
+// So to achieve 24.576MHz, Fraction Setting = (6*24.576) - 147 = 0.456
+// Numerical input = round((Fraction setting * 2^20) = 0.456 * 1048576 = 478151
+
+#else
+
+// OPTION 2 - 2us register update rate - Higher jitter
+// 50ps jitter 100Hz-40kHz. Low freq noise floor -93dBc
+
+#define FRAC_REG_WRITE_DLY          (200)
+
+//Found solution: IN 24.000MHz, OUT 22.579186MHz, VCO 3522.35MHz, RD  2, FD  293.529 (m =   9, n =  17), OD  3, FOD   13, ERR -0.641ppm
+#define APP_PLL_CTL_SYNC_22M        (0x09012401)
+#define APP_PLL_DIV_SYNC_22M        (0x8000000C)
+#define APP_PLL_FRAC_SYNC_22M       (0x80000810)
+#define APP_PLL_MOD_INIT_22M        (555326)
+
+// Fout = (Fin/2)*divider/(2*2*3*13) = (fin/312) * divider = (24/312) * divider. = 1/13 * divider.
+// To achieve frequency f, Fraction Setting = (13*f) - 293
+// So to achieve 22.5792MHz, Fraction Setting = (13*22.5792) - 293 = 0.5296
+// Numerical input = round((Fraction setting * 2^20) = 0.5296 * 1048576 = 555326
+
+//Found solution: IN 24.000MHz, OUT 24.576125MHz, VCO 3342.35MHz, RD  2, FD  278.529 (m =   9, n =  17), OD  2, FOD   17, ERR 5.069ppm - Runs VCO out fractionally out of spec at 835MHz
+#define APP_PLL_CTL_SYNC_24M        (0x08811501)
+#define APP_PLL_DIV_SYNC_24M        (0x80000010)
+#define APP_PLL_FRAC_SYNC_24M       (0x80000810)
+#define APP_PLL_MOD_INIT_24M        (553648)
+
+// Fout = (Fin/2)*divider/(2*2*2*17) = (fin/272) * divider = (24/272) * divider. = 3/34 * divider.
+// To achieve frequency f, Fraction Setting = ((34/3)*f) - 278
+// So to achieve 24.576MHz, Fraction Setting = ((34/3)*24.576) - 278 = 0.528
+// Numerical input = round((Fraction setting * 2^20) = 0.528 * 1048576 = 553648
+#endif
 
 /*
  * App PLL settings used for low jitter fixed local clocks
@@ -207,13 +242,13 @@ void SoftPllInit(int clkFreq_hz, struct SoftPllState &pllState)
     switch(clkFreq_hz)
     {
          case 44100 * 512:
-            pllState.expectedClkMod = 29184;
-            pllState.initialSetting = 0x6CF42;
+            pllState.expectedClkMod = 29184; // Count we expect on MCLK port timer at SW PLL check point. For 100Hz, 10ms.
+            pllState.initialSetting = APP_PLL_MOD_INIT_22M;
             break;
 
         case 48000 * 512:
             pllState.expectedClkMod = 49152;
-            pllState.initialSetting = 0x81062;
+            pllState.initialSetting = APP_PLL_MOD_INIT_24M;
             break;
 
          default:
@@ -223,9 +258,9 @@ void SoftPllInit(int clkFreq_hz, struct SoftPllState &pllState)
     pllState.firstUpdate = 1;
 
     pllState.ds_in = pllState.initialSetting;
-    pllState.ds_fb = 0;
     pllState.ds_x1 = 0;
     pllState.ds_x2 = 0;
+    pllState.ds_x3 = 0;
 }
 
 int SoftPllUpdate(tileref tile, unsigned short mclk_pt, unsigned short mclk_pt_last, struct SoftPllState &pllState)
@@ -235,7 +270,7 @@ int SoftPllUpdate(tileref tile, unsigned short mclk_pt, unsigned short mclk_pt_l
     unsigned expectedClksMod = pllState.expectedClkMod;
     unsigned initialSetting = pllState.initialSetting;
 
-    // TODO These values need revisiting
+    // TODO These values need revisiting/making fixed point
     const int Kp = 0;
     const int Ki = 32;
 
@@ -264,6 +299,7 @@ int SoftPllUpdate(tileref tile, unsigned short mclk_pt, unsigned short mclk_pt_l
 
     // Absolute error for last measurement cycle. If diff is positive, port timer was beyond where it should have been, so MCLK was too fast. So this needs to describe a negative error.
     abs_error = -diff;
+
     int_error = int_error + abs_error; // Integral error.
 
     error_p = (Kp * abs_error);
@@ -293,7 +329,8 @@ int SoftPllUpdate(tileref tile, unsigned short mclk_pt, unsigned short mclk_pt_l
 void XUA_SoftPll(tileref tile, server interface SoftPll_if i_softPll, chanend c_update)
 {
 #if (XUA_SYNCMODE != XUA_SYNCMODE_ASYNC)
-    unsigned ds_out;
+    unsigned frac_val;
+    int ds_out;
     timer tmr;
     int time;
     unsigned mclk_pt;
@@ -338,7 +375,11 @@ void XUA_SoftPll(tileref tile, server interface SoftPll_if i_softPll, chanend c_
                     if(setting != -1)
                     {
                         pllState.ds_in = setting;
-                        pllState.ds_in = pllState.ds_in & 0x000FFFFF; // Ensure input is limited to 20 bits
+                        // Limit input range for modulator stability.
+                        if(pllState.ds_in > 980000)
+                            pllState.ds_in = 980000;
+                        if(pllState.ds_in < 60000)
+                            pllState.ds_in = 60000;
                     }
                 }
 
@@ -350,49 +391,38 @@ void XUA_SoftPll(tileref tile, server interface SoftPll_if i_softPll, chanend c_
 
         }
 
-        // Second order, Single bit delta sigma - mod2
-        pllState.ds_x1 += pllState.ds_in - pllState.ds_fb;
-        pllState.ds_x2 += pllState.ds_x1 - pllState.ds_fb;
-        if (pllState.ds_x2 < 0)
-        {
-            ds_out = 0;
-            pllState.ds_fb = 0;
-        }
+        // Third order, 9 level output delta sigma. 20 bit unsigned input.
+        ds_out = ((pllState.ds_x3<<4) + (pllState.ds_x3<<1)) >> 13;
+        if (ds_out > 8)
+          ds_out = 8;
+        if (ds_out < 0)
+          ds_out = 0;
+        pllState.ds_x3 += (pllState.ds_x2>>5) - (ds_out<<9) - (ds_out<<8);
+        pllState.ds_x2 += (pllState.ds_x1>>5) - (ds_out<<14);
+        pllState.ds_x1 += pllState.ds_in - (ds_out<<17);
+
+        if (ds_out == 0)
+            frac_val = 0x00000007; // 0/8
         else
-        {
-            ds_out = 1;
-            pllState.ds_fb = 1048575; //pow(2, 20)
-        }
+            frac_val = ((ds_out - 1) << 8) | 0x80000007; // 1/8 to 8/8
 
         // Now write the register.
         // We need to write the register at a specific period at a fast rate.
         // This period needs to be (div ref clk period (ns) * how many times we repeat same value)
         // In this case, div ref clk = 24/3 = 8MHz. So div ref clk period = 125ns.
-        // So minimum period we could use is 125ns.
-        // We use sw ref clk to time the register write. This uses 10ns clock ticks.
-        // So this period should be a multiple of 10ns too.
-        // So shortest period to meet these requirements is 250ns. This is still very fast though.
-        // 1000ns is a great choice if we can.
-        // 1500ns is a better choice.
-        // 2250ns is the next choice.
-        // The slower we write, our jitter goes up significantly.
-        // Measuring rms jitter 100Hz-40kHz and TIE (TIE across 80ms of clock output).
-        // 750ns  - jitter = 51ps,  tie = +-1.5ns.
-        // 1500ns - jitter = 110ps, tie = +-2.5ns.
-        // 2250ns - jitter = 162ps, tie = +-3.2ns. // Note to be measured for single bit DS.
+        // We're using fraction denominators of 8, so these repeat every 8*125ns = 1us.
+        // So minimum period we could use is 1us and multiples thereof.
+        // The slower we write, the higher our jitter will be.
 
-        time += 150; // We write reg every 1500ns.
+        time += FRAC_REG_WRITE_DLY; // Time the reg write.
         tmr when timerafter(time) :> void;
 
-        // ds_out = 1 => fraction of 1/1 = N+1. ds_out = 0 => fraction of 0/1 = N.
+        // Write the register. Because we are timing the reg writes accurately we do not need to use reg write with ack.
+        // This saves a lot of time. Additionally, apparently we can shorten the time for this reg write by only setting up the channel once and just doing a few instructions to do the write each time.
+        // We can hard code this in assembler.
         if(running)
         {
-            // Write the register. Because we are timing the reg writes accurately we do not need to use reg write with ack.
-            // This saves a lot of time. Additionally, apparently we can shorten the time for this reg write by only setting up
-            // the channel once and just doing a few instructions to do the write each time.
-            // We can hard code this in assembler.
-
-            write_node_config_reg_no_ack(tile, XS1_SSWITCH_SS_APP_PLL_FRAC_N_DIVIDER_NUM, (ds_out << 31));
+            write_node_config_reg_no_ack(tile, XS1_SSWITCH_SS_APP_PLL_FRAC_N_DIVIDER_NUM, frac_val);
         }
     }
 }

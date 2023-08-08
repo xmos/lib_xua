@@ -394,7 +394,7 @@ __builtin_unreachable();
                     unsigned l;
                     unsafe
                     {
-                        mult = multInPtr[i];                        
+                        mult = multInPtr[i];
                     }
                     {h, l} = macs(mult, sample, 0, 0);
                     sample = h << 3;
@@ -427,7 +427,7 @@ __builtin_unreachable();
                     unsigned l;
                     unsafe
                     {
-                        mult = multInPtr[i];                        
+                        mult = multInPtr[i];
                     }
                     {h, l} = macs(mult, sample, 0, 0);
                     sample = h << 3;
@@ -461,7 +461,7 @@ __builtin_unreachable();
                     unsigned l;
                     unsafe
                     {
-                        mult = multInPtr[i];                        
+                        mult = multInPtr[i];
                     }
                     {h, l} = macs(mult, sample, 0, 0);
                     sample = h << 3;
