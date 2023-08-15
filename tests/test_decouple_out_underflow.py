@@ -13,7 +13,6 @@ def test_file(request):
 
 
 def do_test(test_file, options, capfd):
-
     testname, _ = os.path.splitext(os.path.basename(test_file))
 
     binary = f"{testname}/bin/{testname}.xe"
@@ -38,11 +37,11 @@ def do_test(test_file, options, capfd):
 
     return result
 
-#TODO parameterise with:
+
+# TODO parameterise with:
 # - sample rate
 # - usb bus speed
 def test_decouple_out_underflow(test_file, options, capfd):
-
     result = do_test(test_file, options, capfd)
 
     assert result

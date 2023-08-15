@@ -13,7 +13,6 @@ def test_file(request):
 
 
 def do_test(bus_speed, test_file, options, capfd):
-
     testname, _ = os.path.splitext(os.path.basename(test_file))
 
     binary = f"{testname}/bin/{bus_speed}/{testname}_{bus_speed}.xe"
@@ -52,7 +51,6 @@ def do_test(bus_speed, test_file, options, capfd):
 
 @pytest.mark.parametrize("bus_speed", ["FS", "HS"])
 def test_sync_clk_basic(bus_speed, test_file, options, capfd):
-
     result = do_test(bus_speed, test_file, options, capfd)
 
     assert result
