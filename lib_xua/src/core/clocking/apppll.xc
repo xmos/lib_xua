@@ -36,6 +36,7 @@
 #define APP_PLL_CTL_SYNC_22M        (0x0A808600)
 #define APP_PLL_DIV_SYNC_22M        (0x80000005)
 #define APP_PLL_FRAC_SYNC_22M       (0x80000812)
+#define APP_PLL_ERR_MULT_22M        (627) // round(135(divider)*100Hz*1048576/22579200)
 #define APP_PLL_MOD_INIT_22M        (498283)
 
 // Fout = Fin*divider/(2*2*6*6) = (fin/144) * divider = (24/144) * divider. = 1/6 * divider.
@@ -47,6 +48,7 @@
 #define APP_PLL_CTL_SYNC_24M        (0x0A809200)
 #define APP_PLL_DIV_SYNC_24M        (0x80000005)
 #define APP_PLL_FRAC_SYNC_24M       (0x8000040A)
+#define APP_PLL_ERR_MULT_24M        (627) // round(147(divider)*100Hz*1048576/24576000)
 #define APP_PLL_MOD_INIT_24M        (478151)
 
 // Fout = Fin*divider/(2*2*6*6) = (fin/144) * divider = (24/144) * divider. = 1/6 * divider.
@@ -65,6 +67,7 @@
 #define APP_PLL_CTL_SYNC_22M        (0x09012401)
 #define APP_PLL_DIV_SYNC_22M        (0x8000000C)
 #define APP_PLL_FRAC_SYNC_22M       (0x80000810)
+#define APP_PLL_ERR_MULT_22M        (1361) // round(293(divider)*100Hz*1048576/22579200)
 #define APP_PLL_MOD_INIT_22M        (555326)
 
 // Fout = (Fin/2)*divider/(2*2*3*13) = (fin/312) * divider = (24/312) * divider. = 1/13 * divider.
@@ -76,6 +79,7 @@
 #define APP_PLL_CTL_SYNC_24M        (0x08811501)
 #define APP_PLL_DIV_SYNC_24M        (0x80000010)
 #define APP_PLL_FRAC_SYNC_24M       (0x80000810)
+#define APP_PLL_ERR_MULT_24M        (1186) // round(278(divider)*100Hz*1048576/24576000)
 #define APP_PLL_MOD_INIT_24M        (553648)
 
 // Fout = (Fin/2)*divider/(2*2*2*17) = (fin/272) * divider = (24/272) * divider. = 3/34 * divider.
@@ -244,38 +248,38 @@ void SoftPllInit(int clkFreq_hz, struct SoftPllState &pllState)
          case 44100 * 512:
             pllState.expectedClkMod = 29184; // Count we expect on MCLK port timer at SW PLL check point. For 100Hz, 10ms.
             pllState.initialSetting = APP_PLL_MOD_INIT_22M;
+            pllState.initialErrorMult = APP_PLL_ERR_MULT_22M;
             break;
 
         case 48000 * 512:
             pllState.expectedClkMod = 49152;
             pllState.initialSetting = APP_PLL_MOD_INIT_24M;
+            pllState.initialErrorMult = APP_PLL_ERR_MULT_24M;
             break;
 
          default:
             assert(0);
             break;
     }
-    pllState.firstUpdate = 1;
 
     pllState.ds_in = pllState.initialSetting;
     pllState.ds_x1 = 0;
     pllState.ds_x2 = 0;
     pllState.ds_x3 = 0;
+    pllState.iir_y = 0;
+    pllState.phaseError = 0;
+    pllState.phaseErrorInt = 0;
 }
 
-int SoftPllUpdate(tileref tile, unsigned short mclk_pt, unsigned short mclk_pt_last, struct SoftPllState &pllState)
+int SoftPllUpdate(tileref tile, unsigned short mclk_pt, unsigned short mclk_pt_last, struct SoftPllState &pllState, int fastLock)
 {
-    static int int_error = 0;
+    int freq_error, error_p, error_i;
 
     unsigned expectedClksMod = pllState.expectedClkMod;
     unsigned initialSetting = pllState.initialSetting;
+    unsigned init_err_mult = pllState.initialErrorMult;
 
-    // TODO These values need revisiting/making fixed point
-    const int Kp = 0;
-    const int Ki = 32;
-
-    int newsetting;
-    int abs_error, error_p, error_i;
+    int newSetting;
     unsigned short expectedPt;
 
     int set = -1;
@@ -297,27 +301,46 @@ int SoftPllUpdate(tileref tile, unsigned short mclk_pt, unsigned short mclk_pt_l
     // TODO Add a bounds checker on diff to make sure it's roughly where we expect.
     // If it isn't we should ignore it as it's either a glitch or from clock start/stop.
 
-    // Absolute error for last measurement cycle. If diff is positive, port timer was beyond where it should have been, so MCLK was too fast. So this needs to describe a negative error.
-    abs_error = -diff;
+    if(fastLock)  // Fast lock - set DCO based on measured frequency error in first cycle
+    {
+        initialSetting = initialSetting - (diff * init_err_mult); // init_err_mult is the dco input change to cause an output frequency offset equating to a measured input freq error of 1.
+        diff = 0; // reset diff to zero so following code does not see any error in this cycle.
+    }
 
-    int_error = int_error + abs_error; // Integral error.
+    // Absolute frequency error for last measurement cycle. If diff is positive, port timer was beyond where it should have been, so MCLK was too fast. So this needs to describe a negative error.
+    freq_error = -diff;
 
-    error_p = (Kp * abs_error);
-    error_i = (Ki * int_error);
+    // Phase error is the integral of frequency error.
+    pllState.phaseError += freq_error;
 
-    newsetting = (error_p + error_i);
+    // Integral of phase error for use in PI loop below.
+    pllState.phaseErrorInt += pllState.phaseError;
+
+    error_p = (pllState.phaseError     << 5); // << 5 => Kp = 32
+    error_i = (pllState.phaseErrorInt >> 2); // >> 2 => Ki = 0.25
+
+    // input to filter (x) is output of PI controller
+    int x = (error_p + error_i);
+
+    // Filter some noise into DCO to reduce jitter
+    // First order IIR, make A=0.125
+    // y = y + A(x-y)
+    pllState.iir_y += ((x-pllState.iir_y)>>3);
+
+    newSetting = pllState.iir_y;
 
     // Only output new frequency tune value if different to the previous setting
-    if (newsetting != pllState.setting)
+    if (newSetting != pllState.setting)
     {
-        set = (initialSetting + newsetting); // init_set is the value to feed into the NCO to give the "expected" frequency (24.576 or 22.5792). Not required but will make lock faster.
+        set = (initialSetting + newSetting); // init_set is our calculation of the setting required after measuring one cycle, should be accurate to +- 1MCLK.
+
         if (set < 0)
             set = 0;
         else if (set > 0xFFFFF)
             set = 0xFFFFF;
     }
 
-    pllState.setting = newsetting;
+    pllState.setting = newSetting;
 
     // Return the setting to the NCO thread. -1 means no update
     return set;
@@ -340,6 +363,7 @@ void XUA_SoftPll(tileref tile, server interface SoftPll_if i_softPll, chanend c_
     struct SoftPllState pllState;
     int running = 0;
     int firstUpdate = 1;
+    int fastLock = 1;
 
     while(1)
     {
@@ -352,6 +376,7 @@ void XUA_SoftPll(tileref tile, server interface SoftPll_if i_softPll, chanend c_
                 SoftPllInit(mclk_hz, pllState);
                 running = 1;
                 firstUpdate = 1;
+                fastLock = 1;
                 break;
 
 #if (XUA_SYNCMODE == XUA_SYNCMODE_ASYNC)
@@ -370,7 +395,9 @@ void XUA_SoftPll(tileref tile, server interface SoftPll_if i_softPll, chanend c_
                 }
                 else
                 {
-                    int setting = SoftPllUpdate(tile, (unsigned short) mclk_pt, mclk_pt_last, pllState);
+                    int setting = SoftPllUpdate(tile, (unsigned short) mclk_pt, mclk_pt_last, pllState, fastLock);
+
+                    fastLock = 0;
 
                     if(setting != -1)
                     {
@@ -394,9 +421,9 @@ void XUA_SoftPll(tileref tile, server interface SoftPll_if i_softPll, chanend c_
         // Third order, 9 level output delta sigma. 20 bit unsigned input.
         ds_out = ((pllState.ds_x3<<4) + (pllState.ds_x3<<1)) >> 13;
         if (ds_out > 8)
-          ds_out = 8;
+            ds_out = 8;
         if (ds_out < 0)
-          ds_out = 0;
+            ds_out = 0;
         pllState.ds_x3 += (pllState.ds_x2>>5) - (ds_out<<9) - (ds_out<<8);
         pllState.ds_x2 += (pllState.ds_x1>>5) - (ds_out<<14);
         pllState.ds_x1 += pllState.ds_in - (ds_out<<17);

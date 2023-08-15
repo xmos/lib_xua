@@ -37,9 +37,18 @@ struct SoftPllState
     // Note, we expect wrapping so this is essentiually a modulus
     unsigned expectedClkMod;
     unsigned initialSetting;
+    unsigned initialErrorMult;
     unsigned setting;
-    unsigned firstUpdate;
 
+    int phaseError;
+
+    /* Integrated phase error */
+    int phaseErrorInt;
+
+    /* IIR filter */
+    int iir_y;
+
+    /* Delta sigma modulator */
     unsigned ds_in;
     int ds_x1;
     int ds_x2;
