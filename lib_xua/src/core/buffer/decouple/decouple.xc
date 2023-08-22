@@ -394,7 +394,7 @@ __builtin_unreachable();
                     unsigned l;
                     unsafe
                     {
-                        mult = multInPtr[i];                        
+                        mult = multInPtr[i];
                     }
                     {h, l} = macs(mult, sample, 0, 0);
                     sample = h << 3;
@@ -427,7 +427,7 @@ __builtin_unreachable();
                     unsigned l;
                     unsafe
                     {
-                        mult = multInPtr[i];                        
+                        mult = multInPtr[i];
                     }
                     {h, l} = macs(mult, sample, 0, 0);
                     sample = h << 3;
@@ -461,7 +461,7 @@ __builtin_unreachable();
                     unsigned l;
                     unsafe
                     {
-                        mult = multInPtr[i];                        
+                        mult = multInPtr[i];
                     }
                     {h, l} = macs(mult, sample, 0, 0);
                     sample = h << 3;
@@ -514,7 +514,7 @@ __builtin_unreachable();
     {
         /* Finished creating packet - commit it to the FIFO */
         /* Total samps to write could start at 0 (i.e. no MCLK) so need to check for < 0) */
-        if (sampsToWrite <= 0)
+        if(sampsToWrite <= 0)
         {
             int speed, wrPtr;
             packState = 0;
@@ -651,6 +651,7 @@ __builtin_unreachable();
 
 #if (NUM_USB_CHAN_IN > 0)
 /* Mark Endpoint (IN) ready with an appropriately sized zero buffer */
+/* TODO We should properly size zeros packet rather than using "mid" */
 static inline void SetupZerosSendBuffer(XUD_ep aud_to_host_usb_ep, unsigned sampFreq, unsigned slotSize,
                                         xc_ptr aud_to_host_zeros)
 {
@@ -659,8 +660,8 @@ static inline void SetupZerosSendBuffer(XUD_ep aud_to_host_usb_ep, unsigned samp
 
     /* Set IN stream packet size to something sensible. We expect the buffer to
      * over flow and this to be reset */
-    SET_SHARED_GLOBAL(sampsToWrite, 0);
-    SET_SHARED_GLOBAL(totalSampsToWrite, 0);
+    SET_SHARED_GLOBAL(sampsToWrite, mid);
+    SET_SHARED_GLOBAL(totalSampsToWrite, mid);
 
     mid *= g_numUsbChan_In * slotSize;
 
@@ -821,6 +822,7 @@ void XUA_Buffer_Decouple(chanend c_mix_out
                     SetupZerosSendBuffer(aud_to_host_usb_ep, sampFreq, g_curSubSlot_In, aud_to_host_zeros);
 #endif
 
+#if (NUM_USB_CHAN_OUT > 0)
                     /* Reset OUT buffer state */
                     outUnderflow = 1;
                     SET_SHARED_GLOBAL(g_aud_from_host_rdptr, aud_from_host_fifo_start);
@@ -830,10 +832,11 @@ void XUA_Buffer_Decouple(chanend c_mix_out
                     if(outOverflow)
                     {
                         /* If we were previously in overflow we wont have marked as ready */
-                        XUD_SetReady_OutPtr(aud_from_host_usb_ep, aud_from_host_fifo_start+4);
+                        XUD_SetReady_OutPtr(aud_from_host_usb_ep, aud_from_host_fifo_start + 4);
                         outOverflow = 0;
                     }
                 }
+#endif
 
                 /* Wait for handshake back and pass back up */
                 chkct(c_mix_out, XS1_CT_END);
@@ -906,6 +909,7 @@ void XUA_Buffer_Decouple(chanend c_mix_out
                 GET_SHARED_GLOBAL(dataFormat, g_formatChange_DataFormat);
                 GET_SHARED_GLOBAL(sampRes, g_formatChange_SampRes);
 
+#if (NUM_USB_CHAN_OUT > 0)
                 /* Reset OUT buffer state */
                 SET_SHARED_GLOBAL(g_aud_from_host_rdptr, aud_from_host_fifo_start);
                 SET_SHARED_GLOBAL(g_aud_from_host_wrptr, aud_from_host_fifo_start);
@@ -921,6 +925,7 @@ void XUA_Buffer_Decouple(chanend c_mix_out
                     XUD_SetReady_OutPtr(aud_from_host_usb_ep, aud_from_host_fifo_start+4);
                     outOverflow = 0;
                 }
+#endif
 
 #ifdef NATIVE_DSD
                 if(dataFormat == UAC_FORMAT_TYPEI_RAW_DATA)
@@ -1041,7 +1046,7 @@ void XUA_Buffer_Decouple(chanend c_mix_out
 
                 DISABLE_INTERRUPTS();
 
-                if (inUnderflow)
+                if(inUnderflow)
                 {
                     int fillLevel;
                     GET_SHARED_GLOBAL(fillLevel, g_aud_to_host_fill_level);
