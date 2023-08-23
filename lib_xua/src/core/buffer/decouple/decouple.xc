@@ -835,8 +835,8 @@ void XUA_Buffer_Decouple(chanend c_mix_out
                         XUD_SetReady_OutPtr(aud_from_host_usb_ep, aud_from_host_fifo_start + 4);
                         outOverflow = 0;
                     }
-                }
 #endif
+                }
 
                 /* Wait for handshake back and pass back up */
                 chkct(c_mix_out, XS1_CT_END);
