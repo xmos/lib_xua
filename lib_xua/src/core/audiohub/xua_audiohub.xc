@@ -806,7 +806,7 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
         {
             /* TODO wait for good mclk instead of delay */
             /* No delay for DFU modes */
-            if (((curSamFreq / AUD_TO_USB_RATIO) != AUDIO_REBOOT_FROM_DFU) && ((curSamFreq / AUD_TO_USB_RATIO) != AUDIO_STOP_FOR_DFU) && command)
+            if (((curSamFreq / AUD_TO_USB_RATIO) != AUDIO_STOP_FOR_DFU) && command)
             {
 #if 0
                 /* User should ensure MCLK is stable in AudioHwConfig */
@@ -916,13 +916,9 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
 #else
                         dummy_deliver(c_aud, command);
 #endif
+                        /* Note, we do not expect to reach here */
                         curSamFreq = inuint(c_aud);
-
-                        if (curSamFreq == AUDIO_START_FROM_DFU)
-                        {
-                            outct(c_aud, XS1_CT_END);
-                            break;
-                        }
+                        outct(c_aud, XS1_CT_END);
                     }
                 }
 #endif
