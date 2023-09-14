@@ -723,7 +723,7 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
             case XUD_SetData_Select(c_aud_in, ep_aud_in, result):
             {
                 /* Inform stream that buffer sent */
-                SET_SHARED_GLOBAL0(g_aud_to_host_flag, bufferIn+1);
+                SET_SHARED_GLOBAL0(g_aud_to_host_flag, bufferIn+1); // TODO other side only checks for boolean
                 break;
             }
 #endif
