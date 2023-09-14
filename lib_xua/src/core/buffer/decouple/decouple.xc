@@ -479,7 +479,7 @@ __builtin_unreachable();
     {
         /* Finished creating packet - commit it to the FIFO */
         /* Total samps to write could start at 0 (i.e. no MCLK) so need to check for < 0) */
-        if (sampsToWrite <= 0)
+        if(sampsToWrite <= 0)
         {
             int speed, wrPtr;
             packState = 0;
@@ -616,6 +616,7 @@ __builtin_unreachable();
 
 #if (NUM_USB_CHAN_IN > 0)
 /* Mark Endpoint (IN) ready with an appropriately sized zero buffer */
+/* TODO We should properly size zeros packet rather than using "mid" */
 static inline void SetupZerosSendBuffer(XUD_ep aud_to_host_usb_ep, unsigned sampFreq, unsigned slotSize,
                                         xc_ptr aud_to_host_zeros)
 {
@@ -775,7 +776,7 @@ void XUA_Buffer_Decouple(chanend c_mix_out
                     inUnderflow = 1;
                     SET_SHARED_GLOBAL(g_aud_to_host_rdptr, aud_to_host_fifo_start);
                     SET_SHARED_GLOBAL(g_aud_to_host_wrptr, aud_to_host_fifo_start);
-                    SET_SHARED_GLOBAL(g_aud_to_host_dptr,aud_to_host_fifo_start+4);
+                    SET_SHARED_GLOBAL(g_aud_to_host_dptr, aud_to_host_fifo_start + 4);
                     SET_SHARED_GLOBAL(g_aud_to_host_fill_level, 0);
 
                     /* Set buffer to send back to zeros buffer */
@@ -786,6 +787,7 @@ void XUA_Buffer_Decouple(chanend c_mix_out
                     SetupZerosSendBuffer(aud_to_host_usb_ep, sampFreq, g_curSubSlot_In, aud_to_host_zeros);
 #endif
 
+#if (NUM_USB_CHAN_OUT > 0)
                     /* Reset OUT buffer state */
                     outUnderflow = 1;
                     SET_SHARED_GLOBAL(g_aud_from_host_rdptr, aud_from_host_fifo_start);
@@ -798,6 +800,7 @@ void XUA_Buffer_Decouple(chanend c_mix_out
                         XUD_SetReady_OutPtr(aud_from_host_usb_ep, aud_from_host_fifo_start+4);
                         outOverflow = 0;
                     }
+#endif
                 }
 
                 /* Wait for handshake back and pass back up */
@@ -854,6 +857,7 @@ void XUA_Buffer_Decouple(chanend c_mix_out
                 }
 
                 SET_SHARED_GLOBAL(g_freqChange, 0);
+
                 asm volatile("outct res[%0],%1"::"r"(buffer_aud_ctl_chan),"r"(XS1_CT_END));
 
                 ENABLE_INTERRUPTS();
@@ -871,6 +875,7 @@ void XUA_Buffer_Decouple(chanend c_mix_out
                 GET_SHARED_GLOBAL(dataFormat, g_formatChange_DataFormat);
                 GET_SHARED_GLOBAL(sampRes, g_formatChange_SampRes);
 
+#if (NUM_USB_CHAN_OUT > 0)
                 /* Reset OUT buffer state */
                 SET_SHARED_GLOBAL(g_aud_from_host_rdptr, aud_from_host_fifo_start);
                 SET_SHARED_GLOBAL(g_aud_from_host_wrptr, aud_from_host_fifo_start);
@@ -886,6 +891,7 @@ void XUA_Buffer_Decouple(chanend c_mix_out
                     XUD_SetReady_OutPtr(aud_from_host_usb_ep, aud_from_host_fifo_start+4);
                     outOverflow = 0;
                 }
+#endif
 
 #ifdef NATIVE_DSD
                 if(dataFormat == UAC_FORMAT_TYPEI_RAW_DATA)
