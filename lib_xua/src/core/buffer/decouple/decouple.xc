@@ -625,8 +625,8 @@ static inline void SetupZerosSendBuffer(XUD_ep aud_to_host_usb_ep, unsigned samp
 
     /* Set IN stream packet size to something sensible. We expect the buffer to
      * over flow and this to be reset */
-    SET_SHARED_GLOBAL(sampsToWrite, 0);
-    SET_SHARED_GLOBAL(totalSampsToWrite, 0);
+    SET_SHARED_GLOBAL(sampsToWrite, mid);
+    SET_SHARED_GLOBAL(totalSampsToWrite, mid);
 
     mid *= g_numUsbChan_In * slotSize;
 
