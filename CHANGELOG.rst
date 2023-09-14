@@ -1,6 +1,13 @@
 lib_xua Change Log
 ==================
 
+HEAD
+----
+
+  * RESOLVED:  Output volume control not enabled by default when MIXER disabled
+  * RESOLVED:  Full 32bit result of volume processing not calculated when required
+  * RESOVED:   Input stream sending an erroneous zero-length packet when exiting underflow state
+
 3.5.1
 -----
 

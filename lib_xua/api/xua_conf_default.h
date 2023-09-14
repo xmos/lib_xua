@@ -1133,9 +1133,13 @@
 #define VOLUME_RES_MIXER            (0x100)
 #endif
 
-/* Handle out volume control in the mixer - enabled by default */
+/* Handle out volume control in the mixer - enabled by default if mixer enabled */
 #ifndef OUT_VOLUME_IN_MIXER
-#define OUT_VOLUME_IN_MIXER         (1)
+#if MIXER
+    #define OUT_VOLUME_IN_MIXER         (1)
+#else
+    #define OUT_VOLUME_IN_MIXER         (0)
+#endif
 #endif
 
 /* Apply out volume controls after the mix. Only relevant when OUT_VOLUME_IN_MIXER enabled. Enabled by default */
@@ -1148,7 +1152,7 @@
 #define IN_VOLUME_IN_MIXER          (0)
 #endif
 
-/* Apply in volume controls after the mix. Only relebant when IN_VOLUMNE_IN MIXER enabled. Enabled by default */
+/* Apply in volume controls after the mix. Only relevant when IN_VOLUMNE_IN MIXER enabled. Enabled by default */
 #ifndef IN_VOLUME_AFTER_MIX
 #define IN_VOLUME_AFTER_MIX         (1)
 #endif
@@ -1245,8 +1249,6 @@ enum USBEndpointNumber_Out
 #endif /* __ASSEMBLER__ */
 
 #define AUDIO_STOP_FOR_DFU                (0x12345678)
-#define AUDIO_START_FROM_DFU              (0x87654321)
-#define AUDIO_REBOOT_FROM_DFU             (0xa5a5a5a5)
 
 /* Result of db_to_mult(MAX_VOLUME, 8, 29) */
 #define MAX_VOLUME_MULT                   (0x20000000)
@@ -1349,7 +1351,7 @@ enum USBEndpointNumber_Out
 /* Some defines that allow us to remove unused code */
 
 /* Useful for dropping lower part of macs in volume processing... */
-#if (FS_STREAM_FORMAT_OUTPUT_1_RESOLUTION_BITS > 24) || (HS_STREAM_FORMAT_OUTPUT_2_RESOLUTION_BITS > 24) || \
+#if (FS_STREAM_FORMAT_OUTPUT_1_RESOLUTION_BITS > 24) || (HS_STREAM_FORMAT_OUTPUT_1_RESOLUTION_BITS > 24) || \
     (((FS_STREAM_FORMAT_OUTPUT_2_RESOLUTION_BITS > 24) || (HS_STREAM_FORMAT_OUTPUT_2_RESOLUTION_BITS > 24)) && (OUTPUT_FORMAT_COUNT > 1)) || \
     (((FS_STREAM_FORMAT_OUTPUT_3_RESOLUTION_BITS > 24) || (HS_STREAM_FORMAT_OUTPUT_3_RESOLUTION_BITS > 24)) && (OUTPUT_FORMAT_COUNT > 2))
     #define STREAM_FORMAT_OUTPUT_RESOLUTION_32BIT_USED 1
@@ -1383,29 +1385,29 @@ enum USBEndpointNumber_Out
 #endif
 
 /* Useful for dropping lower part of macs in volume processing... */
-    #if (FS_STREAM_FORMAT_INPUT_1_RESOLUTION_BITS > 24) || (FS_STREAM_FORMAT_INPUT_2_RESOLUTION_BITS > 24)
-        #define STREAM_FORMAT_INPUT_RESOLUTION_32BIT_USED 1
-    #else
-        #define STREAM_FORMAT_INPUT_RESOLUTION_32BIT_USED 0
-    #endif
+#if (FS_STREAM_FORMAT_INPUT_1_RESOLUTION_BITS > 24) || (HS_STREAM_FORMAT_INPUT_1_RESOLUTION_BITS > 24)
+    #define STREAM_FORMAT_INPUT_RESOLUTION_32BIT_USED 1
+#else
+    #define STREAM_FORMAT_INPUT_RESOLUTION_32BIT_USED 0
+#endif
 
-    #if((FS_STREAM_FORMAT_INPUT_1_SUBSLOT_BYTES == 4) || (HS_STREAM_FORMAT_INPUT_1_SUBSLOT_BYTES == 4))
-        #define STREAM_FORMAT_INPUT_SUBSLOT_4_USED 1
-    #else
-        #define STREAM_FORMAT_INPUT_SUBSLOT_4_USED 0
-    #endif
+#if((FS_STREAM_FORMAT_INPUT_1_SUBSLOT_BYTES == 4) || (HS_STREAM_FORMAT_INPUT_1_SUBSLOT_BYTES == 4))
+    #define STREAM_FORMAT_INPUT_SUBSLOT_4_USED 1
+#else
+    #define STREAM_FORMAT_INPUT_SUBSLOT_4_USED 0
+#endif
 
-    #if((FS_STREAM_FORMAT_INPUT_1_SUBSLOT_BYTES == 3) || (HS_STREAM_FORMAT_INPUT_1_SUBSLOT_BYTES == 3))
-        #define STREAM_FORMAT_INPUT_SUBSLOT_3_USED 1
-    #else
-        #define STREAM_FORMAT_INPUT_SUBSLOT_3_USED 0
-    #endif
+#if((FS_STREAM_FORMAT_INPUT_1_SUBSLOT_BYTES == 3) || (HS_STREAM_FORMAT_INPUT_1_SUBSLOT_BYTES == 3))
+    #define STREAM_FORMAT_INPUT_SUBSLOT_3_USED 1
+#else
+    #define STREAM_FORMAT_INPUT_SUBSLOT_3_USED 0
+#endif
 
-    #if((FS_STREAM_FORMAT_INPUT_1_SUBSLOT_BYTES == 2) || (HS_STREAM_FORMAT_INPUT_1_SUBSLOT_BYTES == 2))
-        #define STREAM_FORMAT_INPUT_SUBSLOT_2_USED 1
-    #else
-        #define STREAM_FORMAT_INPUT_SUBSLOT_2_USED 0
-    #endif
+#if((FS_STREAM_FORMAT_INPUT_1_SUBSLOT_BYTES == 2) || (HS_STREAM_FORMAT_INPUT_1_SUBSLOT_BYTES == 2))
+    #define STREAM_FORMAT_INPUT_SUBSLOT_2_USED 1
+#else
+    #define STREAM_FORMAT_INPUT_SUBSLOT_2_USED 0
+#endif
 
 #if MAX_FREQ < MIN_FREQ
 #error MAX_FREQ should be >= MIN_FREQ!!

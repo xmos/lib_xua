@@ -797,7 +797,7 @@ void XUA_Buffer_Decouple(chanend c_mix_out
                     if(outOverflow)
                     {
                         /* If we were previously in overflow we wont have marked as ready */
-                        XUD_SetReady_OutPtr(aud_from_host_usb_ep, aud_from_host_fifo_start+4);
+                        XUD_SetReady_OutPtr(aud_from_host_usb_ep, aud_from_host_fifo_start + 4);
                         outOverflow = 0;
                     }
 #endif
@@ -1012,7 +1012,7 @@ void XUA_Buffer_Decouple(chanend c_mix_out
 
                 DISABLE_INTERRUPTS();
 
-                if (inUnderflow)
+                if(inUnderflow)
                 {
                     int fillLevel;
                     GET_SHARED_GLOBAL(fillLevel, g_aud_to_host_fill_level);

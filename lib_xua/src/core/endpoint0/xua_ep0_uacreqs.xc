@@ -145,7 +145,7 @@ static void updateMasterVol(int unitID, chanend ?c_mix_ctl)
                         outuint(c_mix_ctl, x);
                         outct(c_mix_ctl, XS1_CT_END);
                     }
-#else 
+#else
                     unsafe
                     {
                         unsigned int * unsafe multOutPtr = multOut;
