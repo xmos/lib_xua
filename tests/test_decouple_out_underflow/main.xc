@@ -16,24 +16,24 @@
 
 #include "debug_print.h"
 
-#define SAMPLE(frame_count, channel_num) (((frame_count) << 8) | ((channel_num) & 0xFF))
-#define SAMPLE_FRAME_NUM(test_word) ((test_word) >> 8)
-#define SAMPLE_CHANNEL_NUM(test_word) ((test_word) & 0xFF)
+#include "random.h"
+
+#ifndef TEST_SEED
+#error TEST_SEED not defined
+#endif
+
 /* From xua_audiohub.xc */
 extern unsigned samplesOut[NUM_USB_CHAN_OUT];
 extern unsigned samplesIn[2][NUM_USB_CHAN_IN];
 #include "xua_audiohub_st.h"
 
 #define TEST_SAMPLE_RATE_HZ            (48000*4)
-#define SAMPLE_PERIOD_NS               (1000000000/TEST_SAMPLE_RATE_HZ)
-#define USB_FRAME_RATE_HZ              (8000) //HS
-#define TEST_SAMPLE_SIZE_BYTES         (4)
-#define PACKET_SAMPLES_PER_CHAN        (TEST_SAMPLE_RATE_HZ/USB_FRAME_RATE_HZ)
-#define TEST_PACKET_SIZE_NOMINAL_BYTES (PACKET_SAMPLES_PER_CHAN * TEST_SAMPLE_SIZE_BYTES) * (NUM_USB_CHAN_OUT)
+#define TEST_USB_FRAME_RATE_HZ         (8000) //HS
+#define SUBSLOT_SIZE_BYTES             (4)
+#define PACKET_SAMPLES_PER_CHAN        (TEST_SAMPLE_RATE_HZ/TEST_USB_FRAME_RATE_HZ)
+#define PACKET_SIZE_NOMINAL_BYTES      (PACKET_SAMPLES_PER_CHAN * SUBSLOT_SIZE_BYTES) * (NUM_USB_CHAN_OUT)
 
 #define UNDERFLOW_WORD                 (0xBADDA55)
-#define UNDERFLOW_PACKETS              (5) //TODO this is currently high and changes based on SR!
-
 
 typedef enum
 {
@@ -79,43 +79,53 @@ int CheckBuffer(unsigned buffer[length], size_t length, CheckType_t checkType, u
             break;
     }
 }
-//TODO check this period
-#define STIM_AUDIO_DELAY (10000)
 
+#define STIM_AUDIO_DELAY (3000)
 int stim(chanend c_stim_ep, chanend c_stim_au)
 {
     timer t;
     unsigned time;
     t :> time;
-    int rampGen = 0;
     int rampCheck = 0;
-    int underflowPackets = UNDERFLOW_PACKETS;
+    int fillLevel = 0;     // Expected fill level of buffer in bytes
+    int pktCount = 0;
 
-    /* Expect underflow */
-    while(underflowPackets > 0)
+    random_generator_t rg = random_create_generator_from_seed(TEST_SEED);
+
+    /* Expect underflow untill buffer fill level reaches OUT_BUFFER_PREFILL */
+    while(fillLevel < OUT_BUFFER_PREFILL)
     {
+        time += STIM_AUDIO_DELAY/2;
+        t when timerafter(time) :> void;
+
+        /* Note, technically we shouldn't be doing +/- for freqs like 44.1 but for this test it's a 'don't care' */
+        int pktSizeAdjust = (int) (random_get_random_number(rg) % 3) - 1 ; // Rand number between -1 and 1
+
+        pktSizeAdjust *= (NUM_USB_CHAN_OUT * SUBSLOT_SIZE_BYTES);
+        int pktSize = PACKET_SIZE_NOMINAL_BYTES + pktSizeAdjust;
+
+        c_stim_ep <: (int) GEN_RAMP;
+        c_stim_ep <: (int) pktSize;
+
+        fillLevel += pktSize;
+        fillLevel += 4; // Length stored in sample buffer
+
+        pktCount++;
+
+        time += STIM_AUDIO_DELAY/2;
+        t when timerafter(time) :> void;
+
         c_stim_au <: (int)CHECK_STATIC;
         c_stim_au <: (int)UNDERFLOW_WORD;
 
-        time += STIM_AUDIO_DELAY/2;
-        t when timerafter(time) :> void;
-
-        c_stim_ep <: (int) GEN_RAMP;
-        c_stim_ep <: (int) rampGen;
-        rampGen += (TEST_PACKET_SIZE_NOMINAL_BYTES/4);
-
-        time += STIM_AUDIO_DELAY/2;
-        t when timerafter(time) :> void;
-
-        underflowPackets--;
     }
 
     time += STIM_AUDIO_DELAY;
     t when timerafter(time) :> void;
 
-    /* We have given the buffering system "underflowPackets" which is underflowPackets * PACKET_SAMPLES_PER_CHAN * NUM_USB_CHAN_OUT samples */
-    /* Drain this many samples then expect underflow */
-    for(int i = 0; i < (UNDERFLOW_PACKETS * PACKET_SAMPLES_PER_CHAN); i++)
+    /* We have inserted "fillLevel" bytes into buffer. Drain samples and check ensure they are provided as expected.
+     * We then expect the buffer to enter underflow state once again */
+    for(int i = 0; i < fillLevel - (pktCount * sizeof(unsigned)); i += (NUM_USB_CHAN_OUT * SUBSLOT_SIZE_BYTES))
     {
         c_stim_au <: (int)CHECK_RAMP;
         c_stim_au <: (int)rampCheck;
@@ -123,6 +133,7 @@ int stim(chanend c_stim_ep, chanend c_stim_au)
 
         time += STIM_AUDIO_DELAY;
         t when timerafter(time) :> void;
+
     }
 
     c_stim_au <: (int)CHECK_STATIC;
@@ -170,7 +181,7 @@ unsafe
 
 
 /* This will be called by decouple */
-inline int XUD_SetReady_OutPtr(XUD_ep ep, unsigned addr)
+XUD_Result_t XUD_SetReady_OutPtr(XUD_ep ep, unsigned addr)
 {
     assert(g_outEpReady == 0);
 
@@ -180,18 +191,20 @@ inline int XUD_SetReady_OutPtr(XUD_ep ep, unsigned addr)
     {
         gp_pktBuffer = (unsigned * unsafe) addr;
     }
+
+    return XUD_RES_OKAY;
 }
 
 extern unsigned outAudioBuff[];
 
 int Fake_XUA_Buffer_Ep(chanend c_stim)
 {
-    int32_t length = TEST_PACKET_SIZE_NOMINAL_BYTES;
+    int32_t pktLength;
     timer t;
     uint32_t time;
     t :> time;
     GenType_t genType;
-    int ramp = 1;
+    int rampVal = 0;
     size_t i = 0;
     unsigned * unsafe p_outAudioBuff;
 
@@ -209,6 +222,12 @@ int Fake_XUA_Buffer_Ep(chanend c_stim)
 
     while(1)
     {
+        c_stim :> genType;
+        c_stim :> pktLength; // Packet length in bytes
+
+        /* Only one command currenly supported */
+        assert(genType == GEN_RAMP);
+
         /* Wait for decouple to mark EP as ready */
         unsafe{
             while(!*gp_outEpReady);
@@ -217,21 +236,15 @@ int Fake_XUA_Buffer_Ep(chanend c_stim)
 
         i++;
         GET_SHARED_GLOBAL(aud_from_host_buffer, g_aud_from_host_buffer);
-        debug_printf("BUFFER_EP pkt %d; writing length %d to %d\n", i, length, aud_from_host_buffer);
-        write_via_xc_ptr(aud_from_host_buffer, length); // aud_from_host_buffer is gp_pktBuffer--
-
+        debug_printf("BUFFER_EP pkt %d; writing length %d to %d\n", i, pktLength, aud_from_host_buffer);
         assert(aud_from_host_buffer == gp_pktBuffer-1);
-
-        c_stim :> genType;
-        c_stim :> ramp;
-
-        assert(genType == GEN_RAMP);
+        write_via_xc_ptr(aud_from_host_buffer, pktLength); // aud_from_host_buffer is gp_pktBuffer--
 
         /* Populate buffer with data - emulating XUD */
-        for(int i = 0; i < length/sizeof(int); i++)
+        for(int i = 0; i < pktLength/sizeof(int); i++)
         unsafe
         {
-            *(gp_pktBuffer++) = ramp++;
+            *(gp_pktBuffer++) = rampVal++;
         }
 
         /* Wait some time emulating delay before receiving packet */

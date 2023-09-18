@@ -18,6 +18,9 @@
 
 #define AUDIO_IO_TILE           (0)
 
+/* Required so that full 32bit result of volume control is used - otherwise breaks our test ramps */
+#define HS_STREAM_FORMAT_OUTPUT_1_RESOLUTION_BITS 32
+
 #ifndef MCLK_441
 #define MCLK_441                (512 * 44100)
 #endif
