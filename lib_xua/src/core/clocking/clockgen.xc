@@ -219,18 +219,6 @@ static inline int validSamples(Counter &counter, int clockIndex)
 }
 #endif
 
-#if (XUA_SPDIF_RX_EN)
-//:badParity
-/* Returns 1 for bad parity, else 0 */
-static inline int badParity(unsigned x)
-{
-    unsigned X = (x>>4);
-    crc32(X, 0, 1);
-    return X & 1;
-}
-//:
-#endif
-
 #ifdef LEVEL_METER_LEDS
 void VendorLedRefresh(unsigned levelData[]);
 unsigned g_inputLevelData[NUM_USB_CHAN_IN];
@@ -269,9 +257,10 @@ void clockGen (streaming chanend ?c_spdif_rx, chanend ?c_adat_rx, client interfa
     int spdifUnderflow = 1;
     int spdifSamps = 0;                            /* Number of samples in buffer */
     Counter spdifCounters;
-    int spdifReceivedTime;
+    int spdifRxTime;
     unsigned tmp2;
     unsigned spdifLeft = 0;
+    unsigned spdifRxData;
 #endif
 
 #if (XUA_ADAT_RX_EN)
@@ -329,7 +318,6 @@ void clockGen (streaming chanend ?c_spdif_rx, chanend ?c_adat_rx, client interfa
     adatCounters.identicaldiffs = 0;
     adatCounters.samplesPerTick = 0;
 #endif
-
 
     t_local :> timeNextEdge;
     timeLastEdge = timeNextEdge;
@@ -521,25 +509,24 @@ void clockGen (streaming chanend ?c_spdif_rx, chanend ?c_adat_rx, client interfa
 #endif
 
 #if (XUA_SPDIF_RX_EN)
-            /* Receive sample from S/PDIF RX thread (steaming chan) */
-            case c_spdif_rx :> tmp:
+            /* Receive sample from S/PDIF RX thread (streaming chan) */
+            case c_spdif_rx :> spdifRxData:
 
                 /* Record time of sample */
-				t_local :> spdifReceivedTime;
+				t_local :> spdifRxTime;
 
                 /* Check parity and ignore if bad */
-                if(badParity(tmp))
+                if(spdif_check_parity(tmp))
                     continue;
 
-                /* Get pre-amble */
-				tmp2 = tmp & 0xF;
-                switch(tmp2)
+                /* Get preamble */
+				unsigned preamble = spdifRxData & SPDIF_RX_PREAMBLE_MASK;
+                switch(preamble)
                 {
                     /* LEFT */
                     case SPDIF_FRAME_X:
                     case SPDIF_FRAME_Z:
-
-                        spdifLeft = tmp << 4;
+                        spdifLeft = SPDIF_RX_EXTRACT_SAMPLE(spdifRxData);
                         break;
 
                     /* RIGHT */
@@ -550,7 +537,7 @@ void clockGen (streaming chanend ?c_spdif_rx, chanend ?c_adat_rx, client interfa
                         {
                             /* Store left and right sample pair to buffer */
                             spdifSamples[spdifWr] = spdifLeft;
-                            spdifSamples[spdifWr+1] = tmp << 4;
+                            spdifSamples[spdifWr+1] = SPDIF_RX_EXTRACT_SAMPLE(spdifRxData);
 
                             spdifWr = (spdifWr + 2) & (MAX_SPDIF_SAMPLES - 1);
 
@@ -586,13 +573,13 @@ void clockGen (streaming chanend ?c_spdif_rx, chanend ?c_adat_rx, client interfa
                     if((spdifCounters.receivedSamples >=  spdifCounters.samplesPerTick))
                     {
                         /* Check edge is about right... S/PDIF may have changed freq... */
-                        if(timeafter(spdifReceivedTime, (timeLastEdge + LOCAL_CLOCK_INCREMENT - LOCAL_CLOCK_MARGIN)))
+                        if(timeafter(spdifRxTime, (timeLastEdge + LOCAL_CLOCK_INCREMENT - LOCAL_CLOCK_MARGIN)))
                         {
                             /* Record edge time */
-                            timeLastEdge = spdifReceivedTime;
+                            timeLastEdge = spdifRxTime;
 
                             /* Setup for next edge */
-                            timeNextEdge = spdifReceivedTime + LOCAL_CLOCK_INCREMENT + LOCAL_CLOCK_MARGIN;
+                            timeNextEdge = spdifRxTime + LOCAL_CLOCK_INCREMENT + LOCAL_CLOCK_MARGIN;
 
                             /* Toggle edge */
                             i_pll_ref.toggle_timed(1);

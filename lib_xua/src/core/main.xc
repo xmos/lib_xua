@@ -30,8 +30,8 @@
 #include "iap.h"
 #endif
 
-#if (XUA_SPDIF_RX_EN)
-#include "spdif.h"
+#if (XUA_SPDIF_RX_EN || XUA_SPDIF_TX_EN)
+#include "spdif.h"                     /* From lib_spdif */
 #endif
 
 #if (XUA_ADAT_RX_EN)
@@ -40,10 +40,6 @@
 
 #if (XUA_NUM_PDM_MICS > 0)
 #include "xua_pdm_mic.h"
-#endif
-
-#if (XUA_SPDIF_TX_EN)
-#include "spdif.h"   /* From lib_spdif */
 #endif
 
 #if (XUA_DFU_EN == 1)
@@ -142,7 +138,11 @@ on stdcore[XUD_TILE] : buffered in port:32 p_adat_rx        = PORT_ADAT_IN;
 #endif
 
 #if (XUA_SPDIF_RX_EN)
+#if (LEGACY_SPDIF_RECEIVER)
 on tile[XUD_TILE] : in port p_spdif_rx                      = PORT_SPDIF_IN;
+#else
+on tile[XUD_TILE] : buffered in port:32 p_spdif_rx          = PORT_SPDIF_IN;
+#endif
 #endif
 
 #if (XUA_SPDIF_RX_EN) || (XUA_ADAT_RX_EN) || (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
@@ -643,7 +643,7 @@ int main()
         on tile[XUD_TILE]:
         {
             thread_speed();
-            spdif_rx(c_spdif_rx,p_spdif_rx,clk_spd_rx,192000);
+            spdif_rx(c_spdif_rx, p_spdif_rx, clk_spd_rx, 192000);
         }
 #endif
 
