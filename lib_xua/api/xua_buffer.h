@@ -98,7 +98,9 @@ void XUA_Buffer_Decouple(chanend c_audio_out
 );
 #endif
 
+#ifndef MAX
 #define MAX(x,y) ((x)>(y) ? (x) : (y))
+#endif
 
 /* TODO use SLOTSIZE to potentially save memory */
 /* Note we could improve on this, for one subslot is set to 4 */

@@ -27,7 +27,7 @@ extern unsigned samplesOut[NUM_USB_CHAN_OUT];
 extern unsigned samplesIn[2][NUM_USB_CHAN_IN];
 #include "xua_audiohub_st.h"
 
-#define TEST_SAMPLE_RATE_HZ            (48000*4)
+#define TEST_SAMPLE_RATE_HZ            (192000)
 #define TEST_USB_FRAME_RATE_HZ         (8000) //HS
 #define SUBSLOT_SIZE_BYTES             (4)
 #define PACKET_SAMPLES_PER_CHAN        (TEST_SAMPLE_RATE_HZ/TEST_USB_FRAME_RATE_HZ)
@@ -212,7 +212,6 @@ int Fake_XUA_Buffer_Ep(chanend c_stim)
     {
         p_outAudioBuff = &outAudioBuff[0];
     }
-
 
     xc_ptr aud_from_host_buffer = 0;
     SET_SHARED_GLOBAL(g_aud_from_host_flag, 1);
