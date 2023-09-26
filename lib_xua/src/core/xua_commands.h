@@ -30,6 +30,7 @@
 #define SET_SAMPLE_FREQ         4
 #define SET_STREAM_FORMAT_OUT   8
 #define SET_STREAM_FORMAT_IN    9
+#define XUA_EXIT                10
 
 #include "dsd_support.h"
 

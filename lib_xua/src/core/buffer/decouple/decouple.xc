@@ -479,6 +479,7 @@ __builtin_unreachable();
     {
         /* Finished creating packet - commit it to the FIFO */
         /* Total samps to write could start at 0 (i.e. no MCLK) so need to check for < 0) */
+        //printstr("dec : sampsToWrite: "); printintln(sampsToWrite);
         if(sampsToWrite <= 0)
         {
             int speed, wrPtr;
@@ -489,6 +490,9 @@ __builtin_unreachable();
 
             GET_SHARED_GLOBAL(wrPtr, g_aud_to_host_wrptr);
             write_via_xc_ptr(wrPtr, datasize);
+
+          //  printstr("dec samples: ");
+            //printintln(totalSampsToWrite);
 
             /* Round up to nearest word - note, not needed for slotsize == 4! */
             datasize = (datasize+3) & (~0x3);
@@ -501,6 +505,9 @@ __builtin_unreachable();
             GET_SHARED_GLOBAL(fillLevel, g_aud_to_host_fill_level);
             fillLevel += 4+datasize;
             assert(fillLevel <= BUFF_SIZE_IN);
+
+            //printstr("dec filllevel: ");
+            //printintln(fillLevel);
 
             /* Do wrap */
             if (wrPtr >= aud_to_host_fifo_end)
@@ -912,6 +919,14 @@ void XUA_Buffer_Decouple(chanend c_mix_out
                 SET_SHARED_GLOBAL(g_freqChange, 0);
                 ENABLE_INTERRUPTS();
             }
+            else if(tmp == XUA_EXIT)
+            {
+                DISABLE_INTERRUPTS();
+                SET_SHARED_GLOBAL(g_freqChange, 0);
+                inct(c_mix_out);
+                outct(c_mix_out, XS1_CT_END);
+                return;
+            }
 #endif
         }
 
@@ -1025,6 +1040,7 @@ void XUA_Buffer_Decouple(chanend c_mix_out
                         int aud_to_host_rdptr;
                         GET_SHARED_GLOBAL(aud_to_host_rdptr, g_aud_to_host_rdptr);
                         inUnderflow = 0;
+                        //nnprintstr("DEC OUT OF UNDERFLOW\n");
                         aud_to_host_buffer = aud_to_host_rdptr;
                     }
                     else
