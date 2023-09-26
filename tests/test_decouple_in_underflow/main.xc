@@ -54,8 +54,7 @@ unsafe
     volatile unsigned * unsafe gp_pktBuffer;
 }
 
-
-#define DELAY 1000
+#define DELAY 2000
 static inline void Trigger(chanend c, unsigned cmd, int count)
 {
     timer t;
@@ -68,72 +67,118 @@ static inline void Trigger(chanend c, unsigned cmd, int count)
     }
 }
 
+/* Buffering uses this to size packets */
+extern unsigned g_speed;
+
+{int, int} FillBuffer(chanend c_stim_ep, chanend c_stim_au, random_generator_t rg, int pktSizes[64], int &currentPktSamples)
+{
+    int nextPktSamples;
+    int pktSize;
+    int pktCount = 0;
+    int fillLevel = 0;
+
+    while(1)
+    {
+        /* Setup next packet sizing */
+        /* Note, technically we should not be doing +/- for freqs like 44.1 but for this test it's a 'don't care' */
+        int pktSamplesAdjust = (int) (random_get_random_number(rg) % 3) - 1; // Rand number between -1 and 1
+        nextPktSamples = PACKET_SAMPLES_PER_CHAN + pktSamplesAdjust;
+        g_speed = (nextPktSamples << 16);
+
+        /* E.g. We expect 6 +/- 1 transfers per packet at 48000 */
+        Trigger(c_stim_au, CMD_GEN_RAMP, currentPktSamples);
+
+        /* Keep out own record of buffer fill level */
+        pktSize = (currentPktSamples * NUM_USB_CHAN_IN * SUBSLOT_SIZE_BYTES);
+        fillLevel += pktSize + 4; /* +4 since store packet length in buffer */
+
+        /* Record packet sizes for when we are draining the buffer later */
+        pktSizes[pktCount++] = pktSize;
+        assert(pktCount < sizeof(pktSizes)/sizeof(pktSizes[0]));
+
+        /* Stop filling the buffer when we are taking it out of underflow */
+        if(fillLevel >= IN_BUFFER_PREFILL)
+        {
+            return {pktCount, fillLevel};
+        }
+
+        currentPktSamples = nextPktSamples;
+
+        /* Check that the buffer has remained in underflow */
+        Trigger(c_stim_ep, CMD_CHECK_UNDERFLOW, 1);
+    }
+}
 
 int stim(chanend c_stim_ep, chanend c_stim_au)
 {
-    random_generator_t rg = random_create_generator_from_seed(TEST_SEED);
+    int pktSamplesPerChan = PACKET_SAMPLES_PER_CHAN;
+    int fillLevel = 0;
+    int pktCount = 0;
+    int pktSizes[64];
 
+    /* We need to set feedback value such that decouple appropriately sized packets */
+    g_speed = (pktSamplesPerChan << 16);
+
+    random_generator_t rg = random_create_generator_from_seed(TEST_SEED);
 
     /* Initially we should be in underflow */
     Trigger(c_stim_ep, CMD_CHECK_UNDERFLOW, 1);
 
     /* Give the buffering some some recorded samples until we come out of underflow */
+    {pktCount, fillLevel} = FillBuffer(c_stim_ep, c_stim_au, rg, pktSizes, pktSamplesPerChan);
 
-    /* Each packet uses PACKET_SIZE_NOMIMAL_BYTES in the buffer + 4 bytes to store the packet length
-     * it will therefore the number of packets to fill buffer is IN_BUFFER_PREFILL/(PACKET_SIZE_NOMINAL_BYTES + 4)
-     * In the case of 48kHz this is 1560/52 = 30
-     *
-     * Note, this all assumes nominal packet size only...
-     */
-    const int prefillPackets = IN_BUFFER_PREFILL/(PACKET_SIZE_NOMINAL_BYTES+4);
+    /* Will take a packet send in order for buffer to triffer the underflow check */
+    Trigger(c_stim_ep, CMD_CHECK_UNDERFLOW, 1);
 
-    int fillLevel = 0;
+    /* Subtract the amount of bytes used to store packet lengths */
+    fillLevel -= (pktCount * sizeof(unsigned));
 
-    while(fillLevel < IN_BUFFER_PREFILL)
+    /* Now check the packets/samples pop out as expected */
+    for(int i = 0; i < pktCount; i++)
     {
-        /* Note, techically we shoudl be doing +/- for freqs like 44.1 but for this test it's a 'don't care' */
-        int pktSizeAdjust = (int) (random_get_random_number(rg) % 3) - 1 ; // Rand number between -1 and 1
-
-        /* E.g. We expect 6 +/- 1 transfers per packet at 48000 */
-        Trigger(c_stim_au, CMD_GEN_RAMP, PACKET_SAMPLES_PER_CHAN + pktSizeAdjust);
-        Trigger(c_stim_ep, CMD_CHECK_UNDERFLOW, 1);
-
-        fillLevel += (PACKET_SAMPLES_PER_CHAN * NUM_USB_CHAN_IN * SUBSLOT_SIZE_BYTES) + 4;
-        fillLevel += (NUM_USB_CHAN_IN * pktSizeAdjust);
+        Trigger(c_stim_ep, CMD_CHECK_RAMP, 1);
+        fillLevel -= (pktSizes[i]);
     }
-
-    /* Now check the packets pop out as expected */
-    Trigger(c_stim_ep, CMD_CHECK_RAMP, prefillPackets);
+    assert(fillLevel == 0);
 
     /* Check we're into underflow after draining the buffer */
     Trigger(c_stim_ep, CMD_CHECK_UNDERFLOW, 1);
-
     Trigger(c_stim_ep, CMD_CHECK_UNDERFLOW, 1);
 
     /* Fill the buffer up again */
-    for(int i = 0; i < prefillPackets; i++)
-    {
-        /* We expect 6 transfers per packet at 48000 */
-        Trigger(c_stim_au, CMD_GEN_RAMP, PACKET_SAMPLES_PER_CHAN);
-        Trigger(c_stim_ep, CMD_CHECK_UNDERFLOW, 1);
-    }
+    {pktCount, fillLevel} = FillBuffer(c_stim_ep, c_stim_au, rg, pktSizes, pktSamplesPerChan);
 
     /* Fill a bit more .. */
-    for(int i = 0; i < 2; i++)
-    {
-        /* We expect 6 transfers per packet at 48000 */
-        Trigger(c_stim_au, CMD_GEN_RAMP, 6);
-    }
+    Trigger(c_stim_au, CMD_GEN_RAMP, pktSamplesPerChan);
+    fillLevel -= (pktCount * sizeof(unsigned));
+
+    /* Will take a packet send in order for buffer to triffer the underflow check */
+    Trigger(c_stim_ep, CMD_CHECK_UNDERFLOW, 1);
 
     /* Now check the packets pop out as expected */
-    Trigger(c_stim_ep, CMD_CHECK_RAMP, prefillPackets + 2);
+    int i = 0;
+    while(fillLevel > 0)
+    {
+        Trigger(c_stim_ep, CMD_CHECK_RAMP, 1);
+        fillLevel -= (pktSizes[i++]);
+    }
+
+    Trigger(c_stim_ep, CMD_CHECK_RAMP, 1);
 
     /* annnnd back into underflow...*/
     Trigger(c_stim_ep, CMD_CHECK_UNDERFLOW, 3);
 
-    c_stim_au <: CMD_DIE;
+    /* Kill decouple */
+    SET_SHARED_GLOBAL(g_freqChange_flag, XUA_EXIT);
+    int tmp;
+    while(tmp)
+        GET_SHARED_GLOBAL(tmp, g_freqChange_flag);
+
     printstr("PASS\n");
-    exit(0);
+
+    /* kill the test cores */
+    c_stim_au <: CMD_DIE;
+    c_stim_ep <: CMD_DIE;
 
     return 0;
 }
@@ -152,6 +197,8 @@ int Fake_XUA_AudioHub(chanend c_aud, chanend c_stim)
 
         if(cmd == CMD_DIE)
         {
+            outct(c_aud, XS1_CT_END);
+            chkct(c_aud, XS1_CT_END);
             return 0;
         }
         else
@@ -171,7 +218,6 @@ int Fake_XUA_AudioHub(chanend c_aud, chanend c_stim)
 /* This will be called by decouple */
 XUD_Result_t XUD_SetReady_InPtr(XUD_ep ep, unsigned addr, int length)
 {
-    assert(length == PACKET_SIZE_NOMINAL_BYTES && msg("For this test we expect nominal length packets"));
     unsafe
     {
         assert(*gp_inEpReady == 0 && msg("EP already marked ready"));
@@ -183,7 +229,6 @@ XUD_Result_t XUD_SetReady_InPtr(XUD_ep ep, unsigned addr, int length)
     return XUD_RES_OKAY;
 }
 
-extern unsigned g_speed;
 
 /* Checks the contents of audio packets based on the info received from the stim() task */
 int Fake_XUA_Buffer_Ep(chanend c_stim, chanend c_aud_ctl)
@@ -194,9 +239,6 @@ int Fake_XUA_Buffer_Ep(chanend c_stim, chanend c_aud_ctl)
     int length;
     int cmd;
     int ramp = 100; /* Start at something other than 0 just to avoid confusing with underflow */
-
-    /* We need to set feedback value such that decouple appropriately sized packets */
-    g_speed = (PACKET_SAMPLES_PER_CHAN << 16);
 
     /* Decouple waits for this to be set before doing anything. It then resets it */
     SET_SHARED_GLOBAL(g_aud_to_host_flag, 1);
@@ -215,6 +257,9 @@ int Fake_XUA_Buffer_Ep(chanend c_stim, chanend c_aud_ctl)
     {
         c_stim :> cmd;
 
+        if(cmd == CMD_DIE)
+            return 0;
+
         unsafe
         {
             /* Wait for decouple to mark EP as ready to send */
@@ -224,8 +269,6 @@ int Fake_XUA_Buffer_Ep(chanend c_stim, chanend c_aud_ctl)
             /* Grab packet length from the global stored in our implemetation of XUD_SetReady_InPtr() */
             length = *gp_inEpLength;
         }
-
-        assert(length == PACKET_SIZE_NOMINAL_BYTES && msg("Unexpcted length"));
 
         unsafe
         {
@@ -242,12 +285,15 @@ int Fake_XUA_Buffer_Ep(chanend c_stim, chanend c_aud_ctl)
 
                 if(*(gp_pktBuffer+i) != checkValue)
                 {
-                    debug_printf("BUFFER_EP: expected %d got %d from %d\n", checkValue, *(gp_pktBuffer+i), (int) (gp_pktBuffer+i));
+                    debug_printf("ERR BUFFER_EP: expected %d got %d from %d\n", checkValue, *(gp_pktBuffer+i), (int) (gp_pktBuffer+i));
                 }
+                //else
+                //{
+                //    debug_printf("BUFFER_EP: expected %d got %d from %d\n", checkValue, *(gp_pktBuffer+i), (int) (gp_pktBuffer+i));
+                //}
                 assert(*(gp_pktBuffer+i) == checkValue && msg("Bad value in buffer"));
 
                 ramp += (cmd == CMD_CHECK_RAMP);
-
             }
         }
 
