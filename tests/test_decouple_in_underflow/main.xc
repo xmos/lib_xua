@@ -287,10 +287,10 @@ int Fake_XUA_Buffer_Ep(chanend c_stim, chanend c_aud_ctl)
                 {
                     debug_printf("ERR BUFFER_EP: expected %d got %d from %d\n", checkValue, *(gp_pktBuffer+i), (int) (gp_pktBuffer+i));
                 }
-                //else
-                //{
-                //    debug_printf("BUFFER_EP: expected %d got %d from %d\n", checkValue, *(gp_pktBuffer+i), (int) (gp_pktBuffer+i));
-                //}
+                else
+                {
+                    debug_printf("BUFFER_EP: expected %d got %d from %d\n", checkValue, *(gp_pktBuffer+i), (int) (gp_pktBuffer+i));
+                }
                 assert(*(gp_pktBuffer+i) == checkValue && msg("Bad value in buffer"));
 
                 ramp += (cmd == CMD_CHECK_RAMP);

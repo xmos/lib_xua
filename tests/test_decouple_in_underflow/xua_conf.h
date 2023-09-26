@@ -31,7 +31,11 @@
 
 #define MIN_FREQ                (44100)
 #define MAX_FREQ                (192000)
-#define DEFAULT_FREQ            (48000)
+
+#ifndef DEFAULT_FREQ
+#error DEFAULT_FREQ not defined
+//#define DEFAULT_FREQ            (48000)
+#endif
 
 #define SPDIF_TX_INDEX          (0)
 #define VENDOR_STR              "XMOS"

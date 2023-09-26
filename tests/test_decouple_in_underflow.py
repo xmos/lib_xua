@@ -12,7 +12,7 @@ def test_file(request):
     return str(request.node.fspath)
 
 
-def do_test(test_file, options, capfd, test_seed):
+def do_test(test_file, options, capfd, test_seed, sample_rate):
     testname, _ = os.path.splitext(os.path.basename(test_file))
 
     binary = f"{testname}/bin/{testname}.xe"
@@ -33,16 +33,20 @@ def do_test(test_file, options, capfd, test_seed):
         capfd=capfd,
         instTracing=options.enabletracing,
         vcdTracing=options.enablevcdtracing,
-        build_options=["TEST_BUILD_FLAGS=" + f" -DTEST_SEED={test_seed}"],
+        build_options=[
+            "TEST_BUILD_FLAGS="
+            + f" -DTEST_SEED={test_seed}"
+            + f" -DDEFAULT_FREQ={sample_rate}"
+        ],
     )
 
     return result
 
 
 # TODO parameterise with:
-# - sample rate
 # - usb bus speed
-def test_decouple_in_underflow(test_file, options, capfd, test_seed):
-    result = do_test(test_file, options, capfd, test_seed)
+@pytest.mark.parametrize("sample_rate", [48000, 96000, 192000])
+def test_decouple_in_underflow(test_file, options, capfd, test_seed, sample_rate):
+    result = do_test(test_file, options, capfd, test_seed, sample_rate)
 
     assert result
