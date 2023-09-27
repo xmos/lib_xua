@@ -33,6 +33,7 @@ def do_test(test_file, options, capfd, test_seed, sample_rate):
         capfd=capfd,
         instTracing=options.enabletracing,
         vcdTracing=options.enablevcdtracing,
+        clean_before_build=True,
         build_options=[
             "TEST_BUILD_FLAGS="
             + f" -DTEST_SEED={test_seed}"
