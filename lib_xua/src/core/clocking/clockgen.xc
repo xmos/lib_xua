@@ -1,6 +1,5 @@
 // Copyright 2011-2023 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
-
 #include <xs1.h>
 #include <assert.h>
 #include <print.h>
@@ -141,9 +140,6 @@ static inline void setClockValidity(chanend c_interruptControl, int clkIndex, in
     }
 }
 
-
-
-
 /* Returns 1 for valid clock found else 0 */
 static inline int validSamples(Counter &counter, int clockIndex)
 {
@@ -250,10 +246,10 @@ void clockGen (streaming chanend ?c_spdif_rx, chanend ?c_adat_rx, client interfa
 
 #if (XUA_SPDIF_RX_EN)
     /* S/PDIF buffer state */
-	int spdifSamples[MAX_SPDIF_SAMPLES];           /* S/PDIF sample buffer */
-	int spdifWr = 0;                               /* Write index */
-	int spdifRd = 0;                               /* Read index */ //(spdifWriteIndex ^ (MAX_SPDIF_SAMPLES >> 1)) & ~1;   // Start in middle
-	int spdifOverflow = 0;                         /* Overflow/undeflow flags */
+    int spdifSamples[MAX_SPDIF_SAMPLES];           /* S/PDIF sample buffer */
+    int spdifWr = 0;                               /* Write index */
+    int spdifRd = 0;                               /* Read index */ //(spdifWriteIndex ^ (MAX_SPDIF_SAMPLES >> 1)) & ~1;   // Start in middle
+    int spdifOverflow = 0;                         /* Overflow/undeflow flags */
     int spdifUnderflow = 1;
     int spdifSamps = 0;                            /* Number of samples in buffer */
     Counter spdifCounters;
@@ -378,8 +374,8 @@ void clockGen (streaming chanend ?c_spdif_rx, chanend ?c_adat_rx, client interfa
                 break;
 #endif
 
-			/* Updates to clock settings from endpoint 0 */
-			case inuint_byref(c_clk_ctl, tmp):
+            /* Updates to clock settings from endpoint 0 */
+            case inuint_byref(c_clk_ctl, tmp):
                 switch(tmp)
                 {
                     case GET_SEL:
@@ -453,7 +449,7 @@ void clockGen (streaming chanend ?c_spdif_rx, chanend ?c_adat_rx, client interfa
                         break;
                 }
 
-			    break;
+                break;
 
             /* Generate local clock from timer */
             case t_local when timerafter(timeNextEdge) :> void:
@@ -513,14 +509,14 @@ void clockGen (streaming chanend ?c_spdif_rx, chanend ?c_adat_rx, client interfa
             case c_spdif_rx :> spdifRxData:
 
                 /* Record time of sample */
-				t_local :> spdifRxTime;
+                t_local :> spdifRxTime;
 
                 /* Check parity and ignore if bad */
                 if(spdif_check_parity(spdifRxData))
                     continue;
 
                 /* Get preamble */
-				unsigned preamble = spdifRxData & SPDIF_RX_PREAMBLE_MASK;
+                unsigned preamble = spdifRxData & SPDIF_RX_PREAMBLE_MASK;
                 switch(preamble)
                 {
                     /* LEFT */
@@ -692,7 +688,6 @@ void clockGen (streaming chanend ?c_spdif_rx, chanend ?c_adat_rx, client interfa
 
                                             /* Reset counters */
                                             adatCounters.receivedSamples = 0;
-
                                         }
                                     }
                                 }
@@ -703,10 +698,9 @@ void clockGen (streaming chanend ?c_spdif_rx, chanend ?c_adat_rx, client interfa
                     break;
 #endif
 
-
 #if (XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
-			/* AudioHub requests data */
-			case inuint_byref(c_dig_rx, tmp):
+                /* AudioHub requests data */
+                case inuint_byref(c_dig_rx, tmp):
 #if (XUA_SPDIF_RX_EN)
                     if(spdifUnderflow)
                     {
@@ -721,7 +715,7 @@ void clockGen (streaming chanend ?c_spdif_rx, chanend ?c_adat_rx, client interfa
                         tmp2 = spdifSamples[spdifRd + 1];
 
                         spdifRd += 2;
-					    spdifRd &= (MAX_SPDIF_SAMPLES - 1);
+                        spdifRd &= (MAX_SPDIF_SAMPLES - 1);
 
                         g_digData[0] = tmp;
                         g_digData[1] = tmp2;
@@ -826,11 +820,9 @@ void clockGen (streaming chanend ?c_spdif_rx, chanend ?c_adat_rx, client interfa
                 }
 #endif
                 outuint(c_dig_rx, 1);
-				break;
+                break;
 #endif
         }
-
     }
 }
-
 
