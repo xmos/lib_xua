@@ -6,7 +6,8 @@ HEAD
 
   * RESOLVED:  Output volume control not enabled by default when MIXER disabled
   * RESOLVED:  Full 32bit result of volume processing not calculated when required
-  * RESOVED:   Input stream sending an erroneous zero-length packet when exiting underflow state
+  * RESOLVED:  Input stream sending an erroneous zero-length packet when exiting underflow state
+  * CHANGED:   QUAD_SPI_FLASH replaced by XUA_QUAD_SPI_FLASH (default: 1)
 
 3.5.1
 -----
