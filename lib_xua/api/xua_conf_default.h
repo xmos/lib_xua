@@ -241,7 +241,9 @@
 #endif
 
 /**
- * @brief Default device sample frequency. A safe default should be used. Default: MIN_FREQ
+ * @brief Default device sample frequency. A safe default should be used.
+ *
+ * Default: MIN_FREQ
  */
 #ifndef DEFAULT_FREQ
 #define DEFAULT_FREQ             (MIN_FREQ)
@@ -250,7 +252,9 @@
 /* Audio Class Defines */
 
 /**
- * @brief USB Audio Class Version. Default: 2 (Audio Class version 2.0)
+ * @brief USB Audio Class Version.
+ *
+ * Default: 2 (Audio Class version 2.0)
  */
 #ifndef AUDIO_CLASS
 #define AUDIO_CLASS 2
@@ -293,7 +297,9 @@
 /* Feature defines */
 
 /**
- * @brief Number of PDM microphones in the design. Default: None
+ * @brief Number of PDM microphones in the design.
+ *
+ * Default: None
  */
 #ifndef XUA_NUM_PDM_MICS
 #define XUA_NUM_PDM_MICS            (0)
@@ -310,14 +316,18 @@
 #endif
 
 /**
- * @brief Size of a frame of microphone data samples. Default: 1
+ * @brief Size of a frame of microphone data samples.
+ *
+ * Default: 1
  */
 #ifndef XUA_MIC_FRAME_SIZE
 #define XUA_MIC_FRAME_SIZE      (1)
 #endif
 
 /**
- * @brief Enable MIDI functionality including buffering, descriptors etc. Default: DISABLED
+ * @brief Enable MIDI functionality including buffering, descriptors etc.
+ *
+ * Default: 0 (Disabled)
  */
 #ifndef MIDI
 #define MIDI                    (0)
@@ -351,7 +361,9 @@
 #endif
 
 /**
- * @brief Enables ADAT Tx. Default: 0 (Disabled)
+ * @brief Enables ADAT Tx.
+ *
+ * Default: 0 (Disabled)
  */
 #ifndef XUA_ADAT_TX_EN
 #define XUA_ADAT_TX_EN           (0)
@@ -367,14 +379,18 @@
 #endif
 
 /**
- * @brief Enables SPDIF Rx. Default: 0 (Disabled)
+ * @brief Enables SPDIF Rx.
+ *
+ * Default: 0 (Disabled)
  */
 #ifndef XUA_SPDIF_RX_EN
 #define XUA_SPDIF_RX_EN       (0)
 #endif
 
 /**
- * @brief Enables ADAT Rx. Default: 0 (Disabled)
+ * @brief Enables ADAT Rx.
+ *
+ * Default: 0 (Disabled)
  */
 #ifndef XUA_ADAT_RX_EN
 #define XUA_ADAT_RX_EN        (0)
@@ -432,9 +448,18 @@
  * Default: 1 (Enabled)
  */
 #if !defined(XUA_DFU_EN)
-#define XUA_DFU_EN                   (1)
+#define XUA_DFU_EN                  (1)
 #elif defined(XUA_DFU_EN) && (XUA_DFU_EN == 0)
 #undef XUA_DFU_EN
+#endif
+
+/**
+ * @brief Use a QSPI (rather than SPI) flash for DFU (and boot)
+ *
+ * Default: 1 (True i.e use QSPI flash)
+*/
+#if !defined(XUA_QUAD_SPI_FLASH)
+#define XUA_QUAD_SPI_FLASH          (1)
 #endif
 
 /**
@@ -445,7 +470,7 @@
  * Default 0 (Disabled)
  */
 #ifndef HID_CONTROLS
-#define HID_CONTROLS       (0)
+#define HID_CONTROLS                (0)
 #endif
 
 /**

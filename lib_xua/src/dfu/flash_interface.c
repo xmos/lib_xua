@@ -1,4 +1,4 @@
-// Copyright 2011-2021 XMOS LIMITED.
+// Copyright 2011-2023 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 #include <xs1.h>
 #include <flash.h>
@@ -72,7 +72,7 @@ int flash_cmd_init(void)
         return 1;
     }
 
-#ifndef QUAD_SPI_FLASH
+#if (!XUA_QUAD_SPI_FLASH)
     // Disable flash protection
     fl_setProtection(0);
 #endif

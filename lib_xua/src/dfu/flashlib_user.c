@@ -1,11 +1,11 @@
-// Copyright 2012-2021 XMOS LIMITED.
+// Copyright 2012-2023 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 #include "xua.h"
 #if (XUA_DFU_EN == 1)
 #include "uac_hwresources.h"
 #include <xs1.h>
 #include <xclib.h>
-#ifdef QUAD_SPI_FLASH
+#if (XUA_QUAD_SPI_FLASH)
 #include <quadflashlib.h>
 #else
 #include <flashlib.h>
@@ -20,7 +20,7 @@
 
 #ifdef DFU_FLASH_DEVICE
 
-#ifdef QUAD_SPI_FLASH
+#if (XUA_QUAD_SPI_FLASH)
 /* Using specified flash device rather than all supported in tools */
 fl_QuadDeviceSpec flash_devices[] = {DFU_FLASH_DEVICE};
 #else
@@ -29,7 +29,7 @@ fl_DeviceSpec flash_devices[] = {DFU_FLASH_DEVICE};
 #endif
 #endif
 
-#ifdef QUAD_SPI_FLASH
+#if (XUA_QUAD_SPI_FLASH)
 /*
 typedef struct {
       out port qspiCS;
@@ -60,7 +60,7 @@ fl_PortHolderStruct p_flash =
 int flash_cmd_enable_ports()
 {
     int result = 0;
-#ifdef QUAD_SPI_FLASH
+#if (XUA_QUAD_SPI_FLASH)
     /* Ports not shared */
 #else
     setc(p_flash.spiMISO, XS1_SETC_INUSE_OFF);
@@ -89,14 +89,14 @@ int flash_cmd_enable_ports()
 #endif
 
 #ifdef DFU_FLASH_DEVICE
-#ifdef QUAD_SPI_FLASH
+#if (XUA_QUAD_SPI_FLASH)
     result = fl_connectToDevice(&p_qflash, flash_devices, sizeof(flash_devices) / sizeof(fl_QuadDeviceSpec));
 #else
     result = fl_connectToDevice(&p_flash, flash_devices, sizeof(flash_devices) / sizeof(fl_DeviceSpec));
 #endif
 #else
     /* Use default flash list */
-#ifdef QUAD_SPI_FLASH
+#if (XUA_QUAD_SPI_FLASH)
     result = fl_connect(&p_qflash);
 #else
     result = fl_connect(&p_flash);
@@ -117,7 +117,7 @@ int flash_cmd_disable_ports()
 {
     fl_disconnect();
 
-#ifndef QUAD_SPI_FLASH
+#if (!XUA_QUAD_SPI_FLASH)
     setc(p_flash.spiMISO, XS1_SETC_INUSE_OFF);
     setc(p_flash.spiCLK, XS1_SETC_INUSE_OFF);
     setc(p_flash.spiMOSI, XS1_SETC_INUSE_OFF);
