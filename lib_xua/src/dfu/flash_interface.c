@@ -72,7 +72,7 @@ int flash_cmd_init(void)
         return 1;
     }
 
-#ifndef QUAD_SPI_FLASH
+#if (!XUA_QUAD_SPI_FLASH)
     // Disable flash protection
     fl_setProtection(0);
 #endif
