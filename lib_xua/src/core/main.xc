@@ -138,7 +138,11 @@ on stdcore[XUD_TILE] : buffered in port:32 p_adat_rx        = PORT_ADAT_IN;
 #endif
 
 #if (XUA_SPDIF_RX_EN)
+#if (LEGACY_SPDIF_RECEIVER)
 on tile[XUD_TILE] : in port p_spdif_rx                      = PORT_SPDIF_IN;
+#else
+on tile[XUD_TILE] : buffered in port:32 p_spdif_rx          = PORT_SPDIF_IN;
+#endif
 #endif
 
 #if (XUA_SPDIF_RX_EN) || (XUA_ADAT_RX_EN) || (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
