@@ -517,6 +517,7 @@ void clockGen (streaming chanend ?c_spdif_rx, chanend ?c_adat_rx, client interfa
 
                 /* Get preamble */
                 unsigned preamble = spdifRxData & SPDIF_RX_PREAMBLE_MASK;
+
                 switch(preamble)
                 {
                     /* LEFT */

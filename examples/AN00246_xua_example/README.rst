@@ -14,7 +14,7 @@ Required hardware
 .................
 
 The example code provided with the application has been implemented
-and tested on the xCORE-200 Multi-channel Audio Board
+and tested on the xCORE.ai Multi-channel Audio Board
 
 Prerequisites
 .............
