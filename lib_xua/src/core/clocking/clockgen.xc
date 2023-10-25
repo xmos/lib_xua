@@ -512,7 +512,7 @@ void clockGen (streaming chanend ?c_spdif_rx, chanend ?c_adat_rx, client interfa
                 t_local :> spdifRxTime;
 
                 /* Check parity and ignore if bad */
-                if(spdif_check_parity(spdifRxData))
+                if(spdif_rx_check_parity(spdifRxData))
                     continue;
 
                 /* Get preamble */
