@@ -483,25 +483,23 @@ void clockGen (streaming chanend ?c_spdif_rx, chanend ?c_adat_rx, client interfa
 #endif
                 break;
 
-
 #if (XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
             case t_external when timerafter(timeNextClockDetection) :> void:
-
-                timeNextClockDetection += (LOCAL_CLOCK_INCREMENT);
+                {
+                    int valid;
+                    timeNextClockDetection += (LOCAL_CLOCK_INCREMENT);
 #if (XUA_SPDIF_RX_EN)
-                tmp = spdifCounters.samplesPerTick;
-
-                /* Returns 1 if valid clock found */
-                tmp = validSamples(spdifCounters, CLOCK_SPDIF_INDEX);
-                setClockValidity(c_clk_int, CLOCK_SPDIF_INDEX, tmp, clkMode);
+                    /* Returns 1 if valid clock found */
+                    valid = validSamples(spdifCounters, CLOCK_SPDIF_INDEX);
+                    setClockValidity(c_clk_int, CLOCK_SPDIF_INDEX, valid, clkMode);
 #endif
 #if (XUA_ADAT_RX_EN)
-                tmp = validSamples(adatCounters, CLOCK_ADAT_INDEX);
-                setClockValidity(c_clk_int, CLOCK_ADAT_INDEX, tmp, clkMode);
+                    /* Returns 1 if valid clock found */
+                    valid = validSamples(adatCounters, CLOCK_ADAT_INDEX);
+                    setClockValidity(c_clk_int, CLOCK_ADAT_INDEX, valid, clkMode);
 #endif
-
+                }
                 break;
-
 #endif
 
 #if (XUA_SPDIF_RX_EN)
