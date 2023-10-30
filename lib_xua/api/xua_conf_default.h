@@ -17,49 +17,49 @@
  * @brief Location (tile) of audio I/O. Default: 0
  */
 #ifndef AUDIO_IO_TILE
-#define AUDIO_IO_TILE   (0)
+#define AUDIO_IO_TILE           (0)
 #endif
 
 /**
  * @brief Location (tile) of audio I/O. Default: 0
  */
 #ifndef XUD_TILE
-#define XUD_TILE        (0)
+#define XUD_TILE                (0)
 #endif
 
 /**
  * @brief Location (tile) of MIDI I/O. Default: AUDIO_IO_TILE
  */
 #ifndef MIDI_TILE
-#define MIDI_TILE       AUDIO_IO_TILE
+#define MIDI_TILE               AUDIO_IO_TILE
 #endif
 
 /**
  * @brief Location (tile) of SPDIF Tx. Default: AUDIO_IO_TILE
  */
 #ifndef SPDIF_TX_TILE
-#define SPDIF_TX_TILE   AUDIO_IO_TILE
+#define SPDIF_TX_TILE           AUDIO_IO_TILE
 #endif
 
 /**
  * @brief Location (tile) of PDM Rx. Default: AUDIO_IO_TILE
  */
 #ifndef PDM_TILE
-#define PDM_TILE        AUDIO_IO_TILE
+#define PDM_TILE                AUDIO_IO_TILE
 #endif
 
 /**
  * @brief Location (tile) of reference signal to CS2100. Default: AUDIO_IO_TILE
  */
 #ifndef PLL_REF_TILE
-#define PLL_REF_TILE    AUDIO_IO_TILE
+#define PLL_REF_TILE            AUDIO_IO_TILE
 #endif
 
 /**
  * @brief Disable USB functionalty just leaving AudioHub
  */
 #ifndef XUA_USB_EN
-#define XUA_USB_EN      (1)
+#define XUA_USB_EN              (1)
 #endif
 
 /**
@@ -85,10 +85,10 @@
     #if defined(NATIVE_DSD) && (NATIVE_DSD == 0)
         #undef NATIVE_DSD
     #else
-        #define NATIVE_DSD       1  /* Always enable Native DSD when DSD mode is enabled */
+        #define NATIVE_DSD      (1)  /* Always enable Native DSD when DSD mode is enabled */
     #endif
 #else
-    #define DSD_CHANS_DAC        0
+    #define DSD_CHANS_DAC       (0)
 #endif
 
 #define XUA_PCM_FORMAT_I2S      (0)
@@ -103,7 +103,7 @@
         #error Bad value for XUA_PCM_FORMAT
     #endif
 #else
-    #define XUA_PCM_FORMAT        XUA_PCM_FORMAT_I2S
+    #define XUA_PCM_FORMAT      XUA_PCM_FORMAT_I2S
 #endif
 
 /**
@@ -114,9 +114,9 @@
  **/
 #ifndef I2S_CHANS_PER_FRAME
     #if (XUA_PCM_FORMAT == XUA_PCM_FORMAT_TDM)
-        #define I2S_CHANS_PER_FRAME 8
+        #define I2S_CHANS_PER_FRAME (8)
     #else
-        #define I2S_CHANS_PER_FRAME 2
+        #define I2S_CHANS_PER_FRAME (2)
     #endif
 #endif
 
@@ -143,7 +143,7 @@
     #error I2S_CHANS_ADC not defined
     #define I2S_CHANS_ADC 2      /* Define anyway for doxygen */
 #else
-#define I2S_WIRES_ADC            (I2S_CHANS_ADC / I2S_CHANS_PER_FRAME)
+#define I2S_WIRES_ADC           (I2S_CHANS_ADC / I2S_CHANS_PER_FRAME)
 #endif
 
 /**
@@ -153,7 +153,7 @@
  * Default: 1 i.e. I2S and USB Audio are running at the same sample rate.
  */
 #ifndef AUD_TO_USB_RATIO
-#define AUD_TO_USB_RATIO (1)
+#define AUD_TO_USB_RATIO        (1)
 #else
     #if (AUD_TO_USB_RATIO != 3) && (AUD_TO_USB_RATIO != 1)
         #error Unsupported I2S to USB Audio sample rate ratio
@@ -167,7 +167,7 @@
  * Default: 1 i.e. I2S and PDM microphone decimators are running at the same sample rate.
  */
 #ifndef AUD_TO_MICS_RATIO
-#define AUD_TO_MICS_RATIO (1)
+#define AUD_TO_MICS_RATIO       (1)
 #else
     #if (AUD_TO_MICS_RATIO != 3) && (AUD_TO_MICS_RATIO != 1)
         #error Unsupported I2S to PDM microphone decimator sample rate ratio
@@ -180,7 +180,7 @@
  * Default: 0 i.e. mono mode is disabled, all input channels will be downsampled.
  */
 #ifndef I2S_DOWNSAMPLE_MONO_IN
-#define I2S_DOWNSAMPLE_MONO_IN (0)
+#define I2S_DOWNSAMPLE_MONO_IN  (0)
 #endif
 
 /**
@@ -203,7 +203,7 @@
  * Default: 32 bits
  */
 #ifndef XUA_I2S_N_BITS
-#define XUA_I2S_N_BITS (32)
+#define XUA_I2S_N_BITS           (32)
 #endif
 
 #if (XUA_I2S_N_BITS != 16) && (XUA_I2S_N_BITS != 32)
@@ -257,14 +257,16 @@
  * Default: 2 (Audio Class version 2.0)
  */
 #ifndef AUDIO_CLASS
-#define AUDIO_CLASS 2
+#define AUDIO_CLASS              (2)
 #endif
 
 /**
- * @brief Whether or not to fall back to Audio Class 1.0 in USB Full-speed. Default: 0 (Disabled)
+ * @brief Whether or not to fall back to Audio Class 1.0 in USB Full-speed.
+ *
+ * Default: 0 (Disabled i.e. do not fall back to UAC 1.0
  */
 #ifndef AUDIO_CLASS_FALLBACK
-#define AUDIO_CLASS_FALLBACK  0     /* Default to not falling back to UAC 1 */
+#define AUDIO_CLASS_FALLBACK     (0)
 #endif
 
 /**
@@ -276,7 +278,7 @@
 #if (AUDIO_CLASS == 2)
     /* Whether to run in Audio Class 2.0 mode in USB Full-speed */
     #if !defined(FULL_SPEED_AUDIO_2) && (AUDIO_CLASS_FALLBACK == 0)
-        #define FULL_SPEED_AUDIO_2    1     /* Default to falling back to UAC2 */
+        #define FULL_SPEED_AUDIO_2 (1)     /* Default to falling back to UAC2 */
     #endif
 #endif
 
@@ -302,7 +304,7 @@
  * Default: None
  */
 #ifndef XUA_NUM_PDM_MICS
-#define XUA_NUM_PDM_MICS            (0)
+#define XUA_NUM_PDM_MICS        (0)
 #endif
 
 /**
@@ -348,7 +350,7 @@
  * @brief Enables SPDIF Tx. Default: 0 (Disabled)
  */
 #ifndef XUA_SPDIF_TX_EN
-#define XUA_SPDIF_TX_EN          (0)
+#define XUA_SPDIF_TX_EN         (0)
 #endif
 
 /**
@@ -357,7 +359,7 @@
  * Default: 0 (i.e. channels 0 & 1)
  * */
 #ifndef SPDIF_TX_INDEX
-#define SPDIF_TX_INDEX        (0)
+#define SPDIF_TX_INDEX          (0)
 #endif
 
 /**
@@ -366,7 +368,7 @@
  * Default: 0 (Disabled)
  */
 #ifndef XUA_ADAT_TX_EN
-#define XUA_ADAT_TX_EN           (0)
+#define XUA_ADAT_TX_EN          (0)
 #endif
 
 /**
@@ -375,7 +377,7 @@
  * Default: 0 (i.e. channels [0:7])
  * */
 #ifndef ADAT_TX_INDEX
-#define ADAT_TX_INDEX         (0)
+#define ADAT_TX_INDEX           (0)
 #endif
 
 /**
@@ -384,7 +386,7 @@
  * Default: 0 (Disabled)
  */
 #ifndef XUA_SPDIF_RX_EN
-#define XUA_SPDIF_RX_EN       (0)
+#define XUA_SPDIF_RX_EN         (0)
 #endif
 
 /**
@@ -393,7 +395,7 @@
  * Default: 0 (Disabled)
  */
 #ifndef XUA_ADAT_RX_EN
-#define XUA_ADAT_RX_EN        (0)
+#define XUA_ADAT_RX_EN          (0)
 #endif
 
 /**
@@ -448,7 +450,7 @@
  * Default: 1 (Enabled)
  */
 #if !defined(XUA_DFU_EN)
-#define XUA_DFU_EN                  (1)
+#define XUA_DFU_EN              (1)
 #elif defined(XUA_DFU_EN) && (XUA_DFU_EN == 0)
 #undef XUA_DFU_EN
 #endif
@@ -459,7 +461,7 @@
  * Default: 1 (True i.e use QSPI flash)
 */
 #if !defined(XUA_QUAD_SPI_FLASH)
-#define XUA_QUAD_SPI_FLASH          (1)
+#define XUA_QUAD_SPI_FLASH      (1)
 #endif
 
 /**
@@ -470,7 +472,7 @@
  * Default 0 (Disabled)
  */
 #ifndef HID_CONTROLS
-#define HID_CONTROLS                (0)
+#define HID_CONTROLS            (0)
 #endif
 
 /**
@@ -504,7 +506,7 @@
  * Default 0 (Disabled)
  */
 #ifndef HID_OUT_REQUIRED
-#define HID_OUT_REQUIRED       (0)
+#define HID_OUT_REQUIRED        (0)
 #endif
 
 /**
@@ -515,7 +517,7 @@
  * Default: 0 (XMOS is master)
  */
 #ifndef CODEC_MASTER
-#define CODEC_MASTER       (0)
+#define CODEC_MASTER            (0)
 #endif
 
 /**
@@ -524,7 +526,7 @@
  * Default: ""
  */
 #ifndef SERIAL_STR
-#define SERIAL_STR               ""
+#define SERIAL_STR              ""
 #endif
 
 /**
@@ -533,7 +535,7 @@
  * Default: "XMOS"
  */
 #ifndef VENDOR_STR
-#define VENDOR_STR               "XMOS"
+#define VENDOR_STR              "XMOS"
 #endif
 
 /**
@@ -542,7 +544,7 @@
  * Default: 0x20B1 (XMOS)
  */
 #ifndef VENDOR_ID
-#define VENDOR_ID                (0x20B1)
+#define VENDOR_ID               (0x20B1)
 #endif
 
 /**
@@ -584,7 +586,7 @@
  */
 #if (AUDIO_CLASS == 1) || (AUDIO_CLASS_FALLBACK) || defined(__DOXYGEN__)
 #ifndef PID_AUDIO_1
-#define PID_AUDIO_1              (0x0003)
+#define PID_AUDIO_1             (0x0003)
 #endif
 #endif
 
@@ -594,28 +596,28 @@
  * Default: 0x0002
  */
 #ifndef PID_AUDIO_2
-#define PID_AUDIO_2              (0x0002)
+#define PID_AUDIO_2             (0x0002)
 #endif
 
 /**
  * @brief Device firmware version number in Binary Coded Decimal format: 0xJJMN where JJ: major, M: minor, N: sub-minor version number.
  */
 #ifndef BCD_DEVICE_J
-#define BCD_DEVICE_J             (1)
+#define BCD_DEVICE_J            (1)
 #endif
 
 /**
  * @brief Device firmware version number in Binary Coded Decimal format: 0xJJMN where JJ: major, M: minor, N: sub-minor version number.
  */
 #ifndef BCD_DEVICE_M
-#define BCD_DEVICE_M             (2)
+#define BCD_DEVICE_M            (2)
 #endif
 
 /**
  * @brief Device firmware version number in Binary Coded Decimal format: 0xJJMN where JJ: major, M: minor, N: sub-minor version number.
  */
 #ifndef BCD_DEVICE_N
-#define BCD_DEVICE_N             (0)
+#define BCD_DEVICE_N            (0)
 #endif
 
 /**
@@ -1070,7 +1072,7 @@
  * Default: 0 (Disabled)
  */
 #ifndef MIXER
-#define MIXER              (0)
+#define MIXER                   (0)
 #endif
 
 /**
@@ -1080,11 +1082,11 @@
  */
 #if (MIXER)
     #ifndef MAX_MIX_COUNT
-    	#define MAX_MIX_COUNT          (8)
+    	#define MAX_MIX_COUNT   (8)
     #endif
 #else
     #ifndef MAX_MIX_COUNT
-        #define MAX_MIX_COUNT          (0)
+        #define MAX_MIX_COUNT   (0)
     #endif
 #endif
 
@@ -1096,7 +1098,7 @@
  * Default: 18
  */
 #ifndef MIX_INPUTS
-    #define MIX_INPUTS                 (18)
+    #define MIX_INPUTS          (18)
 #endif
 
 /* Volume processing defines */
@@ -1108,7 +1110,7 @@
  * Default: 0x8100 (-127db)
  */
 #ifndef MIN_VOLUME
-#define MIN_VOLUME                     (0x8100)
+#define MIN_VOLUME              (0x8100)
 #endif
 
 
@@ -1118,7 +1120,7 @@
  * Default: 0x0000 (0db)
  */
 #ifndef MAX_VOLUME
-#define MAX_VOLUME                     (0x0000)
+#define MAX_VOLUME              (0x0000)
 #endif
 
 /**
@@ -1127,7 +1129,7 @@
  * Default: 0x100 (1db)
  */
 #ifndef VOLUME_RES
-#define VOLUME_RES                     (0x100)
+#define VOLUME_RES              (0x100)
 #endif
 
 /**
@@ -1137,7 +1139,7 @@
  * Default: 0x8100 (-127db)
  */
 #ifndef MIN_MIXER_VOLUME
-#define MIN_MIXER_VOLUME             (0x8100)
+#define MIN_MIXER_VOLUME        (0x8100)
 #endif
 
 /**
@@ -1146,7 +1148,7 @@
  * Default: 0x0000 (0db)
  */
 #ifndef MAX_MIXER_VOLUME
-#define MAX_MIXER_VOLUME            (0x0000)
+#define MAX_MIXER_VOLUME        (0x0000)
 #endif
 
 /**
@@ -1155,36 +1157,36 @@
 * Default: 0x100 (1db)
 */
 #ifndef VOLUME_RES_MIXER
-#define VOLUME_RES_MIXER            (0x100)
+#define VOLUME_RES_MIXER        (0x100)
 #endif
 
 /* Handle out volume control in the mixer - enabled by default if mixer enabled */
 #ifndef OUT_VOLUME_IN_MIXER
 #if MIXER
-    #define OUT_VOLUME_IN_MIXER         (1)
+    #define OUT_VOLUME_IN_MIXER (1)
 #else
-    #define OUT_VOLUME_IN_MIXER         (0)
+    #define OUT_VOLUME_IN_MIXER (0)
 #endif
 #endif
 
 /* Apply out volume controls after the mix. Only relevant when OUT_VOLUME_IN_MIXER enabled. Enabled by default */
 #ifndef OUT_VOLUME_AFTER_MIX
-#define OUT_VOLUME_AFTER_MIX        (1)
+#define OUT_VOLUME_AFTER_MIX    (1)
 #endif
 
 /* Handle in volume control in the mixer - disabled by default */
 #ifndef IN_VOLUME_IN_MIXER
-#define IN_VOLUME_IN_MIXER          (0)
+#define IN_VOLUME_IN_MIXER      (0)
 #endif
 
 /* Apply in volume controls after the mix. Only relevant when IN_VOLUMNE_IN MIXER enabled. Enabled by default */
 #ifndef IN_VOLUME_AFTER_MIX
-#define IN_VOLUME_AFTER_MIX         (1)
+#define IN_VOLUME_AFTER_MIX     (1)
 #endif
 
 /* Always enable explicit feedback EP, even when input stream is present */
 #ifndef UAC_FORCE_FEEDBACK_EP
-#define UAC_FORCE_FEEDBACK_EP       (1)
+#define UAC_FORCE_FEEDBACK_EP   (1)
 #endif
 
 #if (defined(UAC_FORCE_FEEDBACK_EP) && UAC_FORCE_FEEDBACK_EP == 0)
@@ -1192,9 +1194,9 @@
 #endif
 
 /* Synchronisation defines */
-#define XUA_SYNCMODE_ASYNC (1) // USB_ENDPOINT_SYNCTYPE_ASYNC
-#define XUA_SYNCMODE_ADAPT (2) // USB_ENDPOINT_SYNCTYPE_ADAPT
-#define XUA_SYNCMODE_SYNC  (3) // USB_ENDPOINT_SYNCTYPE_SYNC
+#define XUA_SYNCMODE_ASYNC      (1) // USB_ENDPOINT_SYNCTYPE_ASYNC
+#define XUA_SYNCMODE_ADAPT      (2) // USB_ENDPOINT_SYNCTYPE_ADAPT
+#define XUA_SYNCMODE_SYNC       (3) // USB_ENDPOINT_SYNCTYPE_SYNC
 
 #ifndef XUA_SYNCMODE
 #define XUA_SYNCMODE XUA_SYNCMODE_ASYNC
