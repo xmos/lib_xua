@@ -1,8 +1,7 @@
 // Copyright 2011-2021 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
-
-#ifndef __XUA_INTERNAL_CMDS_H__
-#define __XUA_INTERNAL_CMDS_H__
+#ifndef _XUA_COMMANDS_H_
+#define _XUA_COMMANDS_H_
 
 #include "xua.h"
 
@@ -14,7 +13,7 @@
 
 #define CLOCK_INTERNAL          1
 #define CLOCK_SPDIF             2
-#if SPDIF_RX
+#if (XUA_SPDIF_RX_EN)
 #define CLOCK_ADAT              3
 #else
 #define CLOCK_ADAT              2
