@@ -336,7 +336,7 @@ void usb_audio_io(chanend ?c_aud_in,
 
     par
     {
-#if (MIXER)
+#if (MIXER && XUA_USB_EN)
         /* Mixer cores(s) */
         {
             thread_speed();
@@ -493,14 +493,12 @@ int main()
         on tile[XUD_TILE]:
         par
         {
-#if (XUD_TILE == 0)
+#if XUA_USB_EN
+#if ((XUD_TILE == 0) && (XUA_DFU_EN == 1))
             /* Check if USB is on the flash tile (tile 0) */
-#if (XUA_DFU_EN == 1)
             [[distribute]]
             DFUHandler(dfuInterface, null);
 #endif
-#endif
-#if XUA_USB_EN
 
             /* Core USB task, buffering, USB etc */
             {
