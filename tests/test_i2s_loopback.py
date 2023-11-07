@@ -11,10 +11,17 @@ import sys
 def test_file(request):
     return str(request.node.fspath)
 
-def do_test(
-    pcm_format, i2s_role, channel_count, sample_rate, word_length, test_file, options, capfd
-):
 
+def do_test(
+    pcm_format,
+    i2s_role,
+    channel_count,
+    sample_rate,
+    word_length,
+    test_file,
+    options,
+    capfd,
+):
     build_options = []
     output = []
     testname, _ = os.path.splitext(os.path.basename(test_file))
@@ -71,12 +78,18 @@ def do_test(
 @pytest.mark.parametrize("i2s_role", ["master", "slave"])
 @pytest.mark.parametrize("pcm_format", ["i2s", "tdm"])
 @pytest.mark.parametrize("channel_count", [2, 8, 16])
-@pytest.mark.parametrize("word_length", [16, 32]) # I2S world length in bits
+@pytest.mark.parametrize("word_length", [16, 32])  # I2S world length in bits
 @pytest.mark.parametrize("sample_rate", [48000, 96000, 192000])
 def test_i2s_loopback(
-    i2s_role, pcm_format, channel_count, sample_rate, word_length, test_file, options, capfd
+    i2s_role,
+    pcm_format,
+    channel_count,
+    sample_rate,
+    word_length,
+    test_file,
+    options,
+    capfd,
 ):
-
     if pcm_format == "i2s" and channel_count == 16:
         pytest.skip("Invalid parameter combination")
 
@@ -90,7 +103,14 @@ def test_i2s_loopback(
         pytest.skip("Invalid parameter combination")
 
     result = do_test(
-        pcm_format, i2s_role, channel_count, sample_rate, word_length, test_file, options, capfd
+        pcm_format,
+        i2s_role,
+        channel_count,
+        sample_rate,
+        word_length,
+        test_file,
+        options,
+        capfd,
     )
 
     assert result

@@ -18,7 +18,6 @@ DEPENDENT_MODULES = lib_locks(>=2.1.0) \
 
 MODULE_XCC_FLAGS = $(XCC_FLAGS) \
                    -O3 \
-                   -DREF_CLK_FREQ=100 \
                    -fasm-linenum \
                    -fcomment-asm \
                     $(DEBUG_FLAGS)

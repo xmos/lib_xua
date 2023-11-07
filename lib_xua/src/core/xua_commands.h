@@ -1,8 +1,8 @@
-// Copyright 2011-2021 XMOS LIMITED.
+// Copyright 2011-2023 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
-#ifndef __XUA_INTERNAL_CMDS_H__
-#define __XUA_INTERNAL_CMDS_H__
+#ifndef _XUA_COMMANDS_H_
+#define _XUA_COMMANDS_H_
 
 #include "xua.h"
 
@@ -30,6 +30,7 @@
 #define SET_SAMPLE_FREQ         4
 #define SET_STREAM_FORMAT_OUT   8
 #define SET_STREAM_FORMAT_IN    9
+#define XUA_EXIT                10
 
 #include "dsd_support.h"
 

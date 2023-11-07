@@ -8,7 +8,6 @@ import sys
 
 
 def do_test(options, capfd, test_file, test_seed):
-
     testname, _ = os.path.splitext(os.path.basename(test_file))
 
     binary = f"{testname}/bin/{testname}.xe"
@@ -39,7 +38,6 @@ def do_test(options, capfd, test_file, test_seed):
 
 
 def test_mixer_routing_output(options, capfd, test_file, test_seed):
-
     result = do_test(options, capfd, test_file, test_seed)
 
     assert result

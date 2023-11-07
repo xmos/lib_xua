@@ -11,7 +11,6 @@ def test_file(request):
 
 @pytest.fixture(scope="session")  # Use same seed for whole run
 def test_seed(request):
-
     seed = str(int(time.time()))
     # We dont need the following since pytest will print the values of our fixtures on a failure
     # capmanager = request.config.pluginmanager.getplugin("capturemanager")

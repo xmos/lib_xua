@@ -20,42 +20,7 @@
 #if (HID_CONTROLS)
 #include "user_hid.h"
 #endif
-#define MAX(x,y) ((x)>(y) ? (x) : (y))
 
-/* TODO use SLOTSIZE to potentially save memory */
-/* Note we could improve on this, for one subslot is set to 4 */
-/* The *4 is conversion to bytes, note we're assuming a slotsize of 4 here whic is potentially as waste */
-#define MAX_DEVICE_AUD_PACKET_SIZE_MULT_HS  ((MAX_FREQ/8000+1)*4)
-#define MAX_DEVICE_AUD_PACKET_SIZE_MULT_FS  ((MAX_FREQ_FS/1000+1)*4)
-
-/*** IN PACKET SIZES ***/
-/* Max packet sizes in bytes. Note the +4 is because we store packet lengths in the buffer */
-#define MAX_DEVICE_AUD_PACKET_SIZE_IN_HS  (MAX_DEVICE_AUD_PACKET_SIZE_MULT_HS * NUM_USB_CHAN_IN + 4)
-#define MAX_DEVICE_AUD_PACKET_SIZE_IN_FS  (MAX_DEVICE_AUD_PACKET_SIZE_MULT_FS * NUM_USB_CHAN_IN_FS + 4)
-
-#define MAX_DEVICE_AUD_PACKET_SIZE_IN (MAX(MAX_DEVICE_AUD_PACKET_SIZE_IN_FS, MAX_DEVICE_AUD_PACKET_SIZE_IN_HS))
-
-/*** OUT PACKET SIZES ***/
-#define MAX_DEVICE_AUD_PACKET_SIZE_OUT_HS  (MAX_DEVICE_AUD_PACKET_SIZE_MULT_HS * NUM_USB_CHAN_OUT + 4)
-#define MAX_DEVICE_AUD_PACKET_SIZE_OUT_FS  (MAX_DEVICE_AUD_PACKET_SIZE_MULT_FS * NUM_USB_CHAN_OUT_FS + 4)
-
-#define MAX_DEVICE_AUD_PACKET_SIZE_OUT (MAX(MAX_DEVICE_AUD_PACKET_SIZE_OUT_FS, MAX_DEVICE_AUD_PACKET_SIZE_OUT_HS))
-
-/*** BUFFER SIZES ***/
-
-#define BUFFER_PACKET_COUNT (4)    /* How many packets too allow for in buffer - minimum is 4 */
-
-#define BUFF_SIZE_OUT_HS    MAX_DEVICE_AUD_PACKET_SIZE_OUT_HS * BUFFER_PACKET_COUNT
-#define BUFF_SIZE_OUT_FS    MAX_DEVICE_AUD_PACKET_SIZE_OUT_FS * BUFFER_PACKET_COUNT
-
-#define BUFF_SIZE_IN_HS     MAX_DEVICE_AUD_PACKET_SIZE_IN_HS * BUFFER_PACKET_COUNT
-#define BUFF_SIZE_IN_FS     MAX_DEVICE_AUD_PACKET_SIZE_IN_FS * BUFFER_PACKET_COUNT
-
-#define BUFF_SIZE_OUT       MAX(BUFF_SIZE_OUT_HS, BUFF_SIZE_OUT_FS)
-#define BUFF_SIZE_IN        MAX(BUFF_SIZE_IN_HS, BUFF_SIZE_IN_FS)
-
-#define OUT_BUFFER_PREFILL  (MAX(MAX_DEVICE_AUD_PACKET_SIZE_OUT_HS, MAX_DEVICE_AUD_PACKET_SIZE_OUT_FS))
-#define IN_BUFFER_PREFILL   (MAX(MAX_DEVICE_AUD_PACKET_SIZE_IN_HS, MAX_DEVICE_AUD_PACKET_SIZE_IN_FS)*2)
 
 /* Volume and mute tables */
 #if (OUT_VOLUME_IN_MIXER == 0) && (OUTPUT_VOLUME_CONTROL == 1)
@@ -514,6 +479,7 @@ __builtin_unreachable();
     {
         /* Finished creating packet - commit it to the FIFO */
         /* Total samps to write could start at 0 (i.e. no MCLK) so need to check for < 0) */
+        //printstr("dec : sampsToWrite: "); printintln(sampsToWrite);
         if(sampsToWrite <= 0)
         {
             int speed, wrPtr;
@@ -524,6 +490,9 @@ __builtin_unreachable();
 
             GET_SHARED_GLOBAL(wrPtr, g_aud_to_host_wrptr);
             write_via_xc_ptr(wrPtr, datasize);
+
+          //  printstr("dec samples: ");
+            //printintln(totalSampsToWrite);
 
             /* Round up to nearest word - note, not needed for slotsize == 4! */
             datasize = (datasize+3) & (~0x3);
@@ -536,6 +505,9 @@ __builtin_unreachable();
             GET_SHARED_GLOBAL(fillLevel, g_aud_to_host_fill_level);
             fillLevel += 4+datasize;
             assert(fillLevel <= BUFF_SIZE_IN);
+
+            //printstr("dec filllevel: ");
+            //printintln(fillLevel);
 
             /* Do wrap */
             if (wrPtr >= aud_to_host_fifo_end)
@@ -811,7 +783,7 @@ void XUA_Buffer_Decouple(chanend c_mix_out
                     inUnderflow = 1;
                     SET_SHARED_GLOBAL(g_aud_to_host_rdptr, aud_to_host_fifo_start);
                     SET_SHARED_GLOBAL(g_aud_to_host_wrptr, aud_to_host_fifo_start);
-                    SET_SHARED_GLOBAL(g_aud_to_host_dptr,aud_to_host_fifo_start+4);
+                    SET_SHARED_GLOBAL(g_aud_to_host_dptr, aud_to_host_fifo_start + 4);
                     SET_SHARED_GLOBAL(g_aud_to_host_fill_level, 0);
 
                     /* Set buffer to send back to zeros buffer */
@@ -892,6 +864,7 @@ void XUA_Buffer_Decouple(chanend c_mix_out
                 }
 
                 SET_SHARED_GLOBAL(g_freqChange, 0);
+
                 asm volatile("outct res[%0],%1"::"r"(buffer_aud_ctl_chan),"r"(XS1_CT_END));
 
                 ENABLE_INTERRUPTS();
@@ -945,6 +918,14 @@ void XUA_Buffer_Decouple(chanend c_mix_out
 
                 SET_SHARED_GLOBAL(g_freqChange, 0);
                 ENABLE_INTERRUPTS();
+            }
+            else if(tmp == XUA_EXIT)
+            {
+                DISABLE_INTERRUPTS();
+                SET_SHARED_GLOBAL(g_freqChange, 0);
+                inct(c_mix_out);
+                outct(c_mix_out, XS1_CT_END);
+                return;
             }
 #endif
         }
@@ -1059,6 +1040,7 @@ void XUA_Buffer_Decouple(chanend c_mix_out
                         int aud_to_host_rdptr;
                         GET_SHARED_GLOBAL(aud_to_host_rdptr, g_aud_to_host_rdptr);
                         inUnderflow = 0;
+                        //nnprintstr("DEC OUT OF UNDERFLOW\n");
                         aud_to_host_buffer = aud_to_host_rdptr;
                     }
                     else
