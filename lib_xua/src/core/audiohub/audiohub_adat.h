@@ -7,7 +7,6 @@ unsigned adatSamples[8];
 #pragma unsafe arrays
 static inline void TransferAdatTxSamples(chanend c_adat_out, const unsigned samplesFromHost[], int smux, int handshake)
 {
-
     /* Do some re-arranging for SMUX.. */
     unsafe
     {
@@ -29,7 +28,6 @@ static inline void TransferAdatTxSamples(chanend c_adat_out, const unsigned samp
 
     if(adatCounter == smux)
     {
-
 #ifdef ADAT_TX_USE_SHARED_BUFF
         unsafe
         {
