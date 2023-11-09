@@ -389,13 +389,9 @@ void clockGen (streaming chanend ?c_spdif_rx, chanend ?c_adat_rx, client interfa
 
                     case SET_SEL:
                         /* Update clock mode */
-                        tmp = inuint(c_clk_ctl);
+                        clkMode = inuint(c_clk_ctl);
                         chkct(c_clk_ctl, XS1_CT_END);
 
-                        if(tmp!=0)
-                        {
-                            clkMode = tmp;
-                        }
 #ifdef CLOCK_VALIDITY_CALL
                         switch(clkMode)
                         {
@@ -736,7 +732,6 @@ void clockGen (streaming chanend ?c_spdif_rx, chanend ?c_adat_rx, client interfa
                             spdifOverflow = 0;
                         }
                     }
-
 #endif
 #if (XUA_ADAT_RX_EN)
                 if (adatUnderflow)
