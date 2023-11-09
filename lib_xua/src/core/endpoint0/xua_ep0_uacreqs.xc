@@ -519,7 +519,7 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
                                 int clockIndex = (int) (buffer, unsigned char[])[0];
                                 clockIndex -= 1; /* Index to/from from host is 1-based */
 
-                                if((clockIndex > 0) && (clockIndex < CLOCK_COUNT))
+                                if((clockIndex >= 0) && (clockIndex < CLOCK_COUNT))
                                 {
                                     if(!isnull(c_clk_ctl))
                                     {
