@@ -456,34 +456,35 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
                                     (buffer, unsigned char[])[0] = 1;
                                     return XUD_DoGetRequest(ep0_out, ep0_in, (buffer, unsigned char[]), 1, sp.wLength);
                                     break;
-
+#if (XUA_SPDIF_RX_EN)
                                 case ID_CLKSRC_SPDIF:
 
                                     /* Interogate clockgen thread for validity */
                                     if (!isnull(c_clk_ctl))
                                     {
                                         outuint(c_clk_ctl, GET_VALID);
-                                        outuint(c_clk_ctl, CLOCK_SPDIF_INDEX);
+                                        outuint(c_clk_ctl, CLOCK_SPDIF);
                                         outct(c_clk_ctl, XS1_CT_END);
                                         (buffer, unsigned char[])[0] = inuint(c_clk_ctl);
                                         chkct(c_clk_ctl, XS1_CT_END);
                                         return XUD_DoGetRequest(ep0_out, ep0_in, (buffer, unsigned char[]), 1, sp.wLength);
                                     }
-
                                     break;
-
+#endif
+#if (XUA_ADAT_RX_EN)
                                  case ID_CLKSRC_ADAT:
 
                                     if (!isnull(c_clk_ctl))
                                     {
                                         outuint(c_clk_ctl, GET_VALID);
-                                        outuint(c_clk_ctl, CLOCK_ADAT_INDEX);
+                                        outuint(c_clk_ctl, CLOCK_ADAT);
                                         outct(c_clk_ctl, XS1_CT_END);
                                         (buffer, unsigned char[])[0] = inuint(c_clk_ctl);
                                         chkct(c_clk_ctl, XS1_CT_END);
                                         return XUD_DoGetRequest(ep0_out, ep0_in, (buffer, unsigned char[]), 1, sp.wLength);
                                     }
                                     break;
+#endif
 
                                 default:
                                     //Unknown Unit ID in Clock Valid Control Request
@@ -513,19 +514,23 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
                                 return result;
                             }
 
-                            /* Check for correct datalength for clock sel */
                             if(datalength == 1)
                             {
-                                if (!isnull(c_clk_ctl))
-                                {
-                                    outuint(c_clk_ctl, SET_SEL);
-                                    outuint(c_clk_ctl, (buffer, unsigned char[])[0]);
-                                    outct(c_clk_ctl, XS1_CT_END);
-                                }
-                                /* Send 0 Length as status stage */
-                                return XUD_DoSetRequestStatus(ep0_in);
-                            }
+                                int clockIndex = (int) (buffer, unsigned char[])[0];
+                                clockIndex -= 1; /* Index to/from host is 1-based */
 
+                                if((clockIndex >= 0) && (clockIndex < CLOCK_COUNT))
+                                {
+                                    if(!isnull(c_clk_ctl))
+                                    {
+                                        outuint(c_clk_ctl, SET_SEL);
+                                        outuint(c_clk_ctl, clockIndex);
+                                        outct(c_clk_ctl, XS1_CT_END);
+                                    }
+                                    /* Send 0 Length as status stage */
+                                    return XUD_DoSetRequestStatus(ep0_in);
+                                }
+                            }
                         }
                         else
                         {
@@ -533,13 +538,15 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
                             (buffer, unsigned char[])[0] = 1;
                             if (!isnull(c_clk_ctl))
                             {
+                                int clockIndex;
                                 outuint(c_clk_ctl, GET_SEL);
                                 outct(c_clk_ctl, XS1_CT_END);
-                                (buffer, unsigned char[])[0] = inuint(c_clk_ctl);
+                                clockIndex = inuint(c_clk_ctl);
+                                clockIndex += 1; /* Index to/from host is 1-based */
+                                (buffer, unsigned char[])[0] = (unsigned char) clockIndex;
                                 chkct(c_clk_ctl, XS1_CT_END);
                             }
-                            return XUD_DoGetRequest( ep0_out, ep0_in, (buffer, unsigned char[]), 1, sp.wLength );
-
+                            return XUD_DoGetRequest( ep0_out, ep0_in, (buffer, unsigned char[]), 1, sp.wLength);
                         }
                     }
                     break;

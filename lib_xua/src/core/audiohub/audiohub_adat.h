@@ -1,13 +1,11 @@
-// Copyright 2018-2022 XMOS LIMITED.
+// Copyright 2018-2023 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
-
 unsigned adatCounter = 0;
 unsigned adatSamples[8];
 
 #pragma unsafe arrays
 static inline void TransferAdatTxSamples(chanend c_adat_out, const unsigned samplesFromHost[], int smux, int handshake)
 {
-
     /* Do some re-arranging for SMUX.. */
     unsafe
     {
@@ -29,7 +27,6 @@ static inline void TransferAdatTxSamples(chanend c_adat_out, const unsigned samp
 
     if(adatCounter == smux)
     {
-
 #ifdef ADAT_TX_USE_SHARED_BUFF
         unsafe
         {
