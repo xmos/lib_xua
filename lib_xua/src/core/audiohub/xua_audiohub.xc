@@ -241,12 +241,12 @@ unsigned static AudioHub_MainLoop(chanend ?c_out, chanend ?c_spd_out
     }
 #endif // ((DEBUG_MIC_ARRAY == 1) && (XUA_NUM_PDM_MICS > 0))
 
-    UserBufferManagementInit();
+    UserBufferManagementInit(curSamFreq);
 
     unsigned command = DoSampleTransfer(c_out, readBuffNo, underflowWord);
 
     // Reinitialise user state before entering the main loop
-    UserBufferManagementInit();
+    UserBufferManagementInit(curSamFreq);
 
 #if (XUA_ADAT_TX_EN)
     unsafe{

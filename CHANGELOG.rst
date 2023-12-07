@@ -11,6 +11,7 @@ HEAD
   * RESOLVED   Build failures when XUA_USB_EN = 0
   * RESOLVED:  Clock configuration issues when ADAT and S/PDIF receive are enabled (#352)
   * CHANGED:   QUAD_SPI_FLASH replaced by XUA_QUAD_SPI_FLASH (default: 1)
+  * CHANGED:   UserBufferManagementInit() now takes a sample rate parameter
 
 3.5.1
 -----

@@ -76,7 +76,7 @@ void AudioHwConfig(unsigned samFreq, unsigned mClk, unsigned dsdMode,
 
 #endif // __XC__
 
-void UserBufferManagementInit();
+void UserBufferManagementInit(unsigned samFreq);
 
 void UserBufferManagement(unsigned sampsFromUsbToAudio[], unsigned sampsFromAudioToUsb[]);
 
