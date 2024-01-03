@@ -8,6 +8,13 @@
 #include "xua_commands.h"
 #include "xua_clocking.h"
 
+#ifdef __XS3A__
+extern "C"
+{
+    #include "sw_pll.h"
+}
+#endif
+
 #if (XUA_SPDIF_RX_EN)
 #include "spdif.h"
 #endif
@@ -333,490 +340,496 @@ void clockGen (streaming chanend ?c_spdif_rx, chanend ?c_adat_rx, client interfa
     /* Initial ref clock output and get timestamp */
     i_pll_ref.init();
 
-    while(1)
     {
-        select
+        while(1)
         {
+            select
+            {
 #ifdef LEVEL_METER_LEDS
 #warning Level metering enabled
-            case t_level when timerafter(levelTime) :> void:
+                case t_level when timerafter(levelTime) :> void:
 
-                levelTime += LEVEL_UPDATE_RATE;
+                    levelTime += LEVEL_UPDATE_RATE;
 
-                /* Copy over level data and reset */
-                for(int i = 0; i< NUM_USB_CHAN_IN; i++)
-                {
-                    int tmp;
-
-                    /* Read level data */
-                    //g_inputLevelData[i] = samples_to_host_inputs[i];
-                    asm volatile("ldw %0, %1[%2]":"=r"(tmp):"r"((const int *)samples_to_host_inputs),"r"(i));
-                    g_inputLevelData[i] = tmp;
-
-                    /* Reset level data */
-                    //samples_to_host_inputs[i] = 0;
-                    asm volatile("stw %0, %1[%2]"::"r"(0),"r"((const int *)samples_to_host_inputs),"r"(i));
-
-                    /* Guard against host polling slower than timer and missing peaks */
-                    asm volatile("ldw %0, %1[%2]":"=r"(tmp):"r"((const int *)samples_to_host_inputs_buff),"r"(i));
-
-                    if (g_inputLevelData[i] > tmp)
-                    //if(g_inputLevelData[i] > samples_to_host_inputs_buff[i])
+                    /* Copy over level data and reset */
+                    for(int i = 0; i< NUM_USB_CHAN_IN; i++)
                     {
-                        //samples_to_host_inputs_buff[i] = g_inputLevelData[i];
-                        asm volatile("stw %0, %1[%2]"::"r"(tmp),"r"((const int *)samples_to_host_inputs),"r"(i));
-                    }
-                }
+                        int tmp;
 
-                /* Call user LED refresh */
-                VendorLedRefresh(g_inputLevelData);
+                        /* Read level data */
+                        //g_inputLevelData[i] = samples_to_host_inputs[i];
+                        asm volatile("ldw %0, %1[%2]":"=r"(tmp):"r"((const int *)samples_to_host_inputs),"r"(i));
+                        g_inputLevelData[i] = tmp;
 
-                break;
-#endif
+                        /* Reset level data */
+                        //samples_to_host_inputs[i] = 0;
+                        asm volatile("stw %0, %1[%2]"::"r"(0),"r"((const int *)samples_to_host_inputs),"r"(i));
 
-            /* Updates to clock settings from endpoint 0 */
-            case inuint_byref(c_clk_ctl, tmp):
-                switch(tmp)
-                {
-                    case GET_SEL:
-                        chkct(c_clk_ctl, XS1_CT_END);
+                        /* Guard against host polling slower than timer and missing peaks */
+                        asm volatile("ldw %0, %1[%2]":"=r"(tmp):"r"((const int *)samples_to_host_inputs_buff),"r"(i));
 
-                        /* Send back current clock mode */
-                        outuint(c_clk_ctl, clkMode);
-                        outct(c_clk_ctl, XS1_CT_END);
-
-                        break;
-
-                    case SET_SEL:
-                        /* Update clock mode */
-                        clkMode = inuint(c_clk_ctl);
-                        chkct(c_clk_ctl, XS1_CT_END);
-
-#ifdef CLOCK_VALIDITY_CALL
-                        switch(clkMode)
+                        if (g_inputLevelData[i] > tmp)
+                        //if(g_inputLevelData[i] > samples_to_host_inputs_buff[i])
                         {
-                            case CLOCK_INTERNAL:
-                                VendorClockValidity(1);
-                                break;
-#if (XUA_ADAT_RX_EN)
-                            case CLOCK_ADAT:
-                                VendorClockValidity(clockValid[CLOCK_ADAT]);
-                                break;
-#endif
-#if (XUA_SPDIF_RX_EN)
-                            case CLOCK_SPDIF:
-                                VendorClockValidity(clockValid[CLOCK_SPDIF]);
-                                break;
-#endif
+                            //samples_to_host_inputs_buff[i] = g_inputLevelData[i];
+                            asm volatile("stw %0, %1[%2]"::"r"(tmp),"r"((const int *)samples_to_host_inputs),"r"(i));
                         }
-#endif
-                        break;
-
-                    case GET_VALID:
-                        /* Clock Unit Index */
-                        tmp = inuint(c_clk_ctl);
-                        chkct(c_clk_ctl, XS1_CT_END);
-                        outuint(c_clk_ctl, clockValid[tmp]);
-                        outct(c_clk_ctl, XS1_CT_END);
-                        break;
-
-                    case GET_FREQ:
-                        tmp = inuint(c_clk_ctl);
-                        chkct(c_clk_ctl, XS1_CT_END);
-                        outuint(c_clk_ctl, clockFreq[tmp]);
-                        outct(c_clk_ctl, XS1_CT_END);
-                        break;
-
-                    case SET_SMUX:
-                        smux = inuint(c_clk_ctl);
-#if (XUA_ADAT_RX_EN)
-                        adatRd = 0; /* Reset adat FIFO */
-                        adatWr = 0;
-                        adatSamps = 0;
-#endif
-                        chkct(c_clk_ctl, XS1_CT_END);
-                        break;
-
-                    default:
-#ifdef VENDOR_AUDCORE_REQS
-                            if(VendorAudCoreReqs(tmp, c_clk_ctl))
-#endif
-                            printstrln("ERR: Bad req in clockgen\n");
-                        break;
-                }
-
-                break;
-
-            /* Generate local clock from timer */
-            case t_local when timerafter(timeNextEdge) :> void:
-
-                /* Setup next local clock edge */
-                i_pll_ref.toggle_timed(0);
-
-                /* Record time of edge */
-                timeLastEdge = timeNextEdge;
-
-                /* Setup for next edge */
-                timeNextClockDetection = timeNextEdge + (LOCAL_CLOCK_INCREMENT/2);
-                timeNextEdge += LOCAL_CLOCK_INCREMENT;
-
-                /* If we are in an external clock mode and this fire, then clock invalid
-                 * reset counters in case we are moved to digital clock - we want a well timed
-                 * first edge */
-#if (XUA_SPDIF_RX_EN)
-                spdifCounters.receivedSamples = 0;
-#endif
-#if (XUA_ADAT_RX_EN)
-                adatCounters.receivedSamples = 0;
-#endif
-
-#ifdef CLOCK_VALIDITY_CALL
-                if(clkMode == CLOCK_INTERNAL)
-                {
-                    /* Internal clock always valid */
-                    VendorClockValidity(1);
-                }
-#endif
-                break;
-
-#if (XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
-            case t_external when timerafter(timeNextClockDetection) :> void:
-                {
-                    int valid;
-                    timeNextClockDetection += (LOCAL_CLOCK_INCREMENT);
-#if (XUA_SPDIF_RX_EN)
-                    /* Returns 1 if valid clock found */
-                    valid = validSamples(spdifCounters, CLOCK_SPDIF);
-                    setClockValidity(c_clk_int, CLOCK_SPDIF, valid, clkMode);
-#endif
-#if (XUA_ADAT_RX_EN)
-                    /* Returns 1 if valid clock found */
-                    valid = validSamples(adatCounters, CLOCK_ADAT);
-                    setClockValidity(c_clk_int, CLOCK_ADAT, valid, clkMode);
-#endif
-                }
-                break;
-#endif
-
-#if (XUA_SPDIF_RX_EN)
-            /* Receive sample from S/PDIF RX thread (streaming chan) */
-            case c_spdif_rx :> spdifRxData:
-
-                /* Record time of sample */
-                t_local :> spdifRxTime;
-
-                /* Check parity and ignore if bad */
-                if(spdif_rx_check_parity(spdifRxData))
-                    continue;
-
-                /* Get preamble */
-                unsigned preamble = spdifRxData & SPDIF_RX_PREAMBLE_MASK;
-
-                switch(preamble)
-                {
-                    /* LEFT */
-                    case SPDIF_FRAME_X:
-                    case SPDIF_FRAME_Z:
-                        spdifLeft = SPDIF_RX_EXTRACT_SAMPLE(spdifRxData);
-                        break;
-
-                    /* RIGHT */
-                    case SPDIF_FRAME_Y:
-
-                        /* Only store sample if not in overflow and stream is reasonably valid */
-                        if(!spdifOverflow && clockValid[CLOCK_SPDIF])
-                        {
-                            /* Store left and right sample pair to buffer */
-                            spdifSamples[spdifWr] = spdifLeft;
-                            spdifSamples[spdifWr+1] = SPDIF_RX_EXTRACT_SAMPLE(spdifRxData);
-
-                            spdifWr = (spdifWr + 2) & (MAX_SPDIF_SAMPLES - 1);
-
-                            spdifSamps += 2;
-
-                            /* Check for over flow */
-                            if(spdifSamps > MAX_SPDIF_SAMPLES-1)
-                            {
-                                spdifOverflow = 1;
-                            }
-
-                            /* Check for coming out of under flow */
-                            if(spdifUnderflow && (spdifSamps >= (MAX_SPDIF_SAMPLES >> 1)))
-                            {
-                                spdifUnderflow = 0;
-                            }
-                        }
-                        break;
-
-                        default:
-                            /* Bad sample, skip */
-                            continue;
-                            break;
                     }
 
-                spdifCounters.samples += 1;
+                    /* Call user LED refresh */
+                    VendorLedRefresh(g_inputLevelData);
 
-                if(clkMode == CLOCK_SPDIF && clockValid[CLOCK_SPDIF])
-                {
-                    spdifCounters.receivedSamples+=1;
-
-                    /* Inspect for if we need to produce an edge */
-                    if((spdifCounters.receivedSamples >=  spdifCounters.samplesPerTick))
-                    {
-                        /* Check edge is about right... S/PDIF may have changed freq... */
-                        if(timeafter(spdifRxTime, (timeLastEdge + LOCAL_CLOCK_INCREMENT - LOCAL_CLOCK_MARGIN)))
-                        {
-                            /* Record edge time */
-                            timeLastEdge = spdifRxTime;
-
-                            /* Setup for next edge */
-                            timeNextEdge = spdifRxTime + LOCAL_CLOCK_INCREMENT + LOCAL_CLOCK_MARGIN;
-
-                            /* Toggle edge */
-                            i_pll_ref.toggle_timed(1);
-
-                            /* Reset counters */
-                            spdifCounters.receivedSamples = 0;
-                        }
-                    }
-                }
-                break;
-#endif
-#if (XUA_ADAT_RX_EN)
-                /* receive sample from ADAT rx thread (streaming channel with CT_END) */
-                case inuint_byref(c_adat_rx, tmp):
-                    /* record time of sample */
-                    t_local :> adatReceivedTime;
-
-                    /* Sync is: 1 | (user_byte << 4) */
-                    if(tmp&1)
-                    {
-                        /* user bits - start of frame */
-                        adatChannel = 0;
-                        continue;
-                    }
-                    else
-                    {
-                        /* audio sample */
-                        adatSamplesEver++;
-                        adatFrame[adatChannel] = tmp;
-
-                        adatChannel++;
-                        if (adatChannel == 8)
-                        {
-                            /* only store left samples if not in overflow and stream is reasonably valid */
-                            if (!adatOverflow && clockValid[CLOCK_ADAT])
-                            {
-                                /* Unpick the SMUX.. */
-                                if(smux == 2)
-                                {
-                                    adatSamples[adatWr + 0] = adatFrame[0];
-                                    adatSamples[adatWr + 1] = adatFrame[4];
-                                    adatSamples[adatWr + 2] = adatFrame[1];
-                                    adatSamples[adatWr + 3] = adatFrame[5];
-                                    adatSamples[adatWr + 4] = adatFrame[2];
-                                    adatSamples[adatWr + 5] = adatFrame[6];
-                                    adatSamples[adatWr + 6] = adatFrame[3];
-                                    adatSamples[adatWr + 7] = adatFrame[7];
-                                }
-                                else if(smux)
-                                {
-
-                                    adatSamples[adatWr + 0] = adatFrame[0];
-                                    adatSamples[adatWr + 1] = adatFrame[2];
-                                    adatSamples[adatWr + 2] = adatFrame[4];
-                                    adatSamples[adatWr + 3] = adatFrame[6];
-                                    adatSamples[adatWr + 4] = adatFrame[1];
-                                    adatSamples[adatWr + 5] = adatFrame[3];
-                                    adatSamples[adatWr + 6] = adatFrame[5];
-                                    adatSamples[adatWr + 7] = adatFrame[7];
-                                }
-                                else
-                                {
-                                    adatSamples[adatWr + 0] = adatFrame[0];
-                                    adatSamples[adatWr + 1] = adatFrame[1];
-                                    adatSamples[adatWr + 2] = adatFrame[2];
-                                    adatSamples[adatWr + 3] = adatFrame[3];
-                                    adatSamples[adatWr + 4] = adatFrame[4];
-                                    adatSamples[adatWr + 5] = adatFrame[5];
-                                    adatSamples[adatWr + 6] = adatFrame[6];
-                                    adatSamples[adatWr + 7] = adatFrame[7];
-                                 }
-                                    adatWr = (adatWr + 8) & (MAX_ADAT_SAMPLES - 1);
-                                    adatSamps += 8;
-
-                                    /* check for overflow */
-                                    if (adatSamps > MAX_ADAT_SAMPLES - 1)
-                                    {
-                                        adatOverflow = 1;
-                                    }
-
-                                    /* check for coming out of underflow */
-                                    if (adatUnderflow && (adatSamps >= (MAX_ADAT_SAMPLES >> 1)))
-                                    {
-                                        adatUnderflow = 0;
-                                    }
-                                }
-                        }
-                        if(adatChannel == 4 || adatChannel == 8)
-                        {
-                            adatCounters.samples += 1;
-
-                                if (clkMode == CLOCK_ADAT && clockValid[CLOCK_ADAT])
-                                {
-                                    adatCounters.receivedSamples += 1;
-
-                                    /* Inspect for if we need to produce an edge */
-                                    if ((adatCounters.receivedSamples >= adatCounters.samplesPerTick))
-                                    {
-                                        /* Check edge is about right... ADAT may have changed freq... */
-                                        if (timeafter(adatReceivedTime, (timeLastEdge + LOCAL_CLOCK_INCREMENT - LOCAL_CLOCK_MARGIN)))
-                                        {
-                                            /* Record edge time */
-                                            timeLastEdge = adatReceivedTime;
-
-                                            /* Setup for next edge */
-                                            timeNextEdge = adatReceivedTime + LOCAL_CLOCK_INCREMENT + LOCAL_CLOCK_MARGIN;
-
-                                            /* Toggle edge */
-                                            i_pll_ref.toggle_timed(1);
-
-                                            /* Reset counters */
-                                            adatCounters.receivedSamples = 0;
-                                        }
-                                    }
-                                }
-                            }
-                            if (adatChannel == 8)
-                              adatChannel = 0;
-                        }
                     break;
 #endif
 
-#if (XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
-                /* AudioHub requests data */
-                case inuint_byref(c_dig_rx, tmp):
+                /* Updates to clock settings from endpoint 0 */
+                case inuint_byref(c_clk_ctl, tmp):
+                    switch(tmp)
+                    {
+                        case GET_SEL:
+                            chkct(c_clk_ctl, XS1_CT_END);
+
+                            /* Send back current clock mode */
+                            outuint(c_clk_ctl, clkMode);
+                            outct(c_clk_ctl, XS1_CT_END);
+
+                            break;
+
+                        case SET_SEL:
+                            /* Update clock mode */
+                            clkMode = inuint(c_clk_ctl);
+                            chkct(c_clk_ctl, XS1_CT_END);
+
+#ifdef CLOCK_VALIDITY_CALL
+                            switch(clkMode)
+                            {
+                                case CLOCK_INTERNAL:
+                                    VendorClockValidity(1);
+                                    break;
+#if (XUA_ADAT_RX_EN)
+                                case CLOCK_ADAT:
+                                    VendorClockValidity(clockValid[CLOCK_ADAT]);
+                                    break;
+#endif
 #if (XUA_SPDIF_RX_EN)
-                    if(spdifUnderflow)
-                    {
-                        /* S/PDIF underflowing, send out zero samples */
-                        g_digData[0] = 0;
-                        g_digData[1] = 0;
+                                case CLOCK_SPDIF:
+                                    VendorClockValidity(clockValid[CLOCK_SPDIF]);
+                                    break;
+#endif
+                            }
+#endif
+                            break;
+
+                        case GET_VALID:
+                            /* Clock Unit Index */
+                            tmp = inuint(c_clk_ctl);
+                            chkct(c_clk_ctl, XS1_CT_END);
+                            outuint(c_clk_ctl, clockValid[tmp]);
+                            outct(c_clk_ctl, XS1_CT_END);
+                            break;
+
+                        case GET_FREQ:
+                            tmp = inuint(c_clk_ctl);
+                            chkct(c_clk_ctl, XS1_CT_END);
+                            outuint(c_clk_ctl, clockFreq[tmp]);
+                            outct(c_clk_ctl, XS1_CT_END);
+                            break;
+
+                        case SET_SMUX:
+                            smux = inuint(c_clk_ctl);
+#if (XUA_ADAT_RX_EN)
+                            adatRd = 0; /* Reset adat FIFO */
+                            adatWr = 0;
+                            adatSamps = 0;
+#endif
+                            chkct(c_clk_ctl, XS1_CT_END);
+                            break;
+
+                        default:
+#ifdef VENDOR_AUDCORE_REQS
+                                if(VendorAudCoreReqs(tmp, c_clk_ctl))
+#endif
+                                printstrln("ERR: Bad req in clockgen\n");
+                            break;
                     }
-                    else
-                    {
-                        /* Read out samples from S/PDIF buffer and send... */
-                        tmp = spdifSamples[spdifRd];
-                        tmp2 = spdifSamples[spdifRd + 1];
 
-                        spdifRd += 2;
-                        spdifRd &= (MAX_SPDIF_SAMPLES - 1);
+                    break;
 
-                        g_digData[0] = tmp;
-                        g_digData[1] = tmp2;
+                /* Generate local clock from timer */
+                case t_local when timerafter(timeNextEdge) :> void:
 
-                        spdifSamps -= 2;
+                    /* Setup next local clock edge */
+                    i_pll_ref.toggle_timed(0);
+                    printstr("d\n");
 
-                        /* spdifSamps could go to -1 */
-                        if(spdifSamps < 0)
-                        {
-                            /* We're out of S/PDIF samples, mark underflow condition */
-                            spdifUnderflow = 1;
-                            spdifLeft = 0;
-                        }
 
-                        /* If we are in over flow condition and we have a sensible number of samples
-                            * come out of overflow condition */
-                        if(spdifOverflow && (spdifSamps < (MAX_SPDIF_SAMPLES>>1)))
-                        {
-                            spdifOverflow = 0;
-                        }
-                    }
+                    /* Record time of edge */
+                    timeLastEdge = timeNextEdge;
+
+                    /* Setup for next edge */
+                    timeNextClockDetection = timeNextEdge + (LOCAL_CLOCK_INCREMENT/2);
+                    timeNextEdge += LOCAL_CLOCK_INCREMENT;
+
+                    /* If we are in an external clock mode and this fire, then clock invalid
+                     * reset counters in case we are moved to digital clock - we want a well timed
+                     * first edge */
+#if (XUA_SPDIF_RX_EN)
+                    spdifCounters.receivedSamples = 0;
 #endif
 #if (XUA_ADAT_RX_EN)
-                if (adatUnderflow)
-                {
-                    /* ADAT underflowing, send out zero samples */
-                    g_digData[2] = 0;
-                    g_digData[3] = 0;
-                    g_digData[4] = 0;
-                    g_digData[5] = 0;
-                    g_digData[6] = 0;
-                    g_digData[7] = 0;
-                    g_digData[8] = 0;
-                    g_digData[9] = 0;
-                }
-                else
-                {
-                    /* read out samples from the ADAT buffer and send */
-                    /* always return 8 samples */
-                    /* SMUX II mode */
-                    if (smux == 2)
-                    {
-                        /* SMUX2 mode - 2 samples from fifo and 4 zero samples */
-                        g_digData[2] = adatSamples[adatRd + 0];
-                        g_digData[3] = adatSamples[adatRd + 1];
+                    adatCounters.receivedSamples = 0;
+#endif
 
+#ifdef CLOCK_VALIDITY_CALL
+                    if(clkMode == CLOCK_INTERNAL)
+                    {
+                        /* Internal clock always valid */
+                        VendorClockValidity(1);
+                    }
+#endif
+                    break;
+
+#if (XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
+                case t_external when timerafter(timeNextClockDetection) :> void:
+                    {
+                        int valid;
+                        timeNextClockDetection += (LOCAL_CLOCK_INCREMENT);
+#if (XUA_SPDIF_RX_EN)
+                        /* Returns 1 if valid clock found */
+                        valid = validSamples(spdifCounters, CLOCK_SPDIF);
+                        setClockValidity(c_clk_int, CLOCK_SPDIF, valid, clkMode);
+#endif
+#if (XUA_ADAT_RX_EN)
+                        /* Returns 1 if valid clock found */
+                        valid = validSamples(adatCounters, CLOCK_ADAT);
+                        setClockValidity(c_clk_int, CLOCK_ADAT, valid, clkMode);
+#endif
+                    }
+                    break;
+#endif
+
+#if (XUA_SPDIF_RX_EN)
+                /* Receive sample from S/PDIF RX thread (streaming chan) */
+                case c_spdif_rx :> spdifRxData:
+
+                    /* Record time of sample */
+                    t_local :> spdifRxTime;
+
+                    /* Check parity and ignore if bad */
+                    if(spdif_rx_check_parity(spdifRxData))
+                        continue;
+
+                    /* Get preamble */
+                    unsigned preamble = spdifRxData & SPDIF_RX_PREAMBLE_MASK;
+
+                    switch(preamble)
+                    {
+                        /* LEFT */
+                        case SPDIF_FRAME_X:
+                        case SPDIF_FRAME_Z:
+                            spdifLeft = SPDIF_RX_EXTRACT_SAMPLE(spdifRxData);
+                            break;
+
+                        /* RIGHT */
+                        case SPDIF_FRAME_Y:
+
+                            /* Only store sample if not in overflow and stream is reasonably valid */
+                            if(!spdifOverflow && clockValid[CLOCK_SPDIF])
+                            {
+                                /* Store left and right sample pair to buffer */
+                                spdifSamples[spdifWr] = spdifLeft;
+                                spdifSamples[spdifWr+1] = SPDIF_RX_EXTRACT_SAMPLE(spdifRxData);
+
+                                spdifWr = (spdifWr + 2) & (MAX_SPDIF_SAMPLES - 1);
+
+                                spdifSamps += 2;
+
+                                /* Check for over flow */
+                                if(spdifSamps > MAX_SPDIF_SAMPLES-1)
+                                {
+                                    spdifOverflow = 1;
+                                }
+
+                                /* Check for coming out of under flow */
+                                if(spdifUnderflow && (spdifSamps >= (MAX_SPDIF_SAMPLES >> 1)))
+                                {
+                                    spdifUnderflow = 0;
+                                }
+                            }
+                            break;
+
+                            default:
+                                /* Bad sample, skip */
+                                continue;
+                                break;
+                        }
+
+                    spdifCounters.samples += 1;
+
+                    if(clkMode == CLOCK_SPDIF && clockValid[CLOCK_SPDIF])
+                    {
+                        spdifCounters.receivedSamples+=1;
+
+                        /* Inspect for if we need to produce an edge */
+                        if((spdifCounters.receivedSamples >=  spdifCounters.samplesPerTick))
+                        {
+                            /* Check edge is about right... S/PDIF may have changed freq... */
+                            if(timeafter(spdifRxTime, (timeLastEdge + LOCAL_CLOCK_INCREMENT - LOCAL_CLOCK_MARGIN)))
+                            {
+                                /* Record edge time */
+                                timeLastEdge = spdifRxTime;
+
+                                /* Setup for next edge */
+                                timeNextEdge = spdifRxTime + LOCAL_CLOCK_INCREMENT + LOCAL_CLOCK_MARGIN;
+
+                                /* Toggle edge */
+                                i_pll_ref.toggle_timed(1);
+                                printstr("s\n");
+
+                                /* Reset counters */
+                                spdifCounters.receivedSamples = 0;
+                            }
+                        }
+                    }
+                    break;
+#endif
+#if (XUA_ADAT_RX_EN)
+                    /* receive sample from ADAT rx thread (streaming channel with CT_END) */
+                    case inuint_byref(c_adat_rx, tmp):
+                        /* record time of sample */
+                        t_local :> adatReceivedTime;
+
+                        /* Sync is: 1 | (user_byte << 4) */
+                        if(tmp&1)
+                        {
+                            /* user bits - start of frame */
+                            adatChannel = 0;
+                            continue;
+                        }
+                        else
+                        {
+                            /* audio sample */
+                            adatSamplesEver++;
+                            adatFrame[adatChannel] = tmp;
+
+                            adatChannel++;
+                            if (adatChannel == 8)
+                            {
+                                /* only store left samples if not in overflow and stream is reasonably valid */
+                                if (!adatOverflow && clockValid[CLOCK_ADAT])
+                                {
+                                    /* Unpick the SMUX.. */
+                                    if(smux == 2)
+                                    {
+                                        adatSamples[adatWr + 0] = adatFrame[0];
+                                        adatSamples[adatWr + 1] = adatFrame[4];
+                                        adatSamples[adatWr + 2] = adatFrame[1];
+                                        adatSamples[adatWr + 3] = adatFrame[5];
+                                        adatSamples[adatWr + 4] = adatFrame[2];
+                                        adatSamples[adatWr + 5] = adatFrame[6];
+                                        adatSamples[adatWr + 6] = adatFrame[3];
+                                        adatSamples[adatWr + 7] = adatFrame[7];
+                                    }
+                                    else if(smux)
+                                    {
+
+                                        adatSamples[adatWr + 0] = adatFrame[0];
+                                        adatSamples[adatWr + 1] = adatFrame[2];
+                                        adatSamples[adatWr + 2] = adatFrame[4];
+                                        adatSamples[adatWr + 3] = adatFrame[6];
+                                        adatSamples[adatWr + 4] = adatFrame[1];
+                                        adatSamples[adatWr + 5] = adatFrame[3];
+                                        adatSamples[adatWr + 6] = adatFrame[5];
+                                        adatSamples[adatWr + 7] = adatFrame[7];
+                                    }
+                                    else
+                                    {
+                                        adatSamples[adatWr + 0] = adatFrame[0];
+                                        adatSamples[adatWr + 1] = adatFrame[1];
+                                        adatSamples[adatWr + 2] = adatFrame[2];
+                                        adatSamples[adatWr + 3] = adatFrame[3];
+                                        adatSamples[adatWr + 4] = adatFrame[4];
+                                        adatSamples[adatWr + 5] = adatFrame[5];
+                                        adatSamples[adatWr + 6] = adatFrame[6];
+                                        adatSamples[adatWr + 7] = adatFrame[7];
+                                     }
+                                        adatWr = (adatWr + 8) & (MAX_ADAT_SAMPLES - 1);
+                                        adatSamps += 8;
+
+                                        /* check for overflow */
+                                        if (adatSamps > MAX_ADAT_SAMPLES - 1)
+                                        {
+                                            adatOverflow = 1;
+                                        }
+
+                                        /* check for coming out of underflow */
+                                        if (adatUnderflow && (adatSamps >= (MAX_ADAT_SAMPLES >> 1)))
+                                        {
+                                            adatUnderflow = 0;
+                                        }
+                                    }
+                            }
+                            if(adatChannel == 4 || adatChannel == 8)
+                            {
+                                adatCounters.samples += 1;
+
+                                    if (clkMode == CLOCK_ADAT && clockValid[CLOCK_ADAT])
+                                    {
+                                        adatCounters.receivedSamples += 1;
+
+                                        /* Inspect for if we need to produce an edge */
+                                        if ((adatCounters.receivedSamples >= adatCounters.samplesPerTick))
+                                        {
+                                            /* Check edge is about right... ADAT may have changed freq... */
+                                            if (timeafter(adatReceivedTime, (timeLastEdge + LOCAL_CLOCK_INCREMENT - LOCAL_CLOCK_MARGIN)))
+                                            {
+                                                /* Record edge time */
+                                                timeLastEdge = adatReceivedTime;
+
+                                                /* Setup for next edge */
+                                                timeNextEdge = adatReceivedTime + LOCAL_CLOCK_INCREMENT + LOCAL_CLOCK_MARGIN;
+
+                                                /* Toggle edge */
+                                                i_pll_ref.toggle_timed(1);
+                                                printstr("a\n");
+
+                                                /* Reset counters */
+                                                adatCounters.receivedSamples = 0;
+                                            }
+                                        }
+                                    }
+                                }
+                                if (adatChannel == 8)
+                                  adatChannel = 0;
+                            }
+                        break;
+#endif
+
+#if (XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
+                    /* AudioHub requests data */
+                    case inuint_byref(c_dig_rx, tmp):
+#if (XUA_SPDIF_RX_EN)
+                        if(spdifUnderflow)
+                        {
+                            /* S/PDIF underflowing, send out zero samples */
+                            g_digData[0] = 0;
+                            g_digData[1] = 0;
+                        }
+                        else
+                        {
+                            /* Read out samples from S/PDIF buffer and send... */
+                            tmp = spdifSamples[spdifRd];
+                            tmp2 = spdifSamples[spdifRd + 1];
+
+                            spdifRd += 2;
+                            spdifRd &= (MAX_SPDIF_SAMPLES - 1);
+
+                            g_digData[0] = tmp;
+                            g_digData[1] = tmp2;
+
+                            spdifSamps -= 2;
+
+                            /* spdifSamps could go to -1 */
+                            if(spdifSamps < 0)
+                            {
+                                /* We're out of S/PDIF samples, mark underflow condition */
+                                spdifUnderflow = 1;
+                                spdifLeft = 0;
+                            }
+
+                            /* If we are in over flow condition and we have a sensible number of samples
+                                * come out of overflow condition */
+                            if(spdifOverflow && (spdifSamps < (MAX_SPDIF_SAMPLES>>1)))
+                            {
+                                spdifOverflow = 0;
+                            }
+                        }
+#endif
+#if (XUA_ADAT_RX_EN)
+                    if (adatUnderflow)
+                    {
+                        /* ADAT underflowing, send out zero samples */
+                        g_digData[2] = 0;
+                        g_digData[3] = 0;
                         g_digData[4] = 0;
                         g_digData[5] = 0;
                         g_digData[6] = 0;
                         g_digData[7] = 0;
                         g_digData[8] = 0;
                         g_digData[9] = 0;
-                        adatRd = (adatRd + 2) & (MAX_ADAT_SAMPLES - 1);
-                        adatSamps -= 2;
-                    }
-                    else if(smux)
-                    {
-                        /* SMUX mode - 4 samples from fifo and 4 zero samples */
-                        g_digData[2] = adatSamples[adatRd + 0];
-                        g_digData[3] = adatSamples[adatRd + 1];
-                        g_digData[4] = adatSamples[adatRd + 2];
-                        g_digData[5] = adatSamples[adatRd + 3];
-
-                        g_digData[6] = 0;
-                        g_digData[7] = 0;
-                        g_digData[8] = 0;
-                        g_digData[9] = 0;
-                        adatRd = (adatRd + 4) & (MAX_ADAT_SAMPLES - 1);
-                        adatSamps -= 4;
                     }
                     else
                     {
-                        /* no SMUX mode - 8 samples from fifo */
-                        g_digData[2] = adatSamples[adatRd + 0];
-                        g_digData[3] = adatSamples[adatRd + 1];
-                        g_digData[4] = adatSamples[adatRd + 2];
-                        g_digData[5] = adatSamples[adatRd + 3];
+                        /* read out samples from the ADAT buffer and send */
+                        /* always return 8 samples */
+                        /* SMUX II mode */
+                        if (smux == 2)
+                        {
+                            /* SMUX2 mode - 2 samples from fifo and 4 zero samples */
+                            g_digData[2] = adatSamples[adatRd + 0];
+                            g_digData[3] = adatSamples[adatRd + 1];
 
-                        g_digData[6] = adatSamples[adatRd + 4];
-                        g_digData[7] = adatSamples[adatRd + 5];
-                        g_digData[8] = adatSamples[adatRd + 6];
-                        g_digData[9] = adatSamples[adatRd + 7];
+                            g_digData[4] = 0;
+                            g_digData[5] = 0;
+                            g_digData[6] = 0;
+                            g_digData[7] = 0;
+                            g_digData[8] = 0;
+                            g_digData[9] = 0;
+                            adatRd = (adatRd + 2) & (MAX_ADAT_SAMPLES - 1);
+                            adatSamps -= 2;
+                        }
+                        else if(smux)
+                        {
+                            /* SMUX mode - 4 samples from fifo and 4 zero samples */
+                            g_digData[2] = adatSamples[adatRd + 0];
+                            g_digData[3] = adatSamples[adatRd + 1];
+                            g_digData[4] = adatSamples[adatRd + 2];
+                            g_digData[5] = adatSamples[adatRd + 3];
 
-                        adatRd = (adatRd + 8) & (MAX_ADAT_SAMPLES - 1);
-                        adatSamps -= 8;
+                            g_digData[6] = 0;
+                            g_digData[7] = 0;
+                            g_digData[8] = 0;
+                            g_digData[9] = 0;
+                            adatRd = (adatRd + 4) & (MAX_ADAT_SAMPLES - 1);
+                            adatSamps -= 4;
+                        }
+                        else
+                        {
+                            /* no SMUX mode - 8 samples from fifo */
+                            g_digData[2] = adatSamples[adatRd + 0];
+                            g_digData[3] = adatSamples[adatRd + 1];
+                            g_digData[4] = adatSamples[adatRd + 2];
+                            g_digData[5] = adatSamples[adatRd + 3];
+
+                            g_digData[6] = adatSamples[adatRd + 4];
+                            g_digData[7] = adatSamples[adatRd + 5];
+                            g_digData[8] = adatSamples[adatRd + 6];
+                            g_digData[9] = adatSamples[adatRd + 7];
+
+                            adatRd = (adatRd + 8) & (MAX_ADAT_SAMPLES - 1);
+                            adatSamps -= 8;
+                        }
+
+                        /* adatSamps could go to -1 */
+                        if (adatSamps < 0)
+                        {
+                            /* we're out of ADAT samples, mark underflow condition */
+                            adatUnderflow = 1;
+                        }
+
+                        /* if we are in overflow condition and have a sensible number of samples
+                           come out of overflow condition */
+                        if (adatOverflow && adatSamps < (MAX_ADAT_SAMPLES >> 1))
+                        {
+                            adatOverflow = 0;
+                        }
                     }
-
-                    /* adatSamps could go to -1 */
-                    if (adatSamps < 0)
-                    {
-                        /* we're out of ADAT samples, mark underflow condition */
-                        adatUnderflow = 1;
-                    }
-
-                    /* if we are in overflow condition and have a sensible number of samples
-                       come out of overflow condition */
-                    if (adatOverflow && adatSamps < (MAX_ADAT_SAMPLES >> 1))
-                    {
-                        adatOverflow = 0;
-                    }
-                }
 #endif
-                outuint(c_dig_rx, 1);
-                break;
+                    outuint(c_dig_rx, 1);
+                    break;
 #endif
-        }
-    }
+            } /* select */
+        } /* while(1) */
+    } /* clkgen task scope */
 }
 
