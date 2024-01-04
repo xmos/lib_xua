@@ -640,6 +640,7 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
 #endif
 #if (XUA_ADAT_RX_EN || XUA_SPDIF_RX_EN)
     , chanend c_dig_rx
+    , chanend c_mclk_change
 #endif
 #if (XUD_TILE != 0) && (AUDIO_IO_TILE == 0) && (XUA_DFU_EN == 1)
     , server interface i_dfu ?dfuInterface
@@ -800,6 +801,10 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
 #endif
             /* Configure Clocking/CODEC/DAC/ADC for SampleFreq/MClk */
             AudioHwConfig(curFreq, mClk, dsdMode, curSamRes_DAC, curSamRes_ADC);
+#if (XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
+            /* Notify clockgen of new mCLk */
+            c_mclk_change <: mClk;
+#endif
         }
 
         if(!firstRun)

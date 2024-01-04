@@ -320,6 +320,8 @@ void usb_audio_io(chanend ?c_aud_in,
 
 #if (XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
     chan c_dig_rx;
+    chan c_mclk_change; /* Notification of new mclk freq to clockgen */
+
 
     /* Connect p_for_mclk_count_aud to clk_audio_mclk so we can count mclks/timestamp in digital rx*/
     unsigned x = 0;
@@ -373,6 +375,7 @@ void usb_audio_io(chanend ?c_aud_in,
 #endif
 #if (XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
                 , c_dig_rx
+                , c_mclk_change
 #endif
 #if (XUD_TILE != 0) && (AUDIO_IO_TILE == 0) && (XUA_DFU_EN == 1)
                 , dfuInterface
@@ -393,12 +396,18 @@ void usb_audio_io(chanend ?c_aud_in,
              * However, due to the use of an interface the pll reference signal port can be on another tile
              */
             thread_speed();
-            clockGen(c_spdif_rx, c_adat_rx, i_pll_ref, c_dig_rx, c_clk_ctl, c_clk_int, p_for_mclk_count_aud);
+            clockGen(   c_spdif_rx,
+                        c_adat_rx,
+                        i_pll_ref,
+                        c_dig_rx,
+                        c_clk_ctl,
+                        c_clk_int,
+                        p_for_mclk_count_aud,
+                        c_mclk_change);
         }
 #endif
 
-        //:
-    }
+    } // par
 }
 
 #ifndef USER_MAIN_DECLARATIONS
