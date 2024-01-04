@@ -144,6 +144,7 @@ on tile[XUD_TILE] : in port p_spdif_rx                      = PORT_SPDIF_IN;
 #if (XUA_SPDIF_RX_EN) || (XUA_ADAT_RX_EN) || (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
 /* Reference to external clock multiplier */
 on tile[PLL_REF_TILE] : out port p_pll_ref                  = PORT_PLL_REF;
+on tile[AUDIO_IO_TILE] : port p_for_mclk_count_aud          = PORT_MCLK_COUNT_2;
 #endif
 
 #ifdef MIDI
@@ -309,6 +310,7 @@ void usb_audio_io(chanend ?c_aud_in,
 #endif
 #if (XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
     , client interface pll_ref_if i_pll_ref
+    , port p_for_mclk_count_aud
 #endif
 )
 {
@@ -318,6 +320,12 @@ void usb_audio_io(chanend ?c_aud_in,
 
 #if (XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
     chan c_dig_rx;
+
+    /* Connect p_for_mclk_count_aud to clk_audio_mclk so we can count mclks/timestamp in digital rx*/
+    unsigned x = 0;
+    asm("ldw %0, dp[clk_audio_mclk]":"=r"(x));
+    asm("setclk res[%0], %1"::"r"(p_for_mclk_count_aud), "r"(x));
+
 #else
     #define c_dig_rx null
 #endif
@@ -385,7 +393,7 @@ void usb_audio_io(chanend ?c_aud_in,
              * However, due to the use of an interface the pll reference signal port can be on another tile
              */
             thread_speed();
-            clockGen(c_spdif_rx, c_adat_rx, i_pll_ref, c_dig_rx, c_clk_ctl, c_clk_int);
+            clockGen(c_spdif_rx, c_adat_rx, i_pll_ref, c_dig_rx, c_clk_ctl, c_clk_int, p_for_mclk_count_aud);
         }
 #endif
 
@@ -437,7 +445,7 @@ int main()
 #define c_adat_rx null
 #endif
 
-#if (XUA_SPDIF_TX_EN) //&& (SPDIF_TX_TILE != AUDIO_IO_TILE)
+#if (XUA_SPDIF_TX_EN) && (SPDIF_TX_TILE != AUDIO_IO_TILE)
     chan c_spdif_tx;
 #endif
 
@@ -575,6 +583,7 @@ int main()
 
         on tile[AUDIO_IO_TILE]:
         {
+
             /* Audio I/O task, includes mixing etc */
             usb_audio_io(c_mix_out
 #if (XUA_SPDIF_TX_EN) && (SPDIF_TX_TILE != AUDIO_IO_TILE)
@@ -595,6 +604,7 @@ int main()
 #endif
 #if (XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
                 , i_pll_ref
+                , p_for_mclk_count_aud
 #endif
             );
         }
