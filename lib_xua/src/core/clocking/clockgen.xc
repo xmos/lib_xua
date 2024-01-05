@@ -352,11 +352,11 @@ void SigmaDeltaTask(chanend c_sigma_delta, unsigned sdm_interval){
        the first control value has been received. This avoids issues with 
        channel lockup if two tasks (eg. init and SDM) try to write at the same time. */ 
 
-    /* To be extra safe, spin on sw_pll_ptr until it has been initialised */
+    /* To be extra safe, spin on sw_pll_ptr until it has been initialised by clockgen */
     while(sw_pll_ptr == NULL);
 
     int f_error = 0;
-    int dco_setting = SW_PLL_SDM_CTRL_MID_24; // TODO Assume 24.576MHz?
+    int dco_setting = SW_PLL_SDM_CTRL_MID_24; // Assume 24.576MHz as initial clock
     unsafe
     {
         sw_pll_init_sigma_delta(&sw_pll_ptr->sdm_state);
@@ -578,7 +578,7 @@ void clockGen ( streaming chanend ?c_spdif_rx,
         sw_pll_ptr = &sw_pll;
     }
 
-    unsigned sdm_interval = InitSWPLL(sw_pll, MCLK_48);
+    unsigned sdm_interval = InitSWPLL(sw_pll, MCLK_48); // Assume 24.576MHz initial clock 
 
     par
     {
