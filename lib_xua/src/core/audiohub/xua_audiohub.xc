@@ -804,6 +804,7 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
 #if (XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
             /* Notify clockgen of new mCLk */
             c_mclk_change <: mClk;
+            c_mclk_change <: curFreq;
 #endif
         }
 
