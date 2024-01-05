@@ -8,11 +8,15 @@
 #include "xua_commands.h"
 #include "xua_clocking.h"
 
+/* By default we use SW_PLL for Digital Rx configs running on XCORE-AI */
+/* Note: Not yet implemented for Synchronous mode */
 #ifdef __XS3A__
+#ifndef USE_SW_PLL
 #define USE_SW_PLL  1
+#endif /* USE_SW_PLL */
 #else
 #define USE_SW_PLL  0
-#endif
+#endif /* __XS3A__ */
 
 #if USE_SW_PLL
 extern "C"
