@@ -10,6 +10,7 @@ HEAD
   * RESOLVED:  Input stream sending an erroneous zero-length packet when exiting underflow state
   * RESOLVED   Build failures when XUA_USB_EN = 0
   * RESOLVED:  Clock configuration issues when ADAT and S/PDIF receive are enabled (#352)
+  * RESOLVED:  Repeated old S/PDIF and ADAT samples when entering underflow state
   * CHANGED:   QUAD_SPI_FLASH replaced by XUA_QUAD_SPI_FLASH (default: 1)
   * CHANGED:   UserBufferManagementInit() now takes a sample rate parameter
 

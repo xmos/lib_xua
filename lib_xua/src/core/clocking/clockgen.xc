@@ -1,4 +1,4 @@
-// Copyright 2011-2023 XMOS LIMITED.
+// Copyright 2011-2024 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 #include <xs1.h>
 #include <assert.h>
@@ -718,7 +718,7 @@ void clockGen (streaming chanend ?c_spdif_rx, chanend ?c_adat_rx, client interfa
                         spdifSamps -= 2;
 
                         /* spdifSamps could go to -1 */
-                        if(spdifSamps < 0)
+                        if(spdifSamps <= 0)
                         {
                             /* We're out of S/PDIF samples, mark underflow condition */
                             spdifUnderflow = 1;
@@ -799,7 +799,7 @@ void clockGen (streaming chanend ?c_spdif_rx, chanend ?c_adat_rx, client interfa
                     }
 
                     /* adatSamps could go to -1 */
-                    if (adatSamps < 0)
+                    if (adatSamps <= 0)
                     {
                         /* we're out of ADAT samples, mark underflow condition */
                         adatUnderflow = 1;
