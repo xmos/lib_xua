@@ -978,7 +978,7 @@ void clockGen ( streaming chanend ?c_spdif_rx,
                             spdifSamps -= 2;
 
                             /* spdifSamps could go to -1 */
-                            if(spdifSamps < 0)
+                            if(spdifSamps <= 0)
                             {
                                 /* We're out of S/PDIF samples, mark underflow condition */
                                 spdifUnderflow = 1;
@@ -1061,7 +1061,7 @@ void clockGen ( streaming chanend ?c_spdif_rx,
                         }
 
                         /* adatSamps could go to -1 */
-                        if (adatSamps < 0)
+                        if (adatSamps <= 0)
                         {
                             /* we're out of ADAT samples, mark underflow condition */
                             adatUnderflow = 1;
