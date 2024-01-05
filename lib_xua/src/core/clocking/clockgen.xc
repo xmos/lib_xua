@@ -8,8 +8,6 @@
 #include "xua_commands.h"
 #include "xua_clocking.h"
 
-#include <stdio.h> // TODO DEV ONLY - DELME
-
 #ifdef __XS3A__
 #define USE_SW_PLL  1
 #else
@@ -306,22 +304,35 @@ void do_sw_pll_phase_frequency_detector( sw_pll_state_t sw_pll,
                         chanend c_sigma_delta,
                         int receivedSamples)
 {
+    const unsigned control_loop_rate_divider = 6; /* 300Hz * 2 edges / 6 -> 100Hz loop rate */
+    static unsigned control_loop_counter = 0;
+    static unsigned total_received_samples = 0;
+
     /* Keep a store of the last mclk time stamp so we can work out the increment */
     static unsigned short last_mclk_time_stamp = 0;
 
-    /* Calculate what the zero-error mclk count increment should be for this many samples */
-    const unsigned expected_mclk_inc = mclks_per_sample * receivedSamples / 2; /* divide by 2 because this fn is called per edge */
+    control_loop_counter++;
 
-    /* Calculate actualy time-stamped mclk count increment is */
-    const unsigned short actual_mclk_inc = mclk_time_stamp - last_mclk_time_stamp;
+    total_received_samples += receivedSamples;
 
-    /* The difference is the raw error in terms of mclk counts */
-    short f_error = (int)actual_mclk_inc - (int)expected_mclk_inc;
+    if(control_loop_counter == control_loop_rate_divider)
+    {
+        /* Calculate what the zero-error mclk count increment should be for this many samples */
+        const unsigned expected_mclk_inc = mclks_per_sample * total_received_samples / 2; /* divide by 2 because this fn is called per edge */
 
-    /* send PFD output to the sigma delta thread */
-    outuint(c_sigma_delta, (unsigned) (1000000 + f_error));
- 
-    last_mclk_time_stamp = mclk_time_stamp;
+        /* Calculate actualy time-stamped mclk count increment is */
+        const unsigned short actual_mclk_inc = mclk_time_stamp - last_mclk_time_stamp;
+
+        /* The difference is the raw error in terms of mclk counts */
+        short f_error = (int)actual_mclk_inc - (int)expected_mclk_inc;
+
+        /* send PFD output to the sigma delta thread */
+        outuint(c_sigma_delta, (unsigned) (1000000 + f_error));
+     
+        last_mclk_time_stamp = mclk_time_stamp;
+        control_loop_counter = 0;
+        total_received_samples = 0;
+    }
 }
 
 void SigmaDeltaTask(chanend c_sigma_delta, unsigned sdm_interval){
@@ -354,7 +365,6 @@ void SigmaDeltaTask(chanend c_sigma_delta, unsigned sdm_interval){
         {
             case inuint_byref(c_sigma_delta, tmp):
                 f_error = (int32_t)tmp;
-                printstr("sigma-delta got: "); printintln(f_error);
                 unsafe
                 {
                     sw_pll_sdm_do_control_from_error(sw_pll_ptr, -f_error + 1000000);
@@ -539,7 +549,9 @@ void clockGen ( streaming chanend ?c_spdif_rx,
     chan c_sigma_delta;
     sw_pll_state_t sw_pll;
 
-    /* Initialise before we par off the SDM task */
+    /* Initialise before we par off the SDM thread/
+       We share the sw_pll struct across threads and this
+       us safe because the threads access different memebers */
     unsafe
     {
         sw_pll_ptr = &sw_pll;
