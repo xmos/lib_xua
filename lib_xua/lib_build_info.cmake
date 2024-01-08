@@ -25,7 +25,8 @@ set(LIB_DEPENDENT_MODULES "lib_locks"
                           "lib_spdif"
                           "lib_xassert"
                           "lib_xud"
-                          "lib_adat")
+                          "lib_adat"
+                          "lib_sw_pll(feature/fix_roundup)")
 
 set(LIB_COMPILER_FLAGS -O3 -DREF_CLK_FREQ=100 -fasm-linenum -fcomment-asm)
 
