@@ -144,7 +144,11 @@ on tile[XUD_TILE] : in port p_spdif_rx                      = PORT_SPDIF_IN;
 #if (XUA_SPDIF_RX_EN) || (XUA_ADAT_RX_EN) || (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
 /* Reference to external clock multiplier */
 on tile[PLL_REF_TILE] : out port p_pll_ref                  = PORT_PLL_REF;
-on tile[AUDIO_IO_TILE] : port p_for_mclk_count_aud          = PORT_MCLK_COUNT_2;
+#ifdef __XS3A__
+on tile[AUDIO_IO_TILE] : port p_for_mclk_count_audio        = PORT_MCLK_COUNT_2;
+#else /* __XS3A__ */
+#define p_for_mclk_count_audio                              null
+#endif /* __XS3A__ */
 #endif
 
 #ifdef MIDI
@@ -310,7 +314,7 @@ void usb_audio_io(chanend ?c_aud_in,
 #endif
 #if (XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
     , client interface pll_ref_if i_pll_ref
-    , port p_for_mclk_count_aud
+    , port ?p_for_mclk_count_aud
 #endif
 )
 {
@@ -322,15 +326,14 @@ void usb_audio_io(chanend ?c_aud_in,
     chan c_dig_rx;
     chan c_mclk_change; /* Notification of new mclk freq to clockgen */
 
-
     /* Connect p_for_mclk_count_aud to clk_audio_mclk so we can count mclks/timestamp in digital rx*/
-    unsigned x = 0;
-    asm("ldw %0, dp[clk_audio_mclk]":"=r"(x));
-    asm("setclk res[%0], %1"::"r"(p_for_mclk_count_aud), "r"(x));
-
-#else
-    #define c_dig_rx null
-#endif
+    if(!isnull(p_for_mclk_count_aud))
+    {
+        unsigned x = 0;
+        asm("ldw %0, dp[clk_audio_mclk]":"=r"(x));
+        asm("setclk res[%0], %1"::"r"(p_for_mclk_count_aud), "r"(x));
+    }
+#endif /* (XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN) */
 
 #if (XUA_NUM_PDM_MICS > 0) && (PDM_TILE == AUDIO_IO_TILE)
     /* Configure clocks ports - sharing mclk port with I2S */
@@ -613,7 +616,7 @@ int main()
 #endif
 #if (XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
                 , i_pll_ref
-                , p_for_mclk_count_aud
+                , p_for_mclk_count_audio
 #endif
             );
         }

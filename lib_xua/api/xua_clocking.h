@@ -36,7 +36,7 @@ void clockGen(  streaming chanend ?c_spdif_rx,
                 chanend c_audio,
                 chanend c_clk_ctl,
                 chanend c_clk_int,
-                port p_for_mclk_count_aud,
+                port ?p_for_mclk_count_aud,
                 chanend c_mclk_change);
 #endif
 

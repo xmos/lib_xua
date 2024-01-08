@@ -373,21 +373,21 @@ void SigmaDeltaTask(chanend c_sigma_delta, unsigned sdm_interval){
     tmr :> time_trigger;
     int send_ack_once = 1;
 
+    unsigned rx_word;
     while(1)
     {
         /* Poll for new SDM control value */
-        unsigned tmp;
         select
         {
-            case inuint_byref(c_sigma_delta, tmp):
-                if(tmp == DISABLE_SDM)
+            case inuint_byref(c_sigma_delta, rx_word):
+                if(rx_word == DISABLE_SDM)
                 {
                     f_error = 0;
                     send_ack_once = 1;
                 }
                 else
                 {
-                    f_error = (int32_t)tmp;
+                    f_error = (int32_t)rx_word;
                     unsafe
                     {
                         sw_pll_sdm_do_control_from_error(sw_pll_ptr, -f_error);
@@ -415,7 +415,7 @@ void SigmaDeltaTask(chanend c_sigma_delta, unsigned sdm_interval){
            control value. This will avoid the writing of the
            frac reg from two different threads which may cause
            a channel deadlock. */
-        if(tmp != DISABLE_SDM)
+        if(rx_word != DISABLE_SDM)
         unsafe {
             sw_pll_do_sigma_delta(&sw_pll_ptr->sdm_state, this_tile, dco_setting);
             send_ack_once = 1;
@@ -454,7 +454,7 @@ void clockGen ( streaming chanend ?c_spdif_rx,
                 chanend c_dig_rx,
                 chanend c_clk_ctl,
                 chanend c_clk_int,
-                port p_for_mclk_count_aud,
+                port ?p_for_mclk_count_aud,
                 chanend c_mclk_change)
 {
     timer t_local;
@@ -477,7 +477,10 @@ void clockGen ( streaming chanend ?c_spdif_rx,
     unsigned mclks_per_sample = 0;
     unsigned short mclk_time_stamp = 0;
     /* Get MCLK count */
-    asm volatile(" getts %0, res[%1]" : "=r" (mclk_time_stamp) : "r" (p_for_mclk_count_aud));
+    if(!isnull(p_for_mclk_count_aud))
+    {
+        asm volatile(" getts %0, res[%1]" : "=r" (mclk_time_stamp) : "r" (p_for_mclk_count_aud));
+    }
 #endif
 
 #if (XUA_SPDIF_RX_EN)
@@ -569,7 +572,7 @@ void clockGen ( streaming chanend ?c_spdif_rx,
     /* Initial ref clock output and get timestamp */
     i_pll_ref.init();
 
-#if USE_SW_PLL
+#if (USE_SW_PLL && (XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN))
     chan c_sigma_delta;
     sw_pll_state_t sw_pll;
     int reset_sw_pll_pfd = 1;
@@ -777,7 +780,10 @@ void clockGen ( streaming chanend ?c_spdif_rx,
                 case c_spdif_rx :> spdifRxData:
 
                     /* Record time of sample */
-                    asm volatile(" getts %0, res[%1]" : "=r" (mclk_time_stamp) : "r" (p_for_mclk_count_aud));
+                    if(!isnull(p_for_mclk_count_aud))
+                    {
+                        asm volatile(" getts %0, res[%1]" : "=r" (mclk_time_stamp) : "r" (p_for_mclk_count_aud));
+                    }
                     t_local :> spdifRxTime;
 
                     /* Check parity and ignore if bad */
@@ -866,7 +872,10 @@ void clockGen ( streaming chanend ?c_spdif_rx,
                     /* receive sample from ADAT rx thread (streaming channel with CT_END) */
                     case inuint_byref(c_adat_rx, tmp):
                         /* record time of sample */
-                        asm volatile(" getts %0, res[%1]" : "=r" (mclk_time_stamp) : "r" (p_for_mclk_count_aud));
+                        if(!isnull(p_for_mclk_count_aud))
+                        {
+                            asm volatile(" getts %0, res[%1]" : "=r" (mclk_time_stamp) : "r" (p_for_mclk_count_aud));
+                        }
                         t_local :> adatReceivedTime;
 
                         /* Sync is: 1 | (user_byte << 4) */
