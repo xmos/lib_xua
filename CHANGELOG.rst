@@ -13,6 +13,7 @@ HEAD
   * RESOLVED:  Repeated old S/PDIF and ADAT samples when entering underflow state
   * CHANGED:   QUAD_SPI_FLASH replaced by XUA_QUAD_SPI_FLASH (default: 1)
   * CHANGED:   UserBufferManagementInit() now takes a sample rate parameter
+  * CHANGED:   xcore-ai targets use sigma-delta application PLL for clock recovery
 
 3.5.1
 -----
