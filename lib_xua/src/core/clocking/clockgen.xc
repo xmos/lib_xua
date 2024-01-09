@@ -537,8 +537,8 @@ void clockGen ( streaming chanend ?c_spdif_rx,
                     disable_sigma_delta(c_sigma_delta); /* Blocks until SDM is idle */
                     InitSWPLL(sw_pll, selected_mclk_rate);
                     reset_sw_pll_pfd = 1;
-                    c_mclk_change <: 0; /* Acknowledge to hold off starting audio until done */
 #endif
+                    c_mclk_change <: 0; /* Acknowledge to hold off starting audio until done */
                     break;
 #endif
 
