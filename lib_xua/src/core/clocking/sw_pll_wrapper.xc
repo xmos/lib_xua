@@ -5,12 +5,9 @@
 #include <print.h>
 
 #include "sw_pll_wrapper.h"
+#include "xua.h"
 
 #if USE_SW_PLL
-extern "C"
-{
-    #include "sw_pll.h"
-}
 
 /* Pointer to sw_pll struct to allow it to be used in separate SDM thread */ 
 unsafe 
@@ -212,4 +209,4 @@ void disable_sigma_delta(chanend c_sigma_delta)
     inuint(c_sigma_delta); /* Wait for ACK so we know reg write is complete */
 }
 
-#endif
+#endif /* USE_SW_PLL */

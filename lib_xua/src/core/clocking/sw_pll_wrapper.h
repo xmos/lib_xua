@@ -1,6 +1,9 @@
 // Copyright 2024 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
+#ifndef _SW_PLL_WRAPPPER_H_
+#define _SW_PLL_WRAPPPER_H_
+
 /* By default we use SW_PLL for Digital Rx configs running on XCORE-AI */
 /* Note: Not yet implemented for Synchronous mode */
 #ifdef __XS3A__
@@ -11,7 +14,7 @@
 #define USE_SW_PLL  0
 #endif /* __XS3A__ */
 
-
+#if USE_SW_PLL
 extern "C"
 {
     #include "sw_pll.h"
@@ -56,3 +59,6 @@ void do_sw_pll_phase_frequency_detector_dig_rx( unsigned short mclk_time_stamp,
  *  \param mClk     The current nominal mClk frequency.
  */
 unsigned InitSWPLL(sw_pll_state_t &sw_pll, unsigned mClk);
+
+#endif /* USE_SW_PLL */
+#endif /* _SW_PLL_WRAPPPER_H_ */
