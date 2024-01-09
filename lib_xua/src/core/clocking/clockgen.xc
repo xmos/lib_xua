@@ -551,11 +551,9 @@ void clockGen ( streaming chanend ?c_spdif_rx,
                     c_mclk_change :> selected_sample_rate;
                     mclks_per_sample = selected_mclk_rate / selected_sample_rate;
 #if USE_SW_PLL
-                    printstr("c_mclk_change: "); printuintln(selected_mclk_rate);
                     disable_sigma_delta(c_sigma_delta); /* Blocks until SDM is idle */
                     InitSWPLL(sw_pll, selected_mclk_rate);
                     reset_sw_pll_pfd = 1;
-                    printstr("swpll int'd\n");
                     c_mclk_change <: 0; /* Acknowledge to hold off starting audio until done */
 #endif
                     break;
@@ -605,14 +603,12 @@ void clockGen ( streaming chanend ?c_spdif_rx,
                                 if(spdifSamps > MAX_SPDIF_SAMPLES-1)
                                 {
                                     spdifOverflow = 1;
-                                    printstr("spo+\n"); // DELME
                                 }
 
                                 /* Check for coming out of under flow */
                                 if(spdifUnderflow && (spdifSamps >= (MAX_SPDIF_SAMPLES >> 1)))
                                 {
                                     spdifUnderflow = 0;
-                                    printstr("spu-\n"); // DELME
                                 }
                             }
                             break;
@@ -810,7 +806,6 @@ void clockGen ( streaming chanend ?c_spdif_rx,
                             {
                                 /* We're out of S/PDIF samples, mark underflow condition */
                                 spdifUnderflow = 1;
-                                printstr("spu+\n");  // DELME
                                 spdifLeft = 0;
                             }
 
@@ -819,7 +814,6 @@ void clockGen ( streaming chanend ?c_spdif_rx,
                             if(spdifOverflow && (spdifSamps < (MAX_SPDIF_SAMPLES>>1)))
                             {
                                 spdifOverflow = 0;
-                                printstr("spo-\n");  // DELME
                             }
                         }
 #endif

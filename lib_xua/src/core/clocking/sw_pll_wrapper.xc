@@ -75,8 +75,6 @@ unsigned InitSWPLL(sw_pll_state_t &sw_pll, unsigned mClk)
     /* Reset SDM too */
     sw_pll_init_sigma_delta(&sw_pll.sdm_state);
 
-    printstr("Init sw_pll: "); printuintln(mClk);
-
     return (XS1_TIMER_HZ / sw_pll_sdm_rate[clkIndex]);
 }
 
@@ -112,8 +110,6 @@ void do_sw_pll_phase_frequency_detector_dig_rx( unsigned short mclk_time_stamp,
             f_error = 0;            /* Skip first measurement as it will likely be very out */
             reset_sw_pll_pfd = 0;
         }
-        printintln(f_error);
-
 
         /* send PFD output to the sigma delta thread */
         outuint(c_sigma_delta, (int) f_error);
