@@ -32,16 +32,18 @@ When running in *Internal Clock* mode this core simply generates this clock usin
 timer, based on the XMOS reference clock.
 
 When running in an external clock mode (i.e. S/PDIF Clock" or "ADAT Clock" mode) samples are 
-received from the S/PDIF and/or ADAT receive core.  The external frequency is calculated through 
-counting samples in a given period. The reference clock to the CS2100 is then generated based on
-the reception of these samples.
+received from the S/PDIF and/or ADAT receive core. The external frequency is calculated through 
+counting samples in a given period. Either the reference clock to the CS2100 is then generated based on
+the reception of these samples or the timing information is provided to lib_sw_pll to generate
+the phase-locked clock on-chip (xCORE-AI only).
 
 If an external stream becomes invalid, the *Internal Clock* timer event will fire to ensure that 
 valid master clock generation continues regardless of cable unplugs etc. Efforts are made to 
 ensure the transition between these clocks are relatively seamless. Additionally efforts are also
-made to try and keep the jitter on the reference clock as low as possibly, regardless of activity
+made to try and keep the jitter on the reference clock as low as possible, regardless of activity
 level of the Clock Gen core. The is achieved though the use of port times to schedule pin toggling
-rather than directly outputting to the port.
+rather than directly outputting to the port in the case of using the CS2100. For lib_sw_pll cases the
+last setting is kept for the sigma-delta modulator ensuring clock continuity.
 
 The Clock Gen core gets clock selection Get/Set commands from Endpoint 0 via the ``c_clk_ctl`` 
 channel.  This core also records the validity of external clocks, which is also queried 
