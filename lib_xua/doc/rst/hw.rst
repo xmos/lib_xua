@@ -52,11 +52,11 @@ Three methods of generating an audio master clock are provided on the board:
 
     * A Skyworks Si5351B PLL device. The Si5351 is an I2C configurable clock generator that is ideally suited for replacing crystals, crystal oscillators, VCXOs, phase-locked loops (PLLs), and fanout buffers.
 
-    * xCORE.ai devices are equipped with a secondary (or 'application') PLL which can be used to generate audio clocks
+    * xCORE.ai devices are equipped with a secondary (or 'application') PLL which can be used to generate fixed audio clocks or recover external clocks using lib_sw_pll.
 
 Selection between these methods is done via writing to bits 6 and 7 of PORT 8D on tile[0]. 
 
-Either the locally generated clock (from the PL611) or the recovered low jitter clock (from the CS2100) may be selected to clock the audio stages; the xCORE-200, the ADC/DAC and Digital output stages. Selection is controlled via an additional I/O, bit 5 of PORT 8C, see :ref:`hw_316_ctrlport`.
+Either the locally generated clock (from the PL611) or the recovered low jitter clock (from the CS2100) may be selected to clock the audio stages; the xCORE-AI, the ADC/DAC and Digital output stages. Selection is controlled via an additional I/O, bit 5 of PORT 8C, see :ref:`hw_316_ctrlport`.
 
 .. _hw_316_ctrlport:
 

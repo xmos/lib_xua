@@ -15,17 +15,18 @@ the xCORE.
 
 Using an external PLL/Clock Multiplier allows an Asynchronous mode design to lock to an external
 clock source from a digital stream (e.g. S/PDIF or ADAT input).  The codebase supports the Cirrus
-Logic CS2100 device for this purpose. Other devices may be supported via code modification.
+Logic CS2100 device or use of lib_sw_pll (xCORE-AI only) for this purpose. Other devices may be 
+supported via code modification.
 
-.. note::
-   
-    It is expected that in a future release  the secondary PLL in xCORE.ai devices, coupled with
-    associated software changes, will be capable of replacing the CS2100 part for most designs.
+The Clock Recovery core (Clock Gen) is responsible for either generating the reference frequency 
+to the CS2100 device or driving lib_sw_pll from time measurements based on the local master clock
+and the time of received samples. Clock Gen (via CS2100 or lib_sw_pll) generates the master clock 
+used over the whole design. This core also serves as a smaller buffer between ADAT and S/PDIF 
+receiving cores and the Audio Hub core.
 
-The Clock Recovery core (Clock Gen) is responsible for generating the reference frequency 
-to the CS2100 device. This, in turn, generates the master clock used over the whole design.
-This core also serves as a smaller buffer between ADAT and S/PDIF receiving cores and the Audio Hub
-core.
+When using lib_sw_pll (xCORE-AI only) an further core is instantiated which performs the sigma-delta
+modulation of the xCORE PLL to ensure the lowest jitter over the audio band. See lib_sw_pll
+documentation for further details.
 
 When running in *Internal Clock* mode this core simply generates this clock using a local
 timer, based on the XMOS reference clock.
