@@ -89,27 +89,10 @@ static int abs(int x)
     return x;
 }
 
-static int channelContainsControlToken(chanend x)
-{
-    unsigned char tmpc;
-
-    select
-    {
-        case inct_byref(x, tmpc):
-            return 1;
-        default:
-            return 0;
-    }
-}
-
 static void outInterrupt(chanend c_interruptControl, int value)
 {
-    /* Non-blocking check for control token */
-    //if (channelContainsControlToken(c_interruptControl))
-    {
-        outuint(c_interruptControl, value);
-        outct(c_interruptControl, XS1_CT_END);
-    }
+    outuint(c_interruptControl, value);
+    outct(c_interruptControl, XS1_CT_END);
 }
 #endif
 
