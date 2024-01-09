@@ -556,6 +556,7 @@ void clockGen ( streaming chanend ?c_spdif_rx,
                     InitSWPLL(sw_pll, selected_mclk_rate);
                     reset_sw_pll_pfd = 1;
                     printstr("swpll int'd\n");
+                    c_mclk_change <: 0; /* Acknowledge to hold off starting audio until done */
 #endif
                     break;
 #endif
