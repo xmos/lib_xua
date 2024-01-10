@@ -49,7 +49,8 @@ pipeline {
                       withVenv {
                         runWaf('.', "configure clean build --target=xcore200")
                         viewEnv() {
-                          runPython("TARGET=XCORE200 pytest -s")
+                          runPython("TARGET=XCORE200 pytest -s --junitxml=pytest_unity.xml")
+                          junit "pytest_unity.xml"
                         }
                       }
                     }
