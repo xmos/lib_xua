@@ -29,7 +29,7 @@ The S/PDIF receiver should be called on the appropriate tile::
 With the steps above an S/PDIF stream can be captured by the xCORE. To be functionally useful the audio
 master clock must be able to synchronise to this external digital stream. Additionally, the host can be 
 notified regarding changes in the validity of this stream, it's frequency etc. To synchronise to external 
-streams the codebase assumes the use of an external Cirrus Logic CS2100 device or lib_sw_pll on xCORE-AI designs.
+streams the codebase assumes the use of an external Cirrus Logic CS2100 device or lib_sw_pll on xcore.ai designs.
 
 The ``ClockGen()`` task from ``lib_xua`` provides the reference signal to the CS2100 device or timing information
 to lib_sw_pll and also handles recording of clock validity etc.

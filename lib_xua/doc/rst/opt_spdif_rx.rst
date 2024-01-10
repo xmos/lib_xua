@@ -34,7 +34,7 @@ This must be a 1-bit port, for example::
     <Port Location="XS1_PORT_1A"  Name="PORT_SPDIF_IN"/>
 
 When S/PDIF receive is enabled the codebase expects to either drive a synchronisation signal to an external 
-Cirrus Logic CS2100 device or use lib_swp_pll (xCORE-AI only) for master-clock generation.
+Cirrus Logic CS2100 device or use lib_swp_pll (xcore.ai only) for master-clock generation.
 
 The programmer should ensure the define in :ref:`opt_spdif_rx_ref_defines` is set appropriately.
 
