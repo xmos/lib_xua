@@ -54,7 +54,7 @@ In addition :ref:`usb_audio_optional_components` shows optional components that 
  * - Clockgen
    - Drives an external frequency generator (PLL) and manages
      changes between internal clocks and external clocks arising
-     from digital input. on xCORE-AI Clockgen may also work in
+     from digital input. On xCORE-AI Clockgen may also work in
      conjunction with lib_sw_pll to produce a local clock from 
      the XCORE which is locked to the incoming digital stream.
  * - MIDI
