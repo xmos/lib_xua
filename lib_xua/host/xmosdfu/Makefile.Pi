@@ -6,4 +6,4 @@
 
 xmosdfu: xmosdfu.cpp
 	mkdir -p bin
-	g++ -D_GNU_SOURCE -Wall -g -o bin/xmosdfu -Ilibusb/Rasp -lusb-1.0 -x c xmosdfu.cpp -std=c99
+	g++ -D_GNU_SOURCE -Wall -g -o bin/xmosdfu -Ilibusb/Rasp -x c xmosdfu.cpp -std=c99 -lusb-1.0
