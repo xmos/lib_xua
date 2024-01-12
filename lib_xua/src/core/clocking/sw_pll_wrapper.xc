@@ -137,7 +137,9 @@ void SigmaDeltaTask(chanend c_sigma_delta, unsigned * unsafe selected_mclk_rate_
     tmr :> time_trigger;
     int running = 1;
 
-    unsigned rx_word;
+    outuint(c_sigma_delta, 0); /* Signal back via clockgen to audio to start I2S */
+
+    unsigned rx_word = 0;
     while(running)
     {
         /* Poll for new SDM control value */
@@ -146,7 +148,6 @@ void SigmaDeltaTask(chanend c_sigma_delta, unsigned * unsafe selected_mclk_rate_
             case inuint_byref(c_sigma_delta, rx_word):
                 if(rx_word == DISABLE_SDM)
                 {
-                    printhexln(rx_word);
                     f_error = 0;
                     running = 0;
                 }

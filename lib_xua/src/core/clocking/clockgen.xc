@@ -347,6 +347,8 @@ void clockGen ( streaming chanend ?c_spdif_rx,
 #if (USE_SW_PLL && (XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN))
     chan c_sigma_delta;
     int reset_sw_pll_pfd = 1;
+    int require_ack_to_audio = 0;
+    
     unsafe {
         selected_mclk_rate_ptr = &selected_mclk_rate;
     }
@@ -531,6 +533,17 @@ void clockGen ( streaming chanend ?c_spdif_rx,
                     break;
 #endif
 
+#if ((XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN) && USE_SW_PLL)
+                case inuint_byref(c_sigma_delta, tmp): 
+                    printstr("ACK\n");
+                    if(require_ack_to_audio)
+                    {
+                        c_mclk_change <: tmp;
+                        require_ack_to_audio = 0;
+                    }
+                    break;
+#endif
+
 #if (XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
                 case c_mclk_change :> selected_mclk_rate:
                     c_mclk_change :> selected_sample_rate;
@@ -539,6 +552,7 @@ void clockGen ( streaming chanend ?c_spdif_rx,
                     mclks_per_sample = selected_mclk_rate / selected_sample_rate;
                     restart_sigma_delta(c_sigma_delta);
                     reset_sw_pll_pfd = 1;
+                    require_ack_to_audio = 1;
 #endif
                     break;
 #endif
