@@ -552,7 +552,11 @@ void clockGen ( streaming chanend ?c_spdif_rx,
                     mclks_per_sample = selected_mclk_rate / selected_sample_rate;
                     restart_sigma_delta(c_sigma_delta);
                     reset_sw_pll_pfd = 1;
+                    /* We will shedule an ACK when sigma delta is up and running */
                     require_ack_to_audio = 1;
+#else
+                    /* Send ACK immediately as we are good to go */
+                    c_mclk_change <: 0;
 #endif
                     break;
 #endif
