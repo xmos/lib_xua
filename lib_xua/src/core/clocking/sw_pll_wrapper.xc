@@ -9,12 +9,6 @@
 
 #if USE_SW_PLL
 
-/* Pointer to sw_pll struct to allow it to be used in separate SDM thread */ 
-unsafe 
-{
-    sw_pll_state_t * unsafe sw_pll_ptr = NULL;
-}
-
 
 unsigned InitSWPLL(sw_pll_state_t &sw_pll, unsigned mClk)
 {
@@ -120,19 +114,20 @@ void do_sw_pll_phase_frequency_detector_dig_rx( unsigned short mclk_time_stamp,
     }
 }
 
-void SigmaDeltaTask(chanend c_sigma_delta, unsigned sdm_interval){
+void SigmaDeltaTask(chanend c_sigma_delta, unsigned * unsafe selected_mclk_rate_ptr){
     /* Zero is an invalid number and the SDM will not write the frac reg until
        the first control value has been received. This avoids issues with 
        channel lockup if two tasks (eg. init and SDM) try to write at the same time. */ 
 
-    /* To be extra safe, spin on sw_pll_ptr until it has been initialised by clockgen */
-    while(sw_pll_ptr == NULL);
-
     int f_error = 0;
     int dco_setting = SW_PLL_SDM_CTRL_MID_24; // Assume 24.576MHz as initial clock
+    unsigned sdm_interval = 0;
+    sw_pll_state_t sw_pll;
+
     unsafe
     {
-        sw_pll_init_sigma_delta(&sw_pll_ptr->sdm_state);
+        printf("SigmaDeltaTask: %u\n", *selected_mclk_rate_ptr);
+        sdm_interval = InitSWPLL(sw_pll, (unsigned)*selected_mclk_rate_ptr);
     }
 
     tileref_t this_tile = get_local_tile_id();
@@ -140,10 +135,10 @@ void SigmaDeltaTask(chanend c_sigma_delta, unsigned sdm_interval){
     timer tmr;
     int32_t time_trigger;
     tmr :> time_trigger;
-    int send_ack_once = 1;
+    int running = 1;
 
     unsigned rx_word;
-    while(1)
+    while(running)
     {
         /* Poll for new SDM control value */
         select
@@ -151,16 +146,17 @@ void SigmaDeltaTask(chanend c_sigma_delta, unsigned sdm_interval){
             case inuint_byref(c_sigma_delta, rx_word):
                 if(rx_word == DISABLE_SDM)
                 {
+                    printhexln(rx_word);
                     f_error = 0;
-                    send_ack_once = 1;
+                    running = 0;
                 }
                 else
                 {
                     f_error = (int32_t)rx_word;
                     unsafe
                     {
-                        sw_pll_sdm_do_control_from_error(sw_pll_ptr, -f_error);
-                        dco_setting = sw_pll_ptr->sdm_state.current_ctrl_val;
+                        sw_pll_sdm_do_control_from_error(&sw_pll, -f_error);
+                        dco_setting = sw_pll.sdm_state.current_ctrl_val;
                     }
                 }
             break;
@@ -180,29 +176,16 @@ void SigmaDeltaTask(chanend c_sigma_delta, unsigned sdm_interval){
             break;
         }
 
-        /* Do not write to the frac reg until we get out first
-           control value. This will avoid the writing of the
-           frac reg from two different threads which may cause
-           a channel deadlock. */
-        if(rx_word != DISABLE_SDM)
         unsafe {
-            sw_pll_do_sigma_delta(&sw_pll_ptr->sdm_state, this_tile, dco_setting);
-            send_ack_once = 1;
+            sw_pll_do_sigma_delta(&sw_pll.sdm_state, this_tile, dco_setting);
         }
-        else if(send_ack_once)
-        {
-            /* Send ACK once to synchrnoise with clockgen signalling it's OK to reconfig */
-            outuint(c_sigma_delta, 0); /* Send ACK to say reg writes have ceased */
-            send_ack_once = 0;
-        } 
-    }
+    } /* if running */
 }
 
 
-void disable_sigma_delta(chanend c_sigma_delta)
+void restart_sigma_delta(chanend c_sigma_delta)
 {
-    outuint(c_sigma_delta, DISABLE_SDM); /* Stops SDM */
-    inuint(c_sigma_delta); /* Wait for ACK so we know reg write is complete */
+    outuint(c_sigma_delta, DISABLE_SDM); /* Resets SDM */
 }
 
 #endif /* USE_SW_PLL */

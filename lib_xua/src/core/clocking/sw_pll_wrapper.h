@@ -21,23 +21,23 @@ extern "C"
 }
 
 /* Special control value to disable SDM. Outside of normal range which is less than 16b.*/
-#define DISABLE_SDM     0x1000000 
+#define DISABLE_SDM     0x10000000
 
 
 /** Task that receives an error term, passes it through a PI controller and periodically
  *  calclulates a sigma delta output value and sends it to the PLL fractional register.
  *
- *  \param c_sigma_delta Channel connected to the clocking thread to pass raw error terms.
- *  \param sdm_interval  Unisgned value containing the sigma delta period in timer ticks.
+ *  \param c_sigma_delta            Channel connected to the clocking thread to pass raw error terms.
+ *  \param selected_mclk_rate_ptr   Pointer to the mclk rate variable declared in clockgen.
  */
-void SigmaDeltaTask(chanend c_sigma_delta, unsigned sdm_interval);
+void SigmaDeltaTask(chanend c_sigma_delta, unsigned * unsafe selected_mclk_rate_ptr);
 
-/** Helper function that sends a special disable command and waits for ACK. This is used
- *  to help prevemt simultaenous access to the PLL register from two different threads,
- *
+/** Helper function that sends a special restart command. It causes the SDM task
+ *  to quit and restart using the new mclk.
+ * 
  *  \param c_sigma_delta Channel connected to the clocking thread to pass raw error terms.
  */
-void disable_sigma_delta(chanend c_sigma_delta);
+void restart_sigma_delta(chanend c_sigma_delta);
 
 /** Performs a frequency comparsion between the incoming digital Rx stream and the local mclk.
  *

@@ -26,11 +26,11 @@ unsigned g_digData[10];
 
 typedef struct
  {
-    int receivedSamples;
-    int samples;
-    int savedSamples;
-    int lastDiff;
-    unsigned identicaldiffs;
+    int receivedSamples;        /* Uses by clockgen to count number of dig rx samples to ascertain clock specs */
+    int samples;                /* Raw sample count - rolling int and never reset */
+    int savedSamples;           /* Used by validSamples() to store state of last raw sample count */
+    int lastDiff;               /* Used by validSamples() to store state of last sample count diff */
+    unsigned identicaldiffs;    /* Used by validSamples() to store state of number of identical diffs */
     int samplesPerTick;
 } Counter;
 
@@ -107,6 +107,7 @@ static inline void setClockValidity(chanend c_interruptControl, int clkIndex, in
     {
         clockValid[clkIndex] = valid;
         outInterrupt(c_interruptControl, clockId[clkIndex]);
+        printstr("clockValid=");printintln(valid);
 
 #ifdef CLOCK_VALIDITY_CALL
 #if (XUA_ADAT_RX_EN)
@@ -191,7 +192,7 @@ static inline int validSamples(Counter &counter, int clockIndex)
             }
         }
     }
-    else
+    else /* No valid frequency found - reset state */
     {
         counter.identicaldiffs = 0;
         counter.lastDiff = diff;
@@ -203,7 +204,10 @@ static inline int validSamples(Counter &counter, int clockIndex)
 #if USE_SW_PLL
 /* Pointer to sw_pll struct to allow it to be used in separate SDM thread */ 
 extern sw_pll_state_t * unsafe sw_pll_ptr;
-
+unsafe
+{
+    unsigned * unsafe selected_mclk_rate_ptr = NULL;
+}
 #endif
 
 #ifdef LEVEL_METER_LEDS
@@ -240,7 +244,7 @@ void clockGen ( streaming chanend ?c_spdif_rx,
 
 #if (XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
     timer t_external;
-    unsigned selected_mclk_rate = 0;
+    unsigned selected_mclk_rate = MCLK_48; // Assume 24.576MHz initial clock 
     unsigned selected_sample_rate = 0;
     unsigned mclks_per_sample = 0;
     unsigned short mclk_time_stamp = 0;
@@ -342,22 +346,20 @@ void clockGen ( streaming chanend ?c_spdif_rx,
 
 #if (USE_SW_PLL && (XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN))
     chan c_sigma_delta;
-    sw_pll_state_t sw_pll;
     int reset_sw_pll_pfd = 1;
-
-    /* Initialise before we par off the SDM thread/
-       We share the sw_pll struct across threads and this
-       us safe because the threads access different memebers */
-    unsafe
-    {
-        sw_pll_ptr = &sw_pll;
+    unsafe {
+        selected_mclk_rate_ptr = &selected_mclk_rate;
     }
-
-    unsigned sdm_interval = InitSWPLL(sw_pll, MCLK_48); // Assume 24.576MHz initial clock 
 
     par
     {
-        SigmaDeltaTask(c_sigma_delta, sdm_interval);
+        while(1)
+        {
+            unsafe 
+            {
+                SigmaDeltaTask(c_sigma_delta, selected_mclk_rate_ptr);
+            }
+        }
 #else
     {
 #endif
@@ -532,13 +534,12 @@ void clockGen ( streaming chanend ?c_spdif_rx,
 #if (XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
                 case c_mclk_change :> selected_mclk_rate:
                     c_mclk_change :> selected_sample_rate;
-                    mclks_per_sample = selected_mclk_rate / selected_sample_rate;
+                    printintln(selected_sample_rate);
 #if USE_SW_PLL
-                    disable_sigma_delta(c_sigma_delta); /* Blocks until SDM is idle */
-                    InitSWPLL(sw_pll, selected_mclk_rate);
+                    mclks_per_sample = selected_mclk_rate / selected_sample_rate;
+                    restart_sigma_delta(c_sigma_delta);
                     reset_sw_pll_pfd = 1;
 #endif
-                    c_mclk_change <: 0; /* Acknowledge to hold off starting audio until done */
                     break;
 #endif
 
