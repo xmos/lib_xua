@@ -314,11 +314,11 @@ void usb_audio_io(chanend ?c_aud_in,
 #endif
 #if (XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
     , client interface pll_ref_if i_pll_ref
-#if USE_SW_PLL
+#endif
+#if ((XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN) && USE_SW_PLL)
     , port p_for_mclk_count_aud
     , chanend c_sw_pll
-#endif /* USE_SW_PLL */
-#endif /* (XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN) */
+#endif
 )
 {
 #if (MIXER)
@@ -629,10 +629,10 @@ int main()
 #endif
 #if (XUA_NUM_PDM_MICS > 0)
 #endif
-#if ((XUA_SYNCMODE == XUA_SYNCMODE_SYNC && !USE_SW_PLL) || XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
+#if (XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
                 , i_pll_ref
 #endif
-#if (USE_SW_PLL && (XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN))
+#if ((XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN) && USE_SW_PLL)
                 , p_for_mclk_count_audio
                 , c_sw_pll
 #endif
