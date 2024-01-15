@@ -1,7 +1,7 @@
-// Copyright 2011-2022 XMOS LIMITED.
+// Copyright 2011-2024 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
-#ifndef __XUA_BUFFER_H__
-#define __XUA_BUFFER_H__
+#ifndef _XUA_BUFFER_H_
+#define _XUA_BUFFER_H_
 
 #if __XC__
 
@@ -26,6 +26,7 @@
  *  \param p_off_mclk         A port that is clocked of the MCLK input (not the MCLK input itself)
  *  \param c_aud              Channel connected to XUA_AudioHub() core
  *  \param i_pll_ref          Interface to task that toggles reference pin to CS2100
+ *  \param c_swpll_update     Channel connected to software PLL task. Expects master clock counts based on USB frames.
  */
 void XUA_Buffer(
             chanend c_aud_out,
@@ -38,7 +39,7 @@ void XUA_Buffer(
 #if defined(MIDI) || defined(__DOXYGEN__)
             chanend c_midi_from_host,
             chanend c_midi_to_host,
-			chanend c_midi,
+            chanend c_midi,
 #endif
 #if XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN || defined(__DOXYGEN__)
             chanend ?c_int,
@@ -51,8 +52,13 @@ void XUA_Buffer(
             , chanend c_hid
 #endif
             , chanend c_aud
-#if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC) || defined(__DOXYGEN__)
+#if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC) || defined(__DOYXGEN__)
+    #if (!XUA_USE_APP_PLL) || defined(__DOXYGEN__)
             , client interface pll_ref_if i_pll_ref
+    #endif
+    #if (XUA_USE_APP_PLL) || defined(__DOXYGEN__)
+            , chanend c_swpll_update
+    #endif
 #endif
         );
 
@@ -66,7 +72,7 @@ void XUA_Buffer_Ep(chanend c_aud_out,
 #ifdef MIDI
             chanend c_midi_from_host,
             chanend c_midi_to_host,
-			chanend c_midi,
+            chanend c_midi,
 #endif
 #if (XUA_SPDIF_RX_EN) || (XUA_ADAT_RX_EN)
             chanend ?c_int,
@@ -81,10 +87,16 @@ void XUA_Buffer_Ep(chanend c_aud_out,
 #ifdef CHAN_BUFF_CTRL
             , chanend c_buff_ctrl
 #endif
-#if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC) || defined(__DOXYGEN__)
+#if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC) || defined(__DOYXGEN__)
+    #if (!XUA_USE_APP_PLL) || defined(__DOXYGEN__)
             , client interface pll_ref_if i_pll_ref
+    #endif
+    #if (XUA_USE_APP_PLL) || defined(__DOXYGEN__)
+            , chanend c_swpll_update
+    #endif
 #endif
-        );
+    );
+
 
 /** Manage the data transfer between the USB audio buffer and the
  *  Audio I/O driver.

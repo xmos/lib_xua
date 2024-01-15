@@ -8,9 +8,9 @@ An application using the USB audio framework needs to have defines set for confi
 Defaults for these defines are found in ``xua_conf_default.h``.
 
 These defines should be over-ridden in an optional header file  ``xua_conf.h`` file or in the ``Makefile``
-for a relevant build configuration. 
+for a relevant build configuration.
 
-This section fully documents all of the settable defines and their default values (where appropriate).  
+This section fully documents all of the settable defines and their default values (where appropriate).
 
 Code Location (tile)
 --------------------
@@ -25,12 +25,12 @@ Code Location (tile)
 Channel Counts
 --------------
 
-.. doxygendefine:: NUM_USB_CHAN_OUT 
-.. doxygendefine:: NUM_USB_CHAN_IN 
-.. doxygendefine:: I2S_CHANS_DAC 
-.. doxygendefine:: I2S_CHANS_ADC 
+.. doxygendefine:: NUM_USB_CHAN_OUT
+.. doxygendefine:: NUM_USB_CHAN_IN
+.. doxygendefine:: I2S_CHANS_DAC
+.. doxygendefine:: I2S_CHANS_ADC
 
-Frequencies and Clocks 
+Frequencies and Clocks
 ----------------------
 
 .. doxygendefine:: MAX_FREQ
@@ -38,6 +38,7 @@ Frequencies and Clocks
 .. doxygendefine:: DEFAULT_FREQ
 .. doxygendefine:: MCLK_441
 .. doxygendefine:: MCLK_48
+.. doxygendefine:: USE_SW_PLL
 
 Audio Class
 -----------

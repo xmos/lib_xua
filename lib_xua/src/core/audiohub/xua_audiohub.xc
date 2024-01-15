@@ -20,6 +20,7 @@
 
 #include "xua.h"
 
+#include "audiohw.h"
 #include "audioports.h"
 #include "mic_array_conf.h"
 #if (XUA_SPDIF_TX_EN)
@@ -635,6 +636,9 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
     buffered _XUA_CLK_DIR port:32 ?p_bclk,
     buffered out port:32 (&?p_i2s_dac)[I2S_WIRES_DAC],
     buffered in port:32  (&?p_i2s_adc)[I2S_WIRES_ADC]
+    #if (XUA_USE_APP_PLL)
+        , client interface SoftPll_if i_softPll
+    #endif
 #if (XUA_SPDIF_TX_EN) //&& (SPDIF_TX_TILE != AUDIO_IO_TILE)
     , chanend c_spdif_out
 #endif
@@ -662,6 +666,12 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
     unsigned mClk;
     unsigned divide;
     unsigned firstRun = 1;
+
+#if (XUA_USE_APP_PLL)
+    /* Use xCORE.ai Secondary PLL to generate master clock
+     * This could be "fixed" for async mode or adjusted if in sync mode */
+    i_softPll.init(DEFAULT_MCLK);
+#endif
 
     /* Clock master clock-block from master-clock port */
     /* Note, marked unsafe since other cores may be using this mclk port */
@@ -800,6 +810,15 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
             }
 #endif
             /* Configure Clocking/CODEC/DAC/ADC for SampleFreq/MClk */
+
+            /* User should mute audio hardware */
+            AudioHwConfig_Mute();
+
+            #if (XUA_USE_APP_PLL)
+                        i_softPll.init(mClk);
+            #endif
+
+            /* User code should configure audio harware for SampleFreq/MClk etc */
             AudioHwConfig(curFreq, mClk, dsdMode, curSamRes_DAC, curSamRes_ADC);
 #if (XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
             /* Notify clockgen of new mCLk */
@@ -809,6 +828,9 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
             /* Wait for ACK back from clockgen to signal clocks all good */
             c_mclk_change :> int _;
 #endif
+
+            /* User should unmute audio hardware */
+            AudioHwConfig_UnMute();
         }
 
         if(!firstRun)

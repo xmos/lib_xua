@@ -105,7 +105,11 @@ void XUA_Buffer(
 #endif
     , chanend c_aud
 #if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
+    #if(XUA_USE_APP_PLL)
+    , chanend c_swpll_update
+    #else
     , client interface pll_ref_if i_pll_ref
+    #endif
 #endif
 )
 {
@@ -141,7 +145,11 @@ void XUA_Buffer(
                 , c_buff_ctrl
 #endif
 #if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
-                , i_pll_ref
+    #if(XUA_USE_APP_PLL)
+               , c_swpll_update
+    #else
+               , i_pll_ref
+    #endif
 #endif
             );
 
@@ -190,8 +198,12 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
 #ifdef CHAN_BUFF_CTRL
     , chanend c_buff_ctrl
 #endif
-#if XUA_SYNCMODE == XUA_SYNCMODE_SYNC
+#if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
+    #if (XUA_USE_APP_PLL)
+    , chanend c_swpll_update
+    #else
     , client interface pll_ref_if i_pll_ref
+    #endif
 #endif
     )
 {
@@ -247,7 +259,8 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
 #if (NUM_USB_CHAN_IN > 0)
     unsigned bufferIn = 1;
 #endif
-    unsigned sofCount = 0;
+    int sofCount = 0;
+    int pllUpdate = 0;
 
     unsigned mod_from_last_time = 0;
 #ifdef FB_TOLERANCE_TEST
@@ -294,7 +307,6 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
     unsigned iap_ea_native_interface_alt_setting = 0;
     unsigned iap_ea_native_control_to_send = 0;
     unsigned iap_ea_native_incoming = 0;
-
 #endif
 #endif
 
@@ -357,12 +369,16 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
 #ifndef LOCAL_CLOCK_MARGIN
 #define LOCAL_CLOCK_MARGIN          (1000)
 #endif
+
+#if (!XUA_USE_APP_PLL)
     timer t_sofCheck;
     unsigned timeLastEdge;
     unsigned timeNextEdge;
     t_sofCheck :> timeLastEdge;
     timeNextEdge + LOCAL_CLOCK_INCREMENT;
     i_pll_ref.toggle();
+#endif
+
 #endif
 
     while(1)
@@ -427,7 +443,8 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
                             /* Reset FB */
                             /* Note, Endpoint 0 will hold off host for a sufficient period to allow our feedback
                              * to stabilise (i.e. sofCount == 128 to fire) */
-                            sofCount = 1;
+                            sofCount = 0;
+                            pllUpdate = 0;
                             clocks = 0;
                             clockcounter = 0;
                             mod_from_last_time = 0;
@@ -502,13 +519,13 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
                     }
 #endif
                     /* Pass on sample freq change to decouple() via global flag (saves a chanend) */
-                    /* Note: freqChange flags now used to communicate other commands also */
+                    /* Note: freqChange_flag now used to communicate other commands also */
                     SET_SHARED_GLOBAL0(g_freqChange, cmd);                /* Set command */
                     SET_SHARED_GLOBAL(g_freqChange_flag, cmd);  /* Set Flag */
                 }
                 break;
             }
-#if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
+#if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC) && (!XUA_USE_APP_PLL)
             case t_sofCheck when timerafter(timeNextEdge) :> void:
                 i_pll_ref.toggle();
                 timeLastEdge = timeNextEdge;
@@ -528,7 +545,6 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
                 unsigned usbSpeed;
                 int framesPerSec;
                 GET_SHARED_GLOBAL(usbSpeed, g_curUsbSpeed);
-                static int sofCount = 0;
 
                 framesPerSec = (usbSpeed == XUD_SPEED_HS) ? 8000 : 1000;
 
@@ -539,12 +555,27 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
                 sofCount += 1000;
                 if (sofCount == framesPerSec)
                 {
+                    sofCount = 0;
+                    pllUpdate++;
+#if (!XUA_USE_APP_PLL)
                     /* Port is accessed via interface to allow flexibilty with location */
                     i_pll_ref.toggle();
                     t_sofCheck :> timeLastEdge;
-                    sofCount = 0;
                     timeNextEdge = timeLastEdge + LOCAL_CLOCK_INCREMENT + LOCAL_CLOCK_MARGIN;
+#endif
                 }
+#if (XUA_USE_APP_PLL)
+                // Update PLL @ 100Hz
+                if(pllUpdate == 10)
+                {
+                    pllUpdate = 0;
+                    unsigned short mclk_pt;
+                    asm volatile("getts %0, res[%1]" : "=r" (mclk_pt) : "r" (p_off_mclk));
+                    outuint(c_swpll_update, mclk_pt);
+                    outct(c_swpll_update, XS1_CT_END);
+                }
+#endif
+
 #elif (XUA_SYNCMODE == XUA_SYNCMODE_ASYNC)
 
                 /* NOTE our feedback will be wrong for a couple of SOF's after a SF change due to
@@ -646,7 +677,6 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
                         clockcounter = 0;
                     }
 #else
-
                     /* Assuming 48kHz from a 24.576 master clock (0.0407uS period)
                      * MCLK ticks per SOF = 125uS / 0.0407 = 3072 MCLK ticks per SOF.
                      * expected Feedback is 48000/8000 = 6 samples. so 0x60000 in 16:16 format.
@@ -897,8 +927,8 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
 #endif
 #endif
 
-#if XUA_HID_ENABLED
-                /* HID Report Data */
+#if (XUA_HID_ENABLED)
+            /* HID Report Data */
             case XUD_SetData_Select(c_hid, ep_hid, result):
                 hid_ready_flag = 0U;
                 unsigned reportTime;
@@ -911,7 +941,7 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
 #endif
 
 #ifdef MIDI
-                /* Received word from MIDI thread - Check for ACK or Data */
+            /* Received word from MIDI thread - Check for ACK or Data */
             case midi_get_ack_or_data(c_midi, is_ack, datum):
                 if (is_ack)
                 {

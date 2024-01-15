@@ -12,6 +12,8 @@
 #include "dfu_interface.h"
 #endif
 
+#include "xua_clocking.h"
+
 /** The audio driver thread.
  *
  *  This function drives I2S ports and handles samples to/from other digital
@@ -34,6 +36,8 @@
  *
  *  \param p_i2s_adc        Nullable array of ports for I2S data input lines
  *
+ *  \param i_SoftPll        Interface to software PLL task
+ *
  *  \param c_spdif_tx       Channel connected to S/PDIF transmiter core from lib_spdif
  *
  *  \param c_dig            Channel connected to the clockGen() thread for
@@ -49,6 +53,9 @@ void XUA_AudioHub(chanend ?c_aud,
     buffered _XUA_CLK_DIR port:32 ?p_bclk,
     buffered out port:32 (&?p_i2s_dac)[I2S_WIRES_DAC],
     buffered in port:32  (&?p_i2s_adc)[I2S_WIRES_ADC]
+#if (XUA_USE_APP_PLL) || defined(__DOXYGEN__)
+    , client interface SoftPll_if i_SoftPll
+#endif
 #if (XUA_SPDIF_TX_EN) || defined(__DOXYGEN__)
     , chanend c_spdif_tx
 #endif

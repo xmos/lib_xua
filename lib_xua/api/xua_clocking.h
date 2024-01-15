@@ -38,5 +38,18 @@ void clockGen(  streaming chanend ?c_spdif_rx,
                 chanend c_clk_int,
                 port ?p_for_mclk_count_aud,
                 chanend c_mclk_change);
+
+
+interface SoftPll_if
+{
+    void init(int mclk_hz);
+};
+
+#if (XUA_SYNCMODE == XUA_SYNCMODE_ASYNC)
+[[distributable]]
+#endif
+void XUA_SoftPll(tileref tile, server interface SoftPll_if i_softPll, chanend c_update);
+
+#endif
 #endif
 
