@@ -329,13 +329,13 @@ void usb_audio_io(chanend ?c_aud_in,
     chan c_dig_rx;
     chan c_mclk_change; /* Notification of new mclk freq to clockgen */
 
+#if USE_SW_PLL
     /* Connect p_for_mclk_count_aud to clk_audio_mclk so we can count mclks/timestamp in digital rx*/
-    if(!isnull(p_for_mclk_count_aud))
-    {
-        unsigned x = 0;
-        asm("ldw %0, dp[clk_audio_mclk]":"=r"(x));
-        asm("setclk res[%0], %1"::"r"(p_for_mclk_count_aud), "r"(x));
-    }
+
+    unsigned x = 0;
+    asm("ldw %0, dp[clk_audio_mclk]":"=r"(x));
+    asm("setclk res[%0], %1"::"r"(p_for_mclk_count_aud), "r"(x));
+#endif /* USE_SW_PLL */
 #endif /* (XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN) */
 
 #if (XUA_NUM_PDM_MICS > 0) && (PDM_TILE == AUDIO_IO_TILE)
@@ -408,9 +408,12 @@ void usb_audio_io(chanend ?c_aud_in,
                         c_dig_rx,
                         c_clk_ctl,
                         c_clk_int,
-                        c_mclk_change,
-                        p_for_mclk_count_aud,
-                        c_sw_pll);
+                        c_mclk_change
+#if USE_SW_PLL
+                        , p_for_mclk_count_aud
+                        , c_sw_pll
+#endif
+                        );
         }
 #endif
 

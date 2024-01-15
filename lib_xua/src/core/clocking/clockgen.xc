@@ -222,9 +222,12 @@ void clockGen ( streaming chanend ?c_spdif_rx,
                 chanend c_dig_rx,
                 chanend c_clk_ctl,
                 chanend c_clk_int,
-                chanend c_mclk_change,
-                port ?p_for_mclk_count_aud,
-                chanend ?c_sw_pll)
+                chanend c_mclk_change
+#if USE_SW_PLL
+                , port p_for_mclk_count_aud
+                , chanend c_sw_pll
+#endif
+)
 {
     timer t_local;
     unsigned timeNextEdge, timeLastEdge, timeNextClockDetection;
@@ -243,13 +246,14 @@ void clockGen ( streaming chanend ?c_spdif_rx,
     timer t_external;
     unsigned selected_mclk_rate = MCLK_48; // Assume 24.576MHz initial clock 
     unsigned selected_sample_rate = 0;
+#if USE_SW_PLL
+
     unsigned mclks_per_sample = 0;
     unsigned short mclk_time_stamp = 0;
+
     /* Get MCLK count */
-    if(!isnull(p_for_mclk_count_aud))
-    {
-        asm volatile(" getts %0, res[%1]" : "=r" (mclk_time_stamp) : "r" (p_for_mclk_count_aud));
-    }
+    asm volatile(" getts %0, res[%1]" : "=r" (mclk_time_stamp) : "r" (p_for_mclk_count_aud));
+#endif
 #endif
 
 #if (XUA_SPDIF_RX_EN)
@@ -548,11 +552,10 @@ void clockGen ( streaming chanend ?c_spdif_rx,
             /* Receive sample from S/PDIF RX thread (streaming chan) */
             case c_spdif_rx :> spdifRxData:
 
+#if USE_SW_PLL
                 /* Record time of sample */
-                if(!isnull(p_for_mclk_count_aud))
-                {
-                    asm volatile(" getts %0, res[%1]" : "=r" (mclk_time_stamp) : "r" (p_for_mclk_count_aud));
-                }
+                asm volatile(" getts %0, res[%1]" : "=r" (mclk_time_stamp) : "r" (p_for_mclk_count_aud));
+#endif
                 t_local :> spdifRxTime;
 
                 /* Check parity and ignore if bad */
@@ -642,11 +645,11 @@ void clockGen ( streaming chanend ?c_spdif_rx,
 #if (XUA_ADAT_RX_EN)
                 /* receive sample from ADAT rx thread (streaming channel with CT_END) */
                 case inuint_byref(c_adat_rx, tmp):
+
+#if USE_SW_PLL
                     /* record time of sample */
-                    if(!isnull(p_for_mclk_count_aud))
-                    {
-                        asm volatile(" getts %0, res[%1]" : "=r" (mclk_time_stamp) : "r" (p_for_mclk_count_aud));
-                    }
+                    asm volatile(" getts %0, res[%1]" : "=r" (mclk_time_stamp) : "r" (p_for_mclk_count_aud));
+#endif 
                     t_local :> adatReceivedTime;
 
                     /* Sync is: 1 | (user_byte << 4) */
