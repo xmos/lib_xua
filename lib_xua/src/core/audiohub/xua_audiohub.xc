@@ -814,9 +814,10 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
             /* User should mute audio hardware */
             AudioHwConfig_Mute();
 
-            #if (XUA_USE_APP_PLL)
-                        i_softPll.init(mClk);
-            #endif
+#if (USE_SW_PLL)
+            // i_softPll.init(mClk);
+            #warning SORT THIS
+#endif
 
             /* User code should configure audio harware for SampleFreq/MClk etc */
             AudioHwConfig(curFreq, mClk, dsdMode, curSamRes_DAC, curSamRes_ADC);

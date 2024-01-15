@@ -265,21 +265,16 @@
 #endif
 
 /**
- * @brief Enable/disable the use of the secondary/application PLL for generating master-clocks.
+ * @brief Enable/disable the use of the secondary/application PLL for generating and recovering master-clocks.
  *        Only available on xcore.ai devices.
  *
  * Default: Enabled (for xcore.ai devices)
  */
-#ifndef XUA_USE_APP_PLL
+#ifndef USE_SW_PLL
     #if defined(__XS3A__)
-        #if (XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
-            /* Currently must use an external CS2100 device for syncing to external digital streams */
-            #define XUA_USE_APP_PLL        (0)
-        #else
-            #define XUA_USE_APP_PLL        (1)
-        #endif
+        #define USE_SW_PLL        (1)
     #else
-        #define XUA_USE_APP_PLL            (0)
+        #define USE_SW_PLL        (0)
     #endif
 #endif
 

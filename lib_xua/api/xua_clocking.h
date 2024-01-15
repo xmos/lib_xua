@@ -39,6 +39,7 @@ void clockGen(  streaming chanend ?c_spdif_rx,
                 port ?p_for_mclk_count_aud,
                 chanend c_mclk_change);
 
+#if (XUA_USE_APP_PLL)
 
 interface SoftPll_if
 {

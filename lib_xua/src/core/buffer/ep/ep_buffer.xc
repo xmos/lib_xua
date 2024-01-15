@@ -105,7 +105,7 @@ void XUA_Buffer(
 #endif
     , chanend c_aud
 #if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
-    #if(XUA_USE_APP_PLL)
+    #if(USE_SW_PLL)
     , chanend c_swpll_update
     #else
     , client interface pll_ref_if i_pll_ref
@@ -145,7 +145,7 @@ void XUA_Buffer(
                 , c_buff_ctrl
 #endif
 #if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
-    #if(XUA_USE_APP_PLL)
+    #if(USE_SW_PLL)
                , c_swpll_update
     #else
                , i_pll_ref
@@ -199,7 +199,7 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
     , chanend c_buff_ctrl
 #endif
 #if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
-    #if (XUA_USE_APP_PLL)
+    #if (USE_SW_PLL)
     , chanend c_swpll_update
     #else
     , client interface pll_ref_if i_pll_ref
@@ -370,7 +370,7 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
 #define LOCAL_CLOCK_MARGIN          (1000)
 #endif
 
-#if (!XUA_USE_APP_PLL)
+#if (!USE_SW_PLL)
     timer t_sofCheck;
     unsigned timeLastEdge;
     unsigned timeNextEdge;
@@ -379,7 +379,7 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
     i_pll_ref.toggle();
 #endif
 
-#endif
+#endif /* (XUA_SYNCMODE == XUA_SYNCMODE_SYNC) */
 
     while(1)
     {
@@ -525,7 +525,7 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
                 }
                 break;
             }
-#if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC) && (!XUA_USE_APP_PLL)
+#if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC) && (!USE_SW_PLL)
             case t_sofCheck when timerafter(timeNextEdge) :> void:
                 i_pll_ref.toggle();
                 timeLastEdge = timeNextEdge;
@@ -557,14 +557,14 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
                 {
                     sofCount = 0;
                     pllUpdate++;
-#if (!XUA_USE_APP_PLL)
+#if (!USE_SW_PLL)
                     /* Port is accessed via interface to allow flexibilty with location */
                     i_pll_ref.toggle();
                     t_sofCheck :> timeLastEdge;
                     timeNextEdge = timeLastEdge + LOCAL_CLOCK_INCREMENT + LOCAL_CLOCK_MARGIN;
 #endif
                 }
-#if (XUA_USE_APP_PLL)
+#if (USE_SW_PLL)
                 // Update PLL @ 100Hz
                 if(pllUpdate == 10)
                 {

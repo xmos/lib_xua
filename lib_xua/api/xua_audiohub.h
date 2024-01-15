@@ -86,8 +86,29 @@ void AudioHwConfig(unsigned samFreq, unsigned mClk, unsigned dsdMode,
 
 #endif // __XC__
 
-void UserBufferManagementInit(unsigned samFreq);
-
+/**
+ * @brief   User buffer management code
+ *
+ * This function is called at the sample rate of the USB Audio stack (e.g,. 48 kHz) and between the two parameter arrays
+ * contain a full multi-channel audio-frame. The first array carries all the data that has been received from the USB host
+ * and is to be presented to the audio interfaces. The second array carries all the data received from the interfaces and
+ * is to be presented to the USB host. The user can chose to intercept and overwrite the samples stored in these arrays.
+ *
+ * \param sampsFromUsbToAudio    Samples received from USB host and to be presented to audio interfaces
+ *
+ * \param sampsFromAudioToUsb    Samples received from the audio interfaces and to be presented to the USB host
+*/
 void UserBufferManagement(unsigned sampsFromUsbToAudio[], unsigned sampsFromAudioToUsb[]);
+
+/**
+ * @brief   User buffer managment init code
+ *
+ * This function is called once, before the first call to UserBufferManagement(), and can be used to initialise any
+ * related user state
+ * 
+ * \param sampFreq               The initial sample frequency
+ * 
+ */
+void UserBufferManagementInit(unsigned sampFreq);
 
 #endif // _XUA_AUDIOHUB_H_

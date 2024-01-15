@@ -316,9 +316,6 @@ void usb_audio_io(chanend ?c_aud_in,
     , client interface pll_ref_if i_pll_ref
     , port ?p_for_mclk_count_aud
 #endif
-    #if (XUA_USE_APP_PLL)
-        , client interface SoftPll_if i_softPll
-    #endif
 )
 {
 #if (MIXER)
@@ -376,9 +373,6 @@ void usb_audio_io(chanend ?c_aud_in,
 #define AUDIO_CHANNEL c_aud_in
 #endif
             XUA_AudioHub(AUDIO_CHANNEL, clk_audio_mclk, clk_audio_bclk, p_mclk_in, p_lrclk, p_bclk, p_i2s_dac, p_i2s_adc
-if (XUA_USE_APP_PLL)
-                , i_softPll
-#endif
 #if (XUA_SPDIF_TX_EN) //&& (SPDIF_TX_TILE != AUDIO_IO_TILE)
                 , c_spdif_tx
 #endif
@@ -489,13 +483,12 @@ int main()
 #endif
 #endif
 
-#if (((XUA_SYNCMODE == XUA_SYNCMODE_SYNC) && !XUA_USE_APP_PLL) || XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
+#if ((XUA_SYNCMODE == XUA_SYNCMODE_SYNC || XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN) && !USE_SW_PLL)
     interface pll_ref_if i_pll_ref;
 #endif
 
-#if (XUA_USE_APP_PLL)
-    interface SoftPll_if i_softPll;
-    chan c_swpll_update;
+#if ((XUA_SYNCMODE == XUA_SYNCMODE_SYNC || XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN) && USE_SW_PLL)
+    chan c_sw_pll;
 #endif
     chan c_sof;
     chan c_xud_out[ENDPOINT_COUNT_OUT];              /* Endpoint channels for XUD */
@@ -518,7 +511,7 @@ int main()
     {
         USER_MAIN_CORES
 
-#if (((XUA_SYNCMODE == XUA_SYNCMODE_SYNC) && XUA_USE_APP_PLL) || XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
+#if ((XUA_SYNCMODE == XUA_SYNCMODE_SYNC || XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN) && !USE_SW_PLL)
         on tile[PLL_REF_TILE]: PllRefPinTask(i_pll_ref, p_pll_ref);
 #endif
         on tile[XUD_TILE]:
@@ -531,7 +524,7 @@ int main()
             DFUHandler(dfuInterface, null);
 #endif
 
-#if (XUA_USE_APP_PLL)
+#if ((XUA_SYNCMODE == XUA_SYNCMODE_SYNC || XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN) && USE_SW_PLL)
             //XUA_SoftPll(tile[0], i_softPll, c_swpll_update);
 #endif
 
@@ -593,13 +586,11 @@ int main()
 #endif
                            , c_mix_out
 #if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
-    #if (!XUA_USE_APP_PLL)
-
+    #if (!USE_SW_PLL)
                            , i_pll_ref
     #else
-                          , c_swpll_update
+                          , c_sw_pll
     #endif
-#endif
 #endif
                     );
                 //:
@@ -614,8 +605,8 @@ int main()
 #endif /* XUA_USB_EN */
         }
 
-#if(XUA_USE_APP_PLL)
-        on tile[AUDIO_IO_TILE]: XUA_SoftPll(tile[0], i_softPll, c_swpll_update);
+#if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC && !USE_SW_PLL)
+            // on tile[AUDIO_IO_TILE]: XUA_SoftPll(tile[0], i_softPll, c_swpll_update);
 #endif
 
         on tile[AUDIO_IO_TILE]:
@@ -634,17 +625,15 @@ int main()
                 , dfuInterface
 #endif
 #if (XUA_NUM_PDM_MICS > 0)
-#if (PDM_TILE == AUDIO_IO_TILE)
+    #if (PDM_TILE == AUDIO_IO_TILE)
                 , c_ds_output
-#endif
+    #endif
                 , c_pdm_pcm
 #endif
 #if (XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
                 , i_pll_ref
 #endif
-if (XUA_USE_APP_PLL)
-                , i_softPll
-#endif
+#if (XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
                 , p_for_mclk_count_audio
 #endif
             );
