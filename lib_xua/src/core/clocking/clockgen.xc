@@ -107,7 +107,6 @@ static inline void setClockValidity(chanend c_interruptControl, int clkIndex, in
     {
         clockValid[clkIndex] = valid;
         outInterrupt(c_interruptControl, clockId[clkIndex]);
-        printstr("clockValid=");printintln(valid);
 
 #ifdef CLOCK_VALIDITY_CALL
 #if (XUA_ADAT_RX_EN)
@@ -349,6 +348,7 @@ void clockGen ( streaming chanend ?c_spdif_rx,
     int reset_sw_pll_pfd = 1;
     int require_ack_to_audio = 0;
     
+    /* Set selected_mclk_rate_ptr to point at local var selected_mclk_rate */
     unsafe {
         selected_mclk_rate_ptr = &selected_mclk_rate;
     }
@@ -535,7 +535,8 @@ void clockGen ( streaming chanend ?c_spdif_rx,
 
 #if ((XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN) && USE_SW_PLL)
                 case inuint_byref(c_sigma_delta, tmp): 
-                    /* Send ACK back to audiohub to allow I2S to start */
+                    /* Send ACK back to audiohub to allow I2S to start
+                       This happens only on SDM restart and only once */
                     if(require_ack_to_audio)
                     {
                         c_mclk_change <: tmp;
@@ -545,7 +546,7 @@ void clockGen ( streaming chanend ?c_spdif_rx,
 #endif
 
 #if (XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
-                    /* Receive notification of audio streaming settings change */
+                    /* Receive notification of audio streaming settings change and store */
                 case c_mclk_change :> selected_mclk_rate:
                     c_mclk_change :> selected_sample_rate;
 #if USE_SW_PLL

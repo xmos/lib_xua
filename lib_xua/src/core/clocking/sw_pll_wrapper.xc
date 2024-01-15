@@ -126,7 +126,7 @@ void SigmaDeltaTask(chanend c_sigma_delta, unsigned * unsafe selected_mclk_rate_
 
     unsafe
     {
-        printf("SigmaDeltaTask: %u\n", *selected_mclk_rate_ptr);
+        /* initialse the SDM and gather SDM initial settings */
         {sdm_interval, dco_setting} = InitSWPLL(sw_pll, (unsigned)*selected_mclk_rate_ptr);
     }
 
@@ -162,7 +162,7 @@ void SigmaDeltaTask(chanend c_sigma_delta, unsigned * unsafe selected_mclk_rate_
                 }
             break;
 
-            // Do nothing & fall-through
+            /* Do nothing & fall-through. Above case polls only once per loop */
             default:
             break;
         }
