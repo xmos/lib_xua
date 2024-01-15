@@ -114,79 +114,82 @@ void do_sw_pll_phase_frequency_detector_dig_rx( unsigned short mclk_time_stamp,
     }
 }
 
-void SigmaDeltaTask(chanend c_sigma_delta, unsigned * unsafe selected_mclk_rate_ptr){
+void sw_pll_task(chanend c_sigma_delta){
     /* Zero is an invalid number and the SDM will not write the frac reg until
        the first control value has been received. This avoids issues with 
        channel lockup if two tasks (eg. init and SDM) try to write at the same time. */ 
 
-    int f_error = 0;
-    int dco_setting = 0;        /* gets set at InitSWPLL */
-    unsigned sdm_interval = 0;  /* gets set at InitSWPLL */
-    sw_pll_state_t sw_pll;
-
-    unsafe
+    while(1)
     {
+        unsigned selected_mclk_rate = inuint(c_sigma_delta);
+
+        int f_error = 0;
+        int dco_setting = 0;        /* gets set at InitSWPLL */
+        unsigned sdm_interval = 0;  /* gets set at InitSWPLL */
+        sw_pll_state_t sw_pll;
+
         /* initialse the SDM and gather SDM initial settings */
-        {sdm_interval, dco_setting} = InitSWPLL(sw_pll, (unsigned)*selected_mclk_rate_ptr);
-    }
+        {sdm_interval, dco_setting} = InitSWPLL(sw_pll, selected_mclk_rate);
 
-    tileref_t this_tile = get_local_tile_id();
+        tileref_t this_tile = get_local_tile_id();
 
-    timer tmr;
-    int32_t time_trigger;
-    tmr :> time_trigger;
-    int running = 1;
+        timer tmr;
+        int32_t time_trigger;
+        tmr :> time_trigger;
+        int running = 1;
 
-    outuint(c_sigma_delta, 0); /* Signal back via clockgen to audio to start I2S */
+        outuint(c_sigma_delta, 0); /* Signal back via clockgen to audio to start I2S */
 
-    unsigned rx_word = 0;
-    while(running)
-    {
-        /* Poll for new SDM control value */
-        select
+        unsigned rx_word = 0;
+        while(running)
         {
-            case inuint_byref(c_sigma_delta, rx_word):
-                if(rx_word == DISABLE_SDM)
-                {
-                    f_error = 0;
-                    running = 0;
-                }
-                else
-                {
-                    f_error = (int32_t)rx_word;
-                    unsafe
+            /* Poll for new SDM control value */
+            select
+            {
+                case inuint_byref(c_sigma_delta, rx_word):
+                    if(rx_word == DISABLE_SDM)
                     {
-                        sw_pll_sdm_do_control_from_error(&sw_pll, -f_error);
-                        dco_setting = sw_pll.sdm_state.current_ctrl_val;
+                        f_error = 0;
+                        running = 0;
                     }
-                }
-            break;
+                    else
+                    {
+                        f_error = (int32_t)rx_word;
+                        unsafe
+                        {
+                            sw_pll_sdm_do_control_from_error(&sw_pll, -f_error);
+                            dco_setting = sw_pll.sdm_state.current_ctrl_val;
+                        }
+                    }
+                break;
 
-            /* Do nothing & fall-through. Above case polls only once per loop */
-            default:
-            break;
-        }
+                /* Do nothing & fall-through. Above case polls only once per loop */
+                default:
+                break;
+            }
 
-        /* Wait until the timer value has been reached
-           This implements a timing barrier and keeps
-           the loop rate constant. */
-        select
-        {
-            case tmr when timerafter(time_trigger) :> int _:
-                time_trigger += sdm_interval;
-            break;
-        }
+            /* Wait until the timer value has been reached
+               This implements a timing barrier and keeps
+               the loop rate constant. */
+            select
+            {
+                case tmr when timerafter(time_trigger) :> int _:
+                    time_trigger += sdm_interval;
+                break;
+            }
 
-        unsafe {
-            sw_pll_do_sigma_delta(&sw_pll.sdm_state, this_tile, dco_setting);
-        }
-    } /* if running */
+            unsafe {
+                sw_pll_do_sigma_delta(&sw_pll.sdm_state, this_tile, dco_setting);
+            }
+        } /* if running */
+    } /* while(1) */
 }
 
 
-void restart_sigma_delta(chanend c_sigma_delta)
+void restart_sigma_delta(chanend c_sigma_delta, unsigned selected_mclk_rate)
 {
     outuint(c_sigma_delta, DISABLE_SDM); /* Resets SDM */
+    outuint(c_sigma_delta, selected_mclk_rate);
 }
 
 #endif /* USE_SW_PLL */

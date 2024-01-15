@@ -6,6 +6,8 @@
 
 #include <xs1.h>
 
+#include "sw_pll_wrapper.h"
+
 interface pll_ref_if
 {
     void toggle();
@@ -26,9 +28,10 @@ void PllRefPinTask(server interface pll_ref_if i_pll_ref, out port p_sync);
  *                   clock
  *  \param c_clk_int channel connected to the decouple() thread for clock
  *                  interrupts
- *  \param p_for_mclk_count_aud port used for counting mclk and providing a timestamp
- * 
  *  \param c_mclk_change channel to notify of master clock change
+ *  \param p_for_mclk_count_aud port used for counting mclk and providing a timestamp
+ *  \param c_sw_pll channel used to communicate with software PLL task
+ * 
  */
 void clockGen(  streaming chanend ?c_spdif_rx,
                 chanend ?c_adat_rx,
@@ -36,8 +39,9 @@ void clockGen(  streaming chanend ?c_spdif_rx,
                 chanend c_audio,
                 chanend c_clk_ctl,
                 chanend c_clk_int,
+                chanend c_mclk_change,
                 port ?p_for_mclk_count_aud,
-                chanend c_mclk_change);
+                chanend ?c_sw_pll);
 
 #if (XUA_USE_APP_PLL)
 
