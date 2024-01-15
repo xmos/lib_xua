@@ -535,7 +535,7 @@ void clockGen ( streaming chanend ?c_spdif_rx,
 
 #if ((XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN) && USE_SW_PLL)
                 case inuint_byref(c_sigma_delta, tmp): 
-                    printstr("ACK\n");
+                    /* Send ACK back to audiohub to allow I2S to start */
                     if(require_ack_to_audio)
                     {
                         c_mclk_change <: tmp;
@@ -545,9 +545,9 @@ void clockGen ( streaming chanend ?c_spdif_rx,
 #endif
 
 #if (XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
+                    /* Receive notification of audio streaming settings change */
                 case c_mclk_change :> selected_mclk_rate:
                     c_mclk_change :> selected_sample_rate;
-                    printintln(selected_sample_rate);
 #if USE_SW_PLL
                     mclks_per_sample = selected_mclk_rate / selected_sample_rate;
                     restart_sigma_delta(c_sigma_delta);
@@ -555,7 +555,7 @@ void clockGen ( streaming chanend ?c_spdif_rx,
                     /* We will shedule an ACK when sigma delta is up and running */
                     require_ack_to_audio = 1;
 #else
-                    /* Send ACK immediately as we are good to go */
+                    /* Send ACK immediately as we are good to go if not using SW_PLL */
                     c_mclk_change <: 0;
 #endif
                     break;

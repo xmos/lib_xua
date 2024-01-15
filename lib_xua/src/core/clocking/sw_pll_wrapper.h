@@ -57,8 +57,9 @@ void do_sw_pll_phase_frequency_detector_dig_rx( unsigned short mclk_time_stamp,
  *
  *  \param sw_pll   Reference to a software pll state struct to be initialised.
  *  \param mClk     The current nominal mClk frequency.
- */
-unsigned InitSWPLL(sw_pll_state_t &sw_pll, unsigned mClk);
+ *
+ *  returns         The SDM update interval and the initial DCO setting for nominal frequency */
+{unsigned, unsigned} InitSWPLL(sw_pll_state_t &sw_pll, unsigned mClk);
 
 #endif /* USE_SW_PLL */
 #endif /* _SW_PLL_WRAPPPER_H_ */
