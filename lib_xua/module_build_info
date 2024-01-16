@@ -14,7 +14,8 @@ DEPENDENT_MODULES = lib_locks(>=2.1.0) \
                     lib_spdif(>=5.0.0) \
                     lib_xassert(>=4.1.0) \
                     lib_xud(>=2.2.3) \
-                    lib_adat(>=1.0.0)
+                    lib_adat(>=1.0.0) \
+                    lib_sw_pll(>=2.1.0) 
 
 MODULE_XCC_FLAGS = $(XCC_FLAGS) \
                    -O3 \

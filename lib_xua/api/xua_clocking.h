@@ -1,4 +1,4 @@
-// Copyright 2011-2022 XMOS LIMITED.
+// Copyright 2011-2024 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
 #ifndef _CLOCKING_H_
@@ -25,8 +25,18 @@ void PllRefPinTask(server interface pll_ref_if i_pll_ref, out port p_sync);
  *  \param c_clk_ctl channel connected to Endpoint0() for configuration of the
  *                   clock
  *  \param c_clk_int channel connected to the decouple() thread for clock
-                     interrupts
+ *                  interrupts
+ *  \param p_for_mclk_count_aud port used for counting mclk and providing a timestamp
+ * 
+ *  \param c_mclk_change channel to notify of master clock change
  */
-void clockGen(streaming chanend ?c_spdif_rx, chanend ?c_adat_rx, client interface pll_ref_if i_pll_ref, chanend c_audio, chanend c_clk_ctl, chanend c_clk_int);
+void clockGen(  streaming chanend ?c_spdif_rx,
+                chanend ?c_adat_rx,
+                client interface pll_ref_if i_pll_ref,
+                chanend c_audio,
+                chanend c_clk_ctl,
+                chanend c_clk_int,
+                port ?p_for_mclk_count_aud,
+                chanend c_mclk_change);
 #endif
 

@@ -1,4 +1,4 @@
-// Copyright 2012-2023 XMOS LIMITED.
+// Copyright 2012-2024 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
 #include "xua.h"                          /* Device specific defines */
@@ -144,6 +144,11 @@ on tile[XUD_TILE] : in port p_spdif_rx                      = PORT_SPDIF_IN;
 #if (XUA_SPDIF_RX_EN) || (XUA_ADAT_RX_EN) || (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
 /* Reference to external clock multiplier */
 on tile[PLL_REF_TILE] : out port p_pll_ref                  = PORT_PLL_REF;
+#ifdef __XS3A__
+on tile[AUDIO_IO_TILE] : port p_for_mclk_count_audio        = PORT_MCLK_COUNT_2;
+#else /* __XS3A__ */
+#define p_for_mclk_count_audio                              null
+#endif /* __XS3A__ */
 #endif
 
 #ifdef MIDI
@@ -309,6 +314,7 @@ void usb_audio_io(chanend ?c_aud_in,
 #endif
 #if (XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
     , client interface pll_ref_if i_pll_ref
+    , port ?p_for_mclk_count_aud
 #endif
 )
 {
@@ -318,9 +324,16 @@ void usb_audio_io(chanend ?c_aud_in,
 
 #if (XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
     chan c_dig_rx;
-#else
-    #define c_dig_rx null
-#endif
+    chan c_mclk_change; /* Notification of new mclk freq to clockgen */
+
+    /* Connect p_for_mclk_count_aud to clk_audio_mclk so we can count mclks/timestamp in digital rx*/
+    if(!isnull(p_for_mclk_count_aud))
+    {
+        unsigned x = 0;
+        asm("ldw %0, dp[clk_audio_mclk]":"=r"(x));
+        asm("setclk res[%0], %1"::"r"(p_for_mclk_count_aud), "r"(x));
+    }
+#endif /* (XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN) */
 
 #if (XUA_NUM_PDM_MICS > 0) && (PDM_TILE == AUDIO_IO_TILE)
     /* Configure clocks ports - sharing mclk port with I2S */
@@ -365,6 +378,7 @@ void usb_audio_io(chanend ?c_aud_in,
 #endif
 #if (XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
                 , c_dig_rx
+                , c_mclk_change
 #endif
 #if (XUD_TILE != 0) && (AUDIO_IO_TILE == 0) && (XUA_DFU_EN == 1)
                 , dfuInterface
@@ -385,12 +399,18 @@ void usb_audio_io(chanend ?c_aud_in,
              * However, due to the use of an interface the pll reference signal port can be on another tile
              */
             thread_speed();
-            clockGen(c_spdif_rx, c_adat_rx, i_pll_ref, c_dig_rx, c_clk_ctl, c_clk_int);
+            clockGen(   c_spdif_rx,
+                        c_adat_rx,
+                        i_pll_ref,
+                        c_dig_rx,
+                        c_clk_ctl,
+                        c_clk_int,
+                        p_for_mclk_count_aud,
+                        c_mclk_change);
         }
 #endif
 
-        //:
-    }
+    } // par
 }
 
 #ifndef USER_MAIN_DECLARATIONS
@@ -437,7 +457,7 @@ int main()
 #define c_adat_rx null
 #endif
 
-#if (XUA_SPDIF_TX_EN) //&& (SPDIF_TX_TILE != AUDIO_IO_TILE)
+#if (XUA_SPDIF_TX_EN) && (SPDIF_TX_TILE != AUDIO_IO_TILE)
     chan c_spdif_tx;
 #endif
 
@@ -575,6 +595,7 @@ int main()
 
         on tile[AUDIO_IO_TILE]:
         {
+
             /* Audio I/O task, includes mixing etc */
             usb_audio_io(c_mix_out
 #if (XUA_SPDIF_TX_EN) && (SPDIF_TX_TILE != AUDIO_IO_TILE)
@@ -595,6 +616,7 @@ int main()
 #endif
 #if (XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
                 , i_pll_ref
+                , p_for_mclk_count_audio
 #endif
             );
         }

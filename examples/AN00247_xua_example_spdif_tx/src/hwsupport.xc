@@ -1,9 +1,12 @@
-// Copyright 2017-2022 XMOS LIMITED.
+// Copyright 2017-2024 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 #include <xs1.h>
 #include <platform.h>
 #include "xua.h"
-#include "../../shared/apppll.h"
+#include "xassert.h"
+extern "C"{
+    #include "sw_pll.h"
+}
 
 on tile[0]: out port p_ctrl = XS1_PORT_8D;
 
@@ -38,19 +41,26 @@ void AudioHwInit()
     delay_milliseconds(100);
 
     /* Use xCORE Secondary PLL to generate *fixed* master clock */
-    AppPllEnable_SampleRate(DEFAULT_FREQ);
+    if(DEFAULT_FREQ % 22050 == 0)
+    {
+        sw_pll_fixed_clock(MCLK_441);
+    }
+    else
+    {
+        sw_pll_fixed_clock(MCLK_48);
+    }
 
     delay_milliseconds(100);
 
 	/* DAC setup: For basic I2S input we don't need any register setup. DACs will clock auto detect etc.
      * It holds DAC in reset until it gets clocks anyway.
-	 * Note, this example doesn't use the ADC's
+	 * Note, this example doesn't use the ADCs
 	 */
 }
 
 /* Configures the external audio hardware for the required sample frequency */
 void AudioHwConfig(unsigned samFreq, unsigned mClk, unsigned dsdMode, unsigned sampRes_DAC, unsigned sampRes_ADC)
 {
-    AppPllEnable_SampleRate(samFreq);
+    sw_pll_fixed_clock(mClk);
 }
 

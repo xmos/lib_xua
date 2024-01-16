@@ -1,4 +1,4 @@
-// Copyright 2011-2023 XMOS LIMITED.
+// Copyright 2011-2024 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 #ifndef _XUA_AUDIOHUB_H_
 #define _XUA_AUDIOHUB_H_
@@ -38,6 +38,8 @@
  *
  *  \param c_dig            Channel connected to the clockGen() thread for
  *                          receiving/transmitting samples
+ * 
+ *  \param c_mclk_change    Channel notifying clockgen of an mclk frequency change
  */
 void XUA_AudioHub(chanend ?c_aud,
     clock ?clk_audio_mclk,
@@ -52,6 +54,7 @@ void XUA_AudioHub(chanend ?c_aud,
 #endif
 #if (XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN || defined(__DOXYGEN__))
     , chanend c_dig
+    , chanend c_mclk_change
 #endif
 #if (XUD_TILE != 0) && (AUDIO_IO_TILE == 0) && (XUA_DFU_EN == 1)
    , server interface i_dfu ?dfuInterface
