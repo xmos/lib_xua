@@ -1,4 +1,4 @@
-// Copyright 2011-2023 XMOS LIMITED.
+// Copyright 2011-2024 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 #include "xua.h"
 #if XUA_USB_EN
@@ -466,6 +466,7 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
                             {
                                 masterClockFreq = MCLK_441;
                             }
+                            // TODO add signalling to sw_pll here
                         }
 #endif
                         /* Ideally we want to wait for handshake (and pass back up) here.  But we cannot keep this
