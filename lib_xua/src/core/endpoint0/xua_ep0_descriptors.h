@@ -1,4 +1,4 @@
-// Copyright 2011-2023 XMOS LIMITED.
+// Copyright 2011-2024 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 /**
  * @file    xua_ep0_descriptors.h
@@ -770,6 +770,11 @@ typedef struct
 #if (XUA_DFU_EN == 1)
     /* DFU descriptors currently handled as a single block */
     unsigned char configDesc_DFU[DFU_LENGTH];
+#endif
+
+#ifdef USB_CONTROL_DESCS
+    /* Inferface descriptor for control */
+    unsigned char itfDesc_control[9];
 #endif
 
 #ifdef IAP
@@ -2103,6 +2108,21 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
     0x01},                                /* 7    bcdDFUVersion */
 #endif
 #endif /* (XUA_DFU_EN == 1) */
+
+#ifdef USB_CONTROL_DESCS
+    {
+    /* Control interface descriptor */
+    0x09,                                                /* 0 bLength : Size of this descriptor, in bytes. (field size 1 bytes) */
+    0x04,                                                /* 1 bDescriptorType : INTERFACE descriptor. (field size 1 bytes) */
+    (INTERFACE_NUMBER_MISC_CONTROL),                     /* 2 bInterfaceNumber */
+    0x00,                                                /* 3 bAlternateSetting : Index of this setting. (field size 1 bytes) */
+    0x00,                                                /* 4 bNumEndpoints : 0 endpoints. (field size 1 bytes) */
+    USB_CLASS_VENDOR_SPECIFIC,                           /* 5 bInterfaceClass : Vendor specific. (field size 1 bytes) */
+    0xFF,                                                /* 6 bInterfaceSubclass : (field size 1 bytes) */
+    0xFF,                                                /* 7 bInterfaceProtocol : Unused. (field size 1 bytes) */
+    offsetof(StringDescTable_t, ctrlStr)/sizeof(char *), /* 8 iInterface */
+    },
+#endif
 
 #ifdef IAP
     /* Interface descriptor */
