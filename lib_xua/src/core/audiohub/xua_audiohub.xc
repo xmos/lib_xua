@@ -636,9 +636,6 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
     buffered _XUA_CLK_DIR port:32 ?p_bclk,
     buffered out port:32 (&?p_i2s_dac)[I2S_WIRES_DAC],
     buffered in port:32  (&?p_i2s_adc)[I2S_WIRES_ADC]
-#if (XUA_USE_APP_PLL)
-    , client interface SoftPll_if i_softPll
-#endif
 #if (XUA_SPDIF_TX_EN) //&& (SPDIF_TX_TILE != AUDIO_IO_TILE)
     , chanend c_spdif_out
 #endif
@@ -666,12 +663,6 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
     unsigned mClk;
     unsigned divide;
     unsigned firstRun = 1;
-
-#if (XUA_USE_APP_PLL)
-    /* Use xCORE.ai Secondary PLL to generate master clock
-     * This could be "fixed" for async mode or adjusted if in sync mode */
-    i_softPll.init(DEFAULT_MCLK);
-#endif
 
     /* Clock master clock-block from master-clock port */
     /* Note, marked unsafe since other cores may be using this mclk port */

@@ -106,7 +106,7 @@ void XUA_Buffer(
     , chanend c_aud
 #if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
     #if(USE_SW_PLL)
-    , chanend c_swpll_update
+    , chanend c_sw_pll
     #else
     , client interface pll_ref_if i_pll_ref
     #endif
@@ -146,7 +146,7 @@ void XUA_Buffer(
 #endif
 #if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
     #if(USE_SW_PLL)
-               , c_swpll_update
+               , c_sw_pll
     #else
                , i_pll_ref
     #endif
@@ -200,7 +200,7 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
 #endif
 #if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
     #if (USE_SW_PLL)
-    , chanend c_swpll_update
+    , chanend c_sw_pll
     #else
     , client interface pll_ref_if i_pll_ref
     #endif
@@ -370,7 +370,21 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
 #define LOCAL_CLOCK_MARGIN          (1000)
 #endif
 
-#if (!USE_SW_PLL)
+#if (USE_SW_PLL)
+    /* Setup the phase frequency detector */
+    const unsigned controller_rate_hz = 100;
+    const unsigned sof_rate_hz = (AUDIO_CLASS == 1 ? 1000 : 8000);
+
+    sw_pll_pfd_state_t sw_pll_pfd;
+    sw_pll_pfd_init(&sw_pll_pfd,
+                    sof_rate_hz / controller_rate_hz,   /* How often the PFD is invoked */
+                    masterClockFreq / sof_rate_hz,      /* pll ratio integer */
+                    0,                                  /* Assume precise timing of sampling */
+                    2000);                              /* PPM range before we assume unlocked */
+    outuint(c_sw_pll, masterClockFreq);
+    inuint(c_sw_pll); /* receive ACK */
+
+#else /* USE_SW_PLL */
     timer t_sofCheck;
     unsigned timeLastEdge;
     unsigned timeNextEdge;
@@ -466,7 +480,7 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
                             {
                                 masterClockFreq = MCLK_441;
                             }
-                            // TODO add signalling to sw_pll here
+                            restart_sigma_delta(c_sw_pll, masterClockFreq);
                         }
 #endif
                         /* Ideally we want to wait for handshake (and pass back up) here.  But we cannot keep this
@@ -572,8 +586,15 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
                     pllUpdate = 0;
                     unsigned short mclk_pt;
                     asm volatile("getts %0, res[%1]" : "=r" (mclk_pt) : "r" (p_off_mclk));
-                    outuint(c_swpll_update, mclk_pt);
-                    outct(c_swpll_update, XS1_CT_END);
+
+                    uint8_t first_loop = 0;
+                    unsafe{
+                        sw_pll_calc_error_from_port_timers(&sw_pll_pfd, &first_loop, mclk_pt, 0);
+                    }
+                    int error = sw_pll_pfd.mclk_diff;
+
+                    outuint(c_sw_pll, error);
+                    // outct(c_sw_pll, XS1_CT_END);
                 }
 #endif
 
@@ -993,6 +1014,15 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
                 }
                 break;
 #endif  /* ifdef MIDI */
+
+#if ((XUA_SYNCMODE == XUA_SYNCMODE_SYNC) && USE_SW_PLL)
+            /* This is fired when sw_pll has completed initialising a new mclk_rate */
+            case inuint_byref(c_sw_pll, u_tmp):
+                printstrln("SWPLL synch\n");
+
+                //TODO - hold off audio until we get this ACK
+                break;
+#endif /* ((XUA_SYNCMODE == XUA_SYNCMODE_SYNC) && USE_SW_PLL) */
 
 #ifdef IAP
             /* Received word from iap thread - Check for ACK or Data */
