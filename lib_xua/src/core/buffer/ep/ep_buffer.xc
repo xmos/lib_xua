@@ -480,7 +480,15 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
                             {
                                 masterClockFreq = MCLK_441;
                             }
+#if USE_SW_PLL
+                            sw_pll_pfd_init(&sw_pll_pfd,
+                                            sof_rate_hz / controller_rate_hz,   /* How often the PFD is invoked */
+                                            masterClockFreq / sof_rate_hz,      /* pll ratio integer */
+                                            0,                                  /* Assume precise timing of sampling */
+                                            2000);    
                             restart_sigma_delta(c_sw_pll, masterClockFreq);
+
+#endif
                         }
 #endif
                         /* Ideally we want to wait for handshake (and pass back up) here.  But we cannot keep this
@@ -593,16 +601,12 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
                     }
 
                     int error = 0;
-                    if(first_loop)
-                    {
-                        printstr("fl\n");
-                    }
-                    else
+                    if(!first_loop)
                     {
                         error = sw_pll_pfd.mclk_diff;
-                        printintln(error);
                     }
                     sw_pll_pfd.mclk_pt_last = mclk_pt;
+
 
                     outuint(c_sw_pll, error);
                     // outct(c_sw_pll, XS1_CT_END);
