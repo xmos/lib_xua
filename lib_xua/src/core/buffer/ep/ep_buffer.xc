@@ -591,7 +591,18 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
                     unsafe{
                         sw_pll_calc_error_from_port_timers(&sw_pll_pfd, &first_loop, mclk_pt, 0);
                     }
-                    int error = sw_pll_pfd.mclk_diff;
+
+                    int error = 0;
+                    if(first_loop)
+                    {
+                        printstr("fl\n");
+                    }
+                    else
+                    {
+                        error = sw_pll_pfd.mclk_diff;
+                        printintln(error);
+                    }
+                    sw_pll_pfd.mclk_pt_last = mclk_pt;
 
                     outuint(c_sw_pll, error);
                     // outct(c_sw_pll, XS1_CT_END);
@@ -1018,7 +1029,7 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
 #if ((XUA_SYNCMODE == XUA_SYNCMODE_SYNC) && USE_SW_PLL)
             /* This is fired when sw_pll has completed initialising a new mclk_rate */
             case inuint_byref(c_sw_pll, u_tmp):
-                printstrln("SWPLL synch\n");
+                printstr("SWPLL synch\n");
 
                 //TODO - hold off audio until we get this ACK
                 break;
