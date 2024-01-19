@@ -480,7 +480,7 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
                             {
                                 masterClockFreq = MCLK_441;
                             }
-#if USE_SW_PLL
+#if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC && USE_SW_PLL)
                             sw_pll_pfd_init(&sw_pll_pfd,
                                             sof_rate_hz / controller_rate_hz,   /* How often the PFD is invoked */
                                             masterClockFreq / sof_rate_hz,      /* pll ratio integer */
@@ -488,9 +488,9 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
                                             2000);    
                             restart_sigma_delta(c_sw_pll, masterClockFreq);
 
-#endif
+#endif /* (XUA_SYNCMODE == XUA_SYNCMODE_SYNC && USE_SW_PLL) */
                         }
-#endif
+#endif /* (MAX_FREQ != MIN_FREQ) */
                         /* Ideally we want to wait for handshake (and pass back up) here.  But we cannot keep this
                         * core locked, it must stay responsive to packets (MIDI etc) and SOFs.  So, set a flag and check for
                         * handshake elsewhere */
