@@ -14,6 +14,7 @@ set(LIB_INCLUDES api
                  src/core/support
                  src/core/user
                  src/core/user/audiostream
+                 src/core/user/audiohw
                  src/core/user/hid
                  src/core/user/hostactive
                  src/hid
