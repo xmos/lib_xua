@@ -641,6 +641,8 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
 #endif
 #if (XUA_ADAT_RX_EN || XUA_SPDIF_RX_EN)
     , chanend c_dig_rx
+#endif
+#if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC || XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
     , chanend c_mclk_change
 #endif
 #if (XUD_TILE != 0) && (AUDIO_IO_TILE == 0) && (XUA_DFU_EN == 1)
@@ -807,12 +809,12 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
 
             /* User code should configure audio harware for SampleFreq/MClk etc */
             AudioHwConfig(curFreq, mClk, dsdMode, curSamRes_DAC, curSamRes_ADC);
-#if (XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
+#if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC || XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
             /* Notify clockgen of new mCLk */
             c_mclk_change <: mClk;
             c_mclk_change <: curFreq;
 
-            /* Wait for ACK back from clockgen to signal clocks all good */
+            /* Wait for ACK back from clockgen or ep_buffer to signal clocks all good */
             c_mclk_change :> int _;
 #endif
 

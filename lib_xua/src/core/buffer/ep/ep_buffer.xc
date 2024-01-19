@@ -105,6 +105,7 @@ void XUA_Buffer(
 #endif
     , chanend c_aud
 #if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
+    , chanend c_mclk_change
     #if(XUA_USE_SW_PLL)
     , chanend c_sw_pll
     #else
@@ -145,6 +146,7 @@ void XUA_Buffer(
                 , c_buff_ctrl
 #endif
 #if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
+                , c_mclk_change
     #if(XUA_USE_SW_PLL)
                , c_sw_pll
     #else
@@ -199,6 +201,7 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
     , chanend c_buff_ctrl
 #endif
 #if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
+    , chanend c_mclk_change
     #if (XUA_USE_SW_PLL)
     , chanend c_sw_pll
     #else
@@ -1030,14 +1033,22 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
                 break;
 #endif  /* ifdef MIDI */
 
-#if ((XUA_SYNCMODE == XUA_SYNCMODE_SYNC) && XUA_USE_SW_PLL)
+#if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
+            case c_mclk_change :> u_tmp:
+                unsigned selected_mclk_rate = u_tmp;
+                c_mclk_change :> u_tmp; /* Sample rate we discard */
+                c_mclk_change <: 0;     /* ACK back to audio to release */
+                break;
+
+#if (XUA_USE_SW_PLL)
             /* This is fired when sw_pll has completed initialising a new mclk_rate */
             case inuint_byref(c_sw_pll, u_tmp):
                 printstr("SWPLL synch\n");
 
                 //TODO - hold off audio until we get this ACK
                 break;
-#endif /* ((XUA_SYNCMODE == XUA_SYNCMODE_SYNC) && XUA_USE_SW_PLL) */
+#endif /* (XUA_USE_SW_PLL) */
+#endif /* (XUA_SYNCMODE == XUA_SYNCMODE_SYNC) */
 
 #ifdef IAP
             /* Received word from iap thread - Check for ACK or Data */

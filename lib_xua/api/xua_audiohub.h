@@ -38,12 +38,16 @@
  *
  *  \param i_SoftPll        Interface to software PLL task
  *
- *  \param c_spdif_tx       Channel connected to S/PDIF transmiter core from lib_spdif
+ *  \param c_spdif_tx       Channel connected to S/PDIF transmitter core from lib_spdif
  *
  *  \param c_dig            Channel connected to the clockGen() thread for
  *                          receiving/transmitting samples
  * 
- *  \param c_mclk_change    Channel notifying clockgen of an mclk frequency change
+ *  \param c_mclk_change    Channel notifying ep_buffer of an mclk frequency change and sync for stable clock
+ * 
+ *  \param dfuInterface     Interface supporting DFU methods
+ * 
+ *  \param c_pdm_in         Channel for receiving decimated PDM samples
  */
 void XUA_AudioHub(chanend ?c_aud,
     clock ?clk_audio_mclk,
@@ -61,12 +65,14 @@ void XUA_AudioHub(chanend ?c_aud,
 #endif
 #if (XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN || defined(__DOXYGEN__))
     , chanend c_dig
+#endif
+#if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC || XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN || defined(__DOXYGEN__))
     , chanend c_mclk_change
 #endif
-#if (XUD_TILE != 0) && (AUDIO_IO_TILE == 0) && (XUA_DFU_EN == 1)
+#if (((XUD_TILE != 0) && (AUDIO_IO_TILE == 0) && (XUA_DFU_EN == 1)) || defined(__DOXYGEN__))
    , server interface i_dfu ?dfuInterface
 #endif
-#if (XUA_NUM_PDM_MICS > 0)
+#if (XUA_NUM_PDM_MICS > 0 || defined(__DOXYGEN__))
     , chanend c_pdm_in
 #endif
 );
