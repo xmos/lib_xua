@@ -483,15 +483,6 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
                             {
                                 masterClockFreq = MCLK_441;
                             }
-#if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC && XUA_USE_SW_PLL)
-                            sw_pll_pfd_init(&sw_pll_pfd,
-                                            sof_rate_hz / controller_rate_hz,   /* How often the PFD is invoked */
-                                            masterClockFreq / sof_rate_hz,      /* pll ratio integer */
-                                            0,                                  /* Assume precise timing of sampling */
-                                            2000);    
-                            restart_sigma_delta(c_sw_pll, masterClockFreq);
-
-#endif /* (XUA_SYNCMODE == XUA_SYNCMODE_SYNC && XUA_USE_SW_PLL) */
                         }
 #endif /* (MAX_FREQ != MIN_FREQ) */
                         /* Ideally we want to wait for handshake (and pass back up) here.  But we cannot keep this
@@ -1035,17 +1026,28 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
 
 #if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
             case c_mclk_change :> u_tmp:
+                printstr("c_mclk_change\n");
                 unsigned selected_mclk_rate = u_tmp;
-                c_mclk_change :> u_tmp; /* Sample rate we discard */
-                c_mclk_change <: 0;     /* ACK back to audio to release */
+                c_mclk_change :> u_tmp;                             /* Sample rate is discarded as only care about mclk */
+#if (XUA_USE_SW_PLL)
+                sw_pll_pfd_init(&sw_pll_pfd,
+                                sof_rate_hz / controller_rate_hz,   /* How often the PFD is invoked */
+                                selected_mclk_rate / sof_rate_hz,   /* pll muliplication ratio integer */
+                                0,                                  /* Assume precise timing of sampling */
+                                2000);    
+                restart_sigma_delta(c_sw_pll, selected_mclk_rate);
+                                                                    /* Delay ACK until sw_pll says it is ready */
+#else
+                c_mclk_change <: 0;                                 /* ACK back to audio to release I2S immediately */
+#endif /* XUA_USE_SW_PLL */
                 break;
 
 #if (XUA_USE_SW_PLL)
             /* This is fired when sw_pll has completed initialising a new mclk_rate */
             case inuint_byref(c_sw_pll, u_tmp):
                 printstr("SWPLL synch\n");
-
-                //TODO - hold off audio until we get this ACK
+                c_mclk_change <: 0;     /* ACK back to audio to release */
+                
                 break;
 #endif /* (XUA_USE_SW_PLL) */
 #endif /* (XUA_SYNCMODE == XUA_SYNCMODE_SYNC) */
