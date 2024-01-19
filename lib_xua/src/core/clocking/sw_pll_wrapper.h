@@ -4,15 +4,7 @@
 #ifndef _SW_PLL_WRAPPPER_H_
 #define _SW_PLL_WRAPPPER_H_
 
-/* By default we use SW_PLL for Digital Rx configs running on xcore.ai */
-/* Note: Not yet implemented for Synchronous mode */
-#ifdef __XS3A__
-#ifndef USE_SW_PLL
-#define USE_SW_PLL  1
-#endif /* USE_SW_PLL */
-#else
-#define USE_SW_PLL  0
-#endif /* __XS3A__ */
+#include "xua.h"
 
 #if USE_SW_PLL
 extern "C"
