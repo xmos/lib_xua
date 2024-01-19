@@ -270,11 +270,11 @@
  *
  * Default: Enabled (for xcore.ai devices)
  */
-#ifndef USE_SW_PLL
+#ifndef XUA_USE_SW_PLL
     #if defined(__XS3A__)
-        #define USE_SW_PLL        (1)
+        #define XUA_USE_SW_PLL        (1)
     #else
-        #define USE_SW_PLL        (0)
+        #define XUA_USE_SW_PLL        (0)
     #endif
 #endif
 

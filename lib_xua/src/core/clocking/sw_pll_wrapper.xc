@@ -7,7 +7,7 @@
 #include "sw_pll_wrapper.h"
 #include "xua.h"
 
-#if USE_SW_PLL
+#if XUA_USE_SW_PLL
 
 
 {unsigned, unsigned} init_sw_pll(sw_pll_state_t &sw_pll, unsigned mClk)
@@ -192,4 +192,4 @@ void restart_sigma_delta(chanend c_sw_pll, unsigned selected_mclk_rate)
     outuint(c_sw_pll, selected_mclk_rate);
 }
 
-#endif /* USE_SW_PLL */
+#endif /* XUA_USE_SW_PLL */

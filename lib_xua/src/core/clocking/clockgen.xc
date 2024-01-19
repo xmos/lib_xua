@@ -199,7 +199,7 @@ static inline int validSamples(Counter &counter, int clockIndex)
 }
 #endif
 
-#if USE_SW_PLL
+#if XUA_USE_SW_PLL
 unsafe
 {
     unsigned * unsafe selected_mclk_rate_ptr = NULL;
@@ -223,7 +223,7 @@ void clockGen ( streaming chanend ?c_spdif_rx,
                 chanend c_clk_ctl,
                 chanend c_clk_int,
                 chanend c_mclk_change
-#if USE_SW_PLL
+#if XUA_USE_SW_PLL
                 , port p_for_mclk_count_aud
                 , chanend c_sw_pll
 #endif
@@ -246,7 +246,7 @@ void clockGen ( streaming chanend ?c_spdif_rx,
     timer t_external;
     unsigned selected_mclk_rate = MCLK_48; // Assume 24.576MHz initial clock 
     unsigned selected_sample_rate = 0;
-#if USE_SW_PLL
+#if XUA_USE_SW_PLL
 
     unsigned mclks_per_sample = 0;
     unsigned short mclk_time_stamp = 0;
@@ -345,7 +345,7 @@ void clockGen ( streaming chanend ?c_spdif_rx,
     /* Initial ref clock output and get timestamp */
     i_pll_ref.init();
 
-#if ((XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN) && USE_SW_PLL)
+#if ((XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN) && XUA_USE_SW_PLL)
     int reset_sw_pll_pfd = 1;
     int require_ack_to_audio = 0;
     restart_sigma_delta(c_sw_pll, MCLK_48); /* default to 48kHz - this will be reset shortly when host selects rate */
@@ -468,7 +468,7 @@ void clockGen ( streaming chanend ?c_spdif_rx,
             /* Generate local clock from timer */
             case t_local when timerafter(timeNextEdge) :> void:
 
-#if USE_SW_PLL
+#if XUA_USE_SW_PLL
                 /* Do nothing - hold the most recent sw_pll setting */
 #else
                 /* Setup next local clock edge */
@@ -519,7 +519,7 @@ void clockGen ( streaming chanend ?c_spdif_rx,
                 break;
 #endif
 
-#if ((XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN) && USE_SW_PLL)
+#if ((XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN) && XUA_USE_SW_PLL)
             case inuint_byref(c_sw_pll, tmp): 
                 /* Send ACK back to audiohub to allow I2S to start
                    This happens only on SDM restart and only once */
@@ -535,7 +535,7 @@ void clockGen ( streaming chanend ?c_spdif_rx,
                 /* Receive notification of audio streaming settings change and store */
             case c_mclk_change :> selected_mclk_rate:
                 c_mclk_change :> selected_sample_rate;
-#if USE_SW_PLL
+#if XUA_USE_SW_PLL
                 mclks_per_sample = selected_mclk_rate / selected_sample_rate;
                 restart_sigma_delta(c_sw_pll, selected_mclk_rate);
                 reset_sw_pll_pfd = 1;
@@ -552,7 +552,7 @@ void clockGen ( streaming chanend ?c_spdif_rx,
             /* Receive sample from S/PDIF RX thread (streaming chan) */
             case c_spdif_rx :> spdifRxData:
 
-#if USE_SW_PLL
+#if XUA_USE_SW_PLL
                 /* Record time of sample */
                 asm volatile(" getts %0, res[%1]" : "=r" (mclk_time_stamp) : "r" (p_for_mclk_count_aud));
 #endif
@@ -625,7 +625,7 @@ void clockGen ( streaming chanend ?c_spdif_rx,
                             /* Setup for next edge */
                             timeNextEdge = spdifRxTime + LOCAL_CLOCK_INCREMENT + LOCAL_CLOCK_MARGIN;
 
-#if USE_SW_PLL
+#if XUA_USE_SW_PLL
                             do_sw_pll_phase_frequency_detector_dig_rx(  mclk_time_stamp,
                                                                         mclks_per_sample,
                                                                         c_sw_pll,
@@ -646,7 +646,7 @@ void clockGen ( streaming chanend ?c_spdif_rx,
                 /* receive sample from ADAT rx thread (streaming channel with CT_END) */
                 case inuint_byref(c_adat_rx, tmp):
 
-#if USE_SW_PLL
+#if XUA_USE_SW_PLL
                     /* record time of sample */
                     asm volatile(" getts %0, res[%1]" : "=r" (mclk_time_stamp) : "r" (p_for_mclk_count_aud));
 #endif 
@@ -742,7 +742,7 @@ void clockGen ( streaming chanend ?c_spdif_rx,
                                             /* Setup for next edge */
                                             timeNextEdge = adatReceivedTime + LOCAL_CLOCK_INCREMENT + LOCAL_CLOCK_MARGIN;
 
-#if USE_SW_PLL
+#if XUA_USE_SW_PLL
                                             do_sw_pll_phase_frequency_detector_dig_rx(  mclk_time_stamp,
                                                                                         mclks_per_sample,
                                                                                         c_sw_pll,

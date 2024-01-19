@@ -6,7 +6,7 @@
 
 #include "xua.h"
 
-#if USE_SW_PLL
+#if XUA_USE_SW_PLL
 extern "C"
 {
     #include "sw_pll.h"
@@ -53,5 +53,5 @@ void do_sw_pll_phase_frequency_detector_dig_rx( unsigned short mclk_time_stamp,
  *  returns         The SDM update interval in ticks and the initial DCO setting for nominal frequency */
 {unsigned, unsigned} InitSWPLL(sw_pll_state_t &sw_pll, unsigned mClk);
 
-#endif /* USE_SW_PLL */
+#endif /* XUA_USE_SW_PLL */
 #endif /* _SW_PLL_WRAPPPER_H_ */

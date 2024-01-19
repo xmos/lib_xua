@@ -315,7 +315,7 @@ void usb_audio_io(chanend ?c_aud_in,
 #if (XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
     , client interface pll_ref_if i_pll_ref
 #endif
-#if ((XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN) && USE_SW_PLL)
+#if ((XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN) && XUA_USE_SW_PLL)
     , port p_for_mclk_count_aud
     , chanend c_sw_pll
 #endif
@@ -329,13 +329,13 @@ void usb_audio_io(chanend ?c_aud_in,
     chan c_dig_rx;
     chan c_mclk_change; /* Notification of new mclk freq to clockgen */
 
-#if USE_SW_PLL
+#if XUA_USE_SW_PLL
     /* Connect p_for_mclk_count_aud to clk_audio_mclk so we can count mclks/timestamp in digital rx*/
 
     unsigned x = 0;
     asm("ldw %0, dp[clk_audio_mclk]":"=r"(x));
     asm("setclk res[%0], %1"::"r"(p_for_mclk_count_aud), "r"(x));
-#endif /* USE_SW_PLL */
+#endif /* XUA_USE_SW_PLL */
 #endif /* (XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN) */
 
 #if (XUA_NUM_PDM_MICS > 0) && (PDM_TILE == AUDIO_IO_TILE)
@@ -409,7 +409,7 @@ void usb_audio_io(chanend ?c_aud_in,
                         c_clk_ctl,
                         c_clk_int,
                         c_mclk_change
-#if USE_SW_PLL
+#if XUA_USE_SW_PLL
                         , p_for_mclk_count_aud
                         , c_sw_pll
 #endif
@@ -490,11 +490,11 @@ int main()
 #endif
 #endif
 
-#if (((XUA_SYNCMODE == XUA_SYNCMODE_SYNC && !USE_SW_PLL) || XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN) )
+#if (((XUA_SYNCMODE == XUA_SYNCMODE_SYNC && !XUA_USE_SW_PLL) || XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN) )
     interface pll_ref_if i_pll_ref;
 #endif
 
-#if ((XUA_SYNCMODE == XUA_SYNCMODE_SYNC || XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN) && USE_SW_PLL)
+#if ((XUA_SYNCMODE == XUA_SYNCMODE_SYNC || XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN) && XUA_USE_SW_PLL)
     chan c_sw_pll;
 #endif
     chan c_sof;
@@ -518,7 +518,7 @@ int main()
     {
         USER_MAIN_CORES
 
-#if (((XUA_SYNCMODE == XUA_SYNCMODE_SYNC  && !USE_SW_PLL) || XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN))
+#if (((XUA_SYNCMODE == XUA_SYNCMODE_SYNC  && !XUA_USE_SW_PLL) || XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN))
         on tile[PLL_REF_TILE]: PllRefPinTask(i_pll_ref, p_pll_ref);
 #endif
         on tile[XUD_TILE]:
@@ -589,7 +589,7 @@ int main()
 #endif
                            , c_mix_out
 #if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
-    #if (!USE_SW_PLL)
+    #if (!XUA_USE_SW_PLL)
                            , i_pll_ref
     #else
                            , c_sw_pll
@@ -608,7 +608,7 @@ int main()
 #endif /* XUA_USB_EN */
         }
 
-#if ((XUA_SYNCMODE == XUA_SYNCMODE_SYNC || XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN) && USE_SW_PLL)
+#if ((XUA_SYNCMODE == XUA_SYNCMODE_SYNC || XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN) && XUA_USE_SW_PLL)
         on tile[AUDIO_IO_TILE]: sw_pll_task(c_sw_pll);
 #endif
 
@@ -632,7 +632,7 @@ int main()
 #if (XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
                 , i_pll_ref
 #endif
-#if ((XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN) && USE_SW_PLL)
+#if ((XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN) && XUA_USE_SW_PLL)
                 , p_for_mclk_count_audio
                 , c_sw_pll
 #endif

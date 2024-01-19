@@ -53,10 +53,10 @@ void XUA_Buffer(
 #endif
             , chanend c_aud
 #if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC) || defined(__DOYXGEN__)
-    #if (!USE_SW_PLL) || defined(__DOXYGEN__)
+    #if (!XUA_USE_SW_PLL) || defined(__DOXYGEN__)
             , client interface pll_ref_if i_pll_ref
     #endif
-    #if (USE_SW_PLL) || defined(__DOXYGEN__)
+    #if (XUA_USE_SW_PLL) || defined(__DOXYGEN__)
             , chanend c_swpll_update
     #endif
 #endif
@@ -88,10 +88,10 @@ void XUA_Buffer_Ep(chanend c_aud_out,
             , chanend c_buff_ctrl
 #endif
 #if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC) || defined(__DOYXGEN__)
-    #if (!USE_SW_PLL) || defined(__DOXYGEN__)
+    #if (!XUA_USE_SW_PLL) || defined(__DOXYGEN__)
             , client interface pll_ref_if i_pll_ref
     #endif
-    #if (USE_SW_PLL) || defined(__DOXYGEN__)
+    #if (XUA_USE_SW_PLL) || defined(__DOXYGEN__)
             , chanend c_swpll_update
     #endif
 #endif

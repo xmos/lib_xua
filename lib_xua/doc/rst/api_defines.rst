@@ -38,7 +38,7 @@ Frequencies and Clocks
 .. doxygendefine:: DEFAULT_FREQ
 .. doxygendefine:: MCLK_441
 .. doxygendefine:: MCLK_48
-.. doxygendefine:: USE_SW_PLL
+.. doxygendefine:: XUA_USE_SW_PLL
 
 Audio Class
 -----------

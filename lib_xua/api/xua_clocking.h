@@ -40,7 +40,7 @@ void clockGen(  streaming chanend ?c_spdif_rx,
                 chanend c_clk_ctl,
                 chanend c_clk_int,
                 chanend c_mclk_change
-#if USE_SW_PLL
+#if XUA_USE_SW_PLL
                 , port p_for_mclk_count_aud
                 , chanend c_sw_pll
 #endif

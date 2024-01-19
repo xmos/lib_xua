@@ -105,7 +105,7 @@ void XUA_Buffer(
 #endif
     , chanend c_aud
 #if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
-    #if(USE_SW_PLL)
+    #if(XUA_USE_SW_PLL)
     , chanend c_sw_pll
     #else
     , client interface pll_ref_if i_pll_ref
@@ -145,7 +145,7 @@ void XUA_Buffer(
                 , c_buff_ctrl
 #endif
 #if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
-    #if(USE_SW_PLL)
+    #if(XUA_USE_SW_PLL)
                , c_sw_pll
     #else
                , i_pll_ref
@@ -199,7 +199,7 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
     , chanend c_buff_ctrl
 #endif
 #if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
-    #if (USE_SW_PLL)
+    #if (XUA_USE_SW_PLL)
     , chanend c_sw_pll
     #else
     , client interface pll_ref_if i_pll_ref
@@ -370,7 +370,7 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
 #define LOCAL_CLOCK_MARGIN          (1000)
 #endif
 
-#if (USE_SW_PLL)
+#if (XUA_USE_SW_PLL)
     /* Setup the phase frequency detector */
     const unsigned controller_rate_hz = 100;
     const unsigned sof_rate_hz = (AUDIO_CLASS == 1 ? 1000 : 8000);
@@ -384,7 +384,7 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
     outuint(c_sw_pll, masterClockFreq);
     inuint(c_sw_pll); /* receive ACK */
 
-#else /* USE_SW_PLL */
+#else /* XUA_USE_SW_PLL */
     timer t_sofCheck;
     unsigned timeLastEdge;
     unsigned timeNextEdge;
@@ -480,7 +480,7 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
                             {
                                 masterClockFreq = MCLK_441;
                             }
-#if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC && USE_SW_PLL)
+#if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC && XUA_USE_SW_PLL)
                             sw_pll_pfd_init(&sw_pll_pfd,
                                             sof_rate_hz / controller_rate_hz,   /* How often the PFD is invoked */
                                             masterClockFreq / sof_rate_hz,      /* pll ratio integer */
@@ -488,7 +488,7 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
                                             2000);    
                             restart_sigma_delta(c_sw_pll, masterClockFreq);
 
-#endif /* (XUA_SYNCMODE == XUA_SYNCMODE_SYNC && USE_SW_PLL) */
+#endif /* (XUA_SYNCMODE == XUA_SYNCMODE_SYNC && XUA_USE_SW_PLL) */
                         }
 #endif /* (MAX_FREQ != MIN_FREQ) */
                         /* Ideally we want to wait for handshake (and pass back up) here.  But we cannot keep this
@@ -548,7 +548,7 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
                 }
                 break;
             }
-#if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC) && (!USE_SW_PLL)
+#if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC) && (!XUA_USE_SW_PLL)
             case t_sofCheck when timerafter(timeNextEdge) :> void:
                 i_pll_ref.toggle();
                 timeLastEdge = timeNextEdge;
@@ -580,14 +580,14 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
                 {
                     sofCount = 0;
                     pllUpdate++;
-#if (!USE_SW_PLL)
+#if (!XUA_USE_SW_PLL)
                     /* Port is accessed via interface to allow flexibilty with location */
                     i_pll_ref.toggle();
                     t_sofCheck :> timeLastEdge;
                     timeNextEdge = timeLastEdge + LOCAL_CLOCK_INCREMENT + LOCAL_CLOCK_MARGIN;
 #endif
                 }
-#if (USE_SW_PLL)
+#if (XUA_USE_SW_PLL)
                 // Update PLL @ 100Hz
                 if(pllUpdate == 10)
                 {
@@ -1030,14 +1030,14 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
                 break;
 #endif  /* ifdef MIDI */
 
-#if ((XUA_SYNCMODE == XUA_SYNCMODE_SYNC) && USE_SW_PLL)
+#if ((XUA_SYNCMODE == XUA_SYNCMODE_SYNC) && XUA_USE_SW_PLL)
             /* This is fired when sw_pll has completed initialising a new mclk_rate */
             case inuint_byref(c_sw_pll, u_tmp):
                 printstr("SWPLL synch\n");
 
                 //TODO - hold off audio until we get this ACK
                 break;
-#endif /* ((XUA_SYNCMODE == XUA_SYNCMODE_SYNC) && USE_SW_PLL) */
+#endif /* ((XUA_SYNCMODE == XUA_SYNCMODE_SYNC) && XUA_USE_SW_PLL) */
 
 #ifdef IAP
             /* Received word from iap thread - Check for ACK or Data */
