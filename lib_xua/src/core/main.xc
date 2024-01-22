@@ -316,7 +316,7 @@ void usb_audio_io(chanend ?c_aud_in,
     , client interface pll_ref_if i_pll_ref
 #endif
 #if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
-    , chanend c_mclk_change
+    , chanend c_audio_rate_change
 #endif
 #if ((XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN) && XUA_USE_SW_PLL)
     , port p_for_mclk_count_aud
@@ -330,10 +330,9 @@ void usb_audio_io(chanend ?c_aud_in,
 
 #if (XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
     chan c_dig_rx;
-    chan c_mclk_change; /* Notification of new mclk freq to clockgen */
+    chan c_audio_rate_change; /* Notification of new mclk freq to clockgen and synch */
 #if XUA_USE_SW_PLL
     /* Connect p_for_mclk_count_aud to clk_audio_mclk so we can count mclks/timestamp in digital rx*/
-
     unsigned x = 0;
     asm("ldw %0, dp[clk_audio_mclk]":"=r"(x));
     asm("setclk res[%0], %1"::"r"(p_for_mclk_count_aud), "r"(x));
@@ -385,7 +384,7 @@ void usb_audio_io(chanend ?c_aud_in,
                 , c_dig_rx
 #endif                
 #if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC || XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
-                , c_mclk_change
+                , c_audio_rate_change
 #endif
 #if (XUD_TILE != 0) && (AUDIO_IO_TILE == 0) && (XUA_DFU_EN == 1)
                 , dfuInterface
@@ -412,7 +411,7 @@ void usb_audio_io(chanend ?c_aud_in,
                         c_dig_rx,
                         c_clk_ctl,
                         c_clk_int,
-                        c_mclk_change
+                        c_audio_rate_change
 #if XUA_USE_SW_PLL
                         , p_for_mclk_count_aud
                         , c_sw_pll
@@ -502,7 +501,7 @@ int main()
     chan c_sw_pll;
 #endif
 #if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
-    chan c_mclk_change; /* Notification of new mclk freq to ep_buffer */
+    chan c_audio_rate_change; /* Notification of new mclk freq to ep_buffer */
 #endif
     chan c_sof;
     chan c_xud_out[ENDPOINT_COUNT_OUT];              /* Endpoint channels for XUD */
@@ -596,7 +595,7 @@ int main()
 #endif
                            , c_mix_out
 #if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
-                           , c_mclk_change
+                           , c_audio_rate_change
     #if (!XUA_USE_SW_PLL)
                            , i_pll_ref
     #else
@@ -641,7 +640,7 @@ int main()
                 , i_pll_ref
 #endif
 #if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
-                , c_mclk_change
+                , c_audio_rate_change
 #endif
 #if ((XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN) && XUA_USE_SW_PLL)
                 , p_for_mclk_count_audio

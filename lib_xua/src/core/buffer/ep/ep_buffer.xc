@@ -105,7 +105,7 @@ void XUA_Buffer(
 #endif
     , chanend c_aud
 #if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
-    , chanend c_mclk_change
+    , chanend c_audio_rate_change
     #if(XUA_USE_SW_PLL)
     , chanend c_sw_pll
     #else
@@ -146,7 +146,7 @@ void XUA_Buffer(
                 , c_buff_ctrl
 #endif
 #if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
-                , c_mclk_change
+                , c_audio_rate_change
     #if(XUA_USE_SW_PLL)
                , c_sw_pll
     #else
@@ -201,7 +201,7 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
     , chanend c_buff_ctrl
 #endif
 #if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
-    , chanend c_mclk_change
+    , chanend c_audio_rate_change
     #if (XUA_USE_SW_PLL)
     , chanend c_sw_pll
     #else
@@ -1025,10 +1025,10 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
 #endif  /* ifdef MIDI */
 
 #if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
-            case c_mclk_change :> u_tmp:
-                printstr("c_mclk_change\n");
+            case c_audio_rate_change :> u_tmp:
+                printstr("c_audio_rate_change\n");
                 unsigned selected_mclk_rate = u_tmp;
-                c_mclk_change :> u_tmp;                             /* Sample rate is discarded as only care about mclk */
+                c_audio_rate_change :> u_tmp;                       /* Sample rate is discarded as only care about mclk */
 #if (XUA_USE_SW_PLL)
                 sw_pll_pfd_init(&sw_pll_pfd,
                                 sof_rate_hz / controller_rate_hz,   /* How often the PFD is invoked */
@@ -1038,7 +1038,7 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
                 restart_sigma_delta(c_sw_pll, selected_mclk_rate);
                                                                     /* Delay ACK until sw_pll says it is ready */
 #else
-                c_mclk_change <: 0;                                 /* ACK back to audio to release I2S immediately */
+                c_audio_rate_change <: 0;                           /* ACK back to audio to release I2S immediately */
 #endif /* XUA_USE_SW_PLL */
                 break;
 
@@ -1046,7 +1046,7 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
             /* This is fired when sw_pll has completed initialising a new mclk_rate */
             case inuint_byref(c_sw_pll, u_tmp):
                 printstr("SWPLL synch\n");
-                c_mclk_change <: 0;     /* ACK back to audio to release */
+                c_audio_rate_change <: 0;     /* ACK back to audio to release */
                 
                 break;
 #endif /* (XUA_USE_SW_PLL) */

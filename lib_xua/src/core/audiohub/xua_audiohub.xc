@@ -643,7 +643,7 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
     , chanend c_dig_rx
 #endif
 #if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC || XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
-    , chanend c_mclk_change
+    , chanend c_audio_rate_change
 #endif
 #if (XUD_TILE != 0) && (AUDIO_IO_TILE == 0) && (XUA_DFU_EN == 1)
     , server interface i_dfu ?dfuInterface
@@ -811,11 +811,11 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
             AudioHwConfig(curFreq, mClk, dsdMode, curSamRes_DAC, curSamRes_ADC);
 #if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC || XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
             /* Notify clockgen of new mCLk */
-            c_mclk_change <: mClk;
-            c_mclk_change <: curFreq;
+            c_audio_rate_change <: mClk;
+            c_audio_rate_change <: curFreq;
 
             /* Wait for ACK back from clockgen or ep_buffer to signal clocks all good */
-            c_mclk_change :> int _;
+            c_audio_rate_change :> int _;
 #endif
 
             /* User should unmute audio hardware */

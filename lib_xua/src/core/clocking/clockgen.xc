@@ -222,7 +222,7 @@ void clockGen ( streaming chanend ?c_spdif_rx,
                 chanend c_dig_rx,
                 chanend c_clk_ctl,
                 chanend c_clk_int,
-                chanend c_mclk_change
+                chanend c_audio_rate_change
 #if XUA_USE_SW_PLL
                 , port p_for_mclk_count_aud
                 , chanend c_sw_pll
@@ -525,7 +525,7 @@ void clockGen ( streaming chanend ?c_spdif_rx,
                    This happens only on SDM restart and only once */
                 if(require_ack_to_audio)
                 {
-                    c_mclk_change <: tmp;
+                    c_audio_rate_change <: tmp;
                     require_ack_to_audio = 0;
                 }
                 break;
@@ -533,8 +533,8 @@ void clockGen ( streaming chanend ?c_spdif_rx,
 
 #if (XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
                 /* Receive notification of audio streaming settings change and store */
-            case c_mclk_change :> selected_mclk_rate:
-                c_mclk_change :> selected_sample_rate;
+            case c_audio_rate_change :> selected_mclk_rate:
+                c_audio_rate_change :> selected_sample_rate;
 #if XUA_USE_SW_PLL
                 mclks_per_sample = selected_mclk_rate / selected_sample_rate;
                 restart_sigma_delta(c_sw_pll, selected_mclk_rate);
@@ -543,7 +543,7 @@ void clockGen ( streaming chanend ?c_spdif_rx,
                 require_ack_to_audio = 1;
 #else
                 /* Send ACK immediately as we are good to go if not using SW_PLL */
-                c_mclk_change <: 0;
+                c_audio_rate_change <: 0;
 #endif
                 break;
 #endif

@@ -53,7 +53,7 @@ void XUA_Buffer(
 #endif
             , chanend c_aud
 #if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC) || defined(__DOYXGEN__)
-            , chanend c_mclk_change
+            , chanend c_audio_rate_change
     #if (!XUA_USE_SW_PLL) || defined(__DOXYGEN__)
             , client interface pll_ref_if i_pll_ref
     #endif
@@ -89,7 +89,7 @@ void XUA_Buffer_Ep(chanend c_aud_out,
             , chanend c_buff_ctrl
 #endif
 #if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC) || defined(__DOYXGEN__)
-            , chanend c_mclk_change
+            , chanend c_audio_rate_change
     #if (!XUA_USE_SW_PLL) || defined(__DOXYGEN__)
             , client interface pll_ref_if i_pll_ref
     #endif
