@@ -385,7 +385,9 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
                     0,                                      /* Assume precise timing of sampling */
                     pfd_ppm_max);                           
     outuint(c_sw_pll, masterClockFreq);
+    outct(c_sw_pll, XS1_CT_END);
     inuint(c_sw_pll); /* receive ACK */
+    inct(c_sw_pll);
 
 #else /* XUA_USE_SW_PLL */
     timer t_sofCheck;
@@ -602,8 +604,9 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
                     sw_pll_pfd.mclk_pt_last = mclk_pt;
 
                     outuint(c_sw_pll, error);
+                    outct(c_sw_pll, XS1_CT_END);
+
                     printintln(error);
-                    // outct(c_sw_pll, XS1_CT_END);
                 }
 #endif
 
@@ -1044,6 +1047,7 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
 #if (XUA_USE_SW_PLL)
             /* This is fired when sw_pll has completed initialising a new mclk_rate */
             case inuint_byref(c_sw_pll, u_tmp):
+                inct(c_sw_pll);
                 printstr("SWPLL synch\n");
                 c_audio_rate_change <: 0;     /* ACK back to audio to release */
                 

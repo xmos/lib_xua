@@ -520,7 +520,8 @@ void clockGen ( streaming chanend ?c_spdif_rx,
 #endif
 
 #if ((XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN) && XUA_USE_SW_PLL)
-            case inuint_byref(c_sw_pll, tmp): 
+            case inuint_byref(c_sw_pll, tmp):
+                inct(c_sw_pll); 
                 /* Send ACK back to audiohub to allow I2S to start
                    This happens only on SDM restart and only once */
                 if(require_ack_to_audio)

@@ -107,6 +107,7 @@ void do_sw_pll_phase_frequency_detector_dig_rx( unsigned short mclk_time_stamp,
 
         /* send PFD output to the sigma delta thread */
         outuint(c_sw_pll, (int) f_error);
+        outct(c_sw_pll, XS1_CT_END);
      
         last_mclk_time_stamp = mclk_time_stamp;
         control_loop_counter = 0;
@@ -122,6 +123,7 @@ void sw_pll_task(chanend c_sw_pll){
     while(1)
     {
         unsigned selected_mclk_rate = inuint(c_sw_pll);
+        inct(c_sw_pll);
 
         int f_error = 0;
         int dco_setting = 0;        /* gets set at init_sw_pll */
@@ -139,6 +141,7 @@ void sw_pll_task(chanend c_sw_pll){
         int running = 1;
 
         outuint(c_sw_pll, 0); /* Signal back via clockgen to audio to start I2S */
+        outct(c_sw_pll, XS1_CT_END);
 
         unsigned rx_word = 0;
         while(running)
@@ -147,6 +150,7 @@ void sw_pll_task(chanend c_sw_pll){
             select
             {
                 case inuint_byref(c_sw_pll, rx_word):
+                    inct(c_sw_pll);
                     if(rx_word == DISABLE_SDM)
                     {
                         f_error = 0;
@@ -189,7 +193,9 @@ void sw_pll_task(chanend c_sw_pll){
 void restart_sigma_delta(chanend c_sw_pll, unsigned selected_mclk_rate)
 {
     outuint(c_sw_pll, DISABLE_SDM); /* Resets SDM */
+    outct(c_sw_pll, XS1_CT_END);
     outuint(c_sw_pll, selected_mclk_rate);
+    outct(c_sw_pll, XS1_CT_END);
 }
 
 #endif /* XUA_USE_SW_PLL */
