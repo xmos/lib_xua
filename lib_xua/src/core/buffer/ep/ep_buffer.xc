@@ -376,14 +376,14 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
 #if (XUA_USE_SW_PLL)
     /* Setup the phase frequency detector */
     const unsigned controller_rate_hz = 100;
-    const unsigned sof_rate_hz = (AUDIO_CLASS == 1 ? 1000 : 8000);
+    const unsigned pfd_ppm_max = 2000;                      /* PPM range before we assume unlocked */
 
     sw_pll_pfd_state_t sw_pll_pfd;
     sw_pll_pfd_init(&sw_pll_pfd,
-                    sof_rate_hz / controller_rate_hz,   /* How often the PFD is invoked */
-                    masterClockFreq / sof_rate_hz,      /* pll ratio integer */
-                    0,                                  /* Assume precise timing of sampling */
-                    2000);                              /* PPM range before we assume unlocked */
+                    1,                                      /* How often the PFD is invoked per call */
+                    masterClockFreq / controller_rate_hz,   /* pll ratio integer */
+                    0,                                      /* Assume precise timing of sampling */
+                    pfd_ppm_max);                           
     outuint(c_sw_pll, masterClockFreq);
     inuint(c_sw_pll); /* receive ACK */
 
@@ -601,8 +601,8 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
                     }
                     sw_pll_pfd.mclk_pt_last = mclk_pt;
 
-
                     outuint(c_sw_pll, error);
+                    printintln(error);
                     // outct(c_sw_pll, XS1_CT_END);
                 }
 #endif
@@ -752,7 +752,6 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
                             clocks < (expected_fb + FB_TOLERANCE))
 #endif
                         {
-                            int usb_speed;
                             asm volatile("stw %0, dp[g_speed]"::"r"(clocks));   // g_speed = clocks
 
                             GET_SHARED_GLOBAL(usb_speed, g_curUsbSpeed);
@@ -1031,10 +1030,10 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
                 c_audio_rate_change :> u_tmp;                       /* Sample rate is discarded as only care about mclk */
 #if (XUA_USE_SW_PLL)
                 sw_pll_pfd_init(&sw_pll_pfd,
-                                sof_rate_hz / controller_rate_hz,   /* How often the PFD is invoked */
-                                selected_mclk_rate / sof_rate_hz,   /* pll muliplication ratio integer */
-                                0,                                  /* Assume precise timing of sampling */
-                                2000);    
+                                1,                                          /* How often the PFD is invoked per call */
+                                selected_mclk_rate / controller_rate_hz,    /* pll muliplication ratio integer */
+                                0,                                          /* Assume precise timing of sampling */
+                                pfd_ppm_max);
                 restart_sigma_delta(c_sw_pll, selected_mclk_rate);
                                                                     /* Delay ACK until sw_pll says it is ready */
 #else

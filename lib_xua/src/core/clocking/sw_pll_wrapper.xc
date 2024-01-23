@@ -181,7 +181,7 @@ void sw_pll_task(chanend c_sw_pll){
             unsafe {
                 sw_pll_do_sigma_delta(&sw_pll.sdm_state, this_tile, dco_setting);
             }
-        } /* if running */
+        } /* while running */
     } /* while(1) */
 }
 
