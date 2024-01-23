@@ -263,7 +263,6 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
     unsigned bufferIn = 1;
 #endif
     int sofCount = 0;
-    int pllUpdate = 0;
 
     unsigned mod_from_last_time = 0;
 #ifdef FB_TOLERANCE_TEST
@@ -463,7 +462,6 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
                             /* Note, Endpoint 0 will hold off host for a sufficient period to allow our feedback
                              * to stabilise (i.e. sofCount == 128 to fire) */
                             sofCount = 0;
-                            pllUpdate = 0;
                             clocks = 0;
                             clockcounter = 0;
                             mod_from_last_time = 0;
@@ -559,35 +557,23 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
             /* SOF notification from XUD_Manager() */
             case inuint_byref(c_sof, u_tmp):
 #if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
-                /* This really could (should) be done in decouple. However, for a quick demo this is okay
-                 * Decouple expects a 16:16 number in fixed point stored in the global g_speed */
                 unsigned usbSpeed;
-                int framesPerSec;
                 GET_SHARED_GLOBAL(usbSpeed, g_curUsbSpeed);
-
-                framesPerSec = (usbSpeed == XUD_SPEED_HS) ? 8000 : 1000;
-
-                clocks =  ((int64_t) sampleFreq << 16) / framesPerSec;
-
-                asm volatile("stw %0, dp[g_speed]"::"r"(clocks));
-
-                sofCount += 1000;
-                if (sofCount == framesPerSec)
-                {
-                    sofCount = 0;
-                    pllUpdate++;
-#if (!XUA_USE_SW_PLL)
-                    /* Port is accessed via interface to allow flexibilty with location */
-                    i_pll_ref.toggle();
-                    t_sofCheck :> timeLastEdge;
-                    timeNextEdge = timeLastEdge + LOCAL_CLOCK_INCREMENT + LOCAL_CLOCK_MARGIN;
-#endif
-                }
+                static int sofCount = 0;
 #if (XUA_USE_SW_PLL)
-                // Update PLL @ 100Hz
-                if(pllUpdate == 10)
+                /* Run PFD and sw_pll controller at 100Hz */ 
+                const int sofFreqDivider = (usbSpeed == XUD_SPEED_HS) ? (8000 / controller_rate_hz) : (1000 / controller_rate_hz);
+#else /* (XUA_USE_SW_PLL) */
+                /* 1000 toggles per second for CS2100 reference -> 500 Hz */
+                const int toggleRateHz = 1000; 
+                const int sofFreqDivider = (usbSpeed == XUD_SPEED_HS) ? (8000 / toggleRateHz) : (1000 / toggleRateHz);
+#endif /* (XUA_USE_SW_PLL) */
+
+                sofCount++;
+                if (sofCount == sofFreqDivider)
                 {
-                    pllUpdate = 0;
+#if (XUA_USE_SW_PLL)
+                    /* Grab port timer count, run through PFD and send to sw_pll */
                     unsigned short mclk_pt;
                     asm volatile("getts %0, res[%1]" : "=r" (mclk_pt) : "r" (p_off_mclk));
 
@@ -603,12 +589,29 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
                     }
                     sw_pll_pfd.mclk_pt_last = mclk_pt;
 
+                    /* Send error to sw_pll */
                     outuint(c_sw_pll, error);
                     outct(c_sw_pll, XS1_CT_END);
 
                     printintln(error);
+#else /* (XUA_USE_SW_PLL) */
+                    /* Do toggle for CS2100 reference clock */
+                    /* Port is accessed via interface to allow flexibilty with location */
+                    i_pll_ref.toggle();
+                    t_sofCheck :> timeLastEdge;
+                    timeNextEdge = timeLastEdge + LOCAL_CLOCK_INCREMENT + LOCAL_CLOCK_MARGIN;
+#endif /* (XUA_USE_SW_PLL) */
+                    sofCount = 0;
                 }
-#endif
+
+                /* This really could (should) be done in decouple. However, for a quick demo this is okay
+                 * Decouple expects a 16:16 number in fixed point stored in the global g_speed */
+
+                const int framesPerSec = (usbSpeed == XUD_SPEED_HS) ? 8000 : 1000;
+
+                clocks = ((int64_t) sampleFreq << 16) / framesPerSec;
+                asm volatile("stw %0, dp[g_speed]"::"r"(clocks));
+
 
 #elif (XUA_SYNCMODE == XUA_SYNCMODE_ASYNC)
 
