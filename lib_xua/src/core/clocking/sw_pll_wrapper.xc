@@ -138,6 +138,7 @@ void sw_pll_task(chanend c_sw_pll){
         timer tmr;
         int32_t time_trigger;
         tmr :> time_trigger;
+        time_trigger += sdm_interval; /* ensure first loop has correct delay */
         int running = 1;
 
         outuint(c_sw_pll, 0); /* Signal back via clockgen to audio to start I2S */
