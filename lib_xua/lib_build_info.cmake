@@ -27,7 +27,7 @@ set(LIB_DEPENDENT_MODULES "lib_locks"
                           "lib_xassert"
                           "lib_xud"
                           "lib_adat"
-                          "lib_sw_pll")
+                          "lib_sw_pll(feature/non_ack_reg_Write)")
 
 set(LIB_COMPILER_FLAGS -O3 -DREF_CLK_FREQ=100 -fasm-linenum -fcomment-asm)
 
