@@ -16,6 +16,21 @@ extern "C"
 #define DISABLE_SDM     0x10000000
 
 
+typedef enum stability_status_t
+{
+    PLL_UNSTABLE,
+    PLL_STABLE
+} stability_status_t;
+
+typedef struct stability_state_t
+{
+    int stabilty_error_threshold;       /* Magnitude of error below which we consider stability achieved */     
+    int stabilty_count_threshold;       /* Number of PFD calculations at below threshold before stable */
+    int instablity_counter;             /* 0 = stable else unstable */
+
+} stability_state_t;
+
+
 /** Task that receives an error term, passes it through a PI controller and periodically
  *  calclulates a sigma delta output value and sends it to the PLL fractional register.
  *
@@ -33,17 +48,20 @@ void restart_sigma_delta(chanend c_sw_pll, unsigned mclk_rate);
 
 /** Performs a frequency comparsion between the incoming digital Rx stream and the local mclk.
  *
- *  \param mclk_time_stamp  The captured mclk count (using port timer) at the time of sample Rx.
- *  \param mclks_per_sample The nominal number of mclks per audio sample.
- *  \param c_sw_pll         Channel connected to the sigma delta and controller thread.
- *  \param receivedSamples  The number of received samples since tha last call to this function.
- *  \param reset_sw_pll_pfd Reference to a flag which will be used to signal reset of this function's state.
+ *  \param  mclk_time_stamp  The captured mclk count (using port timer) at the time of sample Rx.
+ *  \param  mclks_per_sample The nominal number of mclks per audio sample.
+ *  \param  c_sw_pll         Channel connected to the sigma delta and controller thread.
+ *  \param  receivedSamples  The number of received samples since tha last call to this function.
+ *  \param  reset_sw_pll_pfd Reference to a flag which will be used to signal reset of this function's state.
+ * 
+ *  \return the calculated frequency error
  */
-void do_sw_pll_phase_frequency_detector_dig_rx( unsigned short mclk_time_stamp,
+int  do_sw_pll_phase_frequency_detector_dig_rx( unsigned short mclk_time_stamp,
                                                 unsigned mclks_per_sample,
                                                 chanend c_sw_pll,
                                                 int receivedSamples,
-                                                int &reset_sw_pll_pfd);
+                                                int &reset_sw_pll_pfd,
+                                                stability_state_t &stability_state);
 
 /** Initilaises the software PLL both hardware and state. Sets the mclk frequency to a nominal point. 
  *
@@ -52,6 +70,12 @@ void do_sw_pll_phase_frequency_detector_dig_rx( unsigned short mclk_time_stamp,
  *
  *  returns         The SDM update interval in ticks and the initial DCO setting for nominal frequency */
 {unsigned, unsigned} InitSWPLL(sw_pll_state_t &sw_pll, unsigned mClk);
+
+void init_stability(stability_state_t &state, int stabilty_error_threshold, int stabilty_count_threshold);
+
+void reset_stability(stability_state_t &state);
+
+int check_stability(stability_state_t &state, int error);
 
 #endif /* XUA_USE_SW_PLL */
 #endif /* _SW_PLL_WRAPPPER_H_ */

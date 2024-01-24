@@ -385,8 +385,11 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
                     pfd_ppm_max);                           
     outuint(c_sw_pll, masterClockFreq);
     outct(c_sw_pll, XS1_CT_END);
-    inuint(c_sw_pll); /* receive ACK */
-    inct(c_sw_pll);
+
+    stability_state_t stability_state;
+    init_stability(stability_state, 5, 10);                 /* Typically runs at -2 to +2 maximum when locked so 5 or less is good. 
+                                                               10 = number of error calcs at below threshold before considered stable */
+    int audio_needs_ack = 0;                                /* flag saying audio needs ack to release following PLL change */
 
 #else /* XUA_USE_SW_PLL */
     timer t_sofCheck;
@@ -594,6 +597,14 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
                     outct(c_sw_pll, XS1_CT_END);
 
                     printintln(error);
+
+                    if((check_stability(stability_state, error) == PLL_STABLE) && audio_needs_ack)
+                    {
+                        c_audio_rate_change <: 0;     /* ACK back to audio to release to start */
+                        audio_needs_ack = 0;
+                        printstr("stable\n");
+                    }
+
 #else /* (XUA_USE_SW_PLL) */
                     /* Do toggle for CS2100 reference clock */
                     /* Port is accessed via interface to allow flexibilty with location */
@@ -1031,7 +1042,6 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
 
 #if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
             case c_audio_rate_change :> u_tmp:
-                printstr("rc\n");
                 unsigned selected_mclk_rate = u_tmp;
                 c_audio_rate_change :> u_tmp;                       /* Sample rate is discarded as only care about mclk */
 #if (XUA_USE_SW_PLL)
@@ -1042,20 +1052,13 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
                                 pfd_ppm_max);
                 restart_sigma_delta(c_sw_pll, selected_mclk_rate);
                                                                     /* Delay ACK until sw_pll says it is ready */
+                reset_stability(stability_state);
+                audio_needs_ack = 1;
 #else
                 c_audio_rate_change <: 0;                           /* ACK back to audio to release I2S immediately */
 #endif /* XUA_USE_SW_PLL */
                 break;
 
-#if (XUA_USE_SW_PLL)
-            /* This is fired when sw_pll has completed initialising a new mclk_rate */
-            case inuint_byref(c_sw_pll, u_tmp):
-                inct(c_sw_pll);
-                printstr("sy\n");
-                c_audio_rate_change <: 0;     /* ACK back to audio to release */
-                
-                break;
-#endif /* (XUA_USE_SW_PLL) */
 #endif /* (XUA_SYNCMODE == XUA_SYNCMODE_SYNC) */
 
 #ifdef IAP
