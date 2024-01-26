@@ -1185,7 +1185,11 @@
 
 /* Handle out volume control in the mixer - enabled by default */
 #ifndef OUT_VOLUME_IN_MIXER
-#define OUT_VOLUME_IN_MIXER         (1)
+#if MIXER
+    #define OUT_VOLUME_IN_MIXER     (1)
+#else
+    #define OUT_VOLUME_IN_MIXER     (0)
+#endif
 #endif
 
 /* Apply out volume controls after the mix. Only relevant when OUT_VOLUME_IN_MIXER enabled. Enabled by default */
