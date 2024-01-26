@@ -1202,7 +1202,7 @@
 #define IN_VOLUME_IN_MIXER          (0)
 #endif
 
-/* Apply in volume controls after the mix. Only relebant when IN_VOLUMNE_IN MIXER enabled. Enabled by default */
+/* Apply in volume controls after the mix. Only relevant when IN_VOLUMNE_IN MIXER enabled. Enabled by default */
 #ifndef IN_VOLUME_AFTER_MIX
 #define IN_VOLUME_AFTER_MIX         (1)
 #endif
