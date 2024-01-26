@@ -13,20 +13,21 @@
  *  Most of the chanend parameters to the function should be connected to
  *  XUD_Manager().  The uses two cores.
  *
- *  \param c_aud_out          Audio OUT endpoint channel connected to the XUD
- *  \param c_aud_in           Audio IN endpoint channel connected to the XUD
- *  \param c_aud_fb           Audio feedback endpoint channel connected to the XUD
- *  \param c_midi_from_host   MIDI OUT endpoint channel connected to the XUD
- *  \param c_midi_to_host     MIDI IN endpoint channel connected to the XUD
- *  \param c_midi             Channel connected to MIDI core
- *  \param c_int              Audio clocking interrupt endpoint channel connected to the XUD
- *  \param c_clk_int          Optional chanend connected to the clockGen() thread if present
- *  \param c_sof              Start of frame channel connected to the XUD
- *  \param c_aud_ctl          Audio control channel connected to  Endpoint0()
- *  \param p_off_mclk         A port that is clocked of the MCLK input (not the MCLK input itself)
- *  \param c_aud              Channel connected to XUA_AudioHub() core
- *  \param i_pll_ref          Interface to task that toggles reference pin to CS2100
- *  \param c_swpll_update     Channel connected to software PLL task. Expects master clock counts based on USB frames.
+ *  \param c_aud_out            Audio OUT endpoint channel connected to the XUD
+ *  \param c_aud_in             Audio IN endpoint channel connected to the XUD
+ *  \param c_aud_fb             Audio feedback endpoint channel connected to the XUD
+ *  \param c_midi_from_host     MIDI OUT endpoint channel connected to the XUD
+ *  \param c_midi_to_host       MIDI IN endpoint channel connected to the XUD
+ *  \param c_midi               Channel connected to MIDI core
+ *  \param c_int                Audio clocking interrupt endpoint channel connected to the XUD
+ *  \param c_clk_int            Optional chanend connected to the clockGen() thread if present
+ *  \param c_sof                Start of frame channel connected to the XUD
+ *  \param c_aud_ctl            Audio control channel connected to  Endpoint0()
+ *  \param p_off_mclk           A port that is clocked of the MCLK input (not the MCLK input itself)
+ *  \param c_aud                Channel connected to XUA_AudioHub() core
+ *  \param c_audio_rate_change  Channel to notify and synchronise on audio rate change
+ *  \param i_pll_ref            Interface to task that toggles reference pin to CS2100
+ *  \param c_swpll_update       Channel connected to software PLL task. Expects master clock counts based on USB frames.
  */
 void XUA_Buffer(
             chanend c_aud_out,

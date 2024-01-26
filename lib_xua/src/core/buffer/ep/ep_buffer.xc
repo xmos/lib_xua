@@ -593,7 +593,6 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
                     outuint(c_sw_pll, error);
                     outct(c_sw_pll, XS1_CT_END);
 
-                    printintln(error);
 #else /* (XUA_USE_SW_PLL) */
                     /* Do toggle for CS2100 reference clock */
                     /* Port is accessed via interface to allow flexibilty with location */
@@ -1031,7 +1030,6 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
 
 #if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
             case c_audio_rate_change :> u_tmp:
-                printstr("rc\n");
                 unsigned selected_mclk_rate = u_tmp;
                 c_audio_rate_change :> u_tmp;                       /* Sample rate is discarded as only care about mclk */
 #if (XUA_USE_SW_PLL)
@@ -1051,7 +1049,6 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
             /* This is fired when sw_pll has completed initialising a new mclk_rate */
             case inuint_byref(c_sw_pll, u_tmp):
                 inct(c_sw_pll);
-                printstr("sy\n");
                 c_audio_rate_change <: 0;     /* ACK back to audio to release */
                 
                 break;
