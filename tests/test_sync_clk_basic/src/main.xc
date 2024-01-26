@@ -1,4 +1,4 @@
-// Copyright 2022 XMOS LIMITED.
+// Copyright 2022-2024 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
 /* Simple test to ensure reference clock to CS2100 device continues when SOF clock not available
@@ -173,6 +173,7 @@ int main()
     chan c_in[EP_COUNT_IN];
     chan c_sof;
     chan c_aud_ctl;
+    chan c_audio_rate_change;
 
     interface pll_ref_if i_pll_ref;
 
@@ -185,7 +186,7 @@ int main()
 
             XUA_Buffer_Ep(c_out[1],      /* USB Audio Out*/
                 c_in[1],                 /* USB Audio In */
-                c_sof, c_aud_ctl, p_off_mclk, i_pll_ref
+                c_sof, c_aud_ctl, p_off_mclk, c_audio_rate_change, i_pll_ref
             );
         }
 
@@ -193,4 +194,6 @@ int main()
 
         checker();
     }
+
+    return 0;
 }

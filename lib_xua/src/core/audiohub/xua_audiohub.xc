@@ -20,6 +20,7 @@
 
 #include "xua.h"
 
+#include "audiohw.h"
 #include "audioports.h"
 #include "mic_array_conf.h"
 #if (XUA_SPDIF_TX_EN)
@@ -640,7 +641,9 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
 #endif
 #if (XUA_ADAT_RX_EN || XUA_SPDIF_RX_EN)
     , chanend c_dig_rx
-    , chanend c_mclk_change
+#endif
+#if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC || XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
+    , chanend c_audio_rate_change
 #endif
 #if (XUD_TILE != 0) && (AUDIO_IO_TILE == 0) && (XUA_DFU_EN == 1)
     , server interface i_dfu ?dfuInterface
@@ -800,15 +803,23 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
             }
 #endif
             /* Configure Clocking/CODEC/DAC/ADC for SampleFreq/MClk */
-            AudioHwConfig(curFreq, mClk, dsdMode, curSamRes_DAC, curSamRes_ADC);
-#if (XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
-            /* Notify clockgen of new mCLk */
-            c_mclk_change <: mClk;
-            c_mclk_change <: curFreq;
 
-            /* Wait for ACK back from clockgen to signal clocks all good */
-            c_mclk_change :> int _;
+            /* User should mute audio hardware */
+            AudioHwConfig_Mute();
+
+            /* User code should configure audio harware for SampleFreq/MClk etc */
+            AudioHwConfig(curFreq, mClk, dsdMode, curSamRes_DAC, curSamRes_ADC);
+#if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC || XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
+            /* Notify clockgen of new mCLk */
+            c_audio_rate_change <: mClk;
+            c_audio_rate_change <: curFreq;
+
+            /* Wait for ACK back from clockgen or ep_buffer to signal clocks all good */
+            c_audio_rate_change :> int _;
 #endif
+
+            /* User should unmute audio hardware */
+            AudioHwConfig_UnMute();
         }
 
         if(!firstRun)

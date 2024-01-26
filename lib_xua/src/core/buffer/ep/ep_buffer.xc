@@ -1,4 +1,4 @@
-// Copyright 2011-2023 XMOS LIMITED.
+// Copyright 2011-2024 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 #include "xua.h"
 #if XUA_USB_EN
@@ -105,7 +105,12 @@ void XUA_Buffer(
 #endif
     , chanend c_aud
 #if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
+    , chanend c_audio_rate_change
+    #if(XUA_USE_SW_PLL)
+    , chanend c_sw_pll
+    #else
     , client interface pll_ref_if i_pll_ref
+    #endif
 #endif
 )
 {
@@ -141,7 +146,12 @@ void XUA_Buffer(
                 , c_buff_ctrl
 #endif
 #if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
-                , i_pll_ref
+                , c_audio_rate_change
+    #if(XUA_USE_SW_PLL)
+               , c_sw_pll
+    #else
+               , i_pll_ref
+    #endif
 #endif
             );
 
@@ -190,8 +200,13 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
 #ifdef CHAN_BUFF_CTRL
     , chanend c_buff_ctrl
 #endif
-#if XUA_SYNCMODE == XUA_SYNCMODE_SYNC
+#if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
+    , chanend c_audio_rate_change
+    #if (XUA_USE_SW_PLL)
+    , chanend c_sw_pll
+    #else
     , client interface pll_ref_if i_pll_ref
+    #endif
 #endif
     )
 {
@@ -247,7 +262,7 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
 #if (NUM_USB_CHAN_IN > 0)
     unsigned bufferIn = 1;
 #endif
-    unsigned sofCount = 0;
+    int sofCount = 0;
 
     unsigned mod_from_last_time = 0;
 #ifdef FB_TOLERANCE_TEST
@@ -294,7 +309,6 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
     unsigned iap_ea_native_interface_alt_setting = 0;
     unsigned iap_ea_native_control_to_send = 0;
     unsigned iap_ea_native_incoming = 0;
-
 #endif
 #endif
 
@@ -357,6 +371,24 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
 #ifndef LOCAL_CLOCK_MARGIN
 #define LOCAL_CLOCK_MARGIN          (1000)
 #endif
+
+#if (XUA_USE_SW_PLL)
+    /* Setup the phase frequency detector */
+    const unsigned controller_rate_hz = 100;
+    const unsigned pfd_ppm_max = 2000;                      /* PPM range before we assume unlocked */
+
+    sw_pll_pfd_state_t sw_pll_pfd;
+    sw_pll_pfd_init(&sw_pll_pfd,
+                    1,                                      /* How often the PFD is invoked per call */
+                    masterClockFreq / controller_rate_hz,   /* pll ratio integer */
+                    0,                                      /* Assume precise timing of sampling */
+                    pfd_ppm_max);                           
+    outuint(c_sw_pll, masterClockFreq);
+    outct(c_sw_pll, XS1_CT_END);
+    inuint(c_sw_pll); /* receive ACK */
+    inct(c_sw_pll);
+
+#else /* XUA_USE_SW_PLL */
     timer t_sofCheck;
     unsigned timeLastEdge;
     unsigned timeNextEdge;
@@ -364,6 +396,8 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
     timeNextEdge + LOCAL_CLOCK_INCREMENT;
     i_pll_ref.toggle();
 #endif
+
+#endif /* (XUA_SYNCMODE == XUA_SYNCMODE_SYNC) */
 
     while(1)
     {
@@ -427,7 +461,7 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
                             /* Reset FB */
                             /* Note, Endpoint 0 will hold off host for a sufficient period to allow our feedback
                              * to stabilise (i.e. sofCount == 128 to fire) */
-                            sofCount = 1;
+                            sofCount = 0;
                             clocks = 0;
                             clockcounter = 0;
                             mod_from_last_time = 0;
@@ -450,7 +484,7 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
                                 masterClockFreq = MCLK_441;
                             }
                         }
-#endif
+#endif /* (MAX_FREQ != MIN_FREQ) */
                         /* Ideally we want to wait for handshake (and pass back up) here.  But we cannot keep this
                         * core locked, it must stay responsive to packets (MIDI etc) and SOFs.  So, set a flag and check for
                         * handshake elsewhere */
@@ -502,13 +536,13 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
                     }
 #endif
                     /* Pass on sample freq change to decouple() via global flag (saves a chanend) */
-                    /* Note: freqChange flags now used to communicate other commands also */
+                    /* Note: freqChange_flag now used to communicate other commands also */
                     SET_SHARED_GLOBAL0(g_freqChange, cmd);                /* Set command */
                     SET_SHARED_GLOBAL(g_freqChange_flag, cmd);  /* Set Flag */
                 }
                 break;
             }
-#if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
+#if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC) && (!XUA_USE_SW_PLL)
             case t_sofCheck when timerafter(timeNextEdge) :> void:
                 i_pll_ref.toggle();
                 timeLastEdge = timeNextEdge;
@@ -523,28 +557,61 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
             /* SOF notification from XUD_Manager() */
             case inuint_byref(c_sof, u_tmp):
 #if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
-                /* This really could (should) be done in decouple. However, for a quick demo this is okay
-                 * Decouple expects a 16:16 number in fixed point stored in the global g_speed */
                 unsigned usbSpeed;
-                int framesPerSec;
                 GET_SHARED_GLOBAL(usbSpeed, g_curUsbSpeed);
                 static int sofCount = 0;
+#if (XUA_USE_SW_PLL)
+                /* Run PFD and sw_pll controller at 100Hz */ 
+                const int sofFreqDivider = (usbSpeed == XUD_SPEED_HS) ? (8000 / controller_rate_hz) : (1000 / controller_rate_hz);
+#else /* (XUA_USE_SW_PLL) */
+                /* 1000 toggles per second for CS2100 reference -> 500 Hz */
+                const int toggleRateHz = 1000; 
+                const int sofFreqDivider = (usbSpeed == XUD_SPEED_HS) ? (8000 / toggleRateHz) : (1000 / toggleRateHz);
+#endif /* (XUA_USE_SW_PLL) */
 
-                framesPerSec = (usbSpeed == XUD_SPEED_HS) ? 8000 : 1000;
-
-                clocks =  ((int64_t) sampleFreq << 16) / framesPerSec;
-
-                asm volatile("stw %0, dp[g_speed]"::"r"(clocks));
-
-                sofCount += 1000;
-                if (sofCount == framesPerSec)
+                sofCount++;
+                if (sofCount == sofFreqDivider)
                 {
+#if (XUA_USE_SW_PLL)
+                    /* Grab port timer count, run through PFD and send to sw_pll */
+                    unsigned short mclk_pt;
+                    asm volatile("getts %0, res[%1]" : "=r" (mclk_pt) : "r" (p_off_mclk));
+
+                    uint8_t first_loop = 0;
+                    unsafe{
+                        sw_pll_calc_error_from_port_timers(&sw_pll_pfd, &first_loop, mclk_pt, 0);
+                    }
+
+                    int error = 0;
+                    if(!first_loop)
+                    {
+                        error = sw_pll_pfd.mclk_diff;
+                    }
+                    sw_pll_pfd.mclk_pt_last = mclk_pt;
+
+                    /* Send error to sw_pll */
+                    outuint(c_sw_pll, error);
+                    outct(c_sw_pll, XS1_CT_END);
+
+#else /* (XUA_USE_SW_PLL) */
+                    /* Do toggle for CS2100 reference clock */
                     /* Port is accessed via interface to allow flexibilty with location */
                     i_pll_ref.toggle();
                     t_sofCheck :> timeLastEdge;
-                    sofCount = 0;
                     timeNextEdge = timeLastEdge + LOCAL_CLOCK_INCREMENT + LOCAL_CLOCK_MARGIN;
+#endif /* (XUA_USE_SW_PLL) */
+                    sofCount = 0;
                 }
+
+                /* This really could (should) be done in decouple. However, for a quick demo this is okay
+                 * Decouple expects a 16:16 number in fixed point stored in the global g_speed */
+
+                const int framesPerSec = (usbSpeed == XUD_SPEED_HS) ? 8000 : 1000;
+
+                clocks = ((int64_t) sampleFreq << 16) / framesPerSec;
+                asm volatile("stw %0, dp[g_speed]"::"r"(clocks));
+
+
 #elif (XUA_SYNCMODE == XUA_SYNCMODE_ASYNC)
 
                 /* NOTE our feedback will be wrong for a couple of SOF's after a SF change due to
@@ -646,7 +713,6 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
                         clockcounter = 0;
                     }
 #else
-
                     /* Assuming 48kHz from a 24.576 master clock (0.0407uS period)
                      * MCLK ticks per SOF = 125uS / 0.0407 = 3072 MCLK ticks per SOF.
                      * expected Feedback is 48000/8000 = 6 samples. so 0x60000 in 16:16 format.
@@ -691,7 +757,6 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
                             clocks < (expected_fb + FB_TOLERANCE))
 #endif
                         {
-                            int usb_speed;
                             asm volatile("stw %0, dp[g_speed]"::"r"(clocks));   // g_speed = clocks
 
                             GET_SHARED_GLOBAL(usb_speed, g_curUsbSpeed);
@@ -897,8 +962,8 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
 #endif
 #endif
 
-#if XUA_HID_ENABLED
-                /* HID Report Data */
+#if (XUA_HID_ENABLED)
+            /* HID Report Data */
             case XUD_SetData_Select(c_hid, ep_hid, result):
                 hid_ready_flag = 0U;
                 unsigned reportTime;
@@ -911,7 +976,7 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
 #endif
 
 #ifdef MIDI
-                /* Received word from MIDI thread - Check for ACK or Data */
+            /* Received word from MIDI thread - Check for ACK or Data */
             case midi_get_ack_or_data(c_midi, is_ack, datum):
                 if (is_ack)
                 {
@@ -962,6 +1027,33 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
                 }
                 break;
 #endif  /* ifdef MIDI */
+
+#if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
+            case c_audio_rate_change :> u_tmp:
+                unsigned selected_mclk_rate = u_tmp;
+                c_audio_rate_change :> u_tmp;                       /* Sample rate is discarded as only care about mclk */
+#if (XUA_USE_SW_PLL)
+                sw_pll_pfd_init(&sw_pll_pfd,
+                                1,                                          /* How often the PFD is invoked per call */
+                                selected_mclk_rate / controller_rate_hz,    /* pll muliplication ratio integer */
+                                0,                                          /* Assume precise timing of sampling */
+                                pfd_ppm_max);
+                restart_sigma_delta(c_sw_pll, selected_mclk_rate);
+                                                                    /* Delay ACK until sw_pll says it is ready */
+#else
+                c_audio_rate_change <: 0;                           /* ACK back to audio to release I2S immediately */
+#endif /* XUA_USE_SW_PLL */
+                break;
+
+#if (XUA_USE_SW_PLL)
+            /* This is fired when sw_pll has completed initialising a new mclk_rate */
+            case inuint_byref(c_sw_pll, u_tmp):
+                inct(c_sw_pll);
+                c_audio_rate_change <: 0;     /* ACK back to audio to release */
+                
+                break;
+#endif /* (XUA_USE_SW_PLL) */
+#endif /* (XUA_SYNCMODE == XUA_SYNCMODE_SYNC) */
 
 #ifdef IAP
             /* Received word from iap thread - Check for ACK or Data */

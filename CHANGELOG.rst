@@ -14,7 +14,7 @@ HEAD
   * CHANGED:   QUAD_SPI_FLASH replaced by XUA_QUAD_SPI_FLASH (default: 1)
   * CHANGED:   UserBufferManagementInit() now takes a sample rate parameter
   * CHANGED:   xcore.ai targets use sigma-delta software PLL for clock recovery of
-    digital Rx streams by default.
+    digital Rx streams and synch USB audio by default.
 
   * Changes to dependencies:
 
