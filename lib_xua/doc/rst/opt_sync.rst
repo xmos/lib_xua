@@ -39,8 +39,11 @@ Setting the synchronisation mode of the device is done using the define in :ref:
      - USB synchronisation mode
      - ``XUA_SYNCMODE_ASYNC``
 
-When operating in synchronous mode an external Cirrus Logic CS2100 device is required for master clock 
-generation. The codebase expects to drive a synchronisation signal to this external device
+When operating in synchronous mode a local master clock must be generated that is synchronised to the incoming 
+SoF rate from USB. Either an external Cirrus Logic CS2100 device is required for this purpose 
+or, on xcore.ai devices, the on-chip application PLL may be used via lib_sw_pll.
+In the case of using the CS2100, the codebase expects to drive a synchronisation signal to this external device
+as a reference.
 
 The programmer should ensure the define in :ref:`opt_sync_ref_defines` is set appropriately.
 
@@ -56,8 +59,11 @@ The programmer should ensure the define in :ref:`opt_sync_ref_defines` is set ap
    * - ``PLL_REF_TILE``
      - Tile location of reference to CS2100 device
      - ``AUDIO_IO_TILE``
+   * - ``XUA_USE_SW_PLL``
+     - Whether or not to use sw_pll to recover the clock (xcore.ai only)
+     - 1 for xcore.ai targets. May be overridden to 0 in ``xua_conf.h``
 
-The codebase expects this reference signal port to be defined in the application XN file as ``PORT_PLL_REF``. 
+The codebase expects the CS2100 reference signal port to be defined in the application XN file as ``PORT_PLL_REF``. 
 This may be a port of any bit-width, however, connection to bit[0] is assumed::
 
     <Port Location="XS1_PORT_1A"  Name="PORT_PLL_REF"/>
