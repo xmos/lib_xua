@@ -1,4 +1,4 @@
-// Copyright 2022-2023 XMOS LIMITED.
+// Copyright 2022-2024 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
 #include <stdlib.h>
@@ -800,14 +800,18 @@ static int find_xmos_device(unsigned int id)
 
 // End of libusb interface functions
 
-int usb_mixer_connect() 
+#ifdef _WIN32
+int usb_mixer_connect(TCHAR guid[GUID_STR_LEN])
+#else
+int usb_mixer_connect()
+#endif
 {
     // Allocate internal storage
     usb_mixers = (usb_mixer_handle *)malloc(sizeof(usb_mixer_handle));
     memset(usb_mixers, 0, sizeof(usb_mixer_handle));
 
 #if defined(_WIN32)
-    gDrvApi.LoadByGUID(_T("{E5A2658B-817D-4A02-A1DE-B628A93DDF5D}"));
+    gDrvApi.LoadByGUID(guid);
     TUsbAudioStatus st = gDrvApi.TUSBAUDIO_EnumerateDevices();
 #endif
 

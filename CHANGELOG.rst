@@ -15,6 +15,7 @@ HEAD
   * CHANGED:   UserBufferManagementInit() now takes a sample rate parameter
   * CHANGED:   xcore.ai targets use sigma-delta software PLL for clock recovery of
     digital Rx streams and synch USB audio by default.
+  * CHANGED:   Windows host mixer control application now requires driver GUID option
 
   * Changes to dependencies:
 
