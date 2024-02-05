@@ -1,4 +1,4 @@
-// Copyright 2022-2023 XMOS LIMITED.
+// Copyright 2022-2024 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
 #include <stdlib.h>
@@ -14,10 +14,20 @@
 // TODO
 // res, min, max
 
+#ifdef _WIN32
+int mixer_init(TCHAR guid[GUID_STR_LEN])
+#else
 int mixer_init(void)
+#endif
 {
+#ifdef _WIN32
+    int ret = usb_mixer_connect(guid);
+#else
+    int ret = usb_mixer_connect();
+#endif
+
     /* Open the connection to the USB mixer */
-    if (usb_mixer_connect() == USB_MIXER_FAILURE) 
+    if (ret == USB_MIXER_FAILURE)
     {
         return USB_MIXER_FAILURE;
     }
@@ -381,8 +391,15 @@ void print_levels(const char* levelTitle, unsigned char* levels, int levelBytes)
 
 
 void mixer_display_usage(void) {
-    fprintf(stderr, "Usage :\n");
-    fprintf(stderr, 
+    fprintf(stderr, "Usage: xmos_mixer "
+#ifdef _WIN32
+                    "-g<GUID> "
+#endif
+                    "<options>\n");
+    fprintf(stderr,
+#ifdef _WIN32
+            "     -g<GUID>                            Driver GUID string, eg. -g{E5A2658B-817D-4A02-A1DE-B628A93DDF5D}\n"
+#endif
             "     --display-info\n"
             "     --display-mixer-nodes               mixer_id\n"
             "     --display-min                       mixer_id\n"
@@ -421,97 +438,124 @@ int main (int argc, char **argv) {
   unsigned int mixer_index = 0;
   unsigned int result = 0;
 
+  int min_argc;
+  // arg_idx is the position in the arguments to start parsing to skip the "-g" GUID option on Windows
+  int arg_idx;
+#ifdef _WIN32
+  // Driver GUID string is required on Windows
+  min_argc = 3;
+  arg_idx = 2;
+#else
+  min_argc = 2;
+  arg_idx = 1;
+#endif
 
-
-  if (argc < 2) {
+  if (argc < min_argc) {
     fprintf(stderr, "ERROR :: No options passed to mixer application\n");
     mixer_display_usage();
     return -1;
   }
+
+#ifdef _WIN32
+  TCHAR driver_guid[GUID_STR_LEN];
+
+  if (strncmp(argv[1], "-g", 2) == 0) {
+    swprintf(driver_guid, GUID_STR_LEN, L"%hs", argv[1]+2);
+  } else {
+    fprintf(stderr, "ERROR :: First option must be driver GUID\n");
+    return -1;
+  }
+#endif
 
   if (strcmp(argv[1], "--help") == 0) {
     mixer_display_usage();
     return 0;
   } 
 
-  if (mixer_init() != USB_MIXER_SUCCESS) {
+#ifdef _WIN32
+  int ret = mixer_init(driver_guid);
+#else
+  int ret = mixer_init();
+#endif
+
+  if (ret != USB_MIXER_SUCCESS) {
     fprintf(stderr, "ERROR :: Cannot connect\n");
     return -1;
   }
 
-  if (strcmp(argv[1], "--display-info") == 0) 
+  if (strcmp(argv[arg_idx], "--display-info") == 0)
   {
     mixer_display_info();
   } 
-  else if (strcmp(argv[1], "--display-mixer-nodes") == 0) 
+  else if (strcmp(argv[arg_idx], "--display-mixer-nodes") == 0)
   {
-    if (argv[2]) 
+    if (argv[arg_idx+1])
     {
-      mixer_index = atoi(argv[2]);
+      mixer_index = atoi(argv[arg_idx+1]);
     } else {
       fprintf(stderr, "ERROR :: No mixer index supplied\n");
       return -1;
     }
     mixer_display(mixer_index, MIXER_UNIT_DISPLAY_VALUE);
-  } else if (strcmp(argv[1], "--display-mixer-nodes") == 0) {
+  } else if (strcmp(argv[arg_idx], "--display-mixer-nodes") == 0) {
     if (argv[2]) {
-      mixer_index = atoi(argv[2]);
+      mixer_index = atoi(argv[arg_idx+1]);
     } else {
       fprintf(stderr, "ERROR :: No mixer index supplied\n");
       return -1;
     }
     mixer_display(mixer_index, MIXER_UNIT_DISPLAY_VALUE);
-  } else if (strcmp(argv[1], "--display-min") == 0) {
-    if (argv[2]) {
-      mixer_index = atoi(argv[2]);
+  } else if (strcmp(argv[arg_idx], "--display-min") == 0) {
+    if (argv[arg_idx+1]) {
+      mixer_index = atoi(argv[arg_idx+1]);
     } else {
       fprintf(stderr, "ERROR :: No mixer index supplied\n");
       return -1;
     }
     mixer_display(mixer_index, MIXER_UNIT_DISPLAY_MIN);
-  } else if (strcmp(argv[1], "--display-max") == 0) {
-    if (argv[2]) {
-      mixer_index = atoi(argv[2]);
+  } else if (strcmp(argv[arg_idx], "--display-max") == 0) {
+    if (argv[arg_idx+1]) {
+      mixer_index = atoi(argv[arg_idx+1]);
     } else {
       fprintf(stderr, "ERROR :: No mixer index supplied\n");
       return -1;
     }
     mixer_display(mixer_index, MIXER_UNIT_DISPLAY_MAX);
-  } else if (strcmp(argv[1], "--display-res") == 0) {
-    if (argv[2]) {
-      mixer_index = atoi(argv[2]);
+  } else if (strcmp(argv[arg_idx], "--display-res") == 0) {
+    if (argv[arg_idx+1]) {
+      mixer_index = atoi(argv[arg_idx+1]);
     } else {
       fprintf(stderr, "ERROR :: No mixer index supplied\n");
       return -1;
     }
     mixer_display(mixer_index, MIXER_UNIT_DISPLAY_RES);
   } 
-  else if (strcmp(argv[1], "--set-value") == 0) {
+  else if (strcmp(argv[arg_idx], "--set-value") == 0) {
     unsigned int mixer_unit = 0;
     double value = 0;
-    if (argc < 5) {
+    if (argc - arg_idx < 4) {
       fprintf(stderr, "ERROR :: incorrect number of arguments passed\n");
       return -1;
     }
 
-    mixer_index = atoi(argv[2]);
-    mixer_unit = atoi(argv[3]);
-    if (strcmp(argv[4],"-inf")==0) 
+    mixer_index = atoi(argv[arg_idx+1]);
+    mixer_unit = atoi(argv[arg_idx+2]);
+    if (strcmp(argv[arg_idx+3],"-inf")==0)
       value = -128;
     else
-      value = atof(argv[4]);
+      value = atof(argv[arg_idx+3]);
 
     usb_mixer_set_value(mixer_index, mixer_unit, value);
-  } else if (strcmp(argv[1], "--get-value") == 0) {
+  } else if (strcmp(argv[arg_idx], "--get-value") == 0) {
     unsigned int mixer_unit = 0;
     double result = 0;
-    if (argc < 4) {
+    if (argc - arg_idx < 3) {
       fprintf(stderr, "ERROR :: incorrect number of arguments passed\n");
       return -1;
     }
 
-    mixer_index = atoi(argv[2]);
-    mixer_unit = atoi(argv[3]);
+    mixer_index = atoi(argv[arg_idx+1]);
+    mixer_unit = atoi(argv[arg_idx+2]);
 
     result = usb_mixer_get_value(mixer_index, mixer_unit);
     if (result <= -127.996)
@@ -519,99 +563,99 @@ int main (int argc, char **argv) {
     else
       printf("%g\n",result);
   }
-  else if (strcmp(argv[1], "--display-current-mixer-sources") == 0) 
+  else if (strcmp(argv[arg_idx], "--display-current-mixer-sources") == 0)
   {
-    if(argc < 3)
+    if(argc - arg_idx < 2)
     {
         usage_error();
         return -1;
     }
-    display_mixer_sources(atoi(argv[2]));
+    display_mixer_sources(atoi(argv[arg_idx+1]));
   }
-  else if (strcmp(argv[1], "--display-available-mixer-sources") == 0) 
+  else if (strcmp(argv[arg_idx], "--display-available-mixer-sources") == 0)
   {
-    if(argc < 3)
+    if(argc - arg_idx < 2)
     {
         usage_error();
         return -1;
     }
-    display_available_mixer_sources(atoi(argv[2]));
+    display_available_mixer_sources(atoi(argv[arg_idx+1]));
   }
-  else if(strcmp(argv[1], "--set-mixer-source") == 0)
+  else if(strcmp(argv[arg_idx], "--set-mixer-source") == 0)
   {
-    if(argc < 5)
+    if(argc - arg_idx < 4)
     {
         usage_error();
         return -1;
     }
-    set_mixer_source(atoi(argv[2]), atoi(argv[3]), atoi(argv[4]));
+    set_mixer_source(atoi(argv[arg_idx+1]), atoi(argv[arg_idx+2]), atoi(argv[arg_idx+3]));
   }
-    else if (strcmp(argv[1], "--display-aud-channel-map") == 0) 
+    else if (strcmp(argv[arg_idx], "--display-aud-channel-map") == 0)
     {
         /* Display the channel mapping to the devices audio outputs */
         display_aud_channel_map();
     }
-    else if (strcmp(argv[1], "--display-aud-channel-map-sources") == 0) 
+    else if (strcmp(argv[arg_idx], "--display-aud-channel-map-sources") == 0)
     {
         display_aud_channel_map_sources();
     }
-    else if (strcmp(argv[1], "--display-daw-channel-map") == 0) 
+    else if (strcmp(argv[arg_idx], "--display-daw-channel-map") == 0)
     {
         /* Display the channel mapping to the devices DAW output to host */
         display_daw_channel_map();
     }
-    else if (strcmp(argv[1], "--display-daw-channel-map-sources") == 0) 
+    else if (strcmp(argv[arg_idx], "--display-daw-channel-map-sources") == 0)
     {
         display_daw_channel_map_sources();
     }
-    else if (strcmp(argv[1], "--set-aud-channel-map") == 0) 
+    else if (strcmp(argv[arg_idx], "--set-aud-channel-map") == 0)
     { 
         unsigned int dst = 0;
         unsigned int src = 0;
-        if (argc != 4) 
+        if (argc - arg_idx != 3)
         {
             usage_error();
             return -1;
         }
-        dst = atoi(argv[2]);
-        src = atoi(argv[3]);
+        dst = atoi(argv[arg_idx+1]);
+        src = atoi(argv[arg_idx+2]);
 
         usb_set_aud_channel_map(dst, src);
     } 
-  else if (strcmp(argv[1], "--set-daw-channel-map") == 0) 
+  else if (strcmp(argv[arg_idx], "--set-daw-channel-map") == 0)
   { 
     unsigned int dst = 0;
     unsigned int src = 0;
-    if (argc != 4) 
+    if (argc - arg_idx != 3)
     {
         usage_error();
         return -1;
     }
-    dst = atoi(argv[2]);
-    src = atoi(argv[3]);
+    dst = atoi(argv[arg_idx+1]);
+    src = atoi(argv[arg_idx+2]);
 
     usb_set_usb_channel_map(dst, src);
   }
-  else if(strcmp(argv[1], "--get-mixer-levels-input") == 0 || 
-    strcmp(argv[1],"--get-mixer-levels-output") == 0) 
+  else if(strcmp(argv[arg_idx], "--get-mixer-levels-input") == 0 ||
+    strcmp(argv[arg_idx],"--get-mixer-levels-output") == 0)
   {
     unsigned int dst = 0;
     unsigned char levels[64];
     int datalength = 0;
     int offset = 0;
 
-    if (argc < 3) {
+    if (argc - arg_idx < 2) {
       fprintf(stderr, "ERROR :: incorrect number of arguments passed\n");
       return -1;
     }
 
-    if(strcmp(argv[1],"--get-mixer-levels-output") == 0) 
+    if(strcmp(argv[arg_idx],"--get-mixer-levels-output") == 0)
        offset = 1;
 
     for(int i = 0; i < 64; i++)
       levels[i] = 0;
 
-    dst = atoi(argv[2]);
+    dst = atoi(argv[arg_idx+1]);
     
     /* Mem request to mixer with offset of 0 gives input levels */
     datalength = usb_mixer_mem_get(dst, offset, levels);
@@ -628,7 +672,7 @@ int main (int argc, char **argv) {
       print_levels("Mixer Input", levels, datalength);
 
   }
-  else if(strcmp(argv[1], "--vendor-audio-request-get") == 0)
+  else if(strcmp(argv[arg_idx], "--vendor-audio-request-get") == 0)
   {
     unsigned int bRequest = 0;
     unsigned int cs = 0;
@@ -637,7 +681,7 @@ int main (int argc, char **argv) {
     int datalength = 0;
     unsigned char data[64];
 
-    if(argc < 6)
+    if(argc - arg_idx < 5)
     {
       fprintf(stderr, "ERROR :: incorrect number of arguments passed\n");
       return -1;
@@ -646,10 +690,10 @@ int main (int argc, char **argv) {
     for(int i = 0; i < 64; i++)
       data[i] = 0;
 
-    bRequest = atoi(argv[2]);
-    cs = atoi(argv[3]);
-    cn = atoi(argv[4]);
-    unitId = atoi(argv[5]);
+    bRequest = atoi(argv[arg_idx+1]);
+    cs = atoi(argv[arg_idx+2]);
+    cn = atoi(argv[arg_idx+3]);
+    unitId = atoi(argv[arg_idx+4]);
    
     /* Do request */ 
     datalength = usb_audio_request_get(bRequest, cs, cn, unitId, data);    
@@ -666,7 +710,7 @@ int main (int argc, char **argv) {
             printf("0x%02x\n" ,data[i]);
     }
   }
-  else if(strcmp(argv[1], "--vendor-audio-request-set") == 0)
+  else if(strcmp(argv[arg_idx], "--vendor-audio-request-set") == 0)
   {
   
     unsigned int bRequest = 0;
@@ -680,23 +724,23 @@ int main (int argc, char **argv) {
       data[i] = 0;
     }
 
-    if(argc < 7)
+    if(argc - arg_idx < 6)
     {
       fprintf(stderr, "ERROR :: incorrect number of arguments passed - no data passed\n");
       return -1;
     }
-    bRequest = atoi(argv[2]);
-    cs = atoi(argv[3]);
-    cn = atoi(argv[4]);
-    unitId = atoi(argv[5]);
+    bRequest = atoi(argv[arg_idx+1]);
+    cs = atoi(argv[arg_idx+2]);
+    cn = atoi(argv[arg_idx+3]);
+    unitId = atoi(argv[arg_idx+4]);
    
     /* Get data */
-    for(int i=0; i < argc-6; i++)
+    for(int i=0; i < argc-arg_idx-5; i++)
     {
-       data[i] = atoi(argv[i+6]);
+       data[i] = atoi(argv[i+arg_idx+5]);
     }
     
-    result = usb_audio_request_set(bRequest, cs, cn, unitId, data, argc-6);    
+    result = usb_audio_request_set(bRequest, cs, cn, unitId, data, argc-arg_idx-5);
    
     if(result < 0)
     {

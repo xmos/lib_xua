@@ -1,4 +1,4 @@
-// Copyright 2022-2023 XMOS LIMITED.
+// Copyright 2022-2024 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
 #define USB_MIXER_SUCCESS 0
@@ -22,7 +22,14 @@ enum usb_chan_type {
 #define RANGE (2)
 #define MEM   (3)
 
+#ifdef _WIN32
+#include <tchar.h>
+// GUID strings are 36 characters, plus a pair of braces and NUL-termination
+#define GUID_STR_LEN (36+2+1)
+int usb_mixer_connect(TCHAR guid[GUID_STR_LEN]);
+#else
 int usb_mixer_connect();
+#endif
 int usb_mixer_disconnect();
 
 /* MIXER UNIT(s) INTERFACE */
