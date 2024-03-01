@@ -22,7 +22,7 @@
  *  \param c_aud                Audio sample channel connected to the mixer() thread or the
  *                              decouple() thread
  *
- *  \param clk_audio_mclk       Nullable clockblock to be clocked from master clock
+ *  \param clk_audio_mclk   Clockblock to be clocked from master clock
  *
  *  \param clk_audio_bclk       Nullable clockblock to be clocked from i2s bit clock
  *
@@ -50,7 +50,7 @@
  *  \param c_pdm_in             Channel for receiving decimated PDM samples
  */
 void XUA_AudioHub(chanend ?c_aud,
-    clock ?clk_audio_mclk,
+    clock clk_audio_mclk,
     clock ?clk_audio_bclk,
     in port p_mclk_in,
     buffered _XUA_CLK_DIR port:32 ?p_lrclk,
