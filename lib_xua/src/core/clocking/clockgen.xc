@@ -348,6 +348,10 @@ void clockGen ( streaming chanend ?c_spdif_rx,
 #if ((XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN) && XUA_USE_SW_PLL)
     int reset_sw_pll_pfd = 1;
     int require_ack_to_audio = 0;
+    stability_state_t stability_state;
+    init_stability(stability_state, 5, 10);                 /* Typically runs at -1 to +1 maximum when locked so 5 or less is good. 
+                                                               10 = number of error calcs at below threshold before considered stable */
+
     restart_sigma_delta(c_sw_pll, MCLK_48); /* default to 48kHz - this will be reset shortly when host selects rate */
 #endif
 
@@ -469,7 +473,13 @@ void clockGen ( streaming chanend ?c_spdif_rx,
             case t_local when timerafter(timeNextEdge) :> void:
 
 #if XUA_USE_SW_PLL
-                /* Do nothing - hold the most recent sw_pll setting */
+                /* Hold the most recent sw_pll setting */
+                if(require_ack_to_audio)
+                {
+                    c_audio_rate_change <: 0;     /* ACK back to audio to release to start I2S */
+                    require_ack_to_audio = 0;
+                    printstr("stable int\n");
+                }
 #else
                 /* Setup next local clock edge */
                 i_pll_ref.toggle_timed(0);
@@ -519,19 +529,6 @@ void clockGen ( streaming chanend ?c_spdif_rx,
                 break;
 #endif
 
-#if ((XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN) && XUA_USE_SW_PLL)
-            case inuint_byref(c_sw_pll, tmp):
-                inct(c_sw_pll); 
-                /* Send ACK back to audiohub to allow I2S to start
-                   This happens only on SDM restart and only once */
-                if(require_ack_to_audio)
-                {
-                    c_audio_rate_change <: tmp;
-                    require_ack_to_audio = 0;
-                }
-                break;
-#endif
-
 #if (XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
                 /* Receive notification of audio streaming settings change and store */
             case c_audio_rate_change :> selected_mclk_rate:
@@ -540,8 +537,10 @@ void clockGen ( streaming chanend ?c_spdif_rx,
                 mclks_per_sample = selected_mclk_rate / selected_sample_rate;
                 restart_sigma_delta(c_sw_pll, selected_mclk_rate);
                 reset_sw_pll_pfd = 1;
+                reset_stability(stability_state);
                 /* We will shedule an ACK when sigma delta is up and running */
                 require_ack_to_audio = 1;
+                printstr("SR\n");
 #else
                 /* Send ACK immediately as we are good to go if not using SW_PLL */
                 c_audio_rate_change <: 0;
@@ -627,11 +626,18 @@ void clockGen ( streaming chanend ?c_spdif_rx,
                             timeNextEdge = spdifRxTime + LOCAL_CLOCK_INCREMENT + LOCAL_CLOCK_MARGIN;
 
 #if XUA_USE_SW_PLL
-                            do_sw_pll_phase_frequency_detector_dig_rx(  mclk_time_stamp,
-                                                                        mclks_per_sample,
-                                                                        c_sw_pll,
-                                                                        spdifCounters.receivedSamples,
-                                                                        reset_sw_pll_pfd);
+                            int stable = do_sw_pll_phase_frequency_detector_dig_rx( mclk_time_stamp,
+                                                                                    mclks_per_sample,
+                                                                                    c_sw_pll,
+                                                                                    spdifCounters.receivedSamples,
+                                                                                    reset_sw_pll_pfd,
+                                                                                    stability_state);
+                            if(stable && require_ack_to_audio)
+                            {
+                                c_audio_rate_change <: 0;     /* ACK back to audio to release to start */
+                                require_ack_to_audio = 0;
+                                printstr("stable ext\n");
+                            }
 #else
                             /* Toggle edge */
                             i_pll_ref.toggle_timed(1);
@@ -749,6 +755,13 @@ void clockGen ( streaming chanend ?c_spdif_rx,
                                                                                         c_sw_pll,
                                                                                         adatCounters.receivedSamples,
                                                                                         reset_sw_pll_pfd);
+
+                                            if(stable && require_ack_to_audio)
+                                            {
+                                                c_audio_rate_change <: 0;     /* ACK back to audio to release to start */
+                                                require_ack_to_audio = 0;
+                                                printstr("stable ext\n");
+                                            }
 #else
                                             /* Toggle edge */
                                             i_pll_ref.toggle_timed(1);

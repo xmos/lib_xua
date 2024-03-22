@@ -3,6 +3,7 @@
 #include <xs1.h>
 #include <assert.h>
 #include <print.h>
+#include <stdlib.h>
 
 #include "sw_pll_wrapper.h"
 #include "xua.h"
@@ -72,13 +73,15 @@
     return {XS1_TIMER_HZ / sw_pll_sdm_rate[clkIndex], sw_pll_sdm_ctrl_mid[clkIndex]};
 }
 
-void do_sw_pll_phase_frequency_detector_dig_rx( unsigned short mclk_time_stamp,
+int do_sw_pll_phase_frequency_detector_dig_rx(  unsigned short mclk_time_stamp,
                                                 unsigned mclks_per_sample,
                                                 chanend c_sw_pll,
                                                 int receivedSamples,
-                                                int &reset_sw_pll_pfd)
+                                                int &reset_sw_pll_pfd,
+                                                stability_state_t &stability_state)
 {
     const unsigned control_loop_rate_divider = 6; /* 300Hz * 2 edges / 6 -> 100Hz loop rate */
+    static int pll_stable = PLL_UNSTABLE;
     static unsigned control_loop_counter = 0;
     static unsigned total_received_samples = 0;
 
@@ -108,11 +111,17 @@ void do_sw_pll_phase_frequency_detector_dig_rx( unsigned short mclk_time_stamp,
         /* send PFD output to the sigma delta thread */
         outuint(c_sw_pll, (int) f_error);
         outct(c_sw_pll, XS1_CT_END);
-     
+
+        printintln(f_error);
+        pll_stable = check_stability(stability_state, f_error);
+        pll_stable = PLL_STABLE; // TMP - because host cycles through SRs, it never reaches stability
+
         last_mclk_time_stamp = mclk_time_stamp;
         control_loop_counter = 0;
         total_received_samples = 0;
     }
+
+    return pll_stable;
 }
 
 void sw_pll_task(chanend c_sw_pll){
@@ -140,9 +149,6 @@ void sw_pll_task(chanend c_sw_pll){
         tmr :> time_trigger;
         time_trigger += sdm_interval; /* ensure first loop has correct delay */
         int running = 1;
-
-        outuint(c_sw_pll, 0); /* Signal back via clockgen to audio to start I2S */
-        outct(c_sw_pll, XS1_CT_END);
 
         unsigned rx_word = 0;
         while(running)
@@ -197,6 +203,41 @@ void restart_sigma_delta(chanend c_sw_pll, unsigned selected_mclk_rate)
     outct(c_sw_pll, XS1_CT_END);
     outuint(c_sw_pll, selected_mclk_rate);
     outct(c_sw_pll, XS1_CT_END);
+}
+
+
+void init_stability(stability_state_t &state, int stabilty_error_threshold, int stabilty_count_threshold)
+{
+    state.stabilty_error_threshold = stabilty_error_threshold;
+    state.stabilty_count_threshold = stabilty_count_threshold;
+    state.instablity_counter = state.stabilty_count_threshold;
+}
+
+void reset_stability(stability_state_t &state)
+{
+    state.instablity_counter = state.stabilty_count_threshold;
+}
+
+int check_stability(stability_state_t &state, int error)
+{
+    if(abs(error) < state.stabilty_error_threshold)
+    {
+        if(state.instablity_counter > 0)
+        {
+            state.instablity_counter--;
+        }
+        else
+        {
+            return PLL_STABLE;
+        }
+    }
+    else
+    {
+        /* reset stability */
+        state.instablity_counter = state.stabilty_count_threshold;
+    }
+
+    return PLL_UNSTABLE;
 }
 
 #endif /* XUA_USE_SW_PLL */
