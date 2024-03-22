@@ -244,7 +244,7 @@ void clockGen ( streaming chanend ?c_spdif_rx,
 
 #if (XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
     timer t_external;
-    unsigned selected_mclk_rate = MCLK_48; // Assume 24.576MHz initial clock 
+    unsigned selected_mclk_rate = MCLK_48; // Assume 24.576MHz initial clock
     unsigned selected_sample_rate = 0;
 #if XUA_USE_SW_PLL
 
@@ -521,7 +521,7 @@ void clockGen ( streaming chanend ?c_spdif_rx,
 
 #if ((XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN) && XUA_USE_SW_PLL)
             case inuint_byref(c_sw_pll, tmp):
-                inct(c_sw_pll); 
+                inct(c_sw_pll);
                 /* Send ACK back to audiohub to allow I2S to start
                    This happens only on SDM restart and only once */
                 if(require_ack_to_audio)
@@ -650,7 +650,7 @@ void clockGen ( streaming chanend ?c_spdif_rx,
 #if XUA_USE_SW_PLL
                     /* record time of sample */
                     asm volatile(" getts %0, res[%1]" : "=r" (mclk_time_stamp) : "r" (p_for_mclk_count_aud));
-#endif 
+#endif
                     t_local :> adatReceivedTime;
 
                     /* Sync is: 1 | (user_byte << 4) */
@@ -753,7 +753,7 @@ void clockGen ( streaming chanend ?c_spdif_rx,
                                             /* Toggle edge */
                                             i_pll_ref.toggle_timed(1);
 #endif
-                                            
+
                                             /* Reset counters */
                                             adatCounters.receivedSamples = 0;
                                         }

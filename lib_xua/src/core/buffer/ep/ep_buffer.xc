@@ -382,7 +382,7 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
                     1,                                      /* How often the PFD is invoked per call */
                     masterClockFreq / controller_rate_hz,   /* pll ratio integer */
                     0,                                      /* Assume precise timing of sampling */
-                    pfd_ppm_max);                           
+                    pfd_ppm_max);
     outuint(c_sw_pll, masterClockFreq);
     outct(c_sw_pll, XS1_CT_END);
     inuint(c_sw_pll); /* receive ACK */
@@ -561,11 +561,11 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
                 GET_SHARED_GLOBAL(usbSpeed, g_curUsbSpeed);
                 static int sofCount = 0;
 #if (XUA_USE_SW_PLL)
-                /* Run PFD and sw_pll controller at 100Hz */ 
+                /* Run PFD and sw_pll controller at 100Hz */
                 const int sofFreqDivider = (usbSpeed == XUD_SPEED_HS) ? (8000 / controller_rate_hz) : (1000 / controller_rate_hz);
 #else /* (XUA_USE_SW_PLL) */
                 /* 1000 toggles per second for CS2100 reference -> 500 Hz */
-                const int toggleRateHz = 1000; 
+                const int toggleRateHz = 1000;
                 const int sofFreqDivider = (usbSpeed == XUD_SPEED_HS) ? (8000 / toggleRateHz) : (1000 / toggleRateHz);
 #endif /* (XUA_USE_SW_PLL) */
 
@@ -1050,7 +1050,7 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
             case inuint_byref(c_sw_pll, u_tmp):
                 inct(c_sw_pll);
                 c_audio_rate_change <: 0;     /* ACK back to audio to release */
-                
+
                 break;
 #endif /* (XUA_USE_SW_PLL) */
 #endif /* (XUA_SYNCMODE == XUA_SYNCMODE_SYNC) */

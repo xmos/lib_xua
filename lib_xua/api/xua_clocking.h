@@ -31,7 +31,7 @@ void PllRefPinTask(server interface pll_ref_if i_pll_ref, out port p_sync);
  *  \param c_audio_rate_change  channel to notify of master clock change
  *  \param p_for_mclk_count_aud port used for counting mclk and providing a timestamp
  *  \param c_sw_pll             channel used to communicate with software PLL task
- * 
+ *
  */
 void clockGen(  streaming chanend ?c_spdif_rx,
                 chanend ?c_adat_rx,

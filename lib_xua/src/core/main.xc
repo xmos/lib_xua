@@ -382,7 +382,7 @@ void usb_audio_io(chanend ?c_aud_in,
 #endif
 #if (XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
                 , c_dig_rx
-#endif                
+#endif
 #if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC || XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
                 , c_audio_rate_change
 #endif

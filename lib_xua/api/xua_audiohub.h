@@ -42,11 +42,11 @@
  *
  *  \param c_dig                Channel connected to the clockGen() thread for
  *                              receiving/transmitting samples
- * 
+ *
  *  \param c_audio_rate_change  Channel notifying ep_buffer of an mclk frequency change and sync for stable clock
- * 
+ *
  *  \param dfuInterface         Interface supporting DFU methods
- * 
+ *
  *  \param c_pdm_in             Channel for receiving decimated PDM samples
  */
 void XUA_AudioHub(chanend ?c_aud,
@@ -108,9 +108,9 @@ void UserBufferManagement(unsigned sampsFromUsbToAudio[], unsigned sampsFromAudi
  *
  * This function is called once, before the first call to UserBufferManagement(), and can be used to initialise any
  * related user state
- * 
+ *
  * \param sampFreq               The initial sample frequency
- * 
+ *
  */
 void UserBufferManagementInit(unsigned sampFreq);
 

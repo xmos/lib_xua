@@ -25,7 +25,7 @@ void sw_pll_task(chanend c_sw_pll);
 
 /** Helper function that sends a special restart command. It causes the SDM task
  *  to quit and restart using the new mclk.
- * 
+ *
  *  \param c_sw_pll                 Channel connected to the clocking thread to pass raw error terms.
  *  \param mclk_Rate                The mclk frequency in Hz.
  */
@@ -45,7 +45,7 @@ void do_sw_pll_phase_frequency_detector_dig_rx( unsigned short mclk_time_stamp,
                                                 int receivedSamples,
                                                 int &reset_sw_pll_pfd);
 
-/** Initilaises the software PLL both hardware and state. Sets the mclk frequency to a nominal point. 
+/** Initilaises the software PLL both hardware and state. Sets the mclk frequency to a nominal point.
  *
  *  \param sw_pll   Reference to a software pll state struct to be initialised.
  *  \param mClk     The current nominal mClk frequency.
