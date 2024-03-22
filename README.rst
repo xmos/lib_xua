@@ -1,9 +1,8 @@
 lib_xua
 #######
 
-:Version: 3.5.1
+:Version: 4.0.0
 :Vendor: XMOS
-
 
 :Scope: General Use
 
@@ -83,14 +82,15 @@ The following application notes use this library:
 Required Software (dependencies)
 ================================
 
+  * lib_adat (www.github.com/xmos/lib_adat)
   * lib_locks (www.github.com/xmos/lib_locks)
   * lib_logging (www.github.com/xmos/lib_logging)
   * lib_mic_array (www.github.com/xmos/lib_mic_array)
   * lib_xassert (www.github.com/xmos/lib_xassert)
   * lib_dsp (www.github.com/xmos/lib_dsp)
   * lib_spdif (www.github.com/xmos/lib_spdif)
+  * lib_sw_pll (www.github.com/xmos/lib_sw_pll)
   * lib_xud (www.github.com/xmos/lib_xud)
-  * lib_adat (www.github.com/xmos/lib_adat)
 
 Documentation
 =============
@@ -101,4 +101,3 @@ Support
 =======
 
 This package is supported by XMOS Ltd. Issues can be raised against the software at: http://www.xmos.com/support
-
