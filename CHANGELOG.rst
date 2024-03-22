@@ -6,20 +6,33 @@ lib_xua Change Log
 
   * ADDED:     Support for XCommon CMake build system
   * FIXED:     Output volume control not enabled by default when MIXER disabled
-  * FIXED:     Full 32bit result of volume processing not calculated when required
-  * FIXED:     Input stream sending an erroneous zero-length packet when exiting underflow state
+  * FIXED:     Full 32bit result of volume processing not calculated when
+    required
+  * FIXED:     Input stream sending an erroneous zero-length packet when exiting
+    underflow state
   * FIXED      Build failures when XUA_USB_EN = 0
-  * FIXED:     Clock configuration issues when ADAT and S/PDIF receive are enabled (#352)
-  * FIXED:     Repeated old S/PDIF and ADAT samples when entering underflow state
+  * FIXED:     Clock configuration issues when ADAT and S/PDIF receive are
+    enabled (#352)
+  * FIXED:     Repeated old S/PDIF and ADAT samples when entering underflow
+    state
   * CHANGED:   QUAD_SPI_FLASH replaced by XUA_QUAD_SPI_FLASH (default: 1)
   * CHANGED:   UserBufferManagementInit() now takes a sample rate parameter
-  * CHANGED:   xcore.ai targets use sigma-delta software PLL for clock recovery of
-    digital Rx streams and synchronous USB audio by default
-  * CHANGED:   Windows host mixer control application now requires driver GUID option
+  * CHANGED:   xcore.ai targets use sigma-delta software PLL for clock recovery
+    of digital Rx streams and synchronous USB audio by default
+  * CHANGED:   Windows host mixer control application now requires driver GUID
+    option
 
   * Changes to dependencies:
 
+    - lib_dsp: 6.2.1 -> 6.3.0
+
+    - lib_mic_array: 4.5.0 -> 4.6.0
+
+    - lib_spdif: 5.0.1 -> 6.1.0
+
     - lib_sw_pll: Added dependency 2.1.0
+
+    - lib_xud: 2.2.3 -> 2.3.1
 
 3.5.1
 -----
