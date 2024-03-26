@@ -670,7 +670,6 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
     /* Note, marked unsafe since other cores may be using this mclk port */
     configure_clock_src(clk_audio_mclk, p_mclk_in);
 
-    start_clock(clk_audio_mclk);
 
 #if (DSD_CHANS_DAC > 0)
     /* Make sure the DSD ports are on and buffered - just in case they are not shared with I2S */
@@ -682,14 +681,11 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
 #endif
 
 #if (XUA_ADAT_TX_EN)
-    /* Share SPDIF clk blk */
-    configure_clock_src(clk_mst_spd, p_mclk_in);
-    configure_out_port_no_ready(p_adat_tx, clk_mst_spd, 0);
-    set_clock_fall_delay(clk_mst_spd, 7);
-#if (XUA_SPDIF_TX_EN == 0)
-    start_clock(clk_mst_spd);
+    configure_out_port_no_ready(p_adat_tx, clk_audio_mclk, 0);
+    set_clock_fall_delay(clk_audio_mclk, 7);
 #endif
-#endif
+
+    start_clock(clk_audio_mclk);
 
     /* Perform required CODEC/ADC/DAC initialisation */
     AudioHwInit();
