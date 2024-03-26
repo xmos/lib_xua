@@ -630,7 +630,7 @@ static void dummy_deliver(chanend ?c_out, unsigned &command)
  void DFUHandler(server interface i_dfu i, chanend ?c_user_cmd);
  #endif
 
-void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
+void XUA_AudioHub(chanend ?c_aud, clock clk_audio_mclk, clock ?clk_audio_bclk,
     in port p_mclk_in,
     buffered _XUA_CLK_DIR port:32 ?p_lrclk,
     buffered _XUA_CLK_DIR port:32 ?p_bclk,
