@@ -1,6 +1,11 @@
 lib_xua Change Log
 ==================
 
+UNRELEASED
+----------
+
+  * FIXED:     Device fails to enumerate when ADAT and S/PDIF transmit are enabled
+
 4.0.0
 -----
 
