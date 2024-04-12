@@ -19,8 +19,11 @@ struct midi_in_parse_state {
     unsigned codeIndexNumber;
 };
 
-void dump_midi_in_parse_state(struct midi_in_parse_state &s);
+
+#ifdef __XC__
 void reset_midi_state(struct midi_in_parse_state &mips);
+void dump_midi_in_parse_state(struct midi_in_parse_state &s);
 {unsigned int , unsigned int} midi_in_parse(struct midi_in_parse_state &mips, unsigned cable_number, unsigned char b);
+#endif
 
 #endif
