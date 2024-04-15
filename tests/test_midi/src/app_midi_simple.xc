@@ -46,8 +46,6 @@ void ctrlPort();
 #define VELOCITY    80
 
 void test(chanend c_midi){
-    printf("Test\n");
-
     struct midi_in_parse_state mips;
     reset_midi_state(mips);
 
@@ -103,7 +101,7 @@ int main()
         on tile[0]: test(c_midi);
         on tile[1]: usb_midi(p_midi_rx, p_midi_tx, clk_midi, c_midi, 0);
 
-
+        // Setup HW so we can run this on the MC board 
         on tile[0]: ctrlPort();
     }
 
