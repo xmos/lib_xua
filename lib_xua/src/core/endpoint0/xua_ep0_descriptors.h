@@ -1122,9 +1122,9 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
             .wTerminalType              = UAC_TT_OUTPUT_TERMTYPE_SPEAKER,
             0x00,                                        /* 6  bAssocTerminal */
 #if (OUTPUT_VOLUME_CONTROL == 1)
-            FU_USBOUT,                                   /* 7  bSourceID Connect to analog input feature unit*/
+            FU_USBOUT,                                   /* 7  bSourceID Connect to analog output feature unit */
 #else
-            ID_IT_USB,                                   /* 7  bSourceID Connect to analog input feature unit*/
+            ID_IT_USB,                                   /* 7  bSourceID Connect to USB streaming input term */
 #endif
             ID_CLKSEL,                                   /* 8  bCSourceUD */
             0x0000,                                      /* 9  bmControls */
