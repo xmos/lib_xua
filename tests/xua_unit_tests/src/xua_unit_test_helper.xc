@@ -1,4 +1,4 @@
-// Copyright 2021 XMOS LIMITED.
+// Copyright 2021-2024 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 #ifdef __XC__
 
@@ -26,6 +26,11 @@ void AudioHwConfig(unsigned samFreq, unsigned mClk, unsigned dsdMode, unsigned s
 void AudioHwInit()
 {
     ; // nothing
+}
+
+unsigned random(unsigned &x){
+    crc32(x, -1, 0xEB31D82E);
+    return x;
 }
 
 // Wrappers for midi parse because C doesn't support return tuples
