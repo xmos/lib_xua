@@ -48,3 +48,4 @@ host_usb_mixer_control/xmos_mixer
 **/.vscode/**
 **.egg-info
 *tests/logs/*
+midi_tx_cmds.txt

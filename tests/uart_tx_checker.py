@@ -9,6 +9,8 @@ from functools import partial
 # same argument everywhere.
 print = partial(print, flush=True)
 
+# From tools 15.2.1 we need to add an extra factor to go from ps to fs
+time_scaling_factor = 1000
 
 class UARTTxChecker(px.SimThread):
     """
@@ -16,7 +18,7 @@ class UARTTxChecker(px.SimThread):
     transations caused by the device, by looking at the tx pins.
     """
 
-    def __init__(self, rx_port, tx_port, parity, baud, length, stop_bits, bpb):
+    def __init__(self, tx_port, parity, baud, length, stop_bits, bpb, debug=False):
         """
         Create a UARTTxChecker instance.
 
@@ -34,6 +36,7 @@ class UARTTxChecker(px.SimThread):
         self._stop_bits = stop_bits
         self._bits_per_byte = bpb
         # Hex value of stop bits, as MSB 1st char, e.g. 0b11 : 0xC0
+        self.debug = debug
 
     def get_port_val(self, xsi, port):
         """
@@ -57,7 +60,7 @@ class UARTTxChecker(px.SimThread):
         :rtype:            float
         """
         # Return float value in ps
-        return (1.0/self._baud) * 1e12
+        return (1.0/self._baud) * 1e12 * time_scaling_factor
 
     def wait_baud_time(self, xsi):
         """
@@ -88,7 +91,7 @@ class UARTTxChecker(px.SimThread):
         got_start_bit = False
 
         initial_port_val = self.get_port_val(xsi, self._tx_port)
-        print("tx starts high: %s" % ("True" if initial_port_val else "False"))
+        if self.debug: print("tx starts high: %s" % ("True" if initial_port_val else "False"))
 
         for x in range(length):
             packet.append(chr(self.read_byte(xsi, parity)))
@@ -113,11 +116,10 @@ class UARTTxChecker(px.SimThread):
         if initial_port_val == 1:
             self.wait_for_port_pins_change([self._tx_port])
         #else go for it as assume tx has just fallen with no interframe gap
-        # print("Byte start time: ", xsi.get_time())
 
         # The tx line should go low for 1 bit time
         if self.get_val_timeout(xsi, self._tx_port) == 0:
-            print("Start bit recv'd")
+            if self.debug: print("Start bit recv'd")
         else:
             print("Start bit issue")
             return False
@@ -129,7 +131,7 @@ class UARTTxChecker(px.SimThread):
             byte += (val << j)
             crc_sum += val
 
-        print(f"Sampled {self._bits_per_byte} data bits")
+        if self.debug: print(f"Sampled {self._bits_per_byte} data bits: 0x{hex(byte)}")
 
         # Check the parity if needs be
         self.check_parity(xsi, crc_sum, parity)
@@ -138,7 +140,7 @@ class UARTTxChecker(px.SimThread):
         self.check_stopbit(xsi)
 
         # Print a new line to split bytes in output
-        print()
+        if self.debug: print()
 
         return byte
 
@@ -158,7 +160,7 @@ class UARTTxChecker(px.SimThread):
             else:
                 print("Parity bit incorrect. Got %d, expected %d" % (read, (crc_sum + parity_val) % 2))
         else:
-            print("Parity bit correct")
+            if self.debug: print("Parity bit correct")
 
     def check_stopbit(self, xsi):
         """
@@ -171,7 +173,7 @@ class UARTTxChecker(px.SimThread):
             # The stop bits should stay high for this time
             if self.get_val_timeout(xsi, self._tx_port) == 0:
                 stop_bits_correct = False
-        print("Stop bit correct: %s" % ("True" if stop_bits_correct else "False"))
+        if self.debug: print("Stop bit correct: %s" % ("True" if stop_bits_correct else "False"))
 
     def get_val_timeout(self, xsi, port):
         """
@@ -240,5 +242,5 @@ class UARTTxChecker(px.SimThread):
 
         # Print each member of K as a hex byte
         # inline lambda function mapped over a list? awh yiss.
-        print(", ".join(map((lambda x: "0x%02x" % ord(x)), K)))
+        print("uart_tx_checker:", " ".join(map((lambda x: "0x%02x" % ord(x)), K)))
 
