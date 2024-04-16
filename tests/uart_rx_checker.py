@@ -16,6 +16,8 @@ Parity = dict(
     UART_PARITY_BAD=3
 )
 
+# From tools 15.2.1 we need to add an extra factor to go from ps to fs
+time_scaling_factor = 1000
 
 class DriveHigh(px.SimThread):
     def __init__(self, p):
@@ -28,13 +30,12 @@ class DriveHigh(px.SimThread):
 
 
 class UARTRxChecker(px.SimThread):
-    def __init__(self, rx_port, tx_port, parity, baud, stop_bits, bpb, data=[0x7f, 0x00, 0x2f, 0xff],
-                 intermittent=False):
+    def __init__(self, rx_port, parity, baud, stop_bits, bpb, data=[0x7f, 0x00, 0x2f, 0xff],
+                 intermittent=False, debug=False):
         """
         Create a UARTRxChecker instance.
 
         :param rx_port:    Receive port of the UART device under test.
-        :param tx_port:    Transmit port of the UART device under test.
         :param parity:     Parity of the UART connection.
         :param baud:       BAUD rate of the UART connection.
         :param stop_bits:  Number of stop_bits for each UART byte.
@@ -43,7 +44,6 @@ class UARTRxChecker(px.SimThread):
         :param intermittent: Add a random delay between sent bytes.
         """
         self._rx_port = rx_port
-        self._tx_port = tx_port
         self._parity = parity
         self._baud = baud
         self._stop_bits = stop_bits
@@ -142,7 +142,7 @@ class UARTRxChecker(px.SimThread):
         Returns float value in nanoseconds.
         """
         # Return float value in ps
-        return (1.0 / self._baud) * 1e12
+        return (1.0 / self._baud) * 1e12 * time_scaling_factor
 
     def wait_baud_time(self, xsi):
         """

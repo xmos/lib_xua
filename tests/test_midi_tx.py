@@ -6,12 +6,7 @@ import Pyxsim
 from Pyxsim import testers
 from pathlib import Path
 from uart_tx_checker import UARTTxChecker
-# from spdif_test_utils import (
-#     Clock,
-#     Spdif_rx,
-#     Frames,
-#     freq_for_sample_rate,
-# )
+
 
 MAX_CYCLES = 15000000
 MIDI_RATE = 31250
@@ -47,7 +42,6 @@ def create_midi_tx_file(commands):
 @pytest.mark.parametrize("config", CONFIGS)
 def test_tx(capfd, config):
     xe = str(Path(__file__).parent / f"test_midi/bin/{config}/test_midi_{config}.xe")
-    p_midi_out = "tile[1]:XS1_PORT_4C"
 
     midi_commands = [[0x90, 60, 81]]
     create_midi_tx_file(midi_commands)
@@ -62,7 +56,7 @@ def test_tx(capfd, config):
     bpb = 8
     parity = 0 
     stop = 1
-    length_of_test = 3 # characters
+    length_of_test = sum(len(cmd) for cmd in midi_commands)
 
     simthreads = [
         UARTTxChecker(tx_port, parity, baud, length_of_test, stop, bpb, debug=False)
