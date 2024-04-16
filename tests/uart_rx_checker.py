@@ -30,7 +30,7 @@ class DriveHigh(px.SimThread):
 
 
 class UARTRxChecker(px.SimThread):
-    def __init__(self, rx_port, parity, baud, stop_bits, bpb, data=[0x7f, 0x00, 0x2f, 0xff],
+    def __init__(self, tx_port, rx_port, parity, baud, stop_bits, bpb, data=[0x7f, 0x00, 0x2f, 0xff],
                  intermittent=False, debug=False):
         """
         Create a UARTRxChecker instance.
@@ -43,6 +43,7 @@ class UARTRxChecker(px.SimThread):
         :param data:       A list of bytes to send (default: [0x7f, 0x00, 0x2f, 0xff])
         :param intermittent: Add a random delay between sent bytes.
         """
+        self._tx_port = tx_port
         self._rx_port = rx_port
         self._parity = parity
         self._baud = baud
@@ -88,11 +89,11 @@ class UARTRxChecker(px.SimThread):
         :param xsi:        XMOS Simulator Instance.
         :param byte:       Data to send.
         """
-        # print "0x%02x:" % byte
+        # print(f"Checker sent 0x{byte:02x}")
         for x in range(self._bits_per_byte):
-            # print "  Sending bit %d of 0x%02x (%d)" % (x, byte, (byte >> x) & 0x01)
+            # print(f"  Sending bit {x}")
             xsi.drive_port_pins(self._rx_port, (byte & (0x01 << x)) >= 1)
-            # print "  (x): %d" % ((byte & (0x01 << x))>=1)
+            # print(f"  (x): {((byte & (0x01 << x))>=1)}") 
             self.wait_baud_time(xsi)
 
     def send_parity(self, xsi, byte):

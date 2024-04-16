@@ -36,10 +36,12 @@ on tile[MIDI_TILE] : clock    clk_midi                      = CLKBLK_MIDI;
 #define TEST_COMMAND_FILE_TX   "midi_tx_cmds.txt"
 #define TEST_COMMAND_FILE_RX   "midi_rx_cmds.txt"
 
-#ifndef DEBUG
-#define dprintf(...)
-#else
+#define DEBUG 0
+
+#if     DEBUG
 #define dprintf(...) printf(__VA_ARGS__)
+#else
+#define dprintf(...)
 #endif
 
 /* See hwsupport.xc */
@@ -134,8 +136,9 @@ void test(chanend c_midi){
                 } else {
                     unsigned midi_data[3] = {0};
                     unsigned byte_count = 0;
-                    {midi_data[0], midi_data[1], midi_data[2], byte_count} = midi_out_parse(rx_packet);
-                    dprintf("dut_midi_rx: %u %u %u\n", midi_data[0], midi_data[1], midi_data[2]);
+                    {midi_data[0], midi_data[1], midi_data[2], byte_count} = midi_out_parse(byterev(rx_packet));
+                    // Note this needs to always print for capff to pick it up
+                    printf("dut_midi_rx: %u %u %u\n", midi_data[0], midi_data[1], midi_data[2]);
                     rx_cmd_count++;
                 }
             break;
@@ -143,7 +146,7 @@ void test(chanend c_midi){
             case tx_cmd_count < num_to_tx => tmr when timerafter(t_tx) :> int _:
                 unsigned midi[] = {commands[tx_cmd_count][0], commands[tx_cmd_count][1], commands[tx_cmd_count][2]};
                 unsigned tx_packet = mini_in_parse_helper(midi);
-                outuint(c_midi,  byterev(tx_packet));
+                outuint(c_midi, byterev(tx_packet));
                 dprintf("Sent packet to midi: %u %u %u\n", commands[tx_cmd_count][0], commands[tx_cmd_count][1], commands[tx_cmd_count][2]);
                 t_tx += max_tx_time;
             break;

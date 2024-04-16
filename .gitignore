@@ -49,3 +49,4 @@ host_usb_mixer_control/xmos_mixer
 **.egg-info
 *tests/logs/*
 midi_tx_cmds.txt
+midi_rx_cmds.txt

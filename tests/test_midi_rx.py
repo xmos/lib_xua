@@ -5,8 +5,8 @@ import pytest
 import Pyxsim
 from Pyxsim import testers
 from pathlib import Path
-from uart_tx_checker import UARTTxChecker
-from midi_test_helpers import midi_expect_tx, create_midi_tx_file
+from uart_rx_checker import UARTRxChecker
+from midi_test_helpers import midi_expect_rx, create_midi_rx_file, create_midi_tx_file
 
 MAX_CYCLES = 15000000
 MIDI_RATE = 31250
@@ -18,30 +18,34 @@ CONFIGS = ["xs3"]
 # This test builds the spdif transmitter app with a verity of presets and tests that the output matches those presets
 #####
 @pytest.mark.parametrize("config", CONFIGS)
-def test_tx(capfd, config):
+def test_rx(capfd, config):
     xe = str(Path(__file__).parent / f"test_midi/bin/{config}/test_midi_{config}.xe")
 
     midi_commands = [[0x90, 60, 81]]
-    create_midi_tx_file(midi_commands)
+    create_midi_rx_file(1)
+    create_midi_tx_file()
 
-    tester = testers.ComparisonTester(midi_expect_tx().expect(midi_commands),
+
+    tester = testers.ComparisonTester(midi_expect_rx().expect(midi_commands),
                                         regexp = "uart_tx_checker:.+",
                                         ordered = True)
-
     
-    tx_port = "tile[1]:XS1_PORT_4C"
+    rx_port = "tile[1]:XS1_PORT_1F"
+    tx_port = "tile[1]:XS1_PORT_4C" # Needed so that UARTRxChecker (a transmitter) knows when to start
     baud = MIDI_RATE
     bpb = 8
     parity = 0 
     stop = 1
-    length_of_test = sum(len(cmd) for cmd in midi_commands)
+
+    midi_commands_flattened = [item for row in midi_commands for item in row]
+    # midi_commands_flattened.append(0x00) # send a null afterwards to give RXChecker to complete
 
     simthreads = [
-        UARTTxChecker(tx_port, parity, baud, length_of_test, stop, bpb, debug=False)
+        UARTRxChecker(tx_port, rx_port, parity, baud, stop, bpb, midi_commands_flattened, debug=False)
     ]
 
     simargs = ["--max-cycles", str(MAX_CYCLES)]
-    # simargs.extend(["--trace-to", "trace.txt", "--vcd-tracing", "-tile tile[1] -ports -o trace.vcd"]) #This is just for local debug so we can capture the run, pass as kwarg to run_with_pyxsim
+    simargs.extend(["--trace-to", "trace.txt", "--vcd-tracing", "-tile tile[1] -ports -o trace.vcd"]) #This is just for local debug so we can capture the run, pass as kwarg to run_with_pyxsim
 
     # result = Pyxsim.run_on_simulator(
     result = Pyxsim.run_on_simulator(
