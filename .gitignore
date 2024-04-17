@@ -50,3 +50,4 @@ host_usb_mixer_control/xmos_mixer
 *tests/logs/*
 midi_tx_cmds.txt
 midi_rx_cmds.txt
+trace.txt

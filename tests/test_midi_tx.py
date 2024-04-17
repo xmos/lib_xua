@@ -6,62 +6,61 @@ import Pyxsim
 from Pyxsim import testers
 from pathlib import Path
 from uart_tx_checker import UARTTxChecker
-from midi_test_helpers import midi_expect_tx, create_midi_tx_file
+from midi_test_helpers import midi_expect_tx, create_midi_tx_file, create_midi_rx_file, tempdir, MIDI_TEST_CONFIGS, MIDI_RATE
+from distutils.dir_util import copy_tree # we're using python 3.7 and dirs_exist_ok=True isn't available until 3.8 :(
 
 MAX_CYCLES = 15000000
-MIDI_RATE = 31250
-CONFIGS = ["xs2", "xs3"]
-CONFIGS = ["xs3"]
-
 
 #####
-# This test builds the spdif transmitter app with a verity of presets and tests that the output matches those presets
+# This test takes the built binary, copies it to a tmp dir and runs the midi Tx test which sends some commands
+# to the firmware and then receives them using the UARTTX checker
 #####
-@pytest.mark.parametrize("config", CONFIGS)
-def test_tx(capfd, config):
-    xe = str(Path(__file__).parent / f"test_midi/bin/{config}/test_midi_{config}.xe")
+@pytest.mark.parametrize("config", MIDI_TEST_CONFIGS)
+def test_tx(capfd, config, build_midi):
 
-    midi_commands = [[0x90, 60, 81]]
-    create_midi_tx_file(midi_commands)
+    # Need tempdir as we use the same config files and this causes issues when using xdist 
+    with tempdir() as tmpdirname:
+        copy_tree(build_midi, tmpdirname)
+        xe = str(Path(tmpdirname) / f"{config}/test_midi_{config}.xe")
 
-    tester = testers.ComparisonTester(midi_expect_tx().expect(midi_commands),
-                                        regexp = "uart_tx_checker:.+",
-                                        ordered = True)
+        midi_commands = [[0x90, 60, 81]]
+        create_midi_tx_file(midi_commands)
+        create_midi_rx_file()
 
-    
-    tx_port = "tile[1]:XS1_PORT_4C"
-    baud = MIDI_RATE
-    bpb = 8
-    parity = 0 
-    stop = 1
-    length_of_test = sum(len(cmd) for cmd in midi_commands)
+        expected = midi_expect_tx().expect(midi_commands)
+        tester = testers.ComparisonTester(  expected,
+                                            ordered = True)
 
-    simthreads = [
-        UARTTxChecker(tx_port, parity, baud, length_of_test, stop, bpb, debug=False)
-    ]
+        tx_port = "tile[1]:XS1_PORT_4C"
+        baud = MIDI_RATE
+        bpb = 8
+        parity = 0 
+        stop = 1
+        length_of_test = sum(len(cmd) for cmd in midi_commands)
 
-    simargs = ["--max-cycles", str(MAX_CYCLES)]
-    # simargs.extend(["--trace-to", "trace.txt", "--vcd-tracing", "-tile tile[1] -ports -o trace.vcd"]) #This is just for local debug so we can capture the run, pass as kwarg to run_with_pyxsim
+        simthreads = [
+            UARTTxChecker(tx_port, parity, baud, length_of_test, stop, bpb, debug=False)
+        ]
 
-    # result = Pyxsim.run_on_simulator(
-    result = Pyxsim.run_on_simulator(
-        xe,
-        simthreads=simthreads,
-        instTracing=True,
-        # clean_before_build=True,
-        clean_before_build=False,
-        tester=tester,
-        capfd=capfd,
-        # capfd=None,
-        timeout=120,
-        simargs=simargs,
-        build_options=[
-            "-j",
-            f"CONFIG={config}",
-            "EXTRA_BUILD_FLAGS="
-            + f" -DMIDI_RATE_HZ={MIDI_RATE}"
- ,
-        ],
-    )
 
-    assert result
+        simargs = ["--max-cycles", str(MAX_CYCLES)]
+        #This is just for local debug so we can capture the traces if needed. It slows xsim down so not needed
+        # simargs.extend(["--trace-to", "trace.txt", "--vcd-tracing", "-tile tile[1] -ports -o trace.vcd"]) 
+
+        Pyxsim.run_with_pyxsim(
+            xe,
+            simthreads=simthreads,
+            timeout=1200,
+            simargs=simargs,   
+        )
+        capture = capfd.readouterr().out
+        result = tester.run(capture.split("\n"))
+
+        # Print to console
+        # with capfd.disabled():
+        #     print("++++", expected, "++++")
+        #     print("****", capture, "****")
+        #     print("****", capture.split("\n"), "****")
+        #     print(xe)
+
+        assert result

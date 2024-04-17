@@ -2,7 +2,9 @@
 # This Software is subject to the terms of the XMOS Public Licence: Version 1.
 import pytest
 import time
-
+import Pyxsim
+from pathlib import Path
+from midi_test_helpers import MIDI_TEST_CONFIGS
 
 @pytest.fixture()
 def test_file(request):
@@ -39,3 +41,18 @@ def pytest_addoption(parser):
 @pytest.fixture
 def options(request):
     yield request.config.option
+
+# We use the same binary multiple times so just build once
+@pytest.fixture(scope="session")
+def build_midi():
+    all_build_success = True
+    for config in MIDI_TEST_CONFIGS:
+        xe = str(Path(__file__).parent / f"test_midi/bin/{config}/test_midi_{config}.xe")
+
+        success, output = Pyxsim._build(xe, build_options=["-j"])
+        all_build_success |= success
+
+    if not all_build_success:
+        print(f"ERROR MIDI Build failed: {output}")
+
+    return str(Path(__file__).parent / f"test_midi/bin/") if all_build_success else False

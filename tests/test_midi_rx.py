@@ -6,66 +6,63 @@ import Pyxsim
 from Pyxsim import testers
 from pathlib import Path
 from uart_rx_checker import UARTRxChecker
-from midi_test_helpers import midi_expect_rx, create_midi_rx_file, create_midi_tx_file
+from midi_test_helpers import midi_expect_rx, create_midi_rx_file, create_midi_tx_file, tempdir, MIDI_TEST_CONFIGS, MIDI_RATE
+from distutils.dir_util import copy_tree # we're using python 3.7 and dirs_exist_ok=True isn't available until 3.8 :(
 
 MAX_CYCLES = 15000000
-MIDI_RATE = 31250
-CONFIGS = ["xs2", "xs3"]
-CONFIGS = ["xs3"]
 
 
 #####
-# This test builds the spdif transmitter app with a verity of presets and tests that the output matches those presets
+# This test takes the built binary, copies it to a tmp dir and runs the midi Rx test which sends some commands
+# to using the UARTRX checker and the firmware receives them
 #####
-@pytest.mark.parametrize("config", CONFIGS)
-def test_rx(capfd, config):
-    xe = str(Path(__file__).parent / f"test_midi/bin/{config}/test_midi_{config}.xe")
+@pytest.mark.parametrize("config", MIDI_TEST_CONFIGS)
+def test_rx(capfd, config, build_midi):
+    # Need tempdir as we use the same config files and this causes issues when using xdist 
+    with tempdir() as tmpdirname:
+        copy_tree(build_midi, tmpdirname)
+        xe = str(Path(tmpdirname) / f"{config}/test_midi_{config}.xe")
 
-    midi_commands = [[0x90, 60, 81]]
-    create_midi_rx_file(1)
-    create_midi_tx_file()
+        midi_commands = [[0x90, 60, 81]]
+        create_midi_rx_file(1)
+        create_midi_tx_file()
 
+        expected = midi_expect_rx().expect(midi_commands)
+        tester = testers.ComparisonTester(midi_expect_rx().expect(midi_commands),
+                                            ordered = True)
+        
+        rx_port = "tile[1]:XS1_PORT_1F"
+        tx_port = "tile[1]:XS1_PORT_4C" # Needed so that UARTRxChecker (a transmitter) knows when to start
+        baud = MIDI_RATE
+        bpb = 8
+        parity = 0 
+        stop = 1
 
-    tester = testers.ComparisonTester(midi_expect_rx().expect(midi_commands),
-                                        regexp = "uart_tx_checker:.+",
-                                        ordered = True)
-    
-    rx_port = "tile[1]:XS1_PORT_1F"
-    tx_port = "tile[1]:XS1_PORT_4C" # Needed so that UARTRxChecker (a transmitter) knows when to start
-    baud = MIDI_RATE
-    bpb = 8
-    parity = 0 
-    stop = 1
+        midi_commands_flattened = [item for row in midi_commands for item in row]
+        # midi_commands_flattened.append(0x00) # send a null afterwards to give RXChecker to complete
 
-    midi_commands_flattened = [item for row in midi_commands for item in row]
-    # midi_commands_flattened.append(0x00) # send a null afterwards to give RXChecker to complete
+        simthreads = [
+            UARTRxChecker(tx_port, rx_port, parity, baud, stop, bpb, midi_commands_flattened, debug=False)
+        ]
 
-    simthreads = [
-        UARTRxChecker(tx_port, rx_port, parity, baud, stop, bpb, midi_commands_flattened, debug=False)
-    ]
+        simargs = ["--max-cycles", str(MAX_CYCLES)]
+        #This is just for local debug so we can capture the traces if needed. It slows xsim down so not needed
+        # simargs.extend(["--trace-to", "trace.txt", "--vcd-tracing", "-tile tile[1] -ports -o trace.vcd"]) 
 
-    simargs = ["--max-cycles", str(MAX_CYCLES)]
-    simargs.extend(["--trace-to", "trace.txt", "--vcd-tracing", "-tile tile[1] -ports -o trace.vcd"]) #This is just for local debug so we can capture the run, pass as kwarg to run_with_pyxsim
+        # Print to console
+        # with capfd.disabled():
+        #     print("++++", expected, "++++")
+        #     print("****", capture, "****")
+        #     print("****", capture.split("\n"), "****")
+        #     print(xe)
 
-    # result = Pyxsim.run_on_simulator(
-    result = Pyxsim.run_on_simulator(
-        xe,
-        simthreads=simthreads,
-        instTracing=True,
-        # clean_before_build=True,
-        clean_before_build=False,
-        tester=tester,
-        capfd=capfd,
-        # capfd=None,
-        timeout=120,
-        simargs=simargs,
-        build_options=[
-            "-j",
-            f"CONFIG={config}",
-            "EXTRA_BUILD_FLAGS="
-            + f" -DMIDI_RATE_HZ={MIDI_RATE}"
- ,
-        ],
-    )
+        Pyxsim.run_with_pyxsim(
+            xe,
+            simthreads=simthreads,
+            timeout=1200,
+            simargs=simargs,   
+        )
+        capture = capfd.readouterr().out
+        result = tester.run(capture.split("\n"))
 
-    assert result
+        assert result
