@@ -7,6 +7,8 @@
 #include <xclib.h>
 #include "../../../lib_xua/src/midi/midiinparse.h"
 #include "../../../lib_xua/src/midi/midioutparse.h"
+#include "../../../lib_xua/src/midi/queue.h"
+
 #endif // __XC__
 
 
@@ -33,7 +35,7 @@ unsigned random(unsigned &x){
     return x;
 }
 
-// Wrappers for midi parse because C doesn't support return tuples
+////////////////////// Wrappers for midi parse because C doesn't support return tuples
 void midi_in_parse_wrap(void * unsafe mips, unsigned cable_number, unsigned char b, unsigned * unsafe valid, unsigned *unsafe packed){
     unsafe{
         struct midi_in_parse_state * unsafe ptr = mips;
@@ -53,3 +55,57 @@ void reset_midi_state_wrap(void * unsafe mips){
         reset_midi_state(*ptr);
     }
 }
+
+/////////////////////// Wrappers for queue test
+
+
+void queue_init_wrap(queue_t *q, unsigned size) {
+    unsafe{
+        queue_init(*q, size);
+    }
+}
+
+int queue_is_empty_wrap(queue_t *unsafe q) {
+    unsafe{
+        return queue_is_empty(*q);
+    }
+}
+
+int queue_is_full_wrap(queue_t *unsafe q) {
+    unsafe{
+        return queue_is_full(*q);
+    }
+}
+
+/*
+inline void queue_push_word(queue_t &q, unsigned array[], unsigned data)
+{
+    assert(!queue_is_full(q));
+    array[q.wrptr++ & q.mask] = data;
+}
+
+inline unsigned queue_pop_word(queue_t &q, unsigned array[]) {
+    assert(!queue_is_empty(q));
+    return array[q.rdptr++ & q.mask];
+}
+
+inline void queue_push_byte(queue_t &q, unsigned char array[], unsigned data)
+{
+    assert(!queue_is_full(q));
+    array[q.wrptr++ & q.mask] = data;
+}
+
+inline unsigned queue_pop_byte(queue_t &q, unsigned char array[]) {
+    assert(!queue_is_empty(q));
+    return array[q.rdptr++ & q.mask];
+}
+
+inline unsigned queue_items(const queue_t &q) {
+    return q.wrptr - q.rdptr;
+}
+
+inline unsigned queue_space(const queue_t &q) {
+    return q.size - queue_items(q);
+}
+
+*/

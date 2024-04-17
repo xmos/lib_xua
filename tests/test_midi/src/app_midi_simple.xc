@@ -36,7 +36,7 @@ on tile[MIDI_TILE] : clock    clk_midi                      = CLKBLK_MIDI;
 #define TEST_COMMAND_FILE_TX   "midi_tx_cmds.txt"
 #define TEST_COMMAND_FILE_RX   "midi_rx_cmds.txt"
 
-#define DEBUG 0
+#define DEBUG       0
 
 #if     DEBUG
 #define dprintf(...) printf(__VA_ARGS__)

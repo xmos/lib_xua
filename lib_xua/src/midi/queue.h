@@ -14,6 +14,8 @@ typedef struct queue_t {
     unsigned mask;
 } queue_t;
 
+#ifdef __XC__
+
 inline int is_power_of_2(unsigned x) {
     return x != 0 && (x & (x - 1)) == 0;
 }
@@ -63,5 +65,7 @@ inline unsigned queue_items(const queue_t &q) {
 inline unsigned queue_space(const queue_t &q) {
     return q.size - queue_items(q);
 }
+
+#endif // __XC__
 
 #endif /* QUEUE_H_ */
