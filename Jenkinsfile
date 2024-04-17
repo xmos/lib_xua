@@ -39,6 +39,8 @@ pipeline {
                     }
                   }
                 }
+                // Temp debug
+                archiveArtifacts artifacts: "${REPO}/**/*.pdf", fingerprint: true, allowEmptyArchive: true
               }
             }
             stage('Unity tests') {
