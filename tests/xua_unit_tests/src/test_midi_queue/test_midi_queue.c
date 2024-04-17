@@ -14,7 +14,7 @@
 unsigned rndm = RANDOM_SEED;
 
 
-void test_queue(void) {
+void test_midi_queue(void) {
     queue_t symbol_fifo;
     unsigned symbol_fifo_storage[USB_MIDI_DEVICE_OUT_FIFO_SIZE];
     queue_init_wrap(&symbol_fifo, ARRAY_SIZE(symbol_fifo_storage));

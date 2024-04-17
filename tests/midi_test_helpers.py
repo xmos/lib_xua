@@ -21,7 +21,7 @@ def cd(newdir, cleanup=lambda: True):
 
 @contextlib.contextmanager
 def tempdir():
-    dirpath = tempfile.mkdtemp()
+    dirpath = tempfile.mkdtemp(dir=os.getcwd())
     def cleanup():
         shutil.rmtree(dirpath)
     with cd(dirpath, cleanup):
