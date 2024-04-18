@@ -1,7 +1,9 @@
 cmake_minimum_required(VERSION 3.21)
+include($ENV{XMOS_CMAKE_PATH}/xcommon.cmake)
 
 ## App name
 set( APP_NAME xua_unit_tests )
+
 
 # Auto-generate schedule and top level config files
 
@@ -22,16 +24,26 @@ set( GEN_RUNNER_SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/generate_unity_runner.py )
 set( RUNNERS_DIR ${CMAKE_CURRENT_BINARY_DIR}/src.runners )
 file( MAKE_DIRECTORY ${RUNNERS_DIR} )
 
-file( GLOB TEST_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/src/*.c )
+file( GLOB_RECURSE TEST_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/src/test_*/*.c )
 
-# For every source file in ic_unit_tests/src
+message(STATUS "HERE: ${TEST_SOURCES}")
+
+
+# For every source file in xua_unit_tests/
 foreach(testfile ${TEST_SOURCES})
+    message(STATUS "Processing: ${testfile}")
+
     # Get test name
     #cmake_path( GET testfile STEM TESTNAME )
     get_filename_component(TESTNAME ${testfile} NAME_WLE)
+
+    message(STATUS "Unit test name: ${TESTNAME}")
+    project(${TESTNAME})
+
+
     
     # Create runner file directory
-    file( MAKE_DIRECTORY ${RUNNERS_DIR}/${TESTNAME} )
+    file(MAKE_DIRECTORY ${RUNNERS_DIR}/${TESTNAME} )
 
     #########
     ## Create runner file
@@ -49,39 +61,27 @@ foreach(testfile ${TEST_SOURCES})
         COMMAND ${Python3_EXECUTABLE} ${GEN_RUNNER_SCRIPT} ${GEN_RUNNER_SCRIPT_ARGS}
         COMMENT "Generating XUA Unit Test Runner" )
 
-    #########
-    ## Add a build target
-    add_executable(xua_unit_${TESTNAME})
+    ##########################
+    ## Do xcommon cmake build
+    ##########################
 
-    target_sources(xua_unit_${TESTNAME}
-        PRIVATE
-            ${testfile}
-            ${RUNNER_FILE})
+    set(XMOS_SANDBOX_DIR ${CMAKE_CURRENT_LIST_DIR}/../../..)
 
-    target_include_directories(xua_unit_${TESTNAME}
-        PRIVATE
-            src
-            ${CMAKE_CURRENT_SOURCE_DIR}/../../../modules/lib_ic/src
-        )
+    set(APP_HW_TARGET XK-EVK-XU316)
+    set(APP_DEPENDENT_MODULES "lib_xua")
+    set(APP_PCA_ENABLE ON)
+    set(APP_COMPILER_FLAGS ${EXTRA_BUILD_FLAGS} -fcomment-asm
+                                                -Wall
+                                                -O3
+                                                -report
+                                                -g
+                                                -fxscope
+                                                -DUSB_TILE=tile[0]
+                                                )
 
-    # target_link_libraries(fwk_voice_${TESTNAME} 
-    #     PUBLIC
-    #         fwk_voice::ic
-    #         fwk_voice::test::shared::test_utils
-    #         fwk_voice::test::shared::unity)
+    set(APP_INCLUDES    ${CMAKE_CURRENT_LIST_DIR}/src
+                        ${CMAKE_CURRENT_LIST_DIR}/../../../Unity/src)
 
-    if(${CMAKE_SYSTEM_NAME} STREQUAL XCORE_XS3A)
-        target_compile_options(xua_unit_${TESTNAME}
-            PRIVATE 
-                "-DUNITY_SUPPORT_64"
-                "-Wno-xcore-fptrgroup"
-                "-report"
-                "-DSPEEDUP_FACTOR=${TEST_SPEEDUP_FACTOR}")
+    XMOS_REGISTER_APP()
 
-        target_link_options(xua_unit_${TESTNAME}
-            PRIVATE
-                "-target=${XCORE_TARGET}")
-    else()
-        target_link_libraries(xua_unit_${TESTNAME} m)
-    endif()
 endforeach()
