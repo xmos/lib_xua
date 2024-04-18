@@ -29,22 +29,22 @@ unsigned mini_in_parse_ut(unsigned midi[3]){
 
     struct midi_in_parse_state m_state;
     void * mips = &m_state;
-    reset_midi_state_wrap(mips);
+    reset_midi_state_c_wrapper(mips);
 
     unsigned valid = 0;
     unsigned packed = 0;
 
-    midi_in_parse_wrap(mips, CABLE_NUM, midi[0], &valid, &packed);
+    midi_in_parse_c_wrapper(mips, CABLE_NUM, midi[0], &valid, &packed);
     // printf("Valid: %d data: %u\n", valid, packed);
     if(valid){
         return packed;
     }
-    midi_in_parse_wrap(mips, CABLE_NUM, midi[1], &valid, &packed);
+    midi_in_parse_c_wrapper(mips, CABLE_NUM, midi[1], &valid, &packed);
     // printf("Valid: %d data: %u\n", valid, packed);
     if(valid){
         return packed;
     }
-    midi_in_parse_wrap(mips, CABLE_NUM, midi[2], &valid, &packed);
+    midi_in_parse_c_wrapper(mips, CABLE_NUM, midi[2], &valid, &packed);
     // printf("Valid: %d data: %u\n", valid, packed);
     if(valid){
         return packed;
@@ -56,14 +56,14 @@ unsigned mini_in_parse_ut(unsigned midi[3]){
 unsigned rndm = RANDOM_SEED;
 
 
-void test_note(void) {
+void test_midi_note(void) {
     for(int cmd = NOTE_OFF; cmd < NOTE_ON + NUM_CHANS; cmd++){
         for(int test = 0; test < NUM_TESTS_PER_TEST; test++){
             unsigned midi_ref[3] = {cmd, random(&rndm) & DATA_MASK, random(&rndm) & DATA_MASK};
             unsigned packed = mini_in_parse_ut(midi_ref);
             unsigned midi_dut[3] = {0};
             unsigned size = 0;
-            midi_out_parse_wrap(packed, midi_dut, &size);
+            midi_out_parse_c_wrapper(packed, midi_dut, &size);
             // printf("size: %d data: 0x%x 0x%x 0x%x\n", size, midi_ref[0], midi_ref[1], midi_ref[2]);
             // printf("size: %d data: 0x%x 0x%x 0x%x\n", size, midi_dut[0], midi_dut[1], midi_dut[2]);
             //TEST_ASSERT_EQUAL_UINT32_ARRAY not working!?
@@ -74,14 +74,14 @@ void test_note(void) {
     }
 }
 
-void test_pressure(void) {
+void test_midi_pressure(void) {
     for(int cmd = PRESSURE; cmd < PRESSURE + NUM_CHANS; cmd++){
         for(int test = 0; test < NUM_TESTS_PER_TEST; test++){
             unsigned midi_ref[3] = {cmd, random(&rndm) & DATA_MASK, random(&rndm) & DATA_MASK};
             unsigned packed = mini_in_parse_ut(midi_ref);
             unsigned midi_dut[3] = {0};
             unsigned size = 0;
-            midi_out_parse_wrap(packed, midi_dut, &size);
+            midi_out_parse_c_wrapper(packed, midi_dut, &size);
             // printf("size: %d data: 0x%x 0x%x 0x%x\n", size, midi_ref[0], midi_ref[1], midi_ref[2]);
             // printf("size: %d data: 0x%x 0x%x 0x%x\n", size, midi_dut[0], midi_dut[1], midi_dut[2]);
             //TEST_ASSERT_EQUAL_UINT32_ARRAY not working!?
@@ -92,14 +92,14 @@ void test_pressure(void) {
     }
 }
 
-void test_control(void) {
+void test_midi_control(void) {
     for(int cmd = CONTROL; cmd < CONTROL + NUM_CHANS; cmd++){
         for(int test = 0; test < NUM_TESTS_PER_TEST; test++){
             unsigned midi_ref[3] = {cmd, random(&rndm) & DATA_MASK, random(&rndm) & DATA_MASK};
             unsigned packed = mini_in_parse_ut(midi_ref);
             unsigned midi_dut[3] = {0};
             unsigned size = 0;
-            midi_out_parse_wrap(packed, midi_dut, &size);
+            midi_out_parse_c_wrapper(packed, midi_dut, &size);
             // printf("size: %d data: 0x%x 0x%x 0x%x\n", size, midi_ref[0], midi_ref[1], midi_ref[2]);
             // printf("size: %d data: 0x%x 0x%x 0x%x\n", size, midi_dut[0], midi_dut[1], midi_dut[2]);
             //TEST_ASSERT_EQUAL_UINT32_ARRAY not working!?
@@ -110,14 +110,14 @@ void test_control(void) {
     }
 }
 
-void test_program(void) {
+void test_midi_program(void) {
     for(int cmd = PROGRAM; cmd < PROGRAM + NUM_CHANS; cmd++){
         for(int test = 0; test < NUM_TESTS_PER_TEST; test++){
             unsigned midi_ref[3] = {cmd, random(&rndm) & DATA_MASK, random(&rndm) & DATA_MASK};
             unsigned packed = mini_in_parse_ut(midi_ref);
             unsigned midi_dut[3] = {0};
             unsigned size = 0;
-            midi_out_parse_wrap(packed, midi_dut, &size);
+            midi_out_parse_c_wrapper(packed, midi_dut, &size);
             // printf("size: %d data: 0x%x 0x%x 0x%x\n", size, midi_ref[0], midi_ref[1], midi_ref[2]);
             // printf("size: %d data: 0x%x 0x%x 0x%x\n", size, midi_dut[0], midi_dut[1], midi_dut[2]);
             //TEST_ASSERT_EQUAL_UINT32_ARRAY not working!?
@@ -128,14 +128,14 @@ void test_program(void) {
     }
 }
 
-void test_pressure_val(void) {
+void test_midi_pressure_val(void) {
     for(int cmd = PRESSURE_VAL; cmd < PRESSURE_VAL + NUM_CHANS; cmd++){
         for(int test = 0; test < NUM_TESTS_PER_TEST; test++){
             unsigned midi_ref[3] = {cmd, random(&rndm) & DATA_MASK, random(&rndm) & DATA_MASK};
             unsigned packed = mini_in_parse_ut(midi_ref);
             unsigned midi_dut[3] = {0};
             unsigned size = 0;
-            midi_out_parse_wrap(packed, midi_dut, &size);
+            midi_out_parse_c_wrapper(packed, midi_dut, &size);
             // printf("size: %d data: 0x%x 0x%x 0x%x\n", size, midi_ref[0], midi_ref[1], midi_ref[2]);
             // printf("size: %d data: 0x%x 0x%x 0x%x\n", size, midi_dut[0], midi_dut[1], midi_dut[2]);
             //TEST_ASSERT_EQUAL_UINT32_ARRAY not working!?
@@ -146,14 +146,14 @@ void test_pressure_val(void) {
     }
 }
 
-void test_range(void) {
+void test_midi_range(void) {
     for(int cmd = RANGE; cmd < RANGE + NUM_CHANS; cmd++){
         for(int test = 0; test < NUM_TESTS_PER_TEST; test++){
             unsigned midi_ref[3] = {cmd, random(&rndm) & DATA_MASK, random(&rndm) & DATA_MASK};
             unsigned packed = mini_in_parse_ut(midi_ref);
             unsigned midi_dut[3] = {0};
             unsigned size = 0;
-            midi_out_parse_wrap(packed, midi_dut, &size);
+            midi_out_parse_c_wrapper(packed, midi_dut, &size);
             // printf("size: %d data: 0x%x 0x%x 0x%x\n", size, midi_ref[0], midi_ref[1], midi_ref[2]);
             // printf("size: %d data: 0x%x 0x%x 0x%x\n", size, midi_dut[0], midi_dut[1], midi_dut[2]);
             //TEST_ASSERT_EQUAL_UINT32_ARRAY not working!?
@@ -164,14 +164,14 @@ void test_range(void) {
     }
 }
 
-void test_manufacturer_id(void) {
+void test_midi_manufacturer_id(void) {
     for(int cmd = MANUFACTURE_ID; cmd < MANUFACTURE_ID + NUM_CHANS; cmd++){
         for(int test = 0; test < NUM_TESTS_PER_TEST; test++){
             unsigned midi_ref[3] = {cmd, random(&rndm) & DATA_MASK, random(&rndm) & DATA_MASK};
             unsigned packed = mini_in_parse_ut(midi_ref);
             unsigned midi_dut[3] = {0};
             unsigned size = 0;
-            midi_out_parse_wrap(packed, midi_dut, &size);
+            midi_out_parse_c_wrapper(packed, midi_dut, &size);
             // printf("size: %d data: 0x%x 0x%x 0x%x\n", size, midi_ref[0], midi_ref[1], midi_ref[2]);
             // printf("size: %d data: 0x%x 0x%x 0x%x\n", size, midi_dut[0], midi_dut[1], midi_dut[2]);
             //TEST_ASSERT_EQUAL_UINT32_ARRAY not working!?

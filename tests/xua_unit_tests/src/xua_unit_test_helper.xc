@@ -36,20 +36,20 @@ unsigned random(unsigned &x){
 }
 
 ////////////////////// Wrappers for midi parse because C doesn't support return tuples
-void midi_in_parse_wrap(void * unsafe mips, unsigned cable_number, unsigned char b, unsigned * unsafe valid, unsigned *unsafe packed){
+void midi_in_parse_c_wrapper(void * unsafe mips, unsigned cable_number, unsigned char b, unsigned * unsafe valid, unsigned *unsafe packed){
     unsafe{
         struct midi_in_parse_state * unsafe ptr = mips;
         {*valid, *packed} = midi_in_parse(*ptr, cable_number, b);
     }
 }
 
-void midi_out_parse_wrap(unsigned tx_data, unsigned midi[3], unsigned * unsafe size){
+void midi_out_parse_c_wrapper(unsigned tx_data, unsigned midi[3], unsigned * unsafe size){
     unsafe{
         {midi[0], midi[1], midi[2], *size} = midi_out_parse(tx_data);
     }
 }
 
-void reset_midi_state_wrap(void * unsafe mips){
+void reset_midi_state_c_wrapper(void * unsafe mips){
     unsafe{
         struct midi_in_parse_state * unsafe ptr = mips;
         reset_midi_state(*ptr);
@@ -59,53 +59,57 @@ void reset_midi_state_wrap(void * unsafe mips){
 /////////////////////// Wrappers for queue test
 
 
-void queue_init_wrap(queue_t *q, unsigned size) {
+void queue_init_c_wrapper(queue_t *q, unsigned size) {
     unsafe{
         queue_init(*q, size);
     }
 }
 
-int queue_is_empty_wrap(queue_t *unsafe q) {
+int queue_is_empty_c_wrapper(queue_t *unsafe q) {
     unsafe{
         return queue_is_empty(*q);
     }
 }
 
-int queue_is_full_wrap(queue_t *unsafe q) {
+int queue_is_full_c_wrapper(queue_t *unsafe q) {
     unsafe{
         return queue_is_full(*q);
     }
 }
 
-/*
-inline void queue_push_word(queue_t &q, unsigned array[], unsigned data)
-{
-    assert(!queue_is_full(q));
-    array[q.wrptr++ & q.mask] = data;
+void queue_push_word_c_wrapper(queue_t *q, unsigned array[], unsigned data){
+    unsafe{
+        queue_push_word(*q, array, data);
+    }
 }
 
-inline unsigned queue_pop_word(queue_t &q, unsigned array[]) {
-    assert(!queue_is_empty(q));
-    return array[q.rdptr++ & q.mask];
+unsigned queue_pop_word_c_wrapper(queue_t *q, unsigned array[]){
+    unsafe{
+        return queue_pop_word(*q, array);
+    }
 }
 
-inline void queue_push_byte(queue_t &q, unsigned char array[], unsigned data)
-{
-    assert(!queue_is_full(q));
-    array[q.wrptr++ & q.mask] = data;
+void queue_push_byte_c_wrapper(queue_t *q, unsigned char array[], unsigned data){
+    unsafe{
+        queue_push_byte(*q, array, data);
+    }
 }
 
-inline unsigned queue_pop_byte(queue_t &q, unsigned char array[]) {
-    assert(!queue_is_empty(q));
-    return array[q.rdptr++ & q.mask];
+unsigned queue_pop_byte_c_wrapper(queue_t *q, unsigned char array[]){
+    unsafe{
+        return queue_pop_byte(*q, array);
+    }
 }
 
-inline unsigned queue_items(const queue_t &q) {
-    return q.wrptr - q.rdptr;
+unsigned queue_items_c_wrapper(const queue_t *q){
+    unsafe{
+        return queue_items(*q);
+    }
 }
 
-inline unsigned queue_space(const queue_t &q) {
-    return q.size - queue_items(q);
+unsigned queue_space_c_wrapper(const queue_t *q){
+    unsafe{
+        return queue_space(*q);
+    }
 }
 
-*/
