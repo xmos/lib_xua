@@ -1,103 +1,87 @@
-cmake_minimum_required(VERSION 3.13)
+cmake_minimum_required(VERSION 3.21)
 
-set(XMOS_TOOLS_PATH $ENV{XMOS_TOOL_PATH}/bin)
+## App name
+set( APP_NAME xua_unit_tests )
 
-#**********************
-# Setup XMOS toolchain
-#**********************
-if(NOT DEFINED ENV{XUA_PATH})
-    message(FATAL_ERROR "XUA_PATH environment variable not defined")
-    # some more commands
+# Auto-generate schedule and top level config files
+
+if( NOT ${Python3_FOUND} )
+  message(FATAL_ERROR "Python3 not found for running . ") 
 endif()
-include("$ENV{XUA_PATH}/cmake_utils/xmos_toolchain.cmake")
 
-#**********************
-# Project
-#**********************
-# Disable in-source build.
-#if("${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_BINARY_DIR}")
-#    message(FATAL_ERROR "In-source build is not allowed! Please specify a build folder.\n\tex:cmake -B build")
-#endif()
+#copy conftest.py in the build directory since pytest_collect_file only collects tests from the directory tree where conftest.py is present
+configure_file( conftest.py conftest.py COPYONLY ) 
 
+## executable output directory
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
 
-## Define project
-project(xua_unit_tests VERSION 0.1.0)
+# Set unity runner generate script
+set( GEN_RUNNER_SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/generate_unity_runner.py )
 
-## Enable languages for project
-enable_language(CXX XC C ASM)
+# Create directory for runner files
+set( RUNNERS_DIR ${CMAKE_CURRENT_BINARY_DIR}/src.runners )
+file( MAKE_DIRECTORY ${RUNNERS_DIR} )
 
-message(STATUS "CAME HERE")
-add_custom_target("runners" ALL)
-add_custom_command(
-        TARGET runners
-        COMMAND python generate_unity_runners.py
-        COMMENT "generate unity runners"
-)
+file( GLOB TEST_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/src/*.c )
 
-message(STATUS "CAME HERE 1")
-file( GLOB APP_SOURCES src/test*.xc )
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/bin)
-foreach( testsourcefile ${APP_SOURCES} )
-    get_filename_component(ITEM_NAME ${testsourcefile} NAME_WE)
-    message(STATUS "item_name " ${ITEM_NAME})
-    add_executable(${ITEM_NAME})
-    set(APP_COMPILER_FLAGS
-            "-O2"
-            "-g"
-            "-Wall"
-            "-report"
-            "-fxscope"
-            "-target=XCORE-AI-EXPLORER"
-            "${CMAKE_CURRENT_SOURCE_DIR}/config.xscope"
-            "-DHID_CONTROLS=1"
-            "-DUNITY_SUPPORT_64"
-            "-DUNITY_INCLUDE_DOUBLE"
-            )
-     set_source_files_properties(
-        "runners/${ITEM_NAME}/${ITEM_NAME}_Runner.c"
-        PROPERTIES GENERATED TRUE
+# For every source file in ic_unit_tests/src
+foreach(testfile ${TEST_SOURCES})
+    # Get test name
+    #cmake_path( GET testfile STEM TESTNAME )
+    get_filename_component(TESTNAME ${testfile} NAME_WLE)
+    
+    # Create runner file directory
+    file( MAKE_DIRECTORY ${RUNNERS_DIR}/${TESTNAME} )
+
+    #########
+    ## Create runner file
+    set( RUNNER_FILE ${RUNNERS_DIR}/${TESTNAME}/${TESTNAME}_Runner.c )
+    set( GEN_RUNNER_SCRIPT_BYPRODUCTS ${RUNNER_FILE} )
+
+    unset(GEN_RUNNER_SCRIPT_ARGS) 
+    list(APPEND GEN_RUNNER_SCRIPT_ARGS --project-root ${UNITY_PATH}/.. )
+    list(APPEND GEN_RUNNER_SCRIPT_ARGS --source-file ${testfile} )
+    list(APPEND GEN_RUNNER_SCRIPT_ARGS --runner-file ${RUNNER_FILE})
+
+    ## Add command to generate runner file
+    add_custom_command(
+        OUTPUT ${RUNNER_FILE}
+        COMMAND ${Python3_EXECUTABLE} ${GEN_RUNNER_SCRIPT} ${GEN_RUNNER_SCRIPT_ARGS}
+        COMMENT "Generating XUA Unit Test Runner" )
+
+    #########
+    ## Add a build target
+    add_executable(xua_unit_${TESTNAME})
+
+    target_sources(xua_unit_${TESTNAME}
+        PRIVATE
+            ${testfile}
+            ${RUNNER_FILE})
+
+    target_include_directories(xua_unit_${TESTNAME}
+        PRIVATE
+            src
+            ${CMAKE_CURRENT_SOURCE_DIR}/../../../modules/lib_ic/src
         )
 
-    set(APP_SRCS
-            ${testsourcefile}
-            "runners/${ITEM_NAME}/${ITEM_NAME}_Runner.c"
-            "${CMAKE_CURRENT_SOURCE_DIR}/../../../Unity/src/unity.c"
-        )
-    set(APP_INCLUDES
-        "src"
-        "${CMAKE_CURRENT_SOURCE_DIR}/../../../Unity/src"
-    )
-    set(APP_DEPENDENT_MODULES
-            "lib_xua(>=2.0.0)"
-            "lib_logging(>=3.0.0)"
-            "lib_xassert(>=4.0.0)"
-            "lib_xud(>=2.0.0)"
-            "lib_spdif(>=4.0.0)"
-            "lib_mic_array(>=4.0.0)"
-        )
+    # target_link_libraries(fwk_voice_${TESTNAME} 
+    #     PUBLIC
+    #         fwk_voice::ic
+    #         fwk_voice::test::shared::test_utils
+    #         fwk_voice::test::shared::unity)
 
-    include("$ENV{XUA_PATH}/cmake_utils/xua.cmake")
-    set_target_properties(${ITEM_NAME} PROPERTIES OUTPUT_NAME ${ITEM_NAME}.xe)
-    target_compile_options(${ITEM_NAME} PRIVATE ${APP_COMPILER_FLAGS})
+    if(${CMAKE_SYSTEM_NAME} STREQUAL XCORE_XS3A)
+        target_compile_options(xua_unit_${TESTNAME}
+            PRIVATE 
+                "-DUNITY_SUPPORT_64"
+                "-Wno-xcore-fptrgroup"
+                "-report"
+                "-DSPEEDUP_FACTOR=${TEST_SPEEDUP_FACTOR}")
 
-    target_include_directories(${ITEM_NAME}
-        PRIVATE ${APP_INCLUDES}
-        PRIVATE ${XUA_INCLUDES_ALL}
-    )
-
-    target_sources(${ITEM_NAME}
-            PRIVATE ${APP_SRCS}
-            PRIVATE ${XUA_SRCS_ALL}
-            )
-    add_dependencies(${ITEM_NAME} runners)
-    target_link_options(${ITEM_NAME} PRIVATE ${APP_COMPILER_FLAGS})
-    ## Set any additional flags only for C++
-    set(CMAKE_CXX_FLAGS  "-std=c++11")
-
-endforeach( testsourcefile ${APP_SOURCES} )
-
-message(STATUS ${APP_SOURCES})
-
-message(STATUS "CAME HERE 2")
-## Register the application
-#XMOS_REGISTER_APP()
+        target_link_options(xua_unit_${TESTNAME}
+            PRIVATE
+                "-target=${XCORE_TARGET}")
+    else()
+        target_link_libraries(xua_unit_${TESTNAME} m)
+    endif()
+endforeach()
