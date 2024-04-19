@@ -36,7 +36,7 @@ on tile[MIDI_TILE] : clock    clk_midi                      = CLKBLK_MIDI;
 #define TEST_COMMAND_FILE_TX   "midi_tx_cmds.txt"
 #define TEST_COMMAND_FILE_RX   "midi_rx_cmds.txt"
 
-#define DEBUG       0
+#define DEBUG       0 // Prints for debugging. Turn off for actual test
 
 #if     DEBUG
 #define dprintf(...) printf(__VA_ARGS__)
@@ -58,6 +58,7 @@ unsigned mini_in_parse_helper(unsigned midi[3]){
     unsigned packed = 0;
 
     for(int i = 0; i < 3; i++){
+        dprintf("Packing byte %d 0x%x\n", i, midi[i]);
         {valid, packed} = midi_in_parse(m_state, CABLE_NUM, midi[i]);
         if(valid){
             return packed;
@@ -122,10 +123,14 @@ void test(chanend c_midi){
 
     timer tmr;
 
-    int t_tx;
+    int t_tx;       // Used for delay between Txs
+    int tx_end;     // Used to wait for packet to have fully left
     tmr :> t_tx;
+    tmr :> tx_end;
 
     const int max_tx_time = XS1_TIMER_HZ / 31250 * 3 * (8 + 1 + 1);  // 30 bits at 31.25 kbps is 0.96ms
+    const int tx_interval = XS1_TIMER_HZ / 8000; // SoF rate on HS
+    tx_end += max_tx_time; // One whole packet
 
     while(tx_cmd_count < num_to_tx || rx_cmd_count < num_to_rx ){
         select{
@@ -137,9 +142,10 @@ void test(chanend c_midi){
                     unsigned midi_data[3] = {0};
                     unsigned byte_count = 0;
                     {midi_data[0], midi_data[1], midi_data[2], byte_count} = midi_out_parse(byterev(rx_packet));
-                    // Note this needs to always print for capff to pick it up
+                    // Note this needs to always print for capfd in pytest to pick it up
                     printf("dut_midi_rx: %u %u %u\n", midi_data[0], midi_data[1], midi_data[2]);
                     rx_cmd_count++;
+                    midi_send_ack(c_midi);
                 }
             break;
 
@@ -148,15 +154,15 @@ void test(chanend c_midi){
                 unsigned tx_packet = mini_in_parse_helper(midi);
                 outuint(c_midi, byterev(tx_packet));
                 dprintf("Sent packet to midi: %u %u %u\n", commands[tx_cmd_count][0], commands[tx_cmd_count][1], commands[tx_cmd_count][2]);
-                t_tx += max_tx_time;
+                t_tx += tx_interval;
+                tx_end += max_tx_time;
             break;
         }
     }
 
     dprintf("Tx and Rx count met - exiting after last tx complete.\n");
-    tmr when timerafter(t_tx) :> int _; // wait until packet definitely departed
+    tmr when timerafter(tx_end) :> int _; // wait until packet definitely departed
 
-    delay_ticks(max_tx_time / 4); // Allow a few more bit times about to allow TXChecker to do it's thing
     exit(0);
 }
 

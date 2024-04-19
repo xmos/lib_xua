@@ -28,8 +28,7 @@ def test_tx(capfd, config, build_midi):
         create_midi_rx_file()
 
         expected = midi_expect_tx().expect(midi_commands)
-        tester = testers.ComparisonTester(  expected,
-                                            ordered = True)
+        tester = testers.ComparisonTester(expected, ordered = True)
 
         tx_port = "tile[1]:XS1_PORT_4C"
         baud = MIDI_RATE
@@ -47,20 +46,14 @@ def test_tx(capfd, config, build_midi):
         #This is just for local debug so we can capture the traces if needed. It slows xsim down so not needed
         # simargs.extend(["--trace-to", "trace.txt", "--vcd-tracing", "-tile tile[1] -ports -o trace.vcd"]) 
 
+        # with capfd.disabled(): # use to see xsim and tester output
         Pyxsim.run_with_pyxsim(
             xe,
             simthreads=simthreads,
-            timeout=1200,
+            timeout=120,
             simargs=simargs,   
         )
         capture = capfd.readouterr().out
         result = tester.run(capture.split("\n"))
-
-        # Print to console
-        # with capfd.disabled():
-        #     print("++++", expected, "++++")
-        #     print("****", capture, "****")
-        #     print("****", capture.split("\n"), "****")
-        #     print(xe)
 
         assert result
