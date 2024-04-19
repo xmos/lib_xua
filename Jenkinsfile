@@ -7,15 +7,10 @@ pipeline {
   environment {
     REPO = 'lib_xua'
     VIEW = getViewName(REPO)
+    TOOLS_VERSION = "15.2.1"    // For unit tests
   }
   options {
     skipDefaultCheckout()
-  }
-  environment {
-    REPO = 'sw_usb_audio'
-    VIEW = getViewName(REPO)
-    TOOLS_VERSION = "15.2.1"
-    XTAGCTL_VERSION = "v2.0.0"
   }
   stages {
     stage('Basic tests') {
