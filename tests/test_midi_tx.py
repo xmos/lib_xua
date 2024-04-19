@@ -56,4 +56,4 @@ def test_tx(capfd, config, build_midi):
         capture = capfd.readouterr().out
         result = tester.run(capture.split("\n"))
 
-        assert result
+        assert result, f"expected: {expected}\n capture: {capture}"

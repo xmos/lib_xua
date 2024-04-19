@@ -19,7 +19,7 @@
 #define DATA_RANGE      128
 #define DATA_MASK       (DATA_RANGE - 1)
 
-#define NUM_TESTS_PER_TEST  10
+#define NUM_TESTS_PER_TEST  30
 
 #define CABLE_NUM       2
 #define RANDOM_SEED     6031769
