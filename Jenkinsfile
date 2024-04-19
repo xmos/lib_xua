@@ -40,8 +40,8 @@ pipeline {
                     }
                   }
                 }
-                // Temp debug
-                archiveArtifacts artifacts: "${REPO}/**/*.pdf", fingerprint: true, allowEmptyArchive: true
+                // Temp debug used by test_tx
+                archiveArtifacts artifacts: "${REPO}/tests/*.txt", fingerprint: true, allowEmptyArchive: true
               }
             }
             stage('Unity tests') {
