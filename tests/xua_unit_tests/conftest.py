@@ -51,9 +51,9 @@ class UnityTestExecutable(pytest.Item):
                 print("run axe for executable ", self.name)
                 test_output = subprocess.check_output(["axe", self.name], text=True)
             else:
-                print("run xrun for executable ", self.name)
+                print("run xsim for executable ", self.name)
                 test_output = subprocess.check_output(
-                    ["xrun", "--io", "--id", "0", self.name],
+                    ["xsim", self.name],
                     text=True,
                     stderr=subprocess.STDOUT,
                 )
