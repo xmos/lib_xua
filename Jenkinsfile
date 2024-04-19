@@ -36,8 +36,7 @@ pipeline {
                 dir("${REPO}/tests"){
                   viewEnv(){
                     withVenv{
-                      // runPytest('--numprocesses=4')
-                      runPytest('-k "midi" -s')
+                      runPytest('--numprocesses=4')
                     }
                   }
                 }
@@ -76,8 +75,6 @@ pipeline {
       }
       post {
         cleanup {
-          // Temp debug used by test_tx
-          archiveArtifacts artifacts: "${REPO}/**/*.txt", fingerprint: true, allowEmptyArchive: true
           xcoreCleanSandbox()
         }
       }

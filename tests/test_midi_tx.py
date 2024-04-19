@@ -18,11 +18,6 @@ MAX_CYCLES = 15000000
 @pytest.mark.parametrize("config", MIDI_TEST_CONFIGS)
 def test_tx(capfd, config, build_midi):
 
-    with open("dir.txt", "wt") as db:
-        import subprocess
-        output = subprocess.run("tree", capture_output=True, text=True, shell=True) 
-        db.write(output.stdout)
-
     # Need tempdir as we use the same config files and this causes issues when using xdist 
     with tempdir() as tmpdirname:
         copy_tree(build_midi, tmpdirname)

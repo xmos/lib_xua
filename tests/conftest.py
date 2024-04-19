@@ -50,7 +50,7 @@ def build_midi():
     result = subprocess.run(cmd, capture_output=True, text=True, shell=True)
     all_build_success = result.returncode
 
-    with open("midi_build.txt", "wt") as mb:
-        mb.write(str(result))
+    assert all_build_success == 0, f"{result.stderr}\n{result.stdout}"
 
-    return str(Path(__file__).parent / f"test_midi/bin/") if all_build_success == 0 else False
+    return str(Path(__file__).parent / f"test_midi/bin/") 
+
