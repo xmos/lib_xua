@@ -11,6 +11,12 @@ pipeline {
   options {
     skipDefaultCheckout()
   }
+  environment {
+    REPO = 'sw_usb_audio'
+    VIEW = getViewName(REPO)
+    TOOLS_VERSION = "15.2.1"
+    XTAGCTL_VERSION = "v2.0.0"
+  }
   stages {
     stage('Basic tests') {
       agent {
@@ -45,16 +51,14 @@ pipeline {
             }
             stage('Unity tests') {
               steps {
-                dir("${REPO}") {
-                  dir('tests') {
-                    dir('xua_unit_tests') {
-                      withVenv {
-                        withEnv(["XMOS_CMAKE_PATH=${WORKSPACE}/xcommon_cmake"]) {
-                          sh "cmake -G 'Unix Makefiles' -B build"
-                          sh 'xmake -C build -j'
-                          runPython("pytest -s --junitxml=pytest_unity.xml")
-                          junit "pytest_unity.xml"
-                        }
+                dir("${REPO}/test/xua_unit_tests") {
+                  withTools("${env.TOOLS_VERSION}") {
+                    withVenv {
+                      withEnv(["XMOS_CMAKE_PATH=${WORKSPACE}/xcommon_cmake"]) {
+                        sh "cmake -G 'Unix Makefiles' -B build"
+                        sh 'xmake -C build -j'
+                        runPython("pytest -s --junitxml=pytest_unity.xml")
+                        junit "pytest_unity.xml"
                       }
                     }
                   }
