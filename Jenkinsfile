@@ -36,6 +36,7 @@ pipeline {
                 dir("${REPO}/tests"){
                   viewEnv(){
                     withVenv{
+                      sh "xmake -C test_midi -j" // Xdist does not like building so do here
                       runPytest('--numprocesses=auto -vvv')
                     }
                   }
