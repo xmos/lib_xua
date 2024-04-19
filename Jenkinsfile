@@ -40,8 +40,6 @@ pipeline {
                     }
                   }
                 }
-                // Temp debug used by test_tx
-                archiveArtifacts artifacts: "${REPO}/**/*.txt", fingerprint: true, allowEmptyArchive: true
               }
             }
             stage('Unity tests') {
@@ -77,6 +75,8 @@ pipeline {
       }
       post {
         cleanup {
+          // Temp debug used by test_tx
+          archiveArtifacts artifacts: "${REPO}/**/*.txt", fingerprint: true, allowEmptyArchive: true
           xcoreCleanSandbox()
         }
       }
