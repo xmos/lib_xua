@@ -5,6 +5,7 @@ import time
 import Pyxsim
 from pathlib import Path
 from midi_test_helpers import MIDI_TEST_CONFIGS
+import subprocess
 
 @pytest.fixture()
 def test_file(request):
@@ -42,17 +43,11 @@ def pytest_addoption(parser):
 def options(request):
     yield request.config.option
 
-# We use the same binary multiple times so just build once
+# We use the same binary multiple times so just build once for all MIDI tests
 @pytest.fixture(scope="session")
 def build_midi():
-    all_build_success = True
-    for config in MIDI_TEST_CONFIGS:
-        xe = str(Path(__file__).parent / f"test_midi/bin/{config}/test_midi_{config}.xe")
+    cmd = "xmake -C test_midi -j"
+    result = subprocess.run(cmd, capture_output=True, text=True, shell=True)
+    all_build_success = result.returncode
 
-        success, output = Pyxsim._build(xe, build_options=["-j"])
-        all_build_success |= success
-
-    if not all_build_success:
-        print(f"ERROR MIDI Build failed: {output}")
-
-    return str(Path(__file__).parent / f"test_midi/bin/") if all_build_success else False
+    return str(Path(__file__).parent / f"test_midi/bin/") if all_build_success == 0 else False
