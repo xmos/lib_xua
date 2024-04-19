@@ -46,7 +46,7 @@ pipeline {
             }
             stage('Unity tests') {
               steps {
-                dir("${REPO}/test/xua_unit_tests") {
+                dir("${REPO}/tests/xua_unit_tests") {
                   withTools("${env.TOOLS_VERSION}") {
                     withVenv {
                       withEnv(["XMOS_CMAKE_PATH=${WORKSPACE}/xcommon_cmake"]) {
