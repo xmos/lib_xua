@@ -51,3 +51,4 @@ host_usb_mixer_control/xmos_mixer
 midi_tx_cmds.txt
 midi_rx_cmds.txt
 trace.txt
+tests/xua_unit_tests/src.runners

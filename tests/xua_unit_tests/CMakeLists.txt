@@ -13,17 +13,19 @@ configure_file( conftest.py conftest.py COPYONLY )
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
 
 # Set unity runner generate script
-set( GEN_RUNNER_SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/generate_unity_runner.py )
+set(GEN_RUNNER_SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/generate_unity_runner.py)
 
 # Create directory for runner files
-set( RUNNERS_DIR ${CMAKE_CURRENT_BINARY_DIR}/src.runners )
-file( MAKE_DIRECTORY ${RUNNERS_DIR} )
+set(RUNNERS_DIR ${CMAKE_CURRENT_LIST_DIR}/src.runners )
+file(MAKE_DIRECTORY ${RUNNERS_DIR} )
 
 # Find unit test files
-file( GLOB_RECURSE TEST_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/src/test_*/*.c )
+file(GLOB_RECURSE TEST_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/src/test_*/*.c)
 
 # For every source file in xua_unit_tests/
 foreach(TESTFILE ${TEST_SOURCES})
+    set(XMOS_SANDBOX_DIR ${CMAKE_CURRENT_LIST_DIR}/../../..)
+
     # Get test name from C file stem
     cmake_path(GET TESTFILE STEM TESTNAME)
     project(${TESTNAME})
@@ -39,20 +41,19 @@ foreach(TESTFILE ${TEST_SOURCES})
     set( GEN_RUNNER_SCRIPT_BYPRODUCTS ${RUNNER_FILE})
 
     unset(GEN_RUNNER_SCRIPT_ARGS) 
-    list(APPEND GEN_RUNNER_SCRIPT_ARGS --project-root ${UNITY_PATH}/..)
+    list(APPEND GEN_RUNNER_SCRIPT_ARGS --project-root ${XMOS_SANDBOX_DIR})
     list(APPEND GEN_RUNNER_SCRIPT_ARGS --source-file ${TESTFILE})
     list(APPEND GEN_RUNNER_SCRIPT_ARGS --runner-file ${RUNNER_FILE})
 
     ## Add command to generate runner file
     add_custom_command(
         OUTPUT ${RUNNER_FILE}
-        COMMAND ${Python3_EXECUTABLE} ${GEN_RUNNER_SCRIPT} ${GEN_RUNNER_SCRIPT_ARGS}
-        COMMENT "Generating XUA Unit Test Runner" )
+        COMMAND python ${GEN_RUNNER_SCRIPT} ${GEN_RUNNER_SCRIPT_ARGS}
+        COMMENT "Generate XUA Unit Test Runner" )
 
     ##########################
     ## Do xcommon cmake build
     ##########################
-    set(XMOS_SANDBOX_DIR ${CMAKE_CURRENT_LIST_DIR}/../../..)
     set(APP_HW_TARGET XK-EVK-XU316)
     set(APP_DEPENDENT_MODULES "lib_xua")
     # set(APP_PCA_ENABLE ON)
@@ -77,8 +78,9 @@ foreach(TESTFILE ${TEST_SOURCES})
 
     # Workaround for xcommon cmake pre-pending CMAKE_CURRENT_LIST_DIR
     string(REPLACE ${CMAKE_CURRENT_LIST_DIR} "" UNIT_TEST_SOURCE_RELATIVE ${TESTFILE})
+    string(REPLACE ${CMAKE_CURRENT_LIST_DIR} "" RUNNER_FILE_RELATIVE ${RUNNER_FILE})
 
-    set(APP_C_SRCS      runners/${TESTNAME}/${TESTNAME}_Runner.c
+    set(APP_C_SRCS      ${RUNNER_FILE_RELATIVE}
                         ${UNIT_TEST_SOURCE_RELATIVE}
                         ../../../Unity/src/unity.c
                         )

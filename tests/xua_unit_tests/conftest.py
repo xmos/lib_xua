@@ -1,4 +1,4 @@
-# Copyright 2021-2022 XMOS LIMITED.
+# Copyright 2021-2024 XMOS LIMITED.
 # This Software is subject to the terms of the XMOS Public Licence: Version 1.
 from __future__ import print_function
 from builtins import str
@@ -28,7 +28,7 @@ class UnityTestSource(pytest.File):
         # unit_tests/       <- Test root directory
         # |-- bin/          <- Compiled binaries of the test runners
         # |-- conftest.py   <- This file
-        # |-- runners/      <- Auto-generated buildable source of test binaries
+        # |-- src.runners      <- Auto-generated buildable source of test binaries
         # |-- src/          <- Unity test functions
         # `-- wscript       <- Build system file used to generate/build runners
         xe_name = ((os.path.basename(self.name)).split("."))[0] + ".xe"
