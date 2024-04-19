@@ -1,4 +1,4 @@
-@Library('xmos_jenkins_shared_library@v0.24.0') _
+@Library('xmos_jenkins_shared_library@v0.27.0') _
 
 getApproval()
 
@@ -49,9 +49,10 @@ pipeline {
                   dir('tests') {
                     dir('xua_unit_tests') {
                       withVenv {
-                        runWaf('.', "configure clean build --target=xcore200")
-                        viewEnv() {
-                          runPython("TARGET=XCORE200 pytest -s --junitxml=pytest_unity.xml")
+                        withEnv(["XMOS_CMAKE_PATH=${WORKSPACE}/xcommon_cmake"]) {
+                          sh "cmake -G 'Unix Makefiles' -B build"
+                          sh 'xmake -C build -j'
+                          runPython("pytest -s --junitxml=pytest_unity.xml")
                           junit "pytest_unity.xml"
                         }
                       }
