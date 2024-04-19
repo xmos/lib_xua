@@ -41,7 +41,7 @@ pipeline {
                   }
                 }
                 // Temp debug used by test_tx
-                archiveArtifacts artifacts: "${REPO}/tests/*.txt", fingerprint: true, allowEmptyArchive: true
+                archiveArtifacts artifacts: "${REPO}/**/*.txt", fingerprint: true, allowEmptyArchive: true
               }
             }
             stage('Unity tests') {
