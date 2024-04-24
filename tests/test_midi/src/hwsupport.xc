@@ -5,7 +5,7 @@
 #include "xua.h"
 
 
-out port p_ctrl = XS1_PORT_8D;               /* p_ctrl:
+on tile[0]: out port p_ctrl = XS1_PORT_8D;   /* p_ctrl:
                                              * [0:3] - Unused
                                              * [4]   - EN_3v3_N    (1v0 hardware only)
                                              * [5]   - EN_3v3A
