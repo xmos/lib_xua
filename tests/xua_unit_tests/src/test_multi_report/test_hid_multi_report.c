@@ -47,23 +47,26 @@ static unsigned construct_usage_header( unsigned size )
     return header;
 }
 
-void setUp( void )
+void test_init( void )
 {
     hidReportInit();
     hidResetReportDescriptor();
 }
 
 void test_validate_report( void ) {
+	test_init();
     unsigned retVal = hidReportValidate();
     TEST_ASSERT_EQUAL_UINT( HID_STATUS_GOOD, retVal );
 }
 
 void test_reportid_in_use( void ) {
+	test_init();
     unsigned reportIdInUse = hidIsReportIdInUse();
     TEST_ASSERT_EQUAL_UINT( 1, reportIdInUse );
 }
 
 void test_get_next_valid_report_id( void ) {
+	test_init();
     unsigned reportId = 0U;
 
     reportId = hidGetNextValidReportId(reportId);
@@ -80,6 +83,7 @@ void test_get_next_valid_report_id( void ) {
 }
 
 void test_is_report_id_valid( void ) {
+	test_init();
     unsigned isValid = 0;
 
     unsigned reportId = 0;
@@ -106,6 +110,7 @@ void test_is_report_id_valid( void ) {
 // Basic report descriptor tests
 void test_unprepared_hidGetReportDescriptor( void )
 {
+	test_init();
     unsigned char* reportDescPtr = hidGetReportDescriptor();
     TEST_ASSERT_NULL( reportDescPtr );
 
@@ -118,6 +123,7 @@ void test_unprepared_hidGetReportDescriptor( void )
 
 void test_prepared_hidGetReportDescriptor( void )
 {
+	test_init();
     hidPrepareReportDescriptor();
     unsigned char* reportDescPtr = hidGetReportDescriptor();
     TEST_ASSERT_NOT_NULL( reportDescPtr );
@@ -137,6 +143,7 @@ void test_prepared_hidGetReportDescriptor( void )
 
 void test_reset_unprepared_hidGetReportDescriptor( void )
 {
+	test_init();
     hidPrepareReportDescriptor();
     hidResetReportDescriptor();
     unsigned char* reportDescPtr = hidGetReportDescriptor();
@@ -145,6 +152,7 @@ void test_reset_unprepared_hidGetReportDescriptor( void )
 
 void test_reset_prepared_hidGetReportDescriptor( void )
 {
+	test_init();
     hidPrepareReportDescriptor();
     hidResetReportDescriptor();
     hidPrepareReportDescriptor();
@@ -154,6 +162,7 @@ void test_reset_prepared_hidGetReportDescriptor( void )
 
 void test_report_id_limit( void )
 {
+	test_init();
     unsigned reportIdLimit = hidGetReportIdLimit();
     TEST_ASSERT_EQUAL_UINT( HID_REPORTID_LIMIT, reportIdLimit );
 }
@@ -161,6 +170,7 @@ void test_report_id_limit( void )
 // Basic item tests
 void test_max_loc_hidGetReportItem( void )
 {
+	test_init();
     unsigned char data[ HID_REPORT_ITEM_MAX_SIZE ];
     unsigned char header;
     unsigned char page;
@@ -199,6 +209,7 @@ void test_max_loc_hidGetReportItem( void )
 
 void test_min_loc_hidGetReportItem( void )
 {
+	test_init();
     unsigned char data[ HID_REPORT_ITEM_MAX_SIZE ];
     unsigned char header;
     unsigned char page;
@@ -236,6 +247,7 @@ void test_min_loc_hidGetReportItem( void )
 
 void test_invalid_report_id( void )
 {
+	test_init();
     unsigned char data[ HID_REPORT_ITEM_MAX_SIZE ]  = { 0xBA, 0xD2 };
     unsigned char header = 0x33;
     unsigned char page = 0x44;
@@ -253,6 +265,7 @@ void test_invalid_report_id( void )
 
 void test_unused_report_id( void )
 {
+	test_init();
     unsigned char data[ HID_REPORT_ITEM_MAX_SIZE ]  = { 0xBA, 0xD2 };
     unsigned char header = 0x33;
     unsigned char page = 0x44;
@@ -270,6 +283,7 @@ void test_unused_report_id( void )
 
 void test_overflow_bit_hidGetReportItem( void )
 {
+	test_init();
     unsigned char data[ HID_REPORT_ITEM_MAX_SIZE ] = { 0xBA, 0xD1 };
     unsigned char header = 0xAA;
     unsigned char page = 0x44;
@@ -307,6 +321,7 @@ void test_overflow_bit_hidGetReportItem( void )
 
 void test_overflow_byte_hidGetReportItem( void )
 {
+	test_init();
     unsigned char data[ HID_REPORT_ITEM_MAX_SIZE ] = { 0xBA, 0xD1 };
     unsigned char header = 0xAA;
     unsigned char page = 0x44;
@@ -344,6 +359,7 @@ void test_overflow_byte_hidGetReportItem( void )
 
 void test_underflow_bit_hidGetReportItem( void )
 {
+	test_init();
     unsigned char data[ HID_REPORT_ITEM_MAX_SIZE ] = { 0xBA, 0xD1 };
     unsigned char header = 0xAA;
     unsigned char page = 0x44;
@@ -381,6 +397,7 @@ void test_underflow_bit_hidGetReportItem( void )
 
 void test_underflow_byte_hidGetReportItem( void )
 {
+	test_init();
     unsigned char data[ HID_REPORT_ITEM_MAX_SIZE ] = { 0xBA, 0xD1 };
     unsigned char header = 0xAA;
     unsigned char page = 0x44;
@@ -419,6 +436,7 @@ void test_underflow_byte_hidGetReportItem( void )
 // Configurable and non-configurable item tests
 void test_configurable_item_hidSetReportItem( void )
 {
+	test_init();
     const unsigned reportId = 1;
     const unsigned bit = REPORT1_MIN_VALID_BIT;
     const unsigned byte = REPORT1_MIN_VALID_BYTE;
@@ -440,6 +458,7 @@ void test_configurable_item_hidSetReportItem( void )
 // Testing that the high byte of the report gets correctly cleared
 void test_configurable_item_hidSetReportItem_multibyte_orig( void )
 {
+	test_init();
     const unsigned reportId = 2;
     const unsigned bit = 1;  // This byte&bit combo is originally set be 2 bytes long in the header
     const unsigned byte = 0;
@@ -460,6 +479,7 @@ void test_configurable_item_hidSetReportItem_multibyte_orig( void )
 
 void test_nonconfigurable_item_hidSetReportItem( void )
 {
+	test_init();
     const unsigned reportId = 1;
     const unsigned bit = 1;     // This bit and byte combination should not appear in the
     const unsigned byte = 0;    // hidConfigurableElements list in hid_report_descriptors.c.
@@ -474,6 +494,7 @@ void test_nonconfigurable_item_hidSetReportItem( void )
 // Bit range tests
 void test_max_bit_hidSetReportItem( void )
 {
+	test_init();
     const unsigned char header = construct_usage_header( 0 );
 
     unsigned reportId = 1;
@@ -500,6 +521,7 @@ void test_max_bit_hidSetReportItem( void )
 
 void test_min_bit_hidSetReportItem( void )
 {
+	test_init();
     const unsigned char header = construct_usage_header( 0 );
 
     unsigned reportId = 1;
@@ -526,6 +548,7 @@ void test_min_bit_hidSetReportItem( void )
 
 void test_overflow_bit_hidSetReportItem( void )
 {
+	test_init();
     const unsigned char header = construct_usage_header( 0 );
 
     unsigned reportId = 1;
@@ -552,6 +575,7 @@ void test_overflow_bit_hidSetReportItem( void )
 
 void test_underflow_bit_hidSetReportItem( void )
 {
+	test_init();
     const unsigned char header = construct_usage_header( 0 );
 
     unsigned reportId = 1;
@@ -578,6 +602,7 @@ void test_underflow_bit_hidSetReportItem( void )
 
 void test_overflow_byte_hidSetReportItem( void )
 {
+	test_init();
     const unsigned char header = construct_usage_header( 0 );
 
     unsigned reportId = 1;
@@ -604,6 +629,7 @@ void test_overflow_byte_hidSetReportItem( void )
 
 void test_underflow_byte_hidSetReportItem( void )
 {
+	test_init();
     const unsigned char header = construct_usage_header( 0 );
 
     unsigned reportId = 1;
@@ -631,6 +657,7 @@ void test_underflow_byte_hidSetReportItem( void )
 // Size range tests
 void test_max_size_hidSetReportItem( void )
 {
+	test_init();
     const unsigned reportId = 1;
     const unsigned bit = REPORT1_MIN_VALID_BIT;
     const unsigned byte = REPORT1_MIN_VALID_BYTE;
@@ -644,6 +671,7 @@ void test_max_size_hidSetReportItem( void )
 
 void test_min_size_hidSetReportItem( void )
 {
+	test_init();
     const unsigned reportId = 1;
     const unsigned bit = REPORT1_MIN_VALID_BIT;
     const unsigned byte = REPORT1_MIN_VALID_BYTE;
@@ -656,6 +684,7 @@ void test_min_size_hidSetReportItem( void )
 
 void test_unsupported_size_hidSetReportItem( void )
 {
+	test_init();
     const unsigned reportId = 0;
     const unsigned bit = REPORT1_MIN_VALID_BIT;
     const unsigned byte = REPORT1_MIN_VALID_BYTE;
@@ -669,6 +698,7 @@ void test_unsupported_size_hidSetReportItem( void )
 // Combined function tests
 void test_initial_modification_without_subsequent_preparation( void )
 {
+	test_init();
     const unsigned reportId = 2;
     const unsigned bit = REPORT2_MIN_VALID_BIT;
     const unsigned byte = REPORT2_MIN_VALID_BYTE;
@@ -685,6 +715,7 @@ void test_initial_modification_without_subsequent_preparation( void )
 
 void test_initial_modification_with_subsequent_preparation( void )
 {
+	test_init();
     const unsigned reportId = 2;
     const unsigned bit = REPORT2_MIN_VALID_BIT;
     const unsigned byte = REPORT2_MIN_VALID_BYTE;
@@ -702,6 +733,7 @@ void test_initial_modification_with_subsequent_preparation( void )
 
 void test_initial_modification_with_subsequent_verification_1( void )
 {
+	test_init();
     const unsigned reportId = 2;
     const unsigned bit = REPORT2_MIN_VALID_BIT;
     const unsigned byte = REPORT2_MIN_VALID_BYTE;
@@ -727,6 +759,7 @@ void test_initial_modification_with_subsequent_verification_1( void )
 
 void test_initial_modification_with_subsequent_verification_2( void )
 {
+	test_init();
     const unsigned reportId = 3;
     const unsigned bit = REPORT3_MIN_VALID_BIT;
     const unsigned byte = REPORT3_MIN_VALID_BYTE;
@@ -775,6 +808,7 @@ void test_initial_modification_with_subsequent_verification_2( void )
 //setIdle and associated timing functionality tests
 void test_set_idle( void )
 {
+	test_init();
     unsigned reportId = 1;
     unsigned reportId2 = 2;
 
@@ -794,6 +828,7 @@ void test_set_idle( void )
 
 void test_set_all_idle( void )
 {
+	test_init();
     unsigned reportId = 1;
     unsigned reportId2 = 2;
 
@@ -812,6 +847,7 @@ void test_set_all_idle( void )
 
 void test_change_pending( void )
 {
+	test_init();
     unsigned reportId = 1;
     unsigned reportId2 = 2;
 
@@ -831,6 +867,7 @@ void test_change_pending( void )
 
 void test_change_pending_all( void )
 {
+	test_init();
     unsigned reportId = 1;
 
     unsigned changePending = hidIsChangePending( reportId );
@@ -845,6 +882,7 @@ void test_change_pending_all( void )
 
 void test_report_time( void )
 {
+	test_init();
     unsigned reportTime1 = 123;
     unsigned reportTime2 = 456;
 
@@ -859,6 +897,7 @@ void test_report_time( void )
 
 void test_report_time_calc( void )
 {
+	test_init();
     unsigned reportTime1 = 123;
     unsigned reportTime2 = 456;
     unsigned reportPeriod1 = 10;
