@@ -5,7 +5,7 @@
 #include "xua.h"
 
 
-out port p_ctrl = PORT_CTRL;                /* p_ctrl:
+out port p_ctrl = XS1_PORT_8D;               /* p_ctrl:
                                              * [0:3] - Unused
                                              * [4]   - EN_3v3_N    (1v0 hardware only)
                                              * [5]   - EN_3v3A
