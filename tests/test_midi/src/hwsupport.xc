@@ -13,13 +13,6 @@ on tile[0]: out port p_ctrl = XS1_PORT_8D;   /* p_ctrl:
                                              * [7]   - MCLK_DIR    (Out:0, In: 1)
                                              */
 
-on tile[0]: in port p_margin = XS1_PORT_1G;  /* CORE_POWER_MARGIN:   Driven 0:   0.925v
-                                              *                      Pull down:  0.922v
-                                              *                      High-z:     0.9v
-                                              *                      Pull-up:    0.854v
-                                              *                      Driven 1:   0.85v
-                                              */
-
 #define USE_FRACTIONAL_N         (0)
 
 #if (USE_FRACTIONAL_N)
@@ -33,9 +26,6 @@ void board_setup()
 {
     /* "Drive high mode" - drive high for 1, non-driving for 0 */
     set_port_drive_high(p_ctrl);
-
-    /* Ensure high-z for 0.9v */
-    p_margin :> void;
 
     /* Drive control port to turn on 3V3 and mclk direction appropriately.
      * Bits set to low will be high-z, pulled down */
