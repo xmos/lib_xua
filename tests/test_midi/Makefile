@@ -4,11 +4,8 @@
 
 ifeq ($(CONFIG), xs2)
     TARGET = XCORE-200-EXPLORER
-endif
-ifeq ($(CONFIG), xs3)
-    TARGET = XCORE-AI-EXPLORER
 else
-	TARGET = XCORE-AI-EXPLORER
+	TARGET = XCORE-AI-EXPLORER #for xs3 and also loopback test
 endif
 
 # The APP_NAME variable determines the name of the final .xe file. It should

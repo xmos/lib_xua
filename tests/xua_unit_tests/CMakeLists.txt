@@ -55,7 +55,8 @@ foreach(TESTFILE ${TEST_SOURCES})
     ## Do xcommon cmake build
     ##########################
     set(APP_HW_TARGET XK-EVK-XU316)
-    set(APP_DEPENDENT_MODULES "lib_xua")
+    set(APP_DEPENDENT_MODULES                   "lib_xua"
+                                                "lib_unity(2.5.2)")
     # set(APP_PCA_ENABLE ON)
     set(APP_COMPILER_FLAGS ${EXTRA_BUILD_FLAGS} -fcomment-asm
                                                 -Wall
@@ -82,14 +83,12 @@ foreach(TESTFILE ${TEST_SOURCES})
 
     set(APP_C_SRCS      ${RUNNER_FILE_RELATIVE}
                         ${UNIT_TEST_SOURCE_RELATIVE}
-                        ../../../Unity/src/unity.c
                         )
 
 
     get_filename_component(TEST_FILE_DIR ${TESTFILE} DIRECTORY)
     set(APP_INCLUDES    ${CMAKE_CURRENT_LIST_DIR}/src
                         ${TEST_FILE_DIR}
-                        ${XMOS_SANDBOX_DIR}/Unity/src
                         ${XMOS_SANDBOX_DIR}/lib_xud/lib_xud/src/user/class)
 
     XMOS_REGISTER_APP()

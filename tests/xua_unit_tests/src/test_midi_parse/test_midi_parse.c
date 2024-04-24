@@ -24,7 +24,7 @@
 #define CABLE_NUM       2
 #define RANDOM_SEED     6031769
 
-unsigned mini_in_parse_ut(unsigned midi[3]){
+unsigned midi_in_parse_ut(unsigned midi[3]){
     // printf("Composing data: 0x%x 0x%x 0x%x\n", midi[0], midi[1], midi[2]);
 
     struct midi_in_parse_state m_state;
@@ -60,7 +60,7 @@ void test_midi_note(void) {
     for(int cmd = NOTE_OFF; cmd < NOTE_ON + NUM_CHANS; cmd++){
         for(int test = 0; test < NUM_TESTS_PER_TEST; test++){
             unsigned midi_ref[3] = {cmd, random(&rndm) & DATA_MASK, random(&rndm) & DATA_MASK};
-            unsigned packed = mini_in_parse_ut(midi_ref);
+            unsigned packed = midi_in_parse_ut(midi_ref);
             unsigned midi_dut[3] = {0};
             unsigned size = 0;
             midi_out_parse_c_wrapper(packed, midi_dut, &size);
@@ -78,7 +78,7 @@ void test_midi_pressure(void) {
     for(int cmd = PRESSURE; cmd < PRESSURE + NUM_CHANS; cmd++){
         for(int test = 0; test < NUM_TESTS_PER_TEST; test++){
             unsigned midi_ref[3] = {cmd, random(&rndm) & DATA_MASK, random(&rndm) & DATA_MASK};
-            unsigned packed = mini_in_parse_ut(midi_ref);
+            unsigned packed = midi_in_parse_ut(midi_ref);
             unsigned midi_dut[3] = {0};
             unsigned size = 0;
             midi_out_parse_c_wrapper(packed, midi_dut, &size);
@@ -96,7 +96,7 @@ void test_midi_control(void) {
     for(int cmd = CONTROL; cmd < CONTROL + NUM_CHANS; cmd++){
         for(int test = 0; test < NUM_TESTS_PER_TEST; test++){
             unsigned midi_ref[3] = {cmd, random(&rndm) & DATA_MASK, random(&rndm) & DATA_MASK};
-            unsigned packed = mini_in_parse_ut(midi_ref);
+            unsigned packed = midi_in_parse_ut(midi_ref);
             unsigned midi_dut[3] = {0};
             unsigned size = 0;
             midi_out_parse_c_wrapper(packed, midi_dut, &size);
@@ -114,7 +114,7 @@ void test_midi_program(void) {
     for(int cmd = PROGRAM; cmd < PROGRAM + NUM_CHANS; cmd++){
         for(int test = 0; test < NUM_TESTS_PER_TEST; test++){
             unsigned midi_ref[3] = {cmd, random(&rndm) & DATA_MASK, random(&rndm) & DATA_MASK};
-            unsigned packed = mini_in_parse_ut(midi_ref);
+            unsigned packed = midi_in_parse_ut(midi_ref);
             unsigned midi_dut[3] = {0};
             unsigned size = 0;
             midi_out_parse_c_wrapper(packed, midi_dut, &size);
@@ -132,7 +132,7 @@ void test_midi_pressure_val(void) {
     for(int cmd = PRESSURE_VAL; cmd < PRESSURE_VAL + NUM_CHANS; cmd++){
         for(int test = 0; test < NUM_TESTS_PER_TEST; test++){
             unsigned midi_ref[3] = {cmd, random(&rndm) & DATA_MASK, random(&rndm) & DATA_MASK};
-            unsigned packed = mini_in_parse_ut(midi_ref);
+            unsigned packed = midi_in_parse_ut(midi_ref);
             unsigned midi_dut[3] = {0};
             unsigned size = 0;
             midi_out_parse_c_wrapper(packed, midi_dut, &size);
@@ -150,7 +150,7 @@ void test_midi_range(void) {
     for(int cmd = RANGE; cmd < RANGE + NUM_CHANS; cmd++){
         for(int test = 0; test < NUM_TESTS_PER_TEST; test++){
             unsigned midi_ref[3] = {cmd, random(&rndm) & DATA_MASK, random(&rndm) & DATA_MASK};
-            unsigned packed = mini_in_parse_ut(midi_ref);
+            unsigned packed = midi_in_parse_ut(midi_ref);
             unsigned midi_dut[3] = {0};
             unsigned size = 0;
             midi_out_parse_c_wrapper(packed, midi_dut, &size);
@@ -168,7 +168,7 @@ void test_midi_manufacturer_id(void) {
     for(int cmd = MANUFACTURE_ID; cmd < MANUFACTURE_ID + NUM_CHANS; cmd++){
         for(int test = 0; test < NUM_TESTS_PER_TEST; test++){
             unsigned midi_ref[3] = {cmd, random(&rndm) & DATA_MASK, random(&rndm) & DATA_MASK};
-            unsigned packed = mini_in_parse_ut(midi_ref);
+            unsigned packed = midi_in_parse_ut(midi_ref);
             unsigned midi_dut[3] = {0};
             unsigned size = 0;
             midi_out_parse_c_wrapper(packed, midi_dut, &size);

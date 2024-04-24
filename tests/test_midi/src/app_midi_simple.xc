@@ -45,12 +45,12 @@ on tile[MIDI_TILE] : clock    clk_midi                      = CLKBLK_MIDI;
 #endif
 
 /* See hwsupport.xc */
-void ctrlPort();
+void board_setup();
 
 #define CABLE_NUM   0
 
 
-unsigned mini_in_parse_helper(unsigned midi[3]){
+unsigned midi_in_parse_helper(unsigned midi[3]){
     struct midi_in_parse_state m_state;
     reset_midi_state(m_state);
 
@@ -151,7 +151,7 @@ void test(chanend c_midi){
 
             case tx_cmd_count < num_to_tx => tmr when timerafter(t_tx) :> int _:
                 unsigned midi[] = {commands[tx_cmd_count][0], commands[tx_cmd_count][1], commands[tx_cmd_count][2]};
-                unsigned tx_packet = mini_in_parse_helper(midi);
+                unsigned tx_packet = midi_in_parse_helper(midi);
                 outuint(c_midi, byterev(tx_packet));
                 dprintf("Sent packet to midi: %u %u %u\n", commands[tx_cmd_count][0], commands[tx_cmd_count][1], commands[tx_cmd_count][2]);
                 t_tx += tx_interval;
@@ -177,7 +177,7 @@ int main(void)
         on tile[1]: usb_midi(p_midi_rx, p_midi_tx, clk_midi, c_midi, 0);
 
         // Setup HW so we can run this on the MC board 
-        on tile[0]: ctrlPort();
+        on tile[0]: board_setup();
     }
 
     return 0;

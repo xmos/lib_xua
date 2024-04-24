@@ -5,30 +5,44 @@
 #include "xua.h"
 
 
-on tile[0]: out port p_ctrl = XS1_PORT_8D;
+out port p_ctrl = PORT_CTRL;                /* p_ctrl:
+                                             * [0:3] - Unused
+                                             * [4]   - EN_3v3_N    (1v0 hardware only)
+                                             * [5]   - EN_3v3A
+                                             * [6]   - EXT_PLL_SEL (CS2100:0, SI: 1)
+                                             * [7]   - MCLK_DIR    (Out:0, In: 1)
+                                             */
 
-/* p_ctrl:
- * [0:3] - Unused
- * [4]   - EN_3v3_N
- * [5]   - EN_3v3A
- * [6]   - EXT_PLL_SEL (CS2100:0, SI: 1)
- * [7]   - MCLK_DIR    (Out:0, In: 1)
- */
+on tile[0]: in port p_margin = XS1_PORT_1G;  /* CORE_POWER_MARGIN:   Driven 0:   0.925v
+                                              *                      Pull down:  0.922v
+                                              *                      High-z:     0.9v
+                                              *                      Pull-up:    0.854v
+                                              *                      Driven 1:   0.85v
+                                              */
+
+#define USE_FRACTIONAL_N         (0)
+
+#if (USE_FRACTIONAL_N)
+#define EXT_PLL_SEL__MCLK_DIR    (0x00)
+#else
 #define EXT_PLL_SEL__MCLK_DIR    (0x80)
+#endif
 
-/* Note, this runs on Tile[0] */
-void ctrlPort()
+/* Board setup for XU316 MC Audio (1v1) */
+void board_setup()
 {
-    // Drive control port to turn on 3V3 and set MCLK_DIR
-    // Note, "soft-start" to reduce current spike
-    // Note, 3v3_EN is inverted
-    for (int i = 0; i < 30; i++)
-    {
-        p_ctrl <: EXT_PLL_SEL__MCLK_DIR | 0x30; /* 3v3: off, 3v3A: on */
-        delay_microseconds(5);
-        p_ctrl <: EXT_PLL_SEL__MCLK_DIR | 0x20; /* 3v3: on, 3v3A: on */
-        delay_microseconds(5);
-    }
+    /* "Drive high mode" - drive high for 1, non-driving for 0 */
+    set_port_drive_high(p_ctrl);
+
+    /* Ensure high-z for 0.9v */
+    p_margin :> void;
+
+    /* Drive control port to turn on 3V3 and mclk direction appropriately.
+     * Bits set to low will be high-z, pulled down */
+    p_ctrl <: EXT_PLL_SEL__MCLK_DIR | 0x20;
+
+    /* Wait for power supplies to be up and stable */
+    delay_milliseconds(10);
 }
 
 /* Configures the external audio hardware at startup. Note this runs on Tile[1] */
