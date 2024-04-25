@@ -1,16 +1,6 @@
 // Copyright 2024 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
-/* A very simple *example* of a USB audio application (and as such is un-verified for production)
- *
- * It uses the main blocks from the lib_xua
- *
- * - 2 channels out I2S only
- * - No DFU
- * - I2S only
- *
- */
-
 #include <xs1.h>
 #include <platform.h>
 #include <stdio.h>
@@ -47,8 +37,9 @@ on tile[MIDI_TILE] : clock    clk_midi                      = CLKBLK_MIDI;
 /* See hwsupport.xc */
 void board_setup();
 
+#ifndef CABLE_NUM
 #define CABLE_NUM   0
-
+#endif
 
 unsigned midi_in_parse_helper(unsigned midi[3]){
     struct midi_in_parse_state m_state;

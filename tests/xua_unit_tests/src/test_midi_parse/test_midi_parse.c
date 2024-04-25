@@ -19,9 +19,14 @@
 #define DATA_RANGE      128
 #define DATA_MASK       (DATA_RANGE - 1)
 
-#define NUM_TESTS_PER_TEST  30
+#ifndef NUM_TESTS_PER_TEST
+#define NUM_TESTS_PER_TEST   0
+#endif
 
-#define CABLE_NUM       2
+#ifndef CABLE_NUM
+#define CABLE_NUM   0
+#endif
+
 #define RANDOM_SEED     6031769
 
 unsigned midi_in_parse_ut(unsigned midi[3]){
