@@ -1,8 +1,11 @@
-# Copyright 2022-2023 XMOS LIMITED.
+# Copyright 2022-2024 XMOS LIMITED.
 # This Software is subject to the terms of the XMOS Public Licence: Version 1.
 import pytest
 import time
-
+import Pyxsim
+from pathlib import Path
+from midi_test_helpers import MIDI_TEST_CONFIGS
+import subprocess
 
 @pytest.fixture()
 def test_file(request):
@@ -39,3 +42,16 @@ def pytest_addoption(parser):
 @pytest.fixture
 def options(request):
     yield request.config.option
+
+# We use the same binary multiple times so just build once for all MIDI tests
+@pytest.fixture(scope="session")
+def build_midi():
+    cmd = "xmake -C test_midi -j"
+    # result = subprocess.run(cmd, capture_output=True, text=True, shell=True)
+    # return_code = result.returncode
+    return_code = 0
+
+    assert return_code == 0, f"{result.stderr}\n{result.stdout}"
+
+    return str(Path(__file__).parent / f"test_midi/bin/") 
+

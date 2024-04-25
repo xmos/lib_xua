@@ -1,4 +1,4 @@
-@Library('xmos_jenkins_shared_library@v0.24.0') _
+@Library('xmos_jenkins_shared_library@v0.27.0') _
 
 getApproval()
 
@@ -7,6 +7,7 @@ pipeline {
   environment {
     REPO = 'lib_xua'
     VIEW = getViewName(REPO)
+    TOOLS_VERSION = "15.2.1"    // For unit tests
   }
   options {
     skipDefaultCheckout()
@@ -35,7 +36,8 @@ pipeline {
                 dir("${REPO}/tests"){
                   viewEnv(){
                     withVenv{
-                      runPytest('--numprocesses=4')
+                      sh "xmake -C test_midi -j" // Xdist does not like building so do here
+                      runPytest('--numprocesses=auto -vvv')
                     }
                   }
                 }
@@ -43,15 +45,14 @@ pipeline {
             }
             stage('Unity tests') {
               steps {
-                dir("${REPO}") {
-                  dir('tests') {
-                    dir('xua_unit_tests') {
-                      withVenv {
-                        runWaf('.', "configure clean build --target=xcore200")
-                        viewEnv() {
-                          runPython("TARGET=XCORE200 pytest -s --junitxml=pytest_unity.xml")
-                          junit "pytest_unity.xml"
-                        }
+                dir("${REPO}/tests/xua_unit_tests") {
+                  withTools("${env.TOOLS_VERSION}") {
+                    withVenv {
+                      withEnv(["XMOS_CMAKE_PATH=${WORKSPACE}/xcommon_cmake"]) {
+                        sh "cmake -G 'Unix Makefiles' -B build"
+                        sh 'xmake -C build -j'
+                        runPython("pytest -s --junitxml=pytest_unity.xml")
+                        junit "pytest_unity.xml"
                       }
                     }
                   }
