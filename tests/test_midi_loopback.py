@@ -56,8 +56,7 @@ def test_midi_loopback(capfd, build_midi):
 
         # Print to console
         with capfd.disabled():
-            print("CAPTURE ++++", capture, "++++")
-            print("EXPECTED ----", expected, "----")
-
+            print("CAPTURE:", capture)
+            print("EXPECTED:", expected)
 
         assert result

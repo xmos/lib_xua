@@ -23,11 +23,16 @@ def test_rx(capfd, config, build_midi):
         copy_tree(build_midi, tmpdirname)
         xe = str(Path(tmpdirname) / f"{config}/test_midi_{config}.xe")
 
-        midi_commands = [[0x90, 60, 81]]
-        create_midi_rx_file(len(midi_commands))
+        midi_commands = [[0x90, 0x91, 0x90],# Invalid and should be discarded
+                        [0x90, 60, 81],     # Note on
+                        [0x80, 60, 81]]     # Note off
+
+        midi_command_expected = midi_commands[1:] # should skip invalid first message
+
+        create_midi_rx_file(len(midi_command_expected))
         create_midi_tx_file()
 
-        expected = midi_expect_rx().expect(midi_commands)
+        expected = midi_expect_rx().expect(midi_command_expected)
         tester = testers.ComparisonTester(expected, ordered = True)
         
         rx_port = "tile[1]:XS1_PORT_1F"
@@ -57,5 +62,11 @@ def test_rx(capfd, config, build_midi):
         )
         capture = capfd.readouterr().out
         result = tester.run(capture.split("\n"))
+
+        # Print to console
+        with capfd.disabled():
+            print("CAPTURE:", capture)
+            print("EXPECTED:", expected)
+
 
         assert result, f"expected: {expected}\n capture: {capture}"
