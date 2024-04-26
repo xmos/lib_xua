@@ -40,6 +40,28 @@ void test_midi_queue_init(void) {
     TEST_ASSERT_EQUAL_UINT32(USB_MIDI_DEVICE_OUT_FIFO_SIZE, space);
 }
 
+void test_midi_queue_full(void) {
+    queue_t symbol_fifo;
+    unsigned symbol_fifo_storage[USB_MIDI_DEVICE_OUT_FIFO_SIZE];
+    queue_init_c_wrapper(&symbol_fifo, ARRAY_SIZE(symbol_fifo_storage));
+
+    for(unsigned i = 0; i < USB_MIDI_DEVICE_OUT_FIFO_SIZE; i++){
+        queue_push_word_c_wrapper(&symbol_fifo, symbol_fifo_storage, 0);
+    }
+
+    int empty = queue_is_empty_c_wrapper(&symbol_fifo);
+    TEST_ASSERT_EQUAL_INT32(0, empty);
+   
+    int full = queue_is_full_c_wrapper(&symbol_fifo);
+    TEST_ASSERT_EQUAL_INT32(1, full);
+
+    unsigned items = queue_items_c_wrapper(&symbol_fifo);
+    TEST_ASSERT_EQUAL_UINT32(USB_MIDI_DEVICE_OUT_FIFO_SIZE, items);
+
+    unsigned space = queue_space_c_wrapper(&symbol_fifo);
+    TEST_ASSERT_EQUAL_UINT32(0, space);
+}
+
 void test_midi_queue_push_pop(void) {
     queue_t symbol_fifo;
     unsigned symbol_fifo_storage[USB_MIDI_DEVICE_OUT_FIFO_SIZE];
