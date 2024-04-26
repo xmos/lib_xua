@@ -23,13 +23,13 @@ def test_tx(capfd, config, build_midi):
         copy_tree(build_midi, tmpdirname)
         xe = str(Path(tmpdirname) / f"{config}/test_midi_{config}.xe")
 
-        # midi_commands = [[0x90, 0x91, 0x90],# Invalid and should be discarded
-        #                 [0x90, 60, 81],     # Note on
-        #                 [0x80, 60, 81]]     # Note off
-
-        midi_commands = [
+        midi_commands = [[0x90, 0x91, 0x90],# Invalid and should be discarded
                         [0x90, 60, 81],     # Note on
                         [0x80, 60, 81]]     # Note off
+
+        # midi_commands = [
+        #                 [0x90, 60, 81],     # Note on
+        #                 [0x80, 60, 81]]     # Note off
 
 
         # midi_command_expected = midi_commands[1:] # should skip invalid first message
