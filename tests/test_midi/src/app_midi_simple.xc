@@ -41,9 +41,7 @@ void board_setup();
 #define CABLE_NUM   0
 #endif
 
-unsigned midi_in_parse_helper(unsigned midi[3]){
-    struct midi_in_parse_state m_state;
-    reset_midi_state(m_state);
+unsigned midi_in_parse_helper(unsigned midi[3], struct midi_in_parse_state &m_state){
 
     unsigned valid = 0;
     unsigned packed = 0;
@@ -108,6 +106,10 @@ void test(chanend c_midi){
     int is_ack;
     unsigned rx_packet;
 
+    // Midi in parse state
+    struct midi_in_parse_state m_state;
+    reset_midi_state(m_state);
+
     // Counters for Rx and Tx
     unsigned tx_cmd_count = 0;
     unsigned rx_cmd_count = 0;
@@ -142,7 +144,7 @@ void test(chanend c_midi){
 
             case tx_cmd_count < num_to_tx => tmr when timerafter(t_tx) :> int _:
                 unsigned midi[] = {commands[tx_cmd_count][0], commands[tx_cmd_count][1], commands[tx_cmd_count][2]};
-                unsigned tx_packet = midi_in_parse_helper(midi);
+                unsigned tx_packet = midi_in_parse_helper(midi, m_state);
                 outuint(c_midi, byterev(tx_packet));
                 dprintf("Sent packet to midi: %u %u %u\n", commands[tx_cmd_count][0], commands[tx_cmd_count][1], commands[tx_cmd_count][2]);
                 t_tx += tx_interval;

@@ -29,7 +29,10 @@ def test_midi_loopback(capfd, build_midi):
                         [0xe0, 0, 96],  #pitch bend 
                         [0xff],         #MIDI reset
                         [0x80, 60, 81], #note off
+                        [0xf0, 0x00, 0x21], [0x1D, 0x0b, 0x33], [0x3f, 0x1e, 0xf7], # Sysex, Ableton, 0b33f1e, terminator 
+                        [0xc0, 17],     #instr select
                         ]
+
         create_midi_rx_file(len(midi_commands))
         create_midi_tx_file(midi_commands)
 
@@ -39,22 +42,22 @@ def test_midi_loopback(capfd, build_midi):
         simthreads = []
 
         simargs = ["--max-cycles", str(MAX_CYCLES)]
-        #This is just for local debug so we can capture the traces if needed. It slows xsim down so not needed
+        #This is just for local debug so we can capture the traces if needed. It slows xsim down a lot
         # simargs.extend(["--trace-to", "trace.txt", "--vcd-tracing", "-tile tile[1] -ports -o trace.vcd"]) 
 
         Pyxsim.run_with_pyxsim(
             xe,
             simthreads=simthreads,
-            timeout=120,
+            timeout=180,
             simargs=simargs,   
         )
         capture = capfd.readouterr().out
         result = tester.run(capture.split("\n"))
 
         # Print to console
-        # with capfd.disabled():
-        #     print("++++", capture, "++++")
-        #     print("----", expected, "----")
+        with capfd.disabled():
+            print("CAPTURE ++++", capture, "++++")
+            print("EXPECTED ----", expected, "----")
 
 
         assert result
