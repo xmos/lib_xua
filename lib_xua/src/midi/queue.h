@@ -3,6 +3,8 @@
 #ifndef QUEUE_H_
 #define QUEUE_H_
 
+#include "midioutparse.h"
+
 #define assert(x) asm("ecallf %0"::"r"(x));
 
 #ifndef MIDI_ENABLE_ASSERTS
@@ -48,10 +50,11 @@ inline void queue_push_word(queue_t &q, unsigned array[], unsigned data)
             assert(0);
         } else {
             // Drop message
+            return;
         }
-    } else {
-        array[q.wrptr++ & q.mask] = data;
     }
+
+    array[q.wrptr++ & q.mask] = data;
 }
 
 inline unsigned queue_pop_word(queue_t &q, unsigned array[]) {
@@ -59,11 +62,11 @@ inline unsigned queue_pop_word(queue_t &q, unsigned array[]) {
         if(MIDI_ENABLE_ASSERTS){
             assert(0);
         } else {
-            return 0x00000000; // midi_out_parse will return a size of 0 for this message/event
+            return MIDI_OUT_NULL_MESSAGE; 
         }
-    } else {
-        return array[q.rdptr++ & q.mask];
     }
+
+    return array[q.rdptr++ & q.mask];
 }
 
 

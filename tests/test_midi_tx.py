@@ -27,11 +27,6 @@ def test_tx(capfd, config, build_midi):
                         [0x90, 60, 81],     # Note on
                         [0x80, 60, 81]]     # Note off
 
-        # midi_commands = [
-        #                 [0x90, 60, 81],     # Note on
-        #                 [0x80, 60, 81]]     # Note off
-
-
         # midi_command_expected = midi_commands[1:] # should skip invalid first message
         # Make a 1D list from the 2D list
         midi_command_expected = [[item for row in midi_commands for item in row]]
