@@ -43,7 +43,6 @@ def test_rx(capfd, config, build_midi):
         stop = 1
 
         midi_commands_flattened = [item for row in midi_commands for item in row]
-        # midi_commands_flattened.append(0x00) # send a null afterwards to give RXChecker to complete
 
         simthreads = [
             UARTRxChecker(tx_port, rx_port, parity, baud, stop, bpb, midi_commands_flattened, debug=False)
