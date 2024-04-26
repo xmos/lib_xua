@@ -5,6 +5,10 @@
 
 #define assert(x) asm("ecallf %0"::"r"(x));
 
+#ifndef MIDI_ENABLE_ASSERTS
+#define MIDI_ENABLE_ASSERTS     0
+#endif
+
 typedef struct queue_t {
     /// Read index.
     unsigned rdptr;
@@ -21,7 +25,7 @@ inline int is_power_of_2(unsigned x) {
 }
 
 inline void queue_init(queue_t &q, unsigned size) {
-    assert(is_power_of_2(size));
+    assert(is_power_of_2(size)); // Keep this enabled as will be discovered duirng dev time
     q.rdptr = 0;
     q.wrptr = 0;
     q.size = size;
@@ -38,15 +42,28 @@ inline int queue_is_full(const queue_t &q) {
 
 inline void queue_push_word(queue_t &q, unsigned array[], unsigned data)
 {
-    assert(!queue_is_full(q));
-    array[q.wrptr++ & q.mask] = data;
+
+    if(queue_is_full(q)) {
+        if(MIDI_ENABLE_ASSERTS){
+            assert(0);
+        } else {
+            // Drop message
+        }
+    } else {
+        array[q.wrptr++ & q.mask] = data;
+    }
 }
 
 inline unsigned queue_pop_word(queue_t &q, unsigned array[]) {
-    assert(!queue_is_empty(q));
-    return array[q.rdptr++ & q.mask];
-}
-
+    if(queue_is_empty(q)){
+        if(MIDI_ENABLE_ASSERTS){
+            assert(0);
+        } else {
+            return 0x00000000; // midi_out_parse will return a size of 0 for this message/event
+        }
+    } else {
+        return array[q.rdptr++ & q.mask];
+    }
 }
 
 
