@@ -47,16 +47,8 @@ inline unsigned queue_pop_word(queue_t &q, unsigned array[]) {
     return array[q.rdptr++ & q.mask];
 }
 
-inline void queue_push_byte(queue_t &q, unsigned char array[], unsigned data)
-{
-    assert(!queue_is_full(q));
-    array[q.wrptr++ & q.mask] = data;
 }
 
-inline unsigned queue_pop_byte(queue_t &q, unsigned char array[]) {
-    assert(!queue_is_empty(q));
-    return array[q.rdptr++ & q.mask];
-}
 
 inline unsigned queue_items(const queue_t &q) {
     return q.wrptr - q.rdptr;
