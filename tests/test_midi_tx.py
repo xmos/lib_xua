@@ -27,9 +27,8 @@ def test_tx(capfd, config, build_midi):
                         [0x90, 60, 81],     # Note on
                         [0x80, 60, 81]]     # Note off
 
-        # midi_command_expected = midi_commands[1:] # should skip invalid first message
-        # Make a 1D list from the 2D list
-        midi_command_expected = [[item for row in midi_commands for item in row]]
+        # Make a 1D list from the 2D list [1:] because first is invalid and we expect to skip it
+        midi_command_expected = [[item for row in midi_commands[1:] for item in row]]
 
         create_midi_tx_file(midi_commands)
         create_midi_rx_file()
@@ -42,14 +41,14 @@ def test_tx(capfd, config, build_midi):
         bpb = 8
         parity = 0 
         stop = 1
-        length_of_test = sum(len(cmd) for cmd in midi_commands)
+        length_of_test = sum(len(cmd) for cmd in midi_command_expected)
 
         simthreads = [
             UARTTxChecker(tx_port, parity, baud, length_of_test, stop, bpb, debug=False)
         ]
 
 
-        simargs = ["--max-cycles", str(MAX_CYCLES), "-o", "trace.txt"]
+        simargs = ["--max-cycles", str(MAX_CYCLES), "--trace-to", "trace.txt"]
         #This is just for local debug so we can capture the traces if needed. It slows xsim down so not needed
         # simargs.extend(["--vcd-tracing", "-tile tile[1] -ports -o trace.vcd"]) 
 
@@ -60,6 +59,7 @@ def test_tx(capfd, config, build_midi):
             timeout=120,
             simargs=simargs,   
         )
+
         capture = capfd.readouterr().out
         result = tester.run(capture.split("\n"))
 
