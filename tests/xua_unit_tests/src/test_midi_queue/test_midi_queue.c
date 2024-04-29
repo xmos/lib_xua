@@ -2,6 +2,7 @@
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 #include <stddef.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "xua_unit_tests.h"
 #include "../../../lib_xua/src/midi/queue.h"
@@ -25,6 +26,8 @@ unsigned rndm = RANDOM_SEED;
 void test_midi_queue_init(void) {
     queue_t symbol_fifo;
     unsigned symbol_fifo_storage[USB_MIDI_DEVICE_OUT_FIFO_SIZE];
+    memset(symbol_fifo_storage, USB_MIDI_DEVICE_OUT_FIFO_SIZE * sizeof(unsigned), 0xdb); // Non zero
+
     queue_init_c_wrapper(&symbol_fifo, ARRAY_SIZE(symbol_fifo_storage));
 
     int empty = queue_is_empty_c_wrapper(&symbol_fifo);
@@ -38,6 +41,13 @@ void test_midi_queue_init(void) {
 
     unsigned space = queue_space_c_wrapper(&symbol_fifo);
     TEST_ASSERT_EQUAL_UINT32(USB_MIDI_DEVICE_OUT_FIFO_SIZE, space);
+
+    // Pop empty queue
+    unsigned entry = queue_pop_word_c_wrapper(&symbol_fifo, symbol_fifo_storage);
+    TEST_ASSERT_EQUAL_UINT32(MIDI_OUT_NULL_MESSAGE, entry);
+
+    space = queue_space_c_wrapper(&symbol_fifo);
+    TEST_ASSERT_EQUAL_UINT32(USB_MIDI_DEVICE_OUT_FIFO_SIZE, space);
 }
 
 void test_midi_queue_full(void) {
@@ -46,7 +56,7 @@ void test_midi_queue_full(void) {
     queue_init_c_wrapper(&symbol_fifo, ARRAY_SIZE(symbol_fifo_storage));
 
     for(unsigned i = 0; i < USB_MIDI_DEVICE_OUT_FIFO_SIZE; i++){
-        queue_push_word_c_wrapper(&symbol_fifo, symbol_fifo_storage, 0);
+        queue_push_word_c_wrapper(&symbol_fifo, symbol_fifo_storage, 1111);
     }
 
     int empty = queue_is_empty_c_wrapper(&symbol_fifo);
@@ -60,6 +70,12 @@ void test_midi_queue_full(void) {
 
     unsigned space = queue_space_c_wrapper(&symbol_fifo);
     TEST_ASSERT_EQUAL_UINT32(0, space);
+
+    // We want no exception here and this to be ignored
+    queue_push_word_c_wrapper(&symbol_fifo, symbol_fifo_storage, 2222);
+
+    unsigned entry = queue_pop_word_c_wrapper(&symbol_fifo, symbol_fifo_storage);
+    TEST_ASSERT_EQUAL_UINT32(1111, entry);
 }
 
 void test_midi_queue_push_pop(void) {
