@@ -91,7 +91,7 @@ void usb_midi(
 
     // the symbol fifo (to go out of uart).
     queue_t symbol_fifo;
-    unsigned symbol_fifo_arr[USB_MIDI_DEVICE_OUT_FIFO_SIZE]; // Used for 32bit USB MIDI events
+    unsigned symbol_fifo_arr[USB_MIDI_DEVICE_OUT_FIFO_SIZE]; // Used for outgoing UART symbols (which include the start and stop bit)
 
     unsigned rxPT, txPT;
     int midi_from_host_overflow = 0;
