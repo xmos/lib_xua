@@ -89,18 +89,6 @@ unsigned queue_pop_word_c_wrapper(queue_t *q, unsigned array[]){
     }
 }
 
-void queue_push_byte_c_wrapper(queue_t *q, unsigned char array[], unsigned data){
-    unsafe{
-        queue_push_byte(*q, array, data);
-    }
-}
-
-unsigned queue_pop_byte_c_wrapper(queue_t *q, unsigned char array[]){
-    unsafe{
-        return queue_pop_byte(*q, array);
-    }
-}
-
 unsigned queue_items_c_wrapper(const queue_t *q){
     unsafe{
         return queue_items(*q);
