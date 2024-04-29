@@ -6,6 +6,8 @@
 #warning MAYBE A SYSEX START AND FINISH IS SAFEST FOR NULL?
 #define MIDI_OUT_NULL_MESSAGE   0x00000000 // midi_out_parse will return a size of 0 for this invalid message/event
 
+#ifdef __XC__
 {unsigned, unsigned, unsigned, unsigned} midi_out_parse(unsigned event);
+#endif
 
 #endif
