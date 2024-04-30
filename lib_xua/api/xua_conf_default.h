@@ -435,6 +435,18 @@
 #define XUA_SPDIF_RX_EN       (0)
 #endif
 
+#if XUA_ADAT_RX_EN
+    #if (MIN_FREQ < 88200)
+        #define ADAT_RX_MAX_CHANS     (8)
+    #elif (MIN_FREQ < 176400)
+        #define ADAT_RX_MAX_CHANS     (4)
+    #else
+        #define ADAT_RX_MAX_CHANS     (2)
+    #endif
+#else
+#define ADAT_RX_MAX_CHANS             (0)
+#endif
+
 /**
  * @brief Enables ADAT Rx. Default: 0 (Disabled)
  */
@@ -467,7 +479,7 @@
     #define ADAT_RX_INDEX (0) /* Default define for doxygen */
 #endif
 
-#if (ADAT_RX_INDEX + 8 > NUM_USB_CHAN_IN)
+#if (ADAT_RX_INDEX + ADAT_RX_MAX_CHANS > NUM_USB_CHAN_IN)
     #error Not enough channels for ADAT
 #endif
 #endif
@@ -475,17 +487,34 @@
 #if (XUA_ADAT_RX_EN)
 
 /* Setup input stream formats for ADAT */
-#if(MAX_FREQ > 96000)
-#define INPUT_FORMAT_COUNT 3
-#elif(MAX_FREQ > 48000)
-#define INPUT_FORMAT_COUNT 2
+#if (MAX_FREQ > 96000)
+    #if (MIN_FREQ > 96000)
+        #define INPUT_FORMAT_COUNT 1
+        #define HS_STREAM_FORMAT_INPUT_1_CHAN_COUNT NUM_USB_CHAN_IN
+    #elif (MIN_FREQ > 48000)
+        #define INPUT_FORMAT_COUNT 2
+        #define HS_STREAM_FORMAT_INPUT_1_CHAN_COUNT NUM_USB_CHAN_IN
+        #define HS_STREAM_FORMAT_INPUT_2_CHAN_COUNT (NUM_USB_CHAN_IN - 2)
+    #else
+        #define INPUT_FORMAT_COUNT 3
+        #define HS_STREAM_FORMAT_INPUT_1_CHAN_COUNT NUM_USB_CHAN_IN
+        #define HS_STREAM_FORMAT_INPUT_2_CHAN_COUNT (NUM_USB_CHAN_IN - 4)
+        #define HS_STREAM_FORMAT_INPUT_3_CHAN_COUNT (NUM_USB_CHAN_IN - 6)
+    #endif
+#elif (MAX_FREQ > 48000)
+    #if (MIN_FREQ > 48000)
+        #define INPUT_FORMAT_COUNT 1
+        #define HS_STREAM_FORMAT_INPUT_1_CHAN_COUNT NUM_USB_CHAN_IN
+    #else
+        #define INPUT_FORMAT_COUNT 2
+        #define HS_STREAM_FORMAT_INPUT_1_CHAN_COUNT NUM_USB_CHAN_IN
+        #define HS_STREAM_FORMAT_INPUT_2_CHAN_COUNT (NUM_USB_CHAN_IN - 4)
+    #endif
 #else
-#define INPUT_FORMAT_COUNT 1
+    #define INPUT_FORMAT_COUNT 1
+    #define HS_STREAM_FORMAT_INPUT_1_CHAN_COUNT NUM_USB_CHAN_IN
 #endif
 
-#define HS_STREAM_FORMAT_INPUT_1_CHAN_COUNT NUM_USB_CHAN_IN
-#define HS_STREAM_FORMAT_INPUT_2_CHAN_COUNT (NUM_USB_CHAN_IN - 4)
-#define HS_STREAM_FORMAT_INPUT_3_CHAN_COUNT (NUM_USB_CHAN_IN - 6)
 #endif
 
 /**
