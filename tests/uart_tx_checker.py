@@ -94,7 +94,9 @@ class UARTTxChecker(px.SimThread):
         if self.debug: print("tx starts high: %s" % ("True" if initial_port_val else "False"))
 
         for x in range(length):
-            packet.append(chr(self.read_byte(xsi, parity)))
+            byte = self.read_byte(xsi, parity)
+            if self.debug: print(f"Checker got byte: {byte}")
+            packet.append(chr(byte))
         return packet
 
     def read_byte(self, xsi, parity):

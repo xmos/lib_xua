@@ -69,6 +69,7 @@ foreach(TESTFILE ${TEST_SOURCES})
                                                 -DUNITY_INCLUDE_DOUBLE
                                                 -DXUD_CORE_CLOCK=600
                                                 -DXUD_SERIES_SUPPORT=4
+                                                -DXASSERT_ENABLE_ASSERTIONS=0
                                                 )
 
     # For HID tests only enable HID
