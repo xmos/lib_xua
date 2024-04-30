@@ -3,7 +3,9 @@
 #ifndef QUEUE_H_
 #define QUEUE_H_
 
-#define assert(x) asm("ecallf %0"::"r"(x));
+#include "midioutparse.h"
+#include "xassert.h"
+
 
 typedef struct queue_t {
     /// Read index.
@@ -21,7 +23,7 @@ inline int is_power_of_2(unsigned x) {
 }
 
 inline void queue_init(queue_t &q, unsigned size) {
-    assert(is_power_of_2(size));
+    xassert(is_power_of_2(size) && "MIDI FIFO size must be a power of 2"); // Keep this enabled as will be discovered duirng dev time
     q.rdptr = 0;
     q.wrptr = 0;
     q.size = size;
@@ -38,25 +40,26 @@ inline int queue_is_full(const queue_t &q) {
 
 inline void queue_push_word(queue_t &q, unsigned array[], unsigned data)
 {
-    assert(!queue_is_full(q));
+
+    if(queue_is_full(q)) {
+        xassert(0 && "Unexpected push to MIDI queue when full");
+        // Silently drop message if asserts not enabled
+        return;
+    }
+
     array[q.wrptr++ & q.mask] = data;
 }
 
 inline unsigned queue_pop_word(queue_t &q, unsigned array[]) {
-    assert(!queue_is_empty(q));
+    if(queue_is_empty(q)){
+        xassert(0 && "Unexpected pop from MIDI queue when empty");
+        // Return NULL messaqe if asserts not enabled
+        return MIDI_OUT_NULL_MESSAGE; 
+    }
+
     return array[q.rdptr++ & q.mask];
 }
 
-inline void queue_push_byte(queue_t &q, unsigned char array[], unsigned data)
-{
-    assert(!queue_is_full(q));
-    array[q.wrptr++ & q.mask] = data;
-}
-
-inline unsigned queue_pop_byte(queue_t &q, unsigned char array[]) {
-    assert(!queue_is_empty(q));
-    return array[q.rdptr++ & q.mask];
-}
 
 inline unsigned queue_items(const queue_t &q) {
     return q.wrptr - q.rdptr;

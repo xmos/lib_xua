@@ -1,4 +1,4 @@
-// Copyright 2011-2022 XMOS LIMITED.
+// Copyright 2011-2024 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 #include <xs1.h>
 #include <xclib.h>
@@ -13,7 +13,7 @@
 #include "iap_user.h"
 #include "coprocessor_user.h"
 #endif
-//#define MIDI_LOOPBACK 1
+
 int icount = 0;
 static unsigned makeSymbol(unsigned data)
 {
@@ -89,9 +89,9 @@ void usb_midi(
 
     struct midi_in_parse_state mips;
 
-    // the symbol fifo (to go out of uart)
+    // the symbol fifo (to go out of uart).
     queue_t symbol_fifo;
-    unsigned symbol_fifo_arr[USB_MIDI_DEVICE_OUT_FIFO_SIZE]; // Used for 32bit USB MIDI events
+    unsigned symbol_fifo_arr[USB_MIDI_DEVICE_OUT_FIFO_SIZE]; // Used for outgoing UART symbols (which include the start and stop bit)
 
     unsigned rxPT, txPT;
     int midi_from_host_overflow = 0;
@@ -264,7 +264,7 @@ void usb_midi(
             }
             break;
 #endif
-
+        // Received as packet from USB
         case !authenticating => midi_get_ack_or_data(c_midi, is_ack, datum):
 
             if (is_ack)
@@ -281,6 +281,7 @@ void usb_midi(
                 }
             }
             else
+            // A midi packet from the host
             {
                 unsigned midi[3];
                 unsigned size;
@@ -327,7 +328,7 @@ void usb_midi(
                     midi_from_host_overflow = 1;
                 }
                 // Drop through to the isTX guarded case
-                if (!isTX)
+                if (!isTX && size > 0) // do not start tx'ing if this packet has no size
                 {
                     t :> txT; // Should be enough to trigger the other case
                     isTX = 1;
