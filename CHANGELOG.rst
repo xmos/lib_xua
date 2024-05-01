@@ -7,6 +7,7 @@ UNRELEASED
   * FIXED:     Device fails to enumerate when ADAT and S/PDIF transmit are enabled
   * CHANGED:   Enable only the minimum number of ADAT input formats based for the
     supported sample frequencies
+  * FIXED:     ADAT Tx called too frequently
 
 4.0.0
 -----
