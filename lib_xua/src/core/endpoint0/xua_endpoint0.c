@@ -814,7 +814,14 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
                 {
                     unsigned epNum = sp.wIndex & 0xff;
 
-                    if ((epNum == ENDPOINT_ADDRESS_OUT_AUDIO) || (epNum == ENDPOINT_ADDRESS_IN_AUDIO))
+// Ensure we only check for AUDIO EPs if enabled
+#if (NUM_USB_CHAN_IN != 0 && NUM_USB_CHAN_OUT == 0)
+                    if (epNum == ENDPOINT_ADDRESS_IN_AUDIO)
+#elif (NUM_USB_CHAN_IN == 0 && NUM_USB_CHAN_OUT != 0)
+                    if (epNum == ENDPOINT_ADDRESS_OUT_AUDIO)
+#elif (NUM_USB_CHAN_IN != 0 && NUM_USB_CHAN_OUT != 0)
+                    if ((epNum == ENDPOINT_ADDRESS_IN_AUDIO) || (epNum == ENDPOINT_ADDRESS_OUT_AUDIO))
+#endif
                     {
 #if (AUDIO_CLASS == 2) && (AUDIO_CLASS_FALLBACK)
                         if(g_curUsbSpeed == XUD_SPEED_FS)
