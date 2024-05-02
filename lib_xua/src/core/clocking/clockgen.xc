@@ -723,7 +723,14 @@ void clockGen ( streaming chanend ?c_spdif_rx,
                                     }
                                 }
                         }
-                        if(adatChannel == 4 || adatChannel == 8)
+
+                        /* An edge needs to be recorded/toggled in the following cases:
+                         *    smux = 0:  adatChannel = 4, 8
+                         *    smux = 1:  adatChannel = 2, 4, 6, 8
+                         *    smux = 2:  adatChannel = 1, 2, 3, 4, 5, 6, 7, 8
+                         * This is simplified to a shift-and-mask in the if-condition below.
+                         */
+                        if ((adatChannel != 0) && ((adatChannel << smux) & 3) == 0)
                         {
                             adatCounters.samples += 1;
 
@@ -764,7 +771,7 @@ void clockGen ( streaming chanend ?c_spdif_rx,
                               adatChannel = 0;
                         }
                     break;
-#endif
+#endif  // XUA_ADAT_RX_EN
 
 #if (XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
                 /* AudioHub requests data */

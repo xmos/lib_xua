@@ -5,6 +5,7 @@ UNRELEASED
 ----------
 
   * FIXED:     Device fails to enumerate when ADAT and S/PDIF transmit are enabled
+  * FIXED:     Update software PLL at the correct rate for ADAT SMUX
   * CHANGED:   Enable only the minimum number of ADAT input formats based for the
     supported sample frequencies
 
