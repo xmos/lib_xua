@@ -9,6 +9,7 @@ UNRELEASED
     supported sample frequencies
   * FIXED:     Incorrect internal input EP count for input only devices
   * ADDED:     MIDI unit and subsystem tests
+  * FIXED:     ADAT Tx called too frequently
 
 4.0.0
 -----

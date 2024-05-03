@@ -375,12 +375,11 @@ unsigned static AudioHub_MainLoop(chanend ?c_out, chanend ?c_spd_out
                 }
 #endif // (I2S_CHANS_DAC != 0)
 
-#if (XUA_ADAT_TX_EN)
-                 TransferAdatTxSamples(c_adat_out, samplesOut, adatSmuxMode, 1);
-#endif
-
             if(frameCount == 0)
             {
+#if (XUA_ADAT_TX_EN)
+                TransferAdatTxSamples(c_adat_out, samplesOut, adatSmuxMode, 1);
+#endif
 
 #if (XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
                 /* Sync with clockgen */
