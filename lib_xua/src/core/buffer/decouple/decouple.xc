@@ -22,6 +22,8 @@
 #endif
 #define MAX(x,y) ((x)>(y) ? (x) : (y))
 
+#define DEBUG_IN_UNDERFLOW (0)
+
 /* TODO use SLOTSIZE to potentially save memory */
 /* Note we could improve on this, for one subslot is set to 4 */
 /* The *4 is conversion to bytes, note we're assuming a slotsize of 4 here whic is potentially as waste */
@@ -43,7 +45,7 @@
 
 /*** BUFFER SIZES ***/
 
-#define BUFFER_PACKET_COUNT (4)    /* How many packets too allow for in buffer - minimum is 4 */
+#define BUFFER_PACKET_COUNT (5)    /* How many packets too allow for in buffer - minimum is 5. Come out of underflow with 2 packets in the buffer and have space for 2 more */
 
 #define BUFF_SIZE_OUT_HS    MAX_DEVICE_AUD_PACKET_SIZE_OUT_HS * BUFFER_PACKET_COUNT
 #define BUFF_SIZE_OUT_FS    MAX_DEVICE_AUD_PACKET_SIZE_OUT_FS * BUFFER_PACKET_COUNT
@@ -149,6 +151,12 @@ unsigned unpackData = 0;
 
 unsigned packState = 0;
 unsigned packData = 0;
+#if DEBUG_IN_UNDERFLOW
+unsigned g_in_pkt_counter = 0;
+unsigned g_dropped_pkt_counter = 0;
+unsigned g_in_pkt_counter_prev = 0;
+unsigned g_dropped_pkt_counter_prev = 0;
+#endif
 
 static inline void SendSamples4(chanend c_mix_out)
 {
@@ -564,9 +572,17 @@ __builtin_unreachable();
                 totalSampsToWrite = 0;
             }
 
+
             /* Must allow space for at least one sample per channel, as these are written at the beginning of
              * the interrupt handler even if totalSampsToWrite is zero (will be overwritten by a later packet). */
             int spaceRequired = MAX(totalSampsToWrite, 1) * g_numUsbChan_In * g_curSubSlot_In + 4;
+
+#if DEBUG_IN_UNDERFLOW
+            unsigned in_pkt_counter;
+            GET_SHARED_GLOBAL(in_pkt_counter, g_in_pkt_counter);
+            in_pkt_counter += 1;
+            SET_SHARED_GLOBAL(g_in_pkt_counter, in_pkt_counter);
+#endif
             if (spaceRequired > BUFF_SIZE_IN - fillLevel)
             {
                 /* In pipe has filled its buffer - we need to overflow
@@ -577,12 +593,19 @@ __builtin_unreachable();
                 int min, mid, max;
                 GetADCCounts(sampFreq, min, mid, max);
                 const int max_pkt_size = ((max * g_curSubSlot_In * g_numUsbChan_In + 3) & ~0x3) + 4;
+
                 int rdPtr;
                 GET_SHARED_GLOBAL(rdPtr, g_aud_to_host_rdptr);
 
                 /* Keep throwing away packets until buffer contains two packets */
                 do
                 {
+#if DEBUG_IN_UNDERFLOW
+                    unsigned dropped_pkt_counter = 0;
+                    GET_SHARED_GLOBAL(dropped_pkt_counter, g_dropped_pkt_counter);
+                    dropped_pkt_counter += 1;
+                    SET_SHARED_GLOBAL(g_dropped_pkt_counter, dropped_pkt_counter);
+#endif
                     int wrPtr;
                     GET_SHARED_GLOBAL(wrPtr, g_aud_to_host_wrptr);
 
@@ -1052,9 +1075,14 @@ void XUA_Buffer_Decouple(chanend c_mix_out
                     GET_SHARED_GLOBAL(fillLevel, g_aud_to_host_fill_level);
                     assert(fillLevel >= 0);
                     assert(fillLevel <= BUFF_SIZE_IN);
+                    unsigned sampFreq;
+                    GET_SHARED_GLOBAL(sampFreq, g_freqChange_sampFreq);
+                    int min, mid, max;
+                    GetADCCounts(sampFreq, min, mid, max);
+                    const int min_pkt_size = ((min * g_curSubSlot_In * g_numUsbChan_In + 3) & ~0x3) + 4;
 
-                    /* Check if we have come out of underflow */
-                    if (fillLevel >= IN_BUFFER_PREFILL)
+                    /* Come out of underflow if there are exactly 2 packets in the buffer */
+                    if ((fillLevel >= (min_pkt_size*2)) && (fillLevel < (min_pkt_size*3)))
                     {
                         int aud_to_host_rdptr;
                         GET_SHARED_GLOBAL(aud_to_host_rdptr, g_aud_to_host_rdptr);
@@ -1110,6 +1138,37 @@ void XUA_Buffer_Decouple(chanend c_mix_out
                 {
                     int len;
                     asm volatile("ldw %0, %1[0]":"=r"(len):"r"(aud_to_host_buffer));
+#if DEBUG_IN_UNDERFLOW
+                    if(len)
+                    {
+                        unsigned time;
+
+                        unsigned in_pkt_counter;
+                        GET_SHARED_GLOBAL(in_pkt_counter, g_in_pkt_counter);
+                        unsigned dropped_pkt_counter;
+                        GET_SHARED_GLOBAL(dropped_pkt_counter, g_dropped_pkt_counter);
+
+                        unsigned in_pkts = in_pkt_counter - g_in_pkt_counter_prev;
+                        unsigned dropped_pkts = dropped_pkt_counter - g_dropped_pkt_counter_prev;
+
+                        g_in_pkt_counter_prev = in_pkt_counter;
+                        g_dropped_pkt_counter_prev = dropped_pkt_counter;
+                        write_via_xc_ptr(aud_to_host_buffer+4, 1234 << 8);
+                        write_via_xc_ptr(aud_to_host_buffer+8, inUnderflow << 8);
+
+                        write_via_xc_ptr(aud_to_host_buffer+12, fillLevel << 8);
+                        write_via_xc_ptr(aud_to_host_buffer+16, in_pkts << 8);
+                        write_via_xc_ptr(aud_to_host_buffer+20, dropped_pkts << 8);
+
+                        /*tmr :> time;
+                        unsigned time_hi, time_lo;
+                        time_hi = time >> 16;
+                        time_lo = (unsigned)((uint16_t)time);
+                        write_via_xc_ptr(aud_to_host_buffer+16, time_hi << 8);
+                        write_via_xc_ptr(aud_to_host_buffer+20, time_lo << 8);*/
+                    }
+#endif
+
                     XUD_SetReady_InPtr(aud_to_host_usb_ep, aud_to_host_buffer+4, len);
                 }
 
