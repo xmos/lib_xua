@@ -1454,15 +1454,15 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
     /* Class Specific AS Interface Descriptor */
     .Audio_Out_ClassStreamInterface =
     {
-        0x10,                             /* 0  bLength: 16 */
-        UAC_CS_DESCTYPE_INTERFACE,        /* 1  bDescriptorType: 0x24 */
+        0x10,                                   /* 0  bLength: 16 */
+        UAC_CS_DESCTYPE_INTERFACE,              /* 1  bDescriptorType: 0x24 */
         UAC_CS_AS_INTERFACE_SUBTYPE_AS_GENERAL, /* 2  bDescriptorSubType */
-        ID_IT_USB,                        /* 3  bTerminalLink (Linked to USB input terminal) */
-        0x00,                             /* 4  bmControls */
-        UAC_FORMAT_TYPE_I,                /* 5  bFormatType */
-        STREAM_FORMAT_OUTPUT_1_DATAFORMAT,/* 6:10  bmFormats (note this is a bitmap) */
-        NUM_USB_CHAN_OUT,                 /* 11 bNrChannels */
-        0x00000000,                       /* 12:14: bmChannelConfig */
+        ID_IT_USB,                              /* 3  bTerminalLink (Linked to USB input terminal) */
+        0x00,                                   /* 4  bmControls */
+        UAC_FORMAT_TYPE_I,                      /* 5  bFormatType */
+        STREAM_FORMAT_OUTPUT_1_DATAFORMAT,      /* 6:10  bmFormats (note this is a bitmap) */
+        HS_STREAM_FORMAT_OUTPUT_1_CHAN_COUNT,   /* 11 bNrChannels */
+        0x00000000,                             /* 12:14: bmChannelConfig */
         .iChannelNames                 = offsetof(StringDescTable_t, outputChanStr_1)/sizeof(char *),
     },
 
@@ -1545,15 +1545,15 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
     /* Class Specific AS Interface Descriptor */
     .Audio_Out_ClassStreamInterface_2 =
     {
-        0x10,                             /* 0  bLength: 16 */
-        UAC_CS_DESCTYPE_INTERFACE,        /* 1  bDescriptorType: 0x24 */
+        0x10,                                   /* 0  bLength: 16 */
+        UAC_CS_DESCTYPE_INTERFACE,              /* 1  bDescriptorType: 0x24 */
         UAC_CS_AS_INTERFACE_SUBTYPE_AS_GENERAL, /* 2  bDescriptorSubType */
-        ID_IT_USB,                        /* 3  bTerminalLink (Linked to USB input terminal) */
-        0x00,                             /* 4  bmControls */
-        UAC_FORMAT_TYPE_I,                /* 5  bFormatType */
-        STREAM_FORMAT_OUTPUT_2_DATAFORMAT,/* 6:10  bmFormats (note this is a bitmap) */
-        NUM_USB_CHAN_OUT,                 /* 11 bNrChannels */
-        0x00000000,                       /* 12:14: bmChannelConfig */
+        ID_IT_USB,                              /* 3  bTerminalLink (Linked to USB input terminal) */
+        0x00,                                   /* 4  bmControls */
+        UAC_FORMAT_TYPE_I,                      /* 5  bFormatType */
+        STREAM_FORMAT_OUTPUT_2_DATAFORMAT,      /* 6:10  bmFormats (note this is a bitmap) */
+        HS_STREAM_FORMAT_OUTPUT_2_CHAN_COUNT,   /* 11 bNrChannels */
+        0x00000000,                             /* 12:14: bmChannelConfig */
         .iChannelNames                 = (offsetof(StringDescTable_t, outputChanStr_1)/sizeof(char *)),
     },
 
@@ -1636,15 +1636,15 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
     /* Class Specific AS Interface Descriptor */
     .Audio_Out_ClassStreamInterface_3 =
     {
-        0x10,                             /* 0  bLength: 16 */
-        UAC_CS_DESCTYPE_INTERFACE,        /* 1  bDescriptorType: 0x24 */
+        0x10,                                   /* 0  bLength: 16 */
+        UAC_CS_DESCTYPE_INTERFACE,              /* 1  bDescriptorType: 0x24 */
         UAC_CS_AS_INTERFACE_SUBTYPE_AS_GENERAL, /* 2  bDescriptorSubType */
-        ID_IT_USB,                        /* 3  bTerminalLink (Linked to USB input terminal) */
-        0x00,                             /* 4  bmControls */
-        UAC_FORMAT_TYPE_I,                /* 5  bFormatType */
-        STREAM_FORMAT_OUTPUT_3_DATAFORMAT,/* 6:10  bmFormats (note this is a bitmap) */
-        NUM_USB_CHAN_OUT,                 /* 11 bNrChannels */
-        0x00000000,                       /* 12:14: bmChannelConfig */
+        ID_IT_USB,                              /* 3  bTerminalLink (Linked to USB input terminal) */
+        0x00,                                   /* 4  bmControls */
+        UAC_FORMAT_TYPE_I,                      /* 5  bFormatType */
+        STREAM_FORMAT_OUTPUT_3_DATAFORMAT,      /* 6:10  bmFormats (note this is a bitmap) */
+        HS_STREAM_FORMAT_OUTPUT_3_CHAN_COUNT,   /* 11 bNrChannels */
+        0x00000000,                             /* 12:14: bmChannelConfig */
         .iChannelNames                 = offsetof(StringDescTable_t, outputChanStr_1)/sizeof(char *),
     },
 
