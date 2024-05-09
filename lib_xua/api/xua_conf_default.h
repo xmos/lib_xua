@@ -428,6 +428,7 @@
 #define ADAT_TX_INDEX         (0)
 #endif
 
+/* Calculate max ADAT channels based on sample rate range */
 #if XUA_ADAT_TX_EN
     #if (MIN_FREQ < 88200)
         #define ADAT_TX_MAX_CHANS     (8)
@@ -447,6 +448,14 @@
 #define XUA_SPDIF_RX_EN       (0)
 #endif
 
+/**
+ * @brief Enables ADAT Rx. Default: 0 (Disabled)
+ */
+#ifndef XUA_ADAT_RX_EN
+#define XUA_ADAT_RX_EN        (0)
+#endif
+
+/* Calculate max ADAT channels based on sample rate range */
 #if XUA_ADAT_RX_EN
     #if (MIN_FREQ < 88200)
         #define ADAT_RX_MAX_CHANS     (8)
@@ -459,12 +468,6 @@
 #define ADAT_RX_MAX_CHANS             (0)
 #endif
 
-/**
- * @brief Enables ADAT Rx. Default: 0 (Disabled)
- */
-#ifndef XUA_ADAT_RX_EN
-#define XUA_ADAT_RX_EN        (0)
-#endif
 
 /**
  * @brief S/PDIF Rx first channel index, defines which channels S/PDIF will be input on.
@@ -1036,7 +1039,18 @@
     #define HS_STREAM_FORMAT_INPUT_3_CHAN_COUNT             NUM_USB_CHAN_IN
 #endif
 
+/* Channel count defines for input streams */
+#ifndef HS_STREAM_FORMAT_OUTPUT_1_CHAN_COUNT
+    #define HS_STREAM_FORMAT_OUTPUT_1_CHAN_COUNT            NUM_USB_CHAN_OUT
+#endif
 
+#ifndef HS_STREAM_FORMAT_OUTPUT_2_CHAN_COUNT
+    #define HS_STREAM_FORMAT_OUTPUT_2_CHAN_COUNT            NUM_USB_CHAN_OUT
+#endif
+
+#ifndef HS_STREAM_FORMAT_OUTPUT_3_CHAN_COUNT
+    #define HS_STREAM_FORMAT_OUTPUT_3_CHAN_COUNT            NUM_USB_CHAN_OUT
+#endif
 
 /**
  * @brief Sample sub-slot size (bytes) of input stream Alternate 1 when running in high-speed
