@@ -11,6 +11,8 @@ UNRELEASED
   * FIXED:     Incorrect internal input EP count for input only devices
   * ADDED:     MIDI unit and subsystem tests
   * FIXED:     ADAT Tx called too frequently
+  * CHANGED:   ADAT Tx presents different channel count interfaces based on sample
+    rate 
 
 4.0.0
 -----
