@@ -233,9 +233,23 @@ void clockGen ( streaming chanend ?c_spdif_rx,
     unsigned timeNextEdge, timeLastEdge, timeNextClockDetection;
     unsigned clkMode = CLOCK_INTERNAL;              /* Current clocking mode in operation */
     unsigned tmp;
-
-    /* Start in no-SMUX (8-channel) mode */
-    int smux = 0;
+    int smux;
+    // Initialise smux based based on the DEFAULT_FREQ
+    if(DEFAULT_FREQ < 88200)
+    {
+        /* No SMUX */
+        smux = 0;
+    }
+    else if(DEFAULT_FREQ < 176400)
+    {
+        /* SMUX */
+        smux = 1;
+    }
+    else
+    {
+        /* SMUX II */
+        smux = 2;
+    }
 
 #ifdef LEVEL_METER_LEDS
     timer t_level;
