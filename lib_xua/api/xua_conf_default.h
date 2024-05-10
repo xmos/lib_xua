@@ -413,59 +413,10 @@
 #endif
 
 /**
- * @brief Enables ADAT Tx. Default: 0 (Disabled)
- */
-#ifndef XUA_ADAT_TX_EN
-#define XUA_ADAT_TX_EN           (0)
-#endif
-
-/**
- * @brief Defines which output channels (8) should be output on ADAT. Note, Output channels indexed from 0.
- *
- * Default: 0 (i.e. channels [0:7])
- * */
-#ifndef ADAT_TX_INDEX
-#define ADAT_TX_INDEX         (0)
-#endif
-
-/* Calculate max ADAT channels based on sample rate range */
-#if XUA_ADAT_TX_EN
-    #if (MIN_FREQ < 88200)
-        #define ADAT_TX_MAX_CHANS     (8)
-    #elif (MIN_FREQ < 176400)
-        #define ADAT_TX_MAX_CHANS     (4)
-    #else
-        #define ADAT_TX_MAX_CHANS     (2)
-    #endif
-#else
-#define ADAT_TX_MAX_CHANS             (0)
-#endif
-
-/**
  * @brief Enables SPDIF Rx. Default: 0 (Disabled)
  */
 #ifndef XUA_SPDIF_RX_EN
 #define XUA_SPDIF_RX_EN       (0)
-#endif
-
-/**
- * @brief Enables ADAT Rx. Default: 0 (Disabled)
- */
-#ifndef XUA_ADAT_RX_EN
-#define XUA_ADAT_RX_EN        (0)
-#endif
-
-/* Calculate max ADAT channels based on sample rate range */
-#if XUA_ADAT_RX_EN
-    #if (MIN_FREQ < 88200)
-        #define ADAT_RX_MAX_CHANS     (8)
-    #elif (MIN_FREQ < 176400)
-        #define ADAT_RX_MAX_CHANS     (4)
-    #else
-        #define ADAT_RX_MAX_CHANS     (2)
-    #endif
-#else
-#define ADAT_RX_MAX_CHANS             (0)
 #endif
 
 
@@ -476,10 +427,63 @@
  * Default: NONE (Must be defined by app when SPDIF_RX enabled)
  */
 #if (XUA_SPDIF_RX_EN) || defined (__DOXYGEN__)
-#ifndef SPDIF_RX_INDEX
-    #error SPDIF_RX_INDEX not defined and XUA_SPDIF_RX_EN defined
-    #define SPDIF_RX_INDEX 0 /* Default define for doxygen */
+    #ifndef SPDIF_RX_INDEX
+        #error SPDIF_RX_INDEX not defined and XUA_SPDIF_RX_EN defined
+        #define SPDIF_RX_INDEX 0 /* Default define for doxygen */
+    #endif
 #endif
+
+
+/**
+ * @brief Enables ADAT Tx. Default: 0 (Disabled)
+ */
+#ifndef XUA_ADAT_TX_EN
+#define XUA_ADAT_TX_EN           (0)
+#endif
+
+/* Calculate max ADAT channels based on sample rate range. Used for Tx and Rx */
+#if (MIN_FREQ < 88200)
+    #define ADAT_MAX_CHANS     (8)
+#elif (MIN_FREQ < 176400)
+    #define ADAT_MAX_CHANS     (4)
+#else
+    #define ADAT_MAX_CHANS     (2)
+#endif
+
+/* Set the maximum number of channels for ADAT */
+#if XUA_ADAT_TX_EN
+    #define ADAT_TX_MAX_CHANS   ADAT_MAX_CHANS
+#else
+    #define ADAT_TX_MAX_CHANS   (0)
+#endif
+
+/**
+ * @brief Defines which output channels (8) should be output on ADAT. Note, Output channels indexed from 0.
+ *
+ * Default: 0 (i.e. channels [0:7])
+ * */
+#if (XUA_ADAT_TX_EN) || defined(__DOXYGEN__)
+    #ifndef ADAT_TX_INDEX
+        #define ADAT_TX_INDEX (0)
+    #endif
+
+    #if (ADAT_TX_INDEX + ADAT_TX_MAX_CHANS > NUM_USB_CHAN_OUT)
+        #error Not enough channels for ADAT Tx
+    #endif
+#endif
+
+/**
+ * @brief Enables ADAT Rx. Default: 0 (Disabled)
+ */
+#ifndef XUA_ADAT_RX_EN
+#define XUA_ADAT_RX_EN        (0)
+#endif
+
+/* Set the maximum number of channels for ADAT */
+#if XUA_ADAT_RX_EN
+    #define ADAT_RX_MAX_CHANS   ADAT_MAX_CHANS
+#else
+    #define ADAT_RX_MAX_CHANS   (0)
 #endif
 
 /**
@@ -489,14 +493,14 @@
  * Default: NONE (Must be defined by app when XUA_ADAT_RX_EN is true)
  */
 #if (XUA_ADAT_RX_EN) || defined(__DOXYGEN__)
-#ifndef ADAT_RX_INDEX
-    #error ADAT_RX_INDEX not defined and XUA_ADAT_RX_EN is true
-    #define ADAT_RX_INDEX (0) /* Default define for doxygen */
-#endif
+    #ifndef ADAT_RX_INDEX
+        #error ADAT_RX_INDEX not defined and XUA_ADAT_RX_EN is true
+        #define ADAT_RX_INDEX (0) /* Default define for doxygen */
+    #endif
 
-#if (ADAT_RX_INDEX + ADAT_RX_MAX_CHANS > NUM_USB_CHAN_IN)
-    #error Not enough channels for ADAT
-#endif
+    #if (ADAT_RX_INDEX + ADAT_RX_MAX_CHANS > NUM_USB_CHAN_IN)
+        #error Not enough channels for ADAT Rx
+    #endif
 #endif
 
 
@@ -1039,7 +1043,7 @@
     #define HS_STREAM_FORMAT_INPUT_3_CHAN_COUNT             NUM_USB_CHAN_IN
 #endif
 
-/* Channel count defines for input streams */
+/* Channel count defines for output streams */
 #ifndef HS_STREAM_FORMAT_OUTPUT_1_CHAN_COUNT
     #define HS_STREAM_FORMAT_OUTPUT_1_CHAN_COUNT            NUM_USB_CHAN_OUT
 #endif
