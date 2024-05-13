@@ -11,6 +11,7 @@ UNRELEASED
   * FIXED:     Incorrect internal input EP count for input only devices
   * ADDED:     MIDI unit and subsystem tests
   * FIXED:     ADAT Tx called too frequently
+  * FIXED:     Initialise SMUX based on DEFAULT_FREQ in clockgen
 
 4.0.0
 -----
