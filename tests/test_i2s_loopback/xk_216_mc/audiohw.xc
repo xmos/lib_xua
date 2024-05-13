@@ -1,4 +1,4 @@
-// Copyright 2016-2022 XMOS LIMITED.
+// Copyright 2016-2024 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 #ifdef HARDWARE
 
@@ -19,7 +19,7 @@
 /* CS2100 lists typical lock time as 100 * input period */
 #define     AUDIO_PLL_LOCK_DELAY     (40000000)
 
-#if defined(SPDIF_RX) || defined(ADAT_RX)
+#if defined(XUA_SPDIF_RX_EN) || defined(XUA_ADAT_RX_EN)
 #define USE_FRACTIONAL_N 1
 #endif
 
@@ -32,7 +32,7 @@ port p_i2c = on tile[0]:PORT_I2C;
 
 #ifdef USE_FRACTIONAL_N
 
-#if !(defined(SPDIF_RX) || defined(ADAT_RX))
+#if !(defined(XUA_SPDIF_RX_EN) || defined(XUA_ADAT_RX_EN))
 /* Choose a frequency the xcore can easily generate internally */
 #define PLL_SYNC_FREQ 1000000
 #else
@@ -95,7 +95,7 @@ void PllMult(unsigned output, unsigned ref, client interface i2c_master_if i2c)
 }
 #endif
 
-#if !(defined(SPDIF_RX) || defined(ADAT_RX)) && defined(USE_FRACTIONAL_N)
+#if !(defined(XUA_SPDIF_RX_EN) || defined(XUA_ADAT_RX_EN)) && defined(USE_FRACTIONAL_N)
 on tile[AUDIO_IO_TILE] : out port p_pll_clk = PORT_PLL_REF;
 on tile[AUDIO_IO_TILE] : clock clk_pll_sync = XS1_CLKBLK_5;
 #endif
@@ -111,7 +111,7 @@ void wait_us(int microseconds)
 
 void AudioHwInit(chanend ?c_codec)
 {
-#if !(defined(SPDIF_RX) || defined(ADAT_RX)) && defined(USE_FRACTIONAL_N)
+#if !(defined(XUA_SPDIF_RX_EN) || defined(XUA_ADAT_RX_EN)) && defined(USE_FRACTIONAL_N)
     /* Output a fixed sync clock to the pll */
     configure_clock_rate(clk_pll_sync, 100, 100/(PLL_SYNC_FREQ/1000000));
     configure_port_clock_output(p_pll_clk, clk_pll_sync);

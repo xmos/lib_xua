@@ -13,6 +13,7 @@ UNRELEASED
   * FIXED:     ADAT Tx called too frequently
   * CHANGED:   aud_to_host buffer size and the condition to come out of underflow
     in decoupler to fix buffer underflow seen in ADAT tests
+  * FIXED:     Initialise SMUX based on DEFAULT_FREQ in clockgen
 
 4.0.0
 -----
