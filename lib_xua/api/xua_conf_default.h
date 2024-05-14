@@ -413,10 +413,48 @@
 #endif
 
 /**
+ * @brief Enables SPDIF Rx. Default: 0 (Disabled)
+ */
+#ifndef XUA_SPDIF_RX_EN
+#define XUA_SPDIF_RX_EN       (0)
+#endif
+
+
+/**
+ * @brief S/PDIF Rx first channel index, defines which channels S/PDIF will be input on.
+ * Note, indexed from 0.
+ *
+ * Default: NONE (Must be defined by app when SPDIF_RX enabled)
+ */
+#if (XUA_SPDIF_RX_EN) || defined (__DOXYGEN__)
+    #ifndef SPDIF_RX_INDEX
+        #error SPDIF_RX_INDEX not defined and XUA_SPDIF_RX_EN defined
+        #define SPDIF_RX_INDEX 0 /* Default define for doxygen */
+    #endif
+#endif
+
+
+/**
  * @brief Enables ADAT Tx. Default: 0 (Disabled)
  */
 #ifndef XUA_ADAT_TX_EN
 #define XUA_ADAT_TX_EN           (0)
+#endif
+
+/* Calculate max ADAT channels based on sample rate range. Used for Tx and Rx */
+#if (MIN_FREQ < 88200)
+    #define ADAT_MAX_CHANS     (8)
+#elif (MIN_FREQ < 176400)
+    #define ADAT_MAX_CHANS     (4)
+#else
+    #define ADAT_MAX_CHANS     (2)
+#endif
+
+/* Set the maximum number of channels for ADAT */
+#if XUA_ADAT_TX_EN
+    #define ADAT_TX_MAX_CHANS   ADAT_MAX_CHANS
+#else
+    #define ADAT_TX_MAX_CHANS   (0)
 #endif
 
 /**
@@ -424,27 +462,14 @@
  *
  * Default: 0 (i.e. channels [0:7])
  * */
-#ifndef ADAT_TX_INDEX
-#define ADAT_TX_INDEX         (0)
-#endif
-
-/**
- * @brief Enables SPDIF Rx. Default: 0 (Disabled)
- */
-#ifndef XUA_SPDIF_RX_EN
-#define XUA_SPDIF_RX_EN       (0)
-#endif
-
-#if XUA_ADAT_RX_EN
-    #if (MIN_FREQ < 88200)
-        #define ADAT_RX_MAX_CHANS     (8)
-    #elif (MIN_FREQ < 176400)
-        #define ADAT_RX_MAX_CHANS     (4)
-    #else
-        #define ADAT_RX_MAX_CHANS     (2)
+#if (XUA_ADAT_TX_EN) || defined(__DOXYGEN__)
+    #ifndef ADAT_TX_INDEX
+        #define ADAT_TX_INDEX (0)
     #endif
-#else
-#define ADAT_RX_MAX_CHANS             (0)
+
+    #if (ADAT_TX_INDEX + ADAT_TX_MAX_CHANS > NUM_USB_CHAN_OUT)
+        #error Not enough channels for ADAT Tx
+    #endif
 #endif
 
 /**
@@ -454,17 +479,11 @@
 #define XUA_ADAT_RX_EN        (0)
 #endif
 
-/**
- * @brief S/PDIF Rx first channel index, defines which channels S/PDIF will be input on.
- * Note, indexed from 0.
- *
- * Default: NONE (Must be defined by app when SPDIF_RX enabled)
- */
-#if (XUA_SPDIF_RX_EN) || defined (__DOXYGEN__)
-#ifndef SPDIF_RX_INDEX
-    #error SPDIF_RX_INDEX not defined and XUA_SPDIF_RX_EN defined
-    #define SPDIF_RX_INDEX 0 /* Default define for doxygen */
-#endif
+/* Set the maximum number of channels for ADAT */
+#if XUA_ADAT_RX_EN
+    #define ADAT_RX_MAX_CHANS   ADAT_MAX_CHANS
+#else
+    #define ADAT_RX_MAX_CHANS   (0)
 #endif
 
 /**
@@ -474,47 +493,80 @@
  * Default: NONE (Must be defined by app when XUA_ADAT_RX_EN is true)
  */
 #if (XUA_ADAT_RX_EN) || defined(__DOXYGEN__)
-#ifndef ADAT_RX_INDEX
-    #error ADAT_RX_INDEX not defined and XUA_ADAT_RX_EN is true
-    #define ADAT_RX_INDEX (0) /* Default define for doxygen */
+    #ifndef ADAT_RX_INDEX
+        #error ADAT_RX_INDEX not defined and XUA_ADAT_RX_EN is true
+        #define ADAT_RX_INDEX (0) /* Default define for doxygen */
+    #endif
+
+    #if (ADAT_RX_INDEX + ADAT_RX_MAX_CHANS > NUM_USB_CHAN_IN)
+        #error Not enough channels for ADAT Rx
+    #endif
 #endif
 
-#if (ADAT_RX_INDEX + ADAT_RX_MAX_CHANS > NUM_USB_CHAN_IN)
-    #error Not enough channels for ADAT
-#endif
-#endif
-
-#if (XUA_ADAT_RX_EN)
 
 /* Setup input stream formats for ADAT */
-#if (MAX_FREQ > 96000)
-    #if (MIN_FREQ > 96000)
+#if (XUA_ADAT_RX_EN)
+    #if (MAX_FREQ > 96000)
+        #if (MIN_FREQ > 96000)
+            #define INPUT_FORMAT_COUNT 1
+            #define HS_STREAM_FORMAT_INPUT_1_CHAN_COUNT NUM_USB_CHAN_IN
+        #elif (MIN_FREQ > 48000)
+            #define INPUT_FORMAT_COUNT 2
+            #define HS_STREAM_FORMAT_INPUT_1_CHAN_COUNT NUM_USB_CHAN_IN
+            #define HS_STREAM_FORMAT_INPUT_2_CHAN_COUNT (NUM_USB_CHAN_IN - 2)
+        #else
+            #define INPUT_FORMAT_COUNT 3
+            #define HS_STREAM_FORMAT_INPUT_1_CHAN_COUNT NUM_USB_CHAN_IN
+            #define HS_STREAM_FORMAT_INPUT_2_CHAN_COUNT (NUM_USB_CHAN_IN - 4)
+            #define HS_STREAM_FORMAT_INPUT_3_CHAN_COUNT (NUM_USB_CHAN_IN - 6)
+        #endif
+    #elif (MAX_FREQ > 48000)
+        #if (MIN_FREQ > 48000)
+            #define INPUT_FORMAT_COUNT 1
+            #define HS_STREAM_FORMAT_INPUT_1_CHAN_COUNT NUM_USB_CHAN_IN
+        #else
+            #define INPUT_FORMAT_COUNT 2
+            #define HS_STREAM_FORMAT_INPUT_1_CHAN_COUNT NUM_USB_CHAN_IN
+            #define HS_STREAM_FORMAT_INPUT_2_CHAN_COUNT (NUM_USB_CHAN_IN - 4)
+        #endif
+    #else
         #define INPUT_FORMAT_COUNT 1
         #define HS_STREAM_FORMAT_INPUT_1_CHAN_COUNT NUM_USB_CHAN_IN
-    #elif (MIN_FREQ > 48000)
-        #define INPUT_FORMAT_COUNT 2
-        #define HS_STREAM_FORMAT_INPUT_1_CHAN_COUNT NUM_USB_CHAN_IN
-        #define HS_STREAM_FORMAT_INPUT_2_CHAN_COUNT (NUM_USB_CHAN_IN - 2)
-    #else
-        #define INPUT_FORMAT_COUNT 3
-        #define HS_STREAM_FORMAT_INPUT_1_CHAN_COUNT NUM_USB_CHAN_IN
-        #define HS_STREAM_FORMAT_INPUT_2_CHAN_COUNT (NUM_USB_CHAN_IN - 4)
-        #define HS_STREAM_FORMAT_INPUT_3_CHAN_COUNT (NUM_USB_CHAN_IN - 6)
     #endif
-#elif (MAX_FREQ > 48000)
-    #if (MIN_FREQ > 48000)
-        #define INPUT_FORMAT_COUNT 1
-        #define HS_STREAM_FORMAT_INPUT_1_CHAN_COUNT NUM_USB_CHAN_IN
-    #else
-        #define INPUT_FORMAT_COUNT 2
-        #define HS_STREAM_FORMAT_INPUT_1_CHAN_COUNT NUM_USB_CHAN_IN
-        #define HS_STREAM_FORMAT_INPUT_2_CHAN_COUNT (NUM_USB_CHAN_IN - 4)
-    #endif
-#else
-    #define INPUT_FORMAT_COUNT 1
-    #define HS_STREAM_FORMAT_INPUT_1_CHAN_COUNT NUM_USB_CHAN_IN
 #endif
 
+/* Setup output stream formats for ADAT */
+#if (XUA_ADAT_TX_EN)
+    #if (MAX_FREQ > 96000)
+        #if (MIN_FREQ > 96000)
+            #define OUTPUT_FORMAT_COUNT 1
+            #define HS_STREAM_FORMAT_OUTPUT_1_CHAN_COUNT NUM_USB_CHAN_OUT
+        #elif (MIN_FREQ > 48000)
+            #define OUTPUT_FORMAT_COUNT 2
+            #define HS_STREAM_FORMAT_OUTPUT_1_CHAN_COUNT NUM_USB_CHAN_OUT
+            #define HS_STREAM_FORMAT_OUTPUT_2_CHAN_COUNT (NUM_USB_CHAN_OUT - 2)
+        #else
+            #define OUTPUT_FORMAT_COUNT 3
+            #define HS_STREAM_FORMAT_OUTPUT_1_CHAN_COUNT NUM_USB_CHAN_OUT
+            #define HS_STREAM_FORMAT_OUTPUT_2_CHAN_COUNT (NUM_USB_CHAN_OUT - 4)
+            #define HS_STREAM_FORMAT_OUTPUT_3_CHAN_COUNT (NUM_USB_CHAN_OUT - 6)
+        #endif
+    #elif (MAX_FREQ > 48000)
+        #if (MIN_FREQ > 48000)
+            #define OUTPUT_FORMAT_COUNT 1
+            #define HS_STREAM_FORMAT_OUTPUT_1_CHAN_COUNT NUM_USB_CHAN_OUT
+        #else
+            #define OUTPUT_FORMAT_COUNT 2
+            #define HS_STREAM_FORMAT_OUTPUT_1_CHAN_COUNT NUM_USB_CHAN_OUT
+            #define HS_STREAM_FORMAT_OUTPUT_2_CHAN_COUNT (NUM_USB_CHAN_OUT - 4)
+        #endif
+    #else
+        #define OUTPUT_FORMAT_COUNT 1
+        #define HS_STREAM_FORMAT_OUTPUT_1_CHAN_COUNT NUM_USB_CHAN_OUT
+    #endif
+    #define STREAM_FORMAT_OUTPUT_1_RESOLUTION_BITS  24
+    #define STREAM_FORMAT_OUTPUT_2_RESOLUTION_BITS  24
+    #define STREAM_FORMAT_OUTPUT_3_RESOLUTION_BITS  24
 #endif
 
 /**
@@ -991,7 +1043,18 @@
     #define HS_STREAM_FORMAT_INPUT_3_CHAN_COUNT             NUM_USB_CHAN_IN
 #endif
 
+/* Channel count defines for output streams */
+#ifndef HS_STREAM_FORMAT_OUTPUT_1_CHAN_COUNT
+    #define HS_STREAM_FORMAT_OUTPUT_1_CHAN_COUNT            NUM_USB_CHAN_OUT
+#endif
 
+#ifndef HS_STREAM_FORMAT_OUTPUT_2_CHAN_COUNT
+    #define HS_STREAM_FORMAT_OUTPUT_2_CHAN_COUNT            NUM_USB_CHAN_OUT
+#endif
+
+#ifndef HS_STREAM_FORMAT_OUTPUT_3_CHAN_COUNT
+    #define HS_STREAM_FORMAT_OUTPUT_3_CHAN_COUNT            NUM_USB_CHAN_OUT
+#endif
 
 /**
  * @brief Sample sub-slot size (bytes) of input stream Alternate 1 when running in high-speed
