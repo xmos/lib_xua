@@ -233,6 +233,8 @@ void clockGen ( streaming chanend ?c_spdif_rx,
     unsigned timeNextEdge, timeLastEdge, timeNextClockDetection;
     unsigned clkMode = CLOCK_INTERNAL;              /* Current clocking mode in operation */
     unsigned tmp;
+
+    /* Start in no-SMUX (8-channel) mode */
     int smux;
     // Initialise smux based based on the DEFAULT_FREQ
     if(DEFAULT_FREQ < 88200)

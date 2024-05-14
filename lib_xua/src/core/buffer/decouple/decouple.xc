@@ -1,4 +1,4 @@
-// Copyright 2011-2023 XMOS LIMITED.
+// Copyright 2011-2024 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 #include "xua.h"
 
@@ -44,8 +44,13 @@
 #define MAX_DEVICE_AUD_PACKET_SIZE_OUT (MAX(MAX_DEVICE_AUD_PACKET_SIZE_OUT_FS, MAX_DEVICE_AUD_PACKET_SIZE_OUT_HS))
 
 /*** BUFFER SIZES ***/
-
-#define BUFFER_PACKET_COUNT (5)    /* How many packets too allow for in buffer - minimum is 5. Come out of underflow with 2 packets in the buffer and have space for 2 more */
+/* How many packets too allow for in buffer - minimum is 5.
+2 for having in the aud_to_host buffer when it comes out of underflow, space available for 2 more for to accomodate cases when
+2 pkts from audio hub get written into the aud_to_host buffer within 1 SOF period, and space for 1 extra packet to ensure that
+when the 4th packet gets written to the buffer, there's space to accomodate the next packet, otherwise handle_audio_request() will
+drop packets after writing the 4th packet in the buffer
+*/
+#define BUFFER_PACKET_COUNT (5)
 
 #define BUFF_SIZE_OUT_HS    MAX_DEVICE_AUD_PACKET_SIZE_OUT_HS * BUFFER_PACKET_COUNT
 #define BUFF_SIZE_OUT_FS    MAX_DEVICE_AUD_PACKET_SIZE_OUT_FS * BUFFER_PACKET_COUNT
@@ -1075,13 +1080,22 @@ void XUA_Buffer_Decouple(chanend c_mix_out
                     GET_SHARED_GLOBAL(fillLevel, g_aud_to_host_fill_level);
                     assert(fillLevel >= 0);
                     assert(fillLevel <= BUFF_SIZE_IN);
+
+                    /* Check if we have come out of underflow */
                     unsigned sampFreq;
                     GET_SHARED_GLOBAL(sampFreq, g_freqChange_sampFreq);
                     int min, mid, max;
                     GetADCCounts(sampFreq, min, mid, max);
                     const int min_pkt_size = ((min * g_curSubSlot_In * g_numUsbChan_In + 3) & ~0x3) + 4;
 
-                    /* Come out of underflow if there are exactly 2 packets in the buffer */
+                    /*
+                        Come out of underflow if there are exactly 2 packets in the buffer.
+                        This ensures that handle_audio_request() does not drop packets when writing packets into the aud_to_host buffer
+                        when aud_to_host buffer is not in underflow.
+                        For example, coming out of underflow with 3 packets in the buffer would mean handle_audio_request()
+                        drops packets if 2 pkts are received from audio hub in 1 SOF period. Coming out of underflow with 4
+                        packets would mean handle_audio_request would drop packets after writing 1 packet to the aud_to_host buffer.
+                    */
                     if ((fillLevel >= (min_pkt_size*2)) && (fillLevel < (min_pkt_size*3)))
                     {
                         int aud_to_host_rdptr;
