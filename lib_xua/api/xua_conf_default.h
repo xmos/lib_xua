@@ -1318,7 +1318,7 @@
 #endif
 
 #if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
-    #if (XUA_SPDIF_RX_EN|| ADAT_RX)
+    #if (XUA_SPDIF_RX_EN|| XUA_ADAT_RX_EN)
         #error "Digital input streams not supported in Sync mode"
     #endif
 #endif
