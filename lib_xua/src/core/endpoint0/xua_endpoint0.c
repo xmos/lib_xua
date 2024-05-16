@@ -245,13 +245,21 @@ const unsigned g_dataFormat_In[INPUT_FORMAT_COUNT]      = {STREAM_FORMAT_INPUT_1
 };
 
 /* Channel count */
-/* Note, currently only input changes.. */
 const unsigned g_chanCount_In_HS[INPUT_FORMAT_COUNT]       = {HS_STREAM_FORMAT_INPUT_1_CHAN_COUNT,
 #if(INPUT_FORMAT_COUNT > 1)
                                                             HS_STREAM_FORMAT_INPUT_2_CHAN_COUNT,
 #endif
 #if(INPUT_FORMAT_COUNT > 2)
                                                             HS_STREAM_FORMAT_INPUT_3_CHAN_COUNT
+#endif
+};
+
+const unsigned g_chanCount_Out_HS[OUTPUT_FORMAT_COUNT]       = {HS_STREAM_FORMAT_OUTPUT_1_CHAN_COUNT,
+#if(OUTPUT_FORMAT_COUNT > 1)
+                                                            HS_STREAM_FORMAT_OUTPUT_2_CHAN_COUNT,
+#endif
+#if(OUTPUT_FORMAT_COUNT > 2)
+                                                            HS_STREAM_FORMAT_OUTPUT_3_CHAN_COUNT
 #endif
 };
 
@@ -580,7 +588,7 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
 
                                     if(g_curUsbSpeed == XUD_SPEED_HS)
                                     {
-                                        outuint(c_audioControl, NUM_USB_CHAN_OUT);                 /* Channel count */
+                                        outuint(c_audioControl, g_chanCount_Out_HS[sp.wValue-1]);                 /* Channel count */
                                         outuint(c_audioControl, g_subSlot_Out_HS[sp.wValue-1]);    /* Subslot */
                                         outuint(c_audioControl, g_sampRes_Out_HS[sp.wValue-1]);    /* Resolution */
                                     }

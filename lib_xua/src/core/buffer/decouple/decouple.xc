@@ -158,11 +158,11 @@ unsigned packData = 0;
 static inline void SendSamples4(chanend c_mix_out)
 {
     /* Doing this checking allows us to unroll */
-    if(g_numUsbChan_Out == NUM_USB_CHAN_OUT)
+    if(1)//(g_numUsbChan_Out == NUM_USB_CHAN_OUT)
     {
         /* Buffering not underflow condition send out some samples...*/
 #pragma loop unroll
-        for(int i = 0; i < NUM_USB_CHAN_OUT; i++)
+        for(int i = 0; i < g_numUsbChan_Out; i++)
         {
             int sample;
             int mult;
