@@ -833,13 +833,13 @@ void clockGen ( streaming chanend ?c_spdif_rx,
                 if (adatUnderflow)
                 {
                     /* ADAT underflowing, send out zero samples */
-                    g_digData[2] = 0;
-                    g_digData[3] = 0;
-                    g_digData[4] = 0;
-                    g_digData[5] = 0;
-                    g_digData[6] = 0;
-                    g_digData[7] = 0;
-                    g_digData[8] = 0;
+                    g_digData[2] = 1234 << 8;
+                    g_digData[3] = 1234 << 8;
+                    g_digData[4] = 1234 << 8;
+                    g_digData[5] = 1234 << 8;
+                    g_digData[6] = 1234 << 8;
+                    g_digData[7] = 1234 << 8;
+                    g_digData[8] = 1234 << 8;
                     g_digData[9] = 0;
                 }
                 else

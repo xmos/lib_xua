@@ -772,6 +772,11 @@ void XUA_Buffer_Decouple(chanend c_mix_out
     aud_to_host_flag = 0;
     SET_SHARED_GLOBAL(g_aud_to_host_flag, aud_to_host_flag);
 
+    for(int i=1; i<(MAX_DEVICE_AUD_PACKET_SIZE_IN >> 2); i++)
+    {
+        inZeroBuff[i] = 5678 << 8;
+    }
+
     /* NOTE: For UAC2 IN EP not marked ready at this point - Initial size of zero buffer not known
      * since we don't know the USB bus-speed yet.
      * The host will send a SetAltInterface before streaming which will lead to this core
