@@ -155,7 +155,7 @@ unsigned unpackData = 0;
 unsigned packState = 0;
 unsigned packData = 0;
 
-static inline void _send_sample_4(chanend c_mix_out)
+static inline void _send_sample_4(chanend c_mix_out, int ch)
 {
     int sample;
     read_via_xc_ptr(sample, g_aud_from_host_rdptr);
@@ -167,7 +167,7 @@ static inline void _send_sample_4(chanend c_mix_out)
     unsigned l;
     unsafe
     {
-        mult = multOutPtr[i];
+        mult = multOutPtr[ch];
     }
     {h, l} = macs(mult, sample, 0, 0);
     h <<= 3;
@@ -189,7 +189,7 @@ static inline void SendSamples4(chanend c_mix_out)
         #pragma loop unroll
         for(int i = 0; i < HS_STREAM_FORMAT_OUTPUT_1_CHAN_COUNT; i++)
         {
-            _send_sample_4(c_mix_out);
+            _send_sample_4(c_mix_out, i);
         }
     }
     else if(g_numUsbChan_Out == HS_STREAM_FORMAT_OUTPUT_2_CHAN_COUNT)
@@ -197,7 +197,7 @@ static inline void SendSamples4(chanend c_mix_out)
         #pragma loop unroll
         for(int i = 0; i < HS_STREAM_FORMAT_OUTPUT_2_CHAN_COUNT; i++)
         {
-            _send_sample_4(c_mix_out);
+            _send_sample_4(c_mix_out, i);
         }
     }
     else if(g_numUsbChan_Out == HS_STREAM_FORMAT_OUTPUT_3_CHAN_COUNT)
@@ -205,7 +205,7 @@ static inline void SendSamples4(chanend c_mix_out)
         #pragma loop unroll
         for(int i = 0; i < HS_STREAM_FORMAT_OUTPUT_3_CHAN_COUNT; i++)
         {
-            _send_sample_4(c_mix_out);
+            _send_sample_4(c_mix_out, i);
         }
     }
     else
@@ -213,7 +213,7 @@ static inline void SendSamples4(chanend c_mix_out)
         #pragma loop unroll
         for(int i = 0; i < NUM_USB_CHAN_OUT_FS; i++)
         {
-            _send_sample_4(c_mix_out);
+            _send_sample_4(c_mix_out, i);
         }
     }
 }
