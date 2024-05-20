@@ -155,68 +155,65 @@ unsigned unpackData = 0;
 unsigned packState = 0;
 unsigned packData = 0;
 
-static inline void SendSamples4(chanend c_mix_out)
+static inline void _send_sample_4(chanend c_mix_out)
 {
-    /* Doing this checking allows us to unroll */
-    if(1)//(g_numUsbChan_Out == NUM_USB_CHAN_OUT)
-    {
-        /* Buffering not underflow condition send out some samples...*/
-#pragma loop unroll
-        for(int i = 0; i < g_numUsbChan_Out; i++)
-        {
-            int sample;
-            int mult;
-            int h;
-            unsigned l;
-
-            read_via_xc_ptr(sample, g_aud_from_host_rdptr);
-            g_aud_from_host_rdptr+=4;
+    int sample;
+    read_via_xc_ptr(sample, g_aud_from_host_rdptr);
+    g_aud_from_host_rdptr+=4;
 
 #if (OUTPUT_VOLUME_CONTROL == 1) && (!OUT_VOLUME_IN_MIXER)
-            unsafe
-            {
-                mult = multOutPtr[i];
-            }
-            {h, l} = macs(mult, sample, 0, 0);
-            h <<= 3;
+    int mult;
+    int h;
+    unsigned l;
+    unsafe
+    {
+        mult = multOutPtr[i];
+    }
+    {h, l} = macs(mult, sample, 0, 0);
+    h <<= 3;
 #if (STREAM_FORMAT_OUTPUT_RESOLUTION_32BIT_USED == 1)
-            h |= (l >>29) & 0x7; // Note: This step is not required if we assume sample depth is 24bit (rather than 32bit)
-                                 // Note: We need all 32bits for Native DSD
+    h |= (l >>29) & 0x7; // Note: This step is not required if we assume sample depth is 24bit (rather than 32bit)
+                            // Note: We need all 32bits for Native DSD
 #endif
-            outuint(c_mix_out, h);
+    outuint(c_mix_out, h);
 #else
-            outuint(c_mix_out, sample);
+    outuint(c_mix_out, sample);
 #endif
+}
+
+static inline void SendSamples4(chanend c_mix_out)
+{
+    /* Doing this allows us to unroll */
+    if(g_numUsbChan_Out == HS_STREAM_FORMAT_OUTPUT_1_CHAN_COUNT)
+    {
+        #pragma loop unroll
+        for(int i = 0; i < HS_STREAM_FORMAT_OUTPUT_1_CHAN_COUNT; i++)
+        {
+            _send_sample_4(c_mix_out);
+        }
+    }
+    else if(g_numUsbChan_Out == HS_STREAM_FORMAT_OUTPUT_2_CHAN_COUNT)
+    {
+        #pragma loop unroll
+        for(int i = 0; i < HS_STREAM_FORMAT_OUTPUT_2_CHAN_COUNT; i++)
+        {
+            _send_sample_4(c_mix_out);
+        }
+    }
+    else if(g_numUsbChan_Out == HS_STREAM_FORMAT_OUTPUT_3_CHAN_COUNT)
+    {
+        #pragma loop unroll
+        for(int i = 0; i < HS_STREAM_FORMAT_OUTPUT_3_CHAN_COUNT; i++)
+        {
+            _send_sample_4(c_mix_out);
         }
     }
     else
     {
-#pragma loop unroll
+        #pragma loop unroll
         for(int i = 0; i < NUM_USB_CHAN_OUT_FS; i++)
         {
-            int sample;
-            int mult;
-            int h;
-            unsigned l;
-
-            read_via_xc_ptr(sample, g_aud_from_host_rdptr);
-            g_aud_from_host_rdptr+=4;
-
-#if (OUTPUT_VOLUME_CONTROL == 1) && (!OUT_VOLUME_IN_MIXER)
-            unsafe
-            {
-                mult = multOutPtr[i];
-            }
-            {h, l} = macs(mult, sample, 0, 0);
-            h <<= 3;
-#if (STREAM_FORMAT_OUTPUT_RESOLUTION_32BIT_USED == 1)
-            h |= (l >>29) & 0x7; // Note: This step is not required if we assume sample depth is 24bit (rather than 32bit)
-                                 // Note: We need all 32bits for Native DSD
-#endif
-            outuint(c_mix_out, h);
-#else
-            outuint(c_mix_out, sample);
-#endif
+            _send_sample_4(c_mix_out);
         }
     }
 }
