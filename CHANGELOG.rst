@@ -16,6 +16,8 @@ UNRELEASED
   * CHANGED:   aud_to_host buffer size and the condition to come out of underflow
     in decoupler to fix buffer underflow seen in ADAT tests
   * FIXED:     Initialise SMUX based on DEFAULT_FREQ in clockgen
+  * FIXED:     Update g_numUsbChan_Out to the number of channels for the selected
+    interface when receiving a set interface request over EP0
 
 4.0.0
 -----
