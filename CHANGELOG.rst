@@ -4,20 +4,19 @@ lib_xua Change Log
 UNRELEASED
 ----------
 
-  * FIXED:     Device fails to enumerate when ADAT and S/PDIF transmit are enabled
-  * FIXED:     Update software PLL at the correct rate for ADAT SMUX
+  * ADDED:     MIDI unit and subsystem tests
   * CHANGED:   Enable only the minimum number of ADAT input formats based for the
     supported sample frequencies
+  * CHANGED:   Enabling ADAT tx enables different channel count interface alts, based on sample
+    rate
+  * CHANGED:   Input audio buffer size and the condition to come out of underflow modified to
+    to fix buffer underflow in some configurations
+  * FIXED:     Device fails to enumerate when ADAT and S/PDIF transmit are enabled
+  * FIXED:     Update software PLL at the correct rate for ADAT S/MUX
   * FIXED:     Incorrect internal input EP count for input only devices
-  * ADDED:     MIDI unit and subsystem tests
-  * FIXED:     ADAT Tx called too frequently
-  * CHANGED:   ADAT Tx presents different channel count interfaces based on sample
-    rate 
-  * CHANGED:   aud_to_host buffer size and the condition to come out of underflow
-    in decoupler to fix buffer underflow seen in ADAT tests
-  * FIXED:     Initialise SMUX based on DEFAULT_FREQ in clockgen
-  * FIXED:     Update g_numUsbChan_Out to the number of channels for the selected
-    interface when receiving a set interface request over EP0
+  * FIXED:     Samples transferred to ADAT tx too frequently in TDM mode
+  * FIXED:     S/MUX not initialised to a value based on DEFAULT_FREQ in clockgen
+  * FIXED:     Trap when moving to DSD mode on XS3A based devices
 
 4.0.0
 -----
