@@ -148,7 +148,7 @@ void test(chanend c_midi){
                 unsigned midi[] = {commands[tx_cmd_count][0], commands[tx_cmd_count][1], commands[tx_cmd_count][2]};
                 // Even though this is a Tx to MIDI we use midi_in_parse_helper to form the packet from bytes
                 unsigned tx_packet = midi_in_parse_helper(midi, m_state);
-                outuint(c_midi, byterev(tx_packet));
+                midi_send_data(c_midi, byterev(tx_packet));
                 dprintf("Sent packet to midi: %u %u %u (0x%8x)\n", commands[tx_cmd_count][0], commands[tx_cmd_count][1], commands[tx_cmd_count][2], tx_packet);
                 t_tx += tx_interval;
                 tx_end += max_tx_time;
@@ -172,7 +172,7 @@ int main(void)
         on tile[0]: test(c_midi);
         on tile[1]: usb_midi(p_midi_rx, p_midi_tx, clk_midi, c_midi, 0);
 
-        // Setup HW so we can run this on the MC board 
+        // Setup HW so we can run this on the MC board
         on tile[0]: board_setup();
     }
 
