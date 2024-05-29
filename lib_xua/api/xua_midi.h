@@ -57,7 +57,6 @@ void midi_get_ack_or_data(chanend c, int &is_ack, unsigned int &datum);
 INLINE void midi_get_ack_or_data(chanend c, int &is_ack, unsigned int &datum) {
   if (testct(c)) {
     is_ack = 1;
-    (void) inct(c); // read 1-bytes control token
     chkct(c, XS1_CT_END);
   }
   else {
@@ -69,7 +68,6 @@ INLINE void midi_get_ack_or_data(chanend c, int &is_ack, unsigned int &datum) {
 #endif
 
 INLINE void midi_send_ack(chanend c) {
-  outct(c, MIDI_ACK);
   outct(c, XS1_CT_END);
 }
 
