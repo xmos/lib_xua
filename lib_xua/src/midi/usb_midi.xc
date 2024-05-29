@@ -197,7 +197,7 @@ void usb_midi(
                                 {
                                     // send data
                                     // printstr("uart->decouple: ");
-                                    outuint(c_midi, event);
+                                    midi_send_data(c_midi, event);
                                     waiting_for_ack = 1;
                                     th_count++;
                                 }
@@ -272,7 +272,7 @@ void usb_midi(
                 // have we got more data to send
                 if (!queue_is_empty(midi_to_host_fifo))
                 {
-                    outuint(c_midi, queue_pop_word(midi_to_host_fifo, midi_to_host_fifo_arr));
+                    midi_send_data(c_midi, queue_pop_word(midi_to_host_fifo, midi_to_host_fifo_arr));
                     th_count++;
                 }
                 else
@@ -296,7 +296,7 @@ void usb_midi(
                     {
                         // send data
                         event = byterev(event);
-                        outuint(c_midi, event);
+                        midi_send_data(c_midi, event);
                         th_count++;
                         waiting_for_ack = 1;
                     }
