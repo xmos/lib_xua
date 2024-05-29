@@ -993,6 +993,7 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
                         /* Read another word from the fifo and output it to MIDI thread */
                         read_via_xc_ptr(datum, midi_from_host_rdptr);
                         outuint(c_midi, datum);
+                        outct(c_midi, XS1_CT_PAUSE);
                         midi_from_host_rdptr += 4;
                         midi_data_remaining_to_device -= 4;
                     }
@@ -1001,6 +1002,7 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
                 {
                     /* The midi/uart thread has sent us some data - handshake back */
                     midi_send_ack(c_midi);
+                    outct(c_midi, XS1_CT_PAUSE);
                     if (midi_data_collected_from_device < MIDI_USB_BUFFER_TO_HOST_SIZE)
                     {
                         /* There is room in the collecting buffer for the data */
