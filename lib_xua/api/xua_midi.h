@@ -1,4 +1,4 @@
-// Copyright 2011-2022 XMOS LIMITED.
+// Copyright 2011-2024 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 #ifndef _XUA_MIDI_H_
 #define _XUA_MIDI_H_
@@ -57,24 +57,25 @@ void midi_get_ack_or_data(chanend c, int &is_ack, unsigned int &datum);
 INLINE void midi_get_ack_or_data(chanend c, int &is_ack, unsigned int &datum) {
   if (testct(c)) {
     is_ack = 1;
-    (void) inct(c); // read 1-bytes control token
-    (void) inuchar(c);
-    (void) inuchar(c);
-    (void) inuchar(c);
+    chkct(c, XS1_CT_END);
   }
   else {
     is_ack = 0;
     datum = inuint(c);
+    chkct(c, XS1_CT_END);
   }
 }
 #endif
 
 INLINE void midi_send_ack(chanend c) {
-  outct(c, MIDI_ACK);
-  outuchar(c, 0);
-  outuchar(c, 0);
-  outuchar(c, 0);
+  outct(c, XS1_CT_END);
 }
+
+INLINE void midi_send_data(chanend c, unsigned int datum) {
+  outuint(c, datum);
+  outct(c, XS1_CT_END);
+}
+
 #define MIDI_RATE           (31250)
 #define MIDI_BITTIME        (XS1_TIMER_MHZ * 1000000 / MIDI_RATE)
 #define MIDI_BITTIME_2      (MIDI_BITTIME>>1)

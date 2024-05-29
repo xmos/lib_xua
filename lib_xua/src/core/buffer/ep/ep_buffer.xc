@@ -839,7 +839,7 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
                     if (midi_data_remaining_to_device)
                     {
                         read_via_xc_ptr(datum, midi_from_host_rdptr);
-                        outuint(c_midi, datum);
+                        midi_send_data(c_midi, datum);
                         midi_from_host_rdptr += 4;
                         midi_data_remaining_to_device -= 4;
                     }
@@ -992,7 +992,7 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
                     {
                         /* Read another word from the fifo and output it to MIDI thread */
                         read_via_xc_ptr(datum, midi_from_host_rdptr);
-                        outuint(c_midi, datum);
+                        midi_send_data(c_midi, datum);
                         midi_from_host_rdptr += 4;
                         midi_data_remaining_to_device -= 4;
                     }
