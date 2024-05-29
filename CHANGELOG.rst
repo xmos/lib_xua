@@ -17,6 +17,7 @@ UNRELEASED
   * FIXED:     Samples transferred to ADAT tx too frequently in TDM mode
   * FIXED:     S/MUX not initialised to a value based on DEFAULT_FREQ in clockgen
   * FIXED:     Trap when moving to DSD mode on XS3A based devices
+  * ADDED:     CT_END token based handshake in MIDI channels transactions
 
 4.0.0
 -----
