@@ -191,7 +191,7 @@ void test_midi_sys_ex(void) {
         midi_ref[3] = random(&rndm) & DATA_MASK;    // Manf ID 1
         for(unsigned i = 4; i < msg_len - 1; i++){
             midi_ref[i] = random(&rndm) & DATA_MASK; // Some data
-        }            
+        }
         midi_ref[msg_len - 1] = SYSEX_EOM;          // End of sys-ex
 
         unsigned midi_dut[1 + MAX_SYS_EX_LENGTH + 1 + 2] = {0}; // Add SOM + EOM. Add 2 because msg_size % 3 may be up to 2.
