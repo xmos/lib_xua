@@ -24,7 +24,7 @@ lib_xua change log
 
   * Changes to dependencies:
 
-    - lib_adat: 1.0.1 -> 1.1.0
+    - lib_adat: 1.0.1 -> 1.2.0
 
     - lib_locks: 2.1.0 -> 2.2.0
 
