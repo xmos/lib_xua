@@ -1,23 +1,36 @@
 lib_xua Change Log
 ==================
 
-UNRELEASED
-----------
+4.1.0
+-----
 
-  * ADDED:     MIDI unit and subsystem tests
-  * CHANGED:   Enable only the minimum number of ADAT input formats based for the
-    supported sample frequencies
-  * CHANGED:   Enabling ADAT tx enables different channel count interface alts, based on sample
-    rate
-  * CHANGED:   Input audio buffer size and the condition to come out of underflow modified to
-    to fix buffer underflow in some configurations
-  * FIXED:     Device fails to enumerate when ADAT and S/PDIF transmit are enabled
+  * ADDED:     MIDI unit and sub-system tests
+  * CHANGED:   Only the minimum number of ADAT input formats are enabled based
+    on the supported sample rates
+  * CHANGED:   Enabling ADAT tx enables different channel count interface alts,
+    based on sample rate
+  * CHANGED:   Input audio buffer size and the exit condition underflow modified
+    to to fix buffer underflow in some configurations
+  * CHANGED:   CT_END token based handshake in MIDI channels transactions,
+    reducing opportuninity for deadlock
+  * FIXED:     Device fails to enumerate when ADAT and S/PDIF transmit are
+    enabled
   * FIXED:     Update software PLL at the correct rate for ADAT S/MUX
   * FIXED:     Incorrect internal input EP count for input only devices
   * FIXED:     Samples transferred to ADAT tx too frequently in TDM mode
-  * FIXED:     S/MUX not initialised to a value based on DEFAULT_FREQ in clockgen
+  * FIXED:     S/MUX not initialised to a value based on DEFAULT_FREQ in
+    clockgen
   * FIXED:     Trap when moving to DSD mode on XS3A based devices
-  * ADDED:     CT_END token based handshake in MIDI channels transactions
+
+  * Changes to dependencies:
+
+    - lib_adat: 1.0.1 -> 1.1.0
+
+    - lib_locks: 2.1.0 -> 2.2.0
+
+    - lib_logging: 3.1.1 -> 3.2.0
+
+    - lib_xassert: 4.1.0 -> 4.2.0
 
 4.0.0
 -----

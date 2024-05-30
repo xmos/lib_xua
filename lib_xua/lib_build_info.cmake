@@ -1,5 +1,5 @@
 set(LIB_NAME lib_xua)
-set(LIB_VERSION 4.0.0)
+set(LIB_VERSION 4.1.0)
 set(LIB_INCLUDES api
                  src/core
                  src/core/audiohub
