@@ -1,4 +1,4 @@
-lib_xua Change Log
+lib_xua change log
 ==================
 
 4.1.0
@@ -29,6 +29,8 @@ lib_xua Change Log
     - lib_locks: 2.1.0 -> 2.2.0
 
     - lib_logging: 3.1.1 -> 3.2.0
+
+    - lib_sw_pll: 2.1.0 -> 2.2.0
 
     - lib_xassert: 4.1.0 -> 4.2.0
 
