@@ -1494,17 +1494,6 @@ enum USBEndpointNumber_Out
     #endif
 #endif
 
-/* Some defines that allow us to remove unused code */
-
-/* Useful for dropping lower part of macs in volume processing... */
-#if (FS_STREAM_FORMAT_OUTPUT_1_RESOLUTION_BITS > 24) || (HS_STREAM_FORMAT_OUTPUT_1_RESOLUTION_BITS > 24) || \
-    (((FS_STREAM_FORMAT_OUTPUT_2_RESOLUTION_BITS > 24) || (HS_STREAM_FORMAT_OUTPUT_2_RESOLUTION_BITS > 24)) && (OUTPUT_FORMAT_COUNT > 1)) || \
-    (((FS_STREAM_FORMAT_OUTPUT_3_RESOLUTION_BITS > 24) || (HS_STREAM_FORMAT_OUTPUT_3_RESOLUTION_BITS > 24)) && (OUTPUT_FORMAT_COUNT > 2))
-    #define STREAM_FORMAT_OUTPUT_RESOLUTION_32BIT_USED 1
-#else
-    #define STREAM_FORMAT_OUTPUT_RESOLUTION_32BIT_USED 0
-#endif
-
 /* SUBSLOT defines useful for removing packing/unpacking code in USB buffering code */
 #if (FS_STREAM_FORMAT_OUTPUT_1_SUBSLOT_BYTES == 2) || (FS_STREAM_FORMAT_OUTPUT_2_SUBSLOT_BYTES == 2) || \
     (FS_STREAM_FORMAT_OUTPUT_3_SUBSLOT_BYTES == 2) || (HS_STREAM_FORMAT_OUTPUT_1_SUBSLOT_BYTES == 2) || \

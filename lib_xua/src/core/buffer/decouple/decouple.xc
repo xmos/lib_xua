@@ -170,11 +170,7 @@ static inline void _send_sample_4(chanend c_mix_out, int ch)
         mult = multOutPtr[ch];
     }
     {h, l} = macs(mult, sample, 0, 0);
-    h <<= 3;
-#if (STREAM_FORMAT_OUTPUT_RESOLUTION_32BIT_USED == 1)
-    h |= (l >>29) & 0x7; // Note: This step is not required if we assume sample depth is 24bit (rather than 32bit)
-                            // Note: We need all 32bits for Native DSD
-#endif
+    asm("lextract %0,%1,%2,%3,32":"=r"(h):"r"(h),"r"(l),"r"(3));
     outuint(c_mix_out, h);
 #else
     outuint(c_mix_out, sample);
@@ -432,10 +428,7 @@ __builtin_unreachable();
                         mult = multInPtr[i];
                     }
                     {h, l} = macs(mult, sample, 0, 0);
-                    sample = h << 3;
-#if (STREAM_FORMAT_INPUT_RESOLUTION_32BIT_USED == 1)
-                    sample |= (l >> 29) & 0x7; // Note, this step is not required if we assume sample depth is 24 (rather than 32)
-#endif
+                    asm("lextract %0,%1,%2,%3,32":"=r"(h):"r"(h),"r"(l),"r"(3));
 #elif (IN_VOLUME_IN_MIXER) && (IN_VOLUME_AFTER_MIX)
                     sample = sample << 3;
 #endif

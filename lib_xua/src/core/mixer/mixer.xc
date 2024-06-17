@@ -35,6 +35,10 @@ unsafe
 }
 #endif
 
+
+// ashr r, x, 32
+// add x, x, 1
+// xor x, x, r
 #if defined (LEVEL_METER_LEDS) || defined (LEVEL_METER_HOST)
 static unsigned abs(int x)
 {
@@ -145,15 +149,7 @@ static inline int doMix(volatile int * unsafe samples, volatile int * unsafe con
     }
 
     /* Perform saturation */
-    l = sext(h, XUA_MIXER_MULT_FRAC_BITS);
-
-    if(l != h)
-    {
-        if(h>>32)
-            h = (0x80000000>>7);
-        else
-            h = (0x7fffff00>>7);
-    }
+    asm("lsats %0,%1,%2": "=r" (h), "=r" (l): "r" (25), "0" (h), "1" (l));
     return h<<7;
 }
 #endif
@@ -234,12 +230,7 @@ static inline void GetSamplesFromHost(chanend c)
 #warning OUT Vols in mixer, BEFORE mix & map
             mult = multOut[i];
             {h, l} = macs(mult, sample, 0, 0);
-            h<<=3;
-#if (STREAM_FORMAT_OUTPUT_RESOLUTION_32BIT_USED == 1)
-            h |= (l >>29)& 0x7; // Note: This step is not required if we assume sample depth is 24bit (rather than 32bit)
-                                // Note: We need all 32bits for Native DSD
-#endif
-            sample = h;
+            asm("lextract %0,%1,%2,%3,32":"=r"(sample):"r"(h),"r"(l),"r"(3));
 #endif
             ptr_samples[i] = sample;
         }
@@ -288,11 +279,7 @@ static inline void GiveSamplesToDevice(chanend c, volatile int * unsafe deviceMa
         }
 
         {h, l} = macs(mult, sample, 0, 0);
-        h<<=3;              // Shift used to be done in audio thread but now done here incase of 32bit support
-#if (STREAM_FORMAT_OUTPUT_RESOLUTION_32BIT_USED == 1)
-        h |= (l >>29)& 0x7; // Note: This step is not required if we assume sample depth is 24bit (rather than 32bit)
-                            // Note: We need all 32bits for Native DSD
-#endif
+        asm("lextract %0,%1,%2,%3,32":"=r"(h):"r"(h),"r"(l),"r"(3));
         outuint(c, h);
 #else
         outuint(c, sample);
