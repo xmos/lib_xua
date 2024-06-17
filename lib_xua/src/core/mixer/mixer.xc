@@ -35,10 +35,6 @@ unsafe
 }
 #endif
 
-
-// ashr r, x, 32
-// add x, x, 1
-// xor x, x, r
 #if defined (LEVEL_METER_LEDS) || defined (LEVEL_METER_HOST)
 static unsigned abs(int x)
 {
