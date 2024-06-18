@@ -113,6 +113,7 @@ static inline void ComputeMixerLevel(int sample, int i)
 }
 #endif
 
+
 #if (FAST_MIXER)
 void setPtr(int src, int dst, int mix);
 int doMix0(volatile int * const unsafe samples, volatile int * const unsafe mult);
@@ -354,7 +355,7 @@ static inline void GetSamplesFromDevice(chanend c)
 static int mixer1_mix2_flag = (DEFAULT_FREQ > 96000);
 
 #pragma unsafe arrays
-static void mixer1(chanend c_host, chanend c_mix_ctl, chanend c_mixer2)
+static void mixer1(chanend c_host, chanend c_mix_ctl, chanend ?c_mixer2, chanend c_audio)
 {
 #if (MAX_MIX_COUNT > 0)
     int mixed;
@@ -368,15 +369,11 @@ static void mixer1(chanend c_host, chanend c_mix_ctl, chanend c_mixer2)
     while (1)
     {
         /* Request from audio()/mixer2() */
-        request = inuint(c_mixer2);
+        request = inuint(c_audio);
 
         /* Forward on Request for data to decouple thread */
         outuint(c_host, request);
 
-#if (MAX_MIX_COUNT > 0)
-        /* Sync */
-        outuint(c_mixer2, 0);
-#endif
         /* Between request to decouple and response ~ 400nS latency for interrupt to fire */
 
 #if (MAX_MIX_COUNT > 0) || (IN_VOLUME_IN_MIXER) || (OUT_VOLUME_IN_MIXER) || defined (LEVEL_METER_HOST) || defined(LEVEL_METER_LEDS)
@@ -546,17 +543,16 @@ static void mixer1(chanend c_host, chanend c_mix_ctl, chanend c_mixer2)
                     mixer1_mix2_flag = sampFreq > 96000;
 
                     /* Inform mixer2 (or audio()) about freq change */
-                    outct(c_mixer2, command);
-                    outuint(c_mixer2, sampFreq);
+                    outct(c_audio, command);
+                    outuint(c_audio, sampFreq);
                     break;
 
                 case SET_STREAM_FORMAT_OUT:
                 case SET_STREAM_FORMAT_IN:
-
                     /* Inform mixer2 (or audio()) about format change */
-                    outct(c_mixer2, command);
-                    outuint(c_mixer2, inuint(c_host));
-                    outuint(c_mixer2, inuint(c_host));
+                    outct(c_audio, command);
+                    outuint(c_audio, inuint(c_host));
+                    outuint(c_audio, inuint(c_host));
                     break;
 
                 default:
@@ -574,18 +570,20 @@ static void mixer1(chanend c_host, chanend c_mix_ctl, chanend c_mixer2)
             }
 
             /* Wait for handshake and pass on */
-            chkct(c_mixer2, XS1_CT_END);
+            chkct(c_audio, XS1_CT_END);
             outct(c_host, XS1_CT_END);
         }
         else
         {
 #if (MAX_MIX_COUNT > 0)
+            inuint(c_mixer2); // This is where we need mixer 2 to have finished
+            GiveSamplesToDevice(c_audio, samples_to_device_map);
+            GetSamplesFromDevice(c_audio);
             GetSamplesFromHost(c_host);
             GiveSamplesToHost(c_host, samples_to_host_map);
 
-            /* Sync with mixer 2 (once it has swapped samples with audiohub) */
-            outuint(c_mixer2, 0);
-            inuint(c_mixer2);
+            /* Trigger mixer2 */
+            outuint(c_mixer2, mixer1_mix2_flag);
 
             /* Do the mixing */
             unsafe
@@ -597,11 +595,9 @@ static void mixer1(chanend c_host, chanend c_mix_ctl, chanend c_mixer2)
 #endif
                 ptr_samples[NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + 0] = mixed;
             }
-
 #if defined (LEVEL_METER_HOST) || defined(LEVEL_METER_LEDS)
             ComputeMixerLevel(mixed, 0);
 #endif
-
 #if (MAX_FREQ > 96000)
             if (!mixer1_mix2_flag)
 #endif
@@ -654,8 +650,8 @@ static void mixer1(chanend c_host, chanend c_mix_ctl, chanend c_mixer2)
             }
 #else       /* IF MAX_MIX_COUNT > 0 */
             /* No mixes, this thread runs on its own doing just volume */
-            GiveSamplesToDevice(c_mixer2, samples_to_device_map);
-            GetSamplesFromDevice(c_mixer2);
+            GiveSamplesToDevice(c_audio, samples_to_device_map);
+            GetSamplesFromDevice(c_audio);
             GetSamplesFromHost(c_host);
             GiveSamplesToHost(c_host, samples_to_host_map);
 #endif
@@ -667,135 +663,82 @@ static void mixer1(chanend c_host, chanend c_mix_ctl, chanend c_mixer2)
 static int mixer2_mix2_flag = (DEFAULT_FREQ > 96000);
 
 #pragma unsafe arrays
-static void mixer2(chanend c_mixer1, chanend c_audio)
+static void mixer2(chanend c_mixer1)
 {
     int mixed;
-    unsigned request;
-
+    outuint(c_mixer1, 0); // To get mixer1 started
     while (1)
     {
-        request = inuint(c_audio);
+        mixer2_mix2_flag = inuint(c_mixer1);
 
-        /* Forward the request on */
-        outuint(c_mixer1, request);
-
-        /* Sync */
-        inuint(c_mixer1);
-
-        if(testct(c_mixer1))
-        {
-            int sampFreq;
-            unsigned command = inct(c_mixer1);
-
-            switch(command)
-            {
-                case SET_SAMPLE_FREQ:
-                    sampFreq = inuint(c_mixer1);
-                    mixer2_mix2_flag = sampFreq > 96000;
-
-                    /* Inform mixer2 (or audio()) about freq change */
-                    outct(c_audio, command);
-                    outuint(c_audio, sampFreq);
-                    break;
-
-                case SET_STREAM_FORMAT_OUT:
-                case SET_STREAM_FORMAT_IN:
-                     /* Inform mixer2 (or audio()) about format change */
-                    outct(c_audio, command);
-                    outuint(c_audio, inuint(c_mixer1));
-                    outuint(c_audio, inuint(c_mixer1));
-                    break;
-
-                default:
-                    break;
-            }
-
-            for (int i=0;i<MAX_MIX_COUNT;i++)
-            unsafe{
-                ptr_samples[NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + i] = 0;
-            }
-
-            /* Wait for handshake and pass on */
-            chkct(c_audio, XS1_CT_END);
-            outct(c_mixer1, XS1_CT_END);
-        }
-        else
-        {
-            GiveSamplesToDevice(c_audio, samples_to_device_map);
-            GetSamplesFromDevice(c_audio);
-
-            /* Sync with mixer 1 (once it has swapped samples with the buffering sub-system) */
-            inuint(c_mixer1);
-            outuint(c_mixer1, 0);
-
-            /* Do the mixing */
+        /* Do the mixing */
 #if (MAX_MIX_COUNT > 1)
-            unsafe
-            {
+        unsafe
+        {
 #if (FAST_MIXER)
-                mixed = doMix1(ptr_samples, slice(mix_mult, 1));
+            mixed = doMix1(ptr_samples, slice(mix_mult, 1));
 #else
-                mixed = doMix(ptr_samples, slice(mix_map, 1), slice(mix_mult, 1));
+            mixed = doMix(ptr_samples, slice(mix_map, 1), slice(mix_mult, 1));
 #endif
-                ptr_samples[NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + 1] = mixed;
-            }
+            ptr_samples[NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + 1] = mixed;
+        }
 #if defined (LEVEL_METER_HOST) || defined(LEVEL_METER_LEDS)
-            ComputeMixerLevel(mixed, 1);
+        ComputeMixerLevel(mixed, 1);
 #endif
 #endif
 
 #if (MAX_FREQ > 96000)
-            /* Fewer mixes when running higher than 96kHz */
-            if (!mixer2_mix2_flag)
+        /* Fewer mixes when running higher than 96kHz */
+        if (!mixer2_mix2_flag)
 #endif
-            {
+        {
 #if (MAX_MIX_COUNT > 3)
-                unsafe
-                {
+            unsafe
+            {
 #if (FAST_MIXER)
-                    mixed = doMix3(ptr_samples, slice(mix_mult, 3));
+                mixed = doMix3(ptr_samples, slice(mix_mult, 3));
 #else
-                    mixed = doMix(ptr_samples, slice(mix_map, 3), slice(mix_mult, 3));
+                mixed = doMix(ptr_samples, slice(mix_map, 3), slice(mix_mult, 3));
 #endif
-                    ptr_samples[NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + 3] = mixed;
-                }
+                ptr_samples[NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + 3] = mixed;
+            }
 #if defined (LEVEL_METER_HOST) || defined(LEVEL_METER_LEDS)
-                ComputeMixerLevel(mixed, 3);
+            ComputeMixerLevel(mixed, 3);
 #endif
 #endif
 
 #if (MAX_MIX_COUNT > 5)
-                unsafe
-                {
+            unsafe
+            {
 #if (FAST_MIXER)
-                    mixed = doMix5(ptr_samples, slice(mix_mult, 5));
+                mixed = doMix5(ptr_samples, slice(mix_mult, 5));
 #else
-                    mixed = doMix(ptr_samples, slice(mix_map, 5), slice(mix_mult, 5));
+                mixed = doMix(ptr_samples, slice(mix_map, 5), slice(mix_mult, 5));
 #endif
-                    ptr_samples[NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + 5] = mixed;
+                ptr_samples[NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + 5] = mixed;
 
-                }
+            }
 #if defined (LEVEL_METER_HOST) || defined(LEVEL_METER_LEDS)
-                ComputeMixerLevel(mixed, 5);
+            ComputeMixerLevel(mixed, 5);
 #endif
 #endif
 
 #if (MAX_MIX_COUNT > 7)
-                unsafe
-                {
+            unsafe
+            {
 #if (FAST_MIXER)
-                    mixed = doMix7(ptr_samples, slice(mix_mult, 7));
+                mixed = doMix7(ptr_samples, slice(mix_mult, 7));
 #else
-                    mixed = doMix(ptr_samples, slice(mix_map, 7), slice(mix_mult, 7));
+                mixed = doMix(ptr_samples, slice(mix_map, 7), slice(mix_mult, 7));
 #endif
-                    ptr_samples[NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + 7] = mixed;
-                }
-#if defined (LEVEL_METER_HOST) || defined(LEVEL_METER_LEDS)
-                ComputeMixerLevel(mixed, 7);
-#endif
-#endif
+                ptr_samples[NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + 7] = mixed;
             }
+#if defined (LEVEL_METER_HOST) || defined(LEVEL_METER_LEDS)
+            ComputeMixerLevel(mixed, 7);
+#endif
+#endif
         }
+        outuint(c_mixer1, 0);
     }
 }
 #endif
@@ -854,14 +797,13 @@ void mixer(chanend c_mix_in, chanend c_mix_out, chanend c_mix_ctl)
         }
 #endif
 
-
     par
     {
 #if (MAX_MIX_COUNT > 0)
-        mixer1(c_mix_in, c_mix_ctl, c);
-        mixer2(c, c_mix_out);
+        mixer1(c_mix_in, c_mix_ctl, c, c_mix_out);
+        mixer2(c);
 #else
-        mixer1(c_mix_in, c_mix_ctl, c_mix_out);
+        mixer1(c_mix_in, c_mix_ctl, null, c_mix_out);
 #endif
     }
 }
