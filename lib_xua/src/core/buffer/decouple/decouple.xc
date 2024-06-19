@@ -170,7 +170,7 @@ static inline void _send_sample_4(chanend c_mix_out, int ch)
         mult = multOutPtr[ch];
     }
     {h, l} = macs(mult, sample, 0, 0);
-    asm("lextract %0,%1,%2,%3,32":"=r"(h):"r"(h),"r"(l),"r"(3));
+    asm("lextract %0,%1,%2,%3,32":"=r"(h):"r"(h),"r"(l),"r"(29));
     outuint(c_mix_out, h);
 #else
     outuint(c_mix_out, sample);

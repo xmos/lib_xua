@@ -226,7 +226,7 @@ static inline void GetSamplesFromHost(chanend c)
 #warning OUT Vols in mixer, BEFORE mix & map
             mult = multOut[i];
             {h, l} = macs(mult, sample, 0, 0);
-            asm("lextract %0,%1,%2,%3,32":"=r"(sample):"r"(h),"r"(l),"r"(3));
+            asm("lextract %0,%1,%2,%3,32":"=r"(sample):"r"(h),"r"(l),"r"(29));
 #endif
             ptr_samples[i] = sample;
         }
@@ -275,7 +275,7 @@ static inline void GiveSamplesToDevice(chanend c, volatile int * unsafe deviceMa
         }
 
         {h, l} = macs(mult, sample, 0, 0);
-        asm("lextract %0,%1,%2,%3,32":"=r"(h):"r"(h),"r"(l),"r"(3));
+        asm("lextract %0,%1,%2,%3,32":"=r"(h):"r"(h),"r"(l),"r"(29));
         outuint(c, h);
 #else
         outuint(c, sample);
