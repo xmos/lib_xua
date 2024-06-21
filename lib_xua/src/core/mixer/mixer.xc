@@ -352,11 +352,11 @@ static inline void GetSamplesFromDevice(chanend c)
     }
 }
 
-static int mixer1_mix2_flag = (DEFAULT_FREQ > 96000);
 
 #pragma unsafe arrays
 static void mixer1(chanend c_host, chanend c_mix_ctl, chanend ?c_mixer2, chanend c_audio)
 {
+    int mixer1_mix2_flag = (DEFAULT_FREQ > 96000);
 #if (MAX_MIX_COUNT > 0)
     int mixed;
 #endif
@@ -577,11 +577,13 @@ static void mixer1(chanend c_host, chanend c_mix_ctl, chanend ?c_mixer2, chanend
         {
 #if (MAX_MIX_COUNT > 0)
             inuint(c_mixer2); // This is where we need mixer 2 to have finished
+#endif
             GiveSamplesToDevice(c_audio, samples_to_device_map);
             GetSamplesFromDevice(c_audio);
             GetSamplesFromHost(c_host);
             GiveSamplesToHost(c_host, samples_to_host_map);
 
+#if (MAX_MIX_COUNT > 0)
             /* Trigger mixer2 */
             outuint(c_mixer2, mixer1_mix2_flag);
 
@@ -648,25 +650,18 @@ static void mixer1(chanend c_host, chanend c_mix_ctl, chanend ?c_mixer2, chanend
 #endif
 #endif
             }
-#else       /* IF MAX_MIX_COUNT > 0 */
-            /* No mixes, this thread runs on its own doing just volume */
-            GiveSamplesToDevice(c_audio, samples_to_device_map);
-            GetSamplesFromDevice(c_audio);
-            GetSamplesFromHost(c_host);
-            GiveSamplesToHost(c_host, samples_to_host_map);
 #endif
         }
     }
 }
 
 #if (MAX_MIX_COUNT > 0)
-static int mixer2_mix2_flag = (DEFAULT_FREQ > 96000);
-
 #pragma unsafe arrays
 static void mixer2(chanend c_mixer1)
 {
     int mixed;
     outuint(c_mixer1, 0); // To get mixer1 started
+    int mixer2_mix2_flag;
     while (1)
     {
         mixer2_mix2_flag = inuint(c_mixer1);

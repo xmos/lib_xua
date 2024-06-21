@@ -36,6 +36,7 @@ doMix##i##: ;\
           lsub      r0, r1, r0, r0, r0;\
           .label_##i##:
 
+// Saturate the maccs result to 25bits
 #define DOMIX_BOT(i) \
           ldap      r11, _dp; \
           set       dp, r11;\
@@ -43,7 +44,7 @@ doMix##i##: ;\
           set       cp, r11;\
 \
           ldc       r2, 0x19; \
-          lsats     r1, r0, r2; //Saturate to 25bits \
+          lsats     r1, r0, r2; \
           shl       r0, r1, 7; \
           retsp     0x0;\
 \
