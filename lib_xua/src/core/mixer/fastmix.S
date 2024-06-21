@@ -43,7 +43,7 @@ doMix##i##: ;\
           set       cp, r11;\
 \
           ldc       r2, 0x19; \
-          lsats     r1, r0, r2; \
+          lsats     r1, r0, r2; //Saturate to 25bits \
           shl       r0, r1, 7; \
           retsp     0x0;\
 \
