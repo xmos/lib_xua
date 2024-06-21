@@ -61,10 +61,12 @@ the mixing operations for the even output channel numbers. The mixing for the od
 
    Mixer communication sequence diagram
 
-The mixer can also be configured in passthrough mode (MAX_MIX_COUNT = 0). In this mode, the mixer2 thread is
+The mixer can also be configured in passthrough mode (MAX_MIX_COUNT = 0), as shown in :ref:`mixer_passthrough`. In this mode, the mixer2 thread is
 not present and the mixer1 exchanges data with Audio Hub and Decouple along with any volume control operations without doing any actual mixing.
 
 .. only:: latex
+
+ .. _mixer_passthrough:
 
  .. figure:: images/mixer_passthrough.pdf
 
