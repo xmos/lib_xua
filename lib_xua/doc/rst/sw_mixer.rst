@@ -46,9 +46,10 @@ A sequence diagram showing the communication between Audio Hub, Decouple and mix
 mixer1 thread exchanges data with Decouple and Audio Hub along with any volume control operations and performs
 the mixing operations for the even output channel numbers. The mixing for the odd channels is offloaded to the mixer2 thread.
 
-.. _mixer_full:
 
 .. only:: latex
+
+ .. _mixer_full:
 
  .. figure:: images/mixer.pdf
 
