@@ -42,9 +42,11 @@ volume controls. If the mixer is configured to handle volume but the number of m
 (such that the core is solely doing volume setting) then the component will use only one core. This
 is sometimes a useful configuration for large channel count devices.
 
-A sequence diagram showing the communication between Audio Hub, Decouple and mixer threads is shown below.
+A sequence diagram showing the communication between Audio Hub, Decouple and mixer threads is shown in :ref:`mixer_full`.
 mixer1 thread exchanges data with Decouple and Audio Hub along with any volume control operations and performs
 the mixing operations for the even output channel numbers. The mixing for the odd channels is offloaded to the mixer2 thread.
+
+.. _mixer_full:
 
 .. only:: latex
 
