@@ -110,6 +110,9 @@ on tile[AUDIO_IO_TILE] : buffered in port:32 p_i2s_adc[I2S_WIRES_ADC] =
     #define p_i2s_adc null
 #endif
 
+#if (NUM_USB_CHAN_IN==0 && NUM_USB_CHAN_OUT==0)
+    #define I2S_ONLY (1)
+#endif
 
 #if CODEC_MASTER
 on tile[AUDIO_IO_TILE] : buffered in port:32 p_lrclk        = PORT_I2S_LRCLK;
@@ -560,7 +563,7 @@ int main()
 
                 /* Attach mclk count port to mclk clock-block (for feedback) */
                 //set_port_clock(p_for_mclk_count, clk_audio_mclk);
-#if(AUDIO_IO_TILE != XUD_TILE)
+#if(AUDIO_IO_TILE != XUD_TILE || !I2S_ONLY)
                 set_clock_src(clk_audio_mclk_usb, p_mclk_in_usb);
                 set_port_clock(p_for_mclk_count, clk_audio_mclk_usb);
                 start_clock(clk_audio_mclk_usb);
