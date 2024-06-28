@@ -1,0 +1,34 @@
+@startuml
+
+
+participant audiohub as audiohub
+participant mixer1 as mixer1
+participant mixer2 as mixer2
+participant decoupler as decoupler
+
+
+title "Mixer: MAX_MIX_COUNT > 0"
+loop while(1)
+audiohub -> mixer1 : receive request
+mixer1 -> decoupler : forward request
+mixer1 -> mixer1 : do mixer control
+
+alt decoupler responds with command
+decoupler -> mixer1 : get command
+mixer1 -> audiohub : forward command
+audiohub -> mixer1 : receive handshake
+mixer1 -> decoupler : forward handshake
+else decoupler responds with data
+mixer2 -> mixer1 : synchronise
+mixer1 -> audiohub : give samples
+mixer1 <- audiohub : get samples
+mixer1 <- decoupler : get samples
+mixer1 -> decoupler : give samples
+mixer1 -> mixer2 : trigger
+par
+mixer2 -> mixer2 : doMix
+mixer1 -> mixer1 : doMix
+end
+end
+end
+@enduml

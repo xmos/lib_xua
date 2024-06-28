@@ -1,6 +1,12 @@
 lib_xua change log
 ==================
 
+UNRELEASED
+----------
+
+  * CHANGED:    Using lsats instruction for saturation in the mixer
+  * CHANGED:    Simplified the mixer threads communication scheme
+
 4.1.0
 -----
 
