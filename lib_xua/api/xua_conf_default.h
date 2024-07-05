@@ -1456,6 +1456,7 @@ enum USBEndpointNumber_Out
 #define DFU_PRODUCT_STR_INDEX       offsetof(StringDescTable_t, productStr_Audio1)/sizeof(char *)
 #endif
 #endif
+#define DFU_SERIAL_STR_INDEX        offsetof(StringDescTable_t, serialStr)/sizeof(char *) // Same as in the APP mode device descriptor
 
 /* USB test mode support enabled by default (Required for compliance testing) */
 #if defined(TEST_MODE_SUPPORT) && (TEST_MODE_SUPPORT == 0)

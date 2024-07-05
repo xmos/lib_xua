@@ -17,7 +17,7 @@
 
 #ifndef DFU_SERIAL_STR_INDEX
 /* By default no serial string */
-#define DFU_SERIAL_STR_INDEX        (0x00)
+#error DFU_SERIAL_STR_INDEX is not defined!!
 #endif
 
 #ifndef DFU_PRODUCT_STR_INDEX
