@@ -49,6 +49,13 @@ unsigned char DFUdevDesc[] = {
     0x01                            /* 17 bNumConfigurations : Number of possible configs */
 };
 
+#define DFU_ATTR_CAN_DOWNLOAD              (1u << 0)
+#define DFU_ATTR_CAN_UPLOAD                (1u << 1)
+#define DFU_ATTR_MANIFESTATION_TOLERANT    (1u << 2)
+#define DFU_ATTR_WILL_DETACH               (1u << 3)
+// DFU functional attributes
+#define DFU_FUNC_ATTRS (DFU_ATTR_CAN_UPLOAD | DFU_ATTR_CAN_DOWNLOAD | DFU_ATTR_WILL_DETACH | DFU_ATTR_MANIFESTATION_TOLERANT)
+
 unsigned char DFUcfgDesc[] = {
     /* Standard USB device descriptor */
     0x09,                           /* 0  bLength */
@@ -75,7 +82,7 @@ unsigned char DFUcfgDesc[] = {
     /* DFU 1.1 Run-Time DFU Functional Descriptor */
     0x09,                           /* 0    Size */
     0x21,                           /* 1    bDescriptorType : DFU FUNCTIONAL */
-    0x07,                           /* 2    bmAttributes */
+    DFU_FUNC_ATTRS,                 /* 2    bmAttributes */
     0xFA,                           /* 3    wDetachTimeOut */
     0x00,                           /* 4    wDetachTimeOut */
     0x40,                           /* 5    wTransferSize */

@@ -84,27 +84,6 @@ static int DFU_CloseFlash(chanend ?c_user_cmd)
     return 0;
 }
 
-static int DFU_Detach(unsigned int timeout, chanend ?c_user_cmd, unsigned &DFU_state)
-{
-    if (DFU_state == STATE_APP_IDLE)
-    {
-        DFU_state = STATE_APP_DETACH;
-
-        DFU_OpenFlash();
-
-        // Setup DFU timeout value
-        DFUResetTimeout = timeout * 100000;
-
-        // Start DFU reset timer
-        DFUTimer :> DFUTimerStart;
-    }
-    else
-    {
-        DFU_state = STATE_DFU_ERROR;
-    }
-    return 0;
-}
-
 static int DFU_Dnload(unsigned int request_len, unsigned int block_num, const unsigned request_data[16], chanend ?c_user_cmd, int &return_data_len, unsigned &DFU_state)
 {
     unsigned int fromDfuIdle = 0;
@@ -446,9 +425,18 @@ void DFUHandler(server interface i_dfu i, chanend ?c_user_cmd)
                 switch (sp.bRequest)
                 {
                     case DFU_DETACH:
-                        tmpDfuState = dfuState;
-                        return_data_len = DFU_Detach(sp.wValue, c_user_cmd, tmpDfuState);
-                        newDfuState = tmpDfuState;;
+                        if(dfuState == STATE_APP_IDLE)
+                        {
+                            dfu_reset_override = 0x11042011; // Reboot in DFU mode
+                        }
+                        else
+                        {
+                            // We expect to come here only in the STATE_DFU_IDLE state but to be safe,
+                            // in every state other than APP_IDLE, reboot in APP mode.
+                            dfu_reset_override = 0;
+                        }
+                        reset_device_after_ack = 1;
+                        return_data_len = 0;
                         break;
 
                     case DFU_DNLOAD:
