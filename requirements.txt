@@ -1,4 +1,4 @@
-# python_version 3.7.6
+# python_version 3.12
 #
 # The parse_version_from_requirements() function in the installPipfile.groovy
 # file of the Jenkins Shared Library uses the python_version comment to set
