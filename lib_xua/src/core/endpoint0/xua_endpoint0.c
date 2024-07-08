@@ -941,15 +941,49 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
     {
         if(result == XUD_RES_ERR)
         {
+            unsigned bmRequestType = (sp.bmRequestType.Direction<<7) | (sp.bmRequestType.Type<<5) | (sp.bmRequestType.Recipient);
+            if(bmRequestType == USB_BMREQ_D2H_VENDOR_DEV)
+            {
+                if((sp.bRequest == REQUEST_GET_MS_DESCRIPTOR) &&
+                    sp.wIndex == MS_OS_20_DESCRIPTOR_INDEX)
+                {
+                    result = XUD_DoGetRequest(ep0_out, ep0_in, desc_ms_os_20, MS_OS_20_DESC_LEN, sp.wLength);
+                }
+            }
+
+        }
+        if(result == XUD_RES_ERR)
+        {
             /* Run vendor defined parsing/processing */
             /* Note, an interface might seem ideal here but this *must* be executed on the same
              * core sure to shared memory depandancy */
             result = VendorRequests(ep0_out, ep0_in, &sp VENDOR_REQUESTS_PARAMS_);
         }
+        // Check for BOS descriptor request
+        if(result == XUD_RES_ERR)
+        {
+            unsigned bmRequestType = (sp.bmRequestType.Direction<<7) | (sp.bmRequestType.Type<<5) | (sp.bmRequestType.Recipient);
+            switch(bmRequestType)
+            {
+                case USB_BMREQ_D2H_STANDARD_DEV:
+                    switch(sp.bRequest)
+                    {
+                        case USB_GET_DESCRIPTOR:
+                            switch(sp.wValue & 0xff00)
+                            {
+                                case (USB_DESCTYPE_BOS << 8):
+                                    result = XUD_DoGetRequest(ep0_out, ep0_in, desc_bos, BOS_TOTAL_LEN, sp.wLength);
+                                break;
+                            }
+                        break;
+                    }
+                break;
+            }
+        }
     }
 
     if(result == XUD_RES_ERR)
-    {
+    {        
 #if (XUA_DFU_EN == 1)
         if (!DFU_mode_active)
         {

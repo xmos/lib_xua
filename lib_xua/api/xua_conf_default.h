@@ -630,7 +630,7 @@
  * Default: ""
  */
 #ifndef SERIAL_STR
-#define SERIAL_STR               ""
+#define SERIAL_STR               "1234567"
 #endif
 
 /**
