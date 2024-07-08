@@ -629,7 +629,7 @@ unsigned char const desc_bos[] =
   TUD_BOS_MS_OS_20_DESCRIPTOR(MS_OS_20_DESC_LEN, REQUEST_GET_MS_DESCRIPTOR)
 };
 
-uint8_t const desc_ms_os_20[] =
+uint8_t desc_ms_os_20[] =
 {
   // Set header: length, type, windows version, total length
   U16_TO_U8S_LE(0x000A), U16_TO_U8S_LE(MS_OS_20_SET_HEADER_DESCRIPTOR), U32_TO_U8S_LE(0x06030000), U16_TO_U8S_LE(MS_OS_20_DESC_LEN),
@@ -653,7 +653,7 @@ uint8_t const desc_ms_os_20[] =
   // [DriverInterface] bPropertyData
   // InterfaceGUID = {89C14132-D389-4FF7-944E-2E33379BB59D}
   '{', 0x00, '8', 0x00, '9', 0x00, 'C', 0x00, '1', 0x00, '4', 0x00, '1', 0x00, '3', 0x00, '2', 0x00, '-', 0x00,
-  '0', 0x00, 'D', 0x00, '3', 0x00, '8', 0x00, '9', 0x00, '4', 0x00, 'F', 0x00, 'F', 0x00, '7', 0x00, '-', 0x00,
+  'D', 0x00, '3', 0x00, '8', 0x00, '9', 0x00, '-', 0x00, '4', 0x00, 'F', 0x00, 'F', 0x00, '7', 0x00, '-', 0x00,
   '9', 0x00, '4', 0x00, '4', 0x00, 'E', 0x00, '-', 0x00, '2', 0x00, 'E', 0x00, '3', 0x00, '3', 0x00, '3', 0x00,
   '7', 0x00, '9', 0x00, 'B', 0x00, 'B', 0x00, '5', 0x00, '9', 0x00, 'D', 0x00, '}', 0x00, 0x00, 0x00, 0x00, 0x00
 };
@@ -2201,7 +2201,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
     /* DFU 1.1 Run-Time DFU Functional Descriptor */
     0x09,                                 /* 0    Size */
     0x21,                                 /* 1    bDescriptorType : DFU FUNCTIONAL */
-    0x07,                                 /* 2    bmAttributes */
+    0x0f,                                 /* 2    bmAttributes */
     DFU_DETACH_TIME_OUT & 0xFF,           /* 3    wDetachTimeOut */
     (DFU_DETACH_TIME_OUT >> 8) & 0xFF,    /* 4    wDetachTimeOut */
     0x40,                                 /* 5    wTransferSize */

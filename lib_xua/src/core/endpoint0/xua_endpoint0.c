@@ -947,7 +947,15 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
                 if((sp.bRequest == REQUEST_GET_MS_DESCRIPTOR) &&
                     sp.wIndex == MS_OS_20_DESCRIPTOR_INDEX)
                 {
-                    result = XUD_DoGetRequest(ep0_out, ep0_in, desc_ms_os_20, MS_OS_20_DESC_LEN, sp.wLength);
+                    if(DFU_mode_active)
+                    {
+                        desc_ms_os_20[22] = 0;
+                    }
+                    else
+                    {
+                        desc_ms_os_20[22] = INTERFACE_NUMBER_DFU;
+                    }
+                    result = XUD_DoGetRequest(ep0_out, ep0_in, (unsigned char*)desc_ms_os_20, MS_OS_20_DESC_LEN, sp.wLength);
                 }
             }
 
@@ -972,7 +980,7 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
                             switch(sp.wValue & 0xff00)
                             {
                                 case (USB_DESCTYPE_BOS << 8):
-                                    result = XUD_DoGetRequest(ep0_out, ep0_in, desc_bos, BOS_TOTAL_LEN, sp.wLength);
+                                    result = XUD_DoGetRequest(ep0_out, ep0_in, (unsigned char*)desc_bos, BOS_TOTAL_LEN, sp.wLength);
                                 break;
                             }
                         break;
@@ -983,7 +991,7 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
     }
 
     if(result == XUD_RES_ERR)
-    {        
+    {
 #if (XUA_DFU_EN == 1)
         if (!DFU_mode_active)
         {

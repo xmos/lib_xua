@@ -31,7 +31,7 @@
 unsigned char DFUdevDesc[] = {
     18,                             /* 0  bLength : Size of descriptor in Bytes (18 Bytes) */
     1,                              /* 1  bdescriptorType */
-    0,                              /* 2  bcdUSB */
+    1,                              /* 2  bcdUSB */
     2,                              /* 3  bcdUSB */
     0x00,                           /* 4  bDeviceClass:      See interface */
     0x00,                           /* 5  bDeviceSubClass:   See interface */
