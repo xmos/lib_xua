@@ -13,7 +13,7 @@ setuptools.setup(
     name='lib_xua',
     packages=setuptools.find_packages(),
     install_requires=[
-        'flake8~=3.8',
+        'flake8~=7.0',
         'pytest~=6.0',
         'pytest-xdist~=1.34',
     ],
