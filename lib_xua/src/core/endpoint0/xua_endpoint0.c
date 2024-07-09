@@ -19,6 +19,7 @@
 #include "dfu_types.h"
 #include "usbaudio20.h"          /* Defines from USB Audio 2.0 spec */
 #include "xua_ep0_descriptors.h" /* This devices descriptors */
+#include "xua_ep0_msos_descriptors.h" /* MSOS descriptors */
 #include "xua_commands.h"
 #include "audiostream.h"
 #include "hostactive.h"
@@ -949,13 +950,12 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
                 {
                     if(DFU_mode_active)
                     {
-                        desc_ms_os_20[22] = 0;
+                        result = XUD_DoGetRequest(ep0_out, ep0_in, (unsigned char*)desc_ms_os_20_dfu, MS_OS_20_DESC_LEN_DFU, sp.wLength);
                     }
                     else
                     {
-                        desc_ms_os_20[22] = INTERFACE_NUMBER_DFU;
+                        result = XUD_DoGetRequest(ep0_out, ep0_in, (unsigned char*)desc_ms_os_20_runtime, MS_OS_20_DESC_LEN_RUNTIME, sp.wLength);
                     }
-                    result = XUD_DoGetRequest(ep0_out, ep0_in, (unsigned char*)desc_ms_os_20, MS_OS_20_DESC_LEN, sp.wLength);
                 }
             }
 
@@ -980,7 +980,14 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
                             switch(sp.wValue & 0xff00)
                             {
                                 case (USB_DESCTYPE_BOS << 8):
-                                    result = XUD_DoGetRequest(ep0_out, ep0_in, (unsigned char*)desc_bos, BOS_TOTAL_LEN, sp.wLength);
+                                    if(DFU_mode_active)
+                                    {
+                                        result = XUD_DoGetRequest(ep0_out, ep0_in, (unsigned char*)desc_bos_dfu, BOS_TOTAL_LEN, sp.wLength);
+                                    }
+                                    else
+                                    {
+                                        result = XUD_DoGetRequest(ep0_out, ep0_in, (unsigned char*)desc_bos_runtime, BOS_TOTAL_LEN, sp.wLength);
+                                    }
                                 break;
                             }
                         break;

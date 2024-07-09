@@ -33,8 +33,8 @@ unsigned char DFUdevDesc[] = {
     1,                              /* 1  bdescriptorType */
     1,                              /* 2  bcdUSB */
     2,                              /* 3  bcdUSB */
-    0xef,                           /* 4  bDeviceClass:      See interface */
-    0x02,                           /* 5  bDeviceSubClass:   See interface */
+    0,                              /* 4  bDeviceClass:      See interface */
+    0,                              /* 5  bDeviceSubClass:   See interface */
     0,                              /* 6  bDeviceProtocol:   See interface */
     64,                             /* 7  bMaxPacketSize */
     (DFU_VENDOR_ID & 0xFF),         /* 8  idVendor */
