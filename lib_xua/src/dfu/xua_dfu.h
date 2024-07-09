@@ -33,8 +33,8 @@ unsigned char DFUdevDesc[] = {
     1,                              /* 1  bdescriptorType */
     1,                              /* 2  bcdUSB */
     2,                              /* 3  bcdUSB */
-    0x00,                           /* 4  bDeviceClass:      See interface */
-    0x00,                           /* 5  bDeviceSubClass:   See interface */
+    0xef,                           /* 4  bDeviceClass:      See interface */
+    0x02,                           /* 5  bDeviceSubClass:   See interface */
     0,                              /* 6  bDeviceProtocol:   See interface */
     64,                             /* 7  bMaxPacketSize */
     (DFU_VENDOR_ID & 0xFF),         /* 8  idVendor */
@@ -65,8 +65,12 @@ unsigned char DFUcfgDesc[] = {
     1,                              /* 4  bNumInterface: Number of interfaces*/
     0x01,                           /* 5  bConfigurationValue */
     0x00,                           /* 6  iConfiguration */
-    0xC0,                           /* 7  bmAttributes */
-    0x32,                           /* 8  bMaxPower */
+#if (XUA_POWERMODE == XUA_POWERMODE_SELF)
+    192,
+#else
+    128,
+#endif
+    _XUA_BMAX_POWER,
 
     /* Standard DFU class interface descriptor */
     0x09,                           /* 0 bLength : Size of this descriptor, in bytes. (field size 1 bytes) */
@@ -77,7 +81,7 @@ unsigned char DFUcfgDesc[] = {
     0xFE,                           /* 5 bInterfaceClass : AUDIO. (field size 1 bytes) */
     0x01,                           /* 6 bInterfaceSubclass : AUDIO_CONTROL. (field size 1 bytes) */
     0x02,                           /* 7 bInterfaceProtocol : Unused. (field size 1 bytes) */
-    0x00,                           /* 8 iInterface : Unused. (field size 1 bytes) */
+    offsetof(StringDescTable_t, dfuStr)/sizeof(char *), /* 8 iInterface */
 
     /* DFU 1.1 Run-Time DFU Functional Descriptor */
     0x09,                           /* 0    Size */
