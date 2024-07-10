@@ -20,7 +20,7 @@
 #endif
 
 /* Store Flag to fixed address */
-static void SetDFUFlag(unsigned x)
+void SetDFUFlag(unsigned x)
 {
     asm volatile("stw %0, %1[0]" :: "r"(x), "r"(FLAG_ADDRESS));
 }
@@ -420,7 +420,6 @@ void DFUHandler(server interface i_dfu i, chanend ?c_user_cmd)
                 dfu_reset_override = 0;
                 unsigned tmpDfuState = dfuState;
                 returnVal = 0;
-
                 // Map Standard DFU commands onto device level firmware upgrade mechanism
                 switch (sp.bRequest)
                 {
@@ -540,7 +539,6 @@ int DFUDeviceRequests(XUD_ep ep0_out, XUD_ep &?ep0_in, USB_SetupPacket_t &sp, ch
         if (sp.wLength)
             XUD_GetBuffer(ep0_out, (data_buffer, unsigned char[]), data_buffer_len);
     }
-
     /* Interface used here such that the handler can be on another tile */
     {reset_device_after_ack, return_data_len, dfuResetOverride, returnVal, dfuState} = i.HandleDfuRequest(sp, data_buffer, data_buffer_len, g_DFU_state);
 

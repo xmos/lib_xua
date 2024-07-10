@@ -99,6 +99,7 @@ extern void device_reboot(void);
 #endif
 
 unsigned int DFU_mode_active = 0;         // 0 - App active, 1 - DFU active
+unsigned int notify_audio_stop_for_DFU = 0;
 
 /* Global volume and mute tables */
 int volsOut[NUM_USB_CHAN_OUT + 1];
@@ -459,6 +460,7 @@ static unsigned char hidReportDescriptorPtr[] = {
 #endif
 
 
+extern void SetDFUFlag(unsigned x);
 
 void XUA_Endpoint0_init(chanend c_ep0_out, chanend c_ep0_in, NULLABLE_RESOURCE(chanend, c_audioControl),
     chanend c_mix_ctl, chanend c_clk_ctl, chanend c_EANativeTransport_ctrl, CLIENT_INTERFACE(i_dfu, dfuInterface) VENDOR_REQUESTS_PARAMS_DEC_)
@@ -490,6 +492,7 @@ void XUA_Endpoint0_init(chanend c_ep0_out, chanend c_ep0_in, NULLABLE_RESOURCE(c
         outuint(c_audioControl, AUDIO_STOP_FOR_DFU);
         /* No Handshake */
         DFU_mode_active = 1;
+        SetDFUFlag(0); // Clear the DFU mode flag so that a device reboot without setting it back again transitions back to runtime mode
     }
 #endif
 
@@ -868,7 +871,7 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
                         /* If running in application mode stop audio */
                         /* Don't interupt audio for save and restore cmds */
                         if ((DFU_IF == INTERFACE_NUMBER_DFU) && (sp.bRequest != XMOS_DFU_SAVESTATE) &&
-                            (sp.bRequest != XMOS_DFU_RESTORESTATE))
+                            (sp.bRequest != XMOS_DFU_RESTORESTATE) && (notify_audio_stop_for_DFU == 0))
                         {
                             assert((c_audioControl != null) && msg("DFU not supported when c_audioControl is null"));
                             // Stop audio
@@ -876,6 +879,7 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
                             outuint(c_audioControl, AUDIO_STOP_FOR_DFU);
                             // Handshake
                             chkct(c_audioControl, XS1_CT_END);
+                            notify_audio_stop_for_DFU = 1;
                         }
 
                         /* This will return 1 if reset requested */
