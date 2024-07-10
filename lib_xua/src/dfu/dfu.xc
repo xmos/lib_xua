@@ -512,6 +512,7 @@ void DFUHandler(server interface i_dfu i, chanend ?c_user_cmd)
                         break;
 
                     default:
+                        returnVal = XUD_RES_ERR; // Unrecognised request
                         break;
                 }
 				newDfuState = tmpDfuState;
