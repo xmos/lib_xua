@@ -27,7 +27,7 @@ set(LIB_DEPENDENT_MODULES "lib_adat(1.1.0)"
                           "lib_spdif(6.1.0)"
                           "lib_sw_pll(develop)"
                           "lib_xassert(4.2.0)"
-                          "lib_xud(2.3.1)")
+                          "shuchitak/lib_xud(dfu_1_1)")
 
 set(LIB_COMPILER_FLAGS -O3 -DREF_CLK_FREQ=100 -fasm-linenum -fcomment-asm)
 
