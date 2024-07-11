@@ -1,4 +1,4 @@
-// Copyright 2011-2023 XMOS LIMITED.
+// Copyright 2011-2024 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 #include <xs1.h>
 #include <platform.h>
@@ -36,7 +36,10 @@ void ConfigAudioPorts(
 #ifdef __XS3A__
   	/* Increase drive strength of clock ports to 8mA */
 	asm volatile ("setc res[%0], %1" :: "r" (p_bclk), "r" (0x200006));
-	asm volatile ("setc res[%0], %1" :: "r" (p_lrclk), "r" (0x200006));
+    if(!isnull(p_lrclk))
+    {
+	    asm volatile ("setc res[%0], %1" :: "r" (p_lrclk), "r" (0x200006));
+    }
 #endif
 
     /* Note this call to stop_clock() will pause forever if the port clocking the clock-block is not low.

@@ -54,7 +54,7 @@ inline unsigned queue_pop_word(queue_t &q, unsigned array[]) {
     if(queue_is_empty(q)){
         xassert(0 && "Unexpected pop from MIDI queue when empty");
         // Return NULL messaqe if asserts not enabled
-        return MIDI_OUT_NULL_MESSAGE; 
+        return MIDI_OUT_NULL_MESSAGE;
     }
 
     return array[q.rdptr++ & q.mask];

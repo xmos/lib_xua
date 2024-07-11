@@ -1,23 +1,48 @@
-lib_xua Change Log
+lib_xua change log
 ==================
 
 UNRELEASED
 ----------
 
-  * FIXED:     Device fails to enumerate when ADAT and S/PDIF transmit are enabled
-  * FIXED:     Update software PLL at the correct rate for ADAT SMUX
-  * CHANGED:   Enable only the minimum number of ADAT input formats based for the
-    supported sample frequencies
+  * CHANGED:    Using lsats instruction for saturation in the mixer
+  * CHANGED:    Simplified the mixer threads communication scheme
+
+  * Changes to dependencies:
+
+    - lib_xud: 2.3.1 -> 2.3.2
+
+4.1.0
+-----
+
+  * ADDED:     MIDI unit and sub-system tests
+  * CHANGED:   Only the minimum number of ADAT input formats are enabled based
+    on the supported sample rates
+  * CHANGED:   Enabling ADAT tx enables different channel count interface alts,
+    based on sample rate
+  * CHANGED:   Input audio buffer size and the exit condition underflow modified
+    to to fix buffer underflow in some configurations
+  * CHANGED:   CT_END token based handshake in MIDI channels transactions,
+    reducing opportuninity for deadlock
+  * FIXED:     Device fails to enumerate when ADAT and S/PDIF transmit are
+    enabled
+  * FIXED:     Update software PLL at the correct rate for ADAT S/MUX
   * FIXED:     Incorrect internal input EP count for input only devices
-  * ADDED:     MIDI unit and subsystem tests
-  * FIXED:     ADAT Tx called too frequently
-  * CHANGED:   ADAT Tx presents different channel count interfaces based on sample
-    rate 
-  * CHANGED:   aud_to_host buffer size and the condition to come out of underflow
-    in decoupler to fix buffer underflow seen in ADAT tests
-  * FIXED:     Initialise SMUX based on DEFAULT_FREQ in clockgen
-  * FIXED:     Update g_numUsbChan_Out to the number of channels for the selected
-    interface when receiving a set interface request over EP0
+  * FIXED:     Samples transferred to ADAT tx too frequently in TDM mode
+  * FIXED:     S/MUX not initialised to a value based on DEFAULT_FREQ in
+    clockgen
+  * FIXED:     Trap when moving to DSD mode on XS3A based devices
+
+  * Changes to dependencies:
+
+    - lib_adat: 1.0.1 -> 1.2.0
+
+    - lib_locks: 2.1.0 -> 2.2.0
+
+    - lib_logging: 3.1.1 -> 3.2.0
+
+    - lib_sw_pll: 2.1.0 -> 2.2.0
+
+    - lib_xassert: 4.1.0 -> 4.2.0
 
 4.0.0
 -----

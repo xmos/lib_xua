@@ -32,7 +32,7 @@ void test_midi_queue_init(void) {
 
     int empty = queue_is_empty_c_wrapper(&symbol_fifo);
     TEST_ASSERT_EQUAL_INT32(1, empty);
-   
+
     int full = queue_is_full_c_wrapper(&symbol_fifo);
     TEST_ASSERT_EQUAL_INT32(0, full);
 
@@ -61,7 +61,7 @@ void test_midi_queue_full(void) {
 
     int empty = queue_is_empty_c_wrapper(&symbol_fifo);
     TEST_ASSERT_EQUAL_INT32(0, empty);
-   
+
     int full = queue_is_full_c_wrapper(&symbol_fifo);
     TEST_ASSERT_EQUAL_INT32(1, full);
 
