@@ -139,56 +139,31 @@ int flash_cmd_read_page_data(unsigned char *data)
     return 64;
 }
 
-static void begin_write()
-{
-    int result;
-    // TODO this will take a long time. To minimise the amount of time spent
-    // paused on this operation it would be preferable to move to this to a
-    // seperate command, e.g. start_write.
-    do
-    {
-        result = fl_startImageAdd(&factory_image, FLASH_MAX_UPGRADE_SIZE, 0);
-    } while (result > 0);
 
-    if (result < 0)
+int flash_cmd_start_write_image()
+{
+    current_flash_subpage_index = 0;
+    int ret = fl_startImageAdd(&factory_image, FLASH_MAX_UPGRADE_SIZE, 0);
+    if(ret < 0)
         FLASH_ERROR();
+    return ret;
 }
 
-static int pages_written = 0;
-
-int flash_cmd_write_page(unsigned char *data)
+void flash_cmd_reset_subpage_index()
 {
-    unsigned int flag = *(unsigned int *)data;
-
-    if (upgrade_image_valid)
-    {
-        return 0;
-    }
-
-    switch (flag)
-    {
-        case 0:
-            // First page.
-            begin_write();
-            pages_written = 0;
-            // fallthrough
-        case 1:
-            // Do nothing.
-            break;
-        case 2:
-            // Termination.
-            if (fl_endWriteImage() != 0)
-                FLASH_ERROR();
-
-            // Sanity check
-            fl_BootImageInfo image = factory_image;
-            if (fl_getNextBootImage(&image) != 0)
-                FLASH_ERROR();
-            break;
-    }
     current_flash_subpage_index = 0;
+}
 
-    return 0;
+void flash_cmd_end_write_image()
+{
+     if (fl_endWriteImage() != 0)
+        FLASH_ERROR();
+
+    // Sanity check
+    fl_BootImageInfo image = factory_image;
+    if (fl_getNextBootImage(&image) != 0)
+        FLASH_ERROR();
+
 }
 
 int flash_cmd_write_page_data(unsigned char *data)
@@ -213,7 +188,6 @@ int flash_cmd_write_page_data(unsigned char *data)
     {
         if (fl_writeImagePage(current_flash_page_data) != 0)
             FLASH_ERROR();
-        pages_written++;
     }
 
     return 0;

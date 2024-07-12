@@ -4,14 +4,18 @@
 #define _flash_interface_h_
 
 int flash_cmd_init(void);
+
+/// Prepare to write a new image to the flash
+int flash_cmd_start_write_image();
+
+/// Reset the subpage index back to 0
+void flash_cmd_reset_subpage_index();
+
+/// Finish writing image to the flash
+void flash_cmd_end_write_image();
+
 /**
- * Prepare to write a page of a new upgrade image.
- * The first word of data should be set to 0 if it is the first page,
- * 1 for all other pages and 2 to terminate the write (no further data is sent).
- */
-int flash_cmd_write_page(unsigned char []);
-/**
- * Provide upgrade image data. flash_cmd_write_page() must be called previously.
+ * Provide upgrade image data. flash_cmd_start_write_image() must be called previously.
  * Once a page of data has been provided it is written to the device.
  */
 int flash_cmd_write_page_data(unsigned char []);

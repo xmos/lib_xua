@@ -41,9 +41,12 @@ static unsigned int DFUResetTimeout = 100000000; // 1 second default
 static int DFU_flash_connected = 0;
 
 static unsigned int subPagesLeft = 0;
+static int flash_cmd_start_write_image_in_progress = 1;
 
 extern void DFUCustomFlashEnable();
 extern void DFUCustomFlashDisable();
+
+static unsigned int save_blk0_request_data[16];
 
 void DFUDelay(unsigned d)
 {
@@ -126,54 +129,52 @@ static int DFU_Dnload(unsigned int request_len, unsigned int block_num, const un
     if (request_len == 0)
     {
         // Host signalling complete download
-        int i = 0;
-        unsigned int cmd_data[16];
         if (subPagesLeft)
         {
             unsigned int subPagePad[16] = {0};
-            for (i = 0; i < subPagesLeft; i++)
+            for (unsigned i = 0; i < subPagesLeft; i++)
             {
                 flash_cmd_write_page_data((subPagePad, unsigned char[64]));
             }
         }
-
-        cmd_data[0] = 2; // Terminate write
-        flash_cmd_write_page((cmd_data, unsigned char[]));
-
+        flash_cmd_end_write_image();
         DFU_state = STATE_DFU_MANIFEST_SYNC;
     }
     else
     {
-        unsigned int i = 0;
-        unsigned int flash_cmd = 0;
-        unsigned int flash_page_index = 0;
-        unsigned int cmd_data[16];
-
-        if (fromDfuIdle)
+        DFU_state = STATE_DFU_DOWNLOAD_SYNC; //from the spec. dfuDNLOAD-SYNC = Device has received a block and is waiting for the host to
+        // solicit the status via DFU_GETSTATUS. So if the host were to do a GetState right after this, it should see the device state as STATE_DFU_DOWNLOAD_SYNC.
+        // That is why, even when flash_cmd_start_write_image() returns not complete, we don't transition to STATE_DFU_DOWNLOAD_BUSY at this point but do it only
+        // from DFU_GetStatus()
+        if (!(block_num % 4)) // Every 4th block
         {
-            unsigned s = 0;
-
-            // Erase flash on first block
-            flash_cmd_erase_all();
-        }
-
-        // Program firmware, STATE_DFU_DOWNLOAD_BUSY not currently used
-        if (!(block_num % 4))
-        {
-            cmd_data[0] = !fromDfuIdle; // 0 for first page, 1 for other pages.
-            flash_cmd_write_page((cmd_data, unsigned char[64]));
+            flash_cmd_reset_subpage_index();
             subPagesLeft = 4;
+            if (fromDfuIdle) // Only relevant for block 0 which is when fromDfuIdle is also true
+            {
+                // Erase flash on block 0
+                flash_cmd_erase_all();
+
+                flash_cmd_start_write_image_in_progress = flash_cmd_start_write_image();
+                if(flash_cmd_start_write_image_in_progress) // flash_cmd_start_write_image() still in progress
+                {
+                    for (unsigned i = 0; i < 16; i++)
+                    {
+                        save_blk0_request_data[i] = request_data[i]; // save blcok 0 request data to be written to flash once flash_cmd_start_write_image() is complete
+                    }
+                    return 0; // return from here. We only write block 0 to flash once flash_cmd_start_write_image() completes.
+                    //Further checks for flash_cmd_start_write_image() completion and subsequent writing of block 0 to flash happen in DFU_GetStatus()
+                }
+            }
         }
 
-        for (i = 0; i < 16; i++)
+        unsigned int cmd_data[16];
+        for (unsigned i = 0; i < 16; i++)
         {
             cmd_data[i] = request_data[i];
         }
-
         flash_cmd_write_page_data((cmd_data, unsigned char[64]));
         subPagesLeft--;
-
-        DFU_state = STATE_DFU_DOWNLOAD_SYNC;
     }
 
     return 0;
@@ -239,11 +240,37 @@ static int DFU_Upload(unsigned int request_len, unsigned int block_num, unsigned
     return 64;
 }
 
+
+static unsigned transition_dfu_download_state()
+{
+    if(!flash_cmd_start_write_image_in_progress) // If flash_cmd_start_write_image() is done, transition to IDLE since the actual flash writes (flash_cmd_write_page_data) are synchronous
+    {
+        return STATE_DFU_DOWNLOAD_IDLE;
+    }
+    else
+    {
+        flash_cmd_start_write_image_in_progress = flash_cmd_start_write_image();
+        if(!flash_cmd_start_write_image_in_progress)
+        {
+            // Write block 0 to flash
+            flash_cmd_write_page_data((save_blk0_request_data, unsigned char[64]));
+            subPagesLeft--;
+            return STATE_DFU_DOWNLOAD_IDLE;
+        }
+        else // Continue to wait for flash_cmd_start_write_image() to complete
+        {
+            return STATE_DFU_DOWNLOAD_BUSY;
+        }
+
+    }
+
+}
+
 static int DFU_GetStatus(unsigned int request_len, unsigned data_buffer[16], chanend ?c_user_cmd, unsigned &DFU_state)
 {
     unsigned int timeout = 0;
 
-    data_buffer[0] = timeout << 8 | (unsigned char)DFU_status;
+    data_buffer[0] = (timeout << 8) | (unsigned char)DFU_status;
 
     switch (DFU_state)
     {
@@ -252,11 +279,8 @@ static int DFU_GetStatus(unsigned int request_len, unsigned data_buffer[16], cha
             DFU_state = STATE_DFU_ERROR;
             break;
         case STATE_DFU_DOWNLOAD_BUSY:
-            // If download completes -> DFU_DOWNLOAD_SYNC
-            // Currently all transactions are synchronous so no busy state
-            break;
         case STATE_DFU_DOWNLOAD_SYNC:
-            DFU_state = STATE_DFU_DOWNLOAD_IDLE;
+            DFU_state = transition_dfu_download_state();
             break;
         case STATE_DFU_MANIFEST_SYNC:
             // Check if complete here
