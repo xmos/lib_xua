@@ -87,7 +87,7 @@ void XUA_Buffer(
 #if (NUM_USB_CHAN_IN > 0)
     register chanend c_aud_in,
 #endif
-#if (NUM_USB_CHAN_OUT > 0) && ((NUM_USB_CHAN == 0) || defined(UAC_FORCE_FEEDBACK_EP))
+#if (NUM_USB_CHAN_OUT > 0) && ((NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP))
     chanend c_aud_fb,
 #endif
 #ifdef MIDI
@@ -130,7 +130,7 @@ void XUA_Buffer(
 #if (NUM_USB_CHAN_IN > 0)
                 c_aud_in,                 /* USB Audio In */
 #endif
-#if (NUM_USB_CHAN_OUT > 0) && ((NUM_USB_CHAN == 0) || defined(UAC_FORCE_FEEDBACK_EP))
+#if (NUM_USB_CHAN_OUT > 0) && ((NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP))
                 c_aud_fb,                 /* Audio FB */
 #endif
 #ifdef MIDI
@@ -187,7 +187,7 @@ void XUA_Buffer_Ep(
 #if (NUM_USB_CHAN_IN > 0)
     register chanend c_aud_in,
 #endif
-#if (NUM_USB_CHAN_OUT > 0) && ((NUM_USB_CHAN == 0) || defined(UAC_FORCE_FEEDBACK_EP))
+#if (NUM_USB_CHAN_OUT > 0) && ((NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP))
     chanend c_aud_fb,
 #endif
 #ifdef MIDI
@@ -226,7 +226,7 @@ void XUA_Buffer_Ep(
     XUD_ep ep_aud_in = XUD_InitEp(c_aud_in);
 #endif
 
-#if (NUM_USB_CHAN_OUT > 0) && ((NUM_USB_CHAN == 0) || defined(UAC_FORCE_FEEDBACK_EP))
+#if (NUM_USB_CHAN_OUT > 0) && ((NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP))
     XUD_ep ep_aud_fb = XUD_InitEp(c_aud_fb);
 #endif
 
@@ -530,7 +530,7 @@ void XUA_Buffer_Ep(
                         SET_SHARED_GLOBAL(g_formatChange_DataFormat, formatChange_DataFormat);
                         SET_SHARED_GLOBAL(g_formatChange_SampRes, formatChange_SampRes);
 
-#if (NUM_USB_CHAN_OUT > 0) && ((NUM_USB_CHAN == 0) || defined(UAC_FORCE_FEEDBACK_EP))
+#if (NUM_USB_CHAN_OUT > 0) && ((NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP))
                         /* Host is starting up the output stream. Setup (or potentially resize) feedback packet based on bus-speed
                          * This is only really important on inital start up (when bus-speed
                            was unknown) and when changing bus-speeds */

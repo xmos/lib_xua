@@ -231,7 +231,7 @@ XUD_EpType epTypeTableIn[ENDPOINT_COUNT_IN] = { XUD_EPTYPE_CTL | XUD_STATUS_ENAB
 #if (NUM_USB_CHAN_IN > 0)
                                             XUD_EPTYPE_ISO,
 #endif
-#if (NUM_USB_CHAN_OUT > 0) && ((NUM_USB_CHAN == 0) || defined(UAC_FORCE_FEEDBACK_EP))
+#if (NUM_USB_CHAN_OUT > 0) && ((NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP))
                                             XUD_EPTYPE_ISO,    /* Async feedback endpoint */
 #endif
 #if (XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
@@ -580,7 +580,7 @@ int main()
 #if (NUM_USB_CHAN_IN > 0)
                            c_xud_in[ENDPOINT_NUMBER_IN_AUDIO],         /* Audio In */
 #endif
-#if (NUM_USB_CHAN_OUT > 0) && ((NUM_USB_CHAN == 0) || defined(UAC_FORCE_FEEDBACK_EP))
+#if (NUM_USB_CHAN_OUT > 0) && ((NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP))
                            c_xud_in[ENDPOINT_NUMBER_IN_FEEDBACK],      /* Audio FB */
 #endif
 #ifdef MIDI
