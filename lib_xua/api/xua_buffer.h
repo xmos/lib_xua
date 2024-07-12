@@ -30,11 +30,13 @@
  *  \param c_swpll_update       Channel connected to software PLL task. Expects master clock counts based on USB frames.
  */
 void XUA_Buffer(
+#if (NUM_USB_CHAN_OUT > 0)
             chanend c_aud_out,
+#endif
 #if (NUM_USB_CHAN_IN > 0) || defined(__DOXYGEN__)
             chanend c_aud_in,
 #endif
-#if (NUM_USB_CHAN_IN == 0) || defined (UAC_FORCE_FEEDBACK_EP)
+#if ((NUM_USB_CHAN_OUT > 0) && ((NUM_USB_CHAN == 0) || defined(UAC_FORCE_FEEDBACK_EP))) || defined(__DOXYGEN__)
             chanend c_aud_fb,
 #endif
 #if defined(MIDI) || defined(__DOXYGEN__)
@@ -64,11 +66,15 @@ void XUA_Buffer(
 #endif
         );
 
-void XUA_Buffer_Ep(chanend c_aud_out,
+void XUA_Buffer_Ep(
+
+#if (NUM_USB_CHAN_OUT > 0)
+            chanend c_aud_out,
+#endif
 #if (NUM_USB_CHAN_IN > 0) || defined(__DOXYGEN__)
             chanend c_aud_in,
 #endif
-#if (NUM_USB_CHAN_IN == 0) || defined (UAC_FORCE_FEEDBACK_EP)
+#if ((NUM_USB_CHAN_OUT > 0) && ((NUM_USB_CHAN == 0) || defined(UAC_FORCE_FEEDBACK_EP))) || defined(__DOXYGEN__)
             chanend c_aud_fb,
 #endif
 #ifdef MIDI

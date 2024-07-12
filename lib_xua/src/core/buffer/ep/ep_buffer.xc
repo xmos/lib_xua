@@ -81,11 +81,13 @@ unsigned int fb_clocks[4];
 #define FB_TOLERANCE 0x100
 
 void XUA_Buffer(
+#if (NUM_USB_CHAN_OUT > 0)
     register chanend c_aud_out,
+#endif
 #if (NUM_USB_CHAN_IN > 0)
     register chanend c_aud_in,
 #endif
-#if (NUM_USB_CHAN_IN == 0) || defined (UAC_FORCE_FEEDBACK_EP)
+#if (NUM_USB_CHAN_OUT > 0) && ((NUM_USB_CHAN == 0) || defined(UAC_FORCE_FEEDBACK_EP))
     chanend c_aud_fb,
 #endif
 #ifdef MIDI
@@ -121,11 +123,14 @@ void XUA_Buffer(
 
     par
     {
-        XUA_Buffer_Ep(c_aud_out,          /* USB Audio Out*/
+        XUA_Buffer_Ep(
+#if (NUM_USB_CHAN_OUT > 0)
+                c_aud_out,                /* USB Audio Out*/
+#endif
 #if (NUM_USB_CHAN_IN > 0)
                 c_aud_in,                 /* USB Audio In */
 #endif
-#if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP)
+#if (NUM_USB_CHAN_OUT > 0) && ((NUM_USB_CHAN == 0) || defined(UAC_FORCE_FEEDBACK_EP))
                 c_aud_fb,                 /* Audio FB */
 #endif
 #ifdef MIDI
@@ -175,11 +180,14 @@ unsafe{volatile unsigned * unsafe masterClockFreq_ptr;}
  * @param   c_aud_fb      chanend for feeback to xud
  * @return  void
  */
-void XUA_Buffer_Ep(register chanend c_aud_out,
+void XUA_Buffer_Ep(
+#if (NUM_USB_CHAN_OUT > 0)
+    register chanend c_aud_out,
+#endif
 #if (NUM_USB_CHAN_IN > 0)
     register chanend c_aud_in,
 #endif
-#if (NUM_USB_CHAN_IN == 0) || defined (UAC_FORCE_FEEDBACK_EP)
+#if (NUM_USB_CHAN_OUT > 0) && ((NUM_USB_CHAN == 0) || defined(UAC_FORCE_FEEDBACK_EP))
     chanend c_aud_fb,
 #endif
 #ifdef MIDI
@@ -210,13 +218,15 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
 #endif
     )
 {
+#if (NUM_USB_CHAN_OUT > 0)
     XUD_ep ep_aud_out = XUD_InitEp(c_aud_out);
+#endif
 
 #if (NUM_USB_CHAN_IN > 0)
     XUD_ep ep_aud_in = XUD_InitEp(c_aud_in);
 #endif
 
-#if (NUM_USB_CHAN_IN == 0) || defined (UAC_FORCE_FEEDBACK_EP)
+#if (NUM_USB_CHAN_OUT > 0) && ((NUM_USB_CHAN == 0) || defined(UAC_FORCE_FEEDBACK_EP))
     XUD_ep ep_aud_fb = XUD_InitEp(c_aud_fb);
 #endif
 
@@ -313,7 +323,9 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
 #endif
 
     /* Store EP's to globals so that decouple() can access them */
+#if (NUM_USB_CHAN_OUT > 0)
     asm("stw %0, dp[aud_from_host_usb_ep]"::"r"(ep_aud_out));
+#endif
 #if (NUM_USB_CHAN_IN > 0)
     asm("stw %0, dp[aud_to_host_usb_ep]"::"r"(ep_aud_in));
 #endif
@@ -358,7 +370,7 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
 #endif
 
 #if (AUDIO_CLASS == 1)
-#if (NUM_USB_CHAN_IN == 0) || defined (UAC_FORCE_FEEDBACK_EP)
+#if (NUM_USB_CHAN_OUT > 0) && ((NUM_USB_CHAN == 0) || defined(UAC_FORCE_FEEDBACK_EP))
     /* In UAC1 we dont use a stream start event (and we are always FS) so mark FB EP ready now */
     XUD_SetReady_In(ep_aud_fb, (fb_clocks, unsigned char[]), 3);
 #endif
@@ -518,7 +530,7 @@ void XUA_Buffer_Ep(register chanend c_aud_out,
                         SET_SHARED_GLOBAL(g_formatChange_DataFormat, formatChange_DataFormat);
                         SET_SHARED_GLOBAL(g_formatChange_SampRes, formatChange_SampRes);
 
-#if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP)
+#if (NUM_USB_CHAN_OUT > 0) && ((NUM_USB_CHAN == 0) || defined(UAC_FORCE_FEEDBACK_EP))
                         /* Host is starting up the output stream. Setup (or potentially resize) feedback packet based on bus-speed
                          * This is only really important on inital start up (when bus-speed
                            was unknown) and when changing bus-speeds */
