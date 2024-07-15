@@ -48,6 +48,8 @@ extern void DFUCustomFlashDisable();
 
 static unsigned int save_blk0_request_data[16];
 
+#define DO_BLOCKING_ERASE (1)
+
 void DFUDelay(unsigned d)
 {
     timer tmr;
@@ -156,6 +158,12 @@ static int DFU_Dnload(unsigned int request_len, unsigned int block_num, const un
                 flash_cmd_erase_all();
 
                 flash_cmd_start_write_image_in_progress = flash_cmd_start_write_image();
+#if DO_BLOCKING_ERASE
+                while(flash_cmd_start_write_image_in_progress)
+                {
+                    flash_cmd_start_write_image_in_progress = flash_cmd_start_write_image();
+                }
+#else
                 if(flash_cmd_start_write_image_in_progress) // flash_cmd_start_write_image() still in progress
                 {
                     for (unsigned i = 0; i < 16; i++)
@@ -165,6 +173,7 @@ static int DFU_Dnload(unsigned int request_len, unsigned int block_num, const un
                     return 0; // return from here. We only write block 0 to flash once flash_cmd_start_write_image() completes.
                     //Further checks for flash_cmd_start_write_image() completion and subsequent writing of block 0 to flash happen in DFU_GetStatus()
                 }
+#endif
             }
         }
 
