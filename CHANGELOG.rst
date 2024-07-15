@@ -6,6 +6,13 @@ UNRELEASED
 
   * CHANGED:    Using lsats instruction for saturation in the mixer
   * CHANGED:    Simplified the mixer threads communication scheme
+  * ADDED:      Support for DFU_DETACH with bitWillDetach set to 1
+  * ADDED:      Update to bcdUSB version 2.01 and add support for MSOS2.0
+    descriptor which defines the DFU interface as WinUSB compatible
+  * CHANGED:    By default, enumerate with iSerialNumber set to None(0) in the device
+    descriptor
+  * ADDED:      Support for XMOS_DFU_REVERTFACTORY arriving as a USB_BMREQ_H2D_VENDOR_INT
+    request to work with the latest Thesycon DFU driver on Windows
 
   * Changes to dependencies:
 
@@ -669,4 +676,3 @@ Legacy release history
 ----------------------
 
 Please see changelog in sw_usb_audio for changes prior to 6.8.0 release.
-
