@@ -23,40 +23,40 @@
 
 ////////////////////////////////////////From TUSB code///////////////////////////////////////////////////////
 // total length, number of device caps
-#define TU_U16(_high, _low)   ((uint16_t) (((_high) << 8) | (_low)))
-#define TU_U16_HIGH(_u16)     ((uint8_t) (((_u16) >> 8) & 0x00ff))
-#define TU_U16_LOW(_u16)      ((uint8_t) ((_u16)       & 0x00ff))
-#define U16_TO_U8S_BE(_u16)   TU_U16_HIGH(_u16), TU_U16_LOW(_u16)
-#define U16_TO_U8S_LE(_u16)   TU_U16_LOW(_u16), TU_U16_HIGH(_u16)
+#define _U16(_high, _low)   ((uint16_t) (((_high) << 8) | (_low)))
+#define _U16_HIGH(_u16)     ((uint8_t) (((_u16) >> 8) & 0x00ff))
+#define _U16_LOW(_u16)      ((uint8_t) ((_u16)       & 0x00ff))
+#define U16_TO_U8S_BE(_u16)   _U16_HIGH(_u16), _U16_LOW(_u16)
+#define U16_TO_U8S_LE(_u16)   _U16_LOW(_u16), _U16_HIGH(_u16)
 
-#define TU_U32_BYTE3(_u32)    ((uint8_t) ((((uint32_t) _u32) >> 24) & 0x000000ff)) // MSB
-#define TU_U32_BYTE2(_u32)    ((uint8_t) ((((uint32_t) _u32) >> 16) & 0x000000ff))
-#define TU_U32_BYTE1(_u32)    ((uint8_t) ((((uint32_t) _u32) >>  8) & 0x000000ff))
-#define TU_U32_BYTE0(_u32)    ((uint8_t) (((uint32_t)  _u32)        & 0x000000ff)) // LSB
+#define _U32_BYTE3(_u32)    ((uint8_t) ((((uint32_t) _u32) >> 24) & 0x000000ff)) // MSB
+#define _U32_BYTE2(_u32)    ((uint8_t) ((((uint32_t) _u32) >> 16) & 0x000000ff))
+#define _U32_BYTE1(_u32)    ((uint8_t) ((((uint32_t) _u32) >>  8) & 0x000000ff))
+#define _U32_BYTE0(_u32)    ((uint8_t) (((uint32_t)  _u32)        & 0x000000ff)) // LSB
 
-#define U32_TO_U8S_BE(_u32)   TU_U32_BYTE3(_u32), TU_U32_BYTE2(_u32), TU_U32_BYTE1(_u32), TU_U32_BYTE0(_u32)
-#define U32_TO_U8S_LE(_u32)   TU_U32_BYTE0(_u32), TU_U32_BYTE1(_u32), TU_U32_BYTE2(_u32), TU_U32_BYTE3(_u32)
+#define U32_TO_U8S_BE(_u32)   _U32_BYTE3(_u32), _U32_BYTE2(_u32), _U32_BYTE1(_u32), _U32_BYTE0(_u32)
+#define U32_TO_U8S_LE(_u32)   _U32_BYTE0(_u32), _U32_BYTE1(_u32), _U32_BYTE2(_u32), _U32_BYTE3(_u32)
 
 
-#define TUD_BOS_DESC_LEN      0x05
+#define USB_BOS_DESC_LEN      0x05
 #define  DEVICE_CAPABILITY_PLATFORM  0x05
 
 // total length, number of device caps
-#define TUD_BOS_DESCRIPTOR(_total_len, _caps_num) \
+#define USB_BOS_DESCRIPTOR(_total_len, _caps_num) \
   5, USB_DESCTYPE_BOS, U16_TO_U8S_LE(_total_len), _caps_num
 
-#define TUD_BOS_MICROSOFT_OS_DESC_LEN   28
+#define USB_BOS_MICROSOFT_OS_DESC_LEN   28
 // Device Capability Platform 128-bit UUID + Data
-#define TUD_BOS_PLATFORM_DESCRIPTOR(...) \
-  TUD_BOS_MICROSOFT_OS_DESC_LEN, USB_DESCTYPE_DEVICE_CAPABILITY, DEVICE_CAPABILITY_PLATFORM, 0x00, __VA_ARGS__
+#define USB_BOS_PLATFORM_DESCRIPTOR(...) \
+  USB_BOS_MICROSOFT_OS_DESC_LEN, USB_DESCTYPE_DEVICE_CAPABILITY, DEVICE_CAPABILITY_PLATFORM, 0x00, __VA_ARGS__
 
 //------------- Microsoft OS 2.0 Platform -------------//
 
 // Total Length of descriptor set, vendor code
-#define TUD_BOS_MS_OS_20_DESCRIPTOR(_desc_set_len, _vendor_code) \
-  TUD_BOS_PLATFORM_DESCRIPTOR(TUD_BOS_MS_OS_20_UUID, U32_TO_U8S_LE(0x06030000), U16_TO_U8S_LE(_desc_set_len), _vendor_code, 0)
+#define USB_BOS_MS_OS_20_DESCRIPTOR(_desc_set_len, _vendor_code) \
+  USB_BOS_PLATFORM_DESCRIPTOR(USB_BOS_MS_OS_20_UUID, U32_TO_U8S_LE(0x06030000), U16_TO_U8S_LE(_desc_set_len), _vendor_code, 0)
 
-#define TUD_BOS_MS_OS_20_UUID \
+#define USB_BOS_MS_OS_20_UUID \
     0xDF, 0x60, 0xDD, 0xD8, 0x89, 0x45, 0xC7, 0x4C, \
   0x9C, 0xD2, 0x65, 0x9D, 0x9E, 0x64, 0x8A, 0x9F
 
@@ -76,24 +76,24 @@ typedef enum
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 #if XUA_ENABLE_BOS_DESC
-#define BOS_TOTAL_LEN      (TUD_BOS_DESC_LEN + TUD_BOS_MICROSOFT_OS_DESC_LEN)
+#define BOS_TOTAL_LEN      (USB_BOS_DESC_LEN + USB_BOS_MICROSOFT_OS_DESC_LEN)
 
 unsigned char const desc_bos_runtime[] =
 {
   // total length, number of device caps
-  TUD_BOS_DESCRIPTOR(BOS_TOTAL_LEN, 1),
+  USB_BOS_DESCRIPTOR(BOS_TOTAL_LEN, 1),
 
   // Microsoft OS 2.0 descriptor
-  TUD_BOS_MS_OS_20_DESCRIPTOR(MS_OS_20_DESC_LEN_RUNTIME, REQUEST_GET_MS_DESCRIPTOR)
+  USB_BOS_MS_OS_20_DESCRIPTOR(MS_OS_20_DESC_LEN_RUNTIME, REQUEST_GET_MS_DESCRIPTOR)
 };
 
 unsigned char const desc_bos_dfu[] =
 {
   // total length, number of device caps
-  TUD_BOS_DESCRIPTOR(BOS_TOTAL_LEN, 1),
+  USB_BOS_DESCRIPTOR(BOS_TOTAL_LEN, 1),
 
   // Microsoft OS 2.0 descriptor
-  TUD_BOS_MS_OS_20_DESCRIPTOR(MS_OS_20_DESC_LEN_DFU, REQUEST_GET_MS_DESCRIPTOR)
+  USB_BOS_MS_OS_20_DESCRIPTOR(MS_OS_20_DESC_LEN_DFU, REQUEST_GET_MS_DESCRIPTOR)
 };
 
 
