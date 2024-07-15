@@ -959,6 +959,7 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
     } /* if(result == XUD_RES_OKAY) */
 
     {
+#if XUA_ENABLE_BOS_DESC
         if(result == XUD_RES_ERR)
         {
             unsigned bmRequestType = (sp.bmRequestType.Direction<<7) | (sp.bmRequestType.Type<<5) | (sp.bmRequestType.Recipient);
@@ -979,6 +980,9 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
             }
 
         }
+#endif
+
+#if XUA_DFU_EN
         if(result == XUD_RES_ERR)
         {
             // In the new Theycon driver implementation, the XMOS_DFU_REVERTFACTORY request comes as a H2D vendor request and not as a class request addressed to the DFU interface
@@ -994,6 +998,7 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
                 }
             }
         }
+#endif
         if(result == XUD_RES_ERR)
         {
             /* Run vendor defined parsing/processing */
@@ -1001,6 +1006,7 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
              * core sure to shared memory depandancy */
             result = VendorRequests(ep0_out, ep0_in, &sp VENDOR_REQUESTS_PARAMS_);
         }
+#if XUA_ENABLE_BOS_DESC
         // Check for BOS descriptor request
         if(result == XUD_RES_ERR)
         {
@@ -1029,6 +1035,7 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
                 break;
             }
         }
+#endif
     }
 
     if(result == XUD_RES_ERR)

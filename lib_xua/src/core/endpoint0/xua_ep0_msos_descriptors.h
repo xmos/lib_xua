@@ -62,7 +62,7 @@
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
-
+#if XUA_ENABLE_BOS_DESC
 #define BOS_TOTAL_LEN      (TUD_BOS_DESC_LEN + TUD_BOS_MICROSOFT_OS_DESC_LEN)
 
 unsigned char const desc_bos_runtime[] =
@@ -136,5 +136,6 @@ uint8_t const desc_ms_os_20_dfu[] =
   '9', 0x00, '4', 0x00, '4', 0x00, 'E', 0x00, '-', 0x00, '2', 0x00, 'E', 0x00, '3', 0x00, '3', 0x00, '3', 0x00,
   '7', 0x00, '9', 0x00, 'B', 0x00, 'B', 0x00, '5', 0x00, '9', 0x00, 'D', 0x00, '}', 0x00, 0x00, 0x00, 0x00, 0x00
 };
+#endif
 
 #endif

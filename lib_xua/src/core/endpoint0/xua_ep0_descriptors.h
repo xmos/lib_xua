@@ -18,6 +18,14 @@
 #include "xua_hid_descriptor.h"
 #include "xud.h"
 
+// Enable BOS descriptor only when DFU is enabled since the only capability we advertise is the MSOS desc with DFU interface enumerating as WinUSB.
+// Enumerating with 0 capabilities doesn't seem to be allowed
+#if XUA_DFU_EN
+    #define XUA_ENABLE_BOS_DESC (1)
+#else
+    #define XUA_ENABLE_BOS_DESC (0)
+#endif
+
 #define APPEND_VENDOR_STR(x) VENDOR_STR" "#x
 
 #define APPEND_PRODUCT_STR_A2(x) PRODUCT_STR_A2 " "#x
@@ -470,7 +478,11 @@ USB_Descriptor_Device_t devDesc_Audio2 =
 {
     .bLength                        = sizeof(USB_Descriptor_Device_t),
     .bDescriptorType                = USB_DESCTYPE_DEVICE,
+#if XUA_ENABLE_BOS_DESC
     .bcdUSB                         = 0x0201,
+#else
+    .bcdUSB                         = 0x0200,
+#endif
     .bDeviceClass                   = 0xEF,
     .bDeviceSubClass                = 0x02,
     .bDeviceProtocol                = 0x01,
