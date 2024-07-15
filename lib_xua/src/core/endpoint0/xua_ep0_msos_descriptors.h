@@ -61,6 +61,19 @@
   0x9C, 0xD2, 0x65, 0x9D, 0x9E, 0x64, 0x8A, 0x9F
 
 
+typedef enum
+{
+  MS_OS_20_SET_HEADER_DESCRIPTOR       = 0x00,
+  MS_OS_20_SUBSET_HEADER_CONFIGURATION = 0x01,
+  MS_OS_20_SUBSET_HEADER_FUNCTION      = 0x02,
+  MS_OS_20_FEATURE_COMPATBLE_ID        = 0x03,
+  MS_OS_20_FEATURE_REG_PROPERTY        = 0x04,
+  MS_OS_20_FEATURE_MIN_RESUME_TIME     = 0x05,
+  MS_OS_20_FEATURE_MODEL_ID            = 0x06,
+  MS_OS_20_FEATURE_CCGP_DEVICE         = 0x07,
+  MS_OS_20_FEATURE_VENDOR_REVISION     = 0x08
+} microsoft_os_20_type_t;
+
 ///////////////////////////////////////////////////////////////////////////////////////////////
 #if XUA_ENABLE_BOS_DESC
 #define BOS_TOTAL_LEN      (TUD_BOS_DESC_LEN + TUD_BOS_MICROSOFT_OS_DESC_LEN)
