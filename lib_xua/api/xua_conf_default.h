@@ -630,7 +630,7 @@
  * Default: ""
  */
 #ifndef SERIAL_STR
-#define SERIAL_STR               "1234567"
+#define SERIAL_STR               ""
 #endif
 
 /**
@@ -1636,3 +1636,8 @@ enum USBEndpointNumber_Out
 #error CODEC_MASTER with DSD is currently unsupported
 #endif
 
+// When enumerating as bcdUSB 2.01, non-zero iSerialNumber with an empty serialStr doesn't seem to be allowed.
+// If enabling this, ensure that g_strTable.serialStr is set so a non-empty string.
+#ifndef REPORT_USB_SERIAL_NUMBER
+    #define REPORT_USB_SERIAL_NUMBER (0)
+#endif

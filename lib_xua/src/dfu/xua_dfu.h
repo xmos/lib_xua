@@ -45,7 +45,11 @@ unsigned char DFUdevDesc[] = {
     (BCD_DEVICE >> 8),          /* 13 bcdDevice : Device release number */
     DFU_MANUFACTURER_STR_INDEX,     /* 14 iManufacturer : Index of manufacturer string */
     DFU_PRODUCT_STR_INDEX,          /* 15 iProduct : Index of product string descriptor */
+#if REPORT_USB_SERIAL_NUMBER
     DFU_SERIAL_STR_INDEX,           /* 16 iSerialNumber : Index of serial number decriptor */
+#else
+    0,
+#endif
     0x01                            /* 17 bNumConfigurations : Number of possible configs */
 };
 
@@ -103,4 +107,3 @@ int DFUDeviceRequests(XUD_ep c_ep0_out, NULLABLE_REFERENCE_PARAM(XUD_ep, ep0_in)
 void DFUDelay(unsigned d);
 
 #endif /* _DFU_H_ */
-

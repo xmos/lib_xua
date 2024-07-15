@@ -373,6 +373,16 @@ void XUA_Endpoint0_setStrTable() {
 
     // update Serial strings
     concatenateAndCopyStrings(g_serial_str, "", g_strTable.serialStr);
+#if REPORT_USB_SERIAL_NUMBER
+    // When enumerating as bcdUSB 2.01, non-zero iSerialNumber with an empty serialStr doesn't seem to be allowed.
+    // Enumeration stops when the host gets the string descriptor corresponding to the iSerialNumber
+    if(!strcmp(g_strTable.serialStr, "")) // If serialStr is empty
+    {
+        debug_printf("Error: Serial string cannot be empty when REPORT_USB_SERIAL_NUMBER is defined\n");
+        xassert(0);
+    }
+
+#endif
 }
 
 void XUA_Endpoint0_setVendorStr(char* vendor_str) {

@@ -480,7 +480,11 @@ USB_Descriptor_Device_t devDesc_Audio2 =
     .bcdDevice                      = BCD_DEVICE,
     .iManufacturer                  = offsetof(StringDescTable_t, vendorStr)/sizeof(char *),
     .iProduct                       = offsetof(StringDescTable_t, productStr_Audio2)/sizeof(char *),
+#if REPORT_USB_SERIAL_NUMBER
     .iSerialNumber                  = offsetof(StringDescTable_t, serialStr)/sizeof(char *),
+#else
+    .iSerialNumber                  = 0,
+#endif
     .bNumConfigurations             = 0x01
 };
 
