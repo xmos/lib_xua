@@ -11,6 +11,8 @@
 
 #include <stddef.h>
 
+#define USB_DESCTYPE_BOS                    (0x0F)
+#define USB_DESCTYPE_DEVICE_CAPABILITY      (0x10)
 
 #define MS_OS_20_DESC_LEN_RUNTIME  0xB2
 #define MS_OS_20_DESC_LEN_DFU  0xA2
@@ -136,4 +138,3 @@ uint8_t const desc_ms_os_20_dfu[] =
 };
 
 #endif
-

@@ -89,7 +89,7 @@ unsigned char DFUcfgDesc[] = {
 
     /* DFU 1.1 Run-Time DFU Functional Descriptor */
     0x09,                           /* 0    Size */
-    USB_DESCTYPE_FUNCTIONAL,        /* 1    bDescriptorType : DFU FUNCTIONAL */
+    0x21,                           /* 1    bDescriptorType : DFU FUNCTIONAL */
     DFU_FUNC_ATTRS,                 /* 2    bmAttributes */
     0xFA,                           /* 3    wDetachTimeOut */
     0x00,                           /* 4    wDetachTimeOut */

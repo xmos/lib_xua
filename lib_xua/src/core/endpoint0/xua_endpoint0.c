@@ -265,6 +265,11 @@ const unsigned g_chanCount_Out_HS[OUTPUT_FORMAT_COUNT]       = {HS_STREAM_FORMAT
 #endif
 };
 
+// TODO Move to lib_xud
+#define USB_BMREQ_H2D_VENDOR_INT          ((USB_BM_REQTYPE_DIRECTION_H2D << 7) | \
+                                            (USB_BM_REQTYPE_TYPE_VENDOR << 5) | \
+                                            (USB_BM_REQTYPE_RECIP_INTER))
+
 XUD_ep ep0_out;
 XUD_ep ep0_in;
 
