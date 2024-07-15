@@ -38,13 +38,13 @@ clock clk_audio_mclk             = on tile[1]: XS1_CLKBLK_1;   /* Master clock *
 
 /* Endpoint type tables - informs XUD what the transfer types for each Endpoint in use and also
  * if the endpoint wishes to be informed of USB bus resets */
-XUD_EpType epTypeTableOut[]   = {XUD_EPTYPE_CTL | XUD_STATUS_ENABLE, XUD_EPTYPE_ISO};
+XUD_EpType epTypeTableOut[]   = {XUD_EPTYPE_CTL | XUD_STATUS_ENABLE};
 XUD_EpType epTypeTableIn[]    = {XUD_EPTYPE_CTL | XUD_STATUS_ENABLE, XUD_EPTYPE_ISO};
 
 int main()
 {
     /* Channels for lib_xud */
-    chan c_ep_out[2];
+    chan c_ep_out[1];
     chan c_ep_in[2];
 
     /* Channel for communicating SOF notifications from XUD to the Buffering cores */
@@ -65,7 +65,7 @@ int main()
     par
     {
         /* Low level USB device layer core */
-        on tile[1]: XUD_Main(c_ep_out, 2, c_ep_in, 2, c_sof, epTypeTableOut, epTypeTableIn, XUD_SPEED_HS, XUD_PWR_BUS);
+        on tile[1]: XUD_Main(c_ep_out, 1, c_ep_in, 2, c_sof, epTypeTableOut, epTypeTableIn, XUD_SPEED_HS, XUD_PWR_BUS);
 
         /* Endpoint 0 core from lib_xua */
         /* Note, since we are not using many features we pass in null for quite a few params.. */
@@ -82,7 +82,7 @@ int main()
            {
                 /* Buffering task - handles audio data to/from EP's and gives/gets data to/from the audio I/O core */
                 /* Note, this spawns two cores */
-                XUA_Buffer(c_ep_out[1], c_ep_in[1], c_sof, c_aud_ctl, p_for_mclk_count, c_aud);
+                XUA_Buffer(c_ep_in[1], c_sof, c_aud_ctl, p_for_mclk_count, c_aud);
 
                 /* AudioHub/IO core does most of the audio IO i.e. I2S (also serves as a hub for all audio) */
                 /* Note, since we are not using I2S we pass in null for LR and Bit clock ports and the I2S dataline ports */
