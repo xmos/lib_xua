@@ -13,6 +13,8 @@ UNRELEASED
     descriptor
   * ADDED:      Support for XMOS_DFU_REVERTFACTORY arriving as a USB_BMREQ_H2D_VENDOR_INT
     request to work with the latest Thesycon DFU driver on Windows
+  * CHANGED:    xmosdfu app to use DFU_DETACH
+  * CHANGED:    xmosdfu app to send XMOS_DFU_REVERTFACTORY as bmRequestType.Type = Vendor
 
   * Changes to dependencies:
 
