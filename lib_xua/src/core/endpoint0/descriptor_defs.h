@@ -10,11 +10,11 @@
 #include "xua.h"
 
 #if (NUM_USB_CHAN_IN > 0) && (NUM_USB_CHAN_OUT > 0)
-#define AUDIO_INTERFACE_COUNT 3
+#define AUDIO_INTERFACE_COUNT (3)
 #elif (NUM_USB_CHAN_IN > 0) || (NUM_USB_CHAN_OUT > 0)
-#define AUDIO_INTERFACE_COUNT 2
+#define AUDIO_INTERFACE_COUNT (2)
 #else
-#define AUDIO_INTERFACE_COUNT 1
+#define AUDIO_INTERFACE_COUNT (0)
 #endif
 
 /* Endpoint address defines */
@@ -38,7 +38,9 @@
 /* Interface numbers enum */
 enum USBInterfaceNumber
 {
+#if (NUM_USB_CHAN_IN > 0) || (NUM_USB_CHAN_OUT > 0)
     INTERFACE_NUMBER_AUDIO_CONTROL = 0,
+#endif
 #if (NUM_USB_CHAN_OUT > 0)
     INTERFACE_NUMBER_AUDIO_OUTPUT,
 #endif
@@ -68,11 +70,11 @@ enum USBInterfaceNumber
 };
 
 #ifndef ENDPOINT_INT_INTERVAL_IN_HID
-#define ENDPOINT_INT_INTERVAL_IN_HID 0x08
+#define ENDPOINT_INT_INTERVAL_IN_HID (0x08)
 #endif
 
 #ifndef ENDPOINT_INT_INTERVAL_OUT_HID
-#define ENDPOINT_INT_INTERVAL_OUT_HID 0x08
+#define ENDPOINT_INT_INTERVAL_OUT_HID (0x08)
 #endif
 
 #endif
