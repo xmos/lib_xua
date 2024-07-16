@@ -1,4 +1,4 @@
-// Copyright 2012-2021 XMOS LIMITED.
+// Copyright 2012-2024 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 #include <stdio.h>
 #include <stdlib.h>
@@ -45,9 +45,12 @@ device_pid_t pidList[] = {
 };
 
 unsigned int XMOS_DFU_IF = 0;
+static int dfu_timeout = 5000; // 5s
 
-#define DFU_REQUEST_TO_DEV 0x21
-#define DFU_REQUEST_FROM_DEV 0xa1
+#define USB_BMREQ_H2D_CLASS_INT (LIBUSB_ENDPOINT_OUT | LIBUSB_REQUEST_TYPE_CLASS | LIBUSB_RECIPIENT_INTERFACE)
+#define USB_BMREQ_D2H_CLASS_INT (LIBUSB_ENDPOINT_IN | LIBUSB_REQUEST_TYPE_CLASS | LIBUSB_RECIPIENT_INTERFACE)
+
+#define USB_BMREQ_H2D_VENDOR_INT (LIBUSB_ENDPOINT_OUT | LIBUSB_REQUEST_TYPE_VENDOR | LIBUSB_RECIPIENT_INTERFACE)
 
 // Standard DFU requests
 #define DFU_DETACH 0
@@ -143,37 +146,36 @@ static int find_xmos_device(unsigned int id, unsigned int pid, unsigned int list
 
 int xmos_dfu_resetdevice(void)
 {
-    libusb_control_transfer(devh, DFU_REQUEST_TO_DEV, XMOS_DFU_RESETDEVICE, 0, 0, NULL, 0, 0);
+    libusb_control_transfer(devh, USB_BMREQ_H2D_CLASS_INT, XMOS_DFU_RESETDEVICE, 0, 0, NULL, 0, 0);
     return 0;
 }
 
 int xmos_dfu_revertfactory(void)
 {
-    libusb_control_transfer(devh, DFU_REQUEST_TO_DEV, XMOS_DFU_REVERTFACTORY, 0, 0, NULL, 0, 0);
+    libusb_control_transfer(devh, USB_BMREQ_H2D_VENDOR_INT, XMOS_DFU_REVERTFACTORY, 0, 0, NULL, 0, 0);
     return 0;
 }
 
 int xmos_dfu_resetintodfu(unsigned int interface)
 {
-    libusb_control_transfer(devh, DFU_REQUEST_TO_DEV, XMOS_DFU_RESETINTODFU, 0, interface, NULL, 0, 0);
+    libusb_control_transfer(devh, USB_BMREQ_H2D_CLASS_INT, XMOS_DFU_RESETINTODFU, 0, interface, NULL, 0, 0);
     return 0;
 }
 
 int xmos_dfu_resetfromdfu(unsigned int interface)
 {
-    libusb_control_transfer(devh, DFU_REQUEST_TO_DEV, XMOS_DFU_RESETFROMDFU, 0, interface, NULL, 0, 0);
+    libusb_control_transfer(devh, USB_BMREQ_H2D_CLASS_INT, XMOS_DFU_RESETFROMDFU, 0, interface, NULL, 0, 0);
     return 0;
 }
 
 int dfu_detach(unsigned int interface, unsigned int timeout)
 {
-    libusb_control_transfer(devh, DFU_REQUEST_TO_DEV, DFU_DETACH, timeout, interface, NULL, 0, 0);
-    return 0;
+    return libusb_control_transfer(devh, USB_BMREQ_H2D_CLASS_INT, DFU_DETACH, timeout, interface, NULL, 0, dfu_timeout);
 }
 
 int dfu_getState(unsigned int interface, unsigned char *state)
 {
-    libusb_control_transfer(devh, DFU_REQUEST_FROM_DEV, DFU_GETSTATE, 0, interface, state, 1, 0);
+    libusb_control_transfer(devh, USB_BMREQ_D2H_CLASS_INT, DFU_GETSTATE, 0, interface, state, 1, 0);
     return 0;
 }
 
@@ -181,7 +183,7 @@ int dfu_getStatus(unsigned int interface, unsigned char *state, unsigned int *ti
                   unsigned char *nextState, unsigned char *strIndex)
 {
     unsigned int data[2];
-    libusb_control_transfer(devh, DFU_REQUEST_FROM_DEV, DFU_GETSTATUS, 0, interface, (unsigned char *)data, 6, 0);
+    libusb_control_transfer(devh, USB_BMREQ_D2H_CLASS_INT, DFU_GETSTATUS, 0, interface, (unsigned char *)data, 6, 0);
 
     *state = data[0] & 0xff;
     *timeout = (data[0] >> 8) & 0xffffff;
@@ -192,27 +194,27 @@ int dfu_getStatus(unsigned int interface, unsigned char *state, unsigned int *ti
 
 int dfu_clrStatus(unsigned int interface)
 {
-    libusb_control_transfer(devh, DFU_REQUEST_TO_DEV, DFU_CLRSTATUS, 0, interface, NULL, 0, 0);
+    libusb_control_transfer(devh, USB_BMREQ_H2D_CLASS_INT, DFU_CLRSTATUS, 0, interface, NULL, 0, 0);
     return 0;
 }
 
 int dfu_abort(unsigned int interface)
 {
-    libusb_control_transfer(devh, DFU_REQUEST_TO_DEV, DFU_ABORT, 0, interface, NULL, 0, 0);
+    libusb_control_transfer(devh, USB_BMREQ_H2D_CLASS_INT, DFU_ABORT, 0, interface, NULL, 0, 0);
     return 0;
 }
 
 
 int xmos_dfu_save_state(unsigned int interface)
 {
-    libusb_control_transfer(devh, DFU_REQUEST_TO_DEV, XMOS_DFU_SAVESTATE, 0, interface, NULL, 0, 0);
+    libusb_control_transfer(devh, USB_BMREQ_H2D_CLASS_INT, XMOS_DFU_SAVESTATE, 0, interface, NULL, 0, 0);
     printf("Save state command sent\n");
     return 0;
 }
 
 int xmos_dfu_restore_state(unsigned int interface)
 {
-    libusb_control_transfer(devh, DFU_REQUEST_TO_DEV, XMOS_DFU_RESTORESTATE, 0, interface, NULL, 0, 0);
+    libusb_control_transfer(devh, USB_BMREQ_H2D_CLASS_INT, XMOS_DFU_RESTORESTATE, 0, interface, NULL, 0, 0);
     printf("Restore state command sent\n");
     return 0;
 }
@@ -221,14 +223,14 @@ unsigned int dfu_download(unsigned int interface, unsigned int block_num, unsign
 {
     //printf("... Downloading block number %d size %d\r", block_num, size);
     /* Returns actual data size transferred */
-    unsigned int transfered = libusb_control_transfer(devh, DFU_REQUEST_TO_DEV, DFU_DNLOAD, block_num, interface, data, size, 0);
+    unsigned int transfered = libusb_control_transfer(devh, USB_BMREQ_H2D_CLASS_INT, DFU_DNLOAD, block_num, interface, data, size, 0);
     return transfered;
 }
 
 int dfu_upload(unsigned int interface, unsigned int block_num, unsigned int size, unsigned char*data)
 {
     unsigned int numBytes = 0;
-    numBytes = libusb_control_transfer(devh, DFU_REQUEST_FROM_DEV, DFU_UPLOAD, block_num, interface, (unsigned char *)data, size, 0);
+    numBytes = libusb_control_transfer(devh, USB_BMREQ_D2H_CLASS_INT, DFU_UPLOAD, block_num, interface, (unsigned char *)data, size, 0);
     return numBytes;
 }
 
@@ -529,7 +531,11 @@ int main(int argc, char **argv)
     {
 #ifndef START_IN_DFU
         printf("Detaching device from application mode.\n");
-        xmos_dfu_resetintodfu(XMOS_DFU_IF);
+        if(dfu_detach(XMOS_DFU_IF, 1000) < 0)
+        {
+            fprintf(stderr, "error detaching\n");
+            return -1;
+        }
 
         libusb_release_interface(devh, XMOS_DFU_IF);
         libusb_close(devh);
@@ -580,12 +586,20 @@ int main(int argc, char **argv)
         if (download)
         {
             write_dfu_image(firmware_filename);
-            xmos_dfu_resetfromdfu(XMOS_DFU_IF);
+            if(dfu_detach(XMOS_DFU_IF, 1000) < 0)
+            {
+                fprintf(stderr, "error detaching\n");
+                return -1;
+            }
         }
         else if (upload)
         {
             read_dfu_image(firmware_filename);
-            xmos_dfu_resetfromdfu(XMOS_DFU_IF);
+            if(dfu_detach(XMOS_DFU_IF, 1000) < 0)
+            {
+                fprintf(stderr, "error detaching\n");
+                return -1;
+            }
         }
         else if (revert)
         {
@@ -593,11 +607,19 @@ int main(int argc, char **argv)
             xmos_dfu_revertfactory();
             // Give device time to revert firmware
             Sleep(2 * 1000);
-            xmos_dfu_resetfromdfu(XMOS_DFU_IF);
+            if(dfu_detach(XMOS_DFU_IF, 1000) < 0)
+            {
+                fprintf(stderr, "error detaching\n");
+                return -1;
+            }
         }
         else
         {
-            xmos_dfu_resetfromdfu(XMOS_DFU_IF);
+            if(dfu_detach(XMOS_DFU_IF, 1000) < 0)
+            {
+                fprintf(stderr, "error detaching\n");
+                return -1;
+            }
         }
 
         printf("... Returning device to application mode\n");
