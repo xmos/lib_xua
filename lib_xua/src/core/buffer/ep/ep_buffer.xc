@@ -370,7 +370,7 @@ void XUA_Buffer_Ep(
 #endif
 
 #if (AUDIO_CLASS == 1)
-#if (NUM_USB_CHAN_OUT > 0) && ((NUM_USB_CHAN == 0) || defined(UAC_FORCE_FEEDBACK_EP))
+#if (NUM_USB_CHAN_OUT > 0) && ((NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP))
     /* In UAC1 we dont use a stream start event (and we are always FS) so mark FB EP ready now */
     XUD_SetReady_In(ep_aud_fb, (fb_clocks, unsigned char[]), 3);
 #endif
