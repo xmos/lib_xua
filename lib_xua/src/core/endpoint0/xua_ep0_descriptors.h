@@ -204,7 +204,7 @@ typedef struct
 #endif
 
 #if (NUM_USB_CHAN_OUT > 32)
-#error NUM_USB_CHAN > 32
+#error NUM_USB_CHAN_OUT > 32
 #endif
 
 #if (NUM_USB_CHAN_IN > 0)
@@ -305,7 +305,7 @@ typedef struct
 #endif
 
 #if (NUM_USB_CHAN_IN > 32)
-#error NUM_USB_CHAN > 32
+#error NUM_USB_CHAN_IN > 32
 #endif
 
 #if (MIXER) && (MAX_MIX_COUNT > 0)
