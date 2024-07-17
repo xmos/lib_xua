@@ -1,8 +1,8 @@
-// Copyright 2015-2023 XMOS LIMITED.
+// Copyright 2015-2024 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
-#ifndef __DESCRIPTOR_DEFS_H__
-#define __DESCRIPTOR_DEFS_H__
+#ifndef _DESCRIPTOR_DEFS_H_
+#define _DESCRIPTOR_DEFS_H_
 
 /*
     Include xua.h to pick up the #defines of NUM_USB_CHAN_IN and NUM_USB_CHAN_OUT.
