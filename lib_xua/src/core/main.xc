@@ -509,6 +509,8 @@ int main()
     chan c_sof;
     chan c_xud_out[ENDPOINT_COUNT_OUT];              /* Endpoint channels for XUD */
     chan c_xud_in[ENDPOINT_COUNT_IN];
+
+    /* Used to communicate controls/setting from XUA_Endpoint0() to the Audio/Buffering sub-system */
     chan c_aud_ctl;
 
 #if (!MIXER)
@@ -630,7 +632,14 @@ int main()
         {
 
             /* Audio I/O task, includes mixing etc */
-            usb_audio_io(c_mix_out
+            usb_audio_io(
+#if (NUM_USB_CHAN_OUT > 0) || (NUM_USB_CHAN_IN > 0)
+                /* Connect audio system to XUA_Buffer(); */
+                c_mix_out
+#else
+                /* Connect to XUA_Endpoint0() */
+                c_aud_ctl
+#endif
 #if (XUA_SPDIF_TX_EN) && (SPDIF_TX_TILE != AUDIO_IO_TILE)
                 , c_spdif_tx
 #endif

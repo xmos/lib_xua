@@ -444,114 +444,104 @@ void XUA_Buffer_Ep(
                 break;
             }
 #endif
-            /* Sample Freq or chan count update from Endpoint 0 core */
-            case testct_byref(c_aud_ctl, u_tmp):
+            /* Sample Freq or stream format update (e.g. channel count) from Endpoint 0 core */
+            case inuint_byref(c_aud_ctl, u_tmp):
             {
-                if (u_tmp)
-                {
-                   // is a control token sent by reboot_device
-                   inct(c_aud_ctl);
-                   outct(c_aud_ctl, XS1_CT_END);
-                   while(1) {};
-                }
-                else
-                {
-                    unsigned cmd = inuint(c_aud_ctl);
+                unsigned cmd = u_tmp;
 
-                    if(cmd == SET_SAMPLE_FREQ)
-                    {
-                        unsigned receivedSampleFreq = inuint(c_aud_ctl);
+                if(cmd == SET_SAMPLE_FREQ)
+                {
+                    unsigned receivedSampleFreq = inuint(c_aud_ctl);
 
 #if (MAX_FREQ != MIN_FREQ)
-                        /* Don't update things for DFU command.. */
-                        if(receivedSampleFreq != AUDIO_STOP_FOR_DFU)
-                        {
-                            sampleFreq = receivedSampleFreq;
+                    /* Don't update things for DFU command.. */
+                    if(receivedSampleFreq != AUDIO_STOP_FOR_DFU)
+                    {
+                        sampleFreq = receivedSampleFreq;
 #ifdef FB_TOLERANCE_TEST
-                            expected_fb = ((sampleFreq * 0x2000) / frameTime);
+                        expected_fb = ((sampleFreq * 0x2000) / frameTime);
 #endif
-                            /* Reset FB */
-                            /* Note, Endpoint 0 will hold off host for a sufficient period to allow our feedback
-                             * to stabilise (i.e. sofCount == 128 to fire) */
-                            sofCount = 0;
-                            clocks = 0;
-                            clockcounter = 0;
-                            mod_from_last_time = 0;
-                            feedbackValid = 0;
+                        /* Reset FB */
+                        /* Note, Endpoint 0 will hold off host for a sufficient period to allow our feedback
+                         * to stabilise (i.e. sofCount == 128 to fire) */
+                        sofCount = 0;
+                        clocks = 0;
+                        clockcounter = 0;
+                        mod_from_last_time = 0;
+                        feedbackValid = 0;
 #if FB_USE_REF_CLOCK
-                            clock_remainder = 0;
+                        clock_remainder = 0;
 #endif
 
-                            /* Set g_speed to something sensible. We expect it to get over-written before stream time */
-                            int min, mid, max;
-                            GetADCCounts(sampleFreq, min, mid, max);
-                            g_speed = mid<<16;
+                        /* Set g_speed to something sensible. We expect it to get over-written before stream time */
+                        int min, mid, max;
+                        GetADCCounts(sampleFreq, min, mid, max);
+                        g_speed = mid<<16;
 
-                            if((MCLK_48 % sampleFreq) == 0)
-                            {
-                                masterClockFreq = MCLK_48;
-                            }
-                            else
-                            {
-                                masterClockFreq = MCLK_441;
-                            }
-                        }
-#endif /* (MAX_FREQ != MIN_FREQ) */
-                        /* Ideally we want to wait for handshake (and pass back up) here.  But we cannot keep this
-                        * core locked, it must stay responsive to packets (MIDI etc) and SOFs.  So, set a flag and check for
-                        * handshake elsewhere */
-                        SET_SHARED_GLOBAL(g_freqChange_sampFreq, receivedSampleFreq);
-                    }
-#if (AUDIO_CLASS == 2)
-                    else if(cmd == SET_STREAM_FORMAT_IN)
-                    {
-                        unsigned formatChange_DataFormat = inuint(c_aud_ctl);
-                        unsigned formatChange_NumChans = inuint(c_aud_ctl);
-                        unsigned formatChange_SubSlot = inuint(c_aud_ctl);
-                        unsigned formatChange_SampRes = inuint(c_aud_ctl);
-
-                        SET_SHARED_GLOBAL(g_formatChange_NumChans, formatChange_NumChans);
-                        SET_SHARED_GLOBAL(g_formatChange_SubSlot, formatChange_SubSlot);
-                        SET_SHARED_GLOBAL(g_formatChange_DataFormat, formatChange_DataFormat);
-                        SET_SHARED_GLOBAL(g_formatChange_SampRes, formatChange_SampRes);
-                    }
-                    /* FIXME when FB EP is enabled there is no inital XUD_SetReady */
-                    else if (cmd == SET_STREAM_FORMAT_OUT)
-                    {
-
-                        XUD_BusSpeed_t busSpeed;
-                        unsigned formatChange_DataFormat = inuint(c_aud_ctl);
-                        unsigned formatChange_NumChans = inuint(c_aud_ctl);
-                        unsigned formatChange_SubSlot = inuint(c_aud_ctl);
-                        unsigned formatChange_SampRes = inuint(c_aud_ctl);
-
-                        SET_SHARED_GLOBAL(g_formatChange_NumChans, formatChange_NumChans);
-                        SET_SHARED_GLOBAL(g_formatChange_SubSlot, formatChange_SubSlot);
-                        SET_SHARED_GLOBAL(g_formatChange_DataFormat, formatChange_DataFormat);
-                        SET_SHARED_GLOBAL(g_formatChange_SampRes, formatChange_SampRes);
-
-#if (NUM_USB_CHAN_OUT > 0) && ((NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP))
-                        /* Host is starting up the output stream. Setup (or potentially resize) feedback packet based on bus-speed
-                         * This is only really important on inital start up (when bus-speed
-                           was unknown) and when changing bus-speeds */
-                        GET_SHARED_GLOBAL(busSpeed, g_curUsbSpeed);
-
-                        if (busSpeed == XUD_SPEED_HS)
+                        if((MCLK_48 % sampleFreq) == 0)
                         {
-                            XUD_SetReady_In(ep_aud_fb, (fb_clocks, unsigned char[]), 4);
+                            masterClockFreq = MCLK_48;
                         }
                         else
                         {
-                            XUD_SetReady_In(ep_aud_fb, (fb_clocks, unsigned char[]), 3);
+                            masterClockFreq = MCLK_441;
                         }
-#endif
+                    }
+#endif /* (MAX_FREQ != MIN_FREQ) */
+                    /* Ideally we want to wait for handshake (and pass back up) here.  But we cannot keep this
+                     * core locked, it must stay responsive to packets (MIDI etc) and SOFs.  So, set a flag and check for
+                     * handshake elsewhere */
+                    SET_SHARED_GLOBAL(g_freqChange_sampFreq, receivedSampleFreq);
+                }
+#if (AUDIO_CLASS == 2)
+                else if(cmd == SET_STREAM_FORMAT_IN)
+                {
+                    unsigned formatChange_DataFormat = inuint(c_aud_ctl);
+                    unsigned formatChange_NumChans = inuint(c_aud_ctl);
+                    unsigned formatChange_SubSlot = inuint(c_aud_ctl);
+                    unsigned formatChange_SampRes = inuint(c_aud_ctl);
+
+                    SET_SHARED_GLOBAL(g_formatChange_NumChans, formatChange_NumChans);
+                    SET_SHARED_GLOBAL(g_formatChange_SubSlot, formatChange_SubSlot);
+                    SET_SHARED_GLOBAL(g_formatChange_DataFormat, formatChange_DataFormat);
+                    SET_SHARED_GLOBAL(g_formatChange_SampRes, formatChange_SampRes);
+                }
+                /* FIXME when FB EP is enabled there is no inital XUD_SetReady */
+                else if (cmd == SET_STREAM_FORMAT_OUT)
+                {
+
+                    XUD_BusSpeed_t busSpeed;
+                    unsigned formatChange_DataFormat = inuint(c_aud_ctl);
+                    unsigned formatChange_NumChans = inuint(c_aud_ctl);
+                    unsigned formatChange_SubSlot = inuint(c_aud_ctl);
+                    unsigned formatChange_SampRes = inuint(c_aud_ctl);
+
+                    SET_SHARED_GLOBAL(g_formatChange_NumChans, formatChange_NumChans);
+                    SET_SHARED_GLOBAL(g_formatChange_SubSlot, formatChange_SubSlot);
+                    SET_SHARED_GLOBAL(g_formatChange_DataFormat, formatChange_DataFormat);
+                    SET_SHARED_GLOBAL(g_formatChange_SampRes, formatChange_SampRes);
+
+#if (NUM_USB_CHAN_OUT > 0) && ((NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP))
+                    /* Host is starting up the output stream. Setup (or potentially resize) feedback packet based on bus-speed
+                     * This is only really important on inital start up (when bus-speed
+                     was unknown) and when changing bus-speeds */
+                    GET_SHARED_GLOBAL(busSpeed, g_curUsbSpeed);
+
+                    if (busSpeed == XUD_SPEED_HS)
+                    {
+                        XUD_SetReady_In(ep_aud_fb, (fb_clocks, unsigned char[]), 4);
+                    }
+                    else
+                    {
+                        XUD_SetReady_In(ep_aud_fb, (fb_clocks, unsigned char[]), 3);
                     }
 #endif
-                    /* Pass on sample freq change to decouple() via global flag (saves a chanend) */
-                    /* Note: freqChange_flag now used to communicate other commands also */
-                    SET_SHARED_GLOBAL0(g_freqChange, cmd);                /* Set command */
-                    SET_SHARED_GLOBAL(g_freqChange_flag, cmd);  /* Set Flag */
                 }
+#endif
+                /* Pass on sample freq change to decouple() via global flag (saves a chanend) */
+                /* Note: freqChange_flag now used to communicate other commands also */
+                SET_SHARED_GLOBAL0(g_freqChange, cmd);                /* Set command */
+                SET_SHARED_GLOBAL(g_freqChange_flag, cmd);            /* Set Flag */
                 break;
             }
 #if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC) && (!XUA_USE_SW_PLL)

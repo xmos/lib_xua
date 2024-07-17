@@ -872,11 +872,13 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
                                 && (sp.bRequest != XMOS_DFU_SAVESTATE)
                                 && (sp.bRequest != XMOS_DFU_RESTORESTATE))
                         {
-#if(NUM_USB_CHAN_OUT > 0) || (NUM_USB_CHAN_IN > 0)
-                            /* Pass command through buffering system if we have USB channels */
-                            /* We need send this command such that AudioHub runs the DFUHandler()
+                            /* Send STOP_AUDIO_FOR_DFU command. This will either pass through
+                             * buffering system (i.e. ep_buffer/decouple) if the device has USB audio
+                             * channels. Otherwise this directly interacts with AudioHub
+                             * This command needs to be sent such that AudioHub runs the DFUHandler()
                              * task - in the case where AudioHub is running on tile[0] i.e the
-                             * flash tile and the USB code is running on a different tile
+                             * flash tile and the USB code (i.e this task) are running on separate
+                             * tiles. It also means that Flash pins can be shared with "audio" pins.
                              */
                             assert((c_aud_ctl != null) && msg("DFU not supported when c_aud_ctl is null"));
                             // Stop audio
@@ -884,10 +886,6 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
                             outuint(c_aud_ctl, AUDIO_STOP_FOR_DFU);
                             // Handshake
                             chkct(c_aud_ctl, XS1_CT_END);
-#else
-                            /* Directly instruct AudioHub to stop audio (and run DFUHandler() if required) */
-
-#endif
                         }
 
                         /* This will return 1 if reset requested */
