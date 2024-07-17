@@ -839,7 +839,9 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
             case USB_BMREQ_H2D_CLASS_EP:
             case USB_BMREQ_D2H_CLASS_EP:
                 {
+#if (NUM_USB_CHAN_OUT > 0) || (NUM_USB_CHAN_IN > 0)
                     unsigned epNum = sp.wIndex & 0xff;
+#endif
 
 // Ensure we only check for AUDIO EPs if enabled
 #if (NUM_USB_CHAN_IN != 0 && NUM_USB_CHAN_OUT == 0)
@@ -874,7 +876,7 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
                     unsigned DFU_IF = INTERFACE_NUMBER_DFU;
 
                     /* DFU interface number changes based on which mode we are currently running in */
-                    if (DFU_mode_active)
+                    if(DFU_mode_active)
                     {
                         DFU_IF = 0;
                     }
@@ -885,8 +887,10 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
 
                         /* If running in application mode stop audio */
                         /* Don't interupt audio for save and restore cmds */
-                        if ((DFU_IF == INTERFACE_NUMBER_DFU) && (sp.bRequest != XMOS_DFU_SAVESTATE) &&
-                            (sp.bRequest != XMOS_DFU_RESTORESTATE) && (notify_audio_stop_for_DFU == 0))
+                        if (!DFU_mode_active
+                                && (sp.bRequest != XMOS_DFU_SAVESTATE)
+                                && (sp.bRequest != XMOS_DFU_RESTORESTATE)
+                                && (notify_audio_stop_for_DFU == 0))
                         {
                             assert((c_audioControl != null) && msg("DFU not supported when c_audioControl is null"));
                             // Stop audio

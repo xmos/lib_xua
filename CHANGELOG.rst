@@ -15,6 +15,8 @@ UNRELEASED
     request to work with the latest Thesycon DFU driver on Windows
   * CHANGED:    xmosdfu app to use DFU_DETACH
   * CHANGED:    xmosdfu app to send XMOS_DFU_REVERTFACTORY as bmRequestType.Type = Vendor
+  * CHANGED:    Audio Class Control Interface no longer presented in descriptors if NUM_USB_CHAN_IN
+    and NUM_USB_CHAN_OUT are both zero
 
   * Changes to dependencies:
 
