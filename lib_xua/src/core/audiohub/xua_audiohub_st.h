@@ -4,7 +4,7 @@
 #pragma unsafe arrays
 static inline unsigned DoSampleTransfer(chanend ?c_out, const int readBuffNo, const unsigned underflowWord)
 {
-    if(XUA_USB_EN)
+    if(XUA_USB_EN && ((NUM_USB_CHAN_OUT > 0) || (NUM_USB_CHAN_IN > 0)))
     {
         outuint(c_out, underflowWord);
 

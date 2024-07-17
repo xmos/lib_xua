@@ -617,6 +617,7 @@ static void dummy_deliver(chanend ?c_out, unsigned &command)
 #endif
                 }
 
+                /* Request more data */
                 outuint(c_out, 0);
             break;
         }
@@ -915,6 +916,7 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
                 /* Currently no more audio will happen after this point */
                 if ((curSamFreq / AUD_TO_USB_RATIO) == AUDIO_STOP_FOR_DFU)
                 {
+                    /* Handshake back */
                     outct(c_aud, XS1_CT_END);
 
                     outuint(c_aud, 0);
