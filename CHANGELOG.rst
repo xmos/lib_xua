@@ -6,6 +6,8 @@ UNRELEASED
 
   * CHANGED:    Using lsats instruction for saturation in the mixer
   * CHANGED:    Simplified the mixer threads communication scheme
+  * CHANGED:    Audio Class Control Interface no longer presented in descriptors if NUM_USB_CHAN_IN
+    and NUM_USB_CHAN_OUT are both zero
 
   * Changes to dependencies:
 
