@@ -48,7 +48,7 @@ extern void DFUCustomFlashDisable();
 
 static unsigned int save_blk0_request_data[16];
 
-#define DO_BLOCKING_ERASE (1)
+#define DO_BLOCKING_ERASE (0)
 
 void DFUDelay(unsigned d)
 {
@@ -252,13 +252,18 @@ static int DFU_Upload(unsigned int request_len, unsigned int block_num, unsigned
 
 static unsigned transition_dfu_download_state()
 {
+    int tries = 0;
     if(!flash_cmd_start_write_image_in_progress) // If flash_cmd_start_write_image() is done, transition to IDLE since the actual flash writes (flash_cmd_write_page_data) are synchronous
     {
         return STATE_DFU_DOWNLOAD_IDLE;
     }
     else
     {
-        flash_cmd_start_write_image_in_progress = flash_cmd_start_write_image();
+        while(flash_cmd_start_write_image_in_progress && (tries < 50)) // Erase multiple sectors in one GET_STATUS call
+        {
+            flash_cmd_start_write_image_in_progress = flash_cmd_start_write_image();
+            tries++;
+        }
         if(!flash_cmd_start_write_image_in_progress)
         {
             // Write block 0 to flash
@@ -278,6 +283,10 @@ static unsigned transition_dfu_download_state()
 static int DFU_GetStatus(unsigned int request_len, unsigned data_buffer[16], chanend ?c_user_cmd, unsigned &DFU_state)
 {
     unsigned int timeout = 0;
+    if(flash_cmd_start_write_image_in_progress)
+    {
+        timeout = 100; //ms
+    }
 
     data_buffer[0] = (timeout << 8) | (unsigned char)DFU_status;
 
