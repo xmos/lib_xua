@@ -91,6 +91,9 @@ pipeline {
             xcorePrepareSandbox("${VIEW}", "${REPO}")
             dir("${REPO}/${REPO}/host/xmosdfu") {
               sh 'make -f Makefile.Linux64'
+              sh 'mkdir -p Linux64'
+              sh 'mv bin/xmosdfu Linux64/xmosdfu'
+              archiveArtifacts artifacts: "Linux64/xmosdfu", fingerprint: true
             }
           }
           post {
@@ -107,10 +110,14 @@ pipeline {
             xcorePrepareSandbox("${VIEW}", "${REPO}")
             dir("${REPO}/${REPO}/host/xmosdfu") {
               sh 'make -f Makefile.OSX64'
+              sh 'mkdir -p OSX/x86'
+              sh 'mv bin/xmosdfu OSX/x86/xmosdfu'
+              archiveArtifacts artifacts: "OSX/x86/xmosdfu", fingerprint: true
+
             }
             dir("${REPO}/host_usb_mixer_control") {
                 sh 'make -f Makefile.OSX'
-                sh 'mkdir OSX/x86'
+                sh 'mkdir -p OSX/x86'
                 sh 'mv xmos_mixer OSX/x86/xmos_mixer'
                 archiveArtifacts artifacts: "OSX/x86/xmos_mixer", fingerprint: true
             }
