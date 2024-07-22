@@ -69,6 +69,20 @@ static int dfu_timeout = 5000; // 5s
 #define XMOS_DFU_SAVESTATE            0xf5
 #define XMOS_DFU_RESTORESTATE         0xf6
 
+enum dfu_state {
+	DFU_STATE_appIDLE		= 0,
+	DFU_STATE_appDETACH		= 1,
+	DFU_STATE_dfuIDLE		= 2,
+	DFU_STATE_dfuDNLOAD_SYNC	= 3,
+	DFU_STATE_dfuDNBUSY		= 4,
+	DFU_STATE_dfuDNLOAD_IDLE	= 5,
+	DFU_STATE_dfuMANIFEST_SYNC	= 6,
+	DFU_STATE_dfuMANIFEST		= 7,
+	DFU_STATE_dfuMANIFEST_WAIT_RST	= 8,
+	DFU_STATE_dfuUPLOAD_IDLE	= 9,
+	DFU_STATE_dfuERROR		= 10
+};
+
 static libusb_device_handle *devh = NULL;
 
 static int find_xmos_device(unsigned int id, unsigned int pid, unsigned int list)
@@ -305,8 +319,20 @@ int write_dfu_image(char *file)
             return -1;
 
         }
-        dfu_getStatus(0, &dfuState, &timeout, &nextDfuState, &strIndex);
-        dfuBlockCount++;
+        do {
+            dfu_getStatus(0, &dfuState, &timeout, &nextDfuState, &strIndex);
+            if(nextDfuState == DFU_STATE_dfuERROR)
+            {
+                fprintf(stderr,"Error: dfu_getStatus() returned state as DFU_STATE_dfuERROR.\n");
+                return -1;
+            }
+            if(nextDfuState == DFU_STATE_dfuDNLOAD_IDLE)
+            {
+                dfuBlockCount++;
+                break;
+            }
+            Sleep(timeout);
+        }while(1);
     }
 
     if (remainder)
