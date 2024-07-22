@@ -48,7 +48,8 @@ extern void DFUCustomFlashDisable();
 
 static unsigned int save_blk0_request_data[16];
 
-#define DO_BLOCKING_ERASE (0)
+#define DO_BLOCKING_ERASE (0) // If enabled, block on block0 download request while flash_cmd_start_write_image() erases the entire flash.
+                              // If disabled, return DFU_STATE_dfuDNBUSY in reply to DFU_GET_STATUS while flash erase is in progress.
 
 void DFUDelay(unsigned d)
 {
