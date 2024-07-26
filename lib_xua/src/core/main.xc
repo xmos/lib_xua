@@ -509,6 +509,8 @@ int main()
     chan c_sof;
     chan c_xud_out[ENDPOINT_COUNT_OUT];              /* Endpoint channels for XUD */
     chan c_xud_in[ENDPOINT_COUNT_IN];
+
+    /* Used to communicate controls/setting from XUA_Endpoint0() to the Audio/Buffering sub-system */
     chan c_aud_ctl;
 
 #if (!MIXER)
@@ -536,6 +538,7 @@ int main()
 #if XUA_USB_EN
 #if ((XUD_TILE == 0) && (XUA_DFU_EN == 1))
             /* Check if USB is on the flash tile (tile 0) */
+            /* Expect to be distrbuted into XUA_Endpoint0() */
             [[distribute]]
             DFUHandler(dfuInterface, null);
 #endif
@@ -555,6 +558,7 @@ int main()
                          c_sof, epTypeTableOut, epTypeTableIn, usbSpeed, xudPwrCfg);
             }
 
+#if (NUM_USB_CHAN_OUT > 0) || (NUM_USB_CHAN_IN > 0) || XUA_HID_ENABLED || defined(MIDI)
             /* Core USB audio task, buffering, USB etc */
             {
                 unsigned x;
@@ -572,7 +576,7 @@ int main()
                 asm("ldw %0, dp[clk_audio_mclk]":"=r"(x));
                 asm("setclk res[%0], %1"::"r"(p_for_mclk_count), "r"(x));
 #endif
-                /* Endpoint & audio buffering cores */
+                /* Endpoint & audio buffering cores - buffers all EP's other than 0 */
                 XUA_Buffer(
 #if (NUM_USB_CHAN_OUT > 0)
                            c_xud_out[ENDPOINT_NUMBER_OUT_AUDIO],       /* Audio Out*/
@@ -609,6 +613,7 @@ int main()
                     );
                 //:
             }
+#endif
 
             /* Endpoint 0 Core */
             {
@@ -627,7 +632,14 @@ int main()
         {
 
             /* Audio I/O task, includes mixing etc */
-            usb_audio_io(c_mix_out
+            usb_audio_io(
+#if (NUM_USB_CHAN_OUT > 0) || (NUM_USB_CHAN_IN > 0)
+                /* Connect audio system to XUA_Buffer(); */
+                c_mix_out
+#else
+                /* Connect to XUA_Endpoint0() */
+                c_aud_ctl
+#endif
 #if (XUA_SPDIF_TX_EN) && (SPDIF_TX_TILE != AUDIO_IO_TILE)
                 , c_spdif_tx
 #endif
@@ -710,7 +722,7 @@ int main()
 
 
 #if XUA_USB_EN
-#if (XUD_TILE != 0 ) && (AUDIO_IO_TILE != 0) && (XUA_DFU_EN == 1)
+#if (XUD_TILE != 0) && (AUDIO_IO_TILE != 0) && (XUA_DFU_EN == 1)
         /* Run flash code on its own - hope it gets combined */
         //#warning Running DFU flash code on its own
         on stdcore[0]: DFUHandler(dfuInterface, null);

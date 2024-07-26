@@ -566,8 +566,7 @@ unsigned static AudioHub_MainLoop(chanend ?c_out, chanend ?c_spd_out
 void DFUHandler(server interface i_dfu i, chanend ?c_user_cmd);
 #endif
 
-/* This function is a dummy version of the deliver thread that does not
-   connect to the codec ports. It is used during DFU reset. */
+
 
 #pragma select handler
 void testct_byref(chanend c, int &returnVal)
@@ -577,7 +576,9 @@ void testct_byref(chanend c, int &returnVal)
         returnVal = 1;
 }
 
-#if (XUA_DFU_EN == 1)
+#if (XUA_DFU_EN == 1) && ((NUM_USB_CHAN_OUT > 0) || (NUM_USB_CHAN_IN > 0))
+/* This function is a dummy version of the deliver thread that does not
+   connect to the codec ports. It is used during DFU reset. */
 [[combinable]]
 static void dummy_deliver(chanend ?c_out, unsigned &command)
 {
@@ -585,6 +586,7 @@ static void dummy_deliver(chanend ?c_out, unsigned &command)
 
     while (1)
     {
+        /* Note, a select is used such that this task is combinable */
         select
         {
             /* Check for sample freq change or new samples from mixer*/
@@ -596,7 +598,6 @@ static void dummy_deliver(chanend ?c_out, unsigned &command)
                 }
                 else
                 {
-
 #if NUM_USB_CHAN_OUT > 0
 #pragma loop unroll
                     for(int i = 0; i < NUM_USB_CHAN_OUT; i++)
@@ -607,7 +608,6 @@ static void dummy_deliver(chanend ?c_out, unsigned &command)
 #else
                     inuint(c_out);
 #endif
-
 #if NUM_USB_CHAN_IN > 0
 #pragma loop unroll
                     for(int i = 0; i < NUM_USB_CHAN_IN; i++)
@@ -617,6 +617,7 @@ static void dummy_deliver(chanend ?c_out, unsigned &command)
 #endif
                 }
 
+                /* Request more data/commands */
                 outuint(c_out, 0);
             break;
         }
@@ -915,22 +916,25 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
                 /* Currently no more audio will happen after this point */
                 if ((curSamFreq / AUD_TO_USB_RATIO) == AUDIO_STOP_FOR_DFU)
                 {
+                    /* Handshake back */
                     outct(c_aud, XS1_CT_END);
 
+                    /* Request more data/commands */
                     outuint(c_aud, 0);
 
                     while (1)
                     {
-#if (XUD_TILE != 0) && (AUDIO_IO_TILE == 0)
                        [[combine]]
                         par
                         {
+#if (XUD_TILE != 0) && (AUDIO_IO_TILE == 0)
                             DFUHandler(dfuInterface, null);
-                            dummy_deliver(c_aud, command);
-                        }
-#else
-                        dummy_deliver(c_aud, command);
 #endif
+#if (NUM_USB_CHAN_OUT > 0) || (NUM_USB_CHAN_IN > 0)
+                            dummy_deliver(c_aud, command);
+#endif
+                        }
+
                         /* Note, we do not expect to reach here */
                         curSamFreq = inuint(c_aud);
                         outct(c_aud, XS1_CT_END);

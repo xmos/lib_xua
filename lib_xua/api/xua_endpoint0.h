@@ -13,7 +13,7 @@
  *
  *  \param c_ep0_out    Chanend connected to the XUD_Manager() out endpoint array
  *  \param c_ep0_in     Chanend connected to the XUD_Manager() in endpoint array
- *  \param c_audioCtrl  Chanend connected to the decouple thread for control
+ *  \param c_aud_ctl    Chanend connected to the decouple thread for control
  *                      audio (sample rate changes etc.). Note when nulled, the
  *                      audio device only supports single sample rate/format and
  *                      DFU is not supported either since this channel is used
@@ -28,7 +28,7 @@
  *                                  endpoint manager if present
  */
 void XUA_Endpoint0(chanend c_ep0_out,
-                    chanend c_ep0_in, chanend ?c_audioCtrl,
+                    chanend c_ep0_in, chanend ?c_aud_ctl,
                     chanend ?c_mix_ctl, chanend ?c_clk_ctl,
                     chanend ?c_EANativeTransport_ctrl,
                     client interface i_dfu ?dfuInterface

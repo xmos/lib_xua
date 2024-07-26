@@ -24,7 +24,7 @@ enum
     CLOCK_COUNT
 };
 
-/* c_audioControl */
+/* c_aud_ctl */
 #define SET_SAMPLE_FREQ         4
 #define SET_STREAM_FORMAT_OUT   8
 #define SET_STREAM_FORMAT_IN    9
