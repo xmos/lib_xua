@@ -389,7 +389,7 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
                                         }
                                         outct(c_clk_ctl, XS1_CT_END);
 #endif
-                                        outuint(c_aud_ctl, SET_SAMPLE_FREQ);
+                                        outct(c_aud_ctl, SET_SAMPLE_FREQ);
                                         outuint(c_aud_ctl, g_curSamFreq);
 
                                         /* Wait for handshake back - i.e. PLL locked and clocks okay */
@@ -1151,7 +1151,7 @@ int AudioEndpointRequests_1(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp
                                 g_curSamFreq = newSampleRate;
 
                                 /* Instruct audio thread to change sample freq */
-                                outuint(c_aud_ctl, SET_SAMPLE_FREQ);
+                                outct(c_aud_ctl, SET_SAMPLE_FREQ);
                                 outuint(c_aud_ctl, g_curSamFreq);
 
                                 /* Wait for handshake back - i.e. pll locked and clocks okay */

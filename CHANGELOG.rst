@@ -8,6 +8,9 @@ UNRELEASED
   * CHANGED:    Simplified the mixer threads communication scheme
   * CHANGED:    Audio Class Control Interface no longer presented in descriptors if NUM_USB_CHAN_IN
     and NUM_USB_CHAN_OUT are both zero
+  * CHANGED:    Buffering sub-system no longer spawns if NUM_USB_CHAN_IN and NUM_USB_CHAN_OUT are
+    both zero
+  * CHANGED:    Communication of commands between tasks now uniformly uses control tokens.
 
   * Changes to dependencies:
 

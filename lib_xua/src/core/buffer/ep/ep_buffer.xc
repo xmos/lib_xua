@@ -253,6 +253,7 @@ void XUA_Buffer_Ep(
     XUD_ep ep_hid = XUD_InitEp(c_hid);
 #endif
     unsigned u_tmp;
+    unsigned char cmd;
     unsigned sampleFreq = DEFAULT_FREQ;
     unsigned masterClockFreq = DEFAULT_MCLK_FREQ;
 
@@ -445,10 +446,8 @@ void XUA_Buffer_Ep(
             }
 #endif
             /* Sample Freq or stream format update (e.g. channel count) from Endpoint 0 core */
-            case inuint_byref(c_aud_ctl, u_tmp):
+            case inct_byref(c_aud_ctl, cmd):
             {
-                unsigned cmd = u_tmp;
-
                 if(cmd == SET_SAMPLE_FREQ)
                 {
                     unsigned receivedSampleFreq = inuint(c_aud_ctl);

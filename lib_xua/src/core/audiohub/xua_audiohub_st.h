@@ -66,10 +66,10 @@ static inline unsigned DoSampleTransfer(chanend ?c_out, const int readBuffNo, co
             /* In this case USB is still enabled, even though we have no audio channels to/from
              * host. Check for cmd - only expecting STOP_AUDIO_FOR_DFU. The select above cannot be
              * used since EP0 is not expecting to be polled */
-            unsigned command = 0;
+            unsigned char command = 0;
             select
             {
-                case inuint_byref(c_out, command):
+                case inct_byref(c_out, command):
                     break;
 
                 default:
@@ -77,7 +77,7 @@ static inline unsigned DoSampleTransfer(chanend ?c_out, const int readBuffNo, co
             }
 
             if(command)
-                return command;
+                return (unsigned) command;
         }
         /* Run user code */
         UserBufferManagement(samplesOut, samplesIn[readBuffNo]);

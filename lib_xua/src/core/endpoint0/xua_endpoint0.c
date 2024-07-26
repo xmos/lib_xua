@@ -49,6 +49,7 @@
 /* Support for xCORE  channels in C */
 #define null 0
 #define outuint(c, x)   asm ("out res[%0], %1" :: "r" (c), "r" (x))
+#define outct(c, x)     asm ("outct res[%0], %1" :: "r" (c), "r" (x))
 #define chkct(c, x)     asm ("chkct res[%0], %1" :: "r" (c), "r" (x))
 #endif
 
@@ -485,7 +486,7 @@ void XUA_Endpoint0_init(chanend c_ep0_out, chanend c_ep0_in, NULLABLE_RESOURCE(c
         assert(((unsigned)c_aud_ctl != 0) && msg("DFU not supported when c_aud_ctl is null"));
 
         /* Stop audio */
-        outuint(c_aud_ctl, SET_SAMPLE_FREQ);
+        outct(c_aud_ctl, SET_SAMPLE_FREQ);
         outuint(c_aud_ctl, AUDIO_STOP_FOR_DFU);
         /* No Handshake */
         DFU_mode_active = 1;
@@ -583,7 +584,7 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
                                     g_curStreamAlt_Out = sp.wValue;
 
                                     /* Send format of data onto buffering */
-                                    outuint(c_aud_ctl, SET_STREAM_FORMAT_OUT);
+                                    outct(c_aud_ctl, SET_STREAM_FORMAT_OUT);
                                     outuint(c_aud_ctl, g_dataFormat_Out[sp.wValue-1]);        /* Data format (PCM/DSD) */
 
                                     if(g_curUsbSpeed == XUD_SPEED_HS)
@@ -619,7 +620,7 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
                                     g_curStreamAlt_In = sp.wValue;
 
                                     /* Send format of data onto buffering */
-                                    outuint(c_aud_ctl, SET_STREAM_FORMAT_IN);
+                                    outct(c_aud_ctl, SET_STREAM_FORMAT_IN);
                                     outuint(c_aud_ctl, g_dataFormat_In[sp.wValue-1]);        /* Data format (PCM/DSD) */
 
                                     if(g_curUsbSpeed == XUD_SPEED_HS)
@@ -882,7 +883,7 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
                              */
                             assert((c_aud_ctl != null) && msg("DFU not supported when c_aud_ctl is null"));
                             // Stop audio
-                            outuint(c_aud_ctl, SET_SAMPLE_FREQ);
+                            outct(c_aud_ctl, SET_SAMPLE_FREQ);
                             outuint(c_aud_ctl, AUDIO_STOP_FOR_DFU);
                             // Handshake
                             chkct(c_aud_ctl, XS1_CT_END);

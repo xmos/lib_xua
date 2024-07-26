@@ -586,6 +586,7 @@ static void dummy_deliver(chanend ?c_out, unsigned &command)
 
     while (1)
     {
+        /* Note, a select is used such that this task is combinable */
         select
         {
             /* Check for sample freq change or new samples from mixer*/
