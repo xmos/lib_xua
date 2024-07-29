@@ -1,19 +1,23 @@
 lib_xua change log
 ==================
 
-UNRELEASED
-----------
+4.2.0
+-----
 
   * CHANGED:    lsats instruction used for saturation in the mixer
-  * CHANGED:    Mixer task communication scheme simplified, aiding code reuse & performance
-  * CHANGED:    Audio Class Control Interface no longer presented in descriptors if NUM_USB_CHAN_IN
-    and NUM_USB_CHAN_OUT are both zero
-  * CHANGED:    Buffering sub-system no longer spawns if NUM_USB_CHAN_IN and NUM_USB_CHAN_OUT are
-    both zero
-  * CHANGED:    Communication of commands between tasks now uniformly uses control tokens.
-    Potentially making mix & match of components more tractable in the future
+  * CHANGED:    Mixer task communication scheme simplified, aiding code reuse &
+    performance
+  * CHANGED:    Audio Class Control Interface no longer presented in descriptors
+    if NUM_USB_CHAN_IN and NUM_USB_CHAN_OUT are both zero
+  * CHANGED:    Buffering sub-system no longer spawns if NUM_USB_CHAN_IN and
+    NUM_USB_CHAN_OUT are both zero
+  * CHANGED:    Communication of commands between tasks now uniformly uses
+    control tokens. Potentially making mix & match of components more tractable
+    in the future
 
   * Changes to dependencies:
+
+    - lib_spdif: 6.1.0 -> 6.1.1
 
     - lib_xud: 2.3.1 -> 2.3.2
 
