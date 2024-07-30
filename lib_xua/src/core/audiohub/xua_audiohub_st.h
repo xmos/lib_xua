@@ -1,10 +1,10 @@
-// Copyright 2011-2023 XMOS LIMITED.
+// Copyright 2011-2024 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
 #pragma unsafe arrays
 static inline unsigned DoSampleTransfer(chanend ?c_out, const int readBuffNo, const unsigned underflowWord)
 {
-    if(XUA_USB_EN)
+    if(XUA_USB_EN && ((NUM_USB_CHAN_OUT > 0) || (NUM_USB_CHAN_IN > 0)))
     {
         outuint(c_out, underflowWord);
 
@@ -47,6 +47,7 @@ static inline unsigned DoSampleTransfer(chanend ?c_out, const int readBuffNo, co
 #else
             inuint(c_out);
 #endif
+            /* Run user code */
             UserBufferManagement(samplesOut, samplesIn[readBuffNo]);
 
 #if NUM_USB_CHAN_IN > 0
@@ -59,7 +60,28 @@ static inline unsigned DoSampleTransfer(chanend ?c_out, const int readBuffNo, co
         }
     }
     else
+    {
+        if(XUA_USB_EN)
+        {
+            /* In this case USB is still enabled, even though we have no audio channels to/from
+             * host. Check for cmd - only expecting STOP_AUDIO_FOR_DFU. The select above cannot be
+             * used since EP0 is not expecting to be polled */
+            unsigned char command = 0;
+            select
+            {
+                case inct_byref(c_out, command):
+                    break;
+
+                default:
+                    break;
+            }
+
+            if(command)
+                return (unsigned) command;
+        }
+        /* Run user code */
         UserBufferManagement(samplesOut, samplesIn[readBuffNo]);
+    }
 
     return 0;
 }

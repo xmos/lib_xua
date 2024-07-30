@@ -1,4 +1,4 @@
-// Copyright 2011-2023 XMOS LIMITED.
+// Copyright 2011-2024 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 #ifndef _XUA_COMMANDS_H_
 #define _XUA_COMMANDS_H_
@@ -24,7 +24,7 @@ enum
     CLOCK_COUNT
 };
 
-/* c_audioControl */
+/* c_aud_ctl */
 #define SET_SAMPLE_FREQ         4
 #define SET_STREAM_FORMAT_OUT   8
 #define SET_STREAM_FORMAT_IN    9

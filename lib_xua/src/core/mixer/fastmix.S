@@ -1,4 +1,4 @@
-// Copyright 2018-2023 XMOS LIMITED.
+// Copyright 2018-2024 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
 #include "xua.h"
@@ -36,19 +36,16 @@ doMix##i##: ;\
           lsub      r0, r1, r0, r0, r0;\
           .label_##i##:
 
+// Saturate the maccs result to 25bits
 #define DOMIX_BOT(i) \
           ldap      r11, _dp; \
           set       dp, r11;\
           ldap      r11, _cp;\
           set       cp, r11;\
 \
-          mov       r0, r1;\
-          ldc       r2, 0x19;\
-          sext      r0, r2;\
-          eq        r0, r0, r1;\
-          bf        r0, .L20; \
-\
-          shl       r0, r1, 0x7;\
+          ldc       r2, 0x19; \
+          lsats     r1, r0, r2; \
+          shl       r0, r1, 7; \
           retsp     0x0;\
 \
 \
@@ -64,14 +61,6 @@ doMix##i##: ;\
 
 .text
 
-.L20:\
-          lss       r0, r1, r3;\
-          bt        r0, .L16; \
-          ldw       r0, cp[.LC0];\
-          retsp     0x0; \
-.L16:\
-          ldw       r0, cp[.LC1];\
-          retsp     0x0; \
 
 
 #if(MAX_MIX_COUNT > 0)
@@ -166,18 +155,6 @@ setPtr_go:
   retsp 0;
 .size setPtr, .-setPtr
 .cc_bottom setPtr.function
-
-          .section .cp.const4,     "acM", @progbits, 4
-.cc_top .LC0.data
-          .align    4
-.LC0:
-          .int      0x7fffff00
-.cc_bottom .LC0.data
-.cc_top .LC1.data
-          .align    4
-.LC1:
-          .int      0x80000000
-.cc_bottom .LC1.data
 
 #undef N
 #undef BODY

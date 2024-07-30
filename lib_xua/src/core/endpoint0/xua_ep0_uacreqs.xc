@@ -1,4 +1,4 @@
-// Copyright 2011-2023 XMOS LIMITED.
+// Copyright 2011-2024 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 /**
  * @brief   Implements relevant requests from the USB Audio 2.0 Specification
@@ -303,7 +303,7 @@ void UpdateMixerWeight(chanend c_mix_ctl, int mix, int index, unsigned mult)
  *              XUD_RES_RST for device reset
  *              else XUD_RES_ERR
  */
-int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, chanend ?c_audioControl, chanend ?c_mix_ctl, chanend ?c_clk_ctl
+int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, chanend ?c_aud_ctl, chanend ?c_mix_ctl, chanend ?c_clk_ctl
 )
 {
     unsigned int buffer[32];
@@ -389,11 +389,11 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
                                         }
                                         outct(c_clk_ctl, XS1_CT_END);
 #endif
-                                        outuint(c_audioControl, SET_SAMPLE_FREQ);
-                                        outuint(c_audioControl, g_curSamFreq);
+                                        outct(c_aud_ctl, SET_SAMPLE_FREQ);
+                                        outuint(c_aud_ctl, g_curSamFreq);
 
                                         /* Wait for handshake back - i.e. PLL locked and clocks okay */
-                                        chkct(c_audioControl, XS1_CT_END);
+                                        chkct(c_aud_ctl, XS1_CT_END);
 
                                     }
 
@@ -1103,7 +1103,7 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
 
 #if (AUDIO_CLASS_FALLBACK != 0) || (AUDIO_CLASS == 1)
 
-int AudioEndpointRequests_1(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, chanend ?c_audioControl, chanend ?c_mix_ctl, chanend ?c_clk_ctl)
+int AudioEndpointRequests_1(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, chanend ?c_aud_ctl, chanend ?c_mix_ctl, chanend ?c_clk_ctl)
 {
     /* At this point we know:
      * bmRequestType.Recipient = Endpoint
@@ -1151,11 +1151,11 @@ int AudioEndpointRequests_1(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp
                                 g_curSamFreq = newSampleRate;
 
                                 /* Instruct audio thread to change sample freq */
-                                outuint(c_audioControl, SET_SAMPLE_FREQ);
-                                outuint(c_audioControl, g_curSamFreq);
+                                outct(c_aud_ctl, SET_SAMPLE_FREQ);
+                                outuint(c_aud_ctl, g_curSamFreq);
 
                                 /* Wait for handshake back - i.e. pll locked and clocks okay */
-                                chkct(c_audioControl, XS1_CT_END);
+                                chkct(c_aud_ctl, XS1_CT_END);
 
                                 /* Allow time for the change - feedback to stabilise */
                                 FeedbackStabilityDelay();
@@ -1188,7 +1188,7 @@ int AudioEndpointRequests_1(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp
 
 
 /* Handles the Audio Class 1.0 specific requests */
-XUD_Result_t AudioClassRequests_1(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, chanend ?c_audioControl, chanend ?c_mix_ctl, chanend ?c_clk_ctl
+XUD_Result_t AudioClassRequests_1(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, chanend ?c_aud_ctl, chanend ?c_mix_ctl, chanend ?c_clk_ctl
 )
 {
 #if (OUTPUT_VOLUME_CONTROL == 1) || (INPUT_VOLUME_CONTROL == 1)
