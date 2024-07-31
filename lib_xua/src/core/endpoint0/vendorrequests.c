@@ -1,4 +1,4 @@
-// Copyright 2016-2021 XMOS LIMITED.
+// Copyright 2016-2024 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 #include "xua.h"
 #if XUA_USB_EN
@@ -7,12 +7,12 @@
 #include "vendorrequests.h"
 
 int VendorAudioRequests(XUD_ep ep0_out, XUD_ep ep0_in, unsigned char bRequest, unsigned char cs, unsigned char cn,
-    unsigned short unitId, unsigned char direction, NULLABLE_RESOURCE(chanend, c_audioControl),
+    unsigned short unitId, unsigned char direction, NULLABLE_RESOURCE(chanend, c_aud_ctl),
     NULLABLE_RESOURCE(chanend, c_mix_ctl),
     NULLABLE_RESOURCE(chanend, c_clk_ctL)) __attribute__ ((weak));
 
 int VendorAudioRequests(XUD_ep ep0_out, XUD_ep ep0_in, unsigned char bRequest, unsigned char cs, unsigned char cn,
-    unsigned short unitId, unsigned char direction, NULLABLE_RESOURCE(chanend, c_audioControl),
+    unsigned short unitId, unsigned char direction, NULLABLE_RESOURCE(chanend, c_aud_ctl),
     NULLABLE_RESOURCE(chanend, c_mix_ctl),
     NULLABLE_RESOURCE(chanend, c_clk_ctL))
 {

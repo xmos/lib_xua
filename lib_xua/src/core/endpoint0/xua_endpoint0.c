@@ -50,6 +50,7 @@
 /* Support for xCORE  channels in C */
 #define null 0
 #define outuint(c, x)   asm ("out res[%0], %1" :: "r" (c), "r" (x))
+#define outct(c, x)     asm ("outct res[%0], %1" :: "r" (c), "r" (x))
 #define chkct(c, x)     asm ("chkct res[%0], %1" :: "r" (c), "r" (x))
 #endif
 
@@ -477,7 +478,7 @@ static unsigned char hidReportDescriptorPtr[] = {
 
 extern void SetDFUFlag(unsigned x);
 
-void XUA_Endpoint0_init(chanend c_ep0_out, chanend c_ep0_in, NULLABLE_RESOURCE(chanend, c_audioControl),
+void XUA_Endpoint0_init(chanend c_ep0_out, chanend c_ep0_in, NULLABLE_RESOURCE(chanend, c_aud_ctl),
     chanend c_mix_ctl, chanend c_clk_ctl, chanend c_EANativeTransport_ctrl, CLIENT_INTERFACE(i_dfu, dfuInterface) VENDOR_REQUESTS_PARAMS_DEC_)
 {
     ep0_out = XUD_InitEp(c_ep0_out);
@@ -493,18 +494,18 @@ void XUA_Endpoint0_init(chanend c_ep0_out, chanend c_ep0_in, NULLABLE_RESOURCE(c
 #endif
 
 #ifdef VENDOR_AUDIO_REQS
-    VendorAudioRequestsInit(c_audioControl, c_mix_ctl, c_clk_ctl);
+    VendorAudioRequestsInit(c_aud_ctl, c_mix_ctl, c_clk_ctl);
 #endif
 
 #if (XUA_DFU_EN == 1)
     /* Check if device has started in DFU mode */
     if (DFUReportResetState(null))
     {
-        assert(((unsigned)c_audioControl != 0) && msg("DFU not supported when c_audioControl is null"));
+        assert(((unsigned)c_aud_ctl != 0) && msg("DFU not supported when c_aud_ctl is null"));
 
         /* Stop audio */
-        outuint(c_audioControl, SET_SAMPLE_FREQ);
-        outuint(c_audioControl, AUDIO_STOP_FOR_DFU);
+        outct(c_aud_ctl, SET_SAMPLE_FREQ);
+        outuint(c_aud_ctl, AUDIO_STOP_FOR_DFU);
         /* No Handshake */
         DFU_mode_active = 1;
         SetDFUFlag(0); // Clear the DFU mode flag so that a device reboot without setting it back again transitions back to runtime mode
@@ -571,7 +572,7 @@ void XUA_Endpoint0_init(chanend c_ep0_out, chanend c_ep0_in, NULLABLE_RESOURCE(c
 
 }
 
-void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0_out, chanend c_ep0_in, NULLABLE_RESOURCE(chanend, c_audioControl),
+void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0_out, chanend c_ep0_in, NULLABLE_RESOURCE(chanend, c_aud_ctl),
     chanend c_mix_ctl, chanend c_clk_ctl, chanend c_EANativeTransport_ctrl, CLIENT_INTERFACE(i_dfu, dfuInterface) VENDOR_REQUESTS_PARAMS_DEC_)
 {
  if (result == XUD_RES_OKAY)
@@ -598,28 +599,28 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
                                 /* Only send change if we need to */
                                 if((sp.wValue > 0) && (g_curStreamAlt_Out != sp.wValue))
                                 {
-                                    assert((c_audioControl != null) && msg("Format change not supported when c_audioControl is null"));
+                                    assert((c_aud_ctl != null) && msg("Format change not supported when c_aud_ctl is null"));
                                     g_curStreamAlt_Out = sp.wValue;
 
                                     /* Send format of data onto buffering */
-                                    outuint(c_audioControl, SET_STREAM_FORMAT_OUT);
-                                    outuint(c_audioControl, g_dataFormat_Out[sp.wValue-1]);        /* Data format (PCM/DSD) */
+                                    outct(c_aud_ctl, SET_STREAM_FORMAT_OUT);
+                                    outuint(c_aud_ctl, g_dataFormat_Out[sp.wValue-1]);        /* Data format (PCM/DSD) */
 
                                     if(g_curUsbSpeed == XUD_SPEED_HS)
                                     {
-                                        outuint(c_audioControl, g_chanCount_Out_HS[sp.wValue-1]);                 /* Channel count */
-                                        outuint(c_audioControl, g_subSlot_Out_HS[sp.wValue-1]);    /* Subslot */
-                                        outuint(c_audioControl, g_sampRes_Out_HS[sp.wValue-1]);    /* Resolution */
+                                        outuint(c_aud_ctl, g_chanCount_Out_HS[sp.wValue-1]);                 /* Channel count */
+                                        outuint(c_aud_ctl, g_subSlot_Out_HS[sp.wValue-1]);    /* Subslot */
+                                        outuint(c_aud_ctl, g_sampRes_Out_HS[sp.wValue-1]);    /* Resolution */
                                     }
                                     else
                                     {
-                                        outuint(c_audioControl, NUM_USB_CHAN_OUT_FS);              /* Channel count */
-                                        outuint(c_audioControl, g_subSlot_Out_FS[sp.wValue-1]);    /* Subslot */
-                                        outuint(c_audioControl, g_sampRes_Out_FS[sp.wValue-1]);    /* Resolution */
+                                        outuint(c_aud_ctl, NUM_USB_CHAN_OUT_FS);              /* Channel count */
+                                        outuint(c_aud_ctl, g_subSlot_Out_FS[sp.wValue-1]);    /* Subslot */
+                                        outuint(c_aud_ctl, g_sampRes_Out_FS[sp.wValue-1]);    /* Resolution */
                                     }
 
                                     /* Handshake */
-                                    chkct(c_audioControl, XS1_CT_END);
+                                    chkct(c_aud_ctl, XS1_CT_END);
                                 }
                             }
                             break;
@@ -634,28 +635,28 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
                                 /* Only send change if we need to */
                                 if((sp.wValue > 0) && (g_curStreamAlt_In != sp.wValue))
                                 {
-                                    assert((c_audioControl != null) && msg("Format change not supported when c_audioControl is null"));
+                                    assert((c_aud_ctl != null) && msg("Format change not supported when c_aud_ctl is null"));
                                     g_curStreamAlt_In = sp.wValue;
 
                                     /* Send format of data onto buffering */
-                                    outuint(c_audioControl, SET_STREAM_FORMAT_IN);
-                                    outuint(c_audioControl, g_dataFormat_In[sp.wValue-1]);        /* Data format (PCM/DSD) */
+                                    outct(c_aud_ctl, SET_STREAM_FORMAT_IN);
+                                    outuint(c_aud_ctl, g_dataFormat_In[sp.wValue-1]);        /* Data format (PCM/DSD) */
 
                                     if(g_curUsbSpeed == XUD_SPEED_HS)
                                     {
-                                        outuint(c_audioControl, g_chanCount_In_HS[sp.wValue-1]);  /* Channel count */
-                                        outuint(c_audioControl, g_subSlot_In_HS[sp.wValue-1]);    /* Subslot */
-                                        outuint(c_audioControl, g_sampRes_In_HS[sp.wValue-1]);    /* Resolution */
+                                        outuint(c_aud_ctl, g_chanCount_In_HS[sp.wValue-1]);  /* Channel count */
+                                        outuint(c_aud_ctl, g_subSlot_In_HS[sp.wValue-1]);    /* Subslot */
+                                        outuint(c_aud_ctl, g_sampRes_In_HS[sp.wValue-1]);    /* Resolution */
                                     }
                                     else
                                     {
-                                        outuint(c_audioControl, NUM_USB_CHAN_IN_FS);               /* Channel count */
-                                        outuint(c_audioControl, g_subSlot_In_FS[sp.wValue-1]);     /* Subslot */
-                                        outuint(c_audioControl, g_sampRes_In_FS[sp.wValue-1]);     /* Resolution */
+                                        outuint(c_aud_ctl, NUM_USB_CHAN_IN_FS);               /* Channel count */
+                                        outuint(c_aud_ctl, g_subSlot_In_FS[sp.wValue-1]);     /* Subslot */
+                                        outuint(c_aud_ctl, g_sampRes_In_FS[sp.wValue-1]);     /* Resolution */
                                     }
 
                                     /* Wait for handshake */
-                                    chkct(c_audioControl, XS1_CT_END);
+                                    chkct(c_aud_ctl, XS1_CT_END);
                                 }
                             }
                             break;
@@ -855,10 +856,10 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
 #if (AUDIO_CLASS == 2) && (AUDIO_CLASS_FALLBACK)
                         if(g_curUsbSpeed == XUD_SPEED_FS)
                         {
-                            result = AudioEndpointRequests_1(ep0_out, ep0_in, &sp, c_audioControl, c_mix_ctl, c_clk_ctl);
+                            result = AudioEndpointRequests_1(ep0_out, ep0_in, &sp, c_aud_ctl, c_mix_ctl, c_clk_ctl);
                         }
 #elif (AUDIO_CLASS==1)
-                        result = AudioEndpointRequests_1(ep0_out, ep0_in, &sp, c_audioControl, c_mix_ctl, c_clk_ctl);
+                        result = AudioEndpointRequests_1(ep0_out, ep0_in, &sp, c_aud_ctl, c_mix_ctl, c_clk_ctl);
 #endif
                     }
 
@@ -892,12 +893,20 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
                                 && (sp.bRequest != XMOS_DFU_RESTORESTATE)
                                 && (notify_audio_stop_for_DFU == 0))
                         {
-                            assert((c_audioControl != null) && msg("DFU not supported when c_audioControl is null"));
+                            /* Send STOP_AUDIO_FOR_DFU command. This will either pass through
+                             * buffering system (i.e. ep_buffer/decouple) if the device has USB audio
+                             * channels. Otherwise this directly interacts with AudioHub
+                             * This command needs to be sent such that AudioHub runs the DFUHandler()
+                             * task - in the case where AudioHub is running on tile[0] i.e the
+                             * flash tile and the USB code (i.e this task) are running on separate
+                             * tiles. It also means that Flash pins can be shared with "audio" pins.
+                             */
+                            assert((c_aud_ctl != null) && msg("DFU not supported when c_aud_ctl is null"));
                             // Stop audio
-                            outuint(c_audioControl, SET_SAMPLE_FREQ);
-                            outuint(c_audioControl, AUDIO_STOP_FOR_DFU);
+                            outct(c_aud_ctl, SET_SAMPLE_FREQ);
+                            outuint(c_aud_ctl, AUDIO_STOP_FOR_DFU);
                             // Handshake
-                            chkct(c_audioControl, XS1_CT_END);
+                            chkct(c_aud_ctl, XS1_CT_END);
                             notify_audio_stop_for_DFU = 1;
                         }
 
@@ -930,16 +939,16 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
 #if (AUDIO_CLASS == 2) && (AUDIO_CLASS_FALLBACK)
                         if(g_curUsbSpeed == XUD_SPEED_HS)
                         {
-                            result = AudioClassRequests_2(ep0_out, ep0_in, &sp, c_audioControl, c_mix_ctl, c_clk_ctl);
+                            result = AudioClassRequests_2(ep0_out, ep0_in, &sp, c_aud_ctl, c_mix_ctl, c_clk_ctl);
                         }
                         else
                         {
-                            result = AudioClassRequests_1(ep0_out, ep0_in, &sp, c_audioControl, c_mix_ctl, c_clk_ctl);
+                            result = AudioClassRequests_1(ep0_out, ep0_in, &sp, c_aud_ctl, c_mix_ctl, c_clk_ctl);
                         }
 #elif (AUDIO_CLASS==2)
-                        result = AudioClassRequests_2(ep0_out, ep0_in, &sp, c_audioControl, c_mix_ctl, c_clk_ctl);
+                        result = AudioClassRequests_2(ep0_out, ep0_in, &sp, c_aud_ctl, c_mix_ctl, c_clk_ctl);
 #else
-                        result = AudioClassRequests_1(ep0_out, ep0_in, &sp, c_audioControl, c_mix_ctl, c_clk_ctl);
+                        result = AudioClassRequests_1(ep0_out, ep0_in, &sp, c_aud_ctl, c_mix_ctl, c_clk_ctl);
 #endif
 
 #ifdef VENDOR_AUDIO_REQS
@@ -949,7 +958,7 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
                             result = VendorAudioRequests(ep0_out, ep0_in, sp.bRequest,
                                 sp.wValue >> 8, sp.wValue & 0xff,
                                 sp.wIndex >> 8, sp.bmRequestType.Direction,
-                                c_audioControl, c_mix_ctl, c_clk_ctl);
+                                c_aud_ctl, c_mix_ctl, c_clk_ctl);
                         }
 #endif
                     }
@@ -1206,17 +1215,17 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
 }
 
 /* Endpoint 0 function.  Handles all requests to the device */
-void XUA_Endpoint0(chanend c_ep0_out, chanend c_ep0_in, NULLABLE_RESOURCE(chanend, c_audioControl),
+void XUA_Endpoint0(chanend c_ep0_out, chanend c_ep0_in, NULLABLE_RESOURCE(chanend, c_aud_ctl),
     chanend c_mix_ctl, chanend c_clk_ctl, chanend c_EANativeTransport_ctrl, CLIENT_INTERFACE(i_dfu, dfuInterface) VENDOR_REQUESTS_PARAMS_DEC_)
 {
     USB_SetupPacket_t sp;
-    XUA_Endpoint0_init(c_ep0_out, c_ep0_in, c_audioControl, c_mix_ctl, c_clk_ctl, c_EANativeTransport_ctrl, dfuInterface VENDOR_REQUESTS_PARAMS_);
+    XUA_Endpoint0_init(c_ep0_out, c_ep0_in, c_aud_ctl, c_mix_ctl, c_clk_ctl, c_EANativeTransport_ctrl, dfuInterface VENDOR_REQUESTS_PARAMS_);
 
     while(1)
     {
         /* Returns XUD_RES_OKAY for success, XUD_RES_RST for bus reset */
         XUD_Result_t result = USB_GetSetupPacket(ep0_out, ep0_in, &sp);
-        XUA_Endpoint0_loop(result, sp, c_ep0_out, c_ep0_in, c_audioControl, c_mix_ctl, c_clk_ctl, c_EANativeTransport_ctrl, dfuInterface VENDOR_REQUESTS_PARAMS_);
+        XUA_Endpoint0_loop(result, sp, c_ep0_out, c_ep0_in, c_aud_ctl, c_mix_ctl, c_clk_ctl, c_EANativeTransport_ctrl, dfuInterface VENDOR_REQUESTS_PARAMS_);
     }
 }
 #endif /* XUA_USB_EN*/
