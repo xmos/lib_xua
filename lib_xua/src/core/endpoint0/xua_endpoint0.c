@@ -379,16 +379,6 @@ void XUA_Endpoint0_setStrTable() {
 
     // update Serial strings
     concatenateAndCopyStrings(g_serial_str, "", g_strTable.serialStr);
-#if REPORT_USB_SERIAL_NUMBER
-    // When enumerating as bcdUSB 2.01, non-zero iSerialNumber with an empty serialStr doesn't seem to be allowed.
-    // Enumeration stops when the host gets the string descriptor corresponding to the iSerialNumber
-    if(!strcmp(g_strTable.serialStr, "")) // If serialStr is empty
-    {
-        debug_printf("Error: Serial string cannot be empty when REPORT_USB_SERIAL_NUMBER is defined\n");
-        xassert(0);
-    }
-
-#endif
 }
 
 void XUA_Endpoint0_setVendorStr(char* vendor_str) {
@@ -488,6 +478,11 @@ void XUA_Endpoint0_init(chanend c_ep0_out, chanend c_ep0_in, NULLABLE_RESOURCE(c
 
     VendorRequests_Init(VENDOR_REQUESTS_PARAMS);
 
+    if(strcmp(g_strTable.serialStr, "")) // If serialStr is not empty
+    {
+        devDesc_Audio2.iSerialNumber = offsetof(StringDescTable_t, serialStr)/sizeof(char *);
+    }
+
 #if (MIXER)
     /* Set up mixer default state */
     InitLocalMixerState();
@@ -498,6 +493,10 @@ void XUA_Endpoint0_init(chanend c_ep0_out, chanend c_ep0_in, NULLABLE_RESOURCE(c
 #endif
 
 #if (XUA_DFU_EN == 1)
+    if(strcmp(g_strTable.serialStr, "")) // If serialStr is not empty
+    {
+        DFUdevDesc.iSerialNumber = offsetof(StringDescTable_t, serialStr)/sizeof(char *); /* Same as the run-time mode device descriptor */
+    }
     /* Check if device has started in DFU mode */
     if (DFUReportResetState(null))
     {
@@ -1171,7 +1170,7 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
         {
             /* Running in DFU mode - always return same descs for DFU whether HS or FS */
             result = USB_StandardRequests(ep0_out, ep0_in,
-                DFUdevDesc, sizeof(DFUdevDesc),
+                (unsigned char*)&DFUdevDesc, sizeof(DFUdevDesc),
                 DFUcfgDesc, sizeof(DFUcfgDesc),
                 null, 0, /* Used same descriptors for full and high-speed */
                 null, 0,

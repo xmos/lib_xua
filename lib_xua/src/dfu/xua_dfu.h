@@ -15,11 +15,6 @@
 #error DFU_PID not defined!
 #endif
 
-#ifndef DFU_SERIAL_STR_INDEX
-/* By default no serial string */
-#error DFU_SERIAL_STR_INDEX is not defined!!
-#endif
-
 #ifndef DFU_PRODUCT_STR_INDEX
 #error DFU_PROFUCT_INDEX not defined!!
 #endif
@@ -28,29 +23,26 @@
 #error DFU_MANUFACTURE_STR_INDEX not defined!!
 #endif
 
-unsigned char DFUdevDesc[] = {
-    18,                             /* 0  bLength : Size of descriptor in Bytes (18 Bytes) */
-    1,                              /* 1  bdescriptorType */
-    1,                              /* 2  bcdUSB */
-    2,                              /* 3  bcdUSB */
-    0,                              /* 4  bDeviceClass:      See interface */
-    0,                              /* 5  bDeviceSubClass:   See interface */
-    0,                              /* 6  bDeviceProtocol:   See interface */
-    64,                             /* 7  bMaxPacketSize */
-    (DFU_VENDOR_ID & 0xFF),         /* 8  idVendor */
-    (DFU_VENDOR_ID >> 8),           /* 9  idVendor */
-    (DFU_PID & 0xFF),               /* 10 idProduct */
-    (DFU_PID >> 8),                 /* 11 idProduct */
-    (BCD_DEVICE & 0xFF),        /* 12 bcdDevice : Device release number */
-    (BCD_DEVICE >> 8),          /* 13 bcdDevice : Device release number */
-    DFU_MANUFACTURER_STR_INDEX,     /* 14 iManufacturer : Index of manufacturer string */
-    DFU_PRODUCT_STR_INDEX,          /* 15 iProduct : Index of product string descriptor */
-#if REPORT_USB_SERIAL_NUMBER
-    DFU_SERIAL_STR_INDEX,           /* 16 iSerialNumber : Index of serial number decriptor */
+USB_Descriptor_Device_t DFUdevDesc =
+{
+    .bLength                        = sizeof(USB_Descriptor_Device_t),
+    .bDescriptorType                = USB_DESCTYPE_DEVICE,
+#if XUA_ENABLE_BOS_DESC
+    .bcdUSB                         = 0x0201,
 #else
-    0,
+    .bcdUSB                         = 0x0200,
 #endif
-    0x01                            /* 17 bNumConfigurations : Number of possible configs */
+    .bDeviceClass                   = 0, /* See interface */
+    .bDeviceSubClass                = 0, /* See interface */
+    .bDeviceProtocol                = 0, /* See interface */
+    .bMaxPacketSize0                = 64,
+    .idVendor                       = DFU_VENDOR_ID,
+    .idProduct                      = DFU_PID,
+    .bcdDevice                      = BCD_DEVICE,
+    .iManufacturer                  = DFU_MANUFACTURER_STR_INDEX,
+    .iProduct                       = DFU_PRODUCT_STR_INDEX,
+    .iSerialNumber                  = 0, /* Set to None by default */
+    .bNumConfigurations             = 0x01
 };
 
 #define DFU_ATTR_CAN_DOWNLOAD              (1u << 0)

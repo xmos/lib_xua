@@ -1458,7 +1458,6 @@ enum USBEndpointNumber_Out
 #define DFU_PRODUCT_STR_INDEX       offsetof(StringDescTable_t, productStr_Audio1)/sizeof(char *)
 #endif
 #endif
-#define DFU_SERIAL_STR_INDEX        offsetof(StringDescTable_t, serialStr)/sizeof(char *) // Same as in the APP mode device descriptor
 
 /* USB test mode support enabled by default (Required for compliance testing) */
 #if defined(TEST_MODE_SUPPORT) && (TEST_MODE_SUPPORT == 0)
@@ -1636,10 +1635,4 @@ enum USBEndpointNumber_Out
 
 #if (CODEC_MASTER == 1) && (DSD_CHANS_DAC != 0)
 #error CODEC_MASTER with DSD is currently unsupported
-#endif
-
-// When enumerating as bcdUSB 2.01, non-zero iSerialNumber with an empty serialStr doesn't seem to be allowed.
-// If enabling this, ensure that g_strTable.serialStr is set so a non-empty string.
-#ifndef REPORT_USB_SERIAL_NUMBER
-    #define REPORT_USB_SERIAL_NUMBER (0)
 #endif
