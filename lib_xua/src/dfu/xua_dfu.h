@@ -6,6 +6,7 @@
 
 #include <xccompat.h>
 #include "xud_device.h"
+#include "dfu_types.h"
 
 #ifndef DFU_VENDOR_ID
 #error DFU_VENDOR_ID not defined!
@@ -23,11 +24,13 @@
 #error DFU_MANUFACTURE_STR_INDEX not defined!!
 #endif
 
+
+
 USB_Descriptor_Device_t DFUdevDesc =
 {
     .bLength                        = sizeof(USB_Descriptor_Device_t),
     .bDescriptorType                = USB_DESCTYPE_DEVICE,
-#if XUA_ENABLE_BOS_DESC
+#if _XUA_ENABLE_BOS_DESC
     .bcdUSB                         = 0x0201,
 #else
     .bcdUSB                         = 0x0200,
@@ -35,7 +38,7 @@ USB_Descriptor_Device_t DFUdevDesc =
     .bDeviceClass                   = 0, /* See interface */
     .bDeviceSubClass                = 0, /* See interface */
     .bDeviceProtocol                = 0, /* See interface */
-    .bMaxPacketSize0                = 64,
+    .bMaxPacketSize0                = _DFU_TRANSFER_SIZE_BYTES,
     .idVendor                       = DFU_VENDOR_ID,
     .idProduct                      = DFU_PID,
     .bcdDevice                      = BCD_DEVICE,

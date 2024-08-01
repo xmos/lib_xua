@@ -75,7 +75,7 @@ typedef enum
 } microsoft_os_20_type_t;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
-#if XUA_ENABLE_BOS_DESC
+#if _XUA_ENABLE_BOS_DESC
 #define BOS_TOTAL_LEN      (USB_BOS_DESC_LEN + USB_BOS_MICROSOFT_OS_DESC_LEN)
 
 unsigned char const desc_bos_runtime[] =

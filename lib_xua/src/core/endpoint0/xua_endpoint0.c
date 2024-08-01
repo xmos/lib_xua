@@ -466,8 +466,6 @@ static unsigned char hidReportDescriptorPtr[] = {
 #endif
 
 
-extern void SetDFUFlag(unsigned x);
-
 void XUA_Endpoint0_init(chanend c_ep0_out, chanend c_ep0_in, NULLABLE_RESOURCE(chanend, c_aud_ctl),
     chanend c_mix_ctl, chanend c_clk_ctl, chanend c_EANativeTransport_ctrl, CLIENT_INTERFACE(i_dfu, dfuInterface) VENDOR_REQUESTS_PARAMS_DEC_)
 {
@@ -507,7 +505,6 @@ void XUA_Endpoint0_init(chanend c_ep0_out, chanend c_ep0_in, NULLABLE_RESOURCE(c
         outuint(c_aud_ctl, AUDIO_STOP_FOR_DFU);
         /* No Handshake */
         DFU_mode_active = 1;
-        SetDFUFlag(0); // Clear the DFU mode flag so that a device reboot without setting it back again transitions back to runtime mode
     }
 #endif
 
@@ -968,7 +965,7 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
     } /* if(result == XUD_RES_OKAY) */
 
     {
-#if XUA_ENABLE_BOS_DESC
+#if _XUA_ENABLE_BOS_DESC
         if(result == XUD_RES_ERR)
         {
             unsigned bmRequestType = (sp.bmRequestType.Direction<<7) | (sp.bmRequestType.Type<<5) | (sp.bmRequestType.Recipient);
@@ -994,7 +991,7 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
 #if XUA_DFU_EN
         if(result == XUD_RES_ERR)
         {
-            // In the new Theycon driver implementation, the XMOS_DFU_REVERTFACTORY request comes as a H2D vendor request and not as a class request addressed to the DFU interface
+            // From Theycon DFU driver v2.66.0 onwards, the XMOS_DFU_REVERTFACTORY request comes as a H2D vendor request and not as a class request addressed to the DFU interface
             unsigned bmRequestType = (sp.bmRequestType.Direction<<7) | (sp.bmRequestType.Type<<5) | (sp.bmRequestType.Recipient);
             if((bmRequestType == USB_BMREQ_H2D_VENDOR_INT) && (sp.bRequest == XMOS_DFU_REVERTFACTORY))
             {
@@ -1015,7 +1012,7 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
              * core sure to shared memory depandancy */
             result = VendorRequests(ep0_out, ep0_in, &sp VENDOR_REQUESTS_PARAMS_);
         }
-#if XUA_ENABLE_BOS_DESC
+#if _XUA_ENABLE_BOS_DESC
         // Check for BOS descriptor request
         if(result == XUD_RES_ERR)
         {
