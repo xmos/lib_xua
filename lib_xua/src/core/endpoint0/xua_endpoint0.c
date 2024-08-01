@@ -887,10 +887,7 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
 
                         /* If running in application mode stop audio */
                         /* Don't interupt audio for save and restore cmds */
-                        if (!DFU_mode_active
-                                && (sp.bRequest != XMOS_DFU_SAVESTATE)
-                                && (sp.bRequest != XMOS_DFU_RESTORESTATE)
-                                && (notify_audio_stop_for_DFU == 0))
+                        if (!DFU_mode_active && !notify_audio_stop_for_DFU)
                         {
                             /* Send STOP_AUDIO_FOR_DFU command. This will either pass through
                              * buffering system (i.e. ep_buffer/decouple) if the device has USB audio
@@ -906,7 +903,7 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
                             outuint(c_aud_ctl, AUDIO_STOP_FOR_DFU);
                             // Handshake
                             chkct(c_aud_ctl, XS1_CT_END);
-                            notify_audio_stop_for_DFU = 1;
+                            notify_audio_stop_for_DFU = 1;  // So we notify AUDIO_STOP_FOR_DFU only once
                         }
 
                         /* This will return 1 if reset requested */
