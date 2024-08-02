@@ -55,44 +55,62 @@ USB_Descriptor_Device_t DFUdevDesc =
 // DFU functional attributes
 #define DFU_FUNC_ATTRS (DFU_ATTR_CAN_UPLOAD | DFU_ATTR_CAN_DOWNLOAD | DFU_ATTR_WILL_DETACH | DFU_ATTR_MANIFESTATION_TOLERANT)
 
-unsigned char DFUcfgDesc[] = {
-    /* Standard USB device descriptor */
-    0x09,                           /* 0  bLength */
-    USB_DESCTYPE_CONFIGURATION,              /* 1  bDescriptorType */
-    0x1b,                           /* 2  wTotalLength */
-    0x00,                           /* 3  wTotalLength */
-    1,                              /* 4  bNumInterface: Number of interfaces*/
-    0x01,                           /* 5  bConfigurationValue */
-    0x00,                           /* 6  iConfiguration */
+typedef struct
+{
+    unsigned char bLength;
+    unsigned char bDescriptorType;
+    unsigned char bmAttributes;
+    unsigned short wDetachTimeOut;
+    unsigned short wTransferSize;
+    unsigned short bcdDFUVersion;
+}__attribute__((packed)) USB_DFU_Functional_Descriptor_t;
+
+typedef struct
+{
+    USB_Descriptor_Configuration_Header_t       Config; /* Configuration header */
+    USB_Descriptor_Interface_t                  InterfaceDesc;
+    USB_DFU_Functional_Descriptor_t             FunctionalDesc;
+}__attribute__((packed)) USB_Config_Descriptor_DFU_t;
+
+
+USB_Config_Descriptor_DFU_t DFUcfgDesc = {
+    .Config =
+    {
+        .bLength                    = sizeof(USB_Descriptor_Configuration_Header_t),
+        .bDescriptorType            = USB_DESCTYPE_CONFIGURATION,
+        .wTotalLength               = sizeof(USB_Config_Descriptor_DFU_t),
+        .bNumInterfaces             = 1,
+        .bConfigurationValue        = 0x01,
+        .iConfiguration             = 0x00,
 #if (XUA_POWERMODE == XUA_POWERMODE_SELF)
-    192,
+        .bmAttributes               = 192,
 #else
-    128,
+        .bmAttributes               = 128,
 #endif
-    _XUA_BMAX_POWER,
-
-    /* Standard DFU class interface descriptor */
-    0x09,                           /* 0 bLength : Size of this descriptor, in bytes. (field size 1 bytes) */
-    0x04,                           /* 1 bDescriptorType : INTERFACE descriptor. (field size 1 bytes) */
-    0x00,                           /* 2 bInterfaceNumber : Index of this interface. (field size 1 bytes) */
-    0x00,                           /* 3 bAlternateSetting : Index of this setting. (field size 1 bytes) */
-    0x00,                           /* 4 bNumEndpoints : 0 endpoints. (field size 1 bytes) */
-    0xFE,                           /* 5 bInterfaceClass : AUDIO. (field size 1 bytes) */
-    0x01,                           /* 6 bInterfaceSubclass : AUDIO_CONTROL. (field size 1 bytes) */
-    0x02,                           /* 7 bInterfaceProtocol : Unused. (field size 1 bytes) */
-    offsetof(StringDescTable_t, dfuStr)/sizeof(char *), /* 8 iInterface */
-
-    /* DFU 1.1 Run-Time DFU Functional Descriptor */
-    0x09,                           /* 0    Size */
-    0x21,                           /* 1    bDescriptorType : DFU FUNCTIONAL */
-    DFU_FUNC_ATTRS,                 /* 2    bmAttributes */
-    0xFA,                           /* 3    wDetachTimeOut */
-    0x00,                           /* 4    wDetachTimeOut */
-    0x40,                           /* 5    wTransferSize */
-    0x00,                           /* 6    wTransferSize */
-    0x10,                           /* 7    bcdDFUVersion */
-    0x01,                           /* 8    bcdDFUVersion */
+        .bMaxPower                  = _XUA_BMAX_POWER,
+    },
+    .InterfaceDesc =
+    {
+        .bLength                       = sizeof(USB_Descriptor_Interface_t),
+        .bDescriptorType               = USB_DESCTYPE_INTERFACE,
+        .bInterfaceNumber              = 0,
+        .bAlternateSetting             = 0x00,                     /* Must be 0 */
+        .bNumEndpoints                 = 0x00,
+        .bInterfaceClass               = 0xFE,
+        .bInterfaceSubClass            = 0x01,
+        .bInterfaceProtocol            = 0x02,
+        .iInterface                    = offsetof(StringDescTable_t, dfuStr)/sizeof(char *), /* 8 iInterface */
+    },
+    .FunctionalDesc = {
+        .bLength = sizeof(USB_DFU_Functional_Descriptor_t),
+        .bDescriptorType = 0x21, //  DFU FUNCTIONAL
+        .bmAttributes = DFU_FUNC_ATTRS,
+        .wDetachTimeOut = 0x00FA,
+        .wTransferSize = _DFU_TRANSFER_SIZE_BYTES,
+        .bcdDFUVersion = 0x0110
+    }
 };
+
 
 int DFUReportResetState(NULLABLE_RESOURCE(chanend , c_user_cmd));
 int DFUDeviceRequests(XUD_ep c_ep0_out, NULLABLE_REFERENCE_PARAM(XUD_ep, ep0_in), REFERENCE_PARAM(USB_SetupPacket_t, sp),

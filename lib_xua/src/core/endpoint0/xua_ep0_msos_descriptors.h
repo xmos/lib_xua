@@ -11,17 +11,8 @@
 
 #include <stddef.h>
 
-#define USB_DESCTYPE_BOS                    (0x0F)
-#define USB_DESCTYPE_DEVICE_CAPABILITY      (0x10)
+#if _XUA_ENABLE_BOS_DESC
 
-#define MS_OS_20_DESC_LEN_RUNTIME  0xB2
-#define MS_OS_20_DESC_LEN_DFU  0xA2
-#define REQUEST_GET_MS_DESCRIPTOR    0x20
-
-// Microsoft OS 2.0 Descriptors, Table 8
-#define MS_OS_20_DESCRIPTOR_INDEX 7
-
-////////////////////////////////////////From TUSB code///////////////////////////////////////////////////////
 // total length, number of device caps
 #define _U16(_high, _low)   ((uint16_t) (((_high) << 8) | (_low)))
 #define _U16_HIGH(_u16)     ((uint8_t) (((_u16) >> 8) & 0x00ff))
@@ -37,29 +28,67 @@
 #define U32_TO_U8S_BE(_u32)   _U32_BYTE3(_u32), _U32_BYTE2(_u32), _U32_BYTE1(_u32), _U32_BYTE0(_u32)
 #define U32_TO_U8S_LE(_u32)   _U32_BYTE0(_u32), _U32_BYTE1(_u32), _U32_BYTE2(_u32), _U32_BYTE3(_u32)
 
+// USB Binary Device Object Store (BOS) Descriptor
+typedef struct {
+  uint8_t  bLength         ; ///< Size of this descriptor in bytes
+  uint8_t  bDescriptorType ; ///< CONFIGURATION Descriptor Type
+  uint16_t wTotalLength    ; ///< Total length of data returned for this descriptor
+  uint8_t  bNumDeviceCaps  ; ///< Number of device capability descriptors in the BOS
+} __attribute__((packed)) USB_Descriptor_BOS_standard_t;
 
-#define USB_BOS_DESC_LEN      0x05
+// Platform device capability BOS descriptor
+// MSOS 2.0 platform capability
+typedef struct
+{
+  uint8_t bLength;
+  uint8_t bDescriptorType ;
+  uint8_t bDevCapabilityType;
+  uint8_t bReserved;
+  uint8_t PlatformCapabilityUUID[16];
+  uint8_t CapabilityData[8]; // defined as Variable sized for the descriptor in general but 8 for us
+} __attribute__((packed)) USB_Descriptor_BOS_platform_t;
+
+typedef struct
+{
+  USB_Descriptor_BOS_standard_t usb_desc_bos_standard;
+  USB_Descriptor_BOS_platform_t usb_desc_bos_platform;
+} __attribute__((packed)) USB_Descriptor_BOS_t;
+
+
+
+#define USB_DESCTYPE_BOS                    (0x0F)
+
+USB_Descriptor_BOS_standard_t desc_bos_standard =
+{
+  .bLength = sizeof(USB_Descriptor_BOS_standard_t),
+  .bDescriptorType = USB_DESCTYPE_BOS,
+  .wTotalLength = sizeof(USB_Descriptor_BOS_standard_t) + sizeof(USB_Descriptor_BOS_platform_t),
+  .bNumDeviceCaps = 1
+};
+
+#define USB_DESCTYPE_DEVICE_CAPABILITY      (0x10)
 #define  DEVICE_CAPABILITY_PLATFORM  0x05
-
-// total length, number of device caps
-#define USB_BOS_DESCRIPTOR(_total_len, _caps_num) \
-  5, USB_DESCTYPE_BOS, U16_TO_U8S_LE(_total_len), _caps_num
-
-#define USB_BOS_MICROSOFT_OS_DESC_LEN   28
-// Device Capability Platform 128-bit UUID + Data
-#define USB_BOS_PLATFORM_DESCRIPTOR(...) \
-  USB_BOS_MICROSOFT_OS_DESC_LEN, USB_DESCTYPE_DEVICE_CAPABILITY, DEVICE_CAPABILITY_PLATFORM, 0x00, __VA_ARGS__
-
-//------------- Microsoft OS 2.0 Platform -------------//
-
-// Total Length of descriptor set, vendor code
-#define USB_BOS_MS_OS_20_DESCRIPTOR(_desc_set_len, _vendor_code) \
-  USB_BOS_PLATFORM_DESCRIPTOR(USB_BOS_MS_OS_20_UUID, U32_TO_U8S_LE(0x06030000), U16_TO_U8S_LE(_desc_set_len), _vendor_code, 0)
-
 #define USB_BOS_MS_OS_20_UUID \
     0xDF, 0x60, 0xDD, 0xD8, 0x89, 0x45, 0xC7, 0x4C, \
   0x9C, 0xD2, 0x65, 0x9D, 0x9E, 0x64, 0x8A, 0x9F
 
+#define MS_OS_20_DESC_LEN_COMPOSITE  0xB2
+#define MS_OS_20_DESC_LEN_SIMPLE  0xA2
+#define REQUEST_GET_MS_DESCRIPTOR    0x20
+
+USB_Descriptor_BOS_platform_t desc_bos_msos_platform_capability =
+{
+  .bLength = sizeof(USB_Descriptor_BOS_platform_t),
+  .bDescriptorType = USB_DESCTYPE_DEVICE_CAPABILITY,
+  .bDevCapabilityType = DEVICE_CAPABILITY_PLATFORM,
+  .bReserved = 0,
+  .PlatformCapabilityUUID = {USB_BOS_MS_OS_20_UUID},
+  .CapabilityData = {U32_TO_U8S_LE(0x06030000), U16_TO_U8S_LE(0) /*msos2.0 desc len filled at runtime*/, REQUEST_GET_MS_DESCRIPTOR, 0}
+};
+
+
+// Microsoft OS 2.0 Descriptors, Table 8
+#define MS_OS_20_DESCRIPTOR_INDEX 7
 
 typedef enum
 {
@@ -74,80 +103,61 @@ typedef enum
   MS_OS_20_FEATURE_VENDOR_REVISION     = 0x08
 } microsoft_os_20_type_t;
 
-///////////////////////////////////////////////////////////////////////////////////////////////
-#if _XUA_ENABLE_BOS_DESC
-#define BOS_TOTAL_LEN      (USB_BOS_DESC_LEN + USB_BOS_MICROSOFT_OS_DESC_LEN)
 
-unsigned char const desc_bos_runtime[] =
-{
-  // total length, number of device caps
-  USB_BOS_DESCRIPTOR(BOS_TOTAL_LEN, 1),
-
-  // Microsoft OS 2.0 descriptor
-  USB_BOS_MS_OS_20_DESCRIPTOR(MS_OS_20_DESC_LEN_RUNTIME, REQUEST_GET_MS_DESCRIPTOR)
-};
-
-unsigned char const desc_bos_dfu[] =
-{
-  // total length, number of device caps
-  USB_BOS_DESCRIPTOR(BOS_TOTAL_LEN, 1),
-
-  // Microsoft OS 2.0 descriptor
-  USB_BOS_MS_OS_20_DESCRIPTOR(MS_OS_20_DESC_LEN_DFU, REQUEST_GET_MS_DESCRIPTOR)
-};
+#define DEVICE_INTERFACE_GUID_MAX_STRLEN (38)
 
 
-uint8_t desc_ms_os_20_runtime[] =
+uint8_t desc_ms_os_20_composite[] =
 {
   // Set header: length, type, windows version, total length
-  U16_TO_U8S_LE(0x000A), U16_TO_U8S_LE(MS_OS_20_SET_HEADER_DESCRIPTOR), U32_TO_U8S_LE(0x06030000), U16_TO_U8S_LE(MS_OS_20_DESC_LEN_RUNTIME),
+  U16_TO_U8S_LE(0x000A), U16_TO_U8S_LE(MS_OS_20_SET_HEADER_DESCRIPTOR), U32_TO_U8S_LE(0x06030000), U16_TO_U8S_LE(MS_OS_20_DESC_LEN_COMPOSITE),
 
   // Configuration subset header: length, type, configuration index, reserved, configuration total length
-  U16_TO_U8S_LE(0x0008), U16_TO_U8S_LE(MS_OS_20_SUBSET_HEADER_CONFIGURATION), 0, 0, U16_TO_U8S_LE(MS_OS_20_DESC_LEN_RUNTIME-0x0A),
+  U16_TO_U8S_LE(0x0008), U16_TO_U8S_LE(MS_OS_20_SUBSET_HEADER_CONFIGURATION), 0, 0, U16_TO_U8S_LE(MS_OS_20_DESC_LEN_COMPOSITE-0x0A),
 
   // Function Subset header: length, type, first interface, reserved, subset length
-  U16_TO_U8S_LE(0x0008), U16_TO_U8S_LE(MS_OS_20_SUBSET_HEADER_FUNCTION), INTERFACE_NUMBER_DFU, 0, U16_TO_U8S_LE(MS_OS_20_DESC_LEN_RUNTIME-0x0A-0x08),
+  U16_TO_U8S_LE(0x0008), U16_TO_U8S_LE(MS_OS_20_SUBSET_HEADER_FUNCTION), INTERFACE_NUMBER_DFU, 0, U16_TO_U8S_LE(MS_OS_20_DESC_LEN_COMPOSITE-0x0A-0x08),
 
   // MS OS 2.0 Compatible ID descriptor: length, type, compatible ID, sub compatible ID
   U16_TO_U8S_LE(0x0014), U16_TO_U8S_LE(MS_OS_20_FEATURE_COMPATBLE_ID), 'W', 'I', 'N', 'U', 'S', 'B', 0x00, 0x00,
   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // sub-compatible
 
   // MS OS 2.0 Registry property descriptor: length, type
-  U16_TO_U8S_LE(MS_OS_20_DESC_LEN_RUNTIME-0x0A-0x08-0x08-0x14), U16_TO_U8S_LE(MS_OS_20_FEATURE_REG_PROPERTY),
+  U16_TO_U8S_LE(MS_OS_20_DESC_LEN_COMPOSITE-0x0A-0x08-0x08-0x14), U16_TO_U8S_LE(MS_OS_20_FEATURE_REG_PROPERTY),
   U16_TO_U8S_LE(0x0007), U16_TO_U8S_LE(0x002A), // wPropertyDataType, wPropertyNameLength and PropertyName "DeviceInterfaceGUIDs\0" in UTF-16
   'D', 0x00, 'e', 0x00, 'v', 0x00, 'i', 0x00, 'c', 0x00, 'e', 0x00, 'I', 0x00, 'n', 0x00, 't', 0x00, 'e', 0x00,
   'r', 0x00, 'f', 0x00, 'a', 0x00, 'c', 0x00, 'e', 0x00, 'G', 0x00, 'U', 0x00, 'I', 0x00, 'D', 0x00, 's', 0x00, 0x00, 0x00,
   U16_TO_U8S_LE(0x0050), // wPropertyDataLength
   // [DriverInterface] bPropertyData
-  // InterfaceGUID = {89C14132-D389-4FF7-944E-2E33379BB59D}
-  '{', 0x00, '8', 0x00, '9', 0x00, 'C', 0x00, '1', 0x00, '4', 0x00, '1', 0x00, '3', 0x00, '2', 0x00, '-', 0x00,
-  'D', 0x00, '3', 0x00, '8', 0x00, '9', 0x00, '-', 0x00, '4', 0x00, 'F', 0x00, 'F', 0x00, '7', 0x00, '-', 0x00,
-  '9', 0x00, '4', 0x00, '4', 0x00, 'E', 0x00, '-', 0x00, '2', 0x00, 'E', 0x00, '3', 0x00, '3', 0x00, '3', 0x00,
-  '7', 0x00, '9', 0x00, 'B', 0x00, 'B', 0x00, '5', 0x00, '9', 0x00, 'D', 0x00, '}', 0x00, 0x00, 0x00, 0x00, 0x00
+  // InterfaceGUID = defined in WINUSB_DEVICE_INTERFACE_GUID define and updated in the descriptor at runtime
+  '{', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, '-', 0x00,
+  'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, '-', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, '-', 0x00,
+  'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, '-', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00,
+  'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, '}', 0x00, 0x00, 0x00, 0x00, 0x00
 };
 
 
-uint8_t const desc_ms_os_20_dfu[] =
+uint8_t const desc_ms_os_20_simple[] =
 {
   // Set header: length, type, windows version, total length
-  U16_TO_U8S_LE(0x000A), U16_TO_U8S_LE(MS_OS_20_SET_HEADER_DESCRIPTOR), U32_TO_U8S_LE(0x06030000), U16_TO_U8S_LE(MS_OS_20_DESC_LEN_DFU),
+  U16_TO_U8S_LE(0x000A), U16_TO_U8S_LE(MS_OS_20_SET_HEADER_DESCRIPTOR), U32_TO_U8S_LE(0x06030000), U16_TO_U8S_LE(MS_OS_20_DESC_LEN_SIMPLE),
 
   // MS OS 2.0 Compatible ID descriptor: length, type, compatible ID, sub compatible ID
   U16_TO_U8S_LE(0x0014), U16_TO_U8S_LE(MS_OS_20_FEATURE_COMPATBLE_ID), 'W', 'I', 'N', 'U', 'S', 'B', 0x00, 0x00,
   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // sub-compatible
 
   // MS OS 2.0 Registry property descriptor: length, type
-  U16_TO_U8S_LE(MS_OS_20_DESC_LEN_DFU-0x0A-0x14), U16_TO_U8S_LE(MS_OS_20_FEATURE_REG_PROPERTY),
+  U16_TO_U8S_LE(MS_OS_20_DESC_LEN_SIMPLE-0x0A-0x14), U16_TO_U8S_LE(MS_OS_20_FEATURE_REG_PROPERTY),
   U16_TO_U8S_LE(0x0007), U16_TO_U8S_LE(0x002A), // wPropertyDataType, wPropertyNameLength and PropertyName "DeviceInterfaceGUIDs\0" in UTF-16
   'D', 0x00, 'e', 0x00, 'v', 0x00, 'i', 0x00, 'c', 0x00, 'e', 0x00, 'I', 0x00, 'n', 0x00, 't', 0x00, 'e', 0x00,
   'r', 0x00, 'f', 0x00, 'a', 0x00, 'c', 0x00, 'e', 0x00, 'G', 0x00, 'U', 0x00, 'I', 0x00, 'D', 0x00, 's', 0x00, 0x00, 0x00,
   U16_TO_U8S_LE(0x0050), // wPropertyDataLength
   // [DriverInterface] bPropertyData
-  // InterfaceGUID = {89C14132-D389-4FF7-944E-2E33379BB59D}
-  '{', 0x00, '8', 0x00, '9', 0x00, 'C', 0x00, '1', 0x00, '4', 0x00, '1', 0x00, '3', 0x00, '2', 0x00, '-', 0x00,
-  'D', 0x00, '3', 0x00, '8', 0x00, '9', 0x00, '-', 0x00, '4', 0x00, 'F', 0x00, 'F', 0x00, '7', 0x00, '-', 0x00,
-  '9', 0x00, '4', 0x00, '4', 0x00, 'E', 0x00, '-', 0x00, '2', 0x00, 'E', 0x00, '3', 0x00, '3', 0x00, '3', 0x00,
-  '7', 0x00, '9', 0x00, 'B', 0x00, 'B', 0x00, '5', 0x00, '9', 0x00, 'D', 0x00, '}', 0x00, 0x00, 0x00, 0x00, 0x00
+  // InterfaceGUID = defined in WINUSB_DEVICE_INTERFACE_GUID define and updated in the descriptor at runtime
+  '{', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, '-', 0x00,
+  'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, '-', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, '-', 0x00,
+  'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, '-', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00,
+  'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, '}', 0x00, 0x00, 0x00, 0x00, 0x00
 };
 #endif
 

@@ -154,6 +154,9 @@ char g_product_str[XUA_MAX_STR_LEN] = PRODUCT_STR_A1;
 /* Global variable for current USB Serial Number strings */
 char g_serial_str[XUA_MAX_STR_LEN] = SERIAL_STR;
 
+/* Device Interface GUID*/
+char g_device_interface_guid_str[DEVICE_INTERFACE_GUID_MAX_STRLEN+1] = WINUSB_DEVICE_INTERFACE_GUID;
+
 /* Subslot */
 const unsigned g_subSlot_Out_HS[OUTPUT_FORMAT_COUNT]    = {HS_STREAM_FORMAT_OUTPUT_1_SUBSLOT_BYTES,
 #if(OUTPUT_FORMAT_COUNT > 1)
@@ -465,6 +468,25 @@ static unsigned char hidReportDescriptorPtr[] = {
 };
 #endif
 
+/// Update the device interface GUID in both MSOS simple and composite descriptors
+static void update_guid_in_msos_desc(const char *guid_str)
+{
+    int msos_desc_start_offset = MS_OS_20_DESC_LEN_COMPOSITE - 4 - (2 * DEVICE_INTERFACE_GUID_MAX_STRLEN);
+    unsigned char *msos_desc_ptr = (unsigned char *)desc_ms_os_20_composite + msos_desc_start_offset;
+    for(int i=0; i<DEVICE_INTERFACE_GUID_MAX_STRLEN; i++)
+    {
+        msos_desc_ptr[2*i] = guid_str[i];
+        msos_desc_ptr[2*i + 1] = 0x0;
+    }
+    msos_desc_start_offset = MS_OS_20_DESC_LEN_SIMPLE - 4 - (2 * DEVICE_INTERFACE_GUID_MAX_STRLEN);
+    msos_desc_ptr = (unsigned char *)desc_ms_os_20_simple + msos_desc_start_offset;
+    for(int i=0; i<DEVICE_INTERFACE_GUID_MAX_STRLEN; i++)
+    {
+        msos_desc_ptr[2*i] = guid_str[i];
+        msos_desc_ptr[2*i + 1] = 0x0;
+    }
+}
+
 
 void XUA_Endpoint0_init(chanend c_ep0_out, chanend c_ep0_in, NULLABLE_RESOURCE(chanend, c_aud_ctl),
     chanend c_mix_ctl, chanend c_clk_ctl, chanend c_EANativeTransport_ctrl, CLIENT_INTERFACE(i_dfu, dfuInterface) VENDOR_REQUESTS_PARAMS_DEC_)
@@ -475,6 +497,11 @@ void XUA_Endpoint0_init(chanend c_ep0_out, chanend c_ep0_in, NULLABLE_RESOURCE(c
     XUA_Endpoint0_setStrTable();
 
     VendorRequests_Init(VENDOR_REQUESTS_PARAMS);
+
+    if(strcmp(g_device_interface_guid_str, "")) // If g_device_interface_guid_str is not empty
+    {
+        update_guid_in_msos_desc(g_device_interface_guid_str);
+    }
 
 #if (AUDIO_CLASS == 2)
     if(strcmp(g_strTable.serialStr, "")) // If serialStr is not empty
@@ -978,13 +1005,19 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
                 if((sp.bRequest == REQUEST_GET_MS_DESCRIPTOR) &&
                     sp.wIndex == MS_OS_20_DESCRIPTOR_INDEX)
                 {
-                    if(DFU_mode_active)
-                    {
-                        result = XUD_DoGetRequest(ep0_out, ep0_in, (unsigned char*)desc_ms_os_20_dfu, MS_OS_20_DESC_LEN_DFU, sp.wLength);
+                    int num_interfaces;
+                    if(DFU_mode_active) {
+                        num_interfaces = DFUcfgDesc.Config.bNumInterfaces;
                     }
-                    else
-                    {
-                        result = XUD_DoGetRequest(ep0_out, ep0_in, (unsigned char*)desc_ms_os_20_runtime, MS_OS_20_DESC_LEN_RUNTIME, sp.wLength);
+                    else {
+                        num_interfaces = cfgDesc_Audio2.Config.bNumInterfaces;
+                    }
+
+                    if(num_interfaces == 1) {
+                        result = XUD_DoGetRequest(ep0_out, ep0_in, (unsigned char*)desc_ms_os_20_simple, MS_OS_20_DESC_LEN_SIMPLE, sp.wLength);
+                    }
+                    else {
+                        result = XUD_DoGetRequest(ep0_out, ep0_in, (unsigned char*)desc_ms_os_20_composite, MS_OS_20_DESC_LEN_COMPOSITE, sp.wLength);
                     }
                 }
             }
@@ -1030,14 +1063,28 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
                             switch(sp.wValue & 0xff00)
                             {
                                 case (USB_DESCTYPE_BOS << 8):
-                                    if(DFU_mode_active)
-                                    {
-                                        result = XUD_DoGetRequest(ep0_out, ep0_in, (unsigned char*)desc_bos_dfu, BOS_TOTAL_LEN, sp.wLength);
+                                {
+                                    USB_Descriptor_BOS_t desc_bos;
+                                    desc_bos.usb_desc_bos_standard = desc_bos_standard;
+                                    desc_bos.usb_desc_bos_platform = desc_bos_msos_platform_capability;
+                                    uint16_t msos_desc_len;
+                                    int num_interfaces;
+                                    if(DFU_mode_active) {
+                                        num_interfaces = DFUcfgDesc.Config.bNumInterfaces;
                                     }
-                                    else
-                                    {
-                                        result = XUD_DoGetRequest(ep0_out, ep0_in, (unsigned char*)desc_bos_runtime, BOS_TOTAL_LEN, sp.wLength);
+                                    else {
+                                        num_interfaces = cfgDesc_Audio2.Config.bNumInterfaces;
                                     }
+
+                                    if(num_interfaces == 1) {
+                                        msos_desc_len = MS_OS_20_DESC_LEN_SIMPLE;
+                                    }
+                                    else {
+                                        msos_desc_len = MS_OS_20_DESC_LEN_COMPOSITE;
+                                    }
+                                    memcpy(&desc_bos.usb_desc_bos_platform.CapabilityData[4], &msos_desc_len, sizeof(int16_t)); // Update msos descriptor length in paltform capabilityData
+                                    result = XUD_DoGetRequest(ep0_out, ep0_in, (unsigned char*)&desc_bos, sizeof(USB_Descriptor_BOS_t), sp.wLength);
+                                }
                                 break;
                             }
                         break;
@@ -1169,7 +1216,7 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
             /* Running in DFU mode - always return same descs for DFU whether HS or FS */
             result = USB_StandardRequests(ep0_out, ep0_in,
                 (unsigned char*)&DFUdevDesc, sizeof(DFUdevDesc),
-                DFUcfgDesc, sizeof(DFUcfgDesc),
+                (unsigned char*)&DFUcfgDesc, sizeof(DFUcfgDesc),
                 null, 0, /* Used same descriptors for full and high-speed */
                 null, 0,
                 (char**)&g_strTable, sizeof(g_strTable)/sizeof(char *), &sp, g_curUsbSpeed);

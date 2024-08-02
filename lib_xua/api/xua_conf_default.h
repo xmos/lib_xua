@@ -1636,3 +1636,12 @@ enum USBEndpointNumber_Out
 #if (CODEC_MASTER == 1) && (DSD_CHANS_DAC != 0)
 #error CODEC_MASTER with DSD is currently unsupported
 #endif
+
+/**
+ * @brief Device interface GUID.
+ *
+ * Default: "{89C14132-D389-4FF7-944E-2E33379BB59D}" User can override by defining their own in xua_conf.h
+ */
+#ifndef WINUSB_DEVICE_INTERFACE_GUID
+#define WINUSB_DEVICE_INTERFACE_GUID               "{89C14132-D389-4FF7-944E-2E33379BB59D}"
+#endif
