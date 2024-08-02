@@ -468,6 +468,7 @@ static unsigned char hidReportDescriptorPtr[] = {
 };
 #endif
 
+#if _XUA_ENABLE_BOS_DESC
 /// Update the device interface GUID in both MSOS simple and composite descriptors
 static void update_guid_in_msos_desc(const char *guid_str)
 {
@@ -486,7 +487,7 @@ static void update_guid_in_msos_desc(const char *guid_str)
         msos_desc_ptr[2*i + 1] = 0x0;
     }
 }
-
+#endif
 
 void XUA_Endpoint0_init(chanend c_ep0_out, chanend c_ep0_in, NULLABLE_RESOURCE(chanend, c_aud_ctl),
     chanend c_mix_ctl, chanend c_clk_ctl, chanend c_EANativeTransport_ctrl, CLIENT_INTERFACE(i_dfu, dfuInterface) VENDOR_REQUESTS_PARAMS_DEC_)
@@ -497,11 +498,12 @@ void XUA_Endpoint0_init(chanend c_ep0_out, chanend c_ep0_in, NULLABLE_RESOURCE(c
     XUA_Endpoint0_setStrTable();
 
     VendorRequests_Init(VENDOR_REQUESTS_PARAMS);
-
+#if _XUA_ENABLE_BOS_DESC
     if(strcmp(g_device_interface_guid_str, "")) // If g_device_interface_guid_str is not empty
     {
         update_guid_in_msos_desc(g_device_interface_guid_str);
     }
+#endif
 
 #if (AUDIO_CLASS == 2)
     if(strcmp(g_strTable.serialStr, "")) // If serialStr is not empty
