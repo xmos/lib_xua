@@ -476,10 +476,12 @@ void XUA_Endpoint0_init(chanend c_ep0_out, chanend c_ep0_in, NULLABLE_RESOURCE(c
 
     VendorRequests_Init(VENDOR_REQUESTS_PARAMS);
 
+#if (AUDIO_CLASS == 2)
     if(strcmp(g_strTable.serialStr, "")) // If serialStr is not empty
     {
         devDesc_Audio2.iSerialNumber = offsetof(StringDescTable_t, serialStr)/sizeof(char *);
     }
+#endif
 
 #if (MIXER)
     /* Set up mixer default state */
@@ -491,10 +493,12 @@ void XUA_Endpoint0_init(chanend c_ep0_out, chanend c_ep0_in, NULLABLE_RESOURCE(c
 #endif
 
 #if (XUA_DFU_EN == 1)
+#if (AUDIO_CLASS == 2)
     if(strcmp(g_strTable.serialStr, "")) // If serialStr is not empty
     {
         DFUdevDesc.iSerialNumber = offsetof(StringDescTable_t, serialStr)/sizeof(char *); /* Same as the run-time mode device descriptor */
     }
+#endif
     /* Check if device has started in DFU mode */
     if (DFUReportResetState(null))
     {
