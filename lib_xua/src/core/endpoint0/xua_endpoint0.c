@@ -154,8 +154,10 @@ char g_product_str[XUA_MAX_STR_LEN] = PRODUCT_STR_A1;
 /* Global variable for current USB Serial Number strings */
 char g_serial_str[XUA_MAX_STR_LEN] = SERIAL_STR;
 
+#if _XUA_ENABLE_BOS_DESC
 /* Device Interface GUID*/
 char g_device_interface_guid_str[DEVICE_INTERFACE_GUID_MAX_STRLEN+1] = WINUSB_DEVICE_INTERFACE_GUID;
+#endif
 
 /* Subslot */
 const unsigned g_subSlot_Out_HS[OUTPUT_FORMAT_COUNT]    = {HS_STREAM_FORMAT_OUTPUT_1_SUBSLOT_BYTES,
