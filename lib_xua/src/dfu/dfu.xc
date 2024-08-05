@@ -158,6 +158,7 @@ static int DFU_Dnload(unsigned int request_len, unsigned int block_num, const un
                 flash_cmd_erase_all();
 
                 flash_cmd_start_write_image_in_progress = flash_cmd_start_write_image();
+
                 if(flash_cmd_start_write_image_in_progress) // flash_cmd_start_write_image() still in progress
                 {
                     for (unsigned i = 0; i < _DFU_TRANSFER_SIZE_WORDS; i++)
@@ -242,22 +243,30 @@ static int DFU_Upload(unsigned int request_len, unsigned int block_num, unsigned
     return _DFU_TRANSFER_SIZE_BYTES;
 }
 
-
+#define GET_STATUS_POLL_TIMEOUT_MS     (400)    // Erasing 512*1024 bytes of flash requires about 26 instances of the device returning STATE_DFU_DOWNLOAD_BUSY
 static unsigned transition_dfu_download_state()
 {
-    const int num_sectors_erased_per_get_status_call = 50;
-    int tries = 0;
     if(!flash_cmd_start_write_image_in_progress) // If flash_cmd_start_write_image() is done, transition to IDLE since the actual flash writes (flash_cmd_write_page_data) are synchronous
     {
         return STATE_DFU_DOWNLOAD_IDLE;
     }
     else
     {
-        while(flash_cmd_start_write_image_in_progress && (tries < num_sectors_erased_per_get_status_call)) // Erase multiple sectors in one GET_STATUS call
+        timer tmr;
+        unsigned time;
+        tmr :> time;
+        unsigned end_time = time + (XS1_TIMER_KHZ * GET_STATUS_POLL_TIMEOUT_MS);
+
+        while(timeafter(end_time, time)) // Erase as many sectors as we can in GET_STATUS_POLL_TIMEOUT_MS time duration
         {
+            if(!flash_cmd_start_write_image_in_progress)
+            {
+                break;
+            }
             flash_cmd_start_write_image_in_progress = flash_cmd_start_write_image();
-            tries++;
+            tmr :> time;
         }
+
         if(!flash_cmd_start_write_image_in_progress)
         {
             // Write block 0 to flash
@@ -279,7 +288,7 @@ static int DFU_GetStatus(unsigned int request_len, unsigned data_buffer[_DFU_TRA
     unsigned int timeout = 0;
     if(flash_cmd_start_write_image_in_progress)
     {
-        timeout = 100; //ms
+        timeout = GET_STATUS_POLL_TIMEOUT_MS; //ms
     }
 
     data_buffer[0] = (timeout << 8) | (unsigned char)DFU_status;
