@@ -85,9 +85,10 @@ USB_Descriptor_BOS_platform_t desc_bos_msos_platform_capability =
 };
 
 //MSOS descriptor related defines
-#define DEVICE_INTERFACE_GUID_MAX_STRLEN (38)
-#define MSOS_PROPERTY_NAME_LEN  (42) // bytes
-#define MSOS_INTERFACE_GUID_LEN (80) // bytes
+#define MSOS_PROPERTY_NAME_LEN  (42) /* bytes*/
+#define MSOS_INTERFACE_GUID_LEN (80) /* bytes*/
+#define DEVICE_INTERFACE_GUID_MAX_STRLEN ((MSOS_INTERFACE_GUID_LEN-4)/2) /* -4 to exclude null character + 2 extra bytes at the end. \
+                                                                          /2 to go from utf-16 to single byte characters that make up the GUID string*/
 // Microsoft OS 2.0 Descriptors, Table 8
 #define MS_OS_20_DESCRIPTOR_INDEX 7
 
