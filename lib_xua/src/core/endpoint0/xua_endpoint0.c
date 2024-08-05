@@ -1081,12 +1081,12 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
                                     }
 
                                     if(num_interfaces == 1) {
-                                        msos_desc_len = MS_OS_20_DESC_LEN_SIMPLE;
+                                        msos_desc_len = sizeof(MSOS_desc_simple_t);
                                     }
                                     else {
-                                        msos_desc_len = MS_OS_20_DESC_LEN_COMPOSITE;
+                                        msos_desc_len = sizeof(MSOS_desc_composite_t);
                                     }
-                                    memcpy(&desc_bos.usb_desc_bos_platform.CapabilityData[4], &msos_desc_len, sizeof(int16_t)); // Update msos descriptor length in paltform capabilityData
+                                    memcpy(&desc_bos.usb_desc_bos_platform.CapabilityData[4], &msos_desc_len, sizeof(int16_t)); // Update msos descriptor length in platform capabilityData
                                     result = XUD_DoGetRequest(ep0_out, ep0_in, (unsigned char*)&desc_bos, sizeof(USB_Descriptor_BOS_t), sp.wLength);
                                 }
                                 break;

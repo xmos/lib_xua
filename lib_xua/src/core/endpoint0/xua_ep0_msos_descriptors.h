@@ -28,6 +28,16 @@
 #define U32_TO_U8S_BE(_u32)   _U32_BYTE3(_u32), _U32_BYTE2(_u32), _U32_BYTE1(_u32), _U32_BYTE0(_u32)
 #define U32_TO_U8S_LE(_u32)   _U32_BYTE0(_u32), _U32_BYTE1(_u32), _U32_BYTE2(_u32), _U32_BYTE3(_u32)
 
+// BOS descriptor related defines
+#define USB_DESCTYPE_BOS                    (0x0F)
+#define USB_DESCTYPE_DEVICE_CAPABILITY      (0x10)
+#define  DEVICE_CAPABILITY_PLATFORM  0x05
+#define USB_BOS_MS_OS_20_UUID \
+    0xDF, 0x60, 0xDD, 0xD8, 0x89, 0x45, 0xC7, 0x4C, \
+  0x9C, 0xD2, 0x65, 0x9D, 0x9E, 0x64, 0x8A, 0x9F
+
+#define REQUEST_GET_MS_DESCRIPTOR    0x20
+
 // USB Binary Device Object Store (BOS) Descriptor
 typedef struct {
   uint8_t  bLength         ; ///< Size of this descriptor in bytes
@@ -55,9 +65,6 @@ typedef struct
 } __attribute__((packed)) USB_Descriptor_BOS_t;
 
 
-
-#define USB_DESCTYPE_BOS                    (0x0F)
-
 USB_Descriptor_BOS_standard_t desc_bos_standard =
 {
   .bLength = sizeof(USB_Descriptor_BOS_standard_t),
@@ -66,15 +73,6 @@ USB_Descriptor_BOS_standard_t desc_bos_standard =
   .bNumDeviceCaps = 1
 };
 
-#define USB_DESCTYPE_DEVICE_CAPABILITY      (0x10)
-#define  DEVICE_CAPABILITY_PLATFORM  0x05
-#define USB_BOS_MS_OS_20_UUID \
-    0xDF, 0x60, 0xDD, 0xD8, 0x89, 0x45, 0xC7, 0x4C, \
-  0x9C, 0xD2, 0x65, 0x9D, 0x9E, 0x64, 0x8A, 0x9F
-
-#define MS_OS_20_DESC_LEN_COMPOSITE  0xB2
-#define MS_OS_20_DESC_LEN_SIMPLE  0xA2
-#define REQUEST_GET_MS_DESCRIPTOR    0x20
 
 USB_Descriptor_BOS_platform_t desc_bos_msos_platform_capability =
 {
@@ -86,7 +84,10 @@ USB_Descriptor_BOS_platform_t desc_bos_msos_platform_capability =
   .CapabilityData = {U32_TO_U8S_LE(0x06030000), U16_TO_U8S_LE(0) /*msos2.0 desc len filled at runtime*/, REQUEST_GET_MS_DESCRIPTOR, 0}
 };
 
-
+//MSOS descriptor related defines
+#define DEVICE_INTERFACE_GUID_MAX_STRLEN (38)
+#define MSOS_PROPERTY_NAME_LEN  (42) // bytes
+#define MSOS_INTERFACE_GUID_LEN (80) // bytes
 // Microsoft OS 2.0 Descriptors, Table 8
 #define MS_OS_20_DESCRIPTOR_INDEX 7
 
@@ -104,7 +105,6 @@ typedef enum
 } microsoft_os_20_type_t;
 
 
-#define DEVICE_INTERFACE_GUID_MAX_STRLEN (38)
 
 // USB MSOS2.0 Descriptors
 typedef struct {
@@ -137,8 +137,7 @@ typedef struct {
   uint8_t SubCompatibleID[8];
 }__attribute__((packed)) MSOS_desc_compat_id_t;
 
-#define MSOS_PROPERTY_NAME_LEN  (42) // bytes
-#define MSOS_INTERFACE_GUID_LEN (80) // bytes
+
 typedef struct
 {
   uint16_t wLength;
@@ -179,7 +178,7 @@ MSOS_desc_composite_t desc_ms_os_20_composite =
     .wDescriptorType = MS_OS_20_SUBSET_HEADER_CONFIGURATION,
     .bConfigurationValue = 0,
     .bReserved = 0,
-    .wTotalLength = sizeof(MSOS_desc_composite_t) - sizeof(MSOS_desc_cfg_subset_header_t)
+    .wTotalLength = sizeof(MSOS_desc_composite_t) - sizeof(MSOS_desc_header_t)
   },
   .msos_fn_subset_header =
   {
@@ -187,7 +186,7 @@ MSOS_desc_composite_t desc_ms_os_20_composite =
     .wDescriptorType = MS_OS_20_SUBSET_HEADER_FUNCTION,
     .bFirstInterface = INTERFACE_NUMBER_DFU,
     .bReserved = 0,
-    .wSubsetLength = sizeof(MSOS_desc_composite_t) - sizeof(MSOS_desc_cfg_subset_header_t) - sizeof(MSOS_desc_fn_subset_header_t)
+    .wSubsetLength = sizeof(MSOS_desc_composite_t) - sizeof(MSOS_desc_header_t) - sizeof(MSOS_desc_cfg_subset_header_t)
   },
   .msos_desc_compat_id =
   {
@@ -248,60 +247,6 @@ MSOS_desc_simple_t desc_ms_os_20_simple =
   }
 };
 
-#if 0
-uint8_t desc_ms_os_20_composite[] =
-{
-  // Set header: length, type, windows version, total length
-  U16_TO_U8S_LE(0x000A), U16_TO_U8S_LE(MS_OS_20_SET_HEADER_DESCRIPTOR), U32_TO_U8S_LE(0x06030000), U16_TO_U8S_LE(MS_OS_20_DESC_LEN_COMPOSITE),
-
-  // Configuration subset header: length, type, configuration index, reserved, configuration total length
-  U16_TO_U8S_LE(0x0008), U16_TO_U8S_LE(MS_OS_20_SUBSET_HEADER_CONFIGURATION), 0, 0, U16_TO_U8S_LE(MS_OS_20_DESC_LEN_COMPOSITE-0x0A),
-
-  // Function Subset header: length, type, first interface, reserved, subset length
-  U16_TO_U8S_LE(0x0008), U16_TO_U8S_LE(MS_OS_20_SUBSET_HEADER_FUNCTION), INTERFACE_NUMBER_DFU, 0, U16_TO_U8S_LE(MS_OS_20_DESC_LEN_COMPOSITE-0x0A-0x08),
-
-  // MS OS 2.0 Compatible ID descriptor: length, type, compatible ID, sub compatible ID
-  U16_TO_U8S_LE(0x0014), U16_TO_U8S_LE(MS_OS_20_FEATURE_COMPATBLE_ID), 'W', 'I', 'N', 'U', 'S', 'B', 0x00, 0x00,
-  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // sub-compatible
-
-  // MS OS 2.0 Registry property descriptor: length, type
-  U16_TO_U8S_LE(MS_OS_20_DESC_LEN_COMPOSITE-0x0A-0x08-0x08-0x14), U16_TO_U8S_LE(MS_OS_20_FEATURE_REG_PROPERTY),
-  U16_TO_U8S_LE(0x0007), U16_TO_U8S_LE(0x002A), // wPropertyDataType, wPropertyNameLength and PropertyName "DeviceInterfaceGUIDs\0" in UTF-16
-  'D', 0x00, 'e', 0x00, 'v', 0x00, 'i', 0x00, 'c', 0x00, 'e', 0x00, 'I', 0x00, 'n', 0x00, 't', 0x00, 'e', 0x00,
-  'r', 0x00, 'f', 0x00, 'a', 0x00, 'c', 0x00, 'e', 0x00, 'G', 0x00, 'U', 0x00, 'I', 0x00, 'D', 0x00, 's', 0x00, 0x00, 0x00,
-  U16_TO_U8S_LE(0x0050), // wPropertyDataLength
-  // [DriverInterface] bPropertyData
-  // InterfaceGUID = defined in WINUSB_DEVICE_INTERFACE_GUID define and updated in the descriptor at runtime
-  '{', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, '-', 0x00,
-  'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, '-', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, '-', 0x00,
-  'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, '-', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00,
-  'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, '}', 0x00, 0x00, 0x00, 0x00, 0x00
-};
-
-
-uint8_t const desc_ms_os_20_simple[] =
-{
-  // Set header: length, type, windows version, total length
-  U16_TO_U8S_LE(0x000A), U16_TO_U8S_LE(MS_OS_20_SET_HEADER_DESCRIPTOR), U32_TO_U8S_LE(0x06030000), U16_TO_U8S_LE(MS_OS_20_DESC_LEN_SIMPLE),
-
-  // MS OS 2.0 Compatible ID descriptor: length, type, compatible ID, sub compatible ID
-  U16_TO_U8S_LE(0x0014), U16_TO_U8S_LE(MS_OS_20_FEATURE_COMPATBLE_ID), 'W', 'I', 'N', 'U', 'S', 'B', 0x00, 0x00,
-  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // sub-compatible
-
-  // MS OS 2.0 Registry property descriptor: length, type
-  U16_TO_U8S_LE(MS_OS_20_DESC_LEN_SIMPLE-0x0A-0x14), U16_TO_U8S_LE(MS_OS_20_FEATURE_REG_PROPERTY),
-  U16_TO_U8S_LE(0x0007), U16_TO_U8S_LE(0x002A), // wPropertyDataType, wPropertyNameLength and PropertyName "DeviceInterfaceGUIDs\0" in UTF-16
-  'D', 0x00, 'e', 0x00, 'v', 0x00, 'i', 0x00, 'c', 0x00, 'e', 0x00, 'I', 0x00, 'n', 0x00, 't', 0x00, 'e', 0x00,
-  'r', 0x00, 'f', 0x00, 'a', 0x00, 'c', 0x00, 'e', 0x00, 'G', 0x00, 'U', 0x00, 'I', 0x00, 'D', 0x00, 's', 0x00, 0x00, 0x00,
-  U16_TO_U8S_LE(0x0050), // wPropertyDataLength
-  // [DriverInterface] bPropertyData
-  // InterfaceGUID = defined in WINUSB_DEVICE_INTERFACE_GUID define and updated in the descriptor at runtime
-  '{', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, '-', 0x00,
-  'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, '-', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, '-', 0x00,
-  'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, '-', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00,
-  'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, '}', 0x00, 0x00, 0x00, 0x00, 0x00
-};
-#endif
 #endif
 
 #endif
