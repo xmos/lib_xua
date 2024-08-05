@@ -286,10 +286,6 @@ static unsigned transition_dfu_download_state()
 static int DFU_GetStatus(unsigned int request_len, unsigned data_buffer[_DFU_TRANSFER_SIZE_WORDS], chanend ?c_user_cmd, unsigned &DFU_state)
 {
     unsigned int timeout = 0;
-    if(flash_cmd_start_write_image_in_progress)
-    {
-        timeout = GET_STATUS_POLL_TIMEOUT_MS; //ms
-    }
 
     data_buffer[0] = (timeout << 8) | (unsigned char)DFU_status;
 
