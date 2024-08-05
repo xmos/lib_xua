@@ -474,19 +474,19 @@ static unsigned char hidReportDescriptorPtr[] = {
 /// Update the device interface GUID in both MSOS simple and composite descriptors
 static void update_guid_in_msos_desc(const char *guid_str)
 {
-    int msos_desc_start_offset = MS_OS_20_DESC_LEN_COMPOSITE - 4 - (2 * DEVICE_INTERFACE_GUID_MAX_STRLEN);
-    unsigned char *msos_desc_ptr = (unsigned char *)desc_ms_os_20_composite + msos_desc_start_offset;
+    // composite descriptor
+    unsigned char *msos_guid_ptr = desc_ms_os_20_composite.msos_desc_registry_property.PropertyData;
     for(int i=0; i<DEVICE_INTERFACE_GUID_MAX_STRLEN; i++)
     {
-        msos_desc_ptr[2*i] = guid_str[i];
-        msos_desc_ptr[2*i + 1] = 0x0;
+        msos_guid_ptr[2*i] = guid_str[i];
+        msos_guid_ptr[2*i + 1] = 0x0;
     }
-    msos_desc_start_offset = MS_OS_20_DESC_LEN_SIMPLE - 4 - (2 * DEVICE_INTERFACE_GUID_MAX_STRLEN);
-    msos_desc_ptr = (unsigned char *)desc_ms_os_20_simple + msos_desc_start_offset;
+    // simple descriptor
+    msos_guid_ptr = desc_ms_os_20_simple.msos_desc_registry_property.PropertyData;
     for(int i=0; i<DEVICE_INTERFACE_GUID_MAX_STRLEN; i++)
     {
-        msos_desc_ptr[2*i] = guid_str[i];
-        msos_desc_ptr[2*i + 1] = 0x0;
+        msos_guid_ptr[2*i] = guid_str[i];
+        msos_guid_ptr[2*i + 1] = 0x0;
     }
 }
 #endif
@@ -1018,10 +1018,10 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
                     }
 
                     if(num_interfaces == 1) {
-                        result = XUD_DoGetRequest(ep0_out, ep0_in, (unsigned char*)desc_ms_os_20_simple, MS_OS_20_DESC_LEN_SIMPLE, sp.wLength);
+                        result = XUD_DoGetRequest(ep0_out, ep0_in, (unsigned char*)&desc_ms_os_20_simple, sizeof(MSOS_desc_simple_t), sp.wLength);
                     }
                     else {
-                        result = XUD_DoGetRequest(ep0_out, ep0_in, (unsigned char*)desc_ms_os_20_composite, MS_OS_20_DESC_LEN_COMPOSITE, sp.wLength);
+                        result = XUD_DoGetRequest(ep0_out, ep0_in, (unsigned char*)&desc_ms_os_20_composite, sizeof(MSOS_desc_composite_t), sp.wLength);
                     }
                 }
             }

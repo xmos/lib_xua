@@ -106,7 +106,149 @@ typedef enum
 
 #define DEVICE_INTERFACE_GUID_MAX_STRLEN (38)
 
+// USB MSOS2.0 Descriptors
+typedef struct {
+  uint16_t wLength;
+  uint16_t  wDescriptorType;
+  uint32_t dwWindowsVersion;
+  uint16_t  wTotalLength;
+} __attribute__((packed)) MSOS_desc_header_t;
 
+typedef struct {
+  uint16_t wLength;
+  uint16_t  wDescriptorType;
+  uint8_t bConfigurationValue;
+  uint8_t bReserved;
+  uint16_t wTotalLength;
+}__attribute__((packed)) MSOS_desc_cfg_subset_header_t;
+
+typedef struct {
+  uint16_t wLength;
+  uint16_t  wDescriptorType;
+  uint8_t bFirstInterface;
+  uint8_t bReserved;
+  uint16_t wSubsetLength;
+}__attribute__((packed)) MSOS_desc_fn_subset_header_t;
+
+typedef struct {
+  uint16_t wLength;
+  uint16_t  wDescriptorType;
+  uint8_t CompatibleID[8];
+  uint8_t SubCompatibleID[8];
+}__attribute__((packed)) MSOS_desc_compat_id_t;
+
+#define MSOS_PROPERTY_NAME_LEN  (42) // bytes
+#define MSOS_INTERFACE_GUID_LEN (80) // bytes
+typedef struct
+{
+  uint16_t wLength;
+  uint16_t  wDescriptorType;
+  uint16_t wPropertyDataType;
+  uint16_t wPropertyNameLength;
+  uint8_t PropertyName[MSOS_PROPERTY_NAME_LEN];
+  uint16_t wPropertyDataLength;
+  uint8_t PropertyData[MSOS_INTERFACE_GUID_LEN];
+}__attribute__((packed)) MSOS_desc_registry_property_t;
+
+typedef struct {
+  MSOS_desc_header_t              msos_desc_header;
+  MSOS_desc_cfg_subset_header_t   msos_desc_cfg_subset_header;
+  MSOS_desc_fn_subset_header_t    msos_fn_subset_header;
+  MSOS_desc_compat_id_t           msos_desc_compat_id;
+  MSOS_desc_registry_property_t   msos_desc_registry_property;
+}__attribute__((packed)) MSOS_desc_composite_t;
+
+typedef struct {
+  MSOS_desc_header_t              msos_desc_header;
+  MSOS_desc_compat_id_t           msos_desc_compat_id;
+  MSOS_desc_registry_property_t   msos_desc_registry_property;
+}__attribute__((packed)) MSOS_desc_simple_t;
+
+MSOS_desc_composite_t desc_ms_os_20_composite =
+{
+  .msos_desc_header =
+  {
+    .wLength = sizeof(MSOS_desc_header_t),
+    .wDescriptorType = MS_OS_20_SET_HEADER_DESCRIPTOR,
+    .dwWindowsVersion = 0x06030000,
+    .wTotalLength = sizeof(MSOS_desc_composite_t)
+  },
+  .msos_desc_cfg_subset_header =
+  {
+    .wLength = sizeof(MSOS_desc_cfg_subset_header_t),
+    .wDescriptorType = MS_OS_20_SUBSET_HEADER_CONFIGURATION,
+    .bConfigurationValue = 0,
+    .bReserved = 0,
+    .wTotalLength = sizeof(MSOS_desc_composite_t) - sizeof(MSOS_desc_cfg_subset_header_t)
+  },
+  .msos_fn_subset_header =
+  {
+    .wLength = sizeof(MSOS_desc_fn_subset_header_t),
+    .wDescriptorType = MS_OS_20_SUBSET_HEADER_FUNCTION,
+    .bFirstInterface = INTERFACE_NUMBER_DFU,
+    .bReserved = 0,
+    .wSubsetLength = sizeof(MSOS_desc_composite_t) - sizeof(MSOS_desc_cfg_subset_header_t) - sizeof(MSOS_desc_fn_subset_header_t)
+  },
+  .msos_desc_compat_id =
+  {
+    .wLength = sizeof(MSOS_desc_compat_id_t),
+    .wDescriptorType = MS_OS_20_FEATURE_COMPATBLE_ID,
+    .CompatibleID = {'W', 'I', 'N', 'U', 'S', 'B', 0x00, 0x00},
+    .SubCompatibleID = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
+  },
+  .msos_desc_registry_property =
+  {
+    .wLength = sizeof(MSOS_desc_registry_property_t),
+    .wDescriptorType = MS_OS_20_FEATURE_REG_PROPERTY,
+    .wPropertyDataType = 0x0007,
+    .wPropertyNameLength = MSOS_PROPERTY_NAME_LEN,
+    .PropertyName = {'D', 0x00, 'e', 0x00, 'v', 0x00, 'i', 0x00, 'c', 0x00, 'e', 0x00, 'I', 0x00, 'n', 0x00, 't', 0x00, 'e', 0x00,
+                      'r', 0x00, 'f', 0x00, 'a', 0x00, 'c', 0x00, 'e', 0x00, 'G', 0x00, 'U', 0x00, 'I', 0x00, 'D', 0x00, 's', 0x00, 0x00, 0x00}, //"DeviceInterfaceGUIDs\0" in UTF-16
+    .wPropertyDataLength = MSOS_INTERFACE_GUID_LEN,
+    .PropertyData = {
+                      '{', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, '-', 0x00,
+                      'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, '-', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, '-', 0x00,
+                      'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, '-', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00,
+                      'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, '}', 0x00, 0x00, 0x00, 0x00, 0x00
+                    }, //defined in the WINUSB_DEVICE_INTERFACE_GUID define and updated in the descriptor at runtime
+  }
+};
+
+MSOS_desc_simple_t desc_ms_os_20_simple =
+{
+  .msos_desc_header =
+  {
+    .wLength = sizeof(MSOS_desc_header_t),
+    .wDescriptorType = MS_OS_20_SET_HEADER_DESCRIPTOR,
+    .dwWindowsVersion = 0x06030000,
+    .wTotalLength = sizeof(MSOS_desc_simple_t)
+  },
+  .msos_desc_compat_id =
+  {
+    .wLength = sizeof(MSOS_desc_compat_id_t),
+    .wDescriptorType = MS_OS_20_FEATURE_COMPATBLE_ID,
+    .CompatibleID = {'W', 'I', 'N', 'U', 'S', 'B', 0x00, 0x00},
+    .SubCompatibleID = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
+  },
+  .msos_desc_registry_property =
+  {
+    .wLength = sizeof(MSOS_desc_registry_property_t),
+    .wDescriptorType = MS_OS_20_FEATURE_REG_PROPERTY,
+    .wPropertyDataType = 0x0007,
+    .wPropertyNameLength = MSOS_PROPERTY_NAME_LEN,
+    .PropertyName = {'D', 0x00, 'e', 0x00, 'v', 0x00, 'i', 0x00, 'c', 0x00, 'e', 0x00, 'I', 0x00, 'n', 0x00, 't', 0x00, 'e', 0x00,
+                      'r', 0x00, 'f', 0x00, 'a', 0x00, 'c', 0x00, 'e', 0x00, 'G', 0x00, 'U', 0x00, 'I', 0x00, 'D', 0x00, 's', 0x00, 0x00, 0x00}, //"DeviceInterfaceGUIDs\0" in UTF-16
+    .wPropertyDataLength = MSOS_INTERFACE_GUID_LEN,
+    .PropertyData = {
+                      '{', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, '-', 0x00,
+                      'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, '-', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, '-', 0x00,
+                      'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, '-', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00,
+                      'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, '}', 0x00, 0x00, 0x00, 0x00, 0x00
+                    }, //defined in the WINUSB_DEVICE_INTERFACE_GUID define and updated in the descriptor at runtime
+  }
+};
+
+#if 0
 uint8_t desc_ms_os_20_composite[] =
 {
   // Set header: length, type, windows version, total length
@@ -159,6 +301,7 @@ uint8_t const desc_ms_os_20_simple[] =
   'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, '-', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00,
   'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, '}', 0x00, 0x00, 0x00, 0x00, 0x00
 };
+#endif
 #endif
 
 #endif
