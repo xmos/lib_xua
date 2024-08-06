@@ -36,7 +36,7 @@
     0xDF, 0x60, 0xDD, 0xD8, 0x89, 0x45, 0xC7, 0x4C, \
   0x9C, 0xD2, 0x65, 0x9D, 0x9E, 0x64, 0x8A, 0x9F
 
-#define REQUEST_GET_MS_DESCRIPTOR    0x20
+#define REQUEST_GET_MS_DESCRIPTOR    0x20 /* bRequest of the D2H vendor request that the host will send to read the MSOS descriptor. */
 
 // USB Binary Device Object Store (BOS) Descriptor
 typedef struct {
@@ -90,7 +90,7 @@ USB_Descriptor_BOS_platform_t desc_bos_msos_platform_capability =
 #define DEVICE_INTERFACE_GUID_MAX_STRLEN ((MSOS_INTERFACE_GUID_LEN-4)/2) /* -4 to exclude null character + 2 extra bytes at the end. \
                                                                           /2 to go from utf-16 to single byte characters that make up the GUID string*/
 // Microsoft OS 2.0 Descriptors, Table 8
-#define MS_OS_20_DESCRIPTOR_INDEX 7
+#define MS_OS_20_DESCRIPTOR_INDEX 7 /* wIndex of the D2H vendor request sent by the host to read the MSOS descriptor*/
 
 typedef enum
 {
@@ -193,19 +193,20 @@ MSOS_desc_composite_t desc_ms_os_20_composite =
   {
     .wLength = sizeof(MSOS_desc_compat_id_t),
     .wDescriptorType = MS_OS_20_FEATURE_COMPATBLE_ID,
-    .CompatibleID = {'W', 'I', 'N', 'U', 'S', 'B', 0x00, 0x00},
+    .CompatibleID = {'W', 'I', 'N', 'U', 'S', 'B', 0x00, 0x00}, // "WINUSB\0\0"
     .SubCompatibleID = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
   },
   .msos_desc_registry_property =
   {
     .wLength = sizeof(MSOS_desc_registry_property_t),
     .wDescriptorType = MS_OS_20_FEATURE_REG_PROPERTY,
-    .wPropertyDataType = 0x0007,
+    .wPropertyDataType = 0x0007, // REG_MULTI_SZ as defined in Table 15 of Microsoft OS 2.0 Descriptors Specification. Check IMPORTANT NOTE 2 in https://github.com/pbatard/libwdi/wiki/WCID-Devices
+    // for why we need REG_MULTI_SZ and not REG_SZ
     .wPropertyNameLength = MSOS_PROPERTY_NAME_LEN,
     .PropertyName = {'D', 0x00, 'e', 0x00, 'v', 0x00, 'i', 0x00, 'c', 0x00, 'e', 0x00, 'I', 0x00, 'n', 0x00, 't', 0x00, 'e', 0x00,
                       'r', 0x00, 'f', 0x00, 'a', 0x00, 'c', 0x00, 'e', 0x00, 'G', 0x00, 'U', 0x00, 'I', 0x00, 'D', 0x00, 's', 0x00, 0x00, 0x00}, //"DeviceInterfaceGUIDs\0" in UTF-16
     .wPropertyDataLength = MSOS_INTERFACE_GUID_LEN,
-    .PropertyData = {
+    .PropertyData = { // "{xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx}\0\0"
                       '{', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, '-', 0x00,
                       'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, '-', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, '-', 0x00,
                       'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, '-', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00,
@@ -234,7 +235,8 @@ MSOS_desc_simple_t desc_ms_os_20_simple =
   {
     .wLength = sizeof(MSOS_desc_registry_property_t),
     .wDescriptorType = MS_OS_20_FEATURE_REG_PROPERTY,
-    .wPropertyDataType = 0x0007,
+    .wPropertyDataType = 0x0007, // According to IMPORTANT NOTE 2 in https://github.com/pbatard/libwdi/wiki/WCID-Devices, single interface devices could work with wPropertyDataType=REG_SZ,
+    // PropertyName "DeviceInterfaceGUID\0" and PropertyData "{xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx}\0" but I haven't tried it.
     .wPropertyNameLength = MSOS_PROPERTY_NAME_LEN,
     .PropertyName = {'D', 0x00, 'e', 0x00, 'v', 0x00, 'i', 0x00, 'c', 0x00, 'e', 0x00, 'I', 0x00, 'n', 0x00, 't', 0x00, 'e', 0x00,
                       'r', 0x00, 'f', 0x00, 'a', 0x00, 'c', 0x00, 'e', 0x00, 'G', 0x00, 'U', 0x00, 'I', 0x00, 'D', 0x00, 's', 0x00, 0x00, 0x00}, //"DeviceInterfaceGUIDs\0" in UTF-16

@@ -5,8 +5,9 @@ UNRELEASED
 ----------
 
   * ADDED:      Support for DFU_DETACH with bitWillDetach set to 1
-  * ADDED:      Update to bcdUSB version 2.01 and add support for MSOS2.0
-    descriptor which defines the DFU interface as WinUSB compatible
+  * ADDED:      Enumerate with the DFU interface as WINUSB compatible. This is done by
+    updating the bcdUSB version to 2.01 and providing the BOS and MSOS2.0 descriptors listing
+    WINUSB compatibility the time of enumeration
   * CHANGED:    By default, enumerate with iSerialNumber set to None(0) in the device
     descriptor
   * ADDED:      Support for XMOS_DFU_REVERTFACTORY arriving as a USB_BMREQ_H2D_VENDOR_INT
