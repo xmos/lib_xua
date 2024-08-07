@@ -66,8 +66,6 @@ static int dfu_timeout = 5000; // 5s
 #define XMOS_DFU_REVERTFACTORY        0xf1
 #define XMOS_DFU_RESETINTODFU         0xf2
 #define XMOS_DFU_RESETFROMDFU         0xf3
-#define XMOS_DFU_SAVESTATE            0xf5
-#define XMOS_DFU_RESTORESTATE         0xf6
 
 enum dfu_state {
 	DFU_STATE_appIDLE		= 0,
@@ -215,21 +213,6 @@ int dfu_clrStatus(unsigned int interface)
 int dfu_abort(unsigned int interface)
 {
     libusb_control_transfer(devh, USB_BMREQ_H2D_CLASS_INT, DFU_ABORT, 0, interface, NULL, 0, 0);
-    return 0;
-}
-
-
-int xmos_dfu_save_state(unsigned int interface)
-{
-    libusb_control_transfer(devh, USB_BMREQ_H2D_CLASS_INT, XMOS_DFU_SAVESTATE, 0, interface, NULL, 0, 0);
-    printf("Save state command sent\n");
-    return 0;
-}
-
-int xmos_dfu_restore_state(unsigned int interface)
-{
-    libusb_control_transfer(devh, USB_BMREQ_H2D_CLASS_INT, XMOS_DFU_RESTORESTATE, 0, interface, NULL, 0, 0);
-    printf("Restore state command sent\n");
     return 0;
 }
 
@@ -453,8 +436,6 @@ int main(int argc, char **argv)
     unsigned int download = 0;
     unsigned int upload = 0;
     unsigned int revert = 0;
-    unsigned int save = 0;
-    unsigned int restore = 0;
     unsigned int listdev = 0;
 
     char *firmware_filename = NULL;
@@ -508,14 +489,6 @@ int main(int argc, char **argv)
     {
         revert = 1;
     }
-    else if(strcmp(command, "--savecustomstate") == 0)
-    {
-        save = 1;
-    }
-    else if(strcmp(command, "--restorecustomstate") == 0)
-    {
-        restore = 1;
-    }
     else
     {
         print_usage(program_name,  "Invalid option passed to dfu application");
@@ -544,16 +517,7 @@ int main(int argc, char **argv)
     printf("XMOS DFU application started - Interface %d claimed\n", XMOS_DFU_IF);
 #endif
 
-    /* Dont go into DFU mode for save/restore */
-    if(save)
-    {
-        xmos_dfu_save_state(XMOS_DFU_IF);
-    }
-    else if(restore)
-    {
-        xmos_dfu_restore_state(XMOS_DFU_IF);
-    }
-    else if(!listdev)
+    if(!listdev)
     {
 #ifndef START_IN_DFU
         printf("Detaching device from application mode.\n");

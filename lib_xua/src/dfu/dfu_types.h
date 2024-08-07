@@ -15,8 +15,6 @@
 #define XMOS_DFU_RESETINTODFU  0xf2
 #define XMOS_DFU_RESETFROMDFU  0xf3
 #define XMOS_DFU_SELECTIMAGE   0xf4
-#define XMOS_DFU_SAVESTATE     0xf5
-#define XMOS_DFU_RESTORESTATE  0xf6
 
 // DFU States
 #define STATE_APP_IDLE                  0x00

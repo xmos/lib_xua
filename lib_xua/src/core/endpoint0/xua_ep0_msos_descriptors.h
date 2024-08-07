@@ -235,8 +235,7 @@ MSOS_desc_simple_t desc_ms_os_20_simple =
   {
     .wLength = sizeof(MSOS_desc_registry_property_t),
     .wDescriptorType = MS_OS_20_FEATURE_REG_PROPERTY,
-    .wPropertyDataType = 0x0007, // According to IMPORTANT NOTE 2 in https://github.com/pbatard/libwdi/wiki/WCID-Devices, single interface devices could work with wPropertyDataType=REG_SZ,
-    // PropertyName "DeviceInterfaceGUID\0" and PropertyData "{xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx}\0" but I haven't tried it.
+    .wPropertyDataType = 0x0007,
     .wPropertyNameLength = MSOS_PROPERTY_NAME_LEN,
     .PropertyName = {'D', 0x00, 'e', 0x00, 'v', 0x00, 'i', 0x00, 'c', 0x00, 'e', 0x00, 'I', 0x00, 'n', 0x00, 't', 0x00, 'e', 0x00,
                       'r', 0x00, 'f', 0x00, 'a', 0x00, 'c', 0x00, 'e', 0x00, 'G', 0x00, 'U', 0x00, 'I', 0x00, 'D', 0x00, 's', 0x00, 0x00, 0x00}, //"DeviceInterfaceGUIDs\0" in UTF-16

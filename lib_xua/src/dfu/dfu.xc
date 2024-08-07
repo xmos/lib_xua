@@ -436,16 +436,6 @@ static int XMOS_DFU_SelectImage(unsigned int index, chanend ?c_user_cmd)
     return 0;
 }
 
-static int XMOS_DFU_SaveState()
-{
-    return 0;
-}
-
-static int XMOS_DFU_LoadState()
-{
-    return 0;
-}
-
 [[distributable]]
 void DFUHandler(server interface i_dfu i, chanend ?c_user_cmd)
 {
@@ -539,16 +529,6 @@ void DFUHandler(server interface i_dfu i, chanend ?c_user_cmd)
 
                     case XMOS_DFU_SELECTIMAGE:
                         return_data_len = XMOS_DFU_SelectImage(sp.wValue, c_user_cmd);
-                        break;
-
-                    case XMOS_DFU_SAVESTATE:
-                        /* Save passed state to flash */
-                        return_data_len = XMOS_DFU_SaveState();
-                        break;
-
-                    case XMOS_DFU_RESTORESTATE:
-                         /* Restore saved state from flash */
-                        return_data_len = XMOS_DFU_LoadState();
                         break;
 
                     default:
