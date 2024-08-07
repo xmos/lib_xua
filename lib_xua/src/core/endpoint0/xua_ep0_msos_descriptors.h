@@ -1,9 +1,6 @@
 // Copyright 2024 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 /**
- * @file    xua_ep0_descriptors.h
- * @brief   Device Descriptors
- * @author  Ross Owen, XMOS Limited
 */
 
 #ifndef _MSOS_DESCRIPTORS_
