@@ -1036,12 +1036,18 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
             unsigned bmRequestType = (sp.bmRequestType.Direction<<7) | (sp.bmRequestType.Type<<5) | (sp.bmRequestType.Recipient);
             if((bmRequestType == USB_BMREQ_H2D_VENDOR_INT) && (sp.bRequest == XMOS_DFU_REVERTFACTORY))
             {
-                int reset = 0;
-                result = DFUDeviceRequests(ep0_out, &ep0_in, &sp, null, 0 /*this is unused in DFUDeviceRequests()??*/, dfuInterface, &reset);
-                if(reset)
+                unsigned interface_num = sp.wIndex & 0xff;
+                unsigned dfu_if = (DFU_mode_active) ? 0 : INTERFACE_NUMBER_DFU;
+
+                if(interface_num == dfu_if)
                 {
-                    DFUDelay(DELAY_BEFORE_REBOOT_TO_DFU_MS * 100000);
-                    device_reboot();
+                    int reset = 0;
+                    result = DFUDeviceRequests(ep0_out, &ep0_in, &sp, null, 0 /*this is unused in DFUDeviceRequests()??*/, dfuInterface, &reset);
+                    if(reset)
+                    {
+                        DFUDelay(DELAY_BEFORE_REBOOT_TO_DFU_MS * 100000);
+                        device_reboot();
+                    }
                 }
             }
         }
