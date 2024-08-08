@@ -1,6 +1,23 @@
 lib_xua change log
 ==================
 
+UNRELEASED
+----------
+
+  * ADDED:      Support for DFU_DETACH with bitWillDetach set to 1
+  * ADDED:      Enumerate with the DFU interface as WINUSB compatible. This is done by
+    updating the bcdUSB version to 2.01 and providing the BOS and MSOS2.0 descriptors listing
+    WINUSB compatibility the time of enumeration
+  * CHANGED:    By default, enumerate with iSerialNumber set to None(0) in the device
+    descriptor
+  * ADDED:      Support for XMOS_DFU_REVERTFACTORY arriving as a USB_BMREQ_H2D_VENDOR_INT
+    request to work with the latest Thesycon DFU driver on Windows
+  * CHANGED:    xmosdfu app to use DFU_DETACH
+  * CHANGED:    xmosdfu app to send XMOS_DFU_REVERTFACTORY as bmRequestType.Type = Vendor
+  * CHANGED:    Limit HS_STREAM_FORMAT_OUTPUT_1/2/3_MAXPACKETSIZE to 1024 bytes to fix
+    bcdUSB version 2.01 USB device supporting a sampling rate of 192KHz not enumerating
+    on Windows
+
 4.2.0
 -----
 
@@ -679,4 +696,3 @@ Legacy release history
 ----------------------
 
 Please see changelog in sw_usb_audio for changes prior to 6.8.0 release.
-

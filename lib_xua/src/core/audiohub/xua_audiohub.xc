@@ -593,8 +593,9 @@ static void dummy_deliver(chanend ?c_out, unsigned &command)
             case testct_byref(c_out, ct):
                 if(ct)
                 {
-                    unsigned command = inct(c_out);
-                    return;
+                    command = inct(c_out); // Disregard any command received.
+                    unsigned samp_freq = inuint(c_out);
+                    outct(c_out, XS1_CT_END);
                 }
                 else
                 {
@@ -616,7 +617,11 @@ static void dummy_deliver(chanend ?c_out, unsigned &command)
                     }
 #endif
                 }
-
+                const int wait_ticks = XS1_TIMER_HZ/48000;
+                timer tmr;
+                unsigned now;
+                tmr :> now;
+                tmr when timerafter(now + wait_ticks) :> void;
                 /* Request more data/commands */
                 outuint(c_out, 0);
             break;
@@ -934,10 +939,7 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
                             dummy_deliver(c_aud, command);
 #endif
                         }
-
-                        /* Note, we do not expect to reach here */
-                        curSamFreq = inuint(c_aud);
-                        outct(c_aud, XS1_CT_END);
+                        /* Note, we shouldn't reach here. Audio, once stopped for DFU, cannot be resumed */
                     }
                 }
 #endif

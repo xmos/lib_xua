@@ -1,4 +1,4 @@
-// Copyright 2011-2023 XMOS LIMITED.
+// Copyright 2011-2024 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 #include <xs1.h>
 #include <flash.h>
@@ -7,6 +7,7 @@
 #include <xclib.h>
 
 #include "xua.h"
+#include "dfu_types.h" // for _FLASH_PAGE_SIZE_BYTES and _NUM_DFU_PAGES_PER_FLASH_PAGE defines
 
 #if (XUA_DFU_EN == 1)
 
@@ -32,7 +33,7 @@ static fl_BootImageInfo upgrade_image;
 
 static int upgrade_image_valid = 0;
 static int current_flash_subpage_index = 0;
-static unsigned char current_flash_page_data[256];
+static unsigned char current_flash_page_data[_FLASH_PAGE_SIZE_BYTES];
 
 int flash_cmd_enable_ports() __attribute__ ((weak));
 int flash_cmd_enable_ports() {
@@ -103,12 +104,12 @@ int flash_cmd_deinit(void)
     return 0;
 }
 
-int flash_cmd_read_page(unsigned char *data)
+void flash_cmd_read_page(unsigned char *data)
 {
     if (!upgrade_image_valid)
     {
         *(unsigned int *)data = 1;
-        return 4;
+        return;
     }
 
     if (*(unsigned int *)data == 0)
@@ -126,94 +127,68 @@ int flash_cmd_read_page(unsigned char *data)
     {
         *(unsigned int *)data = 1;
     }
-    return 4;
+    return;
 }
 
 int flash_cmd_read_page_data(unsigned char *data)
 {
-    unsigned char *page_data_ptr = &current_flash_page_data[current_flash_subpage_index * 64];
-    memcpy(data, page_data_ptr, 64);
+    unsigned char *page_data_ptr = &current_flash_page_data[current_flash_subpage_index * _DFU_TRANSFER_SIZE_BYTES];
+    memcpy(data, page_data_ptr, _DFU_TRANSFER_SIZE_BYTES);
 
     current_flash_subpage_index++;
 
-    return 64;
+    return _DFU_TRANSFER_SIZE_BYTES;
 }
 
-static void begin_write()
+
+int flash_cmd_start_write_image()
 {
-    int result;
-    // TODO this will take a long time. To minimise the amount of time spent
-    // paused on this operation it would be preferable to move to this to a
-    // seperate command, e.g. start_write.
-    do
-    {
-        result = fl_startImageAdd(&factory_image, FLASH_MAX_UPGRADE_SIZE, 0);
-    } while (result > 0);
-
-    if (result < 0)
-        FLASH_ERROR();
-}
-
-static int pages_written = 0;
-
-int flash_cmd_write_page(unsigned char *data)
-{
-    unsigned int flag = *(unsigned int *)data;
-
-    if (upgrade_image_valid)
-    {
-        return 0;
-    }
-
-    switch (flag)
-    {
-        case 0:
-            // First page.
-            begin_write();
-            pages_written = 0;
-            // fallthrough
-        case 1:
-            // Do nothing.
-            break;
-        case 2:
-            // Termination.
-            if (fl_endWriteImage() != 0)
-                FLASH_ERROR();
-
-            // Sanity check
-            fl_BootImageInfo image = factory_image;
-            if (fl_getNextBootImage(&image) != 0)
-                FLASH_ERROR();
-            break;
-    }
     current_flash_subpage_index = 0;
+    int ret = fl_startImageAdd(&factory_image, FLASH_MAX_UPGRADE_SIZE, 0);
+    if(ret < 0)
+        FLASH_ERROR();
+    return ret;
+}
 
-    return 0;
+void flash_cmd_reset_subpage_index()
+{
+    current_flash_subpage_index = 0;
+}
+
+void flash_cmd_end_write_image()
+{
+     if (fl_endWriteImage() != 0)
+        FLASH_ERROR();
+
+    // Sanity check
+    fl_BootImageInfo image = factory_image;
+    if (fl_getNextBootImage(&image) != 0)
+        FLASH_ERROR();
+
 }
 
 int flash_cmd_write_page_data(unsigned char *data)
 {
-    unsigned char *page_data_ptr = &current_flash_page_data[current_flash_subpage_index * 64];
+    unsigned char *page_data_ptr = &current_flash_page_data[current_flash_subpage_index * _DFU_TRANSFER_SIZE_BYTES];
 
     if (upgrade_image_valid)
     {
         return 0;
     }
 
-    if (current_flash_subpage_index >= 4)
+    if (current_flash_subpage_index >= _NUM_DFU_PAGES_PER_FLASH_PAGE)
     {
         return 0;
     }
 
-    memcpy(page_data_ptr, data, 64);
+    memcpy(page_data_ptr, data, _DFU_TRANSFER_SIZE_BYTES);
 
     current_flash_subpage_index++;
 
-    if (current_flash_subpage_index == 4)
+    if (current_flash_subpage_index == _NUM_DFU_PAGES_PER_FLASH_PAGE)
     {
         if (fl_writeImagePage(current_flash_page_data) != 0)
             FLASH_ERROR();
-        pages_written++;
     }
 
     return 0;
@@ -252,4 +227,3 @@ int flash_cmd_erase_all(void)
     return 0;
 }
 #endif
-

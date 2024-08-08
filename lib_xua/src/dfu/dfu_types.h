@@ -1,4 +1,4 @@
-// Copyright 2011-2021 XMOS LIMITED.
+// Copyright 2011-2024 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 // Default Command requests (from Spec)
 #define DFU_DETACH 0
@@ -15,8 +15,6 @@
 #define XMOS_DFU_RESETINTODFU  0xf2
 #define XMOS_DFU_RESETFROMDFU  0xf3
 #define XMOS_DFU_SELECTIMAGE   0xf4
-#define XMOS_DFU_SAVESTATE     0xf5
-#define XMOS_DFU_RESTORESTATE  0xf6
 
 // DFU States
 #define STATE_APP_IDLE                  0x00
@@ -48,3 +46,12 @@
 #define DFU_errPOR          0x0D // Device detected unexpected power on reset.
 #define DFU_errUNKNOWN      0x0E // Something went wrong, but the device does not know what it was
 #define DFU_errSTALLEDPKT   0x0F // Device stalled an unexpected request.
+
+#define _DFU_TRANSFER_SIZE_BYTES (64)   // bMaxPacketSize0 in DFU device descriptor
+#define _DFU_TRANSFER_SIZE_WORDS (_DFU_TRANSFER_SIZE_BYTES/4)
+#define _FLASH_PAGE_SIZE_BYTES    (256)
+#define _NUM_DFU_PAGES_PER_FLASH_PAGE (_FLASH_PAGE_SIZE_BYTES/_DFU_TRANSFER_SIZE_BYTES)
+
+#if (_FLASH_PAGE_SIZE_BYTES % _DFU_TRANSFER_SIZE_BYTES)
+#error _FLASH_PAGE_SIZE_BYTES should be a multiple of _DFU_TRANSFER_SIZE_BYTES
+#endif

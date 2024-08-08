@@ -18,6 +18,14 @@
 #include "xua_hid_descriptor.h"
 #include "xud.h"
 
+// Enable BOS descriptor only when DFU is enabled since the only capability we advertise is the MSOS desc with DFU interface enumerating as WinUSB.
+// Enumerating with 0 capabilities doesn't seem to be allowed
+#if (XUA_DFU_EN && (AUDIO_CLASS == 2))
+    #define _XUA_ENABLE_BOS_DESC (1)
+#else
+    #define _XUA_ENABLE_BOS_DESC (0)
+#endif
+
 #define APPEND_VENDOR_STR(x) VENDOR_STR" "#x
 
 #define APPEND_PRODUCT_STR_A2(x) PRODUCT_STR_A2 " "#x
@@ -453,7 +461,11 @@ USB_Descriptor_Device_t devDesc_Audio2 =
 {
     .bLength                        = sizeof(USB_Descriptor_Device_t),
     .bDescriptorType                = USB_DESCTYPE_DEVICE,
+#if _XUA_ENABLE_BOS_DESC
+    .bcdUSB                         = 0x0201,
+#else
     .bcdUSB                         = 0x0200,
+#endif
     .bDeviceClass                   = 0xEF,
     .bDeviceSubClass                = 0x02,
     .bDeviceProtocol                = 0x01,
@@ -463,7 +475,7 @@ USB_Descriptor_Device_t devDesc_Audio2 =
     .bcdDevice                      = BCD_DEVICE,
     .iManufacturer                  = offsetof(StringDescTable_t, vendorStr)/sizeof(char *),
     .iProduct                       = offsetof(StringDescTable_t, productStr_Audio2)/sizeof(char *),
-    .iSerialNumber                  = offsetof(StringDescTable_t, serialStr)/sizeof(char *),
+    .iSerialNumber                  = 0, /* Set to None by default */
     .bNumConfigurations             = 0x01
 };
 
@@ -540,7 +552,6 @@ unsigned char devQualDesc_Null[] =
     0x00                            /* 9  bReserved (must be zero) */
 };
 
-
 #if (MIXER) && !defined(AUDIO_PATH_XUS) && (MAX_MIX_COUNT > 0)
 //#warning Extension units on the audio path are required for mixer.  Enabling them now.
 #define AUDIO_PATH_XUS
@@ -584,9 +595,22 @@ unsigned char devQualDesc_Null[] =
 #define HS_STREAM_FORMAT_OUTPUT_2_MAXPACKETSIZE (MAX_PACKET_SIZE_MULT_OUT_HS * HS_STREAM_FORMAT_OUTPUT_2_SUBSLOT_BYTES)
 #define HS_STREAM_FORMAT_OUTPUT_3_MAXPACKETSIZE (MAX_PACKET_SIZE_MULT_OUT_HS * HS_STREAM_FORMAT_OUTPUT_3_SUBSLOT_BYTES)
 
-#if (HS_STEAM_FORMAT_OUPUT_1_MAXPACKETSIZE > 1024) || (HS_STEAM_FORMAT_OUPUT_2_MAXPACKETSIZE > 1024) \
-    || (HS_STEAM_FORMAT_OUPUT_3_MAXPACKETSIZE > 1024)
-#error
+#if (HS_STREAM_FORMAT_OUTPUT_1_MAXPACKETSIZE > 1024)
+#warning HS_STREAM_FORMAT_OUTPUT_1_MAXPACKETSIZE > 1024
+#undef HS_STREAM_FORMAT_OUTPUT_1_MAXPACKETSIZE
+#define HS_STREAM_FORMAT_OUTPUT_1_MAXPACKETSIZE 1024
+#endif
+
+#if (HS_STREAM_FORMAT_OUTPUT_2_MAXPACKETSIZE > 1024)
+#warning HS_STREAM_FORMAT_OUTPUT_2_MAXPACKETSIZE > 1024
+#undef HS_STREAM_FORMAT_OUTPUT_2_MAXPACKETSIZE
+#define HS_STREAM_FORMAT_OUTPUT_2_MAXPACKETSIZE 1024
+#endif
+
+#if (HS_STREAM_FORMAT_OUTPUT_3_MAXPACKETSIZE > 1024)
+#warning HS_STREAM_FORMAT_OUTPUT_3_MAXPACKETSIZE > 1024
+#undef HS_STREAM_FORMAT_OUTPUT_3_MAXPACKETSIZE
+#define HS_STREAM_FORMAT_OUTPUT_3_MAXPACKETSIZE 1024
 #endif
 
 #define FS_STREAM_FORMAT_OUTPUT_1_MAXPACKETSIZE (MAX_PACKET_SIZE_MULT_OUT_FS * FS_STREAM_FORMAT_OUTPUT_1_SUBSLOT_BYTES)
@@ -2085,7 +2109,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
     /* DFU 1.1 Run-Time DFU Functional Descriptor */
     0x09,                                 /* 0    Size */
     0x21,                                 /* 1    bDescriptorType : DFU FUNCTIONAL */
-    0x07,                                 /* 2    bmAttributes */
+    0x0f,                                 /* 2    bmAttributes */
     DFU_DETACH_TIME_OUT & 0xFF,           /* 3    wDetachTimeOut */
     (DFU_DETACH_TIME_OUT >> 8) & 0xFF,    /* 4    wDetachTimeOut */
     0x40,                                 /* 5    wTransferSize */

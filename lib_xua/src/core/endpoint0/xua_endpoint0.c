@@ -19,6 +19,7 @@
 #include "dfu_types.h"
 #include "usbaudio20.h"          /* Defines from USB Audio 2.0 spec */
 #include "xua_ep0_descriptors.h" /* This devices descriptors */
+#include "xua_ep0_msos_descriptors.h" /* MSOS descriptors */
 #include "xua_commands.h"
 #include "audiostream.h"
 #include "hostactive.h"
@@ -99,6 +100,7 @@ extern void device_reboot(void);
 #endif
 
 unsigned int DFU_mode_active = 0;         // 0 - App active, 1 - DFU active
+unsigned int notify_audio_stop_for_DFU = 0;
 
 /* Global volume and mute tables */
 int volsOut[NUM_USB_CHAN_OUT + 1];
@@ -151,6 +153,11 @@ char g_product_str[XUA_MAX_STR_LEN] = PRODUCT_STR_A1;
 
 /* Global variable for current USB Serial Number strings */
 char g_serial_str[XUA_MAX_STR_LEN] = SERIAL_STR;
+
+#if _XUA_ENABLE_BOS_DESC
+/* Device Interface GUID*/
+char g_device_interface_guid_str[DEVICE_INTERFACE_GUID_MAX_STRLEN+1] = WINUSB_DEVICE_INTERFACE_GUID;
+#endif
 
 /* Subslot */
 const unsigned g_subSlot_Out_HS[OUTPUT_FORMAT_COUNT]    = {HS_STREAM_FORMAT_OUTPUT_1_SUBSLOT_BYTES,
@@ -263,6 +270,11 @@ const unsigned g_chanCount_Out_HS[OUTPUT_FORMAT_COUNT]       = {HS_STREAM_FORMAT
                                                             HS_STREAM_FORMAT_OUTPUT_3_CHAN_COUNT
 #endif
 };
+
+// TODO Move to lib_xud
+#define USB_BMREQ_H2D_VENDOR_INT          ((USB_BM_REQTYPE_DIRECTION_H2D << 7) | \
+                                            (USB_BM_REQTYPE_TYPE_VENDOR << 5) | \
+                                            (USB_BM_REQTYPE_RECIP_INTER))
 
 XUD_ep ep0_out;
 XUD_ep ep0_in;
@@ -458,7 +470,26 @@ static unsigned char hidReportDescriptorPtr[] = {
 };
 #endif
 
-
+#if _XUA_ENABLE_BOS_DESC
+/// Update the device interface GUID in both MSOS simple and composite descriptors
+static void update_guid_in_msos_desc(const char *guid_str)
+{
+    // composite descriptor
+    unsigned char *msos_guid_ptr = desc_ms_os_20_composite.msos_desc_registry_property.PropertyData;
+    for(int i=0; i<DEVICE_INTERFACE_GUID_MAX_STRLEN; i++)
+    {
+        msos_guid_ptr[2*i] = guid_str[i];
+        msos_guid_ptr[2*i + 1] = 0x0;
+    }
+    // simple descriptor
+    msos_guid_ptr = desc_ms_os_20_simple.msos_desc_registry_property.PropertyData;
+    for(int i=0; i<DEVICE_INTERFACE_GUID_MAX_STRLEN; i++)
+    {
+        msos_guid_ptr[2*i] = guid_str[i];
+        msos_guid_ptr[2*i + 1] = 0x0;
+    }
+}
+#endif
 
 void XUA_Endpoint0_init(chanend c_ep0_out, chanend c_ep0_in, NULLABLE_RESOURCE(chanend, c_aud_ctl),
     chanend c_mix_ctl, chanend c_clk_ctl, chanend c_EANativeTransport_ctrl, CLIENT_INTERFACE(i_dfu, dfuInterface) VENDOR_REQUESTS_PARAMS_DEC_)
@@ -469,6 +500,19 @@ void XUA_Endpoint0_init(chanend c_ep0_out, chanend c_ep0_in, NULLABLE_RESOURCE(c
     XUA_Endpoint0_setStrTable();
 
     VendorRequests_Init(VENDOR_REQUESTS_PARAMS);
+#if _XUA_ENABLE_BOS_DESC
+    if(strcmp(g_device_interface_guid_str, "")) // If g_device_interface_guid_str is not empty
+    {
+        update_guid_in_msos_desc(g_device_interface_guid_str);
+    }
+#endif
+
+#if (AUDIO_CLASS == 2)
+    if(strcmp(g_strTable.serialStr, "")) // If serialStr is not empty
+    {
+        devDesc_Audio2.iSerialNumber = offsetof(StringDescTable_t, serialStr)/sizeof(char *);
+    }
+#endif
 
 #if (MIXER)
     /* Set up mixer default state */
@@ -480,6 +524,12 @@ void XUA_Endpoint0_init(chanend c_ep0_out, chanend c_ep0_in, NULLABLE_RESOURCE(c
 #endif
 
 #if (XUA_DFU_EN == 1)
+#if (AUDIO_CLASS == 2)
+    if(strcmp(g_strTable.serialStr, "")) // If serialStr is not empty
+    {
+        DFUdevDesc.iSerialNumber = offsetof(StringDescTable_t, serialStr)/sizeof(char *); /* Same as the run-time mode device descriptor */
+    }
+#endif
     /* Check if device has started in DFU mode */
     if (DFUReportResetState(null))
     {
@@ -869,9 +919,7 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
 
                         /* If running in application mode stop audio */
                         /* Don't interupt audio for save and restore cmds */
-                        if (!DFU_mode_active
-                                && (sp.bRequest != XMOS_DFU_SAVESTATE)
-                                && (sp.bRequest != XMOS_DFU_RESTORESTATE))
+                        if (!DFU_mode_active && !notify_audio_stop_for_DFU)
                         {
                             /* Send STOP_AUDIO_FOR_DFU command. This will either pass through
                              * buffering system (i.e. ep_buffer/decouple) if the device has USB audio
@@ -887,6 +935,7 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
                             outuint(c_aud_ctl, AUDIO_STOP_FOR_DFU);
                             // Handshake
                             chkct(c_aud_ctl, XS1_CT_END);
+                            notify_audio_stop_for_DFU = 1;  // So we notify AUDIO_STOP_FOR_DFU only once
                         }
 
                         /* This will return 1 if reset requested */
@@ -951,6 +1000,58 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
     } /* if(result == XUD_RES_OKAY) */
 
     {
+#if _XUA_ENABLE_BOS_DESC
+        if(result == XUD_RES_ERR)
+        {
+            unsigned bmRequestType = (sp.bmRequestType.Direction<<7) | (sp.bmRequestType.Type<<5) | (sp.bmRequestType.Recipient);
+            if(bmRequestType == USB_BMREQ_D2H_VENDOR_DEV)
+            {
+                if((sp.bRequest == REQUEST_GET_MS_DESCRIPTOR) &&
+                    sp.wIndex == MS_OS_20_DESCRIPTOR_INDEX)
+                {
+                    int num_interfaces;
+                    if(DFU_mode_active) {
+                        num_interfaces = DFUcfgDesc.Config.bNumInterfaces;
+                    }
+                    else {
+                        num_interfaces = cfgDesc_Audio2.Config.bNumInterfaces;
+                    }
+
+                    if(num_interfaces == 1) {
+                        result = XUD_DoGetRequest(ep0_out, ep0_in, (unsigned char*)&desc_ms_os_20_simple, sizeof(MSOS_desc_simple_t), sp.wLength);
+                    }
+                    else {
+                        result = XUD_DoGetRequest(ep0_out, ep0_in, (unsigned char*)&desc_ms_os_20_composite, sizeof(MSOS_desc_composite_t), sp.wLength);
+                    }
+                }
+            }
+
+        }
+#endif
+
+#if XUA_DFU_EN
+        if(result == XUD_RES_ERR)
+        {
+            // From Theycon DFU driver v2.66.0 onwards, the XMOS_DFU_REVERTFACTORY request comes as a H2D vendor request and not as a class request addressed to the DFU interface
+            unsigned bmRequestType = (sp.bmRequestType.Direction<<7) | (sp.bmRequestType.Type<<5) | (sp.bmRequestType.Recipient);
+            if((bmRequestType == USB_BMREQ_H2D_VENDOR_INT) && (sp.bRequest == XMOS_DFU_REVERTFACTORY))
+            {
+                unsigned interface_num = sp.wIndex & 0xff;
+                unsigned dfu_if = (DFU_mode_active) ? 0 : INTERFACE_NUMBER_DFU;
+
+                if(interface_num == dfu_if)
+                {
+                    int reset = 0;
+                    result = DFUDeviceRequests(ep0_out, &ep0_in, &sp, null, 0 /*this is unused in DFUDeviceRequests()??*/, dfuInterface, &reset);
+                    if(reset)
+                    {
+                        DFUDelay(DELAY_BEFORE_REBOOT_TO_DFU_MS * 100000);
+                        device_reboot();
+                    }
+                }
+            }
+        }
+#endif
         if(result == XUD_RES_ERR)
         {
             /* Run vendor defined parsing/processing */
@@ -958,6 +1059,50 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
              * core sure to shared memory depandancy */
             result = VendorRequests(ep0_out, ep0_in, &sp VENDOR_REQUESTS_PARAMS_);
         }
+#if _XUA_ENABLE_BOS_DESC
+        // Check for BOS descriptor request
+        if(result == XUD_RES_ERR)
+        {
+            unsigned bmRequestType = (sp.bmRequestType.Direction<<7) | (sp.bmRequestType.Type<<5) | (sp.bmRequestType.Recipient);
+            switch(bmRequestType)
+            {
+                case USB_BMREQ_D2H_STANDARD_DEV:
+                    switch(sp.bRequest)
+                    {
+                        case USB_GET_DESCRIPTOR:
+                            switch(sp.wValue & 0xff00)
+                            {
+                                case (USB_DESCTYPE_BOS << 8):
+                                {
+                                    USB_Descriptor_BOS_t desc_bos;
+                                    desc_bos.usb_desc_bos_standard = desc_bos_standard;
+                                    desc_bos.usb_desc_bos_platform = desc_bos_msos_platform_capability;
+                                    uint16_t msos_desc_len;
+                                    int num_interfaces;
+                                    if(DFU_mode_active) {
+                                        num_interfaces = DFUcfgDesc.Config.bNumInterfaces;
+                                    }
+                                    else {
+                                        num_interfaces = cfgDesc_Audio2.Config.bNumInterfaces;
+                                    }
+
+                                    if(num_interfaces == 1) {
+                                        msos_desc_len = sizeof(MSOS_desc_simple_t);
+                                    }
+                                    else {
+                                        msos_desc_len = sizeof(MSOS_desc_composite_t);
+                                    }
+                                    memcpy(&desc_bos.usb_desc_bos_platform.CapabilityData[4], &msos_desc_len, sizeof(int16_t)); // Update msos descriptor length in platform capabilityData
+                                    result = XUD_DoGetRequest(ep0_out, ep0_in, (unsigned char*)&desc_bos, sizeof(USB_Descriptor_BOS_t), sp.wLength);
+                                }
+                                break;
+                            }
+                        break;
+                    }
+                break;
+            }
+        }
+#endif
     }
 
     if(result == XUD_RES_ERR)
@@ -1080,8 +1225,8 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
         {
             /* Running in DFU mode - always return same descs for DFU whether HS or FS */
             result = USB_StandardRequests(ep0_out, ep0_in,
-                DFUdevDesc, sizeof(DFUdevDesc),
-                DFUcfgDesc, sizeof(DFUcfgDesc),
+                (unsigned char*)&DFUdevDesc, sizeof(DFUdevDesc),
+                (unsigned char*)&DFUcfgDesc, sizeof(DFUcfgDesc),
                 null, 0, /* Used same descriptors for full and high-speed */
                 null, 0,
                 (char**)&g_strTable, sizeof(g_strTable)/sizeof(char *), &sp, g_curUsbSpeed);

@@ -1,4 +1,4 @@
-// Copyright 2011-2021 XMOS LIMITED.
+// Copyright 2011-2024 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
 #ifndef _XUA_DFU_H_
@@ -6,6 +6,7 @@
 
 #include <xccompat.h>
 #include "xud_device.h"
+#include "dfu_types.h"
 
 #ifndef DFU_VENDOR_ID
 #error DFU_VENDOR_ID not defined!
@@ -13,11 +14,6 @@
 
 #ifndef DFU_PID
 #error DFU_PID not defined!
-#endif
-
-#ifndef DFU_SERIAL_STR_INDEX
-/* By default no serial string */
-#define DFU_SERIAL_STR_INDEX        (0x00)
 #endif
 
 #ifndef DFU_PRODUCT_STR_INDEX
@@ -28,61 +24,93 @@
 #error DFU_MANUFACTURE_STR_INDEX not defined!!
 #endif
 
-unsigned char DFUdevDesc[] = {
-    18,                             /* 0  bLength : Size of descriptor in Bytes (18 Bytes) */
-    1,                              /* 1  bdescriptorType */
-    0,                              /* 2  bcdUSB */
-    2,                              /* 3  bcdUSB */
-    0x00,                           /* 4  bDeviceClass:      See interface */
-    0x00,                           /* 5  bDeviceSubClass:   See interface */
-    0,                              /* 6  bDeviceProtocol:   See interface */
-    64,                             /* 7  bMaxPacketSize */
-    (DFU_VENDOR_ID & 0xFF),         /* 8  idVendor */
-    (DFU_VENDOR_ID >> 8),           /* 9  idVendor */
-    (DFU_PID & 0xFF),               /* 10 idProduct */
-    (DFU_PID >> 8),                 /* 11 idProduct */
-    (BCD_DEVICE & 0xFF),        /* 12 bcdDevice : Device release number */
-    (BCD_DEVICE >> 8),          /* 13 bcdDevice : Device release number */
-    DFU_MANUFACTURER_STR_INDEX,     /* 14 iManufacturer : Index of manufacturer string */
-    DFU_PRODUCT_STR_INDEX,          /* 15 iProduct : Index of product string descriptor */
-    DFU_SERIAL_STR_INDEX,           /* 16 iSerialNumber : Index of serial number decriptor */
-    0x01                            /* 17 bNumConfigurations : Number of possible configs */
+
+
+USB_Descriptor_Device_t DFUdevDesc =
+{
+    .bLength                        = sizeof(USB_Descriptor_Device_t),
+    .bDescriptorType                = USB_DESCTYPE_DEVICE,
+#if _XUA_ENABLE_BOS_DESC
+    .bcdUSB                         = 0x0201,
+#else
+    .bcdUSB                         = 0x0200,
+#endif
+    .bDeviceClass                   = 0, /* See interface */
+    .bDeviceSubClass                = 0, /* See interface */
+    .bDeviceProtocol                = 0, /* See interface */
+    .bMaxPacketSize0                = _DFU_TRANSFER_SIZE_BYTES,
+    .idVendor                       = DFU_VENDOR_ID,
+    .idProduct                      = DFU_PID,
+    .bcdDevice                      = BCD_DEVICE,
+    .iManufacturer                  = DFU_MANUFACTURER_STR_INDEX,
+    .iProduct                       = DFU_PRODUCT_STR_INDEX,
+    .iSerialNumber                  = 0, /* Set to None by default */
+    .bNumConfigurations             = 0x01
 };
 
-unsigned char DFUcfgDesc[] = {
-    /* Standard USB device descriptor */
-    0x09,                           /* 0  bLength */
-    USB_DESCTYPE_CONFIGURATION,              /* 1  bDescriptorType */
-    0x1b,                           /* 2  wTotalLength */
-    0x00,                           /* 3  wTotalLength */
-    1,                              /* 4  bNumInterface: Number of interfaces*/
-    0x01,                           /* 5  bConfigurationValue */
-    0x00,                           /* 6  iConfiguration */
-    0xC0,                           /* 7  bmAttributes */
-    0x32,                           /* 8  bMaxPower */
+#define DFU_ATTR_CAN_DOWNLOAD              (1u << 0)
+#define DFU_ATTR_CAN_UPLOAD                (1u << 1)
+#define DFU_ATTR_MANIFESTATION_TOLERANT    (1u << 2)
+#define DFU_ATTR_WILL_DETACH               (1u << 3)
+// DFU functional attributes
+#define DFU_FUNC_ATTRS (DFU_ATTR_CAN_UPLOAD | DFU_ATTR_CAN_DOWNLOAD | DFU_ATTR_WILL_DETACH | DFU_ATTR_MANIFESTATION_TOLERANT)
 
-    /* Standard DFU class interface descriptor */
-    0x09,                           /* 0 bLength : Size of this descriptor, in bytes. (field size 1 bytes) */
-    0x04,                           /* 1 bDescriptorType : INTERFACE descriptor. (field size 1 bytes) */
-    0x00,                           /* 2 bInterfaceNumber : Index of this interface. (field size 1 bytes) */
-    0x00,                           /* 3 bAlternateSetting : Index of this setting. (field size 1 bytes) */
-    0x00,                           /* 4 bNumEndpoints : 0 endpoints. (field size 1 bytes) */
-    0xFE,                           /* 5 bInterfaceClass : AUDIO. (field size 1 bytes) */
-    0x01,                           /* 6 bInterfaceSubclass : AUDIO_CONTROL. (field size 1 bytes) */
-    0x02,                           /* 7 bInterfaceProtocol : Unused. (field size 1 bytes) */
-    0x00,                           /* 8 iInterface : Unused. (field size 1 bytes) */
+typedef struct
+{
+    unsigned char bLength;
+    unsigned char bDescriptorType;
+    unsigned char bmAttributes;
+    unsigned short wDetachTimeOut;
+    unsigned short wTransferSize;
+    unsigned short bcdDFUVersion;
+}__attribute__((packed)) USB_DFU_Functional_Descriptor_t;
 
-    /* DFU 1.1 Run-Time DFU Functional Descriptor */
-    0x09,                           /* 0    Size */
-    0x21,                           /* 1    bDescriptorType : DFU FUNCTIONAL */
-    0x07,                           /* 2    bmAttributes */
-    0xFA,                           /* 3    wDetachTimeOut */
-    0x00,                           /* 4    wDetachTimeOut */
-    0x40,                           /* 5    wTransferSize */
-    0x00,                           /* 6    wTransferSize */
-    0x10,                           /* 7    bcdDFUVersion */
-    0x01,                           /* 8    bcdDFUVersion */
+typedef struct
+{
+    USB_Descriptor_Configuration_Header_t       Config; /* Configuration header */
+    USB_Descriptor_Interface_t                  InterfaceDesc;
+    USB_DFU_Functional_Descriptor_t             FunctionalDesc;
+}__attribute__((packed)) USB_Config_Descriptor_DFU_t;
+
+
+USB_Config_Descriptor_DFU_t DFUcfgDesc = {
+    .Config =
+    {
+        .bLength                    = sizeof(USB_Descriptor_Configuration_Header_t),
+        .bDescriptorType            = USB_DESCTYPE_CONFIGURATION,
+        .wTotalLength               = sizeof(USB_Config_Descriptor_DFU_t),
+        .bNumInterfaces             = 1,
+        .bConfigurationValue        = 0x01,
+        .iConfiguration             = 0x00,
+#if (XUA_POWERMODE == XUA_POWERMODE_SELF)
+        .bmAttributes               = 192,
+#else
+        .bmAttributes               = 128,
+#endif
+        .bMaxPower                  = _XUA_BMAX_POWER,
+    },
+    .InterfaceDesc =
+    {
+        .bLength                       = sizeof(USB_Descriptor_Interface_t),
+        .bDescriptorType               = USB_DESCTYPE_INTERFACE,
+        .bInterfaceNumber              = 0,
+        .bAlternateSetting             = 0x00,                     /* Must be 0 */
+        .bNumEndpoints                 = 0x00,
+        .bInterfaceClass               = 0xFE,
+        .bInterfaceSubClass            = 0x01,
+        .bInterfaceProtocol            = 0x02,
+        .iInterface                    = offsetof(StringDescTable_t, dfuStr)/sizeof(char *), /* 8 iInterface */
+    },
+    .FunctionalDesc = {
+        .bLength = sizeof(USB_DFU_Functional_Descriptor_t),
+        .bDescriptorType = 0x21, //  DFU FUNCTIONAL
+        .bmAttributes = DFU_FUNC_ATTRS,
+        .wDetachTimeOut = 0x00FA,
+        .wTransferSize = _DFU_TRANSFER_SIZE_BYTES,
+        .bcdDFUVersion = 0x0110
+    }
 };
+
 
 int DFUReportResetState(NULLABLE_RESOURCE(chanend , c_user_cmd));
 int DFUDeviceRequests(XUD_ep c_ep0_out, NULLABLE_REFERENCE_PARAM(XUD_ep, ep0_in), REFERENCE_PARAM(USB_SetupPacket_t, sp),
@@ -92,4 +120,3 @@ int DFUDeviceRequests(XUD_ep c_ep0_out, NULLABLE_REFERENCE_PARAM(XUD_ep, ep0_in)
 void DFUDelay(unsigned d);
 
 #endif /* _DFU_H_ */
-
