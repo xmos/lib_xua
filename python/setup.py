@@ -1,4 +1,4 @@
-# Copyright 2020-2021 XMOS LIMITED.
+# Copyright 2020-2024 XMOS LIMITED.
 # This Software is subject to the terms of the XMOS Public Licence: Version 1.
 import setuptools
 
@@ -13,9 +13,9 @@ setuptools.setup(
     name='lib_xua',
     packages=setuptools.find_packages(),
     install_requires=[
-        'flake8~=3.8',
-        'pytest~=6.0',
-        'pytest-xdist~=1.34',
+        'flake8~=7.1',
+        'pytest~=8.3',
+        'pytest-xdist~=3.6',
     ],
     dependency_links=[
     ],
