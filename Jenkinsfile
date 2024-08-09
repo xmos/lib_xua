@@ -6,7 +6,8 @@ pipeline {
   agent none
   environment {
     REPO = 'lib_xua'
-    VIEW = getViewName(REPO)
+    //VIEW = getViewName(REPO)
+    VIEW = 'lib_xua_dfu_testing'
     TOOLS_VERSION = "15.2.1"    // For unit tests
   }
   options {
@@ -14,7 +15,6 @@ pipeline {
   }
   stages {
     stage('Build host apps') {
-      failFast true
       parallel {
         stage('Build Linux host app') {
           agent {
@@ -46,7 +46,9 @@ pipeline {
               sh 'mkdir -p OSX/x86'
               sh 'mv bin/xmosdfu OSX/x86/xmosdfu'
               archiveArtifacts artifacts: "OSX/x86/xmosdfu", fingerprint: true
-
+              dir("OSX/x86") {
+                stash includes: 'xmosdfu', name: 'macos_xmosdfu'
+              }
             }
             dir("${REPO}/host_usb_mixer_control") {
                 sh 'make -f Makefile.OSX'
@@ -109,46 +111,90 @@ pipeline {
         }
       }
     }
-    stage('Basic tests') {
-      agent {
-        label 'x86_64 && linux'
-      }
-      stages {
-        stage('Get view') {
-          steps {
-            xcorePrepareSandbox("${VIEW}", "${REPO}")
+    stage('Testing') {
+      parallel {
+        stage('Build and sim tests') {
+          agent {
+            label 'x86_64 && linux'
           }
-        }
-        stage('Library checks') {
-          steps {
-            xcoreLibraryChecks("${REPO}", false)
-          }
-        }
-        stage('Testing') {
-          failFast true
-          parallel {
-            stage('Tests') {
+          stages {
+            stage('Get view') {
               steps {
-                dir("${REPO}/tests"){
-                  viewEnv(){
-                    withVenv{
-                      sh "xmake -C test_midi -j" // Xdist does not like building so do here
-                      runPytest('--numprocesses=auto -vvv')
+                xcorePrepareSandbox("${VIEW}", "${REPO}")
+              }
+            }
+            stage('Library checks') {
+              steps {
+                xcoreLibraryChecks("${REPO}", false)
+              }
+            }
+            stage('xcore builds') {
+              steps {
+                dir("${REPO}") {
+                  xcoreAllAppNotesBuild('examples')
+                  dir("${REPO}") {
+                    runXdoc('doc')
+                  }
+                }
+                // Archive all the generated .pdf docs
+                archiveArtifacts artifacts: "${REPO}/**/pdf/*.pdf", fingerprint: true, allowEmptyArchive: true
+              }
+            }
+            stage('Simulator tests') {
+              steps {
+                dir("${REPO}/tests") {
+                  viewEnv() {
+                    withVenv {
+                      sh "xmake -C test_midi -j 8" // Xdist does not like building so do here
+
+                      dir("xua_unit_tests") {
+                        withEnv(["XMOS_CMAKE_PATH=${WORKSPACE}/xcommon_cmake"]) {
+                          sh "cmake -G 'Unix Makefiles' -B build"
+                          sh 'xmake -C build -j 8'
+                        }
+                      }
+
+                      // Use "not dfu" keyword filter for now; restructure test directories when converted to XCommon CMake
+                      sh "pytest -n auto -vvv -k \"not dfu\" --junitxml=pytest_sim.xml"
                     }
                   }
                 }
               }
             }
-            stage('Unity tests') {
+          }
+          post {
+            always {
+              junit "lib_xua/tests/pytest_sim.xml"
+            }
+            cleanup {
+              xcoreCleanSandbox()
+            }
+          }
+        }
+        stage('MacOS HW tests') {
+          agent {
+            label 'macos && arm64 && usb_audio && xcore.ai-mcab'
+          }
+          stages {
+            stage('Get View') {
               steps {
-                dir("${REPO}/tests/xua_unit_tests") {
+                xcorePrepareSandbox("${VIEW}", "${REPO}")
+              }
+            }
+            stage('Hardware tests') {
+              steps {
+                dir("hardware_test_tools/xmosdfu") {
+                  unstash "macos_xmosdfu"
+                }
+                dir("lib_xua/tests/xua_hw_tests") {
                   withTools("${env.TOOLS_VERSION}") {
+                    withEnv(["XMOS_CMAKE_PATH=${WORKSPACE}/xcommon_cmake"]) {
+                      sh "cmake -G 'Unix Makefiles' -B build"
+                      sh "xmake -C build -j 8"
+                    }
                     withVenv {
-                      withEnv(["XMOS_CMAKE_PATH=${WORKSPACE}/xcommon_cmake"]) {
-                        sh "cmake -G 'Unix Makefiles' -B build"
-                        sh 'xmake -C build -j'
-                        runPython("pytest -s --junitxml=pytest_unity.xml")
-                        junit "pytest_unity.xml"
+                      withXTAG(["usb_audio_mc_xcai_dut"]) { xtagIds ->
+                        sh "pytest -v --junitxml=pytest_hw_mac.xml --xtag-id=${xtagIds[0]}"
                       }
                     }
                   }
@@ -156,23 +202,51 @@ pipeline {
               }
             }
           }
-        }
-        stage('xCORE builds') {
-          steps {
-            dir("${REPO}") {
-              xcoreAllAppNotesBuild('examples')
-              dir("${REPO}") {
-                runXdoc('doc')
-              }
+          post {
+            always {
+              junit "lib_xua/tests/xua_hw_tests/pytest_hw_mac.xml"
             }
-            // Archive all the generated .pdf docs
-            archiveArtifacts artifacts: "${REPO}/**/pdf/*.pdf", fingerprint: true, allowEmptyArchive: true
+            cleanup {
+              xcoreCleanSandbox()
+            }
           }
         }
-      }
-      post {
-        cleanup {
-          xcoreCleanSandbox()
+        stage('Windows HW tests') {
+          agent {
+            label 'windows11 && usb_audio && xcore.ai-mcab'
+          }
+          stages {
+            stage('Get View') {
+              steps {
+                xcorePrepareSandbox("${VIEW}", "${REPO}")
+              }
+            }
+            stage('Hardware tests') {
+              steps {
+                dir("lib_xua/tests/xua_hw_tests") {
+                  withTools("${env.TOOLS_VERSION}") {
+                    withEnv(["XMOS_CMAKE_PATH=${WORKSPACE}/xcommon_cmake"]) {
+                      sh "cmake -G 'Unix Makefiles' -B build"
+                      sh "xmake -C build"
+                    }
+                    withVenv {
+                      withXTAG(["usb_audio_mc_xcai_dut"]) { xtagIds ->
+                        sh "pytest -v --junitxml=pytest_hw_win.xml --xtag-id=${xtagIds[0]}"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+          post {
+            always {
+              junit "lib_xua/tests/xua_hw_tests/pytest_hw_win.xml"
+            }
+            cleanup {
+              xcoreCleanSandbox()
+            }
+          }
         }
       }
     }
