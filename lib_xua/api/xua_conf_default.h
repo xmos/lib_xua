@@ -1445,9 +1445,13 @@ enum USBEndpointNumber_Out
 
 /* Defines for DFU */
 #if (AUDIO_CLASS == 2)
-#define DFU_PID                     PID_AUDIO_2
+#ifndef DFU_PID
+    #define DFU_PID                     PID_AUDIO_2
+#endif
 #else
-#define DFU_PID                     PID_AUDIO_1
+#ifndef DFU_PID
+    #define DFU_PID                     PID_AUDIO_1
+#endif
 #endif
 #define DFU_VENDOR_ID               VENDOR_ID
 
