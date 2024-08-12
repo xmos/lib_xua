@@ -1650,3 +1650,13 @@ enum USBEndpointNumber_Out
 #ifndef WINUSB_DEVICE_INTERFACE_GUID
 #define WINUSB_DEVICE_INTERFACE_GUID               "{89C14132-D389-4FF7-944E-2E33379BB59D}"
 #endif
+
+/**
+ * @brief bRequest of the D2H vendor request that the host will send to read the MSOS descriptor
+ *
+ * The user shouldn't use this bRequest number in their own custom vendor request to
+ * the device. Override in application if necessary.
+ */
+#ifndef REQUEST_GET_MS_DESCRIPTOR
+#define REQUEST_GET_MS_DESCRIPTOR   0x20
+#endif
