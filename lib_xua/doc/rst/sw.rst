@@ -2,7 +2,7 @@
 Implementation Detail
 *********************
 
-This chapter examines the implementation of the various components that make up ``lib_xua``. It also examines the integration of dependencies and supporting libraries. 
+This chapter examines the implementation of the various components that make up ``lib_xua``. It also examines the integration of dependencies and supporting libraries.
 
 .. toctree::
 
@@ -17,5 +17,5 @@ This chapter examines the implementation of the various components that make up 
     sw_midi
     sw_pdm
     sw_hid
+    sw_dfu
     sw_resource
-
