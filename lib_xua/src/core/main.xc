@@ -651,6 +651,10 @@ int main()
                 , dfuInterface
 #endif
 #if (XUA_NUM_PDM_MICS > 0)
+    #if (PDM_TILE == AUDIO_IO_TILE)
+                , c_ds_output
+    #endif
+                , c_pdm_pcm
 #endif
 #if (XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
                 , i_pll_ref
