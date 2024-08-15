@@ -15,12 +15,12 @@ scheduled on the same tile as the flash so it can access the flash memory.
 The ``dfuInterface`` interface links USB to the XMOS flash user library (see :ref:`libflash_api`).
 
 
-The DFU interface is enabled by default (See XUA_DFU_EN define in ``xua_conf_default.h``).
+The DFU interface is enabled by default (See ``XUA_DFU_EN`` define in ``xua_conf_default.h``).
 When DFU is enabled, there are two sets of descriptors that the device can export, depending on the mode in which it operates.
 There's a descriptor set for the runtime mode, which is the mode the device normally operates in and a set of descriptors for the DFU mode.
 
 In the runtime mode, the DFU interface is one of potentially multiple interfaces that the device exposes. :ref:`dfu_interface_runtime` shows the DFU interface
-descriptors when enumerating in runtime mode as seen in a `Beagle USB analyser <https://www.totalphase.com/products/data-center/>`_ trace:
+descriptors when enumerating in runtime mode as seen in a `Beagle USB analyser <https://www.totalphase.com/products/data-center/>`_ trace.
 
  .. _dfu_interface_runtime:
 
@@ -33,7 +33,7 @@ Note the **bInterfaceProtocol** field set to **Runtime**.
 
 In DFU mode, the device exports the DFU descriptor set. The DFU mode descriptors specify only one interface, the DFU interface.
 :ref:`dfu_interface_dfu` shows the DFU interface
-descriptors when enumerating in DFU mode as seen in a Beagle USB analyser trace:
+descriptors when enumerating in DFU mode as seen in a Beagle USB analyser trace.
 
  .. _dfu_interface_dfu:
 
@@ -45,9 +45,9 @@ descriptors when enumerating in DFU mode as seen in a Beagle USB analyser trace:
 Note the **bInterfaceProtocol** field set to **DFU mode**.
 
 Before starting the DFU upload or download process, the host sends a ``DFU_DETACH`` command to detach the device from runtime to DFU mode.
-In response to the ``DFU_DETACH`` command, the device reboots itself in DFU mode and enumerates using the DFU mode descriptors.
+In response to the ``DFU_DETACH`` command, the device reboots itself into DFU mode and enumerates using the DFU mode descriptors.
 Once the device is in DFU mode, the DFU interface can accept commands defined by the
-`DFU 1.1 class specification <http://www.usb.org/developers/devclass_docs/DFU_1.1.pdf*USB>`_.
+`DFU 1.1 class specification <https://www.usb.org/sites/default/files/DFU_1.1.pdf>`_.
 
 After detaching the device, the host proceeds with the DFU download/upload commands to write/read the firmware upgrade image to/from the device.
 Once the DFU download or upload process is complete, the host sends a ``DETACH`` command, and the device reboots itself back in runtime mode.
@@ -59,10 +59,10 @@ Once the DFU download or upload process is complete, the host sends a ``DETACH``
    defines ``PID_AUDIO_2`` and ``DFU_PID`` respectively in ``xua_conf_default.h``. Users can define custom PIDs in their application by overriding these defines.
 
 
-During the DFU download process, on receiving the first DFU_DNLOAD command (``wBlockNum`` = 0), the device erases the entire
+During the DFU download process, on receiving the first ``DFU_DNLOAD`` command (``wBlockNum`` = 0), the device erases the entire
 ``FLASH_MAX_UPGRADE_SIZE`` bytes of the upgrade section of the flash. This is done by repeatedly calling ``flash_cmd_start_write_image``
-and can take several seconds. To avoid stalling the USB bus and risking a timeout, the flash erase is instead done in the DFU_GETSTATUS handling
-code for block 0. So for block 0, the device ends up returning the status as dfuDNBUSY several times while the flash
+and can take several seconds. To avoid stalling the USB bus and risking a timeout, the flash erase is instead done in the ``DFU_GETSTATUS`` handling
+code for block 0. So for block 0, the device ends up returning the status as ``dfuDNBUSY`` several times while the flash
 erase is in progress. :ref:`dfu_download_seq_diag` describes the DFU download process.
 
  .. _dfu_download_seq_diag:
@@ -89,7 +89,7 @@ function driver without a custom INF file. This means that when the device is co
 shows up as WinUSB compatible automatically, without requiring the user to manually load a driver for it using a utility like Zadig.
 
 The MSOS descriptors are present in the file ``xua_ep0_msos_descriptors.h``. In order to enumerate as a device capable of supplying MSOS
-descriptors, the device's ``bcdUSB`` version in the device descriptor has to be **0x0201**. On seeing the bcdUSB version as 0x0201 when the device
+descriptors, the device's ``bcdUSB`` version in the device descriptor has to be **0x0201**. On seeing the ``bcdUSB`` version as 0x0201 when the device
 enumerates, the host requests for a descriptor called the Binary Device Object Store (BOS) descriptor.
 This descriptor contains information about the capability of the device. It specifies the device to be MSOS 2.0 capable and contains information about
 the vendor request code (``bRequest``) and the request length (``wLength``) that the host needs to use to when making a vendor request to query for the MSOS
