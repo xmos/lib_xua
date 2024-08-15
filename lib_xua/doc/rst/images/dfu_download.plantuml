@@ -1,0 +1,31 @@
+@startuml
+participant Host as H
+participant Device as D
+H -> D : DFU_DETACH
+D -> D : Reboot in DFU mode
+H -> D : DFU_DNLOAD (BlockNum=0, Size>0)
+D -> D : Save block 0 data.\nStart flash erase
+loop until state returned is dfuDNBUSY
+    H -> D : DFU_GETSTATUS
+    D -> D : Continue flash erase for a fixed period
+    alt Flash erase complete
+        D -> D : Write block 0 to flash
+        D --> H : State=dfuDNLOAD-IDLE
+    else Flash erase not complete
+        D --> H : State=dfuDNBUSY
+    end
+end
+
+loop until image is complete: n from 1 to N-1
+    H -> D : DFU_DNLOAD (BlockNum=n, Size>0)
+    D -> D : Write block n to flash
+    H -> D : DFU_GETSTATUS
+    D --> H : State=dfuDNLOAD-IDLE
+end
+H -> D : DFU_DNLOAD (BlockNum=N, Size=0)
+
+H -> D : DFU_GETSTATUS
+D --> H : State=dfuIDLE
+H -> D : DFU_DETACH
+D -> D : Boot in runtime mode\nfrom the upgrade image
+@enduml

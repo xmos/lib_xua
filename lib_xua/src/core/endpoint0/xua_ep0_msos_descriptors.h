@@ -33,7 +33,9 @@
     0xDF, 0x60, 0xDD, 0xD8, 0x89, 0x45, 0xC7, 0x4C, \
   0x9C, 0xD2, 0x65, 0x9D, 0x9E, 0x64, 0x8A, 0x9F
 
-#define REQUEST_GET_MS_DESCRIPTOR    0x20 /* bRequest of the D2H vendor request that the host will send to read the MSOS descriptor. */
+// bRequest of the D2H vendor request that the host will send to read the MSOS descriptor.
+// The user shouldn't use this bRequest number in their custom vendor requests to the device.
+#define REQUEST_GET_MS_DESCRIPTOR   0x20
 
 // USB Binary Device Object Store (BOS) Descriptor
 typedef struct {

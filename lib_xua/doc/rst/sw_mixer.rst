@@ -284,4 +284,3 @@ than "DAW (Digital Audio Workstation i.e. the host) - Analogue 1 and 2" confirmi
 Again, by playing audio into analogue inputs 1/2 this can be heard looped through to analogue outputs 1/2::
 
   $ ./xmos_mixer --display-mixer-nodes 0
-
