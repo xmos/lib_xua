@@ -100,11 +100,10 @@ The host then makes a vendor request with the ``bRequest`` and ``wLength`` as sp
 .. warning::
    If writing a host application that also sends vendor requests to the device, users should ensure that they do not use the ``bRequest`` that is reserved
    for the MSOS descriptor. The MSOS descriptor vendor request's ``bRequest`` is defined as the
-   ``REQUEST_GET_MS_DESCRIPTOR`` define in ``xua_ep0_msos_descriptors.h.
+   ``REQUEST_GET_MS_DESCRIPTOR`` define in ``xua_ep0_msos_descriptors.h``.
 
-   .. code-block:: c
-
-      #define REQUEST_GET_MS_DESCRIPTOR   0x20
+   .. literalinclude:: ../../src/core/endpoint0/xua_ep0_msos_descriptors.h
+      ::start-at: #define REQUEST_GET_MS_DESCRIPTOR
 
 
 The MSOS descriptor reports the compatible ID as *WINUSB* for the DFU interface. It also specifies the device interface GUID in its registry property.
