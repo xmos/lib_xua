@@ -15,7 +15,7 @@ the DFU download operation from the app-under-test.
 
 The testcase verifies that the DFU operations have completed
 successfully by inspecting the BCD_VERSION, so each config
-needs to define the BCD_VERSION preprocessor macroccessfully.
+needs to define the BCD_VERSION preprocessor macro.
 It is best practice to give each app-under-test a unique
 version number to allow easy identification and avoid testcases
 interfering with each other when examining test failures.
