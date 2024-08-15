@@ -1,9 +1,0 @@
-# Requires libusb, you can install with:
-# 	apt-get install libusb-1.0-0-dev
-#
-# Either run as administrator (sudo) or add a udev rule for the correct
-# vendor and product IDs
-
-xmosdfu: xmosdfu.cpp
-	mkdir -p bin
-	g++ -D_GNU_SOURCE -Wall -g -o bin/xmosdfu -Ilibusb/Rasp -x c xmosdfu.cpp -std=c99 -lusb-1.0

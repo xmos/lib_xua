@@ -90,9 +90,10 @@ pipeline {
           steps {
             xcorePrepareSandbox("${VIEW}", "${REPO}")
             dir("${REPO}/${REPO}/host/xmosdfu") {
-              sh 'make -f Makefile.Linux64'
+              sh 'cmake -B build'
+              sh 'make -C build'
               sh 'mkdir -p Linux64'
-              sh 'mv bin/xmosdfu Linux64/xmosdfu'
+              sh 'mv build/bin/xmosdfu Linux64/xmosdfu'
               archiveArtifacts artifacts: "Linux64/xmosdfu", fingerprint: true
             }
           }
@@ -102,16 +103,17 @@ pipeline {
             }
           }
         }
-        stage('Build Mac host app') {
+        stage('Build Mac x86 host app') {
           agent {
             label 'x86_64&&macOS'
           }
           steps {
             xcorePrepareSandbox("${VIEW}", "${REPO}")
             dir("${REPO}/${REPO}/host/xmosdfu") {
-              sh 'make -f Makefile.OSX64'
+              sh 'cmake -B build'
+              sh 'make -C build'
               sh 'mkdir -p OSX/x86'
-              sh 'mv bin/xmosdfu OSX/x86/xmosdfu'
+              sh 'mv build/bin/xmosdfu OSX/x86/xmosdfu'
               archiveArtifacts artifacts: "OSX/x86/xmosdfu", fingerprint: true
 
             }
@@ -128,6 +130,27 @@ pipeline {
             }
           }
         }
+        stage('Build Mac arm host app') {
+          agent {
+            label 'arm64&&macos'
+          }
+          steps {
+            xcorePrepareSandbox("${VIEW}", "${REPO}")
+            dir("${REPO}/${REPO}/host/xmosdfu") {
+              sh 'cmake -B build'
+              sh 'make -C build'
+              sh 'mkdir -p OSX/arm64'
+              sh 'mv build/bin/xmosdfu OSX/arm64/xmosdfu'
+              archiveArtifacts artifacts: "OSX/arm64/xmosdfu", fingerprint: true
+
+            }
+          }
+          post {
+            cleanup {
+              xcoreCleanSandbox()
+            }
+          }
+        }
         stage('Build Pi host app') {
           agent {
             label 'pi'
@@ -136,7 +159,11 @@ pipeline {
             dir("${REPO}") {
               checkout scm
               dir("${REPO}/host/xmosdfu") {
-                sh 'make -f Makefile.Pi'
+                sh 'cmake -B build'
+                sh 'make -C build'
+                sh 'mkdir -p RPi'
+                sh 'mv build/bin/xmosdfu RPi/xmosdfu'
+                archiveArtifacts artifacts: "RPi/xmosdfu", fingerprint: true
               }
             }
           }
@@ -155,7 +182,10 @@ pipeline {
               checkout scm
               dir("${REPO}/host/xmosdfu") {
                 withVS("vcvars32.bat") {
-                  bat "nmake /f Makefile.Win32"
+                  bat "cmake -B build -G Ninja"
+                  bat "ninja -C build"
+                  bat 'mkdir win32 && cp build/bin/xmosdfu.exe win32/'
+                  archiveArtifacts artifacts: "win32/xmosdfu.exe", fingerprint: true
                 }
               }
               dir("host_usb_mixer_control") {
