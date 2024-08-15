@@ -59,9 +59,9 @@ Once the DFU download or upload process is complete, the host sends a ``DETACH``
    defines ``PID_AUDIO_2`` and ``DFU_PID`` respectively in ``xua_conf_default.h``. Users can define custom PIDs in their application by overriding these defines.
 
 
-During the DFU download process, on receiving the first ``DFU_DNLOAD`` command (``wBlockNum`` = 0), the device erases the entire
+During the DFU download process, on receiving the first ``DFU_DNLOAD`` command (``wBlockNum`` = 0), the device erases
 ``FLASH_MAX_UPGRADE_SIZE`` bytes of the upgrade section of the flash. This is done by repeatedly calling ``flash_cmd_start_write_image``
-and can take several seconds. To avoid stalling the USB bus and risking a timeout, the flash erase is instead done in the ``DFU_GETSTATUS`` handling
+and can take several seconds. To avoid the ``DFU_DNLOAD`` request timing out, the flash erase is instead done in the ``DFU_GETSTATUS`` handling
 code for block 0. So for block 0, the device ends up returning the status as ``dfuDNBUSY`` several times while the flash
 erase is in progress. :ref:`dfu_download_seq_diag` describes the DFU download process.
 
@@ -99,8 +99,12 @@ The host then makes a vendor request with the ``bRequest`` and ``wLength`` as sp
 
 .. warning::
    If writing a host application that also sends vendor requests to the device, users should ensure that they do not use the ``bRequest`` that is reserved
-   for the MSOS descriptor. The MSOS descriptor vendor request's ``bRequest`` is defined as an overridable define
-   ``REQUEST_GET_MS_DESCRIPTOR`` in ``xua_conf_default.h``. Users can override this in the application if required.
+   for the MSOS descriptor. The MSOS descriptor vendor request's ``bRequest`` is defined as the
+   ``REQUEST_GET_MS_DESCRIPTOR`` define in ``xua_ep0_msos_descriptors.h.
+
+   .. code-block:: c
+
+      #define REQUEST_GET_MS_DESCRIPTOR   0x20
 
 
 The MSOS descriptor reports the compatible ID as *WINUSB* for the DFU interface. It also specifies the device interface GUID in its registry property.
