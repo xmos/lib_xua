@@ -25,7 +25,7 @@ pipeline {
               sh 'cmake -B build'
               sh 'make -C build'
               sh 'mkdir -p Linux64'
-              sh 'mv build/bin/xmosdfu Linux64/xmosdfu'
+              sh 'mv build/xmosdfu Linux64/xmosdfu'
               archiveArtifacts artifacts: "Linux64/xmosdfu", fingerprint: true
             }
           }
@@ -45,7 +45,7 @@ pipeline {
               sh 'cmake -B build'
               sh 'make -C build'
               sh 'mkdir -p OSX/x86'
-              sh 'mv build/bin/xmosdfu OSX/x86/xmosdfu'
+              sh 'mv build/xmosdfu OSX/x86/xmosdfu'
               archiveArtifacts artifacts: "OSX/x86/xmosdfu", fingerprint: true
             }
             dir("${REPO}/host_usb_mixer_control") {
@@ -71,7 +71,7 @@ pipeline {
               sh 'cmake -B build'
               sh 'make -C build'
               sh 'mkdir -p OSX/arm64'
-              sh 'mv build/bin/xmosdfu OSX/arm64/xmosdfu'
+              sh 'mv build/xmosdfu OSX/arm64/xmosdfu'
               archiveArtifacts artifacts: "OSX/arm64/xmosdfu", fingerprint: true
               dir("OSX/arm64") {
                 stash includes: 'xmosdfu', name: 'macos_xmosdfu'
@@ -95,7 +95,7 @@ pipeline {
                 sh 'cmake -B build'
                 sh 'make -C build'
                 sh 'mkdir -p RPi'
-                sh 'mv build/bin/xmosdfu RPi/xmosdfu'
+                sh 'mv build/xmosdfu RPi/xmosdfu'
                 archiveArtifacts artifacts: "RPi/xmosdfu", fingerprint: true
               }
             }
@@ -117,7 +117,7 @@ pipeline {
                 withVS("vcvars32.bat") {
                   bat "cmake -B build -G Ninja"
                   bat "ninja -C build"
-                  bat 'mkdir win32 && cp build/bin/xmosdfu.exe win32/'
+                  bat 'mkdir win32 && cp build/xmosdfu.exe win32/'
                   archiveArtifacts artifacts: "win32/xmosdfu.exe", fingerprint: true
                 }
               }

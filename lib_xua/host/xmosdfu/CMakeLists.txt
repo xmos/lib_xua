@@ -8,8 +8,6 @@ set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Only Release mode is allowed" FORCE
 
 project(xmosdfu)
 
-set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
-
 add_executable(xmosdfu ${CMAKE_CURRENT_LIST_DIR}/src/xmosdfu.cpp)
 
 # Discern OS for libusb library location
