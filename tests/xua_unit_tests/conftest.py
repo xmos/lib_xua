@@ -1,39 +1,17 @@
 # Copyright 2021-2024 XMOS LIMITED.
 # This Software is subject to the terms of the XMOS Public Licence: Version 1.
-from __future__ import print_function
-from builtins import str
-import os.path
+from pathlib import Path
 import pytest
 import subprocess
 
-target = os.environ.get("TARGET", "all_possible")
-print("target = ", target)
 
-
-def pytest_collect_file(parent, path):
-    if path.ext == ".xe":
-        if target == "all_possible":
-            return UnityTestSource.from_parent(parent, fspath=path)
-        if target == "XCOREAI" and ("xcoreai" in path.basename):
-            return UnityTestSource.from_parent(parent, fspath=path)
-        if target == "XCORE200" and ("xcore200" in path.basename):
-            return UnityTestSource.from_parent(parent, fspath=path)
+def pytest_collect_file(parent, file_path):
+    if file_path.suffix == ".xe":
+        return UnityTestSource.from_parent(parent, path=file_path)
 
 
 class UnityTestSource(pytest.File):
     def collect(self):
-        # Find the binary built from the runner for this test file
-        #
-        # Assume the following directory layout:
-        # unit_tests/       <- Test root directory
-        # |-- bin/          <- Compiled binaries of the test runners
-        # |-- conftest.py   <- This file
-        # |-- src.runners      <- Auto-generated buildable source of test binaries
-        # |-- src/          <- Unity test functions
-        # `-- wscript       <- Build system file used to generate/build runners
-        xe_name = ((os.path.basename(self.name)).split("."))[0] + ".xe"
-        test_bin_path = os.path.join("bin", xe_name)
-
         yield UnityTestExecutable.from_parent(self, name=self.name)
 
 
@@ -47,16 +25,13 @@ class UnityTestExecutable(pytest.Item):
         simulator_fail = False
         test_output = None
         try:
-            if "xcore200" in self.name:
-                print("run axe for executable ", self.name)
-                test_output = subprocess.check_output(["axe", self.name], text=True)
-            else:
-                print("run xsim for executable ", self.name)
-                test_output = subprocess.check_output(
-                    ["xsim", self.name],
-                    text=True,
-                    stderr=subprocess.STDOUT,
-                )
+            print("run xsim for executable ", self.name)
+            xe_path = Path(__file__).parent / "bin" / self.name
+            test_output = subprocess.check_output(
+                ["xsim", xe_path],
+                text=True,
+                stderr=subprocess.STDOUT,
+            )
         except subprocess.CalledProcessError as e:
             # Unity exits non-zero if an assertion fails
             simulator_fail = True
@@ -122,7 +97,7 @@ class UnityTestExecutable(pytest.Item):
         #
         # The source line number will instead be recovered from the Unity print
         # statements.
-        return self.fspath, 0, self.name
+        return self.path, 0, self.name
 
 
 class UnityTestException(Exception):
