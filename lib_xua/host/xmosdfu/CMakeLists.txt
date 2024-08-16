@@ -6,8 +6,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED On)
 set(CMAKE_CXX_EXTENSIONS Off)
 set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Only Release mode is allowed" FORCE)
 
-#set(CMAKE_OSX_ARCHITECTURES "arm64;x86_64" CACHE STRING "" FORCE)
-
 project(xmosdfu)
 
 set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
@@ -38,10 +36,3 @@ target_link_libraries(xmosdfu PRIVATE ${LINK_LIBS})
 
 target_include_directories(xmosdfu PRIVATE ${libusb-1.0_INCLUDE_DIRS})
 
-if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-    add_custom_command(
-        TARGET xmosdfu
-        POST_BUILD
-        COMMAND ${CMAKE_INSTALL_NAME_TOOL} -change "/usr/local/lib/libusb-1.0.0.dylib" "@executable_path/libusb-1.0.0.dylib" $<TARGET_FILE:xmosdfu>
-    )
-endif()
