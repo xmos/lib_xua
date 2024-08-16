@@ -47,9 +47,6 @@ pipeline {
               sh 'mkdir -p OSX/x86'
               sh 'mv build/bin/xmosdfu OSX/x86/xmosdfu'
               archiveArtifacts artifacts: "OSX/x86/xmosdfu", fingerprint: true
-              dir("OSX/x86") {
-                stash includes: 'xmosdfu', name: 'macos_xmosdfu'
-              }
             }
             dir("${REPO}/host_usb_mixer_control") {
                 sh 'make -f Makefile.OSX'
@@ -76,7 +73,9 @@ pipeline {
               sh 'mkdir -p OSX/arm64'
               sh 'mv build/bin/xmosdfu OSX/arm64/xmosdfu'
               archiveArtifacts artifacts: "OSX/arm64/xmosdfu", fingerprint: true
-
+              dir("OSX/arm64") {
+                stash includes: 'xmosdfu', name: 'macos_xmosdfu'
+              }
             }
           }
           post {
