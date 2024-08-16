@@ -1,3 +1,0 @@
-all:
-	mkdir -p bin
-	g++ -Wall -g -o bin/xmosdfu xmosdfu.cpp -Ilibusb/Linux32 -lusb-1.0

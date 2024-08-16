@@ -6,8 +6,7 @@ pipeline {
   agent none
   environment {
     REPO = 'lib_xua'
-    //VIEW = getViewName(REPO)
-    VIEW = 'lib_xua_dfu_testing'
+    VIEW = getViewName(REPO)
     TOOLS_VERSION = "15.2.1"    // For unit tests
   }
   options {
@@ -23,9 +22,10 @@ pipeline {
           steps {
             xcorePrepareSandbox("${VIEW}", "${REPO}")
             dir("${REPO}/${REPO}/host/xmosdfu") {
-              sh 'make -f Makefile.Linux64'
+              sh 'cmake -B build'
+              sh 'make -C build'
               sh 'mkdir -p Linux64'
-              sh 'mv bin/xmosdfu Linux64/xmosdfu'
+              sh 'mv build/xmosdfu Linux64/xmosdfu'
               archiveArtifacts artifacts: "Linux64/xmosdfu", fingerprint: true
             }
           }
@@ -35,26 +35,47 @@ pipeline {
             }
           }
         }
-        stage('Build Mac host app') {
+        stage('Build Mac x86 host app') {
           agent {
             label 'x86_64&&macOS'
           }
           steps {
             xcorePrepareSandbox("${VIEW}", "${REPO}")
             dir("${REPO}/${REPO}/host/xmosdfu") {
-              sh 'make -f Makefile.OSX64'
+              sh 'cmake -B build'
+              sh 'make -C build'
               sh 'mkdir -p OSX/x86'
-              sh 'mv bin/xmosdfu OSX/x86/xmosdfu'
+              sh 'mv build/xmosdfu OSX/x86/xmosdfu'
               archiveArtifacts artifacts: "OSX/x86/xmosdfu", fingerprint: true
-              dir("OSX/x86") {
-                stash includes: 'xmosdfu', name: 'macos_xmosdfu'
-              }
             }
             dir("${REPO}/host_usb_mixer_control") {
                 sh 'make -f Makefile.OSX'
                 sh 'mkdir -p OSX/x86'
                 sh 'mv xmos_mixer OSX/x86/xmos_mixer'
                 archiveArtifacts artifacts: "OSX/x86/xmos_mixer", fingerprint: true
+            }
+          }
+          post {
+            cleanup {
+              xcoreCleanSandbox()
+            }
+          }
+        }
+        stage('Build Mac arm host app') {
+          agent {
+            label 'arm64&&macos'
+          }
+          steps {
+            xcorePrepareSandbox("${VIEW}", "${REPO}")
+            dir("${REPO}/${REPO}/host/xmosdfu") {
+              sh 'cmake -B build'
+              sh 'make -C build'
+              sh 'mkdir -p OSX/arm64'
+              sh 'mv build/xmosdfu OSX/arm64/xmosdfu'
+              archiveArtifacts artifacts: "OSX/arm64/xmosdfu", fingerprint: true
+              dir("OSX/arm64") {
+                stash includes: 'xmosdfu', name: 'macos_xmosdfu'
+              }
             }
           }
           post {
@@ -71,7 +92,11 @@ pipeline {
             dir("${REPO}") {
               checkout scm
               dir("${REPO}/host/xmosdfu") {
-                sh 'make -f Makefile.Pi'
+                sh 'cmake -B build'
+                sh 'make -C build'
+                sh 'mkdir -p RPi'
+                sh 'mv build/xmosdfu RPi/xmosdfu'
+                archiveArtifacts artifacts: "RPi/xmosdfu", fingerprint: true
               }
             }
           }
@@ -90,7 +115,10 @@ pipeline {
               checkout scm
               dir("${REPO}/host/xmosdfu") {
                 withVS("vcvars32.bat") {
-                  bat "nmake /f Makefile.Win32"
+                  bat "cmake -B build -G Ninja"
+                  bat "ninja -C build"
+                  bat 'mkdir win32 && cp build/xmosdfu.exe win32/'
+                  archiveArtifacts artifacts: "win32/xmosdfu.exe", fingerprint: true
                 }
               }
               dir("host_usb_mixer_control") {

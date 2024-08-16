@@ -18,6 +18,7 @@ UNRELEASED
     bcdUSB version 2.01 USB device supporting a sampling rate of 192KHz not enumerating
     on Windows
   * FIXED:     Build issue when XUA_NUM_PDM_MICS > 0
+  * ADDED:     Support for building the xmosdfu application on MacOS arm64
 
 4.2.0
 -----

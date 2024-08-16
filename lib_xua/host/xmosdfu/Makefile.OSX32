@@ -1,3 +1,0 @@
-all:
-	mkdir -p bin
-	g++ -g -o bin/xmosdfu xmosdfu.cpp -Ilibusb/OSX32 libusb/OSX32/libusb-1.0.0.dylib -m32 -Wall
