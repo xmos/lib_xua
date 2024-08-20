@@ -1014,7 +1014,11 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
                         num_interfaces = DFUcfgDesc.Config.bNumInterfaces;
                     }
                     else {
+                        #if (AUDIO_CLASS == 2)
                         num_interfaces = cfgDesc_Audio2.Config.bNumInterfaces;
+                        #else
+                        num_interfaces = NUM_INTERFACES_A1;
+                        #endif
                     }
 
                     if(num_interfaces == 1) {
@@ -1083,7 +1087,11 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
                                         num_interfaces = DFUcfgDesc.Config.bNumInterfaces;
                                     }
                                     else {
+                                        #if (AUDIO_CLASS == 2)
                                         num_interfaces = cfgDesc_Audio2.Config.bNumInterfaces;
+                                        #else
+                                        num_interfaces = NUM_INTERFACES_A1;
+                                        #endif
                                     }
 
                                     if(num_interfaces == 1) {

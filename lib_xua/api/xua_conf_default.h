@@ -580,6 +580,10 @@
 #undef XUA_DFU_EN
 #endif
 
+#if XUA_DFU_EN
+#define FORCE_UAC1_DFU (1)
+#endif
+
 /**
  * @brief Enable HID playback controls functionality.
  *

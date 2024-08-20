@@ -20,7 +20,7 @@
 
 // Enable BOS descriptor only when DFU is enabled since the only capability we advertise is the MSOS desc with DFU interface enumerating as WinUSB.
 // Enumerating with 0 capabilities doesn't seem to be allowed
-#if (XUA_DFU_EN && (AUDIO_CLASS == 2))
+#if (XUA_DFU_EN)
     #define _XUA_ENABLE_BOS_DESC (1)
 #else
     #define _XUA_ENABLE_BOS_DESC (0)
@@ -441,7 +441,11 @@ USB_Descriptor_Device_t devDesc_Audio1 =
 {
     .bLength                        = sizeof(USB_Descriptor_Device_t),
     .bDescriptorType                = USB_DESCTYPE_DEVICE,
+#if _XUA_ENABLE_BOS_DESC
+    .bcdUSB                         = 0x0201,
+#else
     .bcdUSB                         = 0x0200,
+#endif
     .bDeviceClass                   = 0,
     .bDeviceSubClass                = 0,
     .bDeviceProtocol                = 0,
@@ -2096,16 +2100,6 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
     0x01,                                 /* 7 bInterfaceProtocol : Unused. (field size 1 bytes) */
     offsetof(StringDescTable_t, dfuStr)/sizeof(char *), /* 8 iInterface */
 
-#if 0
-    /* DFU 1.0 Run-Time DFU Functional Descriptor */
-    0x07,
-    0x21,
-    0x07,
-    0xFA,
-    0x00,
-    0x40,
-    0x00
-#else
     /* DFU 1.1 Run-Time DFU Functional Descriptor */
     0x09,                                 /* 0    Size */
     0x21,                                 /* 1    bDescriptorType : DFU FUNCTIONAL */
@@ -2116,7 +2110,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
     0x00,                                 /* 6    wTransferSize */
     0x10,                                 /* 7    bcdDFUVersion */
     0x01},                                /* 7    bcdDFUVersion */
-#endif
+
 #endif /* (XUA_DFU_EN == 1) */
 
 #ifdef USB_CONTROL_DESCS
@@ -2356,7 +2350,7 @@ const unsigned num_freqs_a1 = MAX(3, (0
 #endif
 
 #if (XUA_DFU_EN == 1) && (FORCE_UAC1_DFU == 1)
-#define DFU_INTERFACE_BYTES   18
+#define DFU_INTERFACE_BYTES   DFU_LENGTH
 #define DFU_INTERFACES_A1     1
 #else
 #define DFU_INTERFACE_BYTES   0
@@ -2904,7 +2898,7 @@ unsigned char cfgDesc_Audio1[] =
     /* DFU 1.1 Run-Time DFU Functional Descriptor */
     0x09,                                 /* 0    Size */
     0x21,                                 /* 1    bDescriptorType : DFU FUNCTIONAL */
-    0x07,                                 /* 2    bmAttributes */
+    0x0f,                                 /* 2    bmAttributes */
     DFU_DETACH_TIME_OUT & 0xFF,           /* 3    wDetachTimeOut */
     (DFU_DETACH_TIME_OUT >> 8) & 0xFF,    /* 4    wDetachTimeOut */
     0x40,                                 /* 5    wTransferSize */
