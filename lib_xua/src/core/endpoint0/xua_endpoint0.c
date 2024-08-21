@@ -507,12 +507,15 @@ void XUA_Endpoint0_init(chanend c_ep0_out, chanend c_ep0_in, NULLABLE_RESOURCE(c
     }
 #endif
 
-#if (AUDIO_CLASS == 2)
     if(strcmp(g_strTable.serialStr, "")) // If serialStr is not empty
     {
+#if (AUDIO_CLASS == 2)
         devDesc_Audio2.iSerialNumber = offsetof(StringDescTable_t, serialStr)/sizeof(char *);
-    }
+#else
+        devDesc_Audio1.iSerialNumber = offsetof(StringDescTable_t, serialStr)/sizeof(char *);
 #endif
+    }
+
 
 #if (MIXER)
     /* Set up mixer default state */
@@ -524,12 +527,10 @@ void XUA_Endpoint0_init(chanend c_ep0_out, chanend c_ep0_in, NULLABLE_RESOURCE(c
 #endif
 
 #if (XUA_DFU_EN == 1)
-#if (AUDIO_CLASS == 2)
     if(strcmp(g_strTable.serialStr, "")) // If serialStr is not empty
     {
         DFUdevDesc.iSerialNumber = offsetof(StringDescTable_t, serialStr)/sizeof(char *); /* Same as the run-time mode device descriptor */
     }
-#endif
     /* Check if device has started in DFU mode */
     if (DFUReportResetState(null))
     {
@@ -1014,7 +1015,11 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
                         num_interfaces = DFUcfgDesc.Config.bNumInterfaces;
                     }
                     else {
+                        #if (AUDIO_CLASS == 2)
                         num_interfaces = cfgDesc_Audio2.Config.bNumInterfaces;
+                        #else
+                        num_interfaces = NUM_INTERFACES_A1;
+                        #endif
                     }
 
                     if(num_interfaces == 1) {
@@ -1083,7 +1088,11 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
                                         num_interfaces = DFUcfgDesc.Config.bNumInterfaces;
                                     }
                                     else {
+                                        #if (AUDIO_CLASS == 2)
                                         num_interfaces = cfgDesc_Audio2.Config.bNumInterfaces;
+                                        #else
+                                        num_interfaces = NUM_INTERFACES_A1;
+                                        #endif
                                     }
 
                                     if(num_interfaces == 1) {

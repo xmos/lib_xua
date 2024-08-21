@@ -20,7 +20,7 @@
 
 // Enable BOS descriptor only when DFU is enabled since the only capability we advertise is the MSOS desc with DFU interface enumerating as WinUSB.
 // Enumerating with 0 capabilities doesn't seem to be allowed
-#if (XUA_DFU_EN && (AUDIO_CLASS == 2))
+#if (XUA_DFU_EN)
     #define _XUA_ENABLE_BOS_DESC (1)
 #else
     #define _XUA_ENABLE_BOS_DESC (0)
@@ -441,7 +441,11 @@ USB_Descriptor_Device_t devDesc_Audio1 =
 {
     .bLength                        = sizeof(USB_Descriptor_Device_t),
     .bDescriptorType                = USB_DESCTYPE_DEVICE,
+#if _XUA_ENABLE_BOS_DESC
+    .bcdUSB                         = 0x0201,
+#else
     .bcdUSB                         = 0x0200,
+#endif
     .bDeviceClass                   = 0,
     .bDeviceSubClass                = 0,
     .bDeviceProtocol                = 0,
@@ -451,7 +455,7 @@ USB_Descriptor_Device_t devDesc_Audio1 =
     .bcdDevice                      = BCD_DEVICE,
     .iManufacturer                  = offsetof(StringDescTable_t, vendorStr)/sizeof(char *),
     .iProduct                       = offsetof(StringDescTable_t, productStr_Audio1)/sizeof(char *),
-    .iSerialNumber                  = offsetof(StringDescTable_t, serialStr)/sizeof(char *),
+    .iSerialNumber                  = 0, /* Set to None by default */
     .bNumConfigurations             = 1
 };
 #endif
@@ -811,6 +815,29 @@ typedef struct
 #endif
 
 }__attribute__((packed)) USB_Config_Descriptor_Audio2_t;
+
+// DFU Interface and Functional descriptor. Same for AUDIO_CLASS 1 and 2
+#define CONFIG_DESC_DFU /* Standard DFU class Interface descriptor */ \
+    0x09,                                /* 0 bLength : Size of this descriptor, in bytes. (field size 1 bytes) */ \
+    0x04,                                 /* 1 bDescriptorType : INTERFACE descriptor. (field size 1 bytes) */ \
+    INTERFACE_NUMBER_DFU,                 /* 2 bInterfaceNumber : Index of this interface. (field size 1 bytes) */ \
+    0x00,                                 /* 3 bAlternateSetting : Index of this setting. (field size 1 bytes) */ \
+    0x00,                                 /* 4 bNumEndpoints : 0 endpoints. (field size 1 bytes) */ \
+    0xFE,                                 /* 5 bInterfaceClass : DFU. (Application Specific) (field size 1 bytes) */ \
+    0x01,                                 /* 6 bInterfaceSubclass : (field size 1 bytes) */ \
+    0x01,                                 /* 7 bInterfaceProtocol : Unused. (field size 1 bytes) */ \
+    offsetof(StringDescTable_t, dfuStr)/sizeof(char *), /* 8 iInterface */ \
+    \
+    /* DFU 1.1 Run-Time DFU Functional Descriptor */ \
+    0x09,                                 /* 0    Size */ \
+    0x21,                                 /* 1    bDescriptorType : DFU FUNCTIONAL */ \
+    0x0f,                                 /* 2    bmAttributes */ \
+    DFU_DETACH_TIME_OUT & 0xFF,           /* 3    wDetachTimeOut */ \
+    (DFU_DETACH_TIME_OUT >> 8) & 0xFF,    /* 4    wDetachTimeOut */ \
+    0x40,                                 /* 5    wTransferSize */ \
+    0x00,                                 /* 6    wTransferSize */ \
+    0x10,                                 /* 7    bcdDFUVersion */ \
+    0x01                                /* 7    bcdDFUVersion */
 
 #if (AUDIO_CLASS == 2)
 USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
@@ -2085,38 +2112,9 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
 #endif // MIDI
 
 #if (XUA_DFU_EN == 1)
-    /* Standard DFU class Interface descriptor */
-    {0x09,                                /* 0 bLength : Size of this descriptor, in bytes. (field size 1 bytes) */
-    0x04,                                 /* 1 bDescriptorType : INTERFACE descriptor. (field size 1 bytes) */
-    INTERFACE_NUMBER_DFU,                 /* 2 bInterfaceNumber : Index of this interface. (field size 1 bytes) */
-    0x00,                                 /* 3 bAlternateSetting : Index of this setting. (field size 1 bytes) */
-    0x00,                                 /* 4 bNumEndpoints : 0 endpoints. (field size 1 bytes) */
-    0xFE,                                 /* 5 bInterfaceClass : DFU. (Application Specific) (field size 1 bytes) */
-    0x01,                                 /* 6 bInterfaceSubclass : (field size 1 bytes) */
-    0x01,                                 /* 7 bInterfaceProtocol : Unused. (field size 1 bytes) */
-    offsetof(StringDescTable_t, dfuStr)/sizeof(char *), /* 8 iInterface */
-
-#if 0
-    /* DFU 1.0 Run-Time DFU Functional Descriptor */
-    0x07,
-    0x21,
-    0x07,
-    0xFA,
-    0x00,
-    0x40,
-    0x00
-#else
-    /* DFU 1.1 Run-Time DFU Functional Descriptor */
-    0x09,                                 /* 0    Size */
-    0x21,                                 /* 1    bDescriptorType : DFU FUNCTIONAL */
-    0x0f,                                 /* 2    bmAttributes */
-    DFU_DETACH_TIME_OUT & 0xFF,           /* 3    wDetachTimeOut */
-    (DFU_DETACH_TIME_OUT >> 8) & 0xFF,    /* 4    wDetachTimeOut */
-    0x40,                                 /* 5    wTransferSize */
-    0x00,                                 /* 6    wTransferSize */
-    0x10,                                 /* 7    bcdDFUVersion */
-    0x01},                                /* 7    bcdDFUVersion */
-#endif
+    {
+        CONFIG_DESC_DFU
+    },
 #endif /* (XUA_DFU_EN == 1) */
 
 #ifdef USB_CONTROL_DESCS
@@ -2355,8 +2353,8 @@ const unsigned num_freqs_a1 = MAX(3, (0
 #define NUM_CONTROL_USB_INTERFACES 0
 #endif
 
-#if (XUA_DFU_EN == 1) && (FORCE_UAC1_DFU == 1)
-#define DFU_INTERFACE_BYTES   18
+#if (XUA_DFU_EN == 1)
+#define DFU_INTERFACE_BYTES   DFU_LENGTH
 #define DFU_INTERFACES_A1     1
 #else
 #define DFU_INTERFACE_BYTES   0
@@ -2886,31 +2884,8 @@ unsigned char cfgDesc_Audio1[] =
 #endif
 #endif // NUM_USB_CHAN_IN > 0
 
-#if (XUA_DFU_EN == 1) && (FORCE_UAC1_DFU == 1)
-
-    /* NOTE: By default we turn off DFU in UAC1.0 mode for a better user experiance in Windows */
-
-    /* Standard DFU class Interface descriptor */
-    0x09,                                /* 0 bLength : Size of this descriptor, in bytes. (field size 1 bytes) */
-    0x04,                                 /* 1 bDescriptorType : INTERFACE descriptor. (field size 1 bytes) */
-    (OUTPUT_INTERFACES_A1 + INPUT_INTERFACES_A1 + NUM_CONTROL_USB_INTERFACES + 1),  /* 2 bInterfaceNumber : Index of this interface. (field size 1 bytes) */
-    0x00,                                 /* 3 bAlternateSetting : Index of this setting. (field size 1 bytes) */
-    0x00,                                 /* 4 bNumEndpoints : 0 endpoints. (field size 1 bytes) */
-    0xFE,                                 /* 5 bInterfaceClass : DFU. (Application Specific) (field size 1 bytes) */
-    0x01,                                 /* 6 bInterfaceSubclass : (field size 1 bytes) */
-    0x01,                                 /* 7 bInterfaceProtocol : Unused. (field size 1 bytes) */
-    offsetof(StringDescTable_t, dfuStr)/sizeof(char *), /* 8 iInterface */
-
-    /* DFU 1.1 Run-Time DFU Functional Descriptor */
-    0x09,                                 /* 0    Size */
-    0x21,                                 /* 1    bDescriptorType : DFU FUNCTIONAL */
-    0x07,                                 /* 2    bmAttributes */
-    DFU_DETACH_TIME_OUT & 0xFF,           /* 3    wDetachTimeOut */
-    (DFU_DETACH_TIME_OUT >> 8) & 0xFF,    /* 4    wDetachTimeOut */
-    0x40,                                 /* 5    wTransferSize */
-    0x00,                                 /* 6    wTransferSize */
-    0x10,                                 /* 7    bcdDFUVersion */
-    0x01,                                                  /* 7    bcdDFUVersion */
+#if (XUA_DFU_EN == 1)
+    CONFIG_DESC_DFU,
 #endif
 
 #ifdef USB_CONTROL_DESCS

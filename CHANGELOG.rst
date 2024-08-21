@@ -19,6 +19,7 @@ UNRELEASED
     on Windows
   * FIXED:     Build issue when XUA_NUM_PDM_MICS > 0
   * ADDED:     Support for building the xmosdfu application on MacOS arm64
+  * FIXED:     DFU support with UAC1.0
 
 4.2.0
 -----
