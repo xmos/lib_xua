@@ -580,10 +580,6 @@
 #undef XUA_DFU_EN
 #endif
 
-#if XUA_DFU_EN
-#define FORCE_UAC1_DFU (1)
-#endif
-
 /**
  * @brief Enable HID playback controls functionality.
  *
@@ -1654,4 +1650,3 @@ enum USBEndpointNumber_Out
 #ifndef WINUSB_DEVICE_INTERFACE_GUID
 #define WINUSB_DEVICE_INTERFACE_GUID               "{89C14132-D389-4FF7-944E-2E33379BB59D}"
 #endif
-
