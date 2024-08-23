@@ -653,8 +653,8 @@ void XUA_Buffer_Ep(
                     /* This section scales from the 100MHz ref clock to the current MCLK */
                     if (masterClockFreq == MCLK_48)
                     {
-                        full_result = (full_result * 768) / 3125;
                         clock_remainder += (full_result * 768) % 3125;
+                        full_result = (full_result * 768) / 3125;
                         if (clock_remainder >= 3125)
                         {
                             clock_remainder -= 3125;
@@ -663,8 +663,8 @@ void XUA_Buffer_Ep(
                     }
                     else //MCLK_441
                     {
-                        full_result = (full_result * 762) / 3375;
                         clock_remainder += (full_result * 762) % 3375;
+                        full_result = (full_result * 762) / 3375;
                         if (clock_remainder >= 3375)
                         {
                             clock_remainder -= 3375;
