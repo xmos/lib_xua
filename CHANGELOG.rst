@@ -4,34 +4,35 @@ lib_xua change log
 UNRELEASED
 ----------
 
-  * ADDED:      Support for DFU 1.1 DFU_DETACH with bitWillDetach set to 1
-  * ADDED:      Enumerate with the DFU interface as WINUSB compatible. This is done by
+  * ADDED:     Support for DFU 1.1 DFU_DETACH with bitWillDetach set to 1
+  * ADDED:     Enumerate with the DFU interface as WINUSB compatible. This is done by
     updating the bcdUSB version to 2.01 and providing the BOS and MSOS2.0 descriptors listing
     WINUSB compatibility the time of enumeration
-  * ADDED:      Support for XMOS_DFU_REVERTFACTORY arriving as a USB_BMREQ_H2D_VENDOR_INT
+  * ADDED:     Support for XMOS_DFU_REVERTFACTORY arriving as a USB_BMREQ_H2D_VENDOR_INT
     request to work with the latest Thesycon DFU driver on Windows
-  * CHANGED:    By default, enumerate with iSerialNumber set to None(0) in the device
+  * ADDED:     Support for building the xmosdfu application on MacOS arm64
+  * CHANGED:   By default, enumerate with iSerialNumber set to None(0) in the device
     descriptor
-  * CHANGED:    xmosdfu app to use DFU_DETACH
-  * CHANGED:    xmosdfu app to send XMOS_DFU_REVERTFACTORY as bmRequestType.Type = Vendor
-  * CHANGED:    Limit HS_STREAM_FORMAT_OUTPUT_1/2/3_MAXPACKETSIZE to 1024 bytes to fix
+  * CHANGED:   xmosdfu app to use DFU_DETACH
+  * CHANGED:   xmosdfu app to send XMOS_DFU_REVERTFACTORY as bmRequestType.Type = Vendor
+  * CHANGED:   Limit HS_STREAM_FORMAT_OUTPUT_1/2/3_MAXPACKETSIZE to 1024 bytes to fix
     bcdUSB version 2.01 USB device supporting a sampling rate of 192KHz not enumerating
     on Windows
+  * CHANGED:   Added default value (1) for XUA_QUAD_SPI_FLASH
   * FIXED:     Build issue when XUA_NUM_PDM_MICS > 0
-  * ADDED:     Support for building the xmosdfu application on MacOS arm64
   * FIXED:     DFU support with UAC1.0
 
 4.2.0
 -----
 
-  * CHANGED:    lsats instruction used for saturation in the mixer
-  * CHANGED:    Mixer task communication scheme simplified, aiding code reuse &
+  * CHANGED:   lsats instruction used for saturation in the mixer
+  * CHANGED:   Mixer task communication scheme simplified, aiding code reuse &
     performance
-  * CHANGED:    Audio Class Control Interface no longer presented in descriptors
+  * CHANGED:   Audio Class Control Interface no longer presented in descriptors
     if NUM_USB_CHAN_IN and NUM_USB_CHAN_OUT are both zero
-  * CHANGED:    Buffering sub-system no longer spawns if NUM_USB_CHAN_IN and
+  * CHANGED:   Buffering sub-system no longer spawns if NUM_USB_CHAN_IN and
     NUM_USB_CHAN_OUT are both zero
-  * CHANGED:    Communication of commands between tasks now uniformly uses
+  * CHANGED:   Communication of commands between tasks now uniformly uses
     control tokens. Potentially making mix & match of components more tractable
     in the future
 

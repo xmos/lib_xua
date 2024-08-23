@@ -581,6 +581,15 @@
 #endif
 
 /**
+ * @brief Use a Quad SPI (QSPI) flash part rather than a SPI flash
+ *
+ * Default: 1 (Enabled)
+ */
+#if !defined(XUA_QUAD_SPI_FLASH)
+#define XUA_QUAD_SPI_FLASH (1)
+#endif
+
+/**
  * @brief Enable HID playback controls functionality.
  *
  * 1 for enabled, 0 for disabled.
