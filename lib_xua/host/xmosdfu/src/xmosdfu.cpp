@@ -26,8 +26,6 @@ void Sleep(unsigned milliseconds) {
 
 #include "libusb.h"
 
-/* the device's vendor and product id */
-#define XMOS_VID 0x20b1
 
 typedef struct device_pid_t
 {
@@ -35,14 +33,6 @@ typedef struct device_pid_t
     unsigned int pid;
 } device_pid_t;
 
-device_pid_t pidList[] = {
-    { "XMOS_XCORE_AUDIO_AUDIO2_PID", 0x3066},
-    { "XMOS_L1_AUDIO2_PID",          0x0002},
-    { "XMOS_L1_AUDIO1_PID",          0x0003},
-    { "XMOS_L2_AUDIO2_PID",          0x0004},
-    { "XMOS_SU1_AUDIO2_PID",         0x0008},
-    { "XMOS_U8_MFA_AUDIO2_PID",      0x000A}
-};
 
 unsigned int XMOS_DFU_IF = 0;
 static int dfu_timeout = 5000; // 5s
@@ -67,6 +57,10 @@ static int dfu_timeout = 5000; // 5s
 #define XMOS_DFU_RESETINTODFU         0xf2
 #define XMOS_DFU_RESETFROMDFU         0xf3
 
+#define bInterfaceProtocol_RUNTIME (1)
+#define bInterfaceProtocol_DFU (2)
+
+
 enum dfu_state {
 	DFU_STATE_appIDLE		= 0,
 	DFU_STATE_appDETACH		= 1,
@@ -82,79 +76,101 @@ enum dfu_state {
 };
 
 static libusb_device_handle *devh = NULL;
+static int device_bInterfaceProtocol;
+static int match_vendor = -1;
+static int match_product = -1;
+static int match_vendor_dfu = -1;
+static int match_product_dfu = -1;
 
-static int find_xmos_device(unsigned int id, unsigned int pid, unsigned int list)
+
+static int probe_configuration(libusb_device *dev, struct libusb_device_descriptor *desc, unsigned int list)
 {
-    libusb_device *dev;
-    libusb_device **devs;
-    int i = 0;
-    unsigned int found = 0;
-
-    size_t count = libusb_get_device_list(NULL, &devs);
-    if ((int)count < 0)
-    {
-        printf("ERROR: get_device_list returned %d\n", (int)count);
-        exit(1);
+    struct libusb_config_descriptor *config_desc = NULL;
+    int ret = libusb_get_active_config_descriptor(dev, &config_desc);
+    if (ret != 0) {
+        return -1;
     }
-
-    while ((dev = devs[i++]) != NULL)
+    if (config_desc != NULL)
     {
-        int foundDev = 0;
-        struct libusb_device_descriptor desc;
-        libusb_get_device_descriptor(dev, &desc);
-        printf("VID = 0x%x, PID = 0x%x, BCDDevice: 0x%x\n", desc.idVendor, desc.idProduct, desc.bcdDevice);
-
-        if(desc.idVendor == XMOS_VID)
+        //printf("bNumInterfaces: %d\n", config_desc->bNumInterfaces);
+        for (int j = 0; j < config_desc->bNumInterfaces; j++)
         {
-            if (desc.idProduct == pid && !list)
+            const struct libusb_interface_descriptor *inter_desc = ((struct libusb_interface *)&config_desc->interface[j])->altsetting;
+            if (inter_desc->bInterfaceClass == 0xFE && inter_desc->bInterfaceSubClass == 0x1)
             {
-                foundDev = 1;
-            }
-        }
+                XMOS_DFU_IF = inter_desc->bInterfaceNumber;
+                struct libusb_device_descriptor desc;
+                libusb_get_device_descriptor(dev, &desc);
 
-        if (foundDev)
-        {
-            if (found == id)
-            {
-                if (libusb_open(dev, &devh) < 0)
+                if(inter_desc->bInterfaceProtocol == bInterfaceProtocol_RUNTIME)
                 {
-                    return -1;
-                }
-                else
-                {
-                    struct libusb_config_descriptor *config_desc = NULL;
-                    int ret = libusb_get_active_config_descriptor(dev, &config_desc);
-                    if (ret != 0) {
-                      return -1;
-                    }
-                    if (config_desc != NULL)
+                    printf("Found Runtime: [%04x:%04x] ver=%04x\n", desc.idVendor, desc.idProduct, desc.bcdDevice);
+                    if(!list)
                     {
-                        //printf("bNumInterfaces: %d\n", config_desc->bNumInterfaces);
-                        for (int j = 0; j < config_desc->bNumInterfaces; j++)
+                        if((desc.idVendor != match_vendor) || (desc.idProduct != match_product))
                         {
-                            //printf("%d\n", j);
-                            const struct libusb_interface_descriptor *inter_desc = ((struct libusb_interface *)&config_desc->interface[j])->altsetting;
-                            if (inter_desc->bInterfaceClass == 0xFE && inter_desc->bInterfaceSubClass == 0x1)
-                            {
-                                XMOS_DFU_IF = inter_desc->bInterfaceNumber;
-                            }
+                            continue;
+                        }
+                        else
+                        {
+                            printf("Opening DFU capable USB device, [%04x:%04x], Runtime mode.\n", desc.idVendor, desc.idProduct);
+                            device_bInterfaceProtocol = inter_desc->bInterfaceProtocol;
+                            return 0;
                         }
                     }
-                    else
+                }
+                else if(inter_desc->bInterfaceProtocol == bInterfaceProtocol_DFU)
+                {
+                    printf("Found DFU: [%04x:%04x] ver=%04x\n", desc.idVendor, desc.idProduct, desc.bcdDevice);
+                    if(!list)
                     {
-                        XMOS_DFU_IF = 0;
+                        if((match_vendor_dfu >= 0 && desc.idVendor != match_vendor_dfu) ||
+                            (match_product_dfu >= 0 && desc.idProduct != match_product_dfu))
+                        {
+                            continue;
+                        }
+                        else
+                        {
+                            printf("Opening DFU capable USB device, [%04x:%04x], DFU mode.\n", desc.idVendor, desc.idProduct);
+                            device_bInterfaceProtocol = inter_desc->bInterfaceProtocol;
+                            return 0;
+                        }
                     }
                 }
-                break;
             }
-            found++;
         }
     }
+    return -1;
+}
 
-    libusb_free_device_list(devs, 1);
+static int find_xmos_device(unsigned int list)
+{
+    libusb_device **devices;
+	ssize_t num_devs;
+	ssize_t i;
 
+	num_devs = libusb_get_device_list(NULL, &devices);
+    for (i = 0; i < num_devs; ++i)
+    {
+        struct libusb_device_descriptor desc;
+		struct libusb_device *dev = devices[i];
+        if (libusb_get_device_descriptor(dev, &desc))
+			continue;
+        int ret = probe_configuration(dev, &desc, list);
+        if((list == 0) && (ret == 0))
+        {
+            if (libusb_open(dev, &devh) < 0)
+            {
+                libusb_free_device_list(devices, 1);
+                return -1;
+            }
+            break;
+        }
+    }
+    libusb_free_device_list(devices, 1);
     return devh ? 0 : -1;
 }
+
 
 int xmos_dfu_resetdevice(void)
 {
@@ -379,23 +395,14 @@ int read_dfu_image(char *file)
     return 0;
 }
 
-static void print_device_list(FILE *file, const char *indent)
-{
-    for (long unsigned int i = 0; i < sizeof(pidList)/sizeof(pidList[0]); i++)
-    {
-        fprintf(file, "%s%-30s (0x%0x)\n", indent, pidList[i].device_name, pidList[i].pid);
-    }
-}
+
 
 static void print_usage(const char *program_name, const char *error_msg)
 {
     fprintf(stderr, "ERROR: %s\n\n", error_msg);
     fprintf(stderr, "Usage:\n");
     fprintf(stderr, "     %s --listdevices\n", program_name);
-    fprintf(stderr, "     %s DEVICE_PID COMMAND\n", program_name);
-
-    fprintf(stderr, "    Where DEVICE_PID can be a hex value or a name from:\n");
-    print_device_list(stderr, "      ");
+    fprintf(stderr, "     %s <vendor>:<product>[,<vendor_dfu>:<product_dfu>] <COMMAND>\n", program_name);
 
     fprintf(stderr, "    And COMMAND is one of:\n");
     fprintf(stderr, "       --download <firmware> : write an upgrade image\n");
@@ -407,28 +414,103 @@ static void print_usage(const char *program_name, const char *error_msg)
     exit(1);
 }
 
-static unsigned int select_pid(char *device_pid)
+
+static void print_pid_usage_and_exit()
 {
-    // Try interpreting the name as a hex value
-    char * endptr = device_pid;
-    int pid = strtol(device_pid, &endptr, 16);
-    if (endptr != device_pid && *endptr == '\0')
+    fprintf(stderr, "Specify Vendor/Product IDs as hex values in the format \n<vendor_id_runtime>:<product_id_runtime>[,<vendor_id_dfu>:<product_id_dfu>]\n");
+    exit(-1);
+}
+
+
+static int parse_match_value(const char *str)
+{
+    if(str == NULL)
     {
-        return pid;
+        fprintf(stderr, "NULL string passed to parse_match_value()\n");
+        print_pid_usage_and_exit();
+    }
+	char *remainder;
+	int value;
+    value = strtoul(str, &remainder, 16);
+    if (remainder == str) {
+        fprintf(stderr, "Error converting %s string to integer\n", str);
+        print_pid_usage_and_exit();
+    }
+    return value;
+}
+
+
+static void parse_device_vid_pid(const char *str)
+{
+    const char *comma;
+    const char *colon;
+
+	/* Default to match any DFU device in runtime or DFU mode */
+	match_vendor = -1;
+	match_product = -1;
+	match_vendor_dfu = -1;
+	match_product_dfu = -1;
+
+    comma = strchr(str, ',');
+    if(comma == str) // example ,0xc:0xd
+    {
+        fprintf(stderr, "Runtime mode Vendor and Product ID not specified\n");
+        print_pid_usage_and_exit();
+    }
+    colon = strchr(str, ':'); // example 0xa
+    if(colon == NULL)
+    {
+        fprintf(stderr, "Runtime mode Vendor or Product ID not specified\n");
+        print_pid_usage_and_exit();
     }
 
-    // Otherwise do a lookup of names
-    for (long unsigned int i = 0; i < sizeof(pidList)/sizeof(pidList[0]); i++)
+    if ((comma != NULL) && (colon > comma)) // example 0xa,0xc:0xd
     {
-        if (strcmp(device_pid, pidList[i].device_name) == 0)
-        {
-            return pidList[i].pid;
+        fprintf(stderr, "Runtime mode Vendor or Product ID not specified\n");
+        print_pid_usage_and_exit();
+    }
+
+    if(colon == str) // example :0xb,0xc:0xd
+    {
+        fprintf(stderr, "Missing runtime mode Vendor ID\n");
+        print_pid_usage_and_exit();
+    }
+    ++colon;
+    if((strlen(colon) == 0) || (colon[0] == ',')) // example 0xa:,0xc:0xd
+    {
+        fprintf(stderr, "Missing runtime mode Product ID\n");
+        print_pid_usage_and_exit();
+    }
+
+    // Both DFU and runtime mode VID and PID are available.
+    match_vendor = parse_match_value(str);
+    match_product = parse_match_value(colon);
+
+    if (comma != NULL) { // Parse DFU mode Vendor and Product ID
+		++comma;
+		colon = strchr(comma, ':'); // example 0xa:0xb, or 0xa:0xb,0xc
+        if (colon == NULL) {
+            fprintf(stderr, "Missing DFU mode Vendor or Product ID\n");
+            print_pid_usage_and_exit();
         }
-    }
+        if(colon == comma) // example 0xa:0xb,:0xd
+        {
+            fprintf(stderr, "Missing DFU mode Vendor ID\n");
+            print_pid_usage_and_exit();
+        }
 
-    fprintf(stderr, "Failed to find device '%s', should have been one of:\n", device_pid);
-    print_device_list(stderr, "  ");
-    return 0;
+        ++colon;
+        if(strlen(colon) == 0) // example 0xa:0xb,0xc:
+        {
+            fprintf(stderr, "Missing DFU mode Product ID\n");
+            print_pid_usage_and_exit();
+        }
+
+        match_vendor_dfu = parse_match_value(comma);
+		match_product_dfu = parse_match_value(colon);
+	}
+
+    printf("runtime vid 0x%04x, pid 0x%04x. DFU vid 0x%04x, pid 0x%04x\n", match_vendor, match_product, match_vendor_dfu, match_product_dfu);
 }
 
 int main(int argc, char **argv)
@@ -436,7 +518,6 @@ int main(int argc, char **argv)
     unsigned int download = 0;
     unsigned int upload = 0;
     unsigned int revert = 0;
-    unsigned int listdev = 0;
 
     char *firmware_filename = NULL;
 
@@ -453,7 +534,7 @@ int main(int argc, char **argv)
     {
         if (strcmp(argv[1], "--listdevices") == 0)
         {
-            find_xmos_device(0, 0, 1);
+            find_xmos_device(1);
             return 0;
         }
         print_usage(program_name, "Not enough options passed to dfu application");
@@ -465,6 +546,8 @@ int main(int argc, char **argv)
     }
 
     char *device_pid = argv[1];
+    parse_device_vid_pid(device_pid);
+
     char *command = argv[2];
 
     if (strcmp(command, "--download") == 0)
@@ -494,14 +577,13 @@ int main(int argc, char **argv)
         print_usage(program_name,  "Invalid option passed to dfu application");
     }
 
-    unsigned int pid = select_pid(device_pid);
+    unsigned int pid = match_product;
     if (pid == 0)
     {
         return -1;
     }
-//#define START_IN_DFU 1
-#ifndef START_IN_DFU
-    r = find_xmos_device(0, pid, 0);
+
+    r = find_xmos_device(0);
     if (r < 0)
     {
         fprintf(stderr, "Could not find/open device\n");
@@ -515,11 +597,10 @@ int main(int argc, char **argv)
         return -1;
     }
     printf("XMOS DFU application started - Interface %d claimed\n", XMOS_DFU_IF);
-#endif
 
-    if(!listdev)
+
+    if(device_bInterfaceProtocol == bInterfaceProtocol_RUNTIME)
     {
-#ifndef START_IN_DFU
         printf("Detaching device from application mode.\n");
         if(dfu_detach(XMOS_DFU_IF, 1000) < 0)
         {
@@ -534,18 +615,14 @@ int main(int argc, char **argv)
 
         // Wait for device to enter dfu mode and restart
         Sleep(20 * 1000);
-#endif
-
-        // NOW IN DFU APPLICATION MODE
-
-        r = find_xmos_device(0, pid, 0);
+        r = find_xmos_device(0);
         if (r < 0)
         {
             fprintf(stderr, "Could not find/open device\n");
             return -1;
         }
 
-        r = libusb_claim_interface(devh, 0);
+        r = libusb_claim_interface(devh, XMOS_DFU_IF);
         if (r != 0)
         {
             fprintf(stderr, "Error claiming interface 0\n");
@@ -570,53 +647,54 @@ int main(int argc, char **argv)
             }
             return -1;
         }
-
-        printf("... DFU firmware upgrade device opened\n");
-
-        if (download)
-        {
-            write_dfu_image(firmware_filename);
-            if(dfu_detach(XMOS_DFU_IF, 1000) < 0)
-            {
-                fprintf(stderr, "error detaching\n");
-                return -1;
-            }
-        }
-        else if (upload)
-        {
-            read_dfu_image(firmware_filename);
-            if(dfu_detach(XMOS_DFU_IF, 1000) < 0)
-            {
-                fprintf(stderr, "error detaching\n");
-                return -1;
-            }
-        }
-        else if (revert)
-        {
-            printf("... Reverting device to factory image\n");
-            xmos_dfu_revertfactory();
-            // Give device time to revert firmware
-            Sleep(2 * 1000);
-            if(dfu_detach(XMOS_DFU_IF, 1000) < 0)
-            {
-                fprintf(stderr, "error detaching\n");
-                return -1;
-            }
-        }
-        else
-        {
-            if(dfu_detach(XMOS_DFU_IF, 1000) < 0)
-            {
-                fprintf(stderr, "error detaching\n");
-                return -1;
-            }
-        }
-
-        printf("... Returning device to application mode\n");
     }
+
+    printf("... DFU firmware upgrade device opened\n");
+
+    if (download)
+    {
+        write_dfu_image(firmware_filename);
+        if(dfu_detach(XMOS_DFU_IF, 1000) < 0)
+        {
+            fprintf(stderr, "error detaching\n");
+            return -1;
+        }
+    }
+    else if (upload)
+    {
+        read_dfu_image(firmware_filename);
+        if(dfu_detach(XMOS_DFU_IF, 1000) < 0)
+        {
+            fprintf(stderr, "error detaching\n");
+            return -1;
+        }
+    }
+    else if (revert)
+    {
+        printf("... Reverting device to factory image\n");
+        xmos_dfu_revertfactory();
+        // Give device time to revert firmware
+        Sleep(2 * 1000);
+        if(dfu_detach(XMOS_DFU_IF, 1000) < 0)
+        {
+            fprintf(stderr, "error detaching\n");
+            return -1;
+        }
+    }
+    else
+    {
+        if(dfu_detach(XMOS_DFU_IF, 1000) < 0)
+        {
+            fprintf(stderr, "error detaching\n");
+            return -1;
+        }
+    }
+
+    printf("... Returning device to application mode\n");
+
     // END OF DFU APPLICATION MODE
 
-    libusb_release_interface(devh, 0);
+    libusb_release_interface(devh, XMOS_DFU_IF);
     libusb_close(devh);
     libusb_exit(NULL);
 
