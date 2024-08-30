@@ -15,6 +15,7 @@ UNRELEASED
     descriptor
   * CHANGED:   xmosdfu app to use DFU_DETACH
   * CHANGED:   xmosdfu app to send XMOS_DFU_REVERTFACTORY as bmRequestType.Type = Vendor
+  * CHANGED:   xmosdfu app command line for specifying runtime and DFU mode PIDs
   * CHANGED:   Limit HS_STREAM_FORMAT_OUTPUT_1/2/3_MAXPACKETSIZE to 1024 bytes to fix
     bcdUSB version 2.01 USB device supporting a sampling rate of 192KHz not enumerating
     on Windows
