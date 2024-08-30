@@ -6,7 +6,7 @@ pipeline {
   agent none
   environment {
     REPO = 'lib_xua'
-    VIEW = getViewName(REPO)
+    VIEW = 'lib_xua_dfu_testing'
     TOOLS_VERSION = "15.2.1"    // For unit tests
   }
   options {
@@ -108,7 +108,7 @@ pipeline {
         }
         stage('Build Windows host app') {
           agent {
-            label 'x86_64&&windows'
+            label 'x86_64&&windows&&usb_audio'
           }
           steps {
             dir("${REPO}") {
