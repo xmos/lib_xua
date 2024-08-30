@@ -52,9 +52,7 @@ def cfg_list():
 
 
 def dfu_app_list():
-    if platform.system() == "Windows":
-        return ["custom"]
-    elif platform.system() == "Darwin":
+    if platform.system() == "Windows" or platform.system() == "Darwin":
         return ["custom", "dfu-util"]
     else:
         # Until test subdirectories can be rearranged with XCommon CMake builds, an
