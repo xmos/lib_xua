@@ -26,14 +26,6 @@ void Sleep(unsigned milliseconds) {
 
 #include "libusb.h"
 
-
-typedef struct device_pid_t
-{
-    const char *device_name;
-    unsigned int pid;
-} device_pid_t;
-
-
 unsigned int XMOS_DFU_IF = 0;
 static int dfu_timeout = 5000; // 5s
 
@@ -52,10 +44,7 @@ static int dfu_timeout = 5000; // 5s
 #define DFU_ABORT 6
 
 // XMOS alternate setting requests
-#define XMOS_DFU_RESETDEVICE          0xf0
 #define XMOS_DFU_REVERTFACTORY        0xf1
-#define XMOS_DFU_RESETINTODFU         0xf2
-#define XMOS_DFU_RESETFROMDFU         0xf3
 
 #define bInterfaceProtocol_RUNTIME (1)
 #define bInterfaceProtocol_DFU (2)
@@ -172,27 +161,9 @@ static int find_xmos_device(unsigned int list)
 }
 
 
-int xmos_dfu_resetdevice(void)
-{
-    libusb_control_transfer(devh, USB_BMREQ_H2D_CLASS_INT, XMOS_DFU_RESETDEVICE, 0, 0, NULL, 0, 0);
-    return 0;
-}
-
 int xmos_dfu_revertfactory(void)
 {
     libusb_control_transfer(devh, USB_BMREQ_H2D_VENDOR_INT, XMOS_DFU_REVERTFACTORY, 0, 0, NULL, 0, 0);
-    return 0;
-}
-
-int xmos_dfu_resetintodfu(unsigned int interface)
-{
-    libusb_control_transfer(devh, USB_BMREQ_H2D_CLASS_INT, XMOS_DFU_RESETINTODFU, 0, interface, NULL, 0, 0);
-    return 0;
-}
-
-int xmos_dfu_resetfromdfu(unsigned int interface)
-{
-    libusb_control_transfer(devh, USB_BMREQ_H2D_CLASS_INT, XMOS_DFU_RESETFROMDFU, 0, interface, NULL, 0, 0);
     return 0;
 }
 
@@ -408,8 +379,6 @@ static void print_usage(const char *program_name, const char *error_msg)
     fprintf(stderr, "       --download <firmware> : write an upgrade image\n");
     fprintf(stderr, "       --upload <firmware>   : read the upgrade image\n");
     fprintf(stderr, "       --revertfactory       : revert to the factory image\n");
-    fprintf(stderr, "       --savecustomstate     : \n");
-    fprintf(stderr, "       --restorecustomstate  : \n");
 
     exit(1);
 }
