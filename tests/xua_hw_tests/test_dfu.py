@@ -82,7 +82,7 @@ def test_dfu(pytestconfig, factory_xe, upgrade_bin, cfg, dfu_app):
 
     # factory -> cfg -> upgrade
     with UaDut(xtag_id, factory_xe, pid[0], prod_str, in_chans, out_chans, xflash=True) as dut:
-        dfu_test = UaDfuApp(dut.driver_guid, pid, dfu_app_type=dfu_app)
+        dfu_test = UaDfuApp(pid, dfu_app_type=dfu_app)
         factory_version = dfu_test.get_bcd_version()
 
         dfu_test.download(test_bin)
