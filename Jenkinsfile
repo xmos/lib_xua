@@ -108,7 +108,7 @@ pipeline {
         }
         stage('Build Windows host app') {
           agent {
-            label 'x86_64&&windows'
+            label 'x86_64&&windows&&usb_audio'
           }
           steps {
             dir("${REPO}") {

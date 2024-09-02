@@ -52,9 +52,7 @@ def cfg_list():
 
 
 def dfu_app_list():
-    if platform.system() == "Windows":
-        return ["custom"]
-    elif platform.system() == "Darwin":
+    if platform.system() == "Windows" or platform.system() == "Darwin":
         return ["custom", "dfu-util"]
     else:
         # Until test subdirectories can be rearranged with XCommon CMake builds, an
@@ -66,23 +64,20 @@ def dfu_app_list():
 @pytest.mark.parametrize("cfg", cfg_list())
 @pytest.mark.parametrize("dfu_app", dfu_app_list())
 def test_dfu(pytestconfig, factory_xe, upgrade_bin, cfg, dfu_app):
-    if cfg == "i2s_only" and platform.system() == "Windows":
-        pytest.skip("i2s_only not supported on Windows")
-
     xtag_id = pytestconfig.getoption("xtag_id")
     assert xtag_id, "--xtag-id option must be provided on the command line"
 
     test_xe = Path(__file__).parent / "test_dfu" / "bin" / cfg / f"dfu_test_{cfg}.xe"
     test_bin = create_dfu_bin(test_xe)
 
-    pid = 0x16
+    pid = (0x16, 0xD016)
     in_chans = 2
     out_chans = 2
     prod_str = "XUA DFU Test"
 
     # factory -> cfg -> upgrade
-    with UaDut(xtag_id, factory_xe, pid, prod_str, in_chans, out_chans, xflash=True) as dut:
-        dfu_test = UaDfuApp(dut.driver_guid, pid, dfu_app_type=dfu_app)
+    with UaDut(xtag_id, factory_xe, pid[0], prod_str, in_chans, out_chans, xflash=True) as dut:
+        dfu_test = UaDfuApp(pid, dfu_app_type=dfu_app)
         factory_version = dfu_test.get_bcd_version()
 
         dfu_test.download(test_bin)

@@ -13,6 +13,7 @@
 
 #define PRODUCT_STR "XUA DFU Test"
 #define PID_AUDIO_2 (0x0016)
+#define DFU_PID (0xD000 + PID_AUDIO_2)
 
 #ifndef BCD_DEVICE
 #error BCD_DEVICE must be defined in APP_COMPILER_FLAGS_<cfg>
