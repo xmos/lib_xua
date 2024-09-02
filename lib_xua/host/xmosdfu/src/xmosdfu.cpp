@@ -79,6 +79,7 @@ static int probe_configuration(libusb_device *dev, struct libusb_device_descript
     if (ret != 0) {
         return -1;
     }
+    int found_dfu_itf = 0;
     if (config_desc != NULL)
     {
         //printf("bNumInterfaces: %d\n", config_desc->bNumInterfaces);
@@ -104,7 +105,8 @@ static int probe_configuration(libusb_device *dev, struct libusb_device_descript
                         {
                             printf("Opening DFU capable USB device, [%04x:%04x], Runtime mode.\n", desc.idVendor, desc.idProduct);
                             device_bInterfaceProtocol = inter_desc->bInterfaceProtocol;
-                            return 0;
+                            found_dfu_itf = 1;
+                            break;
                         }
                     }
                 }
@@ -122,14 +124,16 @@ static int probe_configuration(libusb_device *dev, struct libusb_device_descript
                         {
                             printf("Opening DFU capable USB device, [%04x:%04x], DFU mode.\n", desc.idVendor, desc.idProduct);
                             device_bInterfaceProtocol = inter_desc->bInterfaceProtocol;
-                            return 0;
+                            found_dfu_itf = 1;
+                            break;
                         }
                     }
                 }
             }
         }
+        libusb_free_config_descriptor(config_desc);
     }
-    return -1;
+    return found_dfu_itf ? 0 : -1;
 }
 
 static int find_xmos_device(unsigned int list)
