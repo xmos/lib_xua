@@ -22,6 +22,8 @@ UNRELEASED
   * CHANGED:   Added default value (1) for XUA_QUAD_SPI_FLASH
   * FIXED:     Build issue when XUA_NUM_PDM_MICS > 0
   * FIXED:     DFU support with UAC1.0
+  * FIXED:     baInterfaceNr field in MIDI Class-specific AC Interface Descriptor to specify
+    the correct MIDI streaming interface number
 
 4.2.0
 -----
