@@ -22,7 +22,7 @@
  * and 5 seconds is just over 300KB
  */
 #ifndef FLASH_MAX_UPGRADE_SIZE
-#define FLASH_MAX_UPGRADE_SIZE (128 * 1024)
+#define FLASH_MAX_UPGRADE_SIZE (512 * 1024)
 #endif
 
 #define FLASH_ERROR() do {} while(0)

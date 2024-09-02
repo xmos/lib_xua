@@ -24,6 +24,7 @@ UNRELEASED
   * FIXED:     DFU support with UAC1.0
   * FIXED:     baInterfaceNr field in MIDI Class-specific AC Interface Descriptor to specify
     the correct MIDI streaming interface number
+  * CHANGED:   Default value of FLASH_MAX_UPGRADE_SIZE to 512 KB
 
 4.2.0
 -----
