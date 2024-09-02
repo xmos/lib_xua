@@ -64,9 +64,6 @@ def dfu_app_list():
 @pytest.mark.parametrize("cfg", cfg_list())
 @pytest.mark.parametrize("dfu_app", dfu_app_list())
 def test_dfu(pytestconfig, factory_xe, upgrade_bin, cfg, dfu_app):
-    if cfg == "i2s_only" and platform.system() == "Windows":
-        pytest.skip("i2s_only not supported on Windows")
-
     xtag_id = pytestconfig.getoption("xtag_id")
     assert xtag_id, "--xtag-id option must be provided on the command line"
 
