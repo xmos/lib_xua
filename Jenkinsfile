@@ -6,7 +6,7 @@ pipeline {
   agent none
   environment {
     REPO = 'lib_xua'
-    VIEW = 'lib_xua_dfu_testing'
+    VIEW = getViewName(REPO)
     TOOLS_VERSION = "15.2.1"    // For unit tests
   }
   options {
