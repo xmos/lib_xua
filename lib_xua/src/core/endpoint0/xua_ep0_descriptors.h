@@ -2013,7 +2013,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
     0x09,                                 /* 5 wTotalLength : Total size of class specific descriptors. (field size 2 bytes) */
     0x00,                                 /* 6 wTotalLength */
     0x01,                                 /* 7 bInCollection : Number of streaming interfaces. (field size 1 bytes) */
-    0x01,                                 /* 8 baInterfaceNr(1) : MIDIStreaming interface 1 belongs to this AudioControl interface */
+    INTERFACE_NUMBER_MIDI_STREAM,         /* 8 baInterfaceNr : MIDIStreaming interface that belongs to this AudioControl interface */
 
 /* Table B-5: MIDI Adapter Standard MS Interface Descriptor */
     0x09,                                 /* 0 bLength : Size of this descriptor, in bytes. (field size 1 bytes) */
