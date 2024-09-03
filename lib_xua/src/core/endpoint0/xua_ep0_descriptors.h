@@ -2353,16 +2353,20 @@ const unsigned num_freqs_a1 = MAX(3, (0
 #define NUM_CONTROL_USB_INTERFACES 0
 #endif
 
-#if (XUA_DFU_EN == 1)
-#define DFU_INTERFACE_BYTES   DFU_LENGTH
-#define DFU_INTERFACES_A1     1
+#ifdef MIDI
 #define MIDI_INTERFACE_BYTES  (MIDI_LENGTH)
 #define MIDI_INTERFACES_A1    (2)   // Control and streaming
 #else
-#define DFU_INTERFACE_BYTES   0
-#define DFU_INTERFACES_A1     0
 #define MIDI_INTERFACE_BYTES  (0)
 #define MIDI_INTERFACES_A1    (0)
+#endif
+
+#if (XUA_DFU_EN == 1)
+#define DFU_INTERFACE_BYTES   DFU_LENGTH
+#define DFU_INTERFACES_A1     1
+#else
+#define DFU_INTERFACE_BYTES   0
+#define DFU_INTERFACES_A1     0
 #endif
 
 #if XUA_OR_STATIC_HID_ENABLED
