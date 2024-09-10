@@ -54,19 +54,6 @@
 #define chkct(c, x)     asm ("chkct res[%0], %1" :: "r" (c), "r" (x))
 #endif
 
-/* Some warnings.... */
-
-/* Windows does not have a built in DFU driver (windows will prompt), so warn that DFU will not be functional in Audio 1.0 mode */
-#ifndef FORCE_UAC1_DFU
-#if ((AUDIO_CLASS == 1) || (AUDIO_CLASS_FALLBACK)) && defined(DFU)
-#warning DFU will not be enabled in AUDIO 1.0 mode due to Windows requesting driver
-#endif
-#endif // FORCE_UAC1_DFU
-
-/* MIDI not supported in Audio 1.0 mode */
-#if ((AUDIO_CLASS == 1) || (AUDIO_CLASS_FALLBACK)) && defined(MIDI)
-#warning MIDI is currently not supported and will not be enabled in AUDIO 1.0 mode
-#endif
 
 /* If DFU_PID not defined, standard PID used.. this is probably what we want.. */
 #ifndef DFU_PID
