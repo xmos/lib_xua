@@ -1,10 +1,10 @@
-# Copyright 2022 XMOS LIMITED.
+# Copyright 2022-2024 XMOS LIMITED.
 # This Software is subject to the terms of the XMOS Public Licence: Version 1.
 import pytest
 import Pyxsim
-from Pyxsim import testers
-import os
+from Pyxsim import testers, px_cmake
 import sys
+from pathlib import Path
 
 
 @pytest.fixture()
@@ -14,11 +14,10 @@ def test_file(request):
 
 def do_test(bus_speed, test_file, options, capfd):
 
-    testname, _ = os.path.splitext(os.path.basename(test_file))
+    testname = Path(__file__).stem
+    binary = Path(__file__).parent / testname / "bin" / bus_speed / f"{testname}_{bus_speed}.xe"
 
-    binary = f"{testname}/bin/{bus_speed}/{testname}_{bus_speed}.xe"
-
-    tester = testers.ComparisonTester(open("pass.expect"))
+    tester = testers.ComparisonTester(open(Path(__file__).parent / "pass.expect"))
 
     loopback_args = (
         "-port tile[0] XS1_PORT_1M 1 0 -port tile[0] XS1_PORT_1I 1 0 "
@@ -40,6 +39,7 @@ def do_test(bus_speed, test_file, options, capfd):
 
     result = Pyxsim.run_on_simulator(
         binary,
+        cmake=True,
         tester=tester,
         simargs=simargs,
         capfd=capfd,
@@ -51,7 +51,7 @@ def do_test(bus_speed, test_file, options, capfd):
 
 
 @pytest.mark.parametrize("bus_speed", ["FS", "HS"])
-def test_sync_clk_basic(bus_speed, test_file, options, capfd):
+def test_sync_clk_basic(bus_speed, test_file, options, capfd, px_cmake):
 
     result = do_test(bus_speed, test_file, options, capfd)
 

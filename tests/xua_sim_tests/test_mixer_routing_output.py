@@ -1,19 +1,17 @@
-# Copyright 2023 XMOS LIMITED.
+# Copyright 2023-2024 XMOS LIMITED.
 # This Software is subject to the terms of the XMOS Public Licence: Version 1.
 import pytest
 import Pyxsim
-from Pyxsim import testers
-import os
+from Pyxsim import testers, px_cmake
 import sys
+from pathlib import Path
 
 
 def do_test(options, capfd, test_file, test_seed):
+    testname = Path(__file__).stem
+    binary = Path(__file__).parent / testname / "bin" / f"{testname}.xe"
 
-    testname, _ = os.path.splitext(os.path.basename(test_file))
-
-    binary = f"{testname}/bin/{testname}.xe"
-
-    tester = testers.ComparisonTester(open("pass.expect"))
+    tester = testers.ComparisonTester(open(Path(__file__).parent / "pass.expect"))
 
     max_cycles = 15000000
 
@@ -22,13 +20,14 @@ def do_test(options, capfd, test_file, test_seed):
         str(max_cycles),
     ]
 
-    build_options = []
-    build_options += ["TEST_SEED=" + str(test_seed)]
+    seed_rsp = Path(__file__).parent / testname / "test_seed.rsp"
+    with open(seed_rsp, "w") as f:
+        f.write(f"-DTEST_SEED={test_seed}")
 
     result = Pyxsim.run_on_simulator(
         binary,
+        cmake=True,
         tester=tester,
-        build_options=build_options,
         simargs=simargs,
         capfd=capfd,
         instTracing=options.enabletracing,
@@ -38,7 +37,7 @@ def do_test(options, capfd, test_file, test_seed):
     return result
 
 
-def test_mixer_routing_output(options, capfd, test_file, test_seed):
+def test_mixer_routing_output(options, capfd, test_file, test_seed, px_cmake):
 
     result = do_test(options, capfd, test_file, test_seed)
 

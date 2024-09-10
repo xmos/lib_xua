@@ -1,4 +1,4 @@
-// Copyright 2022-2023 XMOS LIMITED.
+// Copyright 2022-2024 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
 /* This tests checks the parsing of control requests to endpoint 0 cause the correct changes in mixer output routing */
@@ -17,7 +17,11 @@
 #define TEST_ITERATIONS (100)
 #endif
 
-#include "./../test_mixer_routing_output/src/mixer_test_shared.h"
+#ifndef TEST_SEED
+#error TEST_SEED must be defined (this is done via test_seed.rsp)
+#endif
+
+#include "mixer_test_shared.h"
 
 /* Device channel mapping */
 extern unsigned char channelMapAud[NUM_USB_CHAN_OUT];

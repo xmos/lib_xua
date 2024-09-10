@@ -1,4 +1,4 @@
-// Copyright 2022-2023 XMOS LIMITED.
+// Copyright 2022-2024 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
 /* Tests that routing of mixer outputs behaves as expected
@@ -51,7 +51,11 @@
 #define TEST_ITERATIONS (100)
 #endif
 
-#include "./mixer_test_shared.h"
+#ifndef TEST_SEED
+#error TEST_SEED must be defined (this is done via test_seed.rsp)
+#endif
+
+#include "mixer_test_shared.h"
 
 void UpdateModel(uint32_t modelOut[CHANNEL_MAP_AUD_SIZE], uint32_t modelMixerOut[MAX_MIX_COUNT], uint32_t modelIn[NUM_USB_CHAN_IN],
      int map, int dst, int src)
