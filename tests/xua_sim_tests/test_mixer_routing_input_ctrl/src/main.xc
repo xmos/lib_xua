@@ -1,4 +1,4 @@
-// Copyright 2022-2023 XMOS LIMITED.
+// Copyright 2022-2024 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
 /* This tests checks the parsing of control requests to endpoint 0 cause the correct changes in mixer output routing */
@@ -17,7 +17,13 @@
 #define TEST_ITERATIONS (100)
 #endif
 
-#include "./../test_mixer_routing_output/src/mixer_test_shared.h"
+#include "test_seed.h"
+
+#ifndef TEST_SEED
+#error TEST_SEED must be defined
+#endif
+
+#include "mixer_test_shared.h"
 
 /* Mixer input mapping - from xua_endpoint0.c */
 extern unsigned char mixSel[MAX_MIX_COUNT][MIX_INPUTS];
