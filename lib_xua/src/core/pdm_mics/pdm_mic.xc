@@ -26,6 +26,8 @@
 #define MIC_BUFFER_DEPTH 1
 #endif
 
+#if 0
+
 int mic_decimator_fir_data[8][THIRD_STAGE_COEFS_PER_STAGE * MAX_DECIMATION_FACTOR] = {{0}};
 
 mic_array_frame_time_domain mic_audio[2];
@@ -253,4 +255,6 @@ void xua_pdm_mic(streaming chanend c_ds_output[2], buffered in port:32 p_pdm_mic
 #endif
     }
 }
+#endif
+
 #endif
