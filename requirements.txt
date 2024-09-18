@@ -1,4 +1,4 @@
-# python_version 3.11.6
+# python_version 3.12.1
 # pip_version 24.2
 #
 # The parse_version_from_requirements() function in the installPipfile.groovy
