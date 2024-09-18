@@ -2,7 +2,7 @@
 # This Software is subject to the terms of the XMOS Public Licence: Version 1.
 import pytest
 import Pyxsim
-from Pyxsim import testers, px_cmake
+from Pyxsim import testers
 import sys
 from pathlib import Path
 
@@ -51,7 +51,7 @@ def do_test(bus_speed, test_file, options, capfd):
 
 
 @pytest.mark.parametrize("bus_speed", ["FS", "HS"])
-def test_sync_clk_basic(bus_speed, test_file, options, capfd, px_cmake):
+def test_sync_clk_basic(bus_speed, test_file, options, capfd):
 
     result = do_test(bus_speed, test_file, options, capfd)
 

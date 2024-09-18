@@ -3,7 +3,7 @@
 from pathlib import Path
 import pytest
 import Pyxsim
-from Pyxsim import testers, px_cmake
+from Pyxsim import testers
 import sys
 import json
 
@@ -81,7 +81,7 @@ def do_test(
 @pytest.mark.parametrize("word_length", params["word_length"]) # I2S world length in bits
 @pytest.mark.parametrize("sample_rate", params["sample_rate"])
 def test_i2s_loopback(
-    i2s_role, pcm_format, channel_count, sample_rate, word_length, test_file, options, capfd, px_cmake
+    i2s_role, pcm_format, channel_count, sample_rate, word_length, test_file, options, capfd
 ):
 
     if pcm_format == "i2s" and channel_count == 16:

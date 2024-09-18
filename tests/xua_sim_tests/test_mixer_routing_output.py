@@ -2,7 +2,7 @@
 # This Software is subject to the terms of the XMOS Public Licence: Version 1.
 import pytest
 import Pyxsim
-from Pyxsim import testers, px_cmake
+from Pyxsim import testers
 import sys
 from pathlib import Path
 
@@ -37,7 +37,7 @@ def do_test(options, capfd, test_file, test_seed):
     return result
 
 
-def test_mixer_routing_output(options, capfd, test_file, test_seed, px_cmake):
+def test_mixer_routing_output(options, capfd, test_file, test_seed):
 
     result = do_test(options, capfd, test_file, test_seed)
 
