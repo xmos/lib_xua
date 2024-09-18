@@ -5,17 +5,17 @@
 #define _XUA_CONF_H_
 
 #define NUM_USB_CHAN_OUT 0
-#define NUM_USB_CHAN_IN 8
-#define I2S_CHANS_DAC 0
+#define NUM_USB_CHAN_IN 2
+#define I2S_CHANS_DAC 2
 #define I2S_CHANS_ADC 0
 #define MCLK_441 (512 * 44100)
 #define MCLK_48 (512 * 48000)
-#define MIN_FREQ 48000
-#define MAX_FREQ 48000
+#define MIN_FREQ 16000
+#define MAX_FREQ 16000
 
 #define EXCLUDE_USB_AUDIO_MAIN
 
-#define XUA_NUM_PDM_MICS 8
+#define XUA_NUM_PDM_MICS 2
 #define VENDOR_STR "XMOS"
 #define VENDOR_ID 0x20B1
 #define PRODUCT_STR_A2 "XUA PDM Example"
