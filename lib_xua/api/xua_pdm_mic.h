@@ -15,23 +15,27 @@
 #define MIC_ARRAY_CONFIG_USE_DDR            1
 #define MIC_ARRAY_CONFIG_CLOCK_BLOCK_A      XS1_CLKBLK_1      
 #define MIC_ARRAY_CONFIG_CLOCK_BLOCK_B      XS1_CLKBLK_2
-#define appconfSHF_NOMINAL_HZ               32000
+#define appconfSHF_NOMINAL_HZ               16000
 #define MIC_ARRAY_CONFIG_MIC_COUNT          2
 #define MIC_ARRAY_CONFIG_MIC_IN_COUNT       1
 #define MIC_ARRAY_CONFIG_USE_DC_ELIMINATION 1
 
 /* Included from lib_mic_array */
 #include <xccompat.h>
+
+
 #include "mic_array.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 void ma_init();
-void ma_task(chanend_t c_mic_to_audio);
+void ma_task(chanend c_mic_to_audio);
 #ifdef __cplusplus
 }
 #endif
+
+void mic_array_task(chanend c_mic_to_audio);
 
 
 #if 0

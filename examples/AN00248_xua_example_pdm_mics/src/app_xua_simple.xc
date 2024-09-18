@@ -49,19 +49,37 @@ buffered out port:32 p_i2s_dac[]    = {PORT_I2S_DAC_DATA};   /* I2S Data-line(s)
 buffered out port:32 p_lrclk        = PORT_I2S_LRCLK;    /* I2S Bit-clock */
 buffered out port:32 p_bclk         = PORT_I2S_BCLK;     /* I2S L/R-clock */
 
-void pdm_dummy(chanend c_mic_pcm){
+void pdm_dummy(chanend c_mic_pcm, chanend c_mic_to_audio){
     int sample_rate = 0;
     c_mic_pcm :> sample_rate;
     printintln(sample_rate);
 
     int wave = 0;
 
+    // Synch
+    int tt;
+    // c_mic_to_audio :> tt;
+    printintln(tt);
+    
+
     while(1){
+        delay_milliseconds(100);
+        while(1){
+            unsafe{
+                int32_t mic_samps[MIC_ARRAY_CONFIG_MIC_COUNT];                
+                chanend_t c_m2a = (chanend_t)c_mic_to_audio;
+                ma_frame_rx(mic_samps, c_m2a, MIC_ARRAY_CONFIG_MIC_COUNT, MIC_ARRAY_CONFIG_SAMPLES_PER_FRAME);
+                
+                static int cc = 0; if(cc++ > 10000){printchar('.');cc =0;}
+            }
+        }
+
         int transfer = 0;
         c_mic_pcm :> transfer;
         if(transfer){
             slave
             {
+                // Horrible triangluar wave generator @80Hz
                 int sample = (wave * 1000000);
                 for(int i = 0; i < XUA_NUM_PDM_MICS; i++)
                 {
@@ -84,7 +102,7 @@ void pdm_dummy(chanend c_mic_pcm){
 
 void UserBufferManagement(unsigned sampsFromUsbToAudio[], unsigned sampsFromAudioToUsb[]){
     // printintln(sampsFromAudioToUsb[0]);
-    sampsFromUsbToAudio[0] = sampsFromAudioToUsb[0];
+    sampsFromUsbToAudio[0] = sampsFromAudioToUsb[0]; // Copy to DAC so we can monitor
 }
 
 // Board configuration from lib_board_support
@@ -153,6 +171,8 @@ int main()
             // configure_in_port(p_pdm_mics, clk_pdm);
             // start_clock(clk_pdm);
 
+            chan c_mic_to_audio;
+
             par
             {
                 /* AudioHub/IO core does most of the audio IO i.e. I2S (also serves as a hub for all audio) */
@@ -165,7 +185,8 @@ int main()
                 // mic_array_decimate_to_pcm_4ch(c_4x_pdm_mic_0, c_ds_output[0], MIC_ARRAY_NO_INTERNAL_CHANS);
                 // mic_array_decimate_to_pcm_4ch(c_4x_pdm_mic_1, c_ds_output[1], MIC_ARRAY_NO_INTERNAL_CHANS);
 
-                pdm_dummy(c_mic_pcm);
+                pdm_dummy(c_mic_pcm, c_mic_to_audio);
+                mic_array_task(c_mic_to_audio);
 
                 // XUA_PdmBuffer(c_ds_output, c_mic_pcm);
             }

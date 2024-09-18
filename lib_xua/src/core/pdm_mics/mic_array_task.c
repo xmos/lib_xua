@@ -13,6 +13,7 @@
 #define CLRSR(c)                asm volatile("clrsr %0" : : "n"(c));
 #define CLEAR_KEDI()            CLRSR(XS1_SR_KEDI_MASK)
 
+#include <print.h>
 
 void mic_array_task(chanend_t c_mic_to_audio){
 
@@ -25,7 +26,7 @@ void mic_array_task(chanend_t c_mic_to_audio){
     CLEAR_KEDI()
 
     /* Synchronise with consumer to ensure we start at same time and avoid ma bug */
-    chan_out_word(c_mic_to_audio, 0);
+    // chan_out_word(c_mic_to_audio, 22);
 
     /* Start endless loop */
     ma_task(c_mic_to_audio);

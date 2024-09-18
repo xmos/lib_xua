@@ -12,6 +12,7 @@ set(APP_COMPILER_FLAGS -fcomment-asm
                        -g
                        -Wno-unused-function
                        -Wno-timing
+                       -mcmodel=large
                        -DXUD_CORE_CLOCK=600
                        -DUSB_TILE=tile[0]
                        -fxscope

@@ -157,6 +157,8 @@ void ma_task(
 {
   mics.OutputHandler.FrameTx.SetChannel(c_frames_out);
 
+  mics.PdmRx.AssertOnDroppedBlock(false);
+
   mics.PdmRx.InstallISR();
   mics.PdmRx.UnmaskISR();
 
