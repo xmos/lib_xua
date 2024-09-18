@@ -73,10 +73,9 @@ def test_dfu(pytestconfig, factory_xe, upgrade_bin, cfg, dfu_app):
     pid = (0x16, 0xD016)
     in_chans = 2
     out_chans = 2
-    prod_str = "XUA DFU Test"
 
     # factory -> cfg -> upgrade
-    with UaDut(xtag_id, factory_xe, pid[0], prod_str, in_chans, out_chans, xflash=True) as dut:
+    with UaDut(xtag_id, factory_xe, pid[0], in_chans, out_chans, xflash=True) as dut:
         dfu_test = UaDfuApp(pid, dfu_app_type=dfu_app)
         factory_version = dfu_test.get_bcd_version()
 
