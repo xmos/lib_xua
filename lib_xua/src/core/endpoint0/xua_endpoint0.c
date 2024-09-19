@@ -1193,7 +1193,6 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
                 cfgDesc_Audio2.Audio_In_ClassStreamInterface.bNrChannels = NUM_USB_CHAN_IN_FS;
 #endif
             }
-            printstr("std\n");
 
             result = USB_StandardRequests(ep0_out, ep0_in,
                 (unsigned char*)&devDesc_Audio2, sizeof(devDesc_Audio2),
