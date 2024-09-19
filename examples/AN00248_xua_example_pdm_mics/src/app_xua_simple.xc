@@ -63,7 +63,7 @@ void pdm_dummy(chanend c_mic_pcm, chanend c_mic_to_audio){
             ma_frame_rx(mic_samps[0], c_m2a, MIC_ARRAY_CONFIG_SAMPLES_PER_FRAME, MIC_ARRAY_CONFIG_MIC_COUNT);
             
             // Looping inidicator
-            static int cc = 0; if(cc++ > 16000){printchar('+');cc = 0;}
+            static int cc = 0; if(cc++ > DEFAULT_FREQ){printchar('+');cc = 0;}
         }
 
         int transfer = 0;
