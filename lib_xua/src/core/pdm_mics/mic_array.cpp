@@ -1,5 +1,7 @@
 // Copyright 2022-2023 XMOS LIMITED.
 // This Software is subject to the terms of the XCORE VocalFusion Licence.
+#include "xua_conf.h"
+#if (XUA_NUM_PDM_MICS > 0)
 
 #include <stdint.h>
 #include <xcore/channel_streaming.h>
@@ -164,3 +166,5 @@ void ma_task(
 
   mics.ThreadEntry();
 }
+
+#endif // #if (XUA_NUM_PDM_MICS > 0)

@@ -26,7 +26,7 @@ void mic_array_task(chanend_t c_mic_to_audio){
     CLEAR_KEDI()
 
     /* Synchronise with consumer to ensure we start at same time and avoid ma bug */
-    // chan_out_word(c_mic_to_audio, 22);
+    chan_out_word(c_mic_to_audio, 22);
 
     /* Start endless loop */
     ma_task(c_mic_to_audio);
