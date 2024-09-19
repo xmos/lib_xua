@@ -252,9 +252,9 @@ pipeline {
               clone_test_deps()
 
               withTools(params.TOOLS_VERSION) {
-                createVenv(reqFile: "requirements.txt")
-                withVenv {
-                  dir("tests") {
+                dir("tests") {
+                  createVenv(reqFile: "requirements.txt")
+                  withVenv {
                     // Cross-product of all parameters in test_i2s_loopback produces invalid configs
                     // which cannot be built. They are skipped in pytest, but the build failures
                     // prevent all the XEs being built before running pytest.
@@ -300,21 +300,23 @@ pipeline {
 
                 dir("${REPO}") {
                   checkout scm
-                  createVenv(reqFile: "requirements.txt")
                 }
 
                 dir("hardware_test_tools/xmosdfu") {
                   unstash "macos_xmosdfu"
                 }
 
-                dir("${REPO}/tests/xua_hw_tests") {
+                dir("${REPO}/tests") {
+                  createVenv(reqFile: "requirements.txt")
                   withTools(params.TOOLS_VERSION) {
-                    sh "cmake -G 'Unix Makefiles' -B build"
-                    sh "xmake -C build -j 8"
+                    dir("xua_hw_tests") {
+                      sh "cmake -G 'Unix Makefiles' -B build"
+                      sh "xmake -C build -j 8"
 
-                    withVenv {
-                      withXTAG(["usb_audio_mc_xcai_dut"]) { xtagIds ->
-                        sh "pytest -v --junitxml=pytest_hw_mac.xml --xtag-id=${xtagIds[0]}"
+                      withVenv {
+                        withXTAG(["usb_audio_mc_xcai_dut"]) { xtagIds ->
+                          sh "pytest -v --junitxml=pytest_hw_mac.xml --xtag-id=${xtagIds[0]}"
+                        }
                       }
                     }
                   }
@@ -345,17 +347,19 @@ pipeline {
 
                 dir("${REPO}") {
                   checkout scm
-                  createVenv(reqFile: "requirements.txt")
                 }
 
-                dir("${REPO}/tests/xua_hw_tests") {
+                dir("${REPO}/tests") {
+                  createVenv(reqFile: "requirements.txt")
                   withTools(params.TOOLS_VERSION) {
-                    sh "cmake -G 'Unix Makefiles' -B build"
-                    sh "xmake -C build"
+                    dir("xua_hw_tests") {
+                      sh "cmake -G 'Unix Makefiles' -B build"
+                      sh "xmake -C build"
 
-                    withVenv {
-                      withXTAG(["usb_audio_mc_xcai_dut"]) { xtagIds ->
-                        sh "pytest -v --junitxml=pytest_hw_win.xml --xtag-id=${xtagIds[0]}"
+                      withVenv {
+                        withXTAG(["usb_audio_mc_xcai_dut"]) { xtagIds ->
+                          sh "pytest -v --junitxml=pytest_hw_win.xml --xtag-id=${xtagIds[0]}"
+                        }
                       }
                     }
                   }
