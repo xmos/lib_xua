@@ -52,47 +52,30 @@ void pdm_dummy(chanend c_mic_pcm, chanend c_mic_to_audio){
     c_mic_pcm :> sample_rate;
     printintln(sample_rate);
 
-    int wave = 0;
-
     // Synch
-    int tt;
-    c_mic_to_audio :> tt;
-    printintln(tt);
+    c_mic_to_audio :> int _;
 
-    // delay_milliseconds(100);
-    // int32_t mic_samps[MIC_ARRAY_CONFIG_SAMPLES_PER_FRAME][MIC_ARRAY_CONFIG_MIC_COUNT];                
-    int32_t mic_samps[2][2];                
-
+    int32_t mic_samps[MIC_ARRAY_CONFIG_SAMPLES_PER_FRAME][MIC_ARRAY_CONFIG_MIC_COUNT] = {{0}};
 
     while(1){
-        // while(1){
-            unsafe{
-                chanend_t c_m2a = (chanend_t)c_mic_to_audio;
-                ma_frame_rx(mic_samps[0], c_m2a, MIC_ARRAY_CONFIG_SAMPLES_PER_FRAME, MIC_ARRAY_CONFIG_MIC_COUNT);
-                
-                static int cc = 0; if(cc++ > 16000){printchar('+');cc = 0;}
-            }
-        // }
+        unsafe{
+            chanend_t c_m2a = (chanend_t)c_mic_to_audio;
+            ma_frame_rx(mic_samps[0], c_m2a, MIC_ARRAY_CONFIG_SAMPLES_PER_FRAME, MIC_ARRAY_CONFIG_MIC_COUNT);
+            
+            // Looping inidicator
+            static int cc = 0; if(cc++ > 16000){printchar('+');cc = 0;}
+        }
 
         int transfer = 0;
         c_mic_pcm :> transfer;
         if(transfer){
             slave
             {
-                // Horrible triangluar wave generator @80Hz
-                int sample = (wave * 1000000);
                 for(int i = 0; i < XUA_NUM_PDM_MICS; i++)
                 {
                     c_mic_pcm <: mic_samps[0][i];
-                    // c_mic_pcm <: sample;
                 }
-                if(++wave > 100){
-                    // printstr(".");
-                     wave = -100;
-                }
-                // printintln(sample);
             }
-            static int ic = 0; if(ic++ > 16000){printchar('.');ic = 0;}
 
         } else {
             c_mic_pcm :> sample_rate;
@@ -177,7 +160,6 @@ int main()
             {
                 /* AudioHub/IO core does most of the audio IO i.e. I2S (also serves as a hub for all audio) */
                 /* Note, since we are not using I2S we pass in null for LR and Bit clock ports and the I2S dataline ports */
-                // XUA_AudioHub(c_aud, clk_audio_mclk, clk_audio_bclk, p_pdm_mclk, p_lrclk, p_bclk, p_i2s_dac, null);
                 XUA_AudioHub(c_aud, clk_audio_mclk, clk_audio_bclk, p_pdm_mclk, p_lrclk, p_bclk, p_i2s_dac, null, c_mic_pcm);
 
                 /* Microphone related tasks */

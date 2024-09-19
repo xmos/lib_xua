@@ -4,6 +4,7 @@
 #if (XUA_NUM_PDM_MICS > 0)
 
 #include <stdint.h>
+#include <print.h>
 #include <xcore/channel_streaming.h>
 #include <xcore/interrupt.h>
 
@@ -147,10 +148,13 @@ void ma_init()
   mics.Decimator.Init(stage_1_filter(), stage_2_filter(), *stage_2_shift());
 
   mics.PdmRx.Init(pdm_res.p_pdm_mics);
-  unsigned channel_map[MIC_ARRAY_CONFIG_MIC_COUNT] = {0, 1};
-  mics.PdmRx.MapChannels(channel_map);
+  // unsigned channel_map[MIC_ARRAY_CONFIG_MIC_COUNT] = {0, 1};
+  // mics.PdmRx.MapChannels(channel_map);
   mic_array_resources_configure(&pdm_res, MIC_ARRAY_CONFIG_MCLK_DIVIDER);
   mic_array_pdm_clock_start(&pdm_res);
+
+  printintln(MIC_ARRAY_CONFIG_MCLK_DIVIDER);
+
 }
 
 

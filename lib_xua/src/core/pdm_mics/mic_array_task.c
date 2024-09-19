@@ -1,8 +1,9 @@
 // Copyright 2022-2023 XMOS LIMITED.
 // This Software is subject to the terms of the XCORE VocalFusion Licence.
 
+#include "xua_conf.h"
+#if (XUA_NUM_PDM_MICS > 0)
 
-// This file conatins the mic_array task
 
 #include "xua_pdm_mic.h"
 #include "mic_array.h"
@@ -26,8 +27,10 @@ void mic_array_task(chanend_t c_mic_to_audio){
     CLEAR_KEDI()
 
     /* Synchronise with consumer to ensure we start at same time and avoid ma bug */
-    chan_out_word(c_mic_to_audio, 22);
+    chan_out_word(c_mic_to_audio, 0);
 
     /* Start endless loop */
     ma_task(c_mic_to_audio);
 }
+
+#endif // #if (XUA_NUM_PDM_MICS > 0)
