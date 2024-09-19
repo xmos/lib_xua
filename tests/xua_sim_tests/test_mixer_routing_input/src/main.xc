@@ -34,8 +34,10 @@
 #define TEST_ITERATIONS (300)
 #endif
 
+#include "test_seed.h"
+
 #ifndef TEST_SEED
-#error TEST_SEED must be defined (this is done via test_seed.rsp)
+#error TEST_SEED must be defined
 #endif
 
 #include "mixer_test_shared.h"

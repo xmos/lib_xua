@@ -10,8 +10,7 @@ set(APP_INCLUDES src
 	         ${CMAKE_CURRENT_LIST_DIR}/../shared)
 
 set(APP_COMPILER_FLAGS -O3
-                       -DXUD_WEAK_API=1
-                       "SHELL:-Xpreprocessor @${CMAKE_CURRENT_LIST_DIR}/test_seed.rsp")
+                       -DXUD_WEAK_API=1)
 
 include(${CMAKE_CURRENT_LIST_DIR}/../../../deps.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/../../test_deps.cmake)

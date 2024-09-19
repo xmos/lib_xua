@@ -21,9 +21,9 @@ def do_test(options, capfd, test_file, test_seed):
         str(max_cycles),
     ]
 
-    seed_rsp = Path(__file__).parent / testname / "test_seed.rsp"
-    with open(seed_rsp, "w") as f:
-        f.write(f"-DTEST_SEED={test_seed}")
+    seed_hdr = Path(__file__).parent / testname / "src" / "test_seed.h"
+    with open(seed_hdr, "w") as f:
+        f.write(f"#define TEST_SEED ({test_seed})")
 
     result = Pyxsim.run_on_simulator(
         binary,

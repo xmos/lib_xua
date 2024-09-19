@@ -9,7 +9,7 @@ def clone_test_deps() {
     sh "git -C xtagctl checkout v2.0.0"
 
     sh "git clone git@github.com:xmos/hardware_test_tools"
-    sh "git -C hardware_test_tools checkout abf0e965701e0a3cc0e7c5661f15c4c44b037f70"
+    sh "git -C hardware_test_tools checkout 1fd92925b0cd46e0d7a632c4aa474f1fb14e006a"
   }
 }
 
@@ -82,43 +82,8 @@ pipeline {
           }
         }  // Build documentation
 
-        stage('Simulator and unit tests') {
-          steps {
-            dir("${REPO}") {
-              clone_test_deps()
-
-              withTools(params.TOOLS_VERSION) {
-                createVenv(reqFile: "requirements.txt")
-                withVenv {
-                  dir("tests") {
-                    // Cross-product of all parameters in test_i2s_loopback produces invalid configs
-                    // which cannot be built. They are skipped in pytest, but the build failures
-                    // prevent all the XEs being built before running pytest.
-                    dir("xua_sim_tests") {
-                      sh 'cmake -G "Unix Makefiles" -B build'
-
-                      // XEs for MIDI tests are shared, so need to be built first
-                      sh 'xmake -C build test_midi_LOOPBACK test_midi_xs2 test_midi_xs3'
-
-                      sh "pytest -v -n auto --junitxml=pytest_sim.xml"
-                    }
-
-                    dir("xua_unit_tests") {
-                      sh "cmake -G 'Unix Makefiles' -B build"
-                      sh 'xmake -C build -j 8'
-                      sh "pytest -v -n auto --junitxml=pytest_unit.xml"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }  // Simulator and unit tests
       }
       post {
-        always {
-          junit "${REPO}/tests/**/pytest_*.xml"
-        }
         cleanup {
           xcoreCleanSandbox()
         }
@@ -274,6 +239,52 @@ pipeline {
 
     stage('Testing') {
       parallel {
+        stage('Simulator and unit tests') {
+          agent {
+            label 'x86_64 && linux'
+          }
+          steps {
+            dir("${REPO}") {
+              checkout scm
+
+              clone_test_deps()
+
+              withTools(params.TOOLS_VERSION) {
+                createVenv(reqFile: "requirements.txt")
+                withVenv {
+                  dir("tests") {
+                    // Cross-product of all parameters in test_i2s_loopback produces invalid configs
+                    // which cannot be built. They are skipped in pytest, but the build failures
+                    // prevent all the XEs being built before running pytest.
+                    dir("xua_sim_tests") {
+                      sh 'cmake -G "Unix Makefiles" -B build'
+
+                      // XEs for MIDI tests are shared, so need to be built first
+                      sh 'xmake -C build test_midi_loopback test_midi_xs2 test_midi_xs3'
+
+                      sh "pytest -v -n auto --junitxml=pytest_sim.xml"
+                    }
+
+                    dir("xua_unit_tests") {
+                      sh "cmake -G 'Unix Makefiles' -B build"
+                      sh 'xmake -C build -j 8'
+                      sh "pytest -v -n auto --junitxml=pytest_unit.xml"
+                    }
+                  }
+                }
+              }
+            }
+          }
+          post {
+            always {
+              junit "${REPO}/tests/**/pytest_*.xml"
+            }
+            cleanup {
+              xcoreCleanSandbox()
+            }
+          }
+        }  // Simulator and unit tests
+
         stage('MacOS HW tests') {
           agent {
             label 'macos && arm64 && usb_audio && xcore.ai-mcab'

@@ -21,15 +21,7 @@ MIDI_RATE = 31250
 # Pyxsim as this could break when tests are run in parallel. So the applications must be
 # built before running these tests.
 def midi_xe_path(config):
-    if config == "xs3":
-        xe_path = Path(__file__).parent / "test_midi" / "bin" / "xs3" / "test_midi_xs3.xe"
-    elif config == "xs2":
-        xe_path = Path(__file__).parent / "test_midi_xs2" / "bin" / "test_midi_xs2.xe"
-    elif config == "LOOPBACK":
-        xe_path = Path(__file__).parent / "test_midi" / "bin" / "LOOPBACK" / "test_midi_LOOPBACK.xe"
-    else:
-        assert 0, f"Invalid config {config}"
-
+    xe_path = Path(__file__).parent / "test_midi" / "bin" / f"test_midi_{config}.xe"
     assert xe_path.exists()
     return xe_path
 
@@ -216,7 +208,7 @@ def test_rx(capfd, config):
 # sends some commands, the firmware receives them, prints and compares with the expected output
 #####
 def test_midi_loopback(capfd):
-    xe = midi_xe_path("LOOPBACK")
+    xe = midi_xe_path("loopback")
 
     midi_commands = [
                     [0x90, 60, 81], #note on

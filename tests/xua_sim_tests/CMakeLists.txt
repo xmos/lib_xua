@@ -4,7 +4,6 @@ project(xua_sim_tests)
 
 add_subdirectory(test_i2s_loopback)
 add_subdirectory(test_midi)
-add_subdirectory(test_midi_xs2)
 add_subdirectory(test_mixer_routing_input)
 add_subdirectory(test_mixer_routing_input_ctrl)
 add_subdirectory(test_mixer_routing_output)
