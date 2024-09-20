@@ -11,7 +11,7 @@ set(APP_INCLUDES src
 
 set(APP_COMPILER_FLAGS -O3)
 
-include(${CMAKE_CURRENT_LIST_DIR}/../../../deps.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/../../../examples/deps.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/../../test_deps.cmake)
 
 XMOS_REGISTER_APP()

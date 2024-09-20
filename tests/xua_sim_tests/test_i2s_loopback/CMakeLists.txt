@@ -17,7 +17,7 @@ set(APP_HW_TARGET xk-audio-216-mc.xn)
 
 set(XMOS_SANDBOX_DIR ${CMAKE_CURRENT_LIST_DIR}/../../../..)
 
-include(${CMAKE_CURRENT_LIST_DIR}/../../../deps.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/../../../examples/deps.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/../../test_deps.cmake)
 
 set(APP_INCLUDES src)

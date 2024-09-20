@@ -16,7 +16,7 @@ set(APP_COMPILER_FLAGS_HS ${COMMON_FLAGS} -DBUS_SPEED=2)
 
 set(APP_COMPILER_FLAGS_FS ${COMMON_FLAGS} -DBUS_SPEED=1)
 
-include(${CMAKE_CURRENT_LIST_DIR}/../../../deps.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/../../../examples/deps.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/../../test_deps.cmake)
 
 set(XMOS_SANDBOX_DIR ${CMAKE_CURRENT_LIST_DIR}/../../../..)

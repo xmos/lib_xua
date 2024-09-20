@@ -14,7 +14,7 @@ set(APP_COMPILER_FLAGS -O3
                        -DUSB_TILE=tile[0]
                        -fxscope)
 
-include(${CMAKE_CURRENT_LIST_DIR}/../../deps.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/../deps.cmake)
 
 set(XMOS_SANDBOX_DIR ${CMAKE_CURRENT_LIST_DIR}/../../..)
 

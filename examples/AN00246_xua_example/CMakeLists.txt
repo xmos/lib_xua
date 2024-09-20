@@ -15,7 +15,7 @@ set(APP_COMPILER_FLAGS -O3
                        -fxscope
                        -DUAC_FORCE_FEEDBACK_EP=0)
 
-include(${CMAKE_CURRENT_LIST_DIR}/../../deps.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/../deps.cmake)
 
 set(XMOS_SANDBOX_DIR ${CMAKE_CURRENT_LIST_DIR}/../../..)
 
