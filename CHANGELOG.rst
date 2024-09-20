@@ -44,7 +44,13 @@ UNRELEASED
 
   * Changes to dependencies:
 
+    - lib_dsp: Removed dependency
+
+    - lib_mic_array: 4.6.0 -> 5.3.0
+
     - lib_spdif: 6.1.0 -> 6.1.1
+
+    - lib_xcore_math: Added dependency 2.2.0
 
     - lib_xud: 2.3.1 -> 2.3.2
 
