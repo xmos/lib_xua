@@ -18,16 +18,16 @@
 
 void mic_array_task(chanend_t c_mic_to_audio){
 
-    ma_init();
+    /* Synchronise with consumer to ensure we start at same time and avoid ma bug */
+    unsigned mic_samp_rate = chan_in_word(c_mic_to_audio);
+
+    ma_init(mic_samp_rate);
     /*
      * ma_task() itself uses interrupts, and does re-enable them. However,
      * it appears to assume that KEDI is not set, therefore it is cleared here in
      * case this module is compiled with dual issue.
      */
     CLEAR_KEDI()
-
-    /* Synchronise with consumer to ensure we start at same time and avoid ma bug */
-    chan_out_word(c_mic_to_audio, 0);
 
     /* Start endless loop */
     ma_task(c_mic_to_audio);

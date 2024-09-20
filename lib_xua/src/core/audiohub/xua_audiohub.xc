@@ -231,14 +231,9 @@ unsigned static AudioHub_MainLoop(chanend ?c_out, chanend ?c_spd_out
 
 #if ((DEBUG_MIC_ARRAY == 1) && (XUA_NUM_PDM_MICS > 0))
     /* Get initial samples from PDM->PCM converter to avoid stalling the decimators */
-    c_pdm_pcm <: 1;
-    master
-    {
-#pragma loop unroll
-        for(int i = PDM_MIC_INDEX; i < (XUA_NUM_PDM_MICS + PDM_MIC_INDEX); i++)
-        {
-            c_pdm_pcm :> samplesIn[readBuffNo][i];
-        }
+    unsafe{
+        chanend_t c_m2a = (chanend_t)c_pdm_pcm;
+        ma_frame_rx((int32_t *)samplesIn[readBuffNo], c_m2a, MIC_ARRAY_CONFIG_SAMPLES_PER_FRAME, MIC_ARRAY_CONFIG_MIC_COUNT);
     }
 #endif // ((DEBUG_MIC_ARRAY == 1) && (XUA_NUM_PDM_MICS > 0))
 
@@ -413,17 +408,9 @@ unsigned static AudioHub_MainLoop(chanend ?c_out, chanend ?c_spd_out
 
 #if (XUA_NUM_PDM_MICS > 0)
                 if ((AUD_TO_MICS_RATIO - 1) == audioToMicsRatioCounter)
-                {
-                    /* Get samples from PDM->PCM converter */
-                    c_pdm_pcm <: 1;
-                    master
-                    {
-#pragma loop unroll
-                        for(int i = PDM_MIC_INDEX; i < (XUA_NUM_PDM_MICS + PDM_MIC_INDEX); i++)
-                        {
-                            c_pdm_pcm :> samplesIn[readBuffNo][i];
-                        }
-                    }
+                unsafe {
+                    chanend_t c_m2a = (chanend_t)c_pdm_pcm;
+                    ma_frame_rx((int32_t *)samplesIn[readBuffNo], c_m2a, MIC_ARRAY_CONFIG_SAMPLES_PER_FRAME, MIC_ARRAY_CONFIG_MIC_COUNT);
                     audioToMicsRatioCounter = 0;
                 }
                 else

@@ -47,44 +47,6 @@ buffered out port:32 p_lrclk        = PORT_I2S_LRCLK;    /* I2S Bit-clock */
 buffered out port:32 p_bclk         = PORT_I2S_BCLK;     /* I2S L/R-clock */
 
 
-void pdm_dummy(chanend c_mic_pcm, chanend c_mic_to_audio){
-    int sample_rate = 0;
-    c_mic_pcm :> sample_rate;
-    printintln(sample_rate);
-
-    // Synch
-    c_mic_to_audio :> int _;
-
-    int32_t mic_samps[MIC_ARRAY_CONFIG_SAMPLES_PER_FRAME][MIC_ARRAY_CONFIG_MIC_COUNT] = {{0}};
-
-    while(1){
-        unsafe{
-            chanend_t c_m2a = (chanend_t)c_mic_to_audio;
-            ma_frame_rx(mic_samps[0], c_m2a, MIC_ARRAY_CONFIG_SAMPLES_PER_FRAME, MIC_ARRAY_CONFIG_MIC_COUNT);
-            
-            // Looping inidicator
-            static int cc = 0; if(cc++ > DEFAULT_FREQ){printchar('+');cc = 0;}
-        }
-
-        int transfer = 0;
-        c_mic_pcm :> transfer;
-        if(transfer){
-            slave
-            {
-                for(int i = 0; i < XUA_NUM_PDM_MICS; i++)
-                {
-                    c_mic_pcm <: mic_samps[0][i];
-                }
-            }
-
-        } else {
-            c_mic_pcm :> sample_rate;
-            printintln(sample_rate);
-        }
-    }
-}
-
-
 void UserBufferManagement(unsigned sampsFromUsbToAudio[], unsigned sampsFromAudioToUsb[]){
     // printintln(sampsFromAudioToUsb[0]);
     sampsFromUsbToAudio[0] = sampsFromAudioToUsb[0]; // Copy to DAC so we can monitor
@@ -162,9 +124,8 @@ int main()
                 /* Note, since we are not using I2S we pass in null for LR and Bit clock ports and the I2S dataline ports */
                 XUA_AudioHub(c_aud, clk_audio_mclk, clk_audio_bclk, p_pdm_mclk, p_lrclk, p_bclk, p_i2s_dac, null, c_mic_pcm);
 
-                /* Microphone related tasks */
-                pdm_dummy(c_mic_pcm, c_mic_to_audio);
-                mic_array_task(c_mic_to_audio);
+                /* Microphone related task */
+                mic_array_task(c_mic_pcm);
             }
         }
     }

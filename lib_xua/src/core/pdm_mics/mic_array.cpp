@@ -200,7 +200,7 @@ using TMicArray = mic_array::MicArray<mic_count,
 TMicArray mics;
 
 
-void ma_init()
+void ma_init(unsigned mic_samp_rate)
 {
   mics.Decimator.Init(stage_1_filter(), stage_2_filter(), *stage_2_shift());
 
@@ -210,13 +210,12 @@ void ma_init()
   mic_array_resources_configure(&pdm_res, MIC_ARRAY_CONFIG_MCLK_DIVIDER);
   mic_array_pdm_clock_start(&pdm_res);
 
-  printintln(MIC_ARRAY_CONFIG_MCLK_DIVIDER);
+  printintln(mic_samp_rate);
 
 }
 
 
-void ma_task(
-    chanend_t c_frames_out)
+void ma_task(chanend_t c_frames_out)
 {
   mics.OutputHandler.FrameTx.SetChannel(c_frames_out);
 
