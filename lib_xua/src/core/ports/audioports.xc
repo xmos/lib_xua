@@ -28,7 +28,10 @@ void ConfigAudioPorts(
         in port p_bclk,
 #endif
 #endif
-        in port p_mclk_in, clock clk_audio_bclk, unsigned int divide, unsigned curSamFreq)
+#if (XUA_I2S_EN)
+        in port p_mclk_in,
+#endif
+        clock clk_audio_bclk, unsigned int divide, unsigned curSamFreq)
 {
 #if (I2S_CHANS_DAC != 0) || (I2S_CHANS_ADC != 0)
 

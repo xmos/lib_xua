@@ -34,6 +34,10 @@
 #include "spdif.h"                     /* From lib_spdif */
 #endif
 
+#if (XUA_PWM_CHANNELS > 0)
+#include "pwm_thread.h"
+#endif
+
 #if (XUA_ADAT_RX_EN)
 #include "adat_rx.h"
 #endif
@@ -110,6 +114,7 @@ on tile[AUDIO_IO_TILE] : buffered in port:32 p_i2s_adc[I2S_WIRES_ADC] =
     #define p_i2s_adc null
 #endif
 
+#if XUA_I2S_EN
 
 #if CODEC_MASTER
 on tile[AUDIO_IO_TILE] : buffered in port:32 p_lrclk        = PORT_I2S_LRCLK;
@@ -119,6 +124,7 @@ on tile[AUDIO_IO_TILE] : buffered out port:32 p_lrclk       = PORT_I2S_LRCLK;
 on tile[AUDIO_IO_TILE] : buffered out port:32 p_bclk        = PORT_I2S_BCLK;
 #endif
 
+#endif
 on tile[AUDIO_IO_TILE] :  in port p_mclk_in                 = PORT_MCLK_IN;
 
 #if XUA_USB_EN
@@ -296,6 +302,9 @@ void usb_audio_io(chanend ?c_aud_in,
 #if (XUA_SPDIF_TX_EN) && (SPDIF_TX_TILE != AUDIO_IO_TILE)
     chanend c_spdif_tx,
 #endif
+#if (XUA_PWM_CHANNELS > 0) && (PWM_CHANNELS_TILE != XUD_TILE)
+    chanend c_pwm_channels,
+#endif
 #if (MIXER)
     chanend c_mix_ctl,
 #endif
@@ -351,6 +360,10 @@ void usb_audio_io(chanend ?c_aud_in,
     spdif_tx_port_config(p_spdif_tx, clk_audio_mclk, p_mclk_in, 7);
 #endif
 
+#if (XUA_PWM_CHANNELS > 0) && (PWM_CHANNELS_TILE == XUD_TILE)
+    chan c_pwm_channels;
+#endif
+
     par
     {
 #if (MIXER && XUA_USB_EN)
@@ -368,6 +381,14 @@ void usb_audio_io(chanend ?c_aud_in,
         }
 #endif
 
+#if (XUA_PWM_CHANNELS > 0) && (PWM_CHANNELS_TILE == XUD_TILE)
+#if (AUDIO_IO_TILE == XUD_TILE)
+        pwm_thread(c_pwm_channels, p_mclk_in);
+#else
+        pwm_thread(c_pwm_channels, p_mclk_in_usb);
+#endif
+#endif
+
         /* Audio I/O core (pars additional S/PDIF TX Core) */
         {
             thread_speed();
@@ -376,7 +397,10 @@ void usb_audio_io(chanend ?c_aud_in,
 #else
 #define AUDIO_CHANNEL c_aud_in
 #endif
-            XUA_AudioHub(AUDIO_CHANNEL, clk_audio_mclk, clk_audio_bclk, p_mclk_in, p_lrclk, p_bclk, p_i2s_dac, p_i2s_adc
+            XUA_AudioHub(AUDIO_CHANNEL, clk_audio_mclk, clk_audio_bclk
+#if (XUA_I2S_EN)
+                , p_mclk_in, p_lrclk, p_bclk, p_i2s_dac, p_i2s_adc
+#endif
 #if (XUA_SPDIF_TX_EN) //&& (SPDIF_TX_TILE != AUDIO_IO_TILE)
                 , c_spdif_tx
 #endif
@@ -391,6 +415,9 @@ void usb_audio_io(chanend ?c_aud_in,
 #endif
 #if (XUA_NUM_PDM_MICS > 0)
                 , c_pdm_pcm
+#endif
+#if (XUA_PWM_CHANNELS > 0) //&& (PWM_CHANNELS_TILE != XUD_TILE)
+                , c_pwm_channels
 #endif
             );
         }
@@ -469,6 +496,10 @@ int main()
 
 #if (XUA_SPDIF_TX_EN) && (SPDIF_TX_TILE != AUDIO_IO_TILE)
     chan c_spdif_tx;
+#endif
+
+#if (XUA_PWM_CHANNELS > 0) && (PWM_CHANNELS_TILE != XUD_TILE)
+    chan c_pwm_channels;
 #endif
 
 #if (XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
@@ -627,6 +658,9 @@ int main()
 #if (XUA_SPDIF_TX_EN) && (SPDIF_TX_TILE != AUDIO_IO_TILE)
                 , c_spdif_tx
 #endif
+#if (XUA_PWM_CHANNELS > 0) && (PWM_CHANNELS_TILE != XUD_TILE)
+                , c_pwm_channels
+#endif
 #if (MIXER)
                 , c_mix_ctl
 #endif
@@ -655,6 +689,14 @@ int main()
         {
             thread_speed();
             SpdifTxWrapper(c_spdif_tx);
+        }
+#endif
+
+#if (XUA_PWM_CHANNELS > 0) && (PWM_CHANNELS_TILE != XUD_TILE)
+        on tile[PWM_CHANNELS_TILE]:
+        {
+            thread_speed();
+            pwm_thread(c_pwm_channels, p_mclk_in);
         }
 #endif
 

@@ -31,7 +31,10 @@ void ConfigAudioPorts(
                 in port p_bclk,
 #endif
 #endif
-                in port p_mclk_in, clock clk_audio_bclk, unsigned int divide, unsigned int curSamFreq);
+#if (XUA_I2S_EN)
+                in port p_mclk_in,
+#endif
+                clock clk_audio_bclk, unsigned int divide, unsigned int curSamFreq);
 #else
 
 void ConfigAudioPorts(
@@ -54,7 +57,10 @@ void ConfigAudioPorts(
                 port p_bclk,
 #endif
 #endif
-                port p_mclk_in, clock clk_audio_bclk, unsigned int divide, unsigned int curSamFreq);
+#if (XUA_I2S_EN)
+                port p_mclk_in,
+#endif
+                clock clk_audio_bclk, unsigned int divide, unsigned int curSamFreq);
 
 
 #endif /* __XC__*/
@@ -79,7 +85,10 @@ void ConfigAudioPortsWrapper(
                 buffered in port:32 p_bclk,
 #endif
 #endif
-                in port p_mclk_in, clock clk_audio_bclk, unsigned int divide, unsigned curSamFreq);
+#if (XUA_I2S_EN)
+                in port p_mclk_in,
+#endif
+                clock clk_audio_bclk, unsigned int divide, unsigned curSamFreq);
 #else
 
 void ConfigAudioPortsWrapper(
@@ -95,7 +104,10 @@ void ConfigAudioPortsWrapper(
                 port p_lrclk,
                 port p_bclk,
 #endif
-                port p_mclk_in, clock clk_audio_bclk, unsigned int divide, unsigned curSamFreq);
+#if (XUA_I2S_EN)
+                port p_mclk_in,
+#endif
+                clock clk_audio_bclk, unsigned int divide, unsigned curSamFreq);
 
 
 #endif /* __XC__*/
