@@ -43,6 +43,13 @@
 #endif
 
 /**
+ * @brief Location (tile) of SPDIF Tx. Default: XUD_TILE
+ */
+#ifndef PWM_CHANNELS_TILE
+#define PWM_CHANNELS_TILE   XUD_TILE
+#endif
+
+/**
  * @brief Location (tile) of PDM Rx. Default: AUDIO_IO_TILE
  */
 #ifndef PDM_TILE
@@ -86,6 +93,27 @@
 #endif
 
 /**
+ * @brief Number of PWM output channels in the design. Must be 2 or 0.
+ *
+ * Default: 0
+ */
+#ifndef XUA_NUM_PWM_CHANNELS
+#define XUA_NUM_PWM_CHANNELS     (0)
+#endif
+#if (XUA_NUM_PWM_CHANNELS != 0 && XUA_NUM_PWM_CHANNELS != 2)
+#error "Only none or two PWM channels supported at present"
+#endif
+
+/**
+ * @brief Defines which output channels (stereo) should be output on PWM. Note, Output channels indexed from 0.
+ *
+ * Default: 0 (i.e. channels 0 & 1)
+ * */
+#ifndef PWM_CHANNELS_INDEX
+#define PWM_CHANNELS_INDEX        (0)
+#endif
+
+/**
  * @brief Number of DSD output channels.
  *
  * Default: 0 (disabled)
@@ -123,6 +151,8 @@
 #else
 #define I2S_WIRES_ADC            (I2S_CHANS_ADC / I2S_CHANS_PER_FRAME)
 #endif
+
+#define XUA_I2S_EN ((I2S_WIRES_ADC) > 0 || (I2S_WIRES_DAC) > 0)
 
 /*
  * Defines relating to the interface to external audio hardware i.e. DAC/ADC
