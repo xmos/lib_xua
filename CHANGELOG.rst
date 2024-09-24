@@ -27,6 +27,7 @@ UNRELEASED
   * CHANGED:   Default value of FLASH_MAX_UPGRADE_SIZE to 512 KB
   * ADDED:     MIDI support with UAC1.0
   * CHANGED:   Build examples using XCommon CMake instead of XCommon
+  * CHANGED:   Examples use lib_board_support for XK-AUDIO-316-MC-AB support code
 
 4.2.0
 -----

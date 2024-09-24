@@ -17,22 +17,28 @@ the xCORE.ai Multichannel (MC) Audio board (XK-AUDIO-316-MC).
 The Makefile
 ------------
 
-To start using ``lib_xua``, you need to add ``lib_xua`` to your Makefile::
+To start using the XMOS XUA library, you need to add ``lib_xua`` to the dependent module list
+in the CMakeLists.txt file. This application note uses the ``lib_board_support`` software
+repository to provide common code to configure the xCORE.ai Multichannel (MC) Audio board for
+use. This should also be added to the list of dependent modules in the CMakeLists.txt file::
 
-  USED_MODULES = .. lib_xua ...
+  set(APP_DEPENDENT_MODULES "lib_xua"
+                            "lib_board_support")
 
-This demo also uses the XMOS USB Device library (``lib_xud``) for low-level USB connectivity.
-The Makefile also includes::
+The dependencies for this example are specified by ``deps.cmake`` in the ``examples`` directory
+and are included in the application ``CMakeLists.txt`` file.
 
-  USED_MODULES = .. lib_xud ..
+The ``lib_xud`` library requires some flags for correct operation. Namely the
+tile on which ``lib_xud`` will be executed, for example::
 
-``lib_xud`` library requires some flags for correct operation. Namely the 
-tile on which ``lib_xud`` will be execute, for example::
+  set(APP_COMPILER_FLAGS ... -DUSB_TILE=tile[0] ...)
 
-    XCC_FLAGS = .. -DUSB_TILE=tile[0] ..
+The ``lib_board_support`` requires a compiler flag to select the hardware type::
+
+  set(APP_COMPILER_FLAGS ... -DBOARD_SUPPORT_BOARD=XK_AUDIO_316_MC_AB ...)
 
 Includes
-........
+--------
 
 This application requires the system header that defines XMOS xCORE specific
 defines for declaring and initialising hardware:
@@ -42,14 +48,15 @@ defines for declaring and initialising hardware:
    :end-before: include "xua.h"
 
 The XUA library functions are defined in ``xua.h``. This header must
-be included in your code to use the library. 
+be included in your code to use the library. Headers are also required for
+``lib_xud`` and the board setup code for the xCORE.ai Multichannel Audio board.
 
 .. literalinclude:: app_xua_simple.xc
    :start-on: include "xua.h"
-   :end-on: include "xud_device.h"
+   :end-on: include "xk_audio_316_mc_ab/board.h"
 
 Allocating Hardware Resources
-.............................
+-----------------------------
 
 A basic implementation of a USB Audio device (i.e. simple stereo output via I2S)
 using ``lib_xua`` requires the follow pins:
@@ -91,14 +98,14 @@ Again, for the same reasoning as the master-clock ports, two master-clock clock-
 
 
 Other Declarations
-..................
+------------------
 
 ``lib_xua`` currently requires the manual declaration of tables for the endpoint types for
 ``lib_xud`` and the calling the main XUD function in a par (``XUD_Main()``).
 
 For a simple application the following endpoints are required:
 
-    - ``Control`` enpoint zero 
+    - ``Control`` endpoint zero 
     - ``Isochonous`` endpoint for each direction for audio data to/from the USB host
 
 These are declared as follows:
@@ -107,17 +114,42 @@ These are declared as follows:
    :start-on: /* Endpoint type tables
    :end-on: XUD_EpType epTypeTableIn
 
+Hardware Setup
+--------------
+
+Some code is needed to perform the hardware-specific setup for the board being used
+in this application note.
+
+The ``xk_audio_316_mc_ab_config_t`` structure is used to specify hardware-specific
+configuration options, such as clocking modes and frequencies.
+
+The ``i_i2c_client`` unsafe client interface is required to have a globally-scoped variable
+for gaining access to the ``i2c_master_if`` interface from the audio hardware functions.
+
+.. literalinclude:: app_xua_simple.xc
+   :start-on: /* Board configuration from lib_board_support */
+   :end-on: unsafe client interface i2c_master_if i_i2c_client
+
+The following functions are called by ``XUA_AudioHub`` to configure the hardware; they are
+defined as wrapper functions around the board-specific code from ``lib_board_support``.
+
+.. literalinclude:: app_xua_simple.xc
+   :start-on: void AudioHwInit()
+   :end-before: int main()
+
+
+
 The Application main() Function
 -------------------------------
 
 The ``main()`` function sets up the tasks in the application.
 
-Various channels are required in order to allow the required tasks to communicate. 
+Various channels/interfaces are required in order to allow the required tasks to communicate. 
 These must first be declared:
 
 .. literalinclude:: app_xua_simple.xc
    :start-on: /* Channels for lib_xud
-   :end-on: chan c_aud_ctl
+   :end-on: interface i2c_master_if i2c[1]
 
 The rest of the ``main()`` function starts all of the tasks in parallel
 using the xC ``par`` construct:
@@ -129,11 +161,11 @@ using the xC ``par`` construct:
 This code starts the low-level USB task, an Endpoint 0 task, an Audio buffering task and a task to handle 
 the audio I/O (i.e. I2S signalling).
 
-It also runs a small function ``ctrlPort()`` that simply writes some values to an I/O port to configure some external 
-hardware (it enables analogue power supplies and correctly routes the master clock) and then closes.
+It also runs ``xk_audio_316_mc_ab_board_setup()`` and ``xk_audio_316_mc_ab_i2c_master()`` from ``lib_board_support``
+that are used for setting up the hardware.
 
 Configuration 
-.............
+-------------
 
 ``lib_xua`` has many parameters than can be configured at build time, some examples include:
 
@@ -156,6 +188,29 @@ implentation e.g. master clock frequencies and must be defined.  Please see the 
 
 |appendix|
 |newpage|
+
+Building the Application
+------------------------
+
+The following section assumes you have downloaded and installed the `XMOS XTC tools <https://www.xmos.com/software-tools/>`_
+(see `README` for required version). Installation instructions can be found `here <https://xmos.com/xtc-install-guide>`_.
+Be sure to pay attention to the section `Installation of required third-party tools
+<https://www.xmos.com/documentation/XM-014363-PC-10/html/installation/install-configure/install-tools/install_prerequisites.html>`_.
+
+The application uses the `xcommon-cmake <https://www.xmos.com/file/xcommon-cmake-documentation/?version=latest>`_
+build system as bundled with the XTC tools.
+
+The ``AN00246_xua_example`` software zip-file should be downloaded and unzipped to a chosen directory.
+
+To configure the build run the following from an XTC command prompt::
+
+    cd examples
+    cd AN00246_xua_example
+    cmake -G "Unix Makefiles" -B build
+
+Finally, the application binaries can be built using ``xmake``::
+
+    xmake -C build
 
 Demo Hardware Setup
 -------------------
@@ -207,19 +262,15 @@ References
 
   * XMOS Tools User Guide
 
-    http://www.xmos.com/published/xtimecomposer-user-guide
+    https://www.xmos.com/documentation/XM-014363-PC-9/html/
 
   * XMOS xCORE Programming Guide
 
-    http://www.xmos.com/published/xmos-programming-guide
+    https://www.xmos.com/published/xmos-programming-guide
 
-  * XMOS lib_xua Library
+  * XMOS Libraries
 
-    http://www.xmos.com/support/libraries/lib_xua
-    
-  * XMOS lib_xud Library
-
-    http://www.xmos.com/support/libraries/lib_xud
+    https://www.xmos.com/libraries/
 
 |newpage|
 
