@@ -27,6 +27,7 @@ UNRELEASED
   * CHANGED:   Default value of FLASH_MAX_UPGRADE_SIZE to 512 KB
   * ADDED:     MIDI support with UAC1.0
   * CHANGED:   Build examples using XCommon CMake instead of XCommon
+  * CHANGED:   AN00248 updated to XCORE-AI-EXPLORER board and lib_mic_array v5.2.0
 
 4.2.0
 -----

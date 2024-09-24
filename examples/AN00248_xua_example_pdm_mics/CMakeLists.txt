@@ -20,6 +20,7 @@ set(APP_COMPILER_FLAGS -fcomment-asm
                        -DBOARD_SUPPORT_BOARD=XK_EVK_XU316)
 
 include(${CMAKE_CURRENT_LIST_DIR}/../deps.cmake)
+list(APPEND APP_DEPENDENT_MODULES "lib_mic_array(5.2.0)")
 
 set(XMOS_SANDBOX_DIR ${CMAKE_CURRENT_LIST_DIR}/../../..)
 
