@@ -51,14 +51,12 @@
  */
 void XUA_AudioHub(chanend ?c_aud,
     clock ?clk_audio_mclk,
-    clock ?clk_audio_bclk
-#if (XUA_I2S_EN)
-    , in port p_mclk_in,
+    clock ?clk_audio_bclk,
+    in port p_mclk_in,
     buffered _XUA_CLK_DIR port:32 ?p_lrclk,
     buffered _XUA_CLK_DIR port:32 ?p_bclk,
     buffered out port:32 (&?p_i2s_dac)[I2S_WIRES_DAC],
     buffered in port:32  (&?p_i2s_adc)[I2S_WIRES_ADC]
-#endif
 #if (XUA_SPDIF_TX_EN) || defined(__DOXYGEN__)
     , chanend c_spdif_tx
 #endif

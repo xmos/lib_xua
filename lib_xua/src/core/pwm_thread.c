@@ -16,17 +16,20 @@ void setup_master_clock(port_t clk_in) __attribute__ ((weak));
 void setup_master_clock(port_t clk_in) {
 }
 
-void pwm_thread(chanend_t c_data, port_t clk_in)
+void pwm_init(port_t clk_in) {
+    xclock_t clk = CLKBLK_PWM;
+    setup_master_clock(clk_in);
+    port_set_invert(clk_in);
+    clock_enable(clk);
+    clock_set_source_port(clk, clk_in);
+}
+
+void pwm_thread(chanend_t c_data)
 {
     software_dac_hp_t sd;
     xclock_t clk = CLKBLK_PWM;
     port_t ports[2] = {PORT_PWM_OUT_LEFT, PORT_PWM_OUT_RIGHT};
     port_t clk_out = PORT_PWM_CLK_OUT;
-    port_enable(clk_in);
-    setup_master_clock(clk_in);
-    port_set_invert(clk_in);
-    clock_enable(clk);
-    clock_set_source_port(clk, clk_in);
 
     software_dac_hp_init(&sd, ports, clk, clk_out, 8);
 

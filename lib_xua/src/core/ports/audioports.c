@@ -45,10 +45,7 @@ void ConfigAudioPortsWrapper(
                 port p_lrclk,
                 port p_bclk,
 #endif
-#if (XUA_I2S_EN)
-                port p_mclk_in,
-#endif
-                clock clk_audio_bclk, unsigned int divide, unsigned curSamFreq)
+                port p_mclk_in, clock clk_audio_bclk, unsigned int divide, unsigned curSamFreq)
 {
         ConfigAudioPorts(
 #if (I2S_CHANS_DAC != 0) || (DSD_CHANS_DAC != 0)
@@ -63,9 +60,6 @@ void ConfigAudioPortsWrapper(
                 p_lrclk,
                 p_bclk,
 #endif
-#if (XUA_I2S_EN)
-                p_mclk_in,
-#endif
-                clk_audio_bclk, divide, curSamFreq);
+                p_mclk_in, clk_audio_bclk, divide, curSamFreq);
 }
 

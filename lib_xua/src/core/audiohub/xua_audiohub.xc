@@ -175,12 +175,10 @@ unsigned static AudioHub_MainLoop(chanend ?c_out, chanend ?c_spd_out
 #if (XUA_NUM_PDM_MICS > 0)
     , chanend c_pdm_pcm
 #endif
-#if (XUA_I2S_EN)
     , buffered _XUA_CLK_DIR port:32 ?p_lrclk,
     buffered _XUA_CLK_DIR port:32 ?p_bclk,
     buffered out port:32 (&?p_i2s_dac)[I2S_WIRES_DAC],
     buffered in port:32  (&?p_i2s_adc)[I2S_WIRES_ADC]
-#endif
 )
 {
     /* Since DAC and ADC buffered ports off by one sample we buffer previous ADC frame */
@@ -274,12 +272,10 @@ unsigned static AudioHub_MainLoop(chanend ?c_out, chanend ?c_spd_out
 
         if ((I2S_CHANS_DAC > 0 || I2S_CHANS_ADC > 0))
         {
-#if (XUA_I2S_EN)
 #if CODEC_MASTER
             InitPorts_slave(p_lrclk, p_bclk, p_i2s_dac, p_i2s_adc);
 #else
             InitPorts_master(p_lrclk, p_bclk, p_i2s_dac, p_i2s_adc);
-#endif
 #endif
         }
 
@@ -641,14 +637,12 @@ static void dummy_deliver(chanend ?c_out, unsigned &command)
  void DFUHandler(server interface i_dfu i, chanend ?c_user_cmd);
  #endif
 
-void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk
-#if (XUA_I2S_EN)
-    , in port p_mclk_in,
+void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
+    in port p_mclk_in,
     buffered _XUA_CLK_DIR port:32 ?p_lrclk,
     buffered _XUA_CLK_DIR port:32 ?p_bclk,
     buffered out port:32 (&?p_i2s_dac)[I2S_WIRES_DAC],
     buffered in port:32  (&?p_i2s_adc)[I2S_WIRES_ADC]
-#endif
 #if (XUA_SPDIF_TX_EN) //&& (SPDIF_TX_TILE != AUDIO_IO_TILE)
     , chanend c_spdif_out
 #endif
@@ -684,9 +678,7 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk
 
     /* Clock master clock-block from master-clock port */
     /* Note, marked unsafe since other cores may be using this mclk port */
-#if (XUA_I2S_EN)
     configure_clock_src(clk_audio_mclk, p_mclk_in);
-#endif
 
 #if (DSD_CHANS_DAC > 0)
     /* Make sure the DSD ports are on and buffered - just in case they are not shared with I2S */
@@ -799,9 +791,7 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk
                 p_bclk,
 #endif
 #endif
-#if (XUA_I2S_EN)
             p_mclk_in,
-#endif
                 clk_audio_bclk, divide, curSamFreq);
         }
 
@@ -925,10 +915,7 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk
 #if (XUA_NUM_PDM_MICS > 0)
                    , c_pdm_in
 #endif
-#if (XUA_I2S_EN)
-                  , p_lrclk, p_bclk, p_i2s_dac, p_i2s_adc
-#endif
-                    );
+                  , p_lrclk, p_bclk, p_i2s_dac, p_i2s_adc);
 
 #if (XUA_USB_EN)
                 if(command == SET_SAMPLE_FREQ)
