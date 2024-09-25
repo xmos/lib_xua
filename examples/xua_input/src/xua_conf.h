@@ -12,6 +12,7 @@
 #define MCLK_48   (512 * 48000)     /* 48kHz family master clock frequency */
 #define MIN_FREQ  48000             /* Minimum sample rate */
 #define MAX_FREQ  48000             /* Maximum sample rate */
+#define XUA_NUM_PDM_MICS      2
 
 #define EXCLUDE_USB_AUDIO_MAIN
 
@@ -22,5 +23,4 @@
 #define PID_AUDIO_1     1
 #define PID_AUDIO_2     2
 #define XUA_DFU_EN      0           /* Disable DFU (for simplicity of example */
-#define MIC_DUAL_ENABLED 0          // Use multi-threaded design
 #endif

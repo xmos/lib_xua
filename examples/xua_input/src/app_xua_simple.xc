@@ -52,12 +52,13 @@ void UserBufferManagementInit(unsigned sampFreq)
     printintln(sampFreq);
 }
 
-/* Default implementation for UserBufferManagement() */
+/* Make a copy of inbound mic samples and send to DAC */
 void UserBufferManagement(unsigned sampsFromUsbToAudio[], unsigned sampsFromAudioToUsb[])
 {
-    static int i = 0; i++; if(i > 100) i = -100;
-    sampsFromUsbToAudio[0] = i * 0x100000;
-    sampsFromAudioToUsb[0] = i * 0x100000;
+
+    for(int i = 0; i < I2S_CHANS_DAC; i++){
+        sampsFromUsbToAudio[i] = sampsFromAudioToUsb[i];
+    }
 }
 
 int main()
@@ -75,8 +76,11 @@ int main()
     /* Channel for communicating control messages from EP0 to the rest of the device (via the buffering cores) */
     chan c_aud_ctl;
 
+    /* Channel for communicating I2C control messages from audio to the I2C master server */
     chan c_i2c;
 
+    /* Channel for communicating between mic_array and audio */
+    chan c_mic_pcm;
 
 
     par
@@ -115,10 +119,10 @@ int main()
             {
                 /* AudioHub/IO core does most of the audio IO i.e. I2S (also serves as a hub for all audio) */
                 /* Note, since we are not using I2S we pass in null for LR and Bit clock ports and the I2S dataline ports */
-                XUA_AudioHub(c_aud, clk_audio_mclk, clk_audio_bclk, p_mclk_in, p_lrclk, p_bclk, p_i2s_dac, p_i2s_adc);
+                XUA_AudioHub(c_aud, clk_audio_mclk, clk_audio_bclk, p_mclk_in, p_lrclk, p_bclk, p_i2s_dac, p_i2s_adc, c_mic_pcm);
 
                 /* Microphone related task */
-                // mic_array_task(c_mic_pcm);
+                mic_array_task(c_mic_pcm);
             }
         }
     }
