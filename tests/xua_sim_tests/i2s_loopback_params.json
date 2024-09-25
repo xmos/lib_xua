@@ -1,0 +1,7 @@
+{
+    "i2s_role": ["master", "slave"],
+    "pcm_format": ["i2s", "tdm"],
+    "channel_count": [2, 8, 16],
+    "word_length": [16, 32],
+    "sample_rate": [48000, 96000, 192000]
+}

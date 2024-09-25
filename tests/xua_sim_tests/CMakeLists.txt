@@ -1,0 +1,12 @@
+cmake_minimum_required(VERSION 3.21)
+include($ENV{XMOS_CMAKE_PATH}/xcommon.cmake)
+project(xua_sim_tests)
+
+add_subdirectory(test_i2s_loopback)
+add_subdirectory(test_midi)
+add_subdirectory(test_mixer_routing_input)
+add_subdirectory(test_mixer_routing_input_ctrl)
+add_subdirectory(test_mixer_routing_output)
+add_subdirectory(test_mixer_routing_output_ctrl)
+add_subdirectory(test_sync_clk_basic)
+add_subdirectory(test_sync_clk_plugin)
