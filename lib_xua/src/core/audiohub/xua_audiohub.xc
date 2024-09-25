@@ -44,14 +44,14 @@
 #include "xua_commands.h"
 #include "xc_ptr.h"
 
-#define MAX(x,y) ((x)>(y) ? (x) : (y))
+#define XUA_MAX(x,y) ((x)>(y) ? (x) : (y))
 
-unsigned samplesOut[MAX(NUM_USB_CHAN_OUT, I2S_CHANS_DAC)];
+unsigned samplesOut[XUA_MAX(NUM_USB_CHAN_OUT, I2S_CHANS_DAC)];
 
 /* Two buffers for ADC data to allow for DAC and ADC I2S ports being offset */
 #define IN_CHAN_COUNT (I2S_CHANS_ADC + XUA_NUM_PDM_MICS + (8*XUA_ADAT_RX_EN) + (2*XUA_SPDIF_RX_EN))
 
-unsigned samplesIn[2][MAX(NUM_USB_CHAN_IN, IN_CHAN_COUNT)];
+unsigned samplesIn[2][XUA_MAX(NUM_USB_CHAN_IN, IN_CHAN_COUNT)];
 
 #if (XUA_ADAT_TX_EN)
 extern buffered out port:32 p_adat_tx;
