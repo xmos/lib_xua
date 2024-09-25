@@ -4,7 +4,7 @@
 #ifndef XUA_PDM_MIC_H
 #define XUA_PDM_MIC_H
 
-#include "xua_conf.h"
+#include "xua_conf_full.h"
 
 #define MIC_ARRAY_CONFIG_MCLK_FREQ          MCLK_48
 #define MIC_ARRAY_CONFIG_PDM_FREQ           3072000
@@ -23,7 +23,7 @@
 /* Included from lib_mic_array */
 #include <xccompat.h>
 
-
+#include <stdint.h>
 #include "mic_array.h"
 
 #ifdef __cplusplus
@@ -36,7 +36,8 @@ void ma_task(chanend c_mic_to_audio);
 #endif
 
 void mic_array_task(chanend c_mic_to_audio);
-
+void user_pdm_init();
+void user_pdm_process(int32_t audio[MIC_ARRAY_CONFIG_SAMPLES_PER_FRAME][MIC_ARRAY_CONFIG_MIC_COUNT]);
 
 #endif
 

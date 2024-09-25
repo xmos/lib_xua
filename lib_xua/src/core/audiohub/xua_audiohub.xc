@@ -234,6 +234,7 @@ unsigned static AudioHub_MainLoop(chanend ?c_out, chanend ?c_spd_out
     unsafe{
         chanend_t c_m2a = (chanend_t)c_pdm_pcm;
         ma_frame_rx((int32_t *)samplesIn[readBuffNo], c_m2a, MIC_ARRAY_CONFIG_SAMPLES_PER_FRAME, MIC_ARRAY_CONFIG_MIC_COUNT);
+        user_pdm_process((int32_t *)samplesIn[readBuffNo]);
     }
 #endif // ((DEBUG_MIC_ARRAY == 1) && (XUA_NUM_PDM_MICS > 0))
 
@@ -853,6 +854,7 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
 
 #if (XUA_NUM_PDM_MICS > 0)
                 /* Send decimation factor to PDM task(s) */
+                user_pdm_init();
                 c_pdm_in <: curSamFreq / AUD_TO_MICS_RATIO;
 #endif
 
@@ -934,7 +936,8 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
 #endif /* XUA_USB_EN */
 
 #if XUA_NUM_PDM_MICS > 0
-                c_pdm_in <: 0;
+                // TODO - this willbe an exit command when supported in mic_array
+                // c_pdm_in <: 0;
 #endif
 
 #if (XUA_ADAT_TX_EN)
