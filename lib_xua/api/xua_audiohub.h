@@ -56,13 +56,11 @@ void XUA_AudioHub(
     NULLABLE_RESOURCE(chanend, c_aud),
     NULLABLE_RESOURCE(clock, clk_audio_mclk),
     NULLABLE_RESOURCE(clock, clk_audio_bclk)
-#if (XUA_I2S_EN)
     , NULLABLE_RESOURCE(in_port_t, p_mclk_in)
     , NULLABLE_RESOURCE(i2s_clk_port_type, p_lrclk)
     , NULLABLE_RESOURCE(i2s_clk_port_type, p_bclk)
     , NULLABLE_ARRAY_OF_SIZE(out_buffered_port_32_t, p_i2s_dac, I2S_WIRES_DAC)
     , NULLABLE_ARRAY_OF_SIZE(in_buffered_port_32_t, p_i2s_adc, I2S_WIRES_ADC)
-#endif
 #if (XUA_SPDIF_TX_EN) || defined(__DOXYGEN__)
     , chanend c_spdif_tx
 #endif

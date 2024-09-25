@@ -49,9 +49,7 @@ void ConfigAudioPortsWrapper(
 #endif
     port p_bclk,
 #endif
-#if (XUA_I2S_EN)
     NULLABLE_RESOURCE(in_port_t,  p_mclk_in),
-#endif
     clock clk_audio_bclk, unsigned int divide, unsigned curSamFreq)
 {
         ConfigAudioPorts(
@@ -67,9 +65,7 @@ void ConfigAudioPortsWrapper(
             p_lrclk,
             p_bclk,
 #endif
-#if (XUA_I2S_EN)
             p_mclk_in,
-#endif
             clk_audio_bclk, divide, curSamFreq);
 }
 
