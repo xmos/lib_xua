@@ -44,6 +44,10 @@ UNRELEASED
 
   * Changes to dependencies:
 
+    - lib_dsp: Removed dependency
+
+    - lib_mic_array: Removed dependency
+
     - lib_spdif: 6.1.0 -> 6.1.1
 
     - lib_xud: 2.3.1 -> 2.3.2
