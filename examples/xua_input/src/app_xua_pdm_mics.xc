@@ -21,7 +21,6 @@
 
 
 /* Port declarations. Note, the defines come from the xn file */
-buffered in port:32 p_i2s_adc[]     = {PORT_I2S_ADC_DATA};   /* I2S Data-line(s) */
 buffered out port:32 p_i2s_dac[]    = {PORT_I2S_DAC_DATA};   /* I2S Data-line(s) */
 buffered out port:32 p_lrclk        = PORT_I2S_LRCLK;    /* I2S Bit-clock */
 buffered out port:32 p_bclk         = PORT_I2S_BCLK;     /* I2S L/R-clock */
@@ -135,10 +134,10 @@ int main()
 
             par
             {
-                /* AudioHub/IO core does most of the audio IO i.e. I2S (also serves as a hub for all audio) */
-                XUA_AudioHub(c_aud, clk_audio_mclk, clk_audio_bclk, p_mclk_in, p_lrclk, p_bclk, p_i2s_dac, p_i2s_adc, c_mic_pcm);
+                /* AudioHub/IO core does most of the audio IO i.e. I2S (also serves as a hub for all audio including mics) */
+                XUA_AudioHub(c_aud, clk_audio_mclk, clk_audio_bclk, p_mclk_in, p_lrclk, p_bclk, p_i2s_dac, null, c_mic_pcm);
 
-                /* Microphone related task */
+                /* Microphone task */
                 mic_array_task(c_mic_pcm);
             }
         }
