@@ -21,7 +21,7 @@ void AudioHwInit()
 void AudioHwConfig(unsigned samFreq, unsigned mClk, unsigned dsdMode,
     unsigned sampRes_DAC, unsigned sampRes_ADC)
 {
-    samFreq = 48000;
+    samFreq = 48000; /* xk_evk_xu316_AudioHwConfig doesn't like rates below 22kHz so force to 48k which works OK */
     xk_evk_xu316_AudioHwConfig(samFreq, mClk, dsdMode, sampRes_DAC, sampRes_ADC);
 
     return;

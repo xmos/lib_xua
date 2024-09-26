@@ -54,6 +54,7 @@ void UserBufferManagementInit(unsigned sampFreq)
 }
 
 /* Make a copy of inbound mic samples and send to DAC */
+#pragma unsafe arrays
 void UserBufferManagement(unsigned sampsFromUsbToAudio[], unsigned sampsFromAudioToUsb[])
 {
 
@@ -62,11 +63,12 @@ void UserBufferManagement(unsigned sampsFromUsbToAudio[], unsigned sampsFromAudi
         sampsFromUsbToAudio[i] = sampsFromAudioToUsb[i];
     }
 
-    printint(cls(sampsFromUsbToAudio[0]));
-    printchar('\t');
-    printintln(cls(sampsFromUsbToAudio[1]));
+    // printint(cls(sampsFromUsbToAudio[0]));
+    // printchar('\t');
+    // printintln(cls(sampsFromUsbToAudio[1]));
 }
 
+#pragma unsafe arrays
 void user_pdm_process(int32_t mic_audio[MIC_ARRAY_CONFIG_MIC_COUNT])
 {
     for(int i = 0; i < XUA_NUM_PDM_MICS; i++)
