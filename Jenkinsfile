@@ -291,33 +291,29 @@ pipeline {
           agent {
             label 'macos && arm64 && usb_audio && xcore.ai-mcab'
           }
-          stages {
-            stage('Hardware tests') {
-              steps {
-                println "Stage running on ${env.NODE_NAME}"
+          steps {
+            println "Stage running on ${env.NODE_NAME}"
 
-                clone_test_deps()
+            clone_test_deps()
 
-                dir("${REPO}") {
-                  checkout scm
-                }
+            dir("${REPO}") {
+              checkout scm
+            }
 
-                dir("hardware_test_tools/xmosdfu") {
-                  unstash "macos_xmosdfu"
-                }
+            dir("hardware_test_tools/xmosdfu") {
+              unstash "macos_xmosdfu"
+            }
 
-                dir("${REPO}/tests") {
-                  createVenv(reqFile: "requirements.txt")
-                  withTools(params.TOOLS_VERSION) {
-                    dir("xua_hw_tests") {
-                      sh "cmake -G 'Unix Makefiles' -B build"
-                      sh "xmake -C build -j 8"
+            dir("${REPO}/tests") {
+              createVenv(reqFile: "requirements.txt")
+              withTools(params.TOOLS_VERSION) {
+                dir("xua_hw_tests") {
+                  sh "cmake -G 'Unix Makefiles' -B build"
+                  sh "xmake -C build -j 8"
 
-                      withVenv {
-                        withXTAG(["usb_audio_mc_xcai_dut"]) { xtagIds ->
-                          sh "pytest -v --junitxml=pytest_hw_mac.xml --xtag-id=${xtagIds[0]}"
-                        }
-                      }
+                  withVenv {
+                    withXTAG(["usb_audio_mc_xcai_dut"]) { xtagIds ->
+                      sh "pytest -v --junitxml=pytest_hw_mac.xml --xtag-id=${xtagIds[0]}"
                     }
                   }
                 }
@@ -338,29 +334,25 @@ pipeline {
           agent {
             label 'windows11 && usb_audio && xcore.ai-mcab'
           }
-          stages {
-            stage('Hardware tests') {
-              steps {
-                println "Stage running on ${env.NODE_NAME}"
+          steps {
+            println "Stage running on ${env.NODE_NAME}"
 
-                clone_test_deps()
+            clone_test_deps()
 
-                dir("${REPO}") {
-                  checkout scm
-                }
+            dir("${REPO}") {
+              checkout scm
+            }
 
-                dir("${REPO}/tests") {
-                  createVenv(reqFile: "requirements.txt")
-                  withTools(params.TOOLS_VERSION) {
-                    dir("xua_hw_tests") {
-                      sh "cmake -G 'Unix Makefiles' -B build"
-                      sh "xmake -C build"
+            dir("${REPO}/tests") {
+              createVenv(reqFile: "requirements.txt")
+              withTools(params.TOOLS_VERSION) {
+                dir("xua_hw_tests") {
+                  sh "cmake -G 'Unix Makefiles' -B build"
+                  sh "xmake -C build"
 
-                      withVenv {
-                        withXTAG(["usb_audio_mc_xcai_dut"]) { xtagIds ->
-                          sh "pytest -v --junitxml=pytest_hw_win.xml --xtag-id=${xtagIds[0]}"
-                        }
-                      }
+                  withVenv {
+                    withXTAG(["usb_audio_mc_xcai_dut"]) { xtagIds ->
+                      sh "pytest -v --junitxml=pytest_hw_win.xml --xtag-id=${xtagIds[0]}"
                     }
                   }
                 }
