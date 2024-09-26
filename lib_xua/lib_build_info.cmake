@@ -23,7 +23,6 @@ set(LIB_OPTIONAL_HEADERS xua_conf.h static_hid_report.h)
 set(LIB_DEPENDENT_MODULES "lib_adat(1.2.0)"
                           "lib_locks(2.2.0)"
                           "lib_logging(3.2.0)"
-                          "lib_mic_array(4.6.0)"
                           "lib_spdif(6.1.1)"
                           "lib_sw_pll(2.2.0)"
                           "lib_xassert(4.2.0)"
