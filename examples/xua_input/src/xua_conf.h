@@ -7,11 +7,11 @@
 #define NUM_USB_CHAN_OUT      0     /* Number of channels from host to device */
 #define NUM_USB_CHAN_IN       2     /* Number of channels from device to host */
 #define I2S_CHANS_DAC         2     /* Number of I2S channels out of xCORE */
-#define I2S_CHANS_ADC         2     /* Number of I2S channels in to xCORE */
+#define I2S_CHANS_ADC         0     /* Number of I2S channels in to xCORE */
 #define MCLK_441  (512 * 44100)     /* 44.1kHz family master clock frequency */
 #define MCLK_48   (512 * 48000)     /* 48kHz family master clock frequency */
-#define MIN_FREQ  48000             /* Minimum sample rate */
-#define MAX_FREQ  48000             /* Maximum sample rate */
+#define MIN_FREQ  16000             /* Minimum sample rate */
+#define MAX_FREQ  16000             /* Maximum sample rate */
 #define XUA_NUM_PDM_MICS      2
 
 #define EXCLUDE_USB_AUDIO_MAIN

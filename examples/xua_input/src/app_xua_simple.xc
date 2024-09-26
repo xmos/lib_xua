@@ -13,6 +13,7 @@
 
 #include <xs1.h>
 #include <platform.h>
+#include <string.h>
 
 #include "xua.h"
 #include "xud_device.h"
@@ -56,10 +57,25 @@ void UserBufferManagementInit(unsigned sampFreq)
 void UserBufferManagement(unsigned sampsFromUsbToAudio[], unsigned sampsFromAudioToUsb[])
 {
 
-    for(int i = 0; i < I2S_CHANS_DAC; i++){
+    for(int i = 0; i < I2S_CHANS_DAC; i++)
+    {
         sampsFromUsbToAudio[i] = sampsFromAudioToUsb[i];
     }
+
+    printint(cls(sampsFromUsbToAudio[0]));
+    printchar('\t');
+    printintln(cls(sampsFromUsbToAudio[1]));
 }
+
+void user_pdm_process(int32_t mic_audio[MIC_ARRAY_CONFIG_MIC_COUNT])
+{
+    for(int i = 0; i < XUA_NUM_PDM_MICS; i++)
+    {
+        // Apply some gain (non-saturating - will overflow)
+        mic_audio[i] = mic_audio[i] << 6;
+    }
+}
+
 
 int main()
 {
@@ -118,7 +134,6 @@ int main()
             par
             {
                 /* AudioHub/IO core does most of the audio IO i.e. I2S (also serves as a hub for all audio) */
-                /* Note, since we are not using I2S we pass in null for LR and Bit clock ports and the I2S dataline ports */
                 XUA_AudioHub(c_aud, clk_audio_mclk, clk_audio_bclk, p_mclk_in, p_lrclk, p_bclk, p_i2s_dac, p_i2s_adc, c_mic_pcm);
 
                 /* Microphone related task */
