@@ -5,6 +5,8 @@
 
 #include "xua_conf_full.h"
 
+#if XUA_NUM_PDM_MICS > 0
+
 /* PDM mics configuration */
 #ifndef MIC_ARRAY_CONFIG_MCLK_FREQ
 #define MIC_ARRAY_CONFIG_MCLK_FREQ          MCLK_48     // Used with MIC_ARRAY_CONFIG_PDM_FREQ to calculate clock divider 
@@ -49,5 +51,7 @@
 #if (MIC_ARRAY_CONFIG_SAMPLES_PER_FRAME != 1)
 #error ONLY MIC_ARRAY_CONFIG_SAMPLES_PER_FRAME = 1 supported currently
 #endif
+
+#endif /* XUA_NUM_PDM_MICS > 0 */
 
 #endif /* MIC_ARRAY_CONF_H_ */
