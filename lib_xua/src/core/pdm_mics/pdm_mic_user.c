@@ -16,7 +16,7 @@ void user_pdm_init()
 
 
 void user_pdm_process() __attribute__ ((weak));
-void user_pdm_process(int32_t audio[MIC_ARRAY_CONFIG_SAMPLES_PER_FRAME][MIC_ARRAY_CONFIG_MIC_COUNT])
+void user_pdm_process(int32_t mic_audio[MIC_ARRAY_CONFIG_MIC_COUNT])
 {
     return;
 }

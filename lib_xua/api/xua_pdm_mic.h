@@ -20,6 +20,10 @@
 #define MIC_ARRAY_CONFIG_MIC_IN_COUNT       XUA_NUM_PDM_MICS
 #define MIC_ARRAY_CONFIG_USE_DC_ELIMINATION 1
 
+#if (MIC_ARRAY_CONFIG_SAMPLES_PER_FRAME != 1)
+#error ONLY MIC_ARRAY_CONFIG_SAMPLES_PER_FRAME = 1 supported currently
+#endif
+
 /* Included from lib_mic_array */
 #include <xccompat.h>
 
@@ -37,7 +41,7 @@ void ma_task(chanend c_mic_to_audio);
 
 void mic_array_task(chanend c_mic_to_audio);
 void user_pdm_init();
-void user_pdm_process(int32_t audio[MIC_ARRAY_CONFIG_SAMPLES_PER_FRAME][MIC_ARRAY_CONFIG_MIC_COUNT]);
+void user_pdm_process(int32_t mic_audio[MIC_ARRAY_CONFIG_MIC_COUNT]);
 
 #endif
 

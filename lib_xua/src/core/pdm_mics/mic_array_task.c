@@ -17,10 +17,7 @@
 #include <print.h>
 
 void mic_array_task(chanend_t c_mic_to_audio){
-
-    /* Synchronise with consumer to ensure we start at same time and avoid ma bug */
     unsigned mic_samp_rate = chan_in_word(c_mic_to_audio);
-
     ma_init(mic_samp_rate);
     /*
      * ma_task() itself uses interrupts, and does re-enable them. However,

@@ -228,16 +228,6 @@ unsigned static AudioHub_MainLoop(chanend ?c_out, chanend ?c_spd_out
     memset(&i2sOutUs3.delayLine, 0, sizeof i2sOutUs3.delayLine);
 #endif /* (AUD_TO_USB_RATIO > 1) */
 
-
-#if ((DEBUG_MIC_ARRAY == 1) && (XUA_NUM_PDM_MICS > 0))
-    /* Get initial samples from PDM->PCM converter to avoid stalling the decimators */
-    unsafe{
-        chanend_t c_m2a = (chanend_t)c_pdm_pcm;
-        ma_frame_rx((int32_t *)samplesIn[readBuffNo], c_m2a, MIC_ARRAY_CONFIG_SAMPLES_PER_FRAME, MIC_ARRAY_CONFIG_MIC_COUNT);
-        user_pdm_process((int32_t *)samplesIn[readBuffNo]);
-    }
-#endif // ((DEBUG_MIC_ARRAY == 1) && (XUA_NUM_PDM_MICS > 0))
-
     UserBufferManagementInit(curSamFreq);
 
     unsigned command = DoSampleTransfer(c_out, readBuffNo, underflowWord);
@@ -411,7 +401,9 @@ unsigned static AudioHub_MainLoop(chanend ?c_out, chanend ?c_spd_out
                 if ((AUD_TO_MICS_RATIO - 1) == audioToMicsRatioCounter)
                 unsafe {
                     chanend_t c_m2a = (chanend_t)c_pdm_pcm;
-                    ma_frame_rx((int32_t *)samplesIn[readBuffNo], c_m2a, MIC_ARRAY_CONFIG_SAMPLES_PER_FRAME, MIC_ARRAY_CONFIG_MIC_COUNT);
+                    int32_t *mic_samps_base_addr = (int32_t*)&samplesIn[readBuffNo][PDM_MIC_INDEX];
+                    ma_frame_rx(mic_samps_base_addr, c_m2a, MIC_ARRAY_CONFIG_SAMPLES_PER_FRAME, MIC_ARRAY_CONFIG_MIC_COUNT);
+                    user_pdm_process(mic_samps_base_addr);
                     audioToMicsRatioCounter = 0;
                 }
                 else
@@ -464,7 +456,7 @@ unsigned static AudioHub_MainLoop(chanend ?c_out, chanend ?c_spd_out
                     samplesIn[buffIndex][chanIndex] = sample;
 #endif /* (AUD_TO_USB_RATIO > 1) && !I2S_DOWNSAMPLE_MONO_IN */
                 }
-#endif
+#endif /* I2S_CHANS_ADC != 0) */
 
 #if (I2S_CHANS_ADC != 0 || I2S_CHANS_DAC != 0)
                 syncError += HandleSampleClock(frameCount, p_lrclk);
