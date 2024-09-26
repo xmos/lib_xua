@@ -41,6 +41,7 @@ else()
                                    -DXASSERT_ENABLE_LINE_NUMBERS=0)
 endif()
 
+set(LIB_COMPILER_FLAGS_mic_array.cpp ${LIB_COMPILER_FLAGS} -std=c++14)
 set(LIB_COMPILER_FLAGS_xua_endpoint0.c ${LIB_COMPILER_FLAGS} -Os -mno-dual-issue)
 set(LIB_COMPILER_FLAGS_xua_ep0_uacreqs.xc ${LIB_COMPILER_FLAGS} -Os -mno-dual-issue)
 set(LIB_COMPILER_FLAGS_dbcalc.xc ${LIB_COMPILER_FLAGS} -Os -mno-dual-issue)

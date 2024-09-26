@@ -139,7 +139,9 @@ int main()
                 XUA_AudioHub(c_aud, clk_audio_mclk, clk_audio_bclk, p_mclk_in, p_lrclk, p_bclk, p_i2s_dac, p_i2s_adc, c_mic_pcm);
 
                 /* Microphone related task */
-                mic_array_task(c_mic_pcm);
+                while(1){
+                    mic_array_task(c_mic_pcm);
+                }
             }
         }
     }

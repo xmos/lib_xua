@@ -42,6 +42,7 @@ void ma_task(chanend c_mic_to_audio);
 void mic_array_task(chanend c_mic_to_audio);
 void user_pdm_init();
 void user_pdm_process(int32_t mic_audio[MIC_ARRAY_CONFIG_MIC_COUNT]);
-
+void user_pdm_process(int32_t mic_audio[MIC_ARRAY_CONFIG_MIC_COUNT]);
+void ma_frame_rx_custom(int32_t frame[], const chanend_t c_frame_in, const unsigned channel_count, const unsigned sample_count);
 #endif
 

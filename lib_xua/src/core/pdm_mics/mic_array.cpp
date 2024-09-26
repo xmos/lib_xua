@@ -7,6 +7,8 @@
 #include <print.h>
 #include <xcore/channel_streaming.h>
 #include <xcore/interrupt.h>
+#include <xcore/assert.h>
+#include <xcore/select.h>
 
 #include "mic_array/cpp/Prefab.hpp"
 #include "mic_array/cpp/MicArray.hpp"
@@ -16,7 +18,6 @@
 
 // #include "app_conf.h"
 #include "xmath/types.h"
-
 
 ////// Check that all the required config macros have been defined. 
 
@@ -165,63 +166,192 @@ static const int32_t WORD_ALIGNED stage2_48k_coefs[MIC_ARRAY_48K_STAGE_2_TAP_COU
     -0x453461, 0x9d62c, 0x325327, 0xe98af, -0x19f6aa, -0x138439, 0x7aab9, 0xe0dd5, 0x12b1b, -0x68daa, -0x2b915
 };
 
-// 32kHz vs 16kHz choices
-constexpr int mic_count = MIC_ARRAY_CONFIG_MIC_COUNT;
-constexpr int decimation_factor = (appconfSHF_NOMINAL_HZ == 48000) ? 2 : ((appconfSHF_NOMINAL_HZ == 32000) ? 3 : 6);
-constexpr int stage_2_tap_count = (appconfSHF_NOMINAL_HZ == 48000) ? MIC_ARRAY_48K_STAGE_2_TAP_COUNT : ((appconfSHF_NOMINAL_HZ == 32000) ? MIC_ARRAY_32K_STAGE_2_TAP_COUNT : STAGE2_TAP_COUNT);
-constexpr const uint32_t* stage_1_filter() {
-    return (appconfSHF_NOMINAL_HZ == 48000) ? &stage1_48k_coefs[0] : ((appconfSHF_NOMINAL_HZ == 32000) ? &stage1_32k_coefs[0] : &stage1_coef[0]);
-}
-constexpr const int32_t* stage_2_filter() {
-    return (appconfSHF_NOMINAL_HZ == 48000) ? &stage2_48k_coefs[0] : ((appconfSHF_NOMINAL_HZ == 32000) ? &stage2_32k_coefs[0] : &stage2_coef[0]);
-}
-constexpr const right_shift_t* stage_2_shift() {
-    return (appconfSHF_NOMINAL_HZ == 48000) ? &stage2_48k_shift : ((appconfSHF_NOMINAL_HZ == 32000) ? &stage2_32k_shift : &stage2_shr);
-}
+volatile int run_flag = 0;
+
+// Derived class for MicArray with overridden ThreadEntry() task with exit option
+template <unsigned MIC_COUNT,
+        class TDecimator,
+        class TPdmRx, 
+        class TSampleFilter, 
+        class TOutputHandler> 
+class MicArrayWithExit : public mic_array::MicArray<MIC_COUNT, TDecimator, TPdmRx, TSampleFilter, TOutputHandler> {
+public:
+    void ThreadEntry(void){
+        int32_t sample_out[MIC_COUNT] = {0};
+
+        while(run_flag){
+          uint32_t* pdm_samples = MicArrayWithExit::PdmRx.GetPdmBlock();
+          MicArrayWithExit::Decimator.ProcessBlock(sample_out, pdm_samples);
+          MicArrayWithExit::SampleFilter.Filter(sample_out);
+          MicArrayWithExit::OutputHandler.OutputSample(sample_out);
+        }
+        interrupt_mask_all();
+    };
+};
+
+// Derived class for MicArray with overridden OutputFrame() method with exit option
+template <unsigned MIC_COUNT, unsigned SAMPLE_COUNT>
+class ChannelFrameTransmitterCustom : public mic_array::ChannelFrameTransmitter<MIC_COUNT, SAMPLE_COUNT> {
+public:
+    // Override the OutputFrame method from the base class
+    void OutputFrame(int32_t frame[MIC_ARRAY_CONFIG_MIC_COUNT][MIC_ARRAY_CONFIG_SAMPLES_PER_FRAME]){
+        chanend_t c = mic_array::ChannelFrameTransmitter<MIC_ARRAY_CONFIG_MIC_COUNT, MIC_ARRAY_CONFIG_SAMPLES_PER_FRAME>::GetChannel();
+
+        SELECT_RES(
+            CASE_THEN(c, sr_change),
+            DEFAULT_THEN(default_handler))
+        {
+            sr_change: {
+                chanend_in_word(c);
+                run_flag = 0;
+            }
+            break;
+
+            default_handler:{
+            }// Do nothing & fall-through
+            break;
+        }
+        for(int i = 0; i < MIC_ARRAY_CONFIG_MIC_COUNT * MIC_ARRAY_CONFIG_SAMPLES_PER_FRAME; i++){
+            chanend_out_word(c, frame[0][i]);
+        }
+    };
+};
 
 
-using TMicArray = mic_array::MicArray<mic_count,
-                          mic_array::TwoStageDecimator<mic_count, 
-                                                       decimation_factor, 
-                                                       stage_2_tap_count>,
+using TMicArray_dec_2   = MicArrayWithExit<MIC_ARRAY_CONFIG_MIC_COUNT,
+                          mic_array::TwoStageDecimator<MIC_ARRAY_CONFIG_MIC_COUNT, 
+                                                       2, 
+                                                       MIC_ARRAY_48K_STAGE_2_TAP_COUNT>,
                           mic_array::StandardPdmRxService<MIC_ARRAY_CONFIG_MIC_IN_COUNT,
-                                                          mic_count,
-                                                          decimation_factor>, 
+                                                          MIC_ARRAY_CONFIG_MIC_COUNT,
+                                                          2>, 
                           // std::conditional uses USE_DCOE to determine which 
                           // sample filter is used.
                           typename std::conditional<MIC_ARRAY_CONFIG_USE_DC_ELIMINATION,
-                                              mic_array::DcoeSampleFilter<mic_count>,
-                                              mic_array::NopSampleFilter<mic_count>>::type,
-                          mic_array::FrameOutputHandler<mic_count, 
+                                              mic_array::DcoeSampleFilter<MIC_ARRAY_CONFIG_MIC_COUNT>,
+                                              mic_array::NopSampleFilter<MIC_ARRAY_CONFIG_MIC_COUNT>>::type,
+                                              mic_array::FrameOutputHandler<MIC_ARRAY_CONFIG_MIC_COUNT, 
                                                         MIC_ARRAY_CONFIG_SAMPLES_PER_FRAME, 
-                                                        mic_array::ChannelFrameTransmitter>>;
+                                                        ChannelFrameTransmitterCustom>>;
+
+using TMicArray_dec_3   = MicArrayWithExit<MIC_ARRAY_CONFIG_MIC_COUNT,
+                          mic_array::TwoStageDecimator<MIC_ARRAY_CONFIG_MIC_COUNT, 
+                                                       3, 
+                                                       MIC_ARRAY_32K_STAGE_2_TAP_COUNT>,
+                          mic_array::StandardPdmRxService<MIC_ARRAY_CONFIG_MIC_IN_COUNT,
+                                                          MIC_ARRAY_CONFIG_MIC_COUNT,
+                                                          3>, 
+                          // std::conditional uses USE_DCOE to determine which 
+                          // sample filter is used.
+                          typename std::conditional<MIC_ARRAY_CONFIG_USE_DC_ELIMINATION,
+                                              mic_array::DcoeSampleFilter<MIC_ARRAY_CONFIG_MIC_COUNT>,
+                                              mic_array::NopSampleFilter<MIC_ARRAY_CONFIG_MIC_COUNT>>::type,
+                          mic_array::FrameOutputHandler<MIC_ARRAY_CONFIG_MIC_COUNT, 
+                                                        MIC_ARRAY_CONFIG_SAMPLES_PER_FRAME, 
+                                                        ChannelFrameTransmitterCustom>>;
+
+using TMicArray_dec_6   = MicArrayWithExit<MIC_ARRAY_CONFIG_MIC_COUNT,
+                          mic_array::TwoStageDecimator<MIC_ARRAY_CONFIG_MIC_COUNT, 
+                                                       6, 
+                                                       STAGE2_TAP_COUNT>,
+                          mic_array::StandardPdmRxService<MIC_ARRAY_CONFIG_MIC_IN_COUNT,
+                                                          MIC_ARRAY_CONFIG_MIC_COUNT,
+                                                          6>, 
+                          // std::conditional uses USE_DCOE to determine which 
+                          // sample filter is used.
+                          typename std::conditional<MIC_ARRAY_CONFIG_USE_DC_ELIMINATION,
+                                              mic_array::DcoeSampleFilter<MIC_ARRAY_CONFIG_MIC_COUNT>,
+                                              mic_array::NopSampleFilter<MIC_ARRAY_CONFIG_MIC_COUNT>>::type,
+                          mic_array::FrameOutputHandler<MIC_ARRAY_CONFIG_MIC_COUNT, 
+                                                        MIC_ARRAY_CONFIG_SAMPLES_PER_FRAME, 
+                                                        ChannelFrameTransmitterCustom>>;
 
 
-TMicArray mics;
+
+TMicArray_dec_6 mics_dec_6;
+TMicArray_dec_3 mics_dec_3;
+TMicArray_dec_2 mics_dec_2;
+unsigned decimation_factor = 0;
 
 
 void ma_init(unsigned mic_samp_rate)
 {
-  mics.Decimator.Init(stage_1_filter(), stage_2_filter(), *stage_2_shift());
+    switch(mic_samp_rate){
+        case 16000:
+        case 14700:
+            decimation_factor = 6;
+            break;
+        case 29400:
+        case 32000:
+            decimation_factor = 3;
+            break;
+        case 44100:
+        case 48000:
+            decimation_factor = 2;
+            break;
+        default:
+            xassert(0); // Unsupported decimation factor
+            break;
 
-  mics.PdmRx.Init(pdm_res.p_pdm_mics);
-  // unsigned channel_map[MIC_ARRAY_CONFIG_MIC_COUNT] = {0, 1};
-  // mics.PdmRx.MapChannels(channel_map);
-  mic_array_resources_configure(&pdm_res, MIC_ARRAY_CONFIG_MCLK_DIVIDER);
-  mic_array_pdm_clock_start(&pdm_res);
+    }
+
+    switch(decimation_factor){
+        case 6:
+            mics_dec_6.Decimator.Init(&stage1_coef[0], &stage2_coef[0], stage2_shr);
+            mics_dec_6.PdmRx.Init(pdm_res.p_pdm_mics);
+            break;
+        case 3:
+            mics_dec_3.Decimator.Init(&stage1_32k_coefs[0], &stage2_32k_coefs[0], stage2_32k_shift);
+            mics_dec_3.PdmRx.Init(pdm_res.p_pdm_mics);
+            break;
+        case 2:
+            mics_dec_2.Decimator.Init(&stage1_48k_coefs[0], &stage2_48k_coefs[0], stage2_48k_shift);
+            mics_dec_2.PdmRx.Init(pdm_res.p_pdm_mics);
+            break;
+        default:
+            xassert(0);
+            break;
+
+    }
+    // Optional channel mapping for wide ports (not needed for 1b port / DDR dual mic)
+    // unsigned channel_map[MIC_ARRAY_CONFIG_MIC_COUNT] = {0, 1};
+    // mics.PdmRx.MapChannels(channel_map);
+    mic_array_resources_configure(&pdm_res, MIC_ARRAY_CONFIG_MCLK_DIVIDER);
+    mic_array_pdm_clock_start(&pdm_res);
+
 }
 
 
 void ma_task(chanend_t c_frames_out)
 {
-  mics.OutputHandler.FrameTx.SetChannel(c_frames_out);
+    run_flag = 1;
 
-  mics.PdmRx.AssertOnDroppedBlock(false);
-
-  mics.PdmRx.InstallISR();
-  mics.PdmRx.UnmaskISR();
-
-  mics.ThreadEntry();
+    switch(decimation_factor){
+        case 6:
+            mics_dec_6.OutputHandler.FrameTx.SetChannel(c_frames_out);
+            mics_dec_6.PdmRx.AssertOnDroppedBlock(false);
+            mics_dec_6.PdmRx.InstallISR();
+            mics_dec_6.PdmRx.UnmaskISR();
+            mics_dec_6.ThreadEntry();
+            break;
+        case 3:
+            mics_dec_3.OutputHandler.FrameTx.SetChannel(c_frames_out);
+            mics_dec_3.PdmRx.AssertOnDroppedBlock(false);
+            mics_dec_3.PdmRx.InstallISR();
+            mics_dec_3.PdmRx.UnmaskISR();
+            mics_dec_3.ThreadEntry();
+            break;
+        case 2:
+            mics_dec_2.OutputHandler.FrameTx.SetChannel(c_frames_out);
+            mics_dec_2.PdmRx.AssertOnDroppedBlock(false);
+            mics_dec_2.PdmRx.InstallISR();
+            mics_dec_2.PdmRx.UnmaskISR();
+            mics_dec_2.ThreadEntry();
+            break;
+        default:
+            xassert(0);
+            break;
+    }
 }
 
 #endif // #if (XUA_NUM_PDM_MICS > 0)
