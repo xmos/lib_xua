@@ -4,7 +4,7 @@
 
 def clone_test_deps() {
   dir("${WORKSPACE}") {
-    sh "git clone git@github.com:danielpieczko/test_support"
+    sh "git clone git@github.com:xmos/test_support"
     sh "git -C test_support checkout 961532d89a98b9df9ccbce5abd0d07d176ceda40"
 
     sh "git clone git@github0.xmos.com:xmos-int/xtagctl"
