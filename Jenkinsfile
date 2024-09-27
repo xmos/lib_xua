@@ -51,7 +51,7 @@ pipeline {
               dir("examples") {
                 withTools(params.TOOLS_VERSION) {
                   sh 'cmake -G "Unix Makefiles" -B build'
-                  sh 'xmake -C build -j 8'
+                  sh 'xmake -C build -j 16'
                 }
               }
             }
@@ -269,7 +269,7 @@ pipeline {
 
                     dir("xua_unit_tests") {
                       sh "cmake -G 'Unix Makefiles' -B build"
-                      sh 'xmake -C build -j 8'
+                      sh 'xmake -C build -j 16'
                       sh "pytest -v -n auto --junitxml=pytest_unit.xml"
                     }
                   }
