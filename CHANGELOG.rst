@@ -27,6 +27,7 @@ UNRELEASED
   * CHANGED:   Default value of FLASH_MAX_UPGRADE_SIZE to 512 KB
   * ADDED:     MIDI support with UAC1.0
   * CHANGED:   Build examples using XCommon CMake instead of XCommon
+  * CHANGED:   AN00248 now targets XK-EVK-XU316 and uses mic_array version 5 (new API)
 
 4.2.0
 -----
