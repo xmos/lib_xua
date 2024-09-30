@@ -106,20 +106,23 @@ In addition to ``port`` resources a single clock-block resource is also required
 Allocating hardware resources for lib_mic_array
 ...............................................
 
-``lib_mic_array`` requires a single 1-bit port for PDM data from two microphones. This port, along with other ``mic_array``
-required resources must be declared in ``xua_conf.h``:
+``lib_mic_array`` requires a single 1-bit port for PDM data from two microphones. Each microphone is configured
+to produce a PDM sample on an opposite clock edge from the other. This means the the data is effectively double
+data rate (DDR) with respect to the PDM clock.
+
+The microphones must be clocked by a clock synchronous to the audio application clock - typically 3.072MHz for 16, 32 or 48 kHz.
+
+These ports, along with other ``mic_array`` required resources must be declared in ``xua_conf.h``:
 
 .. literalinclude:: xua_conf.h
    :start-on: #define XUA_NUM_PDM_MICS
    :end-on: #define MIC_ARRAY_CONFIG_CLOCK_BLOCK_B
 
-The microphones must be clocked by an audio related clock - typically 3.072MHz for 16, 32 or 48 kHz.
 
 The ``XK-EVK-XU316`` Board expects the xCORE to divide down the audio master clock input (24.576MHz)
-and output the result to the microphones. This is done internally by ``lib_mic_array`` from the definitions::
-
-    ``lib_mic_array``
-    ``lib_mic_array``
+and output the result to the microphones. This is done internally by ``lib_mic_array`` from the definitions
+``MIC_ARRAY_CONFIG_MCLK_FREQ`` and ``MIC_ARRAY_CONFIG_PDM_FREQ`` which are left as defaults in ``mic_array_conf.h`` to
+generate the nominal 3.072 MHz PDM clock.
 
 Please see the ``lib_mic_array`` library documentation for full details.
 
@@ -198,10 +201,10 @@ Microphone task
 ...............
 
 The microphone task ``mic_array_task`` spawns a single thread which handles PDM receive on the ports and the decimation filters to produce PCM.
+This is placed on tile 1 where the microphone hardware is connected.
 It connects directly to ``XUA_AudioHub`` and provides samples which are at the same rate as the audio I/O.
 
 
-|appendix|
 |newpage|
 
 Demo Hardware Setup

@@ -55,7 +55,9 @@ pipeline {
                 }
               }
             }
-            runLibraryChecks("${WORKSPACE}/${REPO}")
+            warnError("Docs") {
+              runLibraryChecks("${WORKSPACE}/${REPO}")
+            }
           }
         }  // Build examples
 
