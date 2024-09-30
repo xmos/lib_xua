@@ -1,6 +1,6 @@
 // This file relates to internal XMOS infrastructure and should be ignored by external users
 
-@Library('xmos_jenkins_shared_library@develop') _
+@Library('xmos_jenkins_shared_library@v0.34.0') _
 
 def clone_test_deps() {
   dir("${WORKSPACE}") {
@@ -11,7 +11,7 @@ def clone_test_deps() {
     sh "git -C xtagctl checkout v2.0.0"
 
     sh "git clone git@github.com:xmos/hardware_test_tools"
-    sh "git -C hardware_test_tools checkout 1fd92925b0cd46e0d7a632c4aa474f1fb14e006a"
+    sh "git -C hardware_test_tools checkout 2f9919c956f0083cdcecb765b47129d846948ed4"
   }
 }
 
@@ -55,7 +55,7 @@ pipeline {
                 }
               }
             }
-            runLibraryChecks("${WORKSPACE}/${REPO}")
+            runLibraryChecks("${WORKSPACE}/${REPO}", "v2.0.1")
           }
         }  // Build examples
 
