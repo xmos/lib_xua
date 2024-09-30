@@ -21,20 +21,27 @@ note.
 The Makefile
 ------------
 
-To start using ``lib_xua``, you need to add ``lib_xua`` and ``lib_spdif`` to your Makefile::
+To start using the XMOS XUA library, you need to add ``lib_xua`` to the dependent module list
+in the CMakeLists.txt file. This application note also uses ``lib_spdif``, so this must be
+added to the list. The ``lib_board_support`` software repository is also used to provide common
+code to configure the xCORE.ai Multichannel (MC) Audio board for use. This should also be added
+to the list of dependent modules in the CMakeLists.txt file::
 
-  USED_MODULES = .. lib_xua lib_spdif ...
+  set(APP_DEPENDENT_MODULES "lib_xua"
+                            "lib_spdif"
+                            "lib_board_support")
 
-This demo also uses the XMOS USB Device library (``lib_xud``) for low-level USB connectivity.
-The Makefile also includes::
+The dependencies for this example are specified by ``deps.cmake`` in the ``examples`` directory
+and are included in the application ``CMakeLists.txt`` file.
 
-  USED_MODULES = .. lib_xud ..
+The ``lib_xud`` library requires some flags for correct operation. Namely the
+tile on which ``lib_xud`` will be executed, for example::
 
-``lib_xud`` library requires some flags for correct operation. Namely the 
-tile on which ``lib_xud`` will be execute, for example::
+  set(APP_COMPILER_FLAGS ... -DUSB_TILE=tile[0] ...)
 
-    XCC_FLAGS = .. -DUSB_TILE=tile[0] ..
+The ``lib_board_support`` requires a compiler flag to select the hardware type::
 
+  set(APP_COMPILER_FLAGS ... -DBOARD_SUPPORT_BOARD=XK_AUDIO_316_MC_AB ...)
 
 Includes
 --------
@@ -47,18 +54,13 @@ defines for declaring and initialising hardware:
    :end-before: include "xua.h"
 
 The XUA library functions are defined in ``xua.h``. This header must
-be included in your code to use the library. 
+be included in your code to use the library.  Headers are also required
+for ``lib_xud``, ``lib_spdif`` and the board setup code for the
+xCORE.ai Multichannel Audio board.
 
 .. literalinclude:: app_xua_spdiftx.xc
    :start-on: include "xua.h"
-   :end-on: include "xud_device.h"
-
-The application uses the S/PDIF transmitter from ``lib_spdif``. This header
-must be included in your code.
-
-.. literalinclude:: app_xua_spdiftx.xc
-   :start-on: /* From lib_spdif 
-   :end-on: include "spdif.h"
+   :end-on: include "xk_audio_316_mc_ab/board.h"
 
 Declarations
 ------------
@@ -132,6 +134,29 @@ These are declared as follows:
    :start-on: /* Endpoint type tables
    :end-on: XUD_EpType epTypeTableIn
 
+Hardware Setup
+--------------
+
+Some code is needed to perform the hardware-specific setup for the board being used
+in this application note.
+
+The ``xk_audio_316_mc_ab_config_t`` structure is used to specify hardware-specific
+configuration options, such as clocking modes and frequencies.
+
+The ``i_i2c_client`` unsafe client interface is required to have a globally-scoped variable
+for gaining access to the ``i2c_master_if`` interface from the audio hardware functions.
+
+.. literalinclude:: app_xua_spdiftx.xc
+   :start-on: /* Board configuration from lib_board_support */
+   :end-on: unsafe client interface i2c_master_if i_i2c_client
+
+The following functions are called by ``XUA_AudioHub`` to configure the hardware; they are
+defined as wrapper functions around the board-specific code from ``lib_board_support``.
+
+.. literalinclude:: app_xua_spdiftx.xc
+   :start-on: void AudioHwInit()
+   :end-before: int main()
+
 Configuring lib_xua
 -------------------
 
@@ -161,12 +186,12 @@ The application main() function
 
 The ``main()`` function sets up the tasks in the application.
 
-Various channels are required in order to allow the required tasks to communicate. 
+Various channels/interfaces are required in order to allow the required tasks to communicate. 
 These must first be declared:
 
 .. literalinclude:: app_xua_spdiftx.xc
    :start-on: /* Channels for lib_xud
-   :end-on: chan c_spdif_tx
+   :end-on: interface i2c_master_if i2c[1]
 
 The rest of the ``main()`` function starts all of the tasks in parallel
 using the xC ``par`` construct:
@@ -182,8 +207,34 @@ SPDIF transmitter task. In addition the ``spdif_tx()`` task is also run.
 Note that the ``spdif_tx_port_config()`` function is called before a nested ``par`` of ``spdif_tx()`` and ``XUA_AudioHub()``.
 This is because of the "shared" nature of ``p_mclk_in`` and avoids a parallel usage check failure by the XMOS tool-chain.
 
+It also runs ``xk_audio_316_mc_ab_board_setup()`` and ``xk_audio_316_mc_ab_i2c_master()`` from ``lib_board_support``
+that are used for setting up the hardware.
+
 |appendix|
 |newpage|
+
+Building the Application
+------------------------
+
+The following section assumes you have downloaded and installed the `XMOS XTC tools <https://www.xmos.com/software-tools/>`_
+(see `README` for required version). Installation instructions can be found `here <https://xmos.com/xtc-install-guide>`_.
+Be sure to pay attention to the section `Installation of required third-party tools
+<https://www.xmos.com/documentation/XM-014363-PC-10/html/installation/install-configure/install-tools/install_prerequisites.html>`_.
+
+The application uses the `xcommon-cmake <https://www.xmos.com/file/xcommon-cmake-documentation/?version=latest>`_
+build system as bundled with the XTC tools.
+
+The ``AN00247_xua_example_spdiftx`` software zip-file should be downloaded and unzipped to a chosen directory.
+
+To configure the build run the following from an XTC command prompt::
+
+    cd examples
+    cd AN00247_xua_example_spdif_tx
+    cmake -G "Unix Makefiles" -B build
+
+Finally, the application binaries can be built using ``xmake``::
+
+    xmake -C build
 
 Demo Hardware Setup
 -------------------
@@ -216,7 +267,7 @@ Launching from the command line
 From the command line you use the ``xrun`` tool to download and run the code
 on the xCORE device::
 
-  xrun --xscope bin/app_xua_simple.xe
+  xrun --xscope bin/app_xua_spdiftx.xe
 
 Once this command has executed the application will be running on the
 xCORE.ai MC Audio Board
@@ -248,19 +299,15 @@ References
 
   * XMOS Tools User Guide
 
-    http://www.xmos.com/published/xtimecomposer-user-guide
+    https://www.xmos.com/documentation/XM-014363-PC-9/html/
 
   * XMOS xCORE Programming Guide
 
-    http://www.xmos.com/published/xmos-programming-guide
+    https://www.xmos.com/published/xmos-programming-guide
 
-  * XMOS lib_xua Library
+  * XMOS Libraries
 
-    http://www.xmos.com/support/libraries/lib_xua
-    
-  * XMOS lib_xud Library
-
-    http://www.xmos.com/support/libraries/lib_xud
+    https://www.xmos.com/libraries/
 
 |newpage|
 

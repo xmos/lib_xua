@@ -26,9 +26,8 @@ class UnityTestExecutable(pytest.Item):
         test_output = None
         try:
             print("run xsim for executable ", self.name)
-            xe_path = Path(__file__).parent / "bin" / self.name
             test_output = subprocess.check_output(
-                ["xsim", xe_path],
+                ["xsim", self.path],
                 text=True,
                 stderr=subprocess.STDOUT,
             )

@@ -26,20 +26,19 @@ Readers are encouraged to read application note AN00246 in conjunction with this
 The Makefile
 ------------
 
-To start using ``lib_xua``, you need to add ``lib_xua`` to the Makefile. ``lib_mic_array`` should also be 
-added for this application example::
+To start using ``lib_xua``, you need to add ``lib_xua`` to the dependent module list in the CMakeLists.txt
+file. This application note also uses ``lib_mic_array``, so this must also be added to the list::
 
-  USED_MODULES = .. lib_xua lib_mic_array ...
+  set(APP_DEPENDENT_MODULES "lib_xua"
+                            "lib_mic_array")
 
-This demo also uses the XMOS USB Device library (``lib_xud``) for low-level USB connectivity.
-The Makefile therefore also includes this lib::
+The dependencies for this example are specified by ``deps.cmake`` in the ``examples`` directory
+and are included in the application ``CMakeLists.txt`` file.
 
-  USED_MODULES = .. lib_xud ..
-
-``lib_xud`` library requires some flags for correct operation. Namely the 
+The ``lib_xud`` library requires some flags for correct operation. Namely the
 tile on which ``lib_xud`` will be executed, for example::
 
-    XCC_FLAGS = .. -DUSB_TILE=tile[1] ..
+  set(APP_COMPILER_FLAGS ... -DUSB_TILE=tile[1] ...)
 
 Includes
 --------
@@ -221,6 +220,29 @@ The ``mic_array_pdm_rx()`` task expects the PDM microphone port to be clocked fr
 |appendix|
 |newpage|
 
+Building the Application
+------------------------
+
+The following section assumes you have downloaded and installed the `XMOS XTC tools <https://www.xmos.com/software-tools/>`_
+(see `README` for required version). Installation instructions can be found `here <https://xmos.com/xtc-install-guide>`_.
+Be sure to pay attention to the section `Installation of required third-party tools
+<https://www.xmos.com/documentation/XM-014363-PC-10/html/installation/install-configure/install-tools/install_prerequisites.html>`_.
+
+The application uses the `xcommon-cmake <https://www.xmos.com/file/xcommon-cmake-documentation/?version=latest>`_
+build system as bundled with the XTC tools.
+
+The ``AN00248_xua_example_pdm_mics`` software zip-file should be downloaded and unzipped to a chosen directory.
+
+To configure the build run the following from an XTC command prompt::
+
+    cd examples
+    cd AN00248_xua_example_pdm_mics
+    cmake -G "Unix Makefiles" -B build
+
+Finally, the application binaries can be built using ``xmake``::
+
+    xmake -C build
+
 Demo Hardware Setup
 -------------------
 
@@ -283,19 +305,15 @@ References
 
   * XMOS Tools User Guide
 
-    http://www.xmos.com/published/xtimecomposer-user-guide
+    https://www.xmos.com/documentation/XM-014363-PC-9/html/
 
   * XMOS xCORE Programming Guide
 
-    http://www.xmos.com/published/xmos-programming-guide
+    https://www.xmos.com/published/xmos-programming-guide
 
-  * XMOS lib_xua Library
+  * XMOS Libraries
 
-    http://www.xmos.com/support/libraries/lib_xua
-    
-  * XMOS lib_xud Library
-
-    http://www.xmos.com/support/libraries/lib_xud
+    https://www.xmos.com/libraries/
 
 |newpage|
 
