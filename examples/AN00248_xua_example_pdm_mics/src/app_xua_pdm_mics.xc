@@ -5,9 +5,10 @@
  *
  * It uses the main blocks from the lib_xua
  *
- * - 2 channels out I2S only
+ * - 2 channels USB Audio in
+ * - 2 channels I2S out
  * - No DFU
- * - I2S only
+ * - PDM mics enable
  *
  */
 
@@ -17,6 +18,7 @@
 
 #include "xua.h"
 #include "xud_device.h"
+
 #include "xk_evk_xu316/board.h"
 
 
@@ -30,7 +32,7 @@ in port p_mclk_in                   = PORT_MCLK_IN;
 
 /* Resources for USB feedback */
 in port p_for_mclk_count            = on tile[0]: XS1_PORT_16B;   /* Extra port for counting master clock ticks */
-in port p_mclk_in_usb               = on tile[0]: XS1_PORT_1D;;  /* Extra master clock input for the USB tile */
+in port p_mclk_in_usb               = on tile[0]: XS1_PORT_1D;;   /* Extra master clock input for the USB tile - looped back on hardware */
 
 /* Clock-block declarations */
 clock clk_audio_bclk                = on tile[1]: XS1_CLKBLK_4;   /* Bit clock */
@@ -130,8 +132,6 @@ int main()
         {
             xk_evk_xu316_AudioHwChanInit(c_i2c);
 
-            chan c_mic_to_audio;
-
             par
             {
                 /* AudioHub/IO core does most of the audio IO i.e. I2S (also serves as a hub for all audio including mics) */
@@ -141,7 +141,7 @@ int main()
                 mic_array_task(c_mic_pcm);
             }
         }
-    }
+    } /* par */
 
     return 0;
 }
