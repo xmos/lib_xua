@@ -12,7 +12,8 @@ set(APP_COMPILER_FLAGS -O3
                        -Wno-unused-function
                        -DXUD_CORE_CLOCK=600
                        -DUSB_TILE=tile[0]
-                       -fxscope)
+                       -fxscope
+                       -DBOARD_SUPPORT_BOARD=XK_AUDIO_316_MC_AB)
 
 include(${CMAKE_CURRENT_LIST_DIR}/../deps.cmake)
 

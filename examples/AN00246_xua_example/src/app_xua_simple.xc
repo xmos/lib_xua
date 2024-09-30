@@ -1,4 +1,4 @@
-// Copyright 2017-2022 XMOS LIMITED.
+// Copyright 2017-2024 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
 /* A very simple *example* of a USB audio application (and as such is un-verified for production)
@@ -16,6 +16,7 @@
 
 #include "xua.h"
 #include "xud_device.h"
+#include "xk_audio_316_mc_ab/board.h"
 
 /* Port declarations. Note, the defines come from the xn file */
 buffered out port:32 p_i2s_dac[]    = {PORT_I2S_DAC0};   /* I2S Data-line(s) */
@@ -39,12 +40,32 @@ clock clk_audio_mclk_usb            = on tile[0]: XS1_CLKBLK_1;   /* Master cloc
 XUD_EpType epTypeTableOut[]   = {XUD_EPTYPE_CTL | XUD_STATUS_ENABLE, XUD_EPTYPE_ISO};
 XUD_EpType epTypeTableIn[]    = {XUD_EPTYPE_CTL | XUD_STATUS_ENABLE, XUD_EPTYPE_ISO};
 
-/* Port declarations for I2C to config ADC's */
-on tile[0]: port p_scl = XS1_PORT_1L;
-on tile[0]: port p_sda = XS1_PORT_1M;
+/* Board configuration from lib_board_support */
+static const xk_audio_316_mc_ab_config_t hw_config = {
+        CLK_FIXED,              // clk_mode. Drive a fixed MCLK output
+        0,                      // 1 = dac_is_clock_master
+        MCLK_48,
+        0,                      // pll_sync_freq (unused when driving fixed clock)
+        AUD_316_PCM_FORMAT_I2S,
+        32,                     // data bits
+        2                       // channels per frame
+};
 
-/* See hwsupport.xc */
-void ctrlPort();
+unsafe client interface i2c_master_if i_i2c_client;
+
+void AudioHwInit()
+{
+    unsafe {
+        xk_audio_316_mc_ab_AudioHwInit((client interface i2c_master_if)i_i2c_client, hw_config);
+    }
+}
+
+void AudioHwConfig(unsigned samFreq, unsigned mClk, unsigned dsdMode, unsigned sampRes_DAC, unsigned sampRes_ADC)
+{
+    unsafe {
+        xk_audio_316_mc_ab_AudioHwConfig((client interface i2c_master_if)i_i2c_client, hw_config, samFreq, mClk, dsdMode, sampRes_DAC, sampRes_ADC);
+    }
+}
 
 int main()
 {
@@ -60,6 +81,9 @@ int main()
 
     /* Channel for communicating control messages from EP0 to the rest of the device (via the buffering cores) */
     chan c_aud_ctl;
+
+    /* Interface for access to I2C for setting up hardware */
+    interface i2c_master_if i2c[1];
 
     par
     {
@@ -86,12 +110,18 @@ int main()
                     }
 
         /* AudioHub/IO core does most of the audio IO i.e. I2S (also serves as a hub for all audio) */
-        on tile[1]: XUA_AudioHub(c_aud, clk_audio_mclk, clk_audio_bclk, p_mclk_in, p_lrclk, p_bclk, p_i2s_dac, null);
+        on tile[1]: {
+                        unsafe {
+                            i_i2c_client = i2c[0];
+                        }
+                        XUA_AudioHub(c_aud, clk_audio_mclk, clk_audio_bclk, p_mclk_in, p_lrclk, p_bclk, p_i2s_dac, null);
+                    }
 
-        on tile[0]: ctrlPort();
+        on tile[0]: {
+                        xk_audio_316_mc_ab_board_setup(hw_config);
+                        xk_audio_316_mc_ab_i2c_master(i2c);
+                    }
     }
 
     return 0;
 }
-
-

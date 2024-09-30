@@ -26,17 +26,16 @@ Readers are encouraged to read application note AN00246 in conjunction with this
 The Makefile
 ------------
 
-To start using ``lib_xua``, you need to add ``lib_xua`` to the XCommon CMake Makefile. ``lib_mic_array`` should also be 
-added for this application example::
+To start using ``lib_xua``, you need to add ``lib_xua`` to the dependent module list in the CMakeLists.txt
+file. This application note also uses ``lib_mic_array``, so this must also be added to the list::
 
-  APP_DEPENDENT_MODULES = .. lib_xua lib_mic_array ...
+  set(APP_DEPENDENT_MODULES "lib_xua"
+                            "lib_mic_array")
 
-This demo also uses the XMOS USB Device library (``lib_xud``) for low-level USB connectivity.
-The Makefile therefore also includes this library::
+The dependencies for this example are specified by ``deps.cmake`` in the ``examples`` directory
+and are included in the application ``CMakeLists.txt`` file.
 
-  APP_DEPENDENT_MODULES = .. lib_xud ..
-
-``lib_xud`` library requires some flags for correct operation. Namely the 
+The ``lib_xud`` library requires some flags for correct operation. Namely the
 tile on which ``lib_xud`` will be executed, for example::
 
     APP_COMPILER_FLAGS = .. -DUSB_TILE=tile[0] ..
@@ -268,23 +267,15 @@ References
 
   * XMOS Tools User Guide
 
-    http://www.xmos.com/published/xtimecomposer-user-guide
+    https://www.xmos.com/documentation/XM-014363-PC-9/html/
 
   * XMOS xCORE Programming Guide
 
-    http://www.xmos.com/published/xmos-programming-guide
+    https://www.xmos.com/published/xmos-programming-guide
 
-  * XMOS lib_xua Library
+  * XMOS Libraries
 
-    http://www.xmos.com/support/libraries/lib_xua
-    
-  * XMOS lib_xud Library
-
-    http://www.xmos.com/support/libraries/lib_xud
-
-  * XMOS lib_mic_array Library
-
-    http://www.xmos.com/support/libraries/lib_mic_array
+    https://www.xmos.com/libraries/
 
 |newpage|
 

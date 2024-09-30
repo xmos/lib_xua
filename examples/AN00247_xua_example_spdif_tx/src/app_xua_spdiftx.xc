@@ -1,4 +1,4 @@
-// Copyright 2017-2022 XMOS LIMITED.
+// Copyright 2017-2024 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
 /* A very simple *example* of a USB audio application (and as such is un-verified for production)
@@ -18,9 +18,10 @@
 
 /* From lib_spdif */
 #include "spdif.h"
+#include "xk_audio_316_mc_ab/board.h"
 
 /* Lib_spdif port declarations. Note, the defines come from the xn file */
-buffered out port:32 p_spdif_tx     = PORT_COAX_OUT;             /* SPDIF transmit port */
+buffered out port:32 p_spdif_tx     = PORT_SPDIF_OUT;             /* SPDIF transmit port */
 
 clock clk_spdif_tx                  = on tile[1]: XS1_CLKBLK_4;   /* Clock block for S/PDIF transmit */
 
@@ -40,8 +41,32 @@ clock clk_audio_mclk_usb            = on tile[0]: XS1_CLKBLK_1;   /* Master cloc
 XUD_EpType epTypeTableOut[]   = {XUD_EPTYPE_CTL | XUD_STATUS_ENABLE, XUD_EPTYPE_ISO};
 XUD_EpType epTypeTableIn[]    = {XUD_EPTYPE_CTL | XUD_STATUS_ENABLE, XUD_EPTYPE_ISO};
 
-/* From hwsupport.h */
-void ctrlPort();
+/* Board configuration from lib_board_support */
+static const xk_audio_316_mc_ab_config_t hw_config = {
+        CLK_FIXED,              // clk_mode. Drive a fixed MCLK output
+        0,                      // 1 = dac_is_clock_master
+        MCLK_48,
+        0,                      // pll_sync_freq (unused when driving fixed clock)
+        AUD_316_PCM_FORMAT_I2S,
+        32,                     // data bits
+        2                       // channels per frame
+};
+
+unsafe client interface i2c_master_if i_i2c_client;
+
+void AudioHwInit()
+{
+    unsafe {
+        xk_audio_316_mc_ab_AudioHwInit((client interface i2c_master_if)i_i2c_client, hw_config);
+	}
+}
+
+void AudioHwConfig(unsigned samFreq, unsigned mClk, unsigned dsdMode, unsigned sampRes_DAC, unsigned sampRes_ADC)
+{
+    unsafe {
+        xk_audio_316_mc_ab_AudioHwConfig((client interface i2c_master_if)i_i2c_client, hw_config, samFreq, mClk, dsdMode, sampRes_DAC, sampRes_ADC);
+    }
+}
 
 int main()
 {
@@ -60,6 +85,9 @@ int main()
 
     /* Channel for communication between AudioHub and S/PDIF transmitter */
     chan c_spdif_tx;
+
+    /* Interface for access to I2C for setting up hardware */
+    interface i2c_master_if i2c[1];
 
     par
     {
@@ -98,13 +126,21 @@ int main()
                                 spdif_tx(p_spdif_tx, c_spdif_tx);
                             }
 
-                            /* AudioHub/IO core does most of the audio IO i.e. I2S (also serves as a hub for all audio) */
-                            /* Note, since we are not using I2S we pass in null for LR and Bit clock ports and the I2S dataline ports */
-                            XUA_AudioHub(c_aud, clk_audio_mclk, null, p_mclk_in, null, null, null, null, c_spdif_tx);
+                            {
+                                unsafe {
+                                    i_i2c_client = i2c[0];
+                                }
+                                /* AudioHub/IO core does most of the audio IO i.e. I2S (also serves as a hub for all audio) */
+                                /* Note, since we are not using I2S we pass in null for LR and Bit clock ports and the I2S dataline ports */
+                                XUA_AudioHub(c_aud, clk_audio_mclk, null, p_mclk_in, null, null, null, null, c_spdif_tx);
+                            }
                         }
                     }
 
-        on tile[0]: ctrlPort();
+        on tile[0]: {
+                        xk_audio_316_mc_ab_board_setup(hw_config);
+                        xk_audio_316_mc_ab_i2c_master(i2c);
+                    }
     }
 
     return 0;
