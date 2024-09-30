@@ -119,7 +119,7 @@ These ports, along with other ``mic_array`` required resources must be declared 
    :end-on: #define MIC_ARRAY_CONFIG_CLOCK_BLOCK_B
 
 
-The ``XK-EVK-XU316`` Board expects the xCORE to divide down the audio master clock input (24.576MHz)
+The ``XK-EVK-XU316`` Board expects the xCORE to divide down the audio master clock (24.576MHz)
 and output the result to the microphones. This is done internally by ``lib_mic_array`` from the definitions
 ``MIC_ARRAY_CONFIG_MCLK_FREQ`` and ``MIC_ARRAY_CONFIG_PDM_FREQ`` which are left as defaults in ``mic_array_conf.h`` to
 generate the nominal 3.072 MHz PDM clock.
@@ -294,7 +294,7 @@ Full source code listing
 Source code for main.xc
 .......................
 
-.. literalinclude:: app_xua_simple.xc
+.. literalinclude:: app_xua_pdm_mics.xc
   :largelisting:
 
 |newpage|

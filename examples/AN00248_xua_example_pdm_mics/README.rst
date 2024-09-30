@@ -11,13 +11,13 @@ to implement a USB Audio device with the ability to record from multiple PDM mic
 Software dependencies
 .....................
 
-For a list of direct dependencies, look for USED_MODULES in the Makefile.
+For a list of direct dependencies, look for APP_DEPENDENT_MODULES in the ``CMakeLists.txt`` Makefile.
 
 Required hardware
 .................
 
 The example code provided with the application has been implemented
-and tested on the xCORE-200 Array Microphone board.
+and tested on the XK-EVK-XU316 board.
 
 Prerequisites
 .............
@@ -27,9 +27,5 @@ Prerequisites
    aspects which are not specific to this application note are linked to in
    the references appendix.
 
- * For a description of XMOS related terms found in this document
-   please see the XMOS Glossary [#]_.
-
-.. [#] http://www.xmos.com/published/glossary
 
 
