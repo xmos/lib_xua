@@ -28,8 +28,8 @@ UNRELEASED
   * ADDED:     MIDI support with UAC1.0
   * CHANGED:   Build examples using XCommon CMake instead of XCommon
   * CHANGED:   AN00248 now targets XK-EVK-XU316 and uses mic_array version 5 (new API)
-  * REMOVED:   Support for PDM mics in XS2 targets (requires xcore.ai) or use lib_xua 
-    version <=4.2.0.
+  * REMOVED:   Support for PDM mics in XS2 targets (requires xcore.ai). Can use lib_xua 
+    version <=4.2.0 for XS2 (xcore-200) targets
   * CHANGED:   Examples use lib_board_support for XK-AUDIO-316-MC-AB support code
 
 
@@ -51,9 +51,11 @@ UNRELEASED
 
     - lib_dsp: Removed dependency
 
-    - lib_mic_array: Removed dependency
+    - lib_mic_array: 4.6.0 -> 5.3.0
 
     - lib_spdif: 6.1.0 -> 6.2.0
+
+    - lib_xcore_math: Added dependency 2.2.0
 
     - lib_xud: 2.3.1 -> 2.3.2
 
