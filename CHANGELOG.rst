@@ -51,7 +51,7 @@ UNRELEASED
 
     - lib_dsp: Removed dependency
 
-    - lib_mic_array: 4.6.0 -> 5.3.0
+    - lib_mic_array: 4.6.0 -> 5.4.0
 
     - lib_spdif: 6.1.0 -> 6.2.0
 
