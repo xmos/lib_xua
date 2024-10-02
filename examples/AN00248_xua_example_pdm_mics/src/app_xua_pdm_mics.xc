@@ -32,7 +32,7 @@ in port p_mclk_in                   = PORT_MCLK_IN;
 
 /* Resources for USB feedback */
 in port p_for_mclk_count            = on tile[0]: XS1_PORT_16B;   /* Extra port for counting master clock ticks */
-in port p_mclk_in_usb               = on tile[0]: XS1_PORT_1D;;   /* Extra master clock input for the USB tile - looped back on hardware */
+in port p_mclk_in_usb               = on tile[0]: XS1_PORT_1D;    /* Extra master clock input for the USB tile - looped back on hardware */
 
 /* Clock-block declarations */
 clock clk_audio_bclk                = on tile[1]: XS1_CLKBLK_4;   /* Bit clock */
@@ -44,15 +44,10 @@ clock clk_audio_mclk_usb            = on tile[0]: XS1_CLKBLK_1;   /* Master cloc
 XUD_EpType epTypeTableIn[]    = {XUD_EPTYPE_CTL | XUD_STATUS_ENABLE, XUD_EPTYPE_ISO};
 XUD_EpType epTypeTableOut[]   = {XUD_EPTYPE_CTL | XUD_STATUS_ENABLE};
 
-/* Port declarations for I2C to config ADC's */
+/* Port declarations for I2C to config DAC */
 on tile[0]: port p_scl = XS1_PORT_1L;
 on tile[0]: port p_sda = XS1_PORT_1M;
 
-
-void UserBufferManagementInit(unsigned sampFreq)
-{
-    printintln(sampFreq);
-}
 
 /* Make a copy of inbound mic samples and send to DAC */
 #pragma unsafe arrays
@@ -63,19 +58,15 @@ void UserBufferManagement(unsigned sampsFromUsbToAudio[], unsigned sampsFromAudi
     {
         sampsFromUsbToAudio[i] = sampsFromAudioToUsb[i];
     }
-
-    // printint(cls(sampsFromUsbToAudio[0]));
-    // printchar('\t');
-    // printintln(cls(sampsFromUsbToAudio[1]));
 }
 
+/* Apply some gain so we can hear the mics easily (non-saturating - will overflow) */
 #pragma unsafe arrays
 void user_pdm_process(int32_t mic_audio[MIC_ARRAY_CONFIG_MIC_COUNT])
 {
     for(int i = 0; i < XUA_NUM_PDM_MICS; i++)
     {
-        // Apply some gain (non-saturating - will overflow)
-        mic_audio[i] = mic_audio[i] << 6;
+        mic_audio[i] = mic_audio[i] << 6; /* x64 */
     }
 }
 
