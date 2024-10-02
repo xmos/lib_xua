@@ -235,6 +235,17 @@ unsigned static AudioHub_MainLoop(chanend ?c_out, chanend ?c_spd_out
     // Reinitialise user state before entering the main loop
     UserBufferManagementInit(curSamFreq);
 
+#if XUA_NUM_PDM_MICS > 0
+    /* Receive an initial frame and wait one sample period to ensure mic_array is ready to produce so
+       we don't break the audioloop timing by ma_frame_rx() blocking */
+    unsafe {
+        chanend_t c_m2a = (chanend_t)c_pdm_pcm;
+        int32_t *mic_samps_base_addr = (int32_t*)&samplesIn[readBuffNo][PDM_MIC_INDEX];
+        ma_frame_rx(mic_samps_base_addr, c_m2a, MIC_ARRAY_CONFIG_SAMPLES_PER_FRAME, MIC_ARRAY_CONFIG_MIC_COUNT);
+        delay_ticks(XS1_TIMER_HZ / curSamFreq);
+    }
+#endif
+
 #if (XUA_ADAT_TX_EN)
     unsafe{
     //TransferAdatTxSamples(c_adat_out, samplesOut, adatSmuxMode, 0);
