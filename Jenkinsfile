@@ -41,13 +41,28 @@ pipeline {
         label 'x86_64 && linux'
       }
       stages {
+        stage('Checkout and lib checks') {
+          steps {
+            println "Stage running on ${env.NODE_NAME}"
+            dir("${REPO}") {
+              checkout scm
+              dir("examples") {
+                withTools(params.TOOLS_VERSION) {
+                  sh 'cmake -G "Unix Makefiles" -B build'
+                }
+              }
+            }
+            warnError("Docs") {
+            	runLibraryChecks("${WORKSPACE}/${REPO}", "v2.0.1")
+            }
+          }
+        }  // Checkout and lib checks
+
         stage('Build examples') {
           steps {
             println "Stage running on ${env.NODE_NAME}"
 
             dir("${REPO}") {
-              checkout scm
-
               dir("examples") {
                 withTools(params.TOOLS_VERSION) {
                   sh 'cmake -G "Unix Makefiles" -B build'
@@ -55,9 +70,8 @@ pipeline {
                 }
               }
             }
-            warnError("Docs") {
-            	runLibraryChecks("${WORKSPACE}/${REPO}", "v2.0.1")
-            }
+            // Archive all the generated .xe files
+            archiveArtifacts artifacts: "${REPO}/examples/**/*.xe"
           }
         }  // Build examples
 
