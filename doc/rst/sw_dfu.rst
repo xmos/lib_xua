@@ -12,7 +12,7 @@ On receiving DFU commands from the host, the ``DFUDeviceRequests`` function is c
 This function calls the DFU handler functions over the ``dfuInterface`` XC interface.
 The DFU handler thread, ``DFUHandler`` that implements the server side of the ``dfuInterface`` has to be
 scheduled on the same tile as the flash so it can access the flash memory.
-The ``dfuInterface`` interface links USB to the XMOS flash user library (see :ref:`libflash_api`).
+The ``dfuInterface`` interface links USB to the `XMOS flash user library <https://www.xmos.com/file/libflash-api#libflash-api>`_.
 
 
 The DFU interface is enabled by default (See ``XUA_DFU_EN`` define in ``xua_conf_default.h``).
@@ -100,7 +100,7 @@ The host then makes a vendor request with the ``bRequest`` and ``wLength`` as sp
 .. warning::
    If writing a host application that also sends vendor requests to the device, users should ensure that they do not use the ``bRequest`` that is reserved
    for the MSOS descriptor. The MSOS descriptor vendor request's ``bRequest`` is defined as the
-   ``REQUEST_GET_MS_DESCRIPTOR`` define in ``xua_ep0_msos_descriptors.h.
+   ``REQUEST_GET_MS_DESCRIPTOR`` define in ``xua_ep0_msos_descriptors.h``.
 
    .. code-block:: c
 

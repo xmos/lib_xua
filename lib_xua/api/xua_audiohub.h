@@ -3,7 +3,7 @@
 #ifndef _XUA_AUDIOHUB_H_
 #define _XUA_AUDIOHUB_H_
 
-#ifdef __XC__
+#if(defined __XC__ || defined __DOXYGEN__)
 
 #include "xccompat.h"
 #include "xs1.h"
@@ -13,6 +13,23 @@
 #endif
 
 #include "xua_clocking.h"
+
+#ifdef __XC__
+#define NULLABLE_CLIENT_INTERFACE(tag, name) client interface tag ?name
+#define NULLABLE_SERVER_INTERFACE(tag, name) server interface tag ?name
+#define in_port_t in port
+#else
+#define NULLABLE_CLIENT_INTERFACE(type, name) unsigned name
+#define NULLABLE_SERVER_INTERFACE(type, name) unsigned name
+#define in_port_t unsigned
+#endif
+
+#if _XUA_CLK_DIR == in
+    #define i2s_clk_port_type out_buffered_port_32_t
+#else
+    #define i2s_clk_port_type in_buffered_port_32_t
+#endif
+
 
 /** The audio driver thread.
  *
@@ -49,7 +66,34 @@
  *
  *  \param c_pdm_in             Channel for receiving decimated PDM samples
  */
-void XUA_AudioHub(chanend ?c_aud,
+void XUA_AudioHub(
+    NULLABLE_RESOURCE(chanend, c_aud),
+    NULLABLE_RESOURCE(clock, clk_audio_mclk),
+    NULLABLE_RESOURCE(clock, clk_audio_bclk),
+    in_port_t p_mclk_in
+    , NULLABLE_RESOURCE(i2s_clk_port_type, p_lrclk)
+    , NULLABLE_RESOURCE(i2s_clk_port_type, p_bclk)
+    , NULLABLE_ARRAY_OF_SIZE(out_buffered_port_32_t, p_i2s_dac, I2S_WIRES_DAC)
+    , NULLABLE_ARRAY_OF_SIZE(in_buffered_port_32_t, p_i2s_adc, I2S_WIRES_ADC)
+#if (XUA_SPDIF_TX_EN) || defined(__DOXYGEN__)
+    , chanend c_spdif_tx
+#endif
+#if (XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN || defined(__DOXYGEN__))
+    , chanend c_dig
+#endif
+#if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC || XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN || defined(__DOXYGEN__))
+    , chanend c_audio_rate_change
+#endif
+#if (((XUD_TILE != 0) && (AUDIO_IO_TILE == 0) && (XUA_DFU_EN == 1)) || defined(__DOXYGEN__))
+   , NULLABLE_SERVER_INTERFACE(i_dfu, dfuInterface)
+#endif
+#if (XUA_NUM_PDM_MICS > 0 || defined(__DOXYGEN__))
+    , chanend c_pdm_in
+#endif
+
+);
+
+/*void XUA_AudioHub(chanend ?c_aud,
     clock ?clk_audio_mclk,
     clock ?clk_audio_bclk,
     in port p_mclk_in,
@@ -72,20 +116,9 @@ void XUA_AudioHub(chanend ?c_aud,
 #if (XUA_NUM_PDM_MICS > 0 || defined(__DOXYGEN__))
     , chanend c_pdm_in
 #endif
-);
+);*/
 
 void SpdifTxWrapper(chanend c_spdif_tx);
-
-/* These functions must be implemented for the CODEC/ADC/DAC arrangement of a specific design */
-
-/* Any required clocking and CODEC initialisation - run once at start up */
-/* TODO Provide default implementation of this */
-void AudioHwInit();
-
-/* Configure audio hardware (clocking, CODECs etc) for a specific mClk/Sample frquency - run on every sample frequency change */
-/* TODO Provide default implementation of this */
-void AudioHwConfig(unsigned samFreq, unsigned mClk, unsigned dsdMode,
-        unsigned sampRes_DAC, unsigned sampRes_ADC);
 
 #endif // __XC__
 

@@ -1,5 +1,5 @@
 
-.. include:: ../../../README.rst
+.. include:: ../../README.rst
 
 About This Document
 ===================

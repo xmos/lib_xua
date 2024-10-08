@@ -3,8 +3,13 @@
 #ifndef _XUA_BUFFER_H_
 #define _XUA_BUFFER_H_
 
-#if __XC__
+#ifndef __DOXYGEN__
+#define in_port_t in port
+#endif
 
+#if (__XC__ || defined __DOXYGEN__)
+
+#include "xccompat.h"
 #include "xua_clocking.h" /* Required for pll_ref_if */
 
 /** USB Audio Buffering Core(s).
@@ -45,12 +50,12 @@ void XUA_Buffer(
             chanend c_midi,
 #endif
 #if XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN || defined(__DOXYGEN__)
-            chanend ?c_int,
-            chanend ?c_clk_int,
+            NULLABLE_RESOURCE(chanend, c_int),
+            NULLABLE_RESOURCE(chanend, c_clk_int),
 #endif
             chanend c_sof,
             chanend c_aud_ctl,
-            in port p_off_mclk
+            in_port_t p_off_mclk
 #if (HID_CONTROLS)
             , chanend c_hid
 #endif
@@ -58,7 +63,7 @@ void XUA_Buffer(
 #if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC) || defined(__DOYXGEN__)
             , chanend c_audio_rate_change
     #if (!XUA_USE_SW_PLL) || defined(__DOXYGEN__)
-            , client interface pll_ref_if i_pll_ref
+            , CLIENT_INTERFACE(pll_ref_if, i_pll_ref)
     #endif
     #if (XUA_USE_SW_PLL) || defined(__DOXYGEN__)
             , chanend c_swpll_update

@@ -33,12 +33,16 @@ pipeline {
       defaultValue: '15.3.0',
       description: 'The XTC tools version'
     )
+    string(
+      name: 'XMOSDOC_VERSION',
+      defaultValue: 'v6.1.0',
+      description: 'The xmosdoc version')
   }
 
   stages {
     stage('Build and test') {
       agent {
-        label 'x86_64 && linux'
+        label 'documentation && x86_64 && linux'
       }
       stages {
         stage('Build examples') {
@@ -59,31 +63,15 @@ pipeline {
           }
         }  // Build examples
 
-        stage('Build documentation') {
+        stage('Build Documentation') {
           steps {
             dir("${REPO}") {
-              withXdoc("feature/update_xdoc_3_3_0") {
-                withTools(params.TOOLS_VERSION) {
-                  dir("${REPO}/doc") {
-                    sh "xdoc xmospdf"
-                  }
-                  dir("examples/AN00246_xua_example/doc") {
-                    sh "xdoc xmospdf"
-                  }
-                  dir("examples/AN00247_xua_example_spdif_tx/doc") {
-                    sh "xdoc xmospdf"
-                  }
-                  dir("examples/AN00248_xua_example_pdm_mics/doc") {
-                    sh "xdoc xmospdf"
-                  }
-                }
+              warnError("Docs") {
+                buildDocs()
               }
-            }
-            // Archive all the generated .pdf docs
-            archiveArtifacts artifacts: "${REPO}/**/pdf/*.pdf"
-          }
-        }  // Build documentation
-
+            } // dir("${REPO}")
+          } // steps
+        } // stage('Build Documentation')
       }
       post {
         cleanup {

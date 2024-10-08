@@ -328,7 +328,7 @@
  *
  * Default: 1 (Enabled) when AUDIO_CLASS_FALLBACK disabled.
  */
-#if (AUDIO_CLASS == 2)
+#if ((AUDIO_CLASS == 2) || __DOXYGEN__)
     /* Whether to run in Audio Class 2.0 mode in USB Full-speed */
     #if !defined(FULL_SPEED_AUDIO_2) && (AUDIO_CLASS_FALLBACK == 0)
         #define FULL_SPEED_AUDIO_2    1     /* Default to falling back to UAC2 */

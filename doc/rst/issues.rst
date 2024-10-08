@@ -1,10 +1,10 @@
 
-|appendix|
+|newpage|
 
 Known Issues
 ************
 
-- Quad-SPI DFU will corrupt the factory image with tools version < 14.0.4 due to an issue with libquadflash 
+- Quad-SPI DFU will corrupt the factory image with tools version < 14.0.4 due to an issue with libquadflash
 
 - When in DSD mode with S/PDIF output enabled, DSD samples are transmitted over S/PDIF if the DSD and S/PDIF channels are shared, this may or may not be desired (#14762)
 
@@ -14,7 +14,7 @@ Known Issues
 
 - Before DoP mode is detected a small number of DSD samples will be played out as PCM via I2S (lib_xua #162)
 
-- Volume control settings currently affect samples in both DSD and PCM modes. This results in invalid DSD output if volume control not set to 0 (#14887) 
+- Volume control settings currently affect samples in both DSD and PCM modes. This results in invalid DSD output if volume control not set to 0 (#14887)
 
 -  Windows XP volume control very sensitive.  The Audio 1.0 driver built into Windows XP (usbaudio.sys) does not properly support master volume AND channel volume controls, leading to a very sensitive control.  Descriptors can be easily modified to disable master volume control if required (one byte - bmaControls(0) in Feature Unit descriptors)
 

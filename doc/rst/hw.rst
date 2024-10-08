@@ -1,10 +1,11 @@
+:orphan:
 
 XMOS USB Audio Hardware Platforms
 ---------------------------------
 
 A range of hardware platforms for evaluating USB Audio on XMOS devices.
 
-Specific details for each platform/board are out of scope of this library documentation however, the features of the most popular platform are described below with the view of providing a worked example. 
+Specific details for each platform/board are out of scope of this library documentation however, the features of the most popular platform are described below with the view of providing a worked example.
 
 Please also see application note AN00246.
 
@@ -54,7 +55,7 @@ Three methods of generating an audio master clock are provided on the board:
 
     * xCORE.ai devices are equipped with a secondary (or 'application') PLL which can be used to generate fixed audio clocks or recover external clocks using lib_sw_pll.
 
-Selection between these methods is done via writing to bits 6 and 7 of PORT 8D on tile[0]. 
+Selection between these methods is done via writing to bits 6 and 7 of PORT 8D on tile[0].
 
 Either the locally generated clock (from the PL611) or the recovered low jitter clock (from the CS2100) may be selected to clock the audio stages; the xcore.ai, the ADC/DAC and Digital output stages. Selection is controlled via an additional I/O, bit 5 of PORT 8C, see :ref:`hw_316_ctrlport`.
 
@@ -86,8 +87,8 @@ Control I/O
 
 
 .. note::
-     
-    To use the xCORE application PLL bit 7 should be set to 0. To use one of the external PLL's bit 7 should be set to 1. 
+
+    To use the xCORE application PLL bit 7 should be set to 0. To use one of the external PLL's bit 7 should be set to 1.
 
 
 LEDs, Buttons and Other IO
@@ -95,7 +96,7 @@ LEDs, Buttons and Other IO
 
 All programmable I/O on the board is configured for 3v3.
 
-For green LED's and three push buttons are provided for general purpose user interfacing. 
+For green LED's and three push buttons are provided for general purpose user interfacing.
 
 The LEDs are connected to PORT 4F and the buttons are connected to bits [0:2] of PORT 4E. Bit 3 of this port is connected to the (currently
 unused) ADC interrupt line.
@@ -108,14 +109,14 @@ All spare IO and Functional IO brought out on headers for easy connection of exp
 Power
 +++++
 
-The board is capable of acting as a USB2.0 self or bus powered device. If bus powered, board takes power from  ``USB DEVICE`` connector (micro-B receptacle). 
+The board is capable of acting as a USB2.0 self or bus powered device. If bus powered, board takes power from  ``USB DEVICE`` connector (micro-B receptacle).
 If self powered, board takes power from ``EXTERNAL POWER`` input (micro-B receptacle).
 
-A Power Source Select (marked ``PWR SRC``) is used to select between bus and self-powered configuration. 
+A Power Source Select (marked ``PWR SRC``) is used to select between bus and self-powered configuration.
 
 
 Debug
 +++++
 
-For convenience the board includes an on-board xTAG4 for debugging via JTAG/xSCOPE. This is accessed via the USB (micro-B) receptacle marked ``DEBUG``. 
+For convenience the board includes an on-board xTAG4 for debugging via JTAG/xSCOPE. This is accessed via the USB (micro-B) receptacle marked ``DEBUG``.
 
