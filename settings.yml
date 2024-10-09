@@ -14,7 +14,7 @@ documentation:
     lib_xua:
       doxyfile_path: doc/Doxyfile.inc
   pdfs:
-    doc/rst/index.rst:
+    doc/rst/lib_xua.rst:
       pdf_title: '{{title}}'
       pdf_filename: '{{lib_name}}_v{{version}}'
     README.rst:
