@@ -71,6 +71,9 @@ pipeline {
                 dir("examples/AN00246_xua_example") {
                   buildDocs()
                 }
+                dir("examples/AN00247_xua_example_spdif_tx") {
+                  buildDocs()
+                }
               }
             } // dir("${REPO}")
           } // steps

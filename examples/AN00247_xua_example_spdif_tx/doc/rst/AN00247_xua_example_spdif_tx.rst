@@ -10,10 +10,10 @@ Introduction
 
 The XMOS USB Audio (XUA) library provides an implementation of USB Audio Class versions 1.0 and 2.0.
 
-This application note demonstrates the implementation of a basic USB Audio Device with 
+This application note demonstrates the implementation of a basic USB Audio Device with
 S/PDIF transmit functionality the xCORE.ai Multichannel (MC) Audio board.
 
-To reduce complexity this application note does not enable any other audio interfaces other that S/PDIF transmit 
+To reduce complexity this application note does not enable any other audio interfaces other that S/PDIF transmit
 (i.e. no I2S). Readers are encouraged to read application note AN00246 in conjunction with this application
 note.
 
@@ -49,8 +49,8 @@ Includes
 This application requires the system header that defines XMOS xCORE specific
 defines for declaring and initialising hardware:
 
-.. literalinclude:: app_xua_spdiftx.xc
-   :start-on: include <xs1.h>
+.. literalinclude:: ../../src/app_xua_spdiftx.xc
+   :start-at: include <xs1.h>
    :end-before: include "xua.h"
 
 The XUA library functions are defined in ``xua.h``. This header must
@@ -58,9 +58,9 @@ be included in your code to use the library.  Headers are also required
 for ``lib_xud``, ``lib_spdif`` and the board setup code for the
 xCORE.ai Multichannel Audio board.
 
-.. literalinclude:: app_xua_spdiftx.xc
-   :start-on: include "xua.h"
-   :end-on: include "xk_audio_316_mc_ab/board.h"
+.. literalinclude:: ../../src/app_xua_spdiftx.xc
+   :start-at: include "xua.h"
+   :end-at: include "xk_audio_316_mc_ab/board.h"
 
 Declarations
 ------------
@@ -73,28 +73,28 @@ using ``lib_xua`` requires the follow pins:
 
     - Audio Master clock (from clock source to xCORE)
 
-On an xCORE the pins are controlled by ``ports``. The application therefore declares a 
+On an xCORE the pins are controlled by ``ports``. The application therefore declares a
 port for the master clock input signal.
 
-.. literalinclude:: app_xua_spdiftx.xc
-   :start-on: /* Lib_xua port declaration
-   :end-on: in port p_mclk_in
+.. literalinclude:: ../../src/app_xua_spdiftx.xc
+   :start-at: /* Lib_xua port declaration
+   :end-at: in port p_mclk_in
 
-``lib_xua`` also requires two ports for internally calculating USB feedback. Please refer to 
+``lib_xua`` also requires two ports for internally calculating USB feedback. Please refer to
 the ``lib_xua`` library documentation for further details.  The additional input port for the master
 clock is required since USB and S/PDIF do not reside of the same tiles on the example hardware.
 
 These ports are declared as follows:
 
-.. literalinclude:: app_xua_spdiftx.xc
-   :start-on: /* Resources for USB feedback
-   :end-on: in port p_mclk_in_usb
+.. literalinclude:: ../../src/app_xua_spdiftx.xc
+   :start-at: /* Resources for USB feedback
+   :end-at: in port p_mclk_in_usb
 
 In addition to ``port`` resources two clock-block resources are also required:
 
-.. literalinclude:: app_xua_spdiftx.xc
-   :start-on: /* Clock-block
-   :end-on: clock clk_audio_mclk_usb
+.. literalinclude:: ../../src/app_xua_spdiftx.xc
+   :start-at: /* Clock-block
+   :end-at: clock clk_audio_mclk_usb
 
 Again, for the same reasoning as the master-clock ports, two master-clock clock-blocks are required
 - one on each tile.
@@ -105,15 +105,15 @@ Allocating hardware resources for lib_spdif
 
 The S/PDIF transmitter requires a single (buffered) 1-bit port:
 
-.. literalinclude:: app_xua_spdiftx.xc
-   :start-on: /* Lib_spdif port 
-   :end-on: buffered out port 
+.. literalinclude:: ../../src/app_xua_spdiftx.xc
+   :start-at: /* Lib_spdif port
+   :end-at: buffered out port
 
 This port must be clocked from the audio master clock. This application note chooses to declare
 an extra clock-block as follows:
 
-.. literalinclude:: app_xua_spdiftx.xc
-   :start-on: clock clk_spdif_tx
+.. literalinclude:: ../../src/app_xua_spdiftx.xc
+   :start-at: clock clk_spdif_tx
    :end-before: /* Lib_xua
 
 
@@ -125,14 +125,14 @@ Other declarations
 
 For a simple application the following endpoints are required:
 
-    - ``Control`` endpoint zero 
+    - ``Control`` endpoint zero
     - ``Isochonous`` endpoint for each direction for audio data to/from the USB host
 
 These are declared as follows:
 
-.. literalinclude:: app_xua_spdiftx.xc
-   :start-on: /* Endpoint type tables
-   :end-on: XUD_EpType epTypeTableIn
+.. literalinclude:: ../../src/app_xua_spdiftx.xc
+   :start-at: /* Endpoint type tables
+   :end-at: XUD_EpType epTypeTableIn
 
 Hardware Setup
 --------------
@@ -146,21 +146,21 @@ configuration options, such as clocking modes and frequencies.
 The ``i_i2c_client`` unsafe client interface is required to have a globally-scoped variable
 for gaining access to the ``i2c_master_if`` interface from the audio hardware functions.
 
-.. literalinclude:: app_xua_spdiftx.xc
-   :start-on: /* Board configuration from lib_board_support */
-   :end-on: unsafe client interface i2c_master_if i_i2c_client
+.. literalinclude:: ../../src/app_xua_spdiftx.xc
+   :start-at: /* Board configuration from lib_board_support */
+   :end-at: unsafe client interface i2c_master_if i_i2c_client
 
 The following functions are called by ``XUA_AudioHub`` to configure the hardware; they are
 defined as wrapper functions around the board-specific code from ``lib_board_support``.
 
-.. literalinclude:: app_xua_spdiftx.xc
-   :start-on: void AudioHwInit()
+.. literalinclude:: ../../src/app_xua_spdiftx.xc
+   :start-at: void AudioHwInit()
    :end-before: int main()
 
 Configuring lib_xua
 -------------------
 
-``lib_xua`` must be configured to enable S/PDIF Tx functionality. 
+``lib_xua`` must be configured to enable S/PDIF Tx functionality.
 
 ``lib_xua`` has many parameters than can be configured at build time, some examples include:
 
@@ -172,36 +172,36 @@ Configuring lib_xua
     - Master clock frequency
 
 To enable S/PDIF functionality ``XUA_SPDIF_TX_EN`` must be set to a non-zero value. Setting this will cause the ``XUA_AudioHub``
-tasks to forward samples and sample rate information to the S/PDIF transmitter task. 
+tasks to forward samples and sample rate information to the S/PDIF transmitter task.
 
-These parameters are set via defines in an optional ``xua_conf.h`` header file. For this simple application the 
+These parameters are set via defines in an optional ``xua_conf.h`` header file. For this simple application the
 complete contents of this file are as follows:
 
-.. literalinclude:: xua_conf.h
-   :start-on: // Copyright
-   :end-on: #endif
+.. literalinclude:: ../../src/xua_conf.h
+   :start-at: // Copyright
+   :end-at: #endif
 
 The application main() function
 -------------------------------
 
 The ``main()`` function sets up the tasks in the application.
 
-Various channels/interfaces are required in order to allow the required tasks to communicate. 
+Various channels/interfaces are required in order to allow the required tasks to communicate.
 These must first be declared:
 
-.. literalinclude:: app_xua_spdiftx.xc
-   :start-on: /* Channels for lib_xud
-   :end-on: interface i2c_master_if i2c[1]
+.. literalinclude:: ../../src/app_xua_spdiftx.xc
+   :start-at: /* Channels for lib_xud
+   :end-at: interface i2c_master_if i2c[1]
 
 The rest of the ``main()`` function starts all of the tasks in parallel
 using the xC ``par`` construct:
 
-.. literalinclude:: app_xua_spdiftx.xc
-   :start-on: par
+.. literalinclude:: ../../src/app_xua_spdiftx.xc
+   :start-at: par
    :end-before: return 0
 
-This code starts the low-level USB task, an Endpoint 0 task, an Audio buffering task and a task to handle 
-the audio I/O. Note, since there is no I2S functionality in this example this task simply forwards samples to the 
+This code starts the low-level USB task, an Endpoint 0 task, an Audio buffering task and a task to handle
+the audio I/O. Note, since there is no I2S functionality in this example this task simply forwards samples to the
 SPDIF transmitter task. In addition the ``spdif_tx()`` task is also run.
 
 Note that the ``spdif_tx_port_config()`` function is called before a nested ``par`` of ``spdif_tx()`` and ``XUA_AudioHub()``.
@@ -210,7 +210,6 @@ This is because of the "shared" nature of ``p_mclk_in`` and avoids a parallel us
 It also runs ``xk_audio_316_mc_ab_board_setup()`` and ``xk_audio_316_mc_ab_i2c_master()`` from ``lib_board_support``
 that are used for setting up the hardware.
 
-|appendix|
 |newpage|
 
 Building the Application
@@ -239,10 +238,10 @@ Finally, the application binaries can be built using ``xmake``::
 Demo Hardware Setup
 -------------------
 
-To run the demo, use a USB cable to connect the on-board xTAG debug adapter (marked DEBUG) to your development computer. 
-Use another USB cable to connect the USB receptacle marked USB DEVICE to the device you wish to play audio from. 
+To run the demo, use a USB cable to connect the on-board xTAG debug adapter (marked DEBUG) to your development computer.
+Use another USB cable to connect the USB receptacle marked USB DEVICE to the device you wish to play audio from.
 
-A device capable of receiving an S/PDIF signal (ie. a speaker) should be connected to COAX TX. 
+A device capable of receiving an S/PDIF signal (ie. a speaker) should be connected to COAX TX.
 
 .. figure:: images/hw_setup.*
    :width: 80%
@@ -287,15 +286,13 @@ xCORE.ai MC Audio board.
 Running the application
 .......................
 
-Once running the device will be detected as a USB Audio device - note, Windows operating 
-systems may require a third party driver for correct operation 
+Once running the device will be detected as a USB Audio device - note, Windows operating
+systems may require a third party driver for correct operation
 
 |newpage|
 
 References
 ----------
-
-.. nopoints::
 
   * XMOS Tools User Guide
 
@@ -311,13 +308,3 @@ References
 
 |newpage|
 
-Full source code listing
-------------------------
-
-Source code for main.xc
-.......................
-
-.. literalinclude:: app_xua_spdiftx.xc
-  :largelisting:
-
-|newpage|
