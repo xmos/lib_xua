@@ -33,9 +33,9 @@ void PllRefPinTask(server interface pll_ref_if i_pll_ref, out port p_sync);
  *  \param c_sw_pll             channel used to communicate with software PLL task
  *
  */
-void clockGen(  NULLABLE_RESOURCE(streaming_chanend_t c_spdif_rx),
+void clockGen(  NULLABLE_RESOURCE(streaming_chanend_t, c_spdif_rx),
                 NULLABLE_RESOURCE(chanend, c_adat_rx),
-                CLIENT_INTERFACE(pll_ref_if i_pll_ref),
+                CLIENT_INTERFACE(pll_ref_if, i_pll_ref),
                 chanend c_audio,
                 chanend c_clk_ctl,
                 chanend c_clk_int,

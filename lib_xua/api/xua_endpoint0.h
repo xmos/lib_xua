@@ -8,14 +8,6 @@
 #include "vendorrequests.h"
 #include "xccompat.h"
 
-#ifdef __XC__
-#define NULLABLE_CLIENT_INTERFACE(tag, name) client interface tag ?name
-#define in_port_t in port
-#else
-#define NULLABLE_CLIENT_INTERFACE(type, name) unsigned name
-#define in_port_t unsigned
-#endif
-
 #if (__XC__ || defined __DOXYGEN__)
 /** Function implementing Endpoint 0 for enumeration, control and configuration
  *  of USB audio devices. It uses the descriptors defined in ``xua_ep0_descriptors.h``.

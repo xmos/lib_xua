@@ -3,9 +3,6 @@
 #ifndef _XUA_BUFFER_H_
 #define _XUA_BUFFER_H_
 
-#ifndef __DOXYGEN__
-#define in_port_t in port
-#endif
 
 #if (__XC__ || defined __DOXYGEN__)
 

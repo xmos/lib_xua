@@ -14,15 +14,6 @@
 
 #include "xua_clocking.h"
 
-#ifdef __XC__
-#define NULLABLE_CLIENT_INTERFACE(tag, name) client interface tag ?name
-#define NULLABLE_SERVER_INTERFACE(tag, name) server interface tag ?name
-#define in_port_t in port
-#else
-#define NULLABLE_CLIENT_INTERFACE(type, name) unsigned name
-#define NULLABLE_SERVER_INTERFACE(type, name) unsigned name
-#define in_port_t unsigned
-#endif
 
 #if _XUA_CLK_DIR == in
     #define i2s_clk_port_type out_buffered_port_32_t

@@ -1659,3 +1659,13 @@ enum USBEndpointNumber_Out
 #ifndef WINUSB_DEVICE_INTERFACE_GUID
 #define WINUSB_DEVICE_INTERFACE_GUID               "{89C14132-D389-4FF7-944E-2E33379BB59D}"
 #endif
+
+#ifdef __XC__
+    #define NULLABLE_CLIENT_INTERFACE(tag, name) client interface tag ?name
+    #define NULLABLE_SERVER_INTERFACE(tag, name) server interface tag ?name
+    #define in_port_t in port
+#else
+    #define NULLABLE_CLIENT_INTERFACE(type, name) unsigned name
+    #define NULLABLE_SERVER_INTERFACE(tag, name) server interface tag ?name
+    #define in_port_t unsigned
+#endif
