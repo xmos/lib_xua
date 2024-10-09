@@ -7,9 +7,11 @@ There are a few other, lesser used, options available.
 
 .. _opt_other_defines:
 
+|beginfullwidth|
+
 .. list-table:: Other defines
    :header-rows: 1
-   :widths: 20 80 20
+   :widths: 40 80 20
 
    * - Define
      - Description
@@ -24,3 +26,4 @@ There are a few other, lesser used, options available.
      - Enables volume control on output channels, both descriptors and processing
      - ``1`` (enabled)
 
+|endfullwidth|

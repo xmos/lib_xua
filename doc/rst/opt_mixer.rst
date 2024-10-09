@@ -3,12 +3,12 @@
 Mixer
 =====
 
-The codebase supports audio mixing functionality with highly flexible routing options. 
+The codebase supports audio mixing functionality with highly flexible routing options.
 
-Essentially the mixer is capable of performing 8 separate mixes with up to 18 inputs at sample rates 
-up to 96kHz and 2 mixes with up to 18 inputs at higher sample rates. 
+Essentially the mixer is capable of performing 8 separate mixes with up to 18 inputs at sample rates
+up to 96kHz and 2 mixes with up to 18 inputs at higher sample rates.
 
-Inputs to the mixer can be selected from any device input (USB, S/PDIF, I2S etc) and 
+Inputs to the mixer can be selected from any device input (USB, S/PDIF, I2S etc) and
 outputs from the mixer can be routed to any device output (USB, S/PDIF, I2S etc).
 
 See :ref:`usb_audio_sec_mixer` for full details of the mixer including control.
@@ -16,6 +16,8 @@ See :ref:`usb_audio_sec_mixer` for full details of the mixer including control.
 Basic configuration of mixer functionality is achieved with the defines in :ref:`opt_mixer_defines`.
 
 .. _opt_mixer_defines:
+
+|beginfullwidth|
 
 .. list-table:: Mixer defines
    :header-rows: 1
@@ -33,6 +35,8 @@ Basic configuration of mixer functionality is achieved with the defines in :ref:
    * - ``MIX_INPUTS``
      - Number of channels input into the mixer
      - ``18``
+
+|endfullwidth|
 
 .. note::
 

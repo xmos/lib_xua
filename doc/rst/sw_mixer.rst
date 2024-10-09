@@ -87,8 +87,11 @@ are described in :ref:`table_mixer_commands`.
 
 .. _table_mixer_commands:
 
+|beginfullwidth|
+
 .. list-table:: Mixer Component Commands
  :header-rows: 1
+ :widths: 40 100
 
  * - Command
    - Description
@@ -113,6 +116,8 @@ are described in :ref:`table_mixer_commands`.
  * - ``SET_MIX_OUT_VOL``
    - If volume adjustment is being done in the mixer, this command
      sets the volume multiplier of one of the USB audio outputs.
+
+|endfullwidth|
 
 Host Control
 ~~~~~~~~~~~~
