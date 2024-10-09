@@ -68,6 +68,9 @@ pipeline {
             dir("${REPO}") {
               warnError("Docs") {
                 buildDocs()
+                dir("examples/AN00246_xua_example") {
+                  buildDocs()
+                }
               }
             } // dir("${REPO}")
           } // steps

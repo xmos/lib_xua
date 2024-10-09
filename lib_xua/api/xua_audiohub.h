@@ -84,31 +84,6 @@ void XUA_AudioHub(
 
 );
 
-/*void XUA_AudioHub(chanend ?c_aud,
-    clock ?clk_audio_mclk,
-    clock ?clk_audio_bclk,
-    in port p_mclk_in,
-    buffered _XUA_CLK_DIR port:32 ?p_lrclk,
-    buffered _XUA_CLK_DIR port:32 ?p_bclk,
-    buffered out port:32 (&?p_i2s_dac)[I2S_WIRES_DAC],
-    buffered in port:32  (&?p_i2s_adc)[I2S_WIRES_ADC]
-#if (XUA_SPDIF_TX_EN) || defined(__DOXYGEN__)
-    , chanend c_spdif_tx
-#endif
-#if (XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN || defined(__DOXYGEN__))
-    , chanend c_dig
-#endif
-#if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC || XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN || defined(__DOXYGEN__))
-    , chanend c_audio_rate_change
-#endif
-#if (((XUD_TILE != 0) && (AUDIO_IO_TILE == 0) && (XUA_DFU_EN == 1)) || defined(__DOXYGEN__))
-   , server interface i_dfu ?dfuInterface
-#endif
-#if (XUA_NUM_PDM_MICS > 0 || defined(__DOXYGEN__))
-    , chanend c_pdm_in
-#endif
-);*/
-
 void SpdifTxWrapper(chanend c_spdif_tx);
 
 #endif // __XC__
