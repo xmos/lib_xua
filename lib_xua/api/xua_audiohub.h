@@ -15,7 +15,7 @@
 #include "xua_clocking.h"
 
 
-#if _XUA_CLK_DIR == in
+#if CODEC_MASTER
     #define i2s_clk_port_type in_buffered_port_32_t
 #else
     #define i2s_clk_port_type out_buffered_port_32_t
