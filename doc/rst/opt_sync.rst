@@ -57,7 +57,7 @@ The programmer should ensure the define in :ref:`opt_sync_ref_defines` is set ap
 
 .. list-table:: Reference clock location
    :header-rows: 1
-   :widths: 40 80 20
+   :widths: 40 60 20
 
    * - Define
      - Description

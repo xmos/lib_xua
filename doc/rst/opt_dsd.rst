@@ -17,7 +17,7 @@ DSD is enabled with by setting the define in :ref:`opt_dsd_defines` to a non-zer
 
 .. list-table:: DSD defines
    :header-rows: 1
-   :widths: 20 80 20
+   :widths: 20 60 20
 
    * - Define
      - Description
@@ -43,7 +43,7 @@ If only DoP functionality is desired the Native implementation can be disabled w
 
 .. list-table:: Native DSD defines
    :header-rows: 1
-   :widths: 20 80 20
+   :widths: 20 60 20
 
    * - Define
      - Description

@@ -48,7 +48,7 @@ The programmer should ensure the define in :ref:`opt_spdif_rx_ref_defines` is se
 
 .. list-table:: Reference Clock Location
    :header-rows: 1
-   :widths: 20 80 20
+   :widths: 20 60 20
 
    * - Define
      - Description

@@ -14,7 +14,7 @@ Basic configuration of S/PDIF transmit functionality is achieved with the define
 
 .. list-table:: S/PDIF tx defines
    :header-rows: 1
-   :widths: 40 80 20
+   :widths: 40 60 20
 
    * - Define
      - Description
@@ -36,7 +36,7 @@ In addition, the developer may choose which tile the S/PDIF transmitter runs on,
 
 .. list-table:: S/PDIF tile define
    :header-rows: 1
-   :widths: 20 80 20
+   :widths: 20 60 20
 
    * - Define
      - Description

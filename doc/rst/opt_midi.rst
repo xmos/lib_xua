@@ -12,7 +12,7 @@ MIDI functionality is enabled with the define in :ref:`opt_midi_defines`.
 
 .. list-table:: MIDI enable define
    :header-rows: 1
-   :widths: 20 80 20
+   :widths: 20 60 20
 
    * - Define
      - Description
@@ -33,7 +33,7 @@ and receive I/O is connected to bit[0] of the port. This is configurable for the
 
 .. list-table:: MIDI port defines
    :header-rows: 1
-   :widths: 40 80 20
+   :widths: 40 60 20
 
    * - Define
      - Description

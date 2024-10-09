@@ -91,7 +91,7 @@ are described in :ref:`table_mixer_commands`.
 
 .. list-table:: Mixer Component Commands
  :header-rows: 1
- :widths: 40 100
+ :widths: 60 100
 
  * - Command
    - Description

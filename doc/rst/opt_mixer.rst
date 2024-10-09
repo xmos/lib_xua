@@ -21,7 +21,7 @@ Basic configuration of mixer functionality is achieved with the defines in :ref:
 
 .. list-table:: Mixer defines
    :header-rows: 1
-   :widths: 20 80 20
+   :widths: 20 60 20
 
    * - Define
      - Description
