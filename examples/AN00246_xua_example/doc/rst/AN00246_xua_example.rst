@@ -10,7 +10,7 @@ Introduction
 
 The XMOS USB Audio (XUA) library provides an implemention of USB Audio Class versions 1.0 and 2.0.
 
-This application note demonstrates the implementation of a basic USB Audio Device on 
+This application note demonstrates the implementation of a basic USB Audio Device on
 the xCORE.ai Multichannel (MC) Audio board (XK-AUDIO-316-MC).
 
 
@@ -43,17 +43,17 @@ Includes
 This application requires the system header that defines XMOS xCORE specific
 defines for declaring and initialising hardware:
 
-.. literalinclude:: app_xua_simple.xc
-   :start-on: include <xs1.h>
+.. literalinclude:: ../../src/app_xua_simple.xc
+   :start-at: include <xs1.h>
    :end-before: include "xua.h"
 
 The XUA library functions are defined in ``xua.h``. This header must
 be included in your code to use the library. Headers are also required for
 ``lib_xud`` and the board setup code for the xCORE.ai Multichannel Audio board.
 
-.. literalinclude:: app_xua_simple.xc
-   :start-on: include "xua.h"
-   :end-on: include "xk_audio_316_mc_ab/board.h"
+.. literalinclude:: ../../src/app_xua_simple.xc
+   :start-at: include "xua.h"
+   :end-at: include "xk_audio_316_mc_ab/board.h"
 
 Allocating Hardware Resources
 -----------------------------
@@ -73,25 +73,25 @@ using ``lib_xua`` requires the follow pins:
 In the xCORE architecture the I/O pins are controlled and accessed by ``ports``. The application therefore declares various ``ports``
 for this purpose:
 
-.. literalinclude:: app_xua_simple.xc
-   :start-on: /* Port declaration
-   :end-on: in port p_mclk_in
+.. literalinclude:: ../../src/app_xua_simple.xc
+   :start-at: /* Port declaration
+   :end-at: in port p_mclk_in
 
-``lib_xua`` also requires two ports for internally calculating USB feedback. Please refer to 
+``lib_xua`` also requires two ports for internally calculating USB feedback. Please refer to
 the ``lib_xua`` library documentation for further details.  The additional input port for the master
 clock is required since USB and S/PDIF do not reside of the same tiles on the xCORE.ai MC Audio Board.
 
 These ports are declared as follows:
 
-.. literalinclude:: app_xua_simple.xc
-   :start-on: /* Resources for USB feedback
-   :end-on: in port p_mclk_in_usb
+.. literalinclude:: ../../src/app_xua_simple.xc
+   :start-at: /* Resources for USB feedback
+   :end-at: in port p_mclk_in_usb
 
 In addition to ``port`` resources two clock-block resources are also required:
 
-.. literalinclude:: app_xua_simple.xc
-   :start-on: /* Clock-block
-   :end-on: clock clk_audio_mclk_usb
+.. literalinclude:: ../../src/app_xua_simple.xc
+   :start-at: /* Clock-block
+   :end-at: clock clk_audio_mclk_usb
 
 Again, for the same reasoning as the master-clock ports, two master-clock clock-blocks are required
 - one on each tile.
@@ -105,14 +105,14 @@ Other Declarations
 
 For a simple application the following endpoints are required:
 
-    - ``Control`` endpoint zero 
+    - ``Control`` endpoint zero
     - ``Isochonous`` endpoint for each direction for audio data to/from the USB host
 
 These are declared as follows:
 
-.. literalinclude:: app_xua_simple.xc
-   :start-on: /* Endpoint type tables
-   :end-on: XUD_EpType epTypeTableIn
+.. literalinclude:: ../../src/app_xua_simple.xc
+   :start-at: /* Endpoint type tables
+   :end-at: XUD_EpType epTypeTableIn
 
 Hardware Setup
 --------------
@@ -126,15 +126,15 @@ configuration options, such as clocking modes and frequencies.
 The ``i_i2c_client`` unsafe client interface is required to have a globally-scoped variable
 for gaining access to the ``i2c_master_if`` interface from the audio hardware functions.
 
-.. literalinclude:: app_xua_simple.xc
-   :start-on: /* Board configuration from lib_board_support */
-   :end-on: unsafe client interface i2c_master_if i_i2c_client
+.. literalinclude:: ../../src/app_xua_simple.xc
+   :start-at: /* Board configuration from lib_board_support */
+   :end-at: unsafe client interface i2c_master_if i_i2c_client
 
 The following functions are called by ``XUA_AudioHub`` to configure the hardware; they are
 defined as wrapper functions around the board-specific code from ``lib_board_support``.
 
-.. literalinclude:: app_xua_simple.xc
-   :start-on: void AudioHwInit()
+.. literalinclude:: ../../src/app_xua_simple.xc
+   :start-at: void AudioHwInit()
    :end-before: int main()
 
 
@@ -144,27 +144,27 @@ The Application main() Function
 
 The ``main()`` function sets up the tasks in the application.
 
-Various channels/interfaces are required in order to allow the required tasks to communicate. 
+Various channels/interfaces are required in order to allow the required tasks to communicate.
 These must first be declared:
 
-.. literalinclude:: app_xua_simple.xc
-   :start-on: /* Channels for lib_xud
-   :end-on: interface i2c_master_if i2c[1]
+.. literalinclude:: ../../src/app_xua_simple.xc
+   :start-at: /* Channels for lib_xud
+   :end-at: interface i2c_master_if i2c[1]
 
 The rest of the ``main()`` function starts all of the tasks in parallel
 using the xC ``par`` construct:
 
-.. literalinclude:: app_xua_simple.xc
-   :start-on: par
+.. literalinclude:: ../../src/app_xua_simple.xc
+   :start-at: par
    :end-before: return 0
 
-This code starts the low-level USB task, an Endpoint 0 task, an Audio buffering task and a task to handle 
+This code starts the low-level USB task, an Endpoint 0 task, an Audio buffering task and a task to handle
 the audio I/O (i.e. I2S signalling).
 
 It also runs ``xk_audio_316_mc_ab_board_setup()`` and ``xk_audio_316_mc_ab_i2c_master()`` from ``lib_board_support``
 that are used for setting up the hardware.
 
-Configuration 
+Configuration
 -------------
 
 ``lib_xua`` has many parameters than can be configured at build time, some examples include:
@@ -176,17 +176,16 @@ Configuration
     - Various product strings
     - Master clock frequency
 
-These parameters are set via defines in an optional ``xua_conf.h`` header file. For this simple application the contents 
+These parameters are set via defines in an optional ``xua_conf.h`` header file. For this simple application the contents
 of this file might look something like the following:
 
-.. literalinclude:: xua_conf.h
-   :start-on: // Copyright
-   :end-on: #endif
+.. literalinclude:: ../../src/xua_conf.h
+   :start-at: // Copyright
+   :end-at: #endif
 
-Some items have sensible default values, items like strings and sample rates for example. However, some items are specific to a hardware 
+Some items have sensible default values, items like strings and sample rates for example. However, some items are specific to a hardware
 implentation e.g. master clock frequencies and must be defined.  Please see the ``lib_xua`` library documentation for full details.
 
-|appendix|
 |newpage|
 
 Building the Application
@@ -215,8 +214,8 @@ Finally, the application binaries can be built using ``xmake``::
 Demo Hardware Setup
 -------------------
 
-To run the demo, use a USB cable to connect the on-board xTAG debug adapter (marked ``DEBUG``) to your development computer. 
-Use another USB cable to connect the USB receptacle marked ``USB DEVICE`` to the device you wish to play audio from. 
+To run the demo, use a USB cable to connect the on-board xTAG debug adapter (marked ``DEBUG``) to your development computer.
+Use another USB cable to connect the USB receptacle marked ``USB DEVICE`` to the device you wish to play audio from.
 
 Plug a device capable of receiving analogue audio (i.e. an amplified speaker) to the 3.5mm jack marked ``OUT 1/2``.
 
@@ -230,7 +229,7 @@ Plug a device capable of receiving analogue audio (i.e. an amplified speaker) to
 Launching the Demo Application
 ------------------------------
 
-Once the demo example has been built from the command line using ``xmake`` 
+Once the demo example has been built from the command line using ``xmake``
 it can be executed on the xCORE.ai MC Audio Board.
 
 Once built there will be a ``bin/`` directory within the project which contains
@@ -250,15 +249,13 @@ xCORE.ai MC Audio Board
 Running the Application
 .......................
 
-Once running the device will be detected as a USB Audio device - note, Windows operating 
-systems may require a third party driver for correct operation 
+Once running the device will be detected as a USB Audio device - note, Windows operating
+systems may require a third party driver for correct operation
 
 |newpage|
 
 References
 ----------
-
-.. nopoints::
 
   * XMOS Tools User Guide
 
@@ -271,16 +268,5 @@ References
   * XMOS Libraries
 
     https://www.xmos.com/libraries/
-
-|newpage|
-
-Full Source Code Listing
-------------------------
-
-Source Code for app_xua_simple.xc
-.................................
-
-.. literalinclude:: app_xua_simple.xc
-  :largelisting:
 
 |newpage|
