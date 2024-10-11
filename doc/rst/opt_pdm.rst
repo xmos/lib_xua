@@ -6,7 +6,7 @@ PDM Microphones
 The codebase supports input from up to 8 PDM microphones.
 
 PDM microphone support is provided via ``lib_mic_array``.  Settings for PDM microphones are controlled
-via the defines in :ref:`opt_pdm_defines`.
+via the following :ref:`defines<opt_pdm_defines>`:
 
 .. _opt_pdm_defines:
 
@@ -20,7 +20,7 @@ via the defines in :ref:`opt_pdm_defines`.
      - Description
      - Default
    * - ``XUA_NUM_PDM_MICS``
-     - The number of mics to enable (0 for disabled)
+     - The number of mics to enable (0 for disabled). This enables compilation of the PDM to PCM code also.
      - ``0`` (disabled)
    * - ``PDM_MIC_INDEX``
      - Defines which input channel the mics map to

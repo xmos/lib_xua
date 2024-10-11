@@ -66,7 +66,7 @@ Due to bandwidth limitations of full-speed USB the following sample-frequency re
 Related Defines
 ---------------
 
-:ref:`opt_audio_class_defines` descibes the defines that effect audio class selection.
+The following :ref:`table <opt_audio_class_defines>` describes the defines that affect audio class selection:
 
 .. _opt_audio_class_defines:
 

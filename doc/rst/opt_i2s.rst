@@ -5,7 +5,7 @@ I2S/TDM
 
 I2S/TDM is typically fundamental to most products and is built into the ``XUA_AudioHub()`` core.
 
-The defines in :ref:`opt_i2s_defines` effect the I2S implementation.
+The following :ref:`defines <opt_i2s_defines>` affect the I2S implementation.
 
 .. tabularcolumns:: lp{5cm}l
 .. _opt_i2s_defines:

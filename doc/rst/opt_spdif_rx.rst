@@ -6,7 +6,7 @@ S/PDIF Receive
 The codebase supports a single, stereo, S/PDIF receiver. This can be input via 75 Ω coaxial or optical fibre.
 In order to provide S/PDIF functionality ``lib_xua`` uses ``lib_spdif`` (https://www.github.com/xmos/lib_spdif).
 
-Basic configuration of S/PDIF receive functionality is achieved with the defines in :ref:`opt_spdif_rx_defines`.
+Basic configuration of S/PDIF receive functionality is achieved with the following :ref:`defines<opt_spdif_rx_defines>`:
 
 .. _opt_spdif_rx_defines:
 
@@ -40,7 +40,7 @@ This must be a 1-bit port, for example::
 When S/PDIF receive is enabled the codebase expects to either drive a synchronisation signal to an external
 Cirrus Logic CS2100 device or use lib_swp_pll (xcore.ai only) for master-clock generation.
 
-The programmer should ensure the define in :ref:`opt_spdif_rx_ref_defines` is set appropriately.
+The programmer should ensure the following :ref:`defines<opt_spdif_rx_ref_defines>` are set appropriately:
 
 .. _opt_spdif_rx_ref_defines:
 

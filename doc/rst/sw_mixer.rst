@@ -83,7 +83,7 @@ Control
 
 The mixers can receive the control commands from the host via USB Control Requests to Endpoint 0.
 The Endpoint 0 core relays these to the Mixer cores(s) via a channel (``c_mix_ctl``). These commands
-are described in :ref:`table_mixer_commands`.
+are described in the following :ref:`table<table_mixer_commands>`:
 
 .. _table_mixer_commands:
 

@@ -13,7 +13,7 @@ outputs from the mixer can be routed to any device output (USB, S/PDIF, I2S etc)
 
 See :ref:`usb_audio_sec_mixer` for full details of the mixer including control.
 
-Basic configuration of mixer functionality is achieved with the defines in :ref:`opt_mixer_defines`.
+Basic configuration of mixer functionality is achieved with the following :ref:`defines<opt_mixer_defines>`:
 
 .. _opt_mixer_defines:
 

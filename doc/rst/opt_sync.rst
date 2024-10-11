@@ -24,7 +24,7 @@ from digital streams, such as S/PDIF, are not currently supported in this mode.
 
    The selection of synchronisation mode is done at build time and cannot be changed dynamically.
 
-Setting the synchronisation mode of the device is done using the define in :ref:`opt_sync_defines`
+Setting the synchronisation mode of the device is done using the following :ref:`defines<opt_sync_defines>`:
 
 .. _opt_sync_defines:
 
@@ -49,7 +49,7 @@ or, on xcore.ai devices, the on-chip application PLL may be used via lib_sw_pll.
 In the case of using the CS2100, the codebase expects to drive a synchronisation signal to this external device
 as a reference.
 
-The programmer should ensure the define in :ref:`opt_sync_ref_defines` is set appropriately.
+The programmer should ensure the following :ref:`defines<opt_sync_ref_defines>` are set appropriately:
 
 .. _opt_sync_ref_defines:
 

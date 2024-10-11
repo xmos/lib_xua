@@ -9,7 +9,7 @@ It uses pulse-density modulation (PDM) encoding.
 The codebase supports DSD playback from the host via "DSD over PCM" (DoP) and a "Native" implementation
 which is, while USB specification based, proprietary to XMOS.
 
-DSD is enabled with by setting the define in :ref:`opt_dsd_defines` to a non-zero value.
+DSD is enabled with by setting the following :ref:` define <opt_dsd_defines>` to a non-zero value:
 
 .. _opt_dsd_defines:
 
@@ -34,8 +34,7 @@ By default both "Native" and DoP functionality are enabled when DSD is enabled. 
 an alternative streaming interface such that the host can inform the device that DSD data is being streamed.
 See: ::ref:`sec_opt_audio_formats` for details.
 
-If only DoP functionality is desired the Native implementation can be disabled with the define in
-:ref:`opt_nativedsd_defines`.
+If only DoP functionality is desired the Native implementation can be disabled with the following :ref:`define <opt_nativedsd_defines>`:
 
 .. _opt_nativedsd_defines:
 
