@@ -53,7 +53,7 @@ pipeline {
               }
             }
             warnError("Docs") {
-            	runLibraryChecks("${WORKSPACE}/${REPO}", "v2.0.1")
+              runLibraryChecks("${WORKSPACE}/${REPO}", "v2.0.1")
             }
           }
         }  // Checkout and lib checks
