@@ -55,7 +55,7 @@ UNRELEASED
 
     - lib_spdif: 6.1.0 -> 6.2.0
 
-    - lib_xcore_math: Added dependency 2.2.0
+    - lib_xcore_math: Added dependency 2.3.0
 
     - lib_xud: 2.3.1 -> 2.3.2
 
