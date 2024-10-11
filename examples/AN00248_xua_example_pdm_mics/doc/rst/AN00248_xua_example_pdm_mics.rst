@@ -255,7 +255,7 @@ To run the application return to the ``/examples/AN00248_xua_example_pdm_mics`` 
 
     xrun bin/app_xua_pdm_mics.xe
 
-You should now see an audio device called ``XUA PDM Example `` and be able hear the stereo microphone audio 
+You should now see an audio device called ``XUA PDM Example`` and be able hear the stereo microphone audio 
 by recording the stream on the host or connecting to the analog output jacks.
 
 |newpage|

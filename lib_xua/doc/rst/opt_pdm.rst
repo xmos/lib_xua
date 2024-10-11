@@ -24,4 +24,4 @@ via the defines in :ref:`opt_pdm_defines`.
      - Defines which starting input channel the mics map to 
      - ``0``
 
-Please see the `PDM Microphones <sw_pdm_main>`_ section for further details. 
+Please see the :ref:`PDM Microphones<sw_pdm_main>` section for further details. 
