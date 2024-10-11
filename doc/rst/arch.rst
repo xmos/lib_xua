@@ -1,4 +1,6 @@
 
+|newpage|
+
 .. _usb_audio_sec_architecture:
 
 Software Architecture
