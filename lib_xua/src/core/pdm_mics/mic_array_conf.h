@@ -33,14 +33,14 @@
 #ifndef MIC_ARRAY_CONFIG_PORT_PDM_CLK
 #error Please define MIC_ARRAY_CONFIG_PORT_PDM_CLK for PDM mics
 #endif
-#ifndef MIC_ARRAY_CONFIG_PORT_PDM_CLK
-#error Please define MIC_ARRAY_CONFIG_PORT_PDM_CLK for PDM mics
+#ifndef MIC_ARRAY_CONFIG_PORT_PDM_DATA
+#error Please define MIC_ARRAY_CONFIG_PORT_PDM_DATA for PDM mics
 #endif
-#ifndef MIC_ARRAY_CONFIG_PORT_PDM_CLK
-#error Please define MIC_ARRAY_CONFIG_PORT_PDM_CLK for PDM mics
+#ifndef MIC_ARRAY_CONFIG_CLOCK_BLOCK_A
+#error Please define MIC_ARRAY_CONFIG_CLOCK_BLOCK_A for PDM mics
 #endif
-#ifndef MIC_ARRAY_CONFIG_PORT_PDM_CLK
-#error Please define MIC_ARRAY_CONFIG_PORT_PDM_CLK for PDM mics
+#if MIC_ARRAY_CONFIG_USE_DDR && !defined(MIC_ARRAY_CONFIG_CLOCK_BLOCK_B)
+#error Please define MIC_ARRAY_CONFIG_CLOCK_BLOCK_B for PDM mics
 #endif
 
 /* Test for errors in config */
