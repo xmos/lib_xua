@@ -1,5 +1,8 @@
 |newpage|
 
+.. _sw_pdm_main:
+
+
 PDM Microphones
 ===============
 
@@ -13,7 +16,7 @@ at a user configurable output sample rate. Currently dynamic sample rate changin
 .. note:: 
     The ``lib_mic_array`` library is only available for xcore.ai series devices since it uses the Vector Processing Unit only available in the XS3 architecture.
 
-Up to sixteen PDM microphones can be attached to each high channel count PDM interface (``mic_array_task()``).
+Up to eight PDM microphones can be attached the PDM interface (``mic_array_task()``) but it is possible to extend this.
 
 After PDM capture and decimation to the output sample-rate various other steps take place e.g. DC offset elimination etc. Please refer to the documentation provided with  ``lib_mic_array`` for further implementation detail and a complete feature set.
 
@@ -47,18 +50,18 @@ output onto the data wire(s) that are connected to the capture port:
 
 No arguments are passed into ``lib_mic_array``. The library is configured statically using the following defines in ``xua_conf.h``:
 
-   - MIC_ARRAY_CONFIG_PORT_MCLK - The port resource for the MCLK from which the PDM_CLK is derived. Normally XS1_PORT_1D on Tile[1].
-   - MIC_ARRAY_CONFIG_PORT_PDM_CLK - The port resource which drives out the PDM clock.
-   - MIC_ARRAY_CONFIG_PORT_PDM_DATA - The port used to receive PDM data. May be 1 bit, 4 bit or 8 bits wide.
-   - MIC_ARRAY_CONFIG_CLOCK_BLOCK_A - The clock block used to generate the PDM clock signal.
-   - MIC_ARRAY_CONFIG_CLOCK_BLOCK_B  - The clock block used to capture the PDM data (Only needed if DDR is used).
+   - ``MIC_ARRAY_CONFIG_PORT_MCLK`` - The port resource for the MCLK from which the PDM_CLK is derived. Normally XS1_PORT_1D on Tile[1].
+   - ``MIC_ARRAY_CONFIG_PORT_PDM_CLK`` - The port resource which drives out the PDM clock.
+   - ``MIC_ARRAY_CONFIG_PORT_PDM_DATA`` - The port used to receive PDM data. May be 1 bit, 4 bit or 8 bits wide.
+   - ``MIC_ARRAY_CONFIG_CLOCK_BLOCK_A`` - The clock block used to generate the PDM clock signal.
+   - ``MIC_ARRAY_CONFIG_CLOCK_BLOCK_B``  - The clock block used to capture the PDM data (Only needed if DDR is used).
 
 Optionally, the following defines may be over-ridden if needed::
 
-   - MIC_ARRAY_CONFIG_MCLK_FREQ - The system MCLK frequency in Hz, usually set to MCLK48.
-   - MIC_ARRAY_CONFIG_PDM_FREQ - The PDM clock frequency in Hz. Usually set to 3072000.
-   - MIC_ARRAY_CONFIG_USE_DC_ELIMINATION - Whether or not to run a DC elimination filter. Set to 1 by default.
-   - MIC_ARRAY_CONFIG_USE_DDR - Whether or not to use Double Data Rate data capture on the PDM microphones. Set to 1 by default.
+   - ``MIC_ARRAY_CONFIG_MCLK_FREQ`` - The system MCLK frequency in Hz, usually set to MCLK48.
+   - ``MIC_ARRAY_CONFIG_PDM_FREQ`` - The PDM clock frequency in Hz. Usually set to 3072000.
+   - ``MIC_ARRAY_CONFIG_USE_DC_ELIMINATION`` - Whether or not to run a DC elimination filter. Set to 1 by default.
+   - ``MIC_ARRAY_CONFIG_USE_DDR`` - Whether or not to use Double Data Rate data capture on the PDM microphones. Set to 1 by default.
 
 
 For full details of the effect of these defines please refer to the `lib_mic_array documentation <https://www.xmos.com/documentation/XM-014926-PC/pdf/mic_array_programming_guide.pdf>`_.
