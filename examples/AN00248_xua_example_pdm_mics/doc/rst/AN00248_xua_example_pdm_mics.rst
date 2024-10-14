@@ -1,12 +1,10 @@
-.. include:: ../../README.rst
+#########################################
+AN00247: Using lib_xua with lib_mic_array
+#########################################
 
-|newpage|
-
+********
 Overview
---------
-
-Introduction
-............
+********
 
 The XMOS USB Audio (XUA) library provides an implementation of USB Audio Class versions 1.0 and 2.0.
 
@@ -22,9 +20,12 @@ from PDM microphones (i.e. no I2S but the on board DAC is configured to play out
 
 Readers are encouraged to read application note AN00246 in conjunction with this application note.
 
+**********************************
+lib_xua with lib_mic_array example
+**********************************
 
-The Makefile
-------------
+The CMakeLists.txt file
+=======================
 
 To start using ``lib_xua``, you need to add ``lib_xua`` to the dependent module list in the CMakeLists.txt
 file. This application note also uses ``lib_mic_array``, so this must also be added to the list::
@@ -41,7 +42,7 @@ tile on which ``lib_xud`` will be executed, for example::
   set(APP_COMPILER_FLAGS = .. -DUSB_TILE=tile[0] ..)
 
 Includes
---------
+========
 
 This application requires the system header files that contains XMOS xCORE specific
 defines for declaring and initialising hardware:
@@ -66,10 +67,10 @@ must be included in the code.
 
 
 Declarations
-------------
+============
 
 Allocating hardware resources for lib_xua
-.........................................
+-----------------------------------------
 
 This implementation of a USB Audio device using ``lib_xua`` requires the following I/O pins:
 
@@ -103,7 +104,7 @@ In addition to ``port`` resources a single clock-block resource is also required
 
 
 Allocating hardware resources for lib_mic_array
-...............................................
+-----------------------------------------------
 
 ``lib_mic_array`` requires a single 1-bit port for PDM data from two microphones. Each microphone is configured
 to produce a PDM sample on an opposite clock edge from the other. This means the the data is effectively double
@@ -127,7 +128,7 @@ Please see the ``lib_mic_array`` library documentation for full details.
 
 
 Other declarations
-..................
+------------------
 
 ``lib_xua`` currently requires the manual declaration of tables for the endpoint types for
 ``lib_xud`` and the calling the main XUD function in a par (``XUD_Main()``).
@@ -144,7 +145,7 @@ These are declared as follows:
    :end-at: XUD_EpType epTypeTableOut
 
 Configuring lib_xua
--------------------
+===================
 
 ``lib_xua`` must be configured to enable support for PDM microphones.
 
@@ -170,12 +171,12 @@ complete contents of this file are as follows:
 You can try changing ``XUA_PDM_MIC_FREQ`` to 32000 or 16000 to reconfigure the system to lower sample rates than the default 48 kHz.
 
 The application main() function
--------------------------------
+===============================
 
 The ``main()`` function sets up and runs the tasks in the application.
 
 Channel declarations
-....................
+--------------------
 
 Various channels are required in order to allow the required tasks to communicate.
 These must first be declared:
@@ -185,7 +186,7 @@ These must first be declared:
    :end-at: chan c_mic_pcm
 
 Standard ``lib_xua`` tasks
-..........................
+--------------------------
 
 The rest of the ``main()`` function starts all of the tasks in parallel
 using the xC ``par`` construct.
@@ -199,7 +200,7 @@ Firstly the standard ``lib_xua`` USB side tasks are run on tile 0. This code sta
 the audio I/O (``XUA_AudioHub``) is started on tile 1 where the I2S bus exists.
 
 Microphone task
-...............
+---------------
 
 The microphone task ``mic_array_task`` spawns a single thread which handles PDM receive on the ports and the decimation filters to produce PCM.
 This is placed on tile 1 where the microphone hardware is connected.
@@ -209,7 +210,7 @@ It connects directly to ``XUA_AudioHub`` and provides samples which are at the s
 |newpage|
 
 Demo Hardware Setup
--------------------
+===================
 
 To run the demo, connect a USB cable to power the ``XK-EVK-XU316`` board, ensure the pair of PDM microphones are connected via the ribbon cables and
 and plug the xTAG to the board and connect the xTAG USB cable to your development machine.
@@ -222,7 +223,7 @@ and plug the xTAG to the board and connect the xTAG USB cable to your developmen
 |newpage|
 
 Building the Application
-------------------------
+========================
 
 The following section assumes you have downloaded and installed the `XMOS XTC tools <https://www.xmos.com/software-tools/>`_
 (see `README` for required version). Installation instructions can be found `here <https://xmos.com/xtc-install-guide>`_.
@@ -251,7 +252,7 @@ Finally, the application binaries can be built using ``xmake``::
 The application uses approximately 49 kB on tile 0 and 17 kB on tile 1 (of 512 kB on each).
 
 Launching the demo application
-------------------------------
+==============================
 
 To run the application return to the ``/examples/AN00248_xua_example_pdm_mics`` directory and run the following command::
 
@@ -262,18 +263,19 @@ by recording the stream on the host or connecting to the analog output jacks.
 
 |newpage|
 
-References
-----------
+***************
+Further Reading
+***************
 
-  * XMOS Tools User Guide
+   * XMOS XTC Tools Installation Guide
 
-    https://www.xmos.com/documentation/XM-014363-PC-9/html/
+     https://xmos.com/xtc-install-guide
 
-  * XMOS xCORE Programming Guide
+      * XMOS XTC Tools User Guide
 
-    https://www.xmos.com/published/xmos-programming-guide
+        https://www.xmos.com/view/Tools-15-Documentation
 
-  * XMOS Libraries
+      * XMOS application build and dependency management system; xcommon-cmake
 
-    https://www.xmos.com/libraries/
+        https://www.xmos.com/file/xcommon-cmake-documentation/?version=latest
 

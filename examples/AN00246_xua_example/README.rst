@@ -50,7 +50,6 @@ Required Libraries (dependencies)
   * lib_spdif (www.github.com/xmos/lib_spdif)
   * lib_sw_pll (www.github.com/xmos/lib_sw_pll)
   * lib_xud (www.github.com/xmos/lib_xud)
-  * lib_i2c (www.github.com/xmos/lib_i2c)
   * lib_board_support (www.github.com/xmos/lib_board_support)
 
 *************************
