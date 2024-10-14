@@ -1,4 +1,4 @@
-// Copyright 2017-2022 XMOS LIMITED.
+// Copyright 2017-2024 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
 #include <xs1.h>
@@ -6,15 +6,13 @@
 #include <platform.h>
 
 #include "xua.h"
+#include "xk_evk_xu316/board.h"
 
-/* 0: DAC reset */
-/* 1: Ethernet Phy reset */
-on tile[1] : out port p_gpio = XS1_PORT_4F;
 
 void AudioHwInit()
 {
-    /* DAC in reset */
-    p_gpio <: 0;
+    xk_evk_xu316_config_t hw_config = {MCLK_48};
+    xk_evk_xu316_AudioHwInit(hw_config);
 
     return;
 }
@@ -23,8 +21,8 @@ void AudioHwInit()
 void AudioHwConfig(unsigned samFreq, unsigned mClk, unsigned dsdMode,
     unsigned sampRes_DAC, unsigned sampRes_ADC)
 {
-    /* Note, without any config the Cirrus 2100 will output it's 24.576MHz ref clock
-       to the Aux output - which we will use for mclk */
+    samFreq = 48000; /* xk_evk_xu316_AudioHwConfig doesn't like rates below 22kHz so force to 48k which works OK */
+    xk_evk_xu316_AudioHwConfig(samFreq, mClk, dsdMode, sampRes_DAC, sampRes_ADC);
 
     return;
 }

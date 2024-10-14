@@ -44,14 +44,14 @@
 #include "xua_commands.h"
 #include "xc_ptr.h"
 
-#define MAX(x,y) ((x)>(y) ? (x) : (y))
+#define XUA_MAX(x,y) ((x)>(y) ? (x) : (y))
 
-unsigned samplesOut[MAX(NUM_USB_CHAN_OUT, I2S_CHANS_DAC)];
+unsigned samplesOut[XUA_MAX(NUM_USB_CHAN_OUT, I2S_CHANS_DAC)];
 
 /* Two buffers for ADC data to allow for DAC and ADC I2S ports being offset */
 #define IN_CHAN_COUNT (I2S_CHANS_ADC + XUA_NUM_PDM_MICS + (8*XUA_ADAT_RX_EN) + (2*XUA_SPDIF_RX_EN))
 
-unsigned samplesIn[2][MAX(NUM_USB_CHAN_IN, IN_CHAN_COUNT)];
+unsigned samplesIn[2][XUA_MAX(NUM_USB_CHAN_IN, IN_CHAN_COUNT)];
 
 #if (XUA_ADAT_TX_EN)
 extern buffered out port:32 p_adat_tx;
@@ -228,26 +228,23 @@ unsigned static AudioHub_MainLoop(chanend ?c_out, chanend ?c_spd_out
     memset(&i2sOutUs3.delayLine, 0, sizeof i2sOutUs3.delayLine);
 #endif /* (AUD_TO_USB_RATIO > 1) */
 
-
-#if ((DEBUG_MIC_ARRAY == 1) && (XUA_NUM_PDM_MICS > 0))
-    /* Get initial samples from PDM->PCM converter to avoid stalling the decimators */
-    c_pdm_pcm <: 1;
-    master
-    {
-#pragma loop unroll
-        for(int i = PDM_MIC_INDEX; i < (XUA_NUM_PDM_MICS + PDM_MIC_INDEX); i++)
-        {
-            c_pdm_pcm :> samplesIn[readBuffNo][i];
-        }
-    }
-#endif // ((DEBUG_MIC_ARRAY == 1) && (XUA_NUM_PDM_MICS > 0))
-
     UserBufferManagementInit(curSamFreq);
 
     unsigned command = DoSampleTransfer(c_out, readBuffNo, underflowWord);
 
     // Reinitialise user state before entering the main loop
     UserBufferManagementInit(curSamFreq);
+
+#if XUA_NUM_PDM_MICS > 0
+    /* Receive an initial frame and wait one sample period to ensure mic_array is ready to produce so
+       we don't break the audioloop timing by ma_frame_rx() blocking */
+    unsafe {
+        chanend_t c_m2a = (chanend_t)c_pdm_pcm;
+        int32_t *mic_samps_base_addr = (int32_t*)&samplesIn[readBuffNo][PDM_MIC_INDEX];
+        ma_frame_rx(mic_samps_base_addr, c_m2a, MIC_ARRAY_CONFIG_SAMPLES_PER_FRAME, MIC_ARRAY_CONFIG_MIC_COUNT);
+        delay_ticks(XS1_TIMER_HZ / curSamFreq);
+    }
+#endif
 
 #if (XUA_ADAT_TX_EN)
     unsafe{
@@ -413,17 +410,11 @@ unsigned static AudioHub_MainLoop(chanend ?c_out, chanend ?c_spd_out
 
 #if (XUA_NUM_PDM_MICS > 0)
                 if ((AUD_TO_MICS_RATIO - 1) == audioToMicsRatioCounter)
-                {
-                    /* Get samples from PDM->PCM converter */
-                    c_pdm_pcm <: 1;
-                    master
-                    {
-#pragma loop unroll
-                        for(int i = PDM_MIC_INDEX; i < (XUA_NUM_PDM_MICS + PDM_MIC_INDEX); i++)
-                        {
-                            c_pdm_pcm :> samplesIn[readBuffNo][i];
-                        }
-                    }
+                unsafe {
+                    chanend_t c_m2a = (chanend_t)c_pdm_pcm;
+                    int32_t *mic_samps_base_addr = (int32_t*)&samplesIn[readBuffNo][PDM_MIC_INDEX];
+                    ma_frame_rx(mic_samps_base_addr, c_m2a, MIC_ARRAY_CONFIG_SAMPLES_PER_FRAME, MIC_ARRAY_CONFIG_MIC_COUNT);
+                    user_pdm_process(mic_samps_base_addr);
                     audioToMicsRatioCounter = 0;
                 }
                 else
@@ -476,7 +467,7 @@ unsigned static AudioHub_MainLoop(chanend ?c_out, chanend ?c_spd_out
                     samplesIn[buffIndex][chanIndex] = sample;
 #endif /* (AUD_TO_USB_RATIO > 1) && !I2S_DOWNSAMPLE_MONO_IN */
                 }
-#endif
+#endif /* I2S_CHANS_ADC != 0) */
 
 #if (I2S_CHANS_ADC != 0 || I2S_CHANS_DAC != 0)
                 syncError += HandleSampleClock(frameCount, p_lrclk);
@@ -866,6 +857,7 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
 
 #if (XUA_NUM_PDM_MICS > 0)
                 /* Send decimation factor to PDM task(s) */
+                user_pdm_init();
                 c_pdm_in <: curSamFreq / AUD_TO_MICS_RATIO;
 #endif
 
@@ -947,7 +939,8 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
 #endif /* XUA_USB_EN */
 
 #if XUA_NUM_PDM_MICS > 0
-                c_pdm_in <: 0;
+                // TODO - this willbe an exit command when supported in mic_array
+                // c_pdm_in <: 0;
 #endif
 
 #if (XUA_ADAT_TX_EN)
