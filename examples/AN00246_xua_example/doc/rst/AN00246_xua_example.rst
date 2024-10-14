@@ -1,12 +1,11 @@
-.. include:: ../../README.rst
 
-|newpage|
+##############################################
+AN00246: Simple USB Audio Device using lib_xua
+##############################################
 
+********
 Overview
---------
-
-Introduction
-............
+********
 
 The XMOS USB Audio (XUA) library provides an implemention of USB Audio Class versions 1.0 and 2.0.
 
@@ -14,8 +13,12 @@ This application note demonstrates the implementation of a basic USB Audio Devic
 the xCORE.ai Multichannel (MC) Audio board (XK-AUDIO-316-MC).
 
 
-The Makefile
-------------
+****************************************
+USB Audio to |I2S| example using lib_xua
+****************************************
+
+The CMakeLists.txt file
+=======================
 
 To start using the XMOS XUA library, you need to add ``lib_xua`` to the dependent module list
 in the CMakeLists.txt file. This application note uses the ``lib_board_support`` software
@@ -38,7 +41,7 @@ The ``lib_board_support`` requires a compiler flag to select the hardware type::
   set(APP_COMPILER_FLAGS ... -DBOARD_SUPPORT_BOARD=XK_AUDIO_316_MC_AB ...)
 
 Includes
---------
+========
 
 This application requires the system header that defines XMOS xCORE specific
 defines for declaring and initialising hardware:
@@ -54,6 +57,9 @@ be included in your code to use the library. Headers are also required for
 .. literalinclude:: ../../src/app_xua_simple.xc
    :start-at: include "xua.h"
    :end-at: include "xk_audio_316_mc_ab/board.h"
+
+Declarations
+============
 
 Allocating Hardware Resources
 -----------------------------
@@ -115,7 +121,7 @@ These are declared as follows:
    :end-at: XUD_EpType epTypeTableIn
 
 Hardware Setup
---------------
+==============
 
 Some code is needed to perform the hardware-specific setup for the board being used
 in this application note.
@@ -140,7 +146,7 @@ defined as wrapper functions around the board-specific code from ``lib_board_sup
 
 
 The Application main() Function
--------------------------------
+===============================
 
 The ``main()`` function sets up the tasks in the application.
 
@@ -165,7 +171,7 @@ It also runs ``xk_audio_316_mc_ab_board_setup()`` and ``xk_audio_316_mc_ab_i2c_m
 that are used for setting up the hardware.
 
 Configuration
--------------
+=============
 
 ``lib_xua`` has many parameters than can be configured at build time, some examples include:
 
@@ -189,7 +195,7 @@ implentation e.g. master clock frequencies and must be defined.  Please see the 
 |newpage|
 
 Building the Application
-------------------------
+========================
 
 The following section assumes you have downloaded and installed the `XMOS XTC tools <https://www.xmos.com/software-tools/>`_
 (see `README` for required version). Installation instructions can be found `here <https://xmos.com/xtc-install-guide>`_.
@@ -212,7 +218,7 @@ Finally, the application binaries can be built using ``xmake``::
     xmake -C build
 
 Demo Hardware Setup
--------------------
+===================
 
 To run the demo, use a USB cable to connect the on-board xTAG debug adapter (marked ``DEBUG``) to your development computer.
 Use another USB cable to connect the USB receptacle marked ``USB DEVICE`` to the device you wish to play audio from.
@@ -226,17 +232,14 @@ Plug a device capable of receiving analogue audio (i.e. an amplified speaker) to
 
 |newpage|
 
-Launching the Demo Application
-------------------------------
+Launching the Demo Application from the command line
+====================================================
 
 Once the demo example has been built from the command line using ``xmake``
 it can be executed on the xCORE.ai MC Audio Board.
 
 Once built there will be a ``bin/`` directory within the project which contains
 the binary for the xCORE device. The xCORE binary has a XMOS standard .xe extension.
-
-Launching from the Command Line
-...............................
 
 From the command line you use the ``xrun`` tool to download and run the code
 on the xCORE device::
@@ -247,26 +250,25 @@ Once this command has executed the application will be running on the
 xCORE.ai MC Audio Board
 
 Running the Application
-.......................
+-----------------------
 
 Once running the device will be detected as a USB Audio device - note, Windows operating
 systems may require a third party driver for correct operation
 
 |newpage|
 
-References
-----------
+***************
+Further Reading
+***************
 
-  * XMOS Tools User Guide
+   * XMOS XTC Tools Installation Guide
 
-    https://www.xmos.com/documentation/XM-014363-PC-9/html/
+     https://xmos.com/xtc-install-guide
 
-  * XMOS xCORE Programming Guide
+      * XMOS XTC Tools User Guide
 
-    https://www.xmos.com/published/xmos-programming-guide
+        https://www.xmos.com/view/Tools-15-Documentation
 
-  * XMOS Libraries
+      * XMOS application build and dependency management system; xcommon-cmake
 
-    https://www.xmos.com/libraries/
-
-|newpage|
+        https://www.xmos.com/file/xcommon-cmake-documentation/?version=latest

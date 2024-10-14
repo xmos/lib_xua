@@ -1,12 +1,10 @@
-.. include:: ../../README.rst
+################################################
+AN00247: Using lib_xua with lib_spdif (transmit)
+################################################
 
-|newpage|
-
+********
 Overview
---------
-
-Introduction
-............
+********
 
 The XMOS USB Audio (XUA) library provides an implementation of USB Audio Class versions 1.0 and 2.0.
 
@@ -17,9 +15,12 @@ To reduce complexity this application note does not enable any other audio inter
 (i.e. no I2S). Readers are encouraged to read application note AN00246 in conjunction with this application
 note.
 
+**************************************************
+USB Audio to S/PDIF transmit example using lib_xua
+**************************************************
 
-The Makefile
-------------
+The CMakeLists.txt file
+=======================
 
 To start using the XMOS XUA library, you need to add ``lib_xua`` to the dependent module list
 in the CMakeLists.txt file. This application note also uses ``lib_spdif``, so this must be
@@ -44,7 +45,7 @@ The ``lib_board_support`` requires a compiler flag to select the hardware type::
   set(APP_COMPILER_FLAGS ... -DBOARD_SUPPORT_BOARD=XK_AUDIO_316_MC_AB ...)
 
 Includes
---------
+========
 
 This application requires the system header that defines XMOS xCORE specific
 defines for declaring and initialising hardware:
@@ -63,10 +64,10 @@ xCORE.ai Multichannel Audio board.
    :end-at: include "xk_audio_316_mc_ab/board.h"
 
 Declarations
-------------
+============
 
 Allocating hardware resources for lib_xua
-.........................................
+-----------------------------------------
 
 A minimal implementation of a USB Audio device, without I2S functionality,
 using ``lib_xua`` requires the follow pins:
@@ -101,7 +102,7 @@ Again, for the same reasoning as the master-clock ports, two master-clock clock-
 
 
 Allocating hardware resources for lib_spdif
-...........................................
+-------------------------------------------
 
 The S/PDIF transmitter requires a single (buffered) 1-bit port:
 
@@ -118,7 +119,7 @@ an extra clock-block as follows:
 
 
 Other declarations
-..................
+------------------
 
 ``lib_xua`` currently requires the manual declaration of tables for the endpoint types for
 ``lib_xud`` and the calling the main XUD function in a par (``XUD_Main()``).
@@ -135,7 +136,7 @@ These are declared as follows:
    :end-at: XUD_EpType epTypeTableIn
 
 Hardware Setup
---------------
+==============
 
 Some code is needed to perform the hardware-specific setup for the board being used
 in this application note.
@@ -158,7 +159,7 @@ defined as wrapper functions around the board-specific code from ``lib_board_sup
    :end-before: int main()
 
 Configuring lib_xua
--------------------
+===================
 
 ``lib_xua`` must be configured to enable S/PDIF Tx functionality.
 
@@ -182,7 +183,7 @@ complete contents of this file are as follows:
    :end-at: #endif
 
 The application main() function
--------------------------------
+===============================
 
 The ``main()`` function sets up the tasks in the application.
 
@@ -213,7 +214,7 @@ that are used for setting up the hardware.
 |newpage|
 
 Building the Application
-------------------------
+========================
 
 The following section assumes you have downloaded and installed the `XMOS XTC tools <https://www.xmos.com/software-tools/>`_
 (see `README` for required version). Installation instructions can be found `here <https://xmos.com/xtc-install-guide>`_.
@@ -236,7 +237,7 @@ Finally, the application binaries can be built using ``xmake``::
     xmake -C build
 
 Demo Hardware Setup
--------------------
+===================
 
 To run the demo, use a USB cable to connect the on-board xTAG debug adapter (marked DEBUG) to your development computer.
 Use another USB cable to connect the USB receptacle marked USB DEVICE to the device you wish to play audio from.
@@ -250,18 +251,13 @@ A device capable of receiving an S/PDIF signal (ie. a speaker) should be connect
 
 |newpage|
 
-Launching the demo application
-------------------------------
+Launching the demo application from the command line
+====================================================
 
-Once the demo example has been built either from the command line using xmake or
-via the build mechanism of xTIMEcomposer studio it can be executed on the xCORE.ai
-MC Audio board.
+Once the demo example has been built it can be executed on the xCORE.ai MC Audio board.
 
 Once built there will be a ``bin/`` directory within the project which contains
 the binary for the xCORE device. The xCORE binary has a XMOS standard .xe extension.
-
-Launching from the command line
-...............................
 
 From the command line you use the ``xrun`` tool to download and run the code
 on the xCORE device::
@@ -271,40 +267,28 @@ on the xCORE device::
 Once this command has executed the application will be running on the
 xCORE.ai MC Audio Board
 
-Launching from xTIMEcomposer Studio
-...................................
-
-From xTIMEcomposer Studio use the run mechanism to download code to xCORE device.
-Select the xCORE binary from the ``bin/`` directory, right click and go to Run
-Configurations. Double click on xCORE application to create a new run configuration,
-enable the xSCOPE I/O mode in the dialog box and then
-select Run.
-
-Once this command has executed the application will be running on the
-xCORE.ai MC Audio board.
 
 Running the application
-.......................
+=======================
 
 Once running the device will be detected as a USB Audio device - note, Windows operating
 systems may require a third party driver for correct operation
 
 |newpage|
 
-References
-----------
+***************
+Further Reading
+***************
 
-  * XMOS Tools User Guide
+   * XMOS XTC Tools Installation Guide
 
-    https://www.xmos.com/documentation/XM-014363-PC-9/html/
+     https://xmos.com/xtc-install-guide
 
-  * XMOS xCORE Programming Guide
+      * XMOS XTC Tools User Guide
 
-    https://www.xmos.com/published/xmos-programming-guide
+        https://www.xmos.com/view/Tools-15-Documentation
 
-  * XMOS Libraries
+      * XMOS application build and dependency management system; xcommon-cmake
 
-    https://www.xmos.com/libraries/
-
-|newpage|
+        https://www.xmos.com/file/xcommon-cmake-documentation/?version=latest
 
