@@ -1,24 +1,32 @@
-lib_xua
-#######
+:orphan:
 
-:Version: 4.2.0
-:Vendor: XMOS
+#####################################
+lib_xua: USB Audio Components Library
+#####################################
 
-:Scope: General Use
+:vendor: XMOS
+:version: 4.2.0
+:scope: General Use
+:description: USB Audio components library
+:category: General Purpose
+:keywords: USB Audio
+:devices: xcore.ai, xcore-200
 
-Summary
-*******
+********
+Overview
+********
 
 lib_xua contains shared components for use in the XMOS USB Audio (XUA) Reference Designs.
 
 These components enable the development of USB Audio devices on the XMOS xCORE architecture.
 
+********
 Features
-========
+********
 
 Key features of the various components in this repository are as follows
 
-- USB Audio Class 1.0/2.0 Compliant
+- USB Audio Class 1.0/2.0 compliant
 
 - Fully Asynchronous operation (synchronous mode as an option)
 
@@ -54,24 +62,26 @@ Key features of the various components in this repository are as follows
 
 - Support for adding custom HID interfaces
 
-Note, not all features may be supported at all sample frequencies, simultaneously or on all devices.  
+Note, not all features may be supported at all sample frequencies, simultaneously or on all devices.
 Some features may also require specific host driver support.
 
+************************
 Host System Requirements
-========================
+************************
 
 USB Audio devices built using `lib_xua` have the following host system requirements.
 
 - Mac OSX version 10.6 or later
 
 - Windows Vista, 7, 8 or 10 with Thesycon Audio Class 2.0 driver for Windows (Tested against version 3.20). Please contact XMOS for details.
- 
+
 - Windows Vista, 7, 8 or 10 with built-in USB Audio Class 1.0 driver.
 
 Older versions of Windows are not guaranteed to operate as expected. Devices are also expected to operate with various Linux distributions including mobile variants.
 
+*************************
 Related Application Notes
-=========================
+*************************
 
 The following application notes use this library:
 
@@ -79,8 +89,15 @@ The following application notes use this library:
   * AN000247 - Using lib_xua with lib_spdif (transmit)
   * AN000248 - Using lib_xua with lib_mic_array
 
-Required Software (dependencies)
-================================
+**************
+Required Tools
+**************
+
+  * XMOS XTC Tools: 15.3.0
+
+*********************************
+Required Libraries (dependencies)
+*********************************
 
   * lib_adat (www.github.com/xmos/lib_adat)
   * lib_locks (www.github.com/xmos/lib_locks)
@@ -92,12 +109,8 @@ Required Software (dependencies)
   * lib_sw_pll (www.github.com/xmos/lib_sw_pll)
   * lib_xud (www.github.com/xmos/lib_xud)
 
-Documentation
-=============
-
-You can find the documentation for this software in the /doc directory of the package.
-
+*******
 Support
-=======
+*******
 
-This package is supported by XMOS Ltd. Issues can be raised against the software at: http://www.xmos.com/support
+This package is supported by XMOS Ltd. Issues can be raised against the software at http://www.xmos.com/support

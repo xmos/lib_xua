@@ -1,7 +1,7 @@
 .. _usb_audio_sec_mixer:
 
 Digital Mixer
--------------
+=============
 
 The Mixer core(s) take outgoing audio from the Decouple core and incoming audio from the Audio Hub
 core. It then applies the volume to each channel and passes incoming audio on to Decouple and outgoing
@@ -79,7 +79,7 @@ not present and the mixer1 exchanges data with Audio Hub and Decouple along with
    Mixer in passthrough mode
 
 Control
-~~~~~~~
+-------
 
 The mixers can receive the control commands from the host via USB Control Requests to Endpoint 0.
 The Endpoint 0 core relays these to the Mixer cores(s) via a channel (``c_mix_ctl``). These commands
@@ -120,7 +120,7 @@ are described in the following :ref:`table<table_mixer_commands>`:
 |endfullwidth|
 
 Host Control
-~~~~~~~~~~~~
+------------
 
 The mixer can be controlled from a host PC by sending requests to Endpoint 0. XMOS provides a simple
 command line based sample application demonstrating how the mixer can be controlled. This is

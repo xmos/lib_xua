@@ -37,7 +37,7 @@ word is always read followed by eight words of data.
 
 
 Usage and Integration
-~~~~~~~~~~~~~~~~~~~~~
+---------------------
 
 Since the ADAT is a digital stream the device's master clock must synchronised to it. The integration
 of ADAT receive is much the same as S/PDIF receive in that the ADAT receive function communicates

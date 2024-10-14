@@ -3,6 +3,7 @@
 
 .. _usb_audio_sec_architecture:
 
+*********************
 Software Architecture
 *********************
 
@@ -27,7 +28,7 @@ This section describes the required software architecture of a USB Audio device 
  * - AudioHub
    - Handles audio I/O over I2S and manages audio data
      to/from other digital audio I/O components.
-    
+
 In addition low-level USB I/0 is required and is provided by the external dependency `lib_xud`
 
 .. tabularcolumns:: lp{5cm}l
@@ -51,13 +52,13 @@ In addition :ref:`usb_audio_optional_components` shows optional components that 
  * - Component
    - Description
  * - Mixer
-   - Allows digital mixing of input and output channels.  It can also 
+   - Allows digital mixing of input and output channels.  It can also
      handle volume control instead of the decoupler.
  * - Clockgen
    - Drives an external frequency generator (PLL) and manages
      changes between internal clocks and external clocks arising
      from digital input. On xcore.ai Clockgen may also work in
-     conjunction with lib_sw_pll to produce a local clock from 
+     conjunction with lib_sw_pll to produce a local clock from
      the XCORE which is locked to the incoming digital stream.
  * - MIDI
    - Outputs and inputs MIDI over a serial UART interface.
@@ -87,7 +88,7 @@ In addition :ref:`usb_audio_optional_components` shows optional components that 
 
 .. figure:: images/threads-crop.*
       :width: 100%
- 
+
       USB Audio Core Diagram
 
 :ref:`usb_audio_threads` shows how the components interact with each
