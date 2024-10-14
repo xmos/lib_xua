@@ -25,6 +25,7 @@
 
 #define EXCLUDE_USB_AUDIO_MAIN
 
+#define AUDIO_CLASS                         1
 #define VENDOR_STR                          "XMOS"
 #define VENDOR_ID                           0x20B1
 #define PRODUCT_STR_A2                      "XUA PDM Example"
