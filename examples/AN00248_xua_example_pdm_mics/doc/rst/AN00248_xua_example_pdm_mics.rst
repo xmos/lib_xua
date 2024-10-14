@@ -38,7 +38,7 @@ and are included in the application ``CMakeLists.txt`` file.
 The ``lib_xud`` library requires some flags for correct operation. Namely the
 tile on which ``lib_xud`` will be executed, for example::
 
-    APP_COMPILER_FLAGS = .. -DUSB_TILE=tile[0] ..
+  set(APP_COMPILER_FLAGS = .. -DUSB_TILE=tile[0] ..)
 
 Includes
 --------

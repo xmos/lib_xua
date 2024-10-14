@@ -4,6 +4,8 @@
 #ifndef _XUA_CONF_H_
 #define _XUA_CONF_H_
 
+#include <platform.h>
+
 #define NUM_USB_CHAN_OUT                    0               /* Number of channels from host to device */
 #define NUM_USB_CHAN_IN                     2               /* Number of channels from device to host */
 #define I2S_CHANS_DAC                       2               /* Number of I2S channels out of xCORE */
@@ -15,9 +17,9 @@
 #define MAX_FREQ  XUA_SAMP_FREQ                             /* Maximum sample rate */
 
 #define XUA_NUM_PDM_MICS                    2
-#define MIC_ARRAY_CONFIG_PORT_MCLK          XS1_PORT_1D
-#define MIC_ARRAY_CONFIG_PORT_PDM_CLK       XS1_PORT_1G
-#define MIC_ARRAY_CONFIG_PORT_PDM_DATA      XS1_PORT_1F
+#define MIC_ARRAY_CONFIG_PORT_MCLK          PORT_MCLK_IN
+#define MIC_ARRAY_CONFIG_PORT_PDM_CLK       PORT_PDM_CLK
+#define MIC_ARRAY_CONFIG_PORT_PDM_DATA      PORT_PDM_DATA
 #define MIC_ARRAY_CONFIG_CLOCK_BLOCK_A      XS1_CLKBLK_1      
 #define MIC_ARRAY_CONFIG_CLOCK_BLOCK_B      XS1_CLKBLK_2    /* Second clock needed as we use DDR */
 

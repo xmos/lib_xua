@@ -14,12 +14,10 @@
 #include "mic_array/etc/filters_default.h"
 #include "xua_pdm_mic.h"
 
-// #include "app_conf.h"
 #include "xmath/types.h"
 
 
 ////// Check that all the required config macros have been defined. 
-
 #ifndef MIC_ARRAY_CONFIG_MCLK_FREQ
 # error Application must specify the master clock frequency by defining MIC_ARRAY_CONFIG_MCLK_FREQ.
 #endif
@@ -29,24 +27,19 @@
 #endif
 
 ////// Provide default values for optional config macros
-
 # if ((MIC_ARRAY_CONFIG_SAMPLES_PER_FRAME) < 1)
 #  error MIC_ARRAY_CONFIG_SAMPLES_PER_FRAME must be positive.
 # endif
 
 ////// Additional macros derived from others
-
 #define MIC_ARRAY_CONFIG_MCLK_DIVIDER     ((MIC_ARRAY_CONFIG_MCLK_FREQ)       \
                                               /(MIC_ARRAY_CONFIG_PDM_FREQ))
 #define MIC_ARRAY_CONFIG_OUT_SAMPLE_RATE    ((MIC_ARRAY_CONFIG_PDM_FREQ)      \
                                               /(STAGE2_DEC_FACTOR))
 
-////// Any Additional correctness checks
-
 
 
 ////// Allocate needed objects
-
 #if (!(MIC_ARRAY_CONFIG_USE_DDR))
 pdm_rx_resources_t pdm_res = PDM_RX_RESOURCES_SDR(
                                 MIC_ARRAY_CONFIG_PORT_MCLK,
