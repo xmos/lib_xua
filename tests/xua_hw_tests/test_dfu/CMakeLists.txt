@@ -6,7 +6,7 @@ set(XMOS_SANDBOX_DIR ${CMAKE_CURRENT_LIST_DIR}/../../../..)
 
 set(APP_HW_TARGET xk-audio-316-mc.xn)
 set(APP_DEPENDENT_MODULES "lib_xua"
-                          "lib_board_support(1.0.1)")
+                          "lib_board_support(1.1.0)")
 set(APP_INCLUDES src)
 
 set(COMMON_FLAGS -O3
