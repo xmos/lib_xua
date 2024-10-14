@@ -9,7 +9,7 @@
 
 /* PDM mics configuration */
 #ifndef MIC_ARRAY_CONFIG_MCLK_FREQ
-#define MIC_ARRAY_CONFIG_MCLK_FREQ          XUA_PDM_MIC_FREQ    // Used with MIC_ARRAY_CONFIG_PDM_FREQ to calculate clock divider 
+#define MIC_ARRAY_CONFIG_MCLK_FREQ          MCLK_48             // Used with MIC_ARRAY_CONFIG_PDM_FREQ to calculate clock divider 
 #endif
 #ifndef MIC_ARRAY_CONFIG_PDM_FREQ
 #define MIC_ARRAY_CONFIG_PDM_FREQ           3072000             // Used with MIC_ARRAY_CONFIG_MCLK_FREQ to calculate clock divider 

@@ -167,6 +167,8 @@ complete contents of this file are as follows:
    :start-on: // Copyright
    :end-on: #endif
 
+You can try changing ``XUA_PDM_MIC_FREQ`` to 32000 or 16000 to reconfigure the system to lower sample rates than the default 48 kHz.
+
 The application main() function
 -------------------------------
 
