@@ -23,5 +23,8 @@ via the defines in :ref:`opt_pdm_defines`.
    * - ``PDM_MIC_INDEX``
      - Defines which starting input channel the mics map to 
      - ``0``
+   * - ``XUA_PDM_MIC_FREQ``
+     - Defines the PCM output sample rate of ``lib_mic_array``
+     - None (must be defined by the application if microphones enabled)
 
 Please see the :ref:`PDM Microphones<sw_pdm_main>` section for further details. 

@@ -160,16 +160,16 @@ static const int32_t WORD_ALIGNED stage2_48k_coefs[MIC_ARRAY_48K_STAGE_2_TAP_COU
 
 // 32kHz vs 16kHz choices
 constexpr int mic_count = MIC_ARRAY_CONFIG_MIC_COUNT;
-constexpr int decimation_factor = (XUA_SAMP_FREQ == 48000) ? 2 : ((XUA_SAMP_FREQ == 32000) ? 3 : 6);
-constexpr int stage_2_tap_count = (XUA_SAMP_FREQ == 48000) ? MIC_ARRAY_48K_STAGE_2_TAP_COUNT : ((XUA_SAMP_FREQ == 32000) ? MIC_ARRAY_32K_STAGE_2_TAP_COUNT : STAGE2_TAP_COUNT);
+constexpr int decimation_factor = (XUA_PDM_MIC_FREQ == 48000) ? 2 : ((XUA_PDM_MIC_FREQ == 32000) ? 3 : 6);
+constexpr int stage_2_tap_count = (XUA_PDM_MIC_FREQ == 48000) ? MIC_ARRAY_48K_STAGE_2_TAP_COUNT : ((XUA_PDM_MIC_FREQ == 32000) ? MIC_ARRAY_32K_STAGE_2_TAP_COUNT : STAGE2_TAP_COUNT);
 constexpr const uint32_t* stage_1_filter() {
-    return (XUA_SAMP_FREQ == 48000) ? &stage1_48k_coefs[0] : ((XUA_SAMP_FREQ == 32000) ? &stage1_32k_coefs[0] : &stage1_coef[0]);
+    return (XUA_PDM_MIC_FREQ == 48000) ? &stage1_48k_coefs[0] : ((XUA_PDM_MIC_FREQ == 32000) ? &stage1_32k_coefs[0] : &stage1_coef[0]);
 }
 constexpr const int32_t* stage_2_filter() {
-    return (XUA_SAMP_FREQ == 48000) ? &stage2_48k_coefs[0] : ((XUA_SAMP_FREQ == 32000) ? &stage2_32k_coefs[0] : &stage2_coef[0]);
+    return (XUA_PDM_MIC_FREQ == 48000) ? &stage2_48k_coefs[0] : ((XUA_PDM_MIC_FREQ == 32000) ? &stage2_32k_coefs[0] : &stage2_coef[0]);
 }
 constexpr const right_shift_t* stage_2_shift() {
-    return (XUA_SAMP_FREQ == 48000) ? &stage2_48k_shift : ((XUA_SAMP_FREQ == 32000) ? &stage2_32k_shift : &stage2_shr);
+    return (XUA_PDM_MIC_FREQ == 48000) ? &stage2_48k_shift : ((XUA_PDM_MIC_FREQ == 32000) ? &stage2_32k_shift : &stage2_shr);
 }
 
 
