@@ -29,4 +29,6 @@ via the following :ref:`defines<opt_pdm_defines>`:
      - Defines the PCM output sample rate of ``lib_mic_array``
      - None (must be defined by the application if microphones enabled)
 
+|endfullwidth|
+
 Please see the :ref:`PDM Microphones<sw_pdm_main>` section for further details.
