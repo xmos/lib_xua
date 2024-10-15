@@ -303,7 +303,7 @@ void usb_audio_io(chanend ?c_aud_in,
     chanend c_mix_ctl,
 #endif
     streaming chanend ?c_spdif_rx,
-    chanend ?c_adat_rx,
+    streaming chanend ?c_adat_rx,
     chanend ?c_clk_ctl,
     chanend ?c_clk_int
 #if (XUD_TILE != 0)  && (AUDIO_IO_TILE == 0) && (XUA_DFU_EN == 1)
@@ -465,7 +465,7 @@ int main()
 #endif
 
 #if (XUA_ADAT_RX_EN)
-    chan c_adat_rx;
+    streaming chan c_adat_rx;
 #else
 #define c_adat_rx null
 #endif

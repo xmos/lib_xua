@@ -34,7 +34,7 @@ void PllRefPinTask(server interface pll_ref_if i_pll_ref, out port p_sync);
  *
  */
 void clockGen(  streaming chanend ?c_spdif_rx,
-                chanend ?c_adat_rx,
+                streaming chanend ?c_adat_rx,
                 client interface pll_ref_if i_pll_ref,
                 chanend c_audio,
                 chanend c_clk_ctl,
