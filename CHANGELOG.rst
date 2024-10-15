@@ -45,6 +45,8 @@ UNRELEASED
 
   * Changes to dependencies:
 
+    - lib_adat: 1.2.0 -> 2.0.0
+
     - lib_spdif: 6.1.0 -> 6.1.1
 
     - lib_xud: 2.3.1 -> 2.3.2
