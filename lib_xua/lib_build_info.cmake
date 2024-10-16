@@ -20,7 +20,7 @@ set(LIB_INCLUDES api
                  src/hid
                  src/midi)
 set(LIB_OPTIONAL_HEADERS xua_conf.h static_hid_report.h)
-set(LIB_DEPENDENT_MODULES "lib_adat(2.0.1)"
+set(LIB_DEPENDENT_MODULES "lib_adat(develop)"
                           "lib_locks(2.2.0)"
                           "lib_logging(3.2.0)"
                           "lib_mic_array(4.6.0)"
