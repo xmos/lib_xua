@@ -1207,8 +1207,8 @@ void XUA_Buffer_Ep(
 
 #endif  // ifdef IAP
 
+#if (0 < HID_CONTROLS)
             default:
-#if ( 0 < HID_CONTROLS )
                 if (!hid_ready_flag)
                 {
                     for (unsigned id = hidIsReportIdInUse(); id < hidGetReportIdLimit(); id++)
@@ -1224,11 +1224,9 @@ void XUA_Buffer_Ep(
                         }
                     }
                 }
-#endif
                 break;
                 //::
-
-
+#endif
         }
     }
 }
