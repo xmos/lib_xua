@@ -18,7 +18,7 @@ The mixer can take inputs from either:
    * The inputs from the audio interfaces on the device---these samples come from the Audio Hub core
      and includes samples from digital input streams.
 
-Since the sum of these inputs may be more then the 18 possible mix inputs to each mixer, there is a
+Since the sum of these inputs may be more than the 18 possible mix inputs to each mixer, there is a
 mapping from all the possible inputs to the mixer inputs.
 
 After the mix occurs, the final outputs are created. There are two possible output destinations
@@ -29,7 +29,7 @@ for each mix.
    * The outputs to the audio interface on the device---these samples are sent to the Audio Hub
      core
 
-For each possible output from the device, a mapping exists to inform the mixer what it's source is.
+For each possible output from the device, a mapping exists to inform the mixer what its source is.
 The possible sources are the output from the USB host, the inputs from the Audio Hub core or the
 outputs from the mixes.
 
@@ -37,7 +37,7 @@ Essentially the mixer/router can be configured such that any device input can be
 any mix or routed directly to any device output. Additionally, any device output can be derived from
 any mixer output or any device input.
 
-As mentioned in :ref:`usb_audio_sec_audio-requ-volume`, the mixer can also handle processing or
+As mentioned in :ref:`usb_audio_sec_audio-requ-volume`, the mixer can also handle processing of
 volume controls. If the mixer is configured to handle volume but the number of mixes is set to zero
 (such that the core is solely doing volume setting) then the component will use only one core. This
 is sometimes a useful configuration for large channel count devices.
@@ -141,7 +141,7 @@ The main requirements of this control utility are to
 
 .. note::
 
-    The flexibility within this configuration space us such that there is often multiple ways
+    The flexibility within this configuration space is such that there are often multiple ways
     of producing the desired result.  Product developers may only want to expose a subset of this
     functionality to their end users.
 

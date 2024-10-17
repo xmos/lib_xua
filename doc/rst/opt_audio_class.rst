@@ -50,12 +50,6 @@ The device will operate in full-speed Audio Class 1.0 mode if one of the followi
 
 The options to control this behavior are detailed in :ref:`sec_api_defines`.
 
-When running in Audio Class 1.0 mode the following restrictions are applied:
-
-- MIDI is disabled.
-
-- DFU is disabled (Since Windows operating systems would prompt for a DFU driver to be installed)
-
 Due to bandwidth limitations of full-speed USB the following sample-frequency restrictions are also applied:
 
 -  Sample rate is limited to a maximum of 48kHz if both input and output are enabled.

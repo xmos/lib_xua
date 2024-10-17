@@ -43,11 +43,11 @@ Note, memory usage is approximate and varies based on device used, compiler sett
 
 .. note::
 
-    The XUD library requires an 80MIPS core to function correctly
-    (i.e. on a 500MHz part only six cores can run).
+    The XUD library requires an 85 MIPS core to function correctly
+    (i.e. on a 600MHz part only seven cores can run).
 
 .. note::
 
-   Unlike other interfaces, since the USB PHY is internal the USB ports are a fixed set of ports
+   Unlike other interfaces, since the USB PHY is internal, the USB ports are a fixed set of ports
    and cannot be modified.  See ``lib_xud`` documentation for full details.
 

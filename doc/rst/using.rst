@@ -34,16 +34,16 @@ All `lib_xua` functions can be accessed via the ``xua.h`` header file::
 
   #include <xua.h>
 
-It is also required to add ``lib_xua`` to the ``USED_MODULES`` field of your application Makefile::
+It is also required to add ``lib_xua`` to the list of dependent modules in the application's CMakeLists.txt file.
 
-  USED_MODULES = .. lib_xua ...
+  set(APP_DEPENDENT_MODULES "lib_xua")
 
 .. _sec_basic_usage_codeless:
 
 "Codeless" Programming Model
 ============================
 
-Whilst it is possible to code a USB Audio device using the building blocks provided by `lib_xua`
+Whilst it is possible to code a USB Audio device using the building blocks provided by `lib_xua`,
 it is realised that this might not be desirable for many classes of customers or products.
 
 For instance, some users may not have a large software development experience and simply want to
@@ -58,9 +58,9 @@ resources, communication channels etc, requiring quite a lot of code to be autho
 In order to cater for the former class of users, a "codeless" option is provided. Put simply, a file
 ``main.xc`` is provided which includes a pre-authored ``main()`` function along with all of the
 required hardware resource declarations. Code is generated based on the options provided by the
-developer in ``xua_conf.h``
+developer in ``xua_conf.h``.
 
-Using this development model the user simply must include a ``xua_conf.h`` with their settings and
+Using this development model the user simply includes a ``xua_conf.h`` with their settings and
 optional implementations of any 'user functions' as desired. This, along with an XN file for their
 hardware platform, is all that is required to build a fully featured and functioning product. This
 XN file should contain definitions of the ports used for the various ``lib_xua`` functionality,

@@ -4,21 +4,21 @@ Audio Controls via Human Interface Device (HID)
 The design supports simple audio controls such as play/pause, volume up/down etc via the USB Human
 Interface Device Class Specification.
 
-This functionality is enabled by setting the ``HID_CONTROLS`` define to ``1``.  Setting to ``0`` 
+This functionality is enabled by setting the ``HID_CONTROLS`` define to ``1``.  Setting to ``0``
 disables this feature.
 
 When turned on the following items are enabled:
 
-    #. HID descriptors are enabled in the Configuration Descriptor informing the host that the device has HID interface
+    #. HID descriptors are enabled in the Configuration Descriptor informing the host that the device has a HID interface.
     #. A Get Report Descriptor request is enabled in ``endpoint0``.
-    #. Endpoint data handling is enabled in the ``buffer`` core
+    #. Endpoint data handling is enabled in the ``buffer`` core.
 
 The Get Descriptor Request enabled in endpoint 0 returns the report descriptor for the HID device.
-This details the format of the HID reports returned from the device to the host.  It maps a bit in 
+This details the format of the HID reports returned from the device to the host.  It maps a bit in
 the report to a function such as play/pause.
 
 The USB Audio Framework implements a report descriptor that should fit most basic audio device controls.
-If further controls are necessary the HID Report Descriptor in ``descriptors.h`` should be modified.  
+If further controls are necessary the HID Report Descriptor in ``descriptors.h`` should be modified.
 The default report size is 1 byte with the format as follows:
 
 .. table:: Default HID Report Format

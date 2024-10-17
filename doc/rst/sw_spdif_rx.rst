@@ -6,13 +6,15 @@ S/PDIF Receive
 XMOS devices can support S/PDIF receive up to 192kHz - see ``lib_spdif`` for full specifications.
 
 The S/PDIF receiver module uses a clock-block and a buffered one-bit port.
-The clock-block is divided of a 100 MHz reference clock. The one bit port is buffered to 4-bits.
+The clock-block is divided off a 100 MHz reference clock. The one bit port is buffered to 4-bits.
 The receiver code uses this clock to over sample the input data.
 
 The receiver outputs audio samples over a *streaming channel end* where data can be input using the
 built-in input operator. ``lib_spdif`` also provides API functions that wrap up this communication.
 
-The S/PDIF receive function never returns. The 32-bit value from the channel input comprises:
+The S/PDIF receive function never returns. The 32-bit value from the channel input comprises of fields shown in :ref:`spdif_rx_word_structure`.
+
+.. _spdif_rx_word_structure:
 
 .. list-table:: S/PDIF RX Word Structure
      :header-rows: 1
@@ -27,7 +29,9 @@ The S/PDIF receive function never returns. The 32-bit value from the channel inp
      * - 29:31
        - User bits (parity, etc)
 
-The tag has one of three values:
+The tag has one of three values, as shown in :ref:`spdif_rx_tag`.
+
+.. _spdif_rx_tag:
 
 .. list-table:: S/PDIF RX Tags
      :header-rows: 1
@@ -47,7 +51,7 @@ See S/PDIF, IEC 60958-3:2006, specification for further details on format, user 
 Usage and Integration
 ---------------------
 
-Since S/PDIF is a digital steam the devices master clock must be synchronised to it. This is typically
+Since S/PDIF is a digital stream, the device's master clock must be synchronised to it. This is typically
 done with an external device. See `Clock Recovery` (:ref:`usb_audio_sec_clock_recovery`).
 
 .. note::

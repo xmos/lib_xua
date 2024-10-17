@@ -4,11 +4,11 @@
 S/PDIF Transmit
 ===============
 
-``lib_xua`` supports the development of devices with S/PDIF transmit throught the use of ``lib_spdif``.
+``lib_xua`` supports the development of devices with S/PDIF transmit through the use of ``lib_spdif``.
 The XMOS S/SPDIF transmitter component runs in a single core and supports sample-rates upto 192kHz.
 
 The S/PDIF transmitter core takes PCM audio samples via a channel and outputs them
-in S/PDIF format to a port.  A lookup table is used to encode the audio data into the required format. 
+in S/PDIF format to a port.  A lookup table is used to encode the audio data into the required format.
 
 It receives samples from the Audio I/O core two at a time (for left and right). For each sample,
 it performs a lookup on each byte, generating 16 bits of encoded data which it outputs to a port.
@@ -22,18 +22,20 @@ Note that a minor change to the ``SpdifTransmitPortConfig`` function would enabl
 clock generation (e.g. when clock source is already locked to desired audio clock).
 
 .. list-table:: S/PDIF Capabilities
-   
-   * - **Sample frequencies**   
+
+   * - **Sample frequencies**
      - 44.1, 48, 88.2, 96, 176.4, 192 kHz
-   * - **Master clock ratios** 
+   * - **Master clock ratios**
      - 128x, 256x, 512x
-   * - **Library**  
+   * - **Library**
      - ``lib_spdif``
 
 Clocking
 --------
 
 .. only:: latex
+
+ .. _spdif_clocking_jitter_reduction:
 
  .. figure:: images/spdif.pdf
 
@@ -46,36 +48,36 @@ Clocking
    D-Type Jitter Reduction
 
 
-The S/PDIF signal is output at a rate dictated by the external master clock. The master clock must 
-be 1x 2x or 4x the BMC bit rate (that is 128x 256x or 512x audio sample rate, respectively). 
+The S/PDIF signal is output at a rate dictated by the external master clock. The master clock must
+be 1x 2x or 4x the BMC bit rate (that is 128x 256x or 512x audio sample rate, respectively).
 For example, the minimum master clock frequency for 192kHz is therefore 24.576MHz.
 
-This resamples the master clock to its clock domain (oscillator), which introduces jitter of 2.5-5 ns on the S/PDIF signal. 
-A typical jitter-reduction scheme is an external D-type flip-flop clocked from the master clock (as shown in the preceding diagram).
+This resamples the master clock to its clock domain (oscillator), which introduces jitter of 2.5-5 ns on the S/PDIF signal.
+A typical jitter-reduction scheme is an external D-type flip-flop clocked from the master clock (as shown in :ref:`spdif_clocking_jitter_reduction`).
 
 Usage
 -----
 
-The interface to the S/PDIF transmitter core is via a normal channel with streaming built-ins
+The interface to the S/PDIF transmitter core is via a normal channel with streaming builtins
 (``outuint``, ``inuint``). Data format should be 24-bit left-aligned in a 32-bit word: ``0x12345600``
 
 The following protocol is used on the channel:
 
 .. list-table:: S/PDIF Component Protocol
 
-  * - ``outct`` 
+  * - ``outct``
     -  New sample rate command
-  * - ``outuint`` 
+  * - ``outuint``
     - Sample frequency (Hz)
-  * - ``outuint`` 
+  * - ``outuint``
     - Master clock frequency (Hz)
   * - ``outuint``
     - Left sample
   * - ``outuint``
-    - Right sample 
-  * - ``outuint`` 
+    - Right sample
+  * - ``outuint``
     - Left sample
-  * - ``outuint`` 
+  * - ``outuint``
     - Right sample
   * - ``...``
     -
@@ -87,7 +89,7 @@ This communication is wrapped up in the API functions provided by ``lib_spdif``.
 Output Stream Structure
 -----------------------
 
-The stream is composed of words with the following structure shown in
+The stream is composed of words with the structure shown in
 :ref:`usb_audio_spdif_stream_structure`. The channel status bits are
 0x0nc07A4, where c=1 for left channel, c=2 for right channel and n
 indicates sampling frequency as shown in :ref:`usb_audio_spdif_sample_bits`.
@@ -97,29 +99,29 @@ indicates sampling frequency as shown in :ref:`usb_audio_spdif_sample_bits`.
 .. list-table:: S/PDIF Stream Structure
      :header-rows: 1
      :widths: 10 32 58
-     
-     * - Bits 
-       - 
+
+     * - Bits
+       -
        -
      * - 0:3
-       - Preamble 
+       - Preamble
        - Correct B M W order, starting at sample 0
-     * - 4:27 
-       - Audio sample 
+     * - 4:27
+       - Audio sample
        - Top 24 bits of given word
-     * - 28 
-       - Validity bit 
+     * - 28
+       - Validity bit
        - Always 0
-     * - 29 
-       - Subcode data (user bits) 
+     * - 29
+       - Subcode data (user bits)
        - Unused, set to 0
-     * - 30 
-       - Channel status 
+     * - 30
+       - Channel status
        - See below
-     * - 31 
-       - Parity 
+     * - 31
+       - Parity
        - Correct parity across bits 4:30
-     
+
 
 .. _usb_audio_spdif_sample_bits:
 

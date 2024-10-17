@@ -9,7 +9,7 @@ It uses pulse-density modulation (PDM) encoding.
 The codebase supports DSD playback from the host via "DSD over PCM" (DoP) and a "Native" implementation
 which is, while USB specification based, proprietary to XMOS.
 
-DSD is enabled with by setting the following :ref:` define <opt_dsd_defines>` to a non-zero value:
+DSD is enabled with by setting the following :ref:`define <opt_dsd_defines>` to a non-zero value:
 
 .. _opt_dsd_defines:
 
@@ -77,7 +77,7 @@ byte being used for a DSD marker (alternating 0x05 and 0xFA values).
 When enabled, if USB audio design detects a un-interrupted run of these samples (above a defined
 threshold) it switches to DSD mode, using the lower 16-bits as DSD sample data.  When this check for
 DSD headers fails the design falls back to PCM mode.  DoP detection and switching is done completely
-in the Audio/I2S core (`audio.xc`). All other code handles the audio samples as PCM.
+in the Audio/I2S core (`xua_audiohub.xc`). All other code handles the audio samples as PCM.
 
 The design supports higher DSD/DoP rates (i.e. DSD128) by simply raising the underlying PCM sample
 rate e.g. from 176.4kHz to 352.8kHz. The marker byte scheme remains exactly the same regardless
@@ -91,7 +91,7 @@ of rate.
 ---------------
 
 Since the DoP specification requires header bytes this eats into the data bandwidth. The "Native" implementation
-has no such overhead and can therefore transfer the same DSD rate and half the effective PCM rate of DoP.
+has no such overhead and can therefore transfer the same DSD rate at half the effective PCM rate of DoP.
 Such a property may be desired when upporting DSD128 without exposing a 352.8kHz PCM rate, for example.
 
 Ports

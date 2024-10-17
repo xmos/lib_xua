@@ -5,7 +5,7 @@ PDM Microphones
 
 The codebase supports input from up to 8 PDM microphones although this is extensible.
 
-PDM microphone support is provided via ``lib_mic_array``.  Settings for PDM microphones are controlled
+PDM microphone support is provided via ``lib_mic_array`` (https://www.github.com/xmos/lib_mic_array).  Settings for PDM microphones are controlled
 via the following :ref:`defines<opt_pdm_defines>`:
 
 .. _opt_pdm_defines:

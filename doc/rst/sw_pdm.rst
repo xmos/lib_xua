@@ -7,13 +7,13 @@ PDM Microphones
 ===============
 
 The XMOS USB Audio Reference Design firmware is capable of integrating with PDM microphones.
-The PDM stream from the microphones is converted to PCM and output to the host via USB. 
+The PDM stream from the microphones is converted to PCM and output to the host via USB.
 
-Interfacing to the PDM microphones is done using the XMOS microphone array library (``lib_mic_array``).
+Interfacing to the PDM microphones is done using the XMOS microphone array library (`lib_mic_array <https://github.com/xmos/lib_mic_array>`_).
 ``lib_mic_array`` is designed to allow interfacing to PDM microphones coupled to efficient decimation filters
 at a user configurable output sample rate. Currently dynamic sample rate changing is not supported.
 
-.. note:: 
+.. note::
     The ``lib_mic_array`` library is only available for xcore.ai series devices since it uses the Vector Processing Unit only available in the XS3 architecture.
 
 Up to eight PDM microphones can be attached the PDM interface (``mic_array_task()``) but it is possible to extend this.
@@ -28,7 +28,7 @@ PDM Microphone Hardware Characteristics
 ---------------------------------------
 
 The PDM microphones require a *clock input* and provide the PDM signal on a *data output*. All of
-the PDM microphones must share the same clock signal (buffered on the PCB as appropriate), and 
+the PDM microphones must share the same clock signal (buffered on the PCB as appropriate), and
 output onto the data wire(s) that are connected to the capture port:
 
 .. _pdm_wire_table:
@@ -36,16 +36,16 @@ output onto the data wire(s) that are connected to the capture port:
 .. list-table:: PDM microphone data and signal wires
      :class: vertical-borders horizontal-borders
      :header-rows: 1
-    
+
      * - Signal
        - Description
      * - CLOCK
-       - Clock line, the PDM clock the used by the microphones to 
+       - Clock line, the PDM clock the used by the microphones to
          drive the data out.
      * - DQ_PDM
        - The data from the PDM microphones on the capture port.
 
-.. note:: 
+.. note::
     The clocking for PDM microphones may be single data rate (one microphone per pin) or double data rate (two microphones per pin clocking on alternate edges). By default ``lib_xua`` assumes double data rate which provides more efficient port usage.
 
 No arguments are passed into ``lib_mic_array``. The library is configured statically using the following defines in ``xua_conf.h``:
@@ -55,9 +55,9 @@ No arguments are passed into ``lib_mic_array``. The library is configured static
    - ``MIC_ARRAY_CONFIG_PORT_PDM_DATA`` - The port used to receive PDM data. May be 1 bit, 4 bit or 8 bits wide.
    - ``MIC_ARRAY_CONFIG_CLOCK_BLOCK_A`` - The clock block used to generate the PDM clock signal.
    - ``MIC_ARRAY_CONFIG_CLOCK_BLOCK_B``  - The clock block used to capture the PDM data (Only needed if DDR is used).
-   - ``XUA_PDM_MIC_FREQ``  - The output samples rate of lib_mic_array.
+   - ``XUA_PDM_MIC_FREQ``  - The output sample rate of lib_mic_array.
 
-Optionally, the following defines may be over-ridden if needed::
+Optionally, the following defines may be overridden if needed:
 
    - ``MIC_ARRAY_CONFIG_MCLK_FREQ`` - The system MCLK frequency in Hz, usually set to XUA_PDM_MIC_FREQ.
    - ``MIC_ARRAY_CONFIG_PDM_FREQ`` - The PDM clock frequency in Hz. Usually set to 3072000.

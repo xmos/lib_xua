@@ -7,8 +7,8 @@ Configuration Defines
 An application using the USB audio framework needs to have defines set for configuration.
 Defaults for these defines are found in ``xua_conf_default.h``.
 
-These defines should be over-ridden in an optional header file  ``xua_conf.h`` file or in the ``Makefile``
-for a relevant build configuration.
+These defines should be overridden in an optional header file  ``xua_conf.h`` file or in the application's ``CMakeLists.txt``
+for the relevant build configuration.
 
 This section fully documents all of the settable defines and their default values (where appropriate).
 

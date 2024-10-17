@@ -9,11 +9,11 @@ USB specification(s).
 
 Asynchronous mode (``XUA_SYNCMODE_ASYNC``) has the advantage that the device is clock-master. This means that
 a high-quality local master-clock source can be utilised. It also has the benefit that the device may
-synchronise it's master clock to an external digital input stream e.g. S/PDIF and thus avoiding sample-rate
+synchronise its master clock to an external digital input stream e.g. S/PDIF and thus avoiding sample-rate
 conversion.
 
 The drawback of this mode is that it burdens the host with syncing to the device which some hosts
-may not support. This is especially pertinent to embedded hosts, however, most PC's and mobile devices
+may not support. This is especially pertinent to embedded hosts, however, most PCs and mobile devices
 will indeed support this mode.
 
 Synchronous mode (``XUA_SYNCMODE_SYNC``) is an option if the target host does not support asynchronous mode
@@ -28,8 +28,6 @@ Setting the synchronisation mode of the device is done using the following :ref:
 
 .. _opt_sync_defines:
 
-|beginfullwidth|
-
 .. list-table:: Sync Define
    :header-rows: 1
    :widths: 20 60 20
@@ -40,8 +38,6 @@ Setting the synchronisation mode of the device is done using the following :ref:
    * - ``XUA_SYNCMODE``
      - USB synchronisation mode
      - ``XUA_SYNCMODE_ASYNC``
-
-|endfullwidth|
 
 When operating in synchronous mode a local master clock must be generated that is synchronised to the incoming
 SoF rate from USB. Either an external Cirrus Logic CS2100 device is required for this purpose

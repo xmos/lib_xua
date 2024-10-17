@@ -37,7 +37,7 @@ The following :ref:`defines <opt_i2s_defines>` affect the I2S implementation.
 
 |endfullwidth|
 
-The I2S code expects that the ports required for I2S (master clock, LR-clock, bit-clock and data lines) are be defined in the application XN file in the relevant `Tile``.
+The I2S code expects that the ports required for I2S (master clock, LR-clock, bit-clock and data lines) are defined in the application XN file on the relevant ``Tile``.
 For example::
 
     <Tile Number="0" Reference="tile[0]">
