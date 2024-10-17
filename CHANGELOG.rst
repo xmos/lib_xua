@@ -1,37 +1,52 @@
 lib_xua change log
 ==================
 
-UNRELEASED
-----------
+5.0.0
+-----
 
   * ADDED:     Support for DFU 1.1 DFU_DETACH with bitWillDetach set to 1
-  * ADDED:     Enumerate with the DFU interface as WINUSB compatible. This is done by
-    updating the bcdUSB version to 2.01 and providing the BOS and MSOS2.0 descriptors listing
-    WINUSB compatibility the time of enumeration
-  * ADDED:     Support for XMOS_DFU_REVERTFACTORY arriving as a USB_BMREQ_H2D_VENDOR_INT
-    request to work with the latest Thesycon DFU driver on Windows
-  * ADDED:     Support for building the xmosdfu application on MacOS arm64
-  * CHANGED:   By default, enumerate with iSerialNumber set to None(0) in the device
-    descriptor
-  * CHANGED:   xmosdfu app to use DFU_DETACH
-  * CHANGED:   xmosdfu app to send XMOS_DFU_REVERTFACTORY as bmRequestType.Type = Vendor
-  * CHANGED:   xmosdfu app command line for specifying runtime and DFU mode PIDs
-  * CHANGED:   Limit HS_STREAM_FORMAT_OUTPUT_1/2/3_MAXPACKETSIZE to 1024 bytes to fix
-    bcdUSB version 2.01 USB device supporting a sampling rate of 192KHz not enumerating
+  * ADDED:     Enumerate with the DFU interface as WINUSB compatible. This is
+    done by updating the bcdUSB version to 2.01 and providing the BOS and
+    MSOS2.0 descriptors listing WINUSB compatibility the time of enumeration
+  * ADDED:     Support for XMOS_DFU_REVERTFACTORY arriving as a
+    USB_BMREQ_H2D_VENDOR_INT request to work with the latest Thesycon DFU driver
     on Windows
+  * ADDED:     Support for building the xmosdfu application on MacOS arm64
+  * CHANGED:   By default, enumerate with iSerialNumber set to None(0) in the
+    device descriptor
+  * CHANGED:   xmosdfu app to use DFU_DETACH
+  * CHANGED:   xmosdfu app to send XMOS_DFU_REVERTFACTORY as bmRequestType.Type
+    = Vendor
+  * CHANGED:   xmosdfu app command line for specifying runtime and DFU mode PIDs
+  * CHANGED:   Limit HS_STREAM_FORMAT_OUTPUT_1/2/3_MAXPACKETSIZE to 1024 bytes
+    to fix bcdUSB version 2.01 USB device supporting a sampling rate of 192KHz
+    not enumerating on Windows
   * CHANGED:   Added default value (1) for XUA_QUAD_SPI_FLASH
   * FIXED:     Build issue when XUA_NUM_PDM_MICS > 0
   * FIXED:     DFU support with UAC1.0
-  * FIXED:     baInterfaceNr field in MIDI Class-specific AC Interface Descriptor to specify
-    the correct MIDI streaming interface number
+  * FIXED:     baInterfaceNr field in MIDI Class-specific AC Interface
+    Descriptor to specify the correct MIDI streaming interface number
   * CHANGED:   Default value of FLASH_MAX_UPGRADE_SIZE to 512 KB
   * ADDED:     MIDI support with UAC1.0
   * CHANGED:   Build examples using XCommon CMake instead of XCommon
-  * CHANGED:   AN00248 now targets XK-EVK-XU316 and uses mic_array version 5 (new API)
-  * REMOVED:   Support for PDM mics in XS2 targets (requires xcore.ai). Can use lib_xua 
-    version <=4.2.0 for XS2 (xcore-200) targets
-  * CHANGED:   Examples use lib_board_support for XK-AUDIO-316-MC-AB support code
+  * CHANGED:   AN00248 now targets XK-EVK-XU316 and uses mic_array version 5
+    (new API)
+  * REMOVED:   Support for PDM mics in XS2 targets (requires xcore.ai). Can use
+    lib_xua version <=4.2.0 for XS2 (xcore-200) targets
+  * CHANGED:   Examples use lib_board_support for XK-AUDIO-316-MC-AB support
+    code
 
+  * Changes to dependencies:
+
+    - lib_adat: 1.2.0 -> 2.0.1
+
+    - lib_dsp: Removed dependency
+
+    - lib_mic_array: 4.6.0 -> 5.4.0
+
+    - lib_spdif: 6.1.1 -> 6.2.0
+
+    - lib_xcore_math: Added dependency 2.3.0
 
 4.2.0
 -----
@@ -49,13 +64,7 @@ UNRELEASED
 
   * Changes to dependencies:
 
-    - lib_dsp: Removed dependency
-
-    - lib_mic_array: 4.6.0 -> 5.4.0
-
-    - lib_spdif: 6.1.0 -> 6.2.0
-
-    - lib_xcore_math: Added dependency 2.3.0
+    - lib_spdif: 6.1.0 -> 6.1.1
 
     - lib_xud: 2.3.1 -> 2.3.2
 

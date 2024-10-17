@@ -33,3 +33,4 @@ Known Issues
 
 - No support for I2S_CHANS_DAC = 0 and I2S_CHANS_ADC = 0 (lib_xua #260)
 
+- Input does not come out of underflow for USB Audio Class 2 when sample rate is 16kHz and channel count is 2. (lib_xua #434). This will result in silence being streamed to the host. Please use USB Audio Class 1 for low channel count and sample rates.

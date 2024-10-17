@@ -217,7 +217,7 @@ int VendorAudCoreReqs(unsigned cmd, chanend c);
 
 #pragma unsafe arrays
 void clockGen ( streaming chanend ?c_spdif_rx,
-                chanend ?c_adat_rx,
+                streaming chanend ?c_adat_rx,
                 client interface pll_ref_if i_pll_ref,
                 chanend c_dig_rx,
                 chanend c_clk_ctl,
@@ -661,8 +661,7 @@ void clockGen ( streaming chanend ?c_spdif_rx,
 #endif
 #if (XUA_ADAT_RX_EN)
                 /* receive sample from ADAT rx thread (streaming channel with CT_END) */
-                case inuint_byref(c_adat_rx, tmp):
-
+                case c_adat_rx :> tmp:
 #if XUA_USE_SW_PLL
                     /* record time of sample */
                     asm volatile(" getts %0, res[%1]" : "=r" (mclk_time_stamp) : "r" (p_for_mclk_count_aud));

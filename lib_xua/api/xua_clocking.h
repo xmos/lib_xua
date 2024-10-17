@@ -34,7 +34,7 @@ void PllRefPinTask(server interface pll_ref_if i_pll_ref, out port p_sync);
  *
  */
 void clockGen(  NULLABLE_RESOURCE(streaming_chanend_t, c_spdif_rx),
-                NULLABLE_RESOURCE(chanend, c_adat_rx),
+                NULLABLE_RESOURCE(streaming_chanend, c_adat_rx),
                 CLIENT_INTERFACE(pll_ref_if, i_pll_ref),
                 chanend c_audio,
                 chanend c_clk_ctl,

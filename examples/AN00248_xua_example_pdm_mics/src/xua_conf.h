@@ -6,15 +6,15 @@
 
 #include <platform.h>
 
-#define NUM_USB_CHAN_OUT                    0               /* Number of channels from host to device */
-#define NUM_USB_CHAN_IN                     2               /* Number of channels from device to host */
-#define I2S_CHANS_DAC                       2               /* Number of I2S channels out of xCORE */
-#define I2S_CHANS_ADC                       0               /* Number of I2S channels in to xCORE */
-#define MCLK_441                            (512 * 44100)   /* 44.1kHz family master clock frequency */
-#define MCLK_48                             (512 * 48000)   /* 48kHz family master clock frequency */
-#define XUA_PDM_MIC_FREQ                    48000           /* Currently sample rate changes are not supported for PDM mics */
-#define MIN_FREQ  XUA_PDM_MIC_FREQ                          /* Minimum sample rate */
-#define MAX_FREQ  XUA_PDM_MIC_FREQ                          /* Maximum sample rate */
+#define NUM_USB_CHAN_OUT                    0                /* Number of channels from host to device */
+#define NUM_USB_CHAN_IN                     2                /* Number of channels from device to host */
+#define I2S_CHANS_DAC                       2                /* Number of I2S channels out of xCORE */
+#define I2S_CHANS_ADC                       0                /* Number of I2S channels in to xCORE */
+#define MCLK_441                            (512 * 44100)    /* 44.1kHz family master clock frequency */
+#define MCLK_48                             (512 * 48000)    /* 48kHz family master clock frequency */
+#define XUA_PDM_MIC_FREQ                    48000            /* Currently sample rate changes are not supported for PDM mics */
+#define MIN_FREQ                            XUA_PDM_MIC_FREQ /* Minimum sample rate */
+#define MAX_FREQ                            XUA_PDM_MIC_FREQ /* Maximum sample rate */
 
 #define XUA_NUM_PDM_MICS                    2
 #define MIC_ARRAY_CONFIG_PORT_MCLK          PORT_MCLK_IN
@@ -25,6 +25,7 @@
 
 #define EXCLUDE_USB_AUDIO_MAIN
 
+#define AUDIO_CLASS                         1
 #define VENDOR_STR                          "XMOS"
 #define VENDOR_ID                           0x20B1
 #define PRODUCT_STR_A2                      "XUA PDM Example"
