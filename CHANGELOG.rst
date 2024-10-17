@@ -29,12 +29,24 @@ lib_xua change log
   * CHANGED:   Default value of FLASH_MAX_UPGRADE_SIZE to 512 KB
   * ADDED:     MIDI support with UAC1.0
   * CHANGED:   Build examples using XCommon CMake instead of XCommon
+  * CHANGED:   AN00248 now targets XK-EVK-XU316 and uses mic_array version 5
+    (new API)
+  * REMOVED:   Support for PDM mics in XS2 targets (requires xcore.ai). Can use
+    lib_xua version <=4.2.0 for XS2 (xcore-200) targets
   * CHANGED:   Examples use lib_board_support for XK-AUDIO-316-MC-AB support
     code
 
   * Changes to dependencies:
 
     - lib_adat: 1.2.0 -> 2.0.1
+
+    - lib_dsp: Removed dependency
+
+    - lib_mic_array: 4.6.0 -> 5.4.0
+
+    - lib_spdif: 6.1.1 -> 6.2.0
+
+    - lib_xcore_math: Added dependency 2.3.0
 
 4.2.0
 -----

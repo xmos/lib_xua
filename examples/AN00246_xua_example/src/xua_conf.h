@@ -1,4 +1,4 @@
-// Copyright 2017-2022 XMOS LIMITED.
+// Copyright 2017-2024 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
 #ifndef _XUA_CONF_H_
@@ -22,6 +22,5 @@
 #define PID_AUDIO_1     1
 #define PID_AUDIO_2     2
 #define XUA_DFU_EN      0           /* Disable DFU (for simplicity of example */
-#define MIC_DUAL_ENABLED 0          // Use multi-threaded design
 
 #endif

@@ -1,5 +1,8 @@
 |newpage|
 
+.. _sw_pdm_main:
+
+
 PDM Microphones
 ===============
 
@@ -7,51 +10,26 @@ The XMOS USB Audio Reference Design firmware is capable of integrating with PDM 
 The PDM stream from the microphones is converted to PCM and output to the host via USB. 
 
 Interfacing to the PDM microphones is done using the XMOS microphone array library (``lib_mic_array``).
-``lib_mic_array`` is designed to allow interfacing to PDM microphones coupled with efficient decimation
-to user selectable output sample rates. 
+``lib_mic_array`` is designed to allow interfacing to PDM microphones coupled to efficient decimation filters
+at a user configurable output sample rate. Currently dynamic sample rate changing is not supported.
 
 .. note:: 
-    The ``lib_mic_array`` library is only available for xCORE-200 series devices.
+    The ``lib_mic_array`` library is only available for xcore.ai series devices since it uses the Vector Processing Unit only available in the XS3 architecture.
 
-The following components of the library are used:
+Up to eight PDM microphones can be attached the PDM interface (``mic_array_task()``) but it is possible to extend this.
 
- * PDM interface
- * Four channel decimators
+After PDM capture and decimation to the output sample-rate various other steps take place e.g. DC offset elimination etc. Please refer to the documentation provided with  ``lib_mic_array`` for further implementation detail and a complete feature set.
 
-Up to sixteen PDM microphones can be attached to each high channel count PDM interface (``mic_array_pdm_rx()``). 
-One to four processing tasks, ``mic_array_decimate_to_pcm_4ch()``, each process up to four channels. For 1-4 
-channels the library requires two logical cores:
+By default the sample rates supported are 16 kHz, 32 kHz and 48 kHz although other rates are supportable with some modifications.
 
- .. figure:: images/pdm_chan4.pdf
-            :width: 100%
-
-            One to four channel count PDM interface
-
-
-for 5-8 channels three logical cores are required, as shown below:
-
- .. figure:: images/pdm_chan8.pdf
-            :width: 100%
-
-            Five to eight count PDM interface
-
-The left most task, ``mic_array_pdm_rx()``, samples up to 8 microphones and filters the data to provide up to
-eight 384kHz data streams, split into two streams of four channels. The processing thread
-decimates the signal to a user chosen sample rate (one of 48, 24, 16, 12 or 8kHz).
-
-More channels can be supported by increasing the number of cores dedicated to the PDM tasks. However, the current
-PDM mic integration into ``lib_xua`` is limited to 8.
-
-After the decimation to the output sample-rate various other steps take place e.g. DC offset elimination, gain correction
-and compensation etc. Please refer to the documentation provided with  ``lib_mic_array`` for further
-implementation detail and complete feature set. 
+Please see `AN00248 Using lib_xua with lib_mic_array <https://github.com/xmos/lib_xua/tree/develop/examples/AN00248_xua_example_pdm_mics>`_ for a practical example of this feature.
 
 PDM Microphone Hardware Characteristics
 ---------------------------------------
 
 The PDM microphones require a *clock input* and provide the PDM signal on a *data output*. All of
 the PDM microphones must share the same clock signal (buffered on the PCB as appropriate), and 
-output onto eight data wires that are connected to a single 8-bit port:
+output onto the data wire(s) that are connected to the capture port:
 
 .. _pdm_wire_table:
 
@@ -65,51 +43,45 @@ output onto eight data wires that are connected to a single 8-bit port:
        - Clock line, the PDM clock the used by the microphones to 
          drive the data out.
      * - DQ_PDM
-       - The data from the PDM microphones on an 8 bit port.
-       
-The only port that is passed into ``lib_mic_array`` is the 8-bit data port. The library
-assumes that the input port is clocked using the PDM clock and requires no knowledge of the 
-PDM clock source. 
+       - The data from the PDM microphones on the capture port.
 
-The input clock for the microphones can be generated in a multitude of
-ways. For example, a 3.072MHz clock can be generated on the board, or the xCORE can
-divide down 12.288 MHz master clock. Or, if clock accuracy is not important, the internal 100 MHz 
-reference can be divided down to provide an approximate clock.
+.. note:: 
+    The clocking for PDM microphones may be single data rate (one microphone per pin) or double data rate (two microphones per pin clocking on alternate edges). By default ``lib_xua`` assumes double data rate which provides more efficient port usage.
+
+No arguments are passed into ``lib_mic_array``. The library is configured statically using the following defines in ``xua_conf.h``:
+
+   - ``MIC_ARRAY_CONFIG_PORT_MCLK`` - The port resource for the MCLK from which the PDM_CLK is derived. Normally XS1_PORT_1D on Tile[1].
+   - ``MIC_ARRAY_CONFIG_PORT_PDM_CLK`` - The port resource which drives out the PDM clock.
+   - ``MIC_ARRAY_CONFIG_PORT_PDM_DATA`` - The port used to receive PDM data. May be 1 bit, 4 bit or 8 bits wide.
+   - ``MIC_ARRAY_CONFIG_CLOCK_BLOCK_A`` - The clock block used to generate the PDM clock signal.
+   - ``MIC_ARRAY_CONFIG_CLOCK_BLOCK_B``  - The clock block used to capture the PDM data (Only needed if DDR is used).
+   - ``XUA_PDM_MIC_FREQ``  - The output samples rate of lib_mic_array.
+
+Optionally, the following defines may be over-ridden if needed::
+
+   - ``MIC_ARRAY_CONFIG_MCLK_FREQ`` - The system MCLK frequency in Hz, usually set to XUA_PDM_MIC_FREQ.
+   - ``MIC_ARRAY_CONFIG_PDM_FREQ`` - The PDM clock frequency in Hz. Usually set to 3072000.
+   - ``MIC_ARRAY_CONFIG_USE_DC_ELIMINATION`` - Whether or not to run a DC elimination filter. Set to 1 by default.
+   - ``MIC_ARRAY_CONFIG_USE_DDR`` - Whether or not to use Double Data Rate data capture on the PDM microphones. Set to 1 by default.
+
+
+For full details of the effect of these defines please refer to the `lib_mic_array documentation <https://www.xmos.com/documentation/XM-014926-PC/pdf/mic_array_programming_guide.pdf>`_.
 
 Usage & Integration
 -------------------
 
 A PDM microphone wrapper is called from ``main()`` and takes one channel argument connecting it to the rest of the system:
 
-    ``pcm_pdm_mic(c_pdm_pcm);``
+    ``mic_array_task(c_pdm_pcm);``
 
-The implementation of this function can be found in the file ``pcm_pdm_mics.xc``.
-
-The first job of this function is to configure the ports/clocking for the microphones, this divides the external 
-audio master clock input (on port ``p_mclk``) and outputs the divided clock to the microphones via the ``p_pdm_clk`` port:: 
-
-    configure_clock_src_divide(pdmclk, p_mclk, MCLK_TO_PDM_CLK_DIV);
-    configure_port_clock_output(p_pdm_clk, pdmclk);
-    configure_in_port(p_pdm_mics, pdmclk);
-    start_clock(pdmclk);
-
-It then runs the various cores required for the PDM interface and PDM to PCM conversion as previously discussed::
-
-    par
-    {
-        mic_array_pdm_rx(p_pdm_mics, c_4x_pdm_mic_0, c_4x_pdm_mic_1);
-        mic_array_decimate_to_pcm_4ch(c_4x_pdm_mic_0, c_ds_output[0]);
-        mic_array_decimate_to_pcm_4ch(c_4x_pdm_mic_1, c_ds_output[1]);
-        pdm_process(c_ds_output, c_pcm_out);
-    }
-
-The ``pdm_process()`` task includes the main integration code, it takes audio from the ``lib_mic_array`` cores, buffers 
-it, performs optional local processing and outputs it to the audio driver (TDM/I2S core).
-
-This function simply makes a call to ``mic_array_get_next_time_domain_frame()`` in order to get a frame of PCM audio 
-from the microphones.  It then waits for an request for audio samples from the Audio Hub core via a channel and
-sends the frame of audio back over this channel.
+The implementation of this function can be found in the file ``mic_array_task.c`` but it nominally takes one hardware thread.
 
 Note, it is assumed that the system shares a global master-clock, therefore no additional buffering or rate-matching/conversion
-is required.
+is required. This ensures the PDM subsystem and XUA Audiohub are synchronous.
 
+Two weak callback APIs are provided which optionally allow user code to be executed at startup (post PDM microphone initialisation) and after each sample frame is formed. These can be useful for custom hardware initialisation required by the PDM microphone or post processing such as gain control before samples are forwarded to XUA::
+
+    void user_pdm_init();
+    void user_pdm_process(int32_t mic_audio[MIC_ARRAY_CONFIG_MIC_COUNT]);
+
+Please be aware that ``user_pdm_process()`` is called in the main I2S audioloop and so and processing should be kept very short to avoid breaking timing. Typically a small fraction of sample period is acceptable although the headroom is much larger at lower sample rates. The array of samples ``mic_audio`` can modified in-place.
