@@ -11,5 +11,6 @@
 #define CLKBLK_FLASHLIB    XS1_CLKBLK_3   /* Clock block for use by flash lib */
 #define CLKBLK_ADAT_RX     XS1_CLKBLK_REF /* Use REF for ADAT_RX on x200/AI series */
 #define CLKBLK_I2S_BIT     XS1_CLKBLK_3
+#define CLKBLK_PWM         XS1_CLKBLK_1
 
 #endif /* _UAC_HWRESOURCES_H_ */

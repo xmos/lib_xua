@@ -13,6 +13,7 @@
 #include <platform.h>
 #include <xs1.h>
 #include <xclib.h>
+#include <stdio.h>
 #include <print.h>
 #ifdef XSCOPE
 #include <xscope.h>
@@ -32,6 +33,10 @@
 
 #if (XUA_SPDIF_RX_EN || XUA_SPDIF_TX_EN)
 #include "spdif.h"                     /* From lib_spdif */
+#endif
+
+#if (XUA_PWM_CHANNELS > 0)
+#include "pwm_thread.h"
 #endif
 
 #if (XUA_ADAT_RX_EN)
@@ -110,6 +115,7 @@ on tile[AUDIO_IO_TILE] : buffered in port:32 p_i2s_adc[I2S_WIRES_ADC] =
     #define p_i2s_adc null
 #endif
 
+#if XUA_I2S_EN
 
 #if CODEC_MASTER
 on tile[AUDIO_IO_TILE] : buffered in port:32 p_lrclk        = PORT_I2S_LRCLK;
@@ -118,7 +124,10 @@ on tile[AUDIO_IO_TILE] : buffered in port:32 p_bclk         = PORT_I2S_BCLK;
 on tile[AUDIO_IO_TILE] : buffered out port:32 p_lrclk       = PORT_I2S_LRCLK;
 on tile[AUDIO_IO_TILE] : buffered out port:32 p_bclk        = PORT_I2S_BCLK;
 #endif
-
+#else
+#define p_lrclk null
+#define p_bclk null
+#endif
 on tile[AUDIO_IO_TILE] :  in port p_mclk_in                 = PORT_MCLK_IN;
 
 #if XUA_USB_EN
@@ -161,6 +170,10 @@ on tile[MIDI_TILE] :  buffered in port:1 p_midi_rx          = PORT_MIDI_IN;
 #endif
 #endif
 
+
+#if (XUA_PWM_CHANNELS > 0)
+clock clk_pwm_channels                                      = on tile[PWM_CHANNELS_TILE]: CLKBLK_PWM;
+#endif
 
 #ifdef MIDI
 on tile[MIDI_TILE] : clock    clk_midi                      = CLKBLK_MIDI;
@@ -286,6 +299,9 @@ void usb_audio_io(chanend ?c_aud_in,
 #if (XUA_SPDIF_TX_EN) && (SPDIF_TX_TILE != AUDIO_IO_TILE)
     chanend c_spdif_tx,
 #endif
+#if (XUA_PWM_CHANNELS > 0)
+    chanend c_pwm_channels,
+#endif
 #if (MIXER)
     chanend c_mix_ctl,
 #endif
@@ -326,6 +342,10 @@ void usb_audio_io(chanend ?c_aud_in,
 #endif /* XUA_USE_SW_PLL */
 #endif /* (XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN) */
 
+
+#if (XUA_PWM_CHANNELS > 0) && (PWM_CHANNELS_TILE == AUDIO_IO_TILE)
+    pwm_init(p_mclk_in);
+#endif
 
 #if (XUA_SPDIF_TX_EN) && (SPDIF_TX_TILE == AUDIO_IO_TILE)
     chan c_spdif_tx;
@@ -374,6 +394,9 @@ void usb_audio_io(chanend ?c_aud_in,
 #endif
 #if (XUA_NUM_PDM_MICS > 0)
                 , c_pdm_pcm
+#endif
+#if (XUA_PWM_CHANNELS > 0)
+                , c_pwm_channels
 #endif
             );
         }
@@ -448,6 +471,10 @@ int main()
 
 #if (XUA_SPDIF_TX_EN) && (SPDIF_TX_TILE != AUDIO_IO_TILE)
     chan c_spdif_tx;
+#endif
+
+#if (XUA_PWM_CHANNELS > 0)
+    chan c_pwm_channels;
 #endif
 
 #if (XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
@@ -538,6 +565,10 @@ int main()
 
                 /* Attach mclk count port to mclk clock-block (for feedback) */
                 //set_port_clock(p_for_mclk_count, clk_audio_mclk);
+#if (XUA_PWM_CHANNELS > 0) && (PWM_CHANNELS_TILE != AUDIO_IO_TILE)
+                pwm_init(p_mclk_in);
+#endif
+
 #if(AUDIO_IO_TILE != XUD_TILE)
                 set_clock_src(clk_audio_mclk_usb, p_mclk_in_usb);
                 set_port_clock(p_for_mclk_count, clk_audio_mclk_usb);
@@ -615,6 +646,9 @@ int main()
 #if (XUA_SPDIF_TX_EN) && (SPDIF_TX_TILE != AUDIO_IO_TILE)
                 , c_spdif_tx
 #endif
+#if (XUA_PWM_CHANNELS > 0)
+                , c_pwm_channels
+#endif
 #if (MIXER)
                 , c_mix_ctl
 #endif
@@ -644,6 +678,21 @@ int main()
         {
             thread_speed();
             SpdifTxWrapper(c_spdif_tx);
+        }
+#endif
+
+#if (XUA_PWM_CHANNELS > 0)
+        on tile[PWM_CHANNELS_TILE]:
+        {
+            thread_speed();
+            timer tmr;
+            int tt;
+            tmr :> tt;
+            // Nasty - wait for clock block to be inited
+            // Ideally, this happens before the PAR.
+            // But it is inside the IO thread
+            tmr when timerafter(tt + 1000000) :> void;
+            pwm_thread(c_pwm_channels);
         }
 #endif
 

@@ -72,6 +72,9 @@ void XUA_AudioHub(chanend ?c_aud,
 #if (XUA_NUM_PDM_MICS > 0 || defined(__DOXYGEN__))
     , chanend c_pdm_in
 #endif
+#if (XUA_PWM_CHANNELS > 0) || defined(__DOXYGEN__)
+    , chanend c_pwm_channels
+#endif
 );
 
 void SpdifTxWrapper(chanend c_spdif_tx);

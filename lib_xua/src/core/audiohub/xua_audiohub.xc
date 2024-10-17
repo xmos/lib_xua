@@ -161,6 +161,9 @@ static inline int HandleSampleClock(int frameCount, buffered _XUA_CLK_DIR port:3
 
 #pragma unsafe arrays
 unsigned static AudioHub_MainLoop(chanend ?c_out, chanend ?c_spd_out
+#if (XUA_PWM_CHANNELS > 0)
+    , chanend c_pwm_channels
+#endif
 #if (XUA_ADAT_TX_EN)
     , chanend c_adat_out
     , unsigned adatSmuxMode
@@ -407,6 +410,10 @@ unsigned static AudioHub_MainLoop(chanend ?c_out, chanend ?c_spd_out
                 outuint(c_spd_out, samplesOut[SPDIF_TX_INDEX]);  /* Forward samples to S/PDIF Tx thread */
                 outuint(c_spd_out, samplesOut[SPDIF_TX_INDEX + 1]);
 #endif
+#if (XUA_PWM_CHANNELS > 0) && (NUM_USB_CHAN_OUT > 0)
+                outuint(c_pwm_channels, samplesOut[PWM_CHANNELS_INDEX]);  /* Forward samples to PWM generator threads */
+                outuint(c_pwm_channels, samplesOut[PWM_CHANNELS_INDEX + 1]);
+#endif
 
 #if (XUA_NUM_PDM_MICS > 0)
                 if ((AUD_TO_MICS_RATIO - 1) == audioToMicsRatioCounter)
@@ -647,6 +654,9 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
 #if (XUA_NUM_PDM_MICS > 0)
     , chanend c_pdm_in
 #endif
+#if (XUA_PWM_CHANNELS > 0) || defined(__DOXYGEN__)
+    , chanend c_pwm_channels
+#endif
 )
 {
 #if (XUA_ADAT_TX_EN)
@@ -665,7 +675,6 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
     /* Clock master clock-block from master-clock port */
     /* Note, marked unsafe since other cores may be using this mclk port */
     configure_clock_src(clk_audio_mclk, p_mclk_in);
-
 
 #if (DSD_CHANS_DAC > 0)
     /* Make sure the DSD ports are on and buffered - just in case they are not shared with I2S */
@@ -778,7 +787,8 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
                 p_bclk,
 #endif
 #endif
-            p_mclk_in, clk_audio_bclk, divide, curSamFreq);
+            p_mclk_in,
+                clk_audio_bclk, divide, curSamFreq);
         }
 
         {
@@ -855,6 +865,13 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
                 outuint(c_spdif_out, mClk);
 #endif
 
+#if (XUA_PWM_CHANNELS > 0)
+                /* Communicate master clock and sample freq to PWM thread */
+// TODO                outct(c_pwm_channels, XS1_CT_END);
+// TODO                outuint(c_pwm_channels, curSamFreq);
+// TODO                outuint(c_pwm_channels, mClk);
+#endif
+
 #if (XUA_NUM_PDM_MICS > 0)
                 /* Send decimation factor to PDM task(s) */
                 user_pdm_init();
@@ -880,6 +897,9 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
                    , c_spdif_out
 #else
                    , null
+#endif
+#if (XUA_PWM_CHANNELS > 0)
+                   , c_pwm_channels
 #endif
 #if (XUA_ADAT_TX_EN)
                    , c_adat_out
