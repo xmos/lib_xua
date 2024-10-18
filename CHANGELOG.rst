@@ -42,9 +42,17 @@ lib_xua change log
 
     - lib_dsp: Removed dependency
 
+    - lib_locks: 2.2.0 -> 2.3.1
+
+    - lib_logging: 3.2.0 -> 3.3.1
+
     - lib_mic_array: 4.6.0 -> 5.4.0
 
     - lib_spdif: 6.1.1 -> 6.2.0
+
+    - lib_sw_pll: 2.2.0 -> 2.3.0
+
+    - lib_xassert: 4.2.0 -> 4.3.1
 
     - lib_xcore_math: Added dependency 2.3.0
 
