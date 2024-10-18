@@ -23,6 +23,7 @@ For full details of all options please see  :ref:`sec_api`.
     S/PDIF Transmit <opt_spdif_tx>
     S/PDIF Receive <opt_spdif_rx>
     ADAT Transmit <opt_adat_tx>
+    ADAT Receive <opt_adat_rx>
     MIDI <opt_midi>
     PDM Microphones <opt_pdm>
     Mixer <opt_mixer>
