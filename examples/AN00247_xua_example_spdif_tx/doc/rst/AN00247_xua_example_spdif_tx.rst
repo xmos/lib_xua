@@ -168,7 +168,7 @@ Configuring lib_xua
     - Sample-rates
     - Channel counts
     - Audio Class version
-    - Product/Vendor ID's
+    - Product/Vendor IDs
     - Various product strings
     - Master clock frequency
 

@@ -154,7 +154,7 @@ Configuring lib_xua
     - Supported sample-rates (Note ``lib_mic_array`` does not currently support sample rate change after initialisation)
     - Channel counts
     - Audio Class version
-    - Product/Vendor ID's
+    - Product/Vendor IDs
     - Various product strings
     - Master clock frequency
 
