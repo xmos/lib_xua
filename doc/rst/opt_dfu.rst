@@ -36,4 +36,5 @@ The codebase supports DFU over USB implementation compliant with with version 1.
      - Index to string descriptor containing the Product name in the DFU mode device descriptor
      - Same as index to string descriptor containing the Product name in the runtime mode device descriptor
        and cannot be overriden.
+
 |endfullwidth|
