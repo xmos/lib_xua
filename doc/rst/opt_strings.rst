@@ -3,7 +3,7 @@ Strings and IDs
 ===============
 
 The codebase includes various strings and IDs that should be customised to match the product requirements.
-These are listed in ::ref:`opt_strings_defines`.
+These are listed in :ref:`opt_strings_defines`.
 
 The Vendor ID (VID) should be acquired from the USB Implementers Forum (www.usb.org). Under no circumstances
 should the XMOS VID or any other VID be used without express permission.

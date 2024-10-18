@@ -32,7 +32,7 @@ Typically this would be set to ``2`` for stereo output.
 
 By default both "Native" and DoP functionality are enabled when DSD is enabled. The Native DSD implementation uses
 an alternative streaming interface such that the host can inform the device that DSD data is being streamed.
-See: ::ref:`sec_opt_audio_formats` for details.
+See: :ref:`sec_opt_audio_formats` for details.
 
 If only DoP functionality is desired the Native implementation can be disabled with the following :ref:`define <opt_nativedsd_defines>`:
 

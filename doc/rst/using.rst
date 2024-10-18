@@ -67,13 +67,13 @@ Using this development model the user simply includes a ``xua_conf.h`` with thei
 optional implementations of any 'user functions' as desired. This, along with an XN file for their
 hardware platform, is all that is required to build a fully featured and functioning product. This
 XN file should contain definitions of the ports used for the various ``lib_xua`` functionality,
-see ::ref:`sec_options`.
+see :ref:`sec_options`.
 
 This development model also provides the benefit of a full and verified codebase as a basis for a product.
 
 This behaviour described in this section is the default behaviour of `lib_xua`, to disable this please
 set ``EXCLUDE_USB_AUDIO_MAIN`` to 1 in the application makefile or ``xua_conf.h`` and see
-::ref:`sec_advanced_usage`.
+:ref:`sec_advanced_usage`.
 
 Configuring lib_xua
 ===================
@@ -82,7 +82,7 @@ Configuration of the various build time options of ``lib_xua`` is done via the o
 To allow the build scripts to locate this file it should reside somewhere in the application `src` directory.
 
 Such build time options include audio class version, sample rates, channel counts etc. Please see
-::ref:`sec_api` for full listings.
+:ref:`sec_api` for full listings.
 
 The build system will automatically include the `xua_conf.h` header file as appropriate - the developer
 should continue to include `xua.h` as previously directed. A simple example is shown below::
@@ -102,6 +102,6 @@ User Functions
 ==============
 
 To enable custom functionality, such as configuring external audio hardware, bespoke behaviour on
-stream start/stop etc, various functions can be overridden by the user. (see ::ref:`sec_api` for
+stream start/stop etc, various functions can be overridden by the user. (see :ref:`sec_api` for
 full listings). The default implementations of these functions are empty.
 
