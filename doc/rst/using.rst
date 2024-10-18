@@ -30,13 +30,16 @@ Note, the midi and dfu directories are potential candidates for separate libs in
 Using in a Project
 ==================
 
+``lib_xua`` is intended to be used with the `XCommon CMake <https://www.xmos.com/file/xcommon-cmake-documentation/?version=latest>`_
+, the `XMOS` application build and dependency management system.
+
+To use ``lib_xua`` in an application, add ``lib_xua``, to the list of dependent modules in the application's CMakeLists.txt file.
+
+  set(APP_DEPENDENT_MODULES "lib_xua")
+
 All `lib_xua` functions can be accessed via the ``xua.h`` header file::
 
   #include <xua.h>
-
-It is also required to add ``lib_xua`` to the list of dependent modules in the application's CMakeLists.txt file.
-
-  set(APP_DEPENDENT_MODULES "lib_xua")
 
 .. _sec_basic_usage_codeless:
 

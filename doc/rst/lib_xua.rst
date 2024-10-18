@@ -14,7 +14,6 @@ lib_xua
     Additional Features <feat>
     Implementation Detail <sw>
     API <api>
-    Known Issues <issues>
 
 
 

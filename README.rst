@@ -5,18 +5,18 @@ lib_xua: USB Audio Components Library
 #####################################
 
 :vendor: XMOS
-:version: 4.2.0
+:version: 5.0.0
 :scope: General Use
 :description: USB Audio components library
 :category: General Purpose
-:keywords: USB Audio
+:keywords: USB Audio, I2S, MIDI, HID, DFU
 :devices: xcore.ai, xcore-200
 
 ********
 Overview
 ********
 
-lib_xua contains shared components for use in the XMOS USB Audio (XUA) Reference Designs.
+``lib_xua`` contains shared components for use in the XMOS USB Audio (XUA) Reference Designs.
 
 These components enable the development of USB Audio devices on the XMOS xCORE architecture.
 
@@ -65,6 +65,30 @@ Key features of the various components in this repository are as follows
 Note, not all features may be supported at all sample frequencies, simultaneously or on all devices.
 Some features may also require specific host driver support.
 
+************
+Known Issues
+************
+
+- When in DSD mode with S/PDIF output enabled, DSD samples are transmitted over S/PDIF if the DSD and S/PDIF channels are shared, this may or may not be desired (#14762)
+
+- I2S input is completely disabled when DSD output is active - any input stream to the host will contain 0 samples (#14173)
+
+- Operating the design at a sample rate of less than or equal to the SOF rate (i.e. 8kHz at HS, 1kHz at FS) may expose a corner case relating to 0 length packet handling in both the driver and device and should be considered unsupported at this time (#14780)
+
+- Before DoP mode is detected a small number of DSD samples will be played out as PCM via I2S (lib_xua #162)
+
+- Volume control settings currently affect samples in both DSD and PCM modes. This results in invalid DSD output if volume control not set to 0 (#14887)
+
+- 88.2kHz and 176.4kHz sample frequencies are not exposed in Windows control panels.  These are known OS restrictions.
+
+- When DFU flash access fails the device NAKS the host indefinitely (sw_usb_audio #54)
+
+- In synchronous mode there is no nice transition of the reference signal when moving between internal and SOF clocks (lib_xua #275)
+
+- Binary images exceeding FLASH_MAX_UPGRADE_SIZE fail silently on DFU download (lib_xua #165)
+
+- Input does not come out of underflow for USB Audio Class 2 when sample rate is 16kHz and channel count is 2. (lib_xua #434). This will result in silence being streamed to the host. Please use USB Audio Class 1 for low channel count and sample rates.
+
 ************************
 Host System Requirements
 ************************
@@ -73,21 +97,11 @@ USB Audio devices built using `lib_xua` have the following host system requireme
 
 - Mac OSX version 10.6 or later
 
-- Windows Vista, 7, 8 or 10 with Thesycon Audio Class 2.0 driver for Windows (Tested against version 3.20). Please contact XMOS for details.
+- Windows 10 or 11, with Thesycon Audio Class 2.0 driver for Windows (Tested against version 5.70.0). Please contact XMOS for details.
 
-- Windows Vista, 7, 8 or 10 with built-in USB Audio Class 1.0 driver.
+- Windows 10 or 11 with built-in USB Audio Class 1.0 driver.
 
 Older versions of Windows are not guaranteed to operate as expected. Devices are also expected to operate with various Linux distributions including mobile variants.
-
-*************************
-Related Application Notes
-*************************
-
-The following application notes use this library:
-
-  * AN000246 - Simple USB Audio Device using lib_xua
-  * AN000247 - Using lib_xua with lib_spdif (transmit)
-  * AN000248 - Using lib_xua with lib_mic_array
 
 **************
 Required Tools
@@ -108,6 +122,17 @@ Required Libraries (dependencies)
   * lib_spdif (www.github.com/xmos/lib_spdif)
   * lib_sw_pll (www.github.com/xmos/lib_sw_pll)
   * lib_xud (www.github.com/xmos/lib_xud)
+
+
+*************************
+Related Application Notes
+*************************
+
+The following application notes use this library:
+
+  * AN000246 - Simple USB Audio Device using lib_xua
+  * AN000247 - Using lib_xua with lib_spdif (transmit)
+  * AN000248 - Using lib_xua with lib_mic_array
 
 *******
 Support
