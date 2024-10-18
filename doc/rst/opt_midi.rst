@@ -25,7 +25,7 @@ MIDI functionality is enabled with the define in :ref:`opt_midi_defines`.
 The codebase supports MIDI receive on a 4-bit or 1-bit port, defaulting to using a 1-bit port.
 MIDI transmit is supported over a port of any bit-width.  By default the codebase assumes the transmit
 and receive I/O is connected to bit[0] of the port. This is configurable for the transmit port.
-:ref:`opt_midi_port_defines` provides information on the configuring these parameters.
+:ref:`MIDI port defines table <opt_midi_port_defines>` provides information on configuring these parameters.
 
 .. _opt_midi_port_defines:
 

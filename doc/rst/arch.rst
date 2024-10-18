@@ -74,12 +74,12 @@ In addition :ref:`usb_audio_optional_components` shows optional components that 
  * - Component
    - Description
  * - S/PDIF Transmitter (lib_spdif)
-   - Outputs samples of an S/PDIF digital audio interface.
+   - Outputs samples off an S/PDIF digital audio interface.
  * - S/PDIF Receiver (lib_spdif)
-   - Inputs samples of an S/PDIF digital audio interface (requires the
+   - Inputs samples off an S/PDIF digital audio interface (requires the
      clockgen component).
  * - ADAT Receiver (lib_adat)
-   - Inputs samples of an ADAT digital audio interface (requires the
+   - Inputs samples off an ADAT digital audio interface (requires the
      clockgen component).
  * - PDM Microphones (lib_mic_array)
    - Receives PDM data from microphones and performs PDM to PCM conversion

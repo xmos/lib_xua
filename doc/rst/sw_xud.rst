@@ -4,7 +4,7 @@
 XMOS USB Device (XUD) Library
 =============================
 
-All low level communication with the USB host is handled by the XMOS USB Device (XUD) library - `lib_xud <https://github.com/xmos/lib_xud>`_
+All low level communication with the USB host is handled by the XMOS USB Device (XUD) library - `lib_xud <https://github.com/xmos/lib_xud>`__
 
 The ``XUD_Main()`` function runs in its own core and communicates with endpoint cores though a
 mixture of shared memory and channel communications.
