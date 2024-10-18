@@ -6,7 +6,7 @@ DFU
 The codebase supports DFU over USB implementation compliant with with version 1.1 of
 `Universal Serial Bus Device Class Specification for Device Firmware Upgrade <https://www.usb.org/sites/default/files/DFU_1.1.pdf>`_.
 
-:ref:`DFU defines<opt_dfu>` lists the DFU related configuration options. Unless explicitly stated, these can be overriden by the application:
+:ref:`DFU defines<opt_dfu>` lists the DFU related configuration options.
 
 .. _opt_dfu:
 
@@ -14,7 +14,7 @@ The codebase supports DFU over USB implementation compliant with with version 1.
 
 .. list-table:: DFU defines
    :header-rows: 1
-   :widths: 40 60 20
+   :widths: 40 40 40
 
    * - Define
      - Description
