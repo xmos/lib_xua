@@ -18,7 +18,7 @@ Basic configuration of ADAT transmit functionality is achieved with the followin
 
 .. list-table:: ADAT tx defines
    :header-rows: 1
-   :widths: 20 40 40
+   :widths: 25 40 40
 
    * - Define
      - Description
@@ -28,7 +28,7 @@ Basic configuration of ADAT transmit functionality is achieved with the followin
      - ``0`` (Disabled)
    * - ``ADAT_TX_MAX_CHANS``
      - Maximum number of channels to transmit over the ADAT interface
-     - ``8, 4 or 2 depending on the min and max sampling freq supported in the application``
+     - ``8, 4 or 2`` depending on the min and max sampling freq supported in the application
    * - ``ADAT_TX_INDEX``
      - Start channel index of ADAT TX channels
      - N/A (must be defined by the application)
