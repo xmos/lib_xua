@@ -24,6 +24,7 @@ For full details of all options please see  ::ref:`sec_api`.
     PDM Microphones <opt_pdm>
     Mixer <opt_mixer>
     Direct Stream Digital (DSD) <opt_dsd>
+    DFU <opt_dfu>
     USB Audio Formats <opt_audio_formats>
     Other Options <opt_other>
 

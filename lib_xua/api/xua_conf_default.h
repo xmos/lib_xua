@@ -570,7 +570,7 @@
 #endif
 
 /**
- * @brief Enable DFU functionality. A driver required for Windows operation.
+ * @brief Enable DFU functionality.
  *
  * Default: 1 (Enabled)
  */

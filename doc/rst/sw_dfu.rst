@@ -1,13 +1,17 @@
 .. _usb_audio_sec_dfu:
 
-Device Firmware Upgrade (DFU)
-=============================
+Device Firmware Upgrade (DFU) over USB
+======================================
 
-The DFU implementation in lib_xua is compliant with version 1.1 of
+The DFU implementation in ``lib_xua`` is compliant with version 1.1 of
 `Universal Serial Bus Device Class Specification for Device Firmware Upgrade <https://www.usb.org/sites/default/files/DFU_1.1.pdf>`_.
-The device descriptors expose a DFU interface that handles updates to the boot image of the device over USB.
 
+This section describes the DFU implementation in ``lib_xua``. For information about using a DFU loader to send DFU
+commands to the USB Audio device, refer to appnote **AN02019: Using Device Firmware Upgrade (DFU) in USB Audio**.
 
+The USB device descriptors expose a DFU interface that handles updates to the boot image of the device over USB.
+
+The host sends DFU requests as Host to Device Class requests to the DFU interface.
 On receiving DFU commands from the host, the ``DFUDeviceRequests`` function is called from the Endpoint 0 core.
 This function calls the DFU handler functions over the ``dfuInterface`` XC interface.
 The DFU handler thread, ``DFUHandler`` that implements the server side of the ``dfuInterface`` has to be
