@@ -1,3 +1,5 @@
+|newpage|
+
 .. _sec_advanced_usage:
 
 **************

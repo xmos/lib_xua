@@ -1,3 +1,4 @@
+|newpage|
 
 .. _sec_api:
 
