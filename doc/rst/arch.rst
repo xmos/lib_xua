@@ -78,6 +78,8 @@ In addition :ref:`usb_audio_optional_components` shows optional components that 
  * - S/PDIF Receiver (lib_spdif)
    - Inputs samples off an S/PDIF digital audio interface (requires the
      clockgen component).
+ * - ADAT Transmitter (lib_adat)
+   - Outputs samples on an ADAT digital audio interface.
  * - ADAT Receiver (lib_adat)
    - Inputs samples off an ADAT digital audio interface (requires the
      clockgen component).

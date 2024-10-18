@@ -464,6 +464,7 @@
  * */
 #if (XUA_ADAT_TX_EN) || defined(__DOXYGEN__)
     #ifndef ADAT_TX_INDEX
+        #error ADAT_TX_INDEX not defined and XUA_ADAT_TX_EN is true
         #define ADAT_TX_INDEX (0)
     #endif
 

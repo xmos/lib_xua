@@ -24,7 +24,7 @@ Basic configuration of S/PDIF receive functionality is achieved with the followi
      - ``0`` (Disabled)
    * - ``SPDIF_RX_INDEX``
      - Defines which channels S/PDIF will be input on
-     - N/A (must defined)
+     - N/A (must be defined)
 
 |endfullwidth|
 
