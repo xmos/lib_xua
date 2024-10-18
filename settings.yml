@@ -1,7 +1,7 @@
 ---
 lib_name: lib_xua
 project: '{{lib_name}}'
-title: '{{lib_name}}: XMOS XUA Library'
+title: '{{lib_name}}: USB Audio Components Library'
 version: 5.0.0
 
 documentation:

@@ -30,7 +30,7 @@ Setting the synchronisation mode of the device is done using the following :ref:
 
 .. list-table:: Sync Define
    :header-rows: 1
-   :widths: 20 60 20
+   :widths: 30 60 20
 
    * - Define
      - Description
