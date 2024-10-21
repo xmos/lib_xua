@@ -14,6 +14,7 @@ Where something must be defined, it is recommended this is done in `xua_conf.h` 
 
     S/PDIF Transmit <feat_spdif_tx>
     S/PDIF Receive <feat_spdif_rx>
+    ADAT Transmit <feat_adat_tx>
 
 
 
