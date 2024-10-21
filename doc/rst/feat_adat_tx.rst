@@ -84,7 +84,7 @@ the S/MUX setting.
 The master clock multiplier is the ratio between the mclk freqency and the sampling frequency. The S/MUX setting is
 1, 2 or 4, depending on the sampling frequency:
 
-.. literalinclude:: ../../src/core/audiohub/xua_audiohub.xc
+.. literalinclude:: ../../lib_xua/src/core/audiohub/xua_audiohub.xc
    :start-at: /* Calculate what master clock we should be using */
    :end-before: /* Calculate master clock to bit clock
 
