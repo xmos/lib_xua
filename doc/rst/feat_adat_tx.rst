@@ -78,6 +78,8 @@ Finally the ADAT transmitter task is run - passing in the port and channel for c
 Communication between ``XUA_AudioHub`` and the ``adat_tx_port`` task
 --------------------------------------------------------------------
 
+The interface to the ADAT transmitter core is via a normal channel with streaming builtins (``outuint``, ``inuint``).
+
 To begin with, ``XUA_AudioHub`` sends two values on the channel - the master clock multiplier and
 the S/MUX setting.
 
@@ -93,7 +95,8 @@ The ``XUA_AudioHub`` "runs ahead" of the ADAT transmitter task, assembling the n
 ADAT transmitter converts the current block into an ADAT stream to transmit over the optical interface.
 
 The ADAT transmitter, once done processing the current block, acknowledges this by sending a data token over the channel
-to ``XUA_AudioHub``. Only then, ``XUA_AudioHub`` sends the address of the next block of samples over the channel.
+to ``XUA_AudioHub`` as a handshake mechanism.
+On receiving this handshake, ``XUA_AudioHub`` sends the address of the next block of samples over the channel.
 
 Note that a ``XS1_CT_END`` end token is not sent between blocks of data, leading to the channel remaining open and getting used
 as a streaming channel.
@@ -103,9 +106,9 @@ that requires the ``XUA_AudioHub`` to re-communicate the master clock multiplier
 the S/MUX setting.
 
 In case of a sampling frequency change, the ``XUA_AudioHub`` receives the pending handshake from the ADAT transmitter,
-follwed by sending the ``XS1_CT_END`` token indicating the end of data streaming to the ADAT task.
-Once this is done, a fresh transmission is started by sending the new master clock multiplier and
-the S/MUX setting to the ADAT transmitter, follwed by audio blocks transfer as described above.
+followed by sending the ``XS1_CT_END`` token indicating the end of data streaming to the ADAT task.
+A fresh transmission is then started by sending the new master clock multiplier and
+the S/MUX setting to the ADAT transmitter, followed by audio blocks transfer as described above.
 
 :ref:`xua_audiohub_adat_tx` describes the communication between ``XUA_AudioHub`` and the ADAT transmitter:
 

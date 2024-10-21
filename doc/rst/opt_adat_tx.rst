@@ -32,6 +32,9 @@ Basic configuration of ADAT transmit functionality is achieved with the followin
    * - ``ADAT_TX_INDEX``
      - Start channel index of ADAT TX channels
      - N/A (must be defined by the application)
+   * - ``ADAT_TX_USE_SHARED_BUFF``
+     - Use shared memory when transferring samples between AudioHub and the ADAT tansmitter task
+     - N/A (must be defined by the application)
 
 |endfullwidth|
 
