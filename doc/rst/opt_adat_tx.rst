@@ -18,7 +18,7 @@ Basic configuration of ADAT transmit functionality is achieved with the followin
 
 .. list-table:: ADAT TX defines
    :header-rows: 1
-   :widths: 25 40 40
+   :widths: 35 40 40
 
    * - Define
      - Description
