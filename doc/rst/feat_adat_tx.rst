@@ -2,11 +2,11 @@ ADAT Transmit
 =============
 
 ``lib_xua`` supports the development of devices with ADAT transmit functionality through the use of
-``lib_adat``. The XMOS ADAT transmitter runs on a single core and supports transmitting 8 channels of
+`lib_adat <https://github.com/xmos/lib_adat>`__. The XMOS ADAT transmitter runs on a single core and supports transmitting 8 channels of
 digital audio at 44.1 or 48 kHz. Higher rates are supported with a reduced number of samples via S/MUX (‘sample multiplexing’). Using S/MUX,
 the ADAT transmitter can transmit four channels at 88.2 or 96 kHz (SMUX II) or two channels at 176.4 or 192 kHz (SMUX IV).
 
-ADAT transmitter requires a logical core to run on. Blocks of audio samples are transmitted from the ``XUA_AudioHub()`` to the ADAT transmitter,
+ADAT transmitter requires a logical core to run on. Blocks of audio samples are transmitted from the ``XUA_AudioHub()`` to the ADAT transmitter
 over either a dedicated channel or a combination of a channel and shared memory.
 
 Each block of audio samples is made of 8 samples. At sampling rates 44.1/48 kHz (SMUX I), this consists of a single sample of each of the
@@ -24,7 +24,7 @@ eight ADAT channels:
 At 88.2/96 kHz (SMUX II), the audio sample block consists of two samples per four ADAT channels:
 
   * Channel 0 sample 0
-  * Channel 1 sample 1
+  * Channel 0 sample 1
   * Channel 1 sample 0
   * Channel 1 sample 1
   * Channel 2 sample 0
@@ -54,7 +54,7 @@ The sample transfer sequence described in :ref:`xua_adat_tx` assumes that ``ADAT
 Declarations
 ------------
 
-The channel should be declared as normal::
+The channel used for communicating between ``XUA_AudioHub`` and ADAT transmitter should be declared::
 
     chan c_adat_out
 
@@ -116,6 +116,15 @@ the S/MUX setting to the ADAT transmitter, follwed by audio blocks transfer as d
 
 For further details please see the documentation, application notes and examples provided for ``lib_adat``.
 
+Enumerating as a USB Audio device
+---------------------------------
+
+When ADAT TX is enabled, the number of USB OUT channels vary depending on the sampling freq (S/MUX mode). This is
+exposed to the USB host as alternative interfaces, each supporting different channel counts, for the streaming output
+interface.
+The number of alternative interfaces exposed depends on the ``MIN_FREQ`` and ``MAX_FREQ`` supported over the USB interface.
+In the most generic case, where the device supports all sampling rates from 44.1 to 192 kHz, 3 alternative interfaces on the streaming
+output interface are exposed, supporting 16, 12 and 10 output channels respectively.
 
 
 
