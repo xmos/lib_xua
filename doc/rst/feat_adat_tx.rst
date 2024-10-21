@@ -9,7 +9,7 @@ the ADAT transmitter can transmit four channels at 88.2 or 96 kHz (SMUX II) or t
 ADAT transmitter requires a logical core to run on. Blocks of audio samples are transmitted from the ``XUA_AudioHub()`` to the ADAT transmitter,
 over either a dedicated channel or a combination of a channel and shared memory.
 
-Each block of audio samples is made of 8 samples. At sampling rates 44.1/48 kHz (SMUX 0), this consists of a single sample of each of the
+Each block of audio samples is made of 8 samples. At sampling rates 44.1/48 kHz (SMUX I), this consists of a single sample of each of the
 eight ADAT channels:
 
   * Channel 0 sample
@@ -80,8 +80,16 @@ Communication between ``XUA_AudioHub`` and the ``adat_tx_port`` task
 
 To begin with, ``XUA_AudioHub`` sends two values on the channel - the master clock multiplier and
 the S/MUX setting.
+
+The master clock multiplier is the ratio between the mclk freqency and the sampling frequency. The S/MUX setting is
+1, 2 or 4, depending on the sampling frequency:
+
+.. literalinclude:: ../../src/core/audiohub/xua_audiohub.xc
+   :start-at: /* Calculate what master clock we should be using */
+   :end-before: /* Calculate master clock to bit clock
+
 This is followed by communicating the address of a block of memory holding the audio samples block.
-The ``XUA_AudioHub`` runs ''ahead'' of the ADAT transmitter task, assembling the next sample block while the
+The ``XUA_AudioHub`` "runs ahead" of the ADAT transmitter task, assembling the next sample block while the
 ADAT transmitter converts the current block into an ADAT stream to transmit over the optical interface.
 
 The ADAT transmitter, once done processing the current block, acknowledges this by sending a data token over the channel
