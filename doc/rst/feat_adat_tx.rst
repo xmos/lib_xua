@@ -107,6 +107,13 @@ follwed by sending the ``XS1_CT_END`` token indicating the end of data streaming
 Once this is done, a fresh transmission is started by sending the new master clock multiplier and
 the S/MUX setting to the ADAT transmitter, follwed by audio blocks transfer as described above.
 
+:ref:`xua_audiohub_adat_tx` describes the communication between ``XUA_AudioHub`` and the ADAT transmitter:
+
+ .. _xua_audiohub_adat_tx:
+
+ .. figure:: images/xua_audiohub_adat_tx.png
+   :width: 60%
+
 For further details please see the documentation, application notes and examples provided for ``lib_adat``.
 
 
