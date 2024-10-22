@@ -3,7 +3,7 @@
 DFU
 ===
 
-The codebase supports DFU over USB implementation compliant with with version 1.1 of
+The codebase supports DFU over USB implementation compliant with version 1.1 of
 `Universal Serial Bus Device Class Specification for Device Firmware Upgrade <https://www.usb.org/sites/default/files/DFU_1.1.pdf>`_.
 
 :ref:`DFU defines<opt_dfu>` lists the DFU related configuration options.

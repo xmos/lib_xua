@@ -1665,7 +1665,7 @@ enum USBEndpointNumber_Out
     #define NULLABLE_SERVER_INTERFACE(tag, name) server interface tag ?name
     #define in_port_t in port
 #else
-    #define NULLABLE_CLIENT_INTERFACE(type, name) unsigned name
-    #define NULLABLE_SERVER_INTERFACE(tag, name) server interface tag ?name
+    #define NULLABLE_CLIENT_INTERFACE(type, name) unsigned *name
+    #define NULLABLE_SERVER_INTERFACE(tag, name) unsigned *name
     #define in_port_t unsigned
 #endif
