@@ -1,7 +1,7 @@
 :orphan:
 
 #########################################
-AN00247: Using lib_xua with lib_mic_array
+AN00248: Using lib_xua with lib_mic_array
 #########################################
 
 :vendor: XMOS

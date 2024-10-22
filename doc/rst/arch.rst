@@ -74,7 +74,7 @@ In addition :ref:`usb_audio_optional_components` shows optional components that 
  * - Component
    - Description
  * - S/PDIF Transmitter (lib_spdif)
-   - Outputs samples off an S/PDIF digital audio interface.
+   - Outputs samples on an S/PDIF digital audio interface.
  * - S/PDIF Receiver (lib_spdif)
    - Inputs samples off an S/PDIF digital audio interface (requires the
      clockgen component).
