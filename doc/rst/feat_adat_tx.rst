@@ -117,7 +117,7 @@ the S/MUX setting to the ADAT transmitter, followed by audio blocks transfer as 
  .. figure:: images/xua_audiohub_adat_tx.png
    :width: 60%
 
-For further details please see the documentation, application notes and examples provided for ``lib_adat``.
+For further details please see the documentation, application notes and examples provided for `lib_adat <https://www.xmos.com/file/lib_adat>`__.
 
 Enumerating as a USB Audio device
 ---------------------------------
@@ -127,7 +127,11 @@ exposed to the USB host as alternative interfaces, each supporting different cha
 interface.
 The number of alternative interfaces exposed depends on the ``MIN_FREQ`` and ``MAX_FREQ`` supported over the USB interface.
 In the most generic case, where the device supports all sampling rates from 44.1 to 192 kHz, 3 alternative interfaces on the streaming
-output interface are exposed, supporting 16, 12 and 10 output channels respectively.
+output interface are exposed, each supporting a different channel count:
+
+.. literalinclude:: ../../lib_xua/api/xua_conf_default.h
+   :start-at: #define OUTPUT_FORMAT_COUNT 3
+   :end-before: #endif
 
 
 

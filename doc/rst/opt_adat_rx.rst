@@ -42,7 +42,7 @@ This must be a 1-bit port, for example::
     <Port Location="XS1_PORT_1O"  Name="PORT_ADAT_IN"/>
 
 When ADAT receive is enabled the codebase expects to either drive a synchronisation signal to an external
-Cirrus Logic CS2100 device or use lib_sw_pll (xcore.ai only) for generating a master clock that is synchronised
+Cirrus Logic CS2100 device or use `lib_sw_pll <https://www.xmos.com/file/lib_sw_pll>`_ (xcore.ai only) for generating a master clock that is synchronised
 to the ADAT digital stream.
 
 The programmer should ensure the following :ref:`defines<opt_adat_rx_ref_defines>` are set appropriately:
