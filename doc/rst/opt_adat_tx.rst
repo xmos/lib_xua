@@ -8,7 +8,7 @@ eight channels of uncompressed digital audio at sample-rates of 44.1 or 48 kHz o
 Higher rates are supported with a reduced number of samples via S/MUX (‘sample multiplexing’). Using S/MUX,
 the ADAT transmitter can transmit four channels at 88.2 or 96 kHz or two channels at 176.4 or 192 kHz.
 
-In order to provide ADAT transmit functionality ``lib_xua`` uses `lib_adat <https://www.github.com/xmos/lib_adat>`_.
+In order to provide ADAT transmit functionality ``lib_xua`` uses `lib_adat <https://www.xmos.com/file/lib_adat>`_.
 
 Basic configuration of ADAT transmit functionality is achieved with the following :ref:`defines<opt_adat_tx_defines>`:
 

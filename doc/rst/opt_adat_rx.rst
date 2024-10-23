@@ -5,7 +5,7 @@ ADAT Receive
 
 The codebase supports a single ADAT receiver that can receive up to eight channels of audio at a sample rate
 of 44.1kHz or 48kHz over an optical interface.
-In order to provide ADAT functionality ``lib_xua`` uses `lib_adat <https://www.github.com/xmos/lib_spdif>`_.
+In order to provide ADAT functionality ``lib_xua`` uses `lib_adat <https://www.xmos.com/file/lib_adat>`_.
 
 Basic configuration of ADAT receive functionality is achieved with the following :ref:`defines<opt_adat_rx_defines>`:
 
@@ -69,4 +69,4 @@ This may be a port of any bit-width, however, connection to bit[0] is assumed::
 
     <Port Location="XS1_PORT_1A"  Name="PORT_PLL_REF"/>
 
-Configuration of the external CS2100 device (typically via I2C) is beyond the scope of this document.
+Configuration of the external CS2100 device (typically via I²C) is beyond the scope of this document.
