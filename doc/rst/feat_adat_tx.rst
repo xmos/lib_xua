@@ -6,7 +6,7 @@ ADAT Transmit
 digital audio at 44.1 or 48 kHz. Higher rates are supported with a reduced number of samples via S/MUX (‘sample multiplexing’). Using S/MUX,
 the ADAT transmitter can transmit four channels at 88.2 or 96 kHz (SMUX II) or two channels at 176.4 or 192 kHz (SMUX IV).
 
-ADAT transmitter requires a logical core to run on. Blocks of audio samples are transmitted from the ``XUA_AudioHub()`` to the ADAT transmitter
+ADAT transmitter requires a thread to run on. Blocks of audio samples are transmitted from the ``XUA_AudioHub()`` to the ADAT transmitter
 over either a dedicated channel or a combination of a channel and shared memory.
 
 Each block of audio samples is made of 8 samples. At sampling rates 44.1/48 kHz (SMUX I), this consists of a single sample of each of the
@@ -78,7 +78,7 @@ Finally the ADAT transmitter task is run - passing in the port and channel for c
 Communication between ``XUA_AudioHub`` and the ``adat_tx_port`` task
 --------------------------------------------------------------------
 
-The interface to the ADAT transmitter core is via a normal channel with streaming builtins (``outuint``, ``inuint``).
+The interface to the ADAT transmitter task is via a normal channel with streaming builtins (``outuint``, ``inuint``).
 
 To begin with, ``XUA_AudioHub`` sends two values on the channel - the master clock multiplier and
 the S/MUX setting.
