@@ -92,7 +92,7 @@ of rate.
 
 Since the DoP specification requires header bytes this eats into the data bandwidth. The "Native" implementation
 has no such overhead and can therefore transfer the same DSD rate at half the effective PCM rate of DoP.
-Such a property may be desired when upporting DSD128 without exposing a 352.8kHz PCM rate, for example.
+Such a property may be desired when supporting DSD128 without exposing a 352.8kHz PCM rate, for example.
 
 Ports
 -----
