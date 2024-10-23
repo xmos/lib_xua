@@ -6,14 +6,14 @@ Audio Hub
 =========
 
 The Audio Hub task performs many functions. It receives and transmits samples from/to the Decoupler
-or Mixer core over a channel.
+or Mixer thread over a channel.
 
 It also drives several in and out I2S/TDM channels to/from a CODEC, DAC, ADC etc. From now on these
 external devices will be termed "audio hardware".
 
 If the firmware is configured with the xCORE as I2S master the required clock lines will also be
 driven from this task. It also has the task of forwarding on and receiving samples to/from other
-audio related tasks/cores such as S/PDIF tasks, ADAT etc.
+audio related tasks/threads such as S/PDIF tasks, ADAT etc.
 
 In master mode, the xCORE generates the I2S "Continuous Serial Clock (SCK)", or "Bit-Clock (BCLK)"
 and the "Word Select (WS)" or "left-right clock (LRCLK)" signals. Any CODEC or DAC/ADC combination
@@ -149,13 +149,13 @@ Changing Audio Sample Frequency
 .. _usb_audio_sec_chang-audio-sample:
 
 When the host changes sample frequency, a new frequency is sent to
-the audio driver core by Endpoint 0 (via the buffering cores and mixer).
+the audio driver thread by Endpoint 0 (via the buffering threads and mixer).
 
-First, a change of sample frequency is reported by sending the new frequency over an XC channel. The audio core
+First, a change of sample frequency is reported by sending the new frequency over an XC channel. The audio thread
 detects this by checking for the presence of a control token on the channel channel
 
 Upon receiving the change of sample frequency request, the audio
-core stops the I2S/TDM interface and calls the CODEC/port configuration
+thread stops the I2S/TDM interface and calls the CODEC/port configuration
 functions.
 
 Once this is complete, the I2S/TDM interface (i.e. the main loop in AudioHub) is restarted at the new frequency.

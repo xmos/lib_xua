@@ -94,6 +94,6 @@ In addition :ref:`usb_audio_optional_components` shows optional components that 
       USB Audio Core Diagram
 
 :ref:`usb_audio_threads` shows how the components interact with each
-other in a typical system.  The green circles represent cores with arrows indicating inter-core communications.
+other in a typical system.  The green circles represent threads with arrows indicating inter-thread communications.
 
 

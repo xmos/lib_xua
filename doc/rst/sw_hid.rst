@@ -11,7 +11,7 @@ When turned on the following items are enabled:
 
     #. HID descriptors are enabled in the Configuration Descriptor informing the host that the device has a HID interface.
     #. A Get Report Descriptor request is enabled in ``endpoint0``.
-    #. Endpoint data handling is enabled in the ``buffer`` core.
+    #. Endpoint data handling is enabled in the ``buffer`` thread.
 
 The Get Descriptor Request enabled in endpoint 0 returns the report descriptor for the HID device.
 This details the format of the HID reports returned from the device to the host.  It maps a bit in
@@ -43,5 +43,5 @@ The default report size is 1 byte with the format as follows:
 
 On each HID report request from the host the function ``Vendor_ReadHidButtons(unsigned char hidData[])`` is called from ``buffer()``.  This function is passed an array ``hidData[]`` by reference.  The programmer should report the state of his buttons into this array. For example, if a volume up command is desired, bit 3 should be set to 1, else 0.
 
-Since the ``Vendor_ReadHidButtons()`` function is called from the ``buffer`` logical core, care should be taken not to add to much execution time to this function since this could cause issues with servicing other endpoints.
+Since the ``Vendor_ReadHidButtons()`` function is called from the ``buffer`` thread, care should be taken not to add to much execution time to this function since this could cause issues with servicing other endpoints.
 

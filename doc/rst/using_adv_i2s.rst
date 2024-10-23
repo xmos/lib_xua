@@ -3,7 +3,7 @@
 I2S/TDM
 =======
 
-I2S/TDM is typically fundamental to most products and is built into the ``XUA_AudioHub()`` core.
+I2S/TDM is typically fundamental to most products and is built into the ``XUA_AudioHub()`` thread.
 
 In order to enable I2S/TDM one must declare an array of ports for the data-lines (one for each direction)::
 
@@ -30,7 +30,7 @@ I2S/TDM functionality also requires two clock-blocks, one for bit-clock and anot
 
 These hardware resources must be passed into the call to ``XUA_AudioHub()``::
 
-    /* AudioHub/IO core does most of the audio IO i.e. I2S (also serves
+    /* AudioHub/IO thread does most of the audio IO i.e. I2S (also serves
      * as a hub for all audio) */
 
     on tile[0]: XUA_AudioHub(c_aud, clk_audio_mclk, clk_audio_bclk, p_mclk_in,

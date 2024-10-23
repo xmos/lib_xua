@@ -3,7 +3,7 @@
 I2S/TDM
 =======
 
-I2S/TDM is typically fundamental to most products and is built into the ``XUA_AudioHub()`` core.
+I2S/TDM is typically fundamental to most products and is built into the ``XUA_AudioHub()`` thread.
 
 The following :ref:`defines <opt_i2s_defines>` affect the I2S implementation.
 
