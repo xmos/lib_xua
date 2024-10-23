@@ -78,6 +78,8 @@ In addition :ref:`usb_audio_optional_components` shows optional components that 
  * - S/PDIF Receiver (lib_spdif)
    - Inputs samples off an S/PDIF digital audio interface (requires the
      clockgen component).
+ * - ADAT Transmitter (lib_adat)
+   - Outputs samples on an ADAT digital audio interface.
  * - ADAT Receiver (lib_adat)
    - Inputs samples off an ADAT digital audio interface (requires the
      clockgen component).
@@ -92,6 +94,6 @@ In addition :ref:`usb_audio_optional_components` shows optional components that 
       USB Audio Core Diagram
 
 :ref:`usb_audio_threads` shows how the components interact with each
-other in a typical system.  The green circles represent cores with arrows indicating inter-core communications.
+other in a typical system.  The green circles represent threads with arrows indicating inter-thread communications.
 
 

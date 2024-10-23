@@ -5,12 +5,12 @@ S/PDIF Transmit
 ===============
 
 ``lib_xua`` supports the development of devices with S/PDIF transmit through the use of ``lib_spdif``.
-The XMOS S/SPDIF transmitter component runs in a single core and supports sample-rates upto 192kHz.
+The XMOS S/SPDIF transmitter component runs in a single thread and supports sample-rates upto 192kHz.
 
-The S/PDIF transmitter core takes PCM audio samples via a channel and outputs them
+The S/PDIF transmitter thread takes PCM audio samples via a channel and outputs them
 in S/PDIF format to a port.  A lookup table is used to encode the audio data into the required format.
 
-It receives samples from the Audio I/O core two at a time (for left and right). For each sample,
+It receives samples from the Audio I/O thread two at a time (for left and right). For each sample,
 it performs a lookup on each byte, generating 16 bits of encoded data which it outputs to a port.
 
 S/PDIF sends data in frames, each containing 192 samples of the left and right channels.
@@ -58,7 +58,7 @@ A typical jitter-reduction scheme is an external D-type flip-flop clocked from t
 Usage
 -----
 
-The interface to the S/PDIF transmitter core is via a normal channel with streaming builtins
+The interface to the S/PDIF transmitter thread is via a normal channel with streaming builtins
 (``outuint``, ``inuint``). Data format should be 24-bit left-aligned in a 32-bit word: ``0x12345600``
 
 The following protocol is used on the channel:

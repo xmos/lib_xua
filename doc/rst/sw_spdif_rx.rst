@@ -59,8 +59,8 @@ done with an external device. See `Clock Recovery` (:ref:`usb_audio_sec_clock_re
    Due to the requirement for this clock recovery S/PDIF receive can only be used in Asynchronous
    mode.
 
-The S/PDIF receive function communicates with the Clock Gen core, which in turn passes audio data to the
-Audio Hub core. The Clock Gen core also handles locking to the S/PDIF clock source
+The S/PDIF receive function communicates with the Clock Gen thread, which in turn passes audio data to the
+Audio Hub thread. The Clock Gen thread also handles locking to the S/PDIF clock source
 (see :ref:`usb_audio_sec_clock_recovery`).
 
 Ideally the parity of each word/sample received should be checked.  This is done using the built in
@@ -100,5 +100,5 @@ The following code snippet illustrates how the output of the S/PDIF receive comp
      }
   }
 
-The Clock Gen core stores samples in a small FIFO before they are communicated to the Audio Hub core.
+The Clock Gen thread stores samples in a small FIFO before they are communicated to the Audio Hub thread.
 

@@ -3,9 +3,9 @@ S/PDIF Transmit
 ===============
 
 ``lib_xua`` supports the development of devices with S/PDIF transmit functionality through the use of
-``lib_spdif``. The XMOS S/PDIF transmitter runs on a single core and supports rates up to 192kHz.
+``lib_spdif``. The XMOS S/PDIF transmitter runs on a single thread and supports rates up to 192kHz.
 
-The S/PDIF transmitter core takes PCM audio samples via a channel and outputs them in S/PDIF format to a port.
+The S/PDIF transmitter thread takes PCM audio samples via a channel and outputs them in S/PDIF format to a port.
 Samples are provided to the S/PDIF transmitter task from the ``XUA_AudioHub()`` task.
 
 The channel should be declared as normal::
@@ -35,7 +35,7 @@ For example::
             spdif_tx(p_spdif_tx, c_spdif_tx);
         }
 
-        /* AudioHub/IO core does most of the audio IO i.e. I2S (also serves as
+        /* AudioHub/IO thread does most of the audio IO i.e. I2S (also serves as
          * a hub for all audio).
          * Note, since we are not using I2S we pass in null for LR and Bit
          * clock ports and the I2S dataline ports */

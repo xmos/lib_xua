@@ -3,19 +3,19 @@
 Digital Mixer
 =============
 
-The Mixer core(s) take outgoing audio from the Decouple core and incoming audio from the Audio Hub
-core. It then applies the volume to each channel and passes incoming audio on to Decouple and outgoing
+The Mixer thread(s) take outgoing audio from the Decouple thread and incoming audio from the Audio Hub
+thread. It then applies the volume to each channel and passes incoming audio on to Decouple and outgoing
 audio to Audio Hub. The volume update is achieved using the built-in 32bit to 64bit signed
 multiply-accumulate function (``macs``). The mixer is implemented in the file ``mixer.xc``.
 
-The mixer takes (up to) two cores and can perform eight mixes with up to 18 inputs at sample rates
+The mixer takes (up to) two threads and can perform eight mixes with up to 18 inputs at sample rates
 up to 96kHz and two mixes with up to 18 inputs at higher sample rates. The component automatically
 reverts to generating two mixes when running at the higher rate.
 
 The mixer can take inputs from either:
 
-   * The USB outputs from the host---these samples come from the Decouple core.
-   * The inputs from the audio interfaces on the device---these samples come from the Audio Hub core
+   * The USB outputs from the host---these samples come from the Decouple thread.
+   * The inputs from the audio interfaces on the device---these samples come from the Audio Hub thread
      and includes samples from digital input streams.
 
 Since the sum of these inputs may be more than the 18 possible mix inputs to each mixer, there is a
@@ -24,13 +24,13 @@ mapping from all the possible inputs to the mixer inputs.
 After the mix occurs, the final outputs are created. There are two possible output destinations
 for each mix.
 
-   * The USB inputs to the host---these samples are sent to the Decouple core.
+   * The USB inputs to the host---these samples are sent to the Decouple thread.
 
    * The outputs to the audio interface on the device---these samples are sent to the Audio Hub
-     core
+     thread
 
 For each possible output from the device, a mapping exists to inform the mixer what its source is.
-The possible sources are the output from the USB host, the inputs from the Audio Hub core or the
+The possible sources are the output from the USB host, the inputs from the Audio Hub thread or the
 outputs from the mixes.
 
 Essentially the mixer/router can be configured such that any device input can be used as an input to
@@ -39,7 +39,7 @@ any mixer output or any device input.
 
 As mentioned in :ref:`usb_audio_sec_audio-requ-volume`, the mixer can also handle processing of
 volume controls. If the mixer is configured to handle volume but the number of mixes is set to zero
-(such that the core is solely doing volume setting) then the component will use only one core. This
+(such that the thread is solely doing volume setting) then the component will use only one thread. This
 is sometimes a useful configuration for large channel count devices.
 
 A sequence diagram showing the communication between Audio Hub, Decouple and mixer threads is shown in :ref:`mixer_full`.
@@ -82,7 +82,7 @@ Control
 -------
 
 The mixers can receive the control commands from the host via USB Control Requests to Endpoint 0.
-The Endpoint 0 core relays these to the Mixer cores(s) via a channel (``c_mix_ctl``). These commands
+The Endpoint 0 thread relays these to the Mixer threads(s) via a channel (``c_mix_ctl``). These commands
 are described in the following :ref:`table<table_mixer_commands>`:
 
 .. _table_mixer_commands:

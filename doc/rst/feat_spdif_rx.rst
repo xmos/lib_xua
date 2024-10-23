@@ -3,7 +3,7 @@ S/PDIF Receive
 ==============
 
 ``lib_xua`` supports the development of devices with S/PDIF receive functionality through the use of
-``lib_spdif``. The XMOS S/PDIF receiver runs on a single core and supports rates up to 192kHz.
+``lib_spdif``. The XMOS S/PDIF receiver runs on a single thread and supports rates up to 192kHz.
 
 The S/PDIF receiver inputs data via a port and outputs samples via a channel. It requires a 1-bit port
 which must be 4-bit buffered. For example::
@@ -35,9 +35,9 @@ The ``ClockGen()`` task from ``lib_xua`` provides the reference signal to the CS
 to lib_sw_pll and also handles recording of clock validity etc.
 See :ref:`usb_audio_sec_clock_recovery` for full details regarding ``ClockGen()``.
 
-It also provides a small FIFO for S/PDIF samples before they are forwarded to the ``AudioHub`` core.
+It also provides a small FIFO for S/PDIF samples before they are forwarded to the ``AudioHub`` thread.
 As such it is required to be inserted in the communication path between the S/PDIF receiver and the
-``AudioHub`` core.  For example::
+``AudioHub`` thread.  For example::
 
     chan c_dig_rx;
     streaming chan c_spdif_rx;

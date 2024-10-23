@@ -12,7 +12,7 @@ commands to the USB Audio device, refer to appnote **AN02019: Using Device Firmw
 The USB device descriptors expose a DFU interface that handles updates to the boot image of the device over USB.
 
 The host sends DFU requests as Host to Device Class requests to the DFU interface.
-On receiving DFU commands from the host, the ``DFUDeviceRequests`` function is called from the Endpoint 0 core.
+On receiving DFU commands from the host, the ``DFUDeviceRequests`` function is called from the Endpoint 0 thread.
 This function calls the DFU handler functions over the ``dfuInterface`` XC interface.
 The DFU handler thread, ``DFUHandler`` that implements the server side of the ``dfuInterface`` has to be
 scheduled on the same tile as the flash so it can access the flash memory.

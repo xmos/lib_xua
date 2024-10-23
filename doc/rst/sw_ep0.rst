@@ -16,7 +16,7 @@ When the device is first attached to a host, enumeration occurs.  This process i
 
 During the enumeration process the host will issue various commands to the device including assigning the device a unique address on the bus.
 
-The endpoint 0 code runs in its own core and follows a similar format to that of the USB Device examples in `lib_xud` (i.e. `Example HID Mouse Demo <https://github.com/xmos/lib_xud/tree/develop/examples/app_hid_mouse>`_). That is, a call is made to ``USB_GetSetupPacket()`` to receive a command from the host. This populates a ``USB_SetupPacket_t`` structure, which is then parsed.
+The endpoint 0 code runs in its own thread and follows a similar format to that of the USB Device examples in `lib_xud` (i.e. `Example HID Mouse Demo <https://github.com/xmos/lib_xud/tree/develop/examples/app_hid_mouse>`_). That is, a call is made to ``USB_GetSetupPacket()`` to receive a command from the host. This populates a ``USB_SetupPacket_t`` structure, which is then parsed.
 
 There are many mandatory requests that a USB Device must support as required by the USB Specification. Since these are required for all devices in order to function a
 ``USB_StandardRequests()`` function is provided (see ``xud_device.xc``) which implements all of these requests. This includes the following items:
@@ -68,7 +68,7 @@ Audio Request: Set Sample Rate
 
 The ``AudioClassRequests_2()`` function parses the passed ``USB_SetupPacket_t`` structure for a ``CUR`` request of type ``SAM_FREQ_CONTROL`` to a Clock Unit in the device's topology (as described in the device descriptors).
 
-The new sample frequency is extracted and passed via a channel to the rest of the design - through the buffering code and eventually to the Audio Hub (I2S) core.
+The new sample frequency is extracted and passed via a channel to the rest of the design - through the buffering code and eventually to the Audio Hub (I2S) thread.
 The ``AudioClassRequests_2()`` function waits for a handshake to propagate back through the system before signalling to the host that the
 request has completed successfully. Note, during this time the USB library is NAKing the host, essentially holding off further traffic/requests until the sample-rate change is fully complete.
 
@@ -79,25 +79,25 @@ Audio Request: Volume Control
 
 When the host requests a volume change, it
 sends an audio interface request to Endpoint 0. An array is
-maintained in the Endpoint 0 core that is updated with such a
+maintained in the Endpoint 0 thread that is updated with such a
 request.
 
 When changing the volume, Endpoint 0 applies the master volume and
 channel volume, producing a single volume value for each channel.
 These are stored in the array.
 
-The volume will either be handled by the ``decouple`` core or the ``mixer``
+The volume will either be handled by the ``decouple`` thread or the ``mixer``
 component (if the mixer component is used). Handling the volume in the
 mixer gives the decoupler more performance to handle more channels.
 
 If the effect of the volume control array on the audio input and
-output is implemented by the decoupler, the ``decoupler`` core
+output is implemented by the decoupler, the ``decoupler`` thread
 reads the volume values from this array. Note that this array is shared
-between Endpoint 0 and the decoupler core. This is done in a safe
+between Endpoint 0 and the decoupler thread. This is done in a safe
 manner, since only Endpoint 0 can write to the array, word update
-is atomic between cores and the decoupler core only reads from
+is atomic between threads and the decoupler thread only reads from
 the array (ordering between writes and reads is unimportant in this
-case). Inline assembly is used by the decoupler core to access
+case). Inline assembly is used by the decoupler thread to access
 the array, avoiding the parallel usage checks of XC.
 
 If volume control is implemented in the mixer, Endpoint 0 sends a mixer command
@@ -110,19 +110,19 @@ Audio Endpoints (Endpoint Buffer and Decoupler)
 Endpoint Buffer
 ---------------
 
-All endpoints other that Endpoint 0 are handled in one core. This
-core is implemented in the file ``ep_buffer.xc``. This core communicates directly with the XUD library.
+All endpoints other that Endpoint 0 are handled in one thread. This
+thread is implemented in the file ``ep_buffer.xc``. This thread communicates directly with the XUD library.
 
-The USB buffer core is also responsible for feedback calculation based on USB Start Of Frame
+The USB buffer thread is also responsible for feedback calculation based on USB Start Of Frame
 (SOF) notification and reads from the port counter of a port connected to the master clock.
 
 Decouple
 --------
 
-The decoupler supplies the USB buffering core with buffers to
+The decoupler supplies the USB buffering thread with buffers to
 transmit/receive audio data to/from the host. It marshals these buffers into
 FIFOs. The data from the FIFOs is then sent over XC channels to
-other parts of the system as they need it. In asynchronous mode this core also
+other parts of the system as they need it. In asynchronous mode this thread also
 determines the size of each packet of audio to send to the host (thus
 matching the audio rate to the USB packet rate). The decoupler is
 implemented in the file ``decouple.xc``.
@@ -131,56 +131,56 @@ Audio Buffering Scheme
 ----------------------
 
 This scheme is executed by co-operation between the buffering
-core, the decouple core and the XUD library.
+thread, the decouple thread and the XUD library.
 
 For data going from the device to the host the following scheme is
 used:
 
-#. The Decouple core receives samples from the Audio Hub core and
+#. The Decouple thread receives samples from the Audio Hub thread and
    puts them into a FIFO. This FIFO is split into packets when data is
    entered into it. Packets are stored in a format consisting of their
    length in bytes followed by the data.
 
-#. When the Endpoint Buffer core needs a buffer to send to the XUD core
-   (after sending the previous buffer), the Decouple core is
+#. When the Endpoint Buffer thread needs a buffer to send to the XUD thread
+   (after sending the previous buffer), the Decouple thread is
    signalled (via a shared memory flag).
 
-#. Upon this signal from the Endpoint Buffer core, the Decouple core
-   passes the next packet from the FIFO to the Endpoint Buffer core. It also
-   signals to the XUD library that the Endpoint Buffer core is able to send a
+#. Upon this signal from the Endpoint Buffer thread, the Decouple thread
+   passes the next packet from the FIFO to the Endpoint Buffer thread. It also
+   signals to the XUD library that the Endpoint Buffer thread is able to send a
    packet.
 
-#. When the Endpoint Buffer core has sent this buffer, it signals to the
-   Decouple core that the buffer has been sent and the Decouple core
+#. When the Endpoint Buffer thread has sent this buffer, it signals to the
+   Decouple thread that the buffer has been sent and the Decouple thread
    moves the read pointer of the FIFO.
 
 For data going from the host to the device the following scheme is
 used:
 
-#. The Decouple core passes a pointer to the Endpoint Buffer core
+#. The Decouple thread passes a pointer to the Endpoint Buffer thread
    pointing into a FIFO of data and signals to the XUD library that
-   the Endpoint Buffer core is ready to receive.
+   the Endpoint Buffer thread is ready to receive.
 
-#. The Endpoint Buffer core then reads a USB packet into the FIFO and
-   signals to the Decouple core that the packet has been read.
+#. The Endpoint Buffer thread then reads a USB packet into the FIFO and
+   signals to the Decouple thread that the packet has been read.
 
-#. Upon receiving this signal the Decouple core updates the
+#. Upon receiving this signal the Decouple thread updates the
    write pointer of the FIFO and provides a new pointer to the
-   Endpoint Buffer core to fill.
+   Endpoint Buffer thread to fill.
 
-#. Upon request from the Audio Hub core, the Decouple core sends
-   samples to the Audio Hub core by reading samples out of the FIFO.
+#. Upon request from the Audio Hub thread, the Decouple thread sends
+   samples to the Audio Hub thread by reading samples out of the FIFO.
 
 Decoupler/Audio Core interaction
 --------------------------------
 
 To meet timing requirements of the audio system (i.e Audio Hub/Mixer), the Decoupler
-core must respond to requests from the audio system to
+thread must respond to requests from the audio system to
 send/receive samples immediately. An interrupt handler
-is set up in the decoupler core to do this. The interrupt handler
+is set up in the decoupler thread to do this. The interrupt handler
 is implemented in the function ``handle_audio_request``.
 
-The audio system sends a word over a channel to the decouple core to
+The audio system sends a word over a channel to the decouple thread to
 request sample transfer (using the build in ``outuint()`` function).
 The receipt of this word in the channel
 causes the ``handle_audio_request`` interrupt to fire.
@@ -190,11 +190,11 @@ is to send back a word acknowledging the request (if there was a change of sampl
 a control token would instead be sent---the audio system uses a testct()
 to inspect for this case).
 
-Sample transfer may now take place.  First the Decouple core sends samples from host to device then the
+Sample transfer may now take place.  First the Decouple thread sends samples from host to device then the
 audio subsystem transfers samples destined for the host.  These transfers always take place
 in channel count sized chunks (i.e. ``NUM_USB_CHAN_OUT`` and
 ``NUM_USB_CHAN_IN``).  That is, if the device has 10 output channels and 8 input channels,
-10 samples are sent from the decouple core and 8 received every interrupt.
+10 samples are sent from the decouple thread and 8 received every interrupt.
 
 The complete communication scheme is shown in the table below (for non sample
 frequency change case):
@@ -234,7 +234,7 @@ frequency change case):
  +-----------------+-----------------+-----------------------------------------+
 
 .. note::
-    The request and acknowledgement sent to/from the Decouple core to the Audio System is an "output underflow" sample
+    The request and acknowledgement sent to/from the Decouple thread to the Audio System is an "output underflow" sample
     value.  If in PCM mode it will be 0, in DSD mode it will be DSD silence.
     This allows the buffering system to output a suitable underflow value without knowing the format of the stream
     (this is especially advantageous in the DSD over PCM (DoP) case)
@@ -249,13 +249,13 @@ the *USB 2.0 Specification*.  This calculated feedback value is also used to siz
 This asynchronous clocking scheme means that the device is the clock master and therefore
 a high-quality local master clock or a digital input stream can be used as the clock source.
 
-After each received USB Start Of Frame (SOF) token, the buffering core takes a time-stamp from a port clocked off
+After each received USB Start Of Frame (SOF) token, the buffering thread takes a time-stamp from a port clocked off
 the master clock. By subtracting the time-stamp taken at the previous SOF, the number of master
 clock ticks since the last SOF is calculated. From this the number of samples (as a fixed
 point number) between SOFs can be calculated.  This count is aggregated over 128 SOFs and used as a
 basis for the feedback value.
 
-The sending of feedback to the host is also handled in the Endpoint Buffer core via an explicit
+The sending of feedback to the host is also handled in the Endpoint Buffer thread via an explicit
 feedback IN endpoint.
 
 If both input and output is enabled then the feedback can be implicit based on the audio stream
@@ -308,8 +308,8 @@ See `USB Device Class Definition for Audio Data Formats v2.0 <https://www.usb.or
  +-----------------+-------------+-------------+
 
 
-To implement this control, the Decoupler core uses the feedback value calculated in the EP Buffering
-core. This value is used to work out the size of the next packet it will insert into the audio FIFO.
+To implement this control, the Decoupler thread uses the feedback value calculated in the EP Buffering
+thread. This value is used to work out the size of the next packet it will insert into the audio FIFO.
 
 .. note::
 
