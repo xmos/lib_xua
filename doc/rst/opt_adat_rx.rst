@@ -32,9 +32,6 @@ Basic configuration of ADAT receive functionality is achieved with the following
 
 |endfullwidth|
 
-.. note::
-
-   ADAT receive always runs on the tile defined by ``AUDIO_IO_TILE``
 
 The codebase expects the ADAT receive port to be defined in the application XN file as ``PORT_ADAT_IN``.
 This must be a 1-bit port, for example::
