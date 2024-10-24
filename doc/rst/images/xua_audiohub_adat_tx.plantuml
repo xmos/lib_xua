@@ -1,0 +1,22 @@
+@startuml
+
+participant "XUA_AudioHub()" as xua
+participant "adat_tx_port()" as adat
+
+loop XUA_AudioHub() : while(1)
+    xua -> adat : send master clock multiplier
+    xua -> adat : send S/MUX
+    xua -> adat : send block start address
+    loop AudioHub_MainLoop : while(1)
+        xua -> xua : assemble next samples block
+        adat -> xua : handshake
+        xua -> adat : send block start address
+        alt sampling rate changed
+        break AudioHub_MainLoop() returns
+        end
+    end
+end
+    adat -> xua : handshake
+    xua -> adat : XS1_CT_END
+end
+@enduml

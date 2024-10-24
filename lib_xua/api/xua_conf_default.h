@@ -328,7 +328,7 @@
  *
  * Default: 1 (Enabled) when AUDIO_CLASS_FALLBACK disabled.
  */
-#if (AUDIO_CLASS == 2)
+#if ((AUDIO_CLASS == 2) || __DOXYGEN__)
     /* Whether to run in Audio Class 2.0 mode in USB Full-speed */
     #if !defined(FULL_SPEED_AUDIO_2) && (AUDIO_CLASS_FALLBACK == 0)
         #define FULL_SPEED_AUDIO_2    1     /* Default to falling back to UAC2 */
@@ -464,6 +464,7 @@
  * */
 #if (XUA_ADAT_TX_EN) || defined(__DOXYGEN__)
     #ifndef ADAT_TX_INDEX
+        #error ADAT_TX_INDEX not defined and XUA_ADAT_TX_EN is true
         #define ADAT_TX_INDEX (0)
     #endif
 
@@ -570,7 +571,7 @@
 #endif
 
 /**
- * @brief Enable DFU functionality. A driver required for Windows operation.
+ * @brief Enable DFU functionality.
  *
  * Default: 1 (Enabled)
  */
@@ -1658,4 +1659,14 @@ enum USBEndpointNumber_Out
  */
 #ifndef WINUSB_DEVICE_INTERFACE_GUID
 #define WINUSB_DEVICE_INTERFACE_GUID               "{89C14132-D389-4FF7-944E-2E33379BB59D}"
+#endif
+
+#ifdef __XC__
+    #define NULLABLE_CLIENT_INTERFACE(tag, name) client interface tag ?name
+    #define NULLABLE_SERVER_INTERFACE(tag, name) server interface tag ?name
+    #define in_port_t in port
+#else
+    #define NULLABLE_CLIENT_INTERFACE(type, name) unsigned *name
+    #define NULLABLE_SERVER_INTERFACE(tag, name) unsigned *name
+    #define in_port_t unsigned
 #endif
