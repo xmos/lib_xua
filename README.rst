@@ -121,15 +121,15 @@ Required Tools
 Required Libraries (dependencies)
 *********************************
 
-  * `lib_adat <www.github.com/xmos/lib_adat>`_
-  * `lib_locks <www.github.com/xmos/lib_locks>`_
-  * `lib_logging <www.github.com/xmos/lib_logging>`_
-  * `lib_mic_array <www.github.com/xmos/lib_mic_array>`_
-  * `lib_xassert <www.github.com/xmos/lib_xassert>`_
-  * `lib_dsp <www.github.com/xmos/lib_dsp>`_
-  * `lib_spdif <www.github.com/xmos/lib_spdif>`_
-  * `lib_sw_pll <www.github.com/xmos/lib_sw_pll>`_
-  * `lib_xud <www.github.com/xmos/lib_xud>`_
+  * `lib_adat <https://www.github.com/xmos/lib_adat>`_
+  * `lib_locks <https://www.github.com/xmos/lib_locks>`_
+  * `lib_logging <https://www.github.com/xmos/lib_logging>`_
+  * `lib_mic_array <https://www.github.com/xmos/lib_mic_array>`_
+  * `lib_xassert <https://www.github.com/xmos/lib_xassert>`_
+  * `lib_dsp <https://www.github.com/xmos/lib_dsp>`_
+  * `lib_spdif <https://www.github.com/xmos/lib_spdif>`_
+  * `lib_sw_pll <https://www.github.com/xmos/lib_sw_pll>`_
+  * `lib_xud <https://www.github.com/xmos/lib_xud>`_
 
 
 *************************
