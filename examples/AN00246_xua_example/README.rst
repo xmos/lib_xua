@@ -47,7 +47,7 @@ Required Libraries (dependencies)
   * `lib_logging <https://www.github.com/xmos/lib_logging>`_
   * `lib_mic_array <https://www.github.com/xmos/lib_mic_array>`_
   * `lib_xassert <https://www.github.com/xmos/lib_xassert>`_
-  * `lib_dsp <https://www.github.com/xmos/lib_dsp>`_
+  * `lib_xcore_math <https://www.github.com/xmos/lib_xcore_math>`_
   * `lib_spdif <https://www.github.com/xmos/lib_spdif>`_
   * `lib_sw_pll <https://www.github.com/xmos/lib_sw_pll>`_
   * `lib_xud <https://www.github.com/xmos/lib_xud>`_
