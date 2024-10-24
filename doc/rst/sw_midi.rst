@@ -11,7 +11,7 @@ The MIDI thread implements a 31250 baud UART (8-N-1) for both input and output. 
     - UART Rx peripheral.
     - Packing of received MIDI bytes into USB MIDI messages/events.
 
-It is connected via a channel to the Endpoint Buffer thread meaning that it can be placed on any XCORE tile in the system subject to resource availability.
+It is connected via a channel to the Endpoint Buffer thread meaning that it can be placed on any `xcore` tile in the system subject to resource availability.
 
 The Endpoint Buffer thread implements the two Bulk endpoints (one In and one Out) as well as interacting with small, shared-memory, FIFOs for each endpoint.
 

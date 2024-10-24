@@ -4,7 +4,7 @@ ADAT Receive
 ============
 
 ``lib_xua`` supports the development of devices with ADAT receive functionality through the use of
-`lib_adat <https://github.com/xmos/lib_adat>`__. The XMOS ADAT receiver runs on a single thread.
+`lib_adat <https://www.xmos.com/file/lib_adat>`__. The XMOS ADAT receiver runs on a single thread.
 
 The ADAT receive component receives up to eight channels of audio at a sample rate
 of 44.1kHz or 48kHz. The API for calling the receiver functions is

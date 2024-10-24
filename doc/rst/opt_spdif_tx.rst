@@ -4,7 +4,7 @@ S/PDIF Transmit
 ===============
 
 The codebase supports a single, stereo, S/PDIF transmitter. This can be output over 75 Ω coaxial or optical fibre.
-In order to provide S/PDIF transmit functionality ``lib_xua`` uses ``lib_spdif`` (https://www.github.com/xmos/lib_spdif).
+In order to provide S/PDIF transmit functionality ``lib_xua`` uses `lib_spdif <https://www.xmos.com/file/lib_spdif>`__.
 
 Basic configuration of S/PDIF transmit functionality is achieved with the following :ref:`defines<opt_spdif_tx_defines>`:
 

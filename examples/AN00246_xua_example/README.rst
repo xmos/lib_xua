@@ -12,7 +12,7 @@ AN00246: Simple USB Audio Device using lib_xua
 :scope: Example
 :description: Simple USB Audio device using lib_xua
 :category: General Purpose
-:keywords: USB Audio, |I2S|
+:keywords: USB Audio, I2S
 :hardware: XK-AUDIO-316-MC
 
 ********
@@ -41,16 +41,17 @@ Required Tools
 Required Libraries (dependencies)
 *********************************
 
-  * lib_adat (www.github.com/xmos/lib_adat)
-  * lib_locks (www.github.com/xmos/lib_locks)
-  * lib_logging (www.github.com/xmos/lib_logging)
-  * lib_mic_array (www.github.com/xmos/lib_mic_array)
-  * lib_xassert (www.github.com/xmos/lib_xassert)
-  * lib_dsp (www.github.com/xmos/lib_dsp)
-  * lib_spdif (www.github.com/xmos/lib_spdif)
-  * lib_sw_pll (www.github.com/xmos/lib_sw_pll)
-  * lib_xud (www.github.com/xmos/lib_xud)
-  * lib_board_support (www.github.com/xmos/lib_board_support)
+  * `lib_xua <www.github.com/xmos/lib_adat>`_
+  * `lib_adat <www.github.com/xmos/lib_adat>`_
+  * `lib_locks <www.github.com/xmos/lib_locks>`_
+  * `lib_logging <www.github.com/xmos/lib_logging>`_
+  * `lib_mic_array <www.github.com/xmos/lib_mic_array>`_
+  * `lib_xassert <www.github.com/xmos/lib_xassert>`_
+  * `lib_dsp <www.github.com/xmos/lib_dsp>`_
+  * `lib_spdif <www.github.com/xmos/lib_spdif>`_
+  * `lib_sw_pll <www.github.com/xmos/lib_sw_pll>`_
+  * `lib_xud <www.github.com/xmos/lib_xud>`_
+  * `lib_board_support <www.github.com/xmos/lib_board_support>`_
 
 *************************
 Related Application Notes

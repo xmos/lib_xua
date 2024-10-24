@@ -15,7 +15,7 @@ the xCORE.
 
 Using an external PLL/Clock Multiplier allows an Asynchronous mode design to lock to an external
 clock source from a digital stream (e.g. S/PDIF or ADAT input).  The codebase supports the Cirrus
-Logic CS2100 device or use of lib_sw_pll (xcore.ai only) for this purpose. Other devices may be
+Logic CS2100 device or use of `lib_sw_pll <https://www.xmos.com/file/lib_sw_pll>`__ (xcore.ai only) for this purpose. Other devices may be
 supported via code modification.
 
 The Clock Recovery thread (Clock Gen) is responsible for either generating the reference frequency

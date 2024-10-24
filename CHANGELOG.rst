@@ -48,9 +48,9 @@ lib_xua change log
 
     - lib_mic_array: 4.6.0 -> 5.4.0
 
-    - lib_spdif: 6.1.1 -> 6.2.0
+    - lib_spdif: 6.1.1 -> 6.2.1
 
-    - lib_sw_pll: 2.2.0 -> 2.3.0
+    - lib_sw_pll: 2.2.0 -> 2.3.1
 
     - lib_xassert: 4.2.0 -> 4.3.1
 

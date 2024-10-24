@@ -3,10 +3,10 @@
 S/PDIF Receive
 ==============
 
-XMOS devices can support S/PDIF receive up to 192kHz - see ``lib_spdif`` for full specifications.
+XMOS devices can support S/PDIF receive up to 192kHz - see `lib_spdif <https://www.xmos.com/file/lib_spdif>`__ for full specifications.
 
 The S/PDIF receiver module uses a clock-block and a buffered one-bit port.
-The clock-block is divided off a 100 MHz reference clock. The one bit port is buffered to 4-bits.
+The clock-block is divided off a 100 MHz reference clock. The one bit port is buffered to 32 bits.
 The receiver code uses this clock to over sample the input data.
 
 The receiver outputs audio samples over a *streaming channel end* where data can be input using the

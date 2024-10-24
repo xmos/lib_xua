@@ -4,7 +4,7 @@
 S/PDIF Transmit
 ===============
 
-``lib_xua`` supports the development of devices with S/PDIF transmit through the use of ``lib_spdif``.
+``lib_xua`` supports the development of devices with S/PDIF transmit through the use of `lib_spdif <https://www.xmos.com/file/lib_spdif>`__.
 The XMOS S/SPDIF transmitter component runs in a single thread and supports sample-rates upto 192kHz.
 
 The S/PDIF transmitter thread takes PCM audio samples via a channel and outputs them

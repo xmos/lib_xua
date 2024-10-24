@@ -107,6 +107,8 @@ USB Audio devices built using `lib_xua` have the following host system requireme
 
 - Windows 10 or 11 with built-in USB Audio Class 1.0 driver.
 
+- Windows 10 or 11 with built-in USB Audio Class 2.0 driver.
+
 Older versions of Windows are not guaranteed to operate as expected. Devices are also expected to operate with various Linux distributions including mobile variants.
 
 **************
@@ -139,6 +141,7 @@ The following application notes use this library:
   * AN000246 - Simple USB Audio Device using lib_xua
   * AN000247 - Using lib_xua with lib_spdif (transmit)
   * AN000248 - Using lib_xua with lib_mic_array
+  * AN02019: Using Device Firmware Upgrade (DFU) for USB Audio
 
 *******
 Support

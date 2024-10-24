@@ -9,7 +9,7 @@ All low level communication with the USB host is handled by the XMOS USB Device 
 The ``XUD_Main()`` function runs in its own thread and communicates with endpoint threads though a
 mixture of shared memory and channel communications.
 
-For more details and full XUD API documentation please refer to `lib_xud <https://www.xmos.com/file/lib_xud>`_.
+For more details and full XUD API documentation please refer to `lib_xud <https://www.xmos.com/file/lib_xud>`__.
 
 :ref:`usb_audio_threads` shows the XUD library communicating with two other threads:
 

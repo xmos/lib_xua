@@ -2,7 +2,7 @@ ADAT Transmit
 =============
 
 ``lib_xua`` supports the development of devices with ADAT transmit functionality through the use of
-`lib_adat <https://github.com/xmos/lib_adat>`__. The XMOS ADAT transmitter runs on a single thread and supports transmitting 8 channels of
+`lib_adat <https://www.xmos.com/file/lib_adat>`__. The XMOS ADAT transmitter runs on a single thread and supports transmitting 8 channels of
 digital audio at 44.1 or 48 kHz. Higher rates are supported with a reduced number of samples via S/MUX (‘sample multiplexing’). Using S/MUX,
 the ADAT transmitter can transmit four channels at 88.2 or 96 kHz (SMUX II) or two channels at 176.4 or 192 kHz (SMUX IV).
 

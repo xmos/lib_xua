@@ -9,7 +9,7 @@ PDM Microphones
 The XMOS USB Audio Reference Design firmware is capable of integrating with PDM microphones.
 The PDM stream from the microphones is converted to PCM and output to the host via USB.
 
-Interfacing to the PDM microphones is done using the XMOS microphone array library (`lib_mic_array <https://github.com/xmos/lib_mic_array>`_).
+Interfacing to the PDM microphones is done using the XMOS microphone array library (`lib_mic_array <https://www.xmos.com/file/lib_mic_array>`_).
 ``lib_mic_array`` is designed to allow interfacing to PDM microphones coupled to efficient decimation filters
 at a user configurable output sample rate. Currently dynamic sample rate changing is not supported.
 
@@ -65,7 +65,7 @@ Optionally, the following defines may be overridden if needed:
    - ``MIC_ARRAY_CONFIG_USE_DDR`` - Whether or not to use Double Data Rate data capture on the PDM microphones. Set to 1 by default.
 
 
-For full details of the effect of these defines please refer to the `lib_mic_array documentation <https://www.xmos.com/documentation/XM-014926-PC/pdf/mic_array_programming_guide.pdf>`_.
+For full details of the effect of these defines please refer to the `lib_mic_array documentation <https://www.xmos.com/file/lib_mic_array>`_.
 
 Usage & Integration
 -------------------

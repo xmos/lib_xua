@@ -4,7 +4,7 @@ S/PDIF Receive
 ==============
 
 The codebase supports a single, stereo, S/PDIF receiver. This can be input via 75 Ω coaxial or optical fibre.
-In order to provide S/PDIF functionality ``lib_xua`` uses ``lib_spdif`` (https://www.github.com/xmos/lib_spdif).
+In order to provide S/PDIF functionality ``lib_xua`` uses `lib_spdif <https://www.xmos.com/file/lib_spdif>`__.
 
 Basic configuration of S/PDIF receive functionality is achieved with the following :ref:`defines<opt_spdif_rx_defines>`:
 

@@ -3,7 +3,7 @@ S/PDIF Receive
 ==============
 
 ``lib_xua`` supports the development of devices with S/PDIF receive functionality through the use of
-``lib_spdif``. The XMOS S/PDIF receiver runs on a single thread and supports rates up to 192kHz.
+`lib_spdif <https://www.xmos.com/file/lib_spdif>`__. The XMOS S/PDIF receiver runs on a single thread and supports rates up to 192kHz.
 
 The S/PDIF receiver inputs data via a port and outputs samples via a channel. It requires a 1-bit port
 which must be 4-bit buffered. For example::
