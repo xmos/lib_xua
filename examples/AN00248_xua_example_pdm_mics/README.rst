@@ -16,7 +16,7 @@ AN00248: Using lib_xua with lib_mic_array
 Overview
 ********
 
-This applicaition note describes how to use ``lib_mic_array`` in conjunction with ``lib_xua``
+This application note describes how to use ``lib_mic_array`` in conjunction with ``lib_xua``
 to implement a USB Audio device with the ability to record from multiple PDM microphones.
 
 
