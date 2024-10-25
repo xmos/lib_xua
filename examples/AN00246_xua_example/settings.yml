@@ -1,0 +1,20 @@
+an_number: AN00246
+project: '{{an_number}}'
+title: '{{an_number}}: How to use the lib_xua library'
+version: 1.0.0
+
+documentation:
+  substitutions_path: doc/substitutions.inc
+  exclude_patterns_path: doc/exclude_patterns.inc
+  root_doc: doc/rst/AN00246_xua_example.rst
+  cognidox_part_number: XM-012647-AN
+  pdfs:
+    doc/rst/AN00246_xua_example.rst:
+      pdf_title: '{{title}}'
+      pdf_filename: '{{an_number}}_v{{version}}'
+      pdf_short: yes
+    README.rst:
+      pdf_title: '{{title}} (README)'
+      pdf_filename: '{{an_number}}_v{{version}}_readme'
+      pdf_short: yes
+
