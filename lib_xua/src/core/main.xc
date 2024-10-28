@@ -119,7 +119,18 @@ on tile[AUDIO_IO_TILE] : buffered out port:32 p_lrclk       = PORT_I2S_LRCLK;
 on tile[AUDIO_IO_TILE] : buffered out port:32 p_bclk        = PORT_I2S_BCLK;
 #endif
 
+#if (!CODEC_MASTER) || XUA_SPDIF_TX_EN || XUA_ADAT_TX_EN || ((AUDIO_IO_TILE == XUD_TILE) && XUA_USB_EN)
+/* Audio master clock input */
 on tile[AUDIO_IO_TILE] :  in port p_mclk_in                 = PORT_MCLK_IN;
+#else
+#define p_mclk_in null
+#endif
+
+#if (AUDIO_IO_TILE != XUD_TILE) && XUA_USB_EN
+/* If audio I/O and USB running on different tiles we need a separate port for
+ * the master clock input (to use for USB async feedback calculation) */
+on tile[XUD_TILE] : in port p_mclk_in_usb                   = PORT_MCLK_IN_USB;
+#endif
 
 #if XUA_USB_EN
 on tile[XUD_TILE] : in port p_for_mclk_count                = PORT_MCLK_COUNT;
@@ -174,13 +185,11 @@ on tile[SPDIF_TX_TILE] : clock    clk_mst_spd               = CLKBLK_SPDIF_TX;
 on tile[XUD_TILE] : clock    clk_spd_rx                     = CLKBLK_SPDIF_RX;
 #endif
 
-
 on tile[AUDIO_IO_TILE] : clock clk_audio_mclk               = CLKBLK_MCLK;       /* Master clock */
 
-#if(AUDIO_IO_TILE != XUD_TILE) && XUA_USB_EN
+#if (AUDIO_IO_TILE != XUD_TILE) && XUA_USB_EN
 /* Separate clock/port for USB feedback calculation */
 on tile[XUD_TILE] : clock clk_audio_mclk_usb                = CLKBLK_MCLK;       /* Master clock */
-on tile[XUD_TILE] : in port p_mclk_in_usb                   = PORT_MCLK_IN_USB;
 #endif
 
 on tile[AUDIO_IO_TILE] : clock clk_audio_bclk               = CLKBLK_I2S_BIT;    /* Bit clock */
@@ -602,7 +611,6 @@ int main()
 
         on tile[AUDIO_IO_TILE]:
         {
-
             /* Audio I/O task, includes mixing etc */
             usb_audio_io(
 #if (NUM_USB_CHAN_OUT > 0) || (NUM_USB_CHAN_IN > 0)
