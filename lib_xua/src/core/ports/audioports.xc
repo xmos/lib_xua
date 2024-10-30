@@ -2,37 +2,42 @@
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 #include <xs1.h>
 #include <platform.h>
-#include <print.h>
 #include "xua.h"
 #include "audioports.h"
+#include "xassert.h"
 
 extern clock    clk_audio_mclk;
 
 void ConfigAudioPorts(
 #if (I2S_CHANS_DAC != 0) || (DSD_CHANS_DAC != 0)
-        buffered out port:32 p_i2s_dac[],
-        int numPortsDac,
+    buffered out port:32 p_i2s_dac[],
+    int numPortsDac,
 #endif
 
 #if (I2S_CHANS_ADC != 0)
-        buffered in port:32  p_i2s_adc[],
-        int numPortsAdc,
+    buffered in port:32  p_i2s_adc[],
+    int numPortsAdc,
 #endif
 
 #if (I2S_CHANS_DAC != 0) || (I2S_CHANS_ADC != 0)
 #if (CODEC_MASTER == 0)
-        buffered out port:32 ?p_lrclk,
-        buffered out port:32 p_bclk,
+    buffered out port:32 ?p_lrclk,
+    buffered out port:32 p_bclk,
 #else
-        in port ?p_lrclk,
-        in port p_bclk,
+    in port ?p_lrclk,
+    in port p_bclk,
 #endif
 #endif
-        in port p_mclk_in, clock clk_audio_bclk, unsigned int divide, unsigned curSamFreq)
+    in port ?p_mclk_in,
+    clock clk_audio_bclk, unsigned int divide, unsigned curSamFreq)
 {
 #if (I2S_CHANS_DAC != 0) || (I2S_CHANS_ADC != 0)
 
 #if (CODEC_MASTER == 0)
+
+    /* We always expect a mclk pin when xcore is master */
+    assert(!isnull(p_mclk_in));
+
 #ifdef __XS3A__
   	/* Increase drive strength of clock ports to 8mA */
 	asm volatile ("setc res[%0], %1" :: "r" (p_bclk), "r" (0x200006));
@@ -46,6 +51,7 @@ void ConfigAudioPorts(
      * deliver() should return with this being the case */
     stop_clock(clk_audio_bclk);
 
+    /* When in DSD mode p_lrclk is null, so check here (allows code reuse) */
     if(!isnull(p_lrclk))
     {
         clearbuf(p_lrclk);

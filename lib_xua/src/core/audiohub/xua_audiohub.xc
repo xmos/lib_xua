@@ -627,7 +627,7 @@ static void dummy_deliver(chanend ?c_out, unsigned &command)
  #endif
 
 void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
-    in port p_mclk_in,
+    in port ?p_mclk_in,
     buffered _XUA_CLK_DIR port:32 ?p_lrclk,
     buffered _XUA_CLK_DIR port:32 ?p_bclk,
     buffered out port:32 (&?p_i2s_dac)[I2S_WIRES_DAC],
@@ -663,9 +663,8 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
     unsigned firstRun = 1;
 
     /* Clock master clock-block from master-clock port */
-    /* Note, marked unsafe since other cores may be using this mclk port */
-    configure_clock_src(clk_audio_mclk, p_mclk_in);
-
+    if(!isnull(p_mclk_in))
+        configure_clock_src(clk_audio_mclk, p_mclk_in);
 
 #if (DSD_CHANS_DAC > 0)
     /* Make sure the DSD ports are on and buffered - just in case they are not shared with I2S */

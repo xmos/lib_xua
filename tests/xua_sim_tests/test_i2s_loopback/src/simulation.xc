@@ -5,8 +5,6 @@
 #include <platform.h>
 #include <print.h>
 
-extern port p_mclk_in;
-
 extern port p_mclk25mhz;
 extern clock clk_mclk25mhz;
 
