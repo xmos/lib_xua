@@ -1,3 +1,5 @@
+# This file relates to internal XMOS infrastructure and should be ignored by external users
+---
 an_number: AN00246
 project: '{{an_number}}'
 title: '{{an_number}}: How to use the lib_xua library'

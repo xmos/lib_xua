@@ -15,6 +15,21 @@ def clone_test_deps() {
   }
 }
 
+def archiveLib(String repoName) {
+  sh "git -C ${repoName} clean -xdf"
+  zip zipFile: "${repoName}_sw.zip", dir: "${repoName}", archive: true, defaultExcludes: false
+}
+
+def checkout_shallow()
+{
+  checkout scm: [
+    $class: 'GitSCM',
+    branches: scm.branches,
+    userRemoteConfigs: scm.userRemoteConfigs,
+    extensions: [[$class: 'CloneOption', depth: 1, shallow: true, noTags: false]]
+  ]
+}
+
 getApproval()
 
 pipeline {
@@ -37,6 +52,12 @@ pipeline {
       name: 'XMOSDOC_VERSION',
       defaultValue: 'v6.1.2',
       description: 'The xmosdoc version')
+
+    string(
+      name: 'INFR_APPS_VERSION',
+      defaultValue: 'v2.0.1',
+      description: 'The infr_apps version'
+    )
   }
 
   stages {
@@ -49,18 +70,23 @@ pipeline {
           steps {
             println "Stage running on ${env.NODE_NAME}"
             dir("${REPO}") {
-              checkout scm
+              checkout_shallow()
               dir("examples") {
                 withTools(params.TOOLS_VERSION) {
-                  sh 'cmake -G "Unix Makefiles" -B build'
+                  sh 'cmake -G "Unix Makefiles" -B build -DDEPS_CLONE_SHALLOW=TRUE'
                 }
               }
             }
-            warnError("Docs") {
-              runLibraryChecks("${WORKSPACE}/${REPO}", "v2.0.1")
+            warnError("lib checks") {
+              runLibraryChecks("${WORKSPACE}/${REPO}", "${params.INFR_APPS_VERSION}")
             }
           }
-        }  // Checkout and lib checks
+        }  // stage('Checkout and lib checks')
+        stage("Archive Lib") {
+          steps {
+            archiveLib(REPO)
+          }
+        } //stage("Archive Lib")
 
         stage('Build examples') {
           steps {
@@ -69,7 +95,7 @@ pipeline {
             dir("${REPO}") {
               dir("examples") {
                 withTools(params.TOOLS_VERSION) {
-                  sh 'cmake -G "Unix Makefiles" -B build'
+                  sh 'cmake -G "Unix Makefiles" -B build -DDEPS_CLONE_SHALLOW=TRUE'
                   sh 'xmake -C build -j 16'
                 }
               }
@@ -115,7 +141,7 @@ pipeline {
             println "Stage running on ${env.NODE_NAME}"
 
             dir("${REPO}") {
-              checkout scm
+              checkout_shallow()
               dir("${REPO}/host/xmosdfu") {
                 sh 'cmake -B build'
                 sh 'make -C build'
@@ -140,7 +166,7 @@ pipeline {
             println "Stage running on ${env.NODE_NAME}"
 
             dir("${REPO}") {
-              checkout scm
+              checkout_shallow()
               dir("${REPO}/host/xmosdfu") {
                 sh 'cmake -B build'
                 sh 'make -C build'
@@ -171,7 +197,7 @@ pipeline {
             println "Stage running on ${env.NODE_NAME}"
 
             dir("${REPO}") {
-              checkout scm
+              checkout_shallow()
               dir("${REPO}/host/xmosdfu") {
                 sh 'cmake -B build'
                 sh 'make -C build'
@@ -199,7 +225,7 @@ pipeline {
             println "Stage running on ${env.NODE_NAME}"
 
             dir("${REPO}") {
-              checkout scm
+              checkout_shallow()
               dir("${REPO}/host/xmosdfu") {
                 sh 'cmake -B build'
                 sh 'make -C build'
@@ -224,7 +250,7 @@ pipeline {
             println "Stage running on ${env.NODE_NAME}"
 
             dir("${REPO}") {
-              checkout scm
+              checkout_shallow()
               dir("${REPO}/host/xmosdfu") {
                 withVS("vcvars32.bat") {
                   bat "cmake -B build -G Ninja"
@@ -260,7 +286,7 @@ pipeline {
           }
           steps {
             dir("${REPO}") {
-              checkout scm
+              checkout_shallow()
 
               clone_test_deps()
 
@@ -310,7 +336,7 @@ pipeline {
             clone_test_deps()
 
             dir("${REPO}") {
-              checkout scm
+              checkout_shallow()
             }
 
             dir("hardware_test_tools/xmosdfu") {
@@ -353,7 +379,7 @@ pipeline {
             clone_test_deps()
 
             dir("${REPO}") {
-              checkout scm
+              checkout_shallow()
             }
 
             dir("${REPO}/tests") {

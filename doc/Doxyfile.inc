@@ -1,7 +1,7 @@
 # This file provides overrides to the Doxyfile configuration
 
 PROJECT_NAME           = lib_xua
-PROJECT_BRIEF          = "XUA library"
+PROJECT_BRIEF          = "USB Audio components library"
 
 INPUT                  = ../lib_xua/api ../lib_xua/src/core/user/audiostream ../lib_xua/src/core/user/hostactive ../lib_xua/src/core/user/hid ../lib_xua/src/core/user/audiohw
 

@@ -1,7 +1,7 @@
 :orphan:
 
 #####################################
-lib_xua: USB Audio Components Library
+lib_xua: USB Audio components library
 #####################################
 
 :vendor: XMOS
@@ -12,9 +12,9 @@ lib_xua: USB Audio Components Library
 :keywords: USB Audio, I2S, MIDI, HID, DFU
 :devices: xcore.ai, xcore-200
 
-********
-Overview
-********
+*******
+Summary
+*******
 
 ``lib_xua`` contains shared components for use in the XMOS USB Audio (XUA) Reference Designs.
 
@@ -66,7 +66,7 @@ Note, not all features may be supported at all sample frequencies, simultaneousl
 Some features may also require specific host driver support.
 
 ************
-Known Issues
+Known issues
 ************
 
 - When in DSD mode with S/PDIF output enabled, DSD samples are transmitted over S/PDIF if the DSD and S/PDIF channels are shared, this may or may not be desired (#14762)
@@ -95,8 +95,14 @@ Development repo
 
   * `lib_xua <https://www.github.com/xmos/lib_xua>`_
 
+**************
+Required tools
+**************
+
+  * XMOS XTC Tools: 15.3.0
+
 ************************
-Host System Requirements
+Host system requirements
 ************************
 
 USB Audio devices built using `lib_xua` have the following host system requirements.
@@ -111,29 +117,22 @@ USB Audio devices built using `lib_xua` have the following host system requireme
 
 Older versions of Windows are not guaranteed to operate as expected. Devices are also expected to operate with various Linux distributions including mobile variants.
 
-**************
-Required Tools
-**************
-
-  * XMOS XTC Tools: 15.3.0
-
 *********************************
-Required Libraries (dependencies)
+Required libraries (dependencies)
 *********************************
 
-  * `lib_adat <https://www.github.com/xmos/lib_adat>`_
-  * `lib_locks <https://www.github.com/xmos/lib_locks>`_
-  * `lib_logging <https://www.github.com/xmos/lib_logging>`_
-  * `lib_mic_array <https://www.github.com/xmos/lib_mic_array>`_
-  * `lib_xassert <https://www.github.com/xmos/lib_xassert>`_
-  * `lib_xcore_math <https://www.github.com/xmos/lib_xcore_math>`_
-  * `lib_spdif <https://www.github.com/xmos/lib_spdif>`_
-  * `lib_sw_pll <https://www.github.com/xmos/lib_sw_pll>`_
-  * `lib_xud <https://www.github.com/xmos/lib_xud>`_
-
+  * `lib_adat <https://www.xmos.com/file/lib_adat>`_
+  * `lib_locks <https://www.xmos.com/file/lib_locks>`_
+  * `lib_logging <https://www.xmos.com/file/lib_logging>`_
+  * `lib_mic_array <https://www.xmos.com/file/lib_mic_array>`_
+  * `lib_xassert <https://www.xmos.com/file/lib_xassert>`_
+  * `lib_xcore_math <https://www.xmos.com/file/lib_xcore_math>`_
+  * `lib_spdif <https://www.xmos.com/file/lib_spdif>`_
+  * `lib_sw_pll <https://www.xmos.com/file/lib_sw_pll>`_
+  * `lib_xud <https://www.xmos.com/file/lib_xud>`_
 
 *************************
-Related Application Notes
+Related application notes
 *************************
 
 The following application notes use this library:
@@ -148,3 +147,4 @@ Support
 *******
 
 This package is supported by XMOS Ltd. Issues can be raised against the software at http://www.xmos.com/support
+
