@@ -9,6 +9,7 @@ documentation:
   substitutions_path: doc/substitutions.inc
   exclude_patterns_path: doc/exclude_patterns.inc
   root_doc: doc/rst/AN00246_xua_example.rst
+  linkcheck_ignore_regex: ['.*xmos\.com\/file.*']
   cognidox_part_number: XM-012647-AN
   pdfs:
     doc/rst/AN00246_xua_example.rst:

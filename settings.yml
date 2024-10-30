@@ -9,7 +9,7 @@ documentation:
   exclude_patterns_path: doc/exclude_patterns.inc
   substitutions_path: doc/substitutions.inc
   root_doc: doc/rst/lib_xua.rst
-  linkcheck_ignore_regex: ['']
+  linkcheck_ignore_regex: ['.*xmos\.com\/file.*']
   cognidox_part_number: XM-012296-UG
   doxygen_projects:
     lib_xua:
