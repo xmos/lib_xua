@@ -16,8 +16,9 @@ def clone_test_deps() {
 }
 
 def archiveLib(String repoName) {
-  sh "git -C ${repoName} clean -xdf"
-  zip zipFile: "${repoName}_sw.zip", dir: "${repoName}", archive: true, defaultExcludes: false
+    sh "git -C ${repoName} clean -xdf"
+    sh "zip ${repoName}_sw.zip -r ${repoName}"
+    archiveArtifacts artifacts: "${repoName}_sw.zip", allowEmptyArchive: false
 }
 
 def checkout_shallow()
