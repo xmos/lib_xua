@@ -13,9 +13,9 @@ This application note demonstrates the implementation of a basic USB Audio Devic
 the xCORE.ai Multichannel (MC) Audio board (XK-AUDIO-316-MC).
 
 
-****************************************
-USB Audio to |I2S| example using lib_xua
-****************************************
+***************************************
+USB Audio to I²S example using lib_xua
+***************************************
 
 The CMakeLists.txt file
 =======================

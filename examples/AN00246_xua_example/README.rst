@@ -1,8 +1,5 @@
 :orphan:
 
-.. |I2S| replace:: I\ :sup:`2`\ S
-
-
 ##############################################
 AN00246: Simple USB Audio Device using lib_xua
 ##############################################
@@ -21,7 +18,7 @@ Summary
 
 This application note demonstrates the use of the XMOS XUA library to
 create a USB device that can play two channels of audio from the host out
-via |I2S|. This is connected to a DAC and the audio can be heard on the
+via I²S. This is connected to a DAC and the audio can be heard on the
 output jack.
 
 *****************
