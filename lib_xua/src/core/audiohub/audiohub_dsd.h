@@ -6,15 +6,6 @@ extern buffered out port:32 p_dsd_dac[DSD_CHANS_DAC];
 extern buffered out port:32 p_dsd_clk;
 #endif
 
-/* I2S Data I/O*/
-#if (I2S_CHANS_DAC != 0)
-extern buffered out port:32 p_i2s_dac[I2S_WIRES_DAC];
-#endif
-
-#if (I2S_CHANS_ADC != 0)
-extern buffered in port:32  p_i2s_adc[I2S_WIRES_ADC];
-#endif
-
 /* This function performs the DSD native loop and outputs a 32b DSD stream per loop */
 static inline void DoDsdNative(unsigned samplesOut[], unsigned &dsdSample_l, unsigned &dsdSample_r, unsigned divide)
 {

@@ -34,32 +34,33 @@ void EnableBufferedPort(port p, unsigned transferWidth)
 /* C wrapper for ConfigAudioPorts() to handle DSD ports */
 void ConfigAudioPortsWrapper(
 #if (I2S_CHANS_DAC != 0) || (DSD_CHANS_DAC != 0)
-                port p_dac[], int numPortsDac,
+    port p_dac[], int numPortsDac,
 #endif
 
 #if (I2S_CHANS_ADC != 0)
-                port p_adc[], int numPortsAdc,
+    port p_adc[], int numPortsAdc,
 #endif
 
 #if (I2S_CHANS_DAC != 0) || (I2S_CHANS_ADC != 0)
-                port p_lrclk,
-                port p_bclk,
+    port p_lrclk,
+    port p_bclk,
 #endif
-                port p_mclk_in, clock clk_audio_bclk, unsigned int divide, unsigned curSamFreq)
+    NULLABLE_RESOURCE(in_port_t,  p_mclk_in),
+    clock clk_audio_bclk, unsigned int divide, unsigned curSamFreq)
 {
         ConfigAudioPorts(
 #if (I2S_CHANS_DAC != 0) || (DSD_CHANS_DAC != 0)
-                p_dac,
-                numPortsDac,
+            p_dac,
+            numPortsDac,
 #endif
 #if (I2S_CHANS_ADC != 0)
-                p_adc,
-                numPortsAdc,
+            p_adc,
+            numPortsAdc,
 #endif
 #if (I2S_CHANS_DAC != 0) || (I2S_CHANS_ADC != 0)
-                p_lrclk,
-                p_bclk,
+            p_lrclk,
+            p_bclk,
 #endif
-                p_mclk_in, clk_audio_bclk, divide, curSamFreq);
+            p_mclk_in, clk_audio_bclk, divide, curSamFreq);
 }
 

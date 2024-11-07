@@ -5,22 +5,17 @@
 
 #if(defined __XC__ || defined __DOXYGEN__)
 
-#include "xccompat.h"
-#include "xs1.h"
+#include "xua.h"
 
 #if XUA_USB_EN
 #include "dfu_interface.h"
 #endif
-
-#include "xua_clocking.h"
-
 
 #if CODEC_MASTER
     #define i2s_clk_port_type in_buffered_port_32_t
 #else
     #define i2s_clk_port_type out_buffered_port_32_t
 #endif
-
 
 /** The audio driver thread.
  *
@@ -34,7 +29,7 @@
  *
  *  \param clk_audio_bclk       Nullable clockblock to be clocked from i2s bit clock
  *
- *  \param p_mclk_in            Master clock inport port (must be 1-bit)
+ *  \param p_mclk_in            Master clock inport port (must be 1-bit). Use null when xcore is slave
  *
  *  \param p_lrclk              Nullable port for I2S sample clock
  *
@@ -60,8 +55,7 @@
 void XUA_AudioHub(
     NULLABLE_RESOURCE(chanend, c_aud),
     NULLABLE_RESOURCE(clock, clk_audio_mclk),
-    NULLABLE_RESOURCE(clock, clk_audio_bclk),
-    in_port_t p_mclk_in
+    NULLABLE_RESOURCE(clock, clk_audio_bclk), NULLABLE_RESOURCE(in_port_t, p_mclk_in)
     , NULLABLE_RESOURCE(i2s_clk_port_type, p_lrclk)
     , NULLABLE_RESOURCE(i2s_clk_port_type, p_bclk)
     , NULLABLE_ARRAY_OF_SIZE(out_buffered_port_32_t, p_i2s_dac, I2S_WIRES_DAC)
@@ -81,7 +75,6 @@ void XUA_AudioHub(
 #if (XUA_NUM_PDM_MICS > 0 || defined(__DOXYGEN__))
     , chanend c_pdm_in
 #endif
-
 );
 
 void SpdifTxWrapper(chanend c_spdif_tx);

@@ -2,10 +2,9 @@
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 /*
  * @brief       Defines relating to device configuration and customisation of lib_xua
- * @author      Ross Owen, XMOS Limited
  */
-#ifndef __XUA_CONF_DEFAULT_H__
-#define __XUA_CONF_DEFAULT_H__
+#ifndef _XUA_CONF_DEFAULT_H_
+#define _XUA_CONF_DEFAULT_H_
 
 #ifdef __xua_conf_h_exists__
     #include "xua_conf.h"
@@ -58,7 +57,7 @@
 #endif
 
 /*
- * Channel based defines
+ * Audio channel based defines
  */
 
 /**
@@ -1661,12 +1660,3 @@ enum USBEndpointNumber_Out
 #define WINUSB_DEVICE_INTERFACE_GUID               "{89C14132-D389-4FF7-944E-2E33379BB59D}"
 #endif
 
-#ifdef __XC__
-    #define NULLABLE_CLIENT_INTERFACE(tag, name) client interface tag ?name
-    #define NULLABLE_SERVER_INTERFACE(tag, name) server interface tag ?name
-    #define in_port_t in port
-#else
-    #define NULLABLE_CLIENT_INTERFACE(type, name) unsigned *name
-    #define NULLABLE_SERVER_INTERFACE(tag, name) unsigned *name
-    #define in_port_t unsigned
-#endif
