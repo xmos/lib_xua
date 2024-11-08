@@ -1,7 +1,7 @@
 
 |newpage|
 
-XMOS USB Device (XUD) Library
+XMOS USB Device (XUD) library
 =============================
 
 All low level communication with the USB host is handled by the XMOS USB Device (XUD) library - `lib_xud <https://www.xmos.com/file/lib_xud>`_
@@ -11,7 +11,7 @@ mixture of shared memory and channel communications.
 
 For more details and full XUD API documentation please refer to `lib_xud <https://www.xmos.com/file/lib_xud>`__.
 
-:ref:`usb_audio_threads` shows the XUD library communicating with two other threads:
+:numref:`usb_audio_threads` shows the XUD library communicating with two other threads:
 
 -  Endpoint 0: This thread controls the enumeration/configuration tasks of the USB device.
 

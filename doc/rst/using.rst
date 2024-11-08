@@ -4,8 +4,7 @@
 Basic Usage
 ***********
 
-This section describes the basic usage of `lib_xua` and provides a guide on how to program USB Audio Devices.
-
+This section describes the basic usage of `lib_xua` and provides a guide on how to program USB Audio devices.
 
 Library Structure
 =================
@@ -23,17 +22,15 @@ The code is split into several directories.
  * - hid
    - Human Interface Device code
 
-
 Note, the midi and dfu directories are potential candidates for separate libs in their own right.
 
+Using in an application
+=======================
 
-Using in a Project
-==================
-
-``lib_xua`` is intended to be used with the `XCommon CMake <https://www.xmos.com/file/xcommon-cmake-documentation/?version=latest>`_
+``lib_xua`` is intended to be used with `XCommon CMake <https://www.xmos.com/file/xcommon-cmake-documentation/?version=latest>`_
 , the `XMOS` application build and dependency management system.
 
-To use ``lib_xua`` in an application, add ``lib_xua``, to the list of dependent modules in the application's CMakeLists.txt file.
+To use ``lib_xua`` in an application, add ``lib_xua``, to the list of dependent modules in the application's `CMakeLists.txt` file.
 
   set(APP_DEPENDENT_MODULES "lib_xua")
 
@@ -43,7 +40,7 @@ All `lib_xua` functions can be accessed via the ``xua.h`` header file::
 
 .. _sec_basic_usage_codeless:
 
-"Codeless" Programming Model
+"Codeless" programming model
 ============================
 
 Whilst it is possible to code a USB Audio device using the building blocks provided by `lib_xua`,
@@ -52,7 +49,7 @@ it is realised that this might not be desirable for many classes of customers or
 For instance, some users may not have a large software development experience and simply want to
 customise some basic settings such as strings, sample-rates, channel-counts etc.
 Others may want to fully customise the implementation - adding additional functionality such as
-adding DSP or possibly only using a subset of the functions provided - just ``XUA_AudioHub``,
+integrating DSP or possibly only using a subset of the functions provided - just ``XUA_AudioHub``,
 for example.
 
 In addition, the large number of supported features can lead to a large number of tasks, hardware
@@ -72,7 +69,7 @@ see :ref:`sec_options`.
 This development model also provides the benefit of a full and verified codebase as a basis for a product.
 
 This behaviour described in this section is the default behaviour of `lib_xua`, to disable this please
-set ``EXCLUDE_USB_AUDIO_MAIN`` to 1 in the application makefile or ``xua_conf.h`` and see
+set ``EXCLUDE_USB_AUDIO_MAIN`` to 1 in the application `CMakeLists.txt` or ``xua_conf.h`` and see
 :ref:`sec_advanced_usage`.
 
 Configuring lib_xua
@@ -85,7 +82,8 @@ Such build time options include audio class version, sample rates, channel count
 :ref:`sec_api` for full listings.
 
 The build system will automatically include the `xua_conf.h` header file as appropriate - the developer
-should continue to include `xua.h` as previously directed. A simple example is shown below::
+should continue to include `xua.h` as previously directed. A simple example `xua_conf.h` file is
+shown below::
 
     #ifndef _XUA_CONF_H_
     #define _XUA_CONF_H_
@@ -98,7 +96,7 @@ should continue to include `xua.h` as previously directed. A simple example is s
 
     #endif
 
-User Functions
+User functions
 ==============
 
 To enable custom functionality, such as configuring external audio hardware, bespoke behaviour on

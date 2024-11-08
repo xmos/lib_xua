@@ -1,14 +1,15 @@
 
-S/PDIF Receive
+S/PDIF receive
 ==============
 
 ``lib_xua`` supports the development of devices with S/PDIF receive functionality through the use of
-`lib_spdif <https://www.xmos.com/file/lib_spdif>`__. The XMOS S/PDIF receiver runs on a single thread and supports rates up to 192kHz.
+`lib_spdif <https://www.xmos.com/file/lib_spdif>`__.
+The `XMOS` S/PDIF receiver runs on a single thread and supports rates up to 192 kHz.
 
-The S/PDIF receiver inputs data via a port and outputs samples via a channel. It requires a 1-bit port
-which must be 4-bit buffered. For example::
+The S/PDIF receiver inputs data via a port and outputs samples via a channel. It requires a 1-bit
+port. For example::
 
-    buffered in port:4 p_spdif_rx = PORT_SPDIF_IN;
+    in port p_spdif_rx = PORT_SPDIF_IN;
 
 It also requires a clock-block, for example::
 
@@ -20,16 +21,20 @@ Finally, a channel for the output samples must be declared, note, this should be
 
 The S/PDIF receiver should be called on the appropriate tile::
 
-    spdif_rx(c_spdif_rx,p_spdif_rx,clk_spd_rx,192000);
+    spdif_rx(c_spdif_rx, p_spdif_rx, clk_spd_rx, 192000);
 
 .. note::
 
     It is recomended to use the value 192000 for the ``sample_freq_estimate`` parameter
 
-With the steps above an S/PDIF stream can be captured by the xCORE. To be functionally useful the audio
-master clock must be able to synchronise to this external digital stream. Additionally, the host can be
-notified regarding changes in the validity of this stream, it's frequency etc. To synchronise to external
-streams the codebase assumes the use of an external Cirrus Logic CS2100 device or lib_sw_pll on xcore.ai designs.
+With the steps above an S/PDIF stream can be captured by the `xcore`.
+To be functionally useful the audio master clock must be able to synchronise to this external
+digital stream.
+Additionally, the host can be notified regarding changes in the validity of this stream, it's
+frequency etc.
+
+To synchronise to external streams the codebase assumes the use of an external Cirrus Logic CS2100
+device or `lib_sw_pll <www.xmos.com/file/lib_sw_pll>`_ on `xcore.ai` designs.
 
 The ``ClockGen()`` task from ``lib_xua`` provides the reference signal to the CS2100 device or timing information
 to lib_sw_pll and also handles recording of clock validity etc.

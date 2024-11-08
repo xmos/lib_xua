@@ -24,13 +24,13 @@ from digital streams, such as S/PDIF, are not currently supported in this mode.
 
    The selection of synchronisation mode is done at build time and cannot be changed dynamically.
 
-Setting the synchronisation mode of the device is done using the following :ref:`defines<opt_sync_defines>`:
+Setting the synchronisation mode of the device is done using the defines in :numref:`opt_sync_defines`.
 
 .. _opt_sync_defines:
 
-.. list-table:: Sync Define
+.. list-table:: Sync mode
    :header-rows: 1
-   :widths: 30 60 20
+   :widths: 15 25 20
 
    * - Define
      - Description
@@ -41,19 +41,18 @@ Setting the synchronisation mode of the device is done using the following :ref:
 
 When operating in synchronous mode a local master clock must be generated that is synchronised to the incoming
 SoF rate from USB. Either an external Cirrus Logic CS2100 device is required for this purpose
-or, on xcore.ai devices, the on-chip application PLL may be used via lib_sw_pll.
+or, on `xcore.ai` devices, the on-chip application PLL may be used via `lib_sw_pll <www.xmos.com/file/lib_sw_pll>`_.
 In the case of using the CS2100, the codebase expects to drive a synchronisation signal to this external device
 as a reference.
 
-The programmer should ensure the following :ref:`defines<opt_sync_ref_defines>` are set appropriately:
+The programmer should ensure the defines in  :numref:`opt_sync_ref_defines` are set appropriately.
 
 .. _opt_sync_ref_defines:
 
-|beginfullwidth|
 
 .. list-table:: Reference clock location
    :header-rows: 1
-   :widths: 40 60 20
+   :widths: 25 60 20
 
    * - Define
      - Description
@@ -62,10 +61,9 @@ The programmer should ensure the following :ref:`defines<opt_sync_ref_defines>` 
      - Tile location of reference to CS2100 device
      - ``AUDIO_IO_TILE``
    * - ``XUA_USE_SW_PLL``
-     - Whether or not to use sw_pll to recover the clock (xcore.ai only)
-     - 1 for xcore.ai targets. May be overridden to 0 in ``xua_conf.h``
+     - Whether or not to use sw_pll to recover the clock (`xcore.ai` only)
+     - 1 (enabled) for `xcore.ai` targets.
 
-|endfullwidth|
 
 The codebase expects the CS2100 reference signal port to be defined in the application XN file as ``PORT_PLL_REF``.
 This may be a port of any bit-width, however, connection to bit[0] is assumed::

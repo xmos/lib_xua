@@ -2,7 +2,7 @@
 
 .. _usb_audio_sec_resource_usage:
 
-Resource Usage
+Resource usage
 ==============
 
 The following table details the resource usage of each component of the reference design software.
@@ -35,16 +35,12 @@ Note, memory usage is approximate and varies based on device used, compiler sett
  | ClockGen      |  1            | 2.5 (2.4 code)      |                                     |
  +---------------+---------------+---------------------+-------------------------------------+
 
-.. note::
-
-    These resource estimates are based on the multichannel reference design with
-    all options of that design enabled. For fewer channels, the resource
-    usage is likely to decrease.
+These resource estimates are based on the multichannel reference design with all options of that
+design enabled. For fewer channels, the resource usage is likely to decrease.
 
 .. note::
 
-    The XUD library requires an 85 MIPS core to function correctly
-    (i.e. on a 600MHz part only seven cores can run).
+    ``lib_xud`` requires an 85 MIPS core to function correctly (i.e. on a 600MHz part only seven cores can run).
 
 .. note::
 

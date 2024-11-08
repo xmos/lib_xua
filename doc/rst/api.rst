@@ -3,7 +3,7 @@
 .. _sec_api:
 
 *************
-API Reference
+API reference
 *************
 
 .. toctree::

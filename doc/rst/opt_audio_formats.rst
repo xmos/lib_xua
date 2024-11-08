@@ -2,7 +2,7 @@
 
 .. _sec_opt_audio_formats:
 
-Audio Stream Formats
+Audio stream formats
 ====================
 
 The design currently supports up to three different stream formats for playback, selectable at
@@ -16,7 +16,7 @@ the default Alternate Setting (Alternate Setting 0) with zero bandwidth requirem
 data endpoint defined) and an additional Alternate Setting that contains the actual isochronous
 data endpoint.  This zero bandwidth alternative setting 0 is always implemented by the design.
 
-For further information refer to 3.16.2 of `USB Audio Device Class Definition for Audio Devices <https://www.usb.org/document-library/usb-20-specification>`_
+For further information refer to 3.16.2 of `USB Audio Device Class Definition for Audio Devices, release 2.0 <https://www.usb.org/document-library/audio-devices-rev-20-and-adopters-agreement>`_
 
 Customisable parameters for the Alternate Settings provided by the design are as follows.:
 
@@ -28,30 +28,31 @@ Customisable parameters for the Alternate Settings provided by the design are as
 
     Currently only a single format is supported for the recording stream
 
-By default the design exposes two sets of Alternative Settings for the playback Audio Streaming interface, one for 16-bit and another for
-24-bit playback. When DSD is enabled an additional (32-bit) alternative is exposed.
+By default the design exposes two sets of Alternative Settings for the playback Audio Streaming
+interface, one for 16-bit and another for 24-bit playback.
+When DSD is enabled an additional (32-bit) alternative is exposed.
 
-Audio Subslot
+Audio subslot
 -------------
 
 An audio subslot holds a single audio sample. See `USB Device Class Definition for Audio Data Formats
-<https://www.usb.org/document-library/usb-20-specification>`_ for full details.
+<https://www.usb.org/document-library/audio-devices-rev-20-and-adopters-agreement>`_ for full details.
 This is represented by `bSubslotSize` in the devices descriptor set.
 
 An audio subslot always contains an integer number of bytes. The specification limits the possible
 audio subslot size to 1, 2, 3 or 4 bytes per audio subslot.
 
-Since the xCORE is a 32-bit machine the value 4 is typically used for `bSubSlot` - this means that
-packing/unpacking samples to/from packets is trivial.  Other values can, however, be used and the design
-supports values 4, 3 and 2.
+Since the `xcore` is a 32-bit machine the value 4 is typically used for `bSubSlot` - this means that
+packing/unpacking samples to/from packets is computationally trivial.  Other values can, however,
+be used and the values 4, 3 and 2 are supported.
 
 Values other than 4 may be used for the following reasons:
 
     * Bus-bandwidth needs to be efficiently utilised. For example maximising channel-count/sample-rates in
       full-speed operation.
 
-    * To support restrictions with certain hosts. For example many Android based hosts support only 16bit
-      samples in a 2-byte subslot.
+    * To support restrictions with certain hosts. For example, historically many Android based hosts
+      support only 16 bit samples in a 2-byte subslot.
 
 `bSubSlot` size is set using the following defines:
 
@@ -72,7 +73,7 @@ Values other than 4 may be used for the following reasons:
       * `FS_STREAM_FORMAT_OUTPUT_3_SUBSLOT_BYTES`
 
 
-Audio Sample Resolution
+Audio sample resolution
 -----------------------
 
 An audio sample is represented using a number of bits (`bBitResolution`) less than or equal to the number
@@ -98,14 +99,14 @@ supports values 16, 24 and 32.
       * `FS_STREAM_FORMAT_OUTPUT_3_RESOLUTION_BITS`
 
 
-Audio Format
+Audio format
 ------------
 
 The design supports two audio formats, PCM and, when "Native" DSD is enabled, Direct Stream Digital (DSD).
 A DSD capable DAC is required for the latter.
 
 The USB Audio `Raw Data` format is used to indicate DSD data (2.3.1.7.5 of `USB Device Class
-Definition for Audio Data Formats <https://www.usb.org/document-library/usb-20-specification>`_).
+Definition for Audio Data Formats <https://www.usb.org/document-library/audio-devices-rev-20-and-adopters-agreement>`_).
 This use of a RAW/DSD format in an alternative setting is termed by XMOS as  *Native DSD*
 
 The following defines affect both full-speed and high-speed operation:

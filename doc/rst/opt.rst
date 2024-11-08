@@ -8,7 +8,7 @@ Options
 *******
 
 This section describes key options of ``lib_xua``. These are typically controlled using build time defines.
-Where something must be defined, it is recommended this is done in `xua_conf.h` but could also be done in the application CMakeLists.txt.
+Where something must be defined, it is recommended this is done in `xua_conf.h` but could also be done in the application `CMakeLists.txt`.
 
 For full details of all options please see  :ref:`sec_api`.
 

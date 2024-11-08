@@ -1,17 +1,21 @@
 |newpage|
 
-ADAT Receive
+ADAT receive
 ============
 
 The codebase supports a single ADAT receiver that can receive up to eight channels of audio at a sample rate
 of 44.1kHz or 48kHz over an optical interface.
+Higher rates are supported with a reduced number of samples via S/MUX (‘sample multiplexing’). Using S/MUX,
+the ADAT receiver can receive four channels at 88.2 or 96 kHz or two channels at 176.4 or 192 kHz.
+
 In order to provide ADAT functionality ``lib_xua`` uses `lib_adat <https://www.xmos.com/file/lib_adat>`_.
 
-Basic configuration of ADAT receive functionality is achieved with the following :ref:`defines<opt_adat_rx_defines>`:
-
-.. _opt_adat_rx_defines:
+Basic configuration of ADAT receive functionality is achieved with the defines in
+:numref:`opt_adat_rx_defines`.
 
 |beginfullwidth|
+
+.. _opt_adat_rx_defines:
 
 .. list-table:: ADAT RX defines
    :header-rows: 1
@@ -23,15 +27,11 @@ Basic configuration of ADAT receive functionality is achieved with the following
    * - ``XUA_ADAT_RX_EN``
      - Enable ADAT receive
      - ``0`` (Disabled)
-   * - ``ADAT_RX_MAX_CHANS``
-     - Maximum number of channels to receive over the ADAT interface
-     - ``8, 4 or 2`` depending on the min and max sampling freq supported in the application
    * - ``ADAT_RX_INDEX``
      - Start channel index of ADAT RX channels
      - N/A (must be defined by the application)
 
 |endfullwidth|
-
 
 The codebase expects the ADAT receive port to be defined in the application XN file as ``PORT_ADAT_IN``.
 This must be a 1-bit port, for example::
@@ -39,16 +39,16 @@ This must be a 1-bit port, for example::
     <Port Location="XS1_PORT_1O"  Name="PORT_ADAT_IN"/>
 
 When ADAT receive is enabled the codebase expects to either drive a synchronisation signal to an external
-Cirrus Logic CS2100 device or use `lib_sw_pll <https://www.xmos.com/file/lib_sw_pll>`_ (xcore.ai only) for generating a master clock that is synchronised
-to the ADAT digital stream.
+Cirrus Logic CS2100 device or use `lib_sw_pll <https://www.xmos.com/file/lib_sw_pll>`_ (`xcore.ai`
+only) for generating a master clock that is synchronised to the ADAT digital stream.
 
-The programmer should ensure the following :ref:`defines<opt_adat_rx_ref_defines>` are set appropriately:
-
-.. _opt_adat_rx_ref_defines:
+The programmer should ensure the defines in :numref:`opt_adat_rx_ref_defines` are set appropriately:
 
 |beginfullwidth|
 
-.. list-table:: Reference Clock Location
+.. _opt_adat_rx_ref_defines:
+
+.. list-table:: Reference clock location
    :header-rows: 1
    :widths: 20 60 20
 
