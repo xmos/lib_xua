@@ -726,13 +726,14 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
 #endif
             divide = mClk / (curSamFreq * numBits);
 
-            //Do some checks
+            // Do some checks
             xassert((divide > 0) && "Error: divider is 0, BCLK rate unachievable");
 
             unsigned remainder = mClk % ( curSamFreq * numBits);
             xassert((!remainder) && "Error: MCLK not divisible into BCLK by an integer number");
 
-            unsigned divider_is_odd =  divide & 0x1;
+            /* Ignore special divide = 1 case */
+            unsigned divider_is_odd = (divide & 0x1) && (divide != 1);
             xassert((!divider_is_odd) && "Error: divider is odd, clockblock cannot produce desired BCLK");
 
        }
