@@ -1,8 +1,8 @@
-Audio Controls via Human Interface Device (HID)
+Audio controls via Human Interface Device (HID)
 ===============================================
 
-The design supports simple audio controls such as play/pause, volume up/down etc via the USB Human
-Interface Device Class Specification.
+The design supports simple audio controls such as play/pause, volume up/down etc via the `USB Human
+Interface Device Class Specification <https://www.usb.org/document-library/device-class-definition-hid-111>`_.
 
 This functionality is enabled by setting the ``HID_CONTROLS`` define to ``1``.  Setting to ``0``
 disables this feature.
@@ -18,7 +18,7 @@ This details the format of the HID reports returned from the device to the host.
 the report to a function such as play/pause.
 
 The USB Audio Framework implements a report descriptor that should fit most basic audio device controls.
-If further controls are necessary the HID Report Descriptor in ``descriptors.h`` should be modified.
+If further controls are necessary the HID Report Descriptor in `hid_report_descriptor.h` should be modified.
 The default report size is 1 byte with the format as follows:
 
 .. table:: Default HID Report Format
@@ -41,7 +41,12 @@ The default report size is 1 byte with the format as follows:
    | 6-7         | Unused                  |
    +-------------+-------------------------+
 
-On each HID report request from the host the function ``Vendor_ReadHidButtons(unsigned char hidData[])`` is called from ``buffer()``.  This function is passed an array ``hidData[]`` by reference.  The programmer should report the state of his buttons into this array. For example, if a volume up command is desired, bit 3 should be set to 1, else 0.
+On each HID report request from the host the function ``UserHIDGetData()`` is called from
+``XUA_Buffer_Ep()``.  This function is passed an array ``hidData[]`` by reference.
+The programmer should report the state of the buttons into this array.
+For example, if a volume up command is desired, bit 3 should be set to 1, else 0.
 
-Since the ``Vendor_ReadHidButtons()`` function is called from the ``buffer`` thread, care should be taken not to add to much execution time to this function since this could cause issues with servicing other endpoints.
+Since the ``UserHIDGetData()`` function is called from the ``XUA_Buffer_Ep()`` thread, care should
+be taken not to add to much execution time to this function since this could cause issues with
+servicing other endpoints.
 

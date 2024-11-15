@@ -8,7 +8,7 @@ lib_xua: USB Audio components library
 :version: 5.0.0
 :scope: General Use
 :description: USB Audio components library
-:category: General Purpose
+:category: Audio
 :keywords: USB Audio, I2S, MIDI, HID, DFU
 :devices: xcore.ai, xcore-200
 
@@ -20,11 +20,15 @@ Summary
 
 These components enable the development of USB Audio devices on the `XMOS xcore` architecture.
 
+.. tip::
+
+    Reference design applications that use `lib_xua` are located in `sw_usb_audio` folder of the
+    USB Audio reference design `download <https://www.xmos.com/develop/usb-multichannel-audio/>`_.
+    This is a typical entry point for most developers.
+
 ********
 Features
 ********
-
-Key features of the various components in this repository are as follows
 
 - USB Audio Class 1.0/2.0 compliant
 
@@ -137,14 +141,12 @@ Related application notes
 
 The following application notes use this library:
 
-  * AN000246 - Simple USB Audio Device using lib_xua
-  * AN000247 - Using lib_xua with lib_spdif (transmit)
-  * AN000248 - Using lib_xua with lib_mic_array
-  * AN02019: Using Device Firmware Upgrade (DFU) for USB Audio
+  * `AN02019: Using Device Firmware Upgrade (DFU) for USB Audio` <www.xmos.com/file/an02019>`_
 
 *******
 Support
 *******
 
-This package is supported by XMOS Ltd. Issues can be raised against the software at http://www.xmos.com/support
+This package is supported by XMOS Ltd. Issues can be raised against the software at
+`http://www.xmos.com/support <http://www.xmos.com/support>`_
 

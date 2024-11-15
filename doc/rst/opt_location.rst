@@ -7,8 +7,8 @@ When designing a system there is a choice as to which hardware resources to use 
 In a multi-tile system the codebase needs to be informed as to which tiles to use for these hardware
 resources and associated code.
 
-A series of defines are used to allow the programmer to easily move code between tiles. Arguably the 
-most important of these are ``AUDIO_IO_TILE`` and ``XUD_TILE``. :ref:`opt_location_defines` shows a 
+A series of defines are used to allow the programmer to easily move code between tiles. Arguably the
+most important of these are ``AUDIO_IO_TILE`` and ``XUD_TILE``. :numref:`opt_location_defines` shows a
 full listing of these ``TILE`` defines.
 
 .. tabularcolumns:: lp{5cm}l
@@ -25,7 +25,7 @@ full listing of these ``TILE`` defines.
      - ``0``
    * - ``XUD_TILE``
      - Tile on which USB resides, including buffering for all USB interfaces/endppoints
-     - ``0`` 
+     - ``0``
    * - ``MIDI_TILE``
      - Tile on which MIDI resides
      - Same as ``AUDIO_IO_TILE``
@@ -39,6 +39,6 @@ full listing of these ``TILE`` defines.
      - Tile on which reference signal to CS2100 resides
      - Same as ``AUDIO_IO_TILE``
 
-.. note:: 
-    
+.. note::
+
     It should be ensured that the relevant port defines in the application XN file match the code location defines

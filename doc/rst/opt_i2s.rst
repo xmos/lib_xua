@@ -1,20 +1,19 @@
 |newpage|
 
-I2S/TDM
+I²S/TDM
 =======
 
-I2S/TDM is typically fundamental to most products and is built into the ``XUA_AudioHub()`` thread.
+I²S/TDM is typically fundamental to most products and is built into the ``XUA_AudioHub()`` thread.
 
-The following :ref:`defines <opt_i2s_defines>` affect the I2S implementation.
-
-.. tabularcolumns:: lp{5cm}l
-.. _opt_i2s_defines:
+:numref:`opt_i2s_defines` lists the defines that affect the I²S implementation.
 
 |beginfullwidth|
 
-.. list-table:: I2S defines
+.. _opt_i2s_defines:
+
+.. list-table:: I²S defines
    :header-rows: 1
-   :widths: 20 80 20
+   :widths: 20 40 20
 
    * - Define
      - Description
@@ -29,15 +28,15 @@ The following :ref:`defines <opt_i2s_defines>` affect the I2S implementation.
      - Enables either TDM or I2S mode
      - ``XUA_PCM_FORMAT_I2S``
    * - ``CODEC_MASTER``
-     - Sets if xCORE is I2S master or slave
-     - ``0`` (xCORE is master)
+     - Sets if `xcore` is I2S master or slave
+     - ``0`` (`xcore` is master)
    * - ``XUA_I2S_N_BITS``
      - I2S/TDM word length (16, 32-bit supported)
      - ``32``
 
 |endfullwidth|
 
-The I2S code expects that the ports required for I2S (master clock, LR-clock, bit-clock and data lines) are defined in the application XN file on the relevant ``Tile``.
+The I²S code expects that the ports required for I²S (master clock, LR-clock, bit-clock and data lines) are defined in the application XN file on the relevant ``Tile``.
 For example::
 
     <Tile Number="0" Reference="tile[0]">
@@ -50,7 +49,7 @@ For example::
         <Port Location="XS1_PORT_1G"  Name="PORT_I2S_ADC1"/>
     </Tile>
 
-All of the I2S/TDM related ports must be 1-bit ports.
+All of the I²S/TDM related ports must be 1-bit ports.
 
 .. note::
 
@@ -58,8 +57,8 @@ All of the I2S/TDM related ports must be 1-bit ports.
 
 .. note::
 
-    Data output/input is in "I2S" format, rather than, say "left-justified" or "right-justified" formats.
-    I2S format specifies a single bit-clock delay after the LR-clock transition before sample-data is driven/received.
+    Data output/input is in "I²S" format, rather than, say "left-justified" or "right-justified" formats.
+    I²S format specifies a single bit-clock delay after the LR-clock transition before sample-data is driven/received.
     This also applies to TDM mode. TDM support in ADC/DAC hardware is quite varied, an "offset" value may need to be programmed into
     the external device for compatible operation.
 

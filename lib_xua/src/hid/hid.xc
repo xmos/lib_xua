@@ -237,4 +237,4 @@ static unsigned HidTimeDiff( const unsigned earlierTime, const unsigned laterTim
   return ( earlierTime < laterTime ) ? laterTime - earlierTime : UINT_MAX - earlierTime + laterTime;
 }
 
-#endif /* ( 0 < HID_CONTROLS ) */
+#endif /* (XUD_HID_ENABLED) */

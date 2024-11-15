@@ -1,16 +1,14 @@
 |newpage|
 
-PDM Microphones
+PDM microphones
 ===============
 
-The codebase supports input from up to 8 PDM microphones although this is extensible.
+``lib_xua`` supports input from up to 8 PDM microphones although this is extensible.
 
-PDM microphone support is provided via `lib_mic_array <https://www.xmos.com/file/lib_mic_array>`__.  Settings for PDM microphones are controlled
-via the following :ref:`defines<opt_pdm_defines>`:
+PDM microphone support is provided via `lib_mic_array <https://www.xmos.com/file/lib_mic_array>`__.
+Settings for PDM microphones are controlled with the defines in :numref:`opt_pdm_defines`.
 
 .. _opt_pdm_defines:
-
-|beginfullwidth|
 
 .. list-table:: PDM defines
    :header-rows: 1
@@ -27,8 +25,10 @@ via the following :ref:`defines<opt_pdm_defines>`:
      - ``0``
    * - ``XUA_PDM_MIC_FREQ``
      - Defines the PCM output sample rate of ``lib_mic_array``
-     - None (must be defined by the application if microphones enabled)
+     - None (must be defined)
 
-|endfullwidth|
+.. note::
+
+   Currently only a single, fixed sample rate is supported for the PDM microphones
 
 Please see the :ref:`PDM Microphones<sw_pdm_main>` section for further details.

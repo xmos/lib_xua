@@ -4,9 +4,9 @@
 MIDI
 ====
 
-The codebase supports MIDI input/output over USB as per `Universal Serial Bus Device Class Definition for MIDI Devices <https://www.usb.org/sites/default/files/midi10.pdf>`_.
+``lib_xua`` supports MIDI input/output over USB as per `Universal Serial Bus Device Class Definition for MIDI Devices <https://www.usb.org/sites/default/files/midi10.pdf>`_.
 
-MIDI functionality is enabled with the define in :ref:`opt_midi_defines`.
+MIDI functionality is enabled with the define in :numref:`opt_midi_defines`.
 
 .. _opt_midi_defines:
 
@@ -22,18 +22,15 @@ MIDI functionality is enabled with the define in :ref:`opt_midi_defines`.
      - ``0`` (Disabled)
 
 
-The codebase supports MIDI receive on a 4-bit or 1-bit port, defaulting to using a 1-bit port.
-MIDI transmit is supported over a port of any bit-width.  By default the codebase assumes the transmit
+``lib_xua`` supports MIDI receive on a 4-bit or 1-bit port, defaulting to using a 1-bit port.
+MIDI transmit is supported over a port of any bit-width.  By default ``lib_xua`` assumes the transmit
 and receive I/O is connected to bit[0] of the port. This is configurable for the transmit port.
-:ref:`MIDI port defines table <opt_midi_port_defines>` provides information on configuring these parameters.
+:numref:`opt_midi_port_defines` provides information on configuring these parameters.
 
 .. _opt_midi_port_defines:
 
-|beginfullwidth|
-
 .. list-table:: MIDI port defines
    :header-rows: 1
-   :widths: 40 60 20
 
    * - Define
      - Description
@@ -45,9 +42,8 @@ and receive I/O is connected to bit[0] of the port. This is configurable for the
      - MIDI tx bit
      - ``0`` (bit[0])
 
-|endfullwidth|
-
-The MIDI code expects that the ports for receive and transmit are defined in the application XN file on the relevant Tile.
+The MIDI code expects that the ports for receive and transmit are defined in the application XN file
+on the relevant Tile.
 The expected names for the ports are ``PORT_MIDI_IN`` and ``PORT_MIDI_OUT``, for example::
 
     <Tile Number="0" Reference="tile[0]">

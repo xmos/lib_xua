@@ -7,7 +7,8 @@ The DFU implementation in ``lib_xua`` is compliant with version 1.1 of
 `Universal Serial Bus Device Class Specification for Device Firmware Upgrade <https://www.usb.org/sites/default/files/DFU_1.1.pdf>`_.
 
 This section describes the DFU implementation in ``lib_xua``. For information about using a DFU loader to send DFU
-commands to the USB Audio device, refer to appnote **AN02019: Using Device Firmware Upgrade (DFU) in USB Audio**.
+commands to the USB Audio device, refer to appnote
+`AN02019: Using Device Firmware Upgrade (DFU) in USB Audio <www.xmos.com/file/an02019>`_.
 
 The USB device descriptors expose a DFU interface that handles updates to the boot image of the device over USB.
 
@@ -16,14 +17,15 @@ On receiving DFU commands from the host, the ``DFUDeviceRequests`` function is c
 This function calls the DFU handler functions over the ``dfuInterface`` XC interface.
 The DFU handler thread, ``DFUHandler`` that implements the server side of the ``dfuInterface`` has to be
 scheduled on the same tile as the flash so it can access the flash memory.
-The ``dfuInterface`` interface links USB to the `XMOS flash user library <https://www.xmos.com/file/libflash-api#libflash-api>`_.
+The ``dfuInterface`` interface essentially links USB to the
+`XMOS flash user library <https://www.xmos.com/file/libflash-api#libflash-api>`_.
 
-
-The DFU interface is enabled by default (See ``XUA_DFU_EN`` define in ``xua_conf_default.h``).
+The DFU interface is enabled by default (See ``XUA_DFU_EN`` define in `xua_conf_default.h`).
 When DFU is enabled, there are two sets of descriptors that the device can export, depending on the mode in which it operates.
-There's a descriptor set for the runtime mode, which is the mode the device normally operates in and a set of descriptors for the DFU mode.
+There is a descriptor set for the runtime mode, which is the mode the device normally operates in and a set of descriptors for the DFU mode.
 
-In the runtime mode, the DFU interface is one of potentially multiple interfaces that the device exposes. :ref:`dfu_interface_runtime` shows the DFU interface
+In the runtime mode, the DFU interface is one of potentially multiple interfaces that the device exposes.
+:numref:`dfu_interface_runtime` shows the DFU interface
 descriptors when enumerating in runtime mode as seen in a `Beagle USB analyser <https://www.totalphase.com/products/data-center/>`_ trace.
 
  .. _dfu_interface_runtime:
@@ -36,7 +38,7 @@ descriptors when enumerating in runtime mode as seen in a `Beagle USB analyser <
 Note the **bInterfaceProtocol** field set to **Runtime**.
 
 In DFU mode, the device exports the DFU descriptor set. The DFU mode descriptors specify only one interface, the DFU interface.
-:ref:`dfu_interface_dfu` shows the DFU interface
+:numref:`dfu_interface_dfu` shows the DFU interface
 descriptors when enumerating in DFU mode as seen in a Beagle USB analyser trace.
 
  .. _dfu_interface_dfu:
@@ -62,20 +64,18 @@ Once the DFU download or upload process is complete, the host sends a ``DETACH``
    system loads the correct driver as the device switches between runtime and DFU modes. The runtime and DFU PID are defined as overridable
    defines ``PID_AUDIO_2`` and ``DFU_PID`` respectively in ``xua_conf_default.h``. Users can define custom PIDs in their application by overriding these defines.
 
-
 During the DFU download process, on receiving the first ``DFU_DNLOAD`` command (``wBlockNum`` = 0), the device erases
 ``FLASH_MAX_UPGRADE_SIZE`` bytes of the upgrade section of the flash. This is done by repeatedly calling ``flash_cmd_start_write_image``
 and can take several seconds. To avoid the ``DFU_DNLOAD`` request timing out, the flash erase is instead done in the ``DFU_GETSTATUS`` handling
 code for block 0. So for block 0, the device ends up returning the status as ``dfuDNBUSY`` several times while the flash
-erase is in progress. :ref:`dfu_download_seq_diag` describes the DFU download process.
+erase is in progress. :numref:`dfu_download_seq_diag` describes the DFU download process.
 
  .. _dfu_download_seq_diag:
 
  .. figure:: images/dfu_download.png
-   :width: 100%
+   :width: 75%
 
    Message sequence chart for the DFU download operation
-
 
 .. note::
 
@@ -83,12 +83,14 @@ erase is in progress. :ref:`dfu_download_seq_diag` describes the DFU download pr
    If the upgrade image is invalid, the factory image will be loaded. To revert back to the factory image, download an invalid upgrade file to the device.
    For example, DFU download a file containing the word 0xFFFFFFFF to the device.
 
+|newpage|
+
 Enumerating as a WinUSB device on Windows
 -----------------------------------------
 
-The Endpoint 0 code supports extra descriptors called the `Microsoft operating system (MSOS) descriptors <https://learn.microsoft.com/en-us/windows-hardware/drivers/usbcon/microsoft-defined-usb-descriptors>`_
+The Endpoint 0 code supports extra descriptors called the `Microsoft Operating System (MSOS) descriptors <https://learn.microsoft.com/en-us/windows-hardware/drivers/usbcon/microsoft-defined-usb-descriptors>`_
 that allow the device to enumerate as a WinUSB device on Windows.
-The MSOS descriptors report the compatible ID as *WINUSB* which enables Windows to load Winusb.sys as the device's
+The MSOS descriptors report the compatible ID as *WINUSB* which enables Windows to load `Winusb.sys` as the device's
 function driver without a custom INF file. This means that when the device is connected, the DFU interface
 shows up as WinUSB compatible automatically, without requiring the user to manually load a driver for it using a utility like Zadig.
 
@@ -115,13 +117,11 @@ The MSOS descriptor reports the compatible ID as *WINUSB* for the DFU interface.
 The GUID is required to access the DFU interface from a user application running on the host (for example the Thesycon DFU driver or the dfu-util DFU application)
 
 .. note::
-   The default device interface GUID is specified in the ``WINUSB_DEVICE_INTERFACE_GUID`` define in ``xua_conf_default.h``.
-   Users can override this by redefining ``WINUSB_DEVICE_INTERFACE_GUID`` in the application. A utility like `guidgenerator <https://guidgenerator.com/>`_ can be used for generating a GUID.
 
-.. note::
+   The default device interface GUID is specified in the ``WINUSB_DEVICE_INTERFACE_GUID`` define in ``xua_conf_default.h``.
+   Users can override this by redefining ``WINUSB_DEVICE_INTERFACE_GUID`` in the application. A utility such as `guidgenerator <https://guidgenerator.com/>`_ can be used for generating a GUID.
+
+.. tip::
 
    The MSOS descriptors for reporting WinUSB compatibility are only relevant for Windows.
-   MacOS loads the WinUSB driver for the DFU interface anyway, without requiring the device to report compatibility.
-
-
 

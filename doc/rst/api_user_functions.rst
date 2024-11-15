@@ -1,14 +1,14 @@
 |newpage|
 
-User Function Definitions
+User function definitions
 =========================
 
-The following functions can be defined by an application using `lib_xua`.
+The following functions can be defined by an application using ``lib_xua``.
 
-.. note:: Default, empty, implementations of these functions are provided in `lib_xua`. These are marked
-   as weak symbols so the application can simply define its own version of them.
+.. note:: Default, empty, implementations of these functions are provided in ``lib_xua``.
+   These are marked as weak symbols so the application can simply define its own version of them.
 
-External Audio Hardware Configuration Functions
+External audio hardware configuration functions
 -----------------------------------------------
 
 The following functions can be optionally used by the design to configure external audio hardware.
@@ -20,8 +20,7 @@ to be provided.
 .. doxygenfunction:: AudioHwConfig_Mute
 .. doxygenfunction:: AudioHwConfig_UnMute
 
-
-Audio Stream Start/Stop Functions
+Audio stream start/stop functions
 ---------------------------------
 
 The following functions can be optionally used by the design. They can be useful for mute lines etc.
@@ -33,14 +32,14 @@ The following functions can be optionally used by the design. They can be useful
 .. doxygenfunction:: UserAudioOutputStreamStart
 .. doxygenfunction:: UserAudioOutputStreamStop
 
-Host Active Functions
+Host active functions
 ---------------------
 
 The following function can be used to signal that the device is connected to a valid host.
 
 .. doxygenfunction:: UserHostActive
 
-HID Controls
+HID controls
 ------------
 
 The following function is called when the device wishes to read physical user input (buttons etc).

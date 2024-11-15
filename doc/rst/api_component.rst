@@ -9,7 +9,7 @@ application and implement the various components described in
 
 When using the USB audio framework the ``c_ep_in`` array is always
 composed in the following order:
-   
+
   * Endpoint 0 (in)
   * Audio Feedback endpoint (if output enabled)
   * Audio IN endpoint (if input enabled)
@@ -17,7 +17,7 @@ composed in the following order:
   * Clock Interrupt endpoint
 
 The array ``c_ep_out`` is always composed in the following order:
-   
+
   * Endpoint 0 (out)
   * Audio OUT endpoint (if output enabled)
   * MIDI OUT endpoint (if MIDI enabled)
