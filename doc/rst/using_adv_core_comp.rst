@@ -1,4 +1,6 @@
-Running the Core Components
+|newpage|
+
+Running the core components
 ===========================
 
 In their most basic form the core components can be run as follows::
@@ -16,7 +18,7 @@ In their most basic form the core components can be run as follows::
         XUA_AudioHub(c_aud, ...) ;
     }
 
-``XUA_Buffer()`` expects its ``p_for_mclk_count`` argument to be clocked from the audio master clock
+``XUA_Buffer()`` expects the ``p_for_mclk_count`` argument to be clocked from the audio master clock
 before receiving it as a parameter. The following code satisfies this requirement::
 
     {
@@ -35,9 +37,10 @@ before receiving it as a parameter. The following code satisfies this requiremen
     }
 
 .. note:: Keeping this configuration outside of ``XUA_Buffer()`` means the possibility of sharing the
-   ``p_mclk_in_usb`` port with additional components is not precluded
+   ``p_mclk_in_usb`` port with additional tasks is not precluded.
 
-For USB connectivity a call to ``XUD_Main()`` (from ``lib_xud``) must also be made::
+For USB connectivity a call to ``XUD_Main()`` (from `lib_xud <www.xmos.com/file/lib_xud>`_) must
+also be made::
 
     /* Low level USB device layer thread */
     on tile[1]: XUD_Main(c_ep_out, 2, c_ep_in, 2, c_sof, epTypeTableOut, epTypeTableIn, null, null, -1, XUD_SPEED_HS, XUD_PWR_SELF);
@@ -57,8 +60,8 @@ Additionally, the required communication channels must also be declared::
     /* Channel for communicating control messages from EP0 to the rest of the device (via the buffering threads) */
     chan c_aud_ctl;
 
-
-This section provides enough information to implement a skeleton program for a USB Audio device. When
-running the xCORE device will present itself as a USB Audio Class device on the bus. Audio streaming will
-be impaired since no physical audio interfaces have yet to be instantiated.
+This section provides enough information to implement a skeleton program for a USB Audio device.
+When running the `xcore` device will present itself as a USB Audio Class device on the bus.
+Audio streaming will be impaired since tasks relating to physical audio interfaces are yet to be
+instantiated.
 

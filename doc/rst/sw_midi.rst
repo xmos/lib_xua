@@ -3,15 +3,17 @@
 MIDI
 ====
 
-The MIDI thread implements a 31250 baud UART (8-N-1) for both input and output. It uses a single dedicated thread which performs multiple functions:
+The MIDI thread implements a 31250 baud UART (8-N-1) for both input and output.
+It uses a single dedicated thread which performs multiple functions:
 
-    - UART Tx peripheral.
-    - UART Tx FIFO of 1024 bytes (may be configured by the user).
+    - UART transmit (tx) peripheral.
+    - UART transmit FIFO of 1024 bytes (may be configured by the user).
     - Decoding of USB MIDI message to bytes.
-    - UART Rx peripheral.
+    - UART receive (rx) peripheral.
     - Packing of received MIDI bytes into USB MIDI messages/events.
 
-It is connected via a channel to the Endpoint Buffer thread meaning that it can be placed on any `xcore` tile in the system subject to resource availability.
+It is connected via a channel to the Endpoint Buffer thread meaning that it can be placed on any
+`xcore` tile in the system subject to resource availability.
 
 The Endpoint Buffer thread implements the two Bulk endpoints (one In and one Out) as well as interacting with small, shared-memory, FIFOs for each endpoint.
 
@@ -24,5 +26,4 @@ to the MIDI port is tiny in comparison to the host USB bandwidth, no buffering i
 All MIDI message types are supported including `Sysex` (MIDI System Exclusive) strings allowing custom function such as bank updates and patches, backup and device firmware upgrade (DFU) where supported by the MIDI device.
 
 The MIDI thread is implemented in the file ``usb_midi.xc`` and the USB buffering is handled in the file ``ep_buffer.xc``.
-
 

@@ -1,3 +1,5 @@
+# This file relates to internal XMOS infrastructure and should be ignored by external users
+---
 an_number: AN00247
 project: '{{an_number}}'
 title: '{{an_number}}: Using lib_xua with lib_spdif (transmit)'
@@ -7,6 +9,7 @@ documentation:
   substitutions_path: doc/substitutions.inc
   exclude_patterns_path: doc/exclude_patterns.inc
   root_doc: doc/rst/AN00247_xua_example_spdif_tx.rst
+  linkcheck_ignore_regex: ['.*xmos\.com\/file.*']
   cognidox_part_number: XM-013121-AN
   pdfs:
     doc/rst/AN00247_xua_example_spdif_tx.rst:

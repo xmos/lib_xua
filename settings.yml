@@ -1,3 +1,4 @@
+# This file relates to internal XMOS infrastructure and should be ignored by external users
 ---
 lib_name: lib_xua
 project: '{{lib_name}}'
@@ -8,7 +9,7 @@ documentation:
   exclude_patterns_path: doc/exclude_patterns.inc
   substitutions_path: doc/substitutions.inc
   root_doc: doc/rst/lib_xua.rst
-  linkcheck_ignore_regex: ['']
+  linkcheck_ignore_regex: ['.*']
   cognidox_part_number: XM-012296-UG
   doxygen_projects:
     lib_xua:

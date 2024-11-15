@@ -7,11 +7,11 @@ lib_xua
     :maxdepth: 2
 
     Overview <overview>
-    Software Architecture <arch>
-    Basic Usage <using>
+    Software architecture <arch>
+    Basic usage <using>
     Options <opt>
-    Advanced Usage <using_adv>
-    Additional Features <feat>
-    Implementation Detail <sw>
+    Advanced usage <using_adv>
+    Additional features <feat>
+    Implementation detail <sw>
     API <api>
 

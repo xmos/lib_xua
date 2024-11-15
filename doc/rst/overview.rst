@@ -4,13 +4,13 @@
 Overview
 ********
 
-``lib_xua`` contains shared components for use in the XMOS USB Audio (XUA) Reference Designs.
+``lib_xua`` contains shared components for use in the `XMOS` USB Audio (XUA) Reference Designs.
 
 These components enable the development of USB Audio devices on the `XMOS xcore` architecture.
 
 This document describes the structure of ``lib_xua``, its use and resources required. It also covers some implementation detail.
 
-This document assumes familiarity with the XMOS xCORE architecture, the Universal Serial Bus 2.0 Specification (and related specifications),
+This document assumes familiarity with the `XMOS` `xcore` architecture, the Universal Serial Bus 2.0 Specification (and related specifications),
 the XMOS tool chain and XC language.
 
 .. table::
@@ -60,9 +60,9 @@ the XMOS tool chain and XC language.
  |                             **Supported Devices**                                                                                               |
  +-------------------------------------------------------------------------------------------------------------------------------------------------+
  +---------------------------------+---------------------------------------------------------------------------------------------------------------+
- | XMOS Devices                    | xCORE-200 Series                                                                                              |
+ | XMOS Devices                    | `xcore-200` Series                                                                                            |
  |                                 +---------------------------------------------------------------------------------------------------------------+
- |                                 | xCORE.AI Series                                                                                               |
+ |                                 | `xcore.ai` Series                                                                                             |
  +---------------------------------+---------------------------------------------------------------------------------------------------------------+
 
 
@@ -74,13 +74,13 @@ the XMOS tool chain and XC language.
  |                       **Requirements**                                                                                        |
  +-------------------------------------------------------------------------------------------------------------------------------+
  +---------------------------------+---------------------------------------------------------------------------------------------+
- | Development Tools               | xTIMEcomposer Development Tools v15.3.0 or later                                            |
+ | Development Tools               | XMOS XTC Development Tools (see README for version)                                         |
  +---------------------------------+---------------------------------------------------------------------------------------------+
- | USB                             | xCORE device with integrated USB phy (external phy not supported)                           |
+ | USB                             | `xcore` device with integrated USB phy (external phy not supported)                         |
  +---------------------------------+---------------------------------------------------------------------------------------------+
  | Audio                           | External audio DAC/ADC/CODECs (and required supporting componentry) supporting I2S/TDM      |
  +---------------------------------+---------------------------------------------------------------------------------------------+
- | Boot/Storage                    | Compatible SPI/QSPI Flash device (or xCORE device with internal flash)                      |
+ | Boot/Storage                    | Compatible SPI/QSPI Flash device (or `xcore` device with internal flash)                    |
  +---------------------------------+---------------------------------------------------------------------------------------------+
  +-------------------------------------------------------------------------------------------------------------------------------+
  |                       **Licensing and Support**                                                                               |

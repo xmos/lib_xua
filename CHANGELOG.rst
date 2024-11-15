@@ -47,7 +47,7 @@ lib_xua change log
 
     - lib_logging: 3.2.0 -> 3.3.1
 
-    - lib_mic_array: 4.6.0 -> 5.4.0
+    - lib_mic_array: 4.6.0 -> 5.5.0
 
     - lib_spdif: 6.1.1 -> 6.2.1
 
@@ -55,7 +55,9 @@ lib_xua change log
 
     - lib_xassert: 4.2.0 -> 4.3.1
 
-    - lib_xcore_math: Added dependency 2.3.0
+    - lib_xcore_math: Added dependency 2.4.0
+
+    - lib_xud: 2.3.2 -> 2.4.0
 
 4.2.0
 -----

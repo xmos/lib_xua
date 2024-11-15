@@ -2,21 +2,23 @@
 
 .. _sw_pdm_main:
 
-
-PDM Microphones
+PDM microphones
 ===============
 
-The XMOS USB Audio Reference Design firmware is capable of integrating with PDM microphones.
+``lib_xua`` is capable of integrating with PDM microphones.
 The PDM stream from the microphones is converted to PCM and output to the host via USB.
 
-Interfacing to the PDM microphones is done using the XMOS microphone array library (`lib_mic_array <https://www.xmos.com/file/lib_mic_array>`_).
+Interfacing to the PDM microphones is done using the `XMOS` microphone array library
+(`lib_mic_array <https://www.xmos.com/file/lib_mic_array>`_).
 ``lib_mic_array`` is designed to allow interfacing to PDM microphones coupled to efficient decimation filters
 at a user configurable output sample rate. Currently dynamic sample rate changing is not supported.
 
 .. note::
-    The ``lib_mic_array`` library is only available for xcore.ai series devices since it uses the Vector Processing Unit only available in the XS3 architecture.
+    The ``lib_mic_array`` library is only available for `xcore.ai` series devices since it uses the
+    Vector Processing Unit of the XS3 architecture.
 
-Up to eight PDM microphones can be attached the PDM interface (``mic_array_task()``) but it is possible to extend this.
+Up to eight PDM microphones can be attached the PDM interface (``mic_array_task()``) but it is
+possible to extend this.
 
 After PDM capture and decimation to the output sample-rate various other steps take place e.g. DC offset elimination etc. Please refer to the documentation provided with  ``lib_mic_array`` for further implementation detail and a complete feature set.
 
@@ -24,12 +26,13 @@ By default the sample rates supported are 16 kHz, 32 kHz and 48 kHz although oth
 
 Please see `AN00248 Using lib_xua with lib_mic_array <https://github.com/xmos/lib_xua/tree/develop/examples/AN00248_xua_example_pdm_mics>`_ for a practical example of this feature.
 
-PDM Microphone Hardware Characteristics
----------------------------------------
+Hardware characteristics
+------------------------
 
 The PDM microphones require a *clock input* and provide the PDM signal on a *data output*. All of
 the PDM microphones must share the same clock signal (buffered on the PCB as appropriate), and
-output onto the data wire(s) that are connected to the capture port:
+output onto the data wire(s) that are connected to the capture port. The lines required to interface
+with PDM microphones are listed in :numref:`pdm_wire_table`.
 
 .. _pdm_wire_table:
 
@@ -40,8 +43,7 @@ output onto the data wire(s) that are connected to the capture port:
      * - Signal
        - Description
      * - CLOCK
-       - Clock line, the PDM clock the used by the microphones to
-         drive the data out.
+       - The PDM clock the used by the microphones to drive the data out.
      * - DQ_PDM
        - The data from the PDM microphones on the capture port.
 
@@ -67,7 +69,7 @@ Optionally, the following defines may be overridden if needed:
 
 For full details of the effect of these defines please refer to the `lib_mic_array documentation <https://www.xmos.com/file/lib_mic_array>`_.
 
-Usage & Integration
+Usage & integration
 -------------------
 
 A PDM microphone wrapper is called from ``main()`` and takes one channel argument connecting it to the rest of the system:
@@ -84,4 +86,5 @@ Two weak callback APIs are provided which optionally allow user code to be execu
     void user_pdm_init();
     void user_pdm_process(int32_t mic_audio[MIC_ARRAY_CONFIG_MIC_COUNT]);
 
-Please be aware that ``user_pdm_process()`` is called in the main I2S audioloop and so and processing should be kept very short to avoid breaking timing. Typically a small fraction of sample period is acceptable although the headroom is much larger at lower sample rates. The array of samples ``mic_audio`` can modified in-place.
+Be aware that ``user_pdm_process()`` is called in the main Audio Hub loop and so and processing should be kept very short to avoid breaking timing of I²S etc. Typically a small fraction of sample period is acceptable although the headroom is much larger at lower sample rates. The array of samples ``mic_audio`` can modified in-place.
+

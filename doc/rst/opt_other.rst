@@ -1,13 +1,13 @@
 |newpage|
 
-Other Options
+Other options
 =============
 
-There are a few other, lesser used, options available.
-
-.. _opt_other_defines:
+There are a few other, lesser used, options available. These are shown in :numref:`opt_other_defines`.
 
 |beginfullwidth|
+
+.. _opt_other_defines:
 
 .. list-table:: Other defines
    :header-rows: 1

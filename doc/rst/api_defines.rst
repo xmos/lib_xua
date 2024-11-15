@@ -1,7 +1,7 @@
 
 .. _sec_api_defines:
 
-Configuration Defines
+Configuration defines
 =====================
 
 An application using the USB audio framework needs to have defines set for configuration.
@@ -12,7 +12,7 @@ for the relevant build configuration.
 
 This section fully documents all of the settable defines and their default values (where appropriate).
 
-Code Location (tile)
+Code location (tile)
 --------------------
 
 .. doxygendefine:: AUDIO_IO_TILE
@@ -22,7 +22,7 @@ Code Location (tile)
 .. doxygendefine:: PDM_TILE
 .. doxygendefine:: PLL_REF_TILE
 
-Channel Counts
+Channel counts
 --------------
 
 .. doxygendefine:: NUM_USB_CHAN_OUT
@@ -30,7 +30,7 @@ Channel Counts
 .. doxygendefine:: I2S_CHANS_DAC
 .. doxygendefine:: I2S_CHANS_ADC
 
-Frequencies and Clocks
+Frequencies and clocks
 ----------------------
 
 .. doxygendefine:: MAX_FREQ
@@ -47,15 +47,12 @@ Audio Class
 .. doxygendefine:: AUDIO_CLASS_FALLBACK
 .. doxygendefine:: FULL_SPEED_AUDIO_2
 
-
-Feature Configuration
+Feature configuration
 ---------------------
 
-I2S/TDM
+I²S/TDM
 ^^^^^^^
 
-.. doxygendefine:: I2S_CHANS_DAC
-.. doxygendefine:: I2S_CHANS_ADC
 .. doxygendefine:: CODEC_MASTER
 .. doxygendefine:: XUA_I2S_N_BITS
 .. doxygendefine:: XUA_PCM_FORMAT
@@ -80,7 +77,7 @@ ADAT
 .. doxygendefine:: XUA_ADAT_RX_EN
 .. doxygendefine:: ADAT_RX_INDEX
 
-PDM Microphones
+PDM microphones
 ^^^^^^^^^^^^^^^
 
 .. doxygendefine:: XUA_NUM_PDM_MICS
@@ -97,14 +94,7 @@ HID
 
 .. doxygendefine:: HID_CONTROLS
 
-
-CODEC Interface
-^^^^^^^^^^^^^^^
-
-.. doxygendefine:: CODEC_MASTER
-
-
-USB Device Configuration
+USB device configuration
 ------------------------
 
 .. doxygendefine:: VENDOR_STR
@@ -120,7 +110,7 @@ USB Device Configuration
 Stream Formats
 --------------
 
-Output/Playback
+Output/playback
 ^^^^^^^^^^^^^^^
 
 .. doxygendefine:: OUTPUT_FORMAT_COUNT
@@ -141,7 +131,7 @@ Output/Playback
 .. doxygendefine:: STREAM_FORMAT_OUTPUT_2_DATAFORMAT
 .. doxygendefine:: STREAM_FORMAT_OUTPUT_3_DATAFORMAT
 
-Input/Recording
+Input/recording
 ^^^^^^^^^^^^^^^
 
 .. doxygendefine:: INPUT_FORMAT_COUNT
@@ -154,7 +144,7 @@ Input/Recording
 
 .. doxygendefine:: STREAM_FORMAT_INPUT_1_DATAFORMAT
 
-Volume Control
+Volume control
 --------------
 
 .. doxygendefine:: OUTPUT_VOLUME_CONTROL

@@ -6,14 +6,12 @@ Direct Stream Digital (DSD)
 Direct Stream Digital (DSD) is used for digitally encoding audio signals on Super Audio CDs (SACD).
 It uses pulse-density modulation (PDM) encoding.
 
-The codebase supports DSD playback from the host via "DSD over PCM" (DoP) and a "Native" implementation
-which is, while USB specification based, proprietary to XMOS.
+``lib_xua`` supports DSD playback from the host via "DSD over PCM" (DoP) and a "Native" implementation
+which is, while USB specification based, proprietary to `XMOS`.
 
 DSD is enabled with by setting the following :ref:`define <opt_dsd_defines>` to a non-zero value:
 
 .. _opt_dsd_defines:
-
-|beginfullwidth|
 
 .. list-table:: DSD defines
    :header-rows: 1
@@ -26,19 +24,16 @@ DSD is enabled with by setting the following :ref:`define <opt_dsd_defines>` to 
      - Number of DSD channels
      - ``0`` (Disabled)
 
-|endfullwidth|
-
 Typically this would be set to ``2`` for stereo output.
 
 By default both "Native" and DoP functionality are enabled when DSD is enabled. The Native DSD implementation uses
 an alternative streaming interface such that the host can inform the device that DSD data is being streamed.
 See: :ref:`sec_opt_audio_formats` for details.
 
-If only DoP functionality is desired the Native implementation can be disabled with the following :ref:`define <opt_nativedsd_defines>`:
+If only DoP functionality is desired the Native implementation can be disabled with the define
+in :numref:`opt_nativedsd_defines`.
 
 .. _opt_nativedsd_defines:
-
-|beginfullwidth|
 
 .. list-table:: Native DSD defines
    :header-rows: 1
@@ -51,23 +46,20 @@ If only DoP functionality is desired the Native implementation can be disabled w
      - Enable/Disable "Native" DSD implementation
      - ``1`` (Enabled)
 
-|endfullwidth|
-
-
 DSD over PCM (DoP)
 ------------------
 
 DoP support follows the method described in the `DoP Open Standard 1.1
 <http://dsd-guide.com/sites/default/files/white-papers/DoP_openStandard_1v1.pdf>`_.
 
-While Native DSD support is available in Windows though a driver, OSX incorporates a USB driver
+While Native DSD support is available in Windows through a driver, macOS incorporates a USB driver
 that only supports PCM, this is also true of the central audio engine, CoreAudio.  It is
-therefore not possible to use the "Native" scheme defined above using the built in driver of OSX.
+therefore not possible to use the "Native" scheme defined above using the built in driver of macOS.
 
-Since the Apple OS only allows a PCM path a method of transporting DSD audio data over PCM frames
+Since the macOS only allows a PCM path a method of transporting DSD audio data over PCM frames
 has been developed.
 
-Standard DSD  has a sample size of 1 bit and a sample rate of 2.8224MHz - this is 64x the speed of a
+Standard DSD has a sample size of 1 bit and a sample rate of 2.8224MHz - this is 64x the speed of a
 compact disc (CD). This equates to the same data-rate as a 16 bit PCM stream at 176.4kHz.
 
 In order to clearly identify when this PCM stream contains DSD and when it contains PCM some header
@@ -85,7 +77,8 @@ of rate.
 
 .. note::
 
-    DoP requires bit-perfect transmission - therefore any audio/volume processing will break the stream.
+    DoP requires bit-perfect transmission - therefore any audio/volume processing will currupt the
+    stream.
 
 "Native" vs DoP
 ---------------
@@ -106,6 +99,6 @@ clock lines for example::
 
 .. note::
 
-   The DSD ports may or may not overlap the I2S ports - the codebase will reconfigure the ports as appropriate
-   when switching between PCM and DSD modes.
+   The DSD ports may or may not overlap the I2S ports - the codebase will reconfigure the ports as
+   appropriate when switching between PCM and DSD modes.
 

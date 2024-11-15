@@ -1,10 +1,10 @@
 |newpage|
 
-ADAT Receive
+ADAT receive
 ============
 
 ``lib_xua`` supports the development of devices with ADAT receive functionality through the use of
-`lib_adat <https://www.xmos.com/file/lib_adat>`__. The XMOS ADAT receiver runs on a single thread.
+`lib_adat <https://www.xmos.com/file/lib_adat>`__. The `XMOS` ADAT receiver runs on a single thread.
 
 The ADAT receive component receives up to eight channels of audio at a sample rate
 of 44.1kHz or 48kHz. The API for calling the receiver functions is
@@ -38,20 +38,19 @@ The control word comprises four control bits in bits [11..8] and the value 0b000
 This control word enables synchronization at a higher level, in that, on the channel, a single odd
 word is always read followed by eight words of data.
 
-
-Usage and Integration
+Usage and integration
 ---------------------
 
 Since the ADAT is a digital stream the device's master clock must be synchronised to it. The integration
 of ADAT receive is much the same as S/PDIF receive in that the ADAT receive function communicates
-with the Clock Gen thread. This Clock Gen Core then passes audio data onto the Audio Hub thread.
+with the `Clock Gen` thread. This `Clock Gen` thread then passes audio data onto the Audio Hub thread.
 It also handles locking to the ADAT clock source.
 
 There are some small differences with the S/PDIF integration accounting for the fact that ADAT
 typically has 8 channels compared to S/PDIF's two.
 
-The Clock Gen thread also handles SMUX II (e.g. 4 channels at 96kHz) and SMUX IV (e.g. 2 channels at
-192kHz), populating the sample FIFO as appropriate. SMUX modes are communicated to the Clock Gen
+The `Clock Gen` thread also handles SMUX II (e.g. 4 channels at 96kHz) and SMUX IV (e.g. 2 channels at
+192 kHz), populating the sample FIFO as appropriate. SMUX modes are communicated to the `Clock Gen`
 thread from Endpoint 0 via the ``c_clk_ctl`` channel.  SMUX modes are exposed to the USB host using
 Alternative Interfaces, with appropriate channel counts, for the streaming input Endpoint.
 

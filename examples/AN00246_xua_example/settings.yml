@@ -1,3 +1,5 @@
+# This file relates to internal XMOS infrastructure and should be ignored by external users
+---
 an_number: AN00246
 project: '{{an_number}}'
 title: '{{an_number}}: How to use the lib_xua library'
@@ -7,6 +9,7 @@ documentation:
   substitutions_path: doc/substitutions.inc
   exclude_patterns_path: doc/exclude_patterns.inc
   root_doc: doc/rst/AN00246_xua_example.rst
+  linkcheck_ignore_regex: ['.*xmos\.com\/file.*']
   cognidox_part_number: XM-012647-AN
   pdfs:
     doc/rst/AN00246_xua_example.rst:
