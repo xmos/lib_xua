@@ -680,7 +680,10 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
     set_clock_fall_delay(clk_audio_mclk, 7);
 #endif
 
-    start_clock(clk_audio_mclk);
+    if (!isnull(clk_audio_mclk))
+    {
+        start_clock(clk_audio_mclk);
+    }
 
     /* Perform required CODEC/ADC/DAC initialisation */
     AudioHwInit();
