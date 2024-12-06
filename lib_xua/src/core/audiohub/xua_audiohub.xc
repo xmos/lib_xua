@@ -741,6 +741,7 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
 
        }
 
+#if (I2S_CHANS_DAC != 0) || (I2S_CHANS_ADC != 0)
 #if (DSD_CHANS_DAC > 0)
         if(dsdMode)
         {
@@ -749,40 +750,37 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
 #if (I2S_CHANS_DAC != 0) || (DSD_CHANS_DAC != 0)
                 p_dsd_dac,
                 DSD_CHANS_DAC,
-#endif
+#endif // (I2S_CHANS_DAC != 0) || (DSD_CHANS_DAC != 0)
 #if (I2S_CHANS_ADC != 0)
                 p_i2s_adc,
                 I2S_WIRES_ADC,
-#endif
-#if (I2S_CHANS_DAC != 0) || (I2S_CHANS_ADC != 0)
+#endif // (I2S_CHANS_ADC != 0)
                 null,
                 p_dsd_clk,
-#endif
                 p_mclk_in, clk_audio_bclk, divide, curSamFreq);
         }
         else
-#endif
+#endif // (DSD_CHANS_DAC > 0)
         {
             ConfigAudioPortsWrapper(
 #if (I2S_CHANS_DAC != 0)
                 p_i2s_dac,
                 I2S_WIRES_DAC,
-#endif
+#endif // (I2S_CHANS_DAC != 0)
 #if (I2S_CHANS_ADC != 0)
                 p_i2s_adc,
                 I2S_WIRES_ADC,
-#endif
-#if (I2S_CHANS_DAC != 0) || (I2S_CHANS_ADC != 0)
+#endif // (I2S_CHANS_ADC != 0)
 #ifndef CODEC_MASTER
                 p_lrclk,
                 p_bclk,
-#else
+#else // ifndef CODEC_MASTER
                 p_lrclk,
                 p_bclk,
-#endif
-#endif
+#endif // ifndef CODEC_MASTER
             p_mclk_in, clk_audio_bclk, divide, curSamFreq);
         }
+#endif // (I2S_CHANS_DAC != 0) || (I2S_CHANS_ADC != 0)
 
         {
             unsigned curFreq = curSamFreq;
