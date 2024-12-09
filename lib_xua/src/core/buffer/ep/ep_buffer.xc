@@ -262,7 +262,7 @@ void XUA_Buffer_Ep(
     unsigned lastClock = 0;
     unsigned freqChange = 0;
 #if (FB_USE_REF_CLOCK == 0)
-    xassert(!isnull(p_off_mclk) && "Error: must provide non-null MCLK port if using asynchronous mode and not using reference clock");
+    xassert(!isnull(p_off_mclk) && "Error: must provide non-null MCLK count port if using asynchronous mode and not using reference clock");
 #endif
 #endif
     unsafe{masterClockFreq_ptr = &masterClockFreq;}
