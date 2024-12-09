@@ -768,14 +768,9 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
                 p_i2s_adc,
                 I2S_WIRES_ADC,
 #endif // (I2S_CHANS_ADC != 0)
-#ifndef CODEC_MASTER
                 p_lrclk,
                 p_bclk,
-#else // ifndef CODEC_MASTER
-                p_lrclk,
-                p_bclk,
-#endif // ifndef CODEC_MASTER
-            p_mclk_in, clk_audio_bclk, divide, curSamFreq);
+                p_mclk_in, clk_audio_bclk, divide, curSamFreq);
         }
 #endif // (I2S_CHANS_DAC != 0) || (I2S_CHANS_ADC != 0)
 
