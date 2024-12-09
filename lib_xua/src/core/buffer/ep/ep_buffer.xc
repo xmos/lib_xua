@@ -261,6 +261,9 @@ void XUA_Buffer_Ep(
 #if (XUA_SYNCMODE == XUA_SYNCMODE_ASYNC)
     unsigned lastClock = 0;
     unsigned freqChange = 0;
+#if (FB_USE_REF_CLOCK == 0)
+    xassert(!isnull(p_off_mclk) && "Error: must provide non-null MCLK port if using asynchronous mode and not using reference clock");
+#endif
 #endif
     unsafe{masterClockFreq_ptr = &masterClockFreq;}
 
@@ -269,9 +272,6 @@ void XUA_Buffer_Ep(
 
 #if FB_USE_REF_CLOCK
     unsigned long long clock_remainder = 0;        /* The carry term from the 100MHz -> MCLK */
-#if (XUA_SYNCMODE == XUA_SYNCMODE_ASYNC)
-    xassert(!isnull(p_off_mclk) && "Error: must provide non-null MCLK port if FB_USE_REF_CLOCK is set and using asynchronous mode");
-#endif
 #endif
 
 #if (NUM_USB_CHAN_IN > 0)
@@ -390,7 +390,7 @@ void XUA_Buffer_Ep(
 #endif
 
 #if (XUA_USE_SW_PLL)
-    xassert((!isnull(p_off_mclk)) && "Error: must provide non-null MCLK port if USE_SW_PLL is set and using synchronous mode");
+    xassert(!isnull(p_off_mclk) && "Error: must provide non-null MCLK port if USE_SW_PLL is set and using synchronous mode");
     /* Setup the phase frequency detector */
     const unsigned controller_rate_hz = 100;
     const unsigned pfd_ppm_max = 2000;                      /* PPM range before we assume unlocked */
