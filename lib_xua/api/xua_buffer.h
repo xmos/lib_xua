@@ -52,7 +52,7 @@ void XUA_Buffer(
 #endif
             chanend c_sof,
             chanend c_aud_ctl,
-            in_port_t p_off_mclk
+            NULLABLE_RESOURCE(in_port_t, p_off_mclk)
 #if (HID_CONTROLS)
             , chanend c_hid
 #endif
@@ -90,7 +90,7 @@ void XUA_Buffer_Ep(
 #endif
             chanend c_sof,
             chanend c_aud_ctl,
-            in port p_off_mclk
+            in port ?p_off_mclk
 #if (HID_CONTROLS)
             , chanend c_hid
 #endif

@@ -6,8 +6,6 @@
 #include "audioports.h"
 #include "xassert.h"
 
-extern clock    clk_audio_mclk;
-
 void ConfigAudioPorts(
 #if (I2S_CHANS_DAC != 0) || (DSD_CHANS_DAC != 0)
     buffered out port:32 p_i2s_dac[],
@@ -19,14 +17,12 @@ void ConfigAudioPorts(
     int numPortsAdc,
 #endif
 
-#if (I2S_CHANS_DAC != 0) || (I2S_CHANS_ADC != 0)
 #if (CODEC_MASTER == 0)
     buffered out port:32 ?p_lrclk,
     buffered out port:32 p_bclk,
 #else
     in port ?p_lrclk,
     in port p_bclk,
-#endif
 #endif
     in port ?p_mclk_in,
     clock clk_audio_bclk, unsigned int divide, unsigned curSamFreq)

@@ -4,6 +4,7 @@
 #if XUA_USB_EN
 #include <xs1.h>
 #include <stdint.h>
+#include <xassert.h>
 
 #include "xc_ptr.h"
 #include "xua_commands.h"
@@ -101,7 +102,7 @@ void XUA_Buffer(
 #endif
     chanend c_sof,
     chanend c_aud_ctl,
-    in port p_off_mclk
+    in port ?p_off_mclk
 #if (HID_CONTROLS )
     , chanend c_hid
 #endif
@@ -201,7 +202,7 @@ void XUA_Buffer_Ep(
 #endif
     chanend c_sof,
     chanend c_aud_ctl,
-    in port p_off_mclk
+    in port ?p_off_mclk
 #if(HID_CONTROLS)
     , chanend c_hid
 #endif
@@ -260,6 +261,9 @@ void XUA_Buffer_Ep(
 #if (XUA_SYNCMODE == XUA_SYNCMODE_ASYNC)
     unsigned lastClock = 0;
     unsigned freqChange = 0;
+#if (FB_USE_REF_CLOCK == 0)
+    xassert(!isnull(p_off_mclk) && "Error: must provide non-null MCLK count port if using asynchronous mode and not using reference clock");
+#endif
 #endif
     unsafe{masterClockFreq_ptr = &masterClockFreq;}
 
@@ -386,6 +390,7 @@ void XUA_Buffer_Ep(
 #endif
 
 #if (XUA_USE_SW_PLL)
+    xassert(!isnull(p_off_mclk) && "Error: must provide non-null MCLK port if USE_SW_PLL is set and using synchronous mode");
     /* Setup the phase frequency detector */
     const unsigned controller_rate_hz = 100;
     const unsigned pfd_ppm_max = 2000;                      /* PPM range before we assume unlocked */
