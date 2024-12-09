@@ -272,6 +272,7 @@ void XUA_Buffer_Ep(
 #if (XUA_SYNCMODE == XUA_SYNCMODE_ASYNC)
     xassert(!isnull(p_off_mclk) && "Error: must provide non-null MCLK port if FB_USE_REF_CLOCK is set and using asynchronous mode");
 #endif
+#endif
 
 #if (NUM_USB_CHAN_IN > 0)
     unsigned bufferIn = 1;
