@@ -4,6 +4,10 @@ lib_xua change log
 UNRELEASED
 ----------
 
+  * CHANGED:   Made `p_off_mclk` nullable for XUA_Buffer; this port is now only
+    required either in configurations using Synchronous mode and using the
+    application PLL to clock the USB buffers, or for configurations using
+    Asynchronous mode and using the reference clock to clock the USB buffers.
   * FIXED:     `p_mclk_in` and `clk_audio_bclk` now correctly nullable when I2S
     not in use.
   * FIXED:     Corrected `clk_audio_mclk` nullability for XUA_AudioHub; this
