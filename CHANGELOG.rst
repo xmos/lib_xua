@@ -1,6 +1,12 @@
 lib_xua change log
 ==================
 
+UNRELEASED
+----------
+
+  * FIXED:     Corrected `clk_audio_mclk` nullability for XUA_AudioHub; this
+    clock block is only required for configurations with ADAT TX
+
 5.0.0
 -----
 
