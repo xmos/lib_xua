@@ -4,6 +4,8 @@ lib_xua change log
 UNRELEASED
 ----------
 
+  * FIXED:     `p_mclk_in` and `clk_audio_bclk` now correctly nullable when I2S
+    not in use.
   * FIXED:     Corrected `clk_audio_mclk` nullability for XUA_AudioHub; this
     clock block is only required for configurations with ADAT TX
 

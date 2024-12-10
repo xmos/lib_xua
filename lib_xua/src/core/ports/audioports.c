@@ -41,10 +41,8 @@ void ConfigAudioPortsWrapper(
     port p_adc[], int numPortsAdc,
 #endif
 
-#if (I2S_CHANS_DAC != 0) || (I2S_CHANS_ADC != 0)
     port p_lrclk,
     port p_bclk,
-#endif
     NULLABLE_RESOURCE(in_port_t,  p_mclk_in),
     clock clk_audio_bclk, unsigned int divide, unsigned curSamFreq)
 {
@@ -57,10 +55,8 @@ void ConfigAudioPortsWrapper(
             p_adc,
             numPortsAdc,
 #endif
-#if (I2S_CHANS_DAC != 0) || (I2S_CHANS_ADC != 0)
             p_lrclk,
             p_bclk,
-#endif
             p_mclk_in, clk_audio_bclk, divide, curSamFreq);
 }
 
