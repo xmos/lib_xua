@@ -714,7 +714,7 @@ int main()
         /* PDM Mics running on a separate to AudioHub */
         on stdcore[PDM_TILE]:
         {
-             mic_array_task(c_mic_pcm);
+             mic_array_task(c_pdm_pcm);
         }
 #endif /*XUA_NUM_PDM_MICS > 0*/
     }
