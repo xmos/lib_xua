@@ -21,7 +21,7 @@
 
 #include "xk_evk_xu316/board.h"
 
-
+#if 0
 /* Port declarations. Note, the defines come from the xn file */
 buffered out port:32 p_i2s_dac[]    = {PORT_I2S_DAC_DATA};   /* I2S Data-line(s) */
 buffered out port:32 p_lrclk        = PORT_I2S_LRCLK;    /* I2S Bit-clock */
@@ -48,6 +48,7 @@ XUD_EpType epTypeTableOut[]   = {XUD_EPTYPE_CTL | XUD_STATUS_ENABLE};
 on tile[0]: port p_scl = XS1_PORT_1L;
 on tile[0]: port p_sda = XS1_PORT_1M;
 
+#endif
 
 /* Make a copy of inbound mic samples and send to DAC */
 #pragma unsafe arrays
@@ -70,6 +71,7 @@ void user_pdm_process(int32_t mic_audio[MIC_ARRAY_CONFIG_MIC_COUNT])
     }
 }
 
+#if 0
 
 int main()
 {
@@ -138,3 +140,4 @@ int main()
 }
 
 
+#endif
