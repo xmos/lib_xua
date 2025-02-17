@@ -12,6 +12,11 @@ UNRELEASED
     not in use.
   * FIXED:     Corrected `clk_audio_mclk` nullability for XUA_AudioHub; this
     clock block is only required for configurations with ADAT TX
+  * FIXED:     Compiler error when PDM mics used an EXCLUDE_USB_AUDIO_MAIN is
+    not defined.
+  * CHANGED:   AN00248 updated so that it uses lib_xua main instead of own
+    main function.
+
 
 5.0.0
 -----
