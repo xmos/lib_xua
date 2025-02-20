@@ -1,4 +1,4 @@
-// Copyright 2017-2024 XMOS LIMITED.
+// Copyright 2017-2025 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
 #ifndef _XUA_CONF_H_
@@ -15,11 +15,11 @@
 #define XUA_PDM_MIC_FREQ                    48000            /* Currently sample rate changes are not supported for PDM mics */
 #define MIN_FREQ                            XUA_PDM_MIC_FREQ /* Minimum sample rate */
 #define MAX_FREQ                            XUA_PDM_MIC_FREQ /* Maximum sample rate */
-#define PORT_I2S_DAC0						PORT_I2S_DAC_DATA
 
 #define AUDIO_IO_TILE 						1
 #define PORT_MCLK_IN_USB 					XS1_PORT_1D
 #define PORT_MCLK_COUNT 					XS1_PORT_16B
+#define PORT_I2S_DAC0						PORT_I2S_DAC_DATA
 
 #define XUA_NUM_PDM_MICS                    2
 #define MIC_ARRAY_CONFIG_PORT_MCLK          PORT_MCLK_IN
@@ -37,4 +37,7 @@
 #define PID_AUDIO_1                         1
 #define PID_AUDIO_2                         2
 #define XUA_DFU_EN                          0               /* Disable DFU for simplicity of example */
+
+#include "user_main.h"
+
 #endif
