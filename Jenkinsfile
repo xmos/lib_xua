@@ -1,6 +1,6 @@
 // This file relates to internal XMOS infrastructure and should be ignored by external users
 
-@Library('xmos_jenkins_shared_library@v0.34.0') _
+@Library('xmos_jenkins_shared_library@v0.38.0') _
 
 def clone_test_deps() {
   dir("${WORKSPACE}") {
@@ -15,28 +15,13 @@ def clone_test_deps() {
   }
 }
 
-def archiveLib(String repoName) {
-    sh "git -C ${repoName} clean -xdf"
-    sh "zip ${repoName}_sw.zip -r ${repoName}"
-    archiveArtifacts artifacts: "${repoName}_sw.zip", allowEmptyArchive: false
-}
-
-def checkout_shallow()
-{
-  checkout scm: [
-    $class: 'GitSCM',
-    branches: scm.branches,
-    userRemoteConfigs: scm.userRemoteConfigs,
-    extensions: [[$class: 'CloneOption', depth: 1, shallow: true, noTags: false]]
-  ]
-}
-
 getApproval()
 
 pipeline {
   agent none
   environment {
     REPO = 'lib_xua'
+    REPO_NAME = 'lib_xua'
   }
   options {
     buildDiscarder(xmosDiscardBuildSettings())
@@ -51,7 +36,7 @@ pipeline {
     )
     string(
       name: 'XMOSDOC_VERSION',
-      defaultValue: 'v6.1.3',
+      defaultValue: 'v6.3.1',
       description: 'The xmosdoc version')
 
     string(
@@ -71,10 +56,10 @@ pipeline {
           steps {
             println "Stage running on ${env.NODE_NAME}"
             dir("${REPO}") {
-              checkout_shallow()
+              checkoutScmShallow()
               dir("examples") {
                 withTools(params.TOOLS_VERSION) {
-                  sh 'cmake -G "Unix Makefiles" -B build -DDEPS_CLONE_SHALLOW=TRUE'
+                  xcoreBuild()
                 }
               }
             }
@@ -85,7 +70,7 @@ pipeline {
         }  // stage('Checkout and lib checks')
         stage("Archive Lib") {
           steps {
-            archiveLib(REPO)
+            archiveSandbox(REPO)
           }
         } //stage("Archive Lib")
 
@@ -96,8 +81,7 @@ pipeline {
             dir("${REPO}") {
               dir("examples") {
                 withTools(params.TOOLS_VERSION) {
-                  sh 'cmake -G "Unix Makefiles" -B build -DDEPS_CLONE_SHALLOW=TRUE'
-                  sh 'xmake -C build -j 16'
+                  xcoreBuild()
                 }
               }
             }
@@ -142,7 +126,7 @@ pipeline {
             println "Stage running on ${env.NODE_NAME}"
 
             dir("${REPO}") {
-              checkout_shallow()
+              checkoutScmShallow()
               dir("${REPO}/host/xmosdfu") {
                 sh 'cmake -B build'
                 sh 'make -C build'
@@ -167,7 +151,7 @@ pipeline {
             println "Stage running on ${env.NODE_NAME}"
 
             dir("${REPO}") {
-              checkout_shallow()
+              checkoutScmShallow()
               dir("${REPO}/host/xmosdfu") {
                 sh 'cmake -B build'
                 sh 'make -C build'
@@ -198,7 +182,7 @@ pipeline {
             println "Stage running on ${env.NODE_NAME}"
 
             dir("${REPO}") {
-              checkout_shallow()
+              checkoutScmShallow()
               dir("${REPO}/host/xmosdfu") {
                 sh 'cmake -B build'
                 sh 'make -C build'
@@ -226,7 +210,7 @@ pipeline {
             println "Stage running on ${env.NODE_NAME}"
 
             dir("${REPO}") {
-              checkout_shallow()
+              checkoutScmShallow()
               dir("${REPO}/host/xmosdfu") {
                 sh 'cmake -B build'
                 sh 'make -C build'
@@ -251,7 +235,7 @@ pipeline {
             println "Stage running on ${env.NODE_NAME}"
 
             dir("${REPO}") {
-              checkout_shallow()
+              checkoutScmShallow()
               dir("${REPO}/host/xmosdfu") {
                 withVS("vcvars32.bat") {
                   bat "cmake -B build -G Ninja"
@@ -287,7 +271,7 @@ pipeline {
           }
           steps {
             dir("${REPO}") {
-              checkout_shallow()
+              checkoutScmShallow()
 
               clone_test_deps()
 
@@ -337,7 +321,7 @@ pipeline {
             clone_test_deps()
 
             dir("${REPO}") {
-              checkout_shallow()
+              checkoutScmShallow()
             }
 
             dir("hardware_test_tools/xmosdfu") {
@@ -380,7 +364,7 @@ pipeline {
             clone_test_deps()
 
             dir("${REPO}") {
-              checkout_shallow()
+              checkoutScmShallow()
             }
 
             dir("${REPO}/tests") {

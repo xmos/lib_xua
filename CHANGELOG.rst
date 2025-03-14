@@ -1,8 +1,8 @@
 lib_xua change log
 ==================
 
-UNRELEASED
-----------
+5.0.1
+-----
 
   * CHANGED:   Made `p_off_mclk` nullable for XUA_Buffer; this port is now only
     required either in configurations using Synchronous mode and using the
@@ -11,7 +11,11 @@ UNRELEASED
   * FIXED:     `p_mclk_in` and `clk_audio_bclk` now correctly nullable when I2S
     not in use.
   * FIXED:     Corrected `clk_audio_mclk` nullability for XUA_AudioHub; this
-    clock block is only required for configurations with ADAT TX
+    clock block is only required for configurations with ADAT or SPDIF TX
+
+  * Changes to dependencies:
+
+    - lib_xud: 2.4.0 -> 2.4.1
 
 5.0.0
 -----
