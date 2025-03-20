@@ -17,6 +17,7 @@
 #include <print.h>
 
 void mic_array_task(chanend_t c_mic_to_audio){
+    printstrln("mic_array_task");
     /* Currently the sample rate is statically defined by XUA_PDM_MIC_FREQ.
      * However this channel transaction serves to synchronise the start of
      * audiohub with mic_array so we always consume samples */
