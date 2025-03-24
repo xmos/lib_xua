@@ -12,6 +12,14 @@ lib_xua change log
     not in use.
   * FIXED:     Corrected `clk_audio_mclk` nullability for XUA_AudioHub; this
     clock block is only required for configurations with ADAT or SPDIF TX
+  * FIXED: Compilation error with NUM_USB_CHAN_IN=0, NUM_USB_CHAN_OUT=0 and
+    HID_CONTROLS=1 config
+  * FIXED: HID functionality with AUDIO_CLASS = 1
+  * FIXED: Alignment issue with HID_Descriptor memory that was causing
+    USB_GET_DESCRIPTOR for the HID interface to fail leading to failing USB3CV
+    HID Descriptor test
+  * ADDED: Support for setting wMaxPacketSize for MIDI bulk IN and OUT endpoints
+    at run time depending on g_curUsbSpeed
 
   * Changes to dependencies:
 
