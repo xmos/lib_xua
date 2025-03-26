@@ -12,6 +12,7 @@ UNRELEASED
     not in use.
   * FIXED:     Corrected `clk_audio_mclk` nullability for XUA_AudioHub; this
     clock block is only required for configurations with ADAT TX
+  * ADDED:     Documented use of CHAN_BUFF_CTRL to save power
 
 5.0.0
 -----
