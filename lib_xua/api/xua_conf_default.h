@@ -1670,7 +1670,5 @@ enum USBEndpointNumber_Out
  */
 #if defined(CHAN_BUFF_CTRL) && (CHAN_BUFF_CTRL == 0)
 #undef CHAN_BUFF_CTRL
-#else
-#define CHAN_BUFF_CTRL  1
 #endif
 
