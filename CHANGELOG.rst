@@ -21,6 +21,8 @@ lib_xua change log
   * ADDED: Support for setting wMaxPacketSize for MIDI bulk IN and OUT endpoints
     at run time depending on g_curUsbSpeed
   * ADDED:     Documented use of CHAN_BUFF_CTRL to save power
+  * ADDED:     Optional user_main_declarations.h user_main_cores.h headers to
+    allow insertion of declarations and tasks for extending main.xc
 
   * Changes to dependencies:
 

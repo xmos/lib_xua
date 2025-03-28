@@ -19,7 +19,7 @@ set(LIB_INCLUDES api
                  src/core/user/hostactive
                  src/hid
                  src/midi)
-set(LIB_OPTIONAL_HEADERS xua_conf.h static_hid_report.h)
+set(LIB_OPTIONAL_HEADERS xua_conf.h static_hid_report.h user_main_declarations.h user_main_cores.h)
 set(LIB_DEPENDENT_MODULES "lib_adat(2.0.1)"
                           "lib_locks(2.3.1)"
                           "lib_logging(3.3.1)"

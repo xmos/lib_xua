@@ -504,10 +504,20 @@ int main()
 #define c_EANativeTransport_ctrl null
 #endif
 
+/* USER_MAIN_DECLARATIONS can be defined either via xua_conf.h or by user_main_declarations.h */
+#ifdef __user_main_declarations_h_exists__
+    #include "user_main_declarations.h"
+#endif
+
     USER_MAIN_DECLARATIONS
 
     par
     {
+
+/* USER_MAIN_CORES can be defined either via xua_conf.h or by user_main_cores.h */
+#ifdef __user_main_cores_h_exists__
+    #include "user_main_cores.h"
+#endif
         USER_MAIN_CORES
 
 #if (((XUA_SYNCMODE == XUA_SYNCMODE_SYNC  && !XUA_USE_SW_PLL) || XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN))
