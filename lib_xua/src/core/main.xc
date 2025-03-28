@@ -411,6 +411,10 @@ void usb_audio_io(chanend ?c_aud_in,
     } // par
 }
 
+#ifndef USER_MAIN_GLOBALS
+#define USER_MAIN_GLOBALS
+#endif
+
 #ifndef USER_MAIN_DECLARATIONS
 #define USER_MAIN_DECLARATIONS
 #endif
@@ -419,6 +423,12 @@ void usb_audio_io(chanend ?c_aud_in,
 #define USER_MAIN_CORES
 #endif
 
+
+/* USER_MAIN_GLOBALS can be defined either via xua_conf.h or by user_main_globals.h */
+#ifdef __user_main_globals_h_exists__
+    #include "user_main_globals.h"
+#endif
+        USER_MAIN_GLOBALS
 
 /* Main for USB Audio Applications */
 int main()
