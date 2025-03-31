@@ -1651,13 +1651,23 @@ enum USBEndpointNumber_Out
 #endif
 
 /**
- * @brief Device interface GUID.
+ * @brief Device interface GUID for the DFU interface.
  *
  * This is provided as part of the device registry property in the MSOS 2.0 descriptor.
  * Default: "{89C14132-D389-4FF7-944E-2E33379BB59D}" User can override by defining their own in xua_conf.h
  */
-#ifndef WINUSB_DEVICE_INTERFACE_GUID
-#define WINUSB_DEVICE_INTERFACE_GUID               "{89C14132-D389-4FF7-944E-2E33379BB59D}"
+#ifndef WINUSB_DEVICE_INTERFACE_GUID_DFU
+#define WINUSB_DEVICE_INTERFACE_GUID_DFU               "{89C14132-D389-4FF7-944E-2E33379BB59D}"
+#endif
+
+/**
+ * @brief Device interface GUID for the vendor control interface.
+ *
+ * This is provided as part of the device registry property in the MSOS 2.0 descriptor.
+ * Default: "{563F19C9-B0CD-4A15-9047-59D31EADC345}" User can override by defining their own in xua_conf.h
+ */
+#ifndef WINUSB_DEVICE_INTERFACE_GUID_CONTROL
+#define WINUSB_DEVICE_INTERFACE_GUID_CONTROL               "{563F19C9-B0CD-4A15-9047-59D31EADC345}"
 #endif
 
 /**

@@ -152,9 +152,17 @@ typedef struct
 typedef struct {
   MSOS_desc_header_t              msos_desc_header;
   MSOS_desc_cfg_subset_header_t   msos_desc_cfg_subset_header;
+#ifdef USB_CONTROL_DESCS
+  MSOS_desc_fn_subset_header_t    msos_fn_subset_header_control;
+  MSOS_desc_compat_id_t           msos_desc_compat_id_control;
+  MSOS_desc_registry_property_t   msos_desc_registry_property_control;
+#endif
+
+#if XUA_DFU_EN
   MSOS_desc_fn_subset_header_t    msos_fn_subset_header;
   MSOS_desc_compat_id_t           msos_desc_compat_id;
   MSOS_desc_registry_property_t   msos_desc_registry_property;
+#endif
 }__attribute__((packed)) MSOS_desc_composite_t;
 
 typedef struct {
@@ -180,13 +188,49 @@ MSOS_desc_composite_t desc_ms_os_20_composite =
     .bReserved = 0,
     .wTotalLength = sizeof(MSOS_desc_composite_t) - sizeof(MSOS_desc_header_t)
   },
+#ifdef USB_CONTROL_DESCS
+  .msos_fn_subset_header_control =
+  {
+    .wLength = sizeof(MSOS_desc_fn_subset_header_t),
+    .wDescriptorType = MS_OS_20_SUBSET_HEADER_FUNCTION,
+    .bFirstInterface = INTERFACE_NUMBER_MISC_CONTROL,
+    .bReserved = 0,
+    .wSubsetLength = sizeof(MSOS_desc_fn_subset_header_t) + sizeof(MSOS_desc_compat_id_t) + sizeof(MSOS_desc_registry_property_t)
+  },
+  .msos_desc_compat_id_control =
+  {
+    .wLength = sizeof(MSOS_desc_compat_id_t),
+    .wDescriptorType = MS_OS_20_FEATURE_COMPATBLE_ID,
+    .CompatibleID = {'W', 'I', 'N', 'U', 'S', 'B', 0x00, 0x00}, // "WINUSB\0\0"
+    .SubCompatibleID = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
+  },
+  .msos_desc_registry_property_control =
+  {
+    .wLength = sizeof(MSOS_desc_registry_property_t),
+    .wDescriptorType = MS_OS_20_FEATURE_REG_PROPERTY,
+    .wPropertyDataType = 0x0007, // REG_MULTI_SZ as defined in Table 15 of Microsoft OS 2.0 Descriptors Specification. Check IMPORTANT NOTE 2 in https://github.com/pbatard/libwdi/wiki/WCID-Devices
+    // for why we need REG_MULTI_SZ and not REG_SZ
+    .wPropertyNameLength = MSOS_PROPERTY_NAME_LEN,
+    .PropertyName = {'D', 0x00, 'e', 0x00, 'v', 0x00, 'i', 0x00, 'c', 0x00, 'e', 0x00, 'I', 0x00, 'n', 0x00, 't', 0x00, 'e', 0x00,
+                      'r', 0x00, 'f', 0x00, 'a', 0x00, 'c', 0x00, 'e', 0x00, 'G', 0x00, 'U', 0x00, 'I', 0x00, 'D', 0x00, 's', 0x00, 0x00, 0x00}, //"DeviceInterfaceGUIDs\0" in UTF-16
+    .wPropertyDataLength = MSOS_INTERFACE_GUID_LEN,
+    .PropertyData = { // "{xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx}\0\0"
+                      '{', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, '-', 0x00,
+                      'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, '-', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, '-', 0x00,
+                      'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, '-', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00,
+                      'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, '}', 0x00, 0x00, 0x00, 0x00, 0x00
+                    }, //defined in the WINUSB_DEVICE_INTERFACE_GUID_CONTROL define and updated in the descriptor at runtime
+  },
+#endif
+
+#if XUA_DFU_EN
   .msos_fn_subset_header =
   {
     .wLength = sizeof(MSOS_desc_fn_subset_header_t),
     .wDescriptorType = MS_OS_20_SUBSET_HEADER_FUNCTION,
     .bFirstInterface = INTERFACE_NUMBER_DFU,
     .bReserved = 0,
-    .wSubsetLength = sizeof(MSOS_desc_composite_t) - sizeof(MSOS_desc_header_t) - sizeof(MSOS_desc_cfg_subset_header_t)
+    .wSubsetLength = sizeof(MSOS_desc_fn_subset_header_t) + sizeof(MSOS_desc_compat_id_t) + sizeof(MSOS_desc_registry_property_t)
   },
   .msos_desc_compat_id =
   {
@@ -210,8 +254,9 @@ MSOS_desc_composite_t desc_ms_os_20_composite =
                       'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, '-', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, '-', 0x00,
                       'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, '-', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00,
                       'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, '}', 0x00, 0x00, 0x00, 0x00, 0x00
-                    }, //defined in the WINUSB_DEVICE_INTERFACE_GUID define and updated in the descriptor at runtime
+                    }, //defined in the WINUSB_DEVICE_INTERFACE_GUID_DFU define and updated in the descriptor at runtime
   }
+#endif
 };
 
 MSOS_desc_simple_t desc_ms_os_20_simple =
@@ -244,7 +289,7 @@ MSOS_desc_simple_t desc_ms_os_20_simple =
                       'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, '-', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, '-', 0x00,
                       'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, '-', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00,
                       'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, 'x', 0x00, '}', 0x00, 0x00, 0x00, 0x00, 0x00
-                    }, //defined in the WINUSB_DEVICE_INTERFACE_GUID define and updated in the descriptor at runtime
+                    }, //defined in the WINUSB_DEVICE_INTERFACE_GUID_DFU define and updated in the descriptor at runtime
   }
 };
 

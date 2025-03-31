@@ -60,9 +60,8 @@
 #warning DFU_PID not defined, Using PID_AUDIO_2. This is probably fine!
 #endif
 
-#if (XUA_DFU_EN == 1)
 #include "xua_dfu.h"
-#define DFU_IF_NUM INPUT_INTERFACES + OUTPUT_INTERFACES + MIDI_INTERFACES + 1
+#if (XUA_DFU_EN == 1)
 extern void device_reboot(void);
 
 /* Windows core USB/device driver stack may not like device coming off bus for
@@ -143,7 +142,8 @@ char g_serial_str[XUA_MAX_STR_LEN] = SERIAL_STR;
 
 #if _XUA_ENABLE_BOS_DESC
 /* Device Interface GUID*/
-char g_device_interface_guid_str[DEVICE_INTERFACE_GUID_MAX_STRLEN+1] = WINUSB_DEVICE_INTERFACE_GUID;
+char g_device_interface_guid_dfu_str[DEVICE_INTERFACE_GUID_MAX_STRLEN+1] = WINUSB_DEVICE_INTERFACE_GUID_DFU;
+char g_device_interface_guid_control_str[DEVICE_INTERFACE_GUID_MAX_STRLEN+1] = WINUSB_DEVICE_INTERFACE_GUID_CONTROL;
 #endif
 
 /* Subslot */
@@ -459,22 +459,43 @@ static unsigned char hidReportDescriptorPtr[] = {
 
 #if _XUA_ENABLE_BOS_DESC
 /// Update the device interface GUID in both MSOS simple and composite descriptors
-static void update_guid_in_msos_desc(const char *guid_str)
+static void update_guid_in_msos_desc(const char *guid_str_dfu, const char *guid_str_control)
 {
     // composite descriptor
-    unsigned char *msos_guid_ptr = desc_ms_os_20_composite.msos_desc_registry_property.PropertyData;
+    unsigned char *msos_guid_ptr;
+#if XUA_DFU_EN
+    msos_guid_ptr = desc_ms_os_20_composite.msos_desc_registry_property.PropertyData;
     for(int i=0; i<DEVICE_INTERFACE_GUID_MAX_STRLEN; i++)
     {
-        msos_guid_ptr[2*i] = guid_str[i];
+        msos_guid_ptr[2*i] = guid_str_dfu[i];
         msos_guid_ptr[2*i + 1] = 0x0;
     }
+#endif
+
+#ifdef USB_CONTROL_DESCS
+    msos_guid_ptr = desc_ms_os_20_composite.msos_desc_registry_property_control.PropertyData;
+    for(int i=0; i<DEVICE_INTERFACE_GUID_MAX_STRLEN; i++)
+    {
+        msos_guid_ptr[2*i] = guid_str_control[i];
+        msos_guid_ptr[2*i + 1] = 0x0;
+    }
+#endif
+
     // simple descriptor
     msos_guid_ptr = desc_ms_os_20_simple.msos_desc_registry_property.PropertyData;
+#if XUA_DFU_EN
     for(int i=0; i<DEVICE_INTERFACE_GUID_MAX_STRLEN; i++)
     {
-        msos_guid_ptr[2*i] = guid_str[i];
+        msos_guid_ptr[2*i] = guid_str_dfu[i];
         msos_guid_ptr[2*i + 1] = 0x0;
     }
+#elif defined USB_CONTROL_DESCS
+    for(int i=0; i<DEVICE_INTERFACE_GUID_MAX_STRLEN; i++)
+    {
+        msos_guid_ptr[2*i] = guid_str_control[i];
+        msos_guid_ptr[2*i + 1] = 0x0;
+    }
+#endif
 }
 #endif
 
@@ -489,10 +510,7 @@ void XUA_Endpoint0_init(chanend c_ep0_out, chanend c_ep0_in, NULLABLE_RESOURCE(c
 
     VendorRequests_Init(VENDOR_REQUESTS_PARAMS);
 #if _XUA_ENABLE_BOS_DESC
-    if(strcmp(g_device_interface_guid_str, "")) // If g_device_interface_guid_str is not empty
-    {
-        update_guid_in_msos_desc(g_device_interface_guid_str);
-    }
+    update_guid_in_msos_desc(g_device_interface_guid_dfu_str, g_device_interface_guid_control_str);
 #endif
 
     if(strcmp(g_strTable.serialStr, "")) // If serialStr is not empty

@@ -21,7 +21,7 @@
 
 // Enable BOS descriptor only when DFU is enabled since the only capability we advertise is the MSOS desc with DFU interface enumerating as WinUSB.
 // Enumerating with 0 capabilities doesn't seem to be allowed
-#if (XUA_DFU_EN)
+#if XUA_DFU_EN || defined USB_CONTROL_DESCS
     #define _XUA_ENABLE_BOS_DESC (1)
 #else
     #define _XUA_ENABLE_BOS_DESC (0)
@@ -774,14 +774,14 @@ typedef struct
     MIDI_Descriptor_t                           MIDI_Descriptors;
 #endif
 
-#if (XUA_DFU_EN == 1)
-    /* DFU descriptors currently handled as a single block */
-    unsigned char configDesc_DFU[DFU_LENGTH];
-#endif
-
 #ifdef USB_CONTROL_DESCS
     /* Inferface descriptor for control */
     unsigned char itfDesc_control[9];
+#endif
+
+#if (XUA_DFU_EN == 1)
+    /* DFU descriptors currently handled as a single block */
+    unsigned char configDesc_DFU[DFU_LENGTH];
 #endif
 
 #ifdef IAP
@@ -2103,13 +2103,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
     },
 #endif // MIDI
 
-#if (XUA_DFU_EN == 1)
-    {
-        CONFIG_DESC_DFU
-    },
-#endif /* (XUA_DFU_EN == 1) */
-
-#ifdef USB_CONTROL_DESCS
+    #ifdef USB_CONTROL_DESCS
     {
     /* Control interface descriptor */
     0x09,                                                /* 0 bLength : Size of this descriptor, in bytes. (field size 1 bytes) */
@@ -2123,6 +2117,12 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
     offsetof(StringDescTable_t, ctrlStr)/sizeof(char *), /* 8 iInterface */
     },
 #endif
+
+#if (XUA_DFU_EN == 1)
+    {
+        CONFIG_DESC_DFU
+    },
+#endif /* (XUA_DFU_EN == 1) */
 
 #ifdef IAP
     /* Interface descriptor */
