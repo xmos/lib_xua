@@ -26,9 +26,17 @@ Settings for PDM microphones are controlled with the defines in :numref:`opt_pdm
    * - ``XUA_PDM_MIC_FREQ``
      - Defines the PCM output sample rate of ``lib_mic_array``
      - None (must be defined)
+   * - ``XUA_PDM_MIC_USE_PDM_ISR``
+     - Define as 1 to enable merging of the PDM receive task and decimation task into a single thread using an ISR
+     - ``0`` (use separate threads for PDM and decimation)
 
 .. note::
 
    Currently only a single, fixed sample rate is supported for the PDM microphones
+
+.. note::
+
+   Setting ``XUA_PDM_MIC_USE_PDM_ISR`` is only recommended for PDM mic counts below 8.
+
 
 Please see the :ref:`PDM Microphones<sw_pdm_main>` section for further details.

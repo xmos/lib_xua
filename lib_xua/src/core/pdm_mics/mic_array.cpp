@@ -7,6 +7,7 @@
 #include <print.h>
 #include <xcore/channel_streaming.h>
 #include <xcore/interrupt.h>
+#include <xcore/parallel.h>
 
 #include "mic_array/cpp/Prefab.hpp"
 #include "mic_array/cpp/MicArray.hpp"
@@ -198,23 +199,44 @@ void ma_init(unsigned mic_samp_rate)
   mics.Decimator.Init(stage_1_filter(), stage_2_filter(), *stage_2_shift());
 
   mics.PdmRx.Init(pdm_res.p_pdm_mics);
+
+  // Use this to re-map microphones if needed. By default they will be mapped linearly (0=0, 1=1 etc.)
   // unsigned channel_map[MIC_ARRAY_CONFIG_MIC_COUNT] = {0, 1};
   // mics.PdmRx.MapChannels(channel_map);
+
   mic_array_resources_configure(&pdm_res, MIC_ARRAY_CONFIG_MCLK_DIVIDER);
   mic_array_pdm_clock_start(&pdm_res);
 }
 
+// Parallel jobs for when XUA_PDM_MIC_USE_PDM_ISR == 0, run separate decimator and pdm rx tasks
+DECLARE_JOB(ma_start_pdm, (void));
+void ma_start_pdm(void){
+  mics.PdmRx.ThreadEntry();
+}
 
+DECLARE_JOB(ma_start_decimator, (chanend_t));
+void ma_start_decimator(chanend_t c_audio_frames){
+  mics.ThreadEntry();
+}
+
+
+// Main ma_task entry
 void ma_task(chanend_t c_frames_out)
 {
   mics.OutputHandler.FrameTx.SetChannel(c_frames_out);
 
+#if XUA_PDM_MIC_USE_PDM_ISR
+  // Setup the ISR and enable. Then start decimator.
   mics.PdmRx.AssertOnDroppedBlock(false);
-
   mics.PdmRx.InstallISR();
   mics.PdmRx.UnmaskISR();
-
   mics.ThreadEntry();
+#else
+  // Start separate PDM and decimator.
+  PAR_JOBS(
+    PJOB(ma_start_pdm, ()),
+    PJOB(ma_start_decimator, (c_frames_out)));
+#endif
 }
 
 #endif // #if (XUA_NUM_PDM_MICS > 0)
