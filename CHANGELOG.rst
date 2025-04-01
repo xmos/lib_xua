@@ -21,6 +21,12 @@ lib_xua change log
   * ADDED: Support for setting wMaxPacketSize for MIDI bulk IN and OUT endpoints
     at run time depending on g_curUsbSpeed
   * ADDED:     Documented use of CHAN_BUFF_CTRL to save power
+  * FIXED: Device enumeration error when both XUA_DFU_EN and USB_CONTROL_DESCS
+    are enabled
+  * ADDED: Enumerate with vendor specific control interface as WinUSB compatible
+    on Windows. Can be disabled by defining ENUMERATE_CONTROL_INTF_AS_WINUSB to
+    0
+  * ADDED: HW test for vendor specific control interface
 
   * Changes to dependencies:
 

@@ -48,8 +48,7 @@ def cfg_list():
         return []
     exclude_cfgs = ["factory", "upgrade"]
     all_cfgs = [dir.stem for dir in bin_dir.iterdir()]
-    #return [cfg for cfg in all_cfgs if cfg not in exclude_cfgs]
-    return ["control"]
+    return [cfg for cfg in all_cfgs if cfg not in exclude_cfgs]
 
 
 def dfu_app_list():

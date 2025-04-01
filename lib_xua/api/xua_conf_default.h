@@ -1682,3 +1682,25 @@ enum USBEndpointNumber_Out
 #undef CHAN_BUFF_CTRL
 #endif
 
+/**
+ * @brief Enable Vendor specific control interface
+ *
+ * When enabled, device enumerates with an extra Vendor specific control interface with no associated endpoints
+ * Default: Disabled by default
+ */
+#ifndef USB_CONTROL_DESCS
+#define USB_CONTROL_DESCS    0
+#endif
+
+/**
+ * @brief Enable Vendor specific control interface to enumerate as WinUSB on Windows
+ *
+ * Allow the Vendor specific control interface, if enabled (USB_CONTROL_DESCS defined to 1), to enumerate as WinUSB on Windows.
+ * Default: Enabled by default. If disabled, manual driver installation for the control interface would
+ * be required on Windows
+ */
+#ifndef ENUMERATE_CONTROL_INTF_AS_WINUSB
+#define ENUMERATE_CONTROL_INTF_AS_WINUSB    1
+#endif
+
+

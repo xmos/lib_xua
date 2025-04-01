@@ -60,27 +60,24 @@ typedef struct
 typedef struct
 {
   USB_Descriptor_BOS_standard_t usb_desc_bos_standard;
-  USB_Descriptor_BOS_platform_t usb_desc_bos_platform;
+  USB_Descriptor_BOS_platform_t usb_desc_bos_platform; // platform capability
 } __attribute__((packed)) USB_Descriptor_BOS_t;
 
-
-USB_Descriptor_BOS_standard_t desc_bos_standard =
-{
-  .bLength = sizeof(USB_Descriptor_BOS_standard_t),
-  .bDescriptorType = USB_DESCTYPE_BOS,
-  .wTotalLength = sizeof(USB_Descriptor_BOS_standard_t) + sizeof(USB_Descriptor_BOS_platform_t),
-  .bNumDeviceCaps = 1
-};
-
-
-USB_Descriptor_BOS_platform_t desc_bos_msos_platform_capability =
-{
-  .bLength = sizeof(USB_Descriptor_BOS_platform_t),
-  .bDescriptorType = USB_DESCTYPE_DEVICE_CAPABILITY,
-  .bDevCapabilityType = DEVICE_CAPABILITY_PLATFORM,
-  .bReserved = 0,
-  .PlatformCapabilityUUID = {USB_BOS_MS_OS_20_UUID},
-  .CapabilityData = {U32_TO_U8S_LE(0x06030000), U16_TO_U8S_LE(0) /*msos2.0 desc len filled at runtime*/, REQUEST_GET_MS_DESCRIPTOR, 0}
+USB_Descriptor_BOS_t desc_bos = {
+  .usb_desc_bos_standard = {
+    .bLength = sizeof(USB_Descriptor_BOS_standard_t),
+    .bDescriptorType = USB_DESCTYPE_BOS,
+    .wTotalLength = sizeof(USB_Descriptor_BOS_standard_t) + sizeof(USB_Descriptor_BOS_platform_t),
+    .bNumDeviceCaps = 1
+  },
+  .usb_desc_bos_platform = {
+    .bLength = sizeof(USB_Descriptor_BOS_platform_t),
+    .bDescriptorType = USB_DESCTYPE_DEVICE_CAPABILITY,
+    .bDevCapabilityType = DEVICE_CAPABILITY_PLATFORM,
+    .bReserved = 0,
+    .PlatformCapabilityUUID = {USB_BOS_MS_OS_20_UUID},
+    .CapabilityData = {U32_TO_U8S_LE(0x06030000), U16_TO_U8S_LE(0) /*msos2.0 desc len filled at runtime*/, REQUEST_GET_MS_DESCRIPTOR, 0}
+  }
 };
 
 //MSOS descriptor related defines
@@ -152,16 +149,16 @@ typedef struct
 typedef struct {
   MSOS_desc_header_t              msos_desc_header;
   MSOS_desc_cfg_subset_header_t   msos_desc_cfg_subset_header;
-#ifdef USB_CONTROL_DESCS
+#if (USB_CONTROL_DESCS && ENUMERATE_CONTROL_INTF_AS_WINUSB)
   MSOS_desc_fn_subset_header_t    msos_fn_subset_header_control;
   MSOS_desc_compat_id_t           msos_desc_compat_id_control;
   MSOS_desc_registry_property_t   msos_desc_registry_property_control;
 #endif
 
 #if XUA_DFU_EN
-  MSOS_desc_fn_subset_header_t    msos_fn_subset_header;
-  MSOS_desc_compat_id_t           msos_desc_compat_id;
-  MSOS_desc_registry_property_t   msos_desc_registry_property;
+  MSOS_desc_fn_subset_header_t    msos_fn_subset_header_dfu;
+  MSOS_desc_compat_id_t           msos_desc_compat_id_dfu;
+  MSOS_desc_registry_property_t   msos_desc_registry_property_dfu;
 #endif
 }__attribute__((packed)) MSOS_desc_composite_t;
 
@@ -188,7 +185,7 @@ MSOS_desc_composite_t desc_ms_os_20_composite =
     .bReserved = 0,
     .wTotalLength = sizeof(MSOS_desc_composite_t) - sizeof(MSOS_desc_header_t)
   },
-#ifdef USB_CONTROL_DESCS
+#if (USB_CONTROL_DESCS && ENUMERATE_CONTROL_INTF_AS_WINUSB)
   .msos_fn_subset_header_control =
   {
     .wLength = sizeof(MSOS_desc_fn_subset_header_t),
@@ -224,7 +221,7 @@ MSOS_desc_composite_t desc_ms_os_20_composite =
 #endif
 
 #if XUA_DFU_EN
-  .msos_fn_subset_header =
+  .msos_fn_subset_header_dfu =
   {
     .wLength = sizeof(MSOS_desc_fn_subset_header_t),
     .wDescriptorType = MS_OS_20_SUBSET_HEADER_FUNCTION,
@@ -232,14 +229,14 @@ MSOS_desc_composite_t desc_ms_os_20_composite =
     .bReserved = 0,
     .wSubsetLength = sizeof(MSOS_desc_fn_subset_header_t) + sizeof(MSOS_desc_compat_id_t) + sizeof(MSOS_desc_registry_property_t)
   },
-  .msos_desc_compat_id =
+  .msos_desc_compat_id_dfu =
   {
     .wLength = sizeof(MSOS_desc_compat_id_t),
     .wDescriptorType = MS_OS_20_FEATURE_COMPATBLE_ID,
     .CompatibleID = {'W', 'I', 'N', 'U', 'S', 'B', 0x00, 0x00}, // "WINUSB\0\0"
     .SubCompatibleID = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
   },
-  .msos_desc_registry_property =
+  .msos_desc_registry_property_dfu =
   {
     .wLength = sizeof(MSOS_desc_registry_property_t),
     .wDescriptorType = MS_OS_20_FEATURE_REG_PROPERTY,

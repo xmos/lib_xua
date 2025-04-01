@@ -21,7 +21,9 @@
 
 // Enable BOS descriptor only when DFU is enabled since the only capability we advertise is the MSOS desc with DFU interface enumerating as WinUSB.
 // Enumerating with 0 capabilities doesn't seem to be allowed
-#if XUA_DFU_EN || defined USB_CONTROL_DESCS
+#if XUA_DFU_EN
+    #define _XUA_ENABLE_BOS_DESC (1)
+#elif (USB_CONTROL_DESCS && ENUMERATE_CONTROL_INTF_AS_WINUSB)
     #define _XUA_ENABLE_BOS_DESC (1)
 #else
     #define _XUA_ENABLE_BOS_DESC (0)
@@ -108,7 +110,7 @@ typedef struct
 #if (XUA_DFU_EN == 1)
     STR_TABLE_ENTRY(dfuStr);                      /* iInterface for DFU interface */
 #endif
-#ifdef USB_CONTROL_DESCS
+#if USB_CONTROL_DESCS
     STR_TABLE_ENTRY(ctrlStr);
 #endif
 #ifdef MIDI
@@ -381,7 +383,7 @@ StringDescTable_t g_strTable =
 #if (XUA_DFU_EN == 1)
     .dfuStr                      = XUA_DFU_EMPTY_STRING,
 #endif
-#ifdef USB_CONTROL_DESCS
+#if USB_CONTROL_DESCS
     .ctrlStr                      = XUA_CTRL_EMPTY_STRING,
 #endif
 #ifdef MIDI
@@ -774,7 +776,7 @@ typedef struct
     MIDI_Descriptor_t                           MIDI_Descriptors;
 #endif
 
-#ifdef USB_CONTROL_DESCS
+#if USB_CONTROL_DESCS
     /* Inferface descriptor for control */
     unsigned char itfDesc_control[9];
 #endif
@@ -2103,7 +2105,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
     },
 #endif // MIDI
 
-    #ifdef USB_CONTROL_DESCS
+#if USB_CONTROL_DESCS
     {
     /* Control interface descriptor */
     0x09,                                                /* 0 bLength : Size of this descriptor, in bytes. (field size 1 bytes) */
@@ -2341,7 +2343,7 @@ const unsigned num_freqs_a1 = MAX(3, (0
 #endif
 ));
 
-#ifdef USB_CONTROL_DESCS
+#if USB_CONTROL_DESCS
 #define CONTROL_INTERFACE_BYTES 9
 #define NUM_CONTROL_USB_INTERFACES 1
 #else
@@ -3023,7 +3025,7 @@ unsigned char cfgDesc_Audio1[] =
     CONFIG_DESC_DFU,
 #endif
 
-#ifdef USB_CONTROL_DESCS
+#if USB_CONTROL_DESCS
     /* Control interface descriptor */
     0x09,                                                /* 0 bLength : Size of this descriptor, in bytes. (field size 1 bytes) */
     0x04,                                                /* 1 bDescriptorType : INTERFACE descriptor. (field size 1 bytes) */

@@ -347,7 +347,7 @@ void XUA_Endpoint0_setStrTable() {
 #if (XUA_DFU_EN == 1)
     concatenateAndCopyStrings(g_vendor_str, " DFU", g_strTable.dfuStr);
 #endif
-#ifdef USB_CONTROL_DESCS
+#if USB_CONTROL_DESCS
     concatenateAndCopyStrings(g_vendor_str, " Control", g_strTable.ctrlStr);
 #endif
 #ifdef MIDI
@@ -464,7 +464,7 @@ static void update_guid_in_msos_desc(const char *guid_str_dfu, const char *guid_
     // composite descriptor
     unsigned char *msos_guid_ptr;
 #if XUA_DFU_EN
-    msos_guid_ptr = desc_ms_os_20_composite.msos_desc_registry_property.PropertyData;
+    msos_guid_ptr = desc_ms_os_20_composite.msos_desc_registry_property_dfu.PropertyData;
     for(int i=0; i<DEVICE_INTERFACE_GUID_MAX_STRLEN; i++)
     {
         msos_guid_ptr[2*i] = guid_str_dfu[i];
@@ -472,7 +472,7 @@ static void update_guid_in_msos_desc(const char *guid_str_dfu, const char *guid_
     }
 #endif
 
-#ifdef USB_CONTROL_DESCS
+#if (USB_CONTROL_DESCS && ENUMERATE_CONTROL_INTF_AS_WINUSB)
     msos_guid_ptr = desc_ms_os_20_composite.msos_desc_registry_property_control.PropertyData;
     for(int i=0; i<DEVICE_INTERFACE_GUID_MAX_STRLEN; i++)
     {
@@ -489,7 +489,7 @@ static void update_guid_in_msos_desc(const char *guid_str_dfu, const char *guid_
         msos_guid_ptr[2*i] = guid_str_dfu[i];
         msos_guid_ptr[2*i + 1] = 0x0;
     }
-#elif defined USB_CONTROL_DESCS
+#elif (USB_CONTROL_DESCS && ENUMERATE_CONTROL_INTF_AS_WINUSB)
     for(int i=0; i<DEVICE_INTERFACE_GUID_MAX_STRLEN; i++)
     {
         msos_guid_ptr[2*i] = guid_str_control[i];
@@ -1084,9 +1084,6 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
                             {
                                 case (USB_DESCTYPE_BOS << 8):
                                 {
-                                    USB_Descriptor_BOS_t desc_bos;
-                                    desc_bos.usb_desc_bos_standard = desc_bos_standard;
-                                    desc_bos.usb_desc_bos_platform = desc_bos_msos_platform_capability;
                                     uint16_t msos_desc_len;
                                     int num_interfaces;
                                     if(DFU_mode_active) {
@@ -1107,7 +1104,15 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
                                         msos_desc_len = sizeof(MSOS_desc_composite_t);
                                     }
                                     memcpy(&desc_bos.usb_desc_bos_platform.CapabilityData[4], &msos_desc_len, sizeof(int16_t)); // Update msos descriptor length in platform capabilityData
-                                    result = XUD_DoGetRequest(ep0_out, ep0_in, (unsigned char*)&desc_bos, sizeof(USB_Descriptor_BOS_t), sp.wLength);
+                                    // On the Mac, BOS desc is requested twice, first with wLength 5 (just usb_desc_bos_standard), then with length 33 (usb_desc_bos_standard + ),
+                                    // while on Windows there's only one request of length 0xff.
+                                    // Set length appropriately
+                                    unsigned length = sp.wLength;
+                                    if(sp.wLength > sizeof(desc_bos))
+                                    {
+                                        length = sizeof(desc_bos);
+                                    }
+                                    result = XUD_DoGetRequest(ep0_out, ep0_in, (unsigned char*)&desc_bos, length, sp.wLength);
                                 }
                                 break;
                             }

@@ -1,3 +1,5 @@
+// Copyright 2025 XMOS LIMITED.
+// This Software is subject to the terms of the XMOS Public Licence: Version 1.
 #include <stdio.h>
 #include <assert.h>
 #if !defined(_MSC_VER) || (_MSC_VER >= 1800) // !MSVC or MSVC >=VS2013
@@ -13,7 +15,7 @@ typedef enum { false = 0, true = 1} bool;
 #endif
 #include <libusb.h>
 
-#define DBG(x) x
+#define DBG(x)
 #define PRINT_ERROR(...)   fprintf(stderr, "Error  : " __VA_ARGS__)
 
 static unsigned num_commands = 0;
@@ -36,7 +38,7 @@ void debug_libusb_error(int err_code)
 #endif
 }
 
-int control_init_usb(int vendor_id, int product_id, int interface_num)
+int control_init_usb(int vendor_id, int product_id)
 {
   int ret = libusb_init(NULL);
   if (ret < 0) {

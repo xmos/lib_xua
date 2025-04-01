@@ -1,3 +1,5 @@
+// Copyright 2025 XMOS LIMITED.
+// This Software is subject to the terms of the XMOS Public Licence: Version 1.
 #ifndef __DEVICE_ACCESS_USB_H__
 #define __DEVICE_ACCESS_USB_H__
 
@@ -5,7 +7,7 @@
 extern "C" {
 #endif
 
-int control_init_usb(int vendor_id, int product_id, int interface_num);
+int control_init_usb(int vendor_id, int product_id);
 int control_cleanup_usb(void);
 int control_read_command(uint8_t resid, uint8_t cmd,
                      uint8_t payload[], size_t payload_len);
