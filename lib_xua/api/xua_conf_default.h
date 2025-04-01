@@ -22,10 +22,22 @@
 #endif
 
 /**
- * @brief Location (tile) of audio I/O. Default: 0
+ * @brief Location (tile) of XMOS USB I/O library. Default: 0
  */
 #ifndef XUD_TILE
 #define XUD_TILE        (0)
+#endif
+
+
+/**
+ * @brief Location (tile) of XUA USB components. Default: XUD_TILE
+ * Note: this is now deprecated and this macro is included for
+ * compatibility. Please use only XUD_TILE in the future.
+ */
+#ifndef XUD_TILE
+#define EXPAND_MACRO(x) x
+#define ADD_TILE(x) tile[x]
+#define XUD_TILE ADD_TILE(EXPAND_MACRO(USB_TILE))
 #endif
 
 /**
