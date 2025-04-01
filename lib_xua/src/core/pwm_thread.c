@@ -10,6 +10,7 @@
 #include <xcore/chanend.h>
 #include <xcore/clock.h>
 #include "software_dac_hp.h"
+#include "sigma_delta_modulators.h"
 #include "uac_hwresources.h"
 
 void setup_master_clock(port_t clk_in) __attribute__ ((weak));
