@@ -21,6 +21,8 @@ lib_xua change log
   * ADDED: Support for setting wMaxPacketSize for MIDI bulk IN and OUT endpoints
     at run time depending on g_curUsbSpeed
   * ADDED:     Documented use of CHAN_BUFF_CTRL to save power
+  * CHANGED:  `XUD_TILE` define is now derived form lib_xud's USB_TILE setting
+  rather than being set to 0 as a default.
 
   * Changes to dependencies:
 

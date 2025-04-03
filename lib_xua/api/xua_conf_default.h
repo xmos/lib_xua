@@ -30,9 +30,10 @@
 
 
 /**
- * @brief Location (tile) of XUA USB components. Default: XUD_TILE
- * Note: this is now deprecated and this macro is included for
- * compatibility. Please use only XUD_TILE in the future.
+ * @brief Location (tile) of XUA USB components including lib_xud. Default: USB_TILE
+ * Note: The USB_TILE define is required by lib_xud (will be set to tile[0] by default)
+ * and lib_xua USB components must reside on the same tile as lib_xud which is
+ * why XUD_TILE is set to USB_TILE. 
  */
 #ifndef XUD_TILE
 #define EXPAND_MACRO(x) x
