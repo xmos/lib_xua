@@ -61,7 +61,7 @@
 #endif
 
 #include "xua_dfu.h"
-#if (XUA_DFU_EN == 1)
+#if XUA_DFU_EN
 extern void device_reboot(void);
 
 /* Windows core USB/device driver stack may not like device coming off bus for
@@ -344,7 +344,7 @@ void XUA_Endpoint0_setStrTable() {
 #if (XUA_ADAT_RX_EN)
     concatenateAndCopyStrings(g_vendor_str, " ADAT Clock", g_strTable.adatClockSourceStr);
 #endif
-#if (XUA_DFU_EN == 1)
+#if XUA_DFU_EN
     concatenateAndCopyStrings(g_vendor_str, " DFU", g_strTable.dfuStr);
 #endif
 #if USB_CONTROL_DESCS
@@ -465,7 +465,7 @@ static void update_guid_in_msos_desc(const char *guid_str_dfu, const char *guid_
     unsigned char *msos_guid_ptr;
 #if XUA_DFU_EN
     msos_guid_ptr = desc_ms_os_20_composite.msos_desc_registry_property_dfu.PropertyData;
-    for(int i=0; i<DEVICE_INTERFACE_GUID_MAX_STRLEN; i++)
+    for(int i=0; i<DEVICE_INTERFACE_GUID_MAX_STRLEN; i++) // Convert to Unicode
     {
         msos_guid_ptr[2*i] = guid_str_dfu[i];
         msos_guid_ptr[2*i + 1] = 0x0;
@@ -474,7 +474,7 @@ static void update_guid_in_msos_desc(const char *guid_str_dfu, const char *guid_
 
 #if (USB_CONTROL_DESCS && ENUMERATE_CONTROL_INTF_AS_WINUSB)
     msos_guid_ptr = desc_ms_os_20_composite.msos_desc_registry_property_control.PropertyData;
-    for(int i=0; i<DEVICE_INTERFACE_GUID_MAX_STRLEN; i++)
+    for(int i=0; i<DEVICE_INTERFACE_GUID_MAX_STRLEN; i++) // Convert to Unicode
     {
         msos_guid_ptr[2*i] = guid_str_control[i];
         msos_guid_ptr[2*i + 1] = 0x0;
@@ -532,7 +532,7 @@ void XUA_Endpoint0_init(chanend c_ep0_out, chanend c_ep0_in, NULLABLE_RESOURCE(c
     VendorAudioRequestsInit(c_aud_ctl, c_mix_ctl, c_clk_ctl);
 #endif
 
-#if (XUA_DFU_EN == 1)
+#if XUA_DFU_EN
     if(strcmp(g_strTable.serialStr, "")) // If serialStr is not empty
     {
         DFUdevDesc.iSerialNumber = offsetof(StringDescTable_t, serialStr)/sizeof(char *); /* Same as the run-time mode device descriptor */
@@ -910,7 +910,7 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
                     //unsigned request = (sp.bmRequestType.Recipient ) | (sp.bmRequestType.Type << 5);
 
                     /* TODO Check on return value retval =  */
-#if (XUA_DFU_EN == 1)
+#if XUA_DFU_EN
                     unsigned DFU_IF = INTERFACE_NUMBER_DFU;
 
                     /* DFU interface number changes based on which mode we are currently running in */
@@ -965,7 +965,7 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
                      *              - Audio endpoint request (Audio 1.0 Sampling freq requests are sent to the endpoint)
                      */
                     if(((interfaceNum == 0) || (interfaceNum == 1) || (interfaceNum == 2))
-#if (XUA_DFU_EN == 1)
+#if XUA_DFU_EN
                             && !DFU_mode_active
 #endif
                         )
@@ -1106,13 +1106,7 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
                                     memcpy(&desc_bos.usb_desc_bos_platform.CapabilityData[4], &msos_desc_len, sizeof(int16_t)); // Update msos descriptor length in platform capabilityData
                                     // On the Mac, BOS desc is requested twice, first with wLength 5 (just usb_desc_bos_standard), then with length 33 (usb_desc_bos_standard + ),
                                     // while on Windows there's only one request of length 0xff.
-                                    // Set length appropriately
-                                    unsigned length = sp.wLength;
-                                    if(sp.wLength > sizeof(desc_bos))
-                                    {
-                                        length = sizeof(desc_bos);
-                                    }
-                                    result = XUD_DoGetRequest(ep0_out, ep0_in, (unsigned char*)&desc_bos, length, sp.wLength);
+                                    result = XUD_DoGetRequest(ep0_out, ep0_in, (unsigned char*)&desc_bos, sizeof(desc_bos), sp.wLength);
                                 }
                                 break;
                             }
@@ -1126,7 +1120,7 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
 
     if(result == XUD_RES_ERR)
     {
-#if (XUA_DFU_EN == 1)
+#if XUA_DFU_EN
         if (!DFU_mode_active)
         {
 #endif
@@ -1245,7 +1239,7 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
                 cfgDesc_Null, sizeof(cfgDesc_Null),
                 (char**)&g_strTable, sizeof(g_strTable)/sizeof(char *), &sp, g_curUsbSpeed);
 #endif
-#if (XUA_DFU_EN == 1)
+#if XUA_DFU_EN
         }
 
         else
@@ -1272,7 +1266,7 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
         g_curStreamAlt_Out = 0;
         g_curStreamAlt_In = 0;
 
-#if (XUA_DFU_EN == 1)
+#if XUA_DFU_EN
         if (DFUReportResetState(null))
         {
             if (!DFU_mode_active)

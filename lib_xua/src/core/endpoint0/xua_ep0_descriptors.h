@@ -107,7 +107,7 @@ typedef struct
     STR_TABLE_ENTRY(adatClockSourceStr);          /* iClockSource for external S/PDIF clock */
 #endif
 #endif // AUDIO_CLASS == 2
-#if (XUA_DFU_EN == 1)
+#if XUA_DFU_EN
     STR_TABLE_ENTRY(dfuStr);                      /* iInterface for DFU interface */
 #endif
 #if USB_CONTROL_DESCS
@@ -380,7 +380,7 @@ StringDescTable_t g_strTable =
     .adatClockSourceStr          = XUA_ADAT_CLOCK_SOURCE_EMPTY_STRING,
 #endif
 #endif // AUDIO_CLASS == 2
-#if (XUA_DFU_EN == 1)
+#if XUA_DFU_EN
     .dfuStr                      = XUA_DFU_EMPTY_STRING,
 #endif
 #if USB_CONTROL_DESCS
@@ -564,7 +564,7 @@ unsigned char devQualDesc_Null[] =
 #define AUDIO_PATH_XUS
 #endif
 
-#if (XUA_DFU_EN == 1)
+#if XUA_DFU_EN
 #define DFU_LENGTH                  (18)
 #else
 #define DFU_LENGTH                  (0)
@@ -781,7 +781,7 @@ typedef struct
     unsigned char itfDesc_control[9];
 #endif
 
-#if (XUA_DFU_EN == 1)
+#if XUA_DFU_EN
     /* DFU descriptors currently handled as a single block */
     unsigned char configDesc_DFU[DFU_LENGTH];
 #endif
@@ -2120,7 +2120,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
     },
 #endif
 
-#if (XUA_DFU_EN == 1)
+#if XUA_DFU_EN
     {
         CONFIG_DESC_DFU
     },
@@ -2359,7 +2359,7 @@ const unsigned num_freqs_a1 = MAX(3, (0
 #define MIDI_INTERFACES_A1    (0)
 #endif
 
-#if (XUA_DFU_EN == 1)
+#if XUA_DFU_EN
 #define DFU_INTERFACE_BYTES   DFU_LENGTH
 #define DFU_INTERFACES_A1     1
 #else
@@ -3021,7 +3021,7 @@ unsigned char cfgDesc_Audio1[] =
     0x03,                                 /* 4 BaAssocJackID(1) : ID of the Embedded MIDI OUT Jack. (field size 1 bytes) */
 #endif // MIDI
 
-#if (XUA_DFU_EN == 1)
+#if XUA_DFU_EN
     CONFIG_DESC_DFU,
 #endif
 
