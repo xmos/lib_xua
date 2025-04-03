@@ -56,7 +56,8 @@ void user_pdm_init();
  *
  *  \param mic_audio    Array of samples for in-place processing
  * 
- **/void user_pdm_process(int32_t mic_audio[MIC_ARRAY_CONFIG_MIC_COUNT]);
+ **/
+void user_pdm_process(int32_t mic_audio[MIC_ARRAY_CONFIG_MIC_COUNT]);
 
 #endif
 
