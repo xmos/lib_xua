@@ -37,7 +37,7 @@ void pwm_thread(chanend_t c_data)
                          2.8544, 2.8684735298,     // scale, limit
                          1.0/120000, -1.0/250000,  // flat_comp_x2, x3
                          3.0/157, 0.63/157,       // pwm comp x2, x3
-                         0);                       // negate
+                         1);                       // negate
 
     software_dac_hp(&sd, c_data);
 }
