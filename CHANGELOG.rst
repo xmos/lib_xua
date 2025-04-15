@@ -1,8 +1,8 @@
 lib_xua change log
 ==================
 
-UNRELEASED
-----------
+5.0.1
+-----
 
   * CHANGED:   Made `p_off_mclk` nullable for XUA_Buffer; this port is now only
     required either in configurations using Synchronous mode and using the
@@ -11,12 +11,23 @@ UNRELEASED
   * FIXED:     `p_mclk_in` and `clk_audio_bclk` now correctly nullable when I2S
     not in use.
   * FIXED:     Corrected `clk_audio_mclk` nullability for XUA_AudioHub; this
-    clock block is only required for configurations with ADAT TX
-  * FIXED:     Compiler error when PDM mics used an EXCLUDE_USB_AUDIO_MAIN is
+    clock block is only required for configurations with ADAT or SPDIF TX
+  * FIXED: Compilation error with NUM_USB_CHAN_IN=0, NUM_USB_CHAN_OUT=0 and
+    HID_CONTROLS=1 config
+  * FIXED: HID functionality with AUDIO_CLASS = 1
+  * FIXED: Alignment issue with HID_Descriptor memory that was causing
+    USB_GET_DESCRIPTOR for the HID interface to fail leading to failing USB3CV
+    HID Descriptor test
+  * ADDED: Support for setting wMaxPacketSize for MIDI bulk IN and OUT endpoints
+    at run time depending on g_curUsbSpeed
+  * ADDED:     Documented use of CHAN_BUFF_CTRL to save power
+  * FIXED:     Compiler error when PDM mics used and EXCLUDE_USB_AUDIO_MAIN is
     not defined.
   * CHANGED:   AN00248 updated so that it uses lib_xua main instead of own
     main function.
+  * Changes to dependencies:
 
+    - lib_xud: 2.4.0 -> 2.4.1
 
 5.0.0
 -----

@@ -613,7 +613,7 @@ int main()
         {
             /* Audio I/O task, includes mixing etc */
             usb_audio_io(
-#if (NUM_USB_CHAN_OUT > 0) || (NUM_USB_CHAN_IN > 0)
+#if (NUM_USB_CHAN_OUT > 0) || (NUM_USB_CHAN_IN > 0) || XUA_HID_ENABLED || defined(MIDI)
                 /* Connect audio system to XUA_Buffer(); */
                 c_mix_out
 #else

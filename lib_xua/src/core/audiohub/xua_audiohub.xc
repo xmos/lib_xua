@@ -671,17 +671,18 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
     }
 #endif
 
-#if (XUA_ADAT_TX_EN)
+#if (XUA_ADAT_TX_EN || XUA_SPDIF_TX_EN)
     xassert((!isnull(clk_audio_mclk) && !isnull(p_mclk_in)) && "Error: must provide non-null MCLK port and MCLK clock-block for ADAT Tx");
     /* Clock master clock-block from master-clock port */
     configure_clock_src(clk_audio_mclk, p_mclk_in);
+#if (XUA_ADAT_TX_EN)
     /* Set ADAT Tx port to be clock from master clock-block*/
     configure_out_port_no_ready(p_adat_tx, clk_audio_mclk, 0);
     set_clock_fall_delay(clk_audio_mclk, 7);
+#endif
     /* Start the master clock-block */
     start_clock(clk_audio_mclk);
 #endif
-
     /* Perform required CODEC/ADC/DAC initialisation */
     AudioHwInit();
 

@@ -730,7 +730,7 @@
  * @brief Device firmware version number in Binary Coded Decimal format: 0xJJMN where JJ: major, M: minor, N: sub-minor version number.
  */
 #ifndef BCD_DEVICE_N
-#define BCD_DEVICE_N             (0)
+#define BCD_DEVICE_N             (1)
 #endif
 
 /**
@@ -1658,5 +1658,17 @@ enum USBEndpointNumber_Out
  */
 #ifndef WINUSB_DEVICE_INTERFACE_GUID
 #define WINUSB_DEVICE_INTERFACE_GUID               "{89C14132-D389-4FF7-944E-2E33379BB59D}"
+#endif
+
+/**
+ * @brief Enable power saving feature in XUA_Buffer_Decouple()
+ *
+ * If set to 1 then a channel is instantiated between the XUA_Buffer_Ep() and XUA_Buffer_Decouple()
+ * tasks (which together form the buffer between XUD and Audio) that limits shared memory polling
+ * in XUA_Buffer_Ep() to occur only when a change has been made by XUA_Buffer_Decouple().
+ * This significantly reduces core power at the cost of two channel ends on the USB_TILE.
+ */
+#if defined(CHAN_BUFF_CTRL) && (CHAN_BUFF_CTRL == 0)
+#undef CHAN_BUFF_CTRL
 #endif
 

@@ -478,6 +478,7 @@ static void update_guid_in_msos_desc(const char *guid_str)
 }
 #endif
 
+unsigned char __attribute__((aligned (4))) hid_desc_word_aligned[sizeof(USB_HID_Descriptor_t)];
 void XUA_Endpoint0_init(chanend c_ep0_out, chanend c_ep0_in, NULLABLE_RESOURCE(chanend, c_aud_ctl),
     chanend c_mix_ctl, chanend c_clk_ctl, chanend c_EANativeTransport_ctrl, CLIENT_INTERFACE(i_dfu, dfuInterface) VENDOR_REQUESTS_PARAMS_DEC_)
 {
@@ -583,12 +584,11 @@ void XUA_Endpoint0_init(chanend c_ep0_out, chanend c_ep0_in, NULLABLE_RESOURCE(c
     cfgDesc_Audio1[USB_HID_DESCRIPTOR_OFFSET + HID_DESCRIPTOR_LENGTH_FIELD_OFFSET    ] = hidReportDescriptorLengthLo;
     cfgDesc_Audio1[USB_HID_DESCRIPTOR_OFFSET + HID_DESCRIPTOR_LENGTH_FIELD_OFFSET + 1] = hidReportDescriptorLengthHi;
 #endif
-
     hidDescriptor[HID_DESCRIPTOR_LENGTH_FIELD_OFFSET    ] = hidReportDescriptorLengthLo;
     hidDescriptor[HID_DESCRIPTOR_LENGTH_FIELD_OFFSET + 1] = hidReportDescriptorLengthHi;
 
+    memcpy(hid_desc_word_aligned, hidDescriptor, hidDescriptor[0]); // Copy to a word-aligned address that can be safely sent to XUD_DoGetRequest()
 #endif // 0 < HID_CONTROLS
-
 }
 
 void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0_out, chanend c_ep0_in, NULLABLE_RESOURCE(chanend, c_aud_ctl),
@@ -804,8 +804,8 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
                                 case HID_HID:
                                     {
                                         /* Return HID Descriptor */
-                                         result = XUD_DoGetRequest(ep0_out, ep0_in, hidDescriptor,
-                                            hidDescriptor[0], sp.wLength);
+                                        result = XUD_DoGetRequest(ep0_out, ep0_in, hid_desc_word_aligned,
+                                            hid_desc_word_aligned[0], sp.wLength);
                                     }
                                     break;
                                 case HID_REPORT:
@@ -1152,6 +1152,10 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
                 cfgDesc_Audio2.Audio_In_Endpoint.wMaxPacketSize = HS_STREAM_FORMAT_INPUT_1_MAXPACKETSIZE;
                 cfgDesc_Audio2.Audio_In_ClassStreamInterface.bNrChannels = NUM_USB_CHAN_IN;
 #endif
+#if MIDI
+                cfgDesc_Audio2.MIDI_Descriptors.MIDI_Standard_Bulk_OUT_Endpoint.wMaxPacketSize = 512;
+                cfgDesc_Audio2.MIDI_Descriptors.MIDI_Standard_Bulk_IN_Endpoint.wMaxPacketSize = 512;
+#endif
             }
             else
             {
@@ -1184,6 +1188,10 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
                 cfgDesc_Audio2.Audio_In_Format.bBitResolution = FS_STREAM_FORMAT_INPUT_1_RESOLUTION_BITS;
                 cfgDesc_Audio2.Audio_In_Endpoint.wMaxPacketSize = FS_STREAM_FORMAT_INPUT_1_MAXPACKETSIZE;
                 cfgDesc_Audio2.Audio_In_ClassStreamInterface.bNrChannels = NUM_USB_CHAN_IN_FS;
+#endif
+#if MIDI
+                cfgDesc_Audio2.MIDI_Descriptors.MIDI_Standard_Bulk_OUT_Endpoint.wMaxPacketSize = 64;
+                cfgDesc_Audio2.MIDI_Descriptors.MIDI_Standard_Bulk_IN_Endpoint.wMaxPacketSize = 64;
 #endif
             }
 
