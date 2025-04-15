@@ -2451,7 +2451,7 @@ unsigned char cfgDesc_Audio1[] =
 #endif
     _XUA_BMAX_POWER,                           /* 8  bMaxPower */
 
-#if ((NUM_USB_CHAN_OUT > 0) || (NUM_USB_CHAN_OUT > 0))
+#if ((NUM_USB_CHAN_IN > 0) || (NUM_USB_CHAN_OUT > 0))
     /* Standard AC interface descriptor */
     0x09,
     USB_DESCTYPE_INTERFACE,

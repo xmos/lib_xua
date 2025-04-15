@@ -11,7 +11,7 @@ The XMOS USB Audio (XUA) library provides an implementation of USB Audio Class v
 This application note demonstrates the implementation of a basic USB Audio Device with
 record functionality from PDM microphones on the `XK-EVK-XU316 <https://www.xmos.com/xk-evk-xu316>`_ board.
 
-Core PDM microphone functionality is contained in` ``lib_mic_array``. This library includes both the physical
+Core PDM microphone functionality is contained in ``lib_mic_array``. This library includes both the physical
 interfacing to the PDM microphones as well as efficient decimation to user configurable output
 sample rates - essentially providing PDM to PCM conversion.
 
@@ -60,26 +60,18 @@ This implementation of a USB Audio device using ``lib_xua`` requires the followi
 
 On an xCORE the pins are controlled by ``ports``. The main application application therefore declares a
 port for the master clock input signal.
+The ``main()`` function that is provided within `lib_xua <https://github.com/xmos/lib_xua/blob/develop/lib_xua/src/core/main.xc>`_ itself
+has these ports defined. Look for ``p_i2s_dac``, ``p_lrclk``, ``p_bclk`` and ``p_mclk_in`` in
+`lib_xua main.xc <https://github.com/xmos/lib_xua/blob/develop/lib_xua/src/core/main.xc>`_
 
-.. literalinclude:: ../../src/app_xua_pdm_mics.xc
-   :start-at: /* Port declarations.
-   :end-at: in port p_mclk_in
 
 ``lib_xua`` also requires two ports for internally calculating USB feedback. Please refer to
 the ``lib_xua`` library documentation for further details.  In this example ``XUA_Buffer()`` and ``XUA_AudioHub()``
 reside on the same tile and can therefore make use of the same master-clock port.
+These are defined as ``p_for_mclk_count`` and ``p_mclk_in_usb`` in the ``main()`` function in `lib_xua`.
 
-These ports are declared as follows:
-
-.. literalinclude:: ../../src/app_xua_pdm_mics.xc
-   :start-at: /* Resources for USB feedback
-   :end-at: in port p_mclk_in_usb
-
-In addition to ``port`` resources a single clock-block resource is also required:
-
-.. literalinclude:: ../../src/app_xua_pdm_mics.xc
-   :start-at: /* Clock-block declarations
-   :end-at: clock clk_audio_mclk_usb
+In addition to ``port`` resources, some clock-block resources (``clk_audio_bclk``, ``clk_audio_mclk`` and ``clk_audio_mclk_usb``),
+also defined in the ``main()`` function in `lib_xua`, are required.
 
 
 Allocating hardware resources for lib_mic_array
@@ -113,7 +105,12 @@ Configuring lib_xua
 
 ``lib_xua`` has many parameters than can be configured at build time, some examples include:
 
-    - Supported sample-rates (Note ``lib_mic_array`` does not currently support sample rate change after initialisation)
+    - Supported sample-rates
+
+    .. note::
+
+      ``lib_mic_array`` does not currently support sample rate change after initialisation
+
     - Channel counts
     - Audio Class version
     - Product/Vendor IDs
@@ -133,42 +130,38 @@ complete contents of this file are as follows:
 You can try changing ``XUA_PDM_MIC_FREQ`` to 32000 or 16000 to reconfigure the system to lower sample rates than the default 48 kHz.
 
 
-Adding Tasks
-============
+The application ``main()`` function
+===================================
 
-User callbacks
-==============
-
-The ``main()`` function is provided within ``lib_xua`` itself however there are a number of callbacks which allow 
-for customisation of the application.
-
-Hardware Support
-----------------
-
-Various channels are required in order to allow the required tasks to communicate.
-These must first be declared:
-
-.. literalinclude:: ../../src/hwsupport.xc
-
-
-Standard ``lib_xua`` tasks
---------------------------
-
-The rest of the ``main()`` function starts all of the tasks in parallel
-using the xC ``par`` construct.
-
-.. literalinclude:: ../../src/user_callbacks.xc
-
+The ``main()`` function is provided within `lib_xua <https://github.com/xmos/lib_xua/blob/develop/lib_xua/src/core/main.xc>`_ itself
+and it starts all of the tasks in parallel using the xC ``par`` construct.
 
 Firstly the standard ``lib_xua`` USB side tasks are run on tile 0. This code starts the low-level USB task and an Endpoint 0 task. The Audio buffering task and a task to handle
 the audio I/O (``XUA_AudioHub``) is started on tile 1 where the I2S bus exists.
 
-Microphone task
----------------
-
 The microphone task ``mic_array_task`` spawns a single thread which handles PDM receive on the ports and the decimation filters to produce PCM.
 This is placed on tile 1 where the microphone hardware is connected.
 It connects directly to ``XUA_AudioHub`` and provides samples which are at the same rate as the audio I/O.
+
+User callbacks
+--------------
+
+While the ``main()`` function is provided within ``lib_xua`` itself, there are a number of callbacks which allow
+for customisation of the application.
+
+The DAC is configured by ``AudioHwInit()`` function in `hwsupport.xc`, which calls Audio hardware initialisation
+functions for the relevant hardware from ``lib_board_support``
+
+.. literalinclude:: ../../src/hwsupport.xc
+   :start-at: #include "xua.h"
+   :end-before: /* Configures the external
+
+Callback functions ``UserBufferManagement()`` and ``user_pdm_process()`` are defined in `user_callbacks.xc`.
+Both these functions are called from the main loop in ``XUA_AudioHub()``.
+``user_pdm_process()`` implements the PCM sample post processing, which for this example is a simple scaling by a factor of 64
+to allow the mic captured audio to be heard easily. ``UserBufferManagement()`` routes the mic samples to the DAC.
+
+.. literalinclude:: ../../src/user_callbacks.xc
 
 
 |newpage|

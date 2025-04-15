@@ -23,8 +23,9 @@ lib_xua change log
   * ADDED:     Documented use of CHAN_BUFF_CTRL to save power
   * FIXED:     Compiler error when PDM mics used and EXCLUDE_USB_AUDIO_MAIN is
     not defined.
-  * CHANGED:   AN00248 updated so that it uses lib_xua main instead of own
-    main function.
+  * CHANGED:   AN00248 updated so that it uses lib_xua main instead of own main
+    function.
+
   * Changes to dependencies:
 
     - lib_xud: 2.4.0 -> 2.4.1
