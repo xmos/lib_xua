@@ -713,18 +713,26 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
                         if (sp.wValue && !num_input_interfaces)
                         {
                             UserAudioInputStreamStart();
+                            outct(c_aud_ctl, SET_STREAM_INPUT_START);
+                            chkct(c_aud_ctl, XS1_CT_END);
                             if (!num_output_interfaces)
                             {
                                 UserAudioStreamStart();
+                                outct(c_aud_ctl, SET_STREAM_START);
+                                chkct(c_aud_ctl, XS1_CT_END);
                             }
                         }
                         // in: 1 -> 0
                         else if (!sp.wValue && num_input_interfaces)
                         {
                             UserAudioInputStreamStop();
+                            outct(c_aud_ctl, SET_STREAM_INPUT_STOP);
+                            chkct(c_aud_ctl, XS1_CT_END);
                             if (!num_output_interfaces)
                             {
                                 UserAudioStreamStop();
+                                outct(c_aud_ctl, SET_STREAM_STOP);
+                                chkct(c_aud_ctl, XS1_CT_END);
                             }
                         }
                     }
@@ -734,18 +742,26 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
                         if (sp.wValue && !num_output_interfaces)
                         {
                             UserAudioOutputStreamStart();
+                            outct(c_aud_ctl, SET_STREAM_OUTPUT_START);
+                            chkct(c_aud_ctl, XS1_CT_END);
                             if (!num_input_interfaces)
                             {
                                 UserAudioStreamStart();
+                                outct(c_aud_ctl, SET_STREAM_START);
+                                chkct(c_aud_ctl, XS1_CT_END);
                             }
                         }
                         // out: 1 -> 0
                         else if (!sp.wValue && num_output_interfaces)
                         {
                             UserAudioOutputStreamStop();
+                            outct(c_aud_ctl, SET_STREAM_OUTPUT_STOP);
+                            chkct(c_aud_ctl, XS1_CT_END);
                             if (!num_input_interfaces)
                             {
                                 UserAudioStreamStop();
+                                outct(c_aud_ctl, SET_STREAM_STOP);
+                                chkct(c_aud_ctl, XS1_CT_END);
                             }
                         }
                     }
@@ -756,13 +772,21 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
                         {
                             /* if start and not currently running */
                             UserAudioStreamStart();
+                            outct(c_aud_ctl, SET_STREAM_START);
+                            chkct(c_aud_ctl, XS1_CT_END);
                             UserAudioOutputStreamStart();
+                            outct(c_aud_ctl, SET_STREAM_OUTPUT_START);
+                            chkct(c_aud_ctl, XS1_CT_END);
                         }
                         else if (!sp.wValue && g_interfaceAlt[INTERFACE_NUMBER_AUDIO_OUTPUT])
                         {
                             /* if stop and currently running */
                             UserAudioStreamStop();
+                            outct(c_aud_ctl, SET_STREAM_STOP);
+                            chkct(c_aud_ctl, XS1_CT_END);
                             UserAudioOutputStreamStop();
+                            outct(c_aud_ctl, SET_STREAM_OUTPUT_STOP);
+                            chkct(c_aud_ctl, XS1_CT_END);
                         }
                     }
 #elif (NUM_USB_CHAN_IN > 0)
@@ -772,13 +796,21 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
                         {
                             /* if start and not currently running */
                             UserAudioStreamStart();
+                            outct(c_aud_ctl, SET_STREAM_START);
+                            chkct(c_aud_ctl, XS1_CT_END);
                             UserAudioInputStreamStart();
+                            outct(c_aud_ctl, SET_STREAM_INPUT_START);
+                            chkct(c_aud_ctl, XS1_CT_END);
                         }
                         else if (!sp.wValue && g_interfaceAlt[INTERFACE_NUMBER_AUDIO_INPUT])
                         {
                             /* if stop and currently running */
                             UserAudioStreamStop();
+                            outct(c_aud_ctl, SET_STREAM_STOP);
+                            chkct(c_aud_ctl, XS1_CT_END);
                             UserAudioInputStreamStop();
+                            outct(c_aud_ctl, SET_STREAM_INPUT_STOP);
+                            chkct(c_aud_ctl, XS1_CT_END);
                         }
                     }
 #endif

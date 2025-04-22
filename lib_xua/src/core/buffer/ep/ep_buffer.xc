@@ -541,11 +541,22 @@ void XUA_Buffer_Ep(
                     }
 #endif
                 }
-#endif
+#endif /* (AUDIO_CLASS == 2) */
+                else if (cmd == SET_STREAM_START || cmd == SET_STREAM_INPUT_START || cmd == SET_STREAM_OUTPUT_START)
+                {
+                    /* Do nothing for now - just let cmd propagate through to decouple */
+                }
+                else if (cmd == SET_STREAM_STOP || cmd == SET_STREAM_INPUT_STOP || cmd == SET_STREAM_OUTPUT_STOP)
+                {
+                    /* Do nothing for now - just let cmd propagate through to decouple */
+                }
+
                 /* Pass on sample freq change to decouple() via global flag (saves a chanend) */
                 /* Note: freqChange_flag now used to communicate other commands also */
                 SET_SHARED_GLOBAL0(g_freqChange, cmd);                /* Set command */
                 SET_SHARED_GLOBAL(g_freqChange_flag, cmd);            /* Set Flag */
+
+                /* Note no chk_ct(c, XS1_CT_END) because this is done in decouple */
                 break;
             }
 #if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC) && (!XUA_USE_SW_PLL)

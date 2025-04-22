@@ -948,7 +948,15 @@ void XUA_Buffer_Decouple(chanend c_mix_out
                 SET_SHARED_GLOBAL(g_freqChange, 0);
                 ENABLE_INTERRUPTS();
             }
-#endif
+#endif /* (AUDIO_CLASS == 2) */
+            else if (tmp == SET_STREAM_START || tmp == SET_STREAM_INPUT_START || tmp == SET_STREAM_OUTPUT_START)
+            {
+                asm volatile("outct res[%0],%1"::"r"(buffer_aud_ctl_chan),"r"(XS1_CT_END));
+            }
+            else if (tmp == SET_STREAM_STOP || tmp == SET_STREAM_INPUT_STOP || tmp == SET_STREAM_OUTPUT_STOP)
+            {
+                asm volatile("outct res[%0],%1"::"r"(buffer_aud_ctl_chan),"r"(XS1_CT_END));
+            }
         }
 
 #if (NUM_USB_CHAN_OUT > 0)
