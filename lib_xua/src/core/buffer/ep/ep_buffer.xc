@@ -5,6 +5,7 @@
 #include <xs1.h>
 #include <stdint.h>
 #include <xassert.h>
+#include <print.h>
 
 #include "xc_ptr.h"
 #include "xua_commands.h"
@@ -545,10 +546,12 @@ void XUA_Buffer_Ep(
                 else if (cmd == SET_STREAM_START || cmd == SET_STREAM_INPUT_START || cmd == SET_STREAM_OUTPUT_START)
                 {
                     /* Do nothing for now - just let cmd propagate through to decouple */
+                    printstrln("buff stream start");
                 }
                 else if (cmd == SET_STREAM_STOP || cmd == SET_STREAM_INPUT_STOP || cmd == SET_STREAM_OUTPUT_STOP)
                 {
                     /* Do nothing for now - just let cmd propagate through to decouple */
+                    printstrln("buff stream stop");
                 }
 
                 /* Pass on sample freq change to decouple() via global flag (saves a chanend) */
