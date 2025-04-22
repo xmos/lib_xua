@@ -928,8 +928,15 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
                         /* Note, we shouldn't reach here. Audio, once stopped for DFU, cannot be resumed */
                     }
                 }
-#endif
-
+#endif /* (XUA_DFU_EN == 1) */
+                else if (command == SET_STREAM_START || command == SET_STREAM_INPUT_START || command == SET_STREAM_OUTPUT_START)
+                {
+                    printstr("aud stream start ");printintln(command);
+                }
+                else if (command == SET_STREAM_STOP || command == SET_STREAM_INPUT_STOP || command == SET_STREAM_OUTPUT_STOP)
+                {
+                    printstr("aud stream stop ");printintln(command);
+                }
 #endif /* XUA_USB_EN */
 
 #if XUA_NUM_PDM_MICS > 0
@@ -944,7 +951,7 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
 #endif
                 /* Notify ADAT Tx thread of impending new freq... */
                 outct(c_adat_out, XS1_CT_END);
-#endif
+#endif /* XUA_ADAT_TX_EN) */
             }
         }
     }

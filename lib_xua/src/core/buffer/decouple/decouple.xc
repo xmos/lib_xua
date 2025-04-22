@@ -954,6 +954,13 @@ void XUA_Buffer_Decouple(chanend c_mix_out
                 DISABLE_INTERRUPTS();
                 SET_SHARED_GLOBAL(g_freqChange_flag, 0);
                 printstr("dcpl stream start ");printintln(tmp);
+
+                /* Forward command to audio - this will cause the audio loop to break */
+                inuint(c_mix_out);
+                outct(c_mix_out, tmp);
+                chkct(c_mix_out, XS1_CT_END);
+
+                /* ACK back to EP0 */
                 asm volatile("outct res[%0],%1"::"r"(buffer_aud_ctl_chan),"r"(XS1_CT_END));
                 ENABLE_INTERRUPTS();
             }
@@ -962,6 +969,13 @@ void XUA_Buffer_Decouple(chanend c_mix_out
                 DISABLE_INTERRUPTS();
                 SET_SHARED_GLOBAL(g_freqChange_flag, 0);
                 printstr("dcpl stream stop ");printintln(tmp);
+
+                /* Forward command to audio - this will cause the audio loop to break */
+                inuint(c_mix_out);
+                outct(c_mix_out, tmp);
+                chkct(c_mix_out, XS1_CT_END);
+
+                /* ACK back to EP0 */
                 asm volatile("outct res[%0],%1"::"r"(buffer_aud_ctl_chan),"r"(XS1_CT_END));
                 ENABLE_INTERRUPTS();
             }
