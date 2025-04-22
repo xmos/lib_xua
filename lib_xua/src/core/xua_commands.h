@@ -24,10 +24,17 @@ enum
     CLOCK_COUNT
 };
 
-/* c_aud_ctl */
+/* c_aud_ctl commands 
+   Any command will cause the audioloop to break and restart*/
 #define SET_SAMPLE_FREQ         4
 #define SET_STREAM_FORMAT_OUT   8
 #define SET_STREAM_FORMAT_IN    9
+#define SET_STREAM_START        10
+#define SET_STREAM_STOP         11
+#define SET_STREAM_INPUT_START  12
+#define SET_STREAM_INPUT_STOP   13
+#define SET_STREAM_OUTPUT_START 14
+#define SET_STREAM_OUTPUT_STOP  15
 
 #include "dsd_support.h"
 

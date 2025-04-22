@@ -948,7 +948,37 @@ void XUA_Buffer_Decouple(chanend c_mix_out
                 SET_SHARED_GLOBAL(g_freqChange, 0);
                 ENABLE_INTERRUPTS();
             }
-#endif
+#endif /* (AUDIO_CLASS == 2) */
+            else if (tmp == SET_STREAM_START || tmp == SET_STREAM_INPUT_START || tmp == SET_STREAM_OUTPUT_START)
+            {
+                DISABLE_INTERRUPTS();
+                SET_SHARED_GLOBAL(g_freqChange_flag, 0);
+                printstr("dcpl stream start ");printintln(tmp);
+
+                /* Forward command to audio - this will cause the audio loop to break */
+                inuint(c_mix_out);
+                outct(c_mix_out, tmp);
+                chkct(c_mix_out, XS1_CT_END);
+
+                /* ACK back to EP0 */
+                asm volatile("outct res[%0],%1"::"r"(buffer_aud_ctl_chan),"r"(XS1_CT_END));
+                ENABLE_INTERRUPTS();
+            }
+            else if (tmp == SET_STREAM_STOP || tmp == SET_STREAM_INPUT_STOP || tmp == SET_STREAM_OUTPUT_STOP)
+            {
+                DISABLE_INTERRUPTS();
+                SET_SHARED_GLOBAL(g_freqChange_flag, 0);
+                printstr("dcpl stream stop ");printintln(tmp);
+
+                /* Forward command to audio - this will cause the audio loop to break */
+                inuint(c_mix_out);
+                outct(c_mix_out, tmp);
+                chkct(c_mix_out, XS1_CT_END);
+
+                /* ACK back to EP0 */
+                asm volatile("outct res[%0],%1"::"r"(buffer_aud_ctl_chan),"r"(XS1_CT_END));
+                ENABLE_INTERRUPTS();
+            }
         }
 
 #if (NUM_USB_CHAN_OUT > 0)

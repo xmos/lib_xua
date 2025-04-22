@@ -645,7 +645,7 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
 
                                     if(g_curUsbSpeed == XUD_SPEED_HS)
                                     {
-                                        outuint(c_aud_ctl, g_chanCount_Out_HS[sp.wValue-1]);                 /* Channel count */
+                                        outuint(c_aud_ctl, g_chanCount_Out_HS[sp.wValue-1]);  /* Channel count */
                                         outuint(c_aud_ctl, g_subSlot_Out_HS[sp.wValue-1]);    /* Subslot */
                                         outuint(c_aud_ctl, g_sampRes_Out_HS[sp.wValue-1]);    /* Resolution */
                                     }
@@ -720,83 +720,129 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
                         default:
                             /* Unhandled interface */
                             break;
-                    }
+                    } /* switch(sp.wIndex) */
 
+                    /* Now send notification of Alt IF change to rest of XUA */
 #if (NUM_USB_CHAN_OUT > 0) && (NUM_USB_CHAN_IN > 0)
-                    unsigned num_input_interfaces = g_interfaceAlt[INTERFACE_NUMBER_AUDIO_INPUT];
-                    unsigned num_output_interfaces = g_interfaceAlt[INTERFACE_NUMBER_AUDIO_OUTPUT];
+                    unsigned oldStreamAlt_In = g_interfaceAlt[INTERFACE_NUMBER_AUDIO_INPUT];
+                    unsigned oldStreamAlt_Out = g_interfaceAlt[INTERFACE_NUMBER_AUDIO_OUTPUT];
                     if (sp.wIndex == INTERFACE_NUMBER_AUDIO_INPUT)
                     {
                         // in: 0 -> 1
-                        if (sp.wValue && !num_input_interfaces)
+                        g_curStreamAlt_In = sp.wValue;
+                        printstr("g_curStreamAlt_In ");printuintln(g_curStreamAlt_In);
+                        if ((g_curStreamAlt_In > 0) && (oldStreamAlt_In == 0))
                         {
                             UserAudioInputStreamStart();
-                            if (!num_output_interfaces)
+                            outct(c_aud_ctl, SET_STREAM_INPUT_START);
+                            chkct(c_aud_ctl, XS1_CT_END);
+                            if (!oldStreamAlt_Out)
                             {
                                 UserAudioStreamStart();
+                                outct(c_aud_ctl, SET_STREAM_START);
+                                chkct(c_aud_ctl, XS1_CT_END);
                             }
                         }
                         // in: 1 -> 0
-                        else if (!sp.wValue && num_input_interfaces)
+                        else if ((g_curStreamAlt_In == 0) && (oldStreamAlt_In > 0))
                         {
                             UserAudioInputStreamStop();
-                            if (!num_output_interfaces)
+                            outct(c_aud_ctl, SET_STREAM_INPUT_STOP);
+                            chkct(c_aud_ctl, XS1_CT_END);
+                            if (!oldStreamAlt_Out)
                             {
                                 UserAudioStreamStop();
+                                outct(c_aud_ctl, SET_STREAM_STOP);
+                                chkct(c_aud_ctl, XS1_CT_END);
                             }
                         }
                     }
                     else if (sp.wIndex == INTERFACE_NUMBER_AUDIO_OUTPUT)
                     {
                         // out: 0 -> 1
-                        if (sp.wValue && !num_output_interfaces)
+                        g_curStreamAlt_Out = sp.wValue;
+                        printstr("g_curStreamAlt_Out ");printuintln(g_curStreamAlt_Out);
+                        if ((g_curStreamAlt_Out > 0) && (oldStreamAlt_Out == 0))
                         {
                             UserAudioOutputStreamStart();
-                            if (!num_input_interfaces)
+                            outct(c_aud_ctl, SET_STREAM_OUTPUT_START);
+                            chkct(c_aud_ctl, XS1_CT_END);
+                            if (!oldStreamAlt_In)
                             {
                                 UserAudioStreamStart();
+                                outct(c_aud_ctl, SET_STREAM_START);
+                                chkct(c_aud_ctl, XS1_CT_END);
                             }
                         }
                         // out: 1 -> 0
-                        else if (!sp.wValue && num_output_interfaces)
+                        else if ((g_curStreamAlt_Out == 0) && (oldStreamAlt_Out > 0))
                         {
                             UserAudioOutputStreamStop();
-                            if (!num_input_interfaces)
+                            outct(c_aud_ctl, SET_STREAM_OUTPUT_STOP);
+                            chkct(c_aud_ctl, XS1_CT_END);
+                            if (!oldStreamAlt_In)
                             {
                                 UserAudioStreamStop();
+                                outct(c_aud_ctl, SET_STREAM_STOP);
+                                chkct(c_aud_ctl, XS1_CT_END);
                             }
                         }
                     }
 #elif (NUM_USB_CHAN_OUT > 0)
+                    unsigned oldStreamAlt_Out = g_interfaceAlt[INTERFACE_NUMBER_AUDIO_OUTPUT];
+                    printstr("oldStreamAlt_Out ");printuintln(oldStreamAlt_Out);
+
                     if(sp.wIndex == INTERFACE_NUMBER_AUDIO_OUTPUT)
                     {
-                        if(sp.wValue && (!g_interfaceAlt[INTERFACE_NUMBER_AUDIO_OUTPUT]))
+                        g_curStreamAlt_Out = sp.wValue;
+                        printstr("g_curStreamAlt_Out ");printuintln(g_curStreamAlt_Out);
+
+                        if((g_curStreamAlt_Out > 0) && (oldStreamAlt_Out == 0))
                         {
                             /* if start and not currently running */
                             UserAudioStreamStart();
+                            outct(c_aud_ctl, SET_STREAM_START);
+                            chkct(c_aud_ctl, XS1_CT_END);
                             UserAudioOutputStreamStart();
+                            outct(c_aud_ctl, SET_STREAM_OUTPUT_START);
+                            chkct(c_aud_ctl, XS1_CT_END);
                         }
-                        else if (!sp.wValue && g_interfaceAlt[INTERFACE_NUMBER_AUDIO_OUTPUT])
+                        else if ((g_curStreamAlt_Out == 0) && (oldStreamAlt_Out > 0))
                         {
                             /* if stop and currently running */
                             UserAudioStreamStop();
+                            outct(c_aud_ctl, SET_STREAM_STOP);
+                            chkct(c_aud_ctl, XS1_CT_END);
                             UserAudioOutputStreamStop();
+                            outct(c_aud_ctl, SET_STREAM_OUTPUT_STOP);
+                            chkct(c_aud_ctl, XS1_CT_END);
                         }
                     }
 #elif (NUM_USB_CHAN_IN > 0)
+                    unsigned oldStreamAlt_In = g_interfaceAlt[INTERFACE_NUMBER_AUDIO_INPUT];
                     if(sp.wIndex == INTERFACE_NUMBER_AUDIO_INPUT)
                     {
-                        if(sp.wValue && (!g_interfaceAlt[INTERFACE_NUMBER_AUDIO_INPUT]))
+                        g_curStreamAlt_In = sp.wValue;
+                        printstr("g_curStreamAlt_In ");printuintln(g_curStreamAlt_In);
+                        if((g_curStreamAlt_In > 0) && (oldStreamAlt_In == 0))
                         {
                             /* if start and not currently running */
                             UserAudioStreamStart();
+                            outct(c_aud_ctl, SET_STREAM_START);
+                            chkct(c_aud_ctl, XS1_CT_END);
                             UserAudioInputStreamStart();
+                            outct(c_aud_ctl, SET_STREAM_INPUT_START);
+                            chkct(c_aud_ctl, XS1_CT_END);
                         }
-                        else if (!sp.wValue && g_interfaceAlt[INTERFACE_NUMBER_AUDIO_INPUT])
+                        else if ((g_curStreamAlt_In == 0) && (oldStreamAlt_In > 0))
                         {
                             /* if stop and currently running */
                             UserAudioStreamStop();
+                            outct(c_aud_ctl, SET_STREAM_STOP);
+                            chkct(c_aud_ctl, XS1_CT_END);
                             UserAudioInputStreamStop();
+                            outct(c_aud_ctl, SET_STREAM_INPUT_STOP);
+                            chkct(c_aud_ctl, XS1_CT_END);
                         }
                     }
 #endif

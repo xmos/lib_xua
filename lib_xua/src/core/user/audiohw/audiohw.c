@@ -9,6 +9,12 @@ void AudioHwInit()
     return;
 }
 
+void AudioHwDeInit() __attribute__ ((weak));
+void AudioHwDeInit()
+{
+    return;
+}
+
 void AudioHwConfig(unsigned samFreq, unsigned mClk, unsigned dsdMode, unsigned sampRes_DAC, unsigned sampRes_ADC) __attribute__ ((weak));
 void AudioHwConfig(unsigned samFreq, unsigned mClk, unsigned dsdMode, unsigned sampRes_DAC, unsigned sampRes_ADC)
 {
