@@ -83,6 +83,6 @@ static inline unsigned DoSampleTransfer(chanend ?c_out, const int readBuffNo, co
         UserBufferManagement(samplesOut, samplesIn[readBuffNo]);
     }
 
-    return 0;
+    return XUA_AUDCTL_NO_COMMAND;
 }
 

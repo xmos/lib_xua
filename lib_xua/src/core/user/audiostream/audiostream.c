@@ -40,3 +40,10 @@ void UserAudioOutputStreamStart()
 {
     return;
 }
+
+
+void UserAudioStreamState(int inputActive, int outputActive) __attribute__ ((weak));
+void UserAudioStreamState(int inputActive, int outputActive)
+{
+
+}

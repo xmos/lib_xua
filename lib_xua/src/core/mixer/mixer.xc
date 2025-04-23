@@ -554,13 +554,9 @@ static void mixer1(chanend c_host, chanend c_mix_ctl, chanend ?c_mixer2, chanend
                     outuint(c_audio, inuint(c_host));
                     outuint(c_audio, inuint(c_host));
                     break;
-                    
-                case SET_STREAM_START:
-                case SET_STREAM_INPUT_START:
-                case SET_STREAM_OUTPUT_START:
-                case SET_STREAM_STOP:
-                case SET_STREAM_INPUT_STOP:
-                case SET_STREAM_OUTPUT_STOP:
+
+                case SET_AUDIO_START:
+                case SET_AUDIO_STOP:
                     /* Pass on command */
                     outct(c_audio, command);
                     break;

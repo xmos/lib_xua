@@ -51,5 +51,8 @@ void UserAudioOutputStreamStart(void);
  */
 void UserAudioOutputStreamStop(void);
 
+
+void UserAudioStreamState(int inputActive, int outputActive);
+
 #endif
 
