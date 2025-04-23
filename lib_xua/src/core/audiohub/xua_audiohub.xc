@@ -892,6 +892,7 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
                 if(command == SET_SAMPLE_FREQ)
                 {
                     curSamFreq = inuint(c_aud) * AUD_TO_USB_RATIO;
+                    printstr("aud set sr ");printintln(command);
                 }
                 else if(command == SET_STREAM_FORMAT_OUT)
                 {
@@ -901,6 +902,7 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
                      */
                     dsdMode = inuint(c_aud);
                     curSamRes_DAC = inuint(c_aud);
+                    printstr("aud stream format out ");printintln(command);
                 }
 
 #if (XUA_DFU_EN == 1)
@@ -937,6 +939,10 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
                 {
                     printstr("aud stream stop ");printintln(command);
                 }
+                else
+                {
+                    printstr("aud unhandled cmd ");printintln(command);
+                }
 #endif /* XUA_USB_EN */
 
 #if XUA_NUM_PDM_MICS > 0
@@ -952,7 +958,7 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
                 /* Notify ADAT Tx thread of impending new freq... */
                 outct(c_adat_out, XS1_CT_END);
 #endif /* XUA_ADAT_TX_EN) */
-            }
-        }
-    }
+            } /* AudioHub_MainLoop and command handler */
+        } /* par */
+    } /* while(1)*/
 }
