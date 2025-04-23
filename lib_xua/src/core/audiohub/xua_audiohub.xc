@@ -9,6 +9,12 @@
  * Additionally this thread handles clocking and CODEC/DAC/ADC config.
  **/
 
+#include <xccompat.h>
+extern "C" {
+#include "sw_pll.h"
+}
+
+
 #include <syscall.h>
 #include <platform.h>
 #include <xs1.h>
@@ -661,10 +667,10 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
     unsigned mClk;
     unsigned divide;
     unsigned audio_active = 1;
+    unsigned firstRun = 1;
 
     while(1)
     {
-    unsigned firstRun = 1;
 #if (DSD_CHANS_DAC > 0)
         /* Make sure the DSD ports are on and buffered - just in case they are not shared with I2S */
         EnableBufferedPort(p_dsd_clk, 32);
@@ -915,6 +921,7 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
                     else if (command == SET_AUDIO_STOP)
                     {
                         printstr("aud stream stop ");printintln(command);
+                        audio_active = 0;
                     }
                     else
                     {
@@ -967,5 +974,10 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
         } /* while(audio_active) */
 
         AudioHwDeInit();
+        printstr("IDLE...\n");
+        sw_pll_fixed_clock(0);
+        delay_seconds(3);
+        printstr("...FIN\n");
+        audio_active = 1;
     } /* while(1)*/
 }

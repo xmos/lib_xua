@@ -979,7 +979,6 @@ void XUA_Buffer_Decouple(chanend c_mix_out
 
                 /* We do OR logic so audio hub is sent info about whether *ANY* stream is active or not */
                 any_stream_active_current = input_stream_active || output_stream_active;
-                printintln(any_stream_active_current);
                 if(any_stream_active_current != any_stream_active_old)
                 {
                     /* Forward stream actice to audio if needed - this will cause the audio loop to break */
