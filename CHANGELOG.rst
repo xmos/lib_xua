@@ -23,6 +23,10 @@ lib_xua change log
   * ADDED:     Documented use of CHAN_BUFF_CTRL to save power
   * CHANGED:  `XUD_TILE` define is now derived form lib_xud's USB_TILE setting
     rather than being set to 0 as a default.
+  * FIXED:     Compiler error when PDM mics used and EXCLUDE_USB_AUDIO_MAIN is
+    not defined.
+  * CHANGED:   AN00248 updated so that it uses lib_xua main instead of own main
+    function.
 
   * Changes to dependencies:
 

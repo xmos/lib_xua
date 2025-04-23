@@ -158,7 +158,7 @@ static const int32_t WORD_ALIGNED stage2_48k_coefs[MIC_ARRAY_48K_STAGE_2_TAP_COU
     -0x453461, 0x9d62c, 0x325327, 0xe98af, -0x19f6aa, -0x138439, 0x7aab9, 0xe0dd5, 0x12b1b, -0x68daa, -0x2b915
 };
 
-// 32kHz vs 16kHz choices
+// 48kHz vs 32kHz vs 16kHz choices
 constexpr int mic_count = MIC_ARRAY_CONFIG_MIC_COUNT;
 constexpr int decimation_factor = (XUA_PDM_MIC_FREQ == 48000) ? 2 : ((XUA_PDM_MIC_FREQ == 32000) ? 3 : 6);
 constexpr int stage_2_tap_count = (XUA_PDM_MIC_FREQ == 48000) ? MIC_ARRAY_48K_STAGE_2_TAP_COUNT : ((XUA_PDM_MIC_FREQ == 32000) ? MIC_ARRAY_32K_STAGE_2_TAP_COUNT : STAGE2_TAP_COUNT);
@@ -192,14 +192,11 @@ using TMicArray = mic_array::MicArray<mic_count,
 
 TMicArray mics;
 
-
+// Currently the sample rate is statically defined by XUA_PDM_MIC_FREQ
 void ma_init(unsigned mic_samp_rate)
 {
   mics.Decimator.Init(stage_1_filter(), stage_2_filter(), *stage_2_shift());
-
   mics.PdmRx.Init(pdm_res.p_pdm_mics);
-  // unsigned channel_map[MIC_ARRAY_CONFIG_MIC_COUNT] = {0, 1};
-  // mics.PdmRx.MapChannels(channel_map);
   mic_array_resources_configure(&pdm_res, MIC_ARRAY_CONFIG_MCLK_DIVIDER);
   mic_array_pdm_clock_start(&pdm_res);
 }
@@ -208,9 +205,7 @@ void ma_init(unsigned mic_samp_rate)
 void ma_task(chanend_t c_frames_out)
 {
   mics.OutputHandler.FrameTx.SetChannel(c_frames_out);
-
-  mics.PdmRx.AssertOnDroppedBlock(false);
-
+  mics.PdmRx.AssertOnDroppedBlock(false); // Ensure mic_array is tolerant to backpressure
   mics.PdmRx.InstallISR();
   mics.PdmRx.UnmaskISR();
 
