@@ -660,305 +660,312 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
     unsigned command;
     unsigned mClk;
     unsigned divide;
-    unsigned firstRun = 1;
-
-#if (DSD_CHANS_DAC > 0)
-    /* Make sure the DSD ports are on and buffered - just in case they are not shared with I2S */
-    EnableBufferedPort(p_dsd_clk, 32);
-    for(int i = 0; i< DSD_CHANS_DAC; i++)
-    {
-        EnableBufferedPort(p_dsd_dac[i], 32);
-    }
-#endif
-
-#if (XUA_ADAT_TX_EN || XUA_SPDIF_TX_EN)
-    xassert((!isnull(clk_audio_mclk) && !isnull(p_mclk_in)) && "Error: must provide non-null MCLK port and MCLK clock-block for ADAT Tx");
-    /* Clock master clock-block from master-clock port */
-    configure_clock_src(clk_audio_mclk, p_mclk_in);
-#if (XUA_ADAT_TX_EN)
-    /* Set ADAT Tx port to be clock from master clock-block*/
-    configure_out_port_no_ready(p_adat_tx, clk_audio_mclk, 0);
-    set_clock_fall_delay(clk_audio_mclk, 7);
-#endif
-    /* Start the master clock-block */
-    start_clock(clk_audio_mclk);
-#endif
-    /* Perform required CODEC/ADC/DAC initialisation */
-    AudioHwInit();
+    unsigned audio_active = 1;
 
     while(1)
     {
-        /* Calculate what master clock we should be using */
-        if (((MCLK_441) % curSamFreq) == 0)
+    unsigned firstRun = 1;
+#if (DSD_CHANS_DAC > 0)
+        /* Make sure the DSD ports are on and buffered - just in case they are not shared with I2S */
+        EnableBufferedPort(p_dsd_clk, 32);
+        for(int i = 0; i< DSD_CHANS_DAC; i++)
         {
-            mClk = MCLK_441;
-#if (XUA_ADAT_TX_EN)
-            /* Calculate ADAT SMUX mode (1, 2, 4) */
-            adatSmuxMode = curSamFreq / 44100;
-            adatMultiple = mClk / 44100;
-#endif
+            EnableBufferedPort(p_dsd_dac[i], 32);
         }
-        else if (((MCLK_48) % curSamFreq) == 0)
-        {
-            mClk = MCLK_48;
-#if (XUA_ADAT_TX_EN)
-            /* Calculate ADAT SMUX mode (1, 2, 4) */
-            adatSmuxMode = curSamFreq / 48000;
-            adatMultiple = mClk / 48000;
 #endif
-        }
 
-        /* Calculate master clock to bit clock (or DSD clock) divide for current sample freq
-         * e.g. 11.289600 / (176400 * 64)  = 1 */
+#if (XUA_ADAT_TX_EN || XUA_SPDIF_TX_EN)
+        xassert((!isnull(clk_audio_mclk) && !isnull(p_mclk_in)) && "Error: must provide non-null MCLK port and MCLK clock-block for ADAT Tx");
+        /* Clock master clock-block from master-clock port */
+        configure_clock_src(clk_audio_mclk, p_mclk_in);
+#if (XUA_ADAT_TX_EN)
+        /* Set ADAT Tx port to be clock from master clock-block*/
+        configure_out_port_no_ready(p_adat_tx, clk_audio_mclk, 0);
+        set_clock_fall_delay(clk_audio_mclk, 7);
+#endif
+        /* Start the master clock-block */
+        start_clock(clk_audio_mclk);
+#endif /* (XUA_ADAT_TX_EN || XUA_SPDIF_TX_EN) */
+
+        /* Perform required CODEC/ADC/DAC initialisation */
+        AudioHwInit();
+
+        while(audio_active)
         {
-            unsigned numBits = XUA_I2S_N_BITS * I2S_CHANS_PER_FRAME;
+            /* Calculate what master clock we should be using */
+            if (((MCLK_441) % curSamFreq) == 0)
+            {
+                mClk = MCLK_441;
+#if (XUA_ADAT_TX_EN)
+                /* Calculate ADAT SMUX mode (1, 2, 4) */
+                adatSmuxMode = curSamFreq / 44100;
+                adatMultiple = mClk / 44100;
+#endif
+            }
+            else if (((MCLK_48) % curSamFreq) == 0)
+            {
+                mClk = MCLK_48;
+#if (XUA_ADAT_TX_EN)
+                /* Calculate ADAT SMUX mode (1, 2, 4) */
+                adatSmuxMode = curSamFreq / 48000;
+                adatMultiple = mClk / 48000;
+#endif
+            }
+
+            /* Calculate master clock to bit clock (or DSD clock) divide for current sample freq
+             * e.g. 11.289600 / (176400 * 64)  = 1 */
+            {
+                unsigned numBits = XUA_I2S_N_BITS * I2S_CHANS_PER_FRAME;
 
 #if (DSD_CHANS_DAC > 0)
-            if(dsdMode == DSD_MODE_DOP)
-            {
-                /* DoP we receive in 16bit chunks */
-                numBits = 16;
-            }
-            else if(dsdMode == DSD_MODE_NATIVE)
-            {
-                /* DSD native we receive in 32bit chunks */
-                numBits = 32;
-            }
+                if(dsdMode == DSD_MODE_DOP)
+                {
+                    /* DoP we receive in 16bit chunks */
+                    numBits = 16;
+                }
+                else if(dsdMode == DSD_MODE_NATIVE)
+                {
+                    /* DSD native we receive in 32bit chunks */
+                    numBits = 32;
+                }
 #endif
-            divide = mClk / (curSamFreq * numBits);
+                divide = mClk / (curSamFreq * numBits);
 
-            // Do some checks
-            xassert((divide > 0) && "Error: divider is 0, BCLK rate unachievable");
+                // Do some checks
+                xassert((divide > 0) && "Error: divider is 0, BCLK rate unachievable");
 
-            unsigned remainder = mClk % ( curSamFreq * numBits);
-            xassert((!remainder) && "Error: MCLK not divisible into BCLK by an integer number");
+                unsigned remainder = mClk % ( curSamFreq * numBits);
+                xassert((!remainder) && "Error: MCLK not divisible into BCLK by an integer number");
 
-            /* Ignore special divide = 1 case */
-            unsigned divider_is_odd = (divide & 0x1) && (divide != 1);
-            xassert((!divider_is_odd) && "Error: divider is odd, clockblock cannot produce desired BCLK");
+                /* Ignore special divide = 1 case */
+                unsigned divider_is_odd = (divide & 0x1) && (divide != 1);
+                xassert((!divider_is_odd) && "Error: divider is odd, clockblock cannot produce desired BCLK");
 
-       }
+           }
 
 #if (I2S_CHANS_DAC != 0) || (I2S_CHANS_ADC != 0)
 #if (DSD_CHANS_DAC > 0)
-        if(dsdMode)
-        {
-            /* Configure audio ports */
-            ConfigAudioPortsWrapper(
+            if(dsdMode)
+            {
+                /* Configure audio ports */
+                ConfigAudioPortsWrapper(
 #if (I2S_CHANS_DAC != 0) || (DSD_CHANS_DAC != 0)
-                p_dsd_dac,
-                DSD_CHANS_DAC,
+                    p_dsd_dac,
+                    DSD_CHANS_DAC,
 #endif // (I2S_CHANS_DAC != 0) || (DSD_CHANS_DAC != 0)
 #if (I2S_CHANS_ADC != 0)
-                p_i2s_adc,
-                I2S_WIRES_ADC,
+                    p_i2s_adc,
+                    I2S_WIRES_ADC,
 #endif // (I2S_CHANS_ADC != 0)
-                null,
-                p_dsd_clk,
-                p_mclk_in, clk_audio_bclk, divide, curSamFreq);
-        }
-        else
+                    null,
+                    p_dsd_clk,
+                    p_mclk_in, clk_audio_bclk, divide, curSamFreq);
+            }
+            else
 #endif // (DSD_CHANS_DAC > 0)
-        {
-            ConfigAudioPortsWrapper(
+            {
+                ConfigAudioPortsWrapper(
 #if (I2S_CHANS_DAC != 0)
-                p_i2s_dac,
-                I2S_WIRES_DAC,
+                    p_i2s_dac,
+                    I2S_WIRES_DAC,
 #endif // (I2S_CHANS_DAC != 0)
 #if (I2S_CHANS_ADC != 0)
-                p_i2s_adc,
-                I2S_WIRES_ADC,
+                    p_i2s_adc,
+                    I2S_WIRES_ADC,
 #endif // (I2S_CHANS_ADC != 0)
-                p_lrclk,
-                p_bclk,
-                p_mclk_in, clk_audio_bclk, divide, curSamFreq);
-        }
+                    p_lrclk,
+                    p_bclk,
+                    p_mclk_in, clk_audio_bclk, divide, curSamFreq);
+            }
 #endif // (I2S_CHANS_DAC != 0) || (I2S_CHANS_ADC != 0)
 
-        {
-            unsigned curFreq = curSamFreq;
+            {
+                unsigned curFreq = curSamFreq;
 #if (DSD_CHANS_DAC > 0)
-            /* Make AudioHwConfig() implementation a little more user friendly in DSD mode...*/
-            if(dsdMode == DSD_MODE_NATIVE)
-            {
-                curFreq *= 32;
-            }
-            else if(dsdMode == DSD_MODE_DOP)
-            {
-                curFreq *= 16;
-            }
+                /* Make AudioHwConfig() implementation a little more user friendly in DSD mode...*/
+                if(dsdMode == DSD_MODE_NATIVE)
+                {
+                    curFreq *= 32;
+                }
+                else if(dsdMode == DSD_MODE_DOP)
+                {
+                    curFreq *= 16;
+                }
 #endif
-            /* Configure Clocking/CODEC/DAC/ADC for SampleFreq/MClk */
+                /* Configure Clocking/CODEC/DAC/ADC for SampleFreq/MClk */
 
-            /* User should mute audio hardware */
-            AudioHwConfig_Mute();
+                /* User should mute audio hardware */
+                AudioHwConfig_Mute();
 
-            /* User code should configure audio harware for SampleFreq/MClk etc */
-            AudioHwConfig(curFreq, mClk, dsdMode, curSamRes_DAC, curSamRes_ADC);
+                /* User code should configure audio harware for SampleFreq/MClk etc */
+                AudioHwConfig(curFreq, mClk, dsdMode, curSamRes_DAC, curSamRes_ADC);
 #if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC || XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
-            /* Notify clockgen of new mCLk */
-            c_audio_rate_change <: mClk;
-            c_audio_rate_change <: curFreq;
+                /* Notify clockgen of new mCLk */
+                c_audio_rate_change <: mClk;
+                c_audio_rate_change <: curFreq;
 
-            /* Wait for ACK back from clockgen or ep_buffer to signal clocks all good */
-            c_audio_rate_change :> int _;
+                /* Wait for ACK back from clockgen or ep_buffer to signal clocks all good */
+                c_audio_rate_change :> int _;
 #endif
 
-            /* User should unmute audio hardware */
-            AudioHwConfig_UnMute();
-        }
+                /* User should unmute audio hardware */
+                AudioHwConfig_UnMute();
+            }
 
-        if(!firstRun)
-        {
-            /* TODO wait for good mclk instead of delay */
-            /* No delay for DFU modes */
-            if (((curSamFreq / AUD_TO_USB_RATIO) != AUDIO_STOP_FOR_DFU) && command)
+            if(!firstRun)
             {
+                /* TODO wait for good mclk instead of delay */
+                /* No delay for DFU modes */
+                if (((curSamFreq / AUD_TO_USB_RATIO) != AUDIO_STOP_FOR_DFU) && command)
+                {
 #if 0
-                /* User should ensure MCLK is stable in AudioHwConfig */
-                if(retVal1 == SET_SAMPLE_FREQ)
-                {
-                    timer t;
-                    unsigned time;
-                    t :> time;
-                    t when timerafter(time+AUDIO_PLL_LOCK_DELAY) :> void;
-                }
+                    /* User should ensure MCLK is stable in AudioHwConfig */
+                    if(retVal1 == SET_SAMPLE_FREQ)
+                    {
+                        timer t;
+                        unsigned time;
+                        t :> time;
+                        t when timerafter(time+AUDIO_PLL_LOCK_DELAY) :> void;
+                    }
 #endif
-                /* Handshake back */
+                    /* Handshake back */
 #if (XUA_USB_EN)
-                outct(c_aud, XS1_CT_END);
+                    outct(c_aud, XS1_CT_END);
 #endif
+                }
             }
-        }
-        firstRun = 0;
+            firstRun = 0;
 
-        par
-        {
+            par
+            {
 
 #if (XUA_ADAT_TX_EN)
-            {
-                set_thread_fast_mode_on();
-                adat_tx_port(c_adat_out, p_adat_tx);
-            }
+                {
+                    set_thread_fast_mode_on();
+                    adat_tx_port(c_adat_out, p_adat_tx);
+                }
 #endif
-            {
+                {
 #if (XUA_SPDIF_TX_EN)
-                /* Communicate master clock and sample freq to S/PDIF thread */
-                outct(c_spdif_out, XS1_CT_END);
-                outuint(c_spdif_out, curSamFreq);
-                outuint(c_spdif_out, mClk);
+                    /* Communicate master clock and sample freq to S/PDIF thread */
+                    outct(c_spdif_out, XS1_CT_END);
+                    outuint(c_spdif_out, curSamFreq);
+                    outuint(c_spdif_out, mClk);
 #endif
 
 #if (XUA_NUM_PDM_MICS > 0)
-                /* Send decimation factor to PDM task(s) */
-                user_pdm_init();
-                c_pdm_in <: curSamFreq / AUD_TO_MICS_RATIO;
+                    /* Send decimation factor to PDM task(s) */
+                    user_pdm_init();
+                    c_pdm_in <: curSamFreq / AUD_TO_MICS_RATIO;
 #endif
 
 #if (XUA_ADAT_TX_EN)
-                // Configure ADAT parameters ...
-                //
-                // adat_oversampling =  256 for MCLK = 12M288 or 11M2896
-                //                   =  512 for MCLK = 24M576 or 22M5792
-                //                   = 1024 for MCLK = 49M152 or 45M1584
-                //
-                // adatSmuxMode   = 1 for FS =  44K1 or  48K0
-                //                = 2 for FS =  88K2 or  96K0
-                //                = 4 for FS = 176K4 or 192K0
-                outuint(c_adat_out, adatMultiple);
-                outuint(c_adat_out, adatSmuxMode);
+                    // Configure ADAT parameters ...
+                    //
+                    // adat_oversampling =  256 for MCLK = 12M288 or 11M2896
+                    //                   =  512 for MCLK = 24M576 or 22M5792
+                    //                   = 1024 for MCLK = 49M152 or 45M1584
+                    //
+                    // adatSmuxMode   = 1 for FS =  44K1 or  48K0
+                    //                = 2 for FS =  88K2 or  96K0
+                    //                = 4 for FS = 176K4 or 192K0
+                    outuint(c_adat_out, adatMultiple);
+                    outuint(c_adat_out, adatSmuxMode);
 #endif
 
-                command = AudioHub_MainLoop(c_aud
+                    command = AudioHub_MainLoop(c_aud
 #if (XUA_SPDIF_TX_EN)
-                   , c_spdif_out
+                       , c_spdif_out
 #else
-                   , null
+                       , null
 #endif
 #if (XUA_ADAT_TX_EN)
-                   , c_adat_out
-                   , adatSmuxMode
+                       , c_adat_out
+                       , adatSmuxMode
 #endif
-                   , divide, curSamFreq
+                       , divide, curSamFreq
 #if (XUA_ADAT_RX_EN || XUA_SPDIF_RX_EN)
-                   , c_dig_rx
+                       , c_dig_rx
 #endif
 #if (XUA_NUM_PDM_MICS > 0)
-                   , c_pdm_in
+                       , c_pdm_in
 #endif
-                  , p_lrclk, p_bclk, p_i2s_dac, p_i2s_adc);
+                      , p_lrclk, p_bclk, p_i2s_dac, p_i2s_adc);
 
 #if (XUA_USB_EN)
-                if(command == SET_SAMPLE_FREQ)
-                {
-                    curSamFreq = inuint(c_aud) * AUD_TO_USB_RATIO;
-                    printstr("aud set sr ");printintln(command);
-                }
-                else if(command == SET_STREAM_FORMAT_OUT)
-                {
-                    /* Off = 0
-                     * DOP = 1
-                     * Native = 2
-                     */
-                    dsdMode = inuint(c_aud);
-                    curSamRes_DAC = inuint(c_aud);
-                    printstr("aud stream format out ");printintln(command);
-                }
+                    if(command == SET_SAMPLE_FREQ)
+                    {
+                        curSamFreq = inuint(c_aud) * AUD_TO_USB_RATIO;
+                        printstr("aud set sr ");printintln(command);
+                    }
+                    else if(command == SET_STREAM_FORMAT_OUT)
+                    {
+                        /* Off = 0
+                         * DOP = 1
+                         * Native = 2
+                         */
+                        dsdMode = inuint(c_aud);
+                        curSamRes_DAC = inuint(c_aud);
+                        printstr("aud stream format out ");printintln(command);
+                    }
 
 #if (XUA_DFU_EN == 1)
-                /* Currently no more audio will happen after this point */
-                if ((curSamFreq / AUD_TO_USB_RATIO) == AUDIO_STOP_FOR_DFU)
-                {
-                    /* Handshake back */
-                    outct(c_aud, XS1_CT_END);
-
-                    /* Request more data/commands */
-                    outuint(c_aud, 0);
-
-                    while (1)
+                    /* Currently no more audio will happen after this point */
+                    if ((curSamFreq / AUD_TO_USB_RATIO) == AUDIO_STOP_FOR_DFU)
                     {
-                       [[combine]]
-                        par
+                        /* Handshake back */
+                        outct(c_aud, XS1_CT_END);
+
+                        /* Request more data/commands */
+                        outuint(c_aud, 0);
+
+                        while (1)
                         {
+                           [[combine]]
+                            par
+                            {
 #if (XUD_TILE != 0) && (AUDIO_IO_TILE == 0)
-                            DFUHandler(dfuInterface, null);
+                                DFUHandler(dfuInterface, null);
 #endif
 #if (NUM_USB_CHAN_OUT > 0) || (NUM_USB_CHAN_IN > 0)
-                            dummy_deliver(c_aud, command);
+                                dummy_deliver(c_aud, command);
 #endif
+                            }
+                            /* Note, we shouldn't reach here. Audio, once stopped for DFU, cannot be resumed */
                         }
-                        /* Note, we shouldn't reach here. Audio, once stopped for DFU, cannot be resumed */
                     }
-                }
 #endif /* (XUA_DFU_EN == 1) */
-                else if (command == SET_STREAM_START || command == SET_STREAM_INPUT_START || command == SET_STREAM_OUTPUT_START)
-                {
-                    printstr("aud stream start ");printintln(command);
-                }
-                else if (command == SET_STREAM_STOP || command == SET_STREAM_INPUT_STOP || command == SET_STREAM_OUTPUT_STOP)
-                {
-                    printstr("aud stream stop ");printintln(command);
-                }
-                else
-                {
-                    printstr("aud unhandled cmd ");printintln(command);
-                }
+                    else if (command == SET_STREAM_START || command == SET_STREAM_INPUT_START || command == SET_STREAM_OUTPUT_START)
+                    {
+                        printstr("aud stream start ");printintln(command);
+                    }
+                    else if (command == SET_STREAM_STOP || command == SET_STREAM_INPUT_STOP || command == SET_STREAM_OUTPUT_STOP)
+                    {
+                        printstr("aud stream stop ");printintln(command);
+                    }
+                    else
+                    {
+                        printstr("aud unhandled cmd ");printintln(command);
+                    }
 #endif /* XUA_USB_EN */
 
 #if XUA_NUM_PDM_MICS > 0
-                // TODO - this willbe an exit command when supported in mic_array
-                // c_pdm_in <: 0;
+                    // TODO - this willbe an exit command when supported in mic_array
+                    // c_pdm_in <: 0;
 #endif
 
 #if (XUA_ADAT_TX_EN)
 #ifdef ADAT_TX_USE_SHARED_BUFF
-                /* Take out-standing handshake from ADAT core */
-                inuint(c_adat_out);
+                    /* Take out-standing handshake from ADAT core */
+                    inuint(c_adat_out);
 #endif
-                /* Notify ADAT Tx thread of impending new freq... */
-                outct(c_adat_out, XS1_CT_END);
+                    /* Notify ADAT Tx thread of impending new freq... */
+                    outct(c_adat_out, XS1_CT_END);
 #endif /* XUA_ADAT_TX_EN) */
-            } /* AudioHub_MainLoop and command handler */
-        } /* par */
+                } /* AudioHub_MainLoop and command handler */
+            } /* par */
+        } /* while(audio_active) */
+
+        AudioHwDeInit();
     } /* while(1)*/
 }

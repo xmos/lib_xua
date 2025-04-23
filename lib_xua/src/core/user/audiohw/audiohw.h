@@ -5,6 +5,7 @@
 
 /* The functions below should be implemented for the external audio hardware arrangement of a specific design.
  * Note, default (empty) implementations of these are provided in audiohub_user.c
+ * They are always called from the AUDIO_TILE which is where I2S is placed.
  */
 
 /**
@@ -13,6 +14,14 @@
  * This function is called when the device starts up and should contain user code to perform any required audio hardware initialisation
  */
 void AudioHwInit(void);
+
+/**
+ * @brief   User audio hardware de-initialisation code
+ *
+ * This function is called when streaming stops (device enumerated but audio is idle) and should contain user code to perform any 
+ * required audio hardware de-initialisation. This can be useful for saving power in the audio sub-system.
+ */
+void AudioHwDeInit(void);
 
 /**
  * @brief   User audio hardware configuration code
