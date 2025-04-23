@@ -5,6 +5,9 @@
 
 /* Functions that handle functionality that occur on stream start/stop e.g. DAC mute/un-mute.
  * They should be implemented for the external audio hardware arrangement of a specific design.
+
+ * Note that these are called from the EP0 code which always resides on XUD_TILE, i.e. the
+ * tile where the USB device code is executed.
  */
 
 /**
