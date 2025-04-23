@@ -935,11 +935,11 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
                         }
                     }
 #endif /* (XUA_DFU_EN == 1) */
-                    else if (command == SET_STREAM_START || command == SET_STREAM_INPUT_START || command == SET_STREAM_OUTPUT_START)
+                    else if (command == SET_AUDIO_START)
                     {
                         printstr("aud stream start ");printintln(command);
                     }
-                    else if (command == SET_STREAM_STOP || command == SET_STREAM_INPUT_STOP || command == SET_STREAM_OUTPUT_STOP)
+                    else if (command == SET_AUDIO_STOP)
                     {
                         printstr("aud stream stop ");printintln(command);
                     }

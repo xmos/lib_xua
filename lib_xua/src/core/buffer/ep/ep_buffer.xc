@@ -543,12 +543,12 @@ void XUA_Buffer_Ep(
 #endif
                 }
 #endif /* (AUDIO_CLASS == 2) */
-                else if (cmd == SET_STREAM_START || cmd == SET_STREAM_INPUT_START || cmd == SET_STREAM_OUTPUT_START)
+                else if (cmd == SET_STREAM_INPUT_START || cmd == SET_STREAM_OUTPUT_START)
                 {
                     /* Do nothing for now - just let cmd propagate through to decouple */
                     printstrln("\nbuff stream start");
                 }
-                else if (cmd == SET_STREAM_STOP || cmd == SET_STREAM_INPUT_STOP || cmd == SET_STREAM_OUTPUT_STOP)
+                else if (cmd == SET_STREAM_INPUT_STOP || cmd == SET_STREAM_OUTPUT_STOP)
                 {
                     /* Do nothing for now - just let cmd propagate through to decouple */
                     printstrln("\nbuff stream stop");
