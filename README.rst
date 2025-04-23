@@ -106,8 +106,9 @@ Required tools
   * XMOS XTC Tools: 15.3.0
 
 
+************************
 Host system requirements
-========================
+************************
 
 USB Audio devices built using `lib_xua` have the following host system requirements.
 

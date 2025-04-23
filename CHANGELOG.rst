@@ -27,6 +27,10 @@ UNRELEASED
     on Windows. Can be disabled by defining ENUMERATE_CONTROL_INTF_AS_WINUSB to
     0
   * ADDED: HW test for vendor specific control interface
+  * FIXED:     Compiler error when PDM mics used and EXCLUDE_USB_AUDIO_MAIN is
+    not defined.
+  * CHANGED:   AN00248 updated so that it uses lib_xua main instead of own main
+    function.
 
 5.0.0
 -----
