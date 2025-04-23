@@ -1,8 +1,8 @@
 lib_xua change log
 ==================
 
-5.0.1
------
+UNRELEASED
+----------
 
   * CHANGED:   Made `p_off_mclk` nullable for XUA_Buffer; this port is now only
     required either in configurations using Synchronous mode and using the
@@ -27,10 +27,6 @@ lib_xua change log
     on Windows. Can be disabled by defining ENUMERATE_CONTROL_INTF_AS_WINUSB to
     0
   * ADDED: HW test for vendor specific control interface
-
-  * Changes to dependencies:
-
-    - lib_xud: 2.4.0 -> 2.4.1
 
 5.0.0
 -----
