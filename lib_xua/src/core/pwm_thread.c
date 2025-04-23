@@ -5,6 +5,7 @@
  */
 #include "xua_conf_default.h" // Settings
 #if (XUA_PWM_CHANNELS > 0)
+#include "xua_pwm_conf_default.h" // PWM Settings
 #include <platform.h>
 #include <xcore/port.h>
 #include <xcore/chanend.h>
@@ -33,12 +34,14 @@ void pwm_thread(chanend_t c_data)
     port_t clk_out = PORT_PWM_CLK_OUT;
 
     software_dac_hp_init(&sd, ports, clk, clk_out, 8,
-                         sd_coeffs_o6_f1_5_n8,
-                         2.8544, 2.8684735298,     // scale, limit
-                         -1.0/29000, 1.0/120000,  // flat_comp_x2, x3
-                         -3.0/190, 0.63/80,       // pwm comp x2, x3
-                         1);                       // negate
-
+                         XUA_PWM_SD_COEFFS,
+                         XUA_PWM_SCALE,
+                         XUA_PWM_LIMIT,
+                         XUA_PWM_FLAT_COMP_X2,
+                         XUA_PWM_FLAT_COMP_X3,
+                         XUA_PWM_PWM_COMP_X2,
+                         XUA_PWM_PWM_COMP_X3,
+                         XUA_PWM_NEGATE);
     software_dac_hp(&sd, c_data);
 }
 #endif
