@@ -908,6 +908,18 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
                         curSamRes_DAC = inuint(c_aud);
                         printstr("aud stream format out ");printintln(command);
                     }
+                    else if (command == SET_AUDIO_START)
+                    {
+                        printstr("aud stream start ");printintln(command);
+                    }
+                    else if (command == SET_AUDIO_STOP)
+                    {
+                        printstr("aud stream stop ");printintln(command);
+                    }
+                    else
+                    {
+                        printstr("aud unhandled cmd ");printintln(command);
+                    }
 
 #if (XUA_DFU_EN == 1)
                     /* Currently no more audio will happen after this point */
@@ -935,18 +947,6 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
                         }
                     }
 #endif /* (XUA_DFU_EN == 1) */
-                    else if (command == SET_AUDIO_START)
-                    {
-                        printstr("aud stream start ");printintln(command);
-                    }
-                    else if (command == SET_AUDIO_STOP)
-                    {
-                        printstr("aud stream stop ");printintln(command);
-                    }
-                    else
-                    {
-                        printstr("aud unhandled cmd ");printintln(command);
-                    }
 #endif /* XUA_USB_EN */
 
 #if XUA_NUM_PDM_MICS > 0
