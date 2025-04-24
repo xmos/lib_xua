@@ -558,6 +558,45 @@ unsigned static AudioHub_MainLoop(chanend ?c_out, chanend ?c_spd_out
     return 0;
 }
 
+/* This helper function processes the command from Decouple when audiohub breaks */
+void process_command(unsigned command,
+                     chanend c_aud,
+                     unsigned &curSamFreq,
+                     unsigned &dsdMode,
+                     unsigned &curSamRes_DAC,
+                     unsigned &audioActive)
+{
+    if(command == SET_SAMPLE_FREQ)
+    {
+        curSamFreq = inuint(c_aud) * AUD_TO_USB_RATIO;
+        printstr("aud set sr ");printintln(command);
+    }
+    else if(command == SET_STREAM_FORMAT_OUT)
+    {
+        /* Off = 0
+         * DOP = 1
+         * Native = 2
+         */
+        dsdMode = inuint(c_aud);
+        curSamRes_DAC = inuint(c_aud);
+        printstr("aud stream format out ");printintln(command);
+    }
+    else if (command == SET_AUDIO_START)
+    {
+        printstr("aud stream start ");printintln(command);
+    }
+
+    else if (command == SET_AUDIO_STOP)
+    {
+        printstr("aud stream stop ");printintln(command);
+        audioActive = 0;
+    }
+    else
+    {
+        printstr("aud unhandled cmd ");printintln(command);
+    }
+}
+
 #if XUA_DFU_EN
 [[distributable]]
 void DFUHandler(server interface i_dfu i, chanend ?c_user_cmd);
@@ -627,6 +666,7 @@ static void dummy_deliver(chanend ?c_out, unsigned &command)
 }
 #endif
 
+
 #if XUA_DFU_EN
  [[distributable]]
  void DFUHandler(server interface i_dfu i, chanend ?c_user_cmd);
@@ -666,7 +706,7 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
     unsigned command;
     unsigned mClk;
     unsigned divide;
-    unsigned audio_active = 1;
+    unsigned audioActive = 1;
     unsigned firstRun = 1;
 
     while(1)
@@ -696,7 +736,7 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
         /* Perform required CODEC/ADC/DAC initialisation */
         AudioHwInit();
 
-        while(audio_active)
+        while(audioActive)
         {
             /* Calculate what master clock we should be using */
             if (((MCLK_441) % curSamFreq) == 0)
@@ -899,34 +939,8 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
                       , p_lrclk, p_bclk, p_i2s_dac, p_i2s_adc);
 
 #if (XUA_USB_EN)
-                    if(command == SET_SAMPLE_FREQ)
-                    {
-                        curSamFreq = inuint(c_aud) * AUD_TO_USB_RATIO;
-                        printstr("aud set sr ");printintln(command);
-                    }
-                    else if(command == SET_STREAM_FORMAT_OUT)
-                    {
-                        /* Off = 0
-                         * DOP = 1
-                         * Native = 2
-                         */
-                        dsdMode = inuint(c_aud);
-                        curSamRes_DAC = inuint(c_aud);
-                        printstr("aud stream format out ");printintln(command);
-                    }
-                    else if (command == SET_AUDIO_START)
-                    {
-                        printstr("aud stream start ");printintln(command);
-                    }
-                    else if (command == SET_AUDIO_STOP)
-                    {
-                        printstr("aud stream stop ");printintln(command);
-                        audio_active = 0;
-                    }
-                    else
-                    {
-                        printstr("aud unhandled cmd ");printintln(command);
-                    }
+                    /* Now perform any additional inputs and update state accordingly */
+                    process_command(command, c_aud, curSamFreq, dsdMode, curSamRes_DAC, audioActive);
 
 #if (XUA_DFU_EN == 1)
                     /* Currently no more audio will happen after this point */
@@ -971,13 +985,15 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
 #endif /* XUA_ADAT_TX_EN) */
                 } /* AudioHub_MainLoop and command handler */
             } /* par */
-        } /* while(audio_active) */
+        } /* while(audioActive) */
 
         AudioHwDeInit();
         printstr("IDLE...\n");
-        sw_pll_fixed_clock(0);
+        // sw_pll_fixed_clock(0);
+        // printstr("clock off\n");    
         delay_seconds(3);
         printstr("...FIN\n");
-        audio_active = 1;
+        sw_pll_fixed_clock(MCLK_48);
+        audioActive = 1;
     } /* while(1)*/
 }
