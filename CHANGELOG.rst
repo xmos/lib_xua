@@ -89,7 +89,7 @@ UNRELEASED
 
     - lib_spdif: 6.1.1 -> 6.2.1
 
-    - lib_sw_pll: 2.2.0 -> 2.4.0
+    - lib_sw_pll: 2.2.0 -> 2.3.1
 
     - lib_xassert: 4.2.0 -> 4.3.1
 
