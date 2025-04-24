@@ -50,6 +50,8 @@ extern "C" {
 #include "xua_commands.h"
 #include "xc_ptr.h"
 
+#include "debug_print.h"
+
 #define XUA_MAX(x,y) ((x)>(y) ? (x) : (y))
 
 unsigned samplesOut[XUA_MAX(NUM_USB_CHAN_OUT, I2S_CHANS_DAC)];
@@ -569,7 +571,7 @@ void process_command(unsigned command,
     if(command == SET_SAMPLE_FREQ)
     {
         curSamFreq = inuint(c_aud) * AUD_TO_USB_RATIO;
-        printstr("aud set sr ");printintln(command);
+        debug_printf("aud set sr\n");
     }
     else if(command == SET_STREAM_FORMAT_OUT)
     {
@@ -579,21 +581,23 @@ void process_command(unsigned command,
          */
         dsdMode = inuint(c_aud);
         curSamRes_DAC = inuint(c_aud);
-        printstr("aud stream format out ");printintln(command);
+        debug_printf("aud stream format out\n");
     }
     else if (command == SET_AUDIO_START)
     {
-        printstr("aud stream start ");printintln(command);
+
+        debug_printf("aud stream start\n")
+        audioActive = 1;
     }
 
     else if (command == SET_AUDIO_STOP)
     {
-        printstr("aud stream stop ");printintln(command);
+        debug_printf("aud stream stop\n");
         audioActive = 0;
     }
     else
     {
-        printstr("aud unhandled cmd ");printintln(command);
+        debug_printf("aud unhandled cmd  %u\n", command);
     }
 }
 
@@ -988,12 +992,6 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
         } /* while(audioActive) */
 
         AudioHwDeInit();
-        printstr("IDLE...\n");
-        // sw_pll_fixed_clock(0);
-        // printstr("clock off\n");    
-        delay_seconds(3);
-        printstr("...FIN\n");
-        sw_pll_fixed_clock(MCLK_48);
         audioActive = 1;
     } /* while(1)*/
 }
