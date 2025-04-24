@@ -9,12 +9,6 @@
  * Additionally this thread handles clocking and CODEC/DAC/ADC config.
  **/
 
-#include <xccompat.h>
-extern "C" {
-#include "sw_pll.h"
-}
-
-
 #include <syscall.h>
 #include <platform.h>
 #include <xs1.h>
@@ -620,9 +614,14 @@ void testct_byref(chanend c, int &returnVal)
 /* This function is a dummy version of the deliver thread that does not
    connect to the codec ports. It is used during DFU reset. */
 [[combinable]]
-static void dummy_deliver(chanend ?c_out, unsigned &command)
+static void dummy_deliver(chanend ?c_out, unsigned &command, unsigned sampFreq)
 {
     int ct;
+    const int wait_ticks = XS1_TIMER_HZ / sampFreq;
+    timer tmr;
+    int tmr_trigger;
+    tmr :> tmr_trigger;
+    tmr_trigger += wait_ticks;
 
     while (1)
     {
@@ -657,11 +656,9 @@ static void dummy_deliver(chanend ?c_out, unsigned &command)
                     }
 #endif
                 }
-                const int wait_ticks = XS1_TIMER_HZ/48000;
-                timer tmr;
-                unsigned now;
-                tmr :> now;
-                tmr when timerafter(now + wait_ticks) :> void;
+
+                tmr when timerafter(tmr_trigger) :> void;
+                tmr_trigger += wait_ticks;
                 /* Request more data/commands */
                 outuint(c_out, 0);
             break;
@@ -965,7 +962,7 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
                                 DFUHandler(dfuInterface, null);
 #endif
 #if (NUM_USB_CHAN_OUT > 0) || (NUM_USB_CHAN_IN > 0)
-                                dummy_deliver(c_aud, command);
+                                dummy_deliver(c_aud, command, 48000);
 #endif
                             }
                             /* Note, we shouldn't reach here. Audio, once stopped for DFU, cannot be resumed */
