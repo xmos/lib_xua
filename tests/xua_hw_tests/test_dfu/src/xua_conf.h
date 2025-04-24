@@ -9,7 +9,9 @@
 #define MCLK_441 (512 * 44100)
 #define MCLK_48 (512 * 48000)
 
-#define XUA_DFU_EN (1)
+#ifndef XUA_DFU_EN
+    #define XUA_DFU_EN (1)
+#endif
 
 #define PRODUCT_STR "XUA DFU Test"
 #define PID_AUDIO_2 (0x0016)

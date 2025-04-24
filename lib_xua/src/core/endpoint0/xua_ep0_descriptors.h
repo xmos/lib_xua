@@ -21,7 +21,9 @@
 
 // Enable BOS descriptor only when DFU is enabled since the only capability we advertise is the MSOS desc with DFU interface enumerating as WinUSB.
 // Enumerating with 0 capabilities doesn't seem to be allowed
-#if (XUA_DFU_EN)
+#if XUA_DFU_EN
+    #define _XUA_ENABLE_BOS_DESC (1)
+#elif (XUA_USB_CONTROL_DESCS && ENUMERATE_CONTROL_INTF_AS_WINUSB)
     #define _XUA_ENABLE_BOS_DESC (1)
 #else
     #define _XUA_ENABLE_BOS_DESC (0)
@@ -105,10 +107,10 @@ typedef struct
     STR_TABLE_ENTRY(adatClockSourceStr);          /* iClockSource for external S/PDIF clock */
 #endif
 #endif // AUDIO_CLASS == 2
-#if (XUA_DFU_EN == 1)
+#if XUA_DFU_EN
     STR_TABLE_ENTRY(dfuStr);                      /* iInterface for DFU interface */
 #endif
-#ifdef USB_CONTROL_DESCS
+#if XUA_USB_CONTROL_DESCS
     STR_TABLE_ENTRY(ctrlStr);
 #endif
 #ifdef MIDI
@@ -378,10 +380,10 @@ StringDescTable_t g_strTable =
     .adatClockSourceStr          = XUA_ADAT_CLOCK_SOURCE_EMPTY_STRING,
 #endif
 #endif // AUDIO_CLASS == 2
-#if (XUA_DFU_EN == 1)
+#if XUA_DFU_EN
     .dfuStr                      = XUA_DFU_EMPTY_STRING,
 #endif
-#ifdef USB_CONTROL_DESCS
+#if XUA_USB_CONTROL_DESCS
     .ctrlStr                      = XUA_CTRL_EMPTY_STRING,
 #endif
 #ifdef MIDI
@@ -562,7 +564,7 @@ unsigned char devQualDesc_Null[] =
 #define AUDIO_PATH_XUS
 #endif
 
-#if (XUA_DFU_EN == 1)
+#if XUA_DFU_EN
 #define DFU_LENGTH                  (18)
 #else
 #define DFU_LENGTH                  (0)
@@ -774,14 +776,14 @@ typedef struct
     MIDI_Descriptor_t                           MIDI_Descriptors;
 #endif
 
-#if (XUA_DFU_EN == 1)
-    /* DFU descriptors currently handled as a single block */
-    unsigned char configDesc_DFU[DFU_LENGTH];
-#endif
-
-#ifdef USB_CONTROL_DESCS
+#if XUA_USB_CONTROL_DESCS
     /* Inferface descriptor for control */
     unsigned char itfDesc_control[9];
+#endif
+
+#if XUA_DFU_EN
+    /* DFU descriptors currently handled as a single block */
+    unsigned char configDesc_DFU[DFU_LENGTH];
 #endif
 
 #ifdef IAP
@@ -2103,13 +2105,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
     },
 #endif // MIDI
 
-#if (XUA_DFU_EN == 1)
-    {
-        CONFIG_DESC_DFU
-    },
-#endif /* (XUA_DFU_EN == 1) */
-
-#ifdef USB_CONTROL_DESCS
+#if XUA_USB_CONTROL_DESCS
     {
     /* Control interface descriptor */
     0x09,                                                /* 0 bLength : Size of this descriptor, in bytes. (field size 1 bytes) */
@@ -2123,6 +2119,12 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
     offsetof(StringDescTable_t, ctrlStr)/sizeof(char *), /* 8 iInterface */
     },
 #endif
+
+#if XUA_DFU_EN
+    {
+        CONFIG_DESC_DFU
+    },
+#endif /* (XUA_DFU_EN == 1) */
 
 #ifdef IAP
     /* Interface descriptor */
@@ -2341,7 +2343,7 @@ const unsigned num_freqs_a1 = MAX(3, (0
 #endif
 ));
 
-#ifdef USB_CONTROL_DESCS
+#if XUA_USB_CONTROL_DESCS
 #define CONTROL_INTERFACE_BYTES 9
 #define NUM_CONTROL_USB_INTERFACES 1
 #else
@@ -2357,7 +2359,7 @@ const unsigned num_freqs_a1 = MAX(3, (0
 #define MIDI_INTERFACES_A1    (0)
 #endif
 
-#if (XUA_DFU_EN == 1)
+#if XUA_DFU_EN
 #define DFU_INTERFACE_BYTES   DFU_LENGTH
 #define DFU_INTERFACES_A1     1
 #else
@@ -3019,11 +3021,11 @@ unsigned char cfgDesc_Audio1[] =
     0x03,                                 /* 4 BaAssocJackID(1) : ID of the Embedded MIDI OUT Jack. (field size 1 bytes) */
 #endif // MIDI
 
-#if (XUA_DFU_EN == 1)
+#if XUA_DFU_EN
     CONFIG_DESC_DFU,
 #endif
 
-#ifdef USB_CONTROL_DESCS
+#if XUA_USB_CONTROL_DESCS
     /* Control interface descriptor */
     0x09,                                                /* 0 bLength : Size of this descriptor, in bytes. (field size 1 bytes) */
     0x04,                                                /* 1 bDescriptorType : INTERFACE descriptor. (field size 1 bytes) */

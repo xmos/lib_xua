@@ -39,6 +39,23 @@ set(APP_COMPILER_FLAGS_hid ${COMMON_FLAGS}
                            -DI2S_CHANS_DAC=8
                            -DHID_CONTROLS=1)
 
+set(APP_COMPILER_FLAGS_control ${COMMON_FLAGS}
+                           -DBCD_DEVICE=0x0102
+                           -DNUM_USB_CHAN_IN=8
+                           -DNUM_USB_CHAN_OUT=8
+                           -DI2S_CHANS_ADC=8
+                           -DI2S_CHANS_DAC=8
+                           -DXUA_USB_CONTROL_DESCS=1)
+
+
+set(APP_COMPILER_FLAGS_control_not_winusb ${COMMON_FLAGS}
+                           -DBCD_DEVICE=0x0102
+                           -DNUM_USB_CHAN_IN=8
+                           -DNUM_USB_CHAN_OUT=8
+                           -DI2S_CHANS_ADC=8
+                           -DI2S_CHANS_DAC=8
+                           -DXUA_USB_CONTROL_DESCS=1
+                           -DENUMERATE_CONTROL_INTF_AS_WINUSB=0)
 
 # baseline configs for the testcase
 
