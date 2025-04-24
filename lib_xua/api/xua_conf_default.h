@@ -743,7 +743,7 @@
  * @brief Device firmware version number in Binary Coded Decimal format: 0xJJMN where JJ: major, M: minor, N: sub-minor version number.
  */
 #ifndef BCD_DEVICE_N
-#define BCD_DEVICE_N             (1)
+#define BCD_DEVICE_N             (0)
 #endif
 
 /**
@@ -1664,13 +1664,23 @@ enum USBEndpointNumber_Out
 #endif
 
 /**
- * @brief Device interface GUID.
+ * @brief Device interface GUID for the DFU interface.
  *
  * This is provided as part of the device registry property in the MSOS 2.0 descriptor.
  * Default: "{89C14132-D389-4FF7-944E-2E33379BB59D}" User can override by defining their own in xua_conf.h
  */
-#ifndef WINUSB_DEVICE_INTERFACE_GUID
-#define WINUSB_DEVICE_INTERFACE_GUID               "{89C14132-D389-4FF7-944E-2E33379BB59D}"
+#ifndef WINUSB_DEVICE_INTERFACE_GUID_DFU
+#define WINUSB_DEVICE_INTERFACE_GUID_DFU               "{89C14132-D389-4FF7-944E-2E33379BB59D}"
+#endif
+
+/**
+ * @brief Device interface GUID for the vendor control interface.
+ *
+ * This is provided as part of the device registry property in the MSOS 2.0 descriptor.
+ * Default: "{563F19C9-B0CD-4A15-9047-59D31EADC345}" User can override by defining their own in xua_conf.h
+ */
+#ifndef WINUSB_DEVICE_INTERFACE_GUID_CONTROL
+#define WINUSB_DEVICE_INTERFACE_GUID_CONTROL               "{563F19C9-B0CD-4A15-9047-59D31EADC345}"
 #endif
 
 /**
@@ -1684,4 +1694,26 @@ enum USBEndpointNumber_Out
 #if defined(CHAN_BUFF_CTRL) && (CHAN_BUFF_CTRL == 0)
 #undef CHAN_BUFF_CTRL
 #endif
+
+/**
+ * @brief Enable Vendor specific control interface
+ *
+ * When enabled, device enumerates with an extra Vendor specific control interface with no associated endpoints
+ * Default: Disabled by default
+ */
+#ifndef XUA_USB_CONTROL_DESCS
+#define XUA_USB_CONTROL_DESCS    0
+#endif
+
+/**
+ * @brief Enable Vendor specific control interface to enumerate as WinUSB on Windows
+ *
+ * Allow the Vendor specific control interface, if enabled (XUA_USB_CONTROL_DESCS defined to 1), to enumerate as WinUSB on Windows.
+ * Default: Enabled by default. If disabled, manual driver installation for the control interface would
+ * be required on Windows
+ */
+#ifndef ENUMERATE_CONTROL_INTF_AS_WINUSB
+#define ENUMERATE_CONTROL_INTF_AS_WINUSB    1
+#endif
+
 

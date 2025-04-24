@@ -1,8 +1,8 @@
 lib_xua change log
 ==================
 
-5.0.1
------
+UNRELEASED
+----------
 
   * CHANGED:   Made `p_off_mclk` nullable for XUA_Buffer; this port is now only
     required either in configurations using Synchronous mode and using the
@@ -21,6 +21,17 @@ lib_xua change log
   * ADDED: Support for setting wMaxPacketSize for MIDI bulk IN and OUT endpoints
     at run time depending on g_curUsbSpeed
   * ADDED:     Documented use of CHAN_BUFF_CTRL to save power
+  * CHANGED: Renamed USB_CONTROL_DESCS define to XUA_USB_CONTROL_DESCS
+  * FIXED: Device enumeration error when both XUA_DFU_EN and XUA_USB_CONTROL_DESCS
+    are enabled
+  * ADDED: Enumerate with vendor specific control interface as WinUSB compatible
+    on Windows. Can be disabled by defining ENUMERATE_CONTROL_INTF_AS_WINUSB to
+    0
+  * ADDED: HW test for vendor specific control interface
+  * FIXED:     Compiler error when PDM mics used and EXCLUDE_USB_AUDIO_MAIN is
+    not defined.
+  * CHANGED:   AN00248 updated so that it uses lib_xua main instead of own main
+    function.
   * CHANGED:  `XUD_TILE` define is now derived form lib_xud's USB_TILE setting
     rather than being set to 0 as a default.
 

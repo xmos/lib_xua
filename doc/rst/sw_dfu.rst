@@ -118,8 +118,8 @@ The GUID is required to access the DFU interface from a user application running
 
 .. note::
 
-   The default device interface GUID is specified in the ``WINUSB_DEVICE_INTERFACE_GUID`` define in ``xua_conf_default.h``.
-   Users can override this by redefining ``WINUSB_DEVICE_INTERFACE_GUID`` in the application. A utility such as `guidgenerator <https://guidgenerator.com/>`_ can be used for generating a GUID.
+   The default device interface GUID for the DFU interfaces is specified in the ``WINUSB_DEVICE_INTERFACE_GUID_DFU`` define in ``xua_conf_default.h``.
+   Users can override this by redefining ``WINUSB_DEVICE_INTERFACE_GUID_DFU`` in the application. A utility such as `guidgenerator <https://guidgenerator.com/>`_ can be used for generating a GUID.
 
 .. tip::
 
