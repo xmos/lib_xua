@@ -20,7 +20,7 @@ set(APP_COMPILER_FLAGS_audio_control_dfu ${COMMON_FLAGS}
                            -DNUM_USB_CHAN_OUT=8
                            -DI2S_CHANS_ADC=8
                            -DI2S_CHANS_DAC=8
-                           -DUSB_CONTROL_DESCS=1
+                           -DXUA_USB_CONTROL_DESCS=1
                            -DXUA_DFU_EN=1)
 # audio + control
 set(APP_COMPILER_FLAGS_audio_control ${COMMON_FLAGS}
@@ -29,7 +29,7 @@ set(APP_COMPILER_FLAGS_audio_control ${COMMON_FLAGS}
                            -DNUM_USB_CHAN_OUT=8
                            -DI2S_CHANS_ADC=8
                            -DI2S_CHANS_DAC=8
-                           -DUSB_CONTROL_DESCS=1
+                           -DXUA_USB_CONTROL_DESCS=1
                            -DXUA_DFU_EN=0)
 
 # Enumerate with only a single interface for Vendor specific control
@@ -39,7 +39,7 @@ set(APP_COMPILER_FLAGS_control_only ${COMMON_FLAGS}
                            -DNUM_USB_CHAN_OUT=0
                            -DI2S_CHANS_ADC=8
                            -DI2S_CHANS_DAC=8
-                           -DUSB_CONTROL_DESCS=1
+                           -DXUA_USB_CONTROL_DESCS=1
                            -DXUA_DFU_EN=0)
 
 set(APP_INCLUDES src ../../test_dfu/src)

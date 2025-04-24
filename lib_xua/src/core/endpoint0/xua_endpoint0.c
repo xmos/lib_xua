@@ -347,7 +347,7 @@ void XUA_Endpoint0_setStrTable() {
 #if XUA_DFU_EN
     concatenateAndCopyStrings(g_vendor_str, " DFU", g_strTable.dfuStr);
 #endif
-#if USB_CONTROL_DESCS
+#if XUA_USB_CONTROL_DESCS
     concatenateAndCopyStrings(g_vendor_str, " Control", g_strTable.ctrlStr);
 #endif
 #ifdef MIDI
@@ -472,7 +472,7 @@ static void update_guid_in_msos_desc(const char *guid_str_dfu, const char *guid_
     }
 #endif
 
-#if (USB_CONTROL_DESCS && ENUMERATE_CONTROL_INTF_AS_WINUSB)
+#if (XUA_USB_CONTROL_DESCS && ENUMERATE_CONTROL_INTF_AS_WINUSB)
     msos_guid_ptr = desc_ms_os_20_composite.msos_desc_registry_property_control.PropertyData;
     for(int i=0; i<DEVICE_INTERFACE_GUID_MAX_STRLEN; i++) // Convert to Unicode
     {
@@ -489,7 +489,7 @@ static void update_guid_in_msos_desc(const char *guid_str_dfu, const char *guid_
         msos_guid_ptr[2*i] = guid_str_dfu[i];
         msos_guid_ptr[2*i + 1] = 0x0;
     }
-#elif (USB_CONTROL_DESCS && ENUMERATE_CONTROL_INTF_AS_WINUSB)
+#elif (XUA_USB_CONTROL_DESCS && ENUMERATE_CONTROL_INTF_AS_WINUSB)
     for(int i=0; i<DEVICE_INTERFACE_GUID_MAX_STRLEN; i++)
     {
         msos_guid_ptr[2*i] = guid_str_control[i];

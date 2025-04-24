@@ -149,7 +149,7 @@ typedef struct
 typedef struct {
   MSOS_desc_header_t              msos_desc_header;
   MSOS_desc_cfg_subset_header_t   msos_desc_cfg_subset_header;
-#if (USB_CONTROL_DESCS && ENUMERATE_CONTROL_INTF_AS_WINUSB)
+#if (XUA_USB_CONTROL_DESCS && ENUMERATE_CONTROL_INTF_AS_WINUSB)
   MSOS_desc_fn_subset_header_t    msos_fn_subset_header_control;
   MSOS_desc_compat_id_t           msos_desc_compat_id_control;
   MSOS_desc_registry_property_t   msos_desc_registry_property_control;
@@ -185,7 +185,7 @@ MSOS_desc_composite_t desc_ms_os_20_composite =
     .bReserved = 0,
     .wTotalLength = sizeof(MSOS_desc_composite_t) - sizeof(MSOS_desc_header_t)
   },
-#if (USB_CONTROL_DESCS && ENUMERATE_CONTROL_INTF_AS_WINUSB)
+#if (XUA_USB_CONTROL_DESCS && ENUMERATE_CONTROL_INTF_AS_WINUSB)
   .msos_fn_subset_header_control =
   {
     .wLength = sizeof(MSOS_desc_fn_subset_header_t),

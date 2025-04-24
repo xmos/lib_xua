@@ -41,7 +41,7 @@ pipeline {
 
     string(
       name: 'INFR_APPS_VERSION',
-      defaultValue: 'add_optional_sections_to_readme_check',
+      defaultValue: 'develop',
       description: 'The infr_apps version'
     )
   }

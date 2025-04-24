@@ -730,7 +730,7 @@
  * @brief Device firmware version number in Binary Coded Decimal format: 0xJJMN where JJ: major, M: minor, N: sub-minor version number.
  */
 #ifndef BCD_DEVICE_N
-#define BCD_DEVICE_N             (1)
+#define BCD_DEVICE_N             (0)
 #endif
 
 /**
@@ -1688,14 +1688,14 @@ enum USBEndpointNumber_Out
  * When enabled, device enumerates with an extra Vendor specific control interface with no associated endpoints
  * Default: Disabled by default
  */
-#ifndef USB_CONTROL_DESCS
-#define USB_CONTROL_DESCS    0
+#ifndef XUA_USB_CONTROL_DESCS
+#define XUA_USB_CONTROL_DESCS    0
 #endif
 
 /**
  * @brief Enable Vendor specific control interface to enumerate as WinUSB on Windows
  *
- * Allow the Vendor specific control interface, if enabled (USB_CONTROL_DESCS defined to 1), to enumerate as WinUSB on Windows.
+ * Allow the Vendor specific control interface, if enabled (XUA_USB_CONTROL_DESCS defined to 1), to enumerate as WinUSB on Windows.
  * Default: Enabled by default. If disabled, manual driver installation for the control interface would
  * be required on Windows
  */
