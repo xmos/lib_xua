@@ -77,7 +77,7 @@ also defined in the ``main()`` function in `lib_xua`, are required.
 Allocating hardware resources for lib_mic_array
 -----------------------------------------------
 
-``lib_mic_array`` requires a single 1-bit port for PDM data from two microphones in this example. Each microphone is configured
+In this example ``lib_mic_array`` requires a single 1-bit port for PDM data from two microphones. Each microphone is configured
 to produce a PDM sample on an opposite clock edge from the other. This means the the data is effectively double
 data rate (DDR) with respect to the PDM clock.
 
