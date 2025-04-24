@@ -27,7 +27,7 @@ The CMakeLists.txt file
 =======================
 
 To start you need to add ``lib_xua`` to the dependent module list in the CMakeLists.txt
-file as well as ``lib_board_supprt`` which contains code to setup the audio hardware::
+file as well as ``lib_board_support`` which contains code to setup the audio hardware::
 
   set(APP_DEPENDENT_MODULES "lib_xua",
                             "lib_board_support(1.1.1))
