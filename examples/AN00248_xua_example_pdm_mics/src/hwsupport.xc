@@ -8,11 +8,13 @@
 #include "xua.h"
 #include "xk_evk_xu316/board.h"
 
-
 void AudioHwInit()
 {
     xk_evk_xu316_config_t hw_config = {MCLK_48};
     xk_evk_xu316_AudioHwInit(hw_config);
+
+    const int samFreq = 48000; /* xk_evk_xu316_AudioHwConfig doesn't like rates below 22kHz so force to 48k which works OK */
+    xk_evk_xu316_AudioHwConfig(samFreq, MCLK_48, 0, 32, 32);
 
     return;
 }
@@ -21,9 +23,7 @@ void AudioHwInit()
 void AudioHwConfig(unsigned samFreq, unsigned mClk, unsigned dsdMode,
     unsigned sampRes_DAC, unsigned sampRes_ADC)
 {
-    samFreq = 48000; /* xk_evk_xu316_AudioHwConfig doesn't like rates below 22kHz so force to 48k which works OK */
-    xk_evk_xu316_AudioHwConfig(samFreq, mClk, dsdMode, sampRes_DAC, sampRes_ADC);
-
+    /* Do nothing - Audio HW already setup by AudioHwInit */
     return;
 }
 //:

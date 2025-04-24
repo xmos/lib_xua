@@ -859,7 +859,16 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
                 AudioHwConfig_UnMute();
             }
 
-            if(!firstRun)
+
+            if(firstRun)
+            {
+#if (XUA_NUM_PDM_MICS > 0)
+            /* Send decimation factor to PDM task(s) */
+                user_pdm_init();
+                c_pdm_in <: curSamFreq / AUD_TO_MICS_RATIO;
+#endif
+            }
+            else
             {
                 /* TODO wait for good mclk instead of delay */
                 /* No delay for DFU modes */
@@ -900,11 +909,6 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
                     outuint(c_spdif_out, mClk);
 #endif
 
-#if (XUA_NUM_PDM_MICS > 0)
-                    /* Send decimation factor to PDM task(s) */
-                    user_pdm_init();
-                    c_pdm_in <: curSamFreq / AUD_TO_MICS_RATIO;
-#endif
 
 #if (XUA_ADAT_TX_EN)
                     // Configure ADAT parameters ...
@@ -938,6 +942,7 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
                        , c_pdm_in
 #endif
                       , p_lrclk, p_bclk, p_i2s_dac, p_i2s_adc);
+
 
 #if (XUA_USB_EN)
                     /* Now perform any additional inputs and update state accordingly */

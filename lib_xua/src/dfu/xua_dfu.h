@@ -99,7 +99,11 @@ USB_Config_Descriptor_DFU_t DFUcfgDesc = {
         .bInterfaceClass               = 0xFE,
         .bInterfaceSubClass            = 0x01,
         .bInterfaceProtocol            = 0x02,
+#if (XUA_DFU_EN == 1)
         .iInterface                    = offsetof(StringDescTable_t, dfuStr)/sizeof(char *), /* 8 iInterface */
+#else
+        .iInterface                    = 0,
+#endif
     },
     .FunctionalDesc = {
         .bLength = sizeof(USB_DFU_Functional_Descriptor_t),
