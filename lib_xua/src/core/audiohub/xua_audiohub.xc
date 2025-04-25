@@ -533,7 +533,7 @@ unsigned static AudioHub_MainLoop(chanend ?c_out, chanend ?c_spd_out
                     else
                         command = DoSampleTransfer(c_out, 0, underflowWord);
 
-                    if(command)
+                    if(command != XUA_AUDCTL_NO_COMMAND)
                     {
                         return command;
                     }
@@ -555,12 +555,12 @@ unsigned static AudioHub_MainLoop(chanend ?c_out, chanend ?c_spd_out
 }
 
 /* This helper function processes the command from Decouple when audiohub breaks */
-void process_command(unsigned command,
-                     chanend c_aud,
-                     unsigned &curSamFreq,
-                     unsigned &dsdMode,
-                     unsigned &curSamRes_DAC,
-                     unsigned &audioActive)
+static void process_command(unsigned command,
+                            chanend c_aud,
+                            unsigned &curSamFreq,
+                            unsigned &dsdMode,
+                            unsigned &curSamRes_DAC,
+                            unsigned &audioActive)
 {
     if(command == SET_SAMPLE_FREQ)
     {

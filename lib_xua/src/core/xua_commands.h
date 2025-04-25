@@ -25,6 +25,8 @@ enum
 };
 
 /* c_aud_ctl commands - These are propagated from EP0 through EP buffer to Decouple. */
+#define XUA_AUDCTL_NO_COMMAND   0 /* No command from decouple - carry on exchanging samples */
+
 /* These commands will reach I2S and will cause the audioloop to break and restart*/
 #define SET_SAMPLE_FREQ         4
 #define SET_STREAM_FORMAT_OUT   8
