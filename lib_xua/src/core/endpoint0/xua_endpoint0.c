@@ -12,6 +12,7 @@
 #include <string.h>
 #include <xclib.h>
 #include <xassert.h>
+#include <stdio.h>
 #include "xua.h"
 
 #if XUA_USB_EN
@@ -23,6 +24,7 @@
 #include "xua_commands.h"
 #include "audiostream.h"
 #include "hostactive.h"
+#include "suspend.h"
 #include "vendorrequests.h"
 #include "xc_ptr.h"
 #include "xua_ep0_uacreqs.h"
@@ -774,13 +776,14 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
             case USB_BMREQ_H2D_STANDARD_DEV:
 
                 /* Inspect for actual request */
-                switch( sp.bRequest )
+                switch(sp.bRequest)
                 {
                     /* Standard request: SetConfiguration */
                     /* Overriding implementation in USB_StandardRequests */
                     case USB_SET_CONFIGURATION:
 
-                        //if(g_current_config == 1)
+                        /* Check if moving into a configured state */
+                        if((g_currentConfig == 0) && (sp.wValue == 1))
                         {
                             /* Consider host active with valid driver at this point */
                             UserHostActive(1);
@@ -1208,37 +1211,80 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
 #endif
     }
 
-    if (result == XUD_RES_RST)
+    if(result == XUD_RES_UPDATE)
     {
-#ifdef __XC__
-        g_curUsbSpeed = XUD_ResetEndpoint(ep0_out, ep0_in);
-#else
-        g_curUsbSpeed = XUD_ResetEndpoint(ep0_out, &ep0_in);
-#endif
-        g_currentConfig = 0;
-        g_curStreamAlt_Out = 0;
-        g_curStreamAlt_In = 0;
+        XUD_BusState_t busState = XUD_GetBusState(ep0_out, &ep0_in);
+
+        if(busState == XUD_BUS_RESET)
+        {
+            g_curUsbSpeed = XUD_ResetEndpoint(ep0_out, &ep0_in);
+
+            if(g_curStreamAlt_Out || g_curStreamAlt_In)
+            {
+                UserAudioStreamState(0, 0);
+                g_curStreamAlt_Out = 0;
+                g_curStreamAlt_In = 0;
+            }
+
+            if(g_currentConfig)
+            {
+                UserHostActive(0);
+                g_currentConfig = 0;
+            }
 
 #if XUA_DFU_EN
-        if (DFUReportResetState(null))
-        {
-            if (!DFU_mode_active)
+            if (DFUReportResetState(null))
             {
-                DFU_mode_active = 1;
+                if (!DFU_mode_active)
+                {
+                    if (!DFU_mode_active)
+                    {
+                        DFU_mode_active = 1;
+                    }
+                }
+                else
+                {
+                    if (DFU_mode_active)
+                    {
+                        DFU_mode_active = 0;
+
+                        /* Send reboot command */
+                        DFUDelay(DELAY_BEFORE_REBOOT_FROM_DFU_MS * 100000);
+                        device_reboot();
+                    }
+                }
             }
+#endif
         }
         else
         {
-            if (DFU_mode_active)
+            if (busState == XUD_BUS_SUSPEND)
             {
-                DFU_mode_active = 0;
+                /* Device moving from CONFIGURED to SUSPENDED state */
+                if(g_currentConfig)
+                {
+                    UserHostActive(0);
+                }
 
-                /* Send reboot command */
-                DFUDelay(DELAY_BEFORE_REBOOT_FROM_DFU_MS * 100000);
-                device_reboot();
+                // Perform user-defined suspend behaviour
+                XUA_UserSuspendPowerDown();
             }
+            else // XUD_BUS_RESUME
+            {
+                // Peform user-defined resume behaviour
+                XUA_UserSuspendPowerUp();
+
+                /* If audio interfaces still active call user call back */
+                if(g_curStreamAlt_Out || g_curStreamAlt_In)
+                    UserAudioStreamState(g_curStreamAlt_Out > 0, g_curStreamAlt_In > 0);
+
+                /* Device moving from SUSPENDED to CONFIGURED state - call user call back */
+                if(g_currentConfig == 1)
+                    UserHostActive(1);
+            }
+            /* Acknowledge back to XUD letting it know we've handled suspend/resume */
+            XUD_Ack(ep0_out, &ep0_in); // This should set ep_info[i]
         }
-#endif
     }
 }
 
@@ -1251,7 +1297,7 @@ void XUA_Endpoint0(chanend c_ep0_out, chanend c_ep0_in, NULLABLE_RESOURCE(chanen
 
     while(1)
     {
-        /* Returns XUD_RES_OKAY for success, XUD_RES_RST for bus reset */
+        /* Returns XUD_RES_OKAY for success, XUD_RES_UPDATE for bus status update */
         XUD_Result_t result = USB_GetSetupPacket(ep0_out, ep0_in, &sp);
         XUA_Endpoint0_loop(result, sp, c_ep0_out, c_ep0_in, c_aud_ctl, c_mix_ctl, c_clk_ctl, dfuInterface VENDOR_REQUESTS_PARAMS_);
     }

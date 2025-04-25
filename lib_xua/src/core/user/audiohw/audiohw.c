@@ -1,7 +1,8 @@
 // Copyright 2023-2025 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
-/* Default implementations of AudioHwInit(), AudioHwConfig(), AudioHwConfig_Mute() and AudioHwConfig_UnMute() */
+/* Default implementations of AudioHwInit(), AudioHwShutdown(), AudioHwConfig(),
+ * AudioHwConfig_Mute() and AudioHwConfig_UnMute() */
 
 void AudioHwInit() __attribute__ ((weak));
 void AudioHwInit()
