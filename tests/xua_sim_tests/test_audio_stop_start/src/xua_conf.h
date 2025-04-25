@@ -34,6 +34,6 @@
 #define AUDIO_CLASS 2
 #define AUDIO_CLASS_FALLBACK 0
 #define BCD_DEVICE 0x1234
-#define XUA_DFU_EN          0
+#define XUA_DFU_EN          1
 
 #endif

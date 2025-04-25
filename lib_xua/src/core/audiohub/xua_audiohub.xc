@@ -622,7 +622,6 @@ static void dummy_deliver(chanend ?c_out, unsigned &command, unsigned sampFreq)
     int tmr_trigger;
     tmr :> tmr_trigger;
     tmr_trigger += wait_ticks;
-    printstrln("dummy_deliver");
 
     while (1)
     {
@@ -675,7 +674,6 @@ static unsigned dummy_deliver_idle(chanend c_out, unsigned sampFreq)
     int tmr_trigger;
     tmr :> tmr_trigger;
     tmr_trigger += wait_ticks;
-//    printstrln("dummy_deliver_idle");
 
     const unsigned underflowWord = 0; // TODO make appropriate for DSD
     outct(c_out, XS1_CT_END);
