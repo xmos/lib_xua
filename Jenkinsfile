@@ -31,7 +31,7 @@ pipeline {
   parameters {
     string(
       name: 'TOOLS_VERSION',
-      defaultValue: '15.3.0',
+      defaultValue: '15.3.1',
       description: 'The XTC tools version'
     )
     string(
@@ -41,7 +41,7 @@ pipeline {
 
     string(
       name: 'INFR_APPS_VERSION',
-      defaultValue: 'develop',
+      defaultValue: 'v2.1.0',
       description: 'The infr_apps version'
     )
   }
