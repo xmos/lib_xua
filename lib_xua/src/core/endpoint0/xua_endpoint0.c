@@ -730,7 +730,7 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
                     {
                         // in: 0 -> 1
                         g_curStreamAlt_In = sp.wValue;
-pr                        if ((g_curStreamAlt_In > 0) && (oldStreamAlt_In == 0))
+                        if ((g_curStreamAlt_In > 0) && (oldStreamAlt_In == 0))
                         {
                             UserAudioStreamState(g_curStreamAlt_In > 0, g_curStreamAlt_Out > 0);
                             outct(c_aud_ctl, SET_STREAM_INPUT_START);
