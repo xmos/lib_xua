@@ -1,4 +1,4 @@
-// Copyright 2011-2024 XMOS LIMITED.
+// Copyright 2011-2025 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 /**
  * @brief   Implements endpoint zero for an USB Audio 1.0/2.0 device
@@ -6,12 +6,14 @@
  */
 
 #include <xs1.h>
+#include <platform.h>
 #include <safestring.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
 #include <xclib.h>
 #include <xassert.h>
+#include <stdio.h>
 #include "xua.h"
 
 #if XUA_USB_EN
@@ -26,6 +28,9 @@
 #include "vendorrequests.h"
 #include "xc_ptr.h"
 #include "xua_ep0_uacreqs.h"
+
+void powerDown();
+void powerUp();
 
 #if XUA_OR_STATIC_HID_ENABLED
 #include "hid.h"
@@ -627,7 +632,7 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
 
                                     if(g_curUsbSpeed == XUD_SPEED_HS)
                                     {
-                                        outuint(c_aud_ctl, g_chanCount_Out_HS[sp.wValue-1]);                 /* Channel count */
+                                        outuint(c_aud_ctl, g_chanCount_Out_HS[sp.wValue-1]);  /* Channel count */
                                         outuint(c_aud_ctl, g_subSlot_Out_HS[sp.wValue-1]);    /* Subslot */
                                         outuint(c_aud_ctl, g_sampRes_Out_HS[sp.wValue-1]);    /* Resolution */
                                     }
@@ -1230,39 +1235,57 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
 #endif
     }
 
-    if (result == XUD_RES_RST)
+    if(result == XUD_RES_UPDATE)
     {
-#ifdef __XC__
-        g_curUsbSpeed = XUD_ResetEndpoint(ep0_out, ep0_in);
-#else
-        g_curUsbSpeed = XUD_ResetEndpoint(ep0_out, &ep0_in);
-#endif
-        g_currentConfig = 0;
-        g_curStreamAlt_Out = 0;
-        g_curStreamAlt_In = 0;
+        XUD_BusState_t busState = XUD_GetBusState(ep0_out, &ep0_in);
+
+        if(busState == XUD_BUS_RESET)
+        {
+            //printstr("EP0 RESET\n");
+            g_curUsbSpeed = XUD_ResetEndpoint(ep0_out, &ep0_in);
+            g_currentConfig = 0;
+            g_curStreamAlt_Out = 0;
+            g_curStreamAlt_In = 0;
 
 #if (XUA_DFU_EN == 1)
-        if (DFUReportResetState(null))
-        {
-            if (!DFU_mode_active)
+            if (DFUReportResetState(null))
             {
-                DFU_mode_active = 1;
+                if (!DFU_mode_active)
+                {
+                    DFU_mode_active = 1;
+                }
             }
-        }
-        else
-        {
-            if (DFU_mode_active)
+            else
             {
-                DFU_mode_active = 0;
+                if (DFU_mode_active)
+                {
+                    DFU_mode_active = 0;
 
-                /* Send reboot command */
-                DFUDelay(DELAY_BEFORE_REBOOT_FROM_DFU_MS * 100000);
-                device_reboot();
+                    /* Send reboot command */
+                    DFUDelay(DELAY_BEFORE_REBOOT_FROM_DFU_MS * 100000);
+                    device_reboot();
+                }
             }
-        }
 #endif
+        }
+        else if (busState == XUD_BUS_SUSPEND)
+        {
+            //printstr("XUA: GOT SUSPEND\n");
+            powerDown();
+            XUD_Ack(ep0_out, &ep0_in);
+            //printstr("XUA: ACKED SUSPEND \n");
+            XUD_WaitForSuspendEnd(ep0_out, &ep0_in);
+            //printstr("XUA: RESUME\n");
+            powerUp();
+            XUD_Ack(ep0_out, &ep0_in);
+           // printstr("XUA: ACKED RESUME\n");
+        }
     }
 }
+
+#define STR(x)   #x
+#define SHOW_DEFINE(x) printf("%s=%s\n", #x, STR(x))
+
 
 /* Endpoint 0 function.  Handles all requests to the device */
 void XUA_Endpoint0(chanend c_ep0_out, chanend c_ep0_in, NULLABLE_RESOURCE(chanend, c_aud_ctl),
