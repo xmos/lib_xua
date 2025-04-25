@@ -83,13 +83,18 @@ void send_cmd(chanend c_out, unsigned cmd, unsigned val)
     {
       case SET_SAMPLE_FREQ:
         outuint(c_out, val); // note 0x12345678 for DFU
+        printstr("sent SET_SAMPLE_FREQ\n");
         break;
       case SET_STREAM_FORMAT_OUT:
         outuint(c_out, 0);
         outuint(c_out, val);
+        printstr("sent SET_STREAM_FORMAT_OUT\n");
         break;
       case SET_AUDIO_START:
+        printstr("sent SET_AUDIO_START\n");
+        break;
       case SET_AUDIO_STOP:
+        printstr("sent SET_AUDIO_STOP\n");
         break;
       default:
         printstr("Error - incorrect command\n");
@@ -104,12 +109,14 @@ void generator(chanend c_out)
   send_cmd(c_out, SET_SAMPLE_FREQ, 96000);
   send_audio_frames(c_out, 5);
   send_cmd(c_out, SET_AUDIO_STOP, 0);
-  send_audio_frames(c_out, 5);
+  send_audio_frames(c_out, 1); // Just send one frame to check we can do it - looping of dummy_deliver is much slower
   send_cmd(c_out, SET_STREAM_FORMAT_OUT, 24);
-  send_audio_frames(c_out, 5);
+  send_audio_frames(c_out, 1);
   send_cmd(c_out, SET_AUDIO_START, 0);
   send_audio_frames(c_out, 5);
   printstr("Fin\n");
+  send_cmd(c_out, SET_SAMPLE_FREQ, AUDIO_STOP_FOR_DFU); // make sure we can enter DFU
+  send_audio_frames(c_out, 5);
 }
 
 int main(void)

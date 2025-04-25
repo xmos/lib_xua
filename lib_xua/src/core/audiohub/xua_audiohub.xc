@@ -255,7 +255,7 @@ unsigned static AudioHub_MainLoop(chanend ?c_out, chanend ?c_spd_out
     outuint(c_adat_out, (unsigned) samplePtr);
     }
 #endif
-    if(command)
+    if(command != XUA_AUDCTL_NO_COMMAND)
     {
         return command;
     }
@@ -667,6 +667,32 @@ static void dummy_deliver(chanend ?c_out, unsigned &command, unsigned sampFreq)
 }
 #endif
 
+static unsigned dummy_deliver_idle(chanend c_out, unsigned sampFreq)
+{
+    timer tmr;
+    const int wait_ticks = XS1_TIMER_HZ / sampFreq;
+    int tmr_trigger;
+    tmr :> tmr_trigger;
+    tmr_trigger += wait_ticks;
+
+    const unsigned underflowWord = 0; // TODO make appropriate for DSD
+    outct(c_out, XS1_CT_END);
+
+
+    while(1)
+    {
+        unsigned command = DoSampleTransfer(c_out, 0, underflowWord);
+        if(command)
+        {
+            return command;
+        }
+        tmr when timerafter(tmr_trigger) :> void;
+        tmr_trigger += wait_ticks;
+    }
+
+    return 0;
+}
+
 
 #if XUA_DFU_EN
  [[distributable]]
@@ -925,7 +951,6 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
                     outuint(c_adat_out, adatMultiple);
                     outuint(c_adat_out, adatSmuxMode);
 #endif
-
                     command = AudioHub_MainLoop(c_aud
 #if (XUA_SPDIF_TX_EN)
                        , c_spdif_out
@@ -944,6 +969,7 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
                        , c_pdm_in
 #endif
                       , p_lrclk, p_bclk, p_i2s_dac, p_i2s_adc);
+
 
 
 #if (XUA_USB_EN)
@@ -996,6 +1022,9 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
         } /* while(audioActive) */
 
         AudioHwDeInit();
-        audioActive = 1;
+
+        /* Now run dummy loop with no IO. This is sufficient to poll for commands from decouple */
+        command = dummy_deliver_idle(c_aud, 1000); /* Run loop at 1kHz for min power */
+        process_command(command, c_aud, curSamFreq, dsdMode, curSamRes_DAC, audioActive);
     } /* while(1)*/
 }

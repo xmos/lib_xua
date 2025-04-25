@@ -25,7 +25,7 @@ def do_test(options, capfd):
     )
 
 
-    max_cycles = 1500000  # enough to reach the 10 skip + 100 test in sim at 48kHz
+    max_cycles = 3000000  # enough to send all of the frames in the test
 
     simargs = [
         "--max-cycles",
