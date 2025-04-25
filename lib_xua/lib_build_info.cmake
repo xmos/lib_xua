@@ -17,6 +17,7 @@ set(LIB_INCLUDES api
                  src/core/user/audiohw
                  src/core/user/hid
                  src/core/user/hostactive
+                 src/core/user/suspend
                  src/hid
                  src/midi)
 set(LIB_OPTIONAL_HEADERS    xua_conf.h
