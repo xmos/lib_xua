@@ -1126,6 +1126,20 @@ void XUA_Buffer_Decouple(chanend c_mix_out
                 {
                     int len;
                     asm volatile("ldw %0, %1[0]":"=r"(len):"r"(aud_to_host_buffer));
+
+                    unsigned N = 0;
+                    unsigned full_len = len;
+                    unsigned max_len = 0, offset = 15;
+                    asm volatile("ldw %0, %1[%2]":"=r"(max_len):"r"(aud_to_host_usb_ep), "r" (offset));
+
+                    while(full_len != 0){
+                        unsigned tmp = (len >= max_len) ? max_len : len;
+                        full_len -= tmp;
+                        N++;
+                    }
+                    offset = 18;
+                    asm volatile("stw %0, %1[%2]":"=r"(N):"r"(aud_to_host_usb_ep), "r" (offset));
+
                     XUD_SetReady_InPtr(aud_to_host_usb_ep, aud_to_host_buffer+4, len);
                 }
 

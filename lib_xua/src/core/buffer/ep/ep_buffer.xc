@@ -793,8 +793,17 @@ void XUA_Buffer_Ep(
             /* Sent audio packet DEVICE -> HOST */
             case XUD_SetData_Select(c_aud_in, ep_aud_in, result):
             {
+                unsigned remained = 0, offset = 19;
+                asm volatile("ldw %0, %1[%2]":"=r"(remained):"r"(ep_aud_in), "r" (offset));
                 /* Inform stream that buffer sent */
-                SET_SHARED_GLOBAL0(g_aud_to_host_flag, bufferIn+1);
+                if(!remained){
+                    SET_SHARED_GLOBAL0(g_aud_to_host_flag, bufferIn+1);
+                }
+                else{
+                    unsigned buff;
+                    asm volatile("ldw %0, %1[3]":"=r"(buff):"r"(ep_aud_in));
+                    XUD_SetReady_InPtr(ep_aud_in, buff, remained);
+                }
                 break;
             }
 #endif
