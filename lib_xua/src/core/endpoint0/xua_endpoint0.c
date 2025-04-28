@@ -1268,17 +1268,17 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
             }
 #endif
         }
-        else if (busState == XUD_BUS_SUSPEND)
+        else
         {
-            //printstr("XUA: GOT SUSPEND\n");
-            powerDown();
-            XUD_Ack(ep0_out, &ep0_in);
-            //printstr("XUA: ACKED SUSPEND \n");
-            XUD_WaitForSuspendEnd(ep0_out, &ep0_in);
-            //printstr("XUA: RESUME\n");
-            powerUp();
-            XUD_Ack(ep0_out, &ep0_in);
-           // printstr("XUA: ACKED RESUME\n");
+            if (busState == XUD_BUS_SUSPEND)
+            {
+                // Do suspend stuff
+            }
+            else
+            {
+                // Do resume stuff
+            }
+            XUD_Ack(ep0_out, &ep0_in); // This should set ep_info[i].resetting back to 0
         }
     }
 }
