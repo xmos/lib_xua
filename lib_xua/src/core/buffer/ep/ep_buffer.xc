@@ -34,8 +34,8 @@ extern unsigned int g_curSamFreqMultiplier;
 /* Without this, zero size input packets fill the input FIFO and it takes a long time to clear out when feedback starts */
 /* This can cause a delay to the decouple ISR being serviced pushing our I2S timing. Initialising solves this */
 unsigned g_speed = (AUDIO_CLASS == 2) ? (DEFAULT_FREQ/8000) << 16 : (DEFAULT_FREQ/1000) << 16;
-unsigned g_freqChange = 0;
-unsigned feedbackValid = 0;
+unsigned g_streamChange = 0;
+unsigned g_feedbackValid = 0;
 
 #if (XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
 /* When digital Rx enabled we enable an interrupt EP to inform host about changes in clock validity */
@@ -88,7 +88,7 @@ static void resetAsynchFeedback(int &sofCount, unsigned &clocks, long long &cloc
     clocks = 0;
     clockcounter = 0;
     mod_from_last_time = 0;
-    feedbackValid = 0;
+    g_feedbackValid = 0;
 
     /* Set g_speed to something sensible. We expect it to get over-written before stream time */
     int min, mid, max;
@@ -501,7 +501,7 @@ void XUA_Buffer_Ep(
                     /* Ideally we want to wait for handshake (and pass back up) here.  But we cannot keep this
                      * core locked, it must stay responsive to packets (MIDI etc) and SOFs.  So, set a flag and check for
                      * handshake elsewhere */
-                    SET_SHARED_GLOBAL(g_freqChange_sampFreq, receivedSampleFreq);
+                    SET_SHARED_GLOBAL(g_streamChange_sampFreq, receivedSampleFreq);
                 }
 #if (AUDIO_CLASS == 2)
                 else if(cmd == SET_STREAM_FORMAT_IN)
@@ -571,8 +571,8 @@ void XUA_Buffer_Ep(
 
                 /* Pass on sample freq change to decouple() via global flag (saves a chanend) */
                 /* Note: freqChange_flag now used to communicate other commands also */
-                SET_SHARED_GLOBAL0(g_freqChange, cmd);                /* Set command */
-                SET_SHARED_GLOBAL(g_freqChange_flag, cmd);            /* Set Flag */
+                SET_SHARED_GLOBAL0(g_streamChange, cmd);                /* Set command */
+                SET_SHARED_GLOBAL(g_streamChange_flag, cmd);            /* Set Flag */
 
                 /* Note no chk_ct(c, XS1_CT_END) because this is done in decouple */
                 break;
@@ -661,12 +661,12 @@ void XUA_Buffer_Ep(
 #endif
                 /* The time we base feedback on will be invalid until we get 2 SOF's */
                 /* Additionally whilst the SR is being changed we could get some invalid values due to clocks being changed etc */
-                GET_SHARED_GLOBAL(freqChange, g_freqChange);
-                if((freqChange == SET_SAMPLE_FREQ) || !feedbackValid)
+                GET_SHARED_GLOBAL(freqChange, g_streamChange);
+                if((freqChange == SET_SAMPLE_FREQ) || !g_feedbackValid)
                 {
                      /* Keep getting MCLK counts */
                     lastClock = u_tmp;
-                    feedbackValid = 1;
+                    g_feedbackValid = 1;
                 }
                 else
                 {
