@@ -1683,6 +1683,27 @@ enum USBEndpointNumber_Out
 #endif
 
 /**
+ * @brief Enable power saving when device is enumerated but audio in not curretnly streaming
+ *
+ * If set to 1 then transitions to ALT interface 0 (streaming stopped) will cause AudioHub to cease 
+ * looping and no-longer driver the I2S/TDM lines. In addition, the callback AudioHwDeInit() is called
+ * which allows the user to run any specific code (eg. CODEC power-down and/or disable master clock)
+ * to further reduce system power in this state. AudioHwInit() and AudioHwConfig() will always be called
+ * again prior to USB audio streaming. The transition to the low power state will only occur when *both*
+ * input *and* output interfaces are not streaming. As soon as either input or output streaming starts
+ * then audiohub is restarted.
+ * 
+ * If set to zero or undefined (default behaviour) then AudioHub will always continue looping even when
+ * audio streaming stops. This behaviour may be preferable in applications where frequent initialisation
+ * of the mixed signal hardware is undesirable, where other parts of the system rely on I2S clocks being
+ * conitinuously available or in MI (musical instrument) applications where functions such as mixer need
+ * to continuously operate regardless of USB streaming state.
+ */
+#ifndef XUA_LOW_POWER_NON_STREAMING
+#define XUA_LOW_POWER_NON_STREAMING                      0
+#endif
+
+/**
  * @brief Enable Vendor specific control interface
  *
  * When enabled, device enumerates with an extra Vendor specific control interface with no associated endpoints

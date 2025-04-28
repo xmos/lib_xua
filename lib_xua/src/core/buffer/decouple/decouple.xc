@@ -981,10 +981,12 @@ void XUA_Buffer_Decouple(chanend c_mix_out
                 any_stream_active_current = input_stream_active || output_stream_active;
                 if(any_stream_active_current != any_stream_active_old)
                 {
-                    /* Forward stream active to audio if needed - this will cause the audio loop to break */
+#ifdef XUA_LOW_POWER_NON_STREAMING
+                    /* Forward stream active command to audio if needed - this will cause the audio loop to break */
                     inuint(c_mix_out);
                     outct(c_mix_out, any_stream_active_current ? SET_AUDIO_START : SET_AUDIO_STOP);
                     chkct(c_mix_out, XS1_CT_END);
+#endif
                 }
                 any_stream_active_old = any_stream_active_current;
 
