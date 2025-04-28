@@ -1273,24 +1273,25 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
             g_curStreamAlt_In = 0;
 
 #if XUA_DFU_EN
-        if (DFUReportResetState(null))
-        {
-            if (!DFU_mode_active)
+            if (DFUReportResetState(null))
             {
                 if (!DFU_mode_active)
                 {
-                    DFU_mode_active = 1;
+                    if (!DFU_mode_active)
+                    {
+                        DFU_mode_active = 1;
+                    }
                 }
-            }
-            else
-            {
-                if (DFU_mode_active)
+                else
                 {
-                    DFU_mode_active = 0;
+                    if (DFU_mode_active)
+                    {
+                        DFU_mode_active = 0;
 
-                    /* Send reboot command */
-                    DFUDelay(DELAY_BEFORE_REBOOT_FROM_DFU_MS * 100000);
-                    device_reboot();
+                        /* Send reboot command */
+                        DFUDelay(DELAY_BEFORE_REBOOT_FROM_DFU_MS * 100000);
+                        device_reboot();
+                    }
                 }
             }
 #endif
