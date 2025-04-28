@@ -116,8 +116,8 @@ unsigned g_aud_to_host_flag = 0;
 int buffer_aud_ctl_chan = 0;
 unsigned g_aud_from_host_flag = 0;
 unsigned g_aud_from_host_info;
-unsigned g_freqChange_flag = 0;
-unsigned g_freqChange_sampFreq = DEFAULT_FREQ;
+unsigned g_streamChange_flag = 0;
+unsigned g_streamChange_sampFreq = DEFAULT_FREQ;
 
 /* Global vars for sharing stream format change between buffer and decouple (save a channel) */
 unsigned g_formatChange_SubSlot;
@@ -582,7 +582,7 @@ __builtin_unreachable();
                  * Accept the packet, and throw away the oldest in the buffer */
 
                 unsigned sampFreq;
-                GET_SHARED_GLOBAL(sampFreq, g_freqChange_sampFreq);
+                GET_SHARED_GLOBAL(sampFreq, g_streamChange_sampFreq);
                 int min, mid, max;
                 GetADCCounts(sampFreq, min, mid, max);
                 const int max_pkt_size = ((max * g_curSubSlot_In * g_numUsbChan_In + 3) & ~0x3) + 4;
@@ -803,11 +803,11 @@ void XUA_Buffer_Decouple(chanend c_mix_out
 
             /* Check for freq change or other update */
 
-            GET_SHARED_GLOBAL(tmp, g_freqChange_flag);
+            GET_SHARED_GLOBAL(tmp, g_streamChange_flag);
             if (tmp == SET_SAMPLE_FREQ)
             {
-                SET_SHARED_GLOBAL(g_freqChange_flag, 0);
-                GET_SHARED_GLOBAL(sampFreq, g_freqChange_sampFreq);
+                SET_SHARED_GLOBAL(g_streamChange_flag, 0);
+                GET_SHARED_GLOBAL(sampFreq, g_streamChange_sampFreq);
 
                 /* Pass on to mixer */
                 DISABLE_INTERRUPTS();
@@ -850,7 +850,7 @@ void XUA_Buffer_Decouple(chanend c_mix_out
                 /* Wait for handshake back and pass back up */
                 chkct(c_mix_out, XS1_CT_END);
 
-                SET_SHARED_GLOBAL(g_freqChange, 0);
+                SET_SHARED_GLOBAL(g_streamChange, 0);
                 asm volatile("outct res[%0],%1"::"r"(buffer_aud_ctl_chan),"r"(XS1_CT_END));
 
                 ENABLE_INTERRUPTS();
@@ -869,7 +869,7 @@ void XUA_Buffer_Decouple(chanend c_mix_out
 
                 /* Change in IN channel count */
                 DISABLE_INTERRUPTS();
-                SET_SHARED_GLOBAL(g_freqChange_flag, 0);
+                SET_SHARED_GLOBAL(g_streamChange_flag, 0);
 
                 GET_SHARED_GLOBAL(g_numUsbChan_In, g_formatChange_NumChans);
                 GET_SHARED_GLOBAL(g_curSubSlot_In, g_formatChange_SubSlot);
@@ -900,7 +900,7 @@ void XUA_Buffer_Decouple(chanend c_mix_out
                     g_maxPacketSize = (MAX_DEVICE_AUD_PACKET_SIZE_MULT_FS * g_numUsbChan_In);
                 }
 
-                SET_SHARED_GLOBAL(g_freqChange, 0);
+                SET_SHARED_GLOBAL(g_streamChange, 0);
                 asm volatile("outct res[%0],%1"::"r"(buffer_aud_ctl_chan),"r"(XS1_CT_END));
 
                 ENABLE_INTERRUPTS();
@@ -912,7 +912,7 @@ void XUA_Buffer_Decouple(chanend c_mix_out
 
                 /* Change in OUT channel count - note we expect this on every stream start event */
                 DISABLE_INTERRUPTS();
-                SET_SHARED_GLOBAL(g_freqChange_flag, 0);
+                SET_SHARED_GLOBAL(g_streamChange_flag, 0);
                 GET_SHARED_GLOBAL(g_numUsbChan_Out, g_formatChange_NumChans);
                 GET_SHARED_GLOBAL(g_curSubSlot_Out, g_formatChange_SubSlot);
                 GET_SHARED_GLOBAL(dataFormat, g_formatChange_DataFormat);
@@ -952,14 +952,14 @@ void XUA_Buffer_Decouple(chanend c_mix_out
                 chkct(c_mix_out, XS1_CT_END);
                 asm volatile("outct res[%0],%1"::"r"(buffer_aud_ctl_chan),"r"(XS1_CT_END));
 
-                SET_SHARED_GLOBAL(g_freqChange, 0);
+                SET_SHARED_GLOBAL(g_streamChange, 0);
                 ENABLE_INTERRUPTS();
             }
 #endif /* (AUDIO_CLASS == 2) */
             else if(tmp >= SET_STREAM_INPUT_START && tmp <= SET_STREAM_OUTPUT_STOP)
             {
                 DISABLE_INTERRUPTS();
-                SET_SHARED_GLOBAL(g_freqChange_flag, 0);
+                SET_SHARED_GLOBAL(g_streamChange_flag, 0);
 
                 switch(tmp)
                 {
@@ -981,10 +981,12 @@ void XUA_Buffer_Decouple(chanend c_mix_out
                 any_stream_active_current = input_stream_active || output_stream_active;
                 if(any_stream_active_current != any_stream_active_old)
                 {
-                    /* Forward stream active to audio if needed - this will cause the audio loop to break */
+#ifdef XUA_LOW_POWER_NON_STREAMING
+                    /* Forward stream active command to audio if needed - this will cause the audio loop to break */
                     inuint(c_mix_out);
                     outct(c_mix_out, any_stream_active_current ? SET_AUDIO_START : SET_AUDIO_STOP);
                     chkct(c_mix_out, XS1_CT_END);
+#endif
                 }
                 any_stream_active_old = any_stream_active_current;
 
@@ -1101,7 +1103,7 @@ void XUA_Buffer_Decouple(chanend c_mix_out
 
                     /* Check if we have come out of underflow */
                     unsigned sampFreq;
-                    GET_SHARED_GLOBAL(sampFreq, g_freqChange_sampFreq);
+                    GET_SHARED_GLOBAL(sampFreq, g_streamChange_sampFreq);
                     int min, mid, max;
                     GetADCCounts(sampFreq, min, mid, max);
                     const int min_pkt_size = ((min * g_curSubSlot_In * g_numUsbChan_In + 3) & ~0x3) + 4;

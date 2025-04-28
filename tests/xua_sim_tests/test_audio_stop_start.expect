@@ -19,9 +19,13 @@ sent SET_STREAM_FORMAT_OUT
 AudioHwInit
 AudioHwDeInit
 Frame 0
+sent SET_SAMPLE_FREQ
+AudioHwInit
+AudioHwDeInit
+Frame 0
 sent SET_AUDIO_START
 AudioHwInit
-AudioHwConfig 96000
+AudioHwConfig 48000
 Frame 0
 Frame 1
 Frame 2

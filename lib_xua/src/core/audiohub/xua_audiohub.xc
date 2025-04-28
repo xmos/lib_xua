@@ -733,7 +733,8 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
     unsigned command;
     unsigned mClk;
     unsigned divide;
-    unsigned audioActive = 1;
+    unsigned audioActive = 1; /* Flag used to indicate whether both interfaces are set to Alt 0 or not for power saving option
+                                 This is only used when XUA_LOW_POWER_NON_STREAMING is define to non-zero */
     unsigned firstRun = 1;
 
     while(1)
@@ -763,7 +764,8 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
         /* Perform required CODEC/ADC/DAC initialisation */
         AudioHwInit();
 
-        while(audioActive)
+        /* Only break this loop if LP non streaming enabled and streams are both Alt 0 */
+        while(audioActive || (!XUA_LOW_POWER_NON_STREAMING))
         {
             /* Calculate what master clock we should be using */
             if (((MCLK_441) % curSamFreq) == 0)
@@ -1019,9 +1021,13 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
 #endif /* XUA_ADAT_TX_EN) */
                 } /* AudioHub_MainLoop and command handler */
             } /* par */
-        } /* while(audioActive) */
+        } /* while(audioActive || (!XUA_LOW_POWER_NON_STREAMING)) */
 
+
+        /* This code can only be reached if XUA_LOW_POWER_NON_STREAMING is enabled and all streams stopped */
         AudioHwDeInit();
+
+        /* TODO - DISABLE I2S PORTS */
 
         /* Now run dummy loop with no IO. This is sufficient to poll for commands from decouple */
         command = dummy_deliver_idle(c_aud, 1000); /* Run loop at 1kHz for min power */

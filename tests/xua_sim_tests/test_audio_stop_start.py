@@ -25,7 +25,7 @@ def do_test(options, capfd):
     )
 
 
-    max_cycles = 3000000  # enough to send all of the frames in the test
+    max_cycles = 4000000  # enough to send all of the frames in the test
 
     simargs = [
         "--max-cycles",

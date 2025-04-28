@@ -105,14 +105,16 @@ void send_cmd(chanend c_out, unsigned cmd, unsigned val)
 
 void generator(chanend c_out)
 {
-  send_audio_frames(c_out, 5);
+  send_audio_frames(c_out, 5); // First test normal streaming sample exchnge and SR change
   send_cmd(c_out, SET_SAMPLE_FREQ, 96000);
   send_audio_frames(c_out, 5);
-  send_cmd(c_out, SET_AUDIO_STOP, 0);
+  send_cmd(c_out, SET_AUDIO_STOP, 0); // Now go to idle mode
   send_audio_frames(c_out, 1); // Just send one frame to check we can do it - looping of dummy_deliver is much slower
-  send_cmd(c_out, SET_STREAM_FORMAT_OUT, 24);
+  send_cmd(c_out, SET_STREAM_FORMAT_OUT, 24); // Check stream format still works in idle mode
   send_audio_frames(c_out, 1);
-  send_cmd(c_out, SET_AUDIO_START, 0);
+  send_cmd(c_out, SET_SAMPLE_FREQ, 48000); // Check SR change works in idle mode - new value of 48000 should be set when we startup
+  send_audio_frames(c_out, 1);
+  send_cmd(c_out, SET_AUDIO_START, 0); // Exit idle mode - I2S now looping again, expect to see Init and Config
   send_audio_frames(c_out, 5);
   printstr("Fin\n");
   send_cmd(c_out, SET_SAMPLE_FREQ, AUDIO_STOP_FOR_DFU); // make sure we can enter DFU
