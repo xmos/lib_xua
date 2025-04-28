@@ -544,7 +544,12 @@ void XUA_Buffer_Ep(
 #endif /* (AUDIO_CLASS == 2) */
                 else if (cmd == SET_STREAM_INPUT_START || cmd == SET_STREAM_OUTPUT_START)
                 {
-                    /* Do nothing for now - just let cmd propagate through to decouple */
+#if XUA_LOW_POWER_NON_STREAMING
+                    /* Set g_speed to something sensible. We expect it to get over-written before stream time */
+                    int min, mid, max;
+                    GetADCCounts(sampleFreq, min, mid, max);
+                    g_speed = mid << 16;
+#endif
                 }
                 else if (cmd == SET_STREAM_INPUT_STOP || cmd == SET_STREAM_OUTPUT_STOP)
                 {
