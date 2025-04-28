@@ -1,4 +1,4 @@
-// Copyright 2022-2024 XMOS LIMITED.
+// Copyright 2022-2025 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
 /* This tests checks the parsing of control requests to endpoint 0 cause the correct changes in mixer output routing */

@@ -1,4 +1,4 @@
-// Copyright 2011-2024 XMOS LIMITED.
+// Copyright 2011-2025 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 #include "xua.h"
 
@@ -20,7 +20,7 @@
 #if (HID_CONTROLS)
 #include "user_hid.h"
 #endif
-#define MAX(x,y) ((x)>(y) ? (x) : (y))
+#define XUA_MAX(x,y) ((x)>(y) ? (x) : (y))
 
 /* TODO use SLOTSIZE to potentially save memory */
 /* Note we could improve on this, for one subslot is set to 4 */
@@ -33,13 +33,13 @@
 #define MAX_DEVICE_AUD_PACKET_SIZE_IN_HS  (MAX_DEVICE_AUD_PACKET_SIZE_MULT_HS * NUM_USB_CHAN_IN + 4)
 #define MAX_DEVICE_AUD_PACKET_SIZE_IN_FS  (MAX_DEVICE_AUD_PACKET_SIZE_MULT_FS * NUM_USB_CHAN_IN_FS + 4)
 
-#define MAX_DEVICE_AUD_PACKET_SIZE_IN (MAX(MAX_DEVICE_AUD_PACKET_SIZE_IN_FS, MAX_DEVICE_AUD_PACKET_SIZE_IN_HS))
+#define MAX_DEVICE_AUD_PACKET_SIZE_IN (XUA_MAX(MAX_DEVICE_AUD_PACKET_SIZE_IN_FS, MAX_DEVICE_AUD_PACKET_SIZE_IN_HS))
 
 /*** OUT PACKET SIZES ***/
 #define MAX_DEVICE_AUD_PACKET_SIZE_OUT_HS  (MAX_DEVICE_AUD_PACKET_SIZE_MULT_HS * NUM_USB_CHAN_OUT + 4)
 #define MAX_DEVICE_AUD_PACKET_SIZE_OUT_FS  (MAX_DEVICE_AUD_PACKET_SIZE_MULT_FS * NUM_USB_CHAN_OUT_FS + 4)
 
-#define MAX_DEVICE_AUD_PACKET_SIZE_OUT (MAX(MAX_DEVICE_AUD_PACKET_SIZE_OUT_FS, MAX_DEVICE_AUD_PACKET_SIZE_OUT_HS))
+#define MAX_DEVICE_AUD_PACKET_SIZE_OUT (XUA_MAX(MAX_DEVICE_AUD_PACKET_SIZE_OUT_FS, MAX_DEVICE_AUD_PACKET_SIZE_OUT_HS))
 
 /*** BUFFER SIZES ***/
 /* How many packets too allow for in buffer - minimum is 5.
@@ -56,11 +56,11 @@ drop packets after writing the 4th packet in the buffer
 #define BUFF_SIZE_IN_HS     MAX_DEVICE_AUD_PACKET_SIZE_IN_HS * BUFFER_PACKET_COUNT
 #define BUFF_SIZE_IN_FS     MAX_DEVICE_AUD_PACKET_SIZE_IN_FS * BUFFER_PACKET_COUNT
 
-#define BUFF_SIZE_OUT       MAX(BUFF_SIZE_OUT_HS, BUFF_SIZE_OUT_FS)
-#define BUFF_SIZE_IN        MAX(BUFF_SIZE_IN_HS, BUFF_SIZE_IN_FS)
+#define BUFF_SIZE_OUT       XUA_MAX(BUFF_SIZE_OUT_HS, BUFF_SIZE_OUT_FS)
+#define BUFF_SIZE_IN        XUA_MAX(BUFF_SIZE_IN_HS, BUFF_SIZE_IN_FS)
 
-#define OUT_BUFFER_PREFILL  (MAX(MAX_DEVICE_AUD_PACKET_SIZE_OUT_HS, MAX_DEVICE_AUD_PACKET_SIZE_OUT_FS))
-#define IN_BUFFER_PREFILL   (MAX(MAX_DEVICE_AUD_PACKET_SIZE_IN_HS, MAX_DEVICE_AUD_PACKET_SIZE_IN_FS)*2)
+#define OUT_BUFFER_PREFILL  (XUA_MAX(MAX_DEVICE_AUD_PACKET_SIZE_OUT_HS, MAX_DEVICE_AUD_PACKET_SIZE_OUT_FS))
+#define IN_BUFFER_PREFILL   (XUA_MAX(MAX_DEVICE_AUD_PACKET_SIZE_IN_HS, MAX_DEVICE_AUD_PACKET_SIZE_IN_FS)*2)
 
 /* Volume and mute tables */
 #if (OUT_VOLUME_IN_MIXER == 0) && (OUTPUT_VOLUME_CONTROL == 1)
@@ -568,7 +568,7 @@ __builtin_unreachable();
 
             /* Must allow space for at least one sample per channel, as these are written at the beginning of
              * the interrupt handler even if totalSampsToWrite is zero (will be overwritten by a later packet). */
-            int spaceRequired = MAX(totalSampsToWrite, 1) * g_numUsbChan_In * g_curSubSlot_In + 4;
+            int spaceRequired = XUA_MAX(totalSampsToWrite, 1) * g_numUsbChan_In * g_curSubSlot_In + 4;
             if (spaceRequired > BUFF_SIZE_IN - fillLevel)
             {
                 /* In pipe has filled its buffer - we need to overflow

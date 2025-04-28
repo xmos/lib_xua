@@ -1,4 +1,4 @@
-// Copyright 2024 XMOS LIMITED.
+// Copyright 2024-2025 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 #ifndef _XUA_CONF_H_
 #define _XUA_CONF_H_
@@ -9,7 +9,9 @@
 #define MCLK_441 (512 * 44100)
 #define MCLK_48 (512 * 48000)
 
-#define XUA_DFU_EN (1)
+#ifndef XUA_DFU_EN
+    #define XUA_DFU_EN (1)
+#endif
 
 #define PRODUCT_STR "XUA DFU Test"
 #define PID_AUDIO_2 (0x0016)

@@ -1,4 +1,4 @@
-// Copyright 2019-2023 XMOS LIMITED.
+// Copyright 2019-2025 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 #include <stdint.h>
 #include <xs1.h>
@@ -237,4 +237,4 @@ static unsigned HidTimeDiff( const unsigned earlierTime, const unsigned laterTim
   return ( earlierTime < laterTime ) ? laterTime - earlierTime : UINT_MAX - earlierTime + laterTime;
 }
 
-#endif /* ( 0 < HID_CONTROLS ) */
+#endif /* (XUD_HID_ENABLED) */

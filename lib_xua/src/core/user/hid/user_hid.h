@@ -1,4 +1,4 @@
-// Copyright 2013-2024 XMOS LIMITED.
+// Copyright 2013-2025 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
 /**
@@ -37,7 +37,7 @@ typedef struct hidEvent_t {
 /**
  *  \brief  Get the data for the next HID Report
  *
- *  \param[in]  id       The HID Report ID (see 5.6, 6.2.2.7, 8.1 and 8.2)
+ *  \param[in]  id       The HID Report ID (see 5.6, 6.2.2.7, 8.1 and 8.2 of the USB Device Class Definition for HID 1.11)
  *                       Set to zero if the application provides only one HID Report
  *                       which does not include a Report ID
  *  \param[out] hidData  The HID data

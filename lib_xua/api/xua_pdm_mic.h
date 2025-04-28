@@ -1,52 +1,52 @@
-// Copyright 2015-2021 XMOS LIMITED.
+// Copyright 2015-2025 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
 #ifndef XUA_PDM_MIC_H
 #define XUA_PDM_MIC_H
 
-/* Included from lib_mic_array */
+#include <xccompat.h>
+#include <stdint.h>
+
+#include "mic_array_conf.h"
 #include "mic_array.h"
 
-
-/* Configures PDM ports/clocks */
-void xua_pdm_mic_config(in port p_pdm_mclk, in port p_pdm_clk, buffered in port:32 p_pdm_mics, clock clk_pdm);
-
-#ifdef MIC_PROCESSING_USE_INTERFACE
-/* Interface based user processing */
-typedef interface mic_process_if
-{
-    void transfer_buffers(mic_array_frame_time_domain * unsafe audio);
-    void init();
-} mic_process_if;
-
-
-[[combinable]]
-void XUA_PdmBuffer(streaming chanend c_ds_output[2], chanend c_audio
-#ifdef MIC_PROCESSING_USE_INTERFACE
-   , client mic_process_if i_mic_process
+#ifdef __cplusplus
+extern "C" {
 #endif
-);
+void ma_init(unsigned mic_samp_rate);
+void ma_task(chanend c_mic_to_audio);
+#ifdef __cplusplus
+}
+#endif
 
-[[combinable]]
-void user_pdm_process(server mic_process_if i_mic_data);
+/** USB PDM Mic task.
+ *
+ *  This task runs the PDM rx and decimators and passes PCM samples to XUA.
+ *  It runs forever and currently supports a single sample rate of 
+ *  48 kHz, 32 kHz or 16 kHz
+ *
+ *  \param c_mic_to_audio    1-bit input port for MIDI
+ * 
+ **/
+void mic_array_task(chanend c_mic_to_audio);
 
-/* PDM interface and decimation cores */
-void xua_pdm_mic(streaming chanend c_ds_output[2], buffered in port:32 p_pdm_mics);
-
-#else
-
-/* Simple user hooks/call-backs */
-void user_pdm_process(mic_array_frame_time_domain * unsafe audio);
-
+/** User pre-PDM mic function callback (optional).
+ *  Use to initialise any PDM related hardware.
+ *
+ **/
 void user_pdm_init();
 
-/* PDM interface and decimation cores */
-[[combinable]]
-void XUA_PdmBuffer(streaming chanend c_ds_output[2], chanend c_audio);
+/** USB PDM Mic PCM sample post processing callback (optional).
+ *
+ *  This is called after the raw PCM samples are received from mic_array.
+ *  It can be used to modify the samples (gain, filter etc.) before sending
+ *  to XUA audiohub. Please note this is called from Audiohub (I2S) and
+ *  so any processing must take significantly less than on half of a sample
+ *  period else I2S will break timing.
+ *
+ *  \param mic_audio    Array of samples for in-place processing
+ * 
+ **/void user_pdm_process(int32_t mic_audio[MIC_ARRAY_CONFIG_MIC_COUNT]);
 
-/* PDM interface and decimation cores */
-void xua_pdm_mic(streaming chanend c_ds_output[2], buffered in port:32 p_pdm_mics);
-
-#endif
 #endif
 

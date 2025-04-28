@@ -1,11 +1,9 @@
-// Copyright 2016-2024 XMOS LIMITED.
+// Copyright 2016-2025 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 #ifdef SIMULATION
 
 #include <platform.h>
 #include <print.h>
-
-extern port p_mclk_in;
 
 extern port p_mclk25mhz;
 extern clock clk_mclk25mhz;

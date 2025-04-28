@@ -1,4 +1,4 @@
-// Copyright 2011-2024 XMOS LIMITED.
+// Copyright 2011-2025 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
 #ifndef _XUA_DFU_H_
@@ -99,7 +99,11 @@ USB_Config_Descriptor_DFU_t DFUcfgDesc = {
         .bInterfaceClass               = 0xFE,
         .bInterfaceSubClass            = 0x01,
         .bInterfaceProtocol            = 0x02,
+#if (XUA_DFU_EN == 1)
         .iInterface                    = offsetof(StringDescTable_t, dfuStr)/sizeof(char *), /* 8 iInterface */
+#else
+        .iInterface                    = 0,
+#endif
     },
     .FunctionalDesc = {
         .bLength = sizeof(USB_DFU_Functional_Descriptor_t),

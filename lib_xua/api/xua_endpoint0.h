@@ -1,4 +1,4 @@
-// Copyright 2011-2024 XMOS LIMITED.
+// Copyright 2011-2025 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
 #ifndef _XUA_ENDPOINT0_H_
@@ -6,8 +6,9 @@
 
 #include "dfu_interface.h"
 #include "vendorrequests.h"
+#include "xccompat.h"
 
-#if __XC__
+#if (__XC__ || defined __DOXYGEN__)
 /** Function implementing Endpoint 0 for enumeration, control and configuration
  *  of USB audio devices. It uses the descriptors defined in ``xua_ep0_descriptors.h``.
  *
@@ -22,20 +23,20 @@
  *                      present
  *  \param c_clk_ctl    Optional chanend to be connected to the clockgen core if
  *                      present
- *  \param dfuInterface Interface to DFU task (this task must be run on a tile
- *                      connected to boot flash.
  *  \param c_EANativeTransport_ctrl Optional chanend to be connected to EA Native
  *                                  endpoint manager if present
+ *  \param dfuInterface Interface to DFU task (this task must be run on a tile
+ *                      connected to boot flash.
  */
 void XUA_Endpoint0(chanend c_ep0_out,
-                    chanend c_ep0_in, chanend ?c_aud_ctl,
-                    chanend ?c_mix_ctl, chanend ?c_clk_ctl,
-                    chanend ?c_EANativeTransport_ctrl,
-                    client interface i_dfu ?dfuInterface
+                    chanend c_ep0_in, NULLABLE_RESOURCE(chanend, c_aud_ctl),
+                    NULLABLE_RESOURCE(chanend, c_mix_ctl), NULLABLE_RESOURCE(chanend, c_clk_ctl),
+                    NULLABLE_RESOURCE(chanend, c_EANativeTransport_ctrl), NULLABLE_CLIENT_INTERFACE(i_dfu, dfuInterface)
 #if !defined(__DOXYGEN__)
                     VENDOR_REQUESTS_PARAMS_DEC_
 #endif
 );
+
 
 /** Function to set the Vendor ID value
  *

@@ -4,30 +4,92 @@ lib_xua change log
 UNRELEASED
 ----------
 
+  * CHANGED:   Made `p_off_mclk` nullable for XUA_Buffer; this port is now only
+    required either in configurations using Synchronous mode and using the
+    application PLL to clock the USB buffers, or for configurations using
+    Asynchronous mode and using the reference clock to clock the USB buffers.
+  * FIXED:     `p_mclk_in` and `clk_audio_bclk` now correctly nullable when I2S
+    not in use.
+  * FIXED:     Corrected `clk_audio_mclk` nullability for XUA_AudioHub; this
+    clock block is only required for configurations with ADAT or SPDIF TX
+  * FIXED: Compilation error with NUM_USB_CHAN_IN=0, NUM_USB_CHAN_OUT=0 and
+    HID_CONTROLS=1 config
+  * FIXED: HID functionality with AUDIO_CLASS = 1
+  * FIXED: Alignment issue with HID_Descriptor memory that was causing
+    USB_GET_DESCRIPTOR for the HID interface to fail leading to failing USB3CV
+    HID Descriptor test
+  * ADDED: Support for setting wMaxPacketSize for MIDI bulk IN and OUT endpoints
+    at run time depending on g_curUsbSpeed
+  * ADDED:     Documented use of CHAN_BUFF_CTRL to save power
+  * CHANGED: Renamed USB_CONTROL_DESCS define to XUA_USB_CONTROL_DESCS
+  * FIXED: Device enumeration error when both XUA_DFU_EN and XUA_USB_CONTROL_DESCS
+    are enabled
+  * ADDED: Enumerate with vendor specific control interface as WinUSB compatible
+    on Windows. Can be disabled by defining ENUMERATE_CONTROL_INTF_AS_WINUSB to
+    0
+  * ADDED: HW test for vendor specific control interface
+  * FIXED:     Compiler error when PDM mics used and EXCLUDE_USB_AUDIO_MAIN is
+    not defined.
+  * CHANGED:   AN00248 updated so that it uses lib_xua main instead of own main
+    function.
+
+5.0.0
+-----
+
   * ADDED:     Support for DFU 1.1 DFU_DETACH with bitWillDetach set to 1
-  * ADDED:     Enumerate with the DFU interface as WINUSB compatible. This is done by
-    updating the bcdUSB version to 2.01 and providing the BOS and MSOS2.0 descriptors listing
-    WINUSB compatibility the time of enumeration
-  * ADDED:     Support for XMOS_DFU_REVERTFACTORY arriving as a USB_BMREQ_H2D_VENDOR_INT
-    request to work with the latest Thesycon DFU driver on Windows
-  * ADDED:     Support for building the xmosdfu application on MacOS arm64
-  * CHANGED:   By default, enumerate with iSerialNumber set to None(0) in the device
-    descriptor
-  * CHANGED:   xmosdfu app to use DFU_DETACH
-  * CHANGED:   xmosdfu app to send XMOS_DFU_REVERTFACTORY as bmRequestType.Type = Vendor
-  * CHANGED:   xmosdfu app command line for specifying runtime and DFU mode PIDs
-  * CHANGED:   Limit HS_STREAM_FORMAT_OUTPUT_1/2/3_MAXPACKETSIZE to 1024 bytes to fix
-    bcdUSB version 2.01 USB device supporting a sampling rate of 192KHz not enumerating
+  * ADDED:     Enumerate with the DFU interface as WINUSB compatible. This is
+    done by updating the bcdUSB version to 2.01 and providing the BOS and
+    MSOS2.0 descriptors listing WINUSB compatibility at enumeration
+  * ADDED:     Support for XMOS_DFU_REVERTFACTORY arriving as a
+    USB_BMREQ_H2D_VENDOR_INT request to work with the latest Thesycon DFU driver
     on Windows
-  * CHANGED:   Added default value (1) for XUA_QUAD_SPI_FLASH
-  * FIXED:     Build issue when XUA_NUM_PDM_MICS > 0
-  * FIXED:     DFU support with UAC1.0
-  * FIXED:     baInterfaceNr field in MIDI Class-specific AC Interface Descriptor to specify
-    the correct MIDI streaming interface number
-  * CHANGED:   Default value of FLASH_MAX_UPGRADE_SIZE to 512 KB
+  * ADDED:     Support for building the xmosdfu application on MacOS arm64
   * ADDED:     MIDI support with UAC1.0
+  * ADDED:     DFU support with UAC1.0
+  * CHANGED:   By default, enumerate with iSerialNumber set to None(0) in the
+    device descriptor
+  * CHANGED:   xmosdfu app to use DFU_DETACH
+  * CHANGED:   xmosdfu app to send XMOS_DFU_REVERTFACTORY as bmRequestType.Type
+    = Vendor
+  * CHANGED:   xmosdfu app command line for specifying runtime and DFU mode PIDs
+  * CHANGED:   Limit HS_STREAM_FORMAT_OUTPUT_1/2/3_MAXPACKETSIZE to 1024 bytes
+    to fix bcdUSB version 2.01 USB device supporting a sampling rate of 192KHz
+    not enumerating on Windows
+  * CHANGED:   Added default value (1) for XUA_QUAD_SPI_FLASH
+  * CHANGED:   Default value of FLASH_MAX_UPGRADE_SIZE to 512 KB
   * CHANGED:   Build examples using XCommon CMake instead of XCommon
-  * CHANGED:   Examples use lib_board_support for XK-AUDIO-316-MC-AB support code
+  * CHANGED:   AN00248 now targets XK-EVK-XU316 and uses mic_array version 5
+    (new API)
+  * CHANGED:   Examples use lib_board_support for XK-AUDIO-316-MC-AB support
+    code
+  * CHANGED:   Master clock port no longer used if not required, for example
+    when using I2S slave with USB disabled
+  * FIXED:     Build issue when XUA_NUM_PDM_MICS > 0
+  * FIXED:     baInterfaceNr field in MIDI Class-specific AC Interface
+    Descriptor to specify the correct MIDI streaming interface number
+  * REMOVED:   Support for PDM mics for xcore-200 targets
+
+  * Changes to dependencies:
+
+    - lib_adat: 1.2.0 -> 2.0.1
+
+    - lib_dsp: Removed dependency
+
+    - lib_locks: 2.2.0 -> 2.3.1
+
+    - lib_logging: 3.2.0 -> 3.3.1
+
+    - lib_mic_array: 4.6.0 -> 5.5.0
+
+    - lib_spdif: 6.1.1 -> 6.2.1
+
+    - lib_sw_pll: 2.2.0 -> 2.3.1
+
+    - lib_xassert: 4.2.0 -> 4.3.1
+
+    - lib_xcore_math: Added dependency 2.4.0
+
+    - lib_xud: 2.3.2 -> 2.4.0
 
 4.2.0
 -----

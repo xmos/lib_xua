@@ -1,18 +1,9 @@
-// Copyright 2018-2023 XMOS LIMITED.
+// Copyright 2018-2025 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
 #if (DSD_CHANS_DAC != 0)
 extern buffered out port:32 p_dsd_dac[DSD_CHANS_DAC];
 extern buffered out port:32 p_dsd_clk;
-#endif
-
-/* I2S Data I/O*/
-#if (I2S_CHANS_DAC != 0)
-extern buffered out port:32 p_i2s_dac[I2S_WIRES_DAC];
-#endif
-
-#if (I2S_CHANS_ADC != 0)
-extern buffered in port:32  p_i2s_adc[I2S_WIRES_ADC];
 #endif
 
 /* This function performs the DSD native loop and outputs a 32b DSD stream per loop */

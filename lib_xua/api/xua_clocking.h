@@ -1,4 +1,4 @@
-// Copyright 2011-2024 XMOS LIMITED.
+// Copyright 2011-2025 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
 #ifndef _CLOCKING_H_
@@ -33,14 +33,14 @@ void PllRefPinTask(server interface pll_ref_if i_pll_ref, out port p_sync);
  *  \param c_sw_pll             channel used to communicate with software PLL task
  *
  */
-void clockGen(  streaming chanend ?c_spdif_rx,
-                chanend ?c_adat_rx,
-                client interface pll_ref_if i_pll_ref,
+void clockGen(  NULLABLE_RESOURCE(streaming_chanend_t, c_spdif_rx),
+                NULLABLE_RESOURCE(streaming_chanend_t, c_adat_rx),
+                CLIENT_INTERFACE(pll_ref_if, i_pll_ref),
                 chanend c_audio,
                 chanend c_clk_ctl,
                 chanend c_clk_int,
                 chanend c_audio_rate_change
-#if XUA_USE_SW_PLL
+#if (XUA_USE_SW_PLL || defined __DOYXGEN__)
                 , port p_for_mclk_count_aud
                 , chanend c_sw_pll
 #endif

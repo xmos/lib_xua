@@ -3,3 +3,4 @@ include($ENV{XMOS_CMAKE_PATH}/xcommon.cmake)
 project(xua_hw_tests)
 
 add_subdirectory(test_dfu)
+add_subdirectory(test_control)

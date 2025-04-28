@@ -1,4 +1,4 @@
-// Copyright 2011-2024 XMOS LIMITED.
+// Copyright 2011-2025 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 /**
  * @file xua_audiohub.xc
@@ -44,14 +44,14 @@
 #include "xua_commands.h"
 #include "xc_ptr.h"
 
-#define MAX(x,y) ((x)>(y) ? (x) : (y))
+#define XUA_MAX(x,y) ((x)>(y) ? (x) : (y))
 
-unsigned samplesOut[MAX(NUM_USB_CHAN_OUT, I2S_CHANS_DAC)];
+unsigned samplesOut[XUA_MAX(NUM_USB_CHAN_OUT, I2S_CHANS_DAC)];
 
 /* Two buffers for ADC data to allow for DAC and ADC I2S ports being offset */
 #define IN_CHAN_COUNT (I2S_CHANS_ADC + XUA_NUM_PDM_MICS + (8*XUA_ADAT_RX_EN) + (2*XUA_SPDIF_RX_EN))
 
-unsigned samplesIn[2][MAX(NUM_USB_CHAN_IN, IN_CHAN_COUNT)];
+unsigned samplesIn[2][XUA_MAX(NUM_USB_CHAN_IN, IN_CHAN_COUNT)];
 
 #if (XUA_ADAT_TX_EN)
 extern buffered out port:32 p_adat_tx;
@@ -228,26 +228,23 @@ unsigned static AudioHub_MainLoop(chanend ?c_out, chanend ?c_spd_out
     memset(&i2sOutUs3.delayLine, 0, sizeof i2sOutUs3.delayLine);
 #endif /* (AUD_TO_USB_RATIO > 1) */
 
-
-#if ((DEBUG_MIC_ARRAY == 1) && (XUA_NUM_PDM_MICS > 0))
-    /* Get initial samples from PDM->PCM converter to avoid stalling the decimators */
-    c_pdm_pcm <: 1;
-    master
-    {
-#pragma loop unroll
-        for(int i = PDM_MIC_INDEX; i < (XUA_NUM_PDM_MICS + PDM_MIC_INDEX); i++)
-        {
-            c_pdm_pcm :> samplesIn[readBuffNo][i];
-        }
-    }
-#endif // ((DEBUG_MIC_ARRAY == 1) && (XUA_NUM_PDM_MICS > 0))
-
     UserBufferManagementInit(curSamFreq);
 
     unsigned command = DoSampleTransfer(c_out, readBuffNo, underflowWord);
 
     // Reinitialise user state before entering the main loop
     UserBufferManagementInit(curSamFreq);
+
+#if XUA_NUM_PDM_MICS > 0
+    /* Receive an initial frame and wait one sample period to ensure mic_array is ready to produce so
+       we don't break the audioloop timing by ma_frame_rx() blocking */
+    unsafe {
+        chanend_t c_m2a = (chanend_t)c_pdm_pcm;
+        int32_t *mic_samps_base_addr = (int32_t*)&samplesIn[readBuffNo][PDM_MIC_INDEX];
+        ma_frame_rx(mic_samps_base_addr, c_m2a, MIC_ARRAY_CONFIG_SAMPLES_PER_FRAME, MIC_ARRAY_CONFIG_MIC_COUNT);
+        delay_ticks(XS1_TIMER_HZ / curSamFreq);
+    }
+#endif
 
 #if (XUA_ADAT_TX_EN)
     unsafe{
@@ -413,17 +410,11 @@ unsigned static AudioHub_MainLoop(chanend ?c_out, chanend ?c_spd_out
 
 #if (XUA_NUM_PDM_MICS > 0)
                 if ((AUD_TO_MICS_RATIO - 1) == audioToMicsRatioCounter)
-                {
-                    /* Get samples from PDM->PCM converter */
-                    c_pdm_pcm <: 1;
-                    master
-                    {
-#pragma loop unroll
-                        for(int i = PDM_MIC_INDEX; i < (XUA_NUM_PDM_MICS + PDM_MIC_INDEX); i++)
-                        {
-                            c_pdm_pcm :> samplesIn[readBuffNo][i];
-                        }
-                    }
+                unsafe {
+                    chanend_t c_m2a = (chanend_t)c_pdm_pcm;
+                    int32_t *mic_samps_base_addr = (int32_t*)&samplesIn[readBuffNo][PDM_MIC_INDEX];
+                    ma_frame_rx(mic_samps_base_addr, c_m2a, MIC_ARRAY_CONFIG_SAMPLES_PER_FRAME, MIC_ARRAY_CONFIG_MIC_COUNT);
+                    user_pdm_process(mic_samps_base_addr);
                     audioToMicsRatioCounter = 0;
                 }
                 else
@@ -476,7 +467,7 @@ unsigned static AudioHub_MainLoop(chanend ?c_out, chanend ?c_spd_out
                     samplesIn[buffIndex][chanIndex] = sample;
 #endif /* (AUD_TO_USB_RATIO > 1) && !I2S_DOWNSAMPLE_MONO_IN */
                 }
-#endif
+#endif /* I2S_CHANS_ADC != 0) */
 
 #if (I2S_CHANS_ADC != 0 || I2S_CHANS_DAC != 0)
                 syncError += HandleSampleClock(frameCount, p_lrclk);
@@ -636,7 +627,7 @@ static void dummy_deliver(chanend ?c_out, unsigned &command)
  #endif
 
 void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
-    in port p_mclk_in,
+    in port ?p_mclk_in,
     buffered _XUA_CLK_DIR port:32 ?p_lrclk,
     buffered _XUA_CLK_DIR port:32 ?p_bclk,
     buffered out port:32 (&?p_i2s_dac)[I2S_WIRES_DAC],
@@ -671,11 +662,6 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
     unsigned divide;
     unsigned firstRun = 1;
 
-    /* Clock master clock-block from master-clock port */
-    /* Note, marked unsafe since other cores may be using this mclk port */
-    configure_clock_src(clk_audio_mclk, p_mclk_in);
-
-
 #if (DSD_CHANS_DAC > 0)
     /* Make sure the DSD ports are on and buffered - just in case they are not shared with I2S */
     EnableBufferedPort(p_dsd_clk, 32);
@@ -685,13 +671,18 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
     }
 #endif
 
+#if (XUA_ADAT_TX_EN || XUA_SPDIF_TX_EN)
+    xassert((!isnull(clk_audio_mclk) && !isnull(p_mclk_in)) && "Error: must provide non-null MCLK port and MCLK clock-block for ADAT Tx");
+    /* Clock master clock-block from master-clock port */
+    configure_clock_src(clk_audio_mclk, p_mclk_in);
 #if (XUA_ADAT_TX_EN)
+    /* Set ADAT Tx port to be clock from master clock-block*/
     configure_out_port_no_ready(p_adat_tx, clk_audio_mclk, 0);
     set_clock_fall_delay(clk_audio_mclk, 7);
 #endif
-
+    /* Start the master clock-block */
     start_clock(clk_audio_mclk);
-
+#endif
     /* Perform required CODEC/ADC/DAC initialisation */
     AudioHwInit();
 
@@ -748,6 +739,7 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
 
        }
 
+#if (I2S_CHANS_DAC != 0) || (I2S_CHANS_ADC != 0)
 #if (DSD_CHANS_DAC > 0)
         if(dsdMode)
         {
@@ -756,40 +748,32 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
 #if (I2S_CHANS_DAC != 0) || (DSD_CHANS_DAC != 0)
                 p_dsd_dac,
                 DSD_CHANS_DAC,
-#endif
+#endif // (I2S_CHANS_DAC != 0) || (DSD_CHANS_DAC != 0)
 #if (I2S_CHANS_ADC != 0)
                 p_i2s_adc,
                 I2S_WIRES_ADC,
-#endif
-#if (I2S_CHANS_DAC != 0) || (I2S_CHANS_ADC != 0)
+#endif // (I2S_CHANS_ADC != 0)
                 null,
                 p_dsd_clk,
-#endif
                 p_mclk_in, clk_audio_bclk, divide, curSamFreq);
         }
         else
-#endif
+#endif // (DSD_CHANS_DAC > 0)
         {
             ConfigAudioPortsWrapper(
 #if (I2S_CHANS_DAC != 0)
                 p_i2s_dac,
                 I2S_WIRES_DAC,
-#endif
+#endif // (I2S_CHANS_DAC != 0)
 #if (I2S_CHANS_ADC != 0)
                 p_i2s_adc,
                 I2S_WIRES_ADC,
-#endif
-#if (I2S_CHANS_DAC != 0) || (I2S_CHANS_ADC != 0)
-#ifndef CODEC_MASTER
+#endif // (I2S_CHANS_ADC != 0)
                 p_lrclk,
                 p_bclk,
-#else
-                p_lrclk,
-                p_bclk,
-#endif
-#endif
-            p_mclk_in, clk_audio_bclk, divide, curSamFreq);
+                p_mclk_in, clk_audio_bclk, divide, curSamFreq);
         }
+#endif // (I2S_CHANS_DAC != 0) || (I2S_CHANS_ADC != 0)
 
         {
             unsigned curFreq = curSamFreq;
@@ -824,7 +808,15 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
             AudioHwConfig_UnMute();
         }
 
-        if(!firstRun)
+        if(firstRun)
+        {
+#if (XUA_NUM_PDM_MICS > 0)
+            /* Send decimation factor to PDM task(s) */
+            user_pdm_init();
+            c_pdm_in <: curSamFreq / AUD_TO_MICS_RATIO;
+#endif
+        }
+        else
         {
             /* TODO wait for good mclk instead of delay */
             /* No delay for DFU modes */
@@ -865,10 +857,6 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
                 outuint(c_spdif_out, mClk);
 #endif
 
-#if (XUA_NUM_PDM_MICS > 0)
-                /* Send decimation factor to PDM task(s) */
-                c_pdm_in <: curSamFreq / AUD_TO_MICS_RATIO;
-#endif
 
 #if (XUA_ADAT_TX_EN)
                 // Configure ADAT parameters ...
@@ -902,6 +890,7 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
                    , c_pdm_in
 #endif
                   , p_lrclk, p_bclk, p_i2s_dac, p_i2s_adc);
+
 
 #if (XUA_USB_EN)
                 if(command == SET_SAMPLE_FREQ)
@@ -948,7 +937,8 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
 #endif /* XUA_USB_EN */
 
 #if XUA_NUM_PDM_MICS > 0
-                c_pdm_in <: 0;
+                // TODO - this willbe an exit command when supported in mic_array
+                // c_pdm_in <: 0;
 #endif
 
 #if (XUA_ADAT_TX_EN)

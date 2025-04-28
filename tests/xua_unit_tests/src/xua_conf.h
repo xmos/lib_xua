@@ -1,4 +1,4 @@
-// Copyright 2017-2021 XMOS LIMITED.
+// Copyright 2017-2025 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
 #define NUM_USB_CHAN_OUT 2

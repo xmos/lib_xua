@@ -1,10 +1,11 @@
-// Copyright 2016-2024 XMOS LIMITED.
+// Copyright 2016-2025 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 #include <platform.h>
 #include <stdlib.h>
 #include <print.h>
 #include <timer.h>
 #include "xua.h"
+#include "xua_commands.h" // Internal header, not part of lib_xua user API
 
 #define DEBUG_UNIT MAIN
 #include "debug_print.h"
@@ -70,14 +71,14 @@ on tile[AUDIO_IO_TILE] : buffered in port:32 p_i2s_adc[I2S_WIRES_ADC] =
 
 
 #if CODEC_MASTER
-buffered in port:32 p_lrclk       = PORT_I2S_LRCLK;
-buffered in port:32 p_bclk        = PORT_I2S_BCLK;
+buffered in port:32 p_lrclk         = PORT_I2S_LRCLK;
+buffered in port:32 p_bclk          = PORT_I2S_BCLK;
+#define p_mclk_in null
 #else
-buffered out port:32 p_lrclk       = PORT_I2S_LRCLK;    /* I2S Bit-clock */
-buffered out port:32 p_bclk        = PORT_I2S_BCLK;     /* I2S L/R-clock */
-#endif
-
+buffered out port:32 p_lrclk        = PORT_I2S_LRCLK;    /* I2S Bit-clock */
+buffered out port:32 p_bclk         = PORT_I2S_BCLK;     /* I2S L/R-clock */
 in port p_mclk_in                   = PORT_MCLK_IN;
+#endif
 
 /* Clock-block declarations */
 clock clk_audio_bclk                = on tile[AUDIO_IO_TILE]: XS1_CLKBLK_1;   /* Bit clock */
@@ -98,12 +99,11 @@ clock clk_audio_mclk                = on tile[AUDIO_IO_TILE]: XS1_CLKBLK_2;   /*
 
 void generator(chanend c_checker, chanend c_out)
 {
-  unsigned frame_count;
+  unsigned frame_count = 0;
   int underflow_word;
-  int fail;
+  int fail = 1;
   int i;
-
-  frame_count = 0;
+  unsigned time;
 
   while (1) {
     underflow_word = inuint(c_out);
@@ -120,12 +120,23 @@ void generator(chanend c_checker, chanend c_out)
       outuint(c_checker, inuint(c_out));
     }
 
+
     if (frame_count == TOTAL_TEST_FRAMES) {
       if (!fail) {
         debug_printf("PASS\n");
       }
-      outct(c_out, AUDIO_STOP_FOR_DFU);
+      outct(c_out, SET_SAMPLE_FREQ);
       //inuint(c_out); //This causes the DFUhandler to be called with exceptiopn in slave mode so skip this - we are out of here anyhow
+
+    /* Give some time for AudioHub() to react to the command to stop accessing ports otherwise exit()
+     * will trap in the port destructors
+     * Note, this is a bit of a cludge since ideally program would completely shutdown, however, AudioHub
+     * has a while(1)
+     */
+      timer t;
+      t :> time;
+      t when timerafter(time + 1000) :> void;
+
       exit(0);
     }
 

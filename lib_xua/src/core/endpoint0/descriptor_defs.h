@@ -1,4 +1,4 @@
-// Copyright 2015-2024 XMOS LIMITED.
+// Copyright 2015-2025 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
 #ifndef _DESCRIPTOR_DEFS_H_
@@ -51,7 +51,7 @@ enum USBInterfaceNumber
     INTERFACE_NUMBER_MIDI_CONTROL,
     INTERFACE_NUMBER_MIDI_STREAM,
 #endif
-#if defined(USB_CONTROL_DESCS) && (USB_CONTROL_DESCS != 0)
+#if XUA_USB_CONTROL_DESCS
     INTERFACE_NUMBER_MISC_CONTROL,
 #endif
 #if defined(XUA_DFU_EN) && (XUA_DFU_EN != 0)

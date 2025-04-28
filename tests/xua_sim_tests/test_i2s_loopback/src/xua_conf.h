@@ -1,4 +1,4 @@
-// Copyright 2016-2024 XMOS LIMITED.
+// Copyright 2016-2025 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 #ifndef _XUA_CONF_H_
 #define _XUA_CONF_H_
@@ -30,7 +30,5 @@
 #define AUDIO_CLASS_FALLBACK 0
 #define BCD_DEVICE 0x1234
 #define XUA_DFU_EN          0
-#define MIC_DUAL_ENABLED 1        //Use single thread, dual PDM mic
-#define XUA_MIC_FRAME_SIZE 240
 
 #endif
