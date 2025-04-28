@@ -81,6 +81,21 @@ unsigned int fb_clocks[4];
 //#define FB_TOLERANCE_TEST
 #define FB_TOLERANCE 0x100
 
+/* Helper function to reset asynch feedback calculation when MCLK changes */
+static void resetAsynchFeedback(int &sofCount, unsigned &clocks, long long &clockcounter, unsigned &mod_from_last_time, unsigned sampleFreq)
+{
+    sofCount = 0;
+    clocks = 0;
+    clockcounter = 0;
+    mod_from_last_time = 0;
+    feedbackValid = 0;
+
+    /* Set g_speed to something sensible. We expect it to get over-written before stream time */
+    int min, mid, max;
+    GetADCCounts(sampleFreq, min, mid, max);
+    g_speed = mid << 16;
+}
+
 void XUA_Buffer(
 #if (NUM_USB_CHAN_OUT > 0)
     register chanend c_aud_out,
@@ -468,19 +483,10 @@ void XUA_Buffer_Ep(
                         /* Reset FB */
                         /* Note, Endpoint 0 will hold off host for a sufficient period to allow our feedback
                          * to stabilise (i.e. sofCount == 128 to fire) */
-                        sofCount = 0;
-                        clocks = 0;
-                        clockcounter = 0;
-                        mod_from_last_time = 0;
-                        feedbackValid = 0;
+                        resetAsynchFeedback(sofCount, clocks, clockcounter, mod_from_last_time, sampleFreq);
 #if FB_USE_REF_CLOCK
                         clock_remainder = 0;
 #endif
-
-                        /* Set g_speed to something sensible. We expect it to get over-written before stream time */
-                        int min, mid, max;
-                        GetADCCounts(sampleFreq, min, mid, max);
-                        g_speed = mid<<16;
 
                         if((MCLK_48 % sampleFreq) == 0)
                         {
@@ -542,18 +548,25 @@ void XUA_Buffer_Ep(
 #endif
                 }
 #endif /* (AUDIO_CLASS == 2) */
-                else if (cmd == SET_STREAM_INPUT_START || cmd == SET_STREAM_OUTPUT_START)
+                else if (cmd == SET_STREAM_INPUT_START)
                 {
-#if XUA_LOW_POWER_NON_STREAMING
+                    /* Do nothing - just let cmd propagate through to decouple */
+                }
+                else if (cmd == SET_STREAM_OUTPUT_START) 
+                {
+#if (XUA_LOW_POWER_NON_STREAMING && (XUA_SYNCMODE == XUA_SYNCMODE_ASYNC))
+                    /* Audiohub will startup again and MCLK may possibly have stopped and restarted */
                     /* Set g_speed to something sensible. We expect it to get over-written before stream time */
-                    int min, mid, max;
-                    GetADCCounts(sampleFreq, min, mid, max);
-                    g_speed = mid << 16;
+                    resetAsynchFeedback(sofCount, clocks, clockcounter, mod_from_last_time, sampleFreq);
 #endif
                 }
-                else if (cmd == SET_STREAM_INPUT_STOP || cmd == SET_STREAM_OUTPUT_STOP)
+                else if (cmd == SET_STREAM_INPUT_STOP)
                 {
-                    /* Do nothing for now - just let cmd propagate through to decouple */
+                    /* Do nothing - just let cmd propagate through to decouple */
+                }
+                else if (cmd == SET_STREAM_OUTPUT_STOP)
+                {
+                    /* Do nothing - just let cmd propagate through to decouple */
                 }
 
                 /* Pass on sample freq change to decouple() via global flag (saves a chanend) */
