@@ -59,7 +59,14 @@ int g_maxPacketSize = MAX_DEVICE_AUD_PACKET_SIZE_IN_FS;  /* IN packet size. Init
 #endif
 
 /* Circular audio buffers */
-unsigned outAudioBuff[(BUFF_SIZE_OUT >> 2)+ (MAX_DEVICE_AUD_PACKET_SIZE_OUT >> 2)];
+#if (XUD_USB_ISO_MAX_TXNS_PER_MICROFRAME > 1)
+    #define REQD_BUF_SIZE_ERR_HANDLING_HIBW_OUT (3*(XUD_USB_ISO_EP_MAX_TXN_SIZE))
+    #define OUT_BUF_EXTRA_SIZE  (XUA_MAX(MAX_DEVICE_AUD_PACKET_SIZE_OUT, REQD_BUF_SIZE_ERR_HANDLING_HIBW_OUT))
+    unsigned outAudioBuff[(BUFF_SIZE_OUT >> 2)+ (OUT_BUF_EXTRA_SIZE >> 2)];
+#else
+    unsigned outAudioBuff[(BUFF_SIZE_OUT >> 2)+ (MAX_DEVICE_AUD_PACKET_SIZE_OUT >> 2)];
+#endif
+
 unsigned audioBuffIn[(BUFF_SIZE_IN >> 2)+ (MAX_DEVICE_AUD_PACKET_SIZE_IN >> 2)];
 
 /* Shift down accounts for bytes -> words */
@@ -199,6 +206,7 @@ void handle_audio_request(chanend c_mix_out)
     /* Input word that triggered interrupt and handshake back */
     unsigned underflowSample = inuint(c_mix_out);
 
+    // OUT
 #if (NUM_USB_CHAN_OUT == 0)
     outuint(c_mix_out, underflowSample);
 #else
@@ -341,6 +349,7 @@ __builtin_unreachable();
 
 #endif
 
+    // IN
     {
         int dPtr;
         GET_SHARED_GLOBAL(dPtr, g_aud_to_host_dptr);
@@ -537,6 +546,7 @@ __builtin_unreachable();
             /* Must allow space for at least one sample per channel, as these are written at the beginning of
              * the interrupt handler even if totalSampsToWrite is zero (will be overwritten by a later packet). */
             int spaceRequired = XUA_MAX(totalSampsToWrite, 1) * g_numUsbChan_In * g_curSubSlot_In + 4;
+
             if (spaceRequired > BUFF_SIZE_IN - fillLevel)
             {
                 /* In pipe has filled its buffer - we need to overflow
@@ -649,7 +659,6 @@ static inline void SetupZerosSendBuffer(XUD_ep aud_to_host_usb_ep, unsigned samp
 
     /* Mark EP ready with the zero buffer. Note this will simply update the packet size
     * if it is already ready */
-
     XUD_SetReady_InPtr(aud_to_host_usb_ep, aud_to_host_zeros+4, mid);
 }
 #endif
@@ -1001,19 +1010,16 @@ void XUA_Buffer_Decouple(chanend c_mix_out
             space_left = aud_from_host_rdptr - aud_from_host_wrptr;
 
             /* Mod and special case */
-            // TODO: Not understood why this is done. Presumably to stop the wrptr from crossing the rdptr
-            // but why is this required only when rdptr = start?
-            if(space_left <= 0 && g_aud_from_host_rdptr == aud_from_host_fifo_start)
+            if(g_aud_from_host_rdptr == aud_from_host_fifo_start)
             {
                 space_left = aud_from_host_fifo_end - g_aud_from_host_wrptr;
             }
 
-            /* Note: space_left == 0 is not used to signal overflow. I think this is because, if the rdptr
-            also happens to be at start (underflow), we'd end up simultaneously in overflow and underflow, which
-            would cause a deadlock. The current implementation cannot distinguish between buffer full or buffer empty
-            when rdptr = wrptr.
-            */
+#if (XUD_USB_ISO_MAX_TXNS_PER_MICROFRAME > 1)
+            if (space_left <= 0 || space_left >= REQD_BUF_SIZE_ERR_HANDLING_HIBW_OUT)
+#else
             if (space_left <= 0 || space_left >= MAX_DEVICE_AUD_PACKET_SIZE_OUT)
+#endif
             {
                 SET_SHARED_GLOBAL(g_aud_from_host_buffer, aud_from_host_wrptr);
                 XUD_SetReady_OutPtr(aud_from_host_usb_ep, aud_from_host_wrptr+4);
