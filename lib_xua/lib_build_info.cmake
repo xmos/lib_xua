@@ -28,7 +28,7 @@ set(LIB_DEPENDENT_MODULES "lib_adat(2.0.1)"
                           "lib_locks(2.3.1)"
                           "lib_logging(3.3.1)"
                           "lib_spdif(6.2.1)"
-                          "lib_sw_pll(2.3.1)"
+                          "lib_sw_pll(develop)"
                           "lib_xassert(4.3.1)"
                           "lib_mic_array(5.5.0)"
                           "lib_xud(develop)")

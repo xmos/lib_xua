@@ -57,7 +57,7 @@ set(APP_COMPILER_FLAGS_control_not_winusb ${COMMON_FLAGS}
                            -DENUMERATE_CONTROL_INTF_AS_WINUSB=0)
 
 set(APP_COMPILER_FLAGS_i0o2_lp  ${COMMON_FLAGS}
-                                -DBCD_DEVICE=0x0100
+                                -DBCD_DEVICE=0x0103
                                 -DNUM_USB_CHAN_IN=0
                                 -DNUM_USB_CHAN_OUT=2
                                 -DI2S_CHANS_ADC=0
@@ -65,7 +65,7 @@ set(APP_COMPILER_FLAGS_i0o2_lp  ${COMMON_FLAGS}
                                 -DLOW_POWER_ENABLE=1
                                 -DCHAN_BUFF_CTRL=1
                                 -DXUD_PRIORITY_HIGH=1
-                                -DXUA_LOW_POWER_NON_STREAMING=1) # low power DAC config
+                                -DXUA_LOW_POWER_NON_STREAMING=1) # low power DAC config, minus tile and switch PD
 
 
 # baseline configs for the testcase

@@ -695,9 +695,45 @@ static unsigned dummy_deliver_idle(chanend c_out, unsigned sampFreq)
 
 
 #if XUA_DFU_EN
- [[distributable]]
- void DFUHandler(server interface i_dfu i, chanend ?c_user_cmd);
- #endif
+/* External DFU handler task */
+[[distributable]]
+void DFUHandler(server interface i_dfu i, chanend ?c_user_cmd);
+
+
+/* Helper function to see if a request for entry to DFU has been issued via a sample rate change.
+   If so, enter DFU. Note this code will never return. The device will
+   need to be reset which is part of the DFU sequence */
+void check_and_enter_dfu(unsigned curSamFreq, chanend c_aud, server interface i_dfu ?dfuInterface)
+{
+    /* Currently no more audio will happen after this point */
+    if ((curSamFreq / AUD_TO_USB_RATIO) == AUDIO_STOP_FOR_DFU)
+    {
+        /* Handshake back */
+        outct(c_aud, XS1_CT_END);
+
+        /* Request more data/commands */
+        outuint(c_aud, 0);
+
+        unsigned command;
+
+        while (1)
+        {
+           [[combine]]
+            par
+            {
+#if (XUD_TILE != 0) && (AUDIO_IO_TILE == 0)
+                DFUHandler(dfuInterface, null);
+#endif
+#if (NUM_USB_CHAN_OUT > 0) || (NUM_USB_CHAN_IN > 0)
+                dummy_deliver(c_aud, command, 48000);
+#endif
+            }
+            /* Note, we shouldn't reach here. Audio, once stopped for DFU, cannot be resumed */
+        }
+    }
+}
+#endif /* XUA_DFU_EN */
+
 
 void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
     in port ?p_mclk_in,
@@ -722,6 +758,10 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
 #endif
 )
 {
+/* This is a bit annoying but we have a mixture of nullable interfaces and variadic function signatures based on defines */
+#if !((XUD_TILE != 0) && (AUDIO_IO_TILE == 0) && (XUA_DFU_EN == 1))
+#define dfuInterface null 
+#endif
 #if (XUA_ADAT_TX_EN)
     chan c_adat_out;
     unsigned adatSmuxMode = 0;
@@ -973,36 +1013,11 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
                       , p_lrclk, p_bclk, p_i2s_dac, p_i2s_adc);
 
 
-
 #if (XUA_USB_EN)
                     /* Now perform any additional inputs and update state accordingly */
                     process_command(command, c_aud, curSamFreq, dsdMode, curSamRes_DAC, audioActive);
-
 #if (XUA_DFU_EN == 1)
-                    /* Currently no more audio will happen after this point */
-                    if ((curSamFreq / AUD_TO_USB_RATIO) == AUDIO_STOP_FOR_DFU)
-                    {
-                        /* Handshake back */
-                        outct(c_aud, XS1_CT_END);
-
-                        /* Request more data/commands */
-                        outuint(c_aud, 0);
-
-                        while (1)
-                        {
-                           [[combine]]
-                            par
-                            {
-#if (XUD_TILE != 0) && (AUDIO_IO_TILE == 0)
-                                DFUHandler(dfuInterface, null);
-#endif
-#if (NUM_USB_CHAN_OUT > 0) || (NUM_USB_CHAN_IN > 0)
-                                dummy_deliver(c_aud, command, 48000);
-#endif
-                            }
-                            /* Note, we shouldn't reach here. Audio, once stopped for DFU, cannot be resumed */
-                        }
-                    }
+                    check_and_enter_dfu(curSamFreq, c_aud, dfuInterface);
 #endif /* (XUA_DFU_EN == 1) */
 #endif /* XUA_USB_EN */
 
@@ -1024,13 +1039,54 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
         } /* while(audioActive || (!XUA_LOW_POWER_NON_STREAMING)) */
 
 
-        /* This code can only be reached if XUA_LOW_POWER_NON_STREAMING is enabled and all streams stopped */
+        /* The following code can only be reached if XUA_LOW_POWER_NON_STREAMING is enabled and all streams stopped */
+
+        /* First shutdown and reset ports before we may shutdown any clocks */
+#if (I2S_CHANS_DAC != 0) || (I2S_CHANS_ADC != 0)
+#if (DSD_CHANS_DAC > 0)
+        if(dsdMode)
+        {
+            /* Configure audio ports */
+            DeConfigAudioPorts(
+#if (I2S_CHANS_DAC != 0) || (DSD_CHANS_DAC != 0)
+                p_dsd_dac,
+                DSD_CHANS_DAC,
+#endif // (I2S_CHANS_DAC != 0) || (DSD_CHANS_DAC != 0)
+#if (I2S_CHANS_ADC != 0)
+                p_i2s_adc,
+                I2S_WIRES_ADC,
+#endif // (I2S_CHANS_ADC != 0)
+                null,
+                p_dsd_clk,
+                p_mclk_in,
+                clk_audio_bclk);
+        }
+        else
+#endif // (DSD_CHANS_DAC > 0)
+        {
+            DeConfigAudioPorts(
+#if (I2S_CHANS_DAC != 0)
+                p_i2s_dac,
+                I2S_WIRES_DAC,
+#endif // (I2S_CHANS_DAC != 0)
+#if (I2S_CHANS_ADC != 0)
+                p_i2s_adc,
+                I2S_WIRES_ADC,
+#endif // (I2S_CHANS_ADC != 0)
+                p_lrclk,
+                p_bclk,
+                p_mclk_in,
+                clk_audio_bclk);
+        }
+#endif // (I2S_CHANS_DAC != 0) || (I2S_CHANS_ADC != 0)
+
+        /* Call user functions for core power down (eg. MCLK disable) and system component power down */ 
         AudioHwDeInit();
-
-        /* TODO - DISABLE I2S PORTS */
-
         /* Now run dummy loop with no IO. This is sufficient to poll for commands from decouple */
         command = dummy_deliver_idle(c_aud, 1000); /* Run loop at 1kHz for min power */
         process_command(command, c_aud, curSamFreq, dsdMode, curSamRes_DAC, audioActive);
+#if (XUA_DFU_EN == 1)
+        check_and_enter_dfu(curSamFreq, c_aud, dfuInterface);
+#endif /* (XUA_DFU_EN == 1) */
     } /* while(1)*/
 }
