@@ -793,16 +793,9 @@ void XUA_Buffer_Ep(
             /* Sent audio packet DEVICE -> HOST */
             case XUD_SetData_Select(c_aud_in, ep_aud_in, result):
             {
-                unsigned remained = 0, offset = 19;
-                asm volatile("ldw %0, %1[%2]":"=r"(remained):"r"(ep_aud_in), "r" (offset));
                 /* Inform stream that buffer sent */
-                if(!remained){
+                if(result != XUD_RES_WAIT){
                     SET_SHARED_GLOBAL0(g_aud_to_host_flag, bufferIn+1);
-                }
-                else{
-                    unsigned buff;
-                    asm volatile("ldw %0, %1[3]":"=r"(buff):"r"(ep_aud_in));
-                    XUD_SetReady_InPtr(ep_aud_in, buff, remained);
                 }
                 break;
             }
@@ -831,12 +824,13 @@ void XUA_Buffer_Ep(
             /* Received Audio packet HOST -> DEVICE. Datalength written to length */
             case XUD_GetData_Select(c_aud_out, ep_aud_out, length, result):
             {
-                GET_SHARED_GLOBAL(aud_from_host_buffer, g_aud_from_host_buffer);
-
-                write_via_xc_ptr(aud_from_host_buffer, length);
-
-                /* Sync with decouple thread */
-                SET_SHARED_GLOBAL0(g_aud_from_host_flag, 1);
+                if(length)
+                {
+                    GET_SHARED_GLOBAL(aud_from_host_buffer, g_aud_from_host_buffer);
+                    write_via_xc_ptr(aud_from_host_buffer, length);
+                    /* Sync with decouple thread */
+                    SET_SHARED_GLOBAL0(g_aud_from_host_flag, 1);
+                }
                 break;
              }
 #endif

@@ -681,6 +681,22 @@ static inline void SetupZerosSendBuffer(XUD_ep aud_to_host_usb_ep, unsigned samp
 
     /* Mark EP ready with the zero buffer. Note this will simply update the packet size
     * if it is already ready */
+    unsigned N = 0;
+    unsigned full_len = mid;
+    unsigned max_len = 0, offset = 15;
+    asm volatile("ldw %0, %1[%2]":"=r"(max_len):"r"(aud_to_host_usb_ep), "r" (offset));
+
+    while(full_len != 0){
+        unsigned tmp = (full_len >= max_len) ? max_len : full_len;
+        full_len -= tmp;
+        N++;
+    }
+    offset = 18;
+    asm volatile("stw %0, %1[%2]"::"r"(N),"r"(aud_to_host_usb_ep),"r"(offset));
+
+    offset = 17;
+    unsigned tr = 0;
+    asm volatile("stw %0, %1[%2]"::"r"(tr),"r"(aud_to_host_usb_ep),"r"(offset));
 
     XUD_SetReady_InPtr(aud_to_host_usb_ep, aud_to_host_zeros+4, mid);
 }
@@ -1133,12 +1149,12 @@ void XUA_Buffer_Decouple(chanend c_mix_out
                     asm volatile("ldw %0, %1[%2]":"=r"(max_len):"r"(aud_to_host_usb_ep), "r" (offset));
 
                     while(full_len != 0){
-                        unsigned tmp = (len >= max_len) ? max_len : len;
+                        unsigned tmp = (full_len >= max_len) ? max_len : full_len;
                         full_len -= tmp;
                         N++;
                     }
                     offset = 18;
-                    asm volatile("stw %0, %1[%2]":"=r"(N):"r"(aud_to_host_usb_ep), "r" (offset));
+                    asm volatile("stw %0, %1[%2]"::"r"(N),"r"(aud_to_host_usb_ep),"r"(offset));
 
                     XUD_SetReady_InPtr(aud_to_host_usb_ep, aud_to_host_buffer+4, len);
                 }
