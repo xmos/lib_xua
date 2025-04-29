@@ -163,10 +163,6 @@ void DeConfigAudioPorts(
 
     /* Note handling of MCLK is done outside of XUA by user */
 
-    /* Note this call to stop_clock() will pause forever if the port clocking the clock-block is not low.
-     * deliver() should return with this being the case */
-    stop_clock(clk_audio_bclk);
-
     /* Clear modes/reset port and set to Hi-Z */
     stop_port(p_bclk);
     start_port(p_bclk);

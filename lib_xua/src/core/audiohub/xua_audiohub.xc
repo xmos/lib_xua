@@ -1022,10 +1022,9 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
         } /* while(audioActive || (!XUA_LOW_POWER_NON_STREAMING)) */
 
 
-        /* This code can only be reached if XUA_LOW_POWER_NON_STREAMING is enabled and all streams stopped */
-        AudioHwDeInit();
+        /* The following code can only be reached if XUA_LOW_POWER_NON_STREAMING is enabled and all streams stopped */
 
-        /* Shutdown ports */
+        /* First shutdown and reset ports before we may shutdown any clocks */
 #if (I2S_CHANS_DAC != 0) || (I2S_CHANS_ADC != 0)
 #if (DSD_CHANS_DAC > 0)
         if(dsdMode)
@@ -1064,6 +1063,8 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
         }
 #endif // (I2S_CHANS_DAC != 0) || (I2S_CHANS_ADC != 0)
 
+        /* Call user functions for core power down (eg. MCLK disable) and system component power down */ 
+        AudioHwDeInit();
         /* Now run dummy loop with no IO. This is sufficient to poll for commands from decouple */
         command = dummy_deliver_idle(c_aud, 1000); /* Run loop at 1kHz for min power */
         process_command(command, c_aud, curSamFreq, dsdMode, curSamRes_DAC, audioActive);
