@@ -150,8 +150,8 @@ void DeConfigAudioPorts(
     NULLABLE_RESOURCE(out_buffered_port_32_t, p_lrclk),
     out_buffered_port_32_t p_bclk,
 #else
-    NULLABLE_RESOURCE(in_port_t, p_lrclk),
-    in_port_t p_bclk,
+    NULLABLE_RESOURCE(in_buffered_port_32_t, p_lrclk),
+    in_buffered_port_32_t p_bclk,
 #endif
     NULLABLE_RESOURCE(in_port_t,  p_mclk_in),
     clock clk_audio_bclk)
