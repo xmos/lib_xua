@@ -1025,7 +1025,44 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
         /* This code can only be reached if XUA_LOW_POWER_NON_STREAMING is enabled and all streams stopped */
         AudioHwDeInit();
 
-        /* TODO - DISABLE I2S PORTS */
+        /* Shutdown ports */
+#if (I2S_CHANS_DAC != 0) || (I2S_CHANS_ADC != 0)
+#if (DSD_CHANS_DAC > 0)
+        if(dsdMode)
+        {
+            /* Configure audio ports */
+            DeConfigAudioPorts(
+#if (I2S_CHANS_DAC != 0) || (DSD_CHANS_DAC != 0)
+                p_dsd_dac,
+                DSD_CHANS_DAC,
+#endif // (I2S_CHANS_DAC != 0) || (DSD_CHANS_DAC != 0)
+#if (I2S_CHANS_ADC != 0)
+                p_i2s_adc,
+                I2S_WIRES_ADC,
+#endif // (I2S_CHANS_ADC != 0)
+                null,
+                p_dsd_clk,
+                p_mclk_in,
+                clk_audio_bclk);
+        }
+        else
+#endif // (DSD_CHANS_DAC > 0)
+        {
+            DeConfigAudioPorts(
+#if (I2S_CHANS_DAC != 0)
+                p_i2s_dac,
+                I2S_WIRES_DAC,
+#endif // (I2S_CHANS_DAC != 0)
+#if (I2S_CHANS_ADC != 0)
+                p_i2s_adc,
+                I2S_WIRES_ADC,
+#endif // (I2S_CHANS_ADC != 0)
+                p_lrclk,
+                p_bclk,
+                p_mclk_in,
+                clk_audio_bclk);
+        }
+#endif // (I2S_CHANS_DAC != 0) || (I2S_CHANS_ADC != 0)
 
         /* Now run dummy loop with no IO. This is sufficient to poll for commands from decouple */
         command = dummy_deliver_idle(c_aud, 1000); /* Run loop at 1kHz for min power */

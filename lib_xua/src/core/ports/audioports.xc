@@ -136,3 +136,71 @@ void ConfigAudioPorts(
 #endif //#if (I2S_CHANS_DAC != 0) || (I2S_CHANS_ADC != 0)
 }
 
+
+void DeConfigAudioPorts(
+#if (I2S_CHANS_DAC != 0) || (DSD_CHANS_DAC != 0)
+    out_buffered_port_32_t p_i2s_dac[],
+    int numPortsDac,
+#endif
+#if (I2S_CHANS_ADC != 0)
+    in_buffered_port_32_t p_i2s_adc[],
+    int numPortsAdc,
+#endif
+#if (CODEC_MASTER == 0)
+    NULLABLE_RESOURCE(out_buffered_port_32_t, p_lrclk),
+    out_buffered_port_32_t p_bclk,
+#else
+    NULLABLE_RESOURCE(in_port_t, p_lrclk),
+    in_port_t p_bclk,
+#endif
+    NULLABLE_RESOURCE(in_port_t,  p_mclk_in),
+    clock clk_audio_bclk)
+{
+#if (I2S_CHANS_DAC != 0) || (I2S_CHANS_ADC != 0)
+    int tmp; 
+    /* We always expect a mclk pin when xcore is master */
+    assert(!isnull(p_mclk_in));
+
+    /* Note handling of MCLK is done outside of XUA by user */
+
+    /* Note this call to stop_clock() will pause forever if the port clocking the clock-block is not low.
+     * deliver() should return with this being the case */
+    stop_clock(clk_audio_bclk);
+
+    /* Clear modes/reset port and set to Hi-Z */
+    stop_port(p_bclk);
+    start_port(p_bclk);
+    asm volatile("in %0, res[%1]":"=r"(tmp):"r"(p_bclk):"memory");
+
+    /* When in DSD mode p_lrclk is null, so check here (allows code reuse) */
+    if(!isnull(p_lrclk))
+    {
+        /* Clear modes/reset port and set to Hi-Z */
+        stop_port(p_lrclk);
+        start_port(p_lrclk);
+        asm volatile("in %0, res[%1]":"=r"(tmp):"r"(p_lrclk):"memory");
+    }
+
+#if (I2S_CHANS_DAC != 0) || (DSD_CHANS_DAC != 0)
+    for(int i = 0; i < numPortsDac; i++)
+    {
+        /* Clear modes/reset port and set to Hi-Z */
+        stop_port(p_i2s_dac[i]);
+        start_port(p_i2s_dac[i]);
+        asm volatile("in %0, res[%1]":"=r"(tmp):"r"(p_i2s_dac[i]):"memory");
+    }
+#endif
+
+#if (I2S_CHANS_ADC != 0)
+    /* Clock I2S input data ports from clock block */
+    for(int i = 0; i < numPortsAdc; i++)
+    {
+        /* Clear modes/reset port and set to Hi-Z */
+        stop_port(p_i2s_adc[i]);
+        start_port(p_i2s_adc[i]);
+        p_i2s_adc[i] :> int _;
+    }
+#endif
+
+#endif //#if (I2S_CHANS_DAC != 0) || (I2S_CHANS_ADC != 0)
+}
