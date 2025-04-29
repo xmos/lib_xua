@@ -20,19 +20,21 @@
  *  \param c_aud_fb             Audio feedback endpoint channel connected to the XUD
  *  \param c_midi_from_host     MIDI OUT endpoint channel connected to the XUD
  *  \param c_midi_to_host       MIDI IN endpoint channel connected to the XUD
- *  \param c_midi               Channel connected to MIDI core
+ *  \param c_midi               Channel connected to MIDI thread
  *  \param c_int                Audio clocking interrupt endpoint channel connected to the XUD
  *  \param c_clk_int            Optional chanend connected to the clockGen() thread if present
  *  \param c_sof                Start of frame channel connected to the XUD
  *  \param c_aud_ctl            Audio control channel connected to  Endpoint0()
  *  \param p_off_mclk           A port that is clocked of the MCLK input (not the MCLK input itself)
- *  \param c_aud                Channel connected to XUA_AudioHub() core
+ *  \param c_hid                Channel connected to the HID handler thread
+ *  \param c_aud                Channel connected to XUA_AudioHub() thread
  *  \param c_audio_rate_change  Channel to notify and synchronise on audio rate change
  *  \param i_pll_ref            Interface to task that toggles reference pin to CS2100
  *  \param c_swpll_update       Channel connected to software PLL task. Expects master clock counts based on USB frames.
  */
+
 void XUA_Buffer(
-#if (NUM_USB_CHAN_OUT > 0)
+#if (NUM_USB_CHAN_OUT > 0) || defined(__DOXYGEN__)
             chanend c_aud_out,
 #endif
 #if (NUM_USB_CHAN_IN > 0) || defined(__DOXYGEN__)
@@ -52,11 +54,11 @@ void XUA_Buffer(
 #endif
             chanend c_sof,
             chanend c_aud_ctl,
-            NULLABLE_RESOURCE(in_port_t, p_off_mclk)
-#if (HID_CONTROLS)
-            , chanend c_hid
+            NULLABLE_RESOURCE(in_port_t, p_off_mclk),
+#if (HID_CONTROLS) || defined(__DOXYGEN__)
+            chanend c_hid,
 #endif
-            , chanend c_aud
+            chanend c_aud
 #if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC) || defined(__DOYXGEN__)
             , chanend c_audio_rate_change
     #if (!XUA_USE_SW_PLL) || defined(__DOXYGEN__)
@@ -67,6 +69,7 @@ void XUA_Buffer(
     #endif
 #endif
         );
+
 
 void XUA_Buffer_Ep(
 

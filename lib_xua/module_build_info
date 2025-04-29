@@ -36,7 +36,7 @@ XCC_FLAGS_dfu.xc = $(MODULE_XCC_FLAGS) -Os -mno-dual-issue
 XCC_FLAGS_flash_interface.c = $(MODULE_XCC_FLAGS) -Os -mno-dual-issue
 XCC_FLAGS_flashlib_user.c = $(MODULE_XCC_FLAGS) -Os -mno-dual-issue
 
-OPTIONAL_HEADERS += xua_conf.h static_hid_report.h
+OPTIONAL_HEADERS += xua_conf.h static_hid_report.h user_main_globals.h user_main_declarations.h user_main_cores.h
 
 EXPORT_INCLUDE_DIRS = api \
                       src/core \
