@@ -676,8 +676,6 @@ static unsigned dummy_deliver_idle(chanend c_out, unsigned sampFreq)
     tmr_trigger += wait_ticks;
 
     const unsigned underflowWord = 0; // TODO make appropriate for DSD
-    outct(c_out, XS1_CT_END);
-
 
     while(1)
     {
@@ -1080,6 +1078,8 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
 
         /* Call user functions for core power down (eg. MCLK disable) and system component power down */ 
         AudioHwDeInit();
+        /* Handshake back previous command causing the break to idle mode */
+        outct(c_aud, XS1_CT_END);
         /* Now run dummy loop with no IO. This is sufficient to poll for commands from decouple */
         command = dummy_deliver_idle(c_aud, 1000); /* Run loop at 1kHz for min power */
         process_command(command, c_aud, curSamFreq, dsdMode, curSamRes_DAC, audioActive);
