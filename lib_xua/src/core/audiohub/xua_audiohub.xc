@@ -762,7 +762,6 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
 #if !((XUD_TILE != 0) && (AUDIO_IO_TILE == 0) && (XUA_DFU_EN == 1))
 #define dfuInterface null 
 #endif
-
 #if (XUA_ADAT_TX_EN)
     chan c_adat_out;
     unsigned adatSmuxMode = 0;
