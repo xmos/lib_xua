@@ -601,15 +601,6 @@ void DFUHandler(server interface i_dfu i, chanend ?c_user_cmd);
 #endif
 
 
-
-#pragma select handler
-void testct_byref(chanend c, int &returnVal)
-{
-    returnVal = 0;
-    if(testct(c))
-        returnVal = 1;
-}
-
 #if (XUA_DFU_EN == 1) && ((NUM_USB_CHAN_OUT > 0) || (NUM_USB_CHAN_IN > 0))
 /* This function is a dummy version of the deliver thread that does not
    connect to the codec ports. It is used during DFU reset. */
