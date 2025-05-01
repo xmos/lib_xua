@@ -1300,20 +1300,17 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
         {
             if (busState == XUD_BUS_SUSPEND)
             {
-                // Do suspend stuff
+                // Perform suspend actions
             }
             else
             {
-                // Do resume stuff
+                // Peform resume actions
             }
-            XUD_Ack(ep0_out, &ep0_in); // This should set ep_info[i].resetting back to 0
+            /* Acknowledge back to XUD letting it know we've handled suspend/resume */
+            XUD_Ack(ep0_out, &ep0_in); // This should set ep_info[i]
         }
     }
 }
-
-#define STR(x)   #x
-#define SHOW_DEFINE(x) printf("%s=%s\n", #x, STR(x))
-
 
 /* Endpoint 0 function.  Handles all requests to the device */
 void XUA_Endpoint0(chanend c_ep0_out, chanend c_ep0_in, NULLABLE_RESOURCE(chanend, c_aud_ctl),
@@ -1324,7 +1321,7 @@ void XUA_Endpoint0(chanend c_ep0_out, chanend c_ep0_in, NULLABLE_RESOURCE(chanen
 
     while(1)
     {
-        /* Returns XUD_RES_OKAY for success, XUD_RES_RST for bus reset */
+        /* Returns XUD_RES_OKAY for success, XUD_RES_UPDATE for bus status update */
         XUD_Result_t result = USB_GetSetupPacket(ep0_out, ep0_in, &sp);
         XUA_Endpoint0_loop(result, sp, c_ep0_out, c_ep0_in, c_aud_ctl, c_mix_ctl, c_clk_ctl, c_EANativeTransport_ctrl, dfuInterface VENDOR_REQUESTS_PARAMS_);
     }
