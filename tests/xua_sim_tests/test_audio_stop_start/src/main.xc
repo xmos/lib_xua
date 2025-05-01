@@ -120,6 +120,8 @@ void generator(chanend c_out)
   send_audio_frames(c_out, 1);
   send_cmd(c_out, SET_SAMPLE_FREQ, AUDIO_STOP_FOR_DFU); // make sure we can enter DFU from idle
   send_audio_frames(c_out, 5);
+  send_cmd(c_out, SET_SAMPLE_FREQ, 44100); // send second SR change to make sure it can ignore it 
+  send_audio_frames(c_out, 5);
   _Exit(0);
 }
 

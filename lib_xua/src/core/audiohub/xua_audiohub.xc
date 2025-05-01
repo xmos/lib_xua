@@ -605,82 +605,51 @@ void DFUHandler(server interface i_dfu i, chanend ?c_user_cmd);
 /* This function is a dummy version of the deliver thread that does not
    connect to the codec ports. It is used during DFU reset. */
 [[combinable]]
-static void dummy_deliver(chanend ?c_out, unsigned &command, unsigned sampFreq)
+static void dummy_deliver(chanend ?c_out, unsigned sampFreq, unsigned dfuMode, unsigned &command)
 {
-    int ct;
     const int wait_ticks = XS1_TIMER_HZ / sampFreq;
     timer tmr;
     int tmr_trigger;
     tmr :> tmr_trigger;
     tmr_trigger += wait_ticks;
+
+    if(!dfuMode)
+    {
+        StartSampleTransfer(c_out, 0);
+    }
 
     while (1)
     {
         /* Note, a select is used such that this task is combinable */
         select
         {
-            /* Check for sample freq change or new samples from mixer*/
-            case testct_byref(c_out, ct):
-                if(ct)
+            case CompleteSampleTransferUsbChans(c_out, 0, command):   /* Check for command & transfer the samples & UBM */
+                if(command)
                 {
-                    command = inct(c_out); // Disregard any command received.
-                    unsigned samp_freq = inuint(c_out);
-                    outct(c_out, XS1_CT_END);
-                }
-                else
-                {
-#if NUM_USB_CHAN_OUT > 0
-#pragma loop unroll
-                    for(int i = 0; i < NUM_USB_CHAN_OUT; i++)
+                    if(dfuMode)
                     {
-                        int tmp = inuint(c_out);
-                        samplesOut[i] = tmp;
+                        /* Just consume the command, ignore it + keep on looping forever */
+                        unsigned dummy1, dummy2, dummy3, dummy4;
+                        process_command(command, c_out, dummy1, dummy2, dummy3, dummy4);
+                        outct(c_out, XS1_CT_END);
                     }
-#else
-                    inuint(c_out);
-#endif
-#if NUM_USB_CHAN_IN > 0
-#pragma loop unroll
-                    for(int i = 0; i < NUM_USB_CHAN_IN; i++)
+                    else
                     {
-                        outuint(c_out, 0);
+                        /* Process the command in the callee */
+                        return;
                     }
-#endif
                 }
-
+                /* Wait one sample period */
                 tmr when timerafter(tmr_trigger) :> void;
                 tmr_trigger += wait_ticks;
+
                 /* Request more data/commands */
-                outuint(c_out, 0);
+                StartSampleTransfer(c_out, 0);
             break;
         }
     }
 }
 #endif
-
-static unsigned dummy_deliver_idle(chanend c_out, unsigned sampFreq)
-{
-    timer tmr;
-    const int wait_ticks = XS1_TIMER_HZ / sampFreq;
-    int tmr_trigger;
-    tmr :> tmr_trigger;
-    tmr_trigger += wait_ticks;
-
-    const unsigned underflowWord = 0; // TODO make appropriate for DSD
-
-    while(1)
-    {
-        unsigned command = DoSampleTransfer(c_out, 0, underflowWord);
-        if(command)
-        {
-            return command;
-        }
-        tmr when timerafter(tmr_trigger) :> void;
-        tmr_trigger += wait_ticks;
-    }
-
-    return 0;
-}
 
 
 #if XUA_DFU_EN
@@ -703,8 +672,8 @@ void check_and_enter_dfu(unsigned curSamFreq, chanend c_aud, server interface i_
         /* Request more data/commands */
         outuint(c_aud, 0);
 
-        unsigned command;
 
+        unsigned command = XUA_AUDCTL_NO_COMMAND;
         while (1)
         {
            [[combine]]
@@ -714,7 +683,8 @@ void check_and_enter_dfu(unsigned curSamFreq, chanend c_aud, server interface i_
                 DFUHandler(dfuInterface, null);
 #endif
 #if (NUM_USB_CHAN_OUT > 0) || (NUM_USB_CHAN_IN > 0)
-                dummy_deliver(c_aud, command, 48000);
+                /* This never exits because we set DFU mode*/
+                dummy_deliver(c_aud, 48000, 1, command);
 #endif
             }
             /* Note, we shouldn't reach here. Audio, once stopped for DFU, cannot be resumed */
@@ -1074,7 +1044,7 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
             /* Handshake back previous command causing the break to idle mode */
             outct(c_aud, XS1_CT_END);
             /* Now run dummy loop with no IO. This is sufficient to poll for commands from decouple */
-            command = dummy_deliver_idle(c_aud, 1000); /* Run loop at 1kHz for min power */
+            dummy_deliver(c_aud, 1000, 0, command);  /* Run loop at 1kHz for min power and exit if ccommand */
             process_command(command, c_aud, curSamFreq, dsdMode, curSamRes_DAC, audioActive);
 #if (XUA_DFU_EN == 1)
             check_and_enter_dfu(curSamFreq, c_aud, dfuInterface);

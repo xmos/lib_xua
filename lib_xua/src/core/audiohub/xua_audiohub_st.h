@@ -86,7 +86,7 @@ static inline void CompleteSampleTransferNoUsbChans(chanend ?c_out, const int re
         /* In this case USB is still enabled, even though we have no audio channels to/from
          * host. Check for cmd - only expecting STOP_AUDIO_FOR_DFU. The select above cannot be
          * used since EP0 is not expecting to be polled */
-        unsigned char command = 0;
+        unsigned char command = XUA_AUDCTL_NO_COMMAND;
         select
         {
             case inct_byref(c_out, command):
