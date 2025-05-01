@@ -803,7 +803,7 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
         AudioHwInit();
 
         /* Only break this loop if LP non streaming enabled and streams are both Alt 0 */
-        while(audioActive || (!XUA_LOW_POWER_NON_STREAMING))
+        while((!XUA_LOW_POWER_NON_STREAMING) || audioActive)
         {
             /* Calculate what master clock we should be using */
             if (((MCLK_441) % curSamFreq) == 0)
@@ -1032,7 +1032,7 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
 #endif /* XUA_ADAT_TX_EN) */
                 } /* AudioHub_MainLoop and command handler */
             } /* par */
-        } /* while(audioActive || (!XUA_LOW_POWER_NON_STREAMING)) */
+        } /* while((!XUA_LOW_POWER_NON_STREAMING) || audioActive) */
 
 
         /* The following code can only be reached if XUA_LOW_POWER_NON_STREAMING is enabled and all streams stopped */
@@ -1078,13 +1078,16 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
 
         /* Call user functions for core power down (eg. MCLK disable) and system component power down */ 
         AudioHwDeInit();
-        /* Handshake back previous command causing the break to idle mode */
-        outct(c_aud, XS1_CT_END);
-        /* Now run dummy loop with no IO. This is sufficient to poll for commands from decouple */
-        command = dummy_deliver_idle(c_aud, 1000); /* Run loop at 1kHz for min power */
-        process_command(command, c_aud, curSamFreq, dsdMode, curSamRes_DAC, audioActive);
+
+        while(!audioActive){
+            /* Handshake back previous command causing the break to idle mode */
+            outct(c_aud, XS1_CT_END);
+            /* Now run dummy loop with no IO. This is sufficient to poll for commands from decouple */
+            command = dummy_deliver_idle(c_aud, 1000); /* Run loop at 1kHz for min power */
+            process_command(command, c_aud, curSamFreq, dsdMode, curSamRes_DAC, audioActive);
 #if (XUA_DFU_EN == 1)
-        check_and_enter_dfu(curSamFreq, c_aud, dfuInterface);
+            check_and_enter_dfu(curSamFreq, c_aud, dfuInterface);
 #endif /* (XUA_DFU_EN == 1) */
+        }
     } /* while(1)*/
 }
