@@ -157,10 +157,10 @@ unsigned packData = 0;
 
 /* These flags are booleans which log whether or not an input or output stream is active
  * They can be used for passing to audio to allow shutdown when not streaming any audio */
-unsigned output_stream_active = 0;
-unsigned input_stream_active = 0;
-unsigned any_stream_active_old = 0;
-unsigned any_stream_active_current = 0;
+unsigned g_output_stream_active = 0;
+unsigned g_input_stream_active = 0;
+unsigned g_any_stream_active_old = 0;
+unsigned g_any_stream_active_current = 0;
 
 static inline void _send_sample_4(chanend c_mix_out, int ch)
 {
@@ -964,29 +964,29 @@ void XUA_Buffer_Decouple(chanend c_mix_out
                 switch(tmp)
                 {
                     case SET_STREAM_INPUT_START:
-                        input_stream_active = 1;
+                        g_input_stream_active = 1;
                         break;
                     case SET_STREAM_INPUT_STOP:
-                        input_stream_active = 0;
+                        g_input_stream_active = 0;
                         break;
                     case SET_STREAM_OUTPUT_START:
-                        output_stream_active = 1;
+                        g_output_stream_active = 1;
                         break;
                     case SET_STREAM_OUTPUT_STOP:
-                        output_stream_active = 0;
+                        g_output_stream_active = 0;
                         break;
                 }
 
                 /* We do OR logic so audio hub is sent info about whether *ANY* stream is active or not */
-                any_stream_active_current = input_stream_active || output_stream_active;
-                if(XUA_LOW_POWER_NON_STREAMING && (any_stream_active_current != any_stream_active_old))
+                g_any_stream_active_current = g_input_stream_active || g_output_stream_active;
+                if(XUA_LOW_POWER_NON_STREAMING && (g_any_stream_active_current != g_any_stream_active_old))
                 {
                     /* Forward stream active command to audio if needed - this will cause the audio loop to break */
                     inuint(c_mix_out);
-                    outct(c_mix_out, any_stream_active_current ? SET_AUDIO_START : SET_AUDIO_STOP);
+                    outct(c_mix_out, g_any_stream_active_current ? SET_AUDIO_START : SET_AUDIO_STOP);
                     chkct(c_mix_out, XS1_CT_END);
                 }
-                any_stream_active_old = any_stream_active_current;
+                g_any_stream_active_old = g_any_stream_active_current;
 
                 /* ACK back to EP0 */
                 asm volatile("outct res[%0],%1"::"r"(buffer_aud_ctl_chan),"r"(XS1_CT_END));
