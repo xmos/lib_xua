@@ -601,7 +601,7 @@ void DFUHandler(server interface i_dfu i, chanend ?c_user_cmd);
 #endif
 
 
-#if (XUA_DFU_EN == 1) && ((NUM_USB_CHAN_OUT > 0) || (NUM_USB_CHAN_IN > 0))
+#if ((NUM_USB_CHAN_OUT > 0) || (NUM_USB_CHAN_IN > 0))
 /* This function is a dummy version of the deliver thread that does not
    connect to the codec ports. It is used during DFU reset. */
 [[combinable]]
@@ -1044,7 +1044,7 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
             /* Handshake back previous command causing the break to idle mode */
             outct(c_aud, XS1_CT_END);
             /* Now run dummy loop with no IO. This is sufficient to poll for commands from decouple */
-            dummy_deliver(c_aud, 1000, 0, command);  /* Run loop at 1kHz for min power and exit if ccommand */
+            dummy_deliver(c_aud, 1000, 0, command);  /* Run loop at 1kHz for min power and exit if command */
             process_command(command, c_aud, curSamFreq, dsdMode, curSamRes_DAC, audioActive);
 #if (XUA_DFU_EN == 1)
             check_and_enter_dfu(curSamFreq, c_aud, dfuInterface);
