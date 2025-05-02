@@ -700,6 +700,7 @@ static void check_and_signal_stream_event_to_audio(chanend c_mix_out, unsigned d
     g_any_stream_active_current = g_input_stream_active || g_output_stream_active;
     if(XUA_LOW_POWER_NON_STREAMING && (g_any_stream_active_current != g_any_stream_active_old))
     {
+        printstr("any stream change DC\n");
         /* Forward stream active command to audio if needed - this will cause the audio loop to break */
         inuint(c_mix_out);
         outct(c_mix_out, g_any_stream_active_current ? SET_AUDIO_START : SET_AUDIO_STOP);
