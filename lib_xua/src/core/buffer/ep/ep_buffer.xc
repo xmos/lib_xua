@@ -470,6 +470,7 @@ void XUA_Buffer_Ep(
             {
                 if(cmd == SET_SAMPLE_FREQ)
                 {
+                    printstr("EPB SET_SAMPLE_FREQ\n");
                     unsigned receivedSampleFreq = inuint(c_aud_ctl);
 
 #if (MAX_FREQ != MIN_FREQ)
@@ -504,9 +505,9 @@ void XUA_Buffer_Ep(
                      * handshake elsewhere */
                     SET_SHARED_GLOBAL(g_streamChange_sampFreq, receivedSampleFreq);
                 }
-#if (AUDIO_CLASS == 2)
                 else if(cmd == SET_STREAM_INPUT_START)
                 {
+                    printstr("EPB SET_STREAM_INPUT_START\n");
                     unsigned formatChange_DataFormat = inuint(c_aud_ctl);
                     unsigned formatChange_NumChans = inuint(c_aud_ctl);
                     unsigned formatChange_SubSlot = inuint(c_aud_ctl);
@@ -520,7 +521,7 @@ void XUA_Buffer_Ep(
                 /* FIXME when FB EP is enabled there is no inital XUD_SetReady */
                 else if (cmd == SET_STREAM_OUTPUT_START)
                 {
-
+                    printstr("EPB SET_STREAM_OUTPUT_START\n");
                     XUD_BusSpeed_t busSpeed;
                     unsigned formatChange_DataFormat = inuint(c_aud_ctl);
                     unsigned formatChange_NumChans = inuint(c_aud_ctl);
@@ -554,13 +555,14 @@ void XUA_Buffer_Ep(
                     resetAsynchFeedback(sofCount, clocks, clockcounter, mod_from_last_time, sampleFreq);
 #endif
                 }
-#endif /* (AUDIO_CLASS == 2) */
                 else if (cmd == SET_STREAM_INPUT_STOP)
                 {
+                    printstr("EPB SET_STREAM_INPUT_STOP\n");
                     /* Do nothing - just let cmd propagate through to decouple */
                 }
                 else if (cmd == SET_STREAM_OUTPUT_STOP)
                 {
+                    printstr("EPB SET_STREAM_OUTPUT_STOP\n");
                     /* Do nothing - just let cmd propagate through to decouple */
                 }
 

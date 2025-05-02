@@ -645,6 +645,7 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
                                     if(g_curStreamAlt_Out > 0)
                                     {
                                         outct(c_aud_ctl, SET_STREAM_OUTPUT_START);
+                                        printstr("EP0 SET_STREAM_OUTPUT_START\n");
                                         outuint(c_aud_ctl, g_dataFormat_Out[newStreamAlt_Out-1]);        /* Data format (PCM/DSD) */
 
                                         if(g_curUsbSpeed == XUD_SPEED_HS)
@@ -663,6 +664,7 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
                                     else
                                     {
                                         outct(c_aud_ctl, SET_STREAM_OUTPUT_STOP);
+                                        printstr("EP0 SET_STREAM_OUTPUT_STOP\n");
                                     }
                                     /* Handshake */
                                     chkct(c_aud_ctl, XS1_CT_END);
@@ -690,6 +692,7 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
                                     if(g_curStreamAlt_In > 0)
                                     {
                                         outct(c_aud_ctl, SET_STREAM_INPUT_START);
+                                        printstr("EP0 SET_STREAM_INPUT_START\n");
                                         outuint(c_aud_ctl, g_dataFormat_In[newStreamAlt_In-1]);        /* Data format (PCM/DSD) */
 
                                         if(g_curUsbSpeed == XUD_SPEED_HS)
@@ -707,6 +710,7 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
                                     }
                                     else
                                     {
+                                        printstr("EP0 SET_STREAM_INPUT_STOP\n");
                                         outct(c_aud_ctl, SET_STREAM_INPUT_STOP);
                                     }
                                     /* Wait for handshake */
