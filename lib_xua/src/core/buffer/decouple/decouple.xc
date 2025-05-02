@@ -698,12 +698,21 @@ static void check_and_signal_stream_event_to_audio(chanend c_mix_out, unsigned d
 {
     /* We do OR logic so audio hub is sent info about whether *ANY* stream is active or not */
     g_any_stream_active_current = g_input_stream_active || g_output_stream_active;
-    if(XUA_LOW_POWER_NON_STREAMING && (g_any_stream_active_current != g_any_stream_active_old))
+    if(g_any_stream_active_current != g_any_stream_active_old)
     {
         printstr("any stream change DC\n");
         /* Forward stream active command to audio if needed - this will cause the audio loop to break */
         inuint(c_mix_out);
-        outct(c_mix_out, g_any_stream_active_current ? SET_AUDIO_START : SET_AUDIO_STOP);
+        if(g_any_stream_active_current)
+        {
+            outct(c_mix_out, SET_AUDIO_START);
+            outuint(c_mix_out, dsdMode);
+            outuint(c_mix_out, sampResOut);
+        }            
+        else
+        {
+            outct(c_mix_out, SET_AUDIO_STOP);
+        }
         chkct(c_mix_out, XS1_CT_END);
     }
     g_any_stream_active_old = g_any_stream_active_current;
