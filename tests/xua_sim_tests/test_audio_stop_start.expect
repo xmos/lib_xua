@@ -15,8 +15,6 @@ Frame 4
 sent SET_AUDIO_STOP
 AudioHwDeInit
 Frame 0
-sent SET_STREAM_FORMAT_OUT
-Frame 0
 sent SET_SAMPLE_FREQ
 Frame 0
 sent SET_AUDIO_START
