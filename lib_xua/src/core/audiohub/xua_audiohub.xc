@@ -567,7 +567,7 @@ static void process_command(unsigned command,
         curSamFreq = inuint(c_aud) * AUD_TO_USB_RATIO;
         debug_printf("aud set sr\n");
     }
-    else if(command == SET_STREAM_FORMAT_OUT)
+    else if(command == SET_AUDIO_START)
     {
         /* Off = 0
          * DOP = 1
@@ -575,15 +575,9 @@ static void process_command(unsigned command,
          */
         dsdMode = inuint(c_aud);
         curSamRes_DAC = inuint(c_aud);
-        debug_printf("aud stream format out\n");
-    }
-    else if (command == SET_AUDIO_START)
-    {
-
-        debug_printf("aud stream start\n")
         audioActive = 1;
+        debug_printf("aud stream start\n")
     }
-
     else if (command == SET_AUDIO_STOP)
     {
         debug_printf("aud stream stop\n");

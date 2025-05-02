@@ -29,11 +29,10 @@ enum
 
 /* These commands will reach I2S and will cause the audioloop to break and restart*/
 #define SET_SAMPLE_FREQ         4
-#define SET_STREAM_FORMAT_OUT   8
-#define SET_STREAM_FORMAT_IN    9
 
 /* These commands only go as far as Decouple where they are translated to the next block */
 /* Note these need to be in order in a contiguous block due to the way the code handles them in decouple */
+/* When starting a stream, format information is also sent */
 #define SET_STREAM_INPUT_START  10
 #define SET_STREAM_INPUT_STOP   11
 #define SET_STREAM_OUTPUT_START 12

@@ -483,6 +483,7 @@ void XUA_Buffer_Ep(
                         /* Reset FB */
                         /* Note, Endpoint 0 will hold off host for a sufficient period to allow our feedback
                          * to stabilise (i.e. sofCount == 128 to fire) */
+                        /* See also https://github.com/xmos/lib_xua/issues/467 */
                         resetAsynchFeedback(sofCount, clocks, clockcounter, mod_from_last_time, sampleFreq);
 #if FB_USE_REF_CLOCK
                         clock_remainder = 0;
@@ -504,7 +505,7 @@ void XUA_Buffer_Ep(
                     SET_SHARED_GLOBAL(g_streamChange_sampFreq, receivedSampleFreq);
                 }
 #if (AUDIO_CLASS == 2)
-                else if(cmd == SET_STREAM_FORMAT_IN)
+                else if(cmd == SET_STREAM_INPUT_START)
                 {
                     unsigned formatChange_DataFormat = inuint(c_aud_ctl);
                     unsigned formatChange_NumChans = inuint(c_aud_ctl);
@@ -517,7 +518,7 @@ void XUA_Buffer_Ep(
                     SET_SHARED_GLOBAL(g_formatChange_SampRes, formatChange_SampRes);
                 }
                 /* FIXME when FB EP is enabled there is no inital XUD_SetReady */
-                else if (cmd == SET_STREAM_FORMAT_OUT)
+                else if (cmd == SET_STREAM_OUTPUT_START)
                 {
 
                     XUD_BusSpeed_t busSpeed;
@@ -546,20 +547,14 @@ void XUA_Buffer_Ep(
                         XUD_SetReady_In(ep_aud_fb, (fb_clocks, unsigned char[]), 3);
                     }
 #endif
-                }
-#endif /* (AUDIO_CLASS == 2) */
-                else if (cmd == SET_STREAM_INPUT_START)
-                {
-                    /* Do nothing - just let cmd propagate through to decouple */
-                }
-                else if (cmd == SET_STREAM_OUTPUT_START) 
-                {
 #if (XUA_LOW_POWER_NON_STREAMING && (XUA_SYNCMODE == XUA_SYNCMODE_ASYNC))
                     /* Audiohub will startup again and MCLK may possibly have stopped and restarted */
                     /* Set g_speed to something sensible. We expect it to get over-written before stream time */
+                    /* See also https://github.com/xmos/lib_xua/issues/467 */
                     resetAsynchFeedback(sofCount, clocks, clockcounter, mod_from_last_time, sampleFreq);
 #endif
                 }
+#endif /* (AUDIO_CLASS == 2) */
                 else if (cmd == SET_STREAM_INPUT_STOP)
                 {
                     /* Do nothing - just let cmd propagate through to decouple */
