@@ -34,7 +34,7 @@ extern unsigned int g_curSamFreqMultiplier;
 /* Without this, zero size input packets fill the input FIFO and it takes a long time to clear out when feedback starts */
 /* This can cause a delay to the decouple ISR being serviced pushing our I2S timing. Initialising solves this */
 unsigned g_speed = (AUDIO_CLASS == 2) ? (DEFAULT_FREQ/8000) << 16 : (DEFAULT_FREQ/1000) << 16;
-unsigned g_streamChange = 0;
+unsigned g_freqChangeOngoing = 0; /* Not cleared until audio has completed it's SR change */
 unsigned g_feedbackValid = 0;
 
 #if (XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
@@ -275,7 +275,7 @@ void XUA_Buffer_Ep(
 
 #if (XUA_SYNCMODE == XUA_SYNCMODE_ASYNC)
     unsigned lastClock = 0;
-    unsigned freqChange = 0;
+    unsigned freqChangeOngoing = 0;
 #if (FB_USE_REF_CLOCK == 0)
     xassert(!isnull(p_off_mclk) && "Error: must provide non-null MCLK count port if using asynchronous mode and not using reference clock");
 #endif
@@ -470,7 +470,6 @@ void XUA_Buffer_Ep(
             {
                 if(cmd == SET_SAMPLE_FREQ)
                 {
-                    printstr("EPB SET_SAMPLE_FREQ\n");
                     unsigned receivedSampleFreq = inuint(c_aud_ctl);
 
 #if (MAX_FREQ != MIN_FREQ)
@@ -507,7 +506,6 @@ void XUA_Buffer_Ep(
                 }
                 else if(cmd == SET_STREAM_INPUT_START)
                 {
-                    printstr("EPB SET_STREAM_INPUT_START\n");
                     unsigned formatChange_DataFormat = inuint(c_aud_ctl);
                     unsigned formatChange_NumChans = inuint(c_aud_ctl);
                     unsigned formatChange_SubSlot = inuint(c_aud_ctl);
@@ -521,7 +519,6 @@ void XUA_Buffer_Ep(
                 /* FIXME when FB EP is enabled there is no inital XUD_SetReady */
                 else if (cmd == SET_STREAM_OUTPUT_START)
                 {
-                    printstr("EPB SET_STREAM_OUTPUT_START\n");
                     XUD_BusSpeed_t busSpeed;
                     unsigned formatChange_DataFormat = inuint(c_aud_ctl);
                     unsigned formatChange_NumChans = inuint(c_aud_ctl);
@@ -557,19 +554,17 @@ void XUA_Buffer_Ep(
                 }
                 else if (cmd == SET_STREAM_INPUT_STOP)
                 {
-                    printstr("EPB SET_STREAM_INPUT_STOP\n");
                     /* Do nothing - just let cmd propagate through to decouple */
                 }
                 else if (cmd == SET_STREAM_OUTPUT_STOP)
                 {
-                    printstr("EPB SET_STREAM_OUTPUT_STOP\n");
                     /* Do nothing - just let cmd propagate through to decouple */
                 }
 
                 /* Pass on sample freq change to decouple() via global flag (saves a chanend) */
                 /* Note: freqChange_flag now used to communicate other commands also */
-                SET_SHARED_GLOBAL0(g_streamChange, cmd);                /* Set command */
-                SET_SHARED_GLOBAL(g_streamChange_flag, cmd);            /* Set Flag */
+                SET_SHARED_GLOBAL(g_freqChangeOngoing, cmd);           /* Set freq change ongoing */
+                SET_SHARED_GLOBAL0(g_streamChange_flag, cmd);          /* Set Flag */
 
                 /* Note no chk_ct(c, XS1_CT_END) because this is done in decouple */
                 break;
@@ -658,8 +653,8 @@ void XUA_Buffer_Ep(
 #endif
                 /* The time we base feedback on will be invalid until we get 2 SOF's */
                 /* Additionally whilst the SR is being changed we could get some invalid values due to clocks being changed etc */
-                GET_SHARED_GLOBAL(freqChange, g_streamChange);
-                if((freqChange == SET_SAMPLE_FREQ) || !g_feedbackValid)
+                GET_SHARED_GLOBAL(freqChangeOngoing, g_freqChangeOngoing);
+                if((freqChangeOngoing == SET_SAMPLE_FREQ) || !g_feedbackValid)
                 {
                      /* Keep getting MCLK counts */
                     lastClock = u_tmp;

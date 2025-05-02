@@ -700,7 +700,6 @@ static void check_and_signal_stream_event_to_audio(chanend c_mix_out, unsigned d
     g_any_stream_active_current = g_input_stream_active || g_output_stream_active;
     if(g_any_stream_active_current != g_any_stream_active_old)
     {
-        printstr("any stream change DC\n");
         /* Forward stream active command to audio if needed - this will cause the audio loop to break */
         inuint(c_mix_out);
         if(g_any_stream_active_current)
@@ -836,7 +835,7 @@ void XUA_Buffer_Decouple(chanend c_mix_out
             GET_SHARED_GLOBAL(tmp, g_streamChange_flag);
             if (tmp == SET_SAMPLE_FREQ)
             {
-                SET_SHARED_GLOBAL(g_streamChange_flag, 0);
+                SET_SHARED_GLOBAL(g_streamChange_flag, XUA_AUDCTL_NO_COMMAND);
                 GET_SHARED_GLOBAL(sampFreq, g_streamChange_sampFreq);
 
                 /* Pass on to mixer */
@@ -880,9 +879,8 @@ void XUA_Buffer_Decouple(chanend c_mix_out
                 /* Wait for handshake back and pass back up */
                 chkct(c_mix_out, XS1_CT_END);
 
-                SET_SHARED_GLOBAL(g_streamChange, 0);
                 asm volatile("outct res[%0],%1"::"r"(buffer_aud_ctl_chan),"r"(XS1_CT_END));
-
+                SET_SHARED_GLOBAL(g_freqChangeOngoing, XUA_AUDCTL_NO_COMMAND);
                 ENABLE_INTERRUPTS();
 
                 if(sampFreq != AUDIO_STOP_FOR_DFU)
@@ -896,7 +894,7 @@ void XUA_Buffer_Decouple(chanend c_mix_out
             {
                 /* Change in IN channel count */
                 DISABLE_INTERRUPTS();
-                SET_SHARED_GLOBAL(g_streamChange_flag, 0);
+                SET_SHARED_GLOBAL(g_streamChange_flag, XUA_AUDCTL_NO_COMMAND);
 
                 GET_SHARED_GLOBAL(g_numUsbChan_In, g_formatChange_NumChans);
                 GET_SHARED_GLOBAL(g_curSubSlot_In, g_formatChange_SubSlot);
@@ -930,16 +928,16 @@ void XUA_Buffer_Decouple(chanend c_mix_out
                 g_input_stream_active = 1;
                 check_and_signal_stream_event_to_audio(c_mix_out, dsdMode, sampResOut);
 
+                /* ACK back to EP0 */
                 asm volatile("outct res[%0],%1"::"r"(buffer_aud_ctl_chan),"r"(XS1_CT_END));
-                SET_SHARED_GLOBAL(g_streamChange, 0);
-
+                SET_SHARED_GLOBAL(g_freqChangeOngoing, XUA_AUDCTL_NO_COMMAND);
                 ENABLE_INTERRUPTS();
             }
             else if(tmp == SET_STREAM_OUTPUT_START)
             {
                 /* Change in OUT channel count - note we expect this on every stream start event */
                 DISABLE_INTERRUPTS();
-                SET_SHARED_GLOBAL(g_streamChange_flag, 0);
+                SET_SHARED_GLOBAL(g_streamChange_flag, XUA_AUDCTL_NO_COMMAND);
                 GET_SHARED_GLOBAL(g_numUsbChan_Out, g_formatChange_NumChans);
                 GET_SHARED_GLOBAL(g_curSubSlot_Out, g_formatChange_SubSlot);
                 GET_SHARED_GLOBAL(dataFormatOut, g_formatChange_DataFormat);
@@ -974,13 +972,13 @@ void XUA_Buffer_Decouple(chanend c_mix_out
                 check_and_signal_stream_event_to_audio(c_mix_out, dsdMode, sampResOut);
 
                 asm volatile("outct res[%0],%1"::"r"(buffer_aud_ctl_chan),"r"(XS1_CT_END));
-
-                SET_SHARED_GLOBAL(g_streamChange, 0);
+                SET_SHARED_GLOBAL(g_freqChangeOngoing, XUA_AUDCTL_NO_COMMAND);
                 ENABLE_INTERRUPTS();
             }
             else if(tmp == SET_STREAM_INPUT_STOP || tmp == SET_STREAM_OUTPUT_STOP)
             {
                 DISABLE_INTERRUPTS();
+                SET_SHARED_GLOBAL(g_streamChange_flag, XUA_AUDCTL_NO_COMMAND);
 
                 /* clear stream active if needed */
                 g_input_stream_active = (tmp == SET_STREAM_INPUT_STOP) ? 0 : g_input_stream_active;
@@ -989,7 +987,7 @@ void XUA_Buffer_Decouple(chanend c_mix_out
 
                 /* ACK back to EP0 */
                 asm volatile("outct res[%0],%1"::"r"(buffer_aud_ctl_chan),"r"(XS1_CT_END));
-                SET_SHARED_GLOBAL(g_streamChange_flag, 0);
+                SET_SHARED_GLOBAL(g_freqChangeOngoing, XUA_AUDCTL_NO_COMMAND);
                 ENABLE_INTERRUPTS();
             }
         }
