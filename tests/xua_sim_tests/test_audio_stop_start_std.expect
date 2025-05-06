@@ -5,7 +5,7 @@ Frame 1
 Frame 2
 Frame 3
 Frame 4
-sent SET_SAMPLE_FREQ
+sent SET_SAMPLE_FREQ 96000
 AudioHwConfig 96000
 Frame 0
 Frame 1
@@ -15,7 +15,7 @@ Frame 4
 sent SET_AUDIO_STOP
 AudioHwDeInit
 Frame 0
-sent SET_SAMPLE_FREQ
+sent SET_SAMPLE_FREQ 48000
 Frame 0
 sent SET_AUDIO_START
 AudioHwInit
@@ -28,13 +28,13 @@ Frame 4
 sent SET_AUDIO_STOP
 AudioHwDeInit
 Frame 0
-sent SET_SAMPLE_FREQ
+sent SET_SAMPLE_FREQ 305419896
 Frame 0
 Frame 1
 Frame 2
 Frame 3
 Frame 4
-sent SET_SAMPLE_FREQ
+sent SET_SAMPLE_FREQ 44100
 Frame 0
 Frame 1
 Frame 2

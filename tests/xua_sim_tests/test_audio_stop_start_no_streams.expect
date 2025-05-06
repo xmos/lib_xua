@@ -1,0 +1,9 @@
+AudioHwInit
+AudioHwConfig 44100
+Frame 0
+sent SET_SAMPLE_FREQ 96000
+AudioHwConfig 96000
+Frame 0
+sent SET_SAMPLE_FREQ 305419896
+Frame 0
+sent SET_SAMPLE_FREQ 44100

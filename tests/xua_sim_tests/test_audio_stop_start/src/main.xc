@@ -12,8 +12,16 @@
 #define DEBUG_UNIT MAIN
 #include "debug_print.h"
 
-on tile[AUDIO_IO_TILE] : buffered out port:32 p_i2s_dac[I2S_WIRES_DAC] =  {XS1_PORT_1A};
-on tile[AUDIO_IO_TILE] : buffered in port:32 p_i2s_adc[I2S_WIRES_ADC] =   {XS1_PORT_1B};
+#if NO_STREAMS
+#define DAC_PORT
+#define ADC_PORT
+#else
+#define DAC_PORT  XS1_PORT_1A
+#define ADC_PORT  XS1_PORT_1B
+#endif
+
+on tile[AUDIO_IO_TILE] : buffered out port:32 p_i2s_dac[I2S_WIRES_DAC] =  {DAC_PORT};
+on tile[AUDIO_IO_TILE] : buffered in port:32 p_i2s_adc[I2S_WIRES_ADC] =   {ADC_PORT};
 
 
 on tile[AUDIO_IO_TILE] : buffered out port:32 p_lrclk        = XS1_PORT_1C;    /* I2S Bit-clock */
@@ -42,7 +50,8 @@ void send_audio_frames(chanend c_out, unsigned num_frames)
 
   while (1) {
     underflow_word = inuint(c_out);
-    for (i = 0; i < NUM_USB_CHAN_OUT; i++) {
+    const int num_outs = NUM_USB_CHAN_OUT == 0 ? 1 : NUM_USB_CHAN_OUT;
+    for (i = 0; i < num_outs; i++) {
       outuint(c_out, frame_count);
     }
     for (i = 0; i < NUM_USB_CHAN_IN; i++) {
@@ -57,23 +66,6 @@ void send_audio_frames(chanend c_out, unsigned num_frames)
   }
 }
 
-/*
-    if(command == SET_SAMPLE_FREQ)
-    {
-        curSamFreq = inuint(c_aud) * AUD_TO_USB_RATIO;
-    else if(command == SET_STREAM_FORMAT_OUT)
-        dsdMode = inuint(c_aud);
-        curSamRes_DAC = inuint(c_aud);
-    }
-    else if (command == SET_AUDIO_START)
-    {
-        audioActive = 1;
-    }
-    else if (command == SET_AUDIO_STOP)
-    {
-        audioActive = 0;
-    }
-*/
 
 void send_cmd(chanend c_out, unsigned cmd, unsigned val)
 {
@@ -82,7 +74,7 @@ void send_cmd(chanend c_out, unsigned cmd, unsigned val)
     switch(cmd)
     {
       case SET_SAMPLE_FREQ:
-        printstr("sent SET_SAMPLE_FREQ\n");
+        printstr("sent SET_SAMPLE_FREQ "); printintln(val);
         outuint(c_out, val); // note 0x12345678 for DFU
         break;
       case SET_AUDIO_START:
@@ -94,7 +86,7 @@ void send_cmd(chanend c_out, unsigned cmd, unsigned val)
         printstr("sent SET_AUDIO_STOP\n");
         break;
       default:
-        printstr("Error - incorrect command\n");
+        printstr("ERROR - incorrect command in send\n");
         break;
     }
     chkct(c_out, XS1_CT_END);
@@ -102,6 +94,14 @@ void send_cmd(chanend c_out, unsigned cmd, unsigned val)
 
 void generator(chanend c_out)
 {
+#if NO_STREAMS
+  send_audio_frames(c_out, 1); /* We have to send at least one audio frame due to the way audiohub pre-buffers */
+  send_cmd(c_out, SET_SAMPLE_FREQ, 96000);
+  send_audio_frames(c_out, 1);
+  send_cmd(c_out, SET_SAMPLE_FREQ, AUDIO_STOP_FOR_DFU); // make sure we can enter DFU from idle
+  send_audio_frames(c_out, 1);
+  send_cmd(c_out, SET_SAMPLE_FREQ, 44100); // send second SR change to make sure it can ignore it 
+#else
   send_audio_frames(c_out, 5); // First test normal streaming sample exchnge and SR change
   send_cmd(c_out, SET_SAMPLE_FREQ, 96000);
   send_audio_frames(c_out, 5);
@@ -117,6 +117,7 @@ void generator(chanend c_out)
   send_audio_frames(c_out, 5);
   send_cmd(c_out, SET_SAMPLE_FREQ, 44100); // send second SR change to make sure it can ignore it 
   send_audio_frames(c_out, 5);
+#endif
   _Exit(0);
 }
 

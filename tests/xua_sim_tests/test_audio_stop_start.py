@@ -8,17 +8,17 @@ import sys
 import json
 
 
-def do_test(options, capfd):
+def do_test(options, capfd, cfg):
 
     build_options = []
     output = []
 
     testname = Path(__file__).stem
-    binary = Path(__file__).parent / testname / "bin" / f"{testname}.xe"
+    binary = Path(__file__).parent / testname / "bin" / cfg / f"{testname}_{cfg}.xe"
     with capfd.disabled():
         print("***", binary)
 
-    tester = testers.ComparisonTester(open(Path(__file__).parent / "test_audio_stop_start.expect"))
+    tester = testers.ComparisonTester(open(Path(__file__).parent / f"test_audio_stop_start_{cfg}.expect"))
 
     loopback_args = (
         "-port tile[1] XS1_PORT_1M 1 0 -port tile[1] XS1_PORT_1D 1 0 " # mclk
@@ -38,7 +38,6 @@ def do_test(options, capfd):
     result = Pyxsim.run_on_simulator(
         binary,
         cmake=True,
-        build_options=build_options,
         tester=tester,
         simargs=simargs,
         capfd=capfd,
@@ -48,9 +47,9 @@ def do_test(options, capfd):
 
     return result
 
+@pytest.mark.parametrize("cfg", ["std", "no_streams"])
+def test_audio_stop_start(options, capfd, cfg):
 
-def test_audio_stop_start(options, capfd):
-
-    result = do_test(options, capfd)
+    result = do_test(options, capfd, cfg)
 
     assert result
