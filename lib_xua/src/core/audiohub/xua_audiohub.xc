@@ -574,11 +574,15 @@ void testct_byref(chanend c, int &returnVal)
         returnVal = 1;
 }
 
-#if (XUA_DFU_EN == 1) && ((NUM_USB_CHAN_OUT > 0) || (NUM_USB_CHAN_IN > 0))
+#if (XUA_DFU_EN == 1) && ((NUM_USB_CHAN_OUT > 0) || (NUM_USB_CHAN_IN > 0) || (XUA_PWM_CHANNELS > 0))
 /* This function is a dummy version of the deliver thread that does not
    connect to the codec ports. It is used during DFU reset. */
 [[combinable]]
-static void dummy_deliver(chanend ?c_out, unsigned &command)
+static void dummy_deliver(chanend ?c_out,
+#if XUA_PWM_CHANNELS > 0
+                          chanend c_pwm,
+#endif
+                          unsigned &command)
 {
     int ct;
 
@@ -612,6 +616,13 @@ static void dummy_deliver(chanend ?c_out, unsigned &command)
                     for(int i = 0; i < NUM_USB_CHAN_IN; i++)
                     {
                         outuint(c_out, 0);
+                    }
+#endif
+#if XUA_PWM_CHANNELS > 0
+#pragma loop unroll
+                    for(int i = 0; i < XUA_PWM_CHANNELS; i++)
+                    {
+                        outuint(c_pwm, 0);
                     }
 #endif
                 }
@@ -945,8 +956,12 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk
 #if (XUD_TILE != 0) && (AUDIO_IO_TILE == 0)
                             DFUHandler(dfuInterface, null);
 #endif
-#if (NUM_USB_CHAN_OUT > 0) || (NUM_USB_CHAN_IN > 0)
-                            dummy_deliver(c_aud, command);
+#if (NUM_USB_CHAN_OUT > 0) || (NUM_USB_CHAN_IN > 0) || (XUA_PWM_CHANNELS > 0)
+                            dummy_deliver(c_aud,
+#if XUA_PWM_CHANNELS > 0
+                                          c_pwm_channels,
+#endif
+                                          command);
 #endif
                         }
                         /* Note, we shouldn't reach here. Audio, once stopped for DFU, cannot be resumed */
