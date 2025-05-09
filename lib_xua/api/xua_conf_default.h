@@ -36,9 +36,7 @@
  * why XUD_TILE is set to USB_TILE. 
  */
 #ifndef XUD_TILE
-#define EXPAND_MACRO(x) x
-#define ADD_TILE(x) tile[x]
-#define XUD_TILE ADD_TILE(EXPAND_MACRO(USB_TILE))
+#define XUD_TILE        USB_TILE
 #endif
 
 /**
