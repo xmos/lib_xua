@@ -37,14 +37,6 @@ UNRELEASED
   * ADDED:     Optional user_main_declarations.h user_main_cores.h headers to
     allow insertion of declarations and tasks for extending main.xc
 
-  * Changes to dependencies:
-
-    - lib_xud: 2.4.0 -> 2.4.1
-
-  * Changes to dependencies:
-
-    - lib_xud: 2.4.0 -> 2.4.1
-
 5.0.0
 -----
 
