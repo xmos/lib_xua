@@ -72,6 +72,54 @@ This behaviour described in this section is the default behaviour of `lib_xua`, 
 set ``EXCLUDE_USB_AUDIO_MAIN`` to 1 in the application `CMakeLists.txt` or ``xua_conf.h`` and see
 :ref:`sec_advanced_usage`.
 
+
+Extending the "Codeless" application
+====================================
+
+The ``main.xc`` function allows insertion of extra code using the preprocessor. For example, you may wish
+to add some control code to control buttons or LEDs or DSP tasks for audio enhancement.
+
+Adding globals
+..............
+
+To add globals to your application, you may declare them in a dedicated source file in your project. They
+may then be referenced from other files using the ``extern`` keyword.
+
+Alternatively, you may add an optional header file to your project called ``user_main_globals.h``.
+If this file exists, its contents will be inserted into ``main.xc`` in global scope.
+
+Example contents of ``user_main_globals.h``::
+
+  unsigned my_global_var = 42;
+
+Adding main function declarations
+.................................
+
+To add declarations to your application, for example channels or interfaces to connect between tasks, you can
+define the token ``USER_MAIN_DECLARATIONS`` from your ``xua_conf.h`` configuration file. This inserts the 
+macro inside ``main.xc`` after ``main()`` but before the main ``par`` statement. 
+
+Alternatively, you may add an optional header file to your project called ``user_main_declarations.h``.
+If this file exists, its contents will be inserted into ``main.xc`` before the main ``par`` statement.
+
+Example contents of ``user_main_declarations.h``::
+
+  chan c_usb_to_user_interface;
+
+
+Adding main function tasks
+..........................
+
+To add extra tasks to your application, you can define the token ``USER_MAIN_CORES`` from your ``xua_conf.h`` configuration file. This inserts the  macro inside ``main.xc`` after the main ``par`` statement meaning the
+compiler will run these tasks in parallel, either on a dedicated hardware thread or combine with other tasks if the task is marked as ``[[combinable]]``. 
+                   
+Alternatively, you may add an optional header file to your project called ``user_main_cores.h``.
+If this file exists, its contents will be inserted into ``main.xc`` after the main ``par`` statement.
+
+Example contents of ``user_main_cores.h``::
+
+  on tile[1]: my_user_interface_task(c_usb_to_user_interface);
+
 Configuring lib_xua
 ===================
 

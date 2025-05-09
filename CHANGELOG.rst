@@ -34,6 +34,12 @@ UNRELEASED
     not defined.
   * CHANGED:   AN00248 updated so that it uses lib_xua main instead of own main
     function.
+  * ADDED:     Optional user_main_declarations.h user_main_cores.h headers to
+    allow insertion of declarations and tasks for extending main.xc
+
+  * Changes to dependencies:
+
+    - lib_xud: 2.4.0 -> 2.4.1
 
   * Changes to dependencies:
 
@@ -95,7 +101,7 @@ UNRELEASED
 
     - lib_xcore_math: Added dependency 2.4.0
 
-    - lib_xud: 2.3.2 -> 2.4.0
+    - lib_xud: 2.3.2 -> 2.4.1
 
 4.2.0
 -----

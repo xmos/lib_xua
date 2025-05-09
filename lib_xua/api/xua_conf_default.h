@@ -1689,6 +1689,9 @@ enum USBEndpointNumber_Out
  * in XUA_Buffer_Ep() to occur only when a change has been made by XUA_Buffer_Decouple().
  * This significantly reduces core power at the cost of two channel ends on the USB_TILE.
  */
+#ifdef __DOXYGEN__
+#define CHAN_BUFF_CTRL
+#endif
 #if defined(CHAN_BUFF_CTRL) && (CHAN_BUFF_CTRL == 0)
 #undef CHAN_BUFF_CTRL
 #endif
