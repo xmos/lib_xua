@@ -17,8 +17,12 @@
 #define MCLK_48 (512 * 48000)
 #endif
 
+#ifndef NUM_USB_CHAN_IN
 #define NUM_USB_CHAN_IN		2
+#endif
+#ifndef NUM_USB_CHAN_OUT
 #define NUM_USB_CHAN_OUT	2
+#endif
 #define I2S_CHANS_ADC		NUM_USB_CHAN_IN
 #define I2S_CHANS_DAC		NUM_USB_CHAN_OUT
 

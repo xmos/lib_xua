@@ -9,9 +9,9 @@ void AudioHwInit(void)
     printf("AudioHwInit\n");
 }
 
-void AudioHwDeInit(void)
+void AudioHwShutdown(void)
 {
-    printf("AudioHwDeInit\n");
+    printf("AudioHwShutdown\n");
 }
 
 void AudioHwConfig(unsigned samFreq, unsigned mClk, unsigned dsdMode, unsigned sampRes_DAC, unsigned sampRes_ADC)

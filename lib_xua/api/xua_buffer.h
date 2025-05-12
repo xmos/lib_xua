@@ -97,7 +97,7 @@ void XUA_Buffer_Ep(
 #if (HID_CONTROLS)
             , chanend c_hid
 #endif
-#ifdef CHAN_BUFF_CTRL
+#ifdef XUA_CHAN_BUFF_CTRL
             , chanend c_buff_ctrl
 #endif
 #if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC) || defined(__DOYXGEN__)
@@ -118,7 +118,7 @@ void XUA_Buffer_Ep(
  * \param c_audio_out Channel connected to the audio() or mixer() threads
  */
 void XUA_Buffer_Decouple(chanend c_audio_out
-#ifdef CHAN_BUFF_CTRL
+#ifdef XUA_CHAN_BUFF_CTRL
      , chanend c_buff_ctrl
 #endif
 );

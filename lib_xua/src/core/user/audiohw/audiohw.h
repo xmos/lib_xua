@@ -20,8 +20,11 @@ void AudioHwInit(void);
  *
  * This function is called when streaming stops (device enumerated but audio is idle) and should contain user code to perform any 
  * required audio hardware de-initialisation. This can be useful for saving power in the audio sub-system.
+ * 
+ * Note this callback will only be called if the XUA_LOW_POWER_NON_STREAMING define is set, otherwise lib_xua assumes that I2S
+ * is always looping.
  */
-void AudioHwDeInit(void);
+void AudioHwShutdown(void);
 
 /**
  * @brief   User audio hardware configuration code

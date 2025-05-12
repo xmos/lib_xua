@@ -9,8 +9,8 @@ void AudioHwInit()
     return;
 }
 
-void AudioHwDeInit() __attribute__ ((weak));
-void AudioHwDeInit()
+void AudioHwShutdown() __attribute__ ((weak));
+void AudioHwShutdown()
 {
     return;
 }

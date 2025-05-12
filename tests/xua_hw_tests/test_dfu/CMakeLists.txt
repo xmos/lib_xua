@@ -63,7 +63,7 @@ set(APP_COMPILER_FLAGS_i0o2_lp  ${COMMON_FLAGS}
                                 -DI2S_CHANS_ADC=0
                                 -DI2S_CHANS_DAC=2
                                 -DLOW_POWER_ENABLE=1
-                                -DCHAN_BUFF_CTRL=1
+                                -DXUA_CHAN_BUFF_CTRL=1
                                 -DXUD_PRIORITY_HIGH=1
                                 -DXUA_LOW_POWER_NON_STREAMING=1) # low power DAC config, minus tile and switch PD
 
