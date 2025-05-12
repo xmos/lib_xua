@@ -24,10 +24,25 @@ enum
     CLOCK_COUNT
 };
 
-/* c_aud_ctl */
-#define SET_SAMPLE_FREQ         4
-#define SET_STREAM_FORMAT_OUT   8
-#define SET_STREAM_FORMAT_IN    9
+/* c_aud_ctl commands - These are propagated from EP0 through EP buffer to Decouple. */
+/* Note we avoid special channel tokens - see xs1b_user.h*/
+#define XUA_AUDCTL_NO_COMMAND               0 /* No command from decouple - carry on exchanging samples. This MUST be value zero */
+
+/* These commands will reach I2S and will cause the audioloop to break and restart*/
+#define XUA_AUDCTL_SET_SAMPLE_FREQ          4 
+
+/* These commands only go as far as Decouple where they are translated to the next block */
+/* Note these need to be in order in a contiguous block due to the way the code handles them in decouple */
+/* When starting a stream, format information is also sent */
+#define XUA_AUDCTL_SET_STREAM_INPUT_START   20
+#define XUA_AUDCTL_SET_STREAM_INPUT_STOP    21
+#define XUA_AUDCTL_SET_STREAM_OUTPUT_START  22
+#define XUA_AUDCTL_SET_STREAM_OUTPUT_STOP   23
+
+/* These commands exist only between Decouple and Audio. The logic to translate from the previous block is in decouple */
+#define XUA_AUD_SET_AUDIO_START             30
+#define XUA_AUD_SET_AUDIO_STOP              31
+
 
 #include "dsd_support.h"
 

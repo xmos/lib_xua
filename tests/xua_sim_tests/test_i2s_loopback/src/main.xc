@@ -125,7 +125,7 @@ void generator(chanend c_checker, chanend c_out)
       if (!fail) {
         debug_printf("PASS\n");
       }
-      outct(c_out, SET_SAMPLE_FREQ);
+      outct(c_out, XUA_AUDCTL_SET_SAMPLE_FREQ);
       //inuint(c_out); //This causes the DFUhandler to be called with exceptiopn in slave mode so skip this - we are out of here anyhow
 
     /* Give some time for AudioHub() to react to the command to stop accessing ports otherwise exit()

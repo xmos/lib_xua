@@ -10,7 +10,7 @@
 void XUD_UserSuspend(void) __attribute__ ((weak));
 void XUD_UserSuspend(void)
 {
-    UserAudioStreamStop();
+    UserAudioStreamState(0, 0);
     UserHostActive(0);
 }
 
