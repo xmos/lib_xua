@@ -20,7 +20,7 @@ UNRELEASED
     HID Descriptor test
   * ADDED: Support for setting wMaxPacketSize for MIDI bulk IN and OUT endpoints
     at run time depending on g_curUsbSpeed
-  * ADDED:     Documented use of CHAN_BUFF_CTRL to save power
+  * ADDED:     Documented use of XUA_CHAN_BUFF_CTRL to save power
   * CHANGED: Renamed USB_CONTROL_DESCS define to XUA_USB_CONTROL_DESCS
   * FIXED: Device enumeration error when both XUA_DFU_EN and XUA_USB_CONTROL_DESCS
     are enabled
@@ -32,6 +32,12 @@ UNRELEASED
     not defined.
   * CHANGED:   AN00248 updated so that it uses lib_xua main instead of own main
     function.
+  * ADDED:     Optional user_main_declarations.h user_main_cores.h headers to
+    allow insertion of declarations and tasks for extending main.xc
+  * CHANGED: UserAudioStreamXxxx replaced by single UserAudioStreamState(in, out)
+    API with arguments indicating whether input or output streams are active
+  * ADDED: XUA_LOW_POWER_NON_STREAMING define allowing low-power state when
+    not streaming which stops I2S and provides additional user callback.
 
 5.0.0
 -----
@@ -89,7 +95,7 @@ UNRELEASED
 
     - lib_xcore_math: Added dependency 2.4.0
 
-    - lib_xud: 2.3.2 -> 2.4.0
+    - lib_xud: 2.3.2 -> 2.4.1
 
 4.2.0
 -----

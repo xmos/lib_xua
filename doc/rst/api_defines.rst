@@ -167,5 +167,5 @@ Power
 -----
 
 .. doxygendefine:: XUA_POWERMODE
-.. doxygendefine:: CHAN_BUFF_CTRL
+.. doxygendefine:: XUA_CHAN_BUFF_CTRL
 

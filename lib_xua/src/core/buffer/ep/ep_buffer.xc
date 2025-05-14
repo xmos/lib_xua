@@ -24,7 +24,7 @@ void GetADCCounts(unsigned samFreq, int &min, int &mid, int &max);
 
 extern unsigned int g_curSamFreqMultiplier;
 
-#ifdef CHAN_BUFF_CTRL
+#ifdef XUA_CHAN_BUFF_CTRL
 #define SET_SHARED_GLOBAL0(x,y) SET_SHARED_GLOBAL(x,y); outuchar(c_buff_ctrl, 0);
 #else
 #define SET_SHARED_GLOBAL0(x,y) SET_SHARED_GLOBAL(x,y)
@@ -34,8 +34,8 @@ extern unsigned int g_curSamFreqMultiplier;
 /* Without this, zero size input packets fill the input FIFO and it takes a long time to clear out when feedback starts */
 /* This can cause a delay to the decouple ISR being serviced pushing our I2S timing. Initialising solves this */
 unsigned g_speed = (AUDIO_CLASS == 2) ? (DEFAULT_FREQ/8000) << 16 : (DEFAULT_FREQ/1000) << 16;
-unsigned g_freqChange = 0;
-unsigned feedbackValid = 0;
+unsigned g_streamChangeOngoing = 0; /* Not cleared until audio has completed it's SR change. This can be used for logic that needs to know audio has completed the command */
+unsigned g_feedbackValid = 0;
 
 #if (XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
 /* When digital Rx enabled we enable an interrupt EP to inform host about changes in clock validity */
@@ -81,6 +81,21 @@ unsigned int fb_clocks[4];
 //#define FB_TOLERANCE_TEST
 #define FB_TOLERANCE 0x100
 
+/* Helper function to reset asynch feedback calculation when MCLK changes */
+static void resetAsynchFeedback(int &sofCount, unsigned &clocks, long long &clockcounter, unsigned &mod_from_last_time, unsigned sampleFreq)
+{
+    sofCount = 0;
+    clocks = 0;
+    clockcounter = 0;
+    mod_from_last_time = 0;
+    g_feedbackValid = 0;
+
+    /* Set g_speed to something sensible. We expect it to get over-written before stream time */
+    int min, mid, max;
+    GetADCCounts(sampleFreq, min, mid, max);
+    g_speed = mid << 16;
+}
+
 void XUA_Buffer(
 #if (NUM_USB_CHAN_OUT > 0)
     register chanend c_aud_out,
@@ -117,7 +132,7 @@ void XUA_Buffer(
 #endif
 )
 {
-#ifdef CHAN_BUFF_CTRL
+#ifdef XUA_CHAN_BUFF_CTRL
 #warning Using channel to control buffering - this may reduce performance but improve power consumption
     chan c_buff_ctrl;
 #endif
@@ -148,7 +163,7 @@ void XUA_Buffer(
 #if XUA_HID_ENABLED
                 , c_hid
 #endif
-#ifdef CHAN_BUFF_CTRL
+#ifdef XUA_CHAN_BUFF_CTRL
                 , c_buff_ctrl
 #endif
 #if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
@@ -163,7 +178,7 @@ void XUA_Buffer(
 
         {
             XUA_Buffer_Decouple(c_aud
-#ifdef CHAN_BUFF_CTRL
+#ifdef XUA_CHAN_BUFF_CTRL
                 , c_buff_ctrl
 #endif
             );
@@ -206,7 +221,7 @@ void XUA_Buffer_Ep(
 #if(HID_CONTROLS)
     , chanend c_hid
 #endif
-#ifdef CHAN_BUFF_CTRL
+#ifdef XUA_CHAN_BUFF_CTRL
     , chanend c_buff_ctrl
 #endif
 #if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
@@ -260,7 +275,7 @@ void XUA_Buffer_Ep(
 
 #if (XUA_SYNCMODE == XUA_SYNCMODE_ASYNC)
     unsigned lastClock = 0;
-    unsigned freqChange = 0;
+    unsigned streamChangeOngoing = 0; /* This is a local which is updated with g_streamChangeOngoing to monitor progress of audiohub command */
 #if (FB_USE_REF_CLOCK == 0)
     xassert(!isnull(p_off_mclk) && "Error: must provide non-null MCLK count port if using asynchronous mode and not using reference clock");
 #endif
@@ -453,7 +468,7 @@ void XUA_Buffer_Ep(
             /* Sample Freq or stream format update (e.g. channel count) from Endpoint 0 core */
             case inct_byref(c_aud_ctl, cmd):
             {
-                if(cmd == SET_SAMPLE_FREQ)
+                if(cmd == XUA_AUDCTL_SET_SAMPLE_FREQ)
                 {
                     unsigned receivedSampleFreq = inuint(c_aud_ctl);
 
@@ -468,19 +483,11 @@ void XUA_Buffer_Ep(
                         /* Reset FB */
                         /* Note, Endpoint 0 will hold off host for a sufficient period to allow our feedback
                          * to stabilise (i.e. sofCount == 128 to fire) */
-                        sofCount = 0;
-                        clocks = 0;
-                        clockcounter = 0;
-                        mod_from_last_time = 0;
-                        feedbackValid = 0;
+                        /* See also https://github.com/xmos/lib_xua/issues/467 */
+                        resetAsynchFeedback(sofCount, clocks, clockcounter, mod_from_last_time, sampleFreq);
 #if FB_USE_REF_CLOCK
                         clock_remainder = 0;
 #endif
-
-                        /* Set g_speed to something sensible. We expect it to get over-written before stream time */
-                        int min, mid, max;
-                        GetADCCounts(sampleFreq, min, mid, max);
-                        g_speed = mid<<16;
 
                         if((MCLK_48 % sampleFreq) == 0)
                         {
@@ -495,10 +502,9 @@ void XUA_Buffer_Ep(
                     /* Ideally we want to wait for handshake (and pass back up) here.  But we cannot keep this
                      * core locked, it must stay responsive to packets (MIDI etc) and SOFs.  So, set a flag and check for
                      * handshake elsewhere */
-                    SET_SHARED_GLOBAL(g_freqChange_sampFreq, receivedSampleFreq);
+                    SET_SHARED_GLOBAL(g_streamChange_sampFreq, receivedSampleFreq);
                 }
-#if (AUDIO_CLASS == 2)
-                else if(cmd == SET_STREAM_FORMAT_IN)
+                else if(cmd == XUA_AUDCTL_SET_STREAM_INPUT_START)
                 {
                     unsigned formatChange_DataFormat = inuint(c_aud_ctl);
                     unsigned formatChange_NumChans = inuint(c_aud_ctl);
@@ -511,9 +517,8 @@ void XUA_Buffer_Ep(
                     SET_SHARED_GLOBAL(g_formatChange_SampRes, formatChange_SampRes);
                 }
                 /* FIXME when FB EP is enabled there is no inital XUD_SetReady */
-                else if (cmd == SET_STREAM_FORMAT_OUT)
+                else if (cmd == XUA_AUDCTL_SET_STREAM_OUTPUT_START)
                 {
-
                     XUD_BusSpeed_t busSpeed;
                     unsigned formatChange_DataFormat = inuint(c_aud_ctl);
                     unsigned formatChange_NumChans = inuint(c_aud_ctl);
@@ -540,12 +545,27 @@ void XUA_Buffer_Ep(
                         XUD_SetReady_In(ep_aud_fb, (fb_clocks, unsigned char[]), 3);
                     }
 #endif
-                }
+#if (XUA_LOW_POWER_NON_STREAMING && (XUA_SYNCMODE == XUA_SYNCMODE_ASYNC))
+                    /* Audiohub will startup again and MCLK may possibly have stopped and restarted */
+                    /* Set g_speed to something sensible. We expect it to get over-written before stream time */
+                    /* See also https://github.com/xmos/lib_xua/issues/467 */
+                    resetAsynchFeedback(sofCount, clocks, clockcounter, mod_from_last_time, sampleFreq);
 #endif
-                /* Pass on sample freq change to decouple() via global flag (saves a chanend) */
-                /* Note: freqChange_flag now used to communicate other commands also */
-                SET_SHARED_GLOBAL0(g_freqChange, cmd);                /* Set command */
-                SET_SHARED_GLOBAL(g_freqChange_flag, cmd);            /* Set Flag */
+                }
+                else if (cmd == XUA_AUDCTL_SET_STREAM_INPUT_STOP)
+                {
+                    /* Do nothing - just let cmd propagate through to decouple */
+                }
+                else if (cmd == XUA_AUDCTL_SET_STREAM_OUTPUT_STOP)
+                {
+                    /* Do nothing - just let cmd propagate through to decouple */
+                }
+
+                /* Pass on sample freq change to decouple() via globals (saves a chanend) */
+                SET_SHARED_GLOBAL(g_streamChangeOngoing, cmd);         /* Set change ongoing */
+                SET_SHARED_GLOBAL0(g_streamChange_flag, cmd);          /* Set Flag */
+
+                /* Note no chk_ct(c, XS1_CT_END) because this is done in decouple */
                 break;
             }
 #if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC) && (!XUA_USE_SW_PLL)
@@ -632,12 +652,12 @@ void XUA_Buffer_Ep(
 #endif
                 /* The time we base feedback on will be invalid until we get 2 SOF's */
                 /* Additionally whilst the SR is being changed we could get some invalid values due to clocks being changed etc */
-                GET_SHARED_GLOBAL(freqChange, g_freqChange);
-                if((freqChange == SET_SAMPLE_FREQ) || !feedbackValid)
+                GET_SHARED_GLOBAL(streamChangeOngoing, g_streamChangeOngoing);
+                if((streamChangeOngoing == XUA_AUDCTL_SET_SAMPLE_FREQ) || !g_feedbackValid)
                 {
                      /* Keep getting MCLK counts */
                     lastClock = u_tmp;
-                    feedbackValid = 1;
+                    g_feedbackValid = 1;
                 }
                 else
                 {

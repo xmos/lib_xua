@@ -1678,8 +1678,32 @@ enum USBEndpointNumber_Out
  * in XUA_Buffer_Ep() to occur only when a change has been made by XUA_Buffer_Decouple().
  * This significantly reduces core power at the cost of two channel ends on the USB_TILE.
  */
-#if defined(CHAN_BUFF_CTRL) && (CHAN_BUFF_CTRL == 0)
-#undef CHAN_BUFF_CTRL
+#ifdef __DOXYGEN__
+#define XUA_CHAN_BUFF_CTRL
+#endif
+#if defined(XUA_CHAN_BUFF_CTRL) && (XUA_CHAN_BUFF_CTRL == 0)
+#undef XUA_CHAN_BUFF_CTRL
+#endif
+
+/**
+ * @brief Enable power saving when device is enumerated but audio in not currently streaming
+ *
+ * If set to 1 then transitions to ALT interface 0 (streaming stopped) will cause AudioHub to cease 
+ * looping and no-longer driver the I2S/TDM lines. In addition, the callback AudioHwShutdown() is called
+ * which allows the user to run any specific code (eg. CODEC power-down and/or disable master clock)
+ * to further reduce system power in this state. AudioHwInit() and AudioHwConfig() will always be called
+ * again prior to USB audio streaming. The transition to the low power state will only occur when *both*
+ * input *and* output interfaces are not streaming. As soon as either input or output streaming starts
+ * then audiohub is restarted.
+ * 
+ * If set to zero or undefined (default behaviour) then AudioHub will always continue looping even when
+ * audio streaming stops. This behaviour may be preferable in applications where frequent initialisation
+ * of the mixed signal hardware is undesirable, where other parts of the system rely on I2S clocks being
+ * conitinuously available or in MI (musical instrument) applications where functions such as mixer need
+ * to continuously operate regardless of USB streaming state.
+ */
+#ifndef XUA_LOW_POWER_NON_STREAMING
+#define XUA_LOW_POWER_NON_STREAMING                      0
 #endif
 
 /**
@@ -1704,3 +1728,12 @@ enum USBEndpointNumber_Out
 #endif
 
 
+/* Run some checks WRT to low power modes */
+#if XUA_LOW_POWER_NON_STREAMING
+#if MIXER
+#warning Enabling MIXER when XUA_LOW_POWER_NON_STREAMING is enabled will result in the mixer stopping when USB audio streams are not active. Is this what you wanted?
+#endif
+#if (NUM_USB_CHAN_OUT == 0 && NUM_USB_CHAN_IN == 0)
+#error Please disable XUA_LOW_POWER_NON_STREAMING if you wish to have a system with no USB audio streams. These features are incompatible.
+#endif
+#endif
