@@ -1301,9 +1301,11 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
             if (busState == XUD_BUS_SUSPEND)
             {
                 // Perform suspend actions
+                printstr("S\n");
             }
             else
             {
+                printstr("R\n");
                 // Peform resume actions
             }
             /* Acknowledge back to XUD letting it know we've handled suspend/resume */
