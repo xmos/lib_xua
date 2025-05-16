@@ -57,6 +57,7 @@ INCLUDE_DIRS = $(EXPORT_INCLUDE_DIRS) \
                src/core/user/audiohw \
                src/core/user/hid \
                src/core/user/hostactive \
+               src/core/user/suspend \
                src/hid \
                src/midi
 
@@ -73,6 +74,7 @@ SOURCE_DIRS = src/core \
               src/core/user/audiostream \
               src/core/user/audiohw \
               src/core/user/hostactive \
+              src/core/user/suspend \
               src/core/xuduser \
               src/dfu \
               src/hid \

@@ -4,17 +4,16 @@
 #if XUA_USB_EN
 #include "hostactive.h"
 #include "audiostream.h"
+#include "print.h"
 
 /* Implementations over-riding empty versions in lib_xud/sec/core/XUD_User.c */
 
-void XUD_UserSuspend(void) __attribute__ ((weak));
 void XUD_UserSuspend(void)
 {
     UserAudioStreamState(0, 0);
     UserHostActive(0);
 }
 
-void XUD_UserResume(void) __attribute__ ((weak));
 void XUD_UserResume(void)
 {
     unsigned config;

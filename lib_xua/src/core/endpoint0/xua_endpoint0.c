@@ -25,12 +25,10 @@
 #include "xua_commands.h"
 #include "audiostream.h"
 #include "hostactive.h"
+#include "suspend.h"
 #include "vendorrequests.h"
 #include "xc_ptr.h"
 #include "xua_ep0_uacreqs.h"
-
-void powerDown();
-void powerUp();
 
 #if XUA_OR_STATIC_HID_ENABLED
 #include "hid.h"
@@ -1245,12 +1243,12 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
             if (busState == XUD_BUS_SUSPEND)
             {
                 // Perform suspend actions
-                printstr("S\n");
+                SuspendPowerDown();
             }
             else
             {
-                printstr("R\n");
                 // Peform resume actions
+                SuspendPowerUp();
             }
             /* Acknowledge back to XUD letting it know we've handled suspend/resume */
             XUD_Ack(ep0_out, &ep0_in); // This should set ep_info[i]
