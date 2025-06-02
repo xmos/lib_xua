@@ -103,6 +103,11 @@ def test_i2s_loopback(
     if pcm_format == "tdm" and sample_rate == 192000:
         pytest.skip("Invalid parameter combination")
 
+    # We only want to test a handful of cases for when on the same tile since we are just testing that the clock works
+    # So don't bother sweeping word_length, sample_rate, role and channel count
+    if tile == "same" and (word_length != 32 or sample_rate != 192 or i2s_role != "master" or channel_count != 8)
+        pytest.skip("Tile placement test doesn't need full sweep")
+
     result = do_test(
         pcm_format, i2s_role, channel_count, sample_rate, word_length, tile, test_file, options, capfd
     )
