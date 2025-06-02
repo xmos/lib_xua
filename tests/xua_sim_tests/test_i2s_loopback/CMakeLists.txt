@@ -37,27 +37,34 @@ get_json_list(pcm_format pcm_format_list)
 get_json_list(channel_count channel_count_list)
 get_json_list(word_length word_length_list)
 get_json_list(sample_rate sample_rate_list)
+get_json_list(tile tile_list)
 
 foreach(channel_count ${channel_count_list})
     foreach(i2s_role ${i2s_role_list})
         foreach(pcm_format ${pcm_format_list})
             foreach(word_length ${word_length_list})
                 foreach(sample_rate ${sample_rate_list})
-                    set(EXTRA_FLAGS "")
-                    if(i2s_role STREQUAL slave)
-                         list(APPEND EXTRA_FLAGS -DCODEC_MASTER=1)
-                    endif()
-                    if(pcm_format STREQUAL tdm)
-                         list(APPEND EXTRA_FLAGS -DXUA_PCM_FORMAT=XUA_PCM_FORMAT_TDM)
-                    endif()
-                    set(cfg_name simulation_${pcm_format}_${i2s_role}_${channel_count}in_${channel_count}out_${sample_rate}_${word_length}bit)
-                    set(APP_COMPILER_FLAGS_${cfg_name} ${COMMON_FLAGS} ${EXTRA_FLAGS}
-                                                       -DNUM_USB_CHAN_IN=${channel_count}
-                                                       -DNUM_USB_CHAN_OUT=${channel_count}
-                                                       -DI2S_CHANS_DAC=${channel_count}
-                                                       -DI2S_CHANS_ADC=${channel_count}
-                                                       -DDEFAULT_FREQ=${sample_rate}
-                                                       -DXUA_I2S_N_BITS=${word_length})
+                    foreach(tile ${tile_list})
+                        set(EXTRA_FLAGS "")
+                        if(i2s_role STREQUAL slave)
+                             list(APPEND EXTRA_FLAGS -DCODEC_MASTER=1)
+                        endif()
+                        if(pcm_format STREQUAL tdm)
+                             list(APPEND EXTRA_FLAGS -DXUA_PCM_FORMAT=XUA_PCM_FORMAT_TDM)
+                        endif()
+                        if(tile STREQUAL same)
+                             list(APPEND EXTRA_FLAGS -DXUD_TILE=0)
+                        endif()
+                        set(cfg_name simulation_${pcm_format}_${i2s_role}_${channel_count}in_${channel_count}out_${sample_rate}_${word_length}bit_${tile}_xud_tile)
+                        set(APP_COMPILER_FLAGS_${cfg_name} ${COMMON_FLAGS} ${EXTRA_FLAGS}
+                                                           -DNUM_USB_CHAN_IN=${channel_count}
+                                                           -DNUM_USB_CHAN_OUT=${channel_count}
+                                                           -DI2S_CHANS_DAC=${channel_count}
+                                                           -DI2S_CHANS_ADC=${channel_count}
+                                                           -DDEFAULT_FREQ=${sample_rate}
+                                                           -DXUA_I2S_N_BITS=${word_length})
+                        message(STATUS ${APP_COMPILER_FLAGS_${cfg_name}})
+                    endforeach()
                 endforeach()
             endforeach()
         endforeach()
