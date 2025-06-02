@@ -18,7 +18,7 @@ with open(Path(__file__).parent / "i2s_loopback_params.json") as f:
 
 
 def do_test(
-    pcm_format, i2s_role, channel_count, sample_rate, word_length, test_file, options, capfd
+    pcm_format, i2s_role, channel_count, sample_rate, word_length, tile, test_file, options, capfd
 ):
 
     build_options = []
@@ -29,8 +29,9 @@ def do_test(
     build_options += [f"channel_count={channel_count}"]
     build_options += [f"sample_rate={sample_rate}"]
     build_options += [f"word_length={word_length}"]
+    build_options += [f"tile={tile}"]
 
-    desc = f"simulation_{pcm_format}_{i2s_role}_{channel_count}in_{channel_count}out_{sample_rate}_{word_length}bit"
+    desc = f"simulation_{pcm_format}_{i2s_role}_{channel_count}in_{channel_count}out_{sample_rate}_{word_length}bit_{tile}_xud_tile"
     testname = Path(__file__).stem
     binary = Path(__file__).parent / testname / "bin" / desc / f"{testname}_{desc}.xe"
 
@@ -72,6 +73,11 @@ def do_test(
         vcdTracing=options.enablevcdtracing,
     )
 
+    with capfd.disabled():
+        print(build_options)
+        print(binary)
+        print(binary.exists())
+
     return result
 
 
@@ -80,8 +86,9 @@ def do_test(
 @pytest.mark.parametrize("channel_count", params["channel_count"])
 @pytest.mark.parametrize("word_length", params["word_length"]) # I2S world length in bits
 @pytest.mark.parametrize("sample_rate", params["sample_rate"])
+@pytest.mark.parametrize("tile", params["tile"])
 def test_i2s_loopback(
-    i2s_role, pcm_format, channel_count, sample_rate, word_length, test_file, options, capfd
+    i2s_role, pcm_format, channel_count, sample_rate, word_length, tile, test_file, options, capfd
 ):
 
     if pcm_format == "i2s" and channel_count == 16:
@@ -97,7 +104,7 @@ def test_i2s_loopback(
         pytest.skip("Invalid parameter combination")
 
     result = do_test(
-        pcm_format, i2s_role, channel_count, sample_rate, word_length, test_file, options, capfd
+        pcm_format, i2s_role, channel_count, sample_rate, word_length, tile, test_file, options, capfd
     )
 
     assert result
