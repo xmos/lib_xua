@@ -794,7 +794,7 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
         set_clock_fall_delay(clk_audio_mclk, 7);
 #endif
         start_clock(clk_audio_mclk);
-#endif /* (XUA_ADAT_TX_EN || XUA_SPDIF_TX_EN) */
+#endif
 
 /* If the XUD tile is different from AUDIO tile, then we start a clkblk for counting clocks on the XUD tile and start it in main.
    If XUD is on the same tile as AUDIO then we just connect p_for_mclk_count to the  clk_audio_mclk in main, but
