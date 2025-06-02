@@ -104,7 +104,7 @@ def test_i2s_loopback(
         pytest.skip("Invalid parameter combination")
 
     # We only want to test a handful of cases for when on the same tile since we are just testing that the clock works
-    # So don't bother sweeping word_length, sample_rate, role and channel count
+    # So don't bother sweeping word_length, sample_rate, role and channel count to reduce test space
     if tile == "same" and (word_length != 32 or sample_rate != 192 or i2s_role != "master" or channel_count != 8):
         pytest.skip("Tile placement test doesn't need full sweep")
 
