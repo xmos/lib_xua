@@ -572,10 +572,13 @@ int main()
                 set_port_clock(p_for_mclk_count, clk_audio_mclk_usb);
                 start_clock(clk_audio_mclk_usb);
 #else
+                /* AUDIO_IO_TILE == XUD_TILE */
                 /* Clock port from same clock-block as I2S */
                 /* TODO remove asm() */
                 asm("ldw %0, dp[clk_audio_mclk]":"=r"(x));
                 asm("setclk res[%0], %1"::"r"(p_for_mclk_count), "r"(x));
+                /* This clock block is started in audiohub in case we first need to connect other logic
+                   e.g. digital Tx to it before starting */
 #endif
                 /* Endpoint & audio buffering cores - buffers all EP's other than 0 */
                 XUA_Buffer(
