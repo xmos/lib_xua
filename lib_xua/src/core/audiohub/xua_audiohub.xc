@@ -793,9 +793,17 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
         configure_out_port_no_ready(p_adat_tx, clk_audio_mclk, 0);
         set_clock_fall_delay(clk_audio_mclk, 7);
 #endif
+#endif /* (XUA_ADAT_TX_EN || XUA_SPDIF_TX_EN) */
+
+/* If the XUD tile is different from AUDIO tile, then we start a clkblk for counting clocks on the XUD tile and start it in main.
+   If XUD is on the same tile as AUDIO then we just connect p_for_mclk_count to the  clk_audio_mclk in main, but
+   we need to start it here after all of the connections have been made. 
+   Note. we do not need a clk_audio_mclk if no dig Tx and XUD and AUDIO are on different tiles because I2S is driven by BCLK clkblk
+   directly from the MCLK port. */
+#if ((AUDIO_IO_TILE == XUD_TILE) || XUA_ADAT_TX_EN || XUA_SPDIF_TX_EN)
         /* Start the master clock-block */
         start_clock(clk_audio_mclk);
-#endif /* (XUA_ADAT_TX_EN || XUA_SPDIF_TX_EN) */
+#endif
 
         /* Perform required CODEC/ADC/DAC initialisation */
         AudioHwInit();
