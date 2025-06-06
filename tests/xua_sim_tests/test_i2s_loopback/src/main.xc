@@ -217,8 +217,6 @@ void mclk_checker(void)
 {
   if(AUDIO_IO_TILE == XUD_TILE)
   {
-    // printstrln("FAAILLE");
-
     int x;
     asm("ldw %0, dp[clk_audio_mclk]":"=r"(x));
     asm("setclk res[%0], %1"::"r"(p_for_mclk_count), "r"(x));
@@ -227,15 +225,16 @@ void mclk_checker(void)
     // startup value of port timer
     delay_microseconds(5); // Wait for I2S to start the clock
     p_for_mclk_count :> void @ c0;
-    delay_microseconds(10); // Wait for port timer to increment a bit more. Should be just over 25 ticks per microsecond, so 250
+    delay_microseconds(10); // Wait for port timer to increment a bit more. Should be just over 25 ticks per microsecond, so 250 + a few instruction times
 
     // Input will fail if not clocked so have timeout
     timer t;
     int timeout;
     t :> timeout;
+    timeout += XS1_TIMER_MHZ; // 1 us in the future
 
     select{
-      case t when timerafter(timeout + XS1_TIMER_MHZ) :> int _: // 1 us later
+      case t when timerafter(timeout) :> int _: 
         debug_printf("TIMEOUT in mclk_checker - MCLK port could not input due to no clock\n");
         break;
 
