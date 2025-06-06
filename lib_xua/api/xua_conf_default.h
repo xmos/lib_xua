@@ -1357,15 +1357,6 @@ enum USBEndpointNumber_In
 #if XUA_OR_STATIC_HID_ENABLED
     ENDPOINT_NUMBER_IN_HID,
 #endif
-#ifdef IAP
-#ifdef IAP_INT_EP
-    ENDPOINT_NUMBER_IN_IAP_INT,
-#endif
-    ENDPOINT_NUMBER_IN_IAP,
-#ifdef IAP_EA_NATIVE_TRANS
-    ENDPOINT_NUMBER_IN_IAP_EA_NATIVE_TRANS,
-#endif
-#endif
     XUA_ENDPOINT_COUNT_IN           /* End marker */
 };
 
@@ -1377,12 +1368,6 @@ enum USBEndpointNumber_Out
 #endif
 #ifdef MIDI
     ENDPOINT_NUMBER_OUT_MIDI,
-#endif
-#ifdef IAP
-    ENDPOINT_NUMBER_OUT_IAP,
-#ifdef IAP_EA_NATIVE_TRANS
-    ENDPOINT_NUMBER_OUT_IAP_EA_NATIVE_TRANS,
-#endif
 #endif
 #if XUA_OR_STATIC_HID_ENABLED && HID_OUT_REQUIRED
     ENDPOINT_NUMBER_OUT_HID,
@@ -1688,14 +1673,14 @@ enum USBEndpointNumber_Out
 /**
  * @brief Enable power saving when device is enumerated but audio in not currently streaming
  *
- * If set to 1 then transitions to ALT interface 0 (streaming stopped) will cause AudioHub to cease 
+ * If set to 1 then transitions to ALT interface 0 (streaming stopped) will cause AudioHub to cease
  * looping and no-longer driver the I2S/TDM lines. In addition, the callback AudioHwShutdown() is called
  * which allows the user to run any specific code (eg. CODEC power-down and/or disable master clock)
  * to further reduce system power in this state. AudioHwInit() and AudioHwConfig() will always be called
  * again prior to USB audio streaming. The transition to the low power state will only occur when *both*
  * input *and* output interfaces are not streaming. As soon as either input or output streaming starts
  * then audiohub is restarted.
- * 
+ *
  * If set to zero or undefined (default behaviour) then AudioHub will always continue looping even when
  * audio streaming stops. This behaviour may be preferable in applications where frequent initialisation
  * of the mixed signal hardware is undesirable, where other parts of the system rely on I2S clocks being
