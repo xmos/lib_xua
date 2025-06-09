@@ -1,4 +1,4 @@
-// Copyright 2023 XMOS LIMITED.
+// Copyright 2025 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
 /* This is a simple test that checks that the in stream exits and re-enters underflow as expected.
@@ -20,7 +20,7 @@
 #include "debug_print.h"
 
 #include "random.h"
-
+#include "test_seed.h"
 #ifndef TEST_SEED
 #error TEST_SEED not defined
 #endif
@@ -41,8 +41,9 @@ extern unsigned samplesIn[2][NUM_USB_CHAN_IN];
 #define CMD_GEN_RAMP                   (3)
 #define CMD_DIE                        (4)
 
+void GetADCCounts(unsigned samFreq, int &min, int &mid, int &max);
+
 /* From decouple.xc */
-extern unsigned g_aud_from_host_flag;
 extern unsigned audioBuffIn[];
 
 int g_inEpReady = 0;
@@ -69,13 +70,17 @@ static inline void Trigger(chanend c, unsigned cmd, int count)
 
 /* Buffering uses this to size packets */
 extern unsigned g_speed;
-
+/* Fill buffer enough to bring it out of Underflow*/
 {int, int} FillBuffer(chanend c_stim_ep, chanend c_stim_au, random_generator_t rg, int pktSizes[64], int &currentPktSamples)
 {
     int nextPktSamples;
     int pktSize;
     int pktCount = 0;
     int fillLevel = 0;
+
+    int min, mid, max;
+    GetADCCounts(DEFAULT_FREQ, min, mid, max);
+    const int min_pkt_size = ((min * SUBSLOT_SIZE_BYTES * NUM_USB_CHAN_IN + 3) & ~0x3) + 4;
 
     while(1)
     {
@@ -96,13 +101,12 @@ extern unsigned g_speed;
         pktSizes[pktCount++] = pktSize;
         assert(pktCount < sizeof(pktSizes)/sizeof(pktSizes[0]));
 
+        currentPktSamples = nextPktSamples;
         /* Stop filling the buffer when we are taking it out of underflow */
-        if(fillLevel >= IN_BUFFER_PREFILL)
+        if ((fillLevel >= (min_pkt_size*2)) && (fillLevel < (min_pkt_size*3)))
         {
             return {pktCount, fillLevel};
         }
-
-        currentPktSamples = nextPktSamples;
 
         /* Check that the buffer has remained in underflow */
         Trigger(c_stim_ep, CMD_CHECK_UNDERFLOW, 1);
@@ -124,10 +128,10 @@ int stim(chanend c_stim_ep, chanend c_stim_au)
     /* Initially we should be in underflow */
     Trigger(c_stim_ep, CMD_CHECK_UNDERFLOW, 1);
 
-    /* Give the buffering some some recorded samples until we come out of underflow */
+    /* Give the buffering some recorded samples until we come out of underflow */
     {pktCount, fillLevel} = FillBuffer(c_stim_ep, c_stim_au, rg, pktSizes, pktSamplesPerChan);
 
-    /* Will take a packet send in order for buffer to triffer the underflow check */
+    /* Will take a packet send in order for buffer to trigger the underflow check */
     Trigger(c_stim_ep, CMD_CHECK_UNDERFLOW, 1);
 
     /* Subtract the amount of bytes used to store packet lengths */
@@ -148,12 +152,12 @@ int stim(chanend c_stim_ep, chanend c_stim_au)
     /* Fill the buffer up again */
     {pktCount, fillLevel} = FillBuffer(c_stim_ep, c_stim_au, rg, pktSizes, pktSamplesPerChan);
 
+    /* Will take a packet send in order for buffer to triffer the underflow check */
+    Trigger(c_stim_ep, CMD_CHECK_UNDERFLOW, 1); // After this is completed the decoupler should no longer be in underflow
+
     /* Fill a bit more .. */
     Trigger(c_stim_au, CMD_GEN_RAMP, pktSamplesPerChan);
     fillLevel -= (pktCount * sizeof(unsigned));
-
-    /* Will take a packet send in order for buffer to triffer the underflow check */
-    Trigger(c_stim_ep, CMD_CHECK_UNDERFLOW, 1);
 
     /* Now check the packets pop out as expected */
     int i = 0;
@@ -164,22 +168,24 @@ int stim(chanend c_stim_ep, chanend c_stim_au)
     }
 
     Trigger(c_stim_ep, CMD_CHECK_RAMP, 1);
-
     /* annnnd back into underflow...*/
     Trigger(c_stim_ep, CMD_CHECK_UNDERFLOW, 3);
-
+    timer t;
+    unsigned time;
+    t :> time;
     /* Kill decouple */
-    SET_SHARED_GLOBAL(g_freqChange_flag, XUA_EXIT);
-    int tmp;
-    while(tmp)
-        GET_SHARED_GLOBAL(tmp, g_freqChange_flag);
+    SET_SHARED_GLOBAL(g_streamChange_flag, XUA_EXIT);
 
-    printstr("PASS\n");
-
+    t when timerafter(time + 1000) :> void;
     /* kill the test cores */
     c_stim_au <: CMD_DIE;
     c_stim_ep <: CMD_DIE;
 
+    int tmp = XUA_EXIT;
+    while(tmp != XUA_AUDCTL_NO_COMMAND)
+        GET_SHARED_GLOBAL(tmp, g_streamChange_flag);
+
+    printstr("PASS\n");
     return 0;
 }
 
@@ -190,6 +196,18 @@ int Fake_XUA_AudioHub(chanend c_aud, chanend c_stim)
     unsigned underflowWord = 0;
     int cmd;
     int ramp = 100;
+    timer t;
+    unsigned time;
+    t :> time;
+
+    // At the very start, a XUA_AUD_SET_AUDIO_START is expected from decoupler to set things going
+    t when timerafter(time + 1000) :> void; // Give decoupler time to start
+    unsigned command = DoSampleTransfer(c_aud, readBuffNo, underflowWord);
+    assert (command == XUA_AUD_SET_AUDIO_START && msg("Unexpected command"));
+    int dsdMode = inuint(c_aud);
+    int curSamRes_DAC = inuint(c_aud);
+    outct(c_aud, XS1_CT_END);
+
 
     while(1)
     {
@@ -248,7 +266,7 @@ int Fake_XUA_Buffer_Ep(chanend c_stim, chanend c_aud_ctl)
     SET_SHARED_GLOBAL(g_formatChange_NumChans, NUM_USB_CHAN_IN);
     SET_SHARED_GLOBAL(g_formatChange_SubSlot, SUBSLOT_SIZE_BYTES);
     SET_SHARED_GLOBAL(g_formatChange_SampRes, SUBSLOT_SIZE_BYTES * 4);
-    SET_SHARED_GLOBAL(g_freqChange_flag, SET_STREAM_FORMAT_IN);
+    SET_SHARED_GLOBAL(g_streamChange_flag, XUA_AUDCTL_SET_STREAM_INPUT_START);
 
     /* Note this would normally be received by the Endpoint0 task */
     chkct(c_aud_ctl, XS1_CT_END);
@@ -285,11 +303,7 @@ int Fake_XUA_Buffer_Ep(chanend c_stim, chanend c_aud_ctl)
 
                 if(*(gp_pktBuffer+i) != checkValue)
                 {
-                    debug_printf("ERR BUFFER_EP: expected %d got %d from %d\n", checkValue, *(gp_pktBuffer+i), (int) (gp_pktBuffer+i));
-                }
-                else
-                {
-                    debug_printf("BUFFER_EP: expected %d got %d from %d\n", checkValue, *(gp_pktBuffer+i), (int) (gp_pktBuffer+i));
+                    debug_printf("ERR BUFFER_EP: expected %d got %d from %d. cmd %d\n", checkValue, *(gp_pktBuffer+i), (int) (gp_pktBuffer+i), cmd);
                 }
                 assert(*(gp_pktBuffer+i) == checkValue && msg("Bad value in buffer"));
 

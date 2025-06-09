@@ -1,10 +1,9 @@
-# Copyright 2022-2023 XMOS LIMITED.
+# Copyright 2022-2025 XMOS LIMITED.
 # This Software is subject to the terms of the XMOS Public Licence: Version 1.
 import pytest
 import Pyxsim
 from Pyxsim import testers
-import os
-import sys
+from pathlib import Path
 
 
 @pytest.fixture()
@@ -13,9 +12,8 @@ def test_file(request):
 
 
 def do_test(test_file, options, capfd, test_seed, sample_rate):
-    testname, _ = os.path.splitext(os.path.basename(test_file))
-
-    binary = f"{testname}/bin/{testname}.xe"
+    testname = Path(__file__).stem
+    binary = Path(__file__).parent / testname / "bin" / f"{sample_rate}" / f"{testname}_{sample_rate}.xe"
 
     tester = testers.ComparisonTester(open("pass.expect"))
 
@@ -26,20 +24,20 @@ def do_test(test_file, options, capfd, test_seed, sample_rate):
         str(max_cycles),
     ]
 
+    seed_hdr = Path(__file__).parent / testname / "src" / "test_seed.h"
+    with open(seed_hdr, "w") as f:
+        f.write(f"#define TEST_SEED ({test_seed})")
+
     result = Pyxsim.run_on_simulator(
         binary,
+        cmake=True,
         tester=tester,
         simargs=simargs,
         capfd=capfd,
         instTracing=options.enabletracing,
         vcdTracing=options.enablevcdtracing,
-        clean_before_build=True,
-        build_options=[
-            "TEST_BUILD_FLAGS="
-            + f" -DTEST_SEED={test_seed}"
-            + f" -DDEFAULT_FREQ={sample_rate}"
-        ],
-    )
+        clean_before_build=False
+        )
 
     return result
 

@@ -1,0 +1,13 @@
+Buffer start:\s*\d+,\s*end:\s*\d+,\s*rdptr:\s*\d+,\s*wrptr:\s*\d+
+Iter 0
+handle_audio_request: Overflow detected and handled
+Fill level after handling overflow =\s*\d+, full fill level =\s*\d+
+Read till buffer empty
+Buffer empty
+Iter 1
+handle_audio_request: Overflow detected and handled
+Fill level after handling overflow =\s*\d+, full fill level =\s*\d+
+Read till buffer empty
+Buffer empty
+End test
+PASS

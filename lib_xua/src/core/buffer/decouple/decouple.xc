@@ -5,6 +5,8 @@
 #define XASSERT_UNIT DECOUPLE
 #include "xassert.h"
 
+#include "debug_print.h"
+
 #if XUA_USB_EN
 #include <xs1.h>
 #include "xc_ptr.h"
@@ -955,6 +957,7 @@ void XUA_Buffer_Decouple(chanend c_mix_out
                 inct(c_mix_out);
                 outct(c_mix_out, XS1_CT_END);
                 SET_SHARED_GLOBAL(g_streamChangeOngoing, XUA_AUDCTL_NO_COMMAND);
+                SET_SHARED_GLOBAL(g_streamChange_flag, XUA_AUDCTL_NO_COMMAND);
                 return;
             }
         }
@@ -998,11 +1001,18 @@ void XUA_Buffer_Decouple(chanend c_mix_out
             space_left = aud_from_host_rdptr - aud_from_host_wrptr;
 
             /* Mod and special case */
+            // TODO: Not understood why this is done. Presumably to stop the wrptr from crossing the rdptr
+            // but why is this required only when rdptr = start?
             if(space_left <= 0 && g_aud_from_host_rdptr == aud_from_host_fifo_start)
             {
                 space_left = aud_from_host_fifo_end - g_aud_from_host_wrptr;
             }
 
+            /* Note: space_left == 0 is not used to signal overflow. I think this is because, if the rdptr
+            also happens to be at start (underflow), we'd end up simultaneously in overflow and underflow, which
+            would cause a deadlock. The current implementation cannot distinguish between buffer full or buffer empty
+            when rdptr = wrptr.
+            */
             if (space_left <= 0 || space_left >= MAX_DEVICE_AUD_PACKET_SIZE_OUT)
             {
                 SET_SHARED_GLOBAL(g_aud_from_host_buffer, aud_from_host_wrptr);

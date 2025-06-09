@@ -1,4 +1,4 @@
-// Copyright 2023 XMOS LIMITED.
+// Copyright 2025 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
 /* This is a simple test that checks that the out stream exits and re-enters underflow as expected */
@@ -18,8 +18,10 @@
 
 #include "random.h"
 
+#include "test_seed.h"
 #ifndef TEST_SEED
 #error TEST_SEED not defined
+#define TEST_SEED 1234
 #endif
 
 /* From xua_audiohub.xc */
@@ -27,7 +29,7 @@ extern unsigned samplesOut[NUM_USB_CHAN_OUT];
 extern unsigned samplesIn[2][NUM_USB_CHAN_IN];
 #include "xua_audiohub_st.h"
 
-#define TEST_SAMPLE_RATE_HZ            (192000)
+#define TEST_SAMPLE_RATE_HZ            (DEFAULT_FREQ)
 #define TEST_USB_FRAME_RATE_HZ         (8000) //HS
 #define SUBSLOT_SIZE_BYTES             (4)
 #define PACKET_SAMPLES_PER_CHAN        (TEST_SAMPLE_RATE_HZ/TEST_USB_FRAME_RATE_HZ)
@@ -235,7 +237,7 @@ int Fake_XUA_Buffer_Ep(chanend c_stim)
 
         i++;
         GET_SHARED_GLOBAL(aud_from_host_buffer, g_aud_from_host_buffer);
-        debug_printf("BUFFER_EP pkt %d; writing length %d to %d\n", i, pktLength, aud_from_host_buffer);
+        //debug_printf("BUFFER_EP pkt %d; writing length %d to %d\n", i, pktLength, aud_from_host_buffer);
         assert(aud_from_host_buffer == gp_pktBuffer-1);
         write_via_xc_ptr(aud_from_host_buffer, pktLength); // aud_from_host_buffer is gp_pktBuffer--
 
