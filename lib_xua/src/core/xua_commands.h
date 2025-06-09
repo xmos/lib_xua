@@ -29,7 +29,7 @@ enum
 #define XUA_AUDCTL_NO_COMMAND               0 /* No command from decouple - carry on exchanging samples. This MUST be value zero */
 
 /* These commands will reach I2S and will cause the audioloop to break and restart*/
-#define XUA_AUDCTL_SET_SAMPLE_FREQ          4 
+#define XUA_AUDCTL_SET_SAMPLE_FREQ          4
 
 /* These commands only go as far as Decouple where they are translated to the next block */
 /* Note these need to be in order in a contiguous block due to the way the code handles them in decouple */
@@ -42,6 +42,8 @@ enum
 /* These commands exist only between Decouple and Audio. The logic to translate from the previous block is in decouple */
 #define XUA_AUD_SET_AUDIO_START             30
 #define XUA_AUD_SET_AUDIO_STOP              31
+
+#define XUA_EXIT                10
 
 
 #include "dsd_support.h"

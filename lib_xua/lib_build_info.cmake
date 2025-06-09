@@ -33,7 +33,7 @@ set(LIB_DEPENDENT_MODULES "lib_adat(2.0.1)"
                           "lib_mic_array(5.5.0)"
                           "lib_xud(2.4.0)")
 
-set(LIB_COMPILER_FLAGS -O3 -DREF_CLK_FREQ=100 -fasm-linenum -fcomment-asm)
+set(LIB_COMPILER_FLAGS -O3 -fasm-linenum -fcomment-asm)
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     list(APPEND LIB_COMPILER_FLAGS -DXASSERT_ENABLE_ASSERTIONS=1

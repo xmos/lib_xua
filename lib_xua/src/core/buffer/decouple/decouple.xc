@@ -20,47 +20,6 @@
 #if (HID_CONTROLS)
 #include "user_hid.h"
 #endif
-#define XUA_MAX(x,y) ((x)>(y) ? (x) : (y))
-
-/* TODO use SLOTSIZE to potentially save memory */
-/* Note we could improve on this, for one subslot is set to 4 */
-/* The *4 is conversion to bytes, note we're assuming a slotsize of 4 here whic is potentially as waste */
-#define MAX_DEVICE_AUD_PACKET_SIZE_MULT_HS  ((MAX_FREQ/8000+1)*4)
-#define MAX_DEVICE_AUD_PACKET_SIZE_MULT_FS  ((MAX_FREQ_FS/1000+1)*4)
-
-/*** IN PACKET SIZES ***/
-/* Max packet sizes in bytes. Note the +4 is because we store packet lengths in the buffer */
-#define MAX_DEVICE_AUD_PACKET_SIZE_IN_HS  (MAX_DEVICE_AUD_PACKET_SIZE_MULT_HS * NUM_USB_CHAN_IN + 4)
-#define MAX_DEVICE_AUD_PACKET_SIZE_IN_FS  (MAX_DEVICE_AUD_PACKET_SIZE_MULT_FS * NUM_USB_CHAN_IN_FS + 4)
-
-#define MAX_DEVICE_AUD_PACKET_SIZE_IN (XUA_MAX(MAX_DEVICE_AUD_PACKET_SIZE_IN_FS, MAX_DEVICE_AUD_PACKET_SIZE_IN_HS))
-
-/*** OUT PACKET SIZES ***/
-#define MAX_DEVICE_AUD_PACKET_SIZE_OUT_HS  (MAX_DEVICE_AUD_PACKET_SIZE_MULT_HS * NUM_USB_CHAN_OUT + 4)
-#define MAX_DEVICE_AUD_PACKET_SIZE_OUT_FS  (MAX_DEVICE_AUD_PACKET_SIZE_MULT_FS * NUM_USB_CHAN_OUT_FS + 4)
-
-#define MAX_DEVICE_AUD_PACKET_SIZE_OUT (XUA_MAX(MAX_DEVICE_AUD_PACKET_SIZE_OUT_FS, MAX_DEVICE_AUD_PACKET_SIZE_OUT_HS))
-
-/*** BUFFER SIZES ***/
-/* How many packets too allow for in buffer - minimum is 5.
-2 for having in the aud_to_host buffer when it comes out of underflow, space available for 2 more for to accomodate cases when
-2 pkts from audio hub get written into the aud_to_host buffer within 1 SOF period, and space for 1 extra packet to ensure that
-when the 4th packet gets written to the buffer, there's space to accomodate the next packet, otherwise handle_audio_request() will
-drop packets after writing the 4th packet in the buffer
-*/
-#define BUFFER_PACKET_COUNT (5)
-
-#define BUFF_SIZE_OUT_HS    MAX_DEVICE_AUD_PACKET_SIZE_OUT_HS * BUFFER_PACKET_COUNT
-#define BUFF_SIZE_OUT_FS    MAX_DEVICE_AUD_PACKET_SIZE_OUT_FS * BUFFER_PACKET_COUNT
-
-#define BUFF_SIZE_IN_HS     MAX_DEVICE_AUD_PACKET_SIZE_IN_HS * BUFFER_PACKET_COUNT
-#define BUFF_SIZE_IN_FS     MAX_DEVICE_AUD_PACKET_SIZE_IN_FS * BUFFER_PACKET_COUNT
-
-#define BUFF_SIZE_OUT       XUA_MAX(BUFF_SIZE_OUT_HS, BUFF_SIZE_OUT_FS)
-#define BUFF_SIZE_IN        XUA_MAX(BUFF_SIZE_IN_HS, BUFF_SIZE_IN_FS)
-
-#define OUT_BUFFER_PREFILL  (XUA_MAX(MAX_DEVICE_AUD_PACKET_SIZE_OUT_HS, MAX_DEVICE_AUD_PACKET_SIZE_OUT_FS))
-#define IN_BUFFER_PREFILL   (XUA_MAX(MAX_DEVICE_AUD_PACKET_SIZE_IN_HS, MAX_DEVICE_AUD_PACKET_SIZE_IN_FS)*2)
 
 /* Volume and mute tables */
 #if (OUT_VOLUME_IN_MIXER == 0) && (OUTPUT_VOLUME_CONTROL == 1)
@@ -707,7 +666,7 @@ static void check_and_signal_stream_event_to_audio(chanend c_mix_out, unsigned d
             outct(c_mix_out, XUA_AUD_SET_AUDIO_START);
             outuint(c_mix_out, dsdMode);
             outuint(c_mix_out, sampResOut);
-        }            
+        }
         else
         {
             outct(c_mix_out, XUA_AUD_SET_AUDIO_STOP);
@@ -989,6 +948,14 @@ void XUA_Buffer_Decouple(chanend c_mix_out
                 asm volatile("outct res[%0],%1"::"r"(buffer_aud_ctl_chan),"r"(XS1_CT_END));
                 SET_SHARED_GLOBAL(g_streamChangeOngoing, XUA_AUDCTL_NO_COMMAND);
                 ENABLE_INTERRUPTS();
+            }
+            else if(cmd == XUA_EXIT)
+            {
+                DISABLE_INTERRUPTS();
+                inct(c_mix_out);
+                outct(c_mix_out, XS1_CT_END);
+                SET_SHARED_GLOBAL(g_streamChangeOngoing, XUA_AUDCTL_NO_COMMAND);
+                return;
             }
         }
 
