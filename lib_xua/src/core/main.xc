@@ -206,7 +206,7 @@ on tile [IAP_TILE] : struct r_i2c r_i2c = {PORT_I2C_SCL, PORT_I2C_SDA};
 #if XUA_USB_EN
 /* Endpoint type tables for XUD */
 XUD_EpType epTypeTableOut[ENDPOINT_COUNT_OUT] = { XUD_EPTYPE_CTL | XUD_STATUS_ENABLE,
-#if (NUM_USB_CHAN_IN > 0)
+#if (NUM_USB_CHAN_OUT > 0)
                                             XUD_EPTYPE_ISO,    /* Audio */
 #endif
 #ifdef MIDI
