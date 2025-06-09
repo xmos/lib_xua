@@ -1260,6 +1260,19 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
         {
             if (busState == XUD_BUS_SUSPEND)
             {
+                /* Ensure all streams have stopped (in case this came in as unplug during streaming) */
+                /* Note the logic in decouple contains state about current stream state and so it 
+                   will not pass this on to audio if already stopped */
+                if(NUM_USB_CHAN_IN > 0){
+                    outct(c_aud_ctl, XUA_AUDCTL_SET_STREAM_INPUT_STOP);
+                    chkct(c_aud_ctl, XS1_CT_END);
+                }
+                if(NUM_USB_CHAN_OUT > 0){
+                    outct(c_aud_ctl, XUA_AUDCTL_SET_STREAM_OUTPUT_STOP);
+                    chkct(c_aud_ctl, XS1_CT_END);
+                }
+
+
                 /* Device moving from CONFIGURED to SUSPENDED state */
                 if(g_currentConfig)
                 {
