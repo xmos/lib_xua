@@ -38,6 +38,8 @@ UNRELEASED
     API with arguments indicating whether input or output streams are active
   * ADDED: XUA_LOW_POWER_NON_STREAMING define allowing low-power state when
     not streaming which stops I2S and provides additional user callback.
+  * FIXED:     Guard on epTypeTableOut[] in main where incorrect EP type
+    for audio out endpoint occurred if additional custom endpoints added.
 
 5.0.0
 -----
