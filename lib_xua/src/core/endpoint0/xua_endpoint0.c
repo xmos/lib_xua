@@ -1296,7 +1296,7 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
                     UserHostActive(1);
             }
             /* Acknowledge back to XUD letting it know we've handled suspend/resume */
-            XUD_Ack(ep0_out, &ep0_in); // This should set ep_info[i]
+            XUD_AckBusState(ep0_out, &ep0_in); // This should set ep_info[i]
         }
     }
 }
