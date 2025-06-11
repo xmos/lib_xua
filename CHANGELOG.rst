@@ -40,6 +40,7 @@ UNRELEASED
     not streaming which stops I2S and provides additional user callback.
   * FIXED:     Guard on epTypeTableOut[] in main where incorrect EP type
     for audio out endpoint occurred if additional custom endpoints added.
+  * REMOVED: Support for iAP EA Native Transport endpoints
 
 5.0.0
 -----

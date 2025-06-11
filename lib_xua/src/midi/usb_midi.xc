@@ -8,11 +8,6 @@
 #include "midiinparse.h"
 #include "midioutparse.h"
 #include "queue.h"
-#ifdef IAP
-#include "iap.h"
-#include "iap_user.h"
-#include "coprocessor_user.h"
-#endif
 
 int icount = 0;
 static unsigned makeSymbol(unsigned data)
@@ -34,21 +29,10 @@ int th_count = 0; // MIDI sent (To Host)
 int uout_count = 0; // UART bytes out
 int uin_count = 0; // UART bytes in
 
-// state for iAP
-#ifdef IAP
-extern unsigned authenticating;
-extern iap_in_buf iap_incoming_buffer;
-extern iap_out_buf iap_outgoing_buffer;
-#else
 unsigned authenticating = 0;
-#endif
 
 // state for auto-selecting dock or USB B
 extern unsigned polltime;
-
-#ifdef IAP
-timer iAPTimer;
-#endif
 
 #define ARRAY_SIZE(x) (sizeof(x) / sizeof(x[0]))
 
@@ -62,10 +46,6 @@ void usb_midi(
     clock ?clk_midi,
     chanend ?c_midi,
     unsigned cable_number
-#ifdef IAP
-    , chanend ?c_iap, chanend ?c_i2c,
-    port ?p_scl, port ?p_sda
-#endif
 )
 {
     unsigned symbol = 0x0; // Symbol in progress of being sent out
@@ -111,33 +91,9 @@ void usb_midi(
     t :> txT;
     t2 :> rxT;
 
-#ifdef IAP
-    CoProcessorDisable();
-#endif
-
    // p_midi_out <: 1 << MIDI_SHIFT_TX; // Start with high bit.
-#ifdef IAP
-    CoProcessorEnable();
-#endif
-
-#ifdef IAP
-    /* Check for special case where MIDI and i2c ports are shared... */
-    if(isnull(c_i2c) && isnull(p_scl) && isnull(p_sda))
-    {
-        init_iAP(iap_incoming_buffer, iap_outgoing_buffer, null, null, null); // uses timer for i2c initialisation pause..
-    }
-    else
-    {
-        init_iAP(iap_incoming_buffer, iap_outgoing_buffer, c_i2c, p_scl, p_sda); // uses timer for i2c initialisation pause..
-    }
-#endif
 
     {
-#ifdef IAP
-        iAPTimer :> polltime;
-        polltime += XS1_TIMER_HZ / 2;
-        SelectUSBPc(); // Select the PC connector to begin with, as we cannot actively detect connections to the USB B
-#endif
         while (1)
         {
             int is_ack;
@@ -336,33 +292,6 @@ void usb_midi(
 #endif
             }
             break;
-#ifdef IAP
-                case !(isTX || isRX) => iap_get_ack_or_reset_or_data(c_iap, is_ack, is_reset, datum):
-
-                    /* Check for special case where MIDI ports are shared with i2c ports */
-                    if(isnull(c_i2c) && isnull(p_scl) && isnull(p_sda))
-                    {
-                        iap_handle_ack_or_reset_or_data(iap_incoming_buffer, iap_outgoing_buffer, is_ack, is_reset, datum, c_iap, null, null, null);
-                    }
-                    else
-                    {
-                        iap_handle_ack_or_reset_or_data(iap_incoming_buffer, iap_outgoing_buffer, is_ack, is_reset, datum, c_iap, c_i2c, p_scl, p_sda);
-                    }
-                    if (!authenticating)
-                    {
-                        // printstrln("Completed authentication");
-                        p_midi_in :> void; // Change port around to input again after authenticating (unique to midi+iAP case)
-                    }
-                    break;
-
-                /* Slow timer looking for IDevice plug/unplug event */
-                case iAPTimer when timerafter(polltime) :> void:
-                    if (!iap_handle_poll_dev_det(iap_incoming_buffer, iap_outgoing_buffer))
-                    {
-                        check_iAP_timeout(iap_outgoing_buffer, c_iap);
-                    }
-                    break;
-#endif
             }
         }
     }

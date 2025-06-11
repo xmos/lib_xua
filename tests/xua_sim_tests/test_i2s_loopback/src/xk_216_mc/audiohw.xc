@@ -145,11 +145,6 @@ void AudioHwInit(chanend ?c_codec)
         PllInit(i2c[0]);
     }
 #endif
-
-#ifdef IAP
-    /* Enable VBUS output */
-    set_gpio(P_GPIO_VBUS_EN, 1);
-#endif
 }
 
 /* Configures the external audio hardware for the required sample frequency.

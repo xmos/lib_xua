@@ -343,12 +343,6 @@ typedef struct
 #if (MIXER) && (MAX_MIX_COUNT > 7)
     STR_TABLE_ENTRY(mixOutStr_8);
 #endif
-#ifdef IAP
-    STR_TABLE_ENTRY(iAPInterfaceStr);
-#endif
-#ifdef IAP_EA_NATIVE_TRANS
-    STR_TABLE_ENTRY(iAP_EANativeTransport_InterfaceStr);
-#endif
 } StringDescTable_t;
 
 StringDescTable_t g_strTable =
@@ -427,12 +421,6 @@ StringDescTable_t g_strTable =
 #endif
 #if (MIXER) && (MAX_MIX_COUNT > 8)
 #error
-#endif
-#ifdef IAP
-    .iAPInterfaceStr             = "iAP Interface",
-#endif
-#ifdef IAP_EA_NATIVE_TRANS
-    .iAP_EANativeTransport_InterfaceStr = IAP2_EA_NATIVE_TRANS_PROTOCOL_NAME,
 #endif
 };
 
@@ -785,21 +773,6 @@ typedef struct
     /* DFU descriptors currently handled as a single block */
     unsigned char configDesc_DFU[DFU_LENGTH];
 #endif
-
-#ifdef IAP
-    USB_Descriptor_Interface_t                  iAP_Interface;
-    USB_Descriptor_Endpoint_t                   iAP_Out_Endpoint;
-    USB_Descriptor_Endpoint_t                   iAP_In_Endpoint;
-#ifdef IAP_INT_EP
-    USB_Descriptor_Endpoint_t                   iAP_Interrupt_Endpoint;
-#endif
-#ifdef IAP_EA_NATIVE_TRANS
-    USB_Descriptor_Interface_t                  iAP_EANativeTransport_Interface_Alt0;
-    USB_Descriptor_Interface_t                  iAP_EANativeTransport_Interface_Alt1;
-    USB_Descriptor_Endpoint_t                   iAP_EANativeTransport_Out_Endpoint;
-    USB_Descriptor_Endpoint_t                   iAP_EANativeTransport_In_Endpoint;
-#endif
-#endif // IAP
 
 #if XUA_OR_STATIC_HID_ENABLED
     USB_Descriptor_Interface_t                  HID_Interface;
@@ -2125,113 +2098,6 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
         CONFIG_DESC_DFU
     },
 #endif /* (XUA_DFU_EN == 1) */
-
-#ifdef IAP
-    /* Interface descriptor */
-    .iAP_Interface =
-    {
-        .bLength                       = sizeof(USB_Descriptor_Interface_t),
-        .bDescriptorType               = USB_DESCTYPE_INTERFACE,
-        .bInterfaceNumber              = INTERFACE_NUMBER_IAP,
-        .bAlternateSetting             = 0x00,
-#ifdef IAP_INT_EP
-        .bNumEndpoints                 = 0x03,
-#else
-        .bNumEndpoints                 = 0x02,
-#endif
-        .bInterfaceClass               = USB_CLASS_VENDOR_SPECIFIC,
-        .bInterfaceSubClass            = 0xF0,                       /* MFI Accessory (Table 38-1) */
-        .bInterfaceProtocol            = 0x00,
-        .iInterface                    = offsetof(StringDescTable_t, iAPInterfaceStr)/sizeof(char *),   /* Note, string is important! */
-    },
-
-    /* iAP Bulk OUT Endpoint Descriptor */
-    .iAP_Out_Endpoint =
-    {
-        0x07,                             /* 0 bLength : Size of this descriptor, in bytes. (field size 1 bytes) */
-        0x05,                             /* 1 bDescriptorType : ENDPOINT descriptor. (field size 1 bytes) */
-        ENDPOINT_ADDRESS_OUT_IAP,         /* 2 bEndpointAddress : OUT Endpoint 3. High bit isIn (field size 1 bytes) */
-        0x02,                             /* 3 bmAttributes : Bulk, not shared. (field size 1 bytes) */
-        0x0200,                           /* 4 wMaxPacketSize : Has to be 0x200 for compliance*/
-        0x00,                             /* 6 bInterval : Ignored for Bulk. Set to zero. (field size 1 bytes) */
-    },
-
-    /* iAP Bulk IN Endpoint Descriptor */
-    .iAP_In_Endpoint =
-    {
-        0x07,                             /* 0 bLength : Size of this descriptor, in bytes. (field size 1 bytes) */
-        0x05,                             /* 1 bDescriptorType : ENDPOINT descriptor. (field size 1 bytes) */
-        ENDPOINT_ADDRESS_IN_IAP,          /* 2 bEndpointAddress : IN Endpoint 5. (field size 1 bytes) */
-        0x02,                             /* 3 bmAttributes : Bulk, not shared. (field size 1 bytes) */
-        0x0200,                           /* 4 wMaxPacketSize : Has to be 0x200 for compliance*/
-        0x00,                             /* 6 bInterval : Ignored for Bulk. Set to zero. (field size 1 bytes) */
-    },
-
-#ifdef IAP_INT_EP
-    /* iAP Interrupt IN Endpoint Descriptor. Note, its usage is now deprecated */
-    .iAP_Interrupt_Endpoint =
-    {
-        0x07,                             /* 0 bLength : Size of this descriptor, in bytes. (field size 1 bytes) */
-        0x05,                             /* 1 bDescriptorType : ENDPOINT descriptor. (field size 1 bytes) */
-        ENDPOINT_ADDRESS_IN_IAP_INT,      /* 2 bEndpointAddress : IN Endpoint 6. (field size 1 bytes) */
-        0x03,                             /* 3 bmAttributes : Interrupt, not shared. (field size 1 bytes) */
-        0x0040,                           /* 4 wMaxPacketSize : 64 bytes per packet. (field size 2 bytes) - has to be 0x40 for compliance*/
-        0x08,                             /* 6 bInterval : (2^(bInterval-1))/8 ms. Must be between 4 and 32ms (field size 1 bytes) */
-    },
-#endif
-#ifdef IAP_EA_NATIVE_TRANS
-    /* iAP EA Native Transport Interface descriptor */
-    /* Zero bandwidth alternative 0 */
-    .iAP_EANativeTransport_Interface_Alt0 =
-    {
-        .bLength                    = sizeof(USB_Descriptor_Interface_t),
-        .bDescriptorType            = USB_DESCTYPE_INTERFACE,
-        .bInterfaceNumber           = INTERFACE_NUMBER_IAP_EA_NATIVE_TRANS,
-        .bAlternateSetting          = 0x00,
-        .bNumEndpoints              = 0x00,
-        .bInterfaceClass            = USB_CLASS_VENDOR_SPECIFIC,
-        .bInterfaceSubClass         = 0xF0,                     /* MFI Accessory (Table 21-2) */
-        .bInterfaceProtocol         = 0x01,
-        .iInterface                 = offsetof(StringDescTable_t, iAP_EANativeTransport_InterfaceStr)/sizeof(char *),
-    },
-
-    /* Alternative 1 */
-    .iAP_EANativeTransport_Interface_Alt1 =
-    {
-        .bLength                    = sizeof(USB_Descriptor_Interface_t),
-        .bDescriptorType            = USB_DESCTYPE_INTERFACE,
-        .bInterfaceNumber           = INTERFACE_NUMBER_IAP_EA_NATIVE_TRANS,
-        .bAlternateSetting          = 0x01,
-        .bNumEndpoints              = 0x02,
-        .bInterfaceClass            = USB_CLASS_VENDOR_SPECIFIC,
-        .bInterfaceSubClass         = 0xF0,                     /* MFI Accessory (Table 21-1) */
-        .bInterfaceProtocol         = 0x01,
-        .iInterface                 = offsetof(StringDescTable_t, iAP_EANativeTransport_InterfaceStr)/sizeof(char *),
-    },
-
-    /* iAP EA Native Transport Bulk OUT Endpoint Descriptor */
-    .iAP_EANativeTransport_Out_Endpoint =
-    {
-        0x07,                             /* 0 bLength : Size of this descriptor, in bytes. (field size 1 bytes) */
-        0x05,                             /* 1 bDescriptorType : ENDPOINT descriptor. (field size 1 bytes) */
-        ENDPOINT_ADDRESS_OUT_IAP_EA_NATIVE_TRANS,  /* 2 bEndpointAddress : OUT Endpoint 3. High bit isIn (field size 1 bytes) */
-        0x02,                             /* 3 bmAttributes : Bulk, not shared. (field size 1 bytes) */
-        0x0200,                           /* 4 wMaxPacketSize : Has to be 0x200 for compliance*/
-        0x00,                             /* 6 bInterval : Ignored for Bulk. Set to zero. (field size 1 bytes) */
-    },
-
-    /* iAP EA Native Transport Bulk IN Endpoint Descriptor */
-    .iAP_EANativeTransport_In_Endpoint =
-    {
-        0x07,                             /* 0 bLength : Size of this descriptor, in bytes. (field size 1 bytes) */
-        0x05,                             /* 1 bDescriptorType : ENDPOINT descriptor. (field size 1 bytes) */
-        ENDPOINT_ADDRESS_IN_IAP_EA_NATIVE_TRANS,  /* 2 bEndpointAddress : OUT Endpoint 3. High bit isIn (field size 1 bytes) */
-        0x02,                             /* 3 bmAttributes : Bulk, not shared. (field size 1 bytes) */
-        0x0200,                           /* 4 wMaxPacketSize : Has to be 0x200 for compliance*/
-        0x00,                             /* 6 bInterval : Ignored for Bulk. Set to zero. (field size 1 bytes) */
-    },
-#endif
-#endif /* IAP */
 
 #if XUA_OR_STATIC_HID_ENABLED
     #include "xua_hid_descriptors.h"

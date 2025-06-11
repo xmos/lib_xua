@@ -25,11 +25,6 @@
 
 #include "uac_hwresources.h"
 
-#ifdef IAP
-#include "i2c_shared.h"
-#include "iap.h"
-#endif
-
 #if (XUA_SPDIF_RX_EN || XUA_SPDIF_TX_EN)
 #include "spdif.h"                     /* From lib_spdif */
 #endif
@@ -194,15 +189,6 @@ on tile[XUD_TILE] : clock clk_audio_mclk_usb                = CLKBLK_MCLK;      
 
 on tile[AUDIO_IO_TILE] : clock clk_audio_bclk               = CLKBLK_I2S_BIT;    /* Bit clock */
 
-#ifdef IAP
-/* I2C ports - in a struct for use with module_i2c_shared & module_i2c_simple/module_i2c_single_port */
-#ifdef PORT_I2C
-on tile [IAP_TILE] : struct r_i2c r_i2c = {PORT_I2C};
-#else
-on tile [IAP_TILE] : struct r_i2c r_i2c = {PORT_I2C_SCL, PORT_I2C_SDA};
-#endif
-#endif
-
 #if XUA_USB_EN
 /* Endpoint type tables for XUD */
 XUD_EpType epTypeTableOut[ENDPOINT_COUNT_OUT] = { XUD_EPTYPE_CTL | XUD_STATUS_ENABLE,
@@ -214,12 +200,6 @@ XUD_EpType epTypeTableOut[ENDPOINT_COUNT_OUT] = { XUD_EPTYPE_CTL | XUD_STATUS_EN
 #endif
 #if HID_OUT_REQUIRED
                                             XUD_EPTYPE_INT,
-#endif
-#ifdef IAP
-                                            XUD_EPTYPE_BUL,    /* iAP */
-#ifdef IAP_EA_NATIVE_TRANS
-                                            XUD_EPTYPE_BUL,    /* EA Native Transport */
-#endif
 #endif
                                         };
 
@@ -238,15 +218,6 @@ XUD_EpType epTypeTableIn[ENDPOINT_COUNT_IN] = { XUD_EPTYPE_CTL | XUD_STATUS_ENAB
 #endif
 #if XUA_OR_STATIC_HID_ENABLED
                                             XUD_EPTYPE_INT,
-#endif
-#ifdef IAP
-                                            XUD_EPTYPE_BUL | XUD_STATUS_ENABLE,
-#ifdef IAP_INT_EP
-                                            XUD_EPTYPE_BUL | XUD_STATUS_ENABLE,
-#endif
-#ifdef IAP_EA_NATIVE_TRANS
-                                            XUD_EPTYPE_BUL | XUD_STATUS_ENABLE,
-#endif
 #endif
                                         };
 #endif /* XUA_USB_EN */
@@ -442,12 +413,6 @@ int main()
 #ifdef MIDI
     chan c_midi;
 #endif
-#ifdef IAP
-    chan c_iap;
-#ifdef IAP_EA_NATIVE_TRANS
-    chan c_ea_data;
-#endif
-#endif
 
 #if (MIXER)
     chan c_mix_ctl;
@@ -506,12 +471,6 @@ int main()
 
 #if (!MIXER)
 #define c_mix_ctl null
-#endif
-
-#ifdef IAP_EA_NATIVE_TRANS
-    chan c_EANativeTransport_ctrl;
-#else
-#define c_EANativeTransport_ctrl null
 #endif
 
 /* USER_MAIN_DECLARATIONS can be defined either via xua_conf.h or by user_main_declarations.h */
@@ -622,7 +581,7 @@ int main()
             /* Endpoint 0 Core */
             {
                 thread_speed();
-                XUA_Endpoint0( c_xud_out[0], c_xud_in[0], c_aud_ctl, c_mix_ctl, c_clk_ctl, c_EANativeTransport_ctrl, dfuInterface VENDOR_REQUESTS_PARAMS_);
+                XUA_Endpoint0( c_xud_out[0], c_xud_in[0], c_aud_ctl, c_mix_ctl, c_clk_ctl, dfuInterface VENDOR_REQUESTS_PARAMS_);
             }
 
 #endif /* XUA_USB_EN */
@@ -678,29 +637,13 @@ int main()
         }
 #endif
 
-#if defined(MIDI) && defined(IAP) && (IAP_TILE == MIDI_TILE)
-        /* MIDI and IAP share a core */
-        on tile[IAP_TILE]:
-        {
-            thread_speed();
-            usb_midi(p_midi_rx, p_midi_tx, clk_midi, c_midi, 0, c_iap, null, null, null);
-        }
-#else
-#if defined(MIDI)
+#ifdef MIDI
         /* MIDI core */
         on tile[MIDI_TILE]:
         {
             thread_speed();
             usb_midi(p_midi_rx, p_midi_tx, clk_midi, c_midi, 0);
         }
-#endif
-#if defined(IAP)
-        on tile[IAP_TILE]:
-        {
-            thread_speed();
-            iAP(c_iap, null, null, null);
-        }
-#endif
 #endif
 
 #if (XUA_SPDIF_RX_EN)
