@@ -508,14 +508,11 @@ int main()
 #ifdef XUD_PRIORITY_HIGH
                 set_core_high_priority_on();
 #endif
-                /* Run UAC2.0 at high-speed, UAC1.0 at full-speed */
-                unsigned usbSpeed = (AUDIO_CLASS == 2) ? XUD_SPEED_HS : XUD_SPEED_FS;
-
                 unsigned xudPwrCfg = (XUA_POWERMODE == XUA_POWERMODE_SELF) ? XUD_PWR_SELF : XUD_PWR_BUS;
 
                 /* USB interface core */
                 XUD_Main(c_xud_out, ENDPOINT_COUNT_OUT, c_xud_in, ENDPOINT_COUNT_IN,
-                         c_sof, epTypeTableOut, epTypeTableIn, usbSpeed, xudPwrCfg);
+                         c_sof, epTypeTableOut, epTypeTableIn, XUA_USB_BUS_SPEED, xudPwrCfg);
             }
 
 #if (NUM_USB_CHAN_OUT > 0) || (NUM_USB_CHAN_IN > 0) || XUA_HID_ENABLED || defined(MIDI)

@@ -304,47 +304,62 @@
  */
 
 /**
- * @brief USB Audio Class Version
+ * @brief Legacy USB Audio Class version
  *
  * Default: 2 (Audio Class version 2.0)
+ *
+ * Note: XUA_USB_AUDIO_CLASS_HS and XUA_USB_AUDIO_CLASS_FS are derived from this value.
+ * Setting these defines directly will override this value.
  */
 #ifndef AUDIO_CLASS
 #define AUDIO_CLASS              (2)
 #endif
 
-/**
- * @brief Enable/disable fall back to Audio Class 1.0 in USB Full-speed.
+/** @brief Audio class version to run at HS
  *
- * Default: Disabled
+ * Default: AUDIO_CLASS
+ *
+ * Note: Set to 0 for no operation at HS.
  */
-#ifndef AUDIO_CLASS_FALLBACK
-#define AUDIO_CLASS_FALLBACK     (0)
+#ifndef XUA_AUDIO_CLASS_HS
+
+#if (AUDIO_CLASS == 1)
+    #define XUA_AUDIO_CLASS_HS   (0)
+#else
+    #define XUA_AUDIO_CLASS_HS   AUDIO_CLASS
+#endif
 #endif
 
-/**
- * @brief Whether or not to run UAC2 in full-speed. When disabled device can either operate in
- *        UAC1 mode in full-speed (if AUDIO_CLASS_FALLBACK enabled) or return "null" descriptors.
+/** @brief Audio class version to run at FS
  *
- * Default: 1 (Enabled) when AUDIO_CLASS_FALLBACK disabled.
+ * Default: AUDIO_CLASS
+ *
+ * Note: Set to 0 for no operation at FS.
  */
-#if ((AUDIO_CLASS == 2) || __DOXYGEN__)
-    /* Whether to run in Audio Class 2.0 mode in USB Full-speed */
-    #if !defined(FULL_SPEED_AUDIO_2) && (AUDIO_CLASS_FALLBACK == 0)
-        #define FULL_SPEED_AUDIO_2    1     /* Default to falling back to UAC2 */
+#ifndef XUA_AUDIO_CLASS_FS
+#define XUA_AUDIO_CLASS_FS       AUDIO_CLASS
+#endif
+
+/* @brief Desired USB Bus Speed to run the device at.
+ *
+ * Default: High-speed for UAC2.0, Full-speed for UAC1.0
+ *
+ * Note: this is a desired speed - the host may not support high-speed (HS) and the device will
+ * then run in full-speed (FS) mode.
+ */
+#ifndef XUA_USB_BUS_SPEED
+  #if AUDIO_CLASS == 1
+    #define XUA_USB_BUS_SPEED    XUD_SPEED_FS
+  #else
+    #define XUA_USB_BUS_SPEED    XUD_SPEED_HS
+  #endif
+#else
+    #if (XUA_USB_BUS_SPEED != XUD_SPEED_HS) && (XUA_USB_BUS_SPEED != XUD_SPEED_FS)
+        #error XUA_USB_BUS_SPEED must be either XUD_SPEED_HS or XUD_SPEED_FS
     #endif
-#endif
-
-#if defined(FULL_SPEED_AUDIO_2) && (FULL_SPEED_AUDIO_2 == 0)
-#undef FULL_SPEED_AUDIO_2
-#endif
-
-/* Some checks on full-speed functionality */
-#if defined(FULL_SPEED_AUDIO_2) && (AUDIO_CLASS_FALLBACK)
-#error FULL_SPEED_AUDIO_2 and AUDIO_CLASS_FALLBACK enabled!
-#endif
-
-#if (AUDIO_CLASS == 1) && defined(FULL_SPEED_AUDIO_2)
-#error AUDIO_CLASS set to 1 and FULL_SPEED_AUDIO_2 enabled!
+    #if (XUA_USB_BUS_SPEED == XUD_SPEED_HS) && (AUDIO_CLASS == 1)
+        #error XUA_USB_BUS_SPEED set to HS but AUDIO_CLASS set to 1, this is an invalid configuration!
+    #endif
 #endif
 
 /*
@@ -693,11 +708,11 @@
 #endif
 
 /**
- * @brief USB Product ID (PID) for Audio Class 1.0 mode. Only required if AUDIO_CLASS == 1 or AUDIO_CLASS_FALLBACK is enabled.
+ * @brief USB Product ID (PID) for Audio Class 1.0 mode. Only required if XUA_AUDIO_CLASS_FS == 1.
  *
  * Default: 0x0003
  */
-#if (AUDIO_CLASS == 1) || (AUDIO_CLASS_FALLBACK) || defined(__DOXYGEN__)
+#if (XUA_AUDIO_CLASS_FS == 1) || defined(__DOXYGEN__)
 #ifndef PID_AUDIO_1
 #define PID_AUDIO_1              (0x0003)
 #endif
