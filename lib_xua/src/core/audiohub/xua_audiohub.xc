@@ -578,7 +578,7 @@ static void receive_command(unsigned command,
         dsdMode = inuint(c_aud);
         curSamRes_DAC = inuint(c_aud);
         audioActive = 1;
-        debug_printf("aud stream start\n")
+        debug_printf("aud stream start\n");
     }
     else if (command == XUA_AUD_SET_AUDIO_STOP)
     {
