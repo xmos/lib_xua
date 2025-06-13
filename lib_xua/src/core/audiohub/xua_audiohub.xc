@@ -43,6 +43,7 @@
 #include "xua_commands.h"
 #include "xc_ptr.h"
 
+#define DEBUG_UNIT XUA_AUDIOHUB
 #include "debug_print.h"
 
 #define XUA_MAX(x,y) ((x)>(y) ? (x) : (y))
