@@ -81,7 +81,7 @@ typedef struct
     STR_TABLE_ENTRY(vendorStr);
     STR_TABLE_ENTRY(serialStr);
 
-#if (AUDIO_CLASS == 2)
+#if (XUA_AUDIO_CLASS_HS == 2) || (XUA_AUDIO_CLASS_FS == 2)
     /* Audio 2.0 Strings */
     STR_TABLE_ENTRY(productStr_Audio2);           /* Product string for Audio 2 */
     STR_TABLE_ENTRY(outputInterfaceStr_Audio2);   /* iInterface for streaming intefaces */
@@ -89,7 +89,7 @@ typedef struct
     STR_TABLE_ENTRY(usbInputTermStr_Audio2);      /* Users sees as output from host */
     STR_TABLE_ENTRY(usbOutputTermStr_Audio2);     /* User sees as input to host */
 #endif
-#if  (AUDIO_CLASS_FALLBACK) || (AUDIO_CLASS == 1)
+#if (XUA_AUDIO_CLASS_FS == 1)
     /* Audio 1.0 Strings */
     STR_TABLE_ENTRY(productStr_Audio1);           /* Product string for Audio 1 */
     STR_TABLE_ENTRY(outputInterfaceStr_Audio1);   /* iInterface for streaming intefaces */
@@ -97,7 +97,7 @@ typedef struct
     STR_TABLE_ENTRY(usbInputTermStr_Audio1);      /* Users sees as output from host */
     STR_TABLE_ENTRY(usbOutputTermStr_Audio1);     /* User sees as input to host */
 #endif
-#if (AUDIO_CLASS == 2)
+#if (XUA_AUDIO_CLASS_HS == 2) || (XUA_AUDIO_CLASS_FS == 2)
     STR_TABLE_ENTRY(clockSelectorStr);            /* iClockSel */
     STR_TABLE_ENTRY(internalClockSourceStr);      /* iClockSource for internal clock */
 #if XUA_SPDIF_RX_EN
@@ -350,21 +350,21 @@ StringDescTable_t g_strTable =
     .langID                      = "\x09\x04", /* US English */
     .vendorStr                   = XUA_VENDOR_EMPTY_STRING,
     .serialStr                   = XUA_SERIAL_EMPTY_STRING,
-#if (AUDIO_CLASS == 2)
+#if (XUA_AUDIO_CLASS_HS == 2) || (XUA_AUDIO_CLASS_FS == 2)
     .productStr_Audio2           = XUA_PRODUCT_EMPTY_STRING,
     .outputInterfaceStr_Audio2   = XUA_PRODUCT_EMPTY_STRING,
     .inputInterfaceStr_Audio2    = XUA_PRODUCT_EMPTY_STRING,
     .usbInputTermStr_Audio2      = XUA_PRODUCT_EMPTY_STRING,
     .usbOutputTermStr_Audio2     = XUA_PRODUCT_EMPTY_STRING,
 #endif
-#if (AUDIO_CLASS_FALLBACK) || (AUDIO_CLASS == 1)
+#if (XUA_AUDIO_CLASS_FS == 1)
     .productStr_Audio1           = XUA_PRODUCT_EMPTY_STRING,
     .outputInterfaceStr_Audio1   = XUA_PRODUCT_EMPTY_STRING,
     .inputInterfaceStr_Audio1    = XUA_PRODUCT_EMPTY_STRING,
     .usbInputTermStr_Audio1      = XUA_PRODUCT_EMPTY_STRING,
     .usbOutputTermStr_Audio1     = XUA_PRODUCT_EMPTY_STRING,
 #endif
-#if (AUDIO_CLASS == 2)
+#if (XUA_AUDIO_CLASS_HS == 2) || (XUA_AUDIO_CLASS_FS == 2)
     .clockSelectorStr            = XUA_CLOCK_SELECTOR_EMPTY_STRING,
     .internalClockSourceStr      = XUA_INTERNAL_CLOCK_SELECTOR_EMPTY_STRING,
 #if (XUA_SPDIF_RX_EN)
@@ -426,7 +426,7 @@ StringDescTable_t g_strTable =
 
 /***** Device Descriptors *****/
 
-#if (AUDIO_CLASS_FALLBACK) || (AUDIO_CLASS == 1)
+#if (XUA_AUDIO_CLASS_FS == 1)
 /* Device Descriptor for Audio Class 1.0 (Assumes Full-Speed) */
 USB_Descriptor_Device_t devDesc_Audio1 =
 {
@@ -451,7 +451,7 @@ USB_Descriptor_Device_t devDesc_Audio1 =
 };
 #endif
 
-#if (AUDIO_CLASS == 2)
+#if (XUA_AUDIO_CLASS_HS == 2) || (XUA_AUDIO_CLASS_FS == 2)
 USB_Descriptor_Device_t devDesc_Audio2 =
 {
     .bLength                        = sizeof(USB_Descriptor_Device_t),
@@ -515,7 +515,7 @@ unsigned char devQualDesc_Audio2[] =
     0x00                            /* 9  bReserved (must be zero) */
 };
 
-#if (AUDIO_CLASS_FALLBACK) || (AUDIO_CLASS == 1)
+#if (XUA_AUDIO_CLASS_FS == 1)
 /* Device Qualifier Descriptor for running at high-speed (matches audio 1.0 device descriptor) */
 unsigned char devQualDesc_Audio1[] =
 {
@@ -808,7 +808,7 @@ typedef struct
     0x10,                                 /* 7    bcdDFUVersion */ \
     0x01                                /* 7    bcdDFUVersion */
 
-#if (AUDIO_CLASS == 2)
+#if (XUA_AUDIO_CLASS_HS == 2) || (XUA_AUDIO_CLASS_FS == 2)
 USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
 {
     .Config =
@@ -2107,12 +2107,12 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
 #endif /* (AUDIO_CLASS == 2) */
 
 #if XUA_OR_STATIC_HID_ENABLED
-#if (AUDIO_CLASS ==1 )
+#if (XUA_AUDIO_CLASS_FS  == 1)
 unsigned char hidDescriptor[] =
 {
     #include "xua_hid_descriptor_contents.h"
 };
-#elif (AUDIO_CLASS == 2)
+#elif (XUA_AUDIO_CLASS_HS == 2) || (XUA_AUDIO_CLASS_FS == 2)
 unsigned char* hidDescriptor = (unsigned char*) &cfgDesc_Audio2.HID_Descriptor;
 #else
     #error "Unknown Audio Class"
@@ -2150,7 +2150,7 @@ unsigned char cfgDesc_Null[] =
 };
 
 
-#if (AUDIO_CLASS_FALLBACK) || (AUDIO_CLASS == 1)
+#if (XUA_AUDIO_CLASS_FS == 1)
 /* Configuration descriptor for Audio v1.0 */
 /* Note Audio 1.0 descriptors still a simple array so we need some extra defines regarding lengths.. */
 #if (NUM_USB_CHAN_IN > 0)
@@ -2909,6 +2909,6 @@ unsigned char cfgDesc_Audio1[] =
 #endif
 
 };
-#endif // (AUDIO_CLASS_FALLBACK) || (AUDIO_CLASS == 1)
+#endif // (XUA_AUDIO_CLASS_FS == 1)
 #endif
 #endif // _DEVICE_DESCRIPTORS_

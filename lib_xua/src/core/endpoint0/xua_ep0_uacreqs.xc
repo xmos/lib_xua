@@ -893,7 +893,7 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
                                 int currentFreq48 = 8000;   //MIN_FREQ_48;
                                 unsigned maxFreq = MAX_FREQ;
 
-#if defined (FULL_SPEED_AUDIO_2)
+#if (XUA_AUDIO_CLASS_FS == 2)
                                 unsigned usbSpeed;
                                 asm("ldw   %0, dp[g_curUsbSpeed]" : "=r" (usbSpeed) :);
 
@@ -1101,8 +1101,7 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
 
 }
 
-#if (AUDIO_CLASS_FALLBACK != 0) || (AUDIO_CLASS == 1)
-
+#if (XUA_AUDIO_CLASS_FS == 1)
 int AudioEndpointRequests_1(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, chanend ?c_aud_ctl, chanend ?c_mix_ctl, chanend ?c_clk_ctl)
 {
     /* At this point we know:

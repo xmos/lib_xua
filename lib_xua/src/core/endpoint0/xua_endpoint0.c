@@ -123,15 +123,11 @@ unsigned g_curStreamAlt_Out = 0;
 unsigned g_curStreamAlt_In = 0;
 
 /* Global variable for current USB bus speed (i.e. FS/HS) */
-#if (AUDIO_CLASS == 2)
-XUD_BusSpeed_t g_curUsbSpeed = XUD_SPEED_HS;
-#else
-XUD_BusSpeed_t g_curUsbSpeed = XUD_SPEED_FS;
-#endif
+XUD_BusSpeed_t g_curUsbSpeed = XUA_USB_BUS_SPEED;
 
 /* Global variables for current USB Vendor and Product strings */
 char g_vendor_str[XUA_MAX_STR_LEN] = VENDOR_STR;
-#if (AUDIO_CLASS == 2)
+#if ((XUA_AUDIO_CLASS_HS == 2) && (XUA_USB_BUS_SPEED == XUD_SPEED_HS)) || ((XUA_AUDIO_CLASS_FS == 2) && (XUA_USB_BUS_SPEED == XUD_SPEED_FS))
 char g_product_str[XUA_MAX_STR_LEN] = PRODUCT_STR_A2;
 #else
 char g_product_str[XUA_MAX_STR_LEN] = PRODUCT_STR_A1;
@@ -267,11 +263,12 @@ XUD_ep ep0_out;
 XUD_ep ep0_in;
 
 void XUA_Endpoint0_setVendorId(unsigned short vid) {
-#if (AUDIO_CLASS == 1)
-    devDesc_Audio1.idVendor = vid;
-#else
+#if (XUA_AUDIO_CLASS_HS == 2) || (XUA_AUDIO_CLASS_FS == 2)
     devDesc_Audio2.idVendor = vid;
-#endif // AUDIO_CLASS == 1}
+#endif
+#if (XUA_AUDIO_CLASS_FS == 1)
+    devDesc_Audio1.idVendor = vid;
+#endif
 }
 
 #if (MIXER)
@@ -334,7 +331,7 @@ void XUA_Endpoint0_setStrTable() {
 
     // update Vendor strings
     concatenateAndCopyStrings(g_vendor_str, "", g_strTable.vendorStr);
-#if (AUDIO_CLASS == 2)
+#if (XUA_AUDIO_CLASS_HS == 2) || (XUA_AUDIO_CLASS_FS == 2)
     concatenateAndCopyStrings(g_vendor_str, " Clock Selector", g_strTable.clockSelectorStr);
     concatenateAndCopyStrings(g_vendor_str, " Internal Clock", g_strTable.internalClockSourceStr);
 #endif
@@ -355,13 +352,14 @@ void XUA_Endpoint0_setStrTable() {
     concatenateAndCopyStrings(g_vendor_str, " MIDI In", g_strTable.midiInStr);
 #endif
     // update product strings
-#if (AUDIO_CLASS_FALLBACK) || (AUDIO_CLASS == 1)
+#if (XUA_AUDIO_CLASS_FS == 1)
     concatenateAndCopyStrings(g_product_str, "", g_strTable.productStr_Audio1);
     concatenateAndCopyStrings(g_product_str, "", g_strTable.outputInterfaceStr_Audio1);
     concatenateAndCopyStrings(g_product_str, "", g_strTable.inputInterfaceStr_Audio1);
     concatenateAndCopyStrings(g_product_str, "", g_strTable.usbInputTermStr_Audio1);
     concatenateAndCopyStrings(g_product_str, "", g_strTable.usbOutputTermStr_Audio1);
-#elif (AUDIO_CLASS == 2)
+#endif
+#if (XUA_AUDIO_CLASS_HS == 2) || (XUA_AUDIO_CLASS_FS == 2)
     concatenateAndCopyStrings(g_product_str, "", g_strTable.productStr_Audio2);
     concatenateAndCopyStrings(g_product_str, "", g_strTable.outputInterfaceStr_Audio2);
     concatenateAndCopyStrings(g_product_str, "", g_strTable.inputInterfaceStr_Audio2);
@@ -392,62 +390,85 @@ char* XUA_Endpoint0_getVendorStr() {
     return g_strTable.vendorStr;
 }
 
-char* XUA_Endpoint0_getProductStr() {
-    #if (AUDIO_CLASS_FALLBACK) || (AUDIO_CLASS == 1)
-    return g_strTable.productStr_Audio1;
-    #elif (AUDIO_CLASS == 2)
-    return g_strTable.productStr_Audio2;
-    #endif
+char* XUA_Endpoint0_getProductStr()
+{
+#if (XUA_AUDIO_CLASS_HS == 2)
+    if (g_curUsbSpeed == XUD_SPEED_HS)
+    {
+        /* We only run UAC2 at HS */
+        return g_strTable.productStr_Audio2;
+    }
+    else
+#endif
+    {
+        /* In FS we could be running in UAC1 or UAC2 mode */
+#if (XUA_AUDIO_CLASS_FS == 2)
+        return g_strTable.productStr_Audio2;
+#else
+        return g_strTable.productStr_Audio1;
+#endif
+    }
 }
 
-char* XUA_Endpoint0_getSerialStr() {
+char* XUA_Endpoint0_getSerialStr()
+{
     return g_strTable.serialStr;
 }
 
-void XUA_Endpoint0_setProductId(unsigned short pid) {
-#if (AUDIO_CLASS == 1)
+/* Note, this sets the same Product ID for both Audio Class 1.0 and Audio Class 2.0.
+ * This is unlikely to be desirable.
+ */
+void XUA_Endpoint0_setProductId(unsigned short pid)
+{
+#if (XUA_AUDIO_CLASS_FS == 1)
     devDesc_Audio1.idProduct = pid;
-#else
+#endif
+#if (XUA_AUDIO_CLASS_HS == 2) || (XUA_AUDIO_CLASS_FS == 2)
     devDesc_Audio2.idProduct = pid;
-#endif // AUDIO_CLASS == 1}
+#endif
 }
 
+/* FIXME this implementation is incorrect - needs to be based on bus-speed */
 unsigned short XUA_Endpoint0_getVendorId() {
     unsigned short vid;
 #if (AUDIO_CLASS == 1)
     vid = devDesc_Audio1.idVendor;
 #else
     vid = devDesc_Audio2.idVendor;
-#endif // AUDIO_CLASS == 1}
+#endif
     return vid;
 }
 
+/* FIXME this implementation is incorrect - needs to be based on current bus-speed */
 unsigned short XUA_Endpoint0_getProductId() {
     unsigned short pid;
 #if (AUDIO_CLASS == 1)
     pid = devDesc_Audio1.idProduct;
 #else
     pid = devDesc_Audio2.idProduct;
-#endif // AUDIO_CLASS == 1}
+#endif
     return pid;
 }
 
+/* FIXME this implementation is incorrect - needs to be based on current bus-speed */
 unsigned short XUA_Endpoint0_getBcdDevice() {
     unsigned short bcd;
 #if (AUDIO_CLASS == 1)
     bcd = devDesc_Audio1.bcdDevice;
 #else
     bcd = devDesc_Audio2.bcdDevice;
-#endif // AUDIO_CLASS == 1}
+#endif
     return bcd;
 }
 
-void XUA_Endpoint0_setBcdDevice(unsigned short bcd) {
-#if (AUDIO_CLASS == 1)
+void XUA_Endpoint0_setBcdDevice(unsigned short bcd)
+{
+#if (XUA_AUDIO_CLASS_FS == 1)
     devDesc_Audio1.bcdDevice = bcd;
-#else
+#endif
+#if (XUA_AUDIO_CLASS_HS == 2) || (XUA_AUDIO_CLASS_FS == 2)
     devDesc_Audio2.bcdDevice = bcd;
-#endif // AUDIO_CLASS == 1}
+#endif
 }
 
 #if defined(__static_hid_report_h_exists__)
@@ -515,9 +536,10 @@ void XUA_Endpoint0_init(chanend c_ep0_out, chanend c_ep0_in, NULLABLE_RESOURCE(c
 
     if(strcmp(g_strTable.serialStr, "")) // If serialStr is not empty
     {
-#if (AUDIO_CLASS == 2)
+#if (XUA_AUDIO_CLASS_HS == 2) || (XUA_AUDIO_CLASS_FS == 2)
         devDesc_Audio2.iSerialNumber = offsetof(StringDescTable_t, serialStr)/sizeof(char *);
-#else
+#endif
+#if (XUA_AUDIO_CLASS_FS == 1)
         devDesc_Audio1.iSerialNumber = offsetof(StringDescTable_t, serialStr)/sizeof(char *);
 #endif
     }
@@ -598,7 +620,7 @@ void XUA_Endpoint0_init(chanend c_ep0_out, chanend c_ep0_in, NULLABLE_RESOURCE(c
     unsigned char hidReportDescriptorLengthLo =  hidReportDescriptorLength & 0xFF;
     unsigned char hidReportDescriptorLengthHi = (hidReportDescriptorLength & 0xFF00) >> 8;
 
-#if( AUDIO_CLASS == 1 )
+#if(XUA_AUDIO_CLASS_FS == 1)
     cfgDesc_Audio1[USB_HID_DESCRIPTOR_OFFSET + HID_DESCRIPTOR_LENGTH_FIELD_OFFSET    ] = hidReportDescriptorLengthLo;
     cfgDesc_Audio1[USB_HID_DESCRIPTOR_OFFSET + HID_DESCRIPTOR_LENGTH_FIELD_OFFSET + 1] = hidReportDescriptorLengthHi;
 #endif
@@ -815,12 +837,8 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
                     if ((epNum == ENDPOINT_ADDRESS_IN_AUDIO) || (epNum == ENDPOINT_ADDRESS_OUT_AUDIO))
 #endif
                     {
-#if (AUDIO_CLASS == 2) && (AUDIO_CLASS_FALLBACK)
-                        if(g_curUsbSpeed == XUD_SPEED_FS)
-                        {
-                            result = AudioEndpointRequests_1(ep0_out, ep0_in, &sp, c_aud_ctl, c_mix_ctl, c_clk_ctl);
-                        }
-#elif (AUDIO_CLASS==1)
+#if (XUA_AUDIO_CLASS_FS == 1)
+                        /* Since we only support Audio Class 1.0 in FS don't need to check bus speed */
                         result = AudioEndpointRequests_1(ep0_out, ep0_in, &sp, c_aud_ctl, c_mix_ctl, c_clk_ctl);
 #endif
                     }
@@ -895,20 +913,20 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
 #endif
                         )
                     {
-#if (AUDIO_CLASS == 2) && (AUDIO_CLASS_FALLBACK)
+#if (XUA_AUDIO_CLASS_HS == 2)
                         if(g_curUsbSpeed == XUD_SPEED_HS)
                         {
                             result = AudioClassRequests_2(ep0_out, ep0_in, &sp, c_aud_ctl, c_mix_ctl, c_clk_ctl);
                         }
                         else
-                        {
-                            result = AudioClassRequests_1(ep0_out, ep0_in, &sp, c_aud_ctl, c_mix_ctl, c_clk_ctl);
-                        }
-#elif (AUDIO_CLASS==2)
-                        result = AudioClassRequests_2(ep0_out, ep0_in, &sp, c_aud_ctl, c_mix_ctl, c_clk_ctl);
-#else
-                        result = AudioClassRequests_1(ep0_out, ep0_in, &sp, c_aud_ctl, c_mix_ctl, c_clk_ctl);
 #endif
+                        {
+#if (XUA_AUDIO_CLASS_FS == 1)
+                            result = AudioClassRequests_1(ep0_out, ep0_in, &sp, c_aud_ctl, c_mix_ctl, c_clk_ctl);
+#else
+                            result = AudioClassRequests_2(ep0_out, ep0_in, &sp, c_aud_ctl, c_mix_ctl, c_clk_ctl);
+#endif
+                        }
 
 #ifdef VENDOR_AUDIO_REQS
                         /* If result is ERR at this point, then request to audio interface not handled - handle vendor audio reqs */
@@ -944,8 +962,10 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
                     if(DFU_mode_active) {
                         num_interfaces = DFUcfgDesc.Config.bNumInterfaces;
                     }
-                    else {
-                        #if (AUDIO_CLASS == 2)
+                    else
+                    {
+                        /* TODO this needs to account for USB bus-speed and potentially falling back to UAC1 in FS mode */
+                        #if (XUA_AUDIO_CLASS_HS == 2) || (XUA_AUDIO_CLASS_FS == 2)
                         num_interfaces = cfgDesc_Audio2.Config.bNumInterfaces;
                         #else
                         num_interfaces = NUM_INTERFACES_A1;
@@ -1015,7 +1035,8 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
                                         num_interfaces = DFUcfgDesc.Config.bNumInterfaces;
                                     }
                                     else {
-                                        #if (AUDIO_CLASS == 2)
+                                        /* TODO this needs to account for USB bus-speed and potentially falling back to UAC1 in FS mode */
+                                        #if (XUA_AUDIO_CLASS_HS == 2) || (XUA_AUDIO_CLASS_FS == 2)
                                         num_interfaces = cfgDesc_Audio2.Config.bNumInterfaces;
                                         #else
                                         num_interfaces = NUM_INTERFACES_A1;
@@ -1049,7 +1070,7 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
         if (!DFU_mode_active)
         {
 #endif
-#if (AUDIO_CLASS_FALLBACK) && (AUDIO_CLASS != 1)
+#if (XUA_AUDIO_CLASS_HS == 2) && (XUA_AUDIO_CLASS_FS == 1)
             /* Return Audio 2.0 Descriptors with Audio 1.0 as fallback */
             result = USB_StandardRequests(ep0_out, ep0_in,
                 (unsigned char*)&devDesc_Audio2, sizeof(devDesc_Audio2),
@@ -1058,9 +1079,8 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
                 cfgDesc_Audio1, sizeof(cfgDesc_Audio1),
                 (char**)&g_strTable, sizeof(g_strTable)/sizeof(char *),
                 &sp, g_curUsbSpeed);
-#elif FULL_SPEED_AUDIO_2
-            /* Return Audio 2.0 Descriptors for high_speed and full-speed */
-
+#elif (XUA_AUDIO_CLASS_HS == 2) || (XUA_AUDIO_CLASS_FS == 2)
+            /* Return Audio 2.0 Descriptors for high-speed and full-speed */
             /* Unfortunately we need to munge the descriptors a bit between full and high-speed */
             if(g_curUsbSpeed == XUD_SPEED_HS)
             {
@@ -1147,7 +1167,7 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
 #else
                 (char**)&g_strTable, sizeof(g_strTable)/sizeof(char *), &sp, g_curUsbSpeed);
 #endif
-#elif (AUDIO_CLASS == 1)
+#elif (XUA_AUDIO_CLASS_FS == 1)
             /* Return Audio 1.0 Descriptors in FS, should never be in HS! */
              result = USB_StandardRequests(ep0_out, ep0_in,
                 null, 0,

@@ -40,7 +40,9 @@ UNRELEASED
     not streaming which stops I2S and provides additional user callback.
   * FIXED:     Guard on epTypeTableOut[] in main where incorrect EP type
     for audio out endpoint occurred if additional custom endpoints added.
-  * REMOVED: Support for iAP EA Native Transport endpoints
+  * REMOVED:   Support for iAP EA Native Transport endpoints
+  * CHANGED:   Functionality associated with AUDIO_CLASS_FALLBACK and
+    FULL_SPEED_AUDIO_2 moved to XUA_AUDIO_CLASS_FS and XUA_AUDIO_CLASS_HS
 
 5.0.0
 -----

@@ -47,7 +47,7 @@ Warnings relating to configuration defines located in this XC source file rather
 #warning BCD_DEVICE not defined. Using XMOS release version number
 #endif
 
-#if (AUDIO_CLASS == 1) || (AUDIO_CLASS_FALLBACK)
+#if (XUA_AUDIO_CLASS_FS == 1)
 #ifndef PID_AUDIO_1
 #warning PID_AUDIO_1 not defined. Using 0x0003
 #endif
@@ -59,10 +59,6 @@ Warnings relating to configuration defines located in this XC source file rather
 
 #ifndef AUDIO_CLASS
 #warning AUDIO_CLASS not defined, using 2
-#endif
-
-#ifndef AUDIO_CLASS_FALLBACK
-#warning AUDIO_CLASS_FALLBACK not defined, using 0 (i.e. disabled)
 #endif
 
 /* Sanity check on FS channel counts */
