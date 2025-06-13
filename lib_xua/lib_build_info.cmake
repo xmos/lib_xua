@@ -32,7 +32,7 @@ set(LIB_DEPENDENT_MODULES "lib_adat(2.0.1)"
                           "lib_sw_pll(develop)"
                           "lib_xassert(4.3.1)"
                           "lib_mic_array(5.5.0)"
-                          "lib_xud(2.4.0)")
+                          "lib_xud(3.0.0)")
 
 set(LIB_COMPILER_FLAGS -O3 -fasm-linenum -fcomment-asm)
 

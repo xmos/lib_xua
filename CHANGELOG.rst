@@ -11,7 +11,12 @@ UNRELEASED
     to allow insertion of declarations and tasks for extending main()
   * ADDED:     XUA_LOW_POWER_NON_STREAMING define allowing low-power state when
     not streaming which stops I2S and provides additional user callback
+  * ADDED:     Calls to user functions XUA_UserSuspendPowerDown() and i
+    XUA_UserResumePowerUp() to allow user code to run when the device is
+    suspended or resumed (default implementations are empty)
   * ADDED:     Documentation of XUA_CHAN_BUFF_CTRL
+  * CHANGED:   Suspend/resume notification from lib_xud (added in v3.0.0) used
+    rather than overriding XUD_UserSuspend() and XUD_UserResume()
   * CHANGED:   Made `p_off_mclk` nullable for XUA_Buffer; this port is now only
     required either in configurations using Synchronous mode and using the
     application PLL to clock the USB buffers, or for configurations using
