@@ -4,45 +4,46 @@ lib_xua change log
 UNRELEASED
 ----------
 
+  * ADDED:     Enumeration of vendor specific control interface as WinUSB
+    compatible on Windows. Can be disabled by defining
+    ENUMERATE_CONTROL_INTF_AS_WINUSB to 0
+  * ADDED:     Optional user_main_declarations.h and user_main_cores.h headers
+    to allow insertion of declarations and tasks for extending main()
+  * ADDED:     XUA_LOW_POWER_NON_STREAMING define allowing low-power state when
+    not streaming which stops I2S and provides additional user callback
+  * ADDED:     Documentation of XUA_CHAN_BUFF_CTRL
   * CHANGED:   Made `p_off_mclk` nullable for XUA_Buffer; this port is now only
     required either in configurations using Synchronous mode and using the
     application PLL to clock the USB buffers, or for configurations using
-    Asynchronous mode and using the reference clock to clock the USB buffers.
-  * FIXED:     `p_mclk_in` and `clk_audio_bclk` now correctly nullable when I2S
-    not in use.
-  * FIXED:     Corrected `clk_audio_mclk` nullability for XUA_AudioHub; this
-    clock block is only required for configurations with ADAT or SPDIF TX
-  * FIXED: Compilation error with NUM_USB_CHAN_IN=0, NUM_USB_CHAN_OUT=0 and
-    HID_CONTROLS=1 config
-  * FIXED: HID functionality with AUDIO_CLASS = 1
-  * FIXED: Alignment issue with HID_Descriptor memory that was causing
-    USB_GET_DESCRIPTOR for the HID interface to fail leading to failing USB3CV
-    HID Descriptor test
-  * ADDED: Support for setting wMaxPacketSize for MIDI bulk IN and OUT endpoints
-    at run time depending on g_curUsbSpeed
-  * ADDED:     Documented use of XUA_CHAN_BUFF_CTRL to save power
-  * CHANGED: Renamed USB_CONTROL_DESCS define to XUA_USB_CONTROL_DESCS
-  * FIXED: Device enumeration error when both XUA_DFU_EN and XUA_USB_CONTROL_DESCS
-    are enabled
-  * ADDED: Enumerate with vendor specific control interface as WinUSB compatible
-    on Windows. Can be disabled by defining ENUMERATE_CONTROL_INTF_AS_WINUSB to
-    0
-  * ADDED: HW test for vendor specific control interface
-  * FIXED:     Compiler error when PDM mics used and EXCLUDE_USB_AUDIO_MAIN is
-    not defined.
-  * CHANGED:   AN00248 updated so that it uses lib_xua main instead of own main
-    function.
-  * ADDED:     Optional user_main_declarations.h user_main_cores.h headers to
-    allow insertion of declarations and tasks for extending main.xc
-  * CHANGED: UserAudioStreamXxxx replaced by single UserAudioStreamState(in, out)
-    API with arguments indicating whether input or output streams are active
-  * ADDED: XUA_LOW_POWER_NON_STREAMING define allowing low-power state when
-    not streaming which stops I2S and provides additional user callback.
-  * FIXED:     Guard on epTypeTableOut[] in main where incorrect EP type
-    for audio out endpoint occurred if additional custom endpoints added.
-  * REMOVED:   Support for iAP EA Native Transport endpoints
+    Asynchronous mode and using the reference clock to clock the USB buffers
+  * CHANGED:   Renamed USB_CONTROL_DESCS define to XUA_USB_CONTROL_DESCS
+  * CHANGED:   AN00248 updated so that it uses lib_xua main() instead of custom
+    main()
+  * CHANGED:   UserAudioStreamStart and UserAudioStreamStop replaced by single
+    UserAudioStreamState(in, out) API with arguments indicating whether input
+    or output streams are active
   * CHANGED:   Functionality associated with AUDIO_CLASS_FALLBACK and
     FULL_SPEED_AUDIO_2 moved to XUA_AUDIO_CLASS_FS and XUA_AUDIO_CLASS_HS
+  * FIXED:      wMaxPacketSize for MIDI bulk IN and OUT endpoints incorrectly
+    set when running at full-speed
+  * FIXED:     `p_mclk_in` and `clk_audio_bclk` not correctly nullable when I2S
+    not in use.
+  * FIXED:     Incorrect `clk_audio_mclk` nullability for XUA_AudioHub; this
+    clock block is only required for configurations with ADAT or SPDIF TX
+  * FIXED:     Compilation error with NUM_USB_CHAN_IN=0, NUM_USB_CHAN_OUT=0 and
+    HID_CONTROLS=1
+  * FIXED:     HID functionality with AUDIO_CLASS = 1
+  * FIXED:     Alignment issue with HID_Descriptor memory that was causing
+    USB_GET_DESCRIPTOR for the HID interface to fail leading to failing USB3CV
+    HID Descriptor test
+  * FIXED:     Device enumeration error when both XUA_DFU_EN and
+    XUA_USB_CONTROL_DESCS enabled
+  * FIXED:     UAC2 descriptors during full-speed operation
+  * FIXED:     Compiler error when PDM mics used and EXCLUDE_USB_AUDIO_MAIN is
+    not defined.
+  * FIXED:     Guard on epTypeTableOut[] declaration where incorrect EP type
+    for audio out endpoint occurred if additional custom endpoints are added
+  * REMOVED:   Support for iAP EA Native Transport endpoints
 
 5.0.0
 -----

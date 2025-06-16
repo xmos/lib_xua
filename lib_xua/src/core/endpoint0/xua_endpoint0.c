@@ -127,7 +127,7 @@ XUD_BusSpeed_t g_curUsbSpeed = XUA_USB_BUS_SPEED;
 
 /* Global variables for current USB Vendor and Product strings */
 char g_vendor_str[XUA_MAX_STR_LEN] = VENDOR_STR;
-#if ((XUA_AUDIO_CLASS_HS == 2) && (XUA_USB_BUS_SPEED == XUD_SPEED_HS)) || ((XUA_AUDIO_CLASS_FS == 2) && (XUA_USB_BUS_SPEED == XUD_SPEED_FS))
+#if ((XUA_AUDIO_CLASS_HS == 2) && (XUA_USB_BUS_SPEED == 2)) || ((XUA_AUDIO_CLASS_FS == 2) && (XUA_USB_BUS_SPEED == 1))
 char g_product_str[XUA_MAX_STR_LEN] = PRODUCT_STR_A2;
 #else
 char g_product_str[XUA_MAX_STR_LEN] = PRODUCT_STR_A1;
@@ -1092,21 +1092,37 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
                 cfgDesc_Audio2.Audio_Out_Format.bBitResolution = HS_STREAM_FORMAT_OUTPUT_1_RESOLUTION_BITS;
                 cfgDesc_Audio2.Audio_Out_Endpoint.wMaxPacketSize = HS_STREAM_FORMAT_OUTPUT_1_MAXPACKETSIZE;
                 cfgDesc_Audio2.Audio_Out_ClassStreamInterface.bNrChannels = HS_STREAM_FORMAT_OUTPUT_1_CHAN_COUNT;
+#if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP) && (XUA_SYNCMODE == XUA_SYNCMODE_ASYNC)
+                /* Async feedback endpoint descriptor change between FS and HS */
+                cfgDesc_Audio2.Audio_Out_Fb_Endpoint.wMaxPacketSize = FEEDBACK_MAX_PACKET_SIZE_HS;
+                cfgDesc_Audio2.Audio_Out_Fb_Endpoint.bInterval = FEEDBACK_INTERVAL_HS;
 #endif
+#endif // (NUM_USB_CHAN_OUT > 0)
 #if (OUTPUT_FORMAT_COUNT > 1)
                 cfgDesc_Audio2.Audio_Out_Format_2.bSubslotSize = HS_STREAM_FORMAT_OUTPUT_2_SUBSLOT_BYTES;
                 cfgDesc_Audio2.Audio_Out_Format_2.bBitResolution = HS_STREAM_FORMAT_OUTPUT_2_RESOLUTION_BITS;
                 cfgDesc_Audio2.Audio_Out_Endpoint_2.wMaxPacketSize = HS_STREAM_FORMAT_OUTPUT_2_MAXPACKETSIZE;
                 cfgDesc_Audio2.Audio_Out_ClassStreamInterface_2.bNrChannels = HS_STREAM_FORMAT_OUTPUT_2_CHAN_COUNT;
+#if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP) && (XUA_SYNCMODE == XUA_SYNCMODE_ASYNC)
+                /* Async feedback endpoint descriptor change between FS and HS */
+                cfgDesc_Audio2.Audio_Out_Fb_Endpoint_2.wMaxPacketSize = FEEDBACK_MAX_PACKET_SIZE_HS;
+                cfgDesc_Audio2.Audio_Out_Fb_Endpoint_2.bInterval = FEEDBACK_INTERVAL_HS;
 #endif
-
+#endif // (OUTPUT_FORMAT_COUNT > 1)
 #if (OUTPUT_FORMAT_COUNT > 2)
                 cfgDesc_Audio2.Audio_Out_Format_3.bSubslotSize = HS_STREAM_FORMAT_OUTPUT_3_SUBSLOT_BYTES;
                 cfgDesc_Audio2.Audio_Out_Format_3.bBitResolution = HS_STREAM_FORMAT_OUTPUT_3_RESOLUTION_BITS;
                 cfgDesc_Audio2.Audio_Out_Endpoint_3.wMaxPacketSize = HS_STREAM_FORMAT_OUTPUT_3_MAXPACKETSIZE;
                 cfgDesc_Audio2.Audio_Out_ClassStreamInterface_3.bNrChannels = HS_STREAM_FORMAT_OUTPUT_3_CHAN_COUNT;
+                cfgDesc_Audio2.Audio_Out_Fb_Endpoint_3.wMaxPacketSize = FEEDBACK_MAX_PACKET_SIZE_HS;
+#if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP) && (XUA_SYNCMODE == XUA_SYNCMODE_ASYNC)
+                /* Async feedback endpoint descriptor change between FS and HS */
+                cfgDesc_Audio2.Audio_Out_Fb_Endpoint.wMaxPacketSize = FEEDBACK_MAX_PACKET_SIZE_HS;
+                cfgDesc_Audio2.Audio_Out_Fb_Endpoint_3.bInterval = FEEDBACK_INTERVAL_HS;
 #endif
-#endif
+#endif // (OUTPUT_FORMAT_COUNT > 2)
+#endif // (NUM_USB_CHAN_OUT > 0)
+
 #if (NUM_USB_CHAN_IN > 0)
                 cfgDesc_Audio2.Audio_CS_Control_Int.Audio_In_InputTerminal.bNrChannels = NUM_USB_CHAN_IN;
                 cfgDesc_Audio2.Audio_In_Format.bSubslotSize = HS_STREAM_FORMAT_INPUT_1_SUBSLOT_BYTES;
@@ -1115,6 +1131,7 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
                 cfgDesc_Audio2.Audio_In_ClassStreamInterface.bNrChannels = NUM_USB_CHAN_IN;
 #endif
 #if MIDI
+                /* MIDI endpoint max packet size must be 512 in HS */
                 cfgDesc_Audio2.MIDI_Descriptors.MIDI_Standard_Bulk_OUT_Endpoint.wMaxPacketSize = 512;
                 cfgDesc_Audio2.MIDI_Descriptors.MIDI_Standard_Bulk_IN_Endpoint.wMaxPacketSize = 512;
 #endif
@@ -1129,21 +1146,36 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
                 cfgDesc_Audio2.Audio_Out_Format.bBitResolution = FS_STREAM_FORMAT_OUTPUT_1_RESOLUTION_BITS;
                 cfgDesc_Audio2.Audio_Out_Endpoint.wMaxPacketSize = FS_STREAM_FORMAT_OUTPUT_1_MAXPACKETSIZE;
                 cfgDesc_Audio2.Audio_Out_ClassStreamInterface.bNrChannels = NUM_USB_CHAN_OUT_FS;
+#if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP) && (XUA_SYNCMODE == XUA_SYNCMODE_ASYNC)
+                /* Async feedback endpoint descriptor change between FS and HS */
+                cfgDesc_Audio2.Audio_Out_Fb_Endpoint.wMaxPacketSize = FEEDBACK_MAX_PACKET_SIZE_FS;
+                cfgDesc_Audio2.Audio_Out_Fb_Endpoint.bInterval = FEEDBACK_INTERVAL_FS;
 #endif
+#endif // (NUM_USB_CHAN_OUT > 0)
 #if (OUTPUT_FORMAT_COUNT > 1)
                 cfgDesc_Audio2.Audio_Out_Format_2.bSubslotSize = FS_STREAM_FORMAT_OUTPUT_2_SUBSLOT_BYTES;
                 cfgDesc_Audio2.Audio_Out_Format_2.bBitResolution = FS_STREAM_FORMAT_OUTPUT_2_RESOLUTION_BITS;
                 cfgDesc_Audio2.Audio_Out_Endpoint_2.wMaxPacketSize = FS_STREAM_FORMAT_OUTPUT_2_MAXPACKETSIZE;
                 cfgDesc_Audio2.Audio_Out_ClassStreamInterface_2.bNrChannels = NUM_USB_CHAN_OUT_FS;
+#if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP) && (XUA_SYNCMODE == XUA_SYNCMODE_ASYNC)
+                /* Async feedback endpoint descriptor change between FS and HS */
+                cfgDesc_Audio2.Audio_Out_Fb_Endpoint_2.wMaxPacketSize = FEEDBACK_MAX_PACKET_SIZE_FS;
+                cfgDesc_Audio2.Audio_Out_Fb_Endpoint_2.bInterval = FEEDBACK_INTERVAL_FS;
+#endif // (OUTPUT_FORMAT_COUNT > 1)
 #endif
-
 #if (OUTPUT_FORMAT_COUNT > 2)
                 cfgDesc_Audio2.Audio_Out_Format_3.bSubslotSize = FS_STREAM_FORMAT_OUTPUT_3_SUBSLOT_BYTES;
                 cfgDesc_Audio2.Audio_Out_Format_3.bBitResolution = FS_STREAM_FORMAT_OUTPUT_3_RESOLUTION_BITS;
                 cfgDesc_Audio2.Audio_Out_Endpoint_3.wMaxPacketSize = FS_STREAM_FORMAT_OUTPUT_3_MAXPACKETSIZE;
                 cfgDesc_Audio2.Audio_Out_ClassStreamInterface_3.bNrChannels = NUM_USB_CHAN_OUT_FS;
+#if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP) && (XUA_SYNCMODE == XUA_SYNCMODE_ASYNC)
+                /* Async feedback endpoint descriptor change between FS and HS */
+                cfgDesc_Audio2.Audio_Out_Fb_Endpoint_3.wMaxPacketSize = FEEDBACK_MAX_PACKET_SIZE_FS;
+                cfgDesc_Audio2.Audio_Out_Fb_Endpoint_3.bInterval = FEEDBACK_INTERVAL_FS;
 #endif
-#endif
+#endif // (OUTPUT_FORMAT_COUNT > 2)
+#endif // (NUM_USB_CHAN_OUT > 0)
+
 #if (NUM_USB_CHAN_IN > 0)
                 cfgDesc_Audio2.Audio_CS_Control_Int.Audio_In_InputTerminal.bNrChannels = NUM_USB_CHAN_IN_FS;
                 cfgDesc_Audio2.Audio_In_Format.bSubslotSize = FS_STREAM_FORMAT_INPUT_1_SUBSLOT_BYTES;
@@ -1152,6 +1184,7 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
                 cfgDesc_Audio2.Audio_In_ClassStreamInterface.bNrChannels = NUM_USB_CHAN_IN_FS;
 #endif
 #if MIDI
+                /* MIDI endpoint max packet size must be 64 bytes in FS */
                 cfgDesc_Audio2.MIDI_Descriptors.MIDI_Standard_Bulk_OUT_Endpoint.wMaxPacketSize = 64;
                 cfgDesc_Audio2.MIDI_Descriptors.MIDI_Standard_Bulk_IN_Endpoint.wMaxPacketSize = 64;
 #endif
@@ -1186,7 +1219,6 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
 #endif
 #if XUA_DFU_EN
         }
-
         else
         {
             /* Running in DFU mode - always return same descs for DFU whether HS or FS */
