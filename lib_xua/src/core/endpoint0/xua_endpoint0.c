@@ -125,17 +125,6 @@ unsigned g_curStreamAlt_In = 0;
 /* Global variable for current USB bus speed (i.e. FS/HS) */
 XUD_BusSpeed_t g_curUsbSpeed = XUA_USB_BUS_SPEED;
 
-/* Global variables for current USB Vendor and Product strings */
-char g_vendor_str[XUA_MAX_STR_LEN] = VENDOR_STR;
-#if ((XUA_AUDIO_CLASS_HS == 2) && (XUA_USB_BUS_SPEED == 2)) || ((XUA_AUDIO_CLASS_FS == 2) && (XUA_USB_BUS_SPEED == 1))
-char g_product_str[XUA_MAX_STR_LEN] = PRODUCT_STR_A2;
-#else
-char g_product_str[XUA_MAX_STR_LEN] = PRODUCT_STR_A1;
-#endif
-
-/* Global variable for current USB Serial Number strings */
-char g_serial_str[XUA_MAX_STR_LEN] = SERIAL_STR;
-
 #if _XUA_ENABLE_BOS_DESC
 /* Device Interface GUID*/
 char g_device_interface_guid_dfu_str[DEVICE_INTERFACE_GUID_MAX_STRLEN+1] = WINUSB_DEVICE_INTERFACE_GUID_DFU;
@@ -309,84 +298,71 @@ void InitLocalMixerState()
 }
 #endif
 
-void concatenateAndCopyStrings(char* string1, char* string2, char* string_buffer) {
+void concatenateAndCopyStrings(char* string1, char* string2, char* destBuffer, size_t destLen)
+{
     debug_printf("concatenateAndCopyStrings() for \"%s\" and \"%s\"\n", string1, string2);
 
-    memset(string_buffer, '\0', strlen(string_buffer));
+    memset(destBuffer, '\0', strlen(destBuffer));
 
-    uint32_t remaining_buffer_size = MIN(strlen(string1), XUA_MAX_STR_LEN-1);
-    strncpy(string_buffer, string1, remaining_buffer_size);
-    uint32_t total_string_size = MIN(strlen(string1)+strlen(string2), XUA_MAX_STR_LEN-1);
-    if (total_string_size==XUA_MAX_STR_LEN-1) {
-        remaining_buffer_size =  XUA_MAX_STR_LEN-1-strlen(string1);
-    } else {
-        remaining_buffer_size = strlen(string2);
-    }
+    /* Copy string1 into the destination buffer */
+    strncat(destBuffer, string1, destLen);
 
-    strncat(string_buffer, string2, remaining_buffer_size);
-    debug_printf("concatenateAndCopyStrings() creates \"%s\"\n", string_buffer);
+    /* Cat what we can of string2 onto the destination buffer */
+    strncat(destBuffer, string2, destLen - strlen(string1));
+
+    debug_printf("concatenateAndCopyStrings() creates \"%s\"\n", destBuffer);
 }
 
-void XUA_Endpoint0_setStrTable() {
+void XUA_Endpoint0_setVendorStr(char* vendorStr)
+{
+    debug_printf("XUA_Endpoint0_setVendorStr() with string %s\n", vendorStr);
+    concatenateAndCopyStrings(vendorStr, "", g_strTable.vendorStr, sizeof(XUA_VENDOR_DEFAULT_STRING));
 
-    // update Vendor strings
-    concatenateAndCopyStrings(g_vendor_str, "", g_strTable.vendorStr);
+    /* Update other strings with the new vendorStr */
 #if (XUA_AUDIO_CLASS_HS == 2) || (XUA_AUDIO_CLASS_FS == 2)
-    concatenateAndCopyStrings(g_vendor_str, " Clock Selector", g_strTable.clockSelectorStr);
-    concatenateAndCopyStrings(g_vendor_str, " Internal Clock", g_strTable.internalClockSourceStr);
+    concatenateAndCopyStrings(vendorStr, " Clock Selector", g_strTable.clockSelectorStr, sizeof(XUA_CLOCK_SELECTOR_DEFAULT_STRING));
+    concatenateAndCopyStrings(vendorStr, " Internal Clock", g_strTable.internalClockSourceStr, sizeof(XUA_INTERNAL_CLOCK_SOURCE_DEFAULT_STRING));
 #endif
 #if (XUA_SPDIF_RX_EN)
-    concatenateAndCopyStrings(g_vendor_str, " S/PDIF Clock", g_strTable.spdifClockSourceStr);
+    concatenateAndCopyStrings(vendorStr, " S/PDIF Clock", g_strTable.spdifClockSourceStr, sizeof(XUA_SPDIF_CLOCK_SOURCE_DEFAULT_STRING));
 #endif
 #if (XUA_ADAT_RX_EN)
-    concatenateAndCopyStrings(g_vendor_str, " ADAT Clock", g_strTable.adatClockSourceStr);
+    concatenateAndCopyStrings(vendorStr, " ADAT Clock", g_strTable.adatClockSourceStr, sizeof(XUA_ADAT_CLOCK_SOURCE_DEFAULT_STRING));
 #endif
 #if XUA_DFU_EN
-    concatenateAndCopyStrings(g_vendor_str, " DFU", g_strTable.dfuStr);
+    concatenateAndCopyStrings(vendorStr, " DFU", g_strTable.dfuStr, sizeof(XUA_DFU_DEFAULT_STRING));
 #endif
 #if XUA_USB_CONTROL_DESCS
-    concatenateAndCopyStrings(g_vendor_str, " Control", g_strTable.ctrlStr);
+    concatenateAndCopyStrings(vendorStr, " Control", g_strTable.ctrlStr, sizeof(XUA_CTRL_DEFAULT_STRING));
 #endif
 #ifdef MIDI
-    concatenateAndCopyStrings(g_vendor_str, " MIDI Out", g_strTable.midiOutStr);
-    concatenateAndCopyStrings(g_vendor_str, " MIDI In", g_strTable.midiInStr);
+    concatenateAndCopyStrings(vendorStr, " MIDI Out", g_strTable.midiOutStr, sizeof(XUA_MIDI_OUT_DEFAULT_STRING));
+    concatenateAndCopyStrings(vendorStr, " MIDI In", g_strTable.midiInStr, sizeof(XUA_MIDI_IN_DEFAULT_STRING));
 #endif
-    // update product strings
+}
+
+/* Note, this writes both UAC1 and UAC2 product strings */
+void XUA_Endpoint0_setProductStr(char* productStr)
+{
+    debug_printf("XUA_Endpoint0_setProductStr() with string %s\n", productStr);
+
 #if (XUA_AUDIO_CLASS_FS == 1)
-    concatenateAndCopyStrings(g_product_str, "", g_strTable.productStr_Audio1);
-    concatenateAndCopyStrings(g_product_str, "", g_strTable.outputInterfaceStr_Audio1);
-    concatenateAndCopyStrings(g_product_str, "", g_strTable.inputInterfaceStr_Audio1);
-    concatenateAndCopyStrings(g_product_str, "", g_strTable.usbInputTermStr_Audio1);
-    concatenateAndCopyStrings(g_product_str, "", g_strTable.usbOutputTermStr_Audio1);
+    concatenateAndCopyStrings(productStr, "", g_strTable.productStr_Audio1, sizeof(XUA_PRODUCT_A1_DEFAULT_STRING));
 #endif
 #if (XUA_AUDIO_CLASS_HS == 2) || (XUA_AUDIO_CLASS_FS == 2)
-    concatenateAndCopyStrings(g_product_str, "", g_strTable.productStr_Audio2);
-    concatenateAndCopyStrings(g_product_str, "", g_strTable.outputInterfaceStr_Audio2);
-    concatenateAndCopyStrings(g_product_str, "", g_strTable.inputInterfaceStr_Audio2);
-    concatenateAndCopyStrings(g_product_str, "", g_strTable.usbInputTermStr_Audio2);
-    concatenateAndCopyStrings(g_product_str, "", g_strTable.usbOutputTermStr_Audio2);
+    concatenateAndCopyStrings(productStr, "", g_strTable.productStr_Audio2, sizeof(XUA_PRODUCT_A2_DEFAULT_STRING));
 #endif
-
-    // update Serial strings
-    concatenateAndCopyStrings(g_serial_str, "", g_strTable.serialStr);
+    /* Note, don't update outputInterfaceStr_Audio2, inputInterfaceStr_Audio2 etc as they are all pointing to the same string */
 }
 
-void XUA_Endpoint0_setVendorStr(char* vendor_str) {
-    debug_printf("XUA_Endpoint0_setVendorStr() with string %s\n", vendor_str);
-    concatenateAndCopyStrings(vendor_str, "", g_vendor_str);
+void XUA_Endpoint0_setSerialStr(char* serialStr)
+{
+    debug_printf("XUA_Endpoint0_setSerialStr() with string %s\n", serialStr);
+    concatenateAndCopyStrings(serialStr, "", g_strTable.serialStr, sizeof(XUA_SERIAL_DEFAULT_STRING));
 }
 
-void XUA_Endpoint0_setProductStr(char* product_str) {
-    debug_printf("XUA_Endpoint0_setProductStr() with string %s\n", product_str);
-    concatenateAndCopyStrings(product_str, "", g_product_str);
-}
-
-void XUA_Endpoint0_setSerialStr(char* serial_str) {
-    debug_printf("XUA_Endpoint0_setSerialStr() with string %s\n", serial_str);
-    concatenateAndCopyStrings(serial_str, "", g_serial_str);
-}
-
-char* XUA_Endpoint0_getVendorStr() {
+char* XUA_Endpoint0_getVendorStr()
+{
     return g_strTable.vendorStr;
 }
 
@@ -414,6 +390,7 @@ char* XUA_Endpoint0_getSerialStr()
 {
     return g_strTable.serialStr;
 }
+
 
 /* Note, this sets the same Product ID for both Audio Class 1.0 and Audio Class 2.0.
  * This is unlikely to be desirable.
@@ -527,15 +504,15 @@ void XUA_Endpoint0_init(chanend c_ep0_out, chanend c_ep0_in, NULLABLE_RESOURCE(c
     ep0_out = XUD_InitEp(c_ep0_out);
     ep0_in  = XUD_InitEp(c_ep0_in);
 
-    XUA_Endpoint0_setStrTable();
-
     VendorRequests_Init(VENDOR_REQUESTS_PARAMS);
 #if _XUA_ENABLE_BOS_DESC
     update_guid_in_msos_desc(g_device_interface_guid_dfu_str, g_device_interface_guid_control_str);
 #endif
 
-    if(strcmp(g_strTable.serialStr, "")) // If serialStr is not empty
+    if(strcmp(g_strTable.serialStr, ""))
     {
+        // If serialStr is not empty then point the serial number in the device descriptor to the
+        // string table. iserialNumber is is set to none (0) by default */
 #if (XUA_AUDIO_CLASS_HS == 2) || (XUA_AUDIO_CLASS_FS == 2)
         devDesc_Audio2.iSerialNumber = offsetof(StringDescTable_t, serialStr)/sizeof(char *);
 #endif
@@ -543,7 +520,6 @@ void XUA_Endpoint0_init(chanend c_ep0_out, chanend c_ep0_in, NULLABLE_RESOURCE(c
         devDesc_Audio1.iSerialNumber = offsetof(StringDescTable_t, serialStr)/sizeof(char *);
 #endif
     }
-
 
 #if (MIXER)
     /* Set up mixer default state */
