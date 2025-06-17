@@ -29,30 +29,22 @@
     #define _XUA_ENABLE_BOS_DESC (0)
 #endif
 
-#define APPEND_VENDOR_STR(x) VENDOR_STR" "#x
-
-#define APPEND_PRODUCT_STR_A2(x) PRODUCT_STR_A2 " "#x
-
-#define APPEND_PRODUCT_STR_A1(x) PRODUCT_STR_A1 " "#x
-
 #define STR_TABLE_ENTRY(name) char * name
 
-// The empty strings below are used in the g_strTable to set the maximum size of the table entries
+// The default strings below are used in the g_strTable to set the maximum size of the table entries
 // The last char of the strings are different, so that the compiler allocates separate memory spaces
-#define XUA_VENDOR_EMPTY_STRING "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\01"
-#define XUA_PRODUCT_EMPTY_STRING "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\02"
-#define XUA_CLOCK_SELECTOR_EMPTY_STRING "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\03"
-#define XUA_INTERNAL_CLOCK_SELECTOR_EMPTY_STRING "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\04"
-#define XUA_SPDIF_CLOCK_SOURCE_EMPTY_STRING "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\05"
-#define XUA_ADAT_CLOCK_SOURCE_EMPTY_STRING "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\06"
-#define XUA_DFU_EMPTY_STRING "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\07"
-#define XUA_CTRL_EMPTY_STRING "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\08"
-#define XUA_MIDI_OUT_EMPTY_STRING "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\09"
-#define XUA_MIDI_IN_EMPTY_STRING "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0a"
-#define XUA_SERIAL_EMPTY_STRING "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0b"
-
-// The value below must match the length of XUA_DESCR_EMPTY_STRING.
-#define XUA_MAX_STR_LEN (32)
+#define XUA_VENDOR_DEFAULT_STRING                VENDOR_STR   "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\01"
+#define XUA_PRODUCT_A1_DEFAULT_STRING            PRODUCT_STR_A1   "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\02"
+#define XUA_PRODUCT_A2_DEFAULT_STRING            PRODUCT_STR_A2   "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\03"
+#define XUA_CLOCK_SELECTOR_DEFAULT_STRING        VENDOR_STR " Clock Selector" "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\04"
+#define XUA_INTERNAL_CLOCK_SOURCE_DEFAULT_STRING VENDOR_STR " Internal Clock" "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\05"
+#define XUA_SPDIF_CLOCK_SOURCE_DEFAULT_STRING    VENDOR_STR " S/PDIF Clock"   "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\06"
+#define XUA_ADAT_CLOCK_SOURCE_DEFAULT_STRING     VENDOR_STR " ADAT Clock"     "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\07"
+#define XUA_DFU_DEFAULT_STRING                   VENDOR_STR " DFU" "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\08"
+#define XUA_CTRL_DEFAULT_STRING                  VENSOR_SRR " Control" "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\09"
+#define XUA_MIDI_OUT_DEFAULT_STRING              VENDOR_STR " MIDI Out" "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0a"
+#define XUA_MIDI_IN_DEFAULT_STRING               VENDOR_STR " MIDI In"  "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0b"
+#define XUA_SERIAL_DEFAULT_STRING                SERIAL_STR "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0c"
 
 #define ISO_EP_ATTRIBUTES_ASYNC                    ((USB_ENDPOINT_TRANSTYPE_ISO << USB_ENDPOINT_TRANSTYPE_SHIFT)\
                                                     | (USB_ENDPOINT_SYNCTYPE_ASYNC << USB_ENDPOINT_SYNCTYPE_SHIFT)\
@@ -353,41 +345,41 @@ typedef struct
 StringDescTable_t g_strTable =
 {
     .langID                      = "\x09\x04", /* US English */
-    .vendorStr                   = XUA_VENDOR_EMPTY_STRING,
-    .serialStr                   = XUA_SERIAL_EMPTY_STRING,
+    .vendorStr                   = XUA_VENDOR_DEFAULT_STRING,
+    .serialStr                   = XUA_SERIAL_DEFAULT_STRING,
 #if (XUA_AUDIO_CLASS_HS == 2) || (XUA_AUDIO_CLASS_FS == 2)
-    .productStr_Audio2           = XUA_PRODUCT_EMPTY_STRING,
-    .outputInterfaceStr_Audio2   = XUA_PRODUCT_EMPTY_STRING,
-    .inputInterfaceStr_Audio2    = XUA_PRODUCT_EMPTY_STRING,
-    .usbInputTermStr_Audio2      = XUA_PRODUCT_EMPTY_STRING,
-    .usbOutputTermStr_Audio2     = XUA_PRODUCT_EMPTY_STRING,
+    .productStr_Audio2           = XUA_PRODUCT_A2_DEFAULT_STRING,
+    .outputInterfaceStr_Audio2   = XUA_PRODUCT_A2_DEFAULT_STRING,
+    .inputInterfaceStr_Audio2    = XUA_PRODUCT_A2_DEFAULT_STRING,
+    .usbInputTermStr_Audio2      = XUA_PRODUCT_A2_DEFAULT_STRING,
+    .usbOutputTermStr_Audio2     = XUA_PRODUCT_A2_DEFAULT_STRING,
 #endif
 #if (XUA_AUDIO_CLASS_FS == 1)
-    .productStr_Audio1           = XUA_PRODUCT_EMPTY_STRING,
-    .outputInterfaceStr_Audio1   = XUA_PRODUCT_EMPTY_STRING,
-    .inputInterfaceStr_Audio1    = XUA_PRODUCT_EMPTY_STRING,
-    .usbInputTermStr_Audio1      = XUA_PRODUCT_EMPTY_STRING,
-    .usbOutputTermStr_Audio1     = XUA_PRODUCT_EMPTY_STRING,
+    .productStr_Audio1           = XUA_PRODUCT_A1_DEFAULT_STRING,
+    .outputInterfaceStr_Audio1   = XUA_PRODUCT_A1_DEFAULT_STRING,
+    .inputInterfaceStr_Audio1    = XUA_PRODUCT_A1_DEFAULT_STRING,
+    .usbInputTermStr_Audio1      = XUA_PRODUCT_A1_DEFAULT_STRING,
+    .usbOutputTermStr_Audio1     = XUA_PRODUCT_A1_DEFAULT_STRING,
 #endif
 #if (XUA_AUDIO_CLASS_HS == 2) || (XUA_AUDIO_CLASS_FS == 2)
-    .clockSelectorStr            = XUA_CLOCK_SELECTOR_EMPTY_STRING,
-    .internalClockSourceStr      = XUA_INTERNAL_CLOCK_SELECTOR_EMPTY_STRING,
+    .clockSelectorStr            = XUA_CLOCK_SELECTOR_DEFAULT_STRING,
+    .internalClockSourceStr      = XUA_INTERNAL_CLOCK_SOURCE_DEFAULT_STRING,
 #if (XUA_SPDIF_RX_EN)
-    .spdifClockSourceStr         = XUA_SPDIF_CLOCK_SOURCE_EMPTY_STRING,
+    .spdifClockSourceStr         = XUA_SPDIF_CLOCK_SOURCE_DEFAULT_STRING,
 #endif
 #if (XUA_ADAT_RX_EN)
-    .adatClockSourceStr          = XUA_ADAT_CLOCK_SOURCE_EMPTY_STRING,
+    .adatClockSourceStr          = XUA_ADAT_CLOCK_SOURCE_DEFAULT_STRING,
 #endif
-#endif // AUDIO_CLASS == 2
+#endif
 #if XUA_DFU_EN
-    .dfuStr                      = XUA_DFU_EMPTY_STRING,
+    .dfuStr                      = XUA_DFU_DEFAULT_STRING,
 #endif
 #if XUA_USB_CONTROL_DESCS
-    .ctrlStr                      = XUA_CTRL_EMPTY_STRING,
+    .ctrlStr                     = XUA_CTRL_DEFAULT_STRING,
 #endif
 #ifdef MIDI
-    .midiOutStr                   = XUA_MIDI_OUT_EMPTY_STRING,
-    .midiInStr                    = XUA_MIDI_IN_EMPTY_STRING,
+    .midiOutStr                  = XUA_MIDI_OUT_DEFAULT_STRING,
+    .midiInStr                   = XUA_MIDI_IN_DEFAULT_STRING,
 #endif
 
     #include "chanstrings.h"
@@ -811,7 +803,7 @@ typedef struct
     0x40,                                 /* 5    wTransferSize */ \
     0x00,                                 /* 6    wTransferSize */ \
     0x10,                                 /* 7    bcdDFUVersion */ \
-    0x01                                /* 7    bcdDFUVersion */
+    0x01                                  /* 7    bcdDFUVersion */
 
 #if (XUA_AUDIO_CLASS_HS == 2) || (XUA_AUDIO_CLASS_FS == 2)
 USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
@@ -2155,8 +2147,7 @@ unsigned char cfgDesc_Null[] =
 #else
     128,
 #endif
-    _XUA_BMAX_POWER,                           /* 8  bMaxPower */
-
+    _XUA_BMAX_POWER,                      /* 8  bMaxPower */
     0x09,                                 /* 0 bLength : Size of this descriptor, in bytes. (field size 1 bytes) */
     0x04,                                 /* 1 bDescriptorType : INTERFACE descriptor. (field size 1 bytes) */
     0x00,                                 /* 2 bInterfaceNumber : Index of this interface. (field size 1 bytes) */
@@ -2337,8 +2328,7 @@ unsigned char cfgDesc_Audio1[] =
 #else
     128,                                  /* 7  bmAttributes */
 #endif
-    _XUA_BMAX_POWER,                           /* 8  bMaxPower */
-
+    _XUA_BMAX_POWER,                      /* 8  bMaxPower */
 #if ((NUM_USB_CHAN_IN > 0) || (NUM_USB_CHAN_OUT > 0))
     /* Standard AC interface descriptor */
     0x09,
