@@ -79,7 +79,7 @@ unsafe
 #endif
 
 /* Default to something sensible but the following are setup at stream start (unless UAC1 only..) */
-#if (AUDIO_CLASS == 2)
+#if (XUA_USB_BUS_SPEED == 2)
 int g_numUsbChan_In = NUM_USB_CHAN_IN; /* Number of channels to/from the USB bus - initialised to HS for UAC2.0 */
 int g_numUsbChan_Out = NUM_USB_CHAN_OUT;
 int g_curSubSlot_Out = HS_STREAM_FORMAT_OUTPUT_1_SUBSLOT_BYTES;
@@ -707,7 +707,7 @@ static void check_and_signal_stream_event_to_audio(chanend c_mix_out, unsigned d
             outct(c_mix_out, XUA_AUD_SET_AUDIO_START);
             outuint(c_mix_out, dsdMode);
             outuint(c_mix_out, sampResOut);
-        }            
+        }
         else
         {
             outct(c_mix_out, XUA_AUD_SET_AUDIO_STOP);
