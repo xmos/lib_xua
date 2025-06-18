@@ -5,6 +5,8 @@
 #define XASSERT_UNIT DECOUPLE
 #include "xassert.h"
 
+#include "debug_print.h"
+
 #if XUA_USB_EN
 #include <xs1.h>
 #include "xc_ptr.h"
@@ -20,47 +22,6 @@
 #if (HID_CONTROLS)
 #include "user_hid.h"
 #endif
-#define XUA_MAX(x,y) ((x)>(y) ? (x) : (y))
-
-/* TODO use SLOTSIZE to potentially save memory */
-/* Note we could improve on this, for one subslot is set to 4 */
-/* The *4 is conversion to bytes, note we're assuming a slotsize of 4 here whic is potentially as waste */
-#define MAX_DEVICE_AUD_PACKET_SIZE_MULT_HS  ((MAX_FREQ/8000+1)*4)
-#define MAX_DEVICE_AUD_PACKET_SIZE_MULT_FS  ((MAX_FREQ_FS/1000+1)*4)
-
-/*** IN PACKET SIZES ***/
-/* Max packet sizes in bytes. Note the +4 is because we store packet lengths in the buffer */
-#define MAX_DEVICE_AUD_PACKET_SIZE_IN_HS  (MAX_DEVICE_AUD_PACKET_SIZE_MULT_HS * NUM_USB_CHAN_IN + 4)
-#define MAX_DEVICE_AUD_PACKET_SIZE_IN_FS  (MAX_DEVICE_AUD_PACKET_SIZE_MULT_FS * NUM_USB_CHAN_IN_FS + 4)
-
-#define MAX_DEVICE_AUD_PACKET_SIZE_IN (XUA_MAX(MAX_DEVICE_AUD_PACKET_SIZE_IN_FS, MAX_DEVICE_AUD_PACKET_SIZE_IN_HS))
-
-/*** OUT PACKET SIZES ***/
-#define MAX_DEVICE_AUD_PACKET_SIZE_OUT_HS  (MAX_DEVICE_AUD_PACKET_SIZE_MULT_HS * NUM_USB_CHAN_OUT + 4)
-#define MAX_DEVICE_AUD_PACKET_SIZE_OUT_FS  (MAX_DEVICE_AUD_PACKET_SIZE_MULT_FS * NUM_USB_CHAN_OUT_FS + 4)
-
-#define MAX_DEVICE_AUD_PACKET_SIZE_OUT (XUA_MAX(MAX_DEVICE_AUD_PACKET_SIZE_OUT_FS, MAX_DEVICE_AUD_PACKET_SIZE_OUT_HS))
-
-/*** BUFFER SIZES ***/
-/* How many packets too allow for in buffer - minimum is 5.
-2 for having in the aud_to_host buffer when it comes out of underflow, space available for 2 more for to accomodate cases when
-2 pkts from audio hub get written into the aud_to_host buffer within 1 SOF period, and space for 1 extra packet to ensure that
-when the 4th packet gets written to the buffer, there's space to accomodate the next packet, otherwise handle_audio_request() will
-drop packets after writing the 4th packet in the buffer
-*/
-#define BUFFER_PACKET_COUNT (5)
-
-#define BUFF_SIZE_OUT_HS    MAX_DEVICE_AUD_PACKET_SIZE_OUT_HS * BUFFER_PACKET_COUNT
-#define BUFF_SIZE_OUT_FS    MAX_DEVICE_AUD_PACKET_SIZE_OUT_FS * BUFFER_PACKET_COUNT
-
-#define BUFF_SIZE_IN_HS     MAX_DEVICE_AUD_PACKET_SIZE_IN_HS * BUFFER_PACKET_COUNT
-#define BUFF_SIZE_IN_FS     MAX_DEVICE_AUD_PACKET_SIZE_IN_FS * BUFFER_PACKET_COUNT
-
-#define BUFF_SIZE_OUT       XUA_MAX(BUFF_SIZE_OUT_HS, BUFF_SIZE_OUT_FS)
-#define BUFF_SIZE_IN        XUA_MAX(BUFF_SIZE_IN_HS, BUFF_SIZE_IN_FS)
-
-#define OUT_BUFFER_PREFILL  (XUA_MAX(MAX_DEVICE_AUD_PACKET_SIZE_OUT_HS, MAX_DEVICE_AUD_PACKET_SIZE_OUT_FS))
-#define IN_BUFFER_PREFILL   (XUA_MAX(MAX_DEVICE_AUD_PACKET_SIZE_IN_HS, MAX_DEVICE_AUD_PACKET_SIZE_IN_FS)*2)
 
 /* Volume and mute tables */
 #if (OUT_VOLUME_IN_MIXER == 0) && (OUTPUT_VOLUME_CONTROL == 1)
@@ -990,6 +951,15 @@ void XUA_Buffer_Decouple(chanend c_mix_out
                 SET_SHARED_GLOBAL(g_streamChangeOngoing, XUA_AUDCTL_NO_COMMAND);
                 ENABLE_INTERRUPTS();
             }
+            else if(cmd == XUA_EXIT)
+            {
+                DISABLE_INTERRUPTS();
+                inct(c_mix_out);
+                outct(c_mix_out, XS1_CT_END);
+                SET_SHARED_GLOBAL(g_streamChangeOngoing, XUA_AUDCTL_NO_COMMAND);
+                SET_SHARED_GLOBAL(g_streamChange_flag, XUA_AUDCTL_NO_COMMAND);
+                return;
+            }
         }
 
 #if (NUM_USB_CHAN_OUT > 0)
@@ -1031,11 +1001,18 @@ void XUA_Buffer_Decouple(chanend c_mix_out
             space_left = aud_from_host_rdptr - aud_from_host_wrptr;
 
             /* Mod and special case */
+            // TODO: Not understood why this is done. Presumably to stop the wrptr from crossing the rdptr
+            // but why is this required only when rdptr = start?
             if(space_left <= 0 && g_aud_from_host_rdptr == aud_from_host_fifo_start)
             {
                 space_left = aud_from_host_fifo_end - g_aud_from_host_wrptr;
             }
 
+            /* Note: space_left == 0 is not used to signal overflow. I think this is because, if the rdptr
+            also happens to be at start (underflow), we'd end up simultaneously in overflow and underflow, which
+            would cause a deadlock. The current implementation cannot distinguish between buffer full or buffer empty
+            when rdptr = wrptr.
+            */
             if (space_left <= 0 || space_left >= MAX_DEVICE_AUD_PACKET_SIZE_OUT)
             {
                 SET_SHARED_GLOBAL(g_aud_from_host_buffer, aud_from_host_wrptr);

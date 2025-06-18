@@ -19,7 +19,6 @@ DEPENDENT_MODULES = lib_adat(>=2.0.1) \
 
 MODULE_XCC_FLAGS = $(XCC_FLAGS) \
                    -O3 \
-                   -DREF_CLK_FREQ=100 \
                    -fasm-linenum \
                    -fcomment-asm \
                     $(DEBUG_FLAGS)
