@@ -350,10 +350,10 @@
 #ifndef XUA_USB_BUS_SPEED
   #if AUDIO_CLASS == 1
     /* XUD_SPEED_FS = 1 */
-    #define XUA_USB_BUS_SPEED    XUD_SPEED_FS
+    #define XUA_USB_BUS_SPEED    1
   #else
     /* XUD_SPEED_HS = 2 */
-    #define XUA_USB_BUS_SPEED    XUD_SPEED_HS
+    #define XUA_USB_BUS_SPEED    2
   #endif
 #else
     #if (XUA_USB_BUS_SPEED != 1) && (XUA_USB_BUS_SPEED != 2)
