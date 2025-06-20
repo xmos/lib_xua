@@ -703,7 +703,7 @@ int main()
 
 
 
-void XUA_wrapper_main(chanend c_aud)
+void XUA_wrapper_task(chanend c_aud)
 {
     chan c_sof;
     chan c_xud_out[ENDPOINT_COUNT_OUT];              /* Endpoint channels for XUD */

@@ -31,7 +31,7 @@
  *  \param c_swpll_update       Channel connected to software PLL task. Expects master clock counts based on USB frames.
  */
 
-void XUA_wrapper_main(chanend c_aud);
+void XUA_wrapper_task(chanend c_aud);
 
 /** USB Audio Buffering Core(s).
  *
@@ -56,5 +56,5 @@ void XUA_wrapper_main(chanend c_aud);
  *  \param i_pll_ref            Interface to task that toggles reference pin to CS2100
  *  \param c_swpll_update       Channel connected to software PLL task. Expects master clock counts based on USB frames.
  */
-void XUA_wrapper_exchange(chanend c_aud, int32_t samples_to_host[NUM_USB_CHAN_IN], int32_t samples_from_host[NUM_USB_CHAN_OUT]);
+void XUA_wrapper_exchange_samples(chanend c_aud, int32_t samples_to_host[NUM_USB_CHAN_IN], int32_t samples_from_host[NUM_USB_CHAN_OUT]);
 #endif

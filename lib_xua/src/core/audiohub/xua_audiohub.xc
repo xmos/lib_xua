@@ -556,12 +556,12 @@ unsigned static AudioHub_MainLoop(chanend ?c_aud, chanend ?c_spd_out
 }
 
 /* This helper function receives the command using the right transaction from Decouple when audiohub breaks */
-static void receive_command(unsigned command,
-                            chanend c_aud,
-                            unsigned &curSamFreq,
-                            unsigned &dsdMode,
-                            unsigned &curSamRes_DAC,
-                            unsigned &audioActive)
+void receive_command(unsigned command,
+                    chanend c_aud,
+                    unsigned &curSamFreq,
+                    unsigned &dsdMode,
+                    unsigned &curSamRes_DAC,
+                    unsigned &audioActive)
 {
     debug_printf("receive_command: %d\n", command);
     if(command == XUA_AUDCTL_SET_SAMPLE_FREQ)
