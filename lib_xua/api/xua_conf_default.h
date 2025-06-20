@@ -1728,6 +1728,16 @@ enum USBEndpointNumber_Out
 #endif
 
 
+/**
+ * @brief Enable API for wrapping the USB host and buffering (without audio)
+ *
+ * When enabled, an API in xua_wrapper.h is enabled
+ */
+#ifndef XUA_WRAPPER
+#define XUA_WRAPPER    0
+#endif
+
+
 /* Run some checks WRT to low power modes */
 #if XUA_LOW_POWER_NON_STREAMING
 #if MIXER

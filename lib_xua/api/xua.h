@@ -30,6 +30,7 @@
     #include "xua_endpoint0.h"
     #include "xua_buffer.h"
     #include "xua_mixer.h"
+    #include "xua_wrapper.h"
 #endif
 
 #ifdef __XC__
