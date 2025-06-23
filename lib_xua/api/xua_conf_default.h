@@ -1195,13 +1195,13 @@
  */
 #if (XUA_POWERMODE == XUA_POWERMODE_SELF)
     /* Default to taking no power from the bus in self-powered mode */
-    #ifndef _XUA_BMAX_POWER
-        #define _XUA_BMAX_POWER     (0)
+    #ifndef XUA_BMAX_POWER
+        #define XUA_BMAX_POWER     (0)
     #endif
 #else
     /* Default to taking 500mA from the bus in bus-powered mode */
-    #ifndef _XUA_BMAX_POWER
-        #define _XUA_BMAX_POWER      (250)
+    #ifndef XUA_BMAX_POWER
+        #define XUA_BMAX_POWER      (250)
     #endif
 #endif
 
