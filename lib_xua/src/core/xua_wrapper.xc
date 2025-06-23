@@ -21,19 +21,25 @@ extern void receive_command(unsigned command, chanend c_aud, unsigned &curSamFre
 unsigned command = XUA_AUDCTL_NO_COMMAND;
 unsigned xua_wrapper_sample_rate = DEFAULT_FREQ; 							// MIN_FREQ
 unsigned xua_wrapper_mclk_rate = DEFAULT_MCLK;   							// Choose correct MCLK for DEFAULT_FREQ
-unsigned xua_wrapper_dsd_mode = 0;											// Not in DSD mode
+unsigned xua_wrapper_dsd_mode = 0;											// Not in DSD mode, PCM only supported
 unsigned xua_wrapper_dac_res = STREAM_FORMAT_OUTPUT_1_RESOLUTION_BITS;
 unsigned xua_wrapper_adc_res = STREAM_FORMAT_INPUT_1_RESOLUTION_BITS;
 
 int XUA_wrapper_exchange_samples(chanend c_aud, int32_t samples_to_host[NUM_USB_CHAN_IN], int32_t samples_from_host[NUM_USB_CHAN_OUT])
 {
 	StartSampleTransfer(c_aud, underflowWord);                  // Send first token to fire ISR in decouple
-	memcpy(samplesIn[readBuffNo], samples_to_host, sizeof(samples_to_host));
+	if(NUM_USB_CHAN_IN > 0)
+	{
+		memcpy(samplesIn[readBuffNo], samples_to_host, sizeof(samples_to_host));
+	}
 	CompleteSampleTransferUsbChans(c_aud, readBuffNo, command); // Check for command & transfer the samples & UBM
-	memcpy(samples_from_host, samplesOut, sizeof(samples_from_host));
+	if(NUM_USB_CHAN_OUT > 0)
+	{
+		memcpy(samples_from_host, samplesOut, sizeof(samples_from_host));
+	}
 	if(command != XUA_AUDCTL_NO_COMMAND)
 	{
-	    /* Just consume the command, ignore it + keep on looping forever */
+	    /* Just consume the command, grab copies of vars then ignore it + keep on looping forever */
 	    unsigned audioActive = 1;
 	    receive_command(command, c_aud, xua_wrapper_sample_rate, xua_wrapper_dsd_mode, xua_wrapper_dac_res, audioActive);
 	    /* Calculate what master clock we should be using */

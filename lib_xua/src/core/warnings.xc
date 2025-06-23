@@ -70,4 +70,27 @@ Warnings relating to configuration defines located in this XC source file rather
 #error NUM_USB_CHAN_IN_FS expected to be less than or equal to NUM_USB_CHAN_IN
 #endif
 
+/* Run some checks WRT to low power modes */
+#if XUA_LOW_POWER_NON_STREAMING
+#if MIXER
+#warning Enabling MIXER when XUA_LOW_POWER_NON_STREAMING is enabled will result in the mixer stopping when USB audio streams are not active. Is this what you wanted?
 #endif
+#if (NUM_USB_CHAN_OUT == 0 && NUM_USB_CHAN_IN == 0)
+#error Please disable XUA_LOW_POWER_NON_STREAMING if you wish to have a system with no USB audio streams. These features are incompatible.
+#endif
+#endif
+
+/* Checks when using xua wrapper */
+#if XUA_WRAPPER
+    #if (!defined(I2S_CHANS_DAC) || !defined(I2S_CHANS_ADC))
+        #warning XUA_WRAPPER used - overriding I2S_CHANS_DAC and I2S_CHANS_ADC to zero
+    #endif
+    #ifdef MIDI
+    #endif
+    #if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC || XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN || XUA_SPDIF_TX_EN || XUA_ADAT_TX_EN)
+        #error XUA_SYNCMODE_SYNC, SPDIF, ADAT not supported by XUA_WRAPPER
+    #endif
+#endif
+
+#endif
+

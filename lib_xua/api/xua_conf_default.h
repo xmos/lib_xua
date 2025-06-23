@@ -3,6 +3,7 @@
 /*
  * @brief       Defines relating to device configuration and customisation of lib_xua
  */
+
 #ifndef _XUA_CONF_DEFAULT_H_
 #define _XUA_CONF_DEFAULT_H_
 
@@ -84,6 +85,22 @@
 #ifndef XUA_NUM_PDM_MICS
 #define XUA_NUM_PDM_MICS         (0)
 #endif
+
+/**
+ * @brief Enable API for wrapping the USB host and buffering (without audio)
+ *
+ * When enabled, an API in xua_wrapper.h is enabled
+ */
+
+#ifndef XUA_WRAPPER
+#define XUA_WRAPPER    0
+#endif
+
+#if XUA_WRAPPER
+    #define I2S_CHANS_DAC  0 /* We are not using audiohub */
+    #define I2S_CHANS_ADC  0
+#endif /* XUA_WRAPPER */
+
 
 /**
  * @brief Number of DSD output channels.
@@ -1727,23 +1744,3 @@ enum USBEndpointNumber_Out
 #define ENUMERATE_CONTROL_INTF_AS_WINUSB    1
 #endif
 
-
-/**
- * @brief Enable API for wrapping the USB host and buffering (without audio)
- *
- * When enabled, an API in xua_wrapper.h is enabled
- */
-#ifndef XUA_WRAPPER
-#define XUA_WRAPPER    0
-#endif
-
-
-/* Run some checks WRT to low power modes */
-#if XUA_LOW_POWER_NON_STREAMING
-#if MIXER
-#warning Enabling MIXER when XUA_LOW_POWER_NON_STREAMING is enabled will result in the mixer stopping when USB audio streams are not active. Is this what you wanted?
-#endif
-#if (NUM_USB_CHAN_OUT == 0 && NUM_USB_CHAN_IN == 0)
-#error Please disable XUA_LOW_POWER_NON_STREAMING if you wish to have a system with no USB audio streams. These features are incompatible.
-#endif
-#endif

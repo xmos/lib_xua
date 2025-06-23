@@ -78,14 +78,17 @@ void thread_speed()
 #endif
 }
 
-#if XUA_USB_EN
-on tile[XUD_TILE] : in port p_for_mclk_count                = PORT_MCLK_COUNT;
-#endif
+extern in port p_for_mclk_count;
 
 #endif //  ((XUA_USB_EN && !defined(EXCLUDE_USB_AUDIO_MAIN)) || XUA_WRAPPER)
 
 
 #ifndef EXCLUDE_USB_AUDIO_MAIN
+
+#if XUA_USB_EN
+on tile[XUD_TILE] : in port p_for_mclk_count                = PORT_MCLK_COUNT;
+#endif
+
 
 #if (XUA_DFU_EN == 1)
 [[distributable]]
@@ -700,8 +703,8 @@ int main()
 #define dfuInterface null
 #define c_mix_ctl null
 
-
-
+extern clock clk_audio_mclk_usb;
+extern in port p_mclk_in_usb;
 
 void XUA_wrapper_task(chanend c_aud)
 {
@@ -757,17 +760,11 @@ void XUA_wrapper_task(chanend c_aud)
 #if (NUM_USB_CHAN_OUT > 0) && ((NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP))
                        c_xud_in[ENDPOINT_NUMBER_IN_FEEDBACK],      /* Audio FB */
 #endif
-#ifdef MIDI
-#endif
-#if (XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
-#endif
                        c_sof, c_aud_ctl, p_for_mclk_count
 #if (XUA_HID_ENABLED)
                        , c_xud_in[ENDPOINT_NUMBER_IN_HID]
 #endif
                        , c_aud
-#if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
-#endif
             );
         }
 #endif //(NUM_USB_CHAN_OUT > 0) || (NUM_USB_CHAN_IN > 0)
@@ -778,19 +775,6 @@ void XUA_wrapper_task(chanend c_aud)
             XUA_Endpoint0( c_xud_out[0], c_xud_in[0], c_aud_ctl, c_mix_ctl, c_clk_ctl, dfuInterface VENDOR_REQUESTS_PARAMS_);
         }
     } // par
-
-#if ((XUA_SYNCMODE == XUA_SYNCMODE_SYNC || XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN) && XUA_USE_SW_PLL)
-#endif
-
-
-#if (XUA_SPDIF_TX_EN) && (SPDIF_TX_TILE != AUDIO_IO_TILE)
-#endif
-
-#ifdef MIDI
-#endif
-
-#if (XUA_SPDIF_RX_EN)
-#endif
 
 }
 
