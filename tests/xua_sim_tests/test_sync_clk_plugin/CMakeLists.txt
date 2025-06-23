@@ -7,7 +7,6 @@ set(APP_HW_TARGET test_xs3_600.xn)
 set(APP_INCLUDES src)
 
 set(COMMON_FLAGS -O3 -g -DXUD_CORE_CLOCK=600
-                 -DUSB_TILE=tile[0]
                  -DLOCAL_CLOCK_INCREMENT=10000
                  -DLOCAL_CLOCK_MARGIN=100
                  -DXUA_USE_SW_PLL=0

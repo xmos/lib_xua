@@ -30,6 +30,8 @@ UNRELEASED
   * CHANGED:   Functionality associated with AUDIO_CLASS_FALLBACK and
     FULL_SPEED_AUDIO_2 moved to XUA_AUDIO_CLASS_FS and XUA_AUDIO_CLASS_HS
   * CHANGED:   Simplification of USB string table handling
+  * CHANGED:   lib_xud's USB_TILE define derived from lib_xua's XUD_TILE define
+    (using xud_conf.h)
   * FIXED:     wMaxPacketSize for MIDI bulk IN and OUT endpoints incorrectly
     set when running at full-speed
   * FIXED:     `p_mclk_in` and `clk_audio_bclk` not correctly nullable when I2S
@@ -51,7 +53,7 @@ UNRELEASED
     for audio out endpoint occurred if additional custom endpoints are added
   * FIXED:     String descriptors not updated when using runtime API (#406)
   * FIXED:     Strings relating to items such as Clock Selector, Clock, DFU, etc
-               not updated when using run time API function setVendorString()
+    not updated when using run time API function setVendorString()
   * REMOVED:   Support for iAP EA Native Transport endpoints
 
 5.0.0
