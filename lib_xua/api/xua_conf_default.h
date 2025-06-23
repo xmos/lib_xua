@@ -1729,13 +1729,3 @@ enum USBEndpointNumber_Out
 #define ENUMERATE_CONTROL_INTF_AS_WINUSB    1
 #endif
 
-
-/* Run some checks WRT to low power modes */
-#if XUA_LOW_POWER_NON_STREAMING
-#if MIXER
-#warning Enabling MIXER when XUA_LOW_POWER_NON_STREAMING is enabled will result in the mixer stopping when USB audio streams are not active. Is this what you wanted?
-#endif
-#if (NUM_USB_CHAN_OUT == 0 && NUM_USB_CHAN_IN == 0)
-#error Please disable XUA_LOW_POWER_NON_STREAMING if you wish to have a system with no USB audio streams. These features are incompatible.
-#endif
-#endif
