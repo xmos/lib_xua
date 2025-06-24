@@ -821,7 +821,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
 #else
         .bmAttributes               = 128,
 #endif
-        .bMaxPower                  = _XUA_BMAX_POWER,
+        .bMaxPower                  = XUA_BMAX_POWER,
     },
 
 #if (NUM_USB_CHAN_OUT > 0) || (NUM_USB_CHAN_IN > 0)
@@ -2150,7 +2150,7 @@ unsigned char cfgDesc_Null[] =
 #else
     128,
 #endif
-    _XUA_BMAX_POWER,                      /* 8  bMaxPower */
+    XUA_BMAX_POWER,                      /* 8  bMaxPower */
     0x09,                                 /* 0 bLength : Size of this descriptor, in bytes. (field size 1 bytes) */
     0x04,                                 /* 1 bDescriptorType : INTERFACE descriptor. (field size 1 bytes) */
     0x00,                                 /* 2 bInterfaceNumber : Index of this interface. (field size 1 bytes) */
@@ -2331,7 +2331,7 @@ unsigned char cfgDesc_Audio1[] =
 #else
     128,                                  /* 7  bmAttributes */
 #endif
-    _XUA_BMAX_POWER,                      /* 8  bMaxPower */
+    XUA_BMAX_POWER,                      /* 8  bMaxPower */
 #if ((NUM_USB_CHAN_IN > 0) || (NUM_USB_CHAN_OUT > 0))
     /* Standard AC interface descriptor */
     0x09,

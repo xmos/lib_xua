@@ -87,7 +87,7 @@ USB_Config_Descriptor_DFU_t DFUcfgDesc = {
 #else
         .bmAttributes               = 128,
 #endif
-        .bMaxPower                  = _XUA_BMAX_POWER,
+        .bMaxPower                  = XUA_BMAX_POWER,
     },
     .InterfaceDesc =
     {
