@@ -922,6 +922,14 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
 
                 /* Wait for ACK back from clockgen or ep_buffer to signal clocks all good */
                 c_audio_rate_change :> int _;
+#if XUA_USE_SW_PLL
+                timer t;
+                unsigned time;
+                /* Allow some time for mclk to lock and MCLK to stabilise - this is important to avoid glitches at start of stream */
+                t :> time;
+                t when timerafter(time+40000000) :> void;
+#endif
+
 #endif
 
                 /* User should unmute audio hardware */
