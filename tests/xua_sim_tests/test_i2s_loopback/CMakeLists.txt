@@ -27,7 +27,6 @@ set(COMMON_FLAGS -O3
                  -lflash
                  -DXUD_CORE_CLOCK=600
                  -fxscope
-                 -DUSB_TILE=tile[1]
                  -DSIMULATION=1)
 
 file(READ ${CMAKE_CURRENT_LIST_DIR}/../i2s_loopback_params.json params_json)
