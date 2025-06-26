@@ -711,7 +711,7 @@ void XUA_wrapper_task(chanend c_aud)
     chan c_sof;
     chan c_xud_out[ENDPOINT_COUNT_OUT];              /* Endpoint channels for XUD */
     chan c_xud_in[ENDPOINT_COUNT_IN];
-    chan c_aud_ctl;     /* Used to communicate controls/setting from XUA_Endpoint0() to the Audio/Buffering sub-system */
+    chan c_aud_ctl;                         /* Used to communicate controls/setting from XUA_Endpoint0() to the Audio/Buffering sub-system */
 
     par
     {
@@ -728,7 +728,6 @@ void XUA_wrapper_task(chanend c_aud)
                      c_sof, epTypeTableOut, epTypeTableIn, XUA_USB_BUS_SPEED, xudPwrCfg);
         }
 
-#if (NUM_USB_CHAN_OUT > 0) || (NUM_USB_CHAN_IN > 0)
         /* Core USB audio task, buffering, USB etc */
         {
             unsigned x;
@@ -767,7 +766,6 @@ void XUA_wrapper_task(chanend c_aud)
                        , c_aud
             );
         }
-#endif //(NUM_USB_CHAN_OUT > 0) || (NUM_USB_CHAN_IN > 0)
 
         /* Endpoint 0 Core */
         {

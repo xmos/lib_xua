@@ -10,8 +10,8 @@
 /** USB Audio Wrapper subsystem.
  *
  *  This task starts four threads and provides a complete USB audio subsyetem which may be
- *  treated as simple audio source sink. It starts four logcal tasks for XUD, Endpoint 0 and
- *  the two buffering tasks. Basic host audio input/output only is supported and I2S or any 
+ *  treated as simple audio source/sink. It starts four logcal tasks for XUD, Endpoint 0 and
+ *  the two buffering tasks. Basic host audio input/output only is supported; I2S or any other
  *  digital interfaces must be started and managed by the user.
  * 
  *  It is necessary to have a valid xua_conf.h and the user must connect the XUA internally

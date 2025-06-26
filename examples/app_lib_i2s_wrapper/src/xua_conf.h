@@ -5,7 +5,7 @@
 #define _XUA_CONF_H_
 
 #define NUM_USB_CHAN_OUT      4     /* Number of channels from host to device */
-#define NUM_USB_CHAN_IN       0     /* Number of channels from device to host */
+#define NUM_USB_CHAN_IN       4     /* Number of channels from device to host */
 #define MCLK_441  (512 * 44100)     /* 44.1kHz family master clock frequency */
 #define MCLK_48   (512 * 48000)     /* 48kHz family master clock frequency */
 #define MIN_FREQ  44100             /* Minimum sample rate */

@@ -9,6 +9,7 @@
 
 const int readBuffNo = 0; 	// Note we don't need to double buffer here due to copy
 unsigned underflowWord = 0;	// Always assumuing PCM
+
 // Variables used by audiohub for sample transfer 
 extern unsigned samplesOut[XUA_MAX(NUM_USB_CHAN_OUT, I2S_CHANS_DAC)];
 extern unsigned samplesIn[2][XUA_MAX(NUM_USB_CHAN_IN, I2S_CHANS_DAC)];
@@ -21,7 +22,7 @@ extern void receive_command(unsigned command, chanend c_aud, unsigned &curSamFre
 unsigned command = XUA_AUDCTL_NO_COMMAND;
 unsigned xua_wrapper_sample_rate = DEFAULT_FREQ; 							// MIN_FREQ
 unsigned xua_wrapper_mclk_rate = DEFAULT_MCLK;   							// Choose correct MCLK for DEFAULT_FREQ
-unsigned xua_wrapper_dsd_mode = 0;											// Not in DSD mode, PCM only supported
+unsigned xua_wrapper_dsd_mode = 0;											// Not in DSD mode, PCM only supported for XUA_WRAPPER
 unsigned xua_wrapper_dac_res = STREAM_FORMAT_OUTPUT_1_RESOLUTION_BITS;
 unsigned xua_wrapper_adc_res = STREAM_FORMAT_INPUT_1_RESOLUTION_BITS;
 
@@ -65,3 +66,5 @@ void XUA_wrapper_get_stream_format(unsigned *curSamFreq, unsigned *mClk, unsigne
 	*curSamRes_DAC = xua_wrapper_dac_res;
 	*curSamRes_ADC = xua_wrapper_adc_res;
 }
+
+// See also void XUA_wrapper_task(chanend c_aud) in main.xc
