@@ -1,8 +1,8 @@
 lib_xua change log
 ==================
 
-UNRELEASED
-----------
+5.1.0
+-----
 
   * ADDED:     Enumeration of vendor specific control interface as WinUSB
     compatible on Windows. Can be disabled by defining
@@ -25,15 +25,15 @@ UNRELEASED
   * CHANGED:   AN00248 updated so that it uses lib_xua main() instead of custom
     main()
   * CHANGED:   UserAudioStreamStart and UserAudioStreamStop replaced by single
-    UserAudioStreamState(in, out) API with arguments indicating whether input
-    or output streams are active
+    UserAudioStreamState(in, out) API with arguments indicating whether input or
+    output streams are active
   * CHANGED:   Functionality associated with AUDIO_CLASS_FALLBACK and
     FULL_SPEED_AUDIO_2 moved to XUA_AUDIO_CLASS_FS and XUA_AUDIO_CLASS_HS
   * CHANGED:   Simplification of USB string table handling
   * CHANGED:   lib_xud's USB_TILE define derived from lib_xua's XUD_TILE define
     (using xud_conf.h)
-  * FIXED:     wMaxPacketSize for MIDI bulk IN and OUT endpoints incorrectly
-    set when running at full-speed
+  * FIXED:     wMaxPacketSize for MIDI bulk IN and OUT endpoints incorrectly set
+    when running at full-speed
   * FIXED:     `p_mclk_in` and `clk_audio_bclk` not correctly nullable when I2S
     not in use.
   * FIXED:     Incorrect `clk_audio_mclk` nullability for XUA_AudioHub; this
@@ -49,12 +49,18 @@ UNRELEASED
   * FIXED:     UAC2 descriptors during full-speed operation
   * FIXED:     Compiler error when PDM mics used and EXCLUDE_USB_AUDIO_MAIN is
     not defined.
-  * FIXED:     Guard on epTypeTableOut[] declaration where incorrect EP type
-    for audio out endpoint occurred if additional custom endpoints are added
+  * FIXED:     Guard on epTypeTableOut[] declaration where incorrect EP type for
+    audio out endpoint occurred if additional custom endpoints are added
   * FIXED:     String descriptors not updated when using runtime API (#406)
   * FIXED:     Strings relating to items such as Clock Selector, Clock, DFU, etc
     not updated when using run time API function setVendorString()
   * REMOVED:   Support for iAP EA Native Transport endpoints
+
+  * Changes to dependencies:
+
+    - lib_sw_pll: 2.3.1 -> 2.4.0
+
+    - lib_xud: 2.4.1 -> 3.0.1
 
 5.0.0
 -----
