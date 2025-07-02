@@ -44,6 +44,8 @@ pipeline {
       defaultValue: 'v2.1.0',
       description: 'The infr_apps version'
     )
+    choice(name: 'TEST_LEVEL', choices: ['smoke', 'nightly'],
+            description: 'The level of test coverage to run')
   }
 
   stages {
@@ -365,7 +367,7 @@ pipeline {
                 dir("xua_hw_tests") {
                   withVenv {
                     withXTAG(["usb_audio_mc_xcai_dut"]) { xtagIds ->
-                      sh "pytest -s -v --junitxml=pytest_hw_mac.xml --xtag-id=${xtagIds[0]}"
+                      sh "pytest -s --junitxml=pytest_hw_mac.xml --xtag-id=${xtagIds[0]} --level ${params.TEST_LEVEL}"
                     }
                   }
                 }
@@ -409,7 +411,7 @@ pipeline {
                 dir("xua_hw_tests") {
                   withVenv {
                     withXTAG(["usb_audio_mc_xcai_dut"]) { xtagIds ->
-                      sh "pytest -s -v --junitxml=pytest_hw_win.xml --xtag-id=${xtagIds[0]}"
+                      sh "pytest -s -v --junitxml=pytest_hw_win.xml --xtag-id=${xtagIds[0]} --level ${params.TEST_LEVEL}"
                     }
                   }
                 }

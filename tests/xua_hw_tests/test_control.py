@@ -8,6 +8,12 @@ import subprocess
 
 from hardware_test_tools.UaDut import UaDut
 
+control_test_smoke_configs = ["audio_control"]
+
+def control_test_uncollect(pytestconfig, cfg,):
+    if (pytestconfig.getoption("level") == "smoke") and (cfg not in control_test_smoke_configs):
+        return True
+    return False
 
 def cfg_list():
     bin_dir = Path(__file__).parent / "test_control" / "device" / "bin"
@@ -16,7 +22,7 @@ def cfg_list():
     all_cfgs = [dir.stem for dir in bin_dir.iterdir()]
     return all_cfgs
 
-
+@pytest.mark.uncollect_if(func=control_test_uncollect)
 @pytest.mark.parametrize("cfg", cfg_list())
 def test_control(pytestconfig, cfg):
     xtag_id = pytestconfig.getoption("xtag_id")

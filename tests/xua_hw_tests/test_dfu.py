@@ -9,6 +9,17 @@ import subprocess
 from hardware_test_tools.UaDut import UaDut
 from hardware_test_tools.UaDfuApp import UaDfuApp
 
+dfu_test_smoke_configs = [
+    ("i8o8", "custom"),
+    ("i2s_only", "custom"),
+    ("i8o8", "dfu-util"),
+    ("i2s_only", "dfu-util"),
+]
+
+def dfu_test_uncollect(pytestconfig, cfg, dfu_app):
+    if (pytestconfig.getoption("level") == "smoke") and ((cfg, dfu_app) not in dfu_test_smoke_configs):
+        return True
+    return False
 
 @pytest.fixture(scope="module")
 def factory_xe():
@@ -75,7 +86,7 @@ def dfu_app_list():
         # these tests from the top-level test directory (but would filter them out)
         return []
 
-
+@pytest.mark.uncollect_if(func=dfu_test_uncollect)
 @pytest.mark.parametrize("cfg", cfg_list())
 @pytest.mark.parametrize("dfu_app", dfu_app_list())
 def test_dfu(pytestconfig, erase_flash, factory_xe, upgrade_bin, cfg, dfu_app):
