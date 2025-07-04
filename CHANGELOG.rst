@@ -1,6 +1,11 @@
 lib_xua change log
 ==================
 
+UNRELEASED
+----------
+
+  * FIXED: Reset SW PLL phase/frequency detector when digital clock becomes invalid to prevent incorrect error input to sigma-delta modulator
+
 5.1.0
 -----
 
