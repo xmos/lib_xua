@@ -524,28 +524,33 @@ Legacy release history
 
 7.4.1
 -----
+
     - FIXED:   Exception due to null chanend when using NO_USB
 
 7.4.0
 -----
+
     - FIXED:   PID_DFU now based on AUDIO_CLASS. This potentially caused issues
       with UAC1 DFU
 
 
 7.3.0
 -----
+
     - CHANGED:    Example OSX DFU host app updated to now take PID as runtime
       argument. This enabled multiple XMOS devices to be attached to the host
       during DFU process
 
 7.2.0
 -----
+
     - ADDED:      DFU to UAC1 descriptors (guarded by DFU and FORCE_UAC1_DFU)
     - FIXED:      Removed 'reinterpretation to type of larger alignment' warnings
     - FIXED:      DFU flash code run on tile[0] even if XUD_TILE and AUDIO_IO_TILE are not 0
 
 7.1.0
 -----
+
     - ADDED:      UserBufferManagementInit() to reset any state required in UserBufferManagement()
     - ADDED:      I2S output up-sampling (enabled when AUD_TO_USB_RATIO is > 1)
     - ADDED:      PDM Mic decimator output rate can now be controlled independently (via AUD_TO_MICS_RATIO)
@@ -555,10 +560,12 @@ Legacy release history
 
 7.0.1
 -----
+
     - FIXED:      PDM microphone decimation issue at some sample rates caused by integration
 
 7.0.0
 ------
+
     - ADDED:      I2S down-sampling (I2S_DOWNSAMPLE_FACTOR)
     - ADDED:      I2S resynchronisation when in slave mode (CODEC_MASTER=1)
     - CHANGED:    Various memory optimisations when MAX_FREQ = MIN_FREQ
@@ -570,6 +577,7 @@ Legacy release history
 
 6.30.0
 ------
+
     - FIXED:   Number of PDM microphone channels configured now based on NUM_PDM_MICS define
     (previously hard-coded)
     - FIXED:   PDM microphone clock divide now based MCLK defines (previously hard-coded)
@@ -577,6 +585,7 @@ Legacy release history
 
 6.20.0
 ------
+
     - FIXED:   Intra-frame sample delays of 1/2 samples on input streaming in TDM mode
     - FIXED:   Build issue with NUM_USB_CHAN_OUT set to 0 and MIXER enabled
     - FIXED:   SPDIF_TX_INDEX not defined build warning only emitted when SPDIF_TX defined
@@ -584,16 +593,19 @@ Legacy release history
 
 6.19.0
 ------
+
     - FIXED:   SPDIF_TX_INDEX not defined build warning only emitted when SPDIF_TX defined
     - FIXED:   Failure to enter DFU mode when configured without input volume control
 
 6.18.1
 ------
+
     - ADDED:   Vendor Specific control interface added to UAC1 descriptors to allow control of
                 XVSM params from Windows (via lib_usb)
 
 6.18.0
 ------
+
     - ADDED:   Call to VendorRequests() and VendorRequests_Init() to Endpoint 0
     - ADDED:   VENDOR_REQUESTS_PARAMS define to allow for custom parameters to VendorRequest calls
     - FIXED:   FIR gain compensation set appropriately in lib_mic_array usage
@@ -601,6 +613,7 @@ Legacy release history
 
 6.16.0
 ------
+
     - ADDED:      Call to UserBufferManagement()
     - ADDED:      PDM_MIC_INDEX in devicedefines.h and usage
     - CHANGED:    pdm_buffer() task now combinable
@@ -610,10 +623,12 @@ Legacy release history
 
 6.15.2
 ------
+
     - FIXED:   interrupt.h (used in audio buffering) now compatible with xCORE-200 ABI
 
 6.15.1
 ------
+
     - FIXED:   DAC data mis-alignment issue in TDM/I2S slave mode
     - CHANGED:    Updates to support API changes in lib_mic_array version 2.0
 
@@ -627,6 +642,7 @@ Legacy release history
 
 6.14.0
 ------
+
     - ADDED:      Support for for master-clock/sample-rate divides that are not a power of 2
                   (i.e. 32kHz from 24.567MHz)
     - ADDED:      Extended available sample-rate/master-clock ratios. Previous restriction was <=
@@ -646,6 +662,7 @@ Legacy release history
 
 6.13.0
 ------
+
     - ADDED:      Device now uses implicit feedback when input stream is available (previously explicit
                   feedback pipe always used). This saves chanend/EP resources and means less processing
                   burden for the host. Previous behaviour available by enabling UAC_FORCE_FEEDBACK_EP
@@ -664,24 +681,29 @@ Legacy release history
 
 6.12.6
 ------
+
     - FIXED:   Build error when DFU is disabled
     - FIXED:   Build error when I2S_CHANS_ADC or I2S_CHANS_DAC set to 0 and CODEC_MASTER enabled
 
 6.12.5
 ------
+
     - FIXED:   Stream issue when NUM_USB_CHAN_IN < I2S_CHANS_ADC
 
 6.12.4
 ------
+
     - FIXED:   DFU fail when DSD enabled and USB library not running on tile[0]
 
 6.12.3
 ------
+
     - FIXED:   Method for storing persistent state over a DFU reboot modified to improve resilience
                   against code-base and tools changes
 
 6.12.2
 ------
+
     - FIXED:   Reboot code (used for DFU) failure in tools versions > 14.0.2 (xCORE-200 only)
     - FIXED:   Run-time exception in mixer when MAX_MIX_COUNT > 0 (xCORE-200 only)
     - FIXED:   MAX_MIX_COUNT checked properly for mix strings in string table
@@ -694,12 +716,14 @@ Legacy release history
 
 6.12.1
 ------
+
     - FIXED:   Fixes to TDM input timing/sample-alignment when BCLK=MCLK
     - FIXED:   Various minor fixes to allow ADAT_RX to run on xCORE 200 MC AUDIO hardware
     - CHANGED:    Moved from old SPDIF define to SPDIF_TX
 
 6.12.0
 ------
+
     - ADDED:      Checks for XUD_200_SERIES define where required
     - FIXED:   Run-time exception due to decouple interrupt not entering correct issue mode
                   (affects XCORE-200 only)
@@ -714,10 +738,12 @@ Legacy release history
 
 6.11.3
 ------
+
     - FIXED:  (Major) Streaming issue when mixer not enabled (introduced in 6.11.2)
 
 6.11.2
 ------
+
     - FIXED:   (Major) Enumeration issue when MAX_MIX_COUNT > 0 only. Introduced in mixer
                   optimisations in 6.11.0. Only affects designs using mixer functionality.
     - FIXED:   (Normal) Audio buffering request system modified such that the mixer output is
@@ -736,6 +762,7 @@ Legacy release history
 
 6.11.1
 ------
+
     - ADDED:      ADAT transmit functionality, including SMUX. See ADAT_TX and ADAT_TX_INDEX.
     - FIXED:   (Normal) Build issue with CODEC_MASTER (xCore is I2S slave) enabled
     - FIXED:   (Minor) Channel ordering issue in when TDM and CODEC_MASTER mode enabled
@@ -744,6 +771,7 @@ Legacy release history
 
 6.11.0
 ------
+
     - ADDED:      Basic TDM I2S functionality added. See I2S_CHANS_PER_FRAME and I2S_MODE_TDM
     - CHANGED:    Various optimisations in 'mixer' core to improve performance for higher
                   channel counts including the use of XC unsafe pointers instead of inline ASM
@@ -753,12 +781,14 @@ Legacy release history
 
 6.10.0
 ------
+
     - CHANGED:    Endpoint management for iAP EA Native Transport now merged into buffer() core.
                   Previously was separate core (as added in 6.8.0).
     - CHANGED:    Minor optimisation to I2S port code for inputs from ADC
 
 6.9.0
 -----
+
     - ADDED:      ADAT S-MUX II functionality (i.e. 2 channels at 192kHz) - Previously only S-MUX
                   supported (4 channels at 96kHz).
     - ADDED:      Explicit build warnings if sample rate/depth & channel combination exceeds
@@ -778,6 +808,7 @@ Legacy release history
 
 6.8.0
 -----
+
     - ADDED:      Evaluation support for iAP EA Native Transport endpoints
     - FIXED:   (Minor) Reverted change in 6.5.1 release where sample rate listing in Audio Class
                   1.0 descriptors was trimmed (previously 4 rates were always reported). This change
@@ -792,7 +823,6 @@ Legacy release history
     - FIXED:    (Minor) Ordering of level data from the device now matches channel ordering into
                   mixer (previously the device input data and the stream from host were swapped)
     - CHANGED:    Level meter buffer naming now resemble functionality
-
 
 Legacy release history
 ----------------------
