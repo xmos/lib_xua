@@ -1,6 +1,6 @@
 // This file relates to internal XMOS infrastructure and should be ignored by external users
 
-@Library('xmos_jenkins_shared_library@v0.38.0') _
+@Library('xmos_jenkins_shared_library@v0.39.0') _
 
 def clone_test_deps() {
   dir("${WORKSPACE}") {
@@ -36,7 +36,7 @@ pipeline {
     )
     string(
       name: 'XMOSDOC_VERSION',
-      defaultValue: 'v7.0.0',
+      defaultValue: 'v7.3.0',
       description: 'The xmosdoc version')
 
     string(
@@ -63,9 +63,7 @@ pipeline {
                 }
               }
             }
-            warnError("lib checks") {
-              runLibraryChecks("${WORKSPACE}/${REPO}", "${params.INFR_APPS_VERSION}")
-            }
+            runLibraryChecks("${WORKSPACE}/${REPO}", "${params.INFR_APPS_VERSION}")
           }
         }  // stage('Checkout and lib checks')
         stage("Archive Lib") {
@@ -106,7 +104,6 @@ pipeline {
         stage('Build Documentation') {
           steps {
             dir("${REPO}") {
-              warnError("Docs") {
                 buildDocs()
                 dir("examples/AN00246_xua_example") {
                   buildDocs()
@@ -116,7 +113,6 @@ pipeline {
                 }
                 dir("examples/AN00248_xua_example_pdm_mics") {
                   buildDocs()
-                }
               }
             } // dir("${REPO}")
           } // steps

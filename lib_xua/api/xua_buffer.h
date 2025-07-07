@@ -3,8 +3,7 @@
 #ifndef _XUA_BUFFER_H_
 #define _XUA_BUFFER_H_
 
-
-#if (__XC__ || defined __DOXYGEN__)
+#if defined(__XC__) || defined(__DOXYGEN__)
 
 #include "xccompat.h"
 #include "xua_clocking.h" /* Required for pll_ref_if */
