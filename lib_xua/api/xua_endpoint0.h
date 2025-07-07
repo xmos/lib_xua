@@ -8,12 +8,15 @@
 #include "vendorrequests.h"
 #include "xccompat.h"
 
-#if (__XC__ || defined __DOXYGEN__)
-/** Function implementing Endpoint 0 for enumeration, control and configuration
+#if defined(__XC__) || defined (__DOXYGEN__)
+
+/** Endpoint 0 task for USB Audio devices
+ *
+ *  Function implementing Endpoint 0 for enumeration, control and configuration
  *  of USB audio devices. It uses the descriptors defined in ``xua_ep0_descriptors.h``.
  *
- *  \param c_ep0_out    Chanend connected to the XUD_Manager() out endpoint array
- *  \param c_ep0_in     Chanend connected to the XUD_Manager() in endpoint array
+ *  \param c_ep0_out    Chanend connected to the XUD_Main() out endpoint array
+ *  \param c_ep0_in     Chanend connected to the XUD_Main() in endpoint array
  *  \param c_aud_ctl    Chanend connected to the decouple thread for control
  *                      audio (sample rate changes etc.). Note when nulled, the
  *                      audio device only supports single sample rate/format and
@@ -27,14 +30,15 @@
  *                      connected to boot flash.
  */
 void XUA_Endpoint0(chanend c_ep0_out,
-                    chanend c_ep0_in, NULLABLE_RESOURCE(chanend, c_aud_ctl),
-                    NULLABLE_RESOURCE(chanend, c_mix_ctl), NULLABLE_RESOURCE(chanend, c_clk_ctl),
-                    NULLABLE_CLIENT_INTERFACE(i_dfu, dfuInterface)
+                    chanend c_ep0_in
+                    , NULLABLE_RESOURCE(chanend, c_aud_ctl),
+                    NULLABLE_RESOURCE(chanend, c_mix_ctl)
+                    , NULLABLE_RESOURCE(chanend, c_clk_ctl)
+                    , NULLABLE_CLIENT_INTERFACE(i_dfu, dfuInterface)
 #if !defined(__DOXYGEN__)
                     VENDOR_REQUESTS_PARAMS_DEC_
 #endif
 );
-
 
 /** Function to set the Vendor ID value
  *

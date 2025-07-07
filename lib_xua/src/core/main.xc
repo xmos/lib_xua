@@ -658,9 +658,9 @@ int main()
 
             while (1)
             {
-				adatReceiver48000(p_adat_rx, c_adat_rx);
-				adatReceiver44100(p_adat_rx, c_adat_rx);
-			}
+                adatReceiver48000(p_adat_rx, c_adat_rx);
+                adatReceiver44100(p_adat_rx, c_adat_rx);
+            }
         }
 #endif
 
