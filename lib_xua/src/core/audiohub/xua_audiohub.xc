@@ -46,8 +46,6 @@
 #define DEBUG_UNIT XUA_AUDIOHUB
 #include "debug_print.h"
 
-#define XUA_MAX(x,y) ((x)>(y) ? (x) : (y))
-
 unsigned samplesOut[XUA_MAX(NUM_USB_CHAN_OUT, I2S_CHANS_DAC)];
 
 /* Two buffers for ADC data to allow for DAC and ADC I2S ports being offset */

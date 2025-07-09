@@ -21,7 +21,7 @@ set(COMMON_FLAGS -O3
 				 -DXASSERT_ENABLE_ASSERTIONS_MAIN=1
                  )
 
-foreach(sample_rate in 48000 96000 192000)
+foreach(sample_rate IN ITEMS 48000 96000 192000)
     set(APP_COMPILER_FLAGS_${sample_rate} ${COMMON_FLAGS}
                                        -DDEFAULT_FREQ=${sample_rate}
                                        )

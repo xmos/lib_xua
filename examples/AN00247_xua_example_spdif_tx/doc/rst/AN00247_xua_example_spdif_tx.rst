@@ -35,11 +35,6 @@ to the list of dependent modules in the CMakeLists.txt file::
 The dependencies for this example are specified by ``deps.cmake`` in the ``examples`` directory
 and are included in the application ``CMakeLists.txt`` file.
 
-The ``lib_xud`` library requires some flags for correct operation. Namely the
-tile on which ``lib_xud`` will be executed, for example::
-
-  set(APP_COMPILER_FLAGS ... -DUSB_TILE=tile[0] ...)
-
 The ``lib_board_support`` requires a compiler flag to select the hardware type::
 
   set(APP_COMPILER_FLAGS ... -DBOARD_SUPPORT_BOARD=XK_AUDIO_316_MC_AB ...)

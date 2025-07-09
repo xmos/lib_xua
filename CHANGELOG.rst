@@ -19,6 +19,7 @@ UNRELEASED
     the software PLL
   * FIXED:     Reset SW PLL phase/frequency detector when digital clock becomes
     invalid to prevent incorrect error input to sigma-delta modulator
+  * ADDED: Support for high bandwidth ISO endpoints
 
 5.1.0
 -----
