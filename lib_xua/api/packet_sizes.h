@@ -5,9 +5,9 @@
 
 #include "xua_conf_full.h"
 
-#define MAX(a,b) (((a)>(b))?(a):(b))
-#define MIN(a,b) (((a)<(b))?(a):(b))
-#define MAX3(a, b, c) (MAX(MAX((a), (b)), (c)))
+#define XUA_MAX(a,b) (((a)>(b))?(a):(b))
+#define XUA_MIN(a,b) (((a)<(b))?(a):(b))
+#define XUA_MAX3(a, b, c) (XUA_MAX(XUA_MAX((a), (b)), (c)))
 
 /// High speed
 /* Output packet sizes: high-speed */
@@ -29,26 +29,26 @@
 
 /* For HiBW: (HS_STREAM_FORMAT_OUTPUT_1/2/3_MAXPACKETSIZE -> MAX_PACKETSIZE_OUT_HS -> MAX_HS_STREAM_PACKETSIZE -> XUD_USB_ISO_EP_MAX_TXN_SIZE -> HS_STREAM_FORMAT_OUTPUT_1/2/3_WMAXPACKETSIZE)*/
 /* Max OUT packet size - HS */
-#define MAX_PACKETSIZE_OUT_HS MAX3(HS_STREAM_FORMAT_OUTPUT_1_MAXPACKETSIZE, \
+#define MAX_PACKETSIZE_OUT_HS XUA_MAX3(HS_STREAM_FORMAT_OUTPUT_1_MAXPACKETSIZE, \
                                                 HS_STREAM_FORMAT_OUTPUT_2_MAXPACKETSIZE, \
                                                 HS_STREAM_FORMAT_OUTPUT_3_MAXPACKETSIZE)
 
 /* For HiBW: (HS_STREAM_FORMAT_INPUT_1/2/3_MAXPACKETSIZE -> MAX_PACKETSIZE_OUT_HS -> MAX_HS_STREAM_PACKETSIZE -> XUD_USB_ISO_EP_MAX_TXN_SIZE -> HS_STREAM_FORMAT_OUTPUT_1/2/3_WMAXPACKETSIZE)*/
 /* Max IN packet size - HS */
-#define MAX_PACKETSIZE_IN_HS MAX3(HS_STREAM_FORMAT_INPUT_1_MAXPACKETSIZE, \
+#define MAX_PACKETSIZE_IN_HS XUA_MAX3(HS_STREAM_FORMAT_INPUT_1_MAXPACKETSIZE, \
                                                 HS_STREAM_FORMAT_INPUT_2_MAXPACKETSIZE, \
                                                 HS_STREAM_FORMAT_INPUT_3_MAXPACKETSIZE)
 
 /* Max subslot bytes across input and output formats - HS*/
-#define MAX_SUBSLOT_BYTES_OUT_HS MAX3(HS_STREAM_FORMAT_OUTPUT_1_SUBSLOT_BYTES, \
+#define MAX_SUBSLOT_BYTES_OUT_HS XUA_MAX3(HS_STREAM_FORMAT_OUTPUT_1_SUBSLOT_BYTES, \
                                                 HS_STREAM_FORMAT_OUTPUT_2_SUBSLOT_BYTES, \
                                                 HS_STREAM_FORMAT_OUTPUT_3_SUBSLOT_BYTES)
 
-#define MAX_SUBSLOT_BYTES_IN_HS MAX3(HS_STREAM_FORMAT_INPUT_1_SUBSLOT_BYTES, \
+#define MAX_SUBSLOT_BYTES_IN_HS XUA_MAX3(HS_STREAM_FORMAT_INPUT_1_SUBSLOT_BYTES, \
                                                 HS_STREAM_FORMAT_INPUT_2_SUBSLOT_BYTES, \
                                                 HS_STREAM_FORMAT_INPUT_3_SUBSLOT_BYTES)
 
-#define MAX_SUBSLOT_BYTES_HS MAX(MAX_SUBSLOT_BYTES_OUT_HS, MAX_SUBSLOT_BYTES_IN_HS)
+#define MAX_SUBSLOT_BYTES_HS XUA_MAX(MAX_SUBSLOT_BYTES_OUT_HS, MAX_SUBSLOT_BYTES_IN_HS)
 
 #define MAX_DEVICE_AUD_PACKET_SIZE_MULT_HS  (MAX_SAMPLES_PER_MICROFRAME_HS * MAX_SUBSLOT_BYTES_HS) // Used in decoupler to compute g_maxPacketSize
 
@@ -62,7 +62,7 @@
 #define FS_STREAM_FORMAT_OUTPUT_3_MAXPACKETSIZE (MAX_PACKET_SIZE_MULT_OUT_FS * FS_STREAM_FORMAT_OUTPUT_3_SUBSLOT_BYTES)
 
 /* Max output packetsize - FS */
-#define MAX_PACKETSIZE_OUT_FS MAX3(FS_STREAM_FORMAT_OUTPUT_1_MAXPACKETSIZE, \
+#define MAX_PACKETSIZE_OUT_FS XUA_MAX3(FS_STREAM_FORMAT_OUTPUT_1_MAXPACKETSIZE, \
                                                 FS_STREAM_FORMAT_OUTPUT_2_MAXPACKETSIZE, \
                                                 FS_STREAM_FORMAT_OUTPUT_3_MAXPACKETSIZE)
 
@@ -73,12 +73,12 @@
 /* Max input packetsize - HS */
 #define MAX_PACKETSIZE_IN_FS (FS_STREAM_FORMAT_INPUT_1_MAXPACKETSIZE)
 
-#define MAX_SUBSLOT_BYTES_OUT_FS MAX3(FS_STREAM_FORMAT_OUTPUT_1_SUBSLOT_BYTES, \
+#define MAX_SUBSLOT_BYTES_OUT_FS XUA_MAX3(FS_STREAM_FORMAT_OUTPUT_1_SUBSLOT_BYTES, \
                                                 FS_STREAM_FORMAT_OUTPUT_2_SUBSLOT_BYTES, \
                                                 FS_STREAM_FORMAT_OUTPUT_3_SUBSLOT_BYTES)
 
 /* Max subslot bytes across input and output formats - FS */
-#define MAX_SUBSLOT_BYTES_FS MAX(MAX_SUBSLOT_BYTES_OUT_FS, FS_STREAM_FORMAT_INPUT_1_SUBSLOT_BYTES)
+#define MAX_SUBSLOT_BYTES_FS XUA_MAX(MAX_SUBSLOT_BYTES_OUT_FS, FS_STREAM_FORMAT_INPUT_1_SUBSLOT_BYTES)
 
 #define MAX_DEVICE_AUD_PACKET_SIZE_MULT_FS  (MAX_SAMPLES_PER_MICROFRAME_FS * MAX_SUBSLOT_BYTES_FS) // Used in decoupler to compute g_maxPacketSize
 

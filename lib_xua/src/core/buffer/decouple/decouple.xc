@@ -61,7 +61,7 @@ int g_maxPacketSize = MAX_DEVICE_AUD_PACKET_SIZE_IN_FS;  /* IN packet size. Init
 /* Circular audio buffers */
 #if (XUD_USB_ISO_MAX_TXNS_PER_MICROFRAME > 1)
     #define REQD_BUF_SIZE_ERR_HANDLING_HIBW_OUT (3*(XUD_USB_ISO_EP_MAX_TXN_SIZE))
-    #define OUT_BUF_EXTRA_SIZE  (MAX(MAX_DEVICE_AUD_PACKET_SIZE_OUT, REQD_BUF_SIZE_ERR_HANDLING_HIBW_OUT))
+    #define OUT_BUF_EXTRA_SIZE  (XUA_MAX(MAX_DEVICE_AUD_PACKET_SIZE_OUT, REQD_BUF_SIZE_ERR_HANDLING_HIBW_OUT))
     unsigned outAudioBuff[(BUFF_SIZE_OUT >> 2)+ (OUT_BUF_EXTRA_SIZE >> 2)];
 #else
     unsigned outAudioBuff[(BUFF_SIZE_OUT >> 2)+ (MAX_DEVICE_AUD_PACKET_SIZE_OUT >> 2)];
@@ -545,7 +545,7 @@ __builtin_unreachable();
 
             /* Must allow space for at least one sample per channel, as these are written at the beginning of
              * the interrupt handler even if totalSampsToWrite is zero (will be overwritten by a later packet). */
-            int spaceRequired = MAX(totalSampsToWrite, 1) * g_numUsbChan_In * g_curSubSlot_In + 4;
+            int spaceRequired = XUA_MAX(totalSampsToWrite, 1) * g_numUsbChan_In * g_curSubSlot_In + 4;
 
             if (spaceRequired > BUFF_SIZE_IN - fillLevel)
             {

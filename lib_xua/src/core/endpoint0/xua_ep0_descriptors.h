@@ -2200,7 +2200,7 @@ unsigned char cfgDesc_Null[] =
  * Note, using a value of <=2 or > 7 for num_freqs_a1 causes enumeration issues on Windows.
  * To work around this we repeat MAX_FREQ_FS multiple times in some cases */
 
-const unsigned num_freqs_a1 = MAX(3, (0
+const unsigned num_freqs_a1 = XUA_MAX(3, (0
 #if(MIN_FREQ <= 8000) && (MAX_FREQ_FS >= 8000)
     + 1
 #endif
