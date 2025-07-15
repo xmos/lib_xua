@@ -16,7 +16,6 @@ set(APP_COMPILER_FLAGS -fcomment-asm
                        -report
                        -g
                        -fxscope
-                       -DUSB_TILE=tile[0]
                        -DUNITY_SUPPORT_64
                        -DUNITY_INCLUDE_DOUBLE
                        -DXUD_CORE_CLOCK=600

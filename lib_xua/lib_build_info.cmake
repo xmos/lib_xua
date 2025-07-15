@@ -1,6 +1,7 @@
 set(LIB_NAME lib_xua)
-set(LIB_VERSION 5.0.0)
+set(LIB_VERSION 5.1.0)
 set(LIB_INCLUDES api
+                 src
                  src/core
                  src/core/audiohub
                  src/core/buffer/ep
@@ -17,23 +18,26 @@ set(LIB_INCLUDES api
                  src/core/user/audiohw
                  src/core/user/hid
                  src/core/user/hostactive
+                 src/core/user/suspend
                  src/hid
                  src/midi)
+
 set(LIB_OPTIONAL_HEADERS    xua_conf.h
                             static_hid_report.h
                             user_main_globals.h
                             user_main_declarations.h
                             user_main_cores.h)
+
 set(LIB_DEPENDENT_MODULES "lib_adat(2.0.1)"
                           "lib_locks(2.3.1)"
                           "lib_logging(3.3.1)"
                           "lib_spdif(6.2.1)"
-                          "lib_sw_pll(develop)"
+                          "lib_sw_pll(2.4.0)"
                           "lib_xassert(4.3.1)"
                           "lib_mic_array(5.5.0)"
-                          "lib_xud(2.4.0)")
+                          "lib_xud(3.0.1)")
 
-set(LIB_COMPILER_FLAGS -O3 -DREF_CLK_FREQ=100 -fasm-linenum -fcomment-asm)
+set(LIB_COMPILER_FLAGS -O3 -fasm-linenum -fcomment-asm)
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     list(APPEND LIB_COMPILER_FLAGS -DXASSERT_ENABLE_ASSERTIONS=1

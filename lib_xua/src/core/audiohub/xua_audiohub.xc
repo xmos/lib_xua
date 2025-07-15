@@ -17,7 +17,6 @@
 #include <string.h>
 #include <xassert.h>
 
-
 #include "xua.h"
 
 #include "audiohw.h"
@@ -44,6 +43,7 @@
 #include "xua_commands.h"
 #include "xc_ptr.h"
 
+#define DEBUG_UNIT XUA_AUDIOHUB
 #include "debug_print.h"
 
 #define XUA_MAX(x,y) ((x)>(y) ? (x) : (y))
@@ -727,7 +727,7 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
 {
 /* This is a bit annoying but we have a mixture of nullable interfaces and variadic function signatures based on defines */
 #if !((XUD_TILE != 0) && (AUDIO_IO_TILE == 0) && (XUA_DFU_EN == 1))
-#define dfuInterface null 
+#define dfuInterface null
 #endif
 #if (XUA_ADAT_TX_EN)
     chan c_adat_out;
@@ -742,7 +742,7 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
     unsigned divide;
     /* Flag used to indicate whether both interfaces are set to Alt 0 or not for power saving option
        This is only used when XUA_LOW_POWER_NON_STREAMING is defined to non-zero */
-    unsigned audioActive = XUA_LOW_POWER_NON_STREAMING ? 0 : 1; 
+    unsigned audioActive = XUA_LOW_POWER_NON_STREAMING ? 0 : 1;
     /* This flag is to ensure that the decouple<->audio channel protocol is observed at startup.
        We need this because we hold off the ACK back to decouple as late as possible so that the control path knows audio is fully ready */
     unsigned firstRun = 1;
@@ -793,17 +793,14 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
         configure_out_port_no_ready(p_adat_tx, clk_audio_mclk, 0);
         set_clock_fall_delay(clk_audio_mclk, 7);
 #endif
-#endif /* ((AUDIO_IO_TILE == XUD_TILE) || XUA_ADAT_TX_EN || XUA_SPDIF_TX_EN) */
-
-/* If the XUD tile is different from AUDIO tile, then we start a clkblk for counting clocks on the XUD tile and start it in main.
-   If XUD is on the same tile as AUDIO then we just connect p_for_mclk_count to the  clk_audio_mclk in main, but
-   we need to start it here after all of the connections have been made. 
-   Note. we do not need a clk_audio_mclk if no dig Tx and XUD and AUDIO are on different tiles because I2S is driven by BCLK clkblk
-   directly from the MCLK port. */
-#if ((AUDIO_IO_TILE == XUD_TILE) || XUA_ADAT_TX_EN || XUA_SPDIF_TX_EN)
+        /* If the XUD tile is different from AUDIO tile, then we start a clkblk for counting clocks on the XUD tile and start it in main.
+        If XUD is on the same tile as AUDIO then we just connect p_for_mclk_count to the  clk_audio_mclk in main, but
+        we need to start it here after all of the connections have been made.
+        Note. we do not need a clk_audio_mclk if no dig Tx and XUD and AUDIO are on different tiles because I2S is driven by BCLK clkblk
+        directly from the MCLK port. */
         /* Start the master clock-block */
         start_clock(clk_audio_mclk);
-#endif
+#endif /* ((AUDIO_IO_TILE == XUD_TILE) || XUA_ADAT_TX_EN || XUA_SPDIF_TX_EN) */
 
         /* Perform required CODEC/ADC/DAC initialisation */
         AudioHwInit();
@@ -1083,7 +1080,12 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
         }
 #endif // (I2S_CHANS_DAC != 0) || (I2S_CHANS_ADC != 0)
 
-        /* Call user functions for core power down (eg. MCLK disable) and system component power down */ 
+#if ((AUDIO_IO_TILE == XUD_TILE) || XUA_ADAT_TX_EN || XUA_SPDIF_TX_EN)
+        /* Start the master clock-block */
+        stop_clock(clk_audio_mclk);
+#endif
+
+        /* Call user functions for core power down (eg. MCLK disable) and system component power down */
         AudioHwShutdown();
 
     } /* while(1)*/

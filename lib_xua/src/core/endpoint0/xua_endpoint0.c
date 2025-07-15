@@ -12,6 +12,7 @@
 #include <string.h>
 #include <xclib.h>
 #include <xassert.h>
+#include <stdio.h>
 #include "xua.h"
 
 #if XUA_USB_EN
@@ -23,6 +24,7 @@
 #include "xua_commands.h"
 #include "audiostream.h"
 #include "hostactive.h"
+#include "suspend.h"
 #include "vendorrequests.h"
 #include "xc_ptr.h"
 #include "xua_ep0_uacreqs.h"
@@ -124,17 +126,6 @@ unsigned g_curStreamAlt_In = 0;
 
 /* Global variable for current USB bus speed (i.e. FS/HS) */
 XUD_BusSpeed_t g_curUsbSpeed = XUA_USB_BUS_SPEED;
-
-/* Global variables for current USB Vendor and Product strings */
-char g_vendor_str[XUA_MAX_STR_LEN] = VENDOR_STR;
-#if ((XUA_AUDIO_CLASS_HS == 2) && (XUA_USB_BUS_SPEED == XUD_SPEED_HS)) || ((XUA_AUDIO_CLASS_FS == 2) && (XUA_USB_BUS_SPEED == XUD_SPEED_FS))
-char g_product_str[XUA_MAX_STR_LEN] = PRODUCT_STR_A2;
-#else
-char g_product_str[XUA_MAX_STR_LEN] = PRODUCT_STR_A1;
-#endif
-
-/* Global variable for current USB Serial Number strings */
-char g_serial_str[XUA_MAX_STR_LEN] = SERIAL_STR;
 
 #if _XUA_ENABLE_BOS_DESC
 /* Device Interface GUID*/
@@ -309,84 +300,71 @@ void InitLocalMixerState()
 }
 #endif
 
-void concatenateAndCopyStrings(char* string1, char* string2, char* string_buffer) {
+void concatenateAndCopyStrings(char* string1, char* string2, char* destBuffer, size_t destLen)
+{
     debug_printf("concatenateAndCopyStrings() for \"%s\" and \"%s\"\n", string1, string2);
 
-    memset(string_buffer, '\0', strlen(string_buffer));
+    memset(destBuffer, '\0', strlen(destBuffer));
 
-    uint32_t remaining_buffer_size = MIN(strlen(string1), XUA_MAX_STR_LEN-1);
-    strncpy(string_buffer, string1, remaining_buffer_size);
-    uint32_t total_string_size = MIN(strlen(string1)+strlen(string2), XUA_MAX_STR_LEN-1);
-    if (total_string_size==XUA_MAX_STR_LEN-1) {
-        remaining_buffer_size =  XUA_MAX_STR_LEN-1-strlen(string1);
-    } else {
-        remaining_buffer_size = strlen(string2);
-    }
+    /* Copy string1 into the destination buffer */
+    strncat(destBuffer, string1, destLen);
 
-    strncat(string_buffer, string2, remaining_buffer_size);
-    debug_printf("concatenateAndCopyStrings() creates \"%s\"\n", string_buffer);
+    /* Cat what we can of string2 onto the destination buffer */
+    strncat(destBuffer, string2, destLen - strlen(string1));
+
+    debug_printf("concatenateAndCopyStrings() creates \"%s\"\n", destBuffer);
 }
 
-void XUA_Endpoint0_setStrTable() {
+void XUA_Endpoint0_setVendorStr(char* vendorStr)
+{
+    debug_printf("XUA_Endpoint0_setVendorStr() with string %s\n", vendorStr);
+    concatenateAndCopyStrings(vendorStr, "", g_strTable.vendorStr, sizeof(XUA_VENDOR_DEFAULT_STRING));
 
-    // update Vendor strings
-    concatenateAndCopyStrings(g_vendor_str, "", g_strTable.vendorStr);
+    /* Update other strings with the new vendorStr */
 #if (XUA_AUDIO_CLASS_HS == 2) || (XUA_AUDIO_CLASS_FS == 2)
-    concatenateAndCopyStrings(g_vendor_str, " Clock Selector", g_strTable.clockSelectorStr);
-    concatenateAndCopyStrings(g_vendor_str, " Internal Clock", g_strTable.internalClockSourceStr);
+    concatenateAndCopyStrings(vendorStr, " Clock Selector", g_strTable.clockSelectorStr, sizeof(XUA_CLOCK_SELECTOR_DEFAULT_STRING));
+    concatenateAndCopyStrings(vendorStr, " Internal Clock", g_strTable.internalClockSourceStr, sizeof(XUA_INTERNAL_CLOCK_SOURCE_DEFAULT_STRING));
 #endif
 #if (XUA_SPDIF_RX_EN)
-    concatenateAndCopyStrings(g_vendor_str, " S/PDIF Clock", g_strTable.spdifClockSourceStr);
+    concatenateAndCopyStrings(vendorStr, " S/PDIF Clock", g_strTable.spdifClockSourceStr, sizeof(XUA_SPDIF_CLOCK_SOURCE_DEFAULT_STRING));
 #endif
 #if (XUA_ADAT_RX_EN)
-    concatenateAndCopyStrings(g_vendor_str, " ADAT Clock", g_strTable.adatClockSourceStr);
+    concatenateAndCopyStrings(vendorStr, " ADAT Clock", g_strTable.adatClockSourceStr, sizeof(XUA_ADAT_CLOCK_SOURCE_DEFAULT_STRING));
 #endif
 #if XUA_DFU_EN
-    concatenateAndCopyStrings(g_vendor_str, " DFU", g_strTable.dfuStr);
+    concatenateAndCopyStrings(vendorStr, " DFU", g_strTable.dfuStr, sizeof(XUA_DFU_DEFAULT_STRING));
 #endif
 #if XUA_USB_CONTROL_DESCS
-    concatenateAndCopyStrings(g_vendor_str, " Control", g_strTable.ctrlStr);
+    concatenateAndCopyStrings(vendorStr, " Control", g_strTable.ctrlStr, sizeof(XUA_CTRL_DEFAULT_STRING));
 #endif
 #ifdef MIDI
-    concatenateAndCopyStrings(g_vendor_str, " MIDI Out", g_strTable.midiOutStr);
-    concatenateAndCopyStrings(g_vendor_str, " MIDI In", g_strTable.midiInStr);
+    concatenateAndCopyStrings(vendorStr, " MIDI Out", g_strTable.midiOutStr, sizeof(XUA_MIDI_OUT_DEFAULT_STRING));
+    concatenateAndCopyStrings(vendorStr, " MIDI In", g_strTable.midiInStr, sizeof(XUA_MIDI_IN_DEFAULT_STRING));
 #endif
-    // update product strings
+}
+
+/* Note, this writes both UAC1 and UAC2 product strings */
+void XUA_Endpoint0_setProductStr(char* productStr)
+{
+    debug_printf("XUA_Endpoint0_setProductStr() with string %s\n", productStr);
+
 #if (XUA_AUDIO_CLASS_FS == 1)
-    concatenateAndCopyStrings(g_product_str, "", g_strTable.productStr_Audio1);
-    concatenateAndCopyStrings(g_product_str, "", g_strTable.outputInterfaceStr_Audio1);
-    concatenateAndCopyStrings(g_product_str, "", g_strTable.inputInterfaceStr_Audio1);
-    concatenateAndCopyStrings(g_product_str, "", g_strTable.usbInputTermStr_Audio1);
-    concatenateAndCopyStrings(g_product_str, "", g_strTable.usbOutputTermStr_Audio1);
+    concatenateAndCopyStrings(productStr, "", g_strTable.productStr_Audio1, sizeof(XUA_PRODUCT_A1_DEFAULT_STRING));
 #endif
 #if (XUA_AUDIO_CLASS_HS == 2) || (XUA_AUDIO_CLASS_FS == 2)
-    concatenateAndCopyStrings(g_product_str, "", g_strTable.productStr_Audio2);
-    concatenateAndCopyStrings(g_product_str, "", g_strTable.outputInterfaceStr_Audio2);
-    concatenateAndCopyStrings(g_product_str, "", g_strTable.inputInterfaceStr_Audio2);
-    concatenateAndCopyStrings(g_product_str, "", g_strTable.usbInputTermStr_Audio2);
-    concatenateAndCopyStrings(g_product_str, "", g_strTable.usbOutputTermStr_Audio2);
+    concatenateAndCopyStrings(productStr, "", g_strTable.productStr_Audio2, sizeof(XUA_PRODUCT_A2_DEFAULT_STRING));
 #endif
-
-    // update Serial strings
-    concatenateAndCopyStrings(g_serial_str, "", g_strTable.serialStr);
+    /* Note, don't update outputInterfaceStr_Audio2, inputInterfaceStr_Audio2 etc as they are all pointing to the same string */
 }
 
-void XUA_Endpoint0_setVendorStr(char* vendor_str) {
-    debug_printf("XUA_Endpoint0_setVendorStr() with string %s\n", vendor_str);
-    concatenateAndCopyStrings(vendor_str, "", g_vendor_str);
+void XUA_Endpoint0_setSerialStr(char* serialStr)
+{
+    debug_printf("XUA_Endpoint0_setSerialStr() with string %s\n", serialStr);
+    concatenateAndCopyStrings(serialStr, "", g_strTable.serialStr, sizeof(XUA_SERIAL_DEFAULT_STRING));
 }
 
-void XUA_Endpoint0_setProductStr(char* product_str) {
-    debug_printf("XUA_Endpoint0_setProductStr() with string %s\n", product_str);
-    concatenateAndCopyStrings(product_str, "", g_product_str);
-}
-
-void XUA_Endpoint0_setSerialStr(char* serial_str) {
-    debug_printf("XUA_Endpoint0_setSerialStr() with string %s\n", serial_str);
-    concatenateAndCopyStrings(serial_str, "", g_serial_str);
-}
-
-char* XUA_Endpoint0_getVendorStr() {
+char* XUA_Endpoint0_getVendorStr()
+{
     return g_strTable.vendorStr;
 }
 
@@ -414,6 +392,7 @@ char* XUA_Endpoint0_getSerialStr()
 {
     return g_strTable.serialStr;
 }
+
 
 /* Note, this sets the same Product ID for both Audio Class 1.0 and Audio Class 2.0.
  * This is unlikely to be desirable.
@@ -527,15 +506,15 @@ void XUA_Endpoint0_init(chanend c_ep0_out, chanend c_ep0_in, NULLABLE_RESOURCE(c
     ep0_out = XUD_InitEp(c_ep0_out);
     ep0_in  = XUD_InitEp(c_ep0_in);
 
-    XUA_Endpoint0_setStrTable();
-
     VendorRequests_Init(VENDOR_REQUESTS_PARAMS);
 #if _XUA_ENABLE_BOS_DESC
     update_guid_in_msos_desc(g_device_interface_guid_dfu_str, g_device_interface_guid_control_str);
 #endif
 
-    if(strcmp(g_strTable.serialStr, "")) // If serialStr is not empty
+    if(strcmp(g_strTable.serialStr, ""))
     {
+        // If serialStr is not empty then point the serial number in the device descriptor to the
+        // string table. iserialNumber is is set to none (0) by default */
 #if (XUA_AUDIO_CLASS_HS == 2) || (XUA_AUDIO_CLASS_FS == 2)
         devDesc_Audio2.iSerialNumber = offsetof(StringDescTable_t, serialStr)/sizeof(char *);
 #endif
@@ -543,7 +522,6 @@ void XUA_Endpoint0_init(chanend c_ep0_out, chanend c_ep0_in, NULLABLE_RESOURCE(c
         devDesc_Audio1.iSerialNumber = offsetof(StringDescTable_t, serialStr)/sizeof(char *);
 #endif
     }
-
 
 #if (MIXER)
     /* Set up mixer default state */
@@ -798,13 +776,14 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
             case USB_BMREQ_H2D_STANDARD_DEV:
 
                 /* Inspect for actual request */
-                switch( sp.bRequest )
+                switch(sp.bRequest)
                 {
                     /* Standard request: SetConfiguration */
                     /* Overriding implementation in USB_StandardRequests */
                     case USB_SET_CONFIGURATION:
 
-                        //if(g_current_config == 1)
+                        /* Check if moving into a configured state */
+                        if((g_currentConfig == 0) && (sp.wValue == 1))
                         {
                             /* Consider host active with valid driver at this point */
                             UserHostActive(1);
@@ -887,7 +866,7 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
                             notify_audio_stop_for_DFU = 1;  // So we notify AUDIO_STOP_FOR_DFU only once
                         }
 
-                        /* This will return 1 if reset requested */
+                        /* Reset will be set to 1 if reboot requested */
                         result = DFUDeviceRequests(ep0_out, &ep0_in, &sp, null, g_interfaceAlt[sp.wIndex], dfuInterface, &reset);
 
                         if(reset)
@@ -1092,21 +1071,36 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
                 cfgDesc_Audio2.Audio_Out_Format.bBitResolution = HS_STREAM_FORMAT_OUTPUT_1_RESOLUTION_BITS;
                 cfgDesc_Audio2.Audio_Out_Endpoint.wMaxPacketSize = HS_STREAM_FORMAT_OUTPUT_1_MAXPACKETSIZE;
                 cfgDesc_Audio2.Audio_Out_ClassStreamInterface.bNrChannels = HS_STREAM_FORMAT_OUTPUT_1_CHAN_COUNT;
+#if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP) && (XUA_SYNCMODE == XUA_SYNCMODE_ASYNC)
+                /* Async feedback endpoint descriptor change between FS and HS */
+                cfgDesc_Audio2.Audio_Out_Fb_Endpoint.wMaxPacketSize = FEEDBACK_MAX_PACKET_SIZE_HS;
+                cfgDesc_Audio2.Audio_Out_Fb_Endpoint.bInterval = FEEDBACK_INTERVAL_HS;
 #endif
+#endif // (NUM_USB_CHAN_OUT > 0)
 #if (OUTPUT_FORMAT_COUNT > 1)
                 cfgDesc_Audio2.Audio_Out_Format_2.bSubslotSize = HS_STREAM_FORMAT_OUTPUT_2_SUBSLOT_BYTES;
                 cfgDesc_Audio2.Audio_Out_Format_2.bBitResolution = HS_STREAM_FORMAT_OUTPUT_2_RESOLUTION_BITS;
                 cfgDesc_Audio2.Audio_Out_Endpoint_2.wMaxPacketSize = HS_STREAM_FORMAT_OUTPUT_2_MAXPACKETSIZE;
                 cfgDesc_Audio2.Audio_Out_ClassStreamInterface_2.bNrChannels = HS_STREAM_FORMAT_OUTPUT_2_CHAN_COUNT;
+#if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP) && (XUA_SYNCMODE == XUA_SYNCMODE_ASYNC)
+                /* Async feedback endpoint descriptor change between FS and HS */
+                cfgDesc_Audio2.Audio_Out_Fb_Endpoint_2.wMaxPacketSize = FEEDBACK_MAX_PACKET_SIZE_HS;
+                cfgDesc_Audio2.Audio_Out_Fb_Endpoint_2.bInterval = FEEDBACK_INTERVAL_HS;
 #endif
-
+#endif // (OUTPUT_FORMAT_COUNT > 1)
 #if (OUTPUT_FORMAT_COUNT > 2)
                 cfgDesc_Audio2.Audio_Out_Format_3.bSubslotSize = HS_STREAM_FORMAT_OUTPUT_3_SUBSLOT_BYTES;
                 cfgDesc_Audio2.Audio_Out_Format_3.bBitResolution = HS_STREAM_FORMAT_OUTPUT_3_RESOLUTION_BITS;
                 cfgDesc_Audio2.Audio_Out_Endpoint_3.wMaxPacketSize = HS_STREAM_FORMAT_OUTPUT_3_MAXPACKETSIZE;
                 cfgDesc_Audio2.Audio_Out_ClassStreamInterface_3.bNrChannels = HS_STREAM_FORMAT_OUTPUT_3_CHAN_COUNT;
+#if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP) && (XUA_SYNCMODE == XUA_SYNCMODE_ASYNC)
+                /* Async feedback endpoint descriptor change between FS and HS */
+                cfgDesc_Audio2.Audio_Out_Fb_Endpoint_3.wMaxPacketSize = FEEDBACK_MAX_PACKET_SIZE_HS;
+                cfgDesc_Audio2.Audio_Out_Fb_Endpoint_3.bInterval = FEEDBACK_INTERVAL_HS;
 #endif
-#endif
+#endif // (OUTPUT_FORMAT_COUNT > 2)
+#endif // (NUM_USB_CHAN_OUT > 0)
+
 #if (NUM_USB_CHAN_IN > 0)
                 cfgDesc_Audio2.Audio_CS_Control_Int.Audio_In_InputTerminal.bNrChannels = NUM_USB_CHAN_IN;
                 cfgDesc_Audio2.Audio_In_Format.bSubslotSize = HS_STREAM_FORMAT_INPUT_1_SUBSLOT_BYTES;
@@ -1115,6 +1109,7 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
                 cfgDesc_Audio2.Audio_In_ClassStreamInterface.bNrChannels = NUM_USB_CHAN_IN;
 #endif
 #if MIDI
+                /* MIDI endpoint max packet size must be 512 in HS */
                 cfgDesc_Audio2.MIDI_Descriptors.MIDI_Standard_Bulk_OUT_Endpoint.wMaxPacketSize = 512;
                 cfgDesc_Audio2.MIDI_Descriptors.MIDI_Standard_Bulk_IN_Endpoint.wMaxPacketSize = 512;
 #endif
@@ -1129,21 +1124,36 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
                 cfgDesc_Audio2.Audio_Out_Format.bBitResolution = FS_STREAM_FORMAT_OUTPUT_1_RESOLUTION_BITS;
                 cfgDesc_Audio2.Audio_Out_Endpoint.wMaxPacketSize = FS_STREAM_FORMAT_OUTPUT_1_MAXPACKETSIZE;
                 cfgDesc_Audio2.Audio_Out_ClassStreamInterface.bNrChannels = NUM_USB_CHAN_OUT_FS;
+#if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP) && (XUA_SYNCMODE == XUA_SYNCMODE_ASYNC)
+                /* Async feedback endpoint descriptor change between FS and HS */
+                cfgDesc_Audio2.Audio_Out_Fb_Endpoint.wMaxPacketSize = FEEDBACK_MAX_PACKET_SIZE_FS;
+                cfgDesc_Audio2.Audio_Out_Fb_Endpoint.bInterval = FEEDBACK_INTERVAL_FS;
 #endif
+#endif // (NUM_USB_CHAN_OUT > 0)
 #if (OUTPUT_FORMAT_COUNT > 1)
                 cfgDesc_Audio2.Audio_Out_Format_2.bSubslotSize = FS_STREAM_FORMAT_OUTPUT_2_SUBSLOT_BYTES;
                 cfgDesc_Audio2.Audio_Out_Format_2.bBitResolution = FS_STREAM_FORMAT_OUTPUT_2_RESOLUTION_BITS;
                 cfgDesc_Audio2.Audio_Out_Endpoint_2.wMaxPacketSize = FS_STREAM_FORMAT_OUTPUT_2_MAXPACKETSIZE;
                 cfgDesc_Audio2.Audio_Out_ClassStreamInterface_2.bNrChannels = NUM_USB_CHAN_OUT_FS;
+#if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP) && (XUA_SYNCMODE == XUA_SYNCMODE_ASYNC)
+                /* Async feedback endpoint descriptor change between FS and HS */
+                cfgDesc_Audio2.Audio_Out_Fb_Endpoint_2.wMaxPacketSize = FEEDBACK_MAX_PACKET_SIZE_FS;
+                cfgDesc_Audio2.Audio_Out_Fb_Endpoint_2.bInterval = FEEDBACK_INTERVAL_FS;
+#endif // (OUTPUT_FORMAT_COUNT > 1)
 #endif
-
 #if (OUTPUT_FORMAT_COUNT > 2)
                 cfgDesc_Audio2.Audio_Out_Format_3.bSubslotSize = FS_STREAM_FORMAT_OUTPUT_3_SUBSLOT_BYTES;
                 cfgDesc_Audio2.Audio_Out_Format_3.bBitResolution = FS_STREAM_FORMAT_OUTPUT_3_RESOLUTION_BITS;
                 cfgDesc_Audio2.Audio_Out_Endpoint_3.wMaxPacketSize = FS_STREAM_FORMAT_OUTPUT_3_MAXPACKETSIZE;
                 cfgDesc_Audio2.Audio_Out_ClassStreamInterface_3.bNrChannels = NUM_USB_CHAN_OUT_FS;
+#if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP) && (XUA_SYNCMODE == XUA_SYNCMODE_ASYNC)
+                /* Async feedback endpoint descriptor change between FS and HS */
+                cfgDesc_Audio2.Audio_Out_Fb_Endpoint_3.wMaxPacketSize = FEEDBACK_MAX_PACKET_SIZE_FS;
+                cfgDesc_Audio2.Audio_Out_Fb_Endpoint_3.bInterval = FEEDBACK_INTERVAL_FS;
 #endif
-#endif
+#endif // (OUTPUT_FORMAT_COUNT > 2)
+#endif // (NUM_USB_CHAN_OUT > 0)
+
 #if (NUM_USB_CHAN_IN > 0)
                 cfgDesc_Audio2.Audio_CS_Control_Int.Audio_In_InputTerminal.bNrChannels = NUM_USB_CHAN_IN_FS;
                 cfgDesc_Audio2.Audio_In_Format.bSubslotSize = FS_STREAM_FORMAT_INPUT_1_SUBSLOT_BYTES;
@@ -1152,6 +1162,7 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
                 cfgDesc_Audio2.Audio_In_ClassStreamInterface.bNrChannels = NUM_USB_CHAN_IN_FS;
 #endif
 #if MIDI
+                /* MIDI endpoint max packet size must be 64 bytes in FS */
                 cfgDesc_Audio2.MIDI_Descriptors.MIDI_Standard_Bulk_OUT_Endpoint.wMaxPacketSize = 64;
                 cfgDesc_Audio2.MIDI_Descriptors.MIDI_Standard_Bulk_IN_Endpoint.wMaxPacketSize = 64;
 #endif
@@ -1186,7 +1197,6 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
 #endif
 #if XUA_DFU_EN
         }
-
         else
         {
             /* Running in DFU mode - always return same descs for DFU whether HS or FS */
@@ -1200,37 +1210,89 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
 #endif
     }
 
-    if (result == XUD_RES_RST)
+    if(result == XUD_RES_UPDATE)
     {
-#ifdef __XC__
-        g_curUsbSpeed = XUD_ResetEndpoint(ep0_out, ep0_in);
-#else
-        g_curUsbSpeed = XUD_ResetEndpoint(ep0_out, &ep0_in);
-#endif
-        g_currentConfig = 0;
-        g_curStreamAlt_Out = 0;
-        g_curStreamAlt_In = 0;
+        XUD_BusState_t busState = XUD_GetBusState(ep0_out, &ep0_in);
+
+        if(busState == XUD_BUS_RESET)
+        {
+            g_curUsbSpeed = XUD_ResetEndpoint(ep0_out, &ep0_in);
+
+            if(g_curStreamAlt_Out || g_curStreamAlt_In)
+            {
+                UserAudioStreamState(0, 0);
+                g_curStreamAlt_Out = 0;
+                g_curStreamAlt_In = 0;
+            }
+
+            if(g_currentConfig)
+            {
+                UserHostActive(0);
+                g_currentConfig = 0;
+            }
 
 #if XUA_DFU_EN
-        if (DFUReportResetState(null))
-        {
-            if (!DFU_mode_active)
+            if (DFUReportResetState(null))
             {
-                DFU_mode_active = 1;
+                if (!DFU_mode_active)
+                {
+                    DFU_mode_active = 1;
+                }
             }
+            else
+            {
+                if (DFU_mode_active)
+                {
+                    DFU_mode_active = 0;
+
+                    /* Send reboot command */
+                    DFUDelay(DELAY_BEFORE_REBOOT_FROM_DFU_MS * 100000);
+                    device_reboot();
+                }
+            }
+#endif
         }
         else
         {
-            if (DFU_mode_active)
+            if (busState == XUD_BUS_SUSPEND)
             {
-                DFU_mode_active = 0;
+                /* Ensure all streams have stopped (in case this came in as unplug during streaming) */
+                /* Note the logic in decouple contains state about current stream state and so it
+                   will not pass this on to audio if already stopped */
+                if(NUM_USB_CHAN_IN > 0){
+                    outct(c_aud_ctl, XUA_AUDCTL_SET_STREAM_INPUT_STOP);
+                    chkct(c_aud_ctl, XS1_CT_END);
+                }
+                if(NUM_USB_CHAN_OUT > 0){
+                    outct(c_aud_ctl, XUA_AUDCTL_SET_STREAM_OUTPUT_STOP);
+                    chkct(c_aud_ctl, XS1_CT_END);
+                }
 
-                /* Send reboot command */
-                DFUDelay(DELAY_BEFORE_REBOOT_FROM_DFU_MS * 100000);
-                device_reboot();
+                /* Device moving from CONFIGURED to SUSPENDED state */
+                if(g_currentConfig)
+                {
+                    UserHostActive(0);
+                }
+
+                // Perform user-defined suspend behaviour
+                XUA_UserSuspendPowerDown();
             }
+            else // XUD_BUS_RESUME
+            {
+                // Peform user-defined resume behaviour
+                XUA_UserSuspendPowerUp();
+
+                /* If audio interfaces still active call user call back */
+                if(g_curStreamAlt_Out || g_curStreamAlt_In)
+                    UserAudioStreamState(g_curStreamAlt_Out > 0, g_curStreamAlt_In > 0);
+
+                /* Device moving from SUSPENDED to CONFIGURED state - call user call back */
+                if(g_currentConfig == 1)
+                    UserHostActive(1);
+            }
+            /* Acknowledge back to XUD letting it know we've handled suspend/resume */
+            XUD_AckBusState(ep0_out, &ep0_in); // This should set ep_info[i]
         }
-#endif
     }
 }
 
@@ -1243,7 +1305,7 @@ void XUA_Endpoint0(chanend c_ep0_out, chanend c_ep0_in, NULLABLE_RESOURCE(chanen
 
     while(1)
     {
-        /* Returns XUD_RES_OKAY for success, XUD_RES_RST for bus reset */
+        /* Returns XUD_RES_OKAY for success, XUD_RES_UPDATE for bus status update */
         XUD_Result_t result = USB_GetSetupPacket(ep0_out, ep0_in, &sp);
         XUA_Endpoint0_loop(result, sp, c_ep0_out, c_ep0_in, c_aud_ctl, c_mix_ctl, c_clk_ctl, dfuInterface VENDOR_REQUESTS_PARAMS_);
     }

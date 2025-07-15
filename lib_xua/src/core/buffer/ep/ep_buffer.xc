@@ -33,7 +33,7 @@ extern unsigned int g_curSamFreqMultiplier;
 /* Initialise g_speed now so we get a sensible packet size until we start properly calculating feedback in the SoF case */
 /* Without this, zero size input packets fill the input FIFO and it takes a long time to clear out when feedback starts */
 /* This can cause a delay to the decouple ISR being serviced pushing our I2S timing. Initialising solves this */
-unsigned g_speed = (AUDIO_CLASS == 2) ? (DEFAULT_FREQ/8000) << 16 : (DEFAULT_FREQ/1000) << 16;
+unsigned g_speed = (XUA_USB_BUS_SPEED == 2) ? (DEFAULT_FREQ/8000) << 16 : (DEFAULT_FREQ/1000) << 16;
 unsigned g_streamChangeOngoing = 0; /* Not cleared until audio has completed it's SR change. This can be used for logic that needs to know audio has completed the command */
 unsigned g_feedbackValid = 0;
 
@@ -129,7 +129,6 @@ void XUA_Buffer(
 )
 {
 #ifdef XUA_CHAN_BUFF_CTRL
-#warning Using channel to control buffering - this may reduce performance but improve power consumption
     chan c_buff_ctrl;
 #endif
 
@@ -766,7 +765,7 @@ void XUA_Buffer_Ep(
             case XUD_SetData_Select(c_aud_in, ep_aud_in, result):
             {
                 /* Inform stream that buffer sent */
-                SET_SHARED_GLOBAL0(g_aud_to_host_flag, bufferIn+1);
+                SET_SHARED_GLOBAL0(g_aud_to_host_flag, bufferIn+1); // TODO other side only checks for boolean
                 break;
             }
 #endif

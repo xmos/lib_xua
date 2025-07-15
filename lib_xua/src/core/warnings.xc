@@ -76,8 +76,16 @@ Warnings relating to configuration defines located in this XC source file rather
 #warning Enabling MIXER when XUA_LOW_POWER_NON_STREAMING is enabled will result in the mixer stopping when USB audio streams are not active. Is this what you wanted?
 #endif
 #if (NUM_USB_CHAN_OUT == 0 && NUM_USB_CHAN_IN == 0)
-#error Please disable XUA_LOW_POWER_NON_STREAMING if you wish to have a system with no USB audio streams. These features are incompatible.
+#error Disable XUA_LOW_POWER_NON_STREAMING if you wish to have a system with no USB audio streams. These features are incompatible.
 #endif
+#endif
+
+#ifdef XUA_CHAN_BUFF_CTRL
+#warning Using channel to control buffering - this may reduce performance but improve power consumption
+#endif
+
+#if (NUM_USB_CHAN_OUT == 0 && NUM_USB_CHAN_IN == 0)
+#error Please disable XUA_LOW_POWER_NON_STREAMING if you wish to have a system with no USB audio streams. These features are incompatible.
 #endif
 
 /* Checks when using xua wrapper */
@@ -95,5 +103,5 @@ Warnings relating to configuration defines located in this XC source file rather
     #endif
 #endif
 
-#endif
+#endif //XUA_USB_EN
 

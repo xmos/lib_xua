@@ -19,18 +19,14 @@ to be provided.
 .. doxygenfunction:: AudioHwConfig
 .. doxygenfunction:: AudioHwConfig_Mute
 .. doxygenfunction:: AudioHwConfig_UnMute
+.. doxygenfunction:: AudioHwShutdown
 
 Audio stream start/stop functions
 ---------------------------------
 
 The following functions can be optionally used by the design. They can be useful for mute lines etc.
 
-.. doxygenfunction:: UserAudioStreamStart
-.. doxygenfunction:: UserAudioStreamStop
-.. doxygenfunction:: UserAudioInputStreamStart
-.. doxygenfunction:: UserAudioInputStreamStop
-.. doxygenfunction:: UserAudioOutputStreamStart
-.. doxygenfunction:: UserAudioOutputStreamStop
+.. doxygenfunction:: UserAudioStreamState
 
 Host active functions
 ---------------------

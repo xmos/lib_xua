@@ -366,12 +366,14 @@
  */
 #ifndef XUA_USB_BUS_SPEED
   #if AUDIO_CLASS == 1
-    #define XUA_USB_BUS_SPEED    XUD_SPEED_FS
+    /* XUD_SPEED_FS = 1 */
+    #define XUA_USB_BUS_SPEED    1
   #else
-    #define XUA_USB_BUS_SPEED    XUD_SPEED_HS
+    /* XUD_SPEED_HS = 2 */
+    #define XUA_USB_BUS_SPEED    2
   #endif
 #else
-    #if (XUA_USB_BUS_SPEED != XUD_SPEED_HS) && (XUA_USB_BUS_SPEED != XUD_SPEED_FS)
+    #if (XUA_USB_BUS_SPEED != 1) && (XUA_USB_BUS_SPEED != 2)
         #error XUA_USB_BUS_SPEED must be either XUD_SPEED_HS or XUD_SPEED_FS
     #endif
     #if (XUA_USB_BUS_SPEED == XUD_SPEED_HS) && (AUDIO_CLASS == 1)
@@ -755,7 +757,7 @@
  * @brief Device firmware version number in Binary Coded Decimal format: 0xJJMN where JJ: major, M: minor, N: sub-minor version number.
  */
 #ifndef BCD_DEVICE_M
-#define BCD_DEVICE_M             (0)
+#define BCD_DEVICE_M             (1)
 #endif
 
 /**
@@ -1210,13 +1212,13 @@
  */
 #if (XUA_POWERMODE == XUA_POWERMODE_SELF)
     /* Default to taking no power from the bus in self-powered mode */
-    #ifndef _XUA_BMAX_POWER
-        #define _XUA_BMAX_POWER     (0)
+    #ifndef XUA_BMAX_POWER
+        #define XUA_BMAX_POWER     (0)
     #endif
 #else
     /* Default to taking 500mA from the bus in bus-powered mode */
-    #ifndef _XUA_BMAX_POWER
-        #define _XUA_BMAX_POWER      (250)
+    #ifndef XUA_BMAX_POWER
+        #define XUA_BMAX_POWER      (250)
     #endif
 #endif
 
