@@ -9,8 +9,8 @@
 
 /** USB Audio Wrapper subsystem.
  *
- *  This task starts four threads and provides a complete USB audio subsyetem which may be
- *  treated as simple audio source/sink. It starts four logcal tasks for XUD, Endpoint 0 and
+ *  This task starts four threads and provides a complete USB audio subsystem which may be
+ *  treated as simple audio source/sink. It starts four logical cores (threads) for XUD, Endpoint 0 and
  *  the two buffering tasks. Basic host audio input/output only is supported; I2S or any other
  *  digital interfaces must be started and managed by the user.
  * 
@@ -29,9 +29,8 @@ void XUA_wrapper_task(chanend c_aud);
 
 /** Exchange samples with XUA_wrapper_task()
  *
- *  This function buffers USB audio data between the XUD and the audio subsystem.
- *  Most of the chanend parameters to the function should be connected to
- *  XUD_Manager().  The uses two cores.
+ *  This function exchanges samples which should be sent or received from USB audio. If this is not
+ *  called at the correct rate it will result in overflow or underflow in the USB audio subsystem.
  *
  *  \param c_aud                Channel connected to XUA_wrapper_task()
  *  \param samples_to_host      An array of samples which are to be passed to the host (input)
@@ -44,12 +43,13 @@ int XUA_wrapper_exchange_samples(chanend c_aud, int32_t samples_to_host[NUM_USB_
 
 /** Get the latest stream format requested by host to XUA_wrapper_task()
  *
- *  This function provides an way of querying the current host audio streaming settings.
+ *  This function provides a way of querying the current host audio streaming settings. This can be
+ *  called after XUA_wrapper_exchange_samples() returns 1, indicating a sample rate or sample format change.
  *
- *  \param curSamFreq       Pointer to sample rate in Hertz
- *  \param mClk             Reference to Master clock rate in Hertz
- *  \param curSamRes_DAC    Reference to output stream bit resolution
- *  \param curSamRes_ADC    Reference Input stream bit resolution
+ *  \param curSamFreq       Pointer to sample rate in Hertz to be updated
+ *  \param mClk             Pointer to Master clock rate in Hertz to be updated
+ *  \param curSamRes_DAC    Pointer to output stream bit resolution to be updated
+ *  \param curSamRes_ADC    Pointer Input stream bit resolution to be updated
  * 
  */
 void XUA_wrapper_get_stream_format(unsigned *curSamFreq, unsigned *mClk, unsigned *curSamRes_DAC, unsigned *curSamRes_ADC);
