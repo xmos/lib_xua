@@ -16,6 +16,7 @@ extern unsigned samplesIn[2][XUA_MAX(NUM_USB_CHAN_IN, I2S_CHANS_DAC)];
 
 /* Sample transfer functions use on the audiohub side */
 #include "xua_audiohub_st.h"
+
 extern void receive_command(unsigned command, chanend c_aud, unsigned &curSamFreq, unsigned &dsdMode, unsigned &curSamRes_DAC, unsigned &audioActive);
 
 // Setup to initial defaults

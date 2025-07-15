@@ -126,29 +126,32 @@ int main()
 
         /* handles XUD, audio data to/from EP's and gives/gets data to/from the audio I/O core */
         /* Note, this spawns four cores. This must be configured using xua_conf.h  */
-        on tile[XUD_TILE]: {
-                        XUA_wrapper_task(c_aud);
-                    }
+        on tile[XUD_TILE]: 
+        {
+            XUA_wrapper_task(c_aud);
+        }
 
-        /* AudioHub/IO core does most of the audio IO i.e. I2S (also serves as a hub for all audio) */
-        on tile[1]: {
-                        i2s_frame_callback_if i_i2s;
-                        par
-                        {
+        /* I2S Audiohub */
+        on tile[AUDIO_IO_TILE]: 
+        {
+            i2s_frame_callback_if i_i2s;
+            par
+            {
 #if I2S_MASTER
-                            i2s_frame_master(i_i2s, p_i2s_dac, NUM_USB_CHAN_OUT / 2, p_i2s_adc, NUM_USB_CHAN_IN / 2, I2S_DATA_BITS, p_bclk, p_lrclk, p_mclk_in, clk_audio_bclk);
+                i2s_frame_master(i_i2s, p_i2s_dac, NUM_USB_CHAN_OUT / 2, p_i2s_adc, NUM_USB_CHAN_IN / 2, I2S_DATA_BITS, p_bclk, p_lrclk, p_mclk_in, clk_audio_bclk);
 #else
-                            i2s_frame_slave(i_i2s, p_i2s_dac, NUM_USB_CHAN_OUT / 2, p_i2s_adc, NUM_USB_CHAN_IN / 2, I2S_DATA_BITS, p_bclk, p_lrclk, clk_audio_bclk);
+                i2s_frame_slave(i_i2s, p_i2s_dac, NUM_USB_CHAN_OUT / 2, p_i2s_adc, NUM_USB_CHAN_IN / 2, I2S_DATA_BITS, p_bclk, p_lrclk, clk_audio_bclk);
 #endif
-                            [[distribute]]
-                            i2s_callback_handler(i_i2s, c_aud, i_i2c[0]);
-                        }
-                    }
+                [[distribute]]
+                i2s_callback_handler(i_i2s, c_aud, i_i2c[0]);
+            }
+        }
 
-        on tile[0]: {
-                        xk_audio_316_mc_ab_board_setup(hw_config);
-                        xk_audio_316_mc_ab_i2c_master(i_i2c);
-                    }
+on tile[0]: 
+        {
+            xk_audio_316_mc_ab_board_setup(hw_config);
+            xk_audio_316_mc_ab_i2c_master(i_i2c);
+        }
     }
 
     return 0;
