@@ -94,6 +94,7 @@ Warnings relating to configuration defines located in this XC source file rather
         #warning XUA_WRAPPER used - overriding I2S_CHANS_DAC and I2S_CHANS_ADC to zero
     #endif
     #ifdef MIDI
+        #error MIDI not supported when using XUA_WRAPPER
     #endif
     #if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC || XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN || XUA_SPDIF_TX_EN || XUA_ADAT_TX_EN)
         #error XUA_SYNCMODE_SYNC, SPDIF, ADAT not supported by XUA_WRAPPER
