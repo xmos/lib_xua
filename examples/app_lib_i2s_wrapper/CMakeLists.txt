@@ -15,7 +15,6 @@ set(COMPILER_FLAGS_COMMON       -O3
                                 -g
                                 -Wno-unused-function
                                 -DXUD_CORE_CLOCK=600
-                                -DUSB_TILE=tile[0]
                                 -DXUD_TILE=0
                                 -DAUDIO_IO_TILE=1
                                 -fxscope

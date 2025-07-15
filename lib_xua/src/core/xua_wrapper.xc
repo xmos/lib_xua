@@ -11,8 +11,10 @@ const int readBuffNo = 0; 	// Note we don't need to double buffer here due to co
 unsigned underflowWord = 0;	// Always assumuing PCM
 
 // Variables used by audiohub for sample transfer 
+/* Two buffers for ADC data to allow for DAC and ADC I2S ports being offset */
+#define IN_CHAN_COUNT (I2S_CHANS_ADC + XUA_NUM_PDM_MICS + (8*XUA_ADAT_RX_EN) + (2*XUA_SPDIF_RX_EN))
 extern unsigned samplesOut[XUA_MAX(NUM_USB_CHAN_OUT, I2S_CHANS_DAC)];
-extern unsigned samplesIn[2][XUA_MAX(NUM_USB_CHAN_IN, I2S_CHANS_DAC)];
+extern unsigned samplesIn[2][XUA_MAX(NUM_USB_CHAN_IN, IN_CHAN_COUNT)];
 
 /* Sample transfer functions use on the audiohub side */
 #include "xua_audiohub_st.h"
