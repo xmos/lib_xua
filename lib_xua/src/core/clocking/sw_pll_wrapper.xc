@@ -106,6 +106,7 @@ void do_sw_pll_phase_frequency_detector_dig_rx( unsigned short mclk_time_stamp,
             f_error = 0;            /* Skip first measurement as it will likely be very out */
             reset_sw_pll_pfd = 0;
         }
+        xscope_int(0, (int)f_error);
         g_f_error = (int)f_error;
         /* send PFD output to the sigma delta thread */
         outuint(c_sw_pll, (int) f_error);

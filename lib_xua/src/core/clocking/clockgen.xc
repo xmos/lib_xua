@@ -217,6 +217,7 @@ extern int samples_to_host_inputs_buff[NUM_USB_CHAN_IN];
 int VendorAudCoreReqs(unsigned cmd, chanend c);
 unsafe {extern int * unsafe p_g_f_error;}
 
+int probe_val = 0;
 #pragma unsafe arrays
 void clockGen ( streaming chanend ?c_spdif_rx,
                 streaming chanend ?c_adat_rx,
@@ -836,7 +837,7 @@ void clockGen ( streaming chanend ?c_spdif_rx,
                 {
                     /* ADAT underflowing, send out zero samples */
                     g_digData[2] = 0;
-                    g_digData[3] = diff_to_log << 8;                    
+                    g_digData[3] = diff_to_log << 8;
                     unsafe {
                         g_digData[4] = (*p_g_f_error) << 8;
                     }
