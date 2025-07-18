@@ -124,11 +124,12 @@ static inline void setClockValidity(chanend c_interruptControl, int clkIndex, in
     }
 }
 
+int diff_to_log = 0;
 /* Returns 1 for valid clock found else 0 */
 static inline int validSamples(Counter &counter, int clockIndex)
 {
     int diff = counter.samples - counter.savedSamples;
-
+    diff_to_log = diff;
     counter.savedSamples = counter.samples;
 
     /* Check for stable sample rate (with some small margin) */
@@ -214,6 +215,7 @@ extern int samples_to_host_inputs_buff[NUM_USB_CHAN_IN];
 #endif
 
 int VendorAudCoreReqs(unsigned cmd, chanend c);
+unsafe {extern int * unsafe p_g_f_error;}
 
 #pragma unsafe arrays
 void clockGen ( streaming chanend ?c_spdif_rx,
@@ -529,6 +531,7 @@ void clockGen ( streaming chanend ?c_spdif_rx,
 #if (XUA_ADAT_RX_EN)
                     /* Returns 1 if valid clock found */
                     valid = validSamples(adatCounters, CLOCK_ADAT);
+                    diff_to_log = (diff_to_log << 1) | valid;
                     setClockValidity(c_clk_int, CLOCK_ADAT, valid, clkMode);
 #endif
                 }
@@ -833,8 +836,10 @@ void clockGen ( streaming chanend ?c_spdif_rx,
                 {
                     /* ADAT underflowing, send out zero samples */
                     g_digData[2] = 0;
-                    g_digData[3] = 0;
-                    g_digData[4] = 0;
+                    g_digData[3] = diff_to_log << 8;                    
+                    unsafe {
+                        g_digData[4] = (*p_g_f_error) << 8;
+                    }
                     g_digData[5] = 0;
                     g_digData[6] = 0;
                     g_digData[7] = 0;
@@ -850,10 +855,11 @@ void clockGen ( streaming chanend ?c_spdif_rx,
                     {
                         /* SMUX2 mode - 2 samples from fifo and 4 zero samples */
                         g_digData[2] = adatSamples[adatRd + 0];
-                        g_digData[3] = adatSamples[adatRd + 1];
-
-                        g_digData[4] = 0;
-                        g_digData[5] = 0;
+                        g_digData[3] = diff_to_log << 8;
+                        unsafe {
+                            g_digData[4] = (*p_g_f_error) << 8;
+                        }
+                        g_digData[5] = adatSamps << 8;
                         g_digData[6] = 0;
                         g_digData[7] = 0;
                         g_digData[8] = 0;

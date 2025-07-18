@@ -72,6 +72,8 @@
     return {XS1_TIMER_HZ / sw_pll_sdm_rate[clkIndex], sw_pll_sdm_ctrl_mid[clkIndex]};
 }
 
+int g_f_error = 0;
+unsafe {int * unsafe p_g_f_error = &g_f_error;}
 void do_sw_pll_phase_frequency_detector_dig_rx( unsigned short mclk_time_stamp,
                                                 unsigned mclks_per_sample,
                                                 chanend c_sw_pll,
@@ -104,7 +106,7 @@ void do_sw_pll_phase_frequency_detector_dig_rx( unsigned short mclk_time_stamp,
             f_error = 0;            /* Skip first measurement as it will likely be very out */
             reset_sw_pll_pfd = 0;
         }
-
+        g_f_error = (int)f_error;
         /* send PFD output to the sigma delta thread */
         outuint(c_sw_pll, (int) f_error);
         outct(c_sw_pll, XS1_CT_END);
