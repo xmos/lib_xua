@@ -1,6 +1,11 @@
 lib_xua change log
 ==================
 
+UNRELEASED
+----------
+
+  * FIXED: Issue with MCLK not present for digital RX only configs when using the software PLL
+
 5.1.0
 -----
 

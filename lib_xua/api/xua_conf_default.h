@@ -1472,7 +1472,6 @@ enum USBEndpointNumber_Out
 #else
 #define DFU_PRODUCT_STR_INDEX       offsetof(StringDescTable_t, productStr_Audio1)/sizeof(char *)
 #endif
-#endif
 
 /* USB test mode support enabled by default (Required for compliance testing) */
 #if defined(TEST_MODE_SUPPORT) && (TEST_MODE_SUPPORT == 0)
@@ -1729,3 +1728,34 @@ enum USBEndpointNumber_Out
 #define ENUMERATE_CONTROL_INTF_AS_WINUSB    1
 #endif
 
+/**
+ * @brief Macro specifying if an mclk input and a second mclk input are required
+ */
+#define _NEED_MCLK_FOR_I2S \
+  (((I2S_CHANS_DAC != 0) || (I2S_CHANS_ADC != 0)) && (!CODEC_MASTER))
+
+#define _NEED_MCLK_FOR_DIG_RX \
+  (XUA_USE_SW_PLL && (XUA_ADAT_RX_EN || XUA_SPDIF_RX_EN))
+
+#define _NEED_MCLK_FOR_ADAT_TX (XUA_ADAT_TX_EN)
+#define _NEED_MCLK_FOR_SPDIF_TX (XUA_SPDIF_TX_EN)
+#define _NEED_MCLK_FOR_USB (XUA_USB_EN)
+
+/* Need mclk */
+#define MCLK_REQUIRED ( \
+    (_NEED_MCLK_FOR_I2S) || \
+    (_NEED_MCLK_FOR_DIG_RX) || \
+    (_NEED_MCLK_FOR_ADAT_TX) || \
+    (_NEED_MCLK_FOR_SPDIF_TX && (SPDIF_TX_TILE == AUDIO_IO_TILE)) || \
+    (_NEED_MCLK_FOR_USB && (AUDIO_IO_TILE == XUD_TILE)) \
+)
+
+/* Need second mclk -
+ - USB is enabled and present on a different tile than audio, a second mclk will be needed for USB feedback calculation
+ - SPDIF TX is enabled and present on a different tile than audio */
+#define SECOND_MCLK_REQUIRED ( \
+    (_NEED_MCLK_FOR_USB && (XUD_TILE != AUDIO_IO_TILE)) || \
+    (_NEED_MCLK_FOR_SPDIF_TX && (SPDIF_TX_TILE != AUDIO_IO_TILE)) \
+)
+
+#endif /* _XUA_CONF_DEFAULT_H_ */

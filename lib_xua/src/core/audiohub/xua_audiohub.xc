@@ -784,7 +784,7 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
         }
 #endif
 
-#if ((AUDIO_IO_TILE == XUD_TILE) || XUA_ADAT_TX_EN || XUA_SPDIF_TX_EN)
+#if (MCLK_REQUIRED)
         xassert((!isnull(clk_audio_mclk) && !isnull(p_mclk_in)) && "Error: must provide non-null MCLK port and MCLK clock-block if digital Rx is enabled or AUDIO_IO_TILE==XUD_TILE");
         /* Clock master clock-block from master-clock port */
         configure_clock_src(clk_audio_mclk, p_mclk_in);
@@ -800,7 +800,7 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
         directly from the MCLK port. */
         /* Start the master clock-block */
         start_clock(clk_audio_mclk);
-#endif /* ((AUDIO_IO_TILE == XUD_TILE) || XUA_ADAT_TX_EN || XUA_SPDIF_TX_EN) */
+#endif /* (MCLK_REQUIRED) */
 
         /* Perform required CODEC/ADC/DAC initialisation */
         AudioHwInit();
@@ -1080,7 +1080,7 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
         }
 #endif // (I2S_CHANS_DAC != 0) || (I2S_CHANS_ADC != 0)
 
-#if ((AUDIO_IO_TILE == XUD_TILE) || XUA_ADAT_TX_EN || XUA_SPDIF_TX_EN)
+#if (MCLK_REQUIRED)
         /* Start the master clock-block */
         stop_clock(clk_audio_mclk);
 #endif
