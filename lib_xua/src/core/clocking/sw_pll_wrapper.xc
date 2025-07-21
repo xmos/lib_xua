@@ -107,6 +107,7 @@ void do_sw_pll_phase_frequency_detector_dig_rx( unsigned short mclk_time_stamp,
             reset_sw_pll_pfd = 0;
         }
         xscope_int(0, (int)f_error);
+        xscope_int(1, (int)mclks_per_sample);
         g_f_error = (int)f_error;
         /* send PFD output to the sigma delta thread */
         outuint(c_sw_pll, (int) f_error);
@@ -122,7 +123,7 @@ void sw_pll_task(chanend c_sw_pll){
     /* Zero is an invalid number and the SDM will not write the frac reg until
        the first control value has been received. This avoids issues with
        channel lockup if two tasks (eg. init and SDM) try to write at the same time. */
-
+    xscope_mode_lossy();
     while(1)
     {
         unsigned selected_mclk_rate = inuint(c_sw_pll);
@@ -167,6 +168,7 @@ void sw_pll_task(chanend c_sw_pll){
                         {
                             sw_pll_sdm_do_control_from_error(&sw_pll, -f_error);
                             dco_setting = sw_pll.sdm_state.current_ctrl_val;
+                            xscope_int(2, (int)dco_setting);
                         }
                     }
                 break;
