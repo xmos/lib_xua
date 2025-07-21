@@ -21,6 +21,7 @@ UNRELEASED
     invalid to prevent incorrect error input to sigma-delta modulator
   * ADDED: Support for high bandwidth ISO endpoints
   * ADDED: pll lock delay in audiohub to allow time for the audio pll to lock and MCLK to stabilise
+  * ADDED: Change to reset sw_pll dco setting to midpoint when there's a change in clock source
 
 5.1.0
 -----

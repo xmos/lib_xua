@@ -157,6 +157,19 @@ void sw_pll_task(chanend c_sw_pll){
                         f_error = 0;
                         running = 0;
                     }
+                    else if(rx_word == SET_DCO_TO_NOMINAL)
+                    {
+                        unsigned mclk_rate = inuint(c_sw_pll);
+                        inct(c_sw_pll);
+                        if(mclk_rate == MCLK_48)
+                        {
+                            dco_setting = SW_PLL_SDM_CTRL_MID_24;
+                        }
+                        else
+                        {
+                            dco_setting = SW_PLL_SDM_CTRL_MID_22;
+                        }
+                    }
                     else
                     {
                         f_error = (int32_t)rx_word;
@@ -194,6 +207,14 @@ void sw_pll_task(chanend c_sw_pll){
 void restart_sigma_delta(chanend c_sw_pll, unsigned selected_mclk_rate)
 {
     outuint(c_sw_pll, DISABLE_SDM); /* Resets SDM */
+    outct(c_sw_pll, XS1_CT_END);
+    outuint(c_sw_pll, selected_mclk_rate);
+    outct(c_sw_pll, XS1_CT_END);
+}
+
+void sw_pll_set_pll_to_nominal(chanend c_sw_pll, unsigned selected_mclk_rate)
+{
+    outuint(c_sw_pll, SET_DCO_TO_NOMINAL);
     outct(c_sw_pll, XS1_CT_END);
     outuint(c_sw_pll, selected_mclk_rate);
     outct(c_sw_pll, XS1_CT_END);
