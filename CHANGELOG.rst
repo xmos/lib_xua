@@ -5,6 +5,7 @@ UNRELEASED
 ----------
 
   * FIXED: Issue with MCLK not present for digital RX only configs when using the software PLL
+  * FIXED: Reset SW PLL phase/frequency detector when digital clock becomes invalid to prevent incorrect error input to sigma-delta modulator
 
 5.1.0
 -----
