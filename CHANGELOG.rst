@@ -22,6 +22,9 @@ UNRELEASED
   * ADDED: Support for high bandwidth ISO endpoints
   * ADDED: pll lock delay in audiohub to allow time for the audio pll to lock and MCLK to stabilise
   * ADDED: Change to reset sw_pll dco setting to midpoint when there's a change in clock source
+  * FIXED: When software pll is enabled, report external clock as invalid when the USB sampling frequency
+    doesn't match the digital input sampling frequency, instead of programming a wrong value dco Setting
+    in the pll sigma delta modulator
 
 5.1.0
 -----

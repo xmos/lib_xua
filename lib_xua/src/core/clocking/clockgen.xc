@@ -550,6 +550,15 @@ void clockGen ( streaming chanend ?c_spdif_rx,
                     /* Returns 1 if valid clock found */
                     valid = validSamples(spdifCounters, CLOCK_SPDIF);
 #if XUA_USE_SW_PLL
+                    if((clkMode == CLOCK_SPDIF) && (selected_sample_rate != clockFreq[CLOCK_SPDIF]))
+                    {
+                        valid = 0; // Signal clock invalid to the host (https://github.com/xmos/lib_xua/issues/509)
+                        if(require_ack_to_audio)
+                        {
+                            c_audio_rate_change <: tmp;
+                            require_ack_to_audio = 0;
+                        }
+                    }
                     if(clockValid[CLOCK_SPDIF] && (valid == 0))
                     {
                         /* Skip first measurement when clock goes valid next as the mclk_time_stamp
@@ -566,6 +575,21 @@ void clockGen ( streaming chanend ?c_spdif_rx,
                     /* Returns 1 if valid clock found */
                     valid = validSamples(adatCounters, CLOCK_ADAT);
 #if XUA_USE_SW_PLL
+                    if(clkMode == CLOCK_ADAT)
+                    {
+                        unsigned expected_mclk = \
+                            ((clockFreq[CLOCK_ADAT] == 48000) || (clockFreq[CLOCK_ADAT] == 96000) || (clockFreq[CLOCK_ADAT] == 192000)) ? MCLK_48 : MCLK_441;
+
+                        if(expected_mclk != selected_mclk_rate)
+                        {
+                            valid = 0;
+                            if(require_ack_to_audio)
+                            {
+                                c_audio_rate_change <: tmp;
+                                require_ack_to_audio = 0;
+                            }
+                        }
+                    }
                     if(clockValid[CLOCK_ADAT] && (valid == 0))
                     {
                         reset_sw_pll_pfd = 1;
