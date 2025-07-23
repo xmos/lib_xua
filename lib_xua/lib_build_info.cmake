@@ -26,7 +26,8 @@ set(LIB_OPTIONAL_HEADERS    xua_conf.h
                             static_hid_report.h
                             user_main_globals.h
                             user_main_declarations.h
-                            user_main_cores.h)
+                            user_main_cores.h
+                            user_main_tasks.h)
 
 set(LIB_DEPENDENT_MODULES "lib_adat(2.0.1)"
                           "lib_locks(2.3.1)"

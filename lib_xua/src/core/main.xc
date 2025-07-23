@@ -382,6 +382,11 @@ void usb_audio_io(chanend ?c_aud_in,
     } // par
 }
 
+/* USER_MAIN_GLOBALS can be defined either via xua_conf.h or by user_main_globals.h */
+#ifdef __user_main_globals_h_exists__
+    #include "user_main_globals.h"
+#endif
+
 #ifndef USER_MAIN_GLOBALS
 #define USER_MAIN_GLOBALS
 #endif
@@ -394,12 +399,11 @@ void usb_audio_io(chanend ?c_aud_in,
 #define USER_MAIN_CORES
 #endif
 
-
-/* USER_MAIN_GLOBALS can be defined either via xua_conf.h or by user_main_globals.h */
-#ifdef __user_main_globals_h_exists__
-    #include "user_main_globals.h"
+#ifndef USER_MAIN_TASKS
+#define USER_MAIN_TASKS
 #endif
-        USER_MAIN_GLOBALS
+
+    USER_MAIN_GLOBALS
 
 /* Main for USB Audio Applications */
 int main()
@@ -483,11 +487,15 @@ int main()
     par
     {
 
-/* USER_MAIN_CORES can be defined either via xua_conf.h or by user_main_cores.h */
+/* USER_MAIN_CORES can be defined either via xua_conf.h or by user_main_tasks.h */
 #ifdef __user_main_cores_h_exists__
     #include "user_main_cores.h"
 #endif
+#ifdef __user_main_tasks_h_exists__
+    #include "user_main_tasks.h"
+#endif
         USER_MAIN_CORES
+        USER_MAIN_TASKS
 
 #if (((XUA_SYNCMODE == XUA_SYNCMODE_SYNC  && !XUA_USE_SW_PLL) || XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN))
         on tile[PLL_REF_TILE]: PllRefPinTask(i_pll_ref, p_pll_ref);
