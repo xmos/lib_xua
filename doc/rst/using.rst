@@ -116,12 +116,12 @@ may wish to add some control code to control buttons or LEDs or DSP tasks for au
 Adding Globals
 ..............
 
-An optional header file named ``user_main_globals.h`` can be added to the project.
+An optional header file named ``xua_conf_globals.h`` can be added to the project.
 
 If this file exists in the project's source tree, its contents will be inserted into
 ``main.xc`` at global scope.
 
-Example contents of ``user_main_globals.h``::
+Example contents of ``xua_conf_globals.h``::
 
   unsigned my_global_var = 42;
 
@@ -143,10 +143,10 @@ header file. This inserts code into ``main.xc`` after the ``main()`` definition
 but before the main ``par`` statement.
 
 Alternatively, an optional header file may be added to the project called
-``user_main_declarations.h``. If this file exists in the project's source tree, its
+``xua_conf_declarations.h``. If this file exists in the project's source tree, its
 contents will be inserted into ``main.xc`` before the main ``par`` statement.
 
-Example contents of ``user_main_declarations.h``::
+Example contents of ``xua_conf_declarations.h``::
 
   chan c_usb_to_user_interface;
 
@@ -158,11 +158,11 @@ To add extra tasks to the application, the define ``USER_MAIN_TASKS`` can be set
 statement, allowing the compiler to run these tasks in parallel — either on a dedicated hardware
 thread or combined with other tasks if marked as ``[[combinable]]``.
 
-Alternatively, an optional header file called ``user_main_tasks.h`` can be added to project.
+Alternatively, an optional header file called ``xua_conf_tasks.h`` can be added to project.
 If this file exists anywhere in the project source tree, its contents will be inserted into
 ``main.xc`` after the main ``par`` statement.
 
-Example contents of ``user_main_tasks.h``::
+Example contents of ``xua_conf_tasks.h``::
 
   on tile[1]: my_user_interface_task(c_usb_to_user_interface);
 

@@ -4,16 +4,20 @@ lib_xua change log
 UNRELEASED
 ----------
 
-  * ADDED: Support for optional include header `user_main_tasks.h` with the same
-    functionality as `user_main_cores.h` i.e. to allow insertion of tasks into
-    the `main()` function (`user_main_cores.h` to be deprecated in a future
+  * ADDED:     Support for optional include header `xua_conf_tasks.h` with the
+    same functionality as `xua_conf_cores.h` i.e. to allow insertion of tasks
+    into the `main()` function (`xua_conf_cores.h` to be deprecated in a future
     release)
-    ADDED: Support for define `USER_MAIN_TASKS` with the same functionalty as
-    `USER_MAIN_CORES` i.e. to allow insertion of tasks into the `main()`
+    ADDED:     Support for define `USER_MAIN_TASKS` with the same functionalty
+    as `USER_MAIN_CORES` i.e. to allow insertion of tasks into the `main()`
     function (`USER_MAIN_CORES` to be deprecated in a future release)
-  * FIXED: Issue with MCLK not present for digital RX only configs when using
+  * CHANGED:   Supported optional configuration header files
+    `user_main_cores.h`, `user_main_declarations.h` and `user_main_globasl.h`
+    should now be named `xua_conf_cores.h`, `xua_conf_declarations.h` and
+    `xua_conf_globals.h` respectively
+  * FIXED:     Issue with MCLK not present for digital RX only configs when using
     the software PLL
-  * FIXED: Reset SW PLL phase/frequency detector when digital clock becomes
+  * FIXED:     Reset SW PLL phase/frequency detector when digital clock becomes
     invalid to prevent incorrect error input to sigma-delta modulator
 
 5.1.0

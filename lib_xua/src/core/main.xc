@@ -382,9 +382,9 @@ void usb_audio_io(chanend ?c_aud_in,
     } // par
 }
 
-/* USER_MAIN_GLOBALS can be defined either via xua_conf.h or by user_main_globals.h */
-#ifdef __user_main_globals_h_exists__
-    #include "user_main_globals.h"
+/* USER_MAIN_GLOBALS can be defined either via xua_conf.h or by xua_conf_globals.h */
+#ifdef __xua_conf_globals_h_exists__
+    #include "xua_conf_globals.h"
 #endif
 
 #ifndef USER_MAIN_GLOBALS
@@ -477,9 +477,9 @@ int main()
 #define c_mix_ctl null
 #endif
 
-/* USER_MAIN_DECLARATIONS can be defined either via xua_conf.h or by user_main_declarations.h */
-#ifdef __user_main_declarations_h_exists__
-    #include "user_main_declarations.h"
+/* USER_MAIN_DECLARATIONS can be defined either via xua_conf.h or by xua_conf_declarations.h */
+#ifdef __xua_conf_declarations_h_exists__
+    #include "xua_conf_declarations.h"
 #endif
 
     USER_MAIN_DECLARATIONS
@@ -487,12 +487,12 @@ int main()
     par
     {
 
-/* USER_MAIN_CORES can be defined either via xua_conf.h or by user_main_tasks.h */
-#ifdef __user_main_cores_h_exists__
-    #include "user_main_cores.h"
+/* USER_MAIN_CORES can be defined either via xua_conf.h or by xua_conf_tasks.h */
+#ifdef __xua_conf_cores_h_exists__
+    #include "xua_conf_cores.h"
 #endif
-#ifdef __user_main_tasks_h_exists__
-    #include "user_main_tasks.h"
+#ifdef __xua_conf_tasks_h_exists__
+    #include "xua_conf_tasks.h"
 #endif
         USER_MAIN_CORES
         USER_MAIN_TASKS
