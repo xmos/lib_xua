@@ -23,11 +23,12 @@ set(LIB_INCLUDES api
                  src/midi)
 
 set(LIB_OPTIONAL_HEADERS    xua_conf.h
+                            xua_conf_globals.h
+                            xua_conf_declarations.h
+                            xua_conf_cores.h
+                            xua_conf_tasks.h
                             static_hid_report.h
-                            user_main_globals.h
-                            user_main_declarations.h
-                            user_main_cores.h
-                            user_main_tasks.h)
+                            )
 
 set(LIB_DEPENDENT_MODULES "lib_adat(2.0.1)"
                           "lib_locks(2.3.1)"
