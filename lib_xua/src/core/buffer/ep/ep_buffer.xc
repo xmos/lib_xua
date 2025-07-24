@@ -765,7 +765,7 @@ void XUA_Buffer_Ep(
             case XUD_SetData_Select(c_aud_in, ep_aud_in, result):
             {
                 /* Inform stream that buffer sent */
-                if(result != XUD_RES_WAIT){
+                if ((result != XUD_RES_WAIT) || (XUD_USB_ISO_MAX_TXNS_PER_MICROFRAME == 1)) {
                     SET_SHARED_GLOBAL0(g_aud_to_host_flag, bufferIn+1); // other side only checks for boolean
                 }
                 break;
@@ -795,7 +795,7 @@ void XUA_Buffer_Ep(
             /* Received Audio packet HOST -> DEVICE. Datalength written to length */
             case XUD_GetData_Select(c_aud_out, ep_aud_out, length, result):
             {
-                if(result != XUD_RES_WAIT)
+                if ((result != XUD_RES_WAIT) || (XUD_USB_ISO_MAX_TXNS_PER_MICROFRAME == 1))
                 {
                     GET_SHARED_GLOBAL(aud_from_host_buffer, g_aud_from_host_buffer);
                     write_via_xc_ptr(aud_from_host_buffer, length);

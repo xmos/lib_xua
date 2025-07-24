@@ -30,6 +30,7 @@
 
     #undef XUD_USB_ISO_EP_MAX_TXN_SIZE
     #define XUD_USB_ISO_EP_MAX_TXN_SIZE   (ROUND_UP_TO_MULTIPLE_OF_4(DIVIDE_AND_ROUND_UP((MAX_HS_STREAM_PACKETSIZE), (XUD_USB_ISO_MAX_TXNS_PER_MICROFRAME))))
+    /* Note: Rounding XUD_USB_ISO_EP_MAX_TXN_SIZE to be a multiple of 4 to ensure that the buffer start for the 2nd txn in the transfer is at a word aligned address */
 
 #endif // #if (MAX_HS_STREAM_PACKETSIZE > (XUD_USB_ISO_MAX_TXNS_PER_MICROFRAME * 1024))
 #endif // #if (XUD_USB_ISO_MAX_TXNS_PER_MICROFRAME > 1)
