@@ -46,8 +46,6 @@
 #define DEBUG_UNIT XUA_AUDIOHUB
 #include "debug_print.h"
 
-#define XUA_MAX(x,y) ((x)>(y) ? (x) : (y))
-
 unsigned samplesOut[XUA_MAX(NUM_USB_CHAN_OUT, I2S_CHANS_DAC)];
 
 /* Two buffers for ADC data to allow for DAC and ADC I2S ports being offset */
@@ -922,6 +920,14 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
 
                 /* Wait for ACK back from clockgen or ep_buffer to signal clocks all good */
                 c_audio_rate_change :> int _;
+#if XUA_USE_SW_PLL
+                timer t;
+                unsigned time;
+                /* Allow some time for mclk to lock and MCLK to stabilise - this is important to avoid glitches at start of stream */
+                t :> time;
+                t when timerafter(time+40000000) :> void;
+#endif
+
 #endif
 
                 /* User should unmute audio hardware */

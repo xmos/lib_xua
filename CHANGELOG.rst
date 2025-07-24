@@ -19,6 +19,8 @@ UNRELEASED
     the software PLL
   * FIXED:     Reset SW PLL phase/frequency detector when digital clock becomes
     invalid to prevent incorrect error input to sigma-delta modulator
+  * ADDED: Support for high bandwidth ISO endpoints
+  * ADDED: pll lock delay in audiohub to allow time for the audio pll to lock and MCLK to stabilise
 
 5.1.0
 -----

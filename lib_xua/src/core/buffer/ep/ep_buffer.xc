@@ -765,7 +765,9 @@ void XUA_Buffer_Ep(
             case XUD_SetData_Select(c_aud_in, ep_aud_in, result):
             {
                 /* Inform stream that buffer sent */
-                SET_SHARED_GLOBAL0(g_aud_to_host_flag, bufferIn+1); // TODO other side only checks for boolean
+                if ((result != XUD_RES_WAIT) || (XUD_USB_ISO_MAX_TXNS_PER_MICROFRAME == 1)) {
+                    SET_SHARED_GLOBAL0(g_aud_to_host_flag, bufferIn+1); // other side only checks for boolean
+                }
                 break;
             }
 #endif
@@ -793,12 +795,13 @@ void XUA_Buffer_Ep(
             /* Received Audio packet HOST -> DEVICE. Datalength written to length */
             case XUD_GetData_Select(c_aud_out, ep_aud_out, length, result):
             {
-                GET_SHARED_GLOBAL(aud_from_host_buffer, g_aud_from_host_buffer);
-
-                write_via_xc_ptr(aud_from_host_buffer, length);
-
-                /* Sync with decouple thread */
-                SET_SHARED_GLOBAL0(g_aud_from_host_flag, 1);
+                if ((result != XUD_RES_WAIT) || (XUD_USB_ISO_MAX_TXNS_PER_MICROFRAME == 1))
+                {
+                    GET_SHARED_GLOBAL(aud_from_host_buffer, g_aud_from_host_buffer);
+                    write_via_xc_ptr(aud_from_host_buffer, length);
+                    /* Sync with decouple thread */
+                    SET_SHARED_GLOBAL0(g_aud_from_host_flag, 1);
+                }
                 break;
              }
 #endif

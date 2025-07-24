@@ -367,7 +367,7 @@ pipeline {
                 dir("xua_hw_tests") {
                   withVenv {
                     withXTAG(["usb_audio_mc_xcai_dut"]) { xtagIds ->
-                      sh "pytest -s --junitxml=pytest_hw_mac.xml --xtag-id=${xtagIds[0]} --level ${params.TEST_LEVEL}"
+                      sh "pytest -v --junitxml=pytest_hw_mac.xml --xtag-id=${xtagIds[0]} --level ${params.TEST_LEVEL}"
                     }
                   }
                 }
@@ -411,7 +411,7 @@ pipeline {
                 dir("xua_hw_tests") {
                   withVenv {
                     withXTAG(["usb_audio_mc_xcai_dut"]) { xtagIds ->
-                      sh "pytest -s -v --junitxml=pytest_hw_win.xml --xtag-id=${xtagIds[0]} --level ${params.TEST_LEVEL}"
+                      sh "pytest -v --junitxml=pytest_hw_win.xml --xtag-id=${xtagIds[0]} --level ${params.TEST_LEVEL}"
                     }
                   }
                 }
