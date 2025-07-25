@@ -120,6 +120,8 @@ void sw_pll_task(chanend c_sw_pll){
        the first control value has been received. This avoids issues with
        channel lockup if two tasks (eg. init and SDM) try to write at the same time. */
 
+    unsigned command = inuint(c_sw_pll);
+    inct(c_sw_pll);
     while(1)
     {
         unsigned selected_mclk_rate = inuint(c_sw_pll);
