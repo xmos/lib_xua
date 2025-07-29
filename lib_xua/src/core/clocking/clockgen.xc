@@ -234,6 +234,7 @@ void clockGen ( streaming chanend ?c_spdif_rx,
     unsigned timeNextEdge, timeLastEdge;
 #endif
     unsigned clkMode = CLOCK_INTERNAL;              /* Current clocking mode in operation */
+    unsigned prev_clk_mode = clkMode;
     unsigned tmp;
 
     /* Start in no-SMUX (8-channel) mode */
@@ -434,14 +435,22 @@ void clockGen ( streaming chanend ?c_spdif_rx,
                         /* Send back current clock mode */
                         outuint(c_clk_ctl, clkMode);
                         outct(c_clk_ctl, XS1_CT_END);
-
                         break;
 
                     case SET_SEL:
                         /* Update clock mode */
                         clkMode = inuint(c_clk_ctl);
                         chkct(c_clk_ctl, XS1_CT_END);
-
+#if ((XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN) && XUA_USE_SW_PLL)
+                        if(prev_clk_mode != clkMode)
+                        {
+                            // Send command to sw_pll to set dco setting to midpoint
+                            sw_pll_set_pll_to_nominal(c_sw_pll, selected_mclk_rate);
+                            reset_sw_pll_pfd = 1; // To ignore the first ferror when the clk source gets switched to external since the first
+                            // mclk_time_stamp would be wrong wrt the last_mclk_time_stamp
+                        }
+#endif
+                        prev_clk_mode = clkMode;
 #ifdef CLOCK_VALIDITY_CALL
                         switch(clkMode)
                         {
@@ -674,6 +683,7 @@ void clockGen ( streaming chanend ?c_spdif_rx,
                                             c_sw_pll,
                                             spdifCounters.receivedSamples,
                                             reset_sw_pll_pfd);
+
                         /* Reset counters */
                         spdifCounters.receivedSamples = 0;
 #else
@@ -801,7 +811,6 @@ void clockGen ( streaming chanend ?c_spdif_rx,
                                             c_sw_pll,
                                             adatCounters.receivedSamples,
                                             reset_sw_pll_pfd);
-
                                         /* Reset counters */
                                         adatCounters.receivedSamples = 0;
 #else
