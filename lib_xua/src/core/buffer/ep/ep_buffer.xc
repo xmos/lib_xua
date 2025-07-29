@@ -367,8 +367,8 @@ void XUA_Buffer_Ep(
                     masterClockFreq / controller_rate_hz,   /* pll ratio integer */
                     0,                                      /* Assume precise timing of sampling */
                     pfd_ppm_max);
-    outuint(c_sw_pll, masterClockFreq);
-    outct(c_sw_pll, XS1_CT_END);
+
+    restart_sigma_delta(c_sw_pll, masterClockFreq);
     inuint(c_sw_pll); /* receive ACK */
     inct(c_sw_pll);
 
