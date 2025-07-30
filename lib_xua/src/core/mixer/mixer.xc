@@ -52,6 +52,7 @@ static unsigned abs(int x)
 static const int SOURCE_COUNT = NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + MAX_MIX_COUNT + 1;
 
 static int samples_array[NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + MAX_MIX_COUNT + 1]; /* One larger for an "off" channel for mixer sources" */
+static int samples_to_device[NUM_USB_CHAN_OUT];
 static int samples_to_host_map_array[NUM_USB_CHAN_IN];
 static int samples_to_device_map_array[NUM_USB_CHAN_OUT];
 
@@ -60,6 +61,7 @@ unsafe
     int volatile * const unsafe ptr_samples = samples_array;
     int volatile * const unsafe samples_to_host_map = samples_to_host_map_array;
     int volatile * const unsafe samples_to_device_map = samples_to_device_map_array;
+    int volatile * const unsafe ptr_samples_to_device = samples_to_device;
 }
 
 #if (MAX_MIX_COUNT > 0)
@@ -259,12 +261,10 @@ static inline void GiveSamplesToDevice(chanend c, volatile int * unsafe deviceMa
     {
         int sample, x;
 #if (OUT_VOLUME_IN_MIXER && OUT_VOLUME_AFTER_MIX)
-        int mult;
-        int h;
-        unsigned l;
-#endif
-        int index;
-
+        unsafe {
+            sample = ptr_samples_to_device[i];
+        }
+#else
 #if (MAX_MIX_COUNT > 0)
         /* If mixer turned on sort out the channel mapping */
         unsafe
@@ -279,25 +279,8 @@ static inline void GiveSamplesToDevice(chanend c, volatile int * unsafe deviceMa
             sample = ptr_samples[i];
         }
 #endif
-
-#if (OUT_VOLUME_IN_MIXER && OUT_VOLUME_AFTER_MIX)
-        /* Do volume control processing */
-#warning OUT Vols in mixer, AFTER mix & map
-        unsafe
-        {
-            mult = multOut[i];
-        }
-
-        {h, l} = macs(mult, sample, 0, 0);
-        h<<=3;              // Shift used to be done in audio thread but now done here incase of 32bit support
-#if (STREAM_FORMAT_OUTPUT_RESOLUTION_32BIT_USED == 1)
-        h |= (l >>29)& 0x7; // Note: This step is not required if we assume sample depth is 24bit (rather than 32bit)
-                            // Note: We need all 32bits for Native DSD
 #endif
-        outuint(c, h);
-#else
         outuint(c, sample);
-#endif
     }
 #endif
 }
@@ -352,6 +335,63 @@ static inline void GetSamplesFromDevice(chanend c)
     }
 }
 
+#if (OUT_VOLUME_IN_MIXER && OUT_VOLUME_AFTER_MIX)
+#pragma unsafe arrays
+static inline void do_output_volume_control(int out_ch_index)
+{
+    int sample, x;
+    int mult;
+    int h;
+    unsigned l;
+
+    /* If mixer turned on sort out the channel mapping */
+    unsafe
+    {
+        /* Read index to sample from the map then Read the actual sample value */
+#if (MAX_MIX_COUNT > 0)
+        /* If mixer turned on sort out the channel mapping */
+        unsafe
+        {
+            /* Read index to sample from the map then Read the actual sample value */
+            sample = ptr_samples[samples_to_device_map[out_ch_index]];
+        }
+#else
+        unsafe
+        {
+            /* Read the actual sample value */
+            sample = ptr_samples[out_ch_index];
+        }
+#endif
+        mult = multOut[out_ch_index];
+    }
+
+    /* Do volume control processing */
+    {h, l} = macs(mult, sample, 0, 0);
+    h<<=3;              // Shift used to be done in audio thread but now done here incase of 32bit support
+#if (STREAM_FORMAT_OUTPUT_RESOLUTION_32BIT_USED == 1)
+    h |= (l >>29)& 0x7; // Note: This step is not required if we assume sample depth is 24bit (rather than 32bit)
+                        // Note: We need all 32bits for Native DSD
+#endif
+/* If mixer turned on sort out the channel mapping */
+#if (MAX_MIX_COUNT > 0)
+    /* If mixer turned on sort out the channel mapping */
+    unsafe
+    {
+        /* Read index to sample from the map then Read the actual sample value */
+        ptr_samples[samples_to_device_map[out_ch_index]] = sample;
+        ptr_samples_to_device[out_ch_index] = sample; // Store linearly
+    }
+#else
+    unsafe
+    {
+        /* Read the actual sample value */
+        ptr_samples[out_ch_index] = sample;
+        ptr_samples_to_device[out_ch_index] = sample; // Store linearly
+    }
+#endif
+}
+#endif
+
 
 #pragma unsafe arrays
 static void mixer1(chanend c_host, chanend c_mix_ctl, chanend ?c_mixer2, chanend c_audio)
@@ -365,9 +405,17 @@ static void mixer1(chanend c_host, chanend c_mix_ctl, chanend ?c_mixer2, chanend
     unsigned char ct;
 #endif
     unsigned request = 0;
+    int mixer2_triggered = 1;
 
     while (1)
     {
+#if (MAX_MIX_COUNT > 0)
+        if(mixer2_triggered)
+        {
+            inuint(c_mixer2); // This is where we need mixer 2 to have finished
+            mixer2_triggered = 0;
+        }
+#endif
         /* Request from audio()/mixer2() */
         request = inuint(c_audio);
 
@@ -558,7 +606,7 @@ static void mixer1(chanend c_host, chanend c_mix_ctl, chanend ?c_mixer2, chanend
                     /* Pass on command */
                     outct(c_audio, command);
                     break;
-                    
+
                 default:
                     break;
             }
@@ -579,9 +627,6 @@ static void mixer1(chanend c_host, chanend c_mix_ctl, chanend ?c_mixer2, chanend
         }
         else
         {
-#if (MAX_MIX_COUNT > 0)
-            inuint(c_mixer2); // This is where we need mixer 2 to have finished
-#endif
             GiveSamplesToDevice(c_audio, samples_to_device_map);
             GetSamplesFromDevice(c_audio);
             GetSamplesFromHost(c_host);
@@ -590,6 +635,7 @@ static void mixer1(chanend c_host, chanend c_mix_ctl, chanend ?c_mixer2, chanend
 #if (MAX_MIX_COUNT > 0)
             /* Trigger mixer2 */
             outuint(c_mixer2, mixer1_mix2_flag);
+            mixer2_triggered = 1;
 
             /* Do the mixing */
             unsafe
@@ -655,6 +701,31 @@ static void mixer1(chanend c_host, chanend c_mix_ctl, chanend ?c_mixer2, chanend
 #endif
             }
 #endif
+#if (OUT_VOLUME_IN_MIXER && OUT_VOLUME_AFTER_MIX)
+        #warning OUT Vols in mixer, AFTER mix & map
+        #pragma loop unroll
+        for (int i=0; i<NUM_USB_CHAN_OUT; i++)
+        {
+            int ch_index;
+            unsafe {
+        #if (MAX_MIX_COUNT > 0)
+            ch_index = samples_to_device_map[i];
+            int do_vol_control = 0;
+            if((ch_index >= NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN) &&
+                !((ch_index - (NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN)) & 0x1))
+            {
+                do_vol_control = 1;
+            }
+        #else // there's no second mixer. mixer1 does all the volume control
+            int do_vol_control = 1;
+        #endif
+            if(do_vol_control)
+            {
+                do_output_volume_control(i);
+            }
+            }
+        }
+    #endif
         }
     }
 }
@@ -737,6 +808,40 @@ static void mixer2(chanend c_mixer1)
 #endif
 #endif
         }
+
+    // mixer2 is responsible for output volume control, unless the sample is not available with mixer2,
+    // in which case it leaves it to mixer1 to do.
+    // mixer2 has ptr_samples[0..(NUM_USB_CHAN_OUT+NUM_USB_CHAN_IN)] as well as index 1,3,5 and 7 (so the odd indexes) of the mixed outputs
+
+#if (OUT_VOLUME_IN_MIXER && OUT_VOLUME_AFTER_MIX)
+        #warning OUT Vols in mixer, AFTER mix & map
+        #pragma loop unroll
+        for (int i=0; i<NUM_USB_CHAN_OUT; i++)
+        {
+            int ch_index;
+            unsafe {
+            ch_index = samples_to_device_map[i];
+            }
+            int do_vol_control = 0;
+            if(ch_index < NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN)
+            {
+                do_vol_control = 1;
+            }
+            else
+            {
+                if((ch_index - (NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN)) & 0x1)
+                {
+                    do_vol_control = 1;
+                }
+            }
+            if(do_vol_control)
+            {
+                do_output_volume_control(i);
+
+            }
+        }
+#endif
+
         outuint(c_mixer1, 0);
     }
 }
