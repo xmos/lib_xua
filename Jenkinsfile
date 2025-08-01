@@ -2,19 +2,6 @@
 
 @Library('xmos_jenkins_shared_library@v0.39.0') _
 
-def clone_test_deps() {
-  dir("${WORKSPACE}") {
-    sh "git clone git@github.com:xmos/test_support"
-    sh "git -C test_support checkout 961532d89a98b9df9ccbce5abd0d07d176ceda40"
-
-    sh "git clone git@github0.xmos.com:xmos-int/xtagctl"
-    sh "git -C xtagctl checkout v2.0.0"
-
-    sh "git clone git@github.com:xmos/hardware_test_tools"
-    sh "git -C hardware_test_tools checkout develop"
-  }
-}
-
 getApproval()
 
 pipeline {
@@ -44,8 +31,9 @@ pipeline {
       defaultValue: 'v2.1.0',
       description: 'The infr_apps version'
     )
-    choice(name: 'TEST_LEVEL', choices: ['smoke', 'nightly'],
-            description: 'The level of test coverage to run')
+    choice(
+        name: 'TEST_LEVEL', choices: ['smoke', 'nightly'],
+        description: 'The level of test coverage to run')
   }
 
   stages {
@@ -300,8 +288,6 @@ pipeline {
             dir("${REPO}") {
               checkoutScmShallow()
 
-              clone_test_deps()
-
               withTools(params.TOOLS_VERSION) {
                 dir("tests") {
                   createVenv(reqFile: "requirements.txt")
@@ -344,8 +330,6 @@ pipeline {
           }
           steps {
             println "Stage running on ${env.NODE_NAME}"
-
-            clone_test_deps()
 
             dir("${REPO}") {
               checkoutScmShallow()
@@ -390,8 +374,6 @@ pipeline {
           }
           steps {
             println "Stage running on ${env.NODE_NAME}"
-
-            clone_test_deps()
 
             dir("${REPO}") {
               checkoutScmShallow()
