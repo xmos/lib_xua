@@ -827,6 +827,7 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
 
                             if(cn < sizeof(mixer1Weights)/sizeof(mixer1Weights[0]))
                             {
+
                                 mixer1Weights[cn] = (buffer, unsigned char[])[0] | (buffer, unsigned char[])[1] << 8;
 
                                 if (mixer1Weights[cn] != 0x8000)
@@ -836,7 +837,7 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
 
                                 if (!isnull(c_mix_ctl))
                                 {
-                                     UpdateMixerWeight(c_mix_ctl, (cn) % 8, (cn) / 8, weightMult);
+                                    UpdateMixerWeight(c_mix_ctl, (cn) % MAX_MIX_COUNT, (cn) / MAX_MIX_COUNT, weightMult);
                                 }
                             }
 

@@ -378,15 +378,15 @@ static inline void do_output_volume_control(int out_ch_index)
     unsafe
     {
         /* Read index to sample from the map then Read the actual sample value */
-        ptr_samples[samples_to_device_map[out_ch_index]] = sample;
-        ptr_samples_to_device[out_ch_index] = sample; // Store linearly
+        ptr_samples[samples_to_device_map[out_ch_index]] = h;
+        ptr_samples_to_device[out_ch_index] = h; // Store linearly
     }
 #else
     unsafe
     {
         /* Read the actual sample value */
-        ptr_samples[out_ch_index] = sample;
-        ptr_samples_to_device[out_ch_index] = sample; // Store linearly
+        ptr_samples[out_ch_index] = h;
+        ptr_samples_to_device[out_ch_index] = h; // Store linearly
     }
 #endif
 }

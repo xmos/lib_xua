@@ -38,7 +38,6 @@ def do_test(options, capfd, test_file, test_seed):
 
 
 def test_mixer_routing_output(options, capfd, test_file, test_seed):
-
     result = do_test(options, capfd, test_file, test_seed)
 
     assert result

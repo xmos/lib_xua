@@ -7,7 +7,7 @@
 #define USB_MIXERS 1
 #define USB_MIXER_INPUTS 18
 #define USB_MIXER_OUTPUTS 8
-#define USB_MAX_CHANNEL_MAP_SIZE (32 + 32 + 8 + 1) /* To match static const int SOURCE_COUNT = NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + MAX_MIX_COUNT + 1;. Not sure about the +1*/
+#define USB_MAX_CHANNEL_MAP_SIZE (32 + 32 + USB_MIXER_OUTPUTS + 1)
 #define USB_MIXER_MAX_NAME_LEN 64
 
 enum usb_chan_type {
