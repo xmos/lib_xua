@@ -259,7 +259,7 @@ static inline void GiveSamplesToDevice(chanend c, volatile int * unsafe deviceMa
 #pragma loop unroll
     for (int i=0; i<NUM_USB_CHAN_OUT; i++)
     {
-        int sample, x;
+        int sample;
 #if (OUT_VOLUME_IN_MIXER && OUT_VOLUME_AFTER_MIX)
         unsafe {
             sample = ptr_samples_to_device[i];
@@ -288,7 +288,7 @@ static inline void GiveSamplesToDevice(chanend c, volatile int * unsafe deviceMa
 #pragma unsafe arrays
 static inline void GetSamplesFromDevice(chanend c)
 {
-#if (IN_VOLUME_IN_MIXER && IN_VOLUME_AFTER_MIX)
+#if (IN_VOLUME_IN_MIXER && !IN_VOLUME_AFTER_MIX)
     int mult;
     int h;
     unsigned l;
@@ -315,7 +315,7 @@ static inline void GetSamplesFromDevice(chanend c)
         }
 #endif
 
-#if (IN_VOLUME_IN_MIXER && IN_VOLUME_AFTER_MIX)
+#if (IN_VOLUME_IN_MIXER && !IN_VOLUME_AFTER_MIX)
         /* Volume processing - read relevant multiplier */
         unsafe
         {
@@ -339,7 +339,7 @@ static inline void GetSamplesFromDevice(chanend c)
 #pragma unsafe arrays
 static inline void do_output_volume_control(int out_ch_index)
 {
-    int sample, x;
+    int sample;
     int mult;
     int h;
     unsigned l;
@@ -405,7 +405,9 @@ static void mixer1(chanend c_host, chanend c_mix_ctl, chanend ?c_mixer2, chanend
     unsigned char ct;
 #endif
     unsigned request = 0;
+#if (MAX_MIX_COUNT > 0)
     int mixer2_triggered = 1;
+#endif
 
     while (1)
     {

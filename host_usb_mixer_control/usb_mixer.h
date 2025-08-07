@@ -7,7 +7,7 @@
 #define USB_MIXERS 1
 #define USB_MIXER_INPUTS 18
 #define USB_MIXER_OUTPUTS 8
-#define USB_MAX_CHANNEL_MAP_SIZE (32 + 32 + USB_MIXER_OUTPUTS + 1)
+#define USB_MAX_CHANNEL_MAP_SIZE (32 + 32 + USB_MIXER_OUTPUTS + 1) /* to support i32o32 configuration */
 #define USB_MIXER_MAX_NAME_LEN 64
 
 enum usb_chan_type {

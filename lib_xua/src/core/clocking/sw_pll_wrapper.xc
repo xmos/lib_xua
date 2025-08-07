@@ -121,6 +121,7 @@ void sw_pll_task(chanend c_sw_pll){
        channel lockup if two tasks (eg. init and SDM) try to write at the same time. */
 
     unsigned command = inuint(c_sw_pll);
+    (void)command;
     inct(c_sw_pll);
     while(1)
     {
