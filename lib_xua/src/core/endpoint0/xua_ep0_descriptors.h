@@ -14,6 +14,7 @@
 #include "descriptor_defs.h"
 #include "usbaudio20.h"                /* Defines from the USB Audio 2.0 Specifications */
 #include "usbaudiocommon.h"
+#include "packet_sizes.h"
 #include "xud_device.h"
 #include "xua_hid_descriptor.h"
 #include "xua_ep0_midi_descriptors.h"
