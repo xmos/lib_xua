@@ -12,7 +12,6 @@
 extern unsafe client interface i2c_master_if i_i2c_client;
 extern void board_setup();
 
-
 #define USER_MAIN_DECLARATIONS \
     interface i2c_master_if i2c[1];
 

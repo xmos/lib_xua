@@ -5,6 +5,8 @@
 #define XASSERT_UNIT DECOUPLE
 #include "xassert.h"
 
+#include "debug_print.h"
+
 #if XUA_USB_EN
 #include <xs1.h>
 #include "xc_ptr.h"
@@ -20,47 +22,6 @@
 #if (HID_CONTROLS)
 #include "user_hid.h"
 #endif
-#define XUA_MAX(x,y) ((x)>(y) ? (x) : (y))
-
-/* TODO use SLOTSIZE to potentially save memory */
-/* Note we could improve on this, for one subslot is set to 4 */
-/* The *4 is conversion to bytes, note we're assuming a slotsize of 4 here whic is potentially as waste */
-#define MAX_DEVICE_AUD_PACKET_SIZE_MULT_HS  ((MAX_FREQ/8000+1)*4)
-#define MAX_DEVICE_AUD_PACKET_SIZE_MULT_FS  ((MAX_FREQ_FS/1000+1)*4)
-
-/*** IN PACKET SIZES ***/
-/* Max packet sizes in bytes. Note the +4 is because we store packet lengths in the buffer */
-#define MAX_DEVICE_AUD_PACKET_SIZE_IN_HS  (MAX_DEVICE_AUD_PACKET_SIZE_MULT_HS * NUM_USB_CHAN_IN + 4)
-#define MAX_DEVICE_AUD_PACKET_SIZE_IN_FS  (MAX_DEVICE_AUD_PACKET_SIZE_MULT_FS * NUM_USB_CHAN_IN_FS + 4)
-
-#define MAX_DEVICE_AUD_PACKET_SIZE_IN (XUA_MAX(MAX_DEVICE_AUD_PACKET_SIZE_IN_FS, MAX_DEVICE_AUD_PACKET_SIZE_IN_HS))
-
-/*** OUT PACKET SIZES ***/
-#define MAX_DEVICE_AUD_PACKET_SIZE_OUT_HS  (MAX_DEVICE_AUD_PACKET_SIZE_MULT_HS * NUM_USB_CHAN_OUT + 4)
-#define MAX_DEVICE_AUD_PACKET_SIZE_OUT_FS  (MAX_DEVICE_AUD_PACKET_SIZE_MULT_FS * NUM_USB_CHAN_OUT_FS + 4)
-
-#define MAX_DEVICE_AUD_PACKET_SIZE_OUT (XUA_MAX(MAX_DEVICE_AUD_PACKET_SIZE_OUT_FS, MAX_DEVICE_AUD_PACKET_SIZE_OUT_HS))
-
-/*** BUFFER SIZES ***/
-/* How many packets too allow for in buffer - minimum is 5.
-2 for having in the aud_to_host buffer when it comes out of underflow, space available for 2 more for to accomodate cases when
-2 pkts from audio hub get written into the aud_to_host buffer within 1 SOF period, and space for 1 extra packet to ensure that
-when the 4th packet gets written to the buffer, there's space to accomodate the next packet, otherwise handle_audio_request() will
-drop packets after writing the 4th packet in the buffer
-*/
-#define BUFFER_PACKET_COUNT (5)
-
-#define BUFF_SIZE_OUT_HS    MAX_DEVICE_AUD_PACKET_SIZE_OUT_HS * BUFFER_PACKET_COUNT
-#define BUFF_SIZE_OUT_FS    MAX_DEVICE_AUD_PACKET_SIZE_OUT_FS * BUFFER_PACKET_COUNT
-
-#define BUFF_SIZE_IN_HS     MAX_DEVICE_AUD_PACKET_SIZE_IN_HS * BUFFER_PACKET_COUNT
-#define BUFF_SIZE_IN_FS     MAX_DEVICE_AUD_PACKET_SIZE_IN_FS * BUFFER_PACKET_COUNT
-
-#define BUFF_SIZE_OUT       XUA_MAX(BUFF_SIZE_OUT_HS, BUFF_SIZE_OUT_FS)
-#define BUFF_SIZE_IN        XUA_MAX(BUFF_SIZE_IN_HS, BUFF_SIZE_IN_FS)
-
-#define OUT_BUFFER_PREFILL  (XUA_MAX(MAX_DEVICE_AUD_PACKET_SIZE_OUT_HS, MAX_DEVICE_AUD_PACKET_SIZE_OUT_FS))
-#define IN_BUFFER_PREFILL   (XUA_MAX(MAX_DEVICE_AUD_PACKET_SIZE_IN_HS, MAX_DEVICE_AUD_PACKET_SIZE_IN_FS)*2)
 
 /* Volume and mute tables */
 #if (OUT_VOLUME_IN_MIXER == 0) && (OUTPUT_VOLUME_CONTROL == 1)
@@ -79,7 +40,7 @@ unsafe
 #endif
 
 /* Default to something sensible but the following are setup at stream start (unless UAC1 only..) */
-#if (AUDIO_CLASS == 2)
+#if (XUA_USB_BUS_SPEED == 2)
 int g_numUsbChan_In = NUM_USB_CHAN_IN; /* Number of channels to/from the USB bus - initialised to HS for UAC2.0 */
 int g_numUsbChan_Out = NUM_USB_CHAN_OUT;
 int g_curSubSlot_Out = HS_STREAM_FORMAT_OUTPUT_1_SUBSLOT_BYTES;
@@ -98,7 +59,14 @@ int g_maxPacketSize = MAX_DEVICE_AUD_PACKET_SIZE_IN_FS;  /* IN packet size. Init
 #endif
 
 /* Circular audio buffers */
-unsigned outAudioBuff[(BUFF_SIZE_OUT >> 2)+ (MAX_DEVICE_AUD_PACKET_SIZE_OUT >> 2)];
+#if (XUD_USB_ISO_MAX_TXNS_PER_MICROFRAME > 1)
+    #define REQD_BUF_SIZE_ERR_HANDLING_HIBW_OUT (3*(XUD_USB_ISO_EP_MAX_TXN_SIZE))
+    #define OUT_BUF_EXTRA_SIZE  (XUA_MAX(MAX_DEVICE_AUD_PACKET_SIZE_OUT, REQD_BUF_SIZE_ERR_HANDLING_HIBW_OUT))
+    unsigned outAudioBuff[(BUFF_SIZE_OUT >> 2)+ (OUT_BUF_EXTRA_SIZE >> 2)];
+#else
+    unsigned outAudioBuff[(BUFF_SIZE_OUT >> 2)+ (MAX_DEVICE_AUD_PACKET_SIZE_OUT >> 2)];
+#endif
+
 unsigned audioBuffIn[(BUFF_SIZE_IN >> 2)+ (MAX_DEVICE_AUD_PACKET_SIZE_IN >> 2)];
 
 /* Shift down accounts for bytes -> words */
@@ -116,8 +84,8 @@ unsigned g_aud_to_host_flag = 0;
 int buffer_aud_ctl_chan = 0;
 unsigned g_aud_from_host_flag = 0;
 unsigned g_aud_from_host_info;
-unsigned g_freqChange_flag = 0;
-unsigned g_freqChange_sampFreq = DEFAULT_FREQ;
+unsigned g_streamChange_flag = XUA_AUDCTL_NO_COMMAND; /* Combined flag and command var used for signalling from host. Valid values are defined in commands.h */
+unsigned g_streamChange_sampFreq = DEFAULT_FREQ;
 
 /* Global vars for sharing stream format change between buffer and decouple (save a channel) */
 unsigned g_formatChange_SubSlot;
@@ -154,6 +122,13 @@ unsigned unpackData = 0;
 
 unsigned packState = 0;
 unsigned packData = 0;
+
+/* These flags are booleans which log whether or not an input or output stream is active
+ * They can be used for passing to audio to allow shutdown when not streaming any audio */
+unsigned g_output_stream_active = 0;
+unsigned g_input_stream_active = 0;
+unsigned g_any_stream_active_old = 0;
+unsigned g_any_stream_active_current = 0;
 
 static inline void _send_sample_4(chanend c_mix_out, int ch)
 {
@@ -231,6 +206,7 @@ void handle_audio_request(chanend c_mix_out)
     /* Input word that triggered interrupt and handshake back */
     unsigned underflowSample = inuint(c_mix_out);
 
+    // OUT
 #if (NUM_USB_CHAN_OUT == 0)
     outuint(c_mix_out, underflowSample);
 #else
@@ -373,6 +349,7 @@ __builtin_unreachable();
 
 #endif
 
+    // IN
     {
         int dPtr;
         GET_SHARED_GLOBAL(dPtr, g_aud_to_host_dptr);
@@ -569,13 +546,14 @@ __builtin_unreachable();
             /* Must allow space for at least one sample per channel, as these are written at the beginning of
              * the interrupt handler even if totalSampsToWrite is zero (will be overwritten by a later packet). */
             int spaceRequired = XUA_MAX(totalSampsToWrite, 1) * g_numUsbChan_In * g_curSubSlot_In + 4;
+
             if (spaceRequired > BUFF_SIZE_IN - fillLevel)
             {
                 /* In pipe has filled its buffer - we need to overflow
                  * Accept the packet, and throw away the oldest in the buffer */
 
                 unsigned sampFreq;
-                GET_SHARED_GLOBAL(sampFreq, g_freqChange_sampFreq);
+                GET_SHARED_GLOBAL(sampFreq, g_streamChange_sampFreq);
                 int min, mid, max;
                 GetADCCounts(sampFreq, min, mid, max);
                 const int max_pkt_size = ((max * g_curSubSlot_In * g_numUsbChan_In + 3) & ~0x3) + 4;
@@ -681,14 +659,37 @@ static inline void SetupZerosSendBuffer(XUD_ep aud_to_host_usb_ep, unsigned samp
 
     /* Mark EP ready with the zero buffer. Note this will simply update the packet size
     * if it is already ready */
-
     XUD_SetReady_InPtr(aud_to_host_usb_ep, aud_to_host_zeros+4, mid);
 }
 #endif
 
+
+static void check_and_signal_stream_event_to_audio(chanend c_mix_out, unsigned dsdMode, unsigned sampResOut)
+{
+    /* We do OR logic so audio hub is sent info about whether *ANY* stream is active or not */
+    g_any_stream_active_current = g_input_stream_active || g_output_stream_active;
+    if(g_any_stream_active_current != g_any_stream_active_old)
+    {
+        /* Forward stream active command to audio if needed - this will cause the audio loop to break */
+        inuint(c_mix_out);
+        if(g_any_stream_active_current)
+        {
+            outct(c_mix_out, XUA_AUD_SET_AUDIO_START);
+            outuint(c_mix_out, dsdMode);
+            outuint(c_mix_out, sampResOut);
+        }
+        else
+        {
+            outct(c_mix_out, XUA_AUD_SET_AUDIO_STOP);
+        }
+        chkct(c_mix_out, XS1_CT_END);
+    }
+    g_any_stream_active_old = g_any_stream_active_current;
+}
+
 #pragma unsafe arrays
 void XUA_Buffer_Decouple(chanend c_mix_out
-#ifdef CHAN_BUFF_CTRL
+#ifdef XUA_CHAN_BUFF_CTRL
     , chanend c_buf_ctrl
 #endif
 )
@@ -725,6 +726,11 @@ void XUA_Buffer_Decouple(chanend c_mix_out
        0 length packets, which is reasonable behaviour */
     t = array_to_xc_ptr(inZeroBuff);
     xc_ptr aud_to_host_zeros = t;
+
+    /* Stream format vars */
+    int dataFormatOut, sampResOut;
+    int dsdMode = DSD_MODE_OFF;
+    int dataFormatIn, usbSpeed;
 
     /* Init vol mult tables */
 #if (OUT_VOLUME_IN_MIXER == 0) && (OUTPUT_VOLUME_CONTROL == 1)
@@ -782,9 +788,9 @@ void XUA_Buffer_Decouple(chanend c_mix_out
 
     while(1)
     {
-        int tmp;
+        int cmd;
 
-#ifdef CHAN_BUFF_CTRL
+#ifdef XUA_CHAN_BUFF_CTRL
         if(!outOverflow)
         {
             /* Need to keep polling in overflow case */
@@ -796,16 +802,16 @@ void XUA_Buffer_Decouple(chanend c_mix_out
 
             /* Check for freq change or other update */
 
-            GET_SHARED_GLOBAL(tmp, g_freqChange_flag);
-            if (tmp == SET_SAMPLE_FREQ)
+            GET_SHARED_GLOBAL(cmd, g_streamChange_flag);
+            if (cmd == XUA_AUDCTL_SET_SAMPLE_FREQ)
             {
-                SET_SHARED_GLOBAL(g_freqChange_flag, 0);
-                GET_SHARED_GLOBAL(sampFreq, g_freqChange_sampFreq);
+                SET_SHARED_GLOBAL(g_streamChange_flag, XUA_AUDCTL_NO_COMMAND);
+                GET_SHARED_GLOBAL(sampFreq, g_streamChange_sampFreq);
 
                 /* Pass on to mixer */
                 DISABLE_INTERRUPTS();
                 inuint(c_mix_out);
-                outct(c_mix_out, SET_SAMPLE_FREQ);
+                outct(c_mix_out, XUA_AUDCTL_SET_SAMPLE_FREQ);
                 outuint(c_mix_out, sampFreq);
 
                 if(sampFreq != AUDIO_STOP_FOR_DFU)
@@ -843,30 +849,26 @@ void XUA_Buffer_Decouple(chanend c_mix_out
                 /* Wait for handshake back and pass back up */
                 chkct(c_mix_out, XS1_CT_END);
 
-                SET_SHARED_GLOBAL(g_freqChange, 0);
                 asm volatile("outct res[%0],%1"::"r"(buffer_aud_ctl_chan),"r"(XS1_CT_END));
-
+                SET_SHARED_GLOBAL(g_streamChangeOngoing, XUA_AUDCTL_NO_COMMAND);
                 ENABLE_INTERRUPTS();
 
                 if(sampFreq != AUDIO_STOP_FOR_DFU)
                     speedRem = 0;
                 continue;
             }
-#if (AUDIO_CLASS == 2)
 #if (MIN_FREQ != MAX_FREQ)
             else
 #endif
-            if(tmp == SET_STREAM_FORMAT_IN)
+            if(cmd == XUA_AUDCTL_SET_STREAM_INPUT_START)
             {
-                unsigned dataFormat, usbSpeed;
-
                 /* Change in IN channel count */
                 DISABLE_INTERRUPTS();
-                SET_SHARED_GLOBAL(g_freqChange_flag, 0);
+                SET_SHARED_GLOBAL(g_streamChange_flag, XUA_AUDCTL_NO_COMMAND);
 
                 GET_SHARED_GLOBAL(g_numUsbChan_In, g_formatChange_NumChans);
                 GET_SHARED_GLOBAL(g_curSubSlot_In, g_formatChange_SubSlot);
-                GET_SHARED_GLOBAL(dataFormat, g_formatChange_DataFormat); /* Not currently used for input stream */
+                GET_SHARED_GLOBAL(dataFormatIn, g_formatChange_DataFormat); /* Not currently used for input stream */
 
                 /* Reset IN buffer state */
                 inUnderflow = 1;
@@ -893,23 +895,23 @@ void XUA_Buffer_Decouple(chanend c_mix_out
                     g_maxPacketSize = (MAX_DEVICE_AUD_PACKET_SIZE_MULT_FS * g_numUsbChan_In);
                 }
 
-                SET_SHARED_GLOBAL(g_freqChange, 0);
-                asm volatile("outct res[%0],%1"::"r"(buffer_aud_ctl_chan),"r"(XS1_CT_END));
+                g_input_stream_active = 1;
+                check_and_signal_stream_event_to_audio(c_mix_out, dsdMode, sampResOut);
 
+                /* ACK back to EP0 */
+                asm volatile("outct res[%0],%1"::"r"(buffer_aud_ctl_chan),"r"(XS1_CT_END));
+                SET_SHARED_GLOBAL(g_streamChangeOngoing, XUA_AUDCTL_NO_COMMAND);
                 ENABLE_INTERRUPTS();
             }
-            else if(tmp == SET_STREAM_FORMAT_OUT)
+            else if(cmd == XUA_AUDCTL_SET_STREAM_OUTPUT_START)
             {
-                unsigned dataFormat, sampRes;
-                unsigned dsdMode = DSD_MODE_OFF;
-
                 /* Change in OUT channel count - note we expect this on every stream start event */
                 DISABLE_INTERRUPTS();
-                SET_SHARED_GLOBAL(g_freqChange_flag, 0);
+                SET_SHARED_GLOBAL(g_streamChange_flag, XUA_AUDCTL_NO_COMMAND);
                 GET_SHARED_GLOBAL(g_numUsbChan_Out, g_formatChange_NumChans);
                 GET_SHARED_GLOBAL(g_curSubSlot_Out, g_formatChange_SubSlot);
-                GET_SHARED_GLOBAL(dataFormat, g_formatChange_DataFormat);
-                GET_SHARED_GLOBAL(sampRes, g_formatChange_SampRes);
+                GET_SHARED_GLOBAL(dataFormatOut, g_formatChange_DataFormat);
+                GET_SHARED_GLOBAL(sampResOut, g_formatChange_SampRes);
 
 #if (NUM_USB_CHAN_OUT > 0)
                 /* Reset OUT buffer state */
@@ -930,25 +932,43 @@ void XUA_Buffer_Decouple(chanend c_mix_out
 #endif
 
 #ifdef NATIVE_DSD
-                if(dataFormat == UAC_FORMAT_TYPEI_RAW_DATA)
+                if(dataFormatOut == UAC_FORMAT_TYPEI_RAW_DATA)
                 {
                     dsdMode = DSD_MODE_NATIVE;
                 }
 #endif
                 /* Wait for the audio code to request samples and respond with command */
-                inuint(c_mix_out);
-                outct(c_mix_out, SET_STREAM_FORMAT_OUT);
-                outuint(c_mix_out, dsdMode);
-                outuint(c_mix_out, sampRes);
+                g_output_stream_active = 1;
+                check_and_signal_stream_event_to_audio(c_mix_out, dsdMode, sampResOut);
 
-                /* Wait for handshake back */
-                chkct(c_mix_out, XS1_CT_END);
                 asm volatile("outct res[%0],%1"::"r"(buffer_aud_ctl_chan),"r"(XS1_CT_END));
-
-                SET_SHARED_GLOBAL(g_freqChange, 0);
+                SET_SHARED_GLOBAL(g_streamChangeOngoing, XUA_AUDCTL_NO_COMMAND);
                 ENABLE_INTERRUPTS();
             }
-#endif
+            else if(cmd == XUA_AUDCTL_SET_STREAM_INPUT_STOP || cmd == XUA_AUDCTL_SET_STREAM_OUTPUT_STOP)
+            {
+                DISABLE_INTERRUPTS();
+                SET_SHARED_GLOBAL(g_streamChange_flag, XUA_AUDCTL_NO_COMMAND);
+
+                /* clear stream active if needed */
+                g_input_stream_active = (cmd == XUA_AUDCTL_SET_STREAM_INPUT_STOP) ? 0 : g_input_stream_active;
+                g_output_stream_active = (cmd == XUA_AUDCTL_SET_STREAM_OUTPUT_STOP) ? 0 : g_output_stream_active;
+                check_and_signal_stream_event_to_audio(c_mix_out, dsdMode, sampResOut);
+
+                /* ACK back to EP0 */
+                asm volatile("outct res[%0],%1"::"r"(buffer_aud_ctl_chan),"r"(XS1_CT_END));
+                SET_SHARED_GLOBAL(g_streamChangeOngoing, XUA_AUDCTL_NO_COMMAND);
+                ENABLE_INTERRUPTS();
+            }
+            else if(cmd == XUA_EXIT)
+            {
+                DISABLE_INTERRUPTS();
+                inct(c_mix_out);
+                outct(c_mix_out, XS1_CT_END);
+                SET_SHARED_GLOBAL(g_streamChangeOngoing, XUA_AUDCTL_NO_COMMAND);
+                SET_SHARED_GLOBAL(g_streamChange_flag, XUA_AUDCTL_NO_COMMAND);
+                return;
+            }
         }
 
 #if (NUM_USB_CHAN_OUT > 0)
@@ -990,12 +1010,16 @@ void XUA_Buffer_Decouple(chanend c_mix_out
             space_left = aud_from_host_rdptr - aud_from_host_wrptr;
 
             /* Mod and special case */
-            if(space_left <= 0 && g_aud_from_host_rdptr == aud_from_host_fifo_start)
+            if(g_aud_from_host_rdptr == aud_from_host_fifo_start)
             {
                 space_left = aud_from_host_fifo_end - g_aud_from_host_wrptr;
             }
 
+#if (XUD_USB_ISO_MAX_TXNS_PER_MICROFRAME > 1)
+            if (space_left <= 0 || space_left >= REQD_BUF_SIZE_ERR_HANDLING_HIBW_OUT)
+#else
             if (space_left <= 0 || space_left >= MAX_DEVICE_AUD_PACKET_SIZE_OUT)
+#endif
             {
                 SET_SHARED_GLOBAL(g_aud_from_host_buffer, aud_from_host_wrptr);
                 XUD_SetReady_OutPtr(aud_from_host_usb_ep, aud_from_host_wrptr+4);
@@ -1039,7 +1063,7 @@ void XUA_Buffer_Decouple(chanend c_mix_out
             /* Check if buffer() has sent a packet to host - uses shared mem flag to save chanends */
             int sentPkt;
             GET_SHARED_GLOBAL(sentPkt, g_aud_to_host_flag);
-            //case inuint_byref(c_buf_in, tmp):
+            //case inuint_byref(c_buf_in, cmd):
             if (sentPkt)
             {
                 /* Signals that the IN endpoint has sent data from the passed buffer */
@@ -1057,7 +1081,7 @@ void XUA_Buffer_Decouple(chanend c_mix_out
 
                     /* Check if we have come out of underflow */
                     unsigned sampFreq;
-                    GET_SHARED_GLOBAL(sampFreq, g_freqChange_sampFreq);
+                    GET_SHARED_GLOBAL(sampFreq, g_streamChange_sampFreq);
                     int min, mid, max;
                     GetADCCounts(sampFreq, min, mid, max);
                     const int min_pkt_size = ((min * g_curSubSlot_In * g_numUsbChan_In + 3) & ~0x3) + 4;

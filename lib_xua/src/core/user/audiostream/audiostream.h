@@ -5,48 +5,21 @@
 
 /* Functions that handle functionality that occur on stream start/stop e.g. DAC mute/un-mute.
  * They should be implemented for the external audio hardware arrangement of a specific design.
+
+ * Note that these are called from the EP0 code which always resides on XUD_TILE, i.e. the
+ * tile where the USB device code is executed.
  */
 
 /**
  * @brief   User stream start code
  *
- * User code to perform any actions required at every stream start - either input or output
+ * User code to perform any actions required at every stream start - either input or output.
+ * 
+ * /param inputActive	An input stream is active if 1, else inactive if 0
+ * /param OutputActive	An output stream is active if 1, else inactive if 0
  */
-void UserAudioStreamStart(void);
 
-/**
- * @brief   User stream stop code
- *
- * User code to perform any actions required on every stream stop - either input or output*/
-void UserAudioStreamStop(void);
-
-/**
- * @brief   User input stream stop code
- *
- * User code to perform any actions required on input stream start i.e. device to host
- */
-void UserAudioInputStreamStart(void);
-
-/**
- * @brief   User input stream stop code
- *
- * User code to perform any actions required on input stream stop i.e. device to host
- */
-void UserAudioInputStreamStop(void);
-
-/**
- * @brief   User output stream start code
- *
- * User code to perform any actions required on output stream start i.e. host to device
- */
-void UserAudioOutputStreamStart(void);
-
-/**
- * @brief   User output stream stop code
- *
- * User code to perfrom any actions required on output stream stop i.e. host to device
- */
-void UserAudioOutputStreamStop(void);
+void UserAudioStreamState(int inputActive, int outputActive);
 
 #endif
 

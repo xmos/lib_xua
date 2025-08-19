@@ -125,7 +125,7 @@ void generator(chanend c_checker, chanend c_out)
       if (!fail) {
         debug_printf("PASS\n");
       }
-      outct(c_out, SET_SAMPLE_FREQ);
+      outct(c_out, XUA_AUDCTL_SET_SAMPLE_FREQ);
       //inuint(c_out); //This causes the DFUhandler to be called with exceptiopn in slave mode so skip this - we are out of here anyhow
 
     /* Give some time for AudioHub() to react to the command to stop accessing ports otherwise exit()
@@ -201,6 +201,7 @@ void checker(chanend c_checker, int disable)
 
 out port p_mclk_gen       = on tile[AUDIO_IO_TILE] :  XS1_PORT_1A;
 clock clk_audio_mclk_gen  = on tile[AUDIO_IO_TILE] : XS1_CLKBLK_3;
+in port p_for_mclk_count  = on tile[XUD_TILE] : XS1_PORT_16A;
 void master_mode_clk_setup(void);
 
 #if CODEC_MASTER
@@ -211,7 +212,43 @@ clock clk_audio_lrclk_gen = on tile[AUDIO_IO_TILE] : XS1_CLKBLK_5;
 void slave_mode_clk_setup(const unsigned samFreq, const unsigned chans_per_frame);
 #endif
 
-#endif
+
+void mclk_checker(void)
+{
+  if(AUDIO_IO_TILE == XUD_TILE)
+  {
+    int x;
+    asm("ldw %0, dp[clk_audio_mclk]":"=r"(x));
+    asm("setclk res[%0], %1"::"r"(p_for_mclk_count), "r"(x));
+
+    unsigned c0, c1;
+    // startup value of port timer
+    delay_microseconds(5); // Wait for I2S to start the clock
+    p_for_mclk_count :> void @ c0;
+    delay_microseconds(10); // Wait for port timer to increment a bit more. Should be just over 25 ticks per microsecond, so 250 + a few instruction times
+
+    // Input will fail if not clocked so have timeout
+    timer t;
+    int timeout;
+    t :> timeout;
+    timeout += XS1_TIMER_MHZ; // 1 us in the future
+
+    select{
+      case t when timerafter(timeout) :> int _: 
+        debug_printf("TIMEOUT in mclk_checker - MCLK port could not input due to no clock\n");
+        break;
+
+      case p_for_mclk_count :> void @ c1:
+        if( ((c1 - c0) > 270) || ((c1 - c0) < 230) ){
+          debug_printf("mclk_checker error - MCLK port could input but timer not incrementing at correct rate. Expecting ~250 for 25MHz but got %d\n", (c1 - c0));
+        }
+        break;
+    }
+    // All good, print nothing
+  }
+}
+
+#endif // SIM
 
 #if (XUA_PCM_FORMAT == XUA_PCM_FORMAT_TDM)
 const int i2s_tdm_mode = 8;
@@ -242,6 +279,9 @@ int main(void)
 #endif
             }
         }
+#ifdef SIMULATION
+        on tile[XUD_TILE]: mclk_checker();
+#endif
     }
 
     return 0;

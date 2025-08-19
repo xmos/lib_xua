@@ -229,9 +229,12 @@ void clockGen ( streaming chanend ?c_spdif_rx,
 #endif
 )
 {
+#if !XUA_USE_SW_PLL
     timer t_local;
-    unsigned timeNextEdge, timeLastEdge, timeNextClockDetection;
+    unsigned timeNextEdge, timeLastEdge;
+#endif
     unsigned clkMode = CLOCK_INTERNAL;              /* Current clocking mode in operation */
+    unsigned prev_clk_mode = clkMode;
     unsigned tmp;
 
     /* Start in no-SMUX (8-channel) mode */
@@ -260,6 +263,7 @@ void clockGen ( streaming chanend ?c_spdif_rx,
 
 #if (XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
     timer t_external;
+    unsigned timeNextClockDetection;
     unsigned selected_mclk_rate = MCLK_48; // Assume 24.576MHz initial clock
     unsigned selected_sample_rate = 0;
 #if XUA_USE_SW_PLL
@@ -281,7 +285,9 @@ void clockGen ( streaming chanend ?c_spdif_rx,
     int spdifUnderflow = 1;
     int spdifSamps = 0;                            /* Number of samples in buffer */
     Counter spdifCounters;
+#if !XUA_USE_SW_PLL
     int spdifRxTime;
+#endif
     unsigned tmp2;
     unsigned spdifLeft = 0;
     unsigned spdifRxData;
@@ -297,7 +303,9 @@ void clockGen ( streaming chanend ?c_spdif_rx,
     //int adatFrameErrors = 0;
     int adatSamps = 0;
     Counter adatCounters;
+#if !XUA_USE_SW_PLL
     int adatReceivedTime;
+#endif
 
     unsigned adatFrame[8];
     int adatChannel = 0;
@@ -343,10 +351,19 @@ void clockGen ( streaming chanend ?c_spdif_rx,
     adatCounters.samplesPerTick = 0;
 #endif
 
+#if !XUA_USE_SW_PLL
     t_local :> timeNextEdge;
     timeLastEdge = timeNextEdge;
+#if (XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
     timeNextClockDetection = timeNextEdge + (LOCAL_CLOCK_INCREMENT / 2);
+#endif
     timeNextEdge += LOCAL_CLOCK_INCREMENT;
+#else
+#if (XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
+    t_external :> timeNextClockDetection;
+    timeNextClockDetection += LOCAL_CLOCK_INCREMENT;
+#endif
+#endif
 
 #ifdef LEVEL_METER_LEDS
     t_level :> levelTime;
@@ -418,14 +435,22 @@ void clockGen ( streaming chanend ?c_spdif_rx,
                         /* Send back current clock mode */
                         outuint(c_clk_ctl, clkMode);
                         outct(c_clk_ctl, XS1_CT_END);
-
                         break;
 
                     case SET_SEL:
                         /* Update clock mode */
                         clkMode = inuint(c_clk_ctl);
                         chkct(c_clk_ctl, XS1_CT_END);
-
+#if ((XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN) && XUA_USE_SW_PLL)
+                        if(prev_clk_mode != clkMode)
+                        {
+                            // Send command to sw_pll to set dco setting to midpoint
+                            sw_pll_set_pll_to_nominal(c_sw_pll, selected_mclk_rate);
+                            reset_sw_pll_pfd = 1; // To ignore the first ferror when the clk source gets switched to external since the first
+                            // mclk_time_stamp would be wrong wrt the last_mclk_time_stamp
+                        }
+#endif
+                        prev_clk_mode = clkMode;
 #ifdef CLOCK_VALIDITY_CALL
                         switch(clkMode)
                         {
@@ -482,19 +507,18 @@ void clockGen ( streaming chanend ?c_spdif_rx,
                 break;
 
             /* Generate local clock from timer */
+#if !XUA_USE_SW_PLL
             case t_local when timerafter(timeNextEdge) :> void:
-
-#if XUA_USE_SW_PLL
-                /* Do nothing - hold the most recent sw_pll setting */
-#else
                 /* Setup next local clock edge */
                 i_pll_ref.toggle_timed(0);
-#endif
+
                 /* Record time of edge */
                 timeLastEdge = timeNextEdge;
 
                 /* Setup for next edge */
+#if (XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
                 timeNextClockDetection = timeNextEdge + (LOCAL_CLOCK_INCREMENT/2);
+#endif
                 timeNextEdge += LOCAL_CLOCK_INCREMENT;
 
                 /* If we are in an external clock mode and this fire, then clock invalid
@@ -515,6 +539,7 @@ void clockGen ( streaming chanend ?c_spdif_rx,
                 }
 #endif
                 break;
+#endif
 
 #if (XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
             case t_external when timerafter(timeNextClockDetection) :> void:
@@ -524,11 +549,53 @@ void clockGen ( streaming chanend ?c_spdif_rx,
 #if (XUA_SPDIF_RX_EN)
                     /* Returns 1 if valid clock found */
                     valid = validSamples(spdifCounters, CLOCK_SPDIF);
+#if XUA_USE_SW_PLL
+                    if((clkMode == CLOCK_SPDIF) && (selected_sample_rate != clockFreq[CLOCK_SPDIF]))
+                    {
+                        valid = 0; // Signal clock invalid to the host (https://github.com/xmos/lib_xua/issues/509)
+                        if(require_ack_to_audio)
+                        {
+                            c_audio_rate_change <: tmp;
+                            require_ack_to_audio = 0;
+                        }
+                    }
+                    if(clockValid[CLOCK_SPDIF] && (valid == 0))
+                    {
+                        /* Skip first measurement when clock goes valid next as the mclk_time_stamp
+                        will be very off wrt the last_mclk_time_stamp which was recorded when the
+                        clock was last valid
+                        */
+                        reset_sw_pll_pfd = 1;
+                        spdifCounters.receivedSamples = 0;
+                    }
+#endif
                     setClockValidity(c_clk_int, CLOCK_SPDIF, valid, clkMode);
 #endif
 #if (XUA_ADAT_RX_EN)
                     /* Returns 1 if valid clock found */
                     valid = validSamples(adatCounters, CLOCK_ADAT);
+#if XUA_USE_SW_PLL
+                    if(clkMode == CLOCK_ADAT)
+                    {
+                        unsigned expected_mclk = \
+                            ((clockFreq[CLOCK_ADAT] == 48000) || (clockFreq[CLOCK_ADAT] == 96000) || (clockFreq[CLOCK_ADAT] == 192000)) ? MCLK_48 : MCLK_441;
+
+                        if(expected_mclk != selected_mclk_rate)
+                        {
+                            valid = 0;
+                            if(require_ack_to_audio)
+                            {
+                                c_audio_rate_change <: tmp;
+                                require_ack_to_audio = 0;
+                            }
+                        }
+                    }
+                    if(clockValid[CLOCK_ADAT] && (valid == 0))
+                    {
+                        reset_sw_pll_pfd = 1;
+                        adatCounters.receivedSamples = 0;
+                    }
+#endif
                     setClockValidity(c_clk_int, CLOCK_ADAT, valid, clkMode);
 #endif
                 }
@@ -572,8 +639,9 @@ void clockGen ( streaming chanend ?c_spdif_rx,
 #if XUA_USE_SW_PLL
                 /* Record time of sample */
                 asm volatile(" getts %0, res[%1]" : "=r" (mclk_time_stamp) : "r" (p_for_mclk_count_aud));
-#endif
+#else
                 t_local :> spdifRxTime;
+#endif
 
                 /* Check parity and ignore if bad */
                 if(spdif_rx_check_parity(spdifRxData))
@@ -633,6 +701,16 @@ void clockGen ( streaming chanend ?c_spdif_rx,
                     /* Inspect for if we need to produce an edge */
                     if((spdifCounters.receivedSamples >=  spdifCounters.samplesPerTick))
                     {
+#if XUA_USE_SW_PLL
+                        do_sw_pll_phase_frequency_detector_dig_rx(  mclk_time_stamp,
+                                            mclks_per_sample,
+                                            c_sw_pll,
+                                            spdifCounters.receivedSamples,
+                                            reset_sw_pll_pfd);
+
+                        /* Reset counters */
+                        spdifCounters.receivedSamples = 0;
+#else
                         /* Check edge is about right... S/PDIF may have changed freq... */
                         if(timeafter(spdifRxTime, (timeLastEdge + LOCAL_CLOCK_INCREMENT - LOCAL_CLOCK_MARGIN)))
                         {
@@ -642,19 +720,13 @@ void clockGen ( streaming chanend ?c_spdif_rx,
                             /* Setup for next edge */
                             timeNextEdge = spdifRxTime + LOCAL_CLOCK_INCREMENT + LOCAL_CLOCK_MARGIN;
 
-#if XUA_USE_SW_PLL
-                            do_sw_pll_phase_frequency_detector_dig_rx(  mclk_time_stamp,
-                                                                        mclks_per_sample,
-                                                                        c_sw_pll,
-                                                                        spdifCounters.receivedSamples,
-                                                                        reset_sw_pll_pfd);
-#else
                             /* Toggle edge */
                             i_pll_ref.toggle_timed(1);
-#endif
+
                             /* Reset counters */
                             spdifCounters.receivedSamples = 0;
                         }
+#endif
                     }
                 }
                 break;
@@ -665,8 +737,9 @@ void clockGen ( streaming chanend ?c_spdif_rx,
 #if XUA_USE_SW_PLL
                     /* record time of sample */
                     asm volatile(" getts %0, res[%1]" : "=r" (mclk_time_stamp) : "r" (p_for_mclk_count_aud));
-#endif
+#else
                     t_local :> adatReceivedTime;
+#endif
 
                     /* Sync is: 1 | (user_byte << 4) */
                     if(tmp&1)
@@ -756,6 +829,15 @@ void clockGen ( streaming chanend ?c_spdif_rx,
                                     /* Inspect for if we need to produce an edge */
                                     if ((adatCounters.receivedSamples >= adatCounters.samplesPerTick))
                                     {
+#if XUA_USE_SW_PLL
+                                        do_sw_pll_phase_frequency_detector_dig_rx(  mclk_time_stamp,
+                                            mclks_per_sample,
+                                            c_sw_pll,
+                                            adatCounters.receivedSamples,
+                                            reset_sw_pll_pfd);
+                                        /* Reset counters */
+                                        adatCounters.receivedSamples = 0;
+#else
                                         /* Check edge is about right... ADAT may have changed freq... */
                                         if (timeafter(adatReceivedTime, (timeLastEdge + LOCAL_CLOCK_INCREMENT - LOCAL_CLOCK_MARGIN)))
                                         {
@@ -765,20 +847,13 @@ void clockGen ( streaming chanend ?c_spdif_rx,
                                             /* Setup for next edge */
                                             timeNextEdge = adatReceivedTime + LOCAL_CLOCK_INCREMENT + LOCAL_CLOCK_MARGIN;
 
-#if XUA_USE_SW_PLL
-                                            do_sw_pll_phase_frequency_detector_dig_rx(  mclk_time_stamp,
-                                                                                        mclks_per_sample,
-                                                                                        c_sw_pll,
-                                                                                        adatCounters.receivedSamples,
-                                                                                        reset_sw_pll_pfd);
-#else
                                             /* Toggle edge */
                                             i_pll_ref.toggle_timed(1);
-#endif
 
                                             /* Reset counters */
                                             adatCounters.receivedSamples = 0;
                                         }
+#endif
                                     }
                                 }
                             }

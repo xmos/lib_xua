@@ -5,7 +5,9 @@
 
 #define EXCLUDE_USB_AUDIO_MAIN
 #define XUA_NUM_PDM_MICS 0
+#ifndef XUD_TILE
 #define XUD_TILE 1
+#endif
 #define AUDIO_IO_TILE 0
 #define MIXER 0
 

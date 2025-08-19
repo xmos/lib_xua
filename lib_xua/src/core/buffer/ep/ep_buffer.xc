@@ -24,7 +24,7 @@ void GetADCCounts(unsigned samFreq, int &min, int &mid, int &max);
 
 extern unsigned int g_curSamFreqMultiplier;
 
-#ifdef CHAN_BUFF_CTRL
+#ifdef XUA_CHAN_BUFF_CTRL
 #define SET_SHARED_GLOBAL0(x,y) SET_SHARED_GLOBAL(x,y); outuchar(c_buff_ctrl, 0);
 #else
 #define SET_SHARED_GLOBAL0(x,y) SET_SHARED_GLOBAL(x,y)
@@ -33,9 +33,9 @@ extern unsigned int g_curSamFreqMultiplier;
 /* Initialise g_speed now so we get a sensible packet size until we start properly calculating feedback in the SoF case */
 /* Without this, zero size input packets fill the input FIFO and it takes a long time to clear out when feedback starts */
 /* This can cause a delay to the decouple ISR being serviced pushing our I2S timing. Initialising solves this */
-unsigned g_speed = (AUDIO_CLASS == 2) ? (DEFAULT_FREQ/8000) << 16 : (DEFAULT_FREQ/1000) << 16;
-unsigned g_freqChange = 0;
-unsigned feedbackValid = 0;
+unsigned g_speed = (XUA_USB_BUS_SPEED == 2) ? (DEFAULT_FREQ/8000) << 16 : (DEFAULT_FREQ/1000) << 16;
+unsigned g_streamChangeOngoing = 0; /* Not cleared until audio has completed it's SR change. This can be used for logic that needs to know audio has completed the command */
+unsigned g_feedbackValid = 0;
 
 #if (XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
 /* When digital Rx enabled we enable an interrupt EP to inform host about changes in clock validity */
@@ -55,7 +55,7 @@ unsigned char g_intData[8] =
 unsigned g_intFlag = 0;
 #endif
 
-#if defined (MIDI) || defined(IAP)
+#ifdef MIDI
 static inline void swap(xc_ptr &a, xc_ptr &b)
 {
   xc_ptr tmp;
@@ -72,14 +72,25 @@ static unsigned int g_midi_to_host_buffer_B[MIDI_USB_BUFFER_TO_HOST_SIZE/4];
 static unsigned int g_midi_from_host_buffer[MAX_USB_MIDI_PACKET_SIZE/4];
 #endif
 
-#ifdef IAP
-unsigned char  gc_zero_buffer[4];
-#endif
-
 unsigned int fb_clocks[4];
 
 //#define FB_TOLERANCE_TEST
 #define FB_TOLERANCE 0x100
+
+/* Helper function to reset asynch feedback calculation when MCLK changes */
+static void resetAsynchFeedback(int &sofCount, unsigned &clocks, long long &clockcounter, unsigned &mod_from_last_time, unsigned sampleFreq)
+{
+    sofCount = 0;
+    clocks = 0;
+    clockcounter = 0;
+    mod_from_last_time = 0;
+    g_feedbackValid = 0;
+
+    /* Set g_speed to something sensible. We expect it to get over-written before stream time */
+    int min, mid, max;
+    GetADCCounts(sampleFreq, min, mid, max);
+    g_speed = mid << 16;
+}
 
 void XUA_Buffer(
 #if (NUM_USB_CHAN_OUT > 0)
@@ -117,8 +128,7 @@ void XUA_Buffer(
 #endif
 )
 {
-#ifdef CHAN_BUFF_CTRL
-#warning Using channel to control buffering - this may reduce performance but improve power consumption
+#ifdef XUA_CHAN_BUFF_CTRL
     chan c_buff_ctrl;
 #endif
 
@@ -148,7 +158,7 @@ void XUA_Buffer(
 #if XUA_HID_ENABLED
                 , c_hid
 #endif
-#ifdef CHAN_BUFF_CTRL
+#ifdef XUA_CHAN_BUFF_CTRL
                 , c_buff_ctrl
 #endif
 #if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
@@ -163,7 +173,7 @@ void XUA_Buffer(
 
         {
             XUA_Buffer_Decouple(c_aud
-#ifdef CHAN_BUFF_CTRL
+#ifdef XUA_CHAN_BUFF_CTRL
                 , c_buff_ctrl
 #endif
             );
@@ -206,7 +216,7 @@ void XUA_Buffer_Ep(
 #if(HID_CONTROLS)
     , chanend c_hid
 #endif
-#ifdef CHAN_BUFF_CTRL
+#ifdef XUA_CHAN_BUFF_CTRL
     , chanend c_buff_ctrl
 #endif
 #if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
@@ -235,17 +245,6 @@ void XUA_Buffer_Ep(
     XUD_ep ep_midi_from_host = XUD_InitEp(c_midi_from_host);
     XUD_ep ep_midi_to_host = XUD_InitEp(c_midi_to_host);
 #endif
-#ifdef IAP
-    XUD_ep ep_iap_from_host   = XUD_InitEp(c_iap_from_host);
-    XUD_ep ep_iap_to_host     = XUD_InitEp(c_iap_to_host);
-#ifdef IAP_INT_EP
-    XUD_ep ep_iap_to_host_int = XUD_InitEp(c_iap_to_host_int);
-#endif
-#ifdef IAP_EA_NATIVE_TRANS
-    XUD_ep ep_iap_ea_native_out = XUD_InitEp(c_iap_ea_native_out);
-    XUD_ep ep_iap_ea_native_in = XUD_InitEp(c_iap_ea_native_in);
-#endif
-#endif
 #if (XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
     XUD_ep ep_int = XUD_InitEp(c_ep_int);
 #endif
@@ -260,7 +259,7 @@ void XUA_Buffer_Ep(
 
 #if (XUA_SYNCMODE == XUA_SYNCMODE_ASYNC)
     unsigned lastClock = 0;
-    unsigned freqChange = 0;
+    unsigned streamChangeOngoing = 0; /* This is a local which is updated with g_streamChangeOngoing to monitor progress of audiohub command */
 #if (FB_USE_REF_CLOCK == 0)
     xassert(!isnull(p_off_mclk) && "Error: must provide non-null MCLK count port if using asynchronous mode and not using reference clock");
 #endif
@@ -302,31 +301,6 @@ void XUA_Buffer_Ep(
     int midi_waiting_on_send_to_host = 0;
 #endif
 
-#ifdef IAP
-    xc_ptr iap_from_host_rdptr;
-    unsigned char iap_from_host_buffer[IAP_MAX_PACKET_SIZE+4];
-    unsigned char iap_to_host_buffer[IAP_MAX_PACKET_SIZE];
-
-    int is_ack_iap;
-    int is_reset;
-    unsigned int datum_iap;
-    int iap_data_remaining_to_device = 0;
-    int iap_data_collected_from_device = 0;
-    int iap_expected_data_length = 0;
-    int iap_draining_chan = 0;
-
-#ifdef IAP_EA_NATIVE_TRANS
-    unsigned char iap_ea_native_control_flag;
-    unsigned char iap_ea_native_rx_buffer[IAP2_EA_NATIVE_TRANS_MAX_PACKET_SIZE];
-    unsigned char iap_ea_native_tx_buffer[IAP2_EA_NATIVE_TRANS_MAX_PACKET_SIZE];
-    unsigned iap_ea_native_rx_length = 0;
-    unsigned iap_ea_native_tx_length = 0;
-    unsigned iap_ea_native_interface_alt_setting = 0;
-    unsigned iap_ea_native_control_to_send = 0;
-    unsigned iap_ea_native_incoming = 0;
-#endif
-#endif
-
     /* Store EP's to globals so that decouple() can access them */
 #if (NUM_USB_CHAN_OUT > 0)
     asm("stw %0, dp[aud_from_host_usb_ep]"::"r"(ep_aud_out));
@@ -353,14 +327,6 @@ void XUA_Buffer_Ep(
     /* Mark OUT endpoints ready to receive data from host */
 #ifdef MIDI
     XUD_SetReady_OutPtr(ep_midi_from_host, midi_from_host_buffer);
-#endif
-
-#ifdef IAP
-    XUD_SetReady_Out(ep_iap_from_host, iap_from_host_buffer);
-
-#ifdef IAP_EA_NATIVE_TRANS
-    XUD_SetReady_Out(ep_iap_ea_native_out, iap_ea_native_rx_buffer);
-#endif
 #endif
 
 #if XUA_HID_ENABLED
@@ -401,8 +367,8 @@ void XUA_Buffer_Ep(
                     masterClockFreq / controller_rate_hz,   /* pll ratio integer */
                     0,                                      /* Assume precise timing of sampling */
                     pfd_ppm_max);
-    outuint(c_sw_pll, masterClockFreq);
-    outct(c_sw_pll, XS1_CT_END);
+
+    restart_sigma_delta(c_sw_pll, masterClockFreq);
     inuint(c_sw_pll); /* receive ACK */
     inct(c_sw_pll);
 
@@ -453,7 +419,7 @@ void XUA_Buffer_Ep(
             /* Sample Freq or stream format update (e.g. channel count) from Endpoint 0 core */
             case inct_byref(c_aud_ctl, cmd):
             {
-                if(cmd == SET_SAMPLE_FREQ)
+                if(cmd == XUA_AUDCTL_SET_SAMPLE_FREQ)
                 {
                     unsigned receivedSampleFreq = inuint(c_aud_ctl);
 
@@ -468,19 +434,11 @@ void XUA_Buffer_Ep(
                         /* Reset FB */
                         /* Note, Endpoint 0 will hold off host for a sufficient period to allow our feedback
                          * to stabilise (i.e. sofCount == 128 to fire) */
-                        sofCount = 0;
-                        clocks = 0;
-                        clockcounter = 0;
-                        mod_from_last_time = 0;
-                        feedbackValid = 0;
+                        /* See also https://github.com/xmos/lib_xua/issues/467 */
+                        resetAsynchFeedback(sofCount, clocks, clockcounter, mod_from_last_time, sampleFreq);
 #if FB_USE_REF_CLOCK
                         clock_remainder = 0;
 #endif
-
-                        /* Set g_speed to something sensible. We expect it to get over-written before stream time */
-                        int min, mid, max;
-                        GetADCCounts(sampleFreq, min, mid, max);
-                        g_speed = mid<<16;
 
                         if((MCLK_48 % sampleFreq) == 0)
                         {
@@ -495,10 +453,9 @@ void XUA_Buffer_Ep(
                     /* Ideally we want to wait for handshake (and pass back up) here.  But we cannot keep this
                      * core locked, it must stay responsive to packets (MIDI etc) and SOFs.  So, set a flag and check for
                      * handshake elsewhere */
-                    SET_SHARED_GLOBAL(g_freqChange_sampFreq, receivedSampleFreq);
+                    SET_SHARED_GLOBAL(g_streamChange_sampFreq, receivedSampleFreq);
                 }
-#if (AUDIO_CLASS == 2)
-                else if(cmd == SET_STREAM_FORMAT_IN)
+                else if(cmd == XUA_AUDCTL_SET_STREAM_INPUT_START)
                 {
                     unsigned formatChange_DataFormat = inuint(c_aud_ctl);
                     unsigned formatChange_NumChans = inuint(c_aud_ctl);
@@ -511,9 +468,8 @@ void XUA_Buffer_Ep(
                     SET_SHARED_GLOBAL(g_formatChange_SampRes, formatChange_SampRes);
                 }
                 /* FIXME when FB EP is enabled there is no inital XUD_SetReady */
-                else if (cmd == SET_STREAM_FORMAT_OUT)
+                else if (cmd == XUA_AUDCTL_SET_STREAM_OUTPUT_START)
                 {
-
                     XUD_BusSpeed_t busSpeed;
                     unsigned formatChange_DataFormat = inuint(c_aud_ctl);
                     unsigned formatChange_NumChans = inuint(c_aud_ctl);
@@ -540,12 +496,27 @@ void XUA_Buffer_Ep(
                         XUD_SetReady_In(ep_aud_fb, (fb_clocks, unsigned char[]), 3);
                     }
 #endif
-                }
+#if (XUA_LOW_POWER_NON_STREAMING && (XUA_SYNCMODE == XUA_SYNCMODE_ASYNC))
+                    /* Audiohub will startup again and MCLK may possibly have stopped and restarted */
+                    /* Set g_speed to something sensible. We expect it to get over-written before stream time */
+                    /* See also https://github.com/xmos/lib_xua/issues/467 */
+                    resetAsynchFeedback(sofCount, clocks, clockcounter, mod_from_last_time, sampleFreq);
 #endif
-                /* Pass on sample freq change to decouple() via global flag (saves a chanend) */
-                /* Note: freqChange_flag now used to communicate other commands also */
-                SET_SHARED_GLOBAL0(g_freqChange, cmd);                /* Set command */
-                SET_SHARED_GLOBAL(g_freqChange_flag, cmd);            /* Set Flag */
+                }
+                else if (cmd == XUA_AUDCTL_SET_STREAM_INPUT_STOP)
+                {
+                    /* Do nothing - just let cmd propagate through to decouple */
+                }
+                else if (cmd == XUA_AUDCTL_SET_STREAM_OUTPUT_STOP)
+                {
+                    /* Do nothing - just let cmd propagate through to decouple */
+                }
+
+                /* Pass on sample freq change to decouple() via globals (saves a chanend) */
+                SET_SHARED_GLOBAL(g_streamChangeOngoing, cmd);         /* Set change ongoing */
+                SET_SHARED_GLOBAL0(g_streamChange_flag, cmd);          /* Set Flag */
+
+                /* Note no chk_ct(c, XS1_CT_END) because this is done in decouple */
                 break;
             }
 #if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC) && (!XUA_USE_SW_PLL)
@@ -632,12 +603,12 @@ void XUA_Buffer_Ep(
 #endif
                 /* The time we base feedback on will be invalid until we get 2 SOF's */
                 /* Additionally whilst the SR is being changed we could get some invalid values due to clocks being changed etc */
-                GET_SHARED_GLOBAL(freqChange, g_freqChange);
-                if((freqChange == SET_SAMPLE_FREQ) || !feedbackValid)
+                GET_SHARED_GLOBAL(streamChangeOngoing, g_streamChangeOngoing);
+                if((streamChangeOngoing == XUA_AUDCTL_SET_SAMPLE_FREQ) || !g_feedbackValid)
                 {
                      /* Keep getting MCLK counts */
                     lastClock = u_tmp;
-                    feedbackValid = 1;
+                    g_feedbackValid = 1;
                 }
                 else
                 {
@@ -794,7 +765,9 @@ void XUA_Buffer_Ep(
             case XUD_SetData_Select(c_aud_in, ep_aud_in, result):
             {
                 /* Inform stream that buffer sent */
-                SET_SHARED_GLOBAL0(g_aud_to_host_flag, bufferIn+1);
+                if ((result != XUD_RES_WAIT) || (XUD_USB_ISO_MAX_TXNS_PER_MICROFRAME == 1)) {
+                    SET_SHARED_GLOBAL0(g_aud_to_host_flag, bufferIn+1); // other side only checks for boolean
+                }
                 break;
             }
 #endif
@@ -822,12 +795,13 @@ void XUA_Buffer_Ep(
             /* Received Audio packet HOST -> DEVICE. Datalength written to length */
             case XUD_GetData_Select(c_aud_out, ep_aud_out, length, result):
             {
-                GET_SHARED_GLOBAL(aud_from_host_buffer, g_aud_from_host_buffer);
-
-                write_via_xc_ptr(aud_from_host_buffer, length);
-
-                /* Sync with decouple thread */
-                SET_SHARED_GLOBAL0(g_aud_from_host_flag, 1);
+                if ((result != XUD_RES_WAIT) || (XUD_USB_ISO_MAX_TXNS_PER_MICROFRAME == 1))
+                {
+                    GET_SHARED_GLOBAL(aud_from_host_buffer, g_aud_from_host_buffer);
+                    write_via_xc_ptr(aud_from_host_buffer, length);
+                    /* Sync with decouple thread */
+                    SET_SHARED_GLOBAL0(g_aud_from_host_flag, 1);
+                }
                 break;
              }
 #endif
@@ -874,98 +848,6 @@ void XUA_Buffer_Ep(
                     midi_waiting_on_send_to_host = 0;
                 }
                 break;
-#endif
-
-#ifdef IAP
-            /* IAP OUT from host. Datalength writen to tmp */
-            case XUD_GetData_Select(c_iap_from_host, ep_iap_from_host, length, result):
-
-                if((result == XUD_RES_OKAY) && (length > 0))
-                {
-                    iap_data_remaining_to_device = length;
-
-                    if(iap_data_remaining_to_device)
-                    {
-                        // Send length first so iAP thread knows how much data to expect
-                        // Don't expect ack from this to make it simpler
-                        outuint(c_iap, iap_data_remaining_to_device);
-
-                        /* Send out first byte in buffer */
-                        datum_iap = iap_from_host_buffer[0];
-                        outuint(c_iap, datum_iap);
-
-                        /* Set read ptr to next byte in buffer */
-                        iap_from_host_rdptr = 1;
-                        iap_data_remaining_to_device -= 1;
-                    }
-                }
-                break;
-
-            /* IAP IN to host */
-            case XUD_SetData_Select(c_iap_to_host, ep_iap_to_host, result):
-
-                if(result == XUD_RES_RST)
-                {
-                    XUD_ResetEndpoint(ep_iap_to_host, null);
-#ifdef IAP_INT_EP
-                    XUD_ResetEndpoint(ep_iap_to_host_int, null);
-#endif
-                    iap_send_reset(c_iap);
-                    iap_draining_chan = 1; // Drain c_iap until a reset is sent back
-                    iap_data_collected_from_device = 0;
-                    iap_data_remaining_to_device = -1;
-                    iap_expected_data_length = 0;
-                    iap_from_host_rdptr = 0;
-                }
-                else
-                {
-                    /* Send out an iAP packet to host, ACK last msg from iAP to let it know we can move on..*/
-                    iap_send_ack(c_iap);
-                }
-                break;  /* IAP IN to host */
-
-#ifdef IAP_INT_EP
-            case XUD_SetData_Select(c_iap_to_host_int, ep_iap_to_host_int, result):
-
-                /* Do nothing.. */
-                /* Note, could get a reset notification here, but deal with it in the case above */
-                break;
-#endif
-
-#ifdef IAP_EA_NATIVE_TRANS
-            /* iAP EA Native Transport OUT from host */
-            case XUD_GetData_Select(c_iap_ea_native_out, ep_iap_ea_native_out, iap_ea_native_rx_length, result):
-                if ((result == XUD_RES_OKAY) && iap_ea_native_rx_length > 0)
-                {
-                    // Notify EA Protocol user code we have iOS app data from XUD
-                    iAP2_EANativeTransport_writeToChan_start(c_iap_ea_native_data, EA_NATIVE_SEND_DATA);
-                }
-                break;
-
-            /* iAP EA Native Transport IN to host */
-            case XUD_SetData_Select(c_iap_ea_native_in, ep_iap_ea_native_in, result):
-                switch (result)
-                {
-                    case XUD_RES_RST:
-                        XUD_ResetEndpoint(ep_iap_ea_native_in, null);
-                        // Notify user code of USB reset to allow any state to be cleared
-                        iAP2_EANativeTransport_writeToChan_start(c_iap_ea_native_data, EA_NATIVE_SEND_CONTROL);
-                        // Set up the control flag to send to EA Protocol user code when it responds
-                        iap_ea_native_control_flag = EA_NATIVE_RESET;
-                        iap_ea_native_control_to_send = 1;
-                        break;
-
-                    case XUD_RES_OKAY: // EA Protocol user data successfully passed to XUD
-                        // Notify user code
-                        iAP2_EANativeTransport_writeToChan_start(c_iap_ea_native_data, EA_NATIVE_SEND_CONTROL);
-                        // Set up the control flag to send to EA Protocol user code when it responds
-                        iap_ea_native_control_flag = EA_NATIVE_DATA_SENT;
-                        iap_ea_native_control_to_send = 1;
-                        break;
-                }
-                break;
-                //::
-#endif
 #endif
 
 #if (XUA_HID_ENABLED)
@@ -1060,157 +942,6 @@ void XUA_Buffer_Ep(
                 break;
 #endif /* (XUA_USE_SW_PLL) */
 #endif /* (XUA_SYNCMODE == XUA_SYNCMODE_SYNC) */
-
-#ifdef IAP
-            /* Received word from iap thread - Check for ACK or Data */
-            case iap_get_ack_or_reset_or_data(c_iap, is_ack_iap, is_reset, datum_iap):
-
-                if (iap_draining_chan)
-                {
-                    /* As we're draining the iAP channel now, ignore ACKs and data */
-                    if (is_reset)
-                    {
-                        // The iAP core has returned a reset token, so we can stop draining the iAP channel now
-                        iap_draining_chan = 0;
-                    }
-                }
-                else
-                {
-                    if (is_ack_iap)
-                    {
-                        /* An ack from the iap/uart thread means it has accepted some data we sent it
-                            * we are okay to send another word */
-                        if (iap_data_remaining_to_device == 0)
-                        {
-                            /* We have read an entire packet - Mark ready to receive another */
-                            XUD_SetReady_Out(ep_iap_from_host, iap_from_host_buffer);
-                        }
-                        else
-                        {
-                            /* Read another byte from the fifo and output it to iap thread */
-                            datum_iap = iap_from_host_buffer[iap_from_host_rdptr];
-                            outuint(c_iap, datum_iap);
-                            iap_from_host_rdptr += 1;
-                            iap_data_remaining_to_device -= 1;
-                        }
-                    }
-                    else if (!is_reset)
-                    {
-                        if (iap_expected_data_length == 0)
-                        {
-                            /* Expect a length from iAP core */
-                            iap_send_ack(c_iap);
-                            iap_expected_data_length = datum_iap;
-                        }
-                        else
-                        {
-                            if (iap_data_collected_from_device < IAP_MAX_PACKET_SIZE)
-                            {
-                                /* There is room in the collecting buffer for the data..  */
-                                iap_to_host_buffer[iap_data_collected_from_device] = datum_iap;
-                                iap_data_collected_from_device += 1;
-                            }
-                            else
-                            {
-                                // Too many events from device - drop
-                            }
-
-                            /* Once we have the whole message, sent it to host */
-                            /* Note we don't ack the last byte yet... */
-                            if (iap_data_collected_from_device == iap_expected_data_length)
-                            {
-                                XUD_Result_t result1 = XUD_RES_OKAY, result2;
-#ifdef IAP_INT_EP
-                                result1 = XUD_SetReady_In(ep_iap_to_host_int, gc_zero_buffer, 0);
-#endif
-                                result2 = XUD_SetReady_In(ep_iap_to_host, iap_to_host_buffer, iap_data_collected_from_device);
-
-                                if((result1 == XUD_RES_RST) || (result2 == XUD_RES_RST))
-                                {
-#ifdef IAP_INT_EP
-                                    XUD_ResetEndpoint(ep_iap_to_host_int, null);
-#endif
-                                    XUD_ResetEndpoint(ep_iap_to_host, null);
-                                    iap_send_reset(c_iap);
-                                    iap_draining_chan = 1; // Drain c_iap until a reset is sent back
-                                    iap_data_remaining_to_device = -1;
-                                    iap_from_host_rdptr = 0;
-                                }
-
-                                iap_data_collected_from_device = 0;
-                                iap_expected_data_length = 0;
-                            }
-                            else
-                            {
-                                /* The iap/uart thread has sent us some data - handshake back */
-                                iap_send_ack(c_iap);
-                            }
-                        }
-                    }
-                }
-                break;
-
-    # if IAP_EA_NATIVE_TRANS
-            /* Change of EA Native Transport interface setting */
-            case inuint_byref(c_iap_ea_native_ctrl, iap_ea_native_interface_alt_setting):
-                /* Handshake */
-                outct(c_iap_ea_native_ctrl, XS1_CT_END);
-
-                if (iap_ea_native_interface_alt_setting == 0) // EA Protocol session closed by Apple device
-                {
-                    // Notify user code of USB reset to allow any state to be cleared
-                    iAP2_EANativeTransport_writeToChan_start(c_iap_ea_native_data, EA_NATIVE_SEND_CONTROL);
-                    // Set up the control flag to send to EA Protocol user code when it responds
-                    iap_ea_native_control_flag = EA_NATIVE_DISCONNECTED;
-                    iap_ea_native_control_to_send = 1;
-                }
-                else if (iap_ea_native_interface_alt_setting == 1) // EA Protocol session opened by Apple device
-                {
-                    // Notify user code of USB reset to allow any state to be cleared
-                    iAP2_EANativeTransport_writeToChan_start(c_iap_ea_native_data, EA_NATIVE_SEND_CONTROL);
-                    // Set up the control flag to send to EA Protocol user code when it responds
-                    iap_ea_native_control_flag = EA_NATIVE_CONNECTED;
-                    iap_ea_native_control_to_send = 1;
-                }
-                break;
-
-            /* Receive data from the EA Protocol user core */
-            case c_iap_ea_native_data :> iap_ea_native_incoming:
-                // Check if this is a ready flag or unsolicited data
-                switch (iap_ea_native_incoming)
-                {
-                    case EA_NATIVE_RECEIVER_READY: // EA Protocol user core ready to receive data
-                        // Check if we are sending a control flag, or OUT data
-                        if (iap_ea_native_control_to_send)
-                        {
-                            unsigned char ea_control[] = {iap_ea_native_control_flag};
-                            iAP2_EANativeTransport_writeToChan_data(c_iap_ea_native_data,
-                                                                    ea_control,
-                                                                    1);
-                            iap_ea_native_control_to_send = 0;
-                        }
-                        else
-                        {
-                            iAP2_EANativeTransport_writeToChan_data(c_iap_ea_native_data,
-                                                                    iap_ea_native_rx_buffer,
-                                                                    iap_ea_native_rx_length);
-                            // Mark the OUT EP as ready again now we have sent all the data
-                            XUD_SetReady_Out(ep_iap_ea_native_out, iap_ea_native_rx_buffer);
-                        }
-                        break;
-
-                    case EA_NATIVE_SEND_DATA: // Unsolicited data from user core for IN ep
-                        iAP2_EANativeTransport_readFromChan_data(c_iap_ea_native_data,
-                                                                 iap_ea_native_tx_buffer,
-                                                                 iap_ea_native_tx_length);
-                        // Mark the IN EP as ready now we have all the data
-                        XUD_SetReady_In(ep_iap_ea_native_in, iap_ea_native_tx_buffer, iap_ea_native_tx_length);
-                        break;
-                }
-                break;
-#endif  // if IAP_EA_NATIVE_TRANS
-
-#endif  // ifdef IAP
 
 #if (0 < HID_CONTROLS)
             default:

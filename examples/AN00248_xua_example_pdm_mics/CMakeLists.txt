@@ -11,8 +11,6 @@ set(APP_COMPILER_FLAGS -O3
                        -g
                        -Wno-unused-function
                        -DXUD_CORE_CLOCK=600
-                       -DUSB_TILE=tile[0]
-                       -mcmodel=large
                        -DBOARD_SUPPORT_BOARD=XK_EVK_XU316)
 
 include(${CMAKE_CURRENT_LIST_DIR}/../deps.cmake)

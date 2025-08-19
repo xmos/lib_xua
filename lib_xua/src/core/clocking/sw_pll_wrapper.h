@@ -15,6 +15,8 @@ extern "C"
 /* Special control value to disable SDM. Outside of normal range which is less than 16b.*/
 #define DISABLE_SDM     0x10000000
 
+#define SET_DCO_TO_NOMINAL 0x10000001
+
 
 /** Task that receives an error term, passes it through a PI controller and periodically
  *  calclulates a sigma delta output value and sends it to the PLL fractional register.
@@ -52,6 +54,14 @@ void do_sw_pll_phase_frequency_detector_dig_rx( unsigned short mclk_time_stamp,
  *
  *  returns         The SDM update interval in ticks and the initial DCO setting for nominal frequency */
 {unsigned, unsigned} InitSWPLL(sw_pll_state_t &sw_pll, unsigned mClk);
+
+/** Helper function that sends a command to reset dco setting to the midpoint. It causes the SDM task
+ *  to set the dco setting to SW_PLL_SDM_CTRL_MID_24 or SW_PLL_SDM_CTRL_MID_22 depending on the mclk
+ *  rate.
+ *  \param c_sw_pll                 Channel connected to the clocking thread to pass raw error terms.
+ *  \param selected_mclk_rate       Current mclk frequency in Hz.
+ */
+void sw_pll_set_pll_to_nominal(chanend c_sw_pll, unsigned selected_mclk_rate);
 
 #endif /* XUA_USE_SW_PLL */
 #endif /* _SW_PLL_WRAPPPER_H_ */

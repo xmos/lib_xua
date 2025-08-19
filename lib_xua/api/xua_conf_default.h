@@ -334,47 +334,64 @@
  */
 
 /**
- * @brief USB Audio Class Version
+ * @brief Legacy USB Audio Class version
  *
  * Default: 2 (Audio Class version 2.0)
+ *
+ * Note: XUA_USB_AUDIO_CLASS_HS and XUA_USB_AUDIO_CLASS_FS are derived from this value.
+ * Setting these defines directly will override this value.
  */
 #ifndef AUDIO_CLASS
 #define AUDIO_CLASS              (2)
 #endif
 
-/**
- * @brief Enable/disable fall back to Audio Class 1.0 in USB Full-speed.
+/** @brief Audio class version to run at HS
  *
- * Default: Disabled
+ * Default: AUDIO_CLASS
+ *
+ * Note: Set to 0 for no operation at HS.
  */
-#ifndef AUDIO_CLASS_FALLBACK
-#define AUDIO_CLASS_FALLBACK     (0)
+#ifndef XUA_AUDIO_CLASS_HS
+
+#if (AUDIO_CLASS == 1)
+    #define XUA_AUDIO_CLASS_HS   (0)
+#else
+    #define XUA_AUDIO_CLASS_HS   AUDIO_CLASS
+#endif
 #endif
 
-/**
- * @brief Whether or not to run UAC2 in full-speed. When disabled device can either operate in
- *        UAC1 mode in full-speed (if AUDIO_CLASS_FALLBACK enabled) or return "null" descriptors.
+/** @brief Audio class version to run at FS
  *
- * Default: 1 (Enabled) when AUDIO_CLASS_FALLBACK disabled.
+ * Default: AUDIO_CLASS
+ *
+ * Note: Set to 0 for no operation at FS.
  */
-#if ((AUDIO_CLASS == 2) || __DOXYGEN__)
-    /* Whether to run in Audio Class 2.0 mode in USB Full-speed */
-    #if !defined(FULL_SPEED_AUDIO_2) && (AUDIO_CLASS_FALLBACK == 0)
-        #define FULL_SPEED_AUDIO_2    1     /* Default to falling back to UAC2 */
+#ifndef XUA_AUDIO_CLASS_FS
+#define XUA_AUDIO_CLASS_FS       AUDIO_CLASS
+#endif
+
+/* @brief Desired USB Bus Speed to run the device at.
+ *
+ * Default: High-speed for UAC2.0, Full-speed for UAC1.0
+ *
+ * Note: this is a desired speed - the host may not support high-speed (HS) and the device will
+ * then run in full-speed (FS) mode.
+ */
+#ifndef XUA_USB_BUS_SPEED
+  #if AUDIO_CLASS == 1
+    /* XUD_SPEED_FS = 1 */
+    #define XUA_USB_BUS_SPEED    1
+  #else
+    /* XUD_SPEED_HS = 2 */
+    #define XUA_USB_BUS_SPEED    2
+  #endif
+#else
+    #if (XUA_USB_BUS_SPEED != 1) && (XUA_USB_BUS_SPEED != 2)
+        #error XUA_USB_BUS_SPEED must be either XUD_SPEED_HS or XUD_SPEED_FS
     #endif
-#endif
-
-#if defined(FULL_SPEED_AUDIO_2) && (FULL_SPEED_AUDIO_2 == 0)
-#undef FULL_SPEED_AUDIO_2
-#endif
-
-/* Some checks on full-speed functionality */
-#if defined(FULL_SPEED_AUDIO_2) && (AUDIO_CLASS_FALLBACK)
-#error FULL_SPEED_AUDIO_2 and AUDIO_CLASS_FALLBACK enabled!
-#endif
-
-#if (AUDIO_CLASS == 1) && defined(FULL_SPEED_AUDIO_2)
-#error AUDIO_CLASS set to 1 and FULL_SPEED_AUDIO_2 enabled!
+    #if (XUA_USB_BUS_SPEED == XUD_SPEED_HS) && (AUDIO_CLASS == 1)
+        #error XUA_USB_BUS_SPEED set to HS but AUDIO_CLASS set to 1, this is an invalid configuration!
+    #endif
 #endif
 
 /*
@@ -723,11 +740,11 @@
 #endif
 
 /**
- * @brief USB Product ID (PID) for Audio Class 1.0 mode. Only required if AUDIO_CLASS == 1 or AUDIO_CLASS_FALLBACK is enabled.
+ * @brief USB Product ID (PID) for Audio Class 1.0 mode. Only required if XUA_AUDIO_CLASS_FS == 1.
  *
  * Default: 0x0003
  */
-#if (AUDIO_CLASS == 1) || (AUDIO_CLASS_FALLBACK) || defined(__DOXYGEN__)
+#if (XUA_AUDIO_CLASS_FS == 1) || defined(__DOXYGEN__)
 #ifndef PID_AUDIO_1
 #define PID_AUDIO_1              (0x0003)
 #endif
@@ -753,14 +770,14 @@
  * @brief Device firmware version number in Binary Coded Decimal format: 0xJJMN where JJ: major, M: minor, N: sub-minor version number.
  */
 #ifndef BCD_DEVICE_M
-#define BCD_DEVICE_M             (0)
+#define BCD_DEVICE_M             (1)
 #endif
 
 /**
  * @brief Device firmware version number in Binary Coded Decimal format: 0xJJMN where JJ: major, M: minor, N: sub-minor version number.
  */
 #ifndef BCD_DEVICE_N
-#define BCD_DEVICE_N             (1)
+#define BCD_DEVICE_N             (0)
 #endif
 
 /**
@@ -1208,13 +1225,13 @@
  */
 #if (XUA_POWERMODE == XUA_POWERMODE_SELF)
     /* Default to taking no power from the bus in self-powered mode */
-    #ifndef _XUA_BMAX_POWER
-        #define _XUA_BMAX_POWER     (0)
+    #ifndef XUA_BMAX_POWER
+        #define XUA_BMAX_POWER     (0)
     #endif
 #else
     /* Default to taking 500mA from the bus in bus-powered mode */
-    #ifndef _XUA_BMAX_POWER
-        #define _XUA_BMAX_POWER      (250)
+    #ifndef XUA_BMAX_POWER
+        #define XUA_BMAX_POWER      (250)
     #endif
 #endif
 
@@ -1387,15 +1404,6 @@ enum USBEndpointNumber_In
 #if XUA_OR_STATIC_HID_ENABLED
     ENDPOINT_NUMBER_IN_HID,
 #endif
-#ifdef IAP
-#ifdef IAP_INT_EP
-    ENDPOINT_NUMBER_IN_IAP_INT,
-#endif
-    ENDPOINT_NUMBER_IN_IAP,
-#ifdef IAP_EA_NATIVE_TRANS
-    ENDPOINT_NUMBER_IN_IAP_EA_NATIVE_TRANS,
-#endif
-#endif
     XUA_ENDPOINT_COUNT_IN           /* End marker */
 };
 
@@ -1407,12 +1415,6 @@ enum USBEndpointNumber_Out
 #endif
 #ifdef MIDI
     ENDPOINT_NUMBER_OUT_MIDI,
-#endif
-#ifdef IAP
-    ENDPOINT_NUMBER_OUT_IAP,
-#ifdef IAP_EA_NATIVE_TRANS
-    ENDPOINT_NUMBER_OUT_IAP_EA_NATIVE_TRANS,
-#endif
 #endif
 #if XUA_OR_STATIC_HID_ENABLED && HID_OUT_REQUIRED
     ENDPOINT_NUMBER_OUT_HID,
@@ -1499,7 +1501,6 @@ enum USBEndpointNumber_Out
 #define DFU_PRODUCT_STR_INDEX       offsetof(StringDescTable_t, productStr_Audio2)/sizeof(char *)
 #else
 #define DFU_PRODUCT_STR_INDEX       offsetof(StringDescTable_t, productStr_Audio1)/sizeof(char *)
-#endif
 #endif
 
 /* USB test mode support enabled by default (Required for compliance testing) */
@@ -1681,13 +1682,23 @@ enum USBEndpointNumber_Out
 #endif
 
 /**
- * @brief Device interface GUID.
+ * @brief Device interface GUID for the DFU interface.
  *
  * This is provided as part of the device registry property in the MSOS 2.0 descriptor.
  * Default: "{89C14132-D389-4FF7-944E-2E33379BB59D}" User can override by defining their own in xua_conf.h
  */
-#ifndef WINUSB_DEVICE_INTERFACE_GUID
-#define WINUSB_DEVICE_INTERFACE_GUID               "{89C14132-D389-4FF7-944E-2E33379BB59D}"
+#ifndef WINUSB_DEVICE_INTERFACE_GUID_DFU
+#define WINUSB_DEVICE_INTERFACE_GUID_DFU               "{89C14132-D389-4FF7-944E-2E33379BB59D}"
+#endif
+
+/**
+ * @brief Device interface GUID for the vendor control interface.
+ *
+ * This is provided as part of the device registry property in the MSOS 2.0 descriptor.
+ * Default: "{563F19C9-B0CD-4A15-9047-59D31EADC345}" User can override by defining their own in xua_conf.h
+ */
+#ifndef WINUSB_DEVICE_INTERFACE_GUID_CONTROL
+#define WINUSB_DEVICE_INTERFACE_GUID_CONTROL               "{563F19C9-B0CD-4A15-9047-59D31EADC345}"
 #endif
 
 /**
@@ -1698,7 +1709,83 @@ enum USBEndpointNumber_Out
  * in XUA_Buffer_Ep() to occur only when a change has been made by XUA_Buffer_Decouple().
  * This significantly reduces core power at the cost of two channel ends on the USB_TILE.
  */
-#if defined(CHAN_BUFF_CTRL) && (CHAN_BUFF_CTRL == 0)
-#undef CHAN_BUFF_CTRL
+#ifdef __DOXYGEN__
+#define XUA_CHAN_BUFF_CTRL
+#endif
+#if defined(XUA_CHAN_BUFF_CTRL) && (XUA_CHAN_BUFF_CTRL == 0)
+#undef XUA_CHAN_BUFF_CTRL
 #endif
 
+/**
+ * @brief Enable power saving when device is enumerated but audio in not currently streaming
+ *
+ * If set to 1 then transitions to ALT interface 0 (streaming stopped) will cause AudioHub to cease
+ * looping and no-longer driver the I2S/TDM lines. In addition, the callback AudioHwShutdown() is called
+ * which allows the user to run any specific code (eg. CODEC power-down and/or disable master clock)
+ * to further reduce system power in this state. AudioHwInit() and AudioHwConfig() will always be called
+ * again prior to USB audio streaming. The transition to the low power state will only occur when *both*
+ * input *and* output interfaces are not streaming. As soon as either input or output streaming starts
+ * then audiohub is restarted.
+ *
+ * If set to zero or undefined (default behaviour) then AudioHub will always continue looping even when
+ * audio streaming stops. This behaviour may be preferable in applications where frequent initialisation
+ * of the mixed signal hardware is undesirable, where other parts of the system rely on I2S clocks being
+ * conitinuously available or in MI (musical instrument) applications where functions such as mixer need
+ * to continuously operate regardless of USB streaming state.
+ */
+#ifndef XUA_LOW_POWER_NON_STREAMING
+#define XUA_LOW_POWER_NON_STREAMING                      0
+#endif
+
+/**
+ * @brief Enable Vendor specific control interface
+ *
+ * When enabled, device enumerates with an extra Vendor specific control interface with no associated endpoints
+ * Default: Disabled by default
+ */
+#ifndef XUA_USB_CONTROL_DESCS
+#define XUA_USB_CONTROL_DESCS    0
+#endif
+
+/**
+ * @brief Enable Vendor specific control interface to enumerate as WinUSB on Windows
+ *
+ * Allow the Vendor specific control interface, if enabled (XUA_USB_CONTROL_DESCS defined to 1), to enumerate as WinUSB on Windows.
+ * Default: Enabled by default. If disabled, manual driver installation for the control interface would
+ * be required on Windows
+ */
+#ifndef ENUMERATE_CONTROL_INTF_AS_WINUSB
+#define ENUMERATE_CONTROL_INTF_AS_WINUSB    1
+#endif
+
+/**
+ * @brief Macro specifying if an mclk input and a second mclk input are required
+ */
+#define _NEED_MCLK_FOR_I2S \
+  (((I2S_CHANS_DAC != 0) || (I2S_CHANS_ADC != 0)) && (!CODEC_MASTER))
+
+#define _NEED_MCLK_FOR_DIG_RX \
+  (XUA_USE_SW_PLL && (XUA_ADAT_RX_EN || XUA_SPDIF_RX_EN))
+
+#define _NEED_MCLK_FOR_ADAT_TX (XUA_ADAT_TX_EN)
+#define _NEED_MCLK_FOR_SPDIF_TX (XUA_SPDIF_TX_EN)
+#define _NEED_MCLK_FOR_USB (XUA_USB_EN)
+
+/* Need mclk */
+#define MCLK_REQUIRED ( \
+    (_NEED_MCLK_FOR_I2S) || \
+    (_NEED_MCLK_FOR_DIG_RX) || \
+    (_NEED_MCLK_FOR_ADAT_TX) || \
+    (_NEED_MCLK_FOR_SPDIF_TX && (SPDIF_TX_TILE == AUDIO_IO_TILE)) || \
+    (_NEED_MCLK_FOR_USB && (AUDIO_IO_TILE == XUD_TILE)) \
+)
+
+/* Need second mclk -
+ - USB is enabled and present on a different tile than audio, a second mclk will be needed for USB feedback calculation
+ - SPDIF TX is enabled and present on a different tile than audio */
+#define SECOND_MCLK_REQUIRED ( \
+    (_NEED_MCLK_FOR_USB && (XUD_TILE != AUDIO_IO_TILE)) || \
+    (_NEED_MCLK_FOR_SPDIF_TX && (SPDIF_TX_TILE != AUDIO_IO_TILE)) \
+)
+
+#endif /* _XUA_CONF_DEFAULT_H_ */

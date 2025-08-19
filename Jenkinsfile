@@ -1,19 +1,6 @@
 // This file relates to internal XMOS infrastructure and should be ignored by external users
 
-@Library('xmos_jenkins_shared_library@v0.38.0') _
-
-def clone_test_deps() {
-  dir("${WORKSPACE}") {
-    sh "git clone git@github.com:xmos/test_support"
-    sh "git -C test_support checkout 961532d89a98b9df9ccbce5abd0d07d176ceda40"
-
-    sh "git clone git@github0.xmos.com:xmos-int/xtagctl"
-    sh "git -C xtagctl checkout v2.0.0"
-
-    sh "git clone git@github.com:xmos/hardware_test_tools"
-    sh "git -C hardware_test_tools checkout 2f9919c956f0083cdcecb765b47129d846948ed4"
-  }
-}
+@Library('xmos_jenkins_shared_library@v0.39.0') _
 
 getApproval()
 
@@ -31,19 +18,22 @@ pipeline {
   parameters {
     string(
       name: 'TOOLS_VERSION',
-      defaultValue: '15.3.0',
+      defaultValue: '15.3.1',
       description: 'The XTC tools version'
     )
     string(
       name: 'XMOSDOC_VERSION',
-      defaultValue: 'v6.3.1',
+      defaultValue: 'v7.3.0',
       description: 'The xmosdoc version')
 
     string(
       name: 'INFR_APPS_VERSION',
-      defaultValue: 'v2.0.1',
+      defaultValue: 'v2.1.0',
       description: 'The infr_apps version'
     )
+    choice(
+        name: 'TEST_LEVEL', choices: ['smoke', 'nightly'],
+        description: 'The level of test coverage to run')
   }
 
   stages {
@@ -63,9 +53,7 @@ pipeline {
                 }
               }
             }
-            warnError("lib checks") {
-              runLibraryChecks("${WORKSPACE}/${REPO}", "${params.INFR_APPS_VERSION}")
-            }
+            runLibraryChecks("${WORKSPACE}/${REPO}", "${params.INFR_APPS_VERSION}")
           }
         }  // stage('Checkout and lib checks')
         stage("Archive Lib") {
@@ -90,10 +78,22 @@ pipeline {
           }
         }  // Build examples
 
+        stage('Build HW tests') {
+          steps {
+            dir("${REPO}") {
+                withTools(params.TOOLS_VERSION) {
+                  dir("tests/xua_hw_tests") {
+                    xcoreBuild()
+                    stash includes: '**/*.xe', name: 'hw_test_bin', useDefaultExcludes: false
+                  }
+                } // withTools(params.TOOLS_VERSION)
+            } // dir("${REPO}")
+          } // steps
+        } // stage('Build tests')
+
         stage('Build Documentation') {
           steps {
             dir("${REPO}") {
-              warnError("Docs") {
                 buildDocs()
                 dir("examples/AN00246_xua_example") {
                   buildDocs()
@@ -103,7 +103,6 @@ pipeline {
                 }
                 dir("examples/AN00248_xua_example_pdm_mics") {
                   buildDocs()
-                }
               }
             } // dir("${REPO}")
           } // steps
@@ -192,7 +191,15 @@ pipeline {
                dir("OSX/arm64") {
                   stash includes: 'xmosdfu', name: 'macos_xmosdfu'
                 }
-              }
+              } // dir("${REPO}/host/xmosdfu")
+              dir("tests/xua_hw_tests/test_control/host")
+              {
+                sh 'pwd'
+                sh 'ls -lrt '
+                sh 'cmake -B build'
+                sh 'make -C build'
+                stash includes: 'build/host_control_test', name: 'host_control_test_bin_mac_arm', useDefaultExcludes: false
+              } // dir("${REPO}/tests/xua_hw_tests/test_control/host")
             }
           }
           post {
@@ -252,6 +259,14 @@ pipeline {
                 bat 'mv bin/Release/x64/host_usb_mixer_control.exe Win/x64/xmos_mixer.exe'
                 archiveArtifacts artifacts: "Win/x64/xmos_mixer.exe", fingerprint: true
               }
+              dir("tests/xua_hw_tests/test_control/host")
+              {
+                withVS("vcvars32.bat") {
+                  bat "cmake -B build -G Ninja"
+                  bat "ninja -C build"
+                  stash includes: 'build/host_control_test.exe', name: 'host_control_test_bin_windows', useDefaultExcludes: false
+                }
+              } // dir("${REPO}/tests/xua_hw_tests/test_control/host")
             }
           }
           post {
@@ -272,8 +287,6 @@ pipeline {
           steps {
             dir("${REPO}") {
               checkoutScmShallow()
-
-              clone_test_deps()
 
               withTools(params.TOOLS_VERSION) {
                 dir("tests") {
@@ -318,32 +331,46 @@ pipeline {
           steps {
             println "Stage running on ${env.NODE_NAME}"
 
-            clone_test_deps()
-
             dir("${REPO}") {
               checkoutScmShallow()
             }
 
-            dir("hardware_test_tools/xmosdfu") {
-              unstash "macos_xmosdfu"
+            dir("${REPO}/tests/xua_hw_tests") {
+              unstash "hw_test_bin" // Unstash HW test DUT binaries
             }
-
+            dir("${REPO}/tests/xua_hw_tests/test_control/host")
+            {
+              unstash "host_control_test_bin_mac_arm" // Unstash host app for control test
+            }
             dir("${REPO}/tests") {
               createVenv(reqFile: "requirements.txt")
               withTools(params.TOOLS_VERSION) {
-                dir("xua_hw_tests") {
-                  sh "cmake -G 'Unix Makefiles' -B build"
-                  sh "xmake -C build -j 8"
+                withVenv {
+                  script {
+                    // Get hardware_test_tools install path from Python
+                    def hwPath = sh(
+                        script: 'python -c "import hardware_test_tools, os; print(os.path.dirname(hardware_test_tools.__file__))"',
+                        returnStdout: true
+                    ).trim()
 
-                  withVenv {
-                    withXTAG(["usb_audio_mc_xcai_dut"]) { xtagIds ->
-                      sh "pytest -v --junitxml=pytest_hw_mac.xml --xtag-id=${xtagIds[0]}"
+                    echo "Hardware Test Tools path: ${hwPath}"
+                    def hwPathParent = hwPath.substring(0, hwPath.lastIndexOf('/'))
+                    echo "Hardware Test Tools repo path: ${hwPathParent}"
+
+                    // Change directory into xmosdfu and unstash
+                    dir("${hwPathParent}/xmosdfu") {
+                        unstash "macos_xmosdfu"
                     }
-                  }
-                }
-              }
-            }
-          }
+                  } // script
+                  dir("xua_hw_tests") {
+                    withXTAG(["usb_audio_mc_xcai_dut"]) { xtagIds ->
+                      sh "pytest -v --junitxml=pytest_hw_mac.xml --xtag-id=${xtagIds[0]} --level ${params.TEST_LEVEL}"
+                    }
+                  } // dir("xua_hw_tests")
+                } // withVenv
+              } // withTools(params.TOOLS_VERSION)
+            } // dir("${REPO}/tests")
+          } // steps
           post {
             always {
               junit "${REPO}/tests/xua_hw_tests/pytest_hw_mac.xml"
@@ -361,22 +388,25 @@ pipeline {
           steps {
             println "Stage running on ${env.NODE_NAME}"
 
-            clone_test_deps()
-
             dir("${REPO}") {
               checkoutScmShallow()
+            }
+
+            dir("${REPO}/tests/xua_hw_tests") {
+              unstash "hw_test_bin" // Unstash HW test DUT binaries
+            }
+            dir("${REPO}/tests/xua_hw_tests/test_control/host")
+            {
+              unstash "host_control_test_bin_windows" // Unstash host app for control test
             }
 
             dir("${REPO}/tests") {
               createVenv(reqFile: "requirements.txt")
               withTools(params.TOOLS_VERSION) {
                 dir("xua_hw_tests") {
-                  sh "cmake -G 'Unix Makefiles' -B build"
-                  sh "xmake -C build"
-
                   withVenv {
                     withXTAG(["usb_audio_mc_xcai_dut"]) { xtagIds ->
-                      sh "pytest -v --junitxml=pytest_hw_win.xml --xtag-id=${xtagIds[0]}"
+                      sh "pytest -v --junitxml=pytest_hw_win.xml --xtag-id=${xtagIds[0]} --level ${params.TEST_LEVEL}"
                     }
                   }
                 }

@@ -3,11 +3,11 @@
 #ifndef _XUA_BUFFER_H_
 #define _XUA_BUFFER_H_
 
-
-#if (__XC__ || defined __DOXYGEN__)
+#if defined(__XC__) || defined(__DOXYGEN__)
 
 #include "xccompat.h"
 #include "xua_clocking.h" /* Required for pll_ref_if */
+#include "packet_sizes.h" /* Required for MAX_PACKETSIZE_IN_HS/OUT, MAX_PACKETSIZE_IN_FS/OUT */
 
 /** USB Audio Buffering Core(s).
  *
@@ -20,19 +20,21 @@
  *  \param c_aud_fb             Audio feedback endpoint channel connected to the XUD
  *  \param c_midi_from_host     MIDI OUT endpoint channel connected to the XUD
  *  \param c_midi_to_host       MIDI IN endpoint channel connected to the XUD
- *  \param c_midi               Channel connected to MIDI core
+ *  \param c_midi               Channel connected to MIDI thread
  *  \param c_int                Audio clocking interrupt endpoint channel connected to the XUD
  *  \param c_clk_int            Optional chanend connected to the clockGen() thread if present
  *  \param c_sof                Start of frame channel connected to the XUD
  *  \param c_aud_ctl            Audio control channel connected to  Endpoint0()
  *  \param p_off_mclk           A port that is clocked of the MCLK input (not the MCLK input itself)
- *  \param c_aud                Channel connected to XUA_AudioHub() core
+ *  \param c_hid                Channel connected to the HID handler thread
+ *  \param c_aud                Channel connected to XUA_AudioHub() thread
  *  \param c_audio_rate_change  Channel to notify and synchronise on audio rate change
  *  \param i_pll_ref            Interface to task that toggles reference pin to CS2100
  *  \param c_swpll_update       Channel connected to software PLL task. Expects master clock counts based on USB frames.
  */
+
 void XUA_Buffer(
-#if (NUM_USB_CHAN_OUT > 0)
+#if (NUM_USB_CHAN_OUT > 0) || defined(__DOXYGEN__)
             chanend c_aud_out,
 #endif
 #if (NUM_USB_CHAN_IN > 0) || defined(__DOXYGEN__)
@@ -52,11 +54,11 @@ void XUA_Buffer(
 #endif
             chanend c_sof,
             chanend c_aud_ctl,
-            NULLABLE_RESOURCE(in_port_t, p_off_mclk)
-#if (HID_CONTROLS)
-            , chanend c_hid
+            NULLABLE_RESOURCE(in_port_t, p_off_mclk),
+#if (HID_CONTROLS) || defined(__DOXYGEN__)
+            chanend c_hid,
 #endif
-            , chanend c_aud
+            chanend c_aud
 #if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC) || defined(__DOYXGEN__)
             , chanend c_audio_rate_change
     #if (!XUA_USE_SW_PLL) || defined(__DOXYGEN__)
@@ -67,6 +69,7 @@ void XUA_Buffer(
     #endif
 #endif
         );
+
 
 void XUA_Buffer_Ep(
 
@@ -94,7 +97,7 @@ void XUA_Buffer_Ep(
 #if (HID_CONTROLS)
             , chanend c_hid
 #endif
-#ifdef CHAN_BUFF_CTRL
+#ifdef XUA_CHAN_BUFF_CTRL
             , chanend c_buff_ctrl
 #endif
 #if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC) || defined(__DOYXGEN__)
@@ -115,9 +118,43 @@ void XUA_Buffer_Ep(
  * \param c_audio_out Channel connected to the audio() or mixer() threads
  */
 void XUA_Buffer_Decouple(chanend c_audio_out
-#ifdef CHAN_BUFF_CTRL
+#ifdef XUA_CHAN_BUFF_CTRL
      , chanend c_buff_ctrl
 #endif
 );
 #endif
+
+/*** IN PACKET SIZES ***/
+/* Max packet sizes in bytes. Note the +4 is because we store packet lengths in the buffer */
+#define MAX_DEVICE_AUD_PACKET_SIZE_IN_HS  (MAX_PACKETSIZE_IN_HS + 4)
+#define MAX_DEVICE_AUD_PACKET_SIZE_IN_FS  (MAX_PACKETSIZE_IN_FS + 4)
+
+#define MAX_DEVICE_AUD_PACKET_SIZE_IN (XUA_MAX(MAX_DEVICE_AUD_PACKET_SIZE_IN_FS, MAX_DEVICE_AUD_PACKET_SIZE_IN_HS))
+
+/*** OUT PACKET SIZES ***/
+#define MAX_DEVICE_AUD_PACKET_SIZE_OUT_HS  (MAX_PACKETSIZE_OUT_HS + 4)
+#define MAX_DEVICE_AUD_PACKET_SIZE_OUT_FS  (MAX_PACKETSIZE_OUT_FS + 4)
+
+#define MAX_DEVICE_AUD_PACKET_SIZE_OUT (XUA_MAX(MAX_DEVICE_AUD_PACKET_SIZE_OUT_FS, MAX_DEVICE_AUD_PACKET_SIZE_OUT_HS))
+
+/*** BUFFER SIZES ***/
+/* How many packets to allow for in buffer - minimum is 5.
+2 for having in the aud_to_host buffer when it comes out of underflow, space available for 2 more for to accomodate cases when
+2 pkts from audio hub get written into the aud_to_host buffer within 1 SOF period, and space for 1 extra packet to ensure that
+when the 4th packet gets written to the buffer, there's space to accomodate the next packet, otherwise handle_audio_request() will
+drop packets after writing the 4th packet in the buffer
+*/
+#define BUFFER_PACKET_COUNT (5)
+
+#define BUFF_SIZE_OUT_HS    (MAX_DEVICE_AUD_PACKET_SIZE_OUT_HS * BUFFER_PACKET_COUNT)
+#define BUFF_SIZE_OUT_FS    (MAX_DEVICE_AUD_PACKET_SIZE_OUT_FS * BUFFER_PACKET_COUNT)
+
+#define BUFF_SIZE_IN_HS     (MAX_DEVICE_AUD_PACKET_SIZE_IN_HS * BUFFER_PACKET_COUNT)
+#define BUFF_SIZE_IN_FS     (MAX_DEVICE_AUD_PACKET_SIZE_IN_FS * BUFFER_PACKET_COUNT)
+
+#define BUFF_SIZE_OUT       XUA_MAX(BUFF_SIZE_OUT_HS, BUFF_SIZE_OUT_FS)
+#define BUFF_SIZE_IN        XUA_MAX(BUFF_SIZE_IN_HS, BUFF_SIZE_IN_FS)
+
+#define OUT_BUFFER_PREFILL  (XUA_MAX(MAX_DEVICE_AUD_PACKET_SIZE_OUT_HS, MAX_DEVICE_AUD_PACKET_SIZE_OUT_FS))
+
 #endif

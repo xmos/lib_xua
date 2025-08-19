@@ -25,7 +25,7 @@ There are a few other, lesser used, options available. These are shown in :numre
    * - ``OUTPUT_VOLUME_CONTROL``
      - Enables volume control on output channels, both descriptors and processing
      - ``1`` (enabled)
-   * - ``CHAN_BUFF_CTRL``
+   * - ``XUA_CHAN_BUFF_CTRL``
      - Enables event based communication between XUA_Buffer_Ep() and XUA_Buffer_Decouple()
        which significantly reduces power consumption (approx 40 mW on xcore.ai) at the cost
        of consuming two extra channel-ends. Consequently this option may not be viable on

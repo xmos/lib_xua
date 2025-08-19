@@ -3,7 +3,7 @@
 #ifndef _XUA_AUDIOHUB_H_
 #define _XUA_AUDIOHUB_H_
 
-#if(defined __XC__ || defined __DOXYGEN__)
+#if defined(__XC__) || defined(__DOXYGEN__)
 
 #include "xua.h"
 
