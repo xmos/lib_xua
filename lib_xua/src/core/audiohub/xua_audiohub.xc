@@ -378,6 +378,10 @@ unsigned static AudioHub_MainLoop(chanend ?c_aud, chanend ?c_spd_out
 #if (XUA_ADAT_TX_EN)
                 TransferAdatTxSamples(c_adat_out, samplesOut, adatSmuxMode, 1);
 #endif
+#if (XUA_SPDIF_TX_EN) && (NUM_USB_CHAN_OUT > 0)
+                outuint(c_spd_out, samplesOut[SPDIF_TX_INDEX]);  /* Forward samples to S/PDIF Tx thread */
+                outuint(c_spd_out, samplesOut[SPDIF_TX_INDEX + 1]);
+#endif
 
 #if (XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
                 /* Sync with clockgen */
@@ -403,10 +407,6 @@ unsigned static AudioHub_MainLoop(chanend ?c_aud, chanend ?c_spd_out
 #if (XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
                 /* Request digital data (with prefill) */
                 outuint(c_dig_rx, 0);
-#endif
-#if (XUA_SPDIF_TX_EN) && (NUM_USB_CHAN_OUT > 0)
-                outuint(c_spd_out, samplesOut[SPDIF_TX_INDEX]);  /* Forward samples to S/PDIF Tx thread */
-                outuint(c_spd_out, samplesOut[SPDIF_TX_INDEX + 1]);
 #endif
 
 #if (XUA_NUM_PDM_MICS > 0)

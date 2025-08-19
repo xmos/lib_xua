@@ -335,9 +335,6 @@ pipeline {
               checkoutScmShallow()
             }
 
-            dir("hardware_test_tools/xmosdfu") {
-              unstash "macos_xmosdfu"
-            }
             dir("${REPO}/tests/xua_hw_tests") {
               unstash "hw_test_bin" // Unstash HW test DUT binaries
             }
@@ -348,16 +345,32 @@ pipeline {
             dir("${REPO}/tests") {
               createVenv(reqFile: "requirements.txt")
               withTools(params.TOOLS_VERSION) {
-                dir("xua_hw_tests") {
-                  withVenv {
+                withVenv {
+                  script {
+                    // Get hardware_test_tools install path from Python
+                    def hwPath = sh(
+                        script: 'python -c "import hardware_test_tools, os; print(os.path.dirname(hardware_test_tools.__file__))"',
+                        returnStdout: true
+                    ).trim()
+
+                    echo "Hardware Test Tools path: ${hwPath}"
+                    def hwPathParent = hwPath.substring(0, hwPath.lastIndexOf('/'))
+                    echo "Hardware Test Tools repo path: ${hwPathParent}"
+
+                    // Change directory into xmosdfu and unstash
+                    dir("${hwPathParent}/xmosdfu") {
+                        unstash "macos_xmosdfu"
+                    }
+                  } // script
+                  dir("xua_hw_tests") {
                     withXTAG(["usb_audio_mc_xcai_dut"]) { xtagIds ->
                       sh "pytest -v --junitxml=pytest_hw_mac.xml --xtag-id=${xtagIds[0]} --level ${params.TEST_LEVEL}"
                     }
-                  }
-                }
-              }
-            }
-          }
+                  } // dir("xua_hw_tests")
+                } // withVenv
+              } // withTools(params.TOOLS_VERSION)
+            } // dir("${REPO}/tests")
+          } // steps
           post {
             always {
               junit "${REPO}/tests/xua_hw_tests/pytest_hw_mac.xml"
