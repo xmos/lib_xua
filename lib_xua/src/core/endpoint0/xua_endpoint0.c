@@ -867,7 +867,6 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
 
                         if(reset)
                         {
-                            UserAudioStreamStop();
                             DFUDelay(DELAY_BEFORE_REBOOT_TO_DFU_MS * 100000);
                             device_reboot();
                         }
@@ -976,7 +975,6 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
                     result = DFUDeviceRequests(ep0_out, &ep0_in, &sp, null, 0 /*this is unused in DFUDeviceRequests()??*/, dfuInterface, &reset);
                     if(reset)
                     {
-                        UserAudioStreamStop();
                         DFUDelay(DELAY_BEFORE_REBOOT_TO_DFU_MS * 100000);
                         device_reboot();
                     }
