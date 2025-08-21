@@ -8,6 +8,8 @@ UNRELEASED
     same functionality as `xua_conf_cores.h` i.e. to allow insertion of tasks
     into the `main()` function (`xua_conf_cores.h` to be deprecated in a future
     release)
+  * ADDED:     Support for lib_sigma_delta to provide high-quality PWM audio
+    outputs via GPIO pins
     ADDED:     Support for define `USER_MAIN_TASKS` with the same functionalty
     as `USER_MAIN_CORES` i.e. to allow insertion of tasks into the `main()`
     function (`USER_MAIN_CORES` to be deprecated in a future release)
