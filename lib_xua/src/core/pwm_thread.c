@@ -1,3 +1,5 @@
+// Copyright 2024-2025 XMOS LIMITED.
+// This Software is subject to the terms of the XMOS Public Licence: Version 1.
 /**
  * @file    pwm_thread.c
  * @brief   Fork the threads to run a PWM engine

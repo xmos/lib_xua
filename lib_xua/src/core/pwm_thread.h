@@ -1,3 +1,5 @@
+// Copyright 2024-2025 XMOS LIMITED.
+// This Software is subject to the terms of the XMOS Public Licence: Version 1.
 #ifndef __pwm_thread__h_
 #define __pwm_thread__h_
 
