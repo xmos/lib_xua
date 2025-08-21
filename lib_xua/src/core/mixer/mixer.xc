@@ -52,7 +52,16 @@ static unsigned abs(int x)
 static const int SOURCE_COUNT = NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + MAX_MIX_COUNT + 1;
 
 static int samples_array[NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + MAX_MIX_COUNT + 1]; /* One larger for an "off" channel for mixer sources" */
-static int samples_to_device[NUM_USB_CHAN_OUT];
+#if (OUT_VOLUME_IN_MIXER && OUT_VOLUME_AFTER_MIX)
+/**
+ * vol_ctld_samples_to_device_array[NUM_USB_CHAN_OUT]
+ *
+ * Only used when OUT_VOLUME_IN_MIXER && OUT_VOLUME_AFTER_MIX
+ * Contains post-mix, post-volume-control samples that are stored linearly for giving to audio
+ * in GiveSamplesToDevice()
+ */
+static int vol_ctld_samples_to_device_array[NUM_USB_CHAN_OUT];
+#endif
 static int samples_to_host_map_array[NUM_USB_CHAN_IN];
 static int samples_to_device_map_array[NUM_USB_CHAN_OUT];
 
@@ -61,7 +70,9 @@ unsafe
     int volatile * const unsafe ptr_samples = samples_array;
     int volatile * const unsafe samples_to_host_map = samples_to_host_map_array;
     int volatile * const unsafe samples_to_device_map = samples_to_device_map_array;
-    int volatile * const unsafe ptr_samples_to_device = samples_to_device;
+#if (OUT_VOLUME_IN_MIXER && OUT_VOLUME_AFTER_MIX)
+    int volatile * const unsafe ptr_vol_ctld_samples_to_device = vol_ctld_samples_to_device_array;
+#endif
 }
 
 #if (MAX_MIX_COUNT > 0)
@@ -262,7 +273,7 @@ static inline void GiveSamplesToDevice(chanend c, volatile int * unsafe deviceMa
         int sample;
 #if (OUT_VOLUME_IN_MIXER && OUT_VOLUME_AFTER_MIX)
         unsafe {
-            sample = ptr_samples_to_device[i];
+            sample = ptr_vol_ctld_samples_to_device[i];
         }
 #else
 #if (MAX_MIX_COUNT > 0)
@@ -336,6 +347,18 @@ static inline void GetSamplesFromDevice(chanend c)
 }
 
 #if (OUT_VOLUME_IN_MIXER && OUT_VOLUME_AFTER_MIX)
+/**
+ * do_output_volume_control()
+ *
+ * If OUT_VOLUME_IN_MIXER and OUT_VOLUME_AFTER_MIX enabled, apply volume control
+ * on a USB OUT sample after mixing and before sending it to audio.
+ * The volume control output is written to the ptr_vol_ctld_samples_to_device[] array
+ * from where it is read linearly in GiveSamplesToDevice().
+ *
+ * - Input: out_ch_index = index of the USB output channel
+ * - Output: The scaled sample is written linearly into
+ *   ptr_vol_ctld_samples_to_device[out_ch_index]
+ */
 #pragma unsafe arrays
 static inline void do_output_volume_control(int out_ch_index)
 {
@@ -344,15 +367,13 @@ static inline void do_output_volume_control(int out_ch_index)
     int h;
     unsigned l;
 
-    /* If mixer turned on sort out the channel mapping */
     unsafe
     {
-        /* Read index to sample from the map then Read the actual sample value */
 #if (MAX_MIX_COUNT > 0)
-        /* If mixer turned on sort out the channel mapping */
         unsafe
         {
-            /* Read index to sample from the map then Read the actual sample value */
+            /* If mixer turned on, account for channel mapping.
+            Read index to sample from the map then Read the actual sample value */
             sample = ptr_samples[samples_to_device_map[out_ch_index]];
         }
 #else
@@ -372,23 +393,15 @@ static inline void do_output_volume_control(int out_ch_index)
     h |= (l >>29)& 0x7; // Note: This step is not required if we assume sample depth is 24bit (rather than 32bit)
                         // Note: We need all 32bits for Native DSD
 #endif
-/* If mixer turned on sort out the channel mapping */
-#if (MAX_MIX_COUNT > 0)
-    /* If mixer turned on sort out the channel mapping */
     unsafe
     {
-        /* Read index to sample from the map then Read the actual sample value */
-        ptr_samples[samples_to_device_map[out_ch_index]] = h;
-        ptr_samples_to_device[out_ch_index] = h; // Store linearly
+        /*
+         * Store in a different array from where it can be read out in GiveSamplesToDevice().
+         * Note: It's important to save it in a different array, and not back in ptr_samples, since the
+         * volume controlled output should not be fed back in the mixer (unless OUT_VOLUME_BEFORE_MIX is enabled)
+        */
+        ptr_vol_ctld_samples_to_device[out_ch_index] = h;
     }
-#else
-    unsafe
-    {
-        /* Read the actual sample value */
-        ptr_samples[out_ch_index] = h;
-        ptr_samples_to_device[out_ch_index] = h; // Store linearly
-    }
-#endif
 }
 #endif
 
@@ -406,6 +419,11 @@ static void mixer1(chanend c_host, chanend c_mix_ctl, chanend ?c_mixer2, chanend
 #endif
     unsigned request = 0;
 #if (MAX_MIX_COUNT > 0)
+    /**
+     * Tracks whether mixer2 was triggered during the last
+     * sample exchange. If the decoupler responds with a
+     * control command, mixer2 is not triggered.
+     */
     int mixer2_triggered = 1;
 #endif
 
@@ -414,7 +432,7 @@ static void mixer1(chanend c_host, chanend c_mix_ctl, chanend ?c_mixer2, chanend
 #if (MAX_MIX_COUNT > 0)
         if(mixer2_triggered)
         {
-            inuint(c_mixer2); // This is where we need mixer 2 to have finished
+            inuint(c_mixer2); // synchronise with mixer2
             mixer2_triggered = 0;
         }
 #endif
@@ -711,12 +729,17 @@ static void mixer1(chanend c_host, chanend c_mix_ctl, chanend ?c_mixer2, chanend
             int ch_index;
             unsafe {
         #if (MAX_MIX_COUNT > 0)
+            // when mixer2 is present, mixer1 only does volume control for the channels that are not present with mixer2.
+            // these are the odd numbered mixer output channels.
+            // If ch_index is one of those channels, do volume control in mixer1.
             ch_index = samples_to_device_map[i];
             int do_vol_control = 0;
-            if((ch_index >= NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN) &&
-                !((ch_index - (NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN)) & 0x1))
+            if(ch_index >= (NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN)) /* if its one of the mixer output channels */
             {
-                do_vol_control = 1;
+                if(!((ch_index - (NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN)) & 0x1)) /* if its on even numbered mixer channel */
+                {
+                    do_vol_control = 1;
+                }
             }
         #else // there's no second mixer. mixer1 does all the volume control
             int do_vol_control = 1;
@@ -813,7 +836,7 @@ static void mixer2(chanend c_mixer1)
 
     // mixer2 is responsible for output volume control, unless the sample is not available with mixer2,
     // in which case it leaves it to mixer1 to do.
-    // mixer2 has ptr_samples[0..(NUM_USB_CHAN_OUT+NUM_USB_CHAN_IN)] as well as index 1,3,5 and 7 (so the odd indexes) of the mixed outputs
+    // mixer2 has ptr_samples[0..(NUM_USB_CHAN_OUT+NUM_USB_CHAN_IN)] as well as index 1,3,5 and 7 (odd indexes!) of the mixed outputs
 
 #if (OUT_VOLUME_IN_MIXER && OUT_VOLUME_AFTER_MIX)
         #warning OUT Vols in mixer, AFTER mix & map
@@ -825,13 +848,13 @@ static void mixer2(chanend c_mixer1)
             ch_index = samples_to_device_map[i];
             }
             int do_vol_control = 0;
-            if(ch_index < NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN)
+            if(ch_index < (NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN)) /* if ch_index is one of the usb out or in channels*/
             {
                 do_vol_control = 1;
             }
             else
             {
-                if((ch_index - (NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN)) & 0x1)
+                if((ch_index - (NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN)) & 0x1) /* if ch_index is an odd numbered mixer output channel*/
                 {
                     do_vol_control = 1;
                 }
@@ -839,7 +862,6 @@ static void mixer2(chanend c_mixer1)
             if(do_vol_control)
             {
                 do_output_volume_control(i);
-
             }
         }
 #endif
