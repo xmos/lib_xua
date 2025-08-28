@@ -84,10 +84,6 @@ Warnings relating to configuration defines located in this XC source file rather
 #warning Using channel to control buffering - this may reduce performance but improve power consumption
 #endif
 
-#if (NUM_USB_CHAN_OUT == 0 && NUM_USB_CHAN_IN == 0)
-#error Please disable XUA_LOW_POWER_NON_STREAMING if you wish to have a system with no USB audio streams. These features are incompatible.
-#endif
-
 /* Checks when using xua wrapper */
 #if XUA_WRAPPER
     #if (!defined(I2S_CHANS_DAC) || !defined(I2S_CHANS_ADC))
