@@ -2,19 +2,6 @@
 
 @Library('xmos_jenkins_shared_library@v0.39.0') _
 
-def clone_test_deps() {
-  dir("${WORKSPACE}") {
-    sh "git clone git@github.com:xmos/test_support"
-    sh "git -C test_support checkout 961532d89a98b9df9ccbce5abd0d07d176ceda40"
-
-    sh "git clone git@github0.xmos.com:xmos-int/xtagctl"
-    sh "git -C xtagctl checkout v2.0.0"
-
-    sh "git clone git@github.com:xmos/hardware_test_tools"
-    sh "git -C hardware_test_tools checkout develop"
-  }
-}
-
 getApproval()
 
 pipeline {
@@ -44,8 +31,9 @@ pipeline {
       defaultValue: 'v2.1.0',
       description: 'The infr_apps version'
     )
-    choice(name: 'TEST_LEVEL', choices: ['smoke', 'nightly'],
-            description: 'The level of test coverage to run')
+    choice(
+        name: 'TEST_LEVEL', choices: ['smoke', 'nightly'],
+        description: 'The level of test coverage to run')
   }
 
   stages {
@@ -300,8 +288,6 @@ pipeline {
             dir("${REPO}") {
               checkoutScmShallow()
 
-              clone_test_deps()
-
               withTools(params.TOOLS_VERSION) {
                 dir("tests") {
                   createVenv(reqFile: "requirements.txt")
@@ -345,15 +331,10 @@ pipeline {
           steps {
             println "Stage running on ${env.NODE_NAME}"
 
-            clone_test_deps()
-
             dir("${REPO}") {
               checkoutScmShallow()
             }
 
-            dir("hardware_test_tools/xmosdfu") {
-              unstash "macos_xmosdfu"
-            }
             dir("${REPO}/tests/xua_hw_tests") {
               unstash "hw_test_bin" // Unstash HW test DUT binaries
             }
@@ -364,16 +345,32 @@ pipeline {
             dir("${REPO}/tests") {
               createVenv(reqFile: "requirements.txt")
               withTools(params.TOOLS_VERSION) {
-                dir("xua_hw_tests") {
-                  withVenv {
-                    withXTAG(["usb_audio_mc_xcai_dut"]) { xtagIds ->
-                      sh "pytest -s --junitxml=pytest_hw_mac.xml --xtag-id=${xtagIds[0]} --level ${params.TEST_LEVEL}"
+                withVenv {
+                  script {
+                    // Get hardware_test_tools install path from Python
+                    def hwPath = sh(
+                        script: 'python -c "import hardware_test_tools, os; print(os.path.dirname(hardware_test_tools.__file__))"',
+                        returnStdout: true
+                    ).trim()
+
+                    echo "Hardware Test Tools path: ${hwPath}"
+                    def hwPathParent = hwPath.substring(0, hwPath.lastIndexOf('/'))
+                    echo "Hardware Test Tools repo path: ${hwPathParent}"
+
+                    // Change directory into xmosdfu and unstash
+                    dir("${hwPathParent}/xmosdfu") {
+                        unstash "macos_xmosdfu"
                     }
-                  }
-                }
-              }
-            }
-          }
+                  } // script
+                  dir("xua_hw_tests") {
+                    withXTAG(["usb_audio_mc_xcai_dut"]) { xtagIds ->
+                      sh "pytest -v --junitxml=pytest_hw_mac.xml --xtag-id=${xtagIds[0]} --level ${params.TEST_LEVEL}"
+                    }
+                  } // dir("xua_hw_tests")
+                } // withVenv
+              } // withTools(params.TOOLS_VERSION)
+            } // dir("${REPO}/tests")
+          } // steps
           post {
             always {
               junit "${REPO}/tests/xua_hw_tests/pytest_hw_mac.xml"
@@ -390,8 +387,6 @@ pipeline {
           }
           steps {
             println "Stage running on ${env.NODE_NAME}"
-
-            clone_test_deps()
 
             dir("${REPO}") {
               checkoutScmShallow()
@@ -411,7 +406,7 @@ pipeline {
                 dir("xua_hw_tests") {
                   withVenv {
                     withXTAG(["usb_audio_mc_xcai_dut"]) { xtagIds ->
-                      sh "pytest -s -v --junitxml=pytest_hw_win.xml --xtag-id=${xtagIds[0]} --level ${params.TEST_LEVEL}"
+                      sh "pytest -v --junitxml=pytest_hw_win.xml --xtag-id=${xtagIds[0]} --level ${params.TEST_LEVEL}"
                     }
                   }
                 }

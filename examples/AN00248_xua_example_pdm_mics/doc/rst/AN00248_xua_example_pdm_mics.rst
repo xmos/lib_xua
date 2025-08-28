@@ -35,12 +35,10 @@ file as well as ``lib_board_support`` which contains code to setup the audio har
 The dependencies for this example are specified by ``deps.cmake`` in the ``examples`` directory
 and are included in the application ``CMakeLists.txt`` file.
 
-The ``lib_xud`` library requires some flags for correct operation. Namely the
-tile on which ``lib_xud`` will be executed. In addition ``lib_board_support`` needs to be told which
+Compiler flags need to be set to tell ``lib_board_support`` which
 board is being used. For example::
 
-  set(APP_COMPILER_FLAGS = .. -DUSB_TILE=tile[0]
-                              -DBOARD_SUPPORT_BOARD=XK_EVK_XU316
+  set(APP_COMPILER_FLAGS =    -DBOARD_SUPPORT_BOARD=XK_EVK_XU316
                               ..)
 
 

@@ -46,8 +46,6 @@
 #define DEBUG_UNIT XUA_AUDIOHUB
 #include "debug_print.h"
 
-#define XUA_MAX(x,y) ((x)>(y) ? (x) : (y))
-
 unsigned samplesOut[XUA_MAX(NUM_USB_CHAN_OUT, I2S_CHANS_DAC)];
 
 /* Two buffers for ADC data to allow for DAC and ADC I2S ports being offset */
@@ -380,6 +378,10 @@ unsigned static AudioHub_MainLoop(chanend ?c_aud, chanend ?c_spd_out
 #if (XUA_ADAT_TX_EN)
                 TransferAdatTxSamples(c_adat_out, samplesOut, adatSmuxMode, 1);
 #endif
+#if (XUA_SPDIF_TX_EN) && (NUM_USB_CHAN_OUT > 0)
+                outuint(c_spd_out, samplesOut[SPDIF_TX_INDEX]);  /* Forward samples to S/PDIF Tx thread */
+                outuint(c_spd_out, samplesOut[SPDIF_TX_INDEX + 1]);
+#endif
 
 #if (XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
                 /* Sync with clockgen */
@@ -405,10 +407,6 @@ unsigned static AudioHub_MainLoop(chanend ?c_aud, chanend ?c_spd_out
 #if (XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
                 /* Request digital data (with prefill) */
                 outuint(c_dig_rx, 0);
-#endif
-#if (XUA_SPDIF_TX_EN) && (NUM_USB_CHAN_OUT > 0)
-                outuint(c_spd_out, samplesOut[SPDIF_TX_INDEX]);  /* Forward samples to S/PDIF Tx thread */
-                outuint(c_spd_out, samplesOut[SPDIF_TX_INDEX + 1]);
 #endif
 
 #if (XUA_NUM_PDM_MICS > 0)
@@ -784,7 +782,7 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
         }
 #endif
 
-#if ((AUDIO_IO_TILE == XUD_TILE) || XUA_ADAT_TX_EN || XUA_SPDIF_TX_EN)
+#if (MCLK_REQUIRED)
         xassert((!isnull(clk_audio_mclk) && !isnull(p_mclk_in)) && "Error: must provide non-null MCLK port and MCLK clock-block if digital Rx is enabled or AUDIO_IO_TILE==XUD_TILE");
         /* Clock master clock-block from master-clock port */
         configure_clock_src(clk_audio_mclk, p_mclk_in);
@@ -800,7 +798,7 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
         directly from the MCLK port. */
         /* Start the master clock-block */
         start_clock(clk_audio_mclk);
-#endif /* ((AUDIO_IO_TILE == XUD_TILE) || XUA_ADAT_TX_EN || XUA_SPDIF_TX_EN) */
+#endif /* (MCLK_REQUIRED) */
 
         /* Perform required CODEC/ADC/DAC initialisation */
         AudioHwInit();
@@ -922,6 +920,14 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
 
                 /* Wait for ACK back from clockgen or ep_buffer to signal clocks all good */
                 c_audio_rate_change :> int _;
+#if XUA_USE_SW_PLL
+                timer t;
+                unsigned time;
+                /* Allow some time for mclk to lock and MCLK to stabilise - this is important to avoid glitches at start of stream */
+                t :> time;
+                t when timerafter(time+40000000) :> void;
+#endif
+
 #endif
 
                 /* User should unmute audio hardware */
@@ -1080,7 +1086,7 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
         }
 #endif // (I2S_CHANS_DAC != 0) || (I2S_CHANS_ADC != 0)
 
-#if ((AUDIO_IO_TILE == XUD_TILE) || XUA_ADAT_TX_EN || XUA_SPDIF_TX_EN)
+#if (MCLK_REQUIRED)
         /* Start the master clock-block */
         stop_clock(clk_audio_mclk);
 #endif

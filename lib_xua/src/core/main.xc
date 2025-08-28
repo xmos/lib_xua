@@ -167,14 +167,14 @@ on tile[AUDIO_IO_TILE] : buffered out port:32 p_lrclk       = PORT_I2S_LRCLK;
 on tile[AUDIO_IO_TILE] : buffered out port:32 p_bclk        = PORT_I2S_BCLK;
 #endif
 
-#if (!CODEC_MASTER) || XUA_SPDIF_TX_EN || XUA_ADAT_TX_EN || ((AUDIO_IO_TILE == XUD_TILE) && XUA_USB_EN)
+#if (MCLK_REQUIRED)
 /* Audio master clock input */
 on tile[AUDIO_IO_TILE] :  in port p_mclk_in                 = PORT_MCLK_IN;
 #else
 #define p_mclk_in null
 #endif
 
-#if (AUDIO_IO_TILE != XUD_TILE) && XUA_USB_EN
+#if (SECOND_MCLK_REQUIRED)
 /* If audio I/O and USB running on different tiles we need a separate port for
  * the master clock input (to use for USB async feedback calculation) */
 on tile[XUD_TILE] : in port p_mclk_in_usb                   = PORT_MCLK_IN_USB;
@@ -390,6 +390,11 @@ void usb_audio_io(chanend ?c_aud_in,
     } // par
 }
 
+/* USER_MAIN_GLOBALS can be defined either via xua_conf.h or by xua_conf_globals.h */
+#ifdef __xua_conf_globals_h_exists__
+    #include "xua_conf_globals.h"
+#endif
+
 #ifndef USER_MAIN_GLOBALS
 #define USER_MAIN_GLOBALS
 #endif
@@ -402,12 +407,11 @@ void usb_audio_io(chanend ?c_aud_in,
 #define USER_MAIN_CORES
 #endif
 
-
-/* USER_MAIN_GLOBALS can be defined either via xua_conf.h or by user_main_globals.h */
-#ifdef __user_main_globals_h_exists__
-    #include "user_main_globals.h"
+#ifndef USER_MAIN_TASKS
+#define USER_MAIN_TASKS
 #endif
-        USER_MAIN_GLOBALS
+
+    USER_MAIN_GLOBALS
 
 /* Main for USB Audio Applications */
 int main()
@@ -481,9 +485,9 @@ int main()
 #define c_mix_ctl null
 #endif
 
-/* USER_MAIN_DECLARATIONS can be defined either via xua_conf.h or by user_main_declarations.h */
-#ifdef __user_main_declarations_h_exists__
-    #include "user_main_declarations.h"
+/* USER_MAIN_DECLARATIONS can be defined either via xua_conf.h or by xua_conf_declarations.h */
+#ifdef __xua_conf_declarations_h_exists__
+    #include "xua_conf_declarations.h"
 #endif
 
     USER_MAIN_DECLARATIONS
@@ -491,11 +495,15 @@ int main()
     par
     {
 
-/* USER_MAIN_CORES can be defined either via xua_conf.h or by user_main_cores.h */
-#ifdef __user_main_cores_h_exists__
-    #include "user_main_cores.h"
+/* USER_MAIN_CORES can be defined either via xua_conf.h or by xua_conf_tasks.h */
+#ifdef __xua_conf_cores_h_exists__
+    #include "xua_conf_cores.h"
+#endif
+#ifdef __xua_conf_tasks_h_exists__
+    #include "xua_conf_tasks.h"
 #endif
         USER_MAIN_CORES
+        USER_MAIN_TASKS
 
 #if (((XUA_SYNCMODE == XUA_SYNCMODE_SYNC  && !XUA_USE_SW_PLL) || XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN))
         on tile[PLL_REF_TILE]: PllRefPinTask(i_pll_ref, p_pll_ref);
@@ -531,7 +539,7 @@ int main()
 
                 /* Attach mclk count port to mclk clock-block (for feedback) */
                 //set_port_clock(p_for_mclk_count, clk_audio_mclk);
-#if(AUDIO_IO_TILE != XUD_TILE)
+#if(SECOND_MCLK_REQUIRED)
                 set_clock_src(clk_audio_mclk_usb, p_mclk_in_usb);
                 set_port_clock(p_for_mclk_count, clk_audio_mclk_usb);
                 start_clock(clk_audio_mclk_usb);

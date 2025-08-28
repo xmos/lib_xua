@@ -7,6 +7,7 @@
 
 #include "xccompat.h"
 #include "xua_clocking.h" /* Required for pll_ref_if */
+#include "packet_sizes.h" /* Required for MAX_PACKETSIZE_IN_HS/OUT, MAX_PACKETSIZE_IN_FS/OUT */
 
 /** USB Audio Buffering Core(s).
  *
@@ -123,29 +124,21 @@ void XUA_Buffer_Decouple(chanend c_audio_out
 );
 #endif
 
-#define XUA_MAX(x,y) ((x)>(y) ? (x) : (y))
-
-/* TODO use SLOTSIZE to potentially save memory */
-/* Note we could improve on this, for one subslot is set to 4 */
-/* The *4 is conversion to bytes, note we're assuming a slotsize of 4 here whic is potentially as waste */
-#define MAX_DEVICE_AUD_PACKET_SIZE_MULT_HS  ((MAX_FREQ/8000+1)*4)
-#define MAX_DEVICE_AUD_PACKET_SIZE_MULT_FS  ((MAX_FREQ_FS/1000+1)*4)
-
 /*** IN PACKET SIZES ***/
 /* Max packet sizes in bytes. Note the +4 is because we store packet lengths in the buffer */
-#define MAX_DEVICE_AUD_PACKET_SIZE_IN_HS  (MAX_DEVICE_AUD_PACKET_SIZE_MULT_HS * NUM_USB_CHAN_IN + 4)
-#define MAX_DEVICE_AUD_PACKET_SIZE_IN_FS  (MAX_DEVICE_AUD_PACKET_SIZE_MULT_FS * NUM_USB_CHAN_IN_FS + 4)
+#define MAX_DEVICE_AUD_PACKET_SIZE_IN_HS  (MAX_PACKETSIZE_IN_HS + 4)
+#define MAX_DEVICE_AUD_PACKET_SIZE_IN_FS  (MAX_PACKETSIZE_IN_FS + 4)
 
 #define MAX_DEVICE_AUD_PACKET_SIZE_IN (XUA_MAX(MAX_DEVICE_AUD_PACKET_SIZE_IN_FS, MAX_DEVICE_AUD_PACKET_SIZE_IN_HS))
 
 /*** OUT PACKET SIZES ***/
-#define MAX_DEVICE_AUD_PACKET_SIZE_OUT_HS  (MAX_DEVICE_AUD_PACKET_SIZE_MULT_HS * NUM_USB_CHAN_OUT + 4)
-#define MAX_DEVICE_AUD_PACKET_SIZE_OUT_FS  (MAX_DEVICE_AUD_PACKET_SIZE_MULT_FS * NUM_USB_CHAN_OUT_FS + 4)
+#define MAX_DEVICE_AUD_PACKET_SIZE_OUT_HS  (MAX_PACKETSIZE_OUT_HS + 4)
+#define MAX_DEVICE_AUD_PACKET_SIZE_OUT_FS  (MAX_PACKETSIZE_OUT_FS + 4)
 
 #define MAX_DEVICE_AUD_PACKET_SIZE_OUT (XUA_MAX(MAX_DEVICE_AUD_PACKET_SIZE_OUT_FS, MAX_DEVICE_AUD_PACKET_SIZE_OUT_HS))
 
 /*** BUFFER SIZES ***/
-/* How many packets too allow for in buffer - minimum is 5.
+/* How many packets to allow for in buffer - minimum is 5.
 2 for having in the aud_to_host buffer when it comes out of underflow, space available for 2 more for to accomodate cases when
 2 pkts from audio hub get written into the aud_to_host buffer within 1 SOF period, and space for 1 extra packet to ensure that
 when the 4th packet gets written to the buffer, there's space to accomodate the next packet, otherwise handle_audio_request() will
