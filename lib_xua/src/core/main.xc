@@ -82,17 +82,17 @@ extern in port p_for_mclk_count;
 
 #endif //  ((XUA_USB_EN && !defined(EXCLUDE_USB_AUDIO_MAIN)) || XUA_WRAPPER)
 
+#if ((XUA_DFU_EN == 1) && (XUA_USB_EN == 1))
+[[distributable]]
+void DFUHandler(server interface i_dfu i, chanend ?c_user_cmd);
+#endif
+
+
 
 #ifndef EXCLUDE_USB_AUDIO_MAIN
 
 #if XUA_USB_EN
 on tile[XUD_TILE] : in port p_for_mclk_count                = PORT_MCLK_COUNT;
-#endif
-
-
-#if (XUA_DFU_EN == 1)
-[[distributable]]
-void DFUHandler(server interface i_dfu i, chanend ?c_user_cmd);
 #endif
 
 /* Audio I/O - Port declarations */
@@ -700,11 +700,17 @@ int main()
 #define c_adat_rx null
 #define c_clk_int null
 #define c_clk_ctl null
-#define dfuInterface null
 #define c_mix_ctl null
+
 
 extern clock clk_audio_mclk_usb;
 extern in port p_mclk_in_usb;
+
+#if ((XUA_DFU_EN == 1) && (XUD_TILE != 0))
+extern unsafe interface i_dfu g_dfuInterface;
+#warning When using XUA_WRAPPER with DFU enabled when XUD_TILE != 0 requires a call on tile[0] to DFUHandler(dfuInterface, null); \
+and a global interface "unsafe interface i_dfu g_dfuInterface"
+#endif
 
 void XUA_wrapper_task(chanend c_aud)
 {
@@ -713,8 +719,24 @@ void XUA_wrapper_task(chanend c_aud)
     chan c_xud_in[ENDPOINT_COUNT_IN];
     chan c_aud_ctl;                         /* Used to communicate controls/setting from XUA_Endpoint0() to the Audio/Buffering sub-system */
 
+#if (XUA_DFU_EN == 1)
+#if (XUD_TILE == 0)
+    interface i_dfu dfuInterface;
+#else // XUD_TILE != 0
+    #define dfuInterface g_dfuInterface
+#endif
+#else
+    #define dfuInterface null
+#endif
+
     par
     {
+#if ((XUA_DFU_EN == 1) && (XUD_TILE == 0))
+        /* Check if USB is on the flash tile (tile 0) */
+        /* Expect to be distrbuted into XUA_Endpoint0() */
+        [[distribute]]
+        DFUHandler(dfuInterface, null);
+#endif // ((XUA_DFU_EN == 1) && (XUD_TILE == 0))
 
         /* Core USB task, buffering, USB etc */
         {

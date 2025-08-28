@@ -20,6 +20,8 @@ extern unsigned samplesIn[2][XUA_MAX(NUM_USB_CHAN_IN, IN_CHAN_COUNT)];
 #include "xua_audiohub_st.h"
 
 extern void receive_command(unsigned command, chanend c_aud, unsigned &curSamFreq, unsigned &dsdMode, unsigned &curSamRes_DAC, unsigned &audioActive);
+extern void check_and_enter_dfu(unsigned curSamFreq, chanend c_aud, server interface i_dfu ?dfuInterface);
+
 
 // Setup to initial defaults
 unsigned command = XUA_AUDCTL_NO_COMMAND;
@@ -43,9 +45,11 @@ int XUA_wrapper_exchange_samples(chanend c_aud, int32_t samples_to_host[NUM_USB_
 	}
 	if(command != XUA_AUDCTL_NO_COMMAND)
 	{
-	    /* Just consume the command, grab copies of vars then ignore it + keep on looping forever */
+	    /* Just consume the command, grab copies of vars then ignore it & keep on looping forever, unless DFU time */
 	    unsigned audioActive = 1;
 	    receive_command(command, c_aud, xua_wrapper_sample_rate, xua_wrapper_dsd_mode, xua_wrapper_dac_res, audioActive);
+		check_and_enter_dfu(xua_wrapper_sample_rate, c_aud, null);
+
 	    /* Calculate what master clock we should be using */
         if (((MCLK_441) % xua_wrapper_sample_rate) == 0)
         {
