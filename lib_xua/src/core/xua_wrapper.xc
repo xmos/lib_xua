@@ -5,8 +5,6 @@
 #include "xua_commands.h"
 #include <string.h>
 
-#define XUA_MAX(x,y) ((x)>(y) ? (x) : (y))
-
 const int readBuffNo = 0; 	// Note we don't need to double buffer here due to copy
 unsigned underflowWord = 0;	// Always assumuing PCM
 
@@ -48,7 +46,9 @@ int XUA_wrapper_exchange_samples(chanend c_aud, int32_t samples_to_host[NUM_USB_
 	    /* Just consume the command, grab copies of vars then ignore it & keep on looping forever, unless DFU time */
 	    unsigned audioActive = 1;
 	    receive_command(command, c_aud, xua_wrapper_sample_rate, xua_wrapper_dsd_mode, xua_wrapper_dac_res, audioActive);
+#if XUA_DFU_EN
 		check_and_enter_dfu(xua_wrapper_sample_rate, c_aud, null);
+#endif
 
 	    /* Calculate what master clock we should be using */
         if (((MCLK_441) % xua_wrapper_sample_rate) == 0)
