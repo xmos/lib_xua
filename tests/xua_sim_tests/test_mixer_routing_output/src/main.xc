@@ -43,6 +43,11 @@
 #include <stddef.h>
 #include "platform.h"
 #include "xua.h"
+#define DEBUG_UNIT TEST_MIXER_ROUTING_OP
+
+#ifndef DEBUG_PRINT_ENABLE_TEST_MIXER_ROUTING_OP
+    #define DEBUG_PRINT_ENABLE_TEST_MIXER_ROUTING_OP 0
+#endif // DEBUG_PRINT_ENABLE_TEST_MIXER_ROUTING_OP
 #include "debug_print.h"
 #include "assert.h"
 #include "random.h"
@@ -52,7 +57,6 @@
 #endif
 
 #include "test_seed.h"
-
 #ifndef TEST_SEED
 #error TEST_SEED must be defined
 #endif
@@ -167,6 +171,7 @@ void stim(chanend c_stim_ah, chanend c_stim_de, chanend c_mix_ctl)
                 /* Update the mixer */
                 SendTrigger(c_stim_ah, 1);
                 UpdateMixerOutputRouting(c_mix_ctl, map, dst, src);
+                SendTrigger(c_stim_ah, 1); // The SAMPLES_TO_DEVICE_MAP is applied with one sample delay to trigger a sample exchange again
                 break;
 
             case SET_SAMPLES_TO_HOST_MAP:
