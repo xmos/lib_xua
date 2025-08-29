@@ -364,6 +364,17 @@
     #endif
 #endif
 
+/** @brief Input channel terminal type override to line in
+ * 
+ * Set to 1 to have USB input present as line-in to the host
+ * 
+ * Default: disabled (input channels appear as mics)
+ *
+ */
+#ifndef XUA_DEC_INPUT_TYPE_LINE_IN
+    #define XUA_DEC_INPUT_TYPE_LINE_IN (0)
+#endif
+
 /*
  * Feature defines
  */

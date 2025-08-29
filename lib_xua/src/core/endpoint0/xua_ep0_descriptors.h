@@ -1155,7 +1155,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
             .bDescriptorType           = UAC_CS_DESCTYPE_INTERFACE,
             .bDescriptorSubtype        = UAC_CS_AC_INTERFACE_SUBTYPE_INPUT_TERMINAL,
             .bTerminalID               = ID_IT_AUD,
-#ifdef XUA_DESC_INPUT_TYPE_LINE_IN
+#if XUA_DESC_INPUT_TYPE_LINE_IN
             .wTerminalType             = UAC_TT_EXTERNAL_TERMTYPE_LINE_CONNECTOR,            
 #else            
             .wTerminalType             = UAC_TT_INPUT_TERMTYPE_MICROPHONE,
