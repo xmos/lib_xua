@@ -3,8 +3,8 @@
 #ifndef _XUA_CONF_H_
 #define _XUA_CONF_H_
 
-#define XUD_TILE (0)
-#define AUDIO_IO_TILE (1)
+#define XUA_XUD_TILE_NUM      (0)
+#define XUA_AUDIO_IO_TILE_NUM (1)
 
 #define MCLK_441 (512 * 44100)
 #define MCLK_48 (512 * 48000)

@@ -36,6 +36,6 @@ Basic configuration of mixer functionality is achieved with the the defines
 
 .. note::
 
-   The mixer threads always run on the tile defined by ``AUDIO_IO_TILE``
+   The mixer threads always run on the tile defined by ``XUA_AUDIO_IO_TILE_NUM``
 
 

@@ -15,8 +15,8 @@
 
 #define UAC_FORCE_FEEDBACK_EP   (0)
 #define XUA_NUM_PDM_MICS 0
-#define XUD_TILE 0
-#define AUDIO_IO_TILE 0
+#define XUA_XUD_TILE_NUM 0
+#define XUA_AUDIO_IO_TILE_NUM 0
 
 #ifndef MCLK_441
 #define MCLK_441 (512 * 44100)

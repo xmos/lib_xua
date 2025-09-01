@@ -12,7 +12,7 @@
 
 /* Port declarations. Note, the defines come from the xn file */
 #if I2S_WIRES_DAC > 0
-on tile[AUDIO_IO_TILE] : buffered out port:32 p_i2s_dac[I2S_WIRES_DAC] =
+on tile[XUA_AUDIO_IO_TILE_NUM] : buffered out port:32 p_i2s_dac[I2S_WIRES_DAC] =
                 {PORT_I2S_DAC0,
 #endif
 #if I2S_WIRES_DAC > 1
@@ -41,7 +41,7 @@ on tile[AUDIO_IO_TILE] : buffered out port:32 p_i2s_dac[I2S_WIRES_DAC] =
 #endif
 
 #if I2S_WIRES_ADC > 0
-on tile[AUDIO_IO_TILE] : buffered in port:32 p_i2s_adc[I2S_WIRES_ADC] =
+on tile[XUA_AUDIO_IO_TILE_NUM] : buffered in port:32 p_i2s_adc[I2S_WIRES_ADC] =
                 {PORT_I2S_ADC0,
 #endif
 #if I2S_WIRES_ADC > 1
@@ -81,8 +81,8 @@ in port p_mclk_in                   = PORT_MCLK_IN;
 #endif
 
 /* Clock-block declarations */
-clock clk_audio_bclk                = on tile[AUDIO_IO_TILE]: XS1_CLKBLK_1;   /* Bit clock */
-clock clk_audio_mclk                = on tile[AUDIO_IO_TILE]: XS1_CLKBLK_2;   /* Master clock */
+clock clk_audio_bclk                = on tile[XUA_AUDIO_IO_TILE_NUM]: XS1_CLKBLK_1;   /* Bit clock */
+clock clk_audio_mclk                = on tile[XUA_AUDIO_IO_TILE_NUM]: XS1_CLKBLK_2;   /* Master clock */
 
 #ifdef SIMULATION
 #define INITIAL_SKIP_FRAMES 10
@@ -199,23 +199,23 @@ void checker(chanend c_checker, int disable)
 
 #ifdef SIMULATION
 
-out port p_mclk_gen       = on tile[AUDIO_IO_TILE] :  XS1_PORT_1A;
-clock clk_audio_mclk_gen  = on tile[AUDIO_IO_TILE] : XS1_CLKBLK_3;
-in port p_for_mclk_count  = on tile[XUD_TILE] : XS1_PORT_16A;
+out port p_mclk_gen       = on tile[XUA_AUDIO_IO_TILE_NUM] :  XS1_PORT_1A;
+clock clk_audio_mclk_gen  = on tile[XUA_AUDIO_IO_TILE_NUM] : XS1_CLKBLK_3;
+in port p_for_mclk_count  = on tile[XUA_XUD_TILE_NUM] : XS1_PORT_16A;
 void master_mode_clk_setup(void);
 
 #if CODEC_MASTER
-out port  p_bclk_gen      = on tile[AUDIO_IO_TILE] : XS1_PORT_1B;
-clock clk_audio_bclk_gen  = on tile[AUDIO_IO_TILE] : XS1_CLKBLK_4;
-out port  p_lrclk_gen     = on tile[AUDIO_IO_TILE] : XS1_PORT_1C;
-clock clk_audio_lrclk_gen = on tile[AUDIO_IO_TILE] : XS1_CLKBLK_5;
+out port  p_bclk_gen      = on tile[XUA_AUDIO_IO_TILE_NUM] : XS1_PORT_1B;
+clock clk_audio_bclk_gen  = on tile[XUA_AUDIO_IO_TILE_NUM] : XS1_CLKBLK_4;
+out port  p_lrclk_gen     = on tile[XUA_AUDIO_IO_TILE_NUM] : XS1_PORT_1C;
+clock clk_audio_lrclk_gen = on tile[XUA_AUDIO_IO_TILE_NUM] : XS1_CLKBLK_5;
 void slave_mode_clk_setup(const unsigned samFreq, const unsigned chans_per_frame);
 #endif
 
 
 void mclk_checker(void)
 {
-  if(AUDIO_IO_TILE == XUD_TILE)
+  if(XUA_AUDIO_IO_TILE_NUM == XUA_XUD_TILE_NUM)
   {
     int x;
     asm("ldw %0, dp[clk_audio_mclk]":"=r"(x));
@@ -263,7 +263,7 @@ int main(void)
 
     par
     {
-        on tile[AUDIO_IO_TILE]:
+        on tile[XUA_AUDIO_IO_TILE_NUM]:
         {
             par
             {
@@ -280,7 +280,7 @@ int main(void)
             }
         }
 #ifdef SIMULATION
-        on tile[XUD_TILE]: mclk_checker();
+        on tile[XUA_XUD_TILE_NUM]: mclk_checker();
 #endif
     }
 

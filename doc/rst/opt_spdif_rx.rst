@@ -26,7 +26,7 @@ Basic configuration of S/PDIF receive functionality is achieved with the defines
 
 .. note::
 
-   S/PDIF receive always runs on the tile defined by ``AUDIO_IO_TILE``
+   S/PDIF receive always runs on the tile defined by ``XUA_AUDIO_IO_TILE_NUM``
 
 The codebase expects the S/PDIF receive port to be defined in the application XN file as ``PORT_SPDIF_IN``.
 This must be a 1-bit port, for example::
@@ -46,9 +46,9 @@ The programmer should ensure the defines in :numref:`opt_spdif_rx_ref_defines` a
    * - Define
      - Description
      - Default
-   * - ``PLL_REF_TILE``
+   * - ``XUA_PLL_REF_TILE_NUM``
      - Tile location of reference to CS2100 device
-     - ``AUDIO_IO_TILE``
+     - Derived from ``PORT_PLL_REF`` in XN file
 
 The codebase expects this reference signal port to be defined in the application XN file as ``PORT_PLL_REF``.
 This may be a port of any bit-width, however, connection to bit[0] is assumed::

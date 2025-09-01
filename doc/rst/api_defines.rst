@@ -15,12 +15,12 @@ This section fully documents all of the settable defines and their default value
 Code location (tile)
 --------------------
 
-.. doxygendefine:: AUDIO_IO_TILE
-.. doxygendefine:: XUD_TILE
-.. doxygendefine:: MIDI_TILE
-.. doxygendefine:: SPDIF_TX_TILE
-.. doxygendefine:: PDM_TILE
-.. doxygendefine:: PLL_REF_TILE
+.. doxygendefine:: XUA_AUDIO_IO_TILE_NUM
+.. doxygendefine:: XUA_XUD_TILE_NUM
+.. doxygendefine:: XUA_MIDI_TILE_NUM
+.. doxygendefine:: XUA_SPDIF_TX_TILE_NUM
+.. doxygendefine:: XUA_MIC_PDM_TILE_NUM
+.. doxygendefine:: XUA_PLL_REF_TILE_NUM
 
 Channel counts
 --------------

@@ -36,9 +36,9 @@ In addition, the developer may choose which tile the S/PDIF transmitter runs on,
    * - Define
      - Description
      - Default
-   * - ``SPDIF_TX_TILE``
+   * - ``XUA_SPDIF_TX_TILE_NUM``
      - Tile that S/PDIF tx is connected to
-     - ``AUDIO_IO_TILE``
+     - Derived from PORT_SPDIF_OUT define in the application XN file
 
 The codebase expects the S/PDIF transmit port to be defined in the application XN file as ``PORT_SPDIF_OUT``.
 This must be a 1-bit port, for example::

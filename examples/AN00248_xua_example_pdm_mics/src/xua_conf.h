@@ -16,18 +16,21 @@
 #define MIN_FREQ                            XUA_PDM_MIC_FREQ /* Minimum sample rate */
 #define MAX_FREQ                            XUA_PDM_MIC_FREQ /* Maximum sample rate */
 
-#define AUDIO_IO_TILE 						1
+
 #define PORT_MCLK_IN_USB 					XS1_PORT_1D
 #define PORT_MCLK_COUNT 					XS1_PORT_16B
 #define PORT_I2S_DAC0						PORT_I2S_DAC_DATA
+
+/* Since the PORT defines are done manually above, not in the XN file, lib_xua must be told
+ * which tiles the ports are located */
+#define XUA_AUDIO_IO_TILE_NUM               1
 
 #define XUA_NUM_PDM_MICS                    2
 #define MIC_ARRAY_CONFIG_PORT_MCLK          PORT_MCLK_IN
 #define MIC_ARRAY_CONFIG_PORT_PDM_CLK       PORT_PDM_CLK
 #define MIC_ARRAY_CONFIG_PORT_PDM_DATA      PORT_PDM_DATA
-#define MIC_ARRAY_CONFIG_CLOCK_BLOCK_A      XS1_CLKBLK_1      
+#define MIC_ARRAY_CONFIG_CLOCK_BLOCK_A      XS1_CLKBLK_1
 #define MIC_ARRAY_CONFIG_CLOCK_BLOCK_B      XS1_CLKBLK_2    /* Second clock needed as we use DDR */
-#define PDM_TILE 							1
 
 #define AUDIO_CLASS                         1
 #define VENDOR_STR                          "XMOS"

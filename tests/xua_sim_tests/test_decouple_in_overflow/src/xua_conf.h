@@ -16,7 +16,7 @@
 #define UAC_FORCE_FEEDBACK_EP   (0)
 #define XUA_NUM_PDM_MICS        (0)
 
-#define AUDIO_IO_TILE           (0)
+#define XUA_AUDIO_IO_TILE_NUM           (0)
 
 /* Required so that full 32bit result of volume control is used - otherwise breaks our test ramps */
 #define HS_STREAM_FORMAT_INPUT_1_RESOLUTION_BITS 32
@@ -48,7 +48,5 @@
 #define AUDIO_CLASS_FALLBACK    (0)
 #define BCD_DEVICE              (0x1234)
 #define XUA_DFU_EN              (0)
-#define MIC_DUAL_ENABLED        (1)        //Use single thread, dual PDM mic
-#define XUA_MIC_FRAME_SIZE      (240)
 
 #endif

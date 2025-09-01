@@ -2,8 +2,10 @@
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 
 /*
-Warnings relating to configuration defines located in this XC source file rather than the xua_conf.h header file in order to avoid multiple warnings being issued when the xua_conf.h header file is included in multiple files.
-*/
+ * Warnings relating to configuration defines located in this XC source file rather than the xua_conf.h
+ * header file in order to avoid multiple warnings being issued when the xua_conf.h header file is
+ * included in multiple files.
+ */
 
 #include "xua_conf_full.h"
 
@@ -82,6 +84,30 @@ Warnings relating to configuration defines located in this XC source file rather
 
 #ifdef XUA_CHAN_BUFF_CTRL
 #warning Using channel to control buffering - this may reduce performance but improve power consumption
+#endif
+
+#ifdef AUDIO_IO_TILE
+#warning "Use of AUDIO_IO_TILE is to be deprecated, use XUA_AUDIO_IO_TILE_NUM instead"
+#endif
+
+#ifdef XUD_TILE
+#warning "Use of XUD_TILE is to be deprecated, use XUA_XUD_TILE_NUM instead"
+#endif
+
+#ifdef MIDI_TILE
+#warning "Use of MIDI_TILE is to be deprecated, use XUA_MIDI_TILE_NUM instead"
+#endif
+
+#ifdef SPDIF_TX_TILE
+#warning "Use of SPDIF_TX_TILE is to be deprecated, use XUA_SPDIF_TX_TILE_NUM instead"
+#endif
+
+#ifdef PDM_TILE
+#warning "Use of PDM_TILE is to be deprecated, use XUA_MIC_PDM_TILE_NUM instead"
+#endif
+
+#ifdef PLL_REF_TILE
+#warning "Use of PLL_REF_TILE is to be deprecated, use XUA_PLL_REF_TILE_NUM instead"
 #endif
 
 #endif

@@ -8,8 +8,13 @@ In a multi-tile system the codebase needs to be informed as to which tiles to us
 resources and associated code.
 
 A series of defines are used to allow the programmer to easily move code between tiles. Arguably the
-most important of these are ``AUDIO_IO_TILE`` and ``XUD_TILE``. :numref:`opt_location_defines` shows a
-full listing of these ``TILE`` defines.
+most important of these are ``XUA_AUDIO_IO_TILE_NUM`` and ``XUA_XUD_TILE_NUM``.
+:numref:`opt_location_defines` shows a full listing of these ``TILE`` defines.
+
+.. note::
+
+    If not explicitly defined by user, tile numbers will be derived from the application XN file
+    ``PORT`` defines. In general this is the recommended approach.
 
 .. tabularcolumns:: lp{5cm}l
 .. _opt_location_defines:
@@ -20,25 +25,26 @@ full listing of these ``TILE`` defines.
    * - Define
      - Description
      - Default
-   * - ``AUDIO_IO_TILE``
+   * - ``XUA_AUDIO_IO_TILE_NUM``
      - Tile on which I2S/TDM, ADAT Rx, S/PDIF Rx & mixer resides
-     - ``0``
-   * - ``XUD_TILE``
+     - Derived from related port defines in the application XN file
+   * - ``XUA_XUD_TILE_NUM``
      - Tile on which USB resides, including buffering for all USB interfaces/endppoints
      - ``0``
-   * - ``MIDI_TILE``
+   * - ``XUA_MIDI_TILE_NUM``
      - Tile on which MIDI resides
-     - Same as ``AUDIO_IO_TILE``
-   * - ``SPDIF_TX_TILE``
+     - Derived from MIDI related port defines in the application XN file
+   * - ``XUA_SPDIF_TX_TILE_NUM``
      - Tile on which S/PDIF Tx resides
-     - Same as ``AUDIO_IO_TILE``
-   * - ``PDM_TILE``
+     - Derived from PORT_SPDIF_OUT port define in the application XN file
+   * - ``XUA_MIC_PDM_TILE_NUM``
      - Tile on which PDM microphones resides
-     - Same as ``AUDIO_IO_TILE``
-   * - ``PLL_REF_TILE``
+     - Derived from Mic related port defines in the application XN file
+   * - ``XUA_PLL_REF_TILE_NUM``
      - Tile on which reference signal to CS2100 resides
-     - Same as ``AUDIO_IO_TILE``
+     - Derived from PORT_PLL_REF port define in the application XN file
 
 .. note::
 
-    It should be ensured that the relevant port defines in the application XN file match the code location defines
+    It should be ensured that the relevant port defines in the application XN file match the code
+    location defines

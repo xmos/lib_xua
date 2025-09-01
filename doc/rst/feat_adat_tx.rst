@@ -64,7 +64,7 @@ The channel used for communicating between ``XUA_AudioHub`` and ADAT transmitter
 
 In order to use the ADAT transmitter with ``lib_xua`` a 1-bit port must be declared e.g::
 
-    on stdcore[AUDIO_IO_TILE] : buffered out port:32 p_adat_tx  = PORT_ADAT_OUT;
+    on tile[XUA_AUDIO_IO_TILE_NUM] : buffered out port:32 p_adat_tx  = PORT_ADAT_OUT;
 
 This port should be clocked from the master-clock::
 
