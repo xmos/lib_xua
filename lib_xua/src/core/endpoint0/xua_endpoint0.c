@@ -19,6 +19,7 @@
 #include "xud_device.h"          /* Standard descriptor requests */
 #include "dfu_types.h"
 #include "usbaudio20.h"          /* Defines from USB Audio 2.0 spec */
+#include "packet_sizes.h"
 #include "xua_ep0_descriptors.h" /* This devices descriptors */
 #include "xua_ep0_msos_descriptors.h" /* MSOS descriptors */
 #include "xua_commands.h"
