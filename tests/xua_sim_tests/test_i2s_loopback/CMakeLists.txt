@@ -55,6 +55,11 @@ foreach(channel_count ${channel_count_list})
                              list(APPEND EXTRA_FLAGS -DXUD_TILE=0)
                         endif()
                         set(cfg_name simulation_${pcm_format}_${i2s_role}_${channel_count}in_${channel_count}out_${sample_rate}_${word_length}bit_${tile}_xud_tile)
+                        if(${channel_count} GREATER 8 AND ${pcm_format} STREQUAL i2s)
+                            message(STATUS "Skipping invalid config: ${cfg_name}")
+                            continue()
+                        endif()
+
                         set(APP_COMPILER_FLAGS_${cfg_name} ${COMMON_FLAGS} ${EXTRA_FLAGS}
                                                            -DNUM_USB_CHAN_IN=${channel_count}
                                                            -DNUM_USB_CHAN_OUT=${channel_count}
