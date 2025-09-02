@@ -3,6 +3,7 @@
 /*
  * @brief       Defines relating to device configuration and customisation of lib_xua
  */
+
 #ifndef _XUA_CONF_DEFAULT_H_
 #define _XUA_CONF_DEFAULT_H_
 
@@ -84,6 +85,22 @@
 #ifndef XUA_NUM_PDM_MICS
 #define XUA_NUM_PDM_MICS         (0)
 #endif
+
+/**
+ * @brief Enable API for wrapping the USB host and buffering (without audio)
+ *
+ * When enabled, an API in xua_wrapper.h is enabled
+ */
+
+#ifndef XUA_WRAPPER
+#define XUA_WRAPPER    0
+#endif
+
+#if XUA_WRAPPER
+    #define I2S_CHANS_DAC  0 /* We are not using audiohub */
+    #define I2S_CHANS_ADC  0
+#endif /* XUA_WRAPPER */
+
 
 /**
  * @brief Number of DSD output channels.

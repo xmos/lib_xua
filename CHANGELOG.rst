@@ -8,7 +8,7 @@ UNRELEASED
     same functionality as `xua_conf_cores.h` i.e. to allow insertion of tasks
     into the `main()` function (`xua_conf_cores.h` to be deprecated in a future
     release)
-    ADDED:     Support for define `USER_MAIN_TASKS` with the same functionalty
+  * ADDED:     Support for define `USER_MAIN_TASKS` with the same functionalty
     as `USER_MAIN_CORES` i.e. to allow insertion of tasks into the `main()`
     function (`USER_MAIN_CORES` to be deprecated in a future release)
   * CHANGED:   Supported optional configuration header files
@@ -25,6 +25,8 @@ UNRELEASED
   * FIXED: When software pll is enabled, report external clock as invalid when the USB sampling frequency
     doesn't match the digital input sampling frequency, instead of programming a wrong value dco Setting
     in the pll sigma delta modulator
+  * ADDED:     Support for core USB Audio task (XUA_WRAPPER) without audio task (I2S) which provides
+    simple API for projects that need to use USB audio as simple audio source/sink
 
 5.1.0
 -----

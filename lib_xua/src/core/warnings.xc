@@ -84,4 +84,21 @@ Warnings relating to configuration defines located in this XC source file rather
 #warning Using channel to control buffering - this may reduce performance but improve power consumption
 #endif
 
+/* Checks when using xua wrapper */
+#if XUA_WRAPPER
+    #if (!defined(I2S_CHANS_DAC) || !defined(I2S_CHANS_ADC))
+        #warning XUA_WRAPPER used - overriding I2S_CHANS_DAC and I2S_CHANS_ADC to zero
+    #endif
+    #ifdef MIDI
+        #error MIDI not supported when using XUA_WRAPPER
+    #endif
+    #if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC || XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN || XUA_SPDIF_TX_EN || XUA_ADAT_TX_EN)
+        #error XUA_SYNCMODE_SYNC, SPDIF, ADAT not supported by XUA_WRAPPER
+    #endif
+    #if (NUM_USB_CHAN_OUT == 0) && (NUM_USB_CHAN_IN == 0)
+        #error XUA_WRAPPER requires non-zero NUM_USB_CHAN_OUT or NUM_USB_CHAN_IN
+    #endif
 #endif
+
+#endif //XUA_USB_EN
+
