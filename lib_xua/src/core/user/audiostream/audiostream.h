@@ -6,7 +6,7 @@
 /* Functions that handle functionality that occur on stream start/stop e.g. DAC mute/un-mute.
  * They should be implemented for the external audio hardware arrangement of a specific design.
 
- * Note that these are called from the EP0 code which always resides on XUD_TILE, i.e. the
+ * Note that these are called from the EP0 code which always resides on XUA_XUD_TILE_NUM, i.e. the
  * tile where the USB device code is executed.
  */
 
@@ -14,7 +14,7 @@
  * @brief   User stream start code
  *
  * User code to perform any actions required at every stream start - either input or output.
- * 
+ *
  * /param inputActive	An input stream is active if 1, else inactive if 0
  * /param OutputActive	An output stream is active if 1, else inactive if 0
  */

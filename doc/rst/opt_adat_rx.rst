@@ -55,9 +55,9 @@ The programmer should ensure the defines in :numref:`opt_adat_rx_ref_defines` ar
    * - Define
      - Description
      - Default
-   * - ``PLL_REF_TILE``
+   * - ``XUA_PLL_REF_TILE_NUM``
      - Tile location of reference signal to CS2100 device
-     - ``AUDIO_IO_TILE``
+     - Derived from location of ``PORT_PLL_REF`` in XN file
 
 |endfullwidth|
 

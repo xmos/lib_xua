@@ -4,27 +4,37 @@ lib_xua change log
 UNRELEASED
 ----------
 
-  * ADDED:     Support for optional include header `xua_conf_tasks.h` with the
-    same functionality as `xua_conf_cores.h` i.e. to allow insertion of tasks
-    into the `main()` function (`xua_conf_cores.h` to be deprecated in a future
-    release)
-    ADDED:     Support for define `USER_MAIN_TASKS` with the same functionalty
-    as `USER_MAIN_CORES` i.e. to allow insertion of tasks into the `main()`
-    function (`USER_MAIN_CORES` to be deprecated in a future release)
+  * ADDED:     Support for optional include header ``xua_conf_tasks.h`` with the
+    same functionality as ``xua_conf_cores.h`` i.e. to allow insertion of tasks
+    into the ``main()`` function (``xua_conf_cores.h`` to be deprecated in a
+    future release)
+    ADDED:     Support for define ``USER_MAIN_TASKS`` with the same functionalty
+    as ``USER_MAIN_CORES`` i.e. to allow insertion of tasks into the `main()`
+    function (``USER_MAIN_CORES`` to be deprecated in a future release)
+  * ADDED:     Support for high bandwidth ISO endpoints
+  * ADDED:     Delay in ``AudioHub()`` to allow time for the audio PLL to  lock
+    and master clock stabilise
+  * ADDED:     Change to reset `Software` PLL DCO setting to midpoint when there's
+    a change in clock source
+  * ADDED:     Where possible ``_TILE_NUM`` defines are now derived from
+    ``PORT_`` defines in the application XN file
+  * CHANGED:   When `Software PLL` is enabled, report external clock as invalid
+    when the USB sampling frequency doesn't match the digital input sampling
+    frequency
+  * CHANGED:   ``AUDIO_IO_TILE`` renamed to ``XUA_AUDIO_IO_TILE_NUM``
+  * CHANGED:   ``XUA_TILE`` renamed to ``XUA_XUD_TILE_NUM``
+  * CHANGED:   ``MIDI_TILE`` renamed to ``XUA_MIDI_TILE_NUM``
+  * CHANGED:   ``SPDIF_TX_TILE`` renamed to ``XUA_SPDIF_TX_TILE_NUM``
+  * CHANGED:   ``PDM_TILE`` renamed to ``XUA_MIC_PDM_TILE_NUM``
+  * CHANGED:   ``PLL_REF_TILE`` renamed to ``XUA_PLL_REF_TILE_NUM``
   * CHANGED:   Supported optional configuration header files
-    `user_main_cores.h`, `user_main_declarations.h` and `user_main_globasl.h`
-    should now be named `xua_conf_cores.h`, `xua_conf_declarations.h` and
-    `xua_conf_globals.h` respectively
-  * FIXED:     Issue with MCLK not present for digital RX only configs when using
-    the software PLL
-  * FIXED:     Reset SW PLL phase/frequency detector when digital clock becomes
-    invalid to prevent incorrect error input to sigma-delta modulator
-  * ADDED: Support for high bandwidth ISO endpoints
-  * ADDED: pll lock delay in audiohub to allow time for the audio pll to lock and MCLK to stabilise
-  * ADDED: Change to reset sw_pll dco setting to midpoint when there's a change in clock source
-  * FIXED: When software pll is enabled, report external clock as invalid when the USB sampling frequency
-    doesn't match the digital input sampling frequency, instead of programming a wrong value dco Setting
-    in the pll sigma delta modulator
+    ``user_main_cores.h``, ``user_main_declarations.h`` and
+    ``user_main_globals.h`` should now be named ``xua_conf_cores.h``,
+    ``xua_conf_declarations.h`` and ``xua_conf_globals.h`` respectively
+  * FIXED:     Issue with master clock not present for digital receive (only)
+    configs when using the `Software PLL`
+  * FIXED:     Reset `Software PLL` phase/frequency detector when digital clock
+    becomes invalid to prevent incorrect error input to sigma-delta modulator
 
 5.1.0
 -----

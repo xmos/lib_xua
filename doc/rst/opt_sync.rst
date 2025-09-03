@@ -57,16 +57,16 @@ The programmer should ensure the defines in  :numref:`opt_sync_ref_defines` are 
    * - Define
      - Description
      - Default
-   * - ``PLL_REF_TILE``
+   * - ``XUA_PLL_REF_TILE_NUM``
      - Tile location of reference to CS2100 device
-     - ``AUDIO_IO_TILE``
+     - Dervied from PORT_PLL_REF in the application XN file.
    * - ``XUA_USE_SW_PLL``
      - Whether or not to use sw_pll to recover the clock (`xcore.ai` only)
      - 1 (enabled) for `xcore.ai` targets.
 
 
-The codebase expects the CS2100 reference signal port to be defined in the application XN file as ``PORT_PLL_REF``.
-This may be a port of any bit-width, however, connection to bit[0] is assumed::
+The codebase expects the CS2100 reference signal port to be defined in the application XN file as
+``PORT_PLL_REF``. This may be a port of any bit-width, however, connection to bit[0] is assumed::
 
     <Port Location="XS1_PORT_1A"  Name="PORT_PLL_REF"/>
 

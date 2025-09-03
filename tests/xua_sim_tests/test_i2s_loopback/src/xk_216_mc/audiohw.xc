@@ -96,8 +96,8 @@ void PllMult(unsigned output, unsigned ref, client interface i2c_master_if i2c)
 #endif
 
 #if !(defined(XUA_SPDIF_RX_EN) || defined(XUA_ADAT_RX_EN)) && defined(USE_FRACTIONAL_N)
-on tile[AUDIO_IO_TILE] : out port p_pll_clk = PORT_PLL_REF;
-on tile[AUDIO_IO_TILE] : clock clk_pll_sync = XS1_CLKBLK_5;
+on tile[XUA_AUDIO_IO_TILE_NUM] : out port p_pll_clk = PORT_PLL_REF;
+on tile[XUA_AUDIO_IO_TILE_NUM] : clock clk_pll_sync = XS1_CLKBLK_5;
 #endif
 
 void wait_us(int microseconds)

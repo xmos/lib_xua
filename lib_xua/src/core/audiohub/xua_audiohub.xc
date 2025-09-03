@@ -687,7 +687,7 @@ void check_and_enter_dfu(unsigned curSamFreq, chanend c_aud, server interface i_
            [[combine]]
             par
             {
-#if (XUD_TILE != 0) && (AUDIO_IO_TILE == 0)
+#if (XUA_XUD_TILE_NUM != 0) && (XUA_AUDIO_IO_TILE_NUM == 0)
                 DFUHandler(dfuInterface, null);
 #endif
                 /* This never exits because we set DFU mode*/
@@ -715,7 +715,7 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
 #if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC || XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
     , chanend c_audio_rate_change
 #endif
-#if (XUD_TILE != 0) && (AUDIO_IO_TILE == 0) && (XUA_DFU_EN == 1)
+#if (XUA_XUD_TILE_NUM != 0) && (XUA_AUDIO_IO_TILE_NUM == 0) && (XUA_DFU_EN == 1)
     , server interface i_dfu ?dfuInterface
 #endif
 #if (XUA_NUM_PDM_MICS > 0)
@@ -724,7 +724,7 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
 )
 {
 /* This is a bit annoying but we have a mixture of nullable interfaces and variadic function signatures based on defines */
-#if !((XUD_TILE != 0) && (AUDIO_IO_TILE == 0) && (XUA_DFU_EN == 1))
+#if !((XUA_XUD_TILE_NUM != 0) && (XUA_AUDIO_IO_TILE_NUM == 0) && (XUA_DFU_EN == 1))
 #define dfuInterface null
 #endif
 #if (XUA_ADAT_TX_EN)
@@ -783,7 +783,7 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
 #endif
 
 #if (MCLK_REQUIRED)
-        xassert((!isnull(clk_audio_mclk) && !isnull(p_mclk_in)) && "Error: must provide non-null MCLK port and MCLK clock-block if digital Rx is enabled or AUDIO_IO_TILE==XUD_TILE");
+        xassert((!isnull(clk_audio_mclk) && !isnull(p_mclk_in)) && "Error: must provide non-null MCLK port and MCLK clock-block if digital Rx is enabled or XUA_AUDIO_IO_TILE_NUM==XUA_XUD_TILE_NUM");
         /* Clock master clock-block from master-clock port */
         configure_clock_src(clk_audio_mclk, p_mclk_in);
 #if (XUA_ADAT_TX_EN)

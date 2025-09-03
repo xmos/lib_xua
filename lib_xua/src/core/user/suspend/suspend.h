@@ -6,7 +6,7 @@
 /**
  * @brief   User code shut down the xcore during USB suspend
  *
- * It is called from EP0 on the XUD_TILE.
+ * It is called from EP0 on the XUA_XUD_TILE_NUM.
  * This function is called during suspend and should not return until the power setting is complete.
  */
 void XUA_UserSuspendPowerDown();
@@ -14,7 +14,7 @@ void XUA_UserSuspendPowerDown();
 /**
  * @brief   User code power up the xcore at USB resume
  *
- * It is called from EP0 on the XUD_TILE.
+ * It is called from EP0 on the XUA_XUD_TILE_NUM.
  * This function is called during resume and should not return until the power setting is complete.
  */
 void XUA_UserSuspendPowerUp();

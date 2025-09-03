@@ -13,9 +13,8 @@
 #define EXCLUDE_USB_AUDIO_MAIN
 #define XUA_NUM_PDM_MICS 0
 
-#define PDM_TILE 2
-#define XUD_TILE 1
-#define AUDIO_IO_TILE 1
+#define XUA_XUD_TILE_NUM      1
+#define XUA_AUDIO_IO_TILE_NUM 1
 
 #define MIXER 0
 

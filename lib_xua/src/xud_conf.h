@@ -7,8 +7,8 @@
 #include "xua_conf_full.h"
 #include "packet_sizes.h"
 
-/* Link lib_xua's XUD_TILE to lib_xud's USB_TILE */
-#define USB_TILE tile[XUD_TILE]
+/* Link lib_xua's XUA_XUD_TILE_NUM to lib_xud's USB_TILE */
+#define USB_TILE tile[XUA_XUD_TILE_NUM]
 
 /* Update XUD_USB_ISO_EP_MAX_TXN_SIZE if HiBW enabled */
 #define STR_HELPER(x) #x

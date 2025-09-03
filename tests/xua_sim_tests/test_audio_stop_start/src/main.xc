@@ -20,22 +20,22 @@
 #define ADC_PORT  XS1_PORT_1B
 #endif
 
-on tile[AUDIO_IO_TILE] : buffered out port:32 p_i2s_dac[I2S_WIRES_DAC] =  {DAC_PORT};
-on tile[AUDIO_IO_TILE] : buffered in port:32 p_i2s_adc[I2S_WIRES_ADC] =   {ADC_PORT};
+on tile[XUA_AUDIO_IO_TILE_NUM] : buffered out port:32 p_i2s_dac[I2S_WIRES_DAC] =  {DAC_PORT};
+on tile[XUA_AUDIO_IO_TILE_NUM] : buffered in port:32 p_i2s_adc[I2S_WIRES_ADC] =   {ADC_PORT};
 
 
-on tile[AUDIO_IO_TILE] : buffered out port:32 p_lrclk        = XS1_PORT_1C;    /* I2S Bit-clock */
-on tile[AUDIO_IO_TILE] : buffered out port:32 p_bclk         = XS1_PORT_1E;     /* I2S L/R-clock */
-on tile[AUDIO_IO_TILE] : in port p_mclk_in                   = XS1_PORT_1D;
+on tile[XUA_AUDIO_IO_TILE_NUM] : buffered out port:32 p_lrclk        = XS1_PORT_1C;    /* I2S Bit-clock */
+on tile[XUA_AUDIO_IO_TILE_NUM] : buffered out port:32 p_bclk         = XS1_PORT_1E;     /* I2S L/R-clock */
+on tile[XUA_AUDIO_IO_TILE_NUM] : in port p_mclk_in                   = XS1_PORT_1D;
 
 /* Clock-block declarations */
-clock clk_audio_bclk                = on tile[AUDIO_IO_TILE]: XS1_CLKBLK_1;   /* Bit clock */
-clock clk_audio_mclk                = on tile[AUDIO_IO_TILE]: XS1_CLKBLK_2;   /* Master clock */
+clock clk_audio_bclk                = on tile[XUA_AUDIO_IO_TILE_NUM]: XS1_CLKBLK_1;   /* Bit clock */
+clock clk_audio_mclk                = on tile[XUA_AUDIO_IO_TILE_NUM]: XS1_CLKBLK_2;   /* Master clock */
 
 
 #ifdef SIMULATION
-out port p_mclk_gen       = on tile[AUDIO_IO_TILE] : XS1_PORT_1M;
-clock clk_audio_mclk_gen  = on tile[AUDIO_IO_TILE] : XS1_CLKBLK_3;
+out port p_mclk_gen       = on tile[XUA_AUDIO_IO_TILE_NUM] : XS1_PORT_1M;
+clock clk_audio_mclk_gen  = on tile[XUA_AUDIO_IO_TILE_NUM] : XS1_CLKBLK_3;
 void master_mode_clk_setup(void);
 #endif
 
@@ -153,7 +153,7 @@ int main(void)
 
     par
     {
-        on tile[AUDIO_IO_TILE]:
+        on tile[XUA_AUDIO_IO_TILE_NUM]:
         {
             par
             {
