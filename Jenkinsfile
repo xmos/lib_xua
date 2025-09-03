@@ -283,9 +283,6 @@ pipeline {
                 dir("tests") {
                   createVenv(reqFile: "requirements.txt")
                   withVenv {
-                    // Cross-product of all parameters in test_i2s_loopback produces invalid configs
-                    // which cannot be built. They are skipped in pytest, but the build failures
-                    // prevent all the XEs being built before running pytest.
                     dir("xua_sim_tests") {
                       sh 'cmake -G "Unix Makefiles" -B build'
 
@@ -296,9 +293,8 @@ pipeline {
                     }
 
                     dir("xua_unit_tests") {
-                      sh "cmake -G 'Unix Makefiles' -B build"
-                      sh 'xmake -C build -j 16'
-                      sh "pytest -v -n auto --junitxml=pytest_unit.xml"
+                      xcoreBuild()
+                      runPytest()
                     }
                   }
                 }
