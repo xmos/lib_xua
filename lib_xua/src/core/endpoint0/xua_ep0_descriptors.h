@@ -71,6 +71,17 @@
 #define FEEDBACK_INTERVAL_HS           (4)         /* Only values <= 1 frame (4) supported by MS */
 #define FEEDBACK_INTERVAL_FS           (1)         /* Has to be 1 */
 
+/* bLockDelayUnits and wLockDelay fields are only applicable for synchronous and adaptive
+endpoints. For asynchronous endpoints, the clock is generated internally in the audio function and
+is completely independent. In this case, bLockDelayUnits and wLockDelay must be set to zero. */
+#if (XUA_SYNCMODE == XUA_SYNCMODE_ASYNC)
+#define _XUA_B_LOCK_DELAY_UNITS       (0x00)      /* Undefined */
+#define _XUA_W_LOCK_DELAY              (0x0000)
+#else
+#define _XUA_B_LOCK_DELAY_UNITS       (0x02)      /* Decoded PCM samples */
+#define _XUA_W_LOCK_DELAY              (0x0008)
+#endif
+
 #if __STDC__
 typedef struct
 {
@@ -1522,8 +1533,8 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
         0x01,                             /* 2   bDescriptorSubtype */
         0x00,                             /* 3   bmAttributes */
         0x00,                             /* 4   bmControls (Bitmap: Pitch control, over/underun etc) */
-        0x02,                             /* 5   bLockDelayUnits: Decoded PCM samples */
-        0x0008,                           /* 6:7 wLockDelay */
+        _XUA_B_LOCK_DELAY_UNITS,          /* 5   bLockDelayUnits */
+        _XUA_W_LOCK_DELAY                 /* 6:7 wLockDelay */
     },
 
 #if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP) && (XUA_SYNCMODE == XUA_SYNCMODE_ASYNC)
@@ -1618,8 +1629,8 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
         0x01,                             /* 2   bDescriptorSubtype */
         0x00,                             /* 3   bmAttributes */
         0x00,                             /* 4   bmControls (Bitmap: Pitch control, over/underun etc) */
-        0x02,                             /* 5   bLockDelayUnits: Decoded PCM samples */
-        0x0008,                           /* 6:7 wLockDelay */
+        _XUA_B_LOCK_DELAY_UNITS,          /* 5   bLockDelayUnits */
+        _XUA_W_LOCK_DELAY                 /* 6:7 wLockDelay */
     },
 
 #if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP) && (XUA_SYNCMODE == XUA_SYNCMODE_ASYNC)
@@ -1716,8 +1727,8 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
         .bDescriptorSubtype            = 0x01,
         .bmAttributes                  = 0x00,
         .bmControls                    = 0x00,                 /* (Bitmap: Pitch control, over/underun etc) */
-        .bLockDelayUnits               = 0x02,                 /* Decoded PCM samples */
-        .wLockDelay                    = 0x0008,
+        .bLockDelayUnits               = _XUA_B_LOCK_DELAY_UNITS,
+        .wLockDelay                    = _XUA_W_LOCK_DELAY,
     },
 
 #if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP) && (XUA_SYNCMODE == XUA_SYNCMODE_ASYNC)
@@ -1827,8 +1838,8 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
         .bDescriptorSubtype            = UAC_CS_ENDPOINT_SUBTYPE_EP_GENERAL,
         .bmAttributes                  = 0x00,
         .bmControls                    = 0x00,
-        .bLockDelayUnits               = 0x02,
-        .wLockDelay                    = 0x0008,
+        .bLockDelayUnits               = _XUA_B_LOCK_DELAY_UNITS,
+        .wLockDelay                    = _XUA_W_LOCK_DELAY,
     },
 #if (INPUT_FORMAT_COUNT > 1)
     /* Alternative 2 */
@@ -1903,8 +1914,8 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
         .bDescriptorSubtype            = UAC_CS_ENDPOINT_SUBTYPE_EP_GENERAL,
         .bmAttributes                  = 0x00,
         .bmControls                    = 0x00,
-        .bLockDelayUnits               = 0x02,
-        .wLockDelay                    = 0x0008,
+        .bLockDelayUnits               = _XUA_B_LOCK_DELAY_UNITS,
+        .wLockDelay                    = _XUA_W_LOCK_DELAY,
     },
 #endif /* (INPUT_FORMAT_COUNT > 1) */
 #if (INPUT_FORMAT_COUNT > 2)
@@ -1980,8 +1991,8 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
         .bDescriptorSubtype            = UAC_CS_ENDPOINT_SUBTYPE_EP_GENERAL,
         .bmAttributes                  = 0x00,
         .bmControls                    = 0x00,
-        .bLockDelayUnits               = 0x02,
-        .wLockDelay                    = 0x0008,
+        .bLockDelayUnits               = _XUA_B_LOCK_DELAY_UNITS,
+        .wLockDelay                    = _XUA_W_LOCK_DELAY,
     },
 #endif /* (INPUT_FORMAT_COUNT > 2) */
 #endif /* (NUM_USB_CHAN_IN > 0) */
@@ -2635,17 +2646,13 @@ unsigned char cfgDesc_Audio1[] =
     #endif
 #endif
 
-    /* CS_Endpoint Descriptor ?? */
+    /* Class-Specific AS Isochronous Audio Data Endpoint Descriptor */
     0x07,
     0x25,                                 /* CS_ENDPOINT */
     0x01,                                 /* subtype - GENERAL */
     0x01,                                 /* attributes. D[0]: sample freq ctrl. */
-    0x02,                                 /* bLockDelayUnits */
-#if (XUA_SYNCMODE == XUA_SYNCMODE_ADAPT)
-    0x08, 0x00,                           /* wLockDelay */
-#else
-    0x00, 0x00,                           /* Not used */
-#endif
+    _XUA_B_LOCK_DELAY_UNITS,              /* bLockDelayUnits */
+    (_XUA_W_LOCK_DELAY & 0xFF), (_XUA_W_LOCK_DELAY >> 8) & 0xFF,  /* wLockDelay */
 
 #if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP) && (XUA_SYNCMODE == XUA_SYNCMODE_ASYNC)
     /* Feedback EP */

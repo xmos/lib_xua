@@ -35,6 +35,7 @@ UNRELEASED
     configs when using the `Software PLL`
   * FIXED:     Reset `Software PLL` phase/frequency detector when digital clock
     becomes invalid to prevent incorrect error input to sigma-delta modulator
+  * FIXED:     Incorrect values of bLockDelayUnits and bLockDelay in async mode
 
 5.1.0
 -----
