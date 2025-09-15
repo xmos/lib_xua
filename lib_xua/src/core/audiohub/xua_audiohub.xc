@@ -857,6 +857,16 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
 
            }
 
+           {
+                /* Configure Clocking/CODEC/DAC/ADC for SampleFreq/MClk */
+
+                /* User should mute audio hardware */
+                AudioHwConfig_Mute();
+
+                /* User code should configure audio harware for SampleFreq/MClk etc */
+                AudioHwConfig(curSamFreq, mClk, dsdMode, curSamRes_DAC, curSamRes_ADC);
+           }
+
 #if (I2S_CHANS_DAC != 0) || (I2S_CHANS_ADC != 0)
 #if (DSD_CHANS_DAC > 0)
             if(dsdMode)
@@ -906,13 +916,6 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
                     curFreq *= 16;
                 }
 #endif
-                /* Configure Clocking/CODEC/DAC/ADC for SampleFreq/MClk */
-
-                /* User should mute audio hardware */
-                AudioHwConfig_Mute();
-
-                /* User code should configure audio harware for SampleFreq/MClk etc */
-                AudioHwConfig(curFreq, mClk, dsdMode, curSamRes_DAC, curSamRes_ADC);
 #if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC || XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
                 /* Notify clockgen of new mCLk */
                 c_audio_rate_change <: mClk;
@@ -1017,6 +1020,14 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
                        , c_pdm_in
 #endif
                       , p_lrclk, p_bclk, p_i2s_dac, p_i2s_adc);
+
+#if (CODEC_MASTER == 0)
+                    /* Clear modes/reset port and set to Hi-Z */
+                    int tmp;
+                    stop_port(p_bclk);
+                    start_port(p_bclk);
+                    asm volatile("in %0, res[%1]":"=r"(tmp):"r"(p_bclk):"memory");
+#endif // (CODEC_MASTER == 0)
 
 #if (XUA_USB_EN)
                     /* Now perform any additional inputs and update state accordingly */
