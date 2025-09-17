@@ -191,35 +191,41 @@ on tile[XUA_AUDIO_IO_TILE_NUM] : clock clk_audio_bclk               = CLKBLK_I2S
 
 #if XUA_USB_EN
 /* Endpoint type tables for XUD */
-XUD_EpType epTypeTableOut[ENDPOINT_COUNT_OUT] = { XUD_EPTYPE_CTL | XUD_STATUS_ENABLE,
+XUD_EpType epTypeTableOut[ENDPOINT_COUNT_OUT];
+XUD_EpType epTypeTableIn[ENDPOINT_COUNT_IN];
+
+void InitEpTypeTables()
+{
+    // OUT
+    epTypeTableOut[ENDPOINT_NUMBER_OUT_CONTROL] = XUD_EPTYPE_CTL | XUD_STATUS_ENABLE;
 #if (NUM_USB_CHAN_OUT > 0)
-                                            XUD_EPTYPE_ISO,    /* Audio */
+    epTypeTableOut[ENDPOINT_NUMBER_OUT_AUDIO] = XUD_EPTYPE_ISO;    /* Audio */
 #endif
 #ifdef MIDI
-                                            XUD_EPTYPE_BUL,    /* MIDI */
+    epTypeTableOut[ENDPOINT_NUMBER_OUT_MIDI] = XUD_EPTYPE_BUL;    /* MIDI */
 #endif
 #if HID_OUT_REQUIRED
-                                            XUD_EPTYPE_INT,
+    epTypeTableOut[ENDPOINT_NUMBER_OUT_HID] = XUD_EPTYPE_INT;
 #endif
-                                        };
 
-XUD_EpType epTypeTableIn[ENDPOINT_COUNT_IN] = { XUD_EPTYPE_CTL | XUD_STATUS_ENABLE,
+    // IN
+    epTypeTableIn[ENDPOINT_NUMBER_IN_CONTROL] = XUD_EPTYPE_CTL | XUD_STATUS_ENABLE;
 #if (NUM_USB_CHAN_IN > 0)
-                                            XUD_EPTYPE_ISO,
+    epTypeTableIn[ENDPOINT_NUMBER_IN_AUDIO] = XUD_EPTYPE_ISO;
 #endif
 #if (NUM_USB_CHAN_OUT > 0) && ((NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP))
-                                            XUD_EPTYPE_ISO,    /* Async feedback endpoint */
+    epTypeTableIn[ENDPOINT_NUMBER_IN_FEEDBACK] = XUD_EPTYPE_ISO;    /* Async feedback endpoint */
 #endif
 #if (XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
-                                            XUD_EPTYPE_INT,
+    epTypeTableIn[ENDPOINT_NUMBER_IN_INTERRUPT] = XUD_EPTYPE_INT;
 #endif
 #ifdef MIDI
-                                            XUD_EPTYPE_BUL,
+    epTypeTableIn[ENDPOINT_NUMBER_IN_MIDI] = XUD_EPTYPE_BUL;
 #endif
 #if XUA_OR_STATIC_HID_ENABLED
-                                            XUD_EPTYPE_INT,
+    epTypeTableIn[ENDPOINT_NUMBER_IN_HID] = XUD_EPTYPE_INT;
 #endif
-                                        };
+}
 #endif /* XUA_USB_EN */
 
 void thread_speed()
@@ -516,6 +522,8 @@ int main()
 #ifdef XUD_PRIORITY_HIGH
                 set_core_high_priority_on();
 #endif
+                InitEpTypeTables();
+
                 unsigned xudPwrCfg = (XUA_POWERMODE == XUA_POWERMODE_SELF) ? XUD_PWR_SELF : XUD_PWR_BUS;
 
                 /* USB interface core */
