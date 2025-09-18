@@ -20,9 +20,9 @@ For further information refer to 3.16.2 of `USB Audio Device Class Definition fo
 
 Customisable parameters for the Alternate Settings provided by the design are as follows.:
 
-    * Audio sample resolution
-    * Audio sample subslot size
-    * Audio data format
+* Audio sample resolution
+* Audio sample subslot size
+* Audio data format
 
 .. note::
 
@@ -48,29 +48,29 @@ be used and the values 4, 3 and 2 are supported.
 
 Values other than 4 may be used for the following reasons:
 
-    * Bus-bandwidth needs to be efficiently utilised. For example maximising channel-count/sample-rates in
-      full-speed operation.
+* Bus-bandwidth needs to be efficiently utilised. For example maximising channel-count/sample-rates in
+  full-speed operation.
 
-    * To support restrictions with certain hosts. For example, historically many Android based hosts
-      support only 16 bit samples in a 2-byte subslot.
+* To support restrictions with certain hosts. For example, historically many Android based hosts
+  support only 16 bit samples in a 2-byte subslot.
 
 `bSubSlot` size is set using the following defines:
 
-    * When running in high-speed:
+* When running in high-speed:
 
-      * `HS_STREAM_FORMAT_OUTPUT_1_SUBSLOT_BYTES`
+  * `HS_STREAM_FORMAT_OUTPUT_1_SUBSLOT_BYTES`
 
-      * `HS_STREAM_FORMAT_OUTPUT_2_SUBSLOT_BYTES`
+  * `HS_STREAM_FORMAT_OUTPUT_2_SUBSLOT_BYTES`
 
-      * `HS_STREAM_FORMAT_OUTPUT_3_SUBSLOT_BYTES`
+  * `HS_STREAM_FORMAT_OUTPUT_3_SUBSLOT_BYTES`
 
-    * When running in full-speed:
+* When running in full-speed:
 
-      * `FS_STREAM_FORMAT_OUTPUT_1_SUBSLOT_BYTES`
+  * `FS_STREAM_FORMAT_OUTPUT_1_SUBSLOT_BYTES`
 
-      * `FS_STREAM_FORMAT_OUTPUT_2_SUBSLOT_BYTES`
+  * `FS_STREAM_FORMAT_OUTPUT_2_SUBSLOT_BYTES`
 
-      * `FS_STREAM_FORMAT_OUTPUT_3_SUBSLOT_BYTES`
+  * `FS_STREAM_FORMAT_OUTPUT_3_SUBSLOT_BYTES`
 
 
 Audio sample resolution
@@ -82,21 +82,21 @@ supports values 16, 24 and 32.
 
 `bBitResolution` is set using the following defines:
 
-    * When operating at high-speed:
+* When operating at high-speed:
 
-      * `HS_STREAM_FORMAT_OUTPUT_1_RESOLUTION_BITS`
+  * `HS_STREAM_FORMAT_OUTPUT_1_RESOLUTION_BITS`
 
-      * `HS_STREAM_FORMAT_OUTPUT_2_RESOLUTION_BITS`
+  * `HS_STREAM_FORMAT_OUTPUT_2_RESOLUTION_BITS`
 
-      * `HS_STREAM_FORMAT_OUTPUT_3_RESOLUTION_BITS`
+  * `HS_STREAM_FORMAT_OUTPUT_3_RESOLUTION_BITS`
 
-    * When operating at full-speed:
+* When operating at full-speed:
 
-      * `FS_STREAM_FORMAT_OUTPUT_1_RESOLUTION_BITS`
+  * `FS_STREAM_FORMAT_OUTPUT_1_RESOLUTION_BITS`
 
-      * `FS_STREAM_FORMAT_OUTPUT_2_RESOLUTION_BITS`
+  * `FS_STREAM_FORMAT_OUTPUT_2_RESOLUTION_BITS`
 
-      * `FS_STREAM_FORMAT_OUTPUT_3_RESOLUTION_BITS`
+  * `FS_STREAM_FORMAT_OUTPUT_3_RESOLUTION_BITS`
 
 
 Audio format
@@ -111,17 +111,17 @@ This use of a RAW/DSD format in an alternative setting is termed by XMOS as  *Na
 
 The following defines affect both full-speed and high-speed operation:
 
-    * STREAM_FORMAT_OUTPUT_1_DATAFORMAT
+* STREAM_FORMAT_OUTPUT_1_DATAFORMAT
 
-    * STREAM_FORMAT_OUTPUT_2_DATAFORMAT
+* STREAM_FORMAT_OUTPUT_2_DATAFORMAT
 
-    * STREAM_FORMAT_OUTPUT_3_DATAFORMAT
+* STREAM_FORMAT_OUTPUT_3_DATAFORMAT
 
 The following options are supported:
 
-    * UAC_FORMAT_TYPEI_RAW_DATA
+* UAC_FORMAT_TYPEI_RAW_DATA
 
-    * UAC_FORMAT_TYPEI_PCM
+* UAC_FORMAT_TYPEI_PCM
 
 .. note::
 

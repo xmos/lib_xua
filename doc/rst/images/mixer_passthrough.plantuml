@@ -1,5 +1,7 @@
 @startuml
 
+!include puml-theme-xmos.puml
+
 participant audiohub as audiohub
 participant mixer1 as mixer1
 participant decoupler as decoupler

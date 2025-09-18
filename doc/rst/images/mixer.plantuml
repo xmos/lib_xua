@@ -1,5 +1,5 @@
 @startuml
-
+!include puml-theme-xmos.puml
 
 participant audiohub as audiohub
 participant mixer1 as mixer1
@@ -9,6 +9,7 @@ participant decoupler as decoupler
 
 title "Mixer: MAX_MIX_COUNT > 0"
 loop while(1)
+mixer2 -> mixer1 : synchronise
 audiohub -> mixer1 : receive request
 mixer1 -> decoupler : forward request
 mixer1 -> mixer1 : do mixer control
@@ -19,7 +20,6 @@ mixer1 -> audiohub : forward command
 audiohub -> mixer1 : receive handshake
 mixer1 -> decoupler : forward handshake
 else decoupler responds with data
-mixer2 -> mixer1 : synchronise
 mixer1 -> audiohub : give samples
 mixer1 <- audiohub : get samples
 mixer1 <- decoupler : get samples

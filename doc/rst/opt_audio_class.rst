@@ -21,14 +21,14 @@ Driver support
 Audio Class 1.0
 ^^^^^^^^^^^^^^^
 
- - Supported in Apple macOS.
- - Supported in all modern Microsoft Windows operating systems (i.e. Windows XP and later).
+- Supported in Apple macOS.
+- Supported in all modern Microsoft Windows operating systems (i.e. Windows XP and later).
 
 Audio Class 2.0
 ^^^^^^^^^^^^^^^
 
- - Supported in Apple macOS since version 10.6.4.
- - Supported in Windows since version 10, release 1703.
+- Supported in Apple macOS since version 10.6.4.
+- Supported in Windows since version 10, release 1703.
 
 Third party Windows drivers are also available, however, documentation of these is beyond the scope
 of this document, please contact `XMOS` for further details.

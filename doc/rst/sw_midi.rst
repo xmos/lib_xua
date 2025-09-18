@@ -6,11 +6,11 @@ MIDI
 The MIDI thread implements a 31250 baud UART (8-N-1) for both input and output.
 It uses a single dedicated thread which performs multiple functions:
 
-    - UART transmit (tx) peripheral.
-    - UART transmit FIFO of 1024 bytes (may be configured by the user).
-    - Decoding of USB MIDI message to bytes.
-    - UART receive (rx) peripheral.
-    - Packing of received MIDI bytes into USB MIDI messages/events.
+- UART transmit (tx) peripheral.
+- UART transmit FIFO of 1024 bytes (may be configured by the user).
+- Decoding of USB MIDI message to bytes.
+- UART receive (rx) peripheral.
+- Packing of received MIDI bytes into USB MIDI messages/events.
 
 It is connected via a channel to the Endpoint Buffer thread meaning that it can be placed on any
 `xcore` tile in the system subject to resource availability.

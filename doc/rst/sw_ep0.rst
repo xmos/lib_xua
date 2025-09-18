@@ -29,10 +29,10 @@ Since these are required for all devices in order to function a
 ``USB_StandardRequests()`` function is provided (see ``xud_device.xc``) which implements all of these requests.
 This includes the following items:
 
-    - Requests for standard descriptors (Device descriptor, configuration descriptor etc) and string descriptors
-    - USB GET/SET INTERFACE requests
-    - USB GET/SET_CONFIGURATION requests
-    - USB SET_ADDRESS requests
+- Requests for standard descriptors (Device descriptor, configuration descriptor etc) and string descriptors
+- USB GET/SET INTERFACE requests
+- USB GET/SET_CONFIGURATION requests
+- USB SET_ADDRESS requests
 
 For more information and full documentation, including full worked examples of simple devices,
 refer to `lib_xud <www.xmos.com/file/lib_xud>`_.
