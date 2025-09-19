@@ -14,9 +14,9 @@ reverts to generating two mixes when running at the higher rate.
 
 The mixer can take inputs from either:
 
-   * The USB outputs from the host---these samples come from the Decouple thread.
-   * The inputs from the audio interfaces on the device---these samples come from the Audio Hub thread
-     and includes samples from digital input streams.
+* The USB outputs from the host---these samples come from the Decouple thread.
+* The inputs from the audio interfaces on the device---these samples come from the Audio Hub thread
+  and includes samples from digital input streams.
 
 Since the sum of these inputs may be more than the 18 possible mix inputs to each mixer, there is a
 mapping from all the possible inputs to the mixer inputs.
@@ -24,10 +24,10 @@ mapping from all the possible inputs to the mixer inputs.
 After the mix occurs, the final outputs are created. There are two possible output destinations
 for each mix.
 
-   * The USB inputs to the host---these samples are sent to the Decouple thread.
+* The USB inputs to the host---these samples are sent to the Decouple thread.
 
-   * The outputs to the audio interface on the device---these samples are sent to the Audio Hub
-     thread
+* The outputs to the audio interface on the device---these samples are sent to the Audio Hub
+  thread
 
 For each possible output from the device, a mapping exists to inform the mixer what its source is.
 The possible sources are the output from the USB host, the inputs from the Audio Hub thread or the
@@ -49,36 +49,22 @@ in :numref:`mixer_full`.
 operations and performs the mixing operations for the even output channel numbers.
 The mixing for the odd channels is offloaded to the ``mixer2`` thread.
 
-.. only:: latex
-
  .. _mixer_full:
+ .. uml:: images/mixer.plantuml
+    :alt: Mixer communication sequence diagram
+    :caption: Mixer communication sequence diagram
+    :align: center
+    :width: 70%
 
- .. figure:: images/mixer.pdf
-
-   Mixer communication sequence diagram
-
-.. only:: html
-
- .. figure:: images/mixer.png
-
-   Mixer communication sequence diagram
-
-The mixer can also be configured in passthrough mode (``MAX_MIX_COUNT`` = 0), as shown in :numref:`mixer_passthrough`. In this mode, the mixer2 thread is
-not present and the mixer1 exchanges data with Audio Hub and Decouple along with any volume control operations without doing any actual mixing.
-
-.. only:: latex
+The mixer can also be configured in passthrough mode (``MAX_MIX_COUNT`` = 0), as shown in :numref:`mixer_passthrough`. In this mode, the ``mixer2`` thread is
+not present and the ``mixer1`` exchanges data with Audio Hub and Decouple along with any volume control operations without doing any actual mixing.
 
  .. _mixer_passthrough:
-
- .. figure:: images/mixer_passthrough.pdf
-
-   Mixer in passthrough mode
-
-.. only:: html
-
- .. figure:: images/mixer_passthrough.png
-
-   Mixer in passthrough mode
+ .. uml:: images/mixer_passthrough.plantuml
+    :alt: Mixer in passthrough mode
+    :caption: Mixer in passthrough mode
+    :align: center
+    :width: 50%
 
 Control
 -------
@@ -136,10 +122,10 @@ A list of arguments can also be seen with::
 
 The main requirements of this control utility are to
 
-  * Set the mapping of input channels into the mixer
-  * Set the coefficients for each mixer output for each input
-  * Set the mapping for physical outputs which can either come
-    directly from the inputs or via the mixer.
+* Set the mapping of input channels into the mixer
+* Set the coefficients for each mixer output for each input
+* Set the mapping for physical outputs which can either come
+  directly from the inputs or via the mixer.
 
 .. note::
 

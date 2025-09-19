@@ -16,36 +16,36 @@ channel and shared memory.
 Each block of audio samples is made of 8 samples. At sampling rates 44.1/48 kHz (SMUX I), this
 consists of a single sample of each of the eight ADAT channels:
 
-  * Channel 0 sample
-  * Channel 1 sample
-  * Channel 2 sample
-  * Channel 3 sample
-  * Channel 4 sample
-  * Channel 5 sample
-  * Channel 6 sample
-  * Channel 7 sample
+* Channel 0 sample
+* Channel 1 sample
+* Channel 2 sample
+* Channel 3 sample
+* Channel 4 sample
+* Channel 5 sample
+* Channel 6 sample
+* Channel 7 sample
 
 At 88.2/96 kHz (SMUX II), the audio sample block consists of two samples per four ADAT channels:
 
-  * Channel 0 sample 0
-  * Channel 0 sample 1
-  * Channel 1 sample 0
-  * Channel 1 sample 1
-  * Channel 2 sample 0
-  * Channel 2 sample 1
-  * Channel 3 sample 0
-  * Channel 3 sample 1
+* Channel 0 sample 0
+* Channel 0 sample 1
+* Channel 1 sample 0
+* Channel 1 sample 1
+* Channel 2 sample 0
+* Channel 2 sample 1
+* Channel 3 sample 0
+* Channel 3 sample 1
 
 At 176.4/192 kHz (SMUX IV), the audio sample block consists of four samples per two ADAT channels:
 
-  * Channel 0 sample 0
-  * Channel 0 sample 1
-  * Channel 0 sample 2
-  * Channel 0 sample 3
-  * Channel 1 sample 0
-  * Channel 1 sample 1
-  * Channel 1 sample 2
-  * Channel 1 sample 3
+* Channel 0 sample 0
+* Channel 0 sample 1
+* Channel 0 sample 2
+* Channel 0 sample 3
+* Channel 1 sample 0
+* Channel 1 sample 1
+* Channel 1 sample 2
+* Channel 1 sample 3
 
 The configuration option ``ADAT_TX_USE_SHARED_BUFF`` determines whether the audio samples block is transmitted using only a channel
 (``ADAT_TX_USE_SHARED_BUFF`` is not defined) or a channel + shared memory (``ADAT_TX_USE_SHARED_BUFF`` is defined).
@@ -119,11 +119,11 @@ the S/MUX setting to the ADAT transmitter, followed by audio blocks transfer as 
 :numref:`xua_audiohub_adat_tx` describes the communication between ``XUA_AudioHub`` and the ADAT transmitter:
 
 .. _xua_audiohub_adat_tx:
-
-.. figure:: images/xua_audiohub_adat_tx.png
-    :width: 60%
-
-    Communication between AudioHub() and ADAT transmit
+.. uml:: images/xua_audiohub_adat_tx.plantuml
+   :alt: Communication between XUA_AudioHub and ADAT transmit
+   :caption: Communication between XUA_AudioHub and ADAT transmit
+   :align: center
+   :width: 50%
 
 For further details please see the documentation and examples provided with `lib_adat <https://www.xmos.com/file/lib_adat>`__.
 

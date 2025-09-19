@@ -1,4 +1,7 @@
 @startuml
+
+!include puml-theme-xmos.puml
+
 participant Host as H
 participant Device as D
 H -> D : DFU_DETACH

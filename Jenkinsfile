@@ -73,7 +73,6 @@ pipeline {
         stage('Doc build') {
           steps {
             dir(REPO_NAME) {
-              buildDocs()
               dir("examples/AN00246_xua_example") {
                 buildDocs()
               }
@@ -83,6 +82,7 @@ pipeline {
               dir("examples/AN00248_xua_example_pdm_mics") {
                 buildDocs()
               }
+              buildDocs()
             }
           }
         }

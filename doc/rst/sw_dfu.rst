@@ -31,7 +31,7 @@ descriptors when enumerating in runtime mode as seen in a `Beagle USB analyser <
  .. _dfu_interface_runtime:
 
  .. figure:: images/dfu_interface_runtime_mode.png
-   :width: 100%
+   :width: 50%
 
    DFU interface when part of runtime mode descriptor set
 
@@ -44,7 +44,7 @@ descriptors when enumerating in DFU mode as seen in a Beagle USB analyser trace.
  .. _dfu_interface_dfu:
 
  .. figure:: images/dfu_interface_dfu_mode.png
-   :width: 100%
+   :width: 50%
 
    DFU interface when part of DFU mode descriptor set
 
@@ -71,11 +71,11 @@ code for block 0. So for block 0, the device ends up returning the status as ``d
 erase is in progress. :numref:`dfu_download_seq_diag` describes the DFU download process.
 
  .. _dfu_download_seq_diag:
-
- .. figure:: images/dfu_download.png
-   :width: 75%
-
-   Message sequence chart for the DFU download operation
+ .. uml:: images/dfu_download.plantuml
+    :alt: Message sequence chart for the DFU download operation
+    :caption: Message sequence chart for the DFU download operation
+    :align: center
+    :width: 70%
 
 .. note::
 

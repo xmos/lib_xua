@@ -67,7 +67,7 @@ Allocating hardware resources for lib_xua
 A minimal implementation of a USB Audio device, without I2S functionality,
 using ``lib_xua`` requires the follow pins:
 
-    - Audio Master clock (from clock source to xCORE)
+- Audio Master clock (from clock source to xCORE)
 
 On an xCORE the pins are controlled by ``ports``. The application therefore declares a
 port for the master clock input signal.
@@ -121,8 +121,8 @@ Other declarations
 
 For a simple application the following endpoints are required:
 
-    - ``Control`` endpoint zero
-    - ``Isochonous`` endpoint for each direction for audio data to/from the USB host
+- ``Control`` endpoint zero
+- ``Isochonous`` endpoint for each direction for audio data to/from the USB host
 
 These are declared as follows:
 
@@ -160,12 +160,12 @@ Configuring lib_xua
 
 ``lib_xua`` has many parameters than can be configured at build time, some examples include:
 
-    - Sample-rates
-    - Channel counts
-    - Audio Class version
-    - Product/Vendor IDs
-    - Various product strings
-    - Master clock frequency
+- Sample-rates
+- Channel counts
+- Audio Class version
+- Product/Vendor IDs
+- Various product strings
+- Master clock frequency
 
 To enable S/PDIF functionality ``XUA_SPDIF_TX_EN`` must be set to a non-zero value. Setting this will cause the ``XUA_AudioHub``
 tasks to forward samples and sample rate information to the S/PDIF transmitter task.
@@ -275,15 +275,15 @@ systems may require a third party driver for correct operation
 Further Reading
 ***************
 
-   * XMOS XTC Tools Installation Guide
+* XMOS XTC Tools Installation Guide
 
-     https://xmos.com/xtc-install-guide
+  https://xmos.com/xtc-install-guide
 
-      * XMOS XTC Tools User Guide
+  * XMOS XTC Tools User Guide
 
-        https://www.xmos.com/view/Tools-15-Documentation
+    https://www.xmos.com/view/Tools-15-Documentation
 
-      * XMOS application build and dependency management system; xcommon-cmake
+  * XMOS application build and dependency management system; xcommon-cmake
 
-        https://www.xmos.com/file/xcommon-cmake-documentation/?version=latest
+    https://www.xmos.com/file/xcommon-cmake-documentation/?version=latest
 

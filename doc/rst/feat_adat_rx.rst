@@ -13,15 +13,15 @@ described in the `ADAT receive example in lib_adat <https://github.com/xmos/lib_
 The component outputs 32 bits words split into nine word frames. The
 frames are laid out in the following manner:
 
-  * Control byte
-  * Channel 0 sample
-  * Channel 1 sample
-  * Channel 2 sample
-  * Channel 3 sample
-  * Channel 4 sample
-  * Channel 5 sample
-  * Channel 6 sample
-  * Channel 7 sample
+* Control byte
+* Channel 0 sample
+* Channel 1 sample
+* Channel 2 sample
+* Channel 3 sample
+* Channel 4 sample
+* Channel 5 sample
+* Channel 6 sample
+* Channel 7 sample
 
 An example of how to read the output of the ADAT component is shown below::
 

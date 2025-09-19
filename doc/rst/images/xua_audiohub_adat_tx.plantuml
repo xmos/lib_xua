@@ -1,5 +1,7 @@
 @startuml
 
+!include puml-theme-xmos.puml
+
 participant "XUA_AudioHub()" as xua
 participant "adat_tx_port()" as adat
 
