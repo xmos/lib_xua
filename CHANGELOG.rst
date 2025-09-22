@@ -31,11 +31,14 @@ UNRELEASED
     ``user_main_cores.h``, ``user_main_declarations.h`` and
     ``user_main_globals.h`` should now be named ``xua_conf_cores.h``,
     ``xua_conf_declarations.h`` and ``xua_conf_globals.h`` respectively
+  * CHANGED:   Renamed AN00246 example to app_xua
   * FIXED:     Issue with master clock not present for digital receive (only)
     configs when using the `Software PLL`
   * FIXED:     Reset `Software PLL` phase/frequency detector when digital clock
     becomes invalid to prevent incorrect error input to sigma-delta modulator
   * FIXED:     Incorrect values of bLockDelayUnits and bLockDelay in async mode
+  * REMOVED:   Application notes AN00247 and AN00248 from examples folder. Instead see
+    https://www.xmos.com/application-notes/
 
 5.1.0
 -----

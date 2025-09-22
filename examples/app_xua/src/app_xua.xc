@@ -18,6 +18,13 @@
 #include "xud_device.h"
 #include "xk_audio_316_mc_ab/board.h"
 
+/**
+This example demonstrates the use of the lib_xua to
+create a USB device that can play two channels of audio from the host out
+via I²S. This is connected to a DAC and the audio can be heard on the
+output jack.
+*/
+
 /* Port declarations. Note, the defines come from the xn file */
 buffered out port:32 p_i2s_dac[]    = {PORT_I2S_DAC0};   /* I2S Data-line(s) */
 buffered out port:32 p_lrclk        = PORT_I2S_LRCLK;    /* I2S Bit-clock */

@@ -73,15 +73,6 @@ pipeline {
         stage('Doc build') {
           steps {
             dir(REPO_NAME) {
-              dir("examples/AN00246_xua_example") {
-                buildDocs()
-              }
-              dir("examples/AN00247_xua_example_spdif_tx") {
-                buildDocs()
-              }
-              dir("examples/AN00248_xua_example_pdm_mics") {
-                buildDocs()
-              }
               buildDocs()
             }
           }
