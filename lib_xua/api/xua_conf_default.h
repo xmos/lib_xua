@@ -1437,11 +1437,11 @@
 enum USBEndpointNumber_In
 {
     ENDPOINT_NUMBER_IN_CONTROL,     /* Endpoint 0 */
-#if (NUM_USB_CHAN_OUT > 0) && ((NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP))
-    ENDPOINT_NUMBER_IN_FEEDBACK,
-#endif
 #if (NUM_USB_CHAN_IN != 0)
     ENDPOINT_NUMBER_IN_AUDIO,
+#endif
+#if (NUM_USB_CHAN_OUT > 0) && ((NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP))
+    ENDPOINT_NUMBER_IN_FEEDBACK,
 #endif
 #if (XUA_SPDIF_RX_EN) || (XUA_ADAT_RX_EN)
     ENDPOINT_NUMBER_IN_INTERRUPT,   /* Audio interrupt/status EP */
