@@ -55,6 +55,10 @@ else()
                                    -DXASSERT_ENABLE_LINE_NUMBERS=0)
 endif()
 
+if(ENABLE_I2S_TIMING_CHECK)
+    list(APPEND LIB_COMPILER_FLAGS -D_XUA_ENABLE_I2S_TIMING_CHECK=1)
+endif()
+
 set(LIB_COMPILER_FLAGS_xua_endpoint0.c ${LIB_COMPILER_FLAGS} -Os -mno-dual-issue)
 set(LIB_COMPILER_FLAGS_xua_ep0_uacreqs.xc ${LIB_COMPILER_FLAGS} -Os -mno-dual-issue)
 set(LIB_COMPILER_FLAGS_dbcalc.xc ${LIB_COMPILER_FLAGS} -Os -mno-dual-issue)

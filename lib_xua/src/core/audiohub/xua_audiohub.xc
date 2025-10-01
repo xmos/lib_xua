@@ -46,6 +46,10 @@
 #define DEBUG_UNIT XUA_AUDIOHUB
 #include "debug_print.h"
 
+#ifndef _XUA_ENABLE_I2S_TIMING_CHECK
+    #define _XUA_ENABLE_I2S_TIMING_CHECK (0)
+#endif
+
 unsigned samplesOut[XUA_MAX(NUM_USB_CHAN_OUT, I2S_CHANS_DAC)];
 
 /* Two buffers for ADC data to allow for DAC and ADC I2S ports being offset */
@@ -81,7 +85,7 @@ unsigned dsdMode = DSD_MODE_OFF;
 #endif
 #include "xua_audiohub_st.h"
 
-static inline int HandleSampleClock(int frameCount, buffered _XUA_CLK_DIR port:32 p_lrclk)
+static inline int HandleSampleClock(int frameCount, buffered _XUA_CLK_DIR port:32 p_lrclk, int first_frame)
 {
 #if CODEC_MASTER
     unsigned syncError = 0;
@@ -133,6 +137,7 @@ static inline int HandleSampleClock(int frameCount, buffered _XUA_CLK_DIR port:3
     return syncError;
 
 #else
+    static unsigned short port_ts, prev_port_ts;
     unsigned clkVal;
     if(XUA_PCM_FORMAT == XUA_PCM_FORMAT_TDM)
     {
@@ -150,9 +155,24 @@ static inline int HandleSampleClock(int frameCount, buffered _XUA_CLK_DIR port:3
     }
 
     if(XUA_I2S_N_BITS == 32)
+    {
         p_lrclk <: clkVal;
+        asm volatile(" getts %0, res[%1]" : "=r" (port_ts) : "r" (p_lrclk));
+    }
     else
+    {
         partout(p_lrclk, XUA_I2S_N_BITS, clkVal >> (32 - XUA_I2S_N_BITS));
+    }
+
+    if(!first_frame)
+    {
+        unsigned short diff = port_ts - prev_port_ts;
+#if _XUA_ENABLE_I2S_TIMING_CHECK
+        asm volatile("ecallf %0":: "r" (diff == 32));
+#endif
+        //xassert((diff == 32)); // compiling with asserts enabled has a separate set of problems, even without this check (sw_usb_audio issue 340)
+    }
+    prev_port_ts = port_ts;
 
     return 0;
 #endif
@@ -264,6 +284,7 @@ unsigned static AudioHub_MainLoop(chanend ?c_aud, chanend ?c_spd_out
     {
         unsigned syncError = 0;
         unsigned frameCount = 0;
+        unsigned skip_ts_check = 1; // Skip I2S port timestamp check for the very first frame
 
         if ((I2S_CHANS_DAC > 0 || I2S_CHANS_ADC > 0))
         {
@@ -342,7 +363,7 @@ unsigned static AudioHub_MainLoop(chanend ?c_aud, chanend ?c_spd_out
 #endif
 
 #if (I2S_CHANS_ADC != 0 || I2S_CHANS_DAC != 0)
-                syncError += HandleSampleClock(frameCount, p_lrclk);
+                syncError += HandleSampleClock(frameCount, p_lrclk, skip_ts_check);
 #endif
 
 #pragma xta endpoint "i2s_output_l"
@@ -471,7 +492,7 @@ unsigned static AudioHub_MainLoop(chanend ?c_aud, chanend ?c_spd_out
 #endif /* I2S_CHANS_ADC != 0) */
 
 #if (I2S_CHANS_ADC != 0 || I2S_CHANS_DAC != 0)
-                syncError += HandleSampleClock(frameCount, p_lrclk);
+                syncError += HandleSampleClock(frameCount, p_lrclk, skip_ts_check);
 #endif
 
                 index = 0;
@@ -548,6 +569,7 @@ unsigned static AudioHub_MainLoop(chanend ?c_aud, chanend ?c_spd_out
                 /* Reset the framecount because we have outputted all channels in the frame now */
                 frameCount = 0;
             }
+            skip_ts_check = 0;
         }
     }
     return 0;
