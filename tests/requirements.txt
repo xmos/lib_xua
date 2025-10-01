@@ -35,7 +35,7 @@ pyyaml==6.0.2
 # If this repository uses the setup functionality (e.g., script entry points)
 # of its own setup.py file, then this list must include an entry for that
 # setup.py file, e.g., '-e .' or '-e ./python' (without the quotes).
--e git+ssh://git@github.com/xmos/test_support.git@961532d89a98b9df9ccbce5abd0d07d176ceda40#egg=test_support
--e git+ssh://git@github.com/xmos/hardware_test_tools.git@984b1e1176003fd55be08001db27aeb58f7a10c9#egg=hardware_test_tools
+-e git+ssh://git@github.com/xmos/test_support.git@bece044e38686f2f17457069508756bc976a8b6a#egg=test_support
+-e git+ssh://git@github.com/xmos/hardware_test_tools.git@fac60ee1842c61f05ddf0b04ec997c5d7684bf24#egg=hardware_test_tools
 -e git+ssh://git@github0.xmos.com/xmos-int/xtagctl.git@v2.0.0#egg=xtagctl
 
