@@ -409,6 +409,9 @@ static inline void do_output_volume_control(int out_ch_index)
 #pragma unsafe arrays
 static void mixer1(chanend c_host, chanend c_mix_ctl, chanend ?c_mixer2, chanend c_audio)
 {
+    int cmd_pending_flag = 0;
+    int pending_cmd[3]; // command + a max of 2 extra values
+
     int mixer1_mix2_flag = (DEFAULT_FREQ > 96000);
 #if (MAX_MIX_COUNT > 0)
     int mixed;
@@ -439,11 +442,51 @@ static void mixer1(chanend c_host, chanend c_mix_ctl, chanend ?c_mixer2, chanend
         /* Request from audio()/mixer2() */
         request = inuint(c_audio);
 
-        /* Forward on Request for data to decouple thread */
+        // Check if cmd is pending from last exchange with decoupler.
+        // If no command pending, transfer sample with audiohub to unblock it as
+        // soon as possible. This is esp important for the I2S TDM case where lots
+        // more samples need to be exchanged in lesser time than regular I2S
+        // (for example, for 96KHz tdm8. 4 i2s lines, exchange 32 samples in (1/(96000*8))seconds)
+        if(!cmd_pending_flag)
+        {
+            GiveSamplesToDevice(c_audio, samples_to_device_map);
+            GetSamplesFromDevice(c_audio);
+        }
+        else
+        {
+            // forward cmd from last exchange with decoupler to audio
+            switch(pending_cmd[0])
+            {
+                case XUA_AUDCTL_SET_SAMPLE_FREQ:
+                    outct(c_audio, pending_cmd[0]); // cmd
+                    outuint(c_audio, pending_cmd[1]); // samp freq
+                    break;
+
+                case XUA_AUD_SET_AUDIO_START:
+                    /* Inform mixer2 (or audio()) about change */
+                    outct(c_audio, pending_cmd[0]); // cmd
+                    outuint(c_audio, pending_cmd[1]); // dsd mode
+                    outuint(c_audio, pending_cmd[2]); // sample res
+                    break;
+
+                case XUA_AUD_SET_AUDIO_STOP:
+                    /* Pass on command */
+                    outct(c_audio, pending_cmd[0]); // cmd
+                    break;
+
+                default:
+                    break;
+            }
+            chkct(c_audio, XS1_CT_END);
+            outct(c_host, XS1_CT_END); // Only now ack back to the decoupler.
+            cmd_pending_flag = 0;
+            continue;
+        }
+
+        /* Forward on Request for data to decouple thread, only after sample exchange with audiohub is complete */
         outuint(c_host, request);
 
         /* Between request to decouple and response ~ 400nS latency for interrupt to fire */
-
 #if (MAX_MIX_COUNT > 0) || (IN_VOLUME_IN_MIXER) || (OUT_VOLUME_IN_MIXER) || defined (LEVEL_METER_HOST) || defined(LEVEL_METER_LEDS)
         select
         {
@@ -603,28 +646,26 @@ static void mixer1(chanend c_host, chanend c_mix_ctl, chanend ?c_mixer2, chanend
         {
             int sampFreq;
             unsigned command = inct(c_host);
+            cmd_pending_flag = 1; // set pending flag. Command will be forwarded to audihub in the next sample period.
+            pending_cmd[0] = command;
 
             switch(command)
             {
                 case XUA_AUDCTL_SET_SAMPLE_FREQ:
                     sampFreq = inuint(c_host);
                     mixer1_mix2_flag = sampFreq > 96000;
-
-                    /* Inform mixer2 (or audio()) about freq change */
-                    outct(c_audio, command);
-                    outuint(c_audio, sampFreq);
+                    pending_cmd[1] = sampFreq;
                     break;
 
                 case XUA_AUD_SET_AUDIO_START:
                     /* Inform mixer2 (or audio()) about change */
-                    outct(c_audio, command);
-                    outuint(c_audio, inuint(c_host));
-                    outuint(c_audio, inuint(c_host));
+                    unsigned dsd_mode = inuint(c_host);
+                    unsigned sample_res = inuint(c_host);
+                    pending_cmd[1] = dsd_mode;
+                    pending_cmd[2] = sample_res;
                     break;
 
                 case XUA_AUD_SET_AUDIO_STOP:
-                    /* Pass on command */
-                    outct(c_audio, command);
                     break;
 
                 default:
@@ -640,15 +681,9 @@ static void mixer1(chanend c_host, chanend c_mix_ctl, chanend ?c_mixer2, chanend
                     ptr_samples[NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + i] = 0;
                 }
             }
-
-            /* Wait for handshake and pass on */
-            chkct(c_audio, XS1_CT_END);
-            outct(c_host, XS1_CT_END);
         }
         else
         {
-            GiveSamplesToDevice(c_audio, samples_to_device_map);
-            GetSamplesFromDevice(c_audio);
             GetSamplesFromHost(c_host);
             GiveSamplesToHost(c_host, samples_to_host_map);
 

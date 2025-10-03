@@ -11,17 +11,26 @@ title "Mixer: MAX_MIX_COUNT > 0"
 loop while(1)
 mixer2 -> mixer1 : synchronise
 audiohub -> mixer1 : receive request
+
+alt command pending from\nlast exchange with decoupler
+mixer1 -> audiohub : forward command
+audiohub -> mixer1 : receive handshake
+mixer1 -> decoupler : forward handshake
+mixer1->mixer1 : clear command pending\ncontinue to start of while(1)
+else no command pending. exchange data
+mixer1 -> audiohub : give samples
+mixer1 <- audiohub : get samples
+end
+
 mixer1 -> decoupler : forward request
 mixer1 -> mixer1 : do mixer control
 
 alt decoupler responds with command
 decoupler -> mixer1 : get command
-mixer1 -> audiohub : forward command
-audiohub -> mixer1 : receive handshake
-mixer1 -> decoupler : forward handshake
+mixer1 -> mixer1: save command\nand set command pending=1
+
 else decoupler responds with data
-mixer1 -> audiohub : give samples
-mixer1 <- audiohub : get samples
+
 mixer1 <- decoupler : get samples
 mixer1 -> decoupler : give samples
 mixer1 -> mixer2 : trigger
