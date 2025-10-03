@@ -984,6 +984,12 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
                     outct(c_spdif_out, XS1_CT_END);
                     outuint(c_spdif_out, curSamFreq);
                     outuint(c_spdif_out, mClk);
+                    if(curSamRes_DAC >= 24) {
+                        outuint(c_spdif_out, 24);
+                    }
+                    else {
+                        outuint(c_spdif_out, 16);
+                    }
 #endif
 
 #if (XUA_ADAT_TX_EN)

@@ -34,6 +34,8 @@ UNRELEASED
   * CHANGED:   Renamed AN00246 example to app_xua
   * CHANGED:   Mixer optimisation to speed up sample exchange between mixer and
     audiohub, to fix I2S timing violation causing intermittent test failures
+  * CHANGED:  Channel protocol between audiohub and SDFIF TX extended to communicate
+    SPDIF audio sample length
   * FIXED:     Issue with master clock not present for digital receive (only)
     configs when using the `Software PLL`
   * FIXED:     Reset `Software PLL` phase/frequency detector when digital clock
