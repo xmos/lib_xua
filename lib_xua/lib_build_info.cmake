@@ -34,8 +34,8 @@ set(LIB_DEPENDENT_MODULES "lib_adat(2.0.1)"
                           "lib_locks(2.3.2)"
                           "lib_logging(3.4.0)"
                           "lib_spdif(develop)"
-                          "lib_sw_pll(2.4.1)"
-                          "lib_xassert(4.3.2)"
+                          "lib_sw_pll(2.4.0)"
+                          "lib_xassert(4.3.1)"
                           "lib_mic_array(5.5.0)"
                           "lib_xud(4.0.0)")
 
@@ -53,6 +53,10 @@ else()
     list(APPEND LIB_COMPILER_FLAGS -DXASSERT_ENABLE_ASSERTIONS=0
                                    -DXASSERT_ENABLE_DEBUG=0
                                    -DXASSERT_ENABLE_LINE_NUMBERS=0)
+endif()
+
+if(ENABLE_I2S_TIMING_CHECK)
+    list(APPEND LIB_COMPILER_FLAGS -D_XUA_ENABLE_I2S_TIMING_CHECK=1)
 endif()
 
 set(LIB_COMPILER_FLAGS_xua_endpoint0.c ${LIB_COMPILER_FLAGS} -Os -mno-dual-issue)
