@@ -439,9 +439,9 @@
 #endif
 
 /** @brief Input channel terminal type override to line in
- * 
+ *
  * Set to 1 to have USB input present as line-in to the host
- * 
+ *
  * Default: disabled (input channels appear as mics)
  *
  */
@@ -818,7 +818,7 @@
  * @brief Device firmware version number in Binary Coded Decimal format: 0xJJMN where JJ: major, M: minor, N: sub-minor version number.
  */
 #ifndef BCD_DEVICE_M
-#define BCD_DEVICE_M             (1)
+#define BCD_DEVICE_M             (2)
 #endif
 
 /**

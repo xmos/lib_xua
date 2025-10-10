@@ -1,23 +1,25 @@
 lib_xua change log
 ==================
 
-UNRELEASED
-----------
+5.2.0
+-----
 
   * ADDED:     Support for optional include header ``xua_conf_tasks.h`` with the
     same functionality as ``xua_conf_cores.h`` i.e. to allow insertion of tasks
     into the ``main()`` function (``xua_conf_cores.h`` to be deprecated in a
-    future release)
-    ADDED:     Support for define ``USER_MAIN_TASKS`` with the same functionalty
-    as ``USER_MAIN_CORES`` i.e. to allow insertion of tasks into the `main()`
-    function (``USER_MAIN_CORES`` to be deprecated in a future release)
+    future release) ADDED:     Support for define ``USER_MAIN_TASKS`` with the
+    same functionalty as ``USER_MAIN_CORES`` i.e. to allow insertion of tasks
+    into the `main()` function (``USER_MAIN_CORES`` to be deprecated in a future
+    release)
   * ADDED:     Support for high bandwidth ISO endpoints
   * ADDED:     Delay in ``AudioHub()`` to allow time for the audio PLL to  lock
     and master clock stabilise
-  * ADDED:     Change to reset `Software` PLL DCO setting to midpoint when there's
-    a change in clock source
+  * ADDED:     Change to reset `Software` PLL DCO setting to midpoint when
+    there's a change in clock source
   * ADDED:     Where possible ``_TILE_NUM`` defines are now derived from
     ``PORT_`` defines in the application XN file
+  * ADDED:    Check for I2S timing violation. Can be enabled by running cmake
+    with -DENABLE_I2S_TIMING_CHECK=ON
   * CHANGED:   When `Software PLL` is enabled, report external clock as invalid
     when the USB sampling frequency doesn't match the digital input sampling
     frequency
@@ -32,17 +34,29 @@ UNRELEASED
     ``user_main_globals.h`` should now be named ``xua_conf_cores.h``,
     ``xua_conf_declarations.h`` and ``xua_conf_globals.h`` respectively
   * CHANGED:   Renamed AN00246 example to app_xua
+  * CHANGED:   Mixer optimisation to do output volume control after mixing,
+    instead of in GiveSamplesToDevice()
   * CHANGED:   Mixer optimisation to speed up sample exchange between mixer and
     audiohub, to fix I2S timing violation causing intermittent test failures
-  * CHANGED:  Channel protocol between audiohub and SDFIF TX extended to communicate
-    SPDIF audio sample length
+  * CHANGED:  Channel protocol between audiohub and SDFIF TX extended to
+    communicate SPDIF audio sample length
   * FIXED:     Issue with master clock not present for digital receive (only)
     configs when using the `Software PLL`
   * FIXED:     Reset `Software PLL` phase/frequency detector when digital clock
     becomes invalid to prevent incorrect error input to sigma-delta modulator
   * FIXED:     Incorrect values of bLockDelayUnits and bLockDelay in async mode
-  * REMOVED:   Application notes AN00247 and AN00248 from examples folder. Instead see
-    https://www.xmos.com/application-notes/
+  * REMOVED:   Application notes AN00247 and AN00248 from examples folder.
+    Instead see https://www.xmos.com/application-notes/
+
+  * Changes to dependencies:
+
+    - lib_locks: 2.3.1 -> 2.3.2
+
+    - lib_logging: 3.3.1 -> 3.4.0
+
+    - lib_spdif: 6.2.1 -> 7.0.0
+
+    - lib_xud: 3.0.1 -> 4.0.0
 
 5.1.0
 -----

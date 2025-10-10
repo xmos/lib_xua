@@ -5,7 +5,7 @@ lib_xua: USB Audio components library
 #####################################
 
 :vendor: XMOS
-:version: 5.1.0
+:version: 5.2.0
 :scope: General Use
 :description: USB Audio components library
 :category: Audio

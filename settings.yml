@@ -3,7 +3,7 @@
 lib_name: lib_xua
 project: '{{lib_name}}'
 title: '{{lib_name}}: USB Audio components library'
-version: 5.1.0
+version: 5.2.0
 
 documentation:
   exclude_patterns_path: doc/exclude_patterns.inc
