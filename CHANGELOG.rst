@@ -7,12 +7,13 @@ lib_xua change log
   * ADDED:     Support for optional include header ``xua_conf_tasks.h`` with the
     same functionality as ``xua_conf_cores.h`` i.e. to allow insertion of tasks
     into the ``main()`` function (``xua_conf_cores.h`` to be deprecated in a
-    future release) ADDED:     Support for define ``USER_MAIN_TASKS`` with the
-    same functionalty as ``USER_MAIN_CORES`` i.e. to allow insertion of tasks
-    into the `main()` function (``USER_MAIN_CORES`` to be deprecated in a future
+    future release)
+  * ADDED:     Support for define ``USER_MAIN_TASKS`` with the same
+    functionality as ``USER_MAIN_CORES`` i.e. to allow insertion of tasks into
+    the `main()` function (``USER_MAIN_CORES`` to be deprecated in a future
     release)
   * ADDED:     Support for high bandwidth ISO endpoints
-  * ADDED:     Delay in ``AudioHub()`` to allow time for the audio PLL to  lock
+  * ADDED:     Delay in ``AudioHub()`` to allow time for the audio PLL to lock
     and master clock stabilise
   * ADDED:     Change to reset `Software` PLL DCO setting to midpoint when
     there's a change in clock source
