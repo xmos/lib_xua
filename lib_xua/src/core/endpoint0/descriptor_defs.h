@@ -55,6 +55,8 @@ enum USBInterfaceNumber
 #if XUA_OR_STATIC_HID_ENABLED
     INTERFACE_NUMBER_HID,
 #endif
+    XUA_USER_INTERFACES
+
     INTERFACE_COUNT          /* End marker */
 };
 

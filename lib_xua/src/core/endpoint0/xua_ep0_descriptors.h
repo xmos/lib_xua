@@ -18,6 +18,10 @@
 #include "xua_hid_descriptor.h"
 #include "xua_ep0_midi_descriptors.h"
 #include "xud.h"
+#ifdef __xua_user_descriptors_incl_h_exists__
+#include "xua_user_descriptors_incl.h"
+#endif
+
 
 // Enable BOS descriptor only when DFU is enabled since the only capability we advertise is the MSOS desc with DFU interface enumerating as WinUSB.
 // Enumerating with 0 capabilities doesn't seem to be allowed
@@ -800,6 +804,9 @@ typedef struct
 #if HID_OUT_REQUIRED
     USB_Descriptor_Endpoint_t                   HID_Out_Endpoint;
 #endif
+#endif
+#ifdef __xua_user_descriptors_decl_h_exists__
+#include "xua_user_descriptors_decl.h"
 #endif
 
 }__attribute__((packed)) USB_Config_Descriptor_Audio2_t;
@@ -2142,6 +2149,10 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
 
 #if XUA_OR_STATIC_HID_ENABLED
     #include "xua_hid_descriptors.h"
+#endif
+
+#ifdef __xua_user_descriptors_content_h_exists__
+#include "xua_user_descriptors_content.h"
 #endif
 
 };
