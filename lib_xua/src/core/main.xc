@@ -37,6 +37,7 @@
 #include "xua_pdm_mic.h"
 #endif
 
+
 #if (XUA_DFU_EN == 1)
 [[distributable]]
 void DFUHandler(server interface i_dfu i, chanend ?c_user_cmd);
@@ -224,6 +225,10 @@ void InitEpTypeTables()
 #endif
 #if XUA_OR_STATIC_HID_ENABLED
     epTypeTableIn[ENDPOINT_NUMBER_IN_HID] = XUD_EPTYPE_INT;
+#endif
+    // Additional user init code if declared
+#ifdef __xua_user_endpoint_init_h_exists__
+    #include "xua_user_endpoint_init.h"
 #endif
 }
 #endif /* XUA_USB_EN */
@@ -488,6 +493,7 @@ int main()
     #include "xua_conf_declarations.h"
 #endif
 
+
     USER_MAIN_DECLARATIONS
 
     par
@@ -534,6 +540,8 @@ int main()
 #if (NUM_USB_CHAN_OUT > 0) || (NUM_USB_CHAN_IN > 0) || XUA_HID_ENABLED || defined(MIDI)
             /* Core USB audio task, buffering, USB etc */
             {
+                XUA_USER_FUNCTION_CALL_PRE_BUFFER
+
                 unsigned x;
                 thread_speed();
 
@@ -696,6 +704,7 @@ int main()
              mic_array_task(c_pdm_pcm);
         }
 #endif /*XUA_NUM_PDM_MICS > 0*/
+
     }
 
     return 0;

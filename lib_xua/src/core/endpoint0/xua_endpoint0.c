@@ -39,6 +39,10 @@
 #include "dsd_support.h"
 #endif
 
+#ifdef __xua_user_endpoint0_decl_h_exists__
+#include "xua_user_endpoint0_decl.h"
+#endif
+
 #define DEBUG_UNIT XUA_EP0
 
 #ifndef DEBUG_PRINT_ENABLE_XUA_EP0
@@ -914,6 +918,12 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
                         }
 #endif
                     }
+
+                // Additional endpoint 0 handling code if declared
+#ifdef __xua_user_endpoint0_handler_h_exists__
+                #include "xua_user_endpoint0_handler.h"
+#endif
+
                 }
                 break;
 

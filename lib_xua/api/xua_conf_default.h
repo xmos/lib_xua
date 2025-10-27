@@ -1427,6 +1427,27 @@
     #endif
 #endif
 
+/* Allows calling of user function before buffer starts. */
+#ifndef XUA_USER_FUNCTION_CALL_PRE_BUFFER
+#define XUA_USER_FUNCTION_CALL_PRE_BUFFER
+#endif
+
+/* Provides a method to insert user IN endpoints. These must be initialised from ``xua_user_endpoint_init.h``. */
+#ifndef XUA_USER_IN_ENDPOINTS
+#define XUA_USER_IN_ENDPOINTS
+#endif
+
+/* Provides a method to insert user OUT endpoints. These must be initialised from ``xua_user_endpoint_init.h``. */
+#ifndef XUA_USER_OUT_ENDPOINTS
+#define XUA_USER_OUT_ENDPOINTS
+#endif
+
+/* Allows insertion of user USB interfaces into descriptors. */
+#ifndef XUA_USER_INTERFACES
+#define XUA_USER_INTERFACES
+#endif
+
+
 
 /*********************************************************/
 /*** Internal defines below here. NOT FOR MODIFICATION ***/
@@ -1452,6 +1473,7 @@ enum USBEndpointNumber_In
 #if XUA_OR_STATIC_HID_ENABLED
     ENDPOINT_NUMBER_IN_HID,
 #endif
+    XUA_USER_IN_ENDPOINTS           /* Optional additional endpoints (eg. CDC)*/
     XUA_ENDPOINT_COUNT_IN           /* End marker */
 };
 
@@ -1467,6 +1489,7 @@ enum USBEndpointNumber_Out
 #if XUA_OR_STATIC_HID_ENABLED && HID_OUT_REQUIRED
     ENDPOINT_NUMBER_OUT_HID,
 #endif
+    XUA_USER_OUT_ENDPOINTS
     XUA_ENDPOINT_COUNT_OUT          /* End marker */
 };
 
