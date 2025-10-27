@@ -159,6 +159,29 @@
 #define XUA_NUM_PDM_MICS         (0)
 #endif
 
+/** Merge the PDM receive task into the decimation task using an ISR.
+ *  Note: this works well with lower PDM mic counts but 8 and above
+ *        may require separation into dedicated tasks.
+ * 		  DEFAULT: 0, Do not enable the ISR mode
+ *
+ **/
+#ifndef XUA_PDM_MIC_USE_PDM_ISR
+#define XUA_PDM_MIC_USE_PDM_ISR		0
+#endif
+
+/**
+ * @brief Indicates whether two microphones share a single data line (DDR mode).
+ *
+ * When set to 1, the system uses Double Data Rate (DDR) signaling to read two
+ * microphones from a single data line. When set to 0, each microphone is read
+ * on a separate data line.
+ *
+ * Default: 1
+ */
+#ifndef XUA_PDM_MIC_USE_DDR
+#define XUA_PDM_MIC_USE_DDR         1
+#endif
+
 /**
  * @brief Number of DSD output channels.
  *

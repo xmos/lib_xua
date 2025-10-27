@@ -7,36 +7,16 @@
 #include <xccompat.h>
 #include <stdint.h>
 
-#include "mic_array_conf.h"
 #include "mic_array.h"
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-void ma_init(unsigned mic_samp_rate);
-void ma_task(chanend c_mic_to_audio);
-#ifdef __cplusplus
-}
-#endif
-
-/** Merge the PDM receive task into the decimation task using an ISR.
- *  Note: this works well with lower PDM mic counts but 8 and above
- *        may require separation into dedicated tasks.
- * 		  DEFAULT: 0, Do not enable the ISR mode 
- *
- **/
-#ifndef XUA_PDM_MIC_USE_PDM_ISR
-#define XUA_PDM_MIC_USE_PDM_ISR		0
-#endif
 
 /** USB PDM Mic task.
  *
  *  This task runs the PDM rx and decimators and passes PCM samples to XUA.
- *  It runs forever and currently supports a single sample rate of 
+ *  It runs forever and currently supports a single sample rate of
  *  48 kHz, 32 kHz or 16 kHz
  *
  *  \param c_mic_to_audio    channel over which decimated frames are produced
- * 
+ *
  **/
 void mic_array_task(chanend c_mic_to_audio);
 
@@ -55,7 +35,7 @@ void user_pdm_init();
  *  period else I2S will break timing.
  *
  *  \param mic_audio    Array of samples for in-place processing
- * 
+ *
  **/
 void user_pdm_process(int32_t mic_audio[MIC_ARRAY_CONFIG_MIC_COUNT]);
 

@@ -699,10 +699,7 @@ int main()
 
 #if (XUA_NUM_PDM_MICS > 0)
         /* PDM Mics running on a separate to AudioHub */
-        on stdcore[XUA_MIC_PDM_TILE_NUM]:
-        {
-             mic_array_task(c_pdm_pcm);
-        }
+        on stdcore[XUA_MIC_PDM_TILE_NUM]: mic_array_task(c_pdm_pcm);
 #endif /*XUA_NUM_PDM_MICS > 0*/
 
     }

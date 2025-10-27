@@ -21,7 +21,6 @@
 
 #include "audiohw.h"
 #include "audioports.h"
-#include "mic_array_conf.h"
 #if (XUA_SPDIF_TX_EN)
 #include "spdif.h"
 #endif
@@ -255,17 +254,6 @@ unsigned static AudioHub_MainLoop(chanend ?c_aud, chanend ?c_spd_out
 
     // Reinitialise user state before entering the main loop
     UserBufferManagementInit(curSamFreq);
-
-#if XUA_NUM_PDM_MICS > 0
-    /* Receive an initial frame and wait one sample period to ensure mic_array is ready to produce so
-       we don't break the audioloop timing by ma_frame_rx() blocking */
-    unsafe {
-        chanend_t c_m2a = (chanend_t)c_pdm_pcm;
-        int32_t *mic_samps_base_addr = (int32_t*)&samplesIn[readBuffNo][PDM_MIC_INDEX];
-        ma_frame_rx(mic_samps_base_addr, c_m2a, MIC_ARRAY_CONFIG_SAMPLES_PER_FRAME, MIC_ARRAY_CONFIG_MIC_COUNT);
-        delay_ticks(XS1_TIMER_HZ / curSamFreq);
-    }
-#endif
 
 #if (XUA_ADAT_TX_EN)
     unsafe{
@@ -766,8 +754,6 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
     /* This flag is to ensure that the decouple<->audio channel protocol is observed at startup.
        We need this because we hold off the ACK back to decouple as late as possible so that the control path knows audio is fully ready */
     unsigned firstRun = 1;
-    /* Mic array currently doesn't support reconfig. So for now we keep a flag to ensure we only the init transaction it once and only when running I2S */
-    unsigned micArrayInitisalised = 0;
 
     while(1)
     {
@@ -951,20 +937,15 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
 #endif
 
 #endif
-
                 /* User should unmute audio hardware */
                 AudioHwConfig_UnMute();
             }
 
-            if(micArrayInitisalised == 0)
-            {
 #if (XUA_NUM_PDM_MICS > 0)
             /* Send decimation factor to PDM task(s) */
             user_pdm_init();
             c_pdm_in <: curSamFreq / AUD_TO_MICS_RATIO;
 #endif
-                micArrayInitisalised = 1;
-            }
 
             if(firstRun == 0)
             {
@@ -1055,9 +1036,11 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
 #endif /* (XUA_DFU_EN == 1) */
 #endif /* XUA_USB_EN */
 
+
 #if XUA_NUM_PDM_MICS > 0
-                    // TODO - this willbe an exit command when supported in mic_array
-                    // c_pdm_in <: 0;
+                    unsafe {
+                        ma_shutdown((chanend_t)c_pdm_in); // shutdown mics
+                    }
 #endif
 
 #if (XUA_ADAT_TX_EN)
