@@ -9,7 +9,7 @@ lib_xua: USB Audio components library
 :scope: General Use
 :description: USB Audio components library
 :category: Audio
-:keywords: USB Audio, I2S, MIDI, HID, DFU
+:keywords: USB Audio, Serial Interface, SRC
 :devices: xcore.ai, xcore-200
 
 *******
