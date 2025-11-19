@@ -33,3 +33,5 @@ The array ``c_ep_out`` is always composed in the following order:
 .. doxygenfunction:: clockGen
 
 .. doxygenfunction:: usb_midi
+
+.. doxygenfunction:: mic_array_task

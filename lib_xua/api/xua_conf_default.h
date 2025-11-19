@@ -161,8 +161,9 @@
 
 /** Merge the PDM receive task into the decimation task using an ISR.
  *  Note: this works well with lower PDM mic counts but 8 and above
- *        may require separation into dedicated tasks.
- * 		  DEFAULT: 0, Do not enable the ISR mode
+ *  may require separation into dedicated tasks.
+ *
+ *  DEFAULT: 0, Do not enable the ISR mode
  *
  **/
 #ifndef XUA_PDM_MIC_USE_PDM_ISR
@@ -491,8 +492,8 @@
  *
  * Default: 0 (i.e. channels [0:XUA_NUM_PDM_MICS-1])
  * */
-#ifndef PDM_MIC_INDEX
-#define PDM_MIC_INDEX           (0)
+#ifndef XUA_PDM_MIC_INDEX
+#define XUA_PDM_MIC_INDEX           (0)
 #endif
 
 /**

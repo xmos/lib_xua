@@ -20,19 +20,19 @@ Settings for PDM microphones are controlled with the defines in :numref:`opt_pdm
    * - ``XUA_NUM_PDM_MICS``
      - The number of mics to enable (0 for disabled). This enables compilation of the PDM to PCM code also.
      - ``0`` (disabled)
-   * - ``PDM_MIC_INDEX``
+   * - ``XUA_PDM_MIC_INDEX``
      - Defines which starting input channel the mics map to
      - ``0``
-   * - ``XUA_PDM_MIC_FREQ``
-     - Defines the PCM output sample rate of ``lib_mic_array``
-     - None (must be defined)
    * - ``XUA_PDM_MIC_USE_PDM_ISR``
      - Define as 1 to enable merging of the PDM receive task and decimation task into a single thread using an ISR
      - ``0`` (use separate threads for PDM and decimation)
+   * - ``XUA_PDM_MIC_USE_DDR``
+     - Define as 1 to enable two microphones sharing a single data line (DDR mode)
+     - ``1`` (DDR mode)
 
 .. note::
 
-   Currently only a single, fixed sample rate is supported for the PDM microphones
+   Currently the only supported sampling rates for the PDM microphones are 16kHz, 32kHz and 48kHz.
 
 .. note::
 

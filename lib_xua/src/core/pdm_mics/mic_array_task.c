@@ -12,8 +12,8 @@
 
 void mic_array_task(chanend_t c_mic_to_audio){
     while(1) {
-        /* This channel transaction serves to synchronise the start of
-        * audiohub with mic_array so we always consume samples */
+        /*This channel transaction serves to synchronise the start of
+        audiohub with mic_array so we always consume samples */
         unsigned mic_samp_rate = chan_in_word(c_mic_to_audio);
         unsigned mClk = MCLK_48, pdmClk = 3072000;
 

@@ -9,15 +9,29 @@
 
 #include "mic_array.h"
 
-/** USB PDM Mic task.
+/**
+ * @brief USB PDM microphone task.
  *
- *  This task runs the PDM rx and decimators and passes PCM samples to XUA.
- *  It runs forever and currently supports a single sample rate of
- *  48 kHz, 32 kHz or 16 kHz
+ * Starts the mic-array processing thread(s)
  *
- *  \param c_mic_to_audio    channel over which decimated frames are produced
+ * Supported sample rates: 16 kHz, 32 kHz, and 48 kHz.
  *
- **/
+ * The task runs in a continuous while(1) loop until `ma_shutdown()` is invoked.
+ * When `ma_shutdown()` is called, the internal mic thread terminates
+ * (`mic_array_start()` returns). After that, a new sampling-rate value may be
+ * received on the same channel, and the mic-array thread is then started again
+ * at the new rate.
+ *
+ * c_mic_to_audio channel usage:
+ * - While the mic thread is running, decimated PCM frames are sent from the
+ *   mic array to the application over this channel.
+ * - Before the mic thread is started, the PCM sampling rate is received over
+ *   this channel.
+ *
+ * \param c_mic_to_audio
+ *        Channel over which decimated PCM frames are produced by the mic array
+ *        and delivered to the application.
+ */
 void mic_array_task(chanend c_mic_to_audio);
 
 /** User pre-PDM mic function callback (optional).
