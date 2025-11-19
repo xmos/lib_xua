@@ -163,11 +163,11 @@
  *  Note: this works well with lower PDM mic counts but 8 and above
  *  may require separation into dedicated tasks.
  *
- *  DEFAULT: 0, Do not enable the ISR mode
+ *  DEFAULT: 1, Enable PDM RX ISR mode
  *
  **/
 #ifndef XUA_PDM_MIC_USE_PDM_ISR
-#define XUA_PDM_MIC_USE_PDM_ISR		0
+#define XUA_PDM_MIC_USE_PDM_ISR		1
 #endif
 
 /**

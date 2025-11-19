@@ -25,7 +25,7 @@ Settings for PDM microphones are controlled with the defines in :numref:`opt_pdm
      - ``0``
    * - ``XUA_PDM_MIC_USE_PDM_ISR``
      - Define as 1 to enable merging of the PDM receive task and decimation task into a single thread using an ISR
-     - ``0`` (use separate threads for PDM and decimation)
+     - ``1`` (Run PDM RX service as an ISR)
    * - ``XUA_PDM_MIC_USE_DDR``
      - Define as 1 to enable two microphones sharing a single data line (DDR mode)
      - ``1`` (DDR mode)

@@ -17,6 +17,13 @@ void mic_array_task(chanend_t c_mic_to_audio){
         unsigned mic_samp_rate = chan_in_word(c_mic_to_audio);
         unsigned mClk = MCLK_48, pdmClk = 3072000;
 
+        if (((MCLK_441) % mic_samp_rate) == 0)
+        {
+            // Warning: this might not work depending on the mics used. Check mic datasheet for supported fClk
+            mClk = MCLK_441;
+            pdmClk = 2822400;
+        }
+
     #if (XUA_PDM_MIC_USE_DDR)
         pdm_rx_resources_t pdm_res = PDM_RX_RESOURCES_DDR(
             PORT_MCLK_IN,

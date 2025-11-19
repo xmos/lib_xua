@@ -114,6 +114,8 @@ other end of the channel passed to the mic array thread to receive PCM frames fr
 
   ma_frame_rx(mic_samps_base_addr, c_m2a, MIC_ARRAY_CONFIG_SAMPLES_PER_FRAME, MIC_ARRAY_CONFIG_MIC_COUNT);
 
+Note that the interface between mic array and xua is sample based - so the only supported value of MIC_ARRAY_CONFIG_SAMPLES_PER_FRAME is 1.
+
 Restarting the mic array
 ^^^^^^^^^^^^^^^^^^^^^^^^
 

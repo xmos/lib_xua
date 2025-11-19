@@ -33,6 +33,9 @@
 
 #if (XUA_NUM_PDM_MICS > 0)
 #include "xua_pdm_mic.h"
+#if (MIC_ARRAY_CONFIG_SAMPLES_PER_FRAME != 1)
+#error Only sample based interface supported between mic array and XUA
+#endif
 #endif
 
 #if (AUD_TO_USB_RATIO > 1)
