@@ -9,7 +9,7 @@ PDM microphones
 The PDM stream from the microphones is converted to PCM and output to the host via USB.
 
 Interfacing to the PDM microphones is done using the `XMOS` microphone array library
-(`lib_mic_array <https://www.xmos.com/file/lib_mic_array>`_).
+(`lib_mic_array <https://www.xmos.com/libraries/lib_mic_array>`_).
 ``lib_mic_array`` is designed to allow interfacing to PDM microphones coupled to efficient decimation filters
 at a user configurable output sample rate.
 
@@ -17,15 +17,15 @@ at a user configurable output sample rate.
     The ``lib_mic_array`` library is only available for `xcore.ai` series devices since it uses the
     Vector Processing Unit of the XS3 architecture.
 
-Up to eight PDM microphones can be attached the PDM interface (``mic_array_task()``) but it is
+Up to eight PDM microphones can be attached to the PDM interface (``mic_array_task()``) but it is
 possible to extend this.
 
 After PDM capture and decimation to the output sample-rate various other steps take place e.g. DC offset elimination etc.
-Please refer to the documentation provided with  ``lib_mic_array`` for further implementation detail and a complete feature set.
+Please refer to the documentation provided with  `lib_mic_array <https://www.xmos.com/libraries/lib_mic_array>`__ for further implementation detail and a complete feature set.
 
 By default the sample rates supported are 16 kHz, 32 kHz and 48 kHz although other rates are supportable with some modifications.
 
-Please see `AN00248 Using lib_xua with lib_mic_array <https://github.com/xmos/lib_xua/tree/develop/examples/AN00248_xua_example_pdm_mics>`_ for a practical example of this feature.
+Please see `AN00248 Using lib_xua with lib_mic_array <https://www.xmos.com/application-notes/AN00248>`_ for a practical example of this feature.
 
 Hardware characteristics
 ------------------------
@@ -86,16 +86,32 @@ Usage & integration
 Mic array task
 ^^^^^^^^^^^^^^
 
-A PDM microphone wrapper :c:func:`mic_array_task()` is called from ``main()`` and takes one channel argument connecting it to the rest of the system:
+A PDM microphone wrapper, :c:func:`mic_array_task()`, is called from ``main()``.
+It takes one channel argument connecting it to the rest of the system,
+and a ``channel_map`` specifying the mapping from PDM input pins to microphone output
+channels:
 
 .. code-block:: c
 
-  on stdcore[XUA_MIC_PDM_TILE_NUM]: mic_array_task(c_pdm_pcm);
+  on stdcore[XUA_MIC_PDM_TILE_NUM]:
+  {
+      for(int i=0; i<XUA_NUM_PDM_MICS; i++) {
+          mic_array_channel_map[i] = i;
+      }
+      mic_array_task(c_pdm_pcm, mic_array_channel_map);
+  }
+
 
 The implementation of :c:func:`mic_array_task()` can be found in the file ``mic_array_task.c``. It typically takes one hardware thread.
 
-:c:func:`mic_array_task()` runs a ``while(1)`` loop. At the start of the loop, it waits to receive the current sampling rate over the
-``c_pdm_pcm`` channel. Once received, it initialises the mic array for the requested sampling rate (using ``mic_array_init()``) and
+:c:func:`mic_array_task()` runs a ``while(1)`` loop.
+At the start of each iteration, it calls :c:func:`xua_user_pdm_init()`, which is an
+optional user-provided function that may be used to update ``channel_map`` if a
+non–1:1 mapping between PDM input pins and microphone output channels is
+required.
+
+It then waits to receive the current sampling rate over the ``c_pdm_pcm`` channel.
+Once received, it initialises the mic array for the requested sampling rate (using ``mic_array_init()``) and
 then starts the mic array thread(s) via ``mic_array_start()``.
 ``mic_array_start()`` launches either one or two hardware threads, depending on the value of :c:macro:`XUA_PDM_MIC_USE_PDM_ISR`.
 
@@ -135,13 +151,7 @@ sampling-rate value on the channel before restarting the mic-array thread(s).
 Weak callback APIs
 ^^^^^^^^^^^^^^^^^^
 
-Two weak callback APIs are provided which optionally allow user code to be executed at startup (post PDM microphone initialisation)
+Two weak callback APIs - :c:func:`xua_user_pdm_init()` and :c:func:`xua_user_pdm_process()`,
+are provided, which optionally allow user code to be executed at startup (post PDM microphone initialisation)
 and after each sample frame is formed.
-These can be useful for custom hardware initialisation required by the PDM microphone or post processing such as gain control
-before samples are forwarded to XUA::
-
-    void user_pdm_init();
-    void user_pdm_process(int32_t mic_audio[MIC_ARRAY_CONFIG_MIC_COUNT]);
-
-Be aware that ``user_pdm_process()`` is called in the main Audio Hub loop and so and processing should be kept very short to avoid breaking timing of I²S etc. Typically a small fraction of sample period is acceptable although the headroom is much larger at lower sample rates. The array of samples ``mic_audio`` can modified in-place.
 

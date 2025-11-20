@@ -10,8 +10,9 @@
 
 #include <xcore/channel.h>
 
-void mic_array_task(chanend_t c_mic_to_audio){
+void mic_array_task(chanend_t c_mic_to_audio, unsigned *channel_map){
     while(1) {
+        xua_user_pdm_init(channel_map);
         /*This channel transaction serves to synchronise the start of
         audiohub with mic_array so we always consume samples */
         unsigned mic_samp_rate = chan_in_word(c_mic_to_audio);
@@ -19,7 +20,8 @@ void mic_array_task(chanend_t c_mic_to_audio){
 
         if (((MCLK_441) % mic_samp_rate) == 0)
         {
-            // Warning: this might not work depending on the mics used. Check mic datasheet for supported fClk
+            // Note: Ensure the selected microphone supports this PDM clock frequency.
+            // Refer to the microphone datasheet for the allowed fClk range.
             mClk = MCLK_441;
             pdmClk = 2822400;
         }
@@ -42,7 +44,7 @@ void mic_array_task(chanend_t c_mic_to_audio){
             pdmClk,
             XS1_CLKBLK_1);
     #endif
-        mic_array_init(&pdm_res, NULL, mic_samp_rate);
+        mic_array_init(&pdm_res, channel_map, mic_samp_rate);
 
         /* Start endless loop */
         mic_array_start(c_mic_to_audio);

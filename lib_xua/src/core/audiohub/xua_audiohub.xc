@@ -427,7 +427,7 @@ unsigned static AudioHub_MainLoop(chanend ?c_aud, chanend ?c_spd_out
                     chanend_t c_m2a = (chanend_t)c_pdm_pcm;
                     int32_t *mic_samps_base_addr = (int32_t*)&samplesIn[readBuffNo][XUA_PDM_MIC_INDEX];
                     ma_frame_rx(mic_samps_base_addr, c_m2a, MIC_ARRAY_CONFIG_SAMPLES_PER_FRAME, MIC_ARRAY_CONFIG_MIC_COUNT);
-                    user_pdm_process(mic_samps_base_addr);
+                    xua_user_pdm_process(mic_samps_base_addr);
                     audioToMicsRatioCounter = 0;
                 }
                 else
@@ -946,7 +946,6 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
 
 #if (XUA_NUM_PDM_MICS > 0)
             /* Send decimation factor to PDM task(s) */
-            user_pdm_init();
             c_pdm_in <: curSamFreq / AUD_TO_MICS_RATIO;
 #endif
 

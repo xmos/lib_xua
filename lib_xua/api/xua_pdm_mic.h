@@ -31,27 +31,47 @@
  * \param c_mic_to_audio
  *        Channel over which decimated PCM frames are produced by the mic array
  *        and delivered to the application.
+ * \param channel_map
+ *        Array mapping the logical microphone indices to PDM input channels.
+ *        The i<sup>th</sup> entry is the pdm-data port pin that is routed to
+ *        microphone output channel *i*
  */
-void mic_array_task(chanend c_mic_to_audio);
+void mic_array_task(chanend c_mic_to_audio, unsigned channel_map[MIC_ARRAY_CONFIG_MIC_COUNT]);
 
-/** User pre-PDM mic function callback (optional).
- *  Use to initialise any PDM related hardware.
+/**
+ * @brief User pre-PDM mic function callback (optional).
+ *
+ * This function is called before mic-array initialisation—both the first time
+ * and every time the mic array restarts.
+ * It can be used to update the ``channel_map`` in cases where the mapping
+ * between PDM input port pins and microphone output channels is not 1:1.
+ * It may also be used to initialise any PDM related hardware.
+ *
+ * @note This function is called on the same tile as the mic-array task
+ *       (``XUA_MIC_PDM_TILE_NUM``).
+ *       ``channel_map`` is a global array whose default initialisation occurs on
+ *       that tile before ``mic_array_task()`` runs.
+ *       ``xua_user_pdm_init()`` is invoked by ``mic_array_task()`` itself, before
+ *       starting the mic-array hardware thread.
  *
  **/
-void user_pdm_init();
+void xua_user_pdm_init(unsigned channel_map[MIC_ARRAY_CONFIG_MIC_COUNT]);
 
-/** USB PDM Mic PCM sample post processing callback (optional).
+/**
+ * @brief USB PDM Mic PCM sample post processing callback (optional).
  *
- *  This is called after the raw PCM samples are received from mic_array.
+ *  This is called after a PCM sample is received from mic_array.
  *  It can be used to modify the samples (gain, filter etc.) before sending
- *  to XUA audiohub. Please note this is called from Audiohub (I2S) and
- *  so any processing must take significantly less than on half of a sample
+ *  to XUA audiohub.
+ *
+ * @warning This function is called from Audiohub (I2S) and
+ *  so any processing must take significantly less than half of a sample
  *  period else I2S will break timing.
  *
  *  \param mic_audio    Array of samples for in-place processing
  *
  **/
-void user_pdm_process(int32_t mic_audio[MIC_ARRAY_CONFIG_MIC_COUNT]);
+void xua_user_pdm_process(int32_t mic_audio[MIC_ARRAY_CONFIG_MIC_COUNT]);
 
 #endif
 

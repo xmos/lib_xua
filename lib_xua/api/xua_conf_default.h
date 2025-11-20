@@ -151,13 +151,24 @@
 #endif
 
 /**
- * @brief Number of PDM microphones in the design.
+ * @brief Number of PDM microphone outputs in the design.
  *
  * Default: 0
  */
 #ifndef XUA_NUM_PDM_MICS
 #define XUA_NUM_PDM_MICS         (0)
 #endif
+
+/**
+ * @brief Number of PDM microphone inputs. This is the width of the pdm data port,
+ * and should be atleast XUA_NUM_PDM_MICS
+ *
+ * Default: XUA_NUM_PDM_MICS
+ */
+#ifndef XUA_NUM_PDM_MICS_IN
+#define XUA_NUM_PDM_MICS_IN         (XUA_NUM_PDM_MICS)
+#endif
+
 
 /** Merge the PDM receive task into the decimation task using an ISR.
  *  Note: this works well with lower PDM mic counts but 8 and above

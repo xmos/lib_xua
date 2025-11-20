@@ -42,3 +42,16 @@ The following function is called when the device wishes to read physical user in
 The function should write relevant HID bits into this array. The bit ordering and functionality is defined by the HID report descriptor used.
 
 .. doxygenfunction:: UserHIDGetData
+
+
+PDM Mics user callback functions
+--------------------------------
+
+Two weak callback APIs are provided which optionally allow user code to be executed at startup (before PDM microphone initialisation)
+and after each PCM sample is received.
+These can be useful for custom hardware initialisation required by the PDM microphone or post processing such as gain control
+before samples are forwarded to XUA
+
+.. doxygenfunction:: xua_user_pdm_init
+
+.. doxygenfunction:: xua_user_pdm_process

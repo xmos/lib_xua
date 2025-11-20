@@ -416,6 +416,16 @@ void usb_audio_io(chanend ?c_aud_in,
 
     USER_MAIN_GLOBALS
 
+unsafe {
+#if XUA_NUM_PDM_MICS
+    unsigned mic_array_channel_map[XUA_NUM_PDM_MICS];
+    unsigned * unsafe p_channel_map = mic_array_channel_map;
+#else
+    unsigned * unsafe p_channel_map = NULL;
+#endif
+}
+
+
 /* Main for USB Audio Applications */
 int main()
 {
@@ -698,8 +708,13 @@ int main()
 #endif
 
 #if (XUA_NUM_PDM_MICS > 0)
-        /* PDM Mics running on a separate to AudioHub */
-        on stdcore[XUA_MIC_PDM_TILE_NUM]: mic_array_task(c_pdm_pcm);
+        on stdcore[XUA_MIC_PDM_TILE_NUM]:
+        {
+            for(int i=0; i<XUA_NUM_PDM_MICS; i++) {
+                mic_array_channel_map[i] = i;
+            }
+            mic_array_task(c_pdm_pcm, mic_array_channel_map);
+        }
 #endif /*XUA_NUM_PDM_MICS > 0*/
 
     }
