@@ -114,8 +114,8 @@ Related application notes
 
 The following application notes use this library:
 
-* `AN01009: Optimising USB Audio for stereo output, battery powered devices <www.xmos.com/application-notes/an01009>`_
-* `AN02019: Using Device Firmware Upgrade (DFU) for USB Audio <www.xmos.com/application-notes/an02019>`_
+* `AN01009: Optimising USB Audio for stereo output, battery powered devices <https://www.xmos.com/application-notes/an01009>`_
+* `AN02019: Using Device Firmware Upgrade (DFU) for USB Audio <https://www.xmos.com/application-notes/an02019>`_
 
 *******
 Support
