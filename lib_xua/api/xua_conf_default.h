@@ -1809,6 +1809,23 @@ enum USBEndpointNumber_Out
 #endif
 
 /**
+ * @brief Derive USB TILE MCLK for async feedback from reference clock.
+ *
+ * When enabled, the clocks are counted from the reference clock. Note there MUST be a rational relationship
+ * between the 100MHz reference clock and the master clock applied to the audio tile for this to work.
+ * You must also define XUA_FB_REF_MUL_48, XUA_FB_REF_DIV_48, XUA_FB_REF_MUL_44 and XUA_FB_REF_DIV_44 if
+ * this feature is enabled. eg. XUA_FB_REF_MUL_48 = 768, XUA_FB_REF_DIV_48 = 3125 for 24.576MHz.
+ * 
+ * Note in some cases the MCLK may not be a rational fraction of the reference clock
+ * (eg. when using APP/Secondary PLL at 44100 kHz). This scheme cannot work in those cases!!
+ * 
+ * This feature also cannot work if an external clock source is enabled (eg. SPDIF or ADAT rx)!!
+ */
+#ifndef XUA_FB_USE_REF_CLOCK
+#define XUA_FB_USE_REF_CLOCK    (0)
+#endif
+
+/**
  * @brief Enable Vendor specific control interface
  *
  * When enabled, device enumerates with an extra Vendor specific control interface with no associated endpoints

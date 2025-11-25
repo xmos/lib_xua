@@ -110,4 +110,14 @@
 #warning "Use of PLL_REF_TILE is to be deprecated, use XUA_PLL_REF_TILE_NUM instead"
 #endif
 
+#if XUA_FB_USE_REF_CLOCK
+    #if (!defined(XUA_FB_REF_MUL_48) || !defined(XUA_FB_REF_DIV_48) || !defined(XUA_FB_REF_MUL_44) || !defined(XUA_FB_REF_DIV_44))
+    #error "When using the reference clock, you must define XUA_FB_REF_MUL_48, XUA_FB_REF_DIV_48, XUA_FB_REF_MUL_44 and XUA_FB_REF_DIV_44"
+    #error "The value 100E6 * XUA_FB_REF_MUL / XUA_FB_REF_DIV must be exactly equal to the MCLK applied to AUDIO_IO_TILE"
+    #endif
+    #if XUA_ADAT_RX_EN || XUA_SPDIF_RX_EN
+    #error "XUA_FB_USE_REF_CLOCK not compatible with digital rx streams due to non phase-locked clock"
+    #endif
 #endif
+
+#endif // XUA_USB_EN

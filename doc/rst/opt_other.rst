@@ -45,7 +45,6 @@ There are a few other, lesser used, options available. These are shown in :numre
        This define must be able to be compiled under ``C``.
      - Undefined
 
-
 .. note:: When extending the descriptors to add user interfaces, the descriptors must also be extended to 
           tell the host what kind of device to expect. There are three optional include files which may
           be used to insert code into user descriptors. The expected files in your

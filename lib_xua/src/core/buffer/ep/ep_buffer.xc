@@ -262,7 +262,7 @@ void XUA_Buffer_Ep(
 #if (XUA_SYNCMODE == XUA_SYNCMODE_ASYNC)
     unsigned lastClock = 0;
     unsigned streamChangeOngoing = 0; /* This is a local which is updated with g_streamChangeOngoing to monitor progress of audiohub command */
-#if (FB_USE_REF_CLOCK == 0)
+#if (XUA_FB_USE_REF_CLOCK == 0)
     xassert(!isnull(p_off_mclk) && "Error: must provide non-null MCLK count port if using asynchronous mode and not using reference clock");
 #endif
 #endif
@@ -281,7 +281,7 @@ void XUA_Buffer_Ep(
 #endif
     unsafe{masterClockFreq_ptr = &masterClockFreq;}
 
-#if FB_USE_REF_CLOCK
+#if XUA_FB_USE_REF_CLOCK
     unsigned long long clock_remainder = 0;        /* The carry term from the 100MHz -> MCLK */
 #endif
 
@@ -445,7 +445,7 @@ void XUA_Buffer_Ep(
                          * to stabilise (i.e. sofCount == 128 to fire) */
                         /* See also https://github.com/xmos/lib_xua/issues/467 */
                         resetAsynchFeedback(sofCount, clocks, clockcounter, mod_from_last_time, sampleFreq);
-#if FB_USE_REF_CLOCK
+#if XUA_FB_USE_REF_CLOCK
                         clock_remainder = 0;
 #endif
 
@@ -603,7 +603,7 @@ void XUA_Buffer_Ep(
                 /* NOTE our feedback will be wrong for a couple of SOF's after a SF change due to
                  * lastClock being incorrect */
 
-#if FB_USE_REF_CLOCK
+#if XUA_FB_USE_REF_CLOCK
                 /* Get core time i.e. 100MHz clock */
                 asm volatile("gettime %0" : "=r"(u_tmp));
 #else
@@ -624,7 +624,7 @@ void XUA_Buffer_Ep(
                     unsigned usb_speed;
                     GET_SHARED_GLOBAL(usb_speed, g_curUsbSpeed);
 
-#if FB_USE_REF_CLOCK
+#if XUA_FB_USE_REF_CLOCK
                     unsigned long long feedbackMul = 64ULL;
 
                     if(usb_speed != XUD_SPEED_HS)
@@ -638,21 +638,21 @@ void XUA_Buffer_Ep(
                     /* This section scales from the 100MHz ref clock to the current MCLK */
                     if (masterClockFreq == MCLK_48)
                     {
-                        clock_remainder += (full_result * 768) % 3125;
-                        full_result = (full_result * 768) / 3125;
-                        if (clock_remainder >= 3125)
+                        clock_remainder += (full_result * XUA_FB_REF_MUL_48) % XUA_FB_REF_DIV_48;
+                        full_result = (full_result * XUA_FB_REF_MUL_48) / XUA_FB_REF_DIV_48;
+                        if (clock_remainder >= XUA_FB_REF_DIV_48)
                         {
-                            clock_remainder -= 3125;
+                            clock_remainder -= XUA_FB_REF_DIV_48;
                             full_result++;
                         }
                     }
                     else //MCLK_441
                     {
-                        clock_remainder += (full_result * 762) % 3375;
-                        full_result = (full_result * 762) / 3375;
-                        if (clock_remainder >= 3375)
+                        clock_remainder += (full_result * XUA_FB_REF_MUL_44) % XUA_FB_REF_DIV_44;
+                        full_result = (full_result * XUA_FB_REF_MUL_44) / XUA_FB_REF_DIV_44;
+                        if (clock_remainder >= XUA_FB_REF_DIV_44)
                         {
-                            clock_remainder -= 3375;
+                            clock_remainder -= XUA_FB_REF_DIV_44;
                             full_result++;
                         }
                     }
