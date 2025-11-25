@@ -151,12 +151,47 @@
 #endif
 
 /**
- * @brief Number of PDM microphones in the design.
+ * @brief Number of PDM microphone outputs in the design.
  *
  * Default: 0
  */
 #ifndef XUA_NUM_PDM_MICS
 #define XUA_NUM_PDM_MICS         (0)
+#endif
+
+/**
+ * @brief Number of PDM microphone inputs. This is the width of the pdm data port,
+ * and should be atleast XUA_NUM_PDM_MICS
+ *
+ * Default: XUA_NUM_PDM_MICS
+ */
+#ifndef XUA_NUM_PDM_MICS_IN
+#define XUA_NUM_PDM_MICS_IN         (XUA_NUM_PDM_MICS)
+#endif
+
+
+/** Merge the PDM receive task into the decimation task using an ISR.
+ *  Note: this works well with lower PDM mic counts but 8 and above
+ *  may require separation into dedicated tasks.
+ *
+ *  DEFAULT: 1, Enable PDM RX ISR mode
+ *
+ **/
+#ifndef XUA_PDM_MIC_USE_PDM_ISR
+#define XUA_PDM_MIC_USE_PDM_ISR		1
+#endif
+
+/**
+ * @brief Indicates whether two microphones share a single data line (DDR mode).
+ *
+ * When set to 1, the system uses Double Data Rate (DDR) signaling to read two
+ * microphones from a single data line. When set to 0, each microphone is read
+ * on a separate data line.
+ *
+ * Default: 1
+ */
+#ifndef XUA_PDM_MIC_USE_DDR
+#define XUA_PDM_MIC_USE_DDR         1
 #endif
 
 /**
@@ -468,8 +503,8 @@
  *
  * Default: 0 (i.e. channels [0:XUA_NUM_PDM_MICS-1])
  * */
-#ifndef PDM_MIC_INDEX
-#define PDM_MIC_INDEX           (0)
+#ifndef XUA_PDM_MIC_INDEX
+#define XUA_PDM_MIC_INDEX           (0)
 #endif
 
 /**

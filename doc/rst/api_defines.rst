@@ -82,6 +82,9 @@ PDM microphones
 ^^^^^^^^^^^^^^^
 
 .. doxygendefine:: XUA_NUM_PDM_MICS
+.. doxygendefine:: XUA_PDM_MIC_USE_PDM_ISR
+.. doxygendefine:: XUA_PDM_MIC_USE_DDR
+.. doxygendefine:: XUA_PDM_MIC_INDEX
 
 DFU
 ^^^

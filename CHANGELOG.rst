@@ -4,20 +4,15 @@ lib_xua change log
 UNRELEASED
 ----------
 
-  * ADDED:    Optional defines to provide insertion of user endpoints, and
-    handling code for them allowing composite USB Audio devices to be built,
-    such as CDC. These are provided by optional include headers 
-    ``xua_user_descriptors_incl.h``, ``xua_user_endpoint_init.h``,
-    ``xua_user_descriptors_content.h``, ``xua_user_endpoint0_decl.h``,
-    ``xua_user_descriptors_decl.h`` and ``xua_user_endpoint0_handler.h`` as
-    well as the defines ``XUA_USER_IN_ENDPOINTS``, ``XUA_USER_OUT_ENDPOINTS``,
-    and ``XUA_USER_INTERFACES``.
-
+  * ADDED: Optional defines and handler code to allow insertion of user
+    endpoints. This allows building composite USB Audio devices such as
+    CDC. Check the `Other defines` section in the documents for more details.
   * ADDED:     Optional ``XUA_USER_FUNCTION_CALL_PRE_BUFFER`` define to allow
     running of user code before XUA buffer starts in the ``main()`` function.
     This may be used to initialise global channel ends or interfaces.
   * CHANGED:   ``FB_USE_REF_CLOCK`` renamed to ``XUA_FB_USE_REF_CLOCK`` and
     added ability to define rational clock ratio between master and ref clock
+  * CHANGED:   Use lib_mic_array's new default API
 
 5.2.0
 -----

@@ -12,27 +12,35 @@ Settings for PDM microphones are controlled with the defines in :numref:`opt_pdm
 
 .. list-table:: PDM defines
    :header-rows: 1
-   :widths: 40 80 20
+   :widths: 60 80 20
 
    * - Define
      - Description
      - Default
    * - ``XUA_NUM_PDM_MICS``
-     - The number of mics to enable (0 for disabled). This enables compilation of the PDM to PCM code also.
+     - The number of mic outputs to enable (0 for disabled). This enables compilation of the PDM to PCM code also.
      - ``0`` (disabled)
-   * - ``PDM_MIC_INDEX``
+   * - ``XUA_NUM_PDM_MICS_IN``
+     - The number of mic input lines. This defines the width of the PDM data port and must be at least ``XUA_NUM_PDM_MICS``.
+     - ``XUA_NUM_PDM_MICS``
+   * - ``XUA_PDM_MIC_INDEX``
      - Defines which starting input channel the mics map to
      - ``0``
-   * - ``XUA_PDM_MIC_FREQ``
-     - Defines the PCM output sample rate of ``lib_mic_array``
-     - None (must be defined)
    * - ``XUA_PDM_MIC_USE_PDM_ISR``
      - Define as 1 to enable merging of the PDM receive task and decimation task into a single thread using an ISR
-     - ``0`` (use separate threads for PDM and decimation)
+     - ``1`` (Run PDM RX service as an ISR)
+   * - ``XUA_PDM_MIC_USE_DDR``
+     - Define as 1 to enable two microphones sharing a single data line (DDR mode)
+     - ``1`` (DDR mode)
 
 .. note::
 
-   Currently only a single, fixed sample rate is supported for the PDM microphones
+   mic array task always runs on the tile defined by ``XUA_MIC_PDM_TILE_NUM``, the value of which is inferred
+   from the ``PORT_PDM_CLK`` port define in the application XN file.
+
+.. note::
+
+   Currently the only supported sampling rates for the PDM microphones are 16kHz, 32kHz and 48kHz.
 
 .. note::
 

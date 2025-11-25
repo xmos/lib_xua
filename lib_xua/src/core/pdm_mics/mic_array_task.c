@@ -10,27 +10,45 @@
 
 #include <xcore/channel.h>
 
+void mic_array_task(chanend_t c_mic_to_audio, unsigned *channel_map){
+    while(1) {
+        xua_user_pdm_init(channel_map);
+        /*This channel transaction serves to synchronise the start of
+        audiohub with mic_array so we always consume samples */
+        unsigned mic_samp_rate = chan_in_word(c_mic_to_audio);
+        unsigned mClk = MCLK_48, pdmClk = 3072000;
 
-#define CLRSR(c)                asm volatile("clrsr %0" : : "n"(c));
-#define CLEAR_KEDI()            CLRSR(XS1_SR_KEDI_MASK)
+        if (((MCLK_441) % mic_samp_rate) == 0)
+        {
+            // Note: Ensure the selected microphone supports this PDM clock frequency.
+            // Refer to the microphone datasheet for the allowed fClk range.
+            mClk = MCLK_441;
+            pdmClk = 2822400;
+        }
 
-#include <print.h>
+    #if (XUA_PDM_MIC_USE_DDR)
+        pdm_rx_resources_t pdm_res = PDM_RX_RESOURCES_DDR(
+            PORT_MCLK_IN,
+            PORT_PDM_CLK,
+            PORT_PDM_DATA,
+            mClk,
+            pdmClk,
+            XS1_CLKBLK_1,
+            XS1_CLKBLK_2);
+    #else
+        pdm_rx_resources_t pdm_res = PDM_RX_RESOURCES_SDR(
+            PORT_MCLK_IN,
+            PORT_PDM_CLK,
+            PORT_PDM_DATA,
+            mClk,
+            pdmClk,
+            XS1_CLKBLK_1);
+    #endif
+        mic_array_init(&pdm_res, channel_map, mic_samp_rate);
 
-void mic_array_task(chanend_t c_mic_to_audio){
-    /* Currently the sample rate is statically defined by XUA_PDM_MIC_FREQ.
-     * However this channel transaction serves to synchronise the start of
-     * audiohub with mic_array so we always consume samples */
-    unsigned mic_samp_rate = chan_in_word(c_mic_to_audio);
-    ma_init(mic_samp_rate);
-    /*
-     * ma_task() itself uses interrupts, and does re-enable them. However,
-     * it appears to assume that KEDI is not set, therefore it is cleared here in
-     * case this module is compiled with dual issue.
-     */
-    CLEAR_KEDI()
-
-    /* Start endless loop */
-    ma_task(c_mic_to_audio);
+        /* Start endless loop */
+        mic_array_start(c_mic_to_audio);
+    }
 }
 
 #endif // #if (XUA_NUM_PDM_MICS > 0)
