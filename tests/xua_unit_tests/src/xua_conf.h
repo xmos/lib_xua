@@ -33,4 +33,8 @@
 /* TODO */
 #define XUA_DFU XUA_DFU_EN
 
-#define FB_USE_REF_CLOCK 1
+#define XUA_FB_USE_REF_CLOCK 1
+#define XUA_FB_REF_MUL_48 768
+#define XUA_FB_REF_DIV_48 3125
+#define XUA_FB_REF_MUL_44 768
+#define XUA_FB_REF_DIV_44 3375
