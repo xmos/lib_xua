@@ -77,6 +77,7 @@ unsigned int fb_clocks[4];
 //#define FB_TOLERANCE_TEST
 #define FB_TOLERANCE 0x100
 
+#if (MAX_FREQ != MIN_FREQ) || (XUA_LOW_POWER_NON_STREAMING && (XUA_SYNCMODE == XUA_SYNCMODE_ASYNC))
 /* Helper function to reset asynch feedback calculation when MCLK changes */
 static void resetAsynchFeedback(int &sofCount, unsigned &clocks, long long &clockcounter, unsigned &mod_from_last_time, unsigned sampleFreq)
 {
@@ -91,6 +92,7 @@ static void resetAsynchFeedback(int &sofCount, unsigned &clocks, long long &cloc
     GetADCCounts(sampleFreq, min, mid, max);
     g_speed = mid << 16;
 }
+#endif
 
 void XUA_Buffer(
 #if (NUM_USB_CHAN_OUT > 0)
@@ -254,7 +256,7 @@ void XUA_Buffer_Ep(
 #endif
     unsigned u_tmp;
     unsigned char cmd;
-    unsigned sampleFreq = DEFAULT_FREQ;
+
     unsigned masterClockFreq = DEFAULT_MCLK_FREQ;
 
 #if (XUA_SYNCMODE == XUA_SYNCMODE_ASYNC)
@@ -264,10 +266,20 @@ void XUA_Buffer_Ep(
     xassert(!isnull(p_off_mclk) && "Error: must provide non-null MCLK count port if using asynchronous mode and not using reference clock");
 #endif
 #endif
-    unsafe{masterClockFreq_ptr = &masterClockFreq;}
-
+    
+#if (MAX_FREQ != MIN_FREQ) || (XUA_SYNCMODE != XUA_SYNCMODE_ADAPT)
+    unsigned sampleFreq = DEFAULT_FREQ;
     unsigned clocks = 0;
+#endif
+
+#if (MAX_FREQ != MIN_FREQ) || (XUA_SYNCMODE == XUA_SYNCMODE_ASYNC)
     long long clockcounter = 0;
+
+    int sofCount = 0;
+
+    unsigned mod_from_last_time = 0;
+#endif
+    unsafe{masterClockFreq_ptr = &masterClockFreq;}
 
 #if FB_USE_REF_CLOCK
     unsigned long long clock_remainder = 0;        /* The carry term from the 100MHz -> MCLK */
@@ -276,9 +288,6 @@ void XUA_Buffer_Ep(
 #if (NUM_USB_CHAN_IN > 0)
     unsigned bufferIn = 1;
 #endif
-    int sofCount = 0;
-
-    unsigned mod_from_last_time = 0;
 #ifdef FB_TOLERANCE_TEST
     unsigned expected_fb = 0;
 #endif

@@ -44,7 +44,7 @@ host_usb_mixer_control/xmos_mixer
 *.dSYM
 *.vcd
 *.pyc
-**/.venv/**
+**/.venv*/**
 **/.vscode/**
 **.egg-info
 *tests/logs/*
