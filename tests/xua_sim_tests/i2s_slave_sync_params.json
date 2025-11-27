@@ -1,0 +1,6 @@
+{
+    "pcm_format": ["i2s"],
+    "channel_count": [2, 8],
+    "word_length": [32, 16],
+    "sample_rate": [44100, 192000]
+}

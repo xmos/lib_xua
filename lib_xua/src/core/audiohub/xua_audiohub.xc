@@ -181,6 +181,10 @@ static inline int HandleSampleClock(int frameCount, buffered _XUA_CLK_DIR port:3
 
 }
 
+// This is placed globally so that it can be used for testing
+unsigned syncError = 0;
+
+
 #pragma unsafe arrays
 unsigned static AudioHub_MainLoop(chanend ?c_aud, chanend ?c_spd_out
 #if (XUA_ADAT_TX_EN)
@@ -273,7 +277,6 @@ unsigned static AudioHub_MainLoop(chanend ?c_aud, chanend ?c_spd_out
     /* Main Audio I/O loop */
     while (1)
     {
-        unsigned syncError = 0;
         unsigned frameCount = 0;
         unsigned skip_ts_check = 1; // Skip I2S port timestamp check for the very first frame
 
@@ -285,6 +288,7 @@ unsigned static AudioHub_MainLoop(chanend ?c_aud, chanend ?c_spd_out
             InitPorts_master(p_lrclk, p_bclk, p_i2s_dac, p_i2s_adc);
 #endif
         }
+        syncError = 0; // Needs to be set after port setup so detectable externally
 
         /* Note we always expect syncError to be 0 when we are master */
         while(!syncError)
@@ -563,7 +567,7 @@ unsigned static AudioHub_MainLoop(chanend ?c_aud, chanend ?c_spd_out
             skip_ts_check = 0;
         }
     }
-    return 0;
+    return 0; // unreachable due to while(1)
 }
 
 /* This helper function receives the command using the right transaction from Decouple when audiohub breaks */
