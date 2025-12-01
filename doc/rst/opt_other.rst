@@ -53,8 +53,8 @@ There are a few other, lesser used, options available. These are shown in :numre
           to populate them. The include files must be able to be compiled under ``C``.
 
 .. note:: In addition to adding user interfaces and descriptors, endpoint 0 handlers and endpoint initialisation must
-          be supplied. The expected files in your project are ``xua_user_endpoint0_decl.h`` to make declarations
-          (for example external function prototype), ``xua_user_endpoint0_handler.h`` to provide handling code for
+          be supplied. The expected files in your project are ``xua_user_ep0_decl.h`` to make declarations
+          (for example external function prototype), ``xua_user_ep0_handler.h`` to provide handling code for
           the extensions to endpoint 0 and ``xua_user_endpoint_init.h`` where the additionally declared endpoints
           are initialised. The include files for endpoint 0 must be able to be compiled under ``C``.
 
