@@ -32,9 +32,8 @@ set(LIB_OPTIONAL_HEADERS    xua_conf.h
                             xua_user_descriptors_decl.h
                             xua_user_descriptors_content.h
                             xua_user_endpoint_init.h
-                            xua_user_ep0_init.h
                             xua_user_ep0_decl.h
-
+                            xua_user_ep0_handler.h
                             )
 
 set(LIB_DEPENDENT_MODULES "lib_adat(2.0.1)"
