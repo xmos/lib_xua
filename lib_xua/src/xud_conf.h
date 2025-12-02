@@ -16,6 +16,15 @@
 #define ROUND_UP_TO_MULTIPLE_OF_4(x)  (((x) + 3) & ~0x3)
 #define DIVIDE_AND_ROUND_UP(x, n)       (((x) + (n-1)) / (n))
 
+/* If DFU is enabled, assign to "...GUID_CONTROL" to assign GUID to `simple` MSOS descriptors */
+#if XUA_DFU_EN
+#define XUD_WINUSB_DEVICE_INTERFACE_GUID_CONTROL    XUA_WINUSB_DEVICE_INTERFACE_GUID_DFU
+#else
+#define XUD_WINUSB_DEVICE_INTERFACE_GUID_CONTROL    XUA_WINUSB_DEVICE_INTERFACE_GUID_CONTROL
+#endif
+
+#define XUD_REQUEST_GET_MSOS_DESCRIPTOR             XUA_REQUEST_GET_MSOS_DESCRIPTOR
+
 #if (XUD_USB_ISO_MAX_TXNS_PER_MICROFRAME > 1) // HiBW enabled
 // For HiBW enabled, recalculate XUD_USB_ISO_EP_MAX_TXN_SIZE to uniformly divide MAX_HS_STREAM_PACKETSIZE across transactions
 #define MAX_HS_STREAM_PACKETSIZE XUA_MAX(MAX_PACKETSIZE_OUT_HS, MAX_PACKETSIZE_IN_HS)

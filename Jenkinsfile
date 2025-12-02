@@ -225,30 +225,27 @@ pipeline {
 
             dir(REPO_NAME) {
               checkoutScmShallow()
-              dir("${REPO_NAME}/host/xmosdfu") {
-                withVS("vcvars32.bat") {
+              withVS() {
+                dir("${REPO_NAME}/host/xmosdfu") {
                   bat "cmake -B build -G Ninja"
                   bat "ninja -C build"
-                  bat 'mkdir win32 && cp build/xmosdfu.exe win32/'
-                  archiveArtifacts artifacts: "win32/xmosdfu.exe", fingerprint: true
+                  bat 'mkdir win64 && cp build/xmosdfu.exe win64/'
+                  archiveArtifacts artifacts: "win64/xmosdfu.exe", fingerprint: true
                 }
-              }
-              dir("host_usb_mixer_control") {
-                withVS() {
+
+                dir("host_usb_mixer_control") {
                   bat 'msbuild host_usb_mixer_control.vcxproj /property:Configuration=Release /property:Platform=x64'
+                  bat 'mkdir Win\\x64'
+                  bat 'mv bin/Release/x64/host_usb_mixer_control.exe Win/x64/xmos_mixer.exe'
+                  archiveArtifacts artifacts: "Win/x64/xmos_mixer.exe", fingerprint: true
                 }
-                bat 'mkdir Win\\x64'
-                bat 'mv bin/Release/x64/host_usb_mixer_control.exe Win/x64/xmos_mixer.exe'
-                archiveArtifacts artifacts: "Win/x64/xmos_mixer.exe", fingerprint: true
-              }
-              dir("tests/xua_hw_tests/test_control/host")
-              {
-                withVS("vcvars32.bat") {
+                dir("tests/xua_hw_tests/test_control/host")
+                {
                   bat "cmake -B build -G Ninja"
                   bat "ninja -C build"
                   stash includes: 'build/host_control_test.exe', name: 'host_control_test_bin_windows', useDefaultExcludes: false
                 }
-              } // dir("${REPO_NAME}/tests/xua_hw_tests/test_control/host")
+              } // withVS()
             }
           }
           post {

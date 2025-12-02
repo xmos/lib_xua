@@ -30,7 +30,7 @@ static const int sync_timeout_ms = 500;
 void debug_libusb_error(int err_code)
 {
 #if defined _WIN32
-  PRINT_ERROR("libusb_control_transfer returned %s\n", libusb_error_name(errno));
+  PRINT_ERROR("libusb_control_transfer returned %s\n", libusb_error_name(err_code));
 #elif defined __APPLE__
   PRINT_ERROR("libusb_control_transfer returned %s\n", libusb_error_name(err_code));
 #elif defined __linux
@@ -47,10 +47,10 @@ int control_init_usb(int vendor_id, int product_id)
   }
 
   libusb_device **devs = NULL;
-  int num_dev = libusb_get_device_list(NULL, &devs);
+  ssize_t num_dev = libusb_get_device_list(NULL, &devs);
 
   libusb_device *dev = NULL;
-  for (int i = 0; i < num_dev; i++) {
+  for (ssize_t i = 0; i < num_dev; i++) {
     struct libusb_device_descriptor desc;
     libusb_get_device_descriptor(devs[i], &desc);
     if (desc.idVendor == vendor_id && desc.idProduct == product_id) {
@@ -148,7 +148,7 @@ int control_read_command(uint8_t resid, uint8_t cmd,
     num_commands, windex, wvalue, wlength));
 
   int ret = libusb_control_transfer(devh,
-    LIBUSB_ENDPOINT_IN | LIBUSB_REQUEST_TYPE_VENDOR | LIBUSB_RECIPIENT_DEVICE,
+    (uint8_t) LIBUSB_ENDPOINT_IN | (uint8_t) LIBUSB_REQUEST_TYPE_VENDOR | (uint8_t) LIBUSB_RECIPIENT_DEVICE,
     0, wvalue, windex, payload, wlength, sync_timeout_ms);
 
   num_commands++;
@@ -183,7 +183,7 @@ int control_write_command(uint8_t resid, uint8_t cmd,
   DBG(print_bytes(payload, payload_len));
 
   int ret = libusb_control_transfer(devh,
-    LIBUSB_ENDPOINT_OUT | LIBUSB_REQUEST_TYPE_VENDOR | LIBUSB_RECIPIENT_DEVICE,
+    (uint8_t) LIBUSB_ENDPOINT_OUT | (uint8_t) LIBUSB_REQUEST_TYPE_VENDOR | (uint8_t) LIBUSB_RECIPIENT_DEVICE,
     0, wvalue, windex, (unsigned char*)payload, wlength, sync_timeout_ms);
 
   num_commands++;

@@ -94,9 +94,9 @@ The MSOS descriptors report the compatible ID as *WINUSB* which enables Windows 
 function driver without a custom INF file. This means that when the device is connected, the DFU interface
 shows up as WinUSB compatible automatically, without requiring the user to manually load a driver for it using a utility like Zadig.
 
-The MSOS descriptors are present in the file ``xua_ep0_msos_descriptors.h``. In order to enumerate as a device capable of supplying MSOS
-descriptors, the device's ``bcdUSB`` version in the device descriptor has to be **0x0201**. On seeing the ``bcdUSB`` version as 0x0201 when the device
-enumerates, the host requests for a descriptor called the Binary Device Object Store (BOS) descriptor.
+The MSOS descriptors are present in the file ``xua_ep0_msos_descriptors.c`` and also in ``lib_xud`` in the file ``simple_ep0_msos_descriptors.c``.
+In order to enumerate as a device capable of supplying MSOS descriptors, the device's ``bcdUSB`` version in the device descriptor has to be **0x0201**.
+On seeing the ``bcdUSB`` version as 0x0201 when the device enumerates, the host requests for a descriptor called the Binary Device Object Store (BOS) descriptor.
 This descriptor contains information about the capability of the device. It specifies the device to be MSOS 2.0 capable and contains information about
 the vendor request code (``bRequest``) and the request length (``wLength``) that the host needs to use to when making a vendor request to query for the MSOS
 descriptor.
@@ -106,20 +106,19 @@ The host then makes a vendor request with the ``bRequest`` and ``wLength`` as sp
 .. warning::
    If writing a host application that also sends vendor requests to the device, users should ensure that they do not use the ``bRequest`` that is reserved
    for the MSOS descriptor. The MSOS descriptor vendor request's ``bRequest`` is defined as the
-   ``REQUEST_GET_MS_DESCRIPTOR`` define in ``xua_ep0_msos_descriptors.h``.
+   ``XUA_REQUEST_GET_MSOS_DESCRIPTOR`` define in ``xua_conf_default.h``.
 
    .. code-block:: c
 
-      #define REQUEST_GET_MS_DESCRIPTOR   0x20
-
+      #define XUA_REQUEST_GET_MSOS_DESCRIPTOR  0x20
 
 The MSOS descriptor reports the compatible ID as *WINUSB* for the DFU interface. It also specifies the device interface GUID in its registry property.
 The GUID is required to access the DFU interface from a user application running on the host (for example the Thesycon DFU driver or the dfu-util DFU application)
 
 .. note::
 
-   The default device interface GUID for the DFU interfaces is specified in the ``WINUSB_DEVICE_INTERFACE_GUID_DFU`` define in ``xua_conf_default.h``.
-   Users can override this by redefining ``WINUSB_DEVICE_INTERFACE_GUID_DFU`` in the application. A utility such as `guidgenerator <https://guidgenerator.com/>`_ can be used for generating a GUID.
+   The default device interface GUID for the DFU interfaces is specified in the ``XUA_WINUSB_DEVICE_INTERFACE_GUID_DFU`` define in ``xua_conf_default.h``.
+   Users can override this by redefining ``XUA_WINUSB_DEVICE_INTERFACE_GUID_DFU`` in the application. A utility such as `guidgenerator <https://guidgenerator.com/>`_ can be used for generating a GUID.
 
 .. tip::
 

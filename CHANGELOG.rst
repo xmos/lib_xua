@@ -15,6 +15,7 @@ UNRELEASED
   * CHANGED:   ``FB_USE_REF_CLOCK`` renamed to ``XUA_FB_USE_REF_CLOCK`` and
     added ability to define rational clock ratio between master and ref clock
   * CHANGED:   Use lib_mic_array's new default API
+  * CHANGED:   Migrated Windows USB DFU host application from 32 bit to 64 bit
 
 5.2.0
 -----
