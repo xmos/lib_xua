@@ -290,7 +290,7 @@ void usb_audio_io(chanend ?c_aud_in,
 #if (XUA_NUM_PDM_MICS > 0)
     , chanend c_pdm_pcm
 #endif
-#if (XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
+#if ((XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN) && !XUA_USE_SW_PLL)
     , client interface pll_ref_if i_pll_ref
 #endif
 #if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
@@ -357,7 +357,7 @@ void usb_audio_io(chanend ?c_aud_in,
 #if (XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
                 , c_dig_rx
 #endif
-#if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC || XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
+#if (ADJUSTABLE_MCLK_REQUIRED)
                 , c_audio_rate_change
 #endif
 #if (XUA_XUD_TILE_NUM != 0) && (XUA_AUDIO_IO_TILE_NUM == 0) && (XUA_DFU_EN == 1)
@@ -377,7 +377,9 @@ void usb_audio_io(chanend ?c_aud_in,
             thread_speed();
             clockGen(   c_spdif_rx,
                         c_adat_rx,
+#if !XUA_USE_SW_PLL
                         i_pll_ref,
+#endif
                         c_dig_rx,
                         c_clk_ctl,
                         c_clk_int,
@@ -419,9 +421,6 @@ void usb_audio_io(chanend ?c_aud_in,
 unsafe {
 #if XUA_NUM_PDM_MICS
     unsigned mic_array_channel_map[XUA_NUM_PDM_MICS];
-    unsigned * unsafe p_channel_map = mic_array_channel_map;
-#else
-    unsigned * unsafe p_channel_map = NULL;
 #endif
 }
 
@@ -477,11 +476,11 @@ int main()
     chan c_pdm_pcm;
 #endif
 
-#if (((XUA_SYNCMODE == XUA_SYNCMODE_SYNC && !XUA_USE_SW_PLL) || XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN) )
+#if (ADJUSTABLE_MCLK_REQUIRED && !XUA_USE_SW_PLL)
     interface pll_ref_if i_pll_ref;
 #endif
 
-#if ((XUA_SYNCMODE == XUA_SYNCMODE_SYNC || XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN) && XUA_USE_SW_PLL)
+#if (ADJUSTABLE_MCLK_REQUIRED && XUA_USE_SW_PLL)
     chan c_sw_pll;
 #endif
 #if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
@@ -519,7 +518,7 @@ int main()
         USER_MAIN_CORES
         USER_MAIN_TASKS
 
-#if (((XUA_SYNCMODE == XUA_SYNCMODE_SYNC  && !XUA_USE_SW_PLL) || XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN))
+#if (ADJUSTABLE_MCLK_REQUIRED && !XUA_USE_SW_PLL)
         on tile[XUA_PLL_REF_TILE_NUM]: PllRefPinTask(i_pll_ref, p_pll_ref);
 #endif
         on tile[XUA_XUD_TILE_NUM]:
@@ -618,7 +617,7 @@ int main()
 #endif /* XUA_USB_EN */
         }
 
-#if ((XUA_SYNCMODE == XUA_SYNCMODE_SYNC || XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN) && XUA_USE_SW_PLL)
+#if (ADJUSTABLE_MCLK_REQUIRED && XUA_USE_SW_PLL)
         on tile[XUA_AUDIO_IO_TILE_NUM]: sw_pll_task(c_sw_pll);
 #endif
 
@@ -646,7 +645,7 @@ int main()
 #if (XUA_NUM_PDM_MICS > 0)
                 , c_pdm_pcm
 #endif
-#if (XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
+#if ((XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN) && !XUA_USE_SW_PLL)
                 , i_pll_ref
 #endif
 #if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)

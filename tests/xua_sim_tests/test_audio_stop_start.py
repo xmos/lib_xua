@@ -25,7 +25,7 @@ def do_test(options, capfd, cfg):
     )
 
 
-    max_cycles = 6000000  # enough to send all of the frames in the test and hit exit(0)
+    max_cycles = 7000000  # enough to send all of the frames in the test and hit exit(0)
 
     simargs = [
         "--max-cycles",

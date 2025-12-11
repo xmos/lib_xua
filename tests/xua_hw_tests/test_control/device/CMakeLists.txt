@@ -5,8 +5,7 @@ project(control_test)
 set(XMOS_SANDBOX_DIR ${CMAKE_CURRENT_LIST_DIR}/../../../../..)
 
 set(APP_HW_TARGET xk-audio-316-mc.xn)
-set(APP_DEPENDENT_MODULES "lib_xua"
-                          "lib_board_support(1.1.0)")
+include(${CMAKE_CURRENT_LIST_DIR}/../../../../examples/deps.cmake)
 
 set(COMMON_FLAGS -O3
                  -lquadflash

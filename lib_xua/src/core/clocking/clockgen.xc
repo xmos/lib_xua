@@ -218,7 +218,9 @@ int VendorAudCoreReqs(unsigned cmd, chanend c);
 #pragma unsafe arrays
 void clockGen ( streaming chanend ?c_spdif_rx,
                 streaming chanend ?c_adat_rx,
+#if !XUA_USE_SW_PLL
                 client interface pll_ref_if i_pll_ref,
+#endif
                 chanend c_dig_rx,
                 chanend c_clk_ctl,
                 chanend c_clk_int,
@@ -375,8 +377,10 @@ void clockGen ( streaming chanend ?c_spdif_rx,
     outuint(c_dig_rx, 1);
 #endif
 
+#if !XUA_USE_SW_PLL
     /* Initial ref clock output and get timestamp */
     i_pll_ref.init();
+#endif
 
 #if ((XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN) && XUA_USE_SW_PLL)
     int reset_sw_pll_pfd = 1;

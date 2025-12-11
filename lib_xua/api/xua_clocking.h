@@ -35,12 +35,14 @@ void PllRefPinTask(server interface pll_ref_if i_pll_ref, out port p_sync);
  */
 void clockGen(  NULLABLE_RESOURCE(streaming_chanend_t, c_spdif_rx),
                 NULLABLE_RESOURCE(streaming_chanend_t, c_adat_rx),
+#if (!XUA_USE_SW_PLL || defined __DOXYGEN__)
                 CLIENT_INTERFACE(pll_ref_if, i_pll_ref),
+#endif
                 chanend c_audio,
                 chanend c_clk_ctl,
                 chanend c_clk_int,
                 chanend c_audio_rate_change
-#if (XUA_USE_SW_PLL || defined __DOYXGEN__)
+#if (XUA_USE_SW_PLL || defined __DOXYGEN__)
                 , port p_for_mclk_count_aud
                 , chanend c_sw_pll
 #endif

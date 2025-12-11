@@ -10,6 +10,8 @@ UNRELEASED
   * ADDED:     Optional ``XUA_USER_FUNCTION_CALL_PRE_BUFFER`` define to allow
     running of user code before XUA buffer starts in the ``main()`` function.
     This may be used to initialise global channel ends or interfaces.
+  * ADDED:    Support for generating fixed clock using the application PLL for
+    xcore.ai targets
   * CHANGED:   ``FB_USE_REF_CLOCK`` renamed to ``XUA_FB_USE_REF_CLOCK`` and
     added ability to define rational clock ratio between master and ref clock
   * CHANGED:   Use lib_mic_array's new default API

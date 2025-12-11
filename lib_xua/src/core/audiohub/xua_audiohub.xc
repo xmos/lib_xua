@@ -725,7 +725,7 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
 #if (XUA_ADAT_RX_EN || XUA_SPDIF_RX_EN)
     , chanend c_dig_rx
 #endif
-#if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC || XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
+#if ADJUSTABLE_MCLK_REQUIRED
     , chanend c_audio_rate_change
 #endif
 #if (XUA_XUD_TILE_NUM != 0) && (XUA_AUDIO_IO_TILE_NUM == 0) && (XUA_DFU_EN == 1)
@@ -923,8 +923,12 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
                 AudioHwConfig_Mute();
 
                 /* User code should configure audio harware for SampleFreq/MClk etc */
+
+#if defined(__XS3A__) && !ADJUSTABLE_MCLK_REQUIRED
+                sw_pll_fixed_clock(mClk); // output a fixed clock using the application PLL
+#endif
                 AudioHwConfig(curFreq, mClk, dsdMode, curSamRes_DAC, curSamRes_ADC);
-#if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC || XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
+#if (ADJUSTABLE_MCLK_REQUIRED)
                 /* Notify clockgen of new mCLk */
                 c_audio_rate_change <: mClk;
                 c_audio_rate_change <: curFreq;
