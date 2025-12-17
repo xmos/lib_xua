@@ -16,11 +16,14 @@
 #include "xua.h"
 
 #if XUA_USB_EN
+#include "msos_descriptors.h"
+#include "msos_helpers.h"
+#include "simple_ep0_msos_descriptors.h"
 #include "xud_device.h"          /* Standard descriptor requests */
 #include "dfu_types.h"
 #include "usbaudio20.h"          /* Defines from USB Audio 2.0 spec */
 #include "xua_ep0_descriptors.h" /* This devices descriptors */
-#include "xua_ep0_msos_descriptors.h" /* MSOS descriptors */
+#include "xua_ep0_msos_descriptors.h" /* Composite MSOS descriptors */
 #include "xua_commands.h"
 #include "audiostream.h"
 #include "hostactive.h"
@@ -126,12 +129,6 @@ unsigned g_curStreamAlt_In = 0;
 
 /* Global variable for current USB bus speed (i.e. FS/HS) */
 XUD_BusSpeed_t g_curUsbSpeed = XUA_USB_BUS_SPEED;
-
-#if _XUA_ENABLE_BOS_DESC
-/* Device Interface GUID*/
-char g_device_interface_guid_dfu_str[DEVICE_INTERFACE_GUID_MAX_STRLEN+1] = WINUSB_DEVICE_INTERFACE_GUID_DFU;
-char g_device_interface_guid_control_str[DEVICE_INTERFACE_GUID_MAX_STRLEN+1] = WINUSB_DEVICE_INTERFACE_GUID_CONTROL;
-#endif
 
 /* Subslot */
 const unsigned g_subSlot_Out_HS[OUTPUT_FORMAT_COUNT]    = {HS_STREAM_FORMAT_OUTPUT_1_SUBSLOT_BYTES,
@@ -457,48 +454,6 @@ static unsigned char hidReportDescriptorPtr[] = {
 };
 #endif
 
-#if _XUA_ENABLE_BOS_DESC
-/// Update the device interface GUID in both MSOS simple and composite descriptors
-static void update_guid_in_msos_desc(const char *guid_str_dfu, const char *guid_str_control)
-{
-    // composite descriptor
-    unsigned char *msos_guid_ptr;
-#if XUA_DFU_EN
-    msos_guid_ptr = desc_ms_os_20_composite.msos_desc_registry_property_dfu.PropertyData;
-    for(int i=0; i<DEVICE_INTERFACE_GUID_MAX_STRLEN; i++) // Convert to Unicode
-    {
-        msos_guid_ptr[2*i] = guid_str_dfu[i];
-        msos_guid_ptr[2*i + 1] = 0x0;
-    }
-#endif
-
-#if (XUA_USB_CONTROL_DESCS && ENUMERATE_CONTROL_INTF_AS_WINUSB)
-    msos_guid_ptr = desc_ms_os_20_composite.msos_desc_registry_property_control.PropertyData;
-    for(int i=0; i<DEVICE_INTERFACE_GUID_MAX_STRLEN; i++) // Convert to Unicode
-    {
-        msos_guid_ptr[2*i] = guid_str_control[i];
-        msos_guid_ptr[2*i + 1] = 0x0;
-    }
-#endif
-
-    // simple descriptor
-    msos_guid_ptr = desc_ms_os_20_simple.msos_desc_registry_property.PropertyData;
-#if XUA_DFU_EN
-    for(int i=0; i<DEVICE_INTERFACE_GUID_MAX_STRLEN; i++)
-    {
-        msos_guid_ptr[2*i] = guid_str_dfu[i];
-        msos_guid_ptr[2*i + 1] = 0x0;
-    }
-#elif (XUA_USB_CONTROL_DESCS && ENUMERATE_CONTROL_INTF_AS_WINUSB)
-    for(int i=0; i<DEVICE_INTERFACE_GUID_MAX_STRLEN; i++)
-    {
-        msos_guid_ptr[2*i] = guid_str_control[i];
-        msos_guid_ptr[2*i + 1] = 0x0;
-    }
-#endif
-}
-#endif
-
 unsigned char __attribute__((aligned (4))) hid_desc_word_aligned[sizeof(USB_HID_Descriptor_t)];
 void XUA_Endpoint0_init(chanend c_ep0_out, chanend c_ep0_in, NULLABLE_RESOURCE(chanend, c_aud_ctl),
     chanend c_mix_ctl, chanend c_clk_ctl, CLIENT_INTERFACE(i_dfu, dfuInterface) VENDOR_REQUESTS_PARAMS_DEC_)
@@ -508,7 +463,7 @@ void XUA_Endpoint0_init(chanend c_ep0_out, chanend c_ep0_in, NULLABLE_RESOURCE(c
 
     VendorRequests_Init(VENDOR_REQUESTS_PARAMS);
 #if _XUA_ENABLE_BOS_DESC
-    update_guid_in_msos_desc(g_device_interface_guid_dfu_str, g_device_interface_guid_control_str);
+    Xua_Init_Ep0_Msos_Descriptors();
 #endif
 
     if(strcmp(g_strTable.serialStr, ""))
@@ -940,7 +895,7 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
             unsigned bmRequestType = (sp.bmRequestType.Direction<<7) | (sp.bmRequestType.Type<<5) | (sp.bmRequestType.Recipient);
             if(bmRequestType == USB_BMREQ_D2H_VENDOR_DEV)
             {
-                if((sp.bRequest == REQUEST_GET_MS_DESCRIPTOR) &&
+                if((sp.bRequest == XUD_REQUEST_GET_MSOS_DESCRIPTOR) &&
                     sp.wIndex == MS_OS_20_DESCRIPTOR_INDEX)
                 {
                     int num_interfaces;
@@ -957,11 +912,13 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
                         #endif
                     }
 
-                    if(num_interfaces == 1) {
-                        result = XUD_DoGetRequest(ep0_out, ep0_in, (unsigned char*)&desc_ms_os_20_simple, sizeof(MSOS_desc_simple_t), sp.wLength);
+                    if (num_interfaces == 1) {
+                        // Use simple MSOS descriptor
+                        result = XUD_GetMsosDescriptor(ep0_out, ep0_in, &sp);
                     }
                     else {
-                        result = XUD_DoGetRequest(ep0_out, ep0_in, (unsigned char*)&desc_ms_os_20_composite, sizeof(MSOS_desc_composite_t), sp.wLength);
+                        // Use composite MSOS descriptor
+                        result = Xua_GetMsosDescriptor(ep0_out, ep0_in, &sp);
                     }
                 }
             }
@@ -1014,7 +971,6 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
                             {
                                 case (USB_DESCTYPE_BOS << 8):
                                 {
-                                    uint16_t msos_desc_len;
                                     int num_interfaces;
                                     if(DFU_mode_active) {
                                         num_interfaces = DFUcfgDesc.Config.bNumInterfaces;
@@ -1029,15 +985,13 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
                                     }
 
                                     if(num_interfaces == 1) {
-                                        msos_desc_len = sizeof(MSOS_desc_simple_t);
+                                        // Use simple MSOS descriptor
+                                        result = XUD_GetBosDescriptor(ep0_out, ep0_in, &sp);
                                     }
                                     else {
-                                        msos_desc_len = sizeof(MSOS_desc_composite_t);
+                                        // Use composite MSOS descriptor
+                                        result = Xua_GetBosDescriptor(ep0_out, ep0_in, &sp);
                                     }
-                                    memcpy(&desc_bos.usb_desc_bos_platform.CapabilityData[4], &msos_desc_len, sizeof(int16_t)); // Update msos descriptor length in platform capabilityData
-                                    // On the Mac, BOS desc is requested twice, first with wLength 5 (just usb_desc_bos_standard), then with length 33 (usb_desc_bos_standard + ),
-                                    // while on Windows there's only one request of length 0xff.
-                                    result = XUD_DoGetRequest(ep0_out, ep0_in, (unsigned char*)&desc_bos, sizeof(desc_bos), sp.wLength);
                                 }
                                 break;
                             }

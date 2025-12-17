@@ -25,7 +25,8 @@ target_sources(${APP_NAME}
 if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 target_compile_options( ${APP_NAME}
     PRIVATE
-        -WX
+        /WX
+        /W4
 )
 else()
 target_compile_options( ${APP_NAME}
@@ -51,8 +52,8 @@ elseif (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     pkg_check_modules(libusb-1.0 REQUIRED libusb-1.0)
     set(LINK_LIBS usb-1.0)
 elseif (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-    target_link_directories(${APP_NAME} PRIVATE "${xua_libusb_path}/Win32")
-    set(libusb-1.0_INCLUDE_DIRS "${xua_libusb_path}/Win32")
+    target_link_directories(${APP_NAME} PRIVATE "${xua_libusb_path}/Win64")
+    set(libusb-1.0_INCLUDE_DIRS "${xua_libusb_path}/Win64")
     set(LINK_LIBS libusb-1.0)
 endif()
 

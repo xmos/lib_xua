@@ -7,7 +7,7 @@
 #include <assert.h>
 #include "device_access_usb.h"
 
-int main(int argc, char **argv) {
+int main(void) {
     int ret = control_init_usb(0x20b1, 0x0016);
     if(ret)
     {
@@ -18,7 +18,7 @@ int main(int argc, char **argv) {
     uint8_t payload[10];
     for(int i=0; i<8; i++)
     {
-        payload[i] = i+1;
+        payload[i] = static_cast<uint8_t>(i + 1);
     }
     // Write
     ret = control_write_command(1, 2, payload, 8);
@@ -41,7 +41,7 @@ int main(int argc, char **argv) {
 
     for(int i=0; i<8; i++)
     {
-        if(payload[i] != (i+1))
+        if(payload[i] != static_cast<uint8_t>(i + 1))
         {
             printf("Read result mismatch at index %d. Expected %d, read back %d\n", i, i+1, payload[i]);
             printf("read result = ");
@@ -52,8 +52,9 @@ int main(int argc, char **argv) {
             printf("\n");
             exit(1);
         }
-        payload[i] = i+1;
+        payload[i] = static_cast<uint8_t>(i + 1);
     }
+    printf("Success\n");
 
     return 0;
 }

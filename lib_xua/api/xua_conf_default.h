@@ -1792,19 +1792,31 @@ enum USBEndpointNumber_Out
  *
  * This is provided as part of the device registry property in the MSOS 2.0 descriptor.
  * Default: "{89C14132-D389-4FF7-944E-2E33379BB59D}" User can override by defining their own in xua_conf.h
+ * 
+ * \warning This GUID must remain unchanged for DFU to work correctly with the XMOS supplied DFU driver.
  */
-#ifndef WINUSB_DEVICE_INTERFACE_GUID_DFU
-#define WINUSB_DEVICE_INTERFACE_GUID_DFU               "{89C14132-D389-4FF7-944E-2E33379BB59D}"
+#ifndef XUA_WINUSB_DEVICE_INTERFACE_GUID_DFU
+#define XUA_WINUSB_DEVICE_INTERFACE_GUID_DFU        "{89C14132-D389-4FF7-944E-2E33379BB59D}"
 #endif
 
 /**
- * @brief Device interface GUID for the vendor control interface.
+ * @brief Device interface GUID for the MSOS 2.0 Descriptor.
  *
  * This is provided as part of the device registry property in the MSOS 2.0 descriptor.
  * Default: "{563F19C9-B0CD-4A15-9047-59D31EADC345}" User can override by defining their own in xua_conf.h
  */
-#ifndef WINUSB_DEVICE_INTERFACE_GUID_CONTROL
-#define WINUSB_DEVICE_INTERFACE_GUID_CONTROL               "{563F19C9-B0CD-4A15-9047-59D31EADC345}"
+#ifndef XUA_WINUSB_DEVICE_INTERFACE_GUID_CONTROL
+#define XUA_WINUSB_DEVICE_INTERFACE_GUID_CONTROL    "{563F19C9-B0CD-4A15-9047-59D31EADC345}"
+#endif
+
+/**
+ * @brief Request code for the D2H vendor request that the host will use to request the MSOS descriptor.
+ *
+ * The user shouldn't use this bRequest number in their custom vendor requests to the device, as it is now reserved for descriptor handling.
+ * However, the user can override this define to use a different bRequest number if required.
+ */
+#ifndef XUA_REQUEST_GET_MSOS_DESCRIPTOR
+#define XUA_REQUEST_GET_MSOS_DESCRIPTOR             (0x20)
 #endif
 
 /**
