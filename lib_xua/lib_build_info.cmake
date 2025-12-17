@@ -41,7 +41,7 @@ set(LIB_DEPENDENT_MODULES "lib_adat(2.0.1)"
                           "lib_logging(3.4.0)"
                           "lib_spdif(7.0.0)"
                           "lib_sw_pll(2.4.0)"
-                          "lib_xassert(4.3.1)"
+                          "lib_xassert(4.3.2)"
                           "lib_mic_array(develop)"
                           "lib_xud(4.0.0)")
 

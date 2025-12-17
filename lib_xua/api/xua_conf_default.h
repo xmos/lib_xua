@@ -1850,10 +1850,10 @@ enum USBEndpointNumber_Out
  * between the 100MHz reference clock and the master clock applied to the audio tile for this to work.
  * You must also define XUA_FB_REF_MUL_48, XUA_FB_REF_DIV_48, XUA_FB_REF_MUL_44 and XUA_FB_REF_DIV_44 if
  * this feature is enabled. eg. XUA_FB_REF_MUL_48 = 768, XUA_FB_REF_DIV_48 = 3125 for 24.576MHz.
- * 
+ *
  * Note in some cases the MCLK may not be a rational fraction of the reference clock
  * (eg. when using APP/Secondary PLL at 44100 kHz). This scheme cannot work in those cases!!
- * 
+ *
  * This feature also cannot work if an external clock source is enabled (eg. SPDIF or ADAT rx)!!
  */
 #ifndef XUA_FB_USE_REF_CLOCK
@@ -1910,5 +1910,12 @@ enum USBEndpointNumber_Out
     (_NEED_MCLK_FOR_USB && (XUA_XUD_TILE_NUM != XUA_AUDIO_IO_TILE_NUM)) || \
     (_NEED_MCLK_FOR_SPDIF_TX && (XUA_SPDIF_TX_TILE_NUM != XUA_AUDIO_IO_TILE_NUM)) \
 )
+
+/*
+ * Indicates whether an adjustable MCLK is required.
+ *   1 = adjustable MCLK required (USB sync mode or SPDIF/ADAT RX enabled)
+ *   0 = fixed MCLK required (USB async/adapt without digital RX)
+ */
+#define ADJUSTABLE_MCLK_REQUIRED  ((XUA_SYNCMODE == XUA_SYNCMODE_SYNC) || XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
 
 #endif /* _XUA_CONF_DEFAULT_H_ */

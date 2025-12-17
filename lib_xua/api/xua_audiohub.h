@@ -66,7 +66,7 @@ void XUA_AudioHub(
 #if (XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN || defined(__DOXYGEN__))
     , chanend c_dig
 #endif
-#if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC || XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN || defined(__DOXYGEN__))
+#if (ADJUSTABLE_MCLK_REQUIRED || defined(__DOXYGEN__))
     , chanend c_audio_rate_change
 #endif
 #if (((XUA_XUD_TILE_NUM != 0) && (XUA_AUDIO_IO_TILE_NUM == 0) && (XUA_DFU_EN == 1)) || defined(__DOXYGEN__))

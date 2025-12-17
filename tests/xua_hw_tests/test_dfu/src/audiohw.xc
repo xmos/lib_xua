@@ -15,10 +15,10 @@
 #endif
 
 static xk_audio_316_mc_ab_config_t config = {
-    (XUA_SYNCMODE == XUA_SYNCMODE_SYNC || XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
+    ADJUSTABLE_MCLK_REQUIRED
     ? ( XUA_USE_SW_PLL
         ? CLK_PLL : CLK_CS2100 )
-    : CLK_FIXED,          // clk_mode
+    : CLK_NONE,          // clk_mode
     CODEC_MASTER,         // dac_is_clk_master
     MCLK_48,              // default_mclk
     PLL_SYNC_FREQ,        // pll_sync_freq
