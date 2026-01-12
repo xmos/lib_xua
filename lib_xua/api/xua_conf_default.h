@@ -210,7 +210,7 @@
 #endif
 
 /**
- * @brief Number of I2S channesl to DAC/CODEC. Must be a multiple of 2.
+ * @brief Number of I2S channels to DAC/CODEC. Must be a multiple of 2.
  *
  * Default: NONE (Must be defined by app)
  */
