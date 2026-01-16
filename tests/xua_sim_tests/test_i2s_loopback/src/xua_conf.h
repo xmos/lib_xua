@@ -1,4 +1,4 @@
-// Copyright 2016-2025 XMOS LIMITED.
+// Copyright 2016-2026 XMOS LIMITED.
 // This Software is subject to the terms of the XMOS Public Licence: Version 1.
 #ifndef _XUA_CONF_H_
 #define _XUA_CONF_H_
