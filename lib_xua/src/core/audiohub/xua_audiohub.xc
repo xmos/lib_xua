@@ -924,7 +924,7 @@ void XUA_AudioHub(chanend ?c_aud, clock ?clk_audio_mclk, clock ?clk_audio_bclk,
 
                 /* User code should configure audio harware for SampleFreq/MClk etc */
 
-#if defined(__XS3A__) && !ADJUSTABLE_MCLK_REQUIRED
+#if defined(__XS3A__) && (!ADJUSTABLE_MCLK_REQUIRED) && (XUA_USE_SW_PLL)
                 sw_pll_fixed_clock(mClk); // output a fixed clock using the application PLL
 #endif
                 AudioHwConfig(curFreq, mClk, dsdMode, curSamRes_DAC, curSamRes_ADC);
