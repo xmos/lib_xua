@@ -486,12 +486,16 @@ int main()
 #if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
     chan c_audio_rate_change; /* Notification of new mclk freq to ep_buffer */
 #endif
+#if XUA_USB_EN
     chan c_sof;
     chan c_xud_out[ENDPOINT_COUNT_OUT];              /* Endpoint channels for XUD */
     chan c_xud_in[ENDPOINT_COUNT_IN];
-
     /* Used to communicate controls/setting from XUA_Endpoint0() to the Audio/Buffering sub-system */
     chan c_aud_ctl;
+#else
+    #define c_aud_ctl null
+#endif
+
 
 #if (!MIXER)
 #define c_mix_ctl null
