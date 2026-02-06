@@ -16,6 +16,8 @@ UNRELEASED
     added ability to define rational clock ratio between master and ref clock
   * CHANGED:   Use lib_mic_array's new default API
   * CHANGED:   Migrated Windows USB DFU host application from 32 bit to 64 bit
+  * FIXED:     Unused variable warnings when XUA_USB_EN = 0
+
 
 5.2.0
 -----
