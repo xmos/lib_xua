@@ -24,6 +24,14 @@ def test_seed(request):
 
 def pytest_addoption(parser):
     parser.addoption(
+        "--level",
+        action="store",
+        default="smoke",
+        choices=["smoke", "nightly"],
+        help="Test coverage level",
+    )
+
+    parser.addoption(
         "--enabletracing",
         action="store_true",
         default=False,

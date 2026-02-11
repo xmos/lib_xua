@@ -21,7 +21,7 @@ pipeline {
 
     string(
       name: 'INFR_APPS_VERSION',
-      defaultValue: 'v3.2.0',
+      defaultValue: 'v3.2.1',
       description: 'The infr_apps version'
     )
     choice(
@@ -275,8 +275,12 @@ pipeline {
                       sh 'cmake -G "Unix Makefiles" -B build'
 
                       // XEs for MIDI tests are shared, so need to be built first
-                      sh 'xmake -C build test_midi_loopback test_midi_xs2 test_midi_xs3'
-
+                      sh 'xmake -C build -j 16 test_midi_loopback test_midi_xs2 test_midi_xs3'
+                      // XEs for slave sync test all need to pre-built
+                      dir("test_i2s_slave_sync") {
+                        sh 'cmake -G "Unix Makefiles" -B build'
+                        sh 'xmake -C build -j 16'
+                      }
                       sh "pytest -v -n auto --junitxml=pytest_sim.xml"
                     }
 
