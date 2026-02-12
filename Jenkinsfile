@@ -1,6 +1,6 @@
 // This file relates to internal XMOS infrastructure and should be ignored by external users
 
-@Library('xmos_jenkins_shared_library@v0.43.3') _
+@Library('xmos_jenkins_shared_library@v0.45.0') _
 
 getApproval()
 
@@ -16,12 +16,12 @@ pipeline {
     )
     string(
       name: 'XMOSDOC_VERSION',
-      defaultValue: 'v8.0.0',
+      defaultValue: 'v8.0.1',
       description: 'The xmosdoc version')
 
     string(
       name: 'INFR_APPS_VERSION',
-      defaultValue: 'v3.2.0',
+      defaultValue: 'v3.3.0',
       description: 'The infr_apps version'
     )
     choice(

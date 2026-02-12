@@ -1,5 +1,5 @@
 set(LIB_NAME lib_xua)
-set(LIB_VERSION 5.2.0)
+set(LIB_VERSION 5.3.0)
 set(LIB_INCLUDES api
                  src
                  src/core
@@ -37,12 +37,12 @@ set(LIB_OPTIONAL_HEADERS    xua_conf.h
                             )
 
 set(LIB_DEPENDENT_MODULES "lib_adat(2.0.1)"
-                          "lib_locks(2.3.2)"
+                          "lib_locks(2.4.0)"
                           "lib_logging(3.4.0)"
                           "lib_spdif(7.0.0)"
                           "lib_sw_pll(2.4.1)"
                           "lib_xassert(4.3.2)"
-                          "lib_mic_array(develop)"
+                          "lib_mic_array(6.0.0)"
                           "lib_xud(4.0.1)")
 
 set(LIB_COMPILER_FLAGS -O3
