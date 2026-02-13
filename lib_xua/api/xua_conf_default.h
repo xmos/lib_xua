@@ -853,7 +853,7 @@
  * @brief Device firmware version number in Binary Coded Decimal format: 0xJJMN where JJ: major, M: minor, N: sub-minor version number.
  */
 #ifndef BCD_DEVICE_M
-#define BCD_DEVICE_M             (2)
+#define BCD_DEVICE_M             (3)
 #endif
 
 /**
@@ -1792,7 +1792,7 @@ enum USBEndpointNumber_Out
  *
  * This is provided as part of the device registry property in the MSOS 2.0 descriptor.
  * Default: "{89C14132-D389-4FF7-944E-2E33379BB59D}" User can override by defining their own in xua_conf.h
- * 
+ *
  * \warning This GUID must remain unchanged for DFU to work correctly with the XMOS supplied DFU driver.
  */
 #ifndef XUA_WINUSB_DEVICE_INTERFACE_GUID_DFU

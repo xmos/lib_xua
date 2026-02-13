@@ -1,12 +1,12 @@
 lib_xua change log
 ==================
 
-UNRELEASED
-----------
+5.3.0
+-----
 
   * ADDED: Optional defines and handler code to allow insertion of user
-    endpoints. This allows building composite USB Audio devices such as
-    CDC. Check the `Other defines` section in the documents for more details.
+    endpoints. This allows building composite USB Audio devices such as CDC.
+    Check the `Other defines` section in the documents for more details.
   * ADDED:     Optional ``XUA_USER_FUNCTION_CALL_PRE_BUFFER`` define to allow
     running of user code before XUA buffer starts in the ``main()`` function.
     This may be used to initialise global channel ends or interfaces.
@@ -18,6 +18,17 @@ UNRELEASED
   * CHANGED:   Migrated Windows USB DFU host application from 32 bit to 64 bit
   * FIXED:     Unused variable warnings when XUA_USB_EN = 0
 
+  * Changes to dependencies:
+
+    - lib_locks: 2.3.2 -> 2.4.0
+
+    - lib_mic_array: 5.5.0 -> 6.0.0
+
+    - lib_sw_pll: 2.4.0 -> 2.4.1
+
+    - lib_xassert: 4.3.1 -> 4.3.2
+
+    - lib_xud: 4.0.0 -> 4.0.1
 
 5.2.0
 -----
