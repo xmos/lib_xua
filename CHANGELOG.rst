@@ -1,6 +1,11 @@
 lib_xua change log
 ==================
 
+UNRELEASED
+----------
+
+  * FIXED: Account for ADAT/SPDIF TX channels in samplesOut sizing in xua_audiohub
+
 5.3.0
 -----
 
