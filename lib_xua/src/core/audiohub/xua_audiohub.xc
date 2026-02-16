@@ -608,7 +608,7 @@ static void receive_command(unsigned command,
 
 #if XUA_DFU_EN
 [[distributable]]
-void DFUHandler(server interface i_dfu i, chanend ?c_user_cmd);
+void DFUHandler(server interface i_dfu i);
 #endif
 
 
@@ -674,7 +674,7 @@ static void dummy_deliver(chanend ?c_aud, unsigned sampFreq, unsigned dfuMode, u
 #if XUA_DFU_EN
 /* External DFU handler task */
 [[distributable]]
-void DFUHandler(server interface i_dfu i, chanend ?c_user_cmd);
+void DFUHandler(server interface i_dfu i);
 
 
 /* Helper function to see if a request for entry to DFU has been issued via a sample rate change.
@@ -701,7 +701,7 @@ void check_and_enter_dfu(unsigned curSamFreq, chanend c_aud, server interface i_
             par
             {
 #if (XUA_XUD_TILE_NUM != 0) && (XUA_AUDIO_IO_TILE_NUM == 0)
-                DFUHandler(dfuInterface, null);
+                DFUHandler(dfuInterface);
 #endif
                 /* This never exits because we set DFU mode*/
                 dummy_deliver(c_aud, 48000, 1, command);
