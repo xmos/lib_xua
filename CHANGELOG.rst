@@ -6,6 +6,7 @@ UNRELEASED
 
   * ADDED: Configurable output channel layout macros for populating UAC2 ``bmChannelConfig``
     and UAC1 ``wChannelConfig`` descriptor fields
+  * FIXED: Control and DFU descriptors ordering in UAC1.0 Config descriptor
 
 5.4.0
 -----

@@ -2928,21 +2928,21 @@ unsigned char cfgDesc_Audio1[] =
     0x03,                                 /* 4 BaAssocJackID(1) : ID of the Embedded MIDI OUT Jack. (field size 1 bytes) */
 #endif // MIDI
 
-#if XUA_DFU_EN
-    CONFIG_DESC_DFU,
-#endif
-
 #if XUA_USB_CONTROL_DESCS
     /* Control interface descriptor */
     0x09,                                                /* 0 bLength : Size of this descriptor, in bytes. (field size 1 bytes) */
     0x04,                                                /* 1 bDescriptorType : INTERFACE descriptor. (field size 1 bytes) */
-    (OUTPUT_INTERFACES_A1 + INPUT_INTERFACES_A1 + 1),    /* 2 bInterfaceNumber */
+    (INTERFACE_NUMBER_MISC_CONTROL),                     /* 2 bInterfaceNumber */
     0x00,                                                /* 3 bAlternateSetting : Index of this setting. (field size 1 bytes) */
     0x00,                                                /* 4 bNumEndpoints : 0 endpoints. (field size 1 bytes) */
     USB_CLASS_VENDOR_SPECIFIC,                           /* 5 bInterfaceClass : Vendor specific. (field size 1 bytes) */
     0xFF,                                                /* 6 bInterfaceSubclass : (field size 1 bytes) */
     0xFF,                                                /* 7 bInterfaceProtocol : Unused. (field size 1 bytes) */
     offsetof(StringDescTable_t, ctrlStr)/sizeof(char *), /* 8 iInterface */
+#endif
+
+#if XUA_DFU_EN
+    CONFIG_DESC_DFU,
 #endif
 
 #if XUA_OR_STATIC_HID_ENABLED
