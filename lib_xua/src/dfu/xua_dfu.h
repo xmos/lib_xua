@@ -5,6 +5,8 @@
 #define _XUA_DFU_H_ 1
 
 #include <xccompat.h>
+
+#include "xua.h"
 #include "xud_device.h"
 #include "dfu_types.h"
 
@@ -24,7 +26,7 @@
 #error DFU_MANUFACTURE_STR_INDEX not defined!!
 #endif
 
-
+#ifndef __XC__
 
 USB_Descriptor_Device_t DFUdevDesc =
 {
@@ -115,12 +117,6 @@ USB_Config_Descriptor_DFU_t DFUcfgDesc = {
     }
 };
 
-
-int DFUReportResetState(NULLABLE_RESOURCE(chanend , c_user_cmd));
-int DFUDeviceRequests(XUD_ep c_ep0_out, NULLABLE_REFERENCE_PARAM(XUD_ep, ep0_in), REFERENCE_PARAM(USB_SetupPacket_t, sp),
-        NULLABLE_RESOURCE(chanend, c_user_cmd), unsigned int altInterface, CLIENT_INTERFACE(i_dfu, dfuInterface), REFERENCE_PARAM(int, reset));
-
-/* Helper function for C */
-void DFUDelay(unsigned d);
+#endif /* __XC__ */
 
 #endif /* _DFU_H_ */

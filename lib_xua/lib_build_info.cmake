@@ -54,7 +54,7 @@ set(LIB_COMPILER_FLAGS -O3
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     list(APPEND LIB_COMPILER_FLAGS -DXASSERT_ENABLE_ASSERTIONS=1
                                    -DXASSERT_ENABLE_DEBUG=1
-                                   -DXASSERT_ENBALE_LINE_NUMBERS=1)
+                                   -DXASSERT_ENABLE_LINE_NUMBERS=1)
 else()
     list(APPEND LIB_COMPILER_FLAGS -DXASSERT_ENABLE_ASSERTIONS=0
                                    -DXASSERT_ENABLE_DEBUG=0

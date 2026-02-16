@@ -12,10 +12,10 @@
 #include "dfu_interface.h"
 
 #if defined(__XS2A__)
-/* Note range 0x7FFC8 - 0x7FFFF guarenteed to be untouched by tools */
+/* Note range 0x7FFC8 - 0x7FFFF guaranteed to be untouched by tools */
 #define FLAG_ADDRESS 0x7ffcc
 #else
-/* Note range 0xFFFC8 - 0xFFFFF guarenteed to be untouched by tools */
+/* Note range 0xFFFC8 - 0xFFFFF guaranteed to be untouched by tools */
 #define FLAG_ADDRESS 0xfffcc
 #endif
 
@@ -350,7 +350,7 @@ static int DFU_Abort(unsigned &DFU_state)
     return 0;
 }
 
-// Tell the DFU state machine that a USB reset has occured
+// Tell the DFU state machine that a USB reset has occurred
 int DFUReportResetState(chanend ?c_user_cmd)
 {
     unsigned int inDFU = 0;

@@ -3,8 +3,6 @@
 #ifndef _flash_interface_h_
 #define _flash_interface_h_
 
-int flash_cmd_init(void);
-
 /// Prepare to write a new image to the flash
 int flash_cmd_start_write_image();
 
@@ -32,7 +30,7 @@ void flash_cmd_read_page(unsigned char []);
  */
 int flash_cmd_read_page_data(unsigned char []);
 int flash_cmd_erase_all(void);
-int flash_cmd_reboot(void);
+// int flash_cmd_reboot(void);
 int flash_cmd_init(void);
 int flash_cmd_deinit(void);
 

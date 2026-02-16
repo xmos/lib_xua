@@ -70,7 +70,9 @@
 #endif
 
 #include "xua_dfu.h"
+#include "xua_dfu_api.h"
 #if XUA_DFU_EN
+#include "dfu_usb_requests.h"
 extern void device_reboot(void);
 
 /* Windows core USB/device driver stack may not like device coming off bus for
@@ -91,7 +93,6 @@ extern void device_reboot(void);
 #endif
 
 unsigned int DFU_mode_active = 0;         // 0 - App active, 1 - DFU active
-unsigned int notify_audio_stop_for_DFU = 0;
 
 /* Global volume and mute tables */
 int volsOut[NUM_USB_CHAN_OUT + 1];
@@ -241,11 +242,6 @@ const unsigned g_chanCount_Out_HS[OUTPUT_FORMAT_COUNT]       = {HS_STREAM_FORMAT
                                                             HS_STREAM_FORMAT_OUTPUT_3_CHAN_COUNT
 #endif
 };
-
-// TODO Move to lib_xud
-#define USB_BMREQ_H2D_VENDOR_INT          ((USB_BM_REQTYPE_DIRECTION_H2D << 7) | \
-                                            (USB_BM_REQTYPE_TYPE_VENDOR << 5) | \
-                                            (USB_BM_REQTYPE_RECIP_INTER))
 
 XUD_ep ep0_out;
 XUD_ep ep0_in;
@@ -783,53 +779,8 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
             case USB_BMREQ_H2D_CLASS_INT:
             case USB_BMREQ_D2H_CLASS_INT:
                 {
-                    unsigned interfaceNum = sp.wIndex & 0xff;
-                    //unsigned request = (sp.bmRequestType.Recipient ) | (sp.bmRequestType.Type << 5);
-
-                    /* TODO Check on return value retval =  */
 #if XUA_DFU_EN
-                    unsigned DFU_IF = INTERFACE_NUMBER_DFU;
-
-                    /* DFU interface number changes based on which mode we are currently running in */
-                    if(DFU_mode_active)
-                    {
-                        DFU_IF = 0;
-                    }
-
-                    if (interfaceNum == DFU_IF)
-                    {
-                        int reset = 0;
-
-                        /* If running in application mode stop audio */
-                        /* Don't interupt audio for save and restore cmds */
-                        if (!DFU_mode_active && !notify_audio_stop_for_DFU)
-                        {
-                            /* Send STOP_AUDIO_FOR_DFU command. This will either pass through
-                             * buffering system (i.e. ep_buffer/decouple) if the device has USB audio
-                             * channels. Otherwise this directly interacts with AudioHub
-                             * This command needs to be sent such that AudioHub runs the DFUHandler()
-                             * task - in the case where AudioHub is running on tile[0] i.e the
-                             * flash tile and the USB code (i.e this task) are running on separate
-                             * tiles. It also means that Flash pins can be shared with "audio" pins.
-                             */
-                            assert((c_aud_ctl != null) && msg("DFU not supported when c_aud_ctl is null"));
-                            // Stop audio
-                            outct(c_aud_ctl, XUA_AUDCTL_SET_SAMPLE_FREQ);
-                            outuint(c_aud_ctl, AUDIO_STOP_FOR_DFU);
-                            // Handshake
-                            chkct(c_aud_ctl, XS1_CT_END);
-                            notify_audio_stop_for_DFU = 1;  // So we notify AUDIO_STOP_FOR_DFU only once
-                        }
-
-                        /* Reset will be set to 1 if reboot requested */
-                        result = DFUDeviceRequests(ep0_out, &ep0_in, &sp, null, g_interfaceAlt[sp.wIndex], dfuInterface, &reset);
-
-                        if(reset)
-                        {
-                            DFUDelay(DELAY_BEFORE_REBOOT_TO_DFU_MS * 100000);
-                            device_reboot();
-                        }
-                    }
+                    result = dfu_usb_class_int_requests(ep0_out, ep0_in, &sp, dfuInterface, c_aud_ctl, DFU_mode_active);
 #endif
 #if XUA_HID_ENABLED
                     if (interfaceNum == INTERFACE_NUMBER_HID)
@@ -837,6 +788,7 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
                         result = HidInterfaceClassRequests(ep0_out, ep0_in, &sp);
                     }
 #endif
+                    unsigned interfaceNum = sp.wIndex & 0xff;
                     /* Check for:   - Audio CONTROL interface request - always 0, note we check for DFU first
                      *              - Audio STREAMING interface request  (In or Out)
                      *              - Audio endpoint request (Audio 1.0 Sampling freq requests are sent to the endpoint)
@@ -929,31 +881,15 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
 #if XUA_DFU_EN
         if(result == XUD_RES_ERR)
         {
-            // From Theycon DFU driver v2.66.0 onwards, the XMOS_DFU_REVERTFACTORY request comes as a H2D vendor request and not as a class request addressed to the DFU interface
-            unsigned bmRequestType = (sp.bmRequestType.Direction<<7) | (sp.bmRequestType.Type<<5) | (sp.bmRequestType.Recipient);
-            if((bmRequestType == USB_BMREQ_H2D_VENDOR_INT) && (sp.bRequest == XMOS_DFU_REVERTFACTORY))
-            {
-                unsigned interface_num = sp.wIndex & 0xff;
-                unsigned dfu_if = (DFU_mode_active) ? 0 : INTERFACE_NUMBER_DFU;
-
-                if(interface_num == dfu_if)
-                {
-                    int reset = 0;
-                    result = DFUDeviceRequests(ep0_out, &ep0_in, &sp, null, 0 /*this is unused in DFUDeviceRequests()??*/, dfuInterface, &reset);
-                    if(reset)
-                    {
-                        DFUDelay(DELAY_BEFORE_REBOOT_TO_DFU_MS * 100000);
-                        device_reboot();
-                    }
-                }
-            }
+            // Handle XMOS_DFU_REVERTFACTORY request in both DFU mode and application mode
+            result = dfu_usb_vendor_requests(ep0_out, ep0_in, &sp, dfuInterface, DFU_mode_active);
         }
 #endif
         if(result == XUD_RES_ERR)
         {
             /* Run vendor defined parsing/processing */
             /* Note, an interface might seem ideal here but this *must* be executed on the same
-             * core sure to shared memory depandancy */
+             * core sure to shared memory dependency */
             result = VendorRequests(ep0_out, ep0_in, &sp VENDOR_REQUESTS_PARAMS_);
         }
 #if _XUA_ENABLE_BOS_DESC
@@ -1270,4 +1206,23 @@ void XUA_Endpoint0(chanend c_ep0_out, chanend c_ep0_in, NULLABLE_RESOURCE(chanen
         XUA_Endpoint0_loop(result, sp, c_ep0_out, c_ep0_in, c_aud_ctl, c_mix_ctl, c_clk_ctl, dfuInterface VENDOR_REQUESTS_PARAMS_);
     }
 }
+
+void DFUNotifyEntry(NULLABLE_RESOURCE(chanend, c_aud_ctl))
+{
+    /* Send STOP_AUDIO_FOR_DFU command. This will either pass through
+        * buffering system (i.e. ep_buffer/decouple) if the device has USB audio
+        * channels. Otherwise this directly interacts with AudioHub
+        * This command needs to be sent such that AudioHub runs the DFUHandler()
+        * task - in the case where AudioHub is running on tile[0] i.e the
+        * flash tile and the USB code (i.e this task) are running on separate
+        * tiles. It also means that Flash pins can be shared with "audio" pins.
+        */
+    assert((c_aud_ctl != null) && msg("DFU not supported when c_aud_ctl is null"));
+    // Stop audio
+    outct(c_aud_ctl, XUA_AUDCTL_SET_SAMPLE_FREQ);
+    outuint(c_aud_ctl, AUDIO_STOP_FOR_DFU);
+    // Handshake
+    chkct(c_aud_ctl, XS1_CT_END);
+}
+
 #endif /* XUA_USB_EN*/

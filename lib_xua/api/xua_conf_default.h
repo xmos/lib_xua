@@ -6,6 +6,8 @@
 #ifndef XUA_CONF_DEFAULT_H_
 #define XUA_CONF_DEFAULT_H_
 
+#include <stddef.h>
+
 #ifdef __xua_conf_h_exists__
     #include "xua_conf.h"
 #endif
