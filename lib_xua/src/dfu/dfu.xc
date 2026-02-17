@@ -22,14 +22,6 @@ extern void DFUCustomFlashDisable();
 
 static unsigned int save_blk0_request_data[_DFU_TRANSFER_SIZE_WORDS];
 
-void DFUDelay(unsigned d)
-{
-    timer tmr;
-    unsigned s;
-    tmr :> s;
-    tmr when timerafter(s + d) :> void;
-}
-
 /* Return non-zero on error */
 static int DFU_OpenFlash()
 {

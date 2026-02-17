@@ -11,6 +11,12 @@
 
 // TODO - refactor to remove "DFU_mode_active" param.
 
+int DFUModeIsActive(void);
+
+void DFUSetModeActive(void);
+
+void DFUSetModeInactive(void);
+
 /* Handle USB reset events
  * 
  * CONTRACT: with lib_xua
@@ -31,7 +37,7 @@ void DFUDelay(unsigned d);
  * CONTRACT: with lib_xua
  * Called from endpoint 0 handler when a vendor request is received.
  */
-int dfu_usb_vendor_requests(XUD_ep ep0_out, XUD_ep ep0_in, REFERENCE_PARAM(USB_SetupPacket_t, sp), CLIENT_INTERFACE(i_dfu, dfuInterface), int DFU_mode_active);
+int dfu_usb_vendor_requests(XUD_ep ep0_out, XUD_ep ep0_in, REFERENCE_PARAM(USB_SetupPacket_t, sp), CLIENT_INTERFACE(i_dfu, dfuInterface));
 
 /* Handle standard DFU requests
  *
@@ -40,7 +46,7 @@ int dfu_usb_vendor_requests(XUD_ep ep0_out, XUD_ep ep0_in, REFERENCE_PARAM(USB_S
  * CONTRACT: with lib_xua
  * Called from endpoint 0 handler when a class request to the DFU interface is received.
  */
-int dfu_usb_class_int_requests(XUD_ep ep0_out, XUD_ep ep0_in, REFERENCE_PARAM(USB_SetupPacket_t, sp), CLIENT_INTERFACE(i_dfu, dfuInterface), NULLABLE_RESOURCE(chanend, c_aud_ctl), int DFU_mode_active);
+int dfu_usb_class_int_requests(XUD_ep ep0_out, XUD_ep ep0_in, REFERENCE_PARAM(USB_SetupPacket_t, sp), CLIENT_INTERFACE(i_dfu, dfuInterface), NULLABLE_RESOURCE(chanend, c_aud_ctl));
 
 // TODO - make parameter user customisable via macro or something, and remove from DFU interface since this is really a user callback and not a DFU interface function
 void DFUNotifyEntryCallback(NULLABLE_RESOURCE(chanend, c_aud_ctl));

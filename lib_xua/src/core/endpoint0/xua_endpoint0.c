@@ -86,9 +86,7 @@
  */
 #define DELAY_BEFORE_REBOOT_FROM_DFU_MS   50
 
-#endif
-
-unsigned int DFU_mode_active = 0;         // 0 - App active, 1 - DFU active
+#endif /* XUA_DFU_EN */
 
 /* Global volume and mute tables */
 int volsOut[NUM_USB_CHAN_OUT + 1];
@@ -493,7 +491,7 @@ void XUA_Endpoint0_init(chanend c_ep0_out, chanend c_ep0_in, NULLABLE_RESOURCE(c
         outct(c_aud_ctl, XUA_AUDCTL_SET_SAMPLE_FREQ);
         outuint(c_aud_ctl, AUDIO_STOP_FOR_DFU);
         /* No Handshake */
-        DFU_mode_active = 1;
+        DFUSetModeActive();
     }
 #endif
 
@@ -776,7 +774,7 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
             case USB_BMREQ_D2H_CLASS_INT:
                 {
 #if XUA_DFU_EN
-                    result = dfu_usb_class_int_requests(ep0_out, ep0_in, &sp, dfuInterface, c_aud_ctl, DFU_mode_active);
+                    result = dfu_usb_class_int_requests(ep0_out, ep0_in, &sp, dfuInterface, c_aud_ctl);
 #endif
 #if XUA_HID_ENABLED
                     if (interfaceNum == INTERFACE_NUMBER_HID)
@@ -791,7 +789,7 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
                      */
                     if(((interfaceNum == 0) || (interfaceNum == 1) || (interfaceNum == 2))
 #if XUA_DFU_EN
-                            && !DFU_mode_active
+                            && !DFUModeIsActive()
 #endif
                         )
                     {
@@ -847,7 +845,7 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
                     sp.wIndex == MS_OS_20_DESCRIPTOR_INDEX)
                 {
                     int num_interfaces;
-                    if(DFU_mode_active) {
+                    if(DFUModeIsActive()) {
                         num_interfaces = DFUcfgDesc.Config.bNumInterfaces;
                     }
                     else
@@ -878,7 +876,7 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
         if(result == XUD_RES_ERR)
         {
             // Handle XMOS_DFU_REVERTFACTORY request in both DFU mode and application mode
-            result = dfu_usb_vendor_requests(ep0_out, ep0_in, &sp, dfuInterface, DFU_mode_active);
+            result = dfu_usb_vendor_requests(ep0_out, ep0_in, &sp, dfuInterface);
         }
 #endif
         if(result == XUD_RES_ERR)
@@ -904,7 +902,7 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
                                 case (USB_DESCTYPE_BOS << 8):
                                 {
                                     int num_interfaces;
-                                    if(DFU_mode_active) {
+                                    if(DFUModeIsActive()) {
                                         num_interfaces = DFUcfgDesc.Config.bNumInterfaces;
                                     }
                                     else {
@@ -938,7 +936,7 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
     if(result == XUD_RES_ERR)
     {
 #if XUA_DFU_EN
-        if (!DFU_mode_active)
+        if (!DFUModeIsActive())
         {
 #endif
 #if (XUA_AUDIO_CLASS_HS == 2) && (XUA_AUDIO_CLASS_FS == 1)
@@ -1122,16 +1120,16 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
 #if XUA_DFU_EN
             if (DFUReportResetState())
             {
-                if (!DFU_mode_active)
+                if (!DFUModeIsActive())
                 {
-                    DFU_mode_active = 1;
+                    DFUSetModeActive();
                 }
             }
             else
             {
-                if (DFU_mode_active)
+                if (DFUModeIsActive())
                 {
-                    DFU_mode_active = 0;
+                    DFUSetModeInactive();
 
                     /* Send reboot command */
                     DFUDelay(DELAY_BEFORE_REBOOT_FROM_DFU_MS * XS1_TIMER_KHZ);

@@ -28,7 +28,7 @@
 #define _BOOT_DFU_MODE_FLAG (0x11042011)
 
 /* Store Flag to fixed address */
-void SetDFUFlag(unsigned x)
+static void SetDFUFlag(unsigned x)
 {
     asm volatile("stw %0, %1[0]" :: "r"(x), "r"(FLAG_ADDRESS));
 }
@@ -60,8 +60,31 @@ static unsigned GetDFUFlag()
  */
 #define DELAY_BEFORE_REBOOT_FROM_DFU_MS   50
 
-// static int DFU_mode_active = 0;
+static int DFU_mode_active = 0;
 static int g_DFU_state = STATE_APP_IDLE;
+
+int DFUModeIsActive(void)
+{
+    return DFU_mode_active;
+}
+
+void DFUSetModeActive()
+{
+    DFU_mode_active = 1;
+}
+
+void DFUSetModeInactive()
+{
+    DFU_mode_active = 0;
+}
+
+void DFUDelay(unsigned d)
+{
+    timer tmr;
+    unsigned s;
+    tmr :> s;
+    tmr when timerafter(s + d) :> void;
+}
 
 // Tell the DFU state machine that a USB reset has occurred
 int DFUReportResetState()
@@ -178,10 +201,10 @@ static int DFUDeviceRequests(XUD_ep ep0_out, XUD_ep &?ep0_in, USB_SetupPacket_t 
   	return returnVal;
 }
 
-int dfu_usb_vendor_requests(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, client interface i_dfu dfuInterface, int DFU_mode_active) {
+int dfu_usb_vendor_requests(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, client interface i_dfu dfuInterface) {
     int result = XUD_RES_ERR;
     // From Theycon DFU driver v2.66.0 onwards, the XMOS_DFU_REVERTFACTORY request comes as a H2D vendor request and not as a class request addressed to the DFU interface
-    unsigned bmRequestType = (sp.bmRequestType.Direction<<7) | (sp.bmRequestType.Type<<5) | (sp.bmRequestType.Recipient);
+    unsigned bmRequestType = (sp.bmRequestType.Direction << 7) | (sp.bmRequestType.Type << 5) | (sp.bmRequestType.Recipient);
     if((bmRequestType == USB_BMREQ_H2D_VENDOR_INT) && (sp.bRequest == XMOS_DFU_REVERTFACTORY))
     {
         unsigned interface_num = sp.wIndex & 0xff;
@@ -201,7 +224,7 @@ int dfu_usb_vendor_requests(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp
     return result;
 }
 
-int dfu_usb_class_int_requests(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, client interface i_dfu dfuInterface, NULLABLE_RESOURCE(chanend, c_aud_ctl), int DFU_mode_active) {
+int dfu_usb_class_int_requests(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, client interface i_dfu dfuInterface, NULLABLE_RESOURCE(chanend, c_aud_ctl)) {
     int result = XUD_RES_ERR;
 
     unsigned interfaceNum = sp.wIndex & 0xff;
