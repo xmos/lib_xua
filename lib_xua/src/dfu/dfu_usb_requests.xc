@@ -102,7 +102,6 @@ int DFUReportResetState()
 
     if (flag == _BOOT_DFU_MODE_FLAG)
     {
-        unsigned int cmd_data[_DFU_TRANSFER_SIZE_WORDS];
         inDFU = 1;
         g_DFU_state = STATE_DFU_IDLE;
         return inDFU;

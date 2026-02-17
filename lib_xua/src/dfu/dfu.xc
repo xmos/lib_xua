@@ -7,7 +7,7 @@
 
 #if defined(XUA_USB_EN) && (XUA_USB_EN == 1)
 #include "dfu_types.h"
-#include "flash_interface.h"
+#include "xua_flash_interface.h"
 #include "dfu_interface.h"
 
 static int DFU_status = DFU_OK;
