@@ -21,10 +21,6 @@
  */
 int DFUReportResetState();
 
-/* DFU API entry point for requests received over USB */
-int DFUDeviceRequests(XUD_ep c_ep0_out, NULLABLE_REFERENCE_PARAM(XUD_ep, ep0_in), REFERENCE_PARAM(USB_SetupPacket_t, sp),
-        unsigned int altInterface, CLIENT_INTERFACE(i_dfu, dfuInterface), REFERENCE_PARAM(int, reset));
-
 /* Helper function for C */
 void DFUDelay(unsigned d);
 

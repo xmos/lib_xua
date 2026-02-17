@@ -12,8 +12,6 @@
 
 static int DFU_status = DFU_OK;
 static timer DFUTimer;
-// static unsigned int DFUTimerStart = 0;
-// static unsigned int DFUResetTimeout = 100000000; // 1 second default
 static int DFU_flash_connected = 0;
 
 static unsigned int subPagesLeft = 0;

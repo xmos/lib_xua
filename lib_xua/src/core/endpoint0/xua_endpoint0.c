@@ -1134,7 +1134,7 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
                     DFU_mode_active = 0;
 
                     /* Send reboot command */
-                    DFUDelay(DELAY_BEFORE_REBOOT_FROM_DFU_MS * 100000);
+                    DFUDelay(DELAY_BEFORE_REBOOT_FROM_DFU_MS * XS1_TIMER_KHZ);
                     device_reboot();
                 }
             }

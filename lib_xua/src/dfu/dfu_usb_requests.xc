@@ -18,9 +18,11 @@
 #if defined(__XS2A__)
 /* Note range 0x7FFC8 - 0x7FFFF guaranteed to be untouched by tools */
 #define FLAG_ADDRESS 0x7ffcc
-#else
+#elif defined(__XS3A__)
 /* Note range 0xFFFC8 - 0xFFFFF guaranteed to be untouched by tools */
 #define FLAG_ADDRESS 0xfffcc
+#else
+#error DFU code requires __XS2A__ or __XS3A__ to be defined
 #endif
 
 #define _BOOT_DFU_MODE_FLAG (0x11042011)
@@ -127,7 +129,7 @@ int DFUReportResetState()
     return inDFU;
 }
 
-int DFUDeviceRequests(XUD_ep ep0_out, XUD_ep &?ep0_in, USB_SetupPacket_t &sp, unsigned int altInterface, client interface i_dfu i,int &reset)
+static int DFUDeviceRequests(XUD_ep ep0_out, XUD_ep &?ep0_in, USB_SetupPacket_t &sp, unsigned int altInterface, client interface i_dfu i,int &reset)
 {
     unsigned int return_data_len = 0;
     unsigned int data_buffer_len = 0;
