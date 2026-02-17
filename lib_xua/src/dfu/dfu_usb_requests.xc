@@ -6,6 +6,7 @@
 #include "xua.h"
 #if defined(XUA_USB_EN) && XUA_USB_EN
 
+#include <timer.h>
 #include <xs1.h>
 #include <xassert.h>
 #include <xccompat.h>
@@ -14,12 +15,33 @@
 #include "xud_device.h"
 #include "dfu_types.h"
 
-// TODO Move to lib_xud
-#define USB_BMREQ_H2D_VENDOR_INT          ((USB_BM_REQTYPE_DIRECTION_H2D << 7) | \
-                                            (USB_BM_REQTYPE_TYPE_VENDOR << 5) | \
-                                            (USB_BM_REQTYPE_RECIP_INTER))
+#if defined(__XS2A__)
+/* Note range 0x7FFC8 - 0x7FFFF guaranteed to be untouched by tools */
+#define FLAG_ADDRESS 0x7ffcc
+#else
+/* Note range 0xFFFC8 - 0xFFFFF guaranteed to be untouched by tools */
+#define FLAG_ADDRESS 0xfffcc
+#endif
 
-extern void device_reboot(void);
+#define _BOOT_DFU_MODE_FLAG (0x11042011)
+
+/* Store Flag to fixed address */
+void SetDFUFlag(unsigned x)
+{
+    asm volatile("stw %0, %1[0]" :: "r"(x), "r"(FLAG_ADDRESS));
+}
+
+/* Load flag from fixed address */
+static unsigned GetDFUFlag()
+{
+    unsigned x;
+    asm volatile("ldw %0, %1[0]" : "=r"(x) : "r"(FLAG_ADDRESS));
+    return x;
+}
+
+#define USB_BMREQ_H2D_VENDOR_INT    ((USB_BM_REQTYPE_DIRECTION_H2D << 7) | \
+                                    (USB_BM_REQTYPE_TYPE_VENDOR << 5) | \
+                                    (USB_BM_REQTYPE_RECIP_INTER))
 
 /* Windows core USB/device driver stack may not like device coming off bus for
  * a very short period of less than 500ms. Enforce at least 500ms by stalling.
@@ -37,6 +59,122 @@ extern void device_reboot(void);
 #define DELAY_BEFORE_REBOOT_FROM_DFU_MS   50
 
 // static int DFU_mode_active = 0;
+static int g_DFU_state = STATE_APP_IDLE;
+
+// Tell the DFU state machine that a USB reset has occurred
+int DFUReportResetState()
+{
+    unsigned int inDFU = 0;
+    // unsigned int currentTime = 0;
+
+    unsigned flag;
+    flag = GetDFUFlag();
+
+//#define START_IN_DFU 1
+#ifdef START_IN_DFU
+    flag = _BOOT_DFU_MODE_FLAG;
+#endif
+
+    if (flag == _BOOT_DFU_MODE_FLAG)
+    {
+        unsigned int cmd_data[_DFU_TRANSFER_SIZE_WORDS];
+        inDFU = 1;
+        g_DFU_state = STATE_DFU_IDLE;
+        return inDFU;
+    }
+
+    switch(g_DFU_state)
+    {
+        case STATE_APP_DETACH:
+        case STATE_DFU_IDLE:
+            g_DFU_state = STATE_DFU_IDLE;
+
+            // DFUTimer :> currentTime;
+            // if (currentTime - DFUTimerStart > DFUResetTimeout)
+            // {
+            //     g_DFU_state = STATE_APP_IDLE;
+            //     inDFU = 0;
+            // }
+            // else
+            {
+                inDFU = 1;
+            }
+            break;
+        case STATE_APP_IDLE:
+        case STATE_DFU_DOWNLOAD_SYNC:
+        case STATE_DFU_DOWNLOAD_BUSY:
+        case STATE_DFU_DOWNLOAD_IDLE:
+        case STATE_DFU_MANIFEST_SYNC:
+        case STATE_DFU_MANIFEST:
+        case STATE_DFU_MANIFEST_WAIT_RESET:
+        case STATE_DFU_UPLOAD_IDLE:
+        case STATE_DFU_ERROR:
+            inDFU = 0;
+            g_DFU_state = STATE_APP_IDLE;
+            break;
+        default:
+            g_DFU_state = STATE_DFU_ERROR;
+            inDFU = 1;
+        break;
+    }
+
+    if (!inDFU)
+    {
+        // TODO - ARGH! - this is possibly called from tile1...
+        // DFU_CloseFlash();
+    }
+
+    return inDFU;
+}
+
+int DFUDeviceRequests(XUD_ep ep0_out, XUD_ep &?ep0_in, USB_SetupPacket_t &sp, unsigned int altInterface, client interface i_dfu i,int &reset)
+{
+    unsigned int return_data_len = 0;
+    unsigned int data_buffer_len = 0;
+    unsigned int data_buffer[17];
+    unsigned int reset_device_after_ack = 0;
+    int returnVal = 0;
+    unsigned int dfuState = g_DFU_state;
+    int dfuResetOverride;
+
+    if(sp.bmRequestType.Direction == USB_BM_REQTYPE_DIRECTION_H2D)
+    {
+        // Host to device
+        if (sp.wLength)
+            XUD_GetBuffer(ep0_out, (data_buffer, unsigned char[]), data_buffer_len);
+    }
+    /* Interface used here such that the handler can be on another tile */
+    {reset_device_after_ack, return_data_len, dfuResetOverride, returnVal, dfuState} = i.HandleDfuRequest(sp.bRequest, sp.wValue, sp.wIndex, data_buffer, data_buffer_len, g_DFU_state);
+
+    if (dfuResetOverride) {
+        SetDFUFlag(_BOOT_DFU_MODE_FLAG);
+    }
+
+    /* Update our version of dfuState */
+    g_DFU_state = dfuState;
+
+    /* Check if the request was handled */
+    if(returnVal == 0)
+    {
+        if (sp.bmRequestType.Direction == USB_BM_REQTYPE_DIRECTION_D2H && sp.wLength != 0)
+        {
+            returnVal = XUD_DoGetRequest(ep0_out, ep0_in, (data_buffer, unsigned char[]), return_data_len, return_data_len);
+        }
+        else
+        {
+            returnVal = XUD_DoSetRequestStatus(ep0_in);
+        }
+
+  	    // If device reset requested, handle after command acknowledgement
+  	    if (reset_device_after_ack)
+  	    {
+  	        reset = 1;
+        }
+    } else {
+        returnVal = XUD_RES_ERR;
+    }
+  	return returnVal;
+}
 
 int dfu_usb_vendor_requests(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, client interface i_dfu dfuInterface, int DFU_mode_active) {
     int result = XUD_RES_ERR;
@@ -53,7 +191,7 @@ int dfu_usb_vendor_requests(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp
             result = DFUDeviceRequests(ep0_out, ep0_in, sp, 0 /* alternate is unused in DFUDeviceRequests()??*/, dfuInterface, reset);
             if(reset)
             {
-                DFUDelay(DELAY_BEFORE_REBOOT_TO_DFU_MS * 100000);
+                DFUDelay(DELAY_BEFORE_REBOOT_TO_DFU_MS * XS1_TIMER_KHZ);
                 device_reboot();
             }
         }
@@ -87,7 +225,7 @@ int dfu_usb_class_int_requests(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t 
 
         if(reset)
         {
-            DFUDelay(DELAY_BEFORE_REBOOT_TO_DFU_MS * 100000);
+            DFUDelay(DELAY_BEFORE_REBOOT_TO_DFU_MS * XS1_TIMER_KHZ);
             device_reboot();
         }
     }

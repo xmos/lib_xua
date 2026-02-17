@@ -11,35 +11,10 @@
 #include "flash_interface.h"
 #include "dfu_interface.h"
 
-#if defined(__XS2A__)
-/* Note range 0x7FFC8 - 0x7FFFF guaranteed to be untouched by tools */
-#define FLAG_ADDRESS 0x7ffcc
-#else
-/* Note range 0xFFFC8 - 0xFFFFF guaranteed to be untouched by tools */
-#define FLAG_ADDRESS 0xfffcc
-#endif
-
-#define _BOOT_DFU_MODE_FLAG (0x11042011)
-
-/* Store Flag to fixed address */
-void SetDFUFlag(unsigned x)
-{
-    asm volatile("stw %0, %1[0]" :: "r"(x), "r"(FLAG_ADDRESS));
-}
-
-/* Load flag from fixed address */
-static unsigned GetDFUFlag()
-{
-    unsigned x;
-    asm volatile("ldw %0, %1[0]" : "=r"(x) : "r"(FLAG_ADDRESS));
-    return x;
-}
-
-static int g_DFU_state = STATE_APP_IDLE;
 static int DFU_status = DFU_OK;
 static timer DFUTimer;
-static unsigned int DFUTimerStart = 0;
-static unsigned int DFUResetTimeout = 100000000; // 1 second default
+// static unsigned int DFUTimerStart = 0;
+// static unsigned int DFUResetTimeout = 100000000; // 1 second default
 static int DFU_flash_connected = 0;
 
 static unsigned int subPagesLeft = 0;
@@ -63,7 +38,7 @@ static int DFU_OpenFlash()
 {
 	if (!DFU_flash_connected)
 	{
-        unsigned int cmd_data[_DFU_TRANSFER_SIZE_WORDS];
+        // unsigned int cmd_data[_DFU_TRANSFER_SIZE_WORDS];
         DFUCustomFlashEnable();
         int error = flash_cmd_init();
         if(error)
@@ -81,7 +56,7 @@ static int DFU_CloseFlash()
 {
     if (DFU_flash_connected)
     {
-        unsigned int cmd_data[_DFU_TRANSFER_SIZE_WORDS];
+        // unsigned int cmd_data[_DFU_TRANSFER_SIZE_WORDS];
         DFUCustomFlashDisable();
         flash_cmd_deinit();
         DFU_flash_connected = 0;
@@ -350,71 +325,6 @@ static int DFU_Abort(unsigned &DFU_state)
     return 0;
 }
 
-// Tell the DFU state machine that a USB reset has occurred
-int DFUReportResetState()
-{
-    unsigned int inDFU = 0;
-    unsigned int currentTime = 0;
-
-    unsigned flag;
-    flag = GetDFUFlag();
-
-//#define START_IN_DFU 1
-#ifdef START_IN_DFU
-    flag = _BOOT_DFU_MODE_FLAG;
-#endif
-
-    if (flag == _BOOT_DFU_MODE_FLAG)
-    {
-        unsigned int cmd_data[_DFU_TRANSFER_SIZE_WORDS];
-        inDFU = 1;
-        g_DFU_state = STATE_DFU_IDLE;
-        return inDFU;
-    }
-
-    switch(g_DFU_state)
-    {
-        case STATE_APP_DETACH:
-        case STATE_DFU_IDLE:
-            g_DFU_state = STATE_DFU_IDLE;
-
-            DFUTimer :> currentTime;
-            if (currentTime - DFUTimerStart > DFUResetTimeout)
-            {
-                g_DFU_state = STATE_APP_IDLE;
-                inDFU = 0;
-            }
-            else
-            {
-                inDFU = 1;
-            }
-            break;
-        case STATE_APP_IDLE:
-        case STATE_DFU_DOWNLOAD_SYNC:
-        case STATE_DFU_DOWNLOAD_BUSY:
-        case STATE_DFU_DOWNLOAD_IDLE:
-        case STATE_DFU_MANIFEST_SYNC:
-        case STATE_DFU_MANIFEST:
-        case STATE_DFU_MANIFEST_WAIT_RESET:
-        case STATE_DFU_UPLOAD_IDLE:
-        case STATE_DFU_ERROR:
-            inDFU = 0;
-            g_DFU_state = STATE_APP_IDLE;
-            break;
-        default:
-            g_DFU_state = STATE_DFU_ERROR;
-            inDFU = 1;
-        break;
-    }
-
-    if (!inDFU)
-    {
-        DFU_CloseFlash();
-    }
-
-    return inDFU;
-}
-
 static int XMOS_DFU_RevertFactory()
 {
     unsigned s = 0;
@@ -457,7 +367,7 @@ void DFUHandler(server interface i_dfu i)
                     case DFU_DETACH:
                         if(dfuState == STATE_APP_IDLE)
                         {
-                            dfu_reset_override = _BOOT_DFU_MODE_FLAG; // Reboot in DFU mode
+                            dfu_reset_override = 1; // Reboot in DFU mode
                         }
                         else
                         {
@@ -517,7 +427,7 @@ void DFUHandler(server interface i_dfu i)
 
                     case XMOS_DFU_RESETINTODFU:
                         reset_device_after_ack = 1;
-                        dfu_reset_override = _BOOT_DFU_MODE_FLAG;
+                        dfu_reset_override = 1;
                         return_data_len = 0;
                         break;
 
@@ -532,7 +442,7 @@ void DFUHandler(server interface i_dfu i)
                         break;
 
                     default:
-                        returnVal = XUD_RES_ERR; // Unrecognised request
+                        returnVal = 1; // Unrecognised request
                         break;
                 }
 				newDfuState = tmpDfuState;
@@ -542,51 +452,6 @@ void DFUHandler(server interface i_dfu i)
                 return;
         }
     }
-}
-
-int DFUDeviceRequests(XUD_ep ep0_out, XUD_ep &?ep0_in, USB_SetupPacket_t &sp, unsigned int altInterface, client interface i_dfu i,int &reset)
-{
-    unsigned int return_data_len = 0;
-    unsigned int data_buffer_len = 0;
-    unsigned int data_buffer[17];
-    unsigned int reset_device_after_ack = 0;
-    int returnVal = 0;
-    unsigned int dfuState = g_DFU_state;
-    int dfuResetOverride;
-
-    if(sp.bmRequestType.Direction == USB_BM_REQTYPE_DIRECTION_H2D)
-    {
-        // Host to device
-        if (sp.wLength)
-            XUD_GetBuffer(ep0_out, (data_buffer, unsigned char[]), data_buffer_len);
-    }
-    /* Interface used here such that the handler can be on another tile */
-    {reset_device_after_ack, return_data_len, dfuResetOverride, returnVal, dfuState} = i.HandleDfuRequest(sp.bRequest, sp.wValue, sp.wIndex, data_buffer, data_buffer_len, g_DFU_state);
-
-    SetDFUFlag(dfuResetOverride);
-
-    /* Update our version of dfuState */
-    g_DFU_state = dfuState;
-
-    /* Check if the request was handled */
-    if(returnVal == 0)
-    {
-        if (sp.bmRequestType.Direction == USB_BM_REQTYPE_DIRECTION_D2H && sp.wLength != 0)
-        {
-            returnVal = XUD_DoGetRequest(ep0_out, ep0_in, (data_buffer, unsigned char[]), return_data_len, return_data_len);
-        }
-        else
-        {
-            returnVal = XUD_DoSetRequestStatus(ep0_in);
-        }
-
-  	    // If device reset requested, handle after command acknowledgement
-  	    if (reset_device_after_ack)
-  	    {
-  	        reset = 1;
-        }
-    }
-  	return returnVal;
 }
 #endif /* XUA_USB_EN */
 
