@@ -70,7 +70,6 @@
 #include "xua_dfu_descs.h"
 #if XUA_DFU_EN
 #include "dfu_usb_requests.h"
-extern void device_reboot(void);
 
 /* Windows core USB/device driver stack may not like device coming off bus for
  * a very short period of less than 500ms. Enforce at least 500ms by stalling.
