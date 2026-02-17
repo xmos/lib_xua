@@ -67,9 +67,9 @@
 #warning DFU_PID not defined, Using PID_AUDIO_2. This is probably fine!
 #endif
 
-#if XUA_DFU_EN
 #include "dfu_usb_descriptors.h"
 #include "dfu_usb_requests.h"
+#if XUA_DFU_EN
 
 /* Windows core USB/device driver stack may not like device coming off bus for
  * a very short period of less than 500ms. Enforce at least 500ms by stalling.
