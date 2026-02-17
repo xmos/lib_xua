@@ -443,7 +443,7 @@ void DFUHandler(server interface i_dfu i)
     {
         select
         {
-            case i.HandleDfuRequest(USB_SetupPacket_t &sp, unsigned data_buffer[], unsigned data_buffer_length, unsigned dfuState)
+            case i.HandleDfuRequest(uint16_t request, uint16_t value, uint16_t index, unsigned data_buffer[], unsigned data_buffer_length, unsigned dfuState)
                 -> {unsigned reset_device_after_ack, int return_data_len, int dfu_reset_override, int returnVal, unsigned newDfuState}:
 
                 reset_device_after_ack = 0;
@@ -452,7 +452,7 @@ void DFUHandler(server interface i_dfu i)
                 unsigned tmpDfuState = dfuState;
                 returnVal = 0;
                 // Map Standard DFU commands onto device level firmware upgrade mechanism
-                switch (sp.bRequest)
+                switch (request)
                 {
                     case DFU_DETACH:
                         if(dfuState == STATE_APP_IDLE)
@@ -473,19 +473,19 @@ void DFUHandler(server interface i_dfu i)
                         unsigned data[_DFU_TRANSFER_SIZE_WORDS];
                         for(int i = 0; i < _DFU_TRANSFER_SIZE_WORDS; i++)
                             data[i] = data_buffer[i];
-                        returnVal = DFU_Dnload(sp.wLength, sp.wValue, data, return_data_len, tmpDfuState);
+                        returnVal = DFU_Dnload(data_buffer_length, value, data, return_data_len, tmpDfuState);
                         break;
 
                     case DFU_UPLOAD:
                         unsigned data_out[_DFU_TRANSFER_SIZE_WORDS];
-                        return_data_len = DFU_Upload(sp.wLength, sp.wValue, data_out, tmpDfuState);
+                        return_data_len = DFU_Upload(data_buffer_length, value, data_out, tmpDfuState);
                         for(int i = 0; i < _DFU_TRANSFER_SIZE_WORDS; i++)
                             data_buffer[i] = data_out[i];
                         break;
 
                     case DFU_GETSTATUS:
                         unsigned data_out[_DFU_TRANSFER_SIZE_WORDS];
-                        return_data_len = DFU_GetStatus(sp.wLength, data_out, tmpDfuState);
+                        return_data_len = DFU_GetStatus(data_buffer_length, data_out, tmpDfuState);
                         for(int i = 0; i < _DFU_TRANSFER_SIZE_WORDS; i++)
                             data_buffer[i] = data_out[i];
                         break;
@@ -496,7 +496,7 @@ void DFUHandler(server interface i_dfu i)
 
                     case DFU_GETSTATE:
                         unsigned data_out[_DFU_TRANSFER_SIZE_WORDS];
-                        return_data_len = DFU_GetState(sp.wLength, data_out, tmpDfuState);
+                        return_data_len = DFU_GetState(data_buffer_length, data_out, tmpDfuState);
                         for(int i = 0; i < _DFU_TRANSFER_SIZE_WORDS; i++)
                             data_buffer[i] = data_out[i];
                         break;
@@ -528,7 +528,7 @@ void DFUHandler(server interface i_dfu i)
                         break;
 
                     case XMOS_DFU_SELECTIMAGE:
-                        return_data_len = XMOS_DFU_SelectImage(sp.wValue);
+                        return_data_len = XMOS_DFU_SelectImage(value);
                         break;
 
                     default:
@@ -561,7 +561,7 @@ int DFUDeviceRequests(XUD_ep ep0_out, XUD_ep &?ep0_in, USB_SetupPacket_t &sp, un
             XUD_GetBuffer(ep0_out, (data_buffer, unsigned char[]), data_buffer_len);
     }
     /* Interface used here such that the handler can be on another tile */
-    {reset_device_after_ack, return_data_len, dfuResetOverride, returnVal, dfuState} = i.HandleDfuRequest(sp, data_buffer, data_buffer_len, g_DFU_state);
+    {reset_device_after_ack, return_data_len, dfuResetOverride, returnVal, dfuState} = i.HandleDfuRequest(sp.bRequest, sp.wValue, sp.wIndex, data_buffer, data_buffer_len, g_DFU_state);
 
     SetDFUFlag(dfuResetOverride);
 

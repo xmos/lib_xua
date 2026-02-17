@@ -6,11 +6,12 @@
 
 #if __XC__
 
-#include "xud_device.h"
+#include <stdint.h>
 
 interface i_dfu
 {
-    {unsigned, int, int, int, unsigned} HandleDfuRequest(USB_SetupPacket_t &sp, unsigned data_buffer[], unsigned data_buffer_length, unsigned dfuState);
+    // TODO - fix the parameter lists
+    {unsigned, int, int, int, unsigned} HandleDfuRequest(uint16_t request, uint16_t value, uint16_t index, unsigned data_buffer[], unsigned data_buffer_length, unsigned dfuState);
     void finish();
 };
 
