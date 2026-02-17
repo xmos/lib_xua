@@ -55,13 +55,11 @@
 #include "debug_print.h"
 #include "xua_usb_params_funcs.h"
 
-#ifndef __XC__
 /* Support for xCORE  channels in C */
 #define null 0
 #define outuint(c, x)   asm ("out res[%0], %1" :: "r" (c), "r" (x))
 #define outct(c, x)     asm ("outct res[%0], %1" :: "r" (c), "r" (x))
 #define chkct(c, x)     asm ("chkct res[%0], %1" :: "r" (c), "r" (x))
-#endif
 
 
 /* If DFU_PID not defined, standard PID used.. this is probably what we want.. */
@@ -488,7 +486,7 @@ void XUA_Endpoint0_init(chanend c_ep0_out, chanend c_ep0_in, NULLABLE_RESOURCE(c
         DFUdevDesc.iSerialNumber = offsetof(StringDescTable_t, serialStr)/sizeof(char *); /* Same as the run-time mode device descriptor */
     }
     /* Check if device has started in DFU mode */
-    if (DFUReportResetState(null))
+    if (DFUReportResetState())
     {
         assert(((unsigned)c_aud_ctl != 0) && msg("DFU not supported when c_aud_ctl is null"));
 
@@ -1068,11 +1066,7 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
                 (unsigned char*)&cfgDesc_Audio2, sizeof(cfgDesc_Audio2),
                 null, 0,
                 null, 0,
-#ifdef __XC__
-                g_strTable, sizeof(g_strTable), sp, null, g_curUsbSpeed);
-#else
                 (char**)&g_strTable, sizeof(g_strTable)/sizeof(char *), &sp, g_curUsbSpeed);
-#endif
 #elif (XUA_AUDIO_CLASS_FS == 1)
             /* Return Audio 1.0 Descriptors in FS, should never be in HS! */
              result = USB_StandardRequests(ep0_out, ep0_in,
@@ -1127,7 +1121,7 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
             }
 
 #if XUA_DFU_EN
-            if (DFUReportResetState(null))
+            if (DFUReportResetState())
             {
                 if (!DFU_mode_active)
                 {
