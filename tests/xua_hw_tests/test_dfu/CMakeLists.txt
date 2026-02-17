@@ -9,7 +9,6 @@ include(${CMAKE_CURRENT_LIST_DIR}/../../../examples/deps.cmake)
 set(APP_INCLUDES src)
 
 set(COMMON_FLAGS -O3
-                 -lquadflash
                  -DXUA_QUAD_SPI_FLASH=1
                  -DBOARD_SUPPORT_BOARD=XK_AUDIO_316_MC_AB)
 
