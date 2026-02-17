@@ -201,14 +201,14 @@ static int DFUDeviceRequests(XUD_ep ep0_out, XUD_ep &?ep0_in, USB_SetupPacket_t 
   	return returnVal;
 }
 
-int dfu_usb_vendor_requests(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, client interface i_dfu dfuInterface) {
+int dfu_usb_vendor_requests(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, client interface i_dfu dfuInterface, unsigned int xua_dfu_interface_num) {
     int result = XUD_RES_ERR;
     // From Theycon DFU driver v2.66.0 onwards, the XMOS_DFU_REVERTFACTORY request comes as a H2D vendor request and not as a class request addressed to the DFU interface
     unsigned bmRequestType = (sp.bmRequestType.Direction << 7) | (sp.bmRequestType.Type << 5) | (sp.bmRequestType.Recipient);
     if((bmRequestType == USB_BMREQ_H2D_VENDOR_INT) && (sp.bRequest == XMOS_DFU_REVERTFACTORY))
     {
         unsigned interface_num = sp.wIndex & 0xff;
-        unsigned dfu_if = (DFU_mode_active) ? 0 : INTERFACE_NUMBER_DFU;
+        unsigned dfu_if = (DFU_mode_active) ? 0 : xua_dfu_interface_num;
 
         if(interface_num == dfu_if)
         {
@@ -224,12 +224,12 @@ int dfu_usb_vendor_requests(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp
     return result;
 }
 
-int dfu_usb_class_int_requests(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, client interface i_dfu dfuInterface, NULLABLE_RESOURCE(chanend, c_aud_ctl)) {
+int dfu_usb_class_int_requests(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, client interface i_dfu dfuInterface, NULLABLE_RESOURCE(chanend, c_aud_ctl), unsigned int xua_dfu_interface_num) {
     int result = XUD_RES_ERR;
 
     unsigned interfaceNum = sp.wIndex & 0xff;
     /* DFU interface number changes based on which mode we are currently running in */
-    unsigned dfu_if = (DFU_mode_active) ? 0 : INTERFACE_NUMBER_DFU;
+    unsigned dfu_if = (DFU_mode_active) ? 0 : xua_dfu_interface_num;
 
     if (interfaceNum == dfu_if)
     {

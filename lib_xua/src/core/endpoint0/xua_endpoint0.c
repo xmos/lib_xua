@@ -774,7 +774,7 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
             case USB_BMREQ_D2H_CLASS_INT:
                 {
 #if XUA_DFU_EN
-                    result = dfu_usb_class_int_requests(ep0_out, ep0_in, &sp, dfuInterface, c_aud_ctl);
+                    result = dfu_usb_class_int_requests(ep0_out, ep0_in, &sp, dfuInterface, c_aud_ctl, INTERFACE_NUMBER_DFU);
 #endif
 #if XUA_HID_ENABLED
                     if (interfaceNum == INTERFACE_NUMBER_HID)
@@ -876,7 +876,7 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
         if(result == XUD_RES_ERR)
         {
             // Handle XMOS_DFU_REVERTFACTORY request in both DFU mode and application mode
-            result = dfu_usb_vendor_requests(ep0_out, ep0_in, &sp, dfuInterface);
+            result = dfu_usb_vendor_requests(ep0_out, ep0_in, &sp, dfuInterface, INTERFACE_NUMBER_DFU);
         }
 #endif
         if(result == XUD_RES_ERR)
