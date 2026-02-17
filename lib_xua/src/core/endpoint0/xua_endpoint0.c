@@ -773,6 +773,7 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
             case USB_BMREQ_H2D_CLASS_INT:
             case USB_BMREQ_D2H_CLASS_INT:
                 {
+                    unsigned interfaceNum = sp.wIndex & 0xff;
 #if XUA_DFU_EN
                     result = dfu_usb_class_int_requests(ep0_out, ep0_in, &sp, dfuInterface, c_aud_ctl, INTERFACE_NUMBER_DFU);
 #endif
@@ -782,7 +783,6 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
                         result = HidInterfaceClassRequests(ep0_out, ep0_in, &sp);
                     }
 #endif
-                    unsigned interfaceNum = sp.wIndex & 0xff;
                     /* Check for:   - Audio CONTROL interface request - always 0, note we check for DFU first
                      *              - Audio STREAMING interface request  (In or Out)
                      *              - Audio endpoint request (Audio 1.0 Sampling freq requests are sent to the endpoint)
