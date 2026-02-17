@@ -1,6 +1,11 @@
 lib_xua change log
 ==================
 
+UNRELEASED
+----------
+
+  * FIXED: Control and DFU descriptors ordering in UAC1.0 Config descriptor
+
 5.3.0
 -----
 
