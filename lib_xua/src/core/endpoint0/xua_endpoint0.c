@@ -69,7 +69,7 @@
 #warning DFU_PID not defined, Using PID_AUDIO_2. This is probably fine!
 #endif
 
-#include "xua_dfu.h"
+#include "xua_dfu_descs.h"
 #include "xua_dfu_api.h"
 #if XUA_DFU_EN
 #include "dfu_usb_requests.h"
