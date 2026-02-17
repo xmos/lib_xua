@@ -11,6 +11,23 @@
 
 // TODO - refactor to remove "DFU_mode_active" param.
 
+/* Handle USB reset events
+ * 
+ * CONTRACT: with lib_xua
+ * Called from endpoint 0 init code to determine if the device should start direct into DFU mode.
+ * Called from endpoint 0 handler when a USB reset event is detected.
+ * 
+ * Returns 1 if the device should be in DFU mode, 0 if it should be in application mode.
+ */
+int DFUReportResetState();
+
+/* DFU API entry point for requests received over USB */
+int DFUDeviceRequests(XUD_ep c_ep0_out, NULLABLE_REFERENCE_PARAM(XUD_ep, ep0_in), REFERENCE_PARAM(USB_SetupPacket_t, sp),
+        unsigned int altInterface, CLIENT_INTERFACE(i_dfu, dfuInterface), REFERENCE_PARAM(int, reset));
+
+/* Helper function for C */
+void DFUDelay(unsigned d);
+
 /* Handle XMOS specific DFU requests
  * 
  * Returns XUD_RES_OKAY if request was handled, XUD_RES_ERR if request was not recognised/handled.

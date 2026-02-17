@@ -70,7 +70,6 @@
 #endif
 
 #include "xua_dfu_descs.h"
-#include "xua_dfu_api.h"
 #if XUA_DFU_EN
 #include "dfu_usb_requests.h"
 extern void device_reboot(void);

@@ -11,16 +11,14 @@
 #include <xccompat.h>
 
 #include "descriptor_defs.h"
-// #include "dfu_types.h"
 #include "xud_device.h"
-#include "xua_dfu_api.h"
+#include "dfu_types.h"
 
 // TODO Move to lib_xud
 #define USB_BMREQ_H2D_VENDOR_INT          ((USB_BM_REQTYPE_DIRECTION_H2D << 7) | \
                                             (USB_BM_REQTYPE_TYPE_VENDOR << 5) | \
                                             (USB_BM_REQTYPE_RECIP_INTER))
 
-// TODO - fix - circular 
 extern void device_reboot(void);
 
 /* Windows core USB/device driver stack may not like device coming off bus for
