@@ -52,7 +52,7 @@ int dfu_usb_vendor_requests(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp
         if(interface_num == dfu_if)
         {
             int reset = 0;
-            result = DFUDeviceRequests(ep0_out, ep0_in, sp, null, 0 /*this is unused in DFUDeviceRequests()??*/, dfuInterface, reset);
+            result = DFUDeviceRequests(ep0_out, ep0_in, sp, 0 /* alternate is unused in DFUDeviceRequests()??*/, dfuInterface, reset);
             if(reset)
             {
                 DFUDelay(DELAY_BEFORE_REBOOT_TO_DFU_MS * 100000);
@@ -85,7 +85,7 @@ int dfu_usb_class_int_requests(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t 
         // TODO - do we need to support alternative interface for DFU?
         // result = DFUDeviceRequests(ep0_out, &ep0_in, &sp, null, g_interfaceAlt[sp.wIndex], dfuInterface, &reset);
         int reset = 0;
-        result = DFUDeviceRequests(ep0_out, ep0_in, sp, null, 0, dfuInterface, reset);
+        result = DFUDeviceRequests(ep0_out, ep0_in, sp, 0, dfuInterface, reset);
 
         if(reset)
         {
