@@ -67,8 +67,8 @@
 #warning DFU_PID not defined, Using PID_AUDIO_2. This is probably fine!
 #endif
 
-#include "xua_dfu_descs.h"
 #if XUA_DFU_EN
+#include "dfu_usb_descriptors.h"
 #include "dfu_usb_requests.h"
 
 /* Windows core USB/device driver stack may not like device coming off bus for

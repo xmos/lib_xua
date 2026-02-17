@@ -19,11 +19,11 @@
 #endif
 
 #ifndef DFU_PRODUCT_STR_INDEX
-#error DFU_PROFUCT_INDEX not defined!!
+#error DFU_PRODUCT_STR_INDEX not defined!!
 #endif
 
 #ifndef DFU_MANUFACTURER_STR_INDEX
-#error DFU_MANUFACTURE_STR_INDEX not defined!!
+#error DFU_MANUFACTURER_STR_INDEX not defined!!
 #endif
 
 #ifndef __XC__

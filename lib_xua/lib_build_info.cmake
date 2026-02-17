@@ -43,7 +43,8 @@ set(LIB_DEPENDENT_MODULES "lib_adat(2.0.1)"
                           "lib_sw_pll(2.4.1)"
                           "lib_xassert(4.3.2)"
                           "lib_mic_array(6.0.0)"
-                          "lib_xud(4.0.1)")
+                          "lib_xud(4.0.1)"
+                          "lib_dfu(develop)")
 
 set(LIB_COMPILER_FLAGS -O3
                        -fasm-linenum
