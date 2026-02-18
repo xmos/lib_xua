@@ -1197,7 +1197,7 @@ void XUA_Endpoint0(chanend c_ep0_out, chanend c_ep0_in, NULLABLE_RESOURCE(chanen
     }
 }
 
-void DFUNotifyEntry(NULLABLE_RESOURCE(chanend, c_aud_ctl))
+void DFUNotifyEntryCallback(NULLABLE_RESOURCE(chanend, c_aud_ctl))
 {
     /* Send STOP_AUDIO_FOR_DFU command. This will either pass through
         * buffering system (i.e. ep_buffer/decouple) if the device has USB audio
