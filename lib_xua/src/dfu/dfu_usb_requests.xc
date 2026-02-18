@@ -172,6 +172,8 @@ static int DFUDeviceRequests(XUD_ep ep0_out, XUD_ep &?ep0_in, USB_SetupPacket_t 
 
     if (dfuResetOverride) {
         SetDFUFlag(_BOOT_DFU_MODE_FLAG);
+    } else {
+        SetDFUFlag(0);
     }
 
     /* Update our version of dfuState */
