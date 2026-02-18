@@ -8,6 +8,7 @@ set(APP_INCLUDES src)
 
 set(APP_COMPILER_FLAGS -O3
                        -report
+                       -lquadflash
                        -g
                        -Wno-unused-function
                        -DXUD_CORE_CLOCK=600
