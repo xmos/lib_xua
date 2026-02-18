@@ -11,7 +11,7 @@
 interface i_dfu
 {
     // TODO - fix the parameter lists
-    {unsigned, int, int, int, unsigned} HandleDfuRequest(uint16_t request, uint16_t value, uint16_t index, unsigned data_buffer[], unsigned data_buffer_length, unsigned dfuState);
+    {unsigned, int, int, int, unsigned} HandleDfuRequest(uint16_t request, uint16_t value, uint16_t index, uint16_t length, unsigned data_buffer[], unsigned data_buffer_length, unsigned dfuState);
     void finish();
 };
 

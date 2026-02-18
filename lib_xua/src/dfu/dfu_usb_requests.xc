@@ -168,7 +168,7 @@ static int DFUDeviceRequests(XUD_ep ep0_out, XUD_ep &?ep0_in, USB_SetupPacket_t 
             XUD_GetBuffer(ep0_out, (data_buffer, unsigned char[]), data_buffer_len);
     }
     /* Interface used here such that the handler can be on another tile */
-    {reset_device_after_ack, return_data_len, dfuResetOverride, returnVal, dfuState} = i.HandleDfuRequest(sp.bRequest, sp.wValue, sp.wIndex, data_buffer, data_buffer_len, g_DFU_state);
+    {reset_device_after_ack, return_data_len, dfuResetOverride, returnVal, dfuState} = i.HandleDfuRequest(sp.bRequest, sp.wValue, sp.wIndex, sp.wLength, data_buffer, data_buffer_len, g_DFU_state);
 
     if (dfuResetOverride) {
         SetDFUFlag(_BOOT_DFU_MODE_FLAG);

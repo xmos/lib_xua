@@ -81,7 +81,7 @@ static int DFU_Dnload(unsigned int request_len, unsigned int block_num, const un
     if ((DFU_state == STATE_DFU_IDLE) && (request_len == 0))
     {
         DFU_state = STATE_DFU_ERROR;
-        return 1;
+        return 0;
     }
     else if (DFU_state == STATE_DFU_IDLE)
     {
@@ -342,7 +342,7 @@ void DFUHandler(server interface i_dfu i)
     {
         select
         {
-            case i.HandleDfuRequest(uint16_t request, uint16_t value, uint16_t index, unsigned data_buffer[], unsigned data_buffer_length, unsigned dfuState)
+            case i.HandleDfuRequest(uint16_t request, uint16_t value, uint16_t index, uint16_t length, unsigned data_buffer[], unsigned data_buffer_length, unsigned dfuState)
                 -> {unsigned reset_device_after_ack, int return_data_len, int dfu_reset_override, int returnVal, unsigned newDfuState}:
 
                 reset_device_after_ack = 0;
@@ -372,19 +372,19 @@ void DFUHandler(server interface i_dfu i)
                         unsigned data[_DFU_TRANSFER_SIZE_WORDS];
                         for(int i = 0; i < _DFU_TRANSFER_SIZE_WORDS; i++)
                             data[i] = data_buffer[i];
-                        returnVal = DFU_Dnload(data_buffer_length, value, data, return_data_len, tmpDfuState);
+                        returnVal = DFU_Dnload(length, value, data, return_data_len, tmpDfuState);
                         break;
 
                     case DFU_UPLOAD:
                         unsigned data_out[_DFU_TRANSFER_SIZE_WORDS];
-                        return_data_len = DFU_Upload(data_buffer_length, value, data_out, tmpDfuState);
+                        return_data_len = DFU_Upload(length, value, data_out, tmpDfuState);
                         for(int i = 0; i < _DFU_TRANSFER_SIZE_WORDS; i++)
                             data_buffer[i] = data_out[i];
                         break;
 
                     case DFU_GETSTATUS:
                         unsigned data_out[_DFU_TRANSFER_SIZE_WORDS];
-                        return_data_len = DFU_GetStatus(data_buffer_length, data_out, tmpDfuState);
+                        return_data_len = DFU_GetStatus(length, data_out, tmpDfuState);
                         for(int i = 0; i < _DFU_TRANSFER_SIZE_WORDS; i++)
                             data_buffer[i] = data_out[i];
                         break;
@@ -395,7 +395,7 @@ void DFUHandler(server interface i_dfu i)
 
                     case DFU_GETSTATE:
                         unsigned data_out[_DFU_TRANSFER_SIZE_WORDS];
-                        return_data_len = DFU_GetState(data_buffer_length, data_out, tmpDfuState);
+                        return_data_len = DFU_GetState(length, data_out, tmpDfuState);
                         for(int i = 0; i < _DFU_TRANSFER_SIZE_WORDS; i++)
                             data_buffer[i] = data_out[i];
                         break;
