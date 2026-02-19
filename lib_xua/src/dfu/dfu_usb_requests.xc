@@ -186,6 +186,9 @@ static int DFUDeviceRequests(XUD_ep ep0_out, XUD_ep &?ep0_in, USB_SetupPacket_t 
     if (result.reset_type == DFU_RESET_TYPE_RESET_TO_DFU) {
         SetDFUFlag(_BOOT_DFU_MODE_FLAG);
     } else {
+        // Yes, we do need to clear this at every opportunity.
+        // The flag should only be set when we are requesting a reset to DFU mode, and should be cleared as soon as possible after
+        // that to avoid the risk of it being left set and forcing us into DFU_IDLE on USB bus reset.
         SetDFUFlag(0);
     }
 
@@ -253,7 +256,7 @@ int dfu_usb_class_int_requests(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t 
         static unsigned int notify_audio_stop_for_DFU = 0;
         if (!DFU_mode_active && !notify_audio_stop_for_DFU)
         {
-            DFUNotifyEntryCallback(c_aud_ctl);
+            DFUNotifyEntryCallback(c_aud_ctl, 1 /* handshake */);
             notify_audio_stop_for_DFU = 1;  // So we notify AUDIO_STOP_FOR_DFU only once
         }
 

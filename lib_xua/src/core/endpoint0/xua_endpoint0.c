@@ -485,12 +485,8 @@ void XUA_Endpoint0_init(chanend c_ep0_out, chanend c_ep0_in, NULLABLE_RESOURCE(c
     /* Check if device has started in DFU mode */
     if (DFUReportResetState())
     {
-        assert(((unsigned)c_aud_ctl != 0) && msg("DFU not supported when c_aud_ctl is null"));
+        DFUNotifyEntryCallback(c_aud_ctl, 0 /* no handshake for init */);
 
-        /* Stop audio */
-        outct(c_aud_ctl, XUA_AUDCTL_SET_SAMPLE_FREQ);
-        outuint(c_aud_ctl, AUDIO_STOP_FOR_DFU);
-        /* No Handshake */
         DFUSetModeActive();
     }
 #endif
@@ -846,6 +842,7 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
                 {
                     int num_interfaces;
                     if(DFUModeIsActive()) {
+                        // TODO - confirm if this is always one?
                         num_interfaces = DFUcfgDesc.Config.bNumInterfaces;
                     }
                     else
@@ -903,6 +900,7 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
                                 {
                                     int num_interfaces;
                                     if(DFUModeIsActive()) {
+                                        // TODO - confirm if this is always one?
                                         num_interfaces = DFUcfgDesc.Config.bNumInterfaces;
                                     }
                                     else {
@@ -1197,7 +1195,7 @@ void XUA_Endpoint0(chanend c_ep0_out, chanend c_ep0_in, NULLABLE_RESOURCE(chanen
     }
 }
 
-void DFUNotifyEntryCallback(NULLABLE_RESOURCE(chanend, c_aud_ctl))
+void DFUNotifyEntryCallback(NULLABLE_RESOURCE(chanend, c_aud_ctl), int handshake)
 {
     /* Send STOP_AUDIO_FOR_DFU command. This will either pass through
         * buffering system (i.e. ep_buffer/decouple) if the device has USB audio
@@ -1212,7 +1210,10 @@ void DFUNotifyEntryCallback(NULLABLE_RESOURCE(chanend, c_aud_ctl))
     outct(c_aud_ctl, XUA_AUDCTL_SET_SAMPLE_FREQ);
     outuint(c_aud_ctl, AUDIO_STOP_FOR_DFU);
     // Handshake
-    chkct(c_aud_ctl, XS1_CT_END);
+    if (handshake)
+    {
+        chkct(c_aud_ctl, XS1_CT_END);
+    }
 }
 
 #endif /* XUA_USB_EN*/

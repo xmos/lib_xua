@@ -49,7 +49,7 @@ int dfu_usb_vendor_requests(XUD_ep ep0_out, XUD_ep ep0_in, REFERENCE_PARAM(USB_S
 int dfu_usb_class_int_requests(XUD_ep ep0_out, XUD_ep ep0_in, REFERENCE_PARAM(USB_SetupPacket_t, sp), CLIENT_INTERFACE(i_dfu, dfuInterface), NULLABLE_RESOURCE(chanend, c_aud_ctl), unsigned int xua_dfu_interface_num);
 
 // TODO - make parameter user customisable via macro or something, and remove from DFU interface since this is really a user callback and not a DFU interface function
-void DFUNotifyEntryCallback(NULLABLE_RESOURCE(chanend, c_aud_ctl));
+void DFUNotifyEntryCallback(NULLABLE_RESOURCE(chanend, c_aud_ctl), int handshake);
 
 /* Reboot the device */
 void device_reboot(void);

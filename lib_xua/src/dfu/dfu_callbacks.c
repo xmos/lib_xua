@@ -5,9 +5,10 @@
 
 #include "dfu_usb_requests.h"
 
-void DFUNotifyEntryCallback(NULLABLE_RESOURCE(chanend, c_aud_ctl)) __attribute__ ((weak));
-void DFUNotifyEntryCallback(NULLABLE_RESOURCE(chanend, c_aud_ctl))
+void DFUNotifyEntryCallback(NULLABLE_RESOURCE(chanend, c_aud_ctl), int handshake) __attribute__ ((weak));
+void DFUNotifyEntryCallback(NULLABLE_RESOURCE(chanend, c_aud_ctl), int handshake)
 {
     /* Weak function, meant to be overridden by user if they want to be notified when a DFU request is received. This is useful for example to stop audio before rebooting to DFU mode. */
-    (void)c_aud_ctl; // Suppress unused parameter warning
+    (void)c_aud_ctl;
+    (void)handshake;
 }
