@@ -156,7 +156,7 @@ static int DFUDeviceRequests(XUD_ep ep0_out, XUD_ep &?ep0_in, USB_SetupPacket_t 
     unsigned int return_data_len = 0;
     unsigned int data_buffer_len = 0;
     unsigned int data_buffer[17];
-    unsigned int reset_device_after_ack = 0;
+    enum dfu_reset_type reset_type = DFU_RESET_TYPE_NONE;
     int returnVal = 0;
     unsigned int dfuState = g_DFU_state;
     int dfuResetOverride;
@@ -168,9 +168,9 @@ static int DFUDeviceRequests(XUD_ep ep0_out, XUD_ep &?ep0_in, USB_SetupPacket_t 
             XUD_GetBuffer(ep0_out, (data_buffer, unsigned char[]), data_buffer_len);
     }
     /* Interface used here such that the handler can be on another tile */
-    {reset_device_after_ack, return_data_len, dfuResetOverride, returnVal, dfuState} = i.HandleDfuRequest(sp.bRequest, sp.wValue, sp.wIndex, sp.wLength, data_buffer, data_buffer_len, g_DFU_state);
+    {reset_type, return_data_len, dfuResetOverride, returnVal, dfuState} = i.HandleDfuRequest(sp.bRequest, sp.wValue, sp.wIndex, sp.wLength, data_buffer, data_buffer_len, g_DFU_state);
 
-    if (dfuResetOverride) {
+    if (reset_type == DFU_RESET_TYPE_RESET_TO_DFU) {
         SetDFUFlag(_BOOT_DFU_MODE_FLAG);
     } else {
         SetDFUFlag(0);
@@ -179,6 +179,7 @@ static int DFUDeviceRequests(XUD_ep ep0_out, XUD_ep &?ep0_in, USB_SetupPacket_t 
     /* Update our version of dfuState */
     g_DFU_state = dfuState;
 
+    // TODO - separate returnVal from USB XUD return value.
     /* Check if the request was handled */
     if(returnVal == 0)
     {
@@ -192,7 +193,7 @@ static int DFUDeviceRequests(XUD_ep ep0_out, XUD_ep &?ep0_in, USB_SetupPacket_t 
         }
 
   	    // If device reset requested, handle after command acknowledgement
-  	    if (reset_device_after_ack)
+  	    if (reset_type != DFU_RESET_TYPE_NONE)
   	    {
   	        reset = 1;
         }

@@ -8,10 +8,36 @@
 
 #include <stdint.h>
 
+enum dfu_reset_type
+{
+    DFU_RESET_TYPE_NONE,
+    DFU_RESET_TYPE_RESET_TO_DFU,
+    DFU_RESET_TYPE_RESET_TO_APP
+};
+
+struct dfu_request_result
+{
+    unsigned return_data_len;
+    unsigned return_code;
+    enum dfu_reset_type reset_type;
+    unsigned dfuState;
+};
+
+struct dfu_request_params
+{
+    uint16_t request;
+    uint16_t value;
+    uint16_t index;
+    uint16_t length;
+    unsigned data_buffer;
+    unsigned data_buffer_length;
+    unsigned dfuState;
+};
+
 interface i_dfu
 {
     // TODO - fix the parameter lists
-    {unsigned, int, int, int, unsigned} HandleDfuRequest(uint16_t request, uint16_t value, uint16_t index, uint16_t length, unsigned data_buffer[], unsigned data_buffer_length, unsigned dfuState);
+    {enum dfu_reset_type, int, int, int, unsigned} HandleDfuRequest(uint16_t request, uint16_t value, uint16_t index, uint16_t length, unsigned data_buffer[], unsigned data_buffer_length, unsigned dfuState);
     void finish();
 };
 

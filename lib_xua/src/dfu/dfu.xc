@@ -343,9 +343,9 @@ void DFUHandler(server interface i_dfu i)
         select
         {
             case i.HandleDfuRequest(uint16_t request, uint16_t value, uint16_t index, uint16_t length, unsigned data_buffer[], unsigned data_buffer_length, unsigned dfuState)
-                -> {unsigned reset_device_after_ack, int return_data_len, int dfu_reset_override, int returnVal, unsigned newDfuState}:
+                -> {enum dfu_reset_type reset_type, int return_data_len, int dfu_reset_override, int returnVal, unsigned newDfuState}:
 
-                reset_device_after_ack = 0;
+                reset_type = DFU_RESET_TYPE_NONE;
                 return_data_len = 0;
                 dfu_reset_override = 0;
                 unsigned tmpDfuState = dfuState;
@@ -356,15 +356,14 @@ void DFUHandler(server interface i_dfu i)
                     case DFU_DETACH:
                         if(dfuState == STATE_APP_IDLE)
                         {
-                            dfu_reset_override = 1; // Reboot in DFU mode
+                            reset_type = DFU_RESET_TYPE_RESET_TO_DFU;
                         }
                         else
                         {
                             // We expect to come here only in the STATE_DFU_IDLE state but to be safe,
                             // in every state other than APP_IDLE, reboot in APP mode.
-                            dfu_reset_override = 0;
+                            reset_type = DFU_RESET_TYPE_RESET_TO_APP;
                         }
-                        reset_device_after_ack = 1;
                         return_data_len = 0;
                         break;
 
@@ -406,7 +405,7 @@ void DFUHandler(server interface i_dfu i)
 
                     /* XMOS Custom DFU requests */
                     case XMOS_DFU_RESETDEVICE:
-                        reset_device_after_ack = 1;
+                        reset_type = DFU_RESET_TYPE_RESET_TO_APP;
                         return_data_len = 0;
                         break;
 
@@ -415,14 +414,12 @@ void DFUHandler(server interface i_dfu i)
                         break;
 
                     case XMOS_DFU_RESETINTODFU:
-                        reset_device_after_ack = 1;
-                        dfu_reset_override = 1;
+                        reset_type = DFU_RESET_TYPE_RESET_TO_DFU;
                         return_data_len = 0;
                         break;
 
                     case XMOS_DFU_RESETFROMDFU:
-                        reset_device_after_ack = 1;
-                        dfu_reset_override = 0;
+                        reset_type = DFU_RESET_TYPE_RESET_TO_APP;
                         return_data_len = 0;
                         break;
 
