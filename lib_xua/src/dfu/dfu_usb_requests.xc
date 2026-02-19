@@ -87,6 +87,15 @@ void DFUDelay(unsigned d)
 }
 
 // Tell the DFU state machine that a USB reset has occurred
+/* USB bus reset
+ * Input: USB bus reset event.
+ * Output: 1 if in DFU mode, 0 if not in DFU mode
+ * State handling: On USB bus reset signalling
+ * - APP_IDLE on normal boot with "valid" firmware (only ever valid).
+ * - DFU_IDLE after request to reset from application to DFU mode.
+ * 
+ * Note: DFU_IDLE on normal boot with "invalid" firmware not possible with flashed firmware.
+ */
 int DFUReportResetState()
 {
     unsigned int inDFU = 0;
@@ -137,6 +146,8 @@ int DFUReportResetState()
             g_DFU_state = STATE_APP_IDLE;
             break;
         default:
+            // Not a valid state transition - to error - on USB bus reset event.
+            // On USB bus reset event the only valid states are APP_IDLE or DFU_IDLE.
             g_DFU_state = STATE_DFU_ERROR;
             inDFU = 1;
         break;
@@ -153,12 +164,8 @@ int DFUReportResetState()
 
 static int DFUDeviceRequests(XUD_ep ep0_out, XUD_ep &?ep0_in, USB_SetupPacket_t &sp, unsigned int altInterface, client interface i_dfu i,int &reset)
 {
-    unsigned int return_data_len = 0;
     unsigned int data_buffer_len = 0;
     unsigned int data_buffer[17];
-    enum dfu_reset_type reset_type = DFU_RESET_TYPE_NONE;
-    int returnVal = 0;
-    unsigned int dfuState = g_DFU_state;
 
     if(sp.bmRequestType.Direction == USB_BM_REQTYPE_DIRECTION_H2D)
     {
@@ -167,24 +174,24 @@ static int DFUDeviceRequests(XUD_ep ep0_out, XUD_ep &?ep0_in, USB_SetupPacket_t 
             XUD_GetBuffer(ep0_out, (data_buffer, unsigned char[]), data_buffer_len);
     }
     /* Interface used here such that the handler can be on another tile */
-    {reset_type, return_data_len, returnVal, dfuState} = i.HandleDfuRequest(sp.bRequest, sp.wValue, sp.wIndex, sp.wLength, data_buffer, data_buffer_len, g_DFU_state);
+    struct dfu_request_result result = i.HandleDfuRequest(sp.bRequest, sp.wValue, sp.wIndex, sp.wLength, data_buffer, data_buffer_len, g_DFU_state);
 
-    if (reset_type == DFU_RESET_TYPE_RESET_TO_DFU) {
+    if (result.reset_type == DFU_RESET_TYPE_RESET_TO_DFU) {
         SetDFUFlag(_BOOT_DFU_MODE_FLAG);
     } else {
         SetDFUFlag(0);
     }
 
     /* Update our version of dfuState */
-    g_DFU_state = dfuState;
+    g_DFU_state = result.dfuState;
 
-    // TODO - separate returnVal from USB XUD return value.
+    int returnVal = 0;
     /* Check if the request was handled */
-    if(returnVal == 0)
+    if(result.return_code == 0)
     {
         if (sp.bmRequestType.Direction == USB_BM_REQTYPE_DIRECTION_D2H && sp.wLength != 0)
         {
-            returnVal = XUD_DoGetRequest(ep0_out, ep0_in, (data_buffer, unsigned char[]), return_data_len, return_data_len);
+            returnVal = XUD_DoGetRequest(ep0_out, ep0_in, (data_buffer, unsigned char[]), result.return_data_len, result.return_data_len);
         }
         else
         {
@@ -192,7 +199,7 @@ static int DFUDeviceRequests(XUD_ep ep0_out, XUD_ep &?ep0_in, USB_SetupPacket_t 
         }
 
   	    // If device reset requested, handle after command acknowledgement
-  	    if (reset_type != DFU_RESET_TYPE_NONE)
+  	    if (result.reset_type != DFU_RESET_TYPE_NONE)
   	    {
   	        reset = 1;
         }

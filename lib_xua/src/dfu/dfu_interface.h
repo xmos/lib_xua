@@ -17,8 +17,8 @@ enum dfu_reset_type
 
 struct dfu_request_result
 {
-    unsigned return_data_len;
-    unsigned return_code;
+    int return_data_len;
+    int return_code;
     enum dfu_reset_type reset_type;
     unsigned dfuState;
 };
@@ -29,15 +29,13 @@ struct dfu_request_params
     uint16_t value;
     uint16_t index;
     uint16_t length;
-    unsigned data_buffer;
-    unsigned data_buffer_length;
     unsigned dfuState;
 };
 
 interface i_dfu
 {
     // TODO - fix the parameter lists
-    {enum dfu_reset_type, int, int, unsigned} HandleDfuRequest(uint16_t request, uint16_t value, uint16_t index, uint16_t length, unsigned data_buffer[], unsigned data_buffer_length, unsigned dfuState);
+    struct dfu_request_result HandleDfuRequest(uint16_t request, uint16_t value, uint16_t index, uint16_t length, unsigned data_buffer[], unsigned data_buffer_length, unsigned dfuState);
     void finish();
 };
 

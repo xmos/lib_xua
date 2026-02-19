@@ -343,94 +343,94 @@ void DFUHandler(server interface i_dfu i)
         select
         {
             case i.HandleDfuRequest(uint16_t request, uint16_t value, uint16_t index, uint16_t length, unsigned data_buffer[], unsigned data_buffer_length, unsigned dfuState)
-                -> {enum dfu_reset_type reset_type, int return_data_len, int returnVal, unsigned newDfuState}:
+                -> struct dfu_request_result result:
 
-                reset_type = DFU_RESET_TYPE_NONE;
-                return_data_len = 0;
+                result.reset_type = DFU_RESET_TYPE_NONE;
+                result.return_data_len = 0;
                 unsigned tmpDfuState = dfuState;
-                returnVal = 0;
+                result.return_code = 0;
                 // Map Standard DFU commands onto device level firmware upgrade mechanism
                 switch (request)
                 {
                     case DFU_DETACH:
                         if(dfuState == STATE_APP_IDLE)
                         {
-                            reset_type = DFU_RESET_TYPE_RESET_TO_DFU;
+                            result.reset_type = DFU_RESET_TYPE_RESET_TO_DFU;
                         }
                         else
                         {
                             // We expect to come here only in the STATE_DFU_IDLE state but to be safe,
                             // in every state other than APP_IDLE, reboot in APP mode.
-                            reset_type = DFU_RESET_TYPE_RESET_TO_APP;
+                            result.reset_type = DFU_RESET_TYPE_RESET_TO_APP;
                         }
-                        return_data_len = 0;
+                        result.return_data_len = 0;
                         break;
 
                     case DFU_DNLOAD:
                         unsigned data[_DFU_TRANSFER_SIZE_WORDS];
                         for(int i = 0; i < _DFU_TRANSFER_SIZE_WORDS; i++)
                             data[i] = data_buffer[i];
-                        returnVal = DFU_Dnload(length, value, data, return_data_len, tmpDfuState);
+                        result.return_code = DFU_Dnload(length, value, data, result.return_data_len, tmpDfuState);
                         break;
 
                     case DFU_UPLOAD:
                         unsigned data_out[_DFU_TRANSFER_SIZE_WORDS];
-                        return_data_len = DFU_Upload(length, value, data_out, tmpDfuState);
+                        result.return_data_len = DFU_Upload(length, value, data_out, tmpDfuState);
                         for(int i = 0; i < _DFU_TRANSFER_SIZE_WORDS; i++)
                             data_buffer[i] = data_out[i];
                         break;
 
                     case DFU_GETSTATUS:
                         unsigned data_out[_DFU_TRANSFER_SIZE_WORDS];
-                        return_data_len = DFU_GetStatus(length, data_out, tmpDfuState);
+                        result.return_data_len = DFU_GetStatus(length, data_out, tmpDfuState);
                         for(int i = 0; i < _DFU_TRANSFER_SIZE_WORDS; i++)
                             data_buffer[i] = data_out[i];
                         break;
 
                     case DFU_CLRSTATUS:
-                        return_data_len = DFU_ClrStatus(tmpDfuState);
+                        result.return_data_len = DFU_ClrStatus(tmpDfuState);
                         break;
 
                     case DFU_GETSTATE:
                         unsigned data_out[_DFU_TRANSFER_SIZE_WORDS];
-                        return_data_len = DFU_GetState(length, data_out, tmpDfuState);
+                        result.return_data_len = DFU_GetState(length, data_out, tmpDfuState);
                         for(int i = 0; i < _DFU_TRANSFER_SIZE_WORDS; i++)
                             data_buffer[i] = data_out[i];
                         break;
 
                     case DFU_ABORT:
-                        return_data_len = DFU_Abort(tmpDfuState);
+                        result.return_data_len = DFU_Abort(tmpDfuState);
                         break;
 
                     /* XMOS Custom DFU requests */
                     case XMOS_DFU_RESETDEVICE:
-                        reset_type = DFU_RESET_TYPE_RESET_TO_APP;
-                        return_data_len = 0;
+                        result.reset_type = DFU_RESET_TYPE_RESET_TO_APP;
+                        result.return_data_len = 0;
                         break;
 
                     case XMOS_DFU_REVERTFACTORY:
-                        return_data_len = XMOS_DFU_RevertFactory();
+                        result.return_data_len = XMOS_DFU_RevertFactory();
                         break;
 
                     case XMOS_DFU_RESETINTODFU:
-                        reset_type = DFU_RESET_TYPE_RESET_TO_DFU;
-                        return_data_len = 0;
+                        result.reset_type = DFU_RESET_TYPE_RESET_TO_DFU;
+                        result.return_data_len = 0;
                         break;
 
                     case XMOS_DFU_RESETFROMDFU:
-                        reset_type = DFU_RESET_TYPE_RESET_TO_APP;
-                        return_data_len = 0;
+                        result.reset_type = DFU_RESET_TYPE_RESET_TO_APP;
+                        result.return_data_len = 0;
                         break;
 
                     case XMOS_DFU_SELECTIMAGE:
-                        return_data_len = XMOS_DFU_SelectImage(value);
+                        result.return_data_len = XMOS_DFU_SelectImage(value);
                         break;
 
                     default:
-                        returnVal = 1; // Unrecognised request
+                        result.return_code = 1; // Unrecognised request
                         break;
                 }
-				newDfuState = tmpDfuState;
+				result.dfuState = tmpDfuState;
                 break;
 
            case i.finish():
