@@ -342,95 +342,95 @@ void DFUHandler(server interface i_dfu i)
     {
         select
         {
-            case i.HandleDfuRequest(uint16_t request, uint16_t value, uint16_t index, uint16_t length, unsigned data_buffer[], unsigned data_buffer_length, unsigned dfuState)
-                -> struct dfu_request_result result:
+            case i.HandleDfuRequest(struct dfu_request_params request, unsigned data_buffer[], unsigned data_buffer_length)
+                -> struct dfu_request_result dfu:
 
-                result.reset_type = DFU_RESET_TYPE_NONE;
-                result.return_data_len = 0;
-                unsigned tmpDfuState = dfuState;
-                result.return_code = 0;
+                dfu.reset_type = DFU_RESET_TYPE_NONE;
+                dfu.return_data_len = 0;
+                unsigned tmpDfuState = request.dfuState;
+                dfu.return_code = 0;
                 // Map Standard DFU commands onto device level firmware upgrade mechanism
-                switch (request)
+                switch (request.request)
                 {
                     case DFU_DETACH:
-                        if(dfuState == STATE_APP_IDLE)
+                        if(tmpDfuState == STATE_APP_IDLE)
                         {
-                            result.reset_type = DFU_RESET_TYPE_RESET_TO_DFU;
+                            dfu.reset_type = DFU_RESET_TYPE_RESET_TO_DFU;
                         }
                         else
                         {
                             // We expect to come here only in the STATE_DFU_IDLE state but to be safe,
                             // in every state other than APP_IDLE, reboot in APP mode.
-                            result.reset_type = DFU_RESET_TYPE_RESET_TO_APP;
+                            dfu.reset_type = DFU_RESET_TYPE_RESET_TO_APP;
                         }
-                        result.return_data_len = 0;
+                        dfu.return_data_len = 0;
                         break;
 
                     case DFU_DNLOAD:
                         unsigned data[_DFU_TRANSFER_SIZE_WORDS];
                         for(int i = 0; i < _DFU_TRANSFER_SIZE_WORDS; i++)
                             data[i] = data_buffer[i];
-                        result.return_code = DFU_Dnload(length, value, data, result.return_data_len, tmpDfuState);
+                        dfu.return_code = DFU_Dnload(request.length, request.value, data, dfu.return_data_len, tmpDfuState);
                         break;
 
                     case DFU_UPLOAD:
                         unsigned data_out[_DFU_TRANSFER_SIZE_WORDS];
-                        result.return_data_len = DFU_Upload(length, value, data_out, tmpDfuState);
+                        dfu.return_data_len = DFU_Upload(request.length, request.value, data_out, tmpDfuState);
                         for(int i = 0; i < _DFU_TRANSFER_SIZE_WORDS; i++)
                             data_buffer[i] = data_out[i];
                         break;
 
                     case DFU_GETSTATUS:
                         unsigned data_out[_DFU_TRANSFER_SIZE_WORDS];
-                        result.return_data_len = DFU_GetStatus(length, data_out, tmpDfuState);
+                        dfu.return_data_len = DFU_GetStatus(request.length, data_out, tmpDfuState);
                         for(int i = 0; i < _DFU_TRANSFER_SIZE_WORDS; i++)
                             data_buffer[i] = data_out[i];
                         break;
 
                     case DFU_CLRSTATUS:
-                        result.return_data_len = DFU_ClrStatus(tmpDfuState);
+                        dfu.return_data_len = DFU_ClrStatus(tmpDfuState);
                         break;
 
                     case DFU_GETSTATE:
                         unsigned data_out[_DFU_TRANSFER_SIZE_WORDS];
-                        result.return_data_len = DFU_GetState(length, data_out, tmpDfuState);
+                        dfu.return_data_len = DFU_GetState(request.length, data_out, tmpDfuState);
                         for(int i = 0; i < _DFU_TRANSFER_SIZE_WORDS; i++)
                             data_buffer[i] = data_out[i];
                         break;
 
                     case DFU_ABORT:
-                        result.return_data_len = DFU_Abort(tmpDfuState);
+                        dfu.return_data_len = DFU_Abort(tmpDfuState);
                         break;
 
                     /* XMOS Custom DFU requests */
                     case XMOS_DFU_RESETDEVICE:
-                        result.reset_type = DFU_RESET_TYPE_RESET_TO_APP;
-                        result.return_data_len = 0;
+                        dfu.reset_type = DFU_RESET_TYPE_RESET_TO_APP;
+                        dfu.return_data_len = 0;
                         break;
 
                     case XMOS_DFU_REVERTFACTORY:
-                        result.return_data_len = XMOS_DFU_RevertFactory();
+                        dfu.return_data_len = XMOS_DFU_RevertFactory();
                         break;
 
                     case XMOS_DFU_RESETINTODFU:
-                        result.reset_type = DFU_RESET_TYPE_RESET_TO_DFU;
-                        result.return_data_len = 0;
+                        dfu.reset_type = DFU_RESET_TYPE_RESET_TO_DFU;
+                        dfu.return_data_len = 0;
                         break;
 
                     case XMOS_DFU_RESETFROMDFU:
-                        result.reset_type = DFU_RESET_TYPE_RESET_TO_APP;
-                        result.return_data_len = 0;
+                        dfu.reset_type = DFU_RESET_TYPE_RESET_TO_APP;
+                        dfu.return_data_len = 0;
                         break;
 
                     case XMOS_DFU_SELECTIMAGE:
-                        result.return_data_len = XMOS_DFU_SelectImage(value);
+                        dfu.return_data_len = XMOS_DFU_SelectImage(request.value);
                         break;
 
                     default:
-                        result.return_code = 1; // Unrecognised request
+                        dfu.return_code = 1; // Unrecognised request
                         break;
                 }
-				result.dfuState = tmpDfuState;
+				dfu.dfuState = tmpDfuState;
                 break;
 
            case i.finish():

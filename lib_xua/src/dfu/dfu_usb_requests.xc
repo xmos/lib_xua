@@ -173,8 +173,15 @@ static int DFUDeviceRequests(XUD_ep ep0_out, XUD_ep &?ep0_in, USB_SetupPacket_t 
         if (sp.wLength)
             XUD_GetBuffer(ep0_out, (data_buffer, unsigned char[]), data_buffer_len);
     }
+    /* Swap to dfu_request_params to avoid having USB SP struct as dependency of DFU. */
+    struct dfu_request_params request;
+    request.request = sp.bRequest;
+    request.value = sp.wValue;
+    request.index = sp.wIndex;
+    request.length = sp.wLength;
+    request.dfuState = g_DFU_state;
     /* Interface used here such that the handler can be on another tile */
-    struct dfu_request_result result = i.HandleDfuRequest(sp.bRequest, sp.wValue, sp.wIndex, sp.wLength, data_buffer, data_buffer_len, g_DFU_state);
+    struct dfu_request_result result = i.HandleDfuRequest(request, data_buffer, data_buffer_len);
 
     if (result.reset_type == DFU_RESET_TYPE_RESET_TO_DFU) {
         SetDFUFlag(_BOOT_DFU_MODE_FLAG);

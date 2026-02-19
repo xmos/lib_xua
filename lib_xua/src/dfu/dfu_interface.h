@@ -34,8 +34,7 @@ struct dfu_request_params
 
 interface i_dfu
 {
-    // TODO - fix the parameter lists
-    struct dfu_request_result HandleDfuRequest(uint16_t request, uint16_t value, uint16_t index, uint16_t length, unsigned data_buffer[], unsigned data_buffer_length, unsigned dfuState);
+    struct dfu_request_result HandleDfuRequest(struct dfu_request_params request, unsigned data_buffer[], unsigned data_buffer_length);
     void finish();
 };
 
