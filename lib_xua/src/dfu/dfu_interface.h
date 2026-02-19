@@ -37,7 +37,7 @@ struct dfu_request_params
 interface i_dfu
 {
     // TODO - fix the parameter lists
-    {enum dfu_reset_type, int, int, int, unsigned} HandleDfuRequest(uint16_t request, uint16_t value, uint16_t index, uint16_t length, unsigned data_buffer[], unsigned data_buffer_length, unsigned dfuState);
+    {enum dfu_reset_type, int, int, unsigned} HandleDfuRequest(uint16_t request, uint16_t value, uint16_t index, uint16_t length, unsigned data_buffer[], unsigned data_buffer_length, unsigned dfuState);
     void finish();
 };
 

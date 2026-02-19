@@ -343,11 +343,10 @@ void DFUHandler(server interface i_dfu i)
         select
         {
             case i.HandleDfuRequest(uint16_t request, uint16_t value, uint16_t index, uint16_t length, unsigned data_buffer[], unsigned data_buffer_length, unsigned dfuState)
-                -> {enum dfu_reset_type reset_type, int return_data_len, int dfu_reset_override, int returnVal, unsigned newDfuState}:
+                -> {enum dfu_reset_type reset_type, int return_data_len, int returnVal, unsigned newDfuState}:
 
                 reset_type = DFU_RESET_TYPE_NONE;
                 return_data_len = 0;
-                dfu_reset_override = 0;
                 unsigned tmpDfuState = dfuState;
                 returnVal = 0;
                 // Map Standard DFU commands onto device level firmware upgrade mechanism
