@@ -179,7 +179,7 @@ static int DFUDeviceRequests(XUD_ep ep0_out, XUD_ep &?ep0_in, USB_SetupPacket_t 
     request.value = sp.wValue;
     request.index = sp.wIndex;
     request.length = sp.wLength;
-    request.dfuState = g_DFU_state;
+    request.dfu_state = g_DFU_state;
     /* Interface used here such that the handler can be on another tile */
     struct dfu_request_result result = i.HandleDfuRequest(request, data_buffer, data_buffer_len);
 
@@ -190,7 +190,7 @@ static int DFUDeviceRequests(XUD_ep ep0_out, XUD_ep &?ep0_in, USB_SetupPacket_t 
     }
 
     /* Update our version of dfuState */
-    g_DFU_state = result.dfuState;
+    g_DFU_state = result.dfu_state;
 
     int returnVal = 0;
     /* Check if the request was handled */

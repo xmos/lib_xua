@@ -20,7 +20,7 @@ struct dfu_request_result
     int return_data_len;
     int return_code;
     enum dfu_reset_type reset_type;
-    unsigned dfuState;
+    unsigned dfu_state;
 };
 
 struct dfu_request_params
@@ -29,7 +29,7 @@ struct dfu_request_params
     uint16_t value;
     uint16_t index;
     uint16_t length;
-    unsigned dfuState;
+    unsigned dfu_state;
 };
 
 interface i_dfu

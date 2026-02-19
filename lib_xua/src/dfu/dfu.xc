@@ -347,7 +347,7 @@ void DFUHandler(server interface i_dfu i)
 
                 dfu.reset_type = DFU_RESET_TYPE_NONE;
                 dfu.return_data_len = 0;
-                unsigned tmpDfuState = request.dfuState;
+                unsigned tmpDfuState = request.dfu_state;
                 dfu.return_code = 0;
                 // Map Standard DFU commands onto device level firmware upgrade mechanism
                 switch (request.request)
@@ -430,7 +430,7 @@ void DFUHandler(server interface i_dfu i)
                         dfu.return_code = 1; // Unrecognised request
                         break;
                 }
-				dfu.dfuState = tmpDfuState;
+				dfu.dfu_state = tmpDfuState;
                 break;
 
            case i.finish():
