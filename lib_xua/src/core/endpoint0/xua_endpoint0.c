@@ -69,6 +69,7 @@
 
 #include "dfu_usb_descriptors.h"
 #include "dfu_usb_requests.h"
+#include "dfu_reboot.h"
 #if XUA_DFU_EN
 
 /* Windows core USB/device driver stack may not like device coming off bus for

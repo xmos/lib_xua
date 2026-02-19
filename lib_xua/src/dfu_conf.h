@@ -8,4 +8,6 @@
 
 #define DFU_ENABLE XUA_DFU_EN
 
+#define DFU_USB_EN XUA_USB_EN
+
 #endif /* DFU_CONF_H */
