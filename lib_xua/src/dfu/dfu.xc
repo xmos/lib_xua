@@ -453,8 +453,8 @@ void DFUHandler(server interface i_dfu i)
                                 device_reboot();
                             }
                             tmpDfuState = STATE_APP_IDLE;
-                            // Must reboot device if it was in DFU mode.
                         }
+                        // Non-zero return value means DFU mode.
                         dfu.return_code = request.value;
                         break;
 

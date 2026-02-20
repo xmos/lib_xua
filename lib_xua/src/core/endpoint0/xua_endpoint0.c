@@ -860,7 +860,7 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
         {
             /* Run vendor defined parsing/processing */
             /* Note, an interface might seem ideal here but this *must* be executed on the same
-             * core sure to shared memory dependency */
+             * thread sure to shared memory dependency */
             result = VendorRequests(ep0_out, ep0_in, &sp VENDOR_REQUESTS_PARAMS_);
         }
 #if _XUA_ENABLE_BOS_DESC
