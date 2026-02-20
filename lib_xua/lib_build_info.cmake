@@ -43,7 +43,8 @@ set(LIB_DEPENDENT_MODULES "lib_adat(2.0.1)"
                           "lib_sw_pll(2.4.1)"
                           "lib_xassert(4.3.2)"
                           "lib_mic_array(6.0.0)"
-                          "lib_xud(4.0.1)")
+                          "lib_xud(4.0.1)"
+                          "humphrey-xmos/lib_dfu(feature/merge-xua-dfu)")
 
 set(LIB_COMPILER_FLAGS -O3
                        -fasm-linenum
@@ -54,7 +55,7 @@ set(LIB_COMPILER_FLAGS -O3
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     list(APPEND LIB_COMPILER_FLAGS -DXASSERT_ENABLE_ASSERTIONS=1
                                    -DXASSERT_ENABLE_DEBUG=1
-                                   -DXASSERT_ENBALE_LINE_NUMBERS=1)
+                                   -DXASSERT_ENABLE_LINE_NUMBERS=1)
 else()
     list(APPEND LIB_COMPILER_FLAGS -DXASSERT_ENABLE_ASSERTIONS=0
                                    -DXASSERT_ENABLE_DEBUG=0

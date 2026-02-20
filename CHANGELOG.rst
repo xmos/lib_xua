@@ -1,6 +1,15 @@
 lib_xua change log
 ==================
 
+UNRELEASED
+----------
+
+  * Migrating DFU support to ``lib_dfu``.
+
+  * Changes to dependencies:
+
+    - lib_dfu: Added dependency 1.1.0
+  
 5.3.0
 -----
 
