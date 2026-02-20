@@ -335,6 +335,8 @@ static int XMOS_DFU_SelectImage(unsigned int index)
     return 0;
 }
 
+static int m_DFU_state = STATE_APP_IDLE;
+
 [[distributable]]
 void DFUHandler(server interface i_dfu i)
 {
@@ -347,7 +349,7 @@ void DFUHandler(server interface i_dfu i)
 
                 dfu.reset_type = DFU_RESET_TYPE_NONE;
                 dfu.return_data_len = 0;
-                unsigned tmpDfuState = request.dfu_state;
+                unsigned tmpDfuState = m_DFU_state;
                 dfu.return_code = 0;
                 // Map Standard DFU commands onto device level firmware upgrade mechanism
                 switch (request.request)
@@ -405,7 +407,6 @@ void DFUHandler(server interface i_dfu i)
                     /* XMOS Custom DFU requests */
                     case XMOS_DFU_RESETDEVICE:
                         dfu.reset_type = DFU_RESET_TYPE_RESET_TO_APP;
-                        dfu.return_data_len = 0;
                         break;
 
                     case XMOS_DFU_REVERTFACTORY:
@@ -414,12 +415,10 @@ void DFUHandler(server interface i_dfu i)
 
                     case XMOS_DFU_RESETINTODFU:
                         dfu.reset_type = DFU_RESET_TYPE_RESET_TO_DFU;
-                        dfu.return_data_len = 0;
                         break;
 
                     case XMOS_DFU_RESETFROMDFU:
                         dfu.reset_type = DFU_RESET_TYPE_RESET_TO_APP;
-                        dfu.return_data_len = 0;
                         break;
 
                     case XMOS_DFU_SELECTIMAGE:
@@ -427,23 +426,22 @@ void DFUHandler(server interface i_dfu i)
                         break;
 
                     case XMOS_BUS_RESET:
-                        dfu.return_data_len = 0;
                         if (request.value) // value is 1 when bus reset is from DFU mode and 0 when bus reset is from APP mode
                         {
+                            tmpDfuState = STATE_DFU_IDLE;
                         }
                         else
                         {
-                            // DFU_CloseFlash();
+                            DFU_CloseFlash();
                         }
                         dfu.return_code = request.value;
-                        dfu.dfu_state = tmpDfuState;
                         break;
 
                     default:
                         dfu.return_code = 1; // Unrecognised request
                         break;
                 }
-				dfu.dfu_state = tmpDfuState;
+				m_DFU_state = tmpDfuState;
                 break;
 
            case i.finish():
