@@ -426,6 +426,19 @@ void DFUHandler(server interface i_dfu i)
                         dfu.return_data_len = XMOS_DFU_SelectImage(request.value);
                         break;
 
+                    case XMOS_BUS_RESET:
+                        dfu.return_data_len = 0;
+                        if (request.value) // value is 1 when bus reset is from DFU mode and 0 when bus reset is from APP mode
+                        {
+                        }
+                        else
+                        {
+                            // DFU_CloseFlash();
+                        }
+                        dfu.return_code = request.value;
+                        dfu.dfu_state = tmpDfuState;
+                        break;
+
                     default:
                         dfu.return_code = 1; // Unrecognised request
                         break;

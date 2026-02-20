@@ -69,23 +69,7 @@
 
 #include "dfu_usb_descriptors.h"
 #include "dfu_usb_requests.h"
-#include "dfu_reboot.h"
 #if XUA_DFU_EN
-
-/* Windows core USB/device driver stack may not like device coming off bus for
- * a very short period of less than 500ms. Enforce at least 500ms by stalling.
- * This may not have the desired effect depending on whether 'off the bus'
- * requires device terminations disabled (PHY off). In that case we would be
- * better off doing the reboot to DFU and then delaying PHY initialisation
- * instead. Suggest revisiting.
- */
-#define DELAY_BEFORE_REBOOT_TO_DFU_MS     500
-
-/* Similarly to the delay before reboot to DFU mode, this delay is meant to
- * avoid shocking the Windows software stack. Suggest revisiting to establish
- * if 50 or 500 is needed.
- */
-#define DELAY_BEFORE_REBOOT_FROM_DFU_MS   50
 
 #endif /* XUA_DFU_EN */
 
@@ -484,12 +468,7 @@ void XUA_Endpoint0_init(chanend c_ep0_out, chanend c_ep0_in, NULLABLE_RESOURCE(c
         DFUdevDesc.iSerialNumber = offsetof(StringDescTable_t, serialStr)/sizeof(char *); /* Same as the run-time mode device descriptor */
     }
     /* Check if device has started in DFU mode */
-    if (DFUReportResetState())
-    {
-        DFUNotifyEntryCallback(c_aud_ctl, 0 /* no handshake for init */);
-
-        DFUSetModeActive();
-    }
+    DFUCheckInitState(c_aud_ctl);
 #endif
 
 #ifdef XUA_USB_DESCRIPTOR_OVERWRITE_RATE_RES //change USB descriptor frequencies and bit resolution values here
@@ -1117,24 +1096,7 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
             }
 
 #if XUA_DFU_EN
-            if (DFUReportResetState())
-            {
-                if (!DFUModeIsActive())
-                {
-                    DFUSetModeActive();
-                }
-            }
-            else
-            {
-                if (DFUModeIsActive())
-                {
-                    DFUSetModeInactive();
-
-                    /* Send reboot command */
-                    DFUDelay(DELAY_BEFORE_REBOOT_FROM_DFU_MS * XS1_TIMER_KHZ);
-                    device_reboot();
-                }
-            }
+            DFUProcessResetState(dfuInterface);
 #endif
         }
         else
