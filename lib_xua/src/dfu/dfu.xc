@@ -9,6 +9,7 @@
 #include "dfu_types.h"
 #include "xua_flash_interface.h"
 #include "dfu_interface.h"
+#include "dfu_reboot.h"
 
 static int DFU_status = DFU_OK;
 static timer DFUTimer;
@@ -21,6 +22,12 @@ extern void DFUCustomFlashEnable();
 extern void DFUCustomFlashDisable();
 
 static unsigned int save_blk0_request_data[_DFU_TRANSFER_SIZE_WORDS];
+
+/* Similarly to the delay before reboot to DFU mode, this delay is meant to
+ * avoid shocking the Windows software stack. Suggest revisiting to establish
+ * if 50 or 500 is needed.
+ */
+#define DELAY_BEFORE_REBOOT_FROM_DFU_MS   50
 
 /* Return non-zero on error */
 static int DFU_OpenFlash()
@@ -426,13 +433,27 @@ void DFUHandler(server interface i_dfu i)
                         break;
 
                     case XMOS_BUS_RESET:
-                        if (request.value) // value is 1 when bus reset is from DFU mode and 0 when bus reset is from APP mode
+                        // value is 1 when bus reset is entering DFU mode and 0 when bus reset is from APP mode
+                        if (request.value)
                         {
                             tmpDfuState = STATE_DFU_IDLE;
                         }
                         else
                         {
                             DFU_CloseFlash();
+                            if (tmpDfuState != STATE_APP_IDLE)
+                            {
+                                // When host triggers a bus reset from DFU mode, transition to APP_IDLE.
+                                tmpDfuState = STATE_APP_IDLE;
+                                /* Send reboot command */
+                                timer tmr;
+                                unsigned now;
+                                tmr :> now;
+                                tmr when timerafter(now + (DELAY_BEFORE_REBOOT_FROM_DFU_MS * XS1_TIMER_KHZ)) :> void;
+                                device_reboot();
+                            }
+                            tmpDfuState = STATE_APP_IDLE;
+                            // Must reboot device if it was in DFU mode.
                         }
                         dfu.return_code = request.value;
                         break;
