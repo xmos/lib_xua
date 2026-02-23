@@ -37,7 +37,7 @@ target_compile_options( ${APP_NAME}
 endif()
 
 # Discern OS for libusb library location
-set(xua_libusb_path "${CMAKE_CURRENT_LIST_DIR}/../../../../lib_xua/host/xmosdfu/libusb")
+set(xua_libusb_path "${CMAKE_CURRENT_LIST_DIR}/../../../../lib_xua/host/libusb")
 message(STATUS "xua_libusb_path = ${xua_libusb_path}")
 if ((${CMAKE_SYSTEM_NAME} MATCHES "Darwin") AND (${CMAKE_SYSTEM_PROCESSOR} MATCHES "x86_64"))
     target_link_directories(${APP_NAME} PRIVATE "${xua_libusb_path}/OSX64")

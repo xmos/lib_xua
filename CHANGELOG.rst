@@ -4,7 +4,8 @@ lib_xua change log
 UNRELEASED
 ----------
 
-  * Migrating DFU support to ``lib_dfu``.
+  * CHANGED:  Migrating DFU support to ``lib_dfu``.
+  * CHANGED:  Moved xmosdfu application to ``lib_dfu``.
 
   * Changes to dependencies:
 

@@ -335,13 +335,6 @@ static int XMOS_DFU_RevertFactory()
     return 0;
 }
 
-static int XMOS_DFU_SelectImage(unsigned int index)
-{
-    // Select the image index for firmware update
-    // Currently not used or implemented
-    return 0;
-}
-
 static int m_DFU_state = STATE_APP_IDLE;
 
 [[distributable]]
@@ -412,24 +405,8 @@ void DFUHandler(server interface i_dfu i)
                         break;
 
                     /* XMOS Custom DFU requests */
-                    case XMOS_DFU_RESETDEVICE:
-                        dfu.reset_type = DFU_RESET_TYPE_RESET_TO_APP;
-                        break;
-
                     case XMOS_DFU_REVERTFACTORY:
                         dfu.return_data_len = XMOS_DFU_RevertFactory();
-                        break;
-
-                    case XMOS_DFU_RESETINTODFU:
-                        dfu.reset_type = DFU_RESET_TYPE_RESET_TO_DFU;
-                        break;
-
-                    case XMOS_DFU_RESETFROMDFU:
-                        dfu.reset_type = DFU_RESET_TYPE_RESET_TO_APP;
-                        break;
-
-                    case XMOS_DFU_SELECTIMAGE:
-                        dfu.return_data_len = XMOS_DFU_SelectImage(request.value);
                         break;
 
                     case XMOS_BUS_RESET:
