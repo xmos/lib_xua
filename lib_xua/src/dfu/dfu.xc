@@ -4,6 +4,7 @@
 #if defined(XUA_DFU_EN) && (XUA_DFU_EN == 1)
 #include <xs1.h>
 #include <platform.h>
+#include <string.h>
 
 #if defined(XUA_USB_EN) && (XUA_USB_EN == 1)
 #include "dfu_types.h"
@@ -21,7 +22,7 @@ static int flash_cmd_start_write_image_in_progress = 1;
 extern void DFUCustomFlashEnable();
 extern void DFUCustomFlashDisable();
 
-static unsigned int save_blk0_request_data[_DFU_TRANSFER_SIZE_WORDS];
+static unsigned char save_blk0_request_data[DFU_TRANSFER_SIZE_BYTES];
 
 /* Similarly to the delay before reboot to DFU mode, this delay is meant to
  * avoid shocking the Windows software stack. Suggest revisiting to establish
@@ -34,7 +35,6 @@ static int DFU_OpenFlash()
 {
 	if (!DFU_flash_connected)
 	{
-        // unsigned int cmd_data[_DFU_TRANSFER_SIZE_WORDS];
         DFUCustomFlashEnable();
         int error = flash_cmd_init();
         if(error)
@@ -52,7 +52,6 @@ static int DFU_CloseFlash()
 {
     if (DFU_flash_connected)
     {
-        // unsigned int cmd_data[_DFU_TRANSFER_SIZE_WORDS];
         DFUCustomFlashDisable();
         flash_cmd_deinit();
         DFU_flash_connected = 0;
@@ -60,7 +59,7 @@ static int DFU_CloseFlash()
     return 0;
 }
 
-static int DFU_Dnload(unsigned int request_len, unsigned int block_num, const unsigned request_data[_DFU_TRANSFER_SIZE_WORDS], int &return_data_len, unsigned &DFU_state)
+static int DFU_Dnload(unsigned int request_len, unsigned int block_num, const unsigned char request_data[DFU_TRANSFER_SIZE_BYTES], int32_t &return_data_len, unsigned &DFU_state)
 {
     unsigned int fromDfuIdle = 0;
     return_data_len = 0;
@@ -104,10 +103,10 @@ static int DFU_Dnload(unsigned int request_len, unsigned int block_num, const un
         // Host signalling complete download
         if (subPagesLeft)
         {
-            unsigned int subPagePad[_DFU_TRANSFER_SIZE_WORDS] = {0};
+            unsigned char subPagePad[DFU_TRANSFER_SIZE_BYTES] = {0};
             for (unsigned i = 0; i < subPagesLeft; i++)
             {
-                flash_cmd_write_page_data((subPagePad, unsigned char[_DFU_TRANSFER_SIZE_BYTES]));
+                flash_cmd_write_page_data(subPagePad);
             }
         }
         flash_cmd_end_write_image();
@@ -132,22 +131,16 @@ static int DFU_Dnload(unsigned int request_len, unsigned int block_num, const un
 
                 if(flash_cmd_start_write_image_in_progress) // flash_cmd_start_write_image() still in progress
                 {
-                    for (unsigned i = 0; i < _DFU_TRANSFER_SIZE_WORDS; i++)
-                    {
-                        save_blk0_request_data[i] = request_data[i]; // save block 0 request data to be written to flash once flash_cmd_start_write_image() is complete
-                    }
+                    memcpy(save_blk0_request_data, request_data, DFU_TRANSFER_SIZE_BYTES); // save block 0 request data to be written to flash once flash_cmd_start_write_image() is complete
                     return 0; // return from here. We only write block 0 to flash once flash_cmd_start_write_image() completes.
                     //Further checks for flash_cmd_start_write_image() completion and subsequent writing of block 0 to flash happen in DFU_GetStatus()
                 }
             }
         }
 
-        unsigned int cmd_data[_DFU_TRANSFER_SIZE_WORDS];
-        for (unsigned i = 0; i < _DFU_TRANSFER_SIZE_WORDS; i++)
-        {
-            cmd_data[i] = request_data[i];
-        }
-        flash_cmd_write_page_data((cmd_data, unsigned char[_DFU_TRANSFER_SIZE_BYTES]));
+        unsigned char cmd_data[DFU_TRANSFER_SIZE_BYTES];
+        memcpy(cmd_data, request_data, DFU_TRANSFER_SIZE_BYTES);
+        flash_cmd_write_page_data(cmd_data);
         subPagesLeft--;
     }
 
@@ -155,7 +148,7 @@ static int DFU_Dnload(unsigned int request_len, unsigned int block_num, const un
 }
 
 
-static int DFU_Upload(unsigned int request_len, unsigned int block_num, unsigned data_out[_DFU_TRANSFER_SIZE_WORDS], unsigned &DFU_state)
+static int DFU_Upload(unsigned int request_len, unsigned int block_num, unsigned char data_out[DFU_TRANSFER_SIZE_BYTES], unsigned &DFU_state)
 {
     unsigned int cmd_data[1];
     unsigned int firstRead = 0;
@@ -205,7 +198,7 @@ static int DFU_Upload(unsigned int request_len, unsigned int block_num, unsigned
     }
 
     // Get _DFU_TRANSFER_SIZE_BYTES bytes of page data from memory
-    flash_cmd_read_page_data((data_out, unsigned char[_DFU_TRANSFER_SIZE_BYTES]));
+    flash_cmd_read_page_data(data_out);
 
     subPagesLeft--;
 
@@ -241,7 +234,7 @@ static unsigned transition_dfu_download_state()
         if(!flash_cmd_start_write_image_in_progress)
         {
             // Write block 0 to flash
-            flash_cmd_write_page_data((save_blk0_request_data, unsigned char[_DFU_TRANSFER_SIZE_BYTES]));
+            flash_cmd_write_page_data(save_blk0_request_data);
             subPagesLeft--;
             return STATE_DFU_DOWNLOAD_IDLE;
         }
@@ -254,11 +247,14 @@ static unsigned transition_dfu_download_state()
 
 }
 
-static int DFU_GetStatus(unsigned int request_len, unsigned data_buffer[_DFU_TRANSFER_SIZE_WORDS], unsigned &DFU_state)
+static int DFU_GetStatus(unsigned int request_len, unsigned char data_buffer[DFU_TRANSFER_SIZE_BYTES], unsigned &DFU_state)
 {
     unsigned int timeout = 0;
 
-    data_buffer[0] = (timeout << 8) | (unsigned char)DFU_status;
+    data_buffer[DFU_GETSTATUS_STATUS_INDEX] = (unsigned char)DFU_status;
+    data_buffer[DFU_GETSTATUS_POLL_TIMEOUT_INDEX + 0] = (unsigned char)(timeout & 0xff);
+    data_buffer[DFU_GETSTATUS_POLL_TIMEOUT_INDEX + 1] = (unsigned char)(timeout >> 8);
+    data_buffer[DFU_GETSTATUS_POLL_TIMEOUT_INDEX + 2] = (unsigned char)(timeout >> 16);
 
     switch (DFU_state)
     {
@@ -278,7 +274,7 @@ static int DFU_GetStatus(unsigned int request_len, unsigned data_buffer[_DFU_TRA
             break;
     }
 
-    data_buffer[1] = DFU_state;
+    data_buffer[DFU_GETSTATUS_STATE_INDEX] = (unsigned char)DFU_state;
 
     return 6;
 
@@ -297,9 +293,9 @@ static int DFU_ClrStatus(unsigned &DFU_state)
     return 0;
 }
 
-static int DFU_GetState(unsigned int request_len, unsigned int request_data[_DFU_TRANSFER_SIZE_WORDS], unsigned &DFU_state)
+static int DFU_GetState(unsigned int request_len, unsigned char request_data[DFU_TRANSFER_SIZE_BYTES], unsigned &DFU_state)
 {
-    request_data[0] = DFU_state;
+    request_data[DFU_GETSTATE_INDEX] = (unsigned char)DFU_state;
 
     switch (DFU_state)
     {
@@ -345,48 +341,46 @@ void DFUHandler(server interface i_dfu i)
         select
         {
             case i.HandleDfuRequest(struct dfu_request_params request, unsigned data_buffer[], unsigned data_buffer_length)
-                -> struct dfu_request_result dfu:
+                -> struct dfu_cmd_response dfu:
 
-                dfu.reset_type = DFU_RESET_TYPE_NONE;
+                unsigned char data_local[DFU_TRANSFER_SIZE_BYTES];
+
+                dfu.deferred_request = 0;
                 dfu.return_data_len = 0;
                 unsigned tmpDfuState = m_DFU_state;
-                dfu.return_code = 0;
+                dfu.status = DFU_API_SUCCESS;
                 // Map Standard DFU commands onto device level firmware upgrade mechanism
                 switch (request.request)
                 {
                     case DFU_DETACH:
                         if(tmpDfuState == STATE_APP_IDLE)
                         {
-                            dfu.reset_type = DFU_RESET_TYPE_RESET_TO_DFU;
+                            dfu.deferred_request = DFU_DEFERRED_ACTION_REBOOT_TO_DFU;
                         }
                         else
                         {
+                            // TODO - ignore detach request if not in app idle state.
+
                             // We expect to come here only in the STATE_DFU_IDLE state but to be safe,
                             // in every state other than APP_IDLE, reboot in APP mode.
-                            dfu.reset_type = DFU_RESET_TYPE_RESET_TO_APP;
+                            dfu.deferred_request = DFU_DEFERRED_ACTION_REBOOT;
                         }
                         dfu.return_data_len = 0;
                         break;
 
                     case DFU_DNLOAD:
-                        unsigned data[_DFU_TRANSFER_SIZE_WORDS];
-                        for(int i = 0; i < _DFU_TRANSFER_SIZE_WORDS; i++)
-                            data[i] = data_buffer[i];
-                        dfu.return_code = DFU_Dnload(request.length, request.value, data, dfu.return_data_len, tmpDfuState);
+                        memcpy(data_local, data_buffer, DFU_TRANSFER_SIZE_BYTES);
+                        dfu.status = DFU_Dnload(request.length, request.value, data_local, dfu.return_data_len, tmpDfuState);
                         break;
 
                     case DFU_UPLOAD:
-                        unsigned data_out[_DFU_TRANSFER_SIZE_WORDS];
-                        dfu.return_data_len = DFU_Upload(request.length, request.value, data_out, tmpDfuState);
-                        for(int i = 0; i < _DFU_TRANSFER_SIZE_WORDS; i++)
-                            data_buffer[i] = data_out[i];
+                        dfu.return_data_len = DFU_Upload(request.length, request.value, data_local, tmpDfuState);
+                        memcpy(data_buffer, data_local, DFU_TRANSFER_SIZE_BYTES);
                         break;
 
                     case DFU_GETSTATUS:
-                        unsigned data_out[_DFU_TRANSFER_SIZE_WORDS];
-                        dfu.return_data_len = DFU_GetStatus(request.length, data_out, tmpDfuState);
-                        for(int i = 0; i < _DFU_TRANSFER_SIZE_WORDS; i++)
-                            data_buffer[i] = data_out[i];
+                        dfu.return_data_len = DFU_GetStatus(request.length, data_local, tmpDfuState);
+                        memcpy(data_buffer, data_local, DFU_TRANSFER_SIZE_BYTES);
                         break;
 
                     case DFU_CLRSTATUS:
@@ -394,22 +388,19 @@ void DFUHandler(server interface i_dfu i)
                         break;
 
                     case DFU_GETSTATE:
-                        unsigned data_out[_DFU_TRANSFER_SIZE_WORDS];
-                        dfu.return_data_len = DFU_GetState(request.length, data_out, tmpDfuState);
-                        for(int i = 0; i < _DFU_TRANSFER_SIZE_WORDS; i++)
-                            data_buffer[i] = data_out[i];
+                        dfu.return_data_len = DFU_GetState(request.length, data_local, tmpDfuState);
+                        memcpy(data_buffer, data_local, DFU_TRANSFER_SIZE_BYTES);
                         break;
 
                     case DFU_ABORT:
                         dfu.return_data_len = DFU_Abort(tmpDfuState);
                         break;
 
-                    /* XMOS Custom DFU requests */
                     case XMOS_DFU_REVERTFACTORY:
                         dfu.return_data_len = XMOS_DFU_RevertFactory();
                         break;
 
-                    case XMOS_BUS_RESET:
+                    case XMOS_DFU_BUS_RESET:
                         // value is 1 when bus reset is entering DFU mode and 0 when bus reset is from APP mode
                         if (request.value)
                         {
@@ -432,11 +423,11 @@ void DFUHandler(server interface i_dfu i)
                             tmpDfuState = STATE_APP_IDLE;
                         }
                         // Non-zero return value means DFU mode.
-                        dfu.return_code = request.value;
+                        dfu.status = request.value;
                         break;
 
                     default:
-                        dfu.return_code = 1; // Unrecognised request
+                        dfu.status = DFU_API_ERROR; // Unrecognised request
                         break;
                 }
 				m_DFU_state = tmpDfuState;
