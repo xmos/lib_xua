@@ -88,7 +88,7 @@ static int DFU_Dnload(unsigned int request_len, unsigned int block_num, const un
     if ((DFU_state == STATE_DFU_IDLE) && (request_len == 0))
     {
         DFU_state = STATE_DFU_ERROR;
-        return 0;
+        return 1;
     }
     else if (DFU_state == STATE_DFU_IDLE)
     {

@@ -426,6 +426,29 @@ static unsigned char hidReportDescriptorPtr[] = {
 };
 #endif
 
+#if XUA_DFU_EN
+static void DFUNotifyEntry(NULLABLE_RESOURCE(chanend, c_aud_ctl), int handshake)
+{
+    /* Send STOP_AUDIO_FOR_DFU command. This will either pass through
+        * buffering system (i.e. ep_buffer/decouple) if the device has USB audio
+        * channels. Otherwise this directly interacts with AudioHub
+        * This command needs to be sent such that AudioHub runs the DFUHandler()
+        * task - in the case where AudioHub is running on tile[0] i.e the
+        * flash tile and the USB code (i.e this task) are running on separate
+        * tiles. It also means that Flash pins can be shared with "audio" pins.
+        */
+    assert((c_aud_ctl != null) && msg("DFU not supported when c_aud_ctl is null"));
+    // Stop audio
+    outct(c_aud_ctl, XUA_AUDCTL_SET_SAMPLE_FREQ);
+    outuint(c_aud_ctl, AUDIO_STOP_FOR_DFU);
+    // Handshake
+    if (handshake)
+    {
+        chkct(c_aud_ctl, XS1_CT_END);
+    }
+}
+#endif
+
 unsigned char __attribute__((aligned (4))) hid_desc_word_aligned[sizeof(USB_HID_Descriptor_t)];
 void XUA_Endpoint0_init(chanend c_ep0_out, chanend c_ep0_in, NULLABLE_RESOURCE(chanend, c_aud_ctl),
     chanend c_mix_ctl, chanend c_clk_ctl, CLIENT_INTERFACE(i_dfu, dfuInterface) VENDOR_REQUESTS_PARAMS_DEC_)
@@ -465,7 +488,9 @@ void XUA_Endpoint0_init(chanend c_ep0_out, chanend c_ep0_in, NULLABLE_RESOURCE(c
         DFUdevDesc.iSerialNumber = offsetof(StringDescTable_t, serialStr)/sizeof(char *); /* Same as the run-time mode device descriptor */
     }
     /* Check if device has started in DFU mode */
-    DFUCheckInitState(c_aud_ctl);
+    if (DFUCheckInitState(c_aud_ctl)) {
+        DFUNotifyEntry(c_aud_ctl, 0 /* no handshake for init */);
+    }
 #endif
 
 #ifdef XUA_USB_DESCRIPTOR_OVERWRITE_RATE_RES //change USB descriptor frequencies and bit resolution values here
@@ -748,7 +773,23 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
                 {
                     unsigned interfaceNum = sp.wIndex & 0xff;
 #if XUA_DFU_EN
-                    result = dfu_usb_class_int_requests(ep0_out, ep0_in, &sp, dfuInterface, c_aud_ctl, INTERFACE_NUMBER_DFU);
+                    /* DFU interface number changes based on which mode we are currently running in */
+                    unsigned dfu_if = (DFUModeIsActive()) ? 0 : INTERFACE_NUMBER_DFU;
+
+                    if (interfaceNum == dfu_if)
+                    {
+                        /* If running in application mode stop audio */
+                        /* Don't interrupt audio for save and restore cmds */
+                        static unsigned int notify_audio_stop_for_DFU = 0;
+                        if (!DFUModeIsActive() && !notify_audio_stop_for_DFU)
+                        {
+                            DFUNotifyEntry(c_aud_ctl, 1 /* handshake */);
+                            notify_audio_stop_for_DFU = 1;  // So we notify AUDIO_STOP_FOR_DFU only once
+                        }
+
+                        // TODO - do we need to support alternative interface for DFU?
+                        result = dfu_usb_class_int_requests(ep0_out, ep0_in, &sp, dfuInterface);
+                    }
 #endif
 #if XUA_HID_ENABLED
                     if (interfaceNum == INTERFACE_NUMBER_HID)
@@ -1152,27 +1193,6 @@ void XUA_Endpoint0(chanend c_ep0_out, chanend c_ep0_in, NULLABLE_RESOURCE(chanen
         /* Returns XUD_RES_OKAY for success, XUD_RES_UPDATE for bus status update */
         XUD_Result_t result = USB_GetSetupPacket(ep0_out, ep0_in, &sp);
         XUA_Endpoint0_loop(result, sp, c_ep0_out, c_ep0_in, c_aud_ctl, c_mix_ctl, c_clk_ctl, dfuInterface VENDOR_REQUESTS_PARAMS_);
-    }
-}
-
-void DFUNotifyEntryCallback(NULLABLE_RESOURCE(chanend, c_aud_ctl), int handshake)
-{
-    /* Send STOP_AUDIO_FOR_DFU command. This will either pass through
-        * buffering system (i.e. ep_buffer/decouple) if the device has USB audio
-        * channels. Otherwise this directly interacts with AudioHub
-        * This command needs to be sent such that AudioHub runs the DFUHandler()
-        * task - in the case where AudioHub is running on tile[0] i.e the
-        * flash tile and the USB code (i.e this task) are running on separate
-        * tiles. It also means that Flash pins can be shared with "audio" pins.
-        */
-    assert((c_aud_ctl != null) && msg("DFU not supported when c_aud_ctl is null"));
-    // Stop audio
-    outct(c_aud_ctl, XUA_AUDCTL_SET_SAMPLE_FREQ);
-    outuint(c_aud_ctl, AUDIO_STOP_FOR_DFU);
-    // Handshake
-    if (handshake)
-    {
-        chkct(c_aud_ctl, XS1_CT_END);
     }
 }
 
