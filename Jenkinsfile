@@ -107,17 +107,6 @@ pipeline {
           }
           steps {
             println "Stage running on ${env.NODE_NAME}"
-
-            dir(REPO_NAME) {
-              checkoutScmShallow()
-              dir("${REPO_NAME}/host/xmosdfu") {
-                sh 'cmake -B build'
-                sh 'make -C build'
-                sh 'mkdir -p Linux64'
-                sh 'mv build/xmosdfu Linux64/xmosdfu'
-                archiveArtifacts artifacts: "Linux64/xmosdfu", fingerprint: true
-              }
-            }
           }
           post {
             cleanup {
@@ -135,13 +124,6 @@ pipeline {
 
             dir(REPO_NAME) {
               checkoutScmShallow()
-              dir("${REPO_NAME}/host/xmosdfu") {
-                sh 'cmake -B build'
-                sh 'make -C build'
-                sh 'mkdir -p OSX/x86'
-                sh 'mv build/xmosdfu OSX/x86/xmosdfu'
-                archiveArtifacts artifacts: "OSX/x86/xmosdfu", fingerprint: true
-              }
               dir("host_usb_mixer_control") {
                 sh 'make -f Makefile.OSX'
                 sh 'mkdir -p OSX/x86'
@@ -166,16 +148,11 @@ pipeline {
 
             dir(REPO_NAME) {
               checkoutScmShallow()
-              dir("${REPO_NAME}/host/xmosdfu") {
-                sh 'cmake -B build'
-                sh 'make -C build'
-                sh 'mkdir -p OSX/arm64'
-                sh 'mv build/xmosdfu OSX/arm64/xmosdfu'
-                archiveArtifacts artifacts: "OSX/arm64/xmosdfu", fingerprint: true
-               dir("OSX/arm64") {
-                  stash includes: 'xmosdfu', name: 'macos_xmosdfu'
-                }
-              } // dir("${REPO_NAME}/host/xmosdfu")
+              // Build examples to pull required dependencies into the sandbox for the host app build.
+              // This is required to build the xmosdfu dependency which is used in the Mac HW tests.
+              dir("examples") {
+                xcoreBuild(archiveBins: false)
+              }
               dir("tests/xua_hw_tests/test_control/host")
               {
                 sh 'cmake -B build'
@@ -183,6 +160,16 @@ pipeline {
                 stash includes: 'build/host_control_test', name: 'host_control_test_bin_mac_arm', useDefaultExcludes: false
               } // dir("${REPO_NAME}/tests/xua_hw_tests/test_control/host")
             }
+            dir("lib_dfu/host/xmosdfu") {
+              sh 'cmake -B build'
+              sh 'make -C build'
+              sh 'mkdir -p OSX/arm64'
+              sh 'mv bin/xmosdfu OSX/arm64/xmosdfu'
+              archiveArtifacts artifacts: "OSX/arm64/xmosdfu", fingerprint: true
+              dir("OSX/arm64") {
+                stash includes: 'xmosdfu', name: 'macos_xmosdfu'
+              }
+            } // dir("lib_dfu/host/xmosdfu")
           }
           post {
             cleanup {
@@ -190,31 +177,6 @@ pipeline {
             }
           }
         }  // Build Mac arm host app
-
-        stage('Build Pi host app') {
-          agent {
-            label 'pi'
-          }
-          steps {
-            println "Stage running on ${env.NODE_NAME}"
-
-            dir(REPO_NAME) {
-              checkoutScmShallow()
-              dir("${REPO_NAME}/host/xmosdfu") {
-                sh 'cmake -B build'
-                sh 'make -C build'
-                sh 'mkdir -p RPi'
-                sh 'mv build/xmosdfu RPi/xmosdfu'
-                archiveArtifacts artifacts: "RPi/xmosdfu", fingerprint: true
-              }
-            }
-          }
-          post {
-            cleanup {
-              xcoreCleanSandbox()
-            }
-          }
-        }  // Build Pi host app
 
         stage('Build Windows host app') {
           agent {
@@ -226,13 +188,6 @@ pipeline {
             dir(REPO_NAME) {
               checkoutScmShallow()
               withVS() {
-                dir("${REPO_NAME}/host/xmosdfu") {
-                  bat "cmake -B build -G Ninja"
-                  bat "ninja -C build"
-                  bat 'mkdir win64 && cp build/xmosdfu.exe win64/'
-                  archiveArtifacts artifacts: "win64/xmosdfu.exe", fingerprint: true
-                }
-
                 dir("host_usb_mixer_control") {
                   bat 'msbuild host_usb_mixer_control.vcxproj /property:Configuration=Release /property:Platform=x64'
                   bat 'mkdir Win\\x64'

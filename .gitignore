@@ -1,6 +1,7 @@
 # XMOS bin files
 *.xe
 *.bin
+*.bin.*
 */bin/*
 
 # XMOS temp files
