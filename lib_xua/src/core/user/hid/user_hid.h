@@ -31,7 +31,9 @@ typedef struct hidEvent_t {
   unsigned value;
 } hidEvent_t;
 
+#ifndef HID_MAX_DATA_BYTES
 #define HID_MAX_DATA_BYTES ( 4 )
+#endif
 #define HID_EVENT_INVALID_ID ( 0x100 )
 
 /**
