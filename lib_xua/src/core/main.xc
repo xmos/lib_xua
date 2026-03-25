@@ -466,7 +466,7 @@ int main()
 #define c_clk_ctl null
 #endif
 
-#if (XUA_DFU_EN == 1)
+#if ((XUA_DFU_EN == 1) && (XUA_USB_EN == 1))
     interface i_dfu dfuInterface;
 #else
     #define dfuInterface null
