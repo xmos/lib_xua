@@ -10,4 +10,6 @@
 
 #define DFU_USB_EN XUA_USB_EN
 
+#define DFU_CONTROL_SERVER 0
+
 #endif /* DFU_CONF_H */
