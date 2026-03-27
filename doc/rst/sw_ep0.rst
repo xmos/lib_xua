@@ -62,7 +62,7 @@ device. In this case the setup packet is parsed, the relevant action taken, the
 Class requests
 --------------
 
-Before making the call to ``USB_StandardRequests()`` the setup packet is parsed for Class requests. These are handled in functions such as ``AudioClassRequests_1()``, ``AudioClassRequests_2``, ``DFUDeviceRequests()`` etc depending on the type of request.
+Before making the call to ``USB_StandardRequests()`` the setup packet is parsed for Class requests. These are handled in functions such as ``AudioClassRequests_1()``, ``AudioClassRequests_2``, ``dfu_usb_class_int_requests()`` etc depending on the type of request.
 
 Any device specific requests are handled - in this case Audio Class, MIDI class, DFU requests etc.
 

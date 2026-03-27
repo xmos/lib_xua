@@ -99,6 +99,7 @@ Required libraries (dependencies)
 *********************************
 
 * `lib_adat <https://www.xmos.com/libraries/lib_adat>`_
+* `lib_dfu <https://www.xmos.com/libraries/lib_dfu>`_
 * `lib_locks <https://www.xmos.com/libraries/lib_locks>`_
 * `lib_logging <https://www.xmos.com/libraries/lib_logging>`_
 * `lib_mic_array <https://www.xmos.com/libraries/lib_mic_array>`_
