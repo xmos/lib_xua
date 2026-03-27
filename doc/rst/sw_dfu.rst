@@ -80,7 +80,7 @@ erase is in progress. :numref:`dfu_download_seq_diag` describes the DFU download
 .. note::
 
    Once a valid upgrade image is loaded in flash, on subsequent reboots, the device will boot from the upgrade image.
-   If the upgrade image is invalid, the factory image will be loaded. To revert back to the factory image,
+   If the upgrade image is invalid e.g. invalid CRC, the factory image will be loaded. To revert back to the factory image,
    there is a custom request available ``XMOS_DFU_REVERTFACTORY``.
 
 For further details of DFU the API and the implementation, please see 
