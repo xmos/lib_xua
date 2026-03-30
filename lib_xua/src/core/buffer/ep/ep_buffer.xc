@@ -628,7 +628,7 @@ void XUA_Buffer_Ep(
                     unsigned long long feedbackMul = 64ULL;
 
                     if(usb_speed != XUD_SPEED_HS)
-                        feedbackMul = 8ULL;  /* TODO Use 4 instead of 8 to avoid windows LSB issues? */
+                        feedbackMul = 4ULL;
 
                     /* Number of MCLK ticks in this SOF period (E.g = 125 * 100 = 12500) */
                     int count = u_tmp - lastClock;
@@ -678,7 +678,7 @@ void XUA_Buffer_Ep(
                         }
                         else
                         {
-                            clocks <<= 6;
+                            clocks <<= 7;
                         }
 
                         {
@@ -708,7 +708,7 @@ void XUA_Buffer_Ep(
                     unsigned long long feedbackMul = 64ULL;
 
                     if(usb_speed != XUD_SPEED_HS)
-                        feedbackMul = 8ULL;  /* TODO Use 4 instead of 8 to avoid windows LSB issues? */
+                        feedbackMul = 4ULL;
 
                     /* Number of MCLK ticks in this SOF period (E.g = 125 * 24.576 = 3072) */
                     int count = (int) ((short)(u_tmp - lastClock));
@@ -736,7 +736,7 @@ void XUA_Buffer_Ep(
                         }
                         else
                         {
-                            clocks <<= 6;
+                            clocks <<= 7;
                         }
 #ifdef FB_TOLERANCE_TEST
                         if (clocks > (expected_fb - FB_TOLERANCE) &&
