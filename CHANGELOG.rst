@@ -7,6 +7,8 @@ UNRELEASED
   * ADDED:    Workaround for some Windows hosts ignoring the FS feedback least significant bit.
   * CHANGED:  Migrating DFU support to ``lib_dfu``.
   * CHANGED:  Moved xmosdfu application to ``lib_dfu``.
+  * CHANGED:  Adjust FS async feedback scaling to a coarser granularity (0x20 instead of 0x10)
+  * CHANGED:  FS async feedback averaging window duration to be the same as HS (16ms)
 
   * Changes to dependencies:
 

@@ -624,15 +624,52 @@ void XUA_Buffer_Ep(
                     unsigned usb_speed;
                     GET_SHARED_GLOBAL(usb_speed, g_curUsbSpeed);
 
-                    /* Assuming 48kHz from a 24.576 master clock (0.0407uS period)
-                     * MCLK ticks per SOF = 125uS / 0.0407 = 3072 MCLK ticks per SOF.
-                     * expected Feedback is 48000/8000 = 6 samples. so 0x60000 in 16:16 format.
+                    /* Assuming 48kHz from a 24.576 master clock (0.0407uS period).
+                     * Expected feedback is in samples per SOF coded in 16.16 format for HS and
+                     * 10.14 format for FS.
+                     * This is calculated as MCLKs/SOF * sampling_rate, summed over
+                     * 16ms worth of SOFs (128 SOFs for HS and 16 SOFs for FS),
+                     * and divided by the MCLK frequency.
+                     *
+                     * MCLKs/SOF is measured every SOF period.
+                     *
+                     * (MCLKs/SOF)*(samples/second)/(MCLKs/second) = samples/SOF
+                     *
+                     * For HS, MCLK ticks per SOF = 125e-6 * 24.576e6 = 3072 MCLK ticks per SOF.
+                     * expected nominal Feedback is 48000/8000 = 6 samples per SOF. so 0x60000 in 16:16 format.
                      * Average over 128 SOFs - 128 x 3072 = 0x60000.
+                     *
+                     * For FS, MCLK ticks per SOF = 1e-3*24.576e6 = 24576 MCLK ticks per SOF.
+                     * Expected nominal feedback is 48000/1000 = 48 samples per SOF, so 0xc0000 in 10.14 format.
                      */
                     unsigned long long feedbackMul = 64ULL;
+                    int feedbackWindowSofs = 128;
 
-                    if(usb_speed != XUD_SPEED_HS)
-                        feedbackMul = 4ULL;
+                    if(usb_speed != XUD_SPEED_HS) {
+                        /* feedbackMul/2 for 0x20 update granularity:
+                         * Windows ignores updates in the LSB.
+                         * Example: 0x10 in 0xc0010 is ignored, so it is treated as 0xc0000.
+                         * To update with 0x10 granularity, don't do feedbackMul / 2 and
+                         * change the >> 7 below to >> 6.
+                         */
+                        feedbackMul = feedbackMul / 2; // for 0x20 update granularity, since windows ignores update in the LSB (for example, the 0x10 in 0xc0010 is ignored and it's treated as 0xc0000)
+                        feedbackWindowSofs = feedbackWindowSofs / 8; // To average over the same time window as HS
+                    }
+                    /* For HS, feedbackMul = 64, summed over 128 SOFs, so nominally (assuming
+                    MCLKs/SOF is the same over all the SOFs), the calculation goes
+                    (MCLKs/SOF * Fs * 64 * 128)/MCLK_freq = (MCLKs/SOF * Fs * 2^13)/MCLK_freq.
+                    A left shift of << 3, gets it from .13 to .16 format
+                    */
+
+                    /* For FS, feedbackMul = 32, summed over 16 SOFs, so nominally (assuming
+                    MCLKs/SOF is the same over all the SOFs), the calculation goes
+                    (MCLKs/SOF * Fs * 32 * 16)/MCLK_freq = (MCLKs/SOF * Fs * 2^9)/MCLK_freq.
+                    A left shift of << 7, gets it from .9 to .16 format (for use internally) and a further
+                    right shift >> 2 to go from .16 to .14 format.
+                    Note that a << 7 and a >> 2 mean an effective left shift of 5, which means that
+                    the feedback will always be updated at a granularity of 32 (0x20) to workaround Windows
+                    ignoring LSB of the feedback issue.
+                    */
 
 #if XUA_FB_USE_REF_CLOCK
                     /* Number of MCLK ticks in this SOF period (E.g = 125 * 100 = 12500) */
@@ -666,29 +703,29 @@ void XUA_Buffer_Ep(
                     /* Number of MCLK ticks in this SOF period (E.g = 125 * 24.576 = 3072) */
                     int count = (int) ((short)(u_tmp - lastClock));
 
-                    unsigned long long full_result = count * feedbackMul * sampleFreq;
+                    unsigned long long full_result = count * feedbackMul * sampleFreq; // mclks/sof * samples/sec * feedbackMul
 #endif
                     clockcounter += full_result;
                     /* Store MCLK for next time around... */
                     lastClock = u_tmp;
 
                     /* Reset counts based on SOF counting.  Expect 16ms (128 HS SOFs/16 FS SOFS) per feedback poll
-                     * We always count 128 SOFs, so 16ms @ HS, 128ms @ FS */
-                    if(sofCount == 128)
+                     * We always count 16ms worth of SOFs, so 128 SOFs @ HS, 16 SOFs @ FS */
+                    if(sofCount == feedbackWindowSofs)
                     {
                         sofCount = 0;
 
                         clockcounter += mod_from_last_time;
-                        clocks = clockcounter / masterClockFreq;
+                        clocks = clockcounter / masterClockFreq; // samples_per_sof scaled
                         mod_from_last_time = clockcounter % masterClockFreq;
 
                         if(usb_speed == XUD_SPEED_HS)
                         {
-                            clocks <<= 3;
+                            clocks <<= 3; // .13 to .16 format
                         }
                         else
                         {
-                            clocks <<= 7;
+                            clocks <<= 7; // .9 to .16 format
                         }
 #ifdef FB_TOLERANCE_TEST
                         if (clocks > (expected_fb - FB_TOLERANCE) &&
@@ -705,7 +742,7 @@ void XUA_Buffer_Ep(
                             }
                             else
                             {
-                                fb_clocks[0] = clocks >> 2;
+                                fb_clocks[0] = clocks >> 2; // from .16 to .14 format
                             }
                         }
 #ifdef FB_TOLERANCE_TEST
