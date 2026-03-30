@@ -266,7 +266,7 @@ void XUA_Buffer_Ep(
     xassert(!isnull(p_off_mclk) && "Error: must provide non-null MCLK count port if using asynchronous mode and not using reference clock");
 #endif
 #endif
-    
+
 #if (MAX_FREQ != MIN_FREQ) || (XUA_SYNCMODE != XUA_SYNCMODE_ADAPT)
     unsigned sampleFreq = DEFAULT_FREQ;
     unsigned clocks = 0;
@@ -624,12 +624,17 @@ void XUA_Buffer_Ep(
                     unsigned usb_speed;
                     GET_SHARED_GLOBAL(usb_speed, g_curUsbSpeed);
 
-#if XUA_FB_USE_REF_CLOCK
+                    /* Assuming 48kHz from a 24.576 master clock (0.0407uS period)
+                     * MCLK ticks per SOF = 125uS / 0.0407 = 3072 MCLK ticks per SOF.
+                     * expected Feedback is 48000/8000 = 6 samples. so 0x60000 in 16:16 format.
+                     * Average over 128 SOFs - 128 x 3072 = 0x60000.
+                     */
                     unsigned long long feedbackMul = 64ULL;
 
                     if(usb_speed != XUD_SPEED_HS)
                         feedbackMul = 4ULL;
 
+#if XUA_FB_USE_REF_CLOCK
                     /* Number of MCLK ticks in this SOF period (E.g = 125 * 100 = 12500) */
                     int count = u_tmp - lastClock;
 
@@ -656,67 +661,14 @@ void XUA_Buffer_Ep(
                             full_result++;
                         }
                     }
-
-                    clockcounter += full_result;
-
-                    /* Store MCLK for next time around... */
-                    lastClock = u_tmp;
-
-                    /* Reset counts based on SOF counting.  Expect 16ms (128 HS SOFs/16 FS SOFS) per feedback poll
-                     * We always count 128 SOFs, so 16ms @ HS, 128ms @ FS */
-                    if(sofCount == 128)
-                    {
-                        sofCount = 0;
-
-                        clockcounter += mod_from_last_time;
-                        clocks = clockcounter / masterClockFreq;
-                        mod_from_last_time = clockcounter % masterClockFreq;
-
-                        if(usb_speed == XUD_SPEED_HS)
-                        {
-                            clocks <<= 3;
-                        }
-                        else
-                        {
-                            clocks <<= 7;
-                        }
-
-                        {
-                            int usb_speed;
-                            asm volatile("stw %0, dp[g_speed]"::"r"(clocks));   // g_speed = clocks
-
-                            GET_SHARED_GLOBAL(usb_speed, g_curUsbSpeed);
-
-                            if (usb_speed == XUD_SPEED_HS)
-                            {
-                                (fb_clocks, unsigned[])[0] = clocks;
-                            }
-                            else
-                            {
-                                (fb_clocks, unsigned[])[0] = clocks >> 2;
-                            }
-                        }
-                        clockcounter = 0;
-                    }
 #else
-                    /* Assuming 48kHz from a 24.576 master clock (0.0407uS period)
-                     * MCLK ticks per SOF = 125uS / 0.0407 = 3072 MCLK ticks per SOF.
-                     * expected Feedback is 48000/8000 = 6 samples. so 0x60000 in 16:16 format.
-                     * Average over 128 SOFs - 128 x 3072 = 0x60000.
-                     */
-
-                    unsigned long long feedbackMul = 64ULL;
-
-                    if(usb_speed != XUD_SPEED_HS)
-                        feedbackMul = 4ULL;
 
                     /* Number of MCLK ticks in this SOF period (E.g = 125 * 24.576 = 3072) */
                     int count = (int) ((short)(u_tmp - lastClock));
 
                     unsigned long long full_result = count * feedbackMul * sampleFreq;
-
+#endif
                     clockcounter += full_result;
-
                     /* Store MCLK for next time around... */
                     lastClock = u_tmp;
 
@@ -763,7 +715,6 @@ void XUA_Buffer_Ep(
 #endif
                         clockcounter = 0;
                     }
-#endif
                     sofCount++;
                 }
 #endif
