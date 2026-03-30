@@ -9,7 +9,7 @@ lib_xua change log
 
   * Changes to dependencies:
 
-    - lib_dfu: Added dependency 1.1.0
+    - lib_dfu: Added dependency 2.0.0
 
 5.3.0
 -----
