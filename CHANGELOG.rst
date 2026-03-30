@@ -9,7 +9,11 @@ lib_xua change log
 
   * Changes to dependencies:
 
-    - lib_dfu: Added dependency 1.1.0
+    - lib_dfu: Added dependency 2.0.0
+
+    - lib_mic_array: 6.0.0 -> 7.0.0
+
+    - lib_xcore_math: 2.4.0 -> 2.4.1
 
 5.3.0
 -----
