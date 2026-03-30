@@ -1134,7 +1134,19 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
             }
 
 #if XUA_DFU_EN
+#if (XUA_XUD_TILE_NUM != 0) && (XUA_AUDIO_IO_TILE_NUM == 0)
+            /* Support for 216-MC board, only process bus-reset event when DFU mode is active */
+            if (DFUModeIsActive())
+            {
+                DFUProcessResetState(dfuInterface);
+            }
+            else
+            {
+                (void)DFUCheckInitState();
+            }
+#else
             DFUProcessResetState(dfuInterface);
+#endif /* (XUA_XUD_TILE_NUM != 0) && (XUA_AUDIO_IO_TILE_NUM == 0) */
 #endif
         }
         else
