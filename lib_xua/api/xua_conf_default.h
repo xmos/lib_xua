@@ -1935,4 +1935,43 @@ enum USBEndpointNumber_Out
  */
 #define ADJUSTABLE_MCLK_REQUIRED  ((XUA_SYNCMODE == XUA_SYNCMODE_SYNC) || XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
 
+/**
+ * @brief UAC2.0 Audio channel location bit-mask for a given channel count.
+ *
+ * This macro is used when building UAC2.0 descriptors to populate the
+ * channel cluster spatial-location bitmap (``bmChannelConfig`` in
+ * UAC2.0 ``Audio_Out_ClassStreamInterface`` and ``Audio_Out_InputTerminal`` descriptors).
+ *
+ * @param ch Number of channels in the stream.
+ *
+ * @return Bitwise OR of channel-position flags corresponding to the
+ * selected channel layout.
+ *
+ * @note Applications may override this macro in ``xua_conf.h`` to provide a
+ * custom speaker/channel layout.
+ */
+#ifndef XUA_OUTPUT_AUDIO20_CHANNEL_MASK
+#define XUA_OUTPUT_AUDIO20_CHANNEL_MASK(ch) AUDIO20_DEFAULT_CHANNEL_MASK(ch)
+#endif
+
+
+/**
+ * @brief UAC1.0 Audio channel location bit-mask for a given channel count.
+ *
+ * This macro is used when building UAC1.0 descriptors to populate the
+ * channel cluster spatial-location bitmap (``wChannelConfig`` in
+ * UAC1.0 CS_Interface Input Terminal 1 descriptor).
+ *
+ * @param ch Number of channels in the stream.
+ *
+ * @return Bitwise OR of channel-position flags corresponding to the
+ * selected channel layout.
+ *
+ * @note Applications may override this macro in ``xua_conf.h`` to provide a
+ * custom speaker/channel layout.
+ */
+#ifndef XUA_OUTPUT_AUDIO10_CHANNEL_MASK
+#define XUA_OUTPUT_AUDIO10_CHANNEL_MASK(ch) AUDIO10_DEFAULT_CHANNEL_MASK(ch)
+#endif
+
 #endif /* _XUA_CONF_DEFAULT_H_ */

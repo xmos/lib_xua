@@ -1000,7 +1000,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
             .bAssocTerminal            = 0x00,
             .bCSourceID                = ID_CLKSEL,
             .bNrChannels               = NUM_USB_CHAN_OUT,
-            .bmChannelConfig           = 0x00000000,                               /* TODO. Set me! */
+            .bmChannelConfig           = XUA_OUTPUT_AUDIO20_CHANNEL_MASK(NUM_USB_CHAN_OUT),                               /* TODO. Set me! */
             .iChannelNames             = offsetof(StringDescTable_t, outputChanStr_1)/sizeof(char *),
             .bmControls                =  0x0000,
             .iTerminal                 = offsetof(StringDescTable_t, usbInputTermStr_Audio2)/sizeof(char *)
@@ -1174,8 +1174,8 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
             .bDescriptorSubtype        = UAC_CS_AC_INTERFACE_SUBTYPE_INPUT_TERMINAL,
             .bTerminalID               = ID_IT_AUD,
 #if XUA_DESC_INPUT_TYPE_LINE_IN
-            .wTerminalType             = UAC_TT_EXTERNAL_TERMTYPE_LINE_CONNECTOR,            
-#else            
+            .wTerminalType             = UAC_TT_EXTERNAL_TERMTYPE_LINE_CONNECTOR,
+#else
             .wTerminalType             = UAC_TT_INPUT_TERMTYPE_MICROPHONE,
 #endif //
             .bAssocTerminal            = 0x00,
@@ -1498,7 +1498,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
         UAC_FORMAT_TYPE_I,                      /* 5  bFormatType */
         STREAM_FORMAT_OUTPUT_1_DATAFORMAT,      /* 6:10  bmFormats (note this is a bitmap) */
         HS_STREAM_FORMAT_OUTPUT_1_CHAN_COUNT,   /* 11 bNrChannels */
-        0x00000000,                             /* 12:14: bmChannelConfig */
+        XUA_OUTPUT_AUDIO20_CHANNEL_MASK(HS_STREAM_FORMAT_OUTPUT_1_CHAN_COUNT), /* 12:14: bmChannelConfig */
         .iChannelNames                 = offsetof(StringDescTable_t, outputChanStr_1)/sizeof(char *),
     },
 
@@ -1595,7 +1595,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
         UAC_FORMAT_TYPE_I,                      /* 5  bFormatType */
         STREAM_FORMAT_OUTPUT_2_DATAFORMAT,      /* 6:10  bmFormats (note this is a bitmap) */
         HS_STREAM_FORMAT_OUTPUT_2_CHAN_COUNT,   /* 11 bNrChannels */
-        0x00000000,                             /* 12:14: bmChannelConfig */
+        XUA_OUTPUT_AUDIO20_CHANNEL_MASK(HS_STREAM_FORMAT_OUTPUT_2_CHAN_COUNT), /* 12:14: bmChannelConfig */
         .iChannelNames                 = (offsetof(StringDescTable_t, outputChanStr_1)/sizeof(char *)),
     },
 
@@ -1692,7 +1692,7 @@ USB_Config_Descriptor_Audio2_t cfgDesc_Audio2=
         UAC_FORMAT_TYPE_I,                      /* 5  bFormatType */
         STREAM_FORMAT_OUTPUT_3_DATAFORMAT,      /* 6:10  bmFormats (note this is a bitmap) */
         HS_STREAM_FORMAT_OUTPUT_3_CHAN_COUNT,   /* 11 bNrChannels */
-        0x00000000,                             /* 12:14: bmChannelConfig */
+        XUA_OUTPUT_AUDIO20_CHANNEL_MASK(HS_STREAM_FORMAT_OUTPUT_3_CHAN_COUNT), /* 12:14: bmChannelConfig */
         .iChannelNames                 = offsetof(StringDescTable_t, outputChanStr_1)/sizeof(char *),
     },
 
@@ -2396,8 +2396,6 @@ unsigned char cfgDesc_Audio1[] =
 
 
 #if (NUM_USB_CHAN_OUT > 0)
-#define CHANNEL_CONFIG_OUT (0xFF >> (8 - NUM_USB_CHAN_OUT_FS))
-
     /* CS_Interface Input Terminal 1 Descriptor - USB streaming Host to Device */
     0x0C,
     UAC_CS_DESCTYPE_INTERFACE,            /* bDescriptorType (UAC_CS_DESCTYPE_INTERFACE) */
@@ -2406,7 +2404,7 @@ unsigned char cfgDesc_Audio1[] =
     0x01, 0x01,                           /* wTerminalType (USB Streaming) */
     0x00,                                 /* Associated terminal - unused  */
     NUM_USB_CHAN_OUT_FS,                  /* bNrChannels */
-    CHANNEL_CONFIG_OUT, 0x00,             /* wChannelConfig */
+    U16_TO_U8S_LE(XUA_OUTPUT_AUDIO10_CHANNEL_MASK(NUM_USB_CHAN_OUT_FS)), /* wChannelConfig */
     offsetof(StringDescTable_t, outputChanStr_1)/sizeof(char *), /* iChannelNames */
     offsetof(StringDescTable_t, usbInputTermStr_Audio1)/sizeof(char *), /* iTerminal */
 

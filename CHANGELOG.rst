@@ -1,6 +1,12 @@
 lib_xua change log
 ==================
 
+UNRELEASED
+----------
+
+  * ADDED: Configurable output channel layout macros for populating UAC2 ``bmChannelConfig``
+    and UAC1 ``wChannelConfig`` descriptor fields
+
 5.4.0
 -----
 
