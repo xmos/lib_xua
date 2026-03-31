@@ -22,15 +22,8 @@
 #include "xua_user_descriptors_incl.h"
 #endif
 
-
-// Enable BOS descriptor only when DFU is enabled since the only capability we advertise is the MSOS desc with DFU interface enumerating as WinUSB.
-// Enumerating with 0 capabilities doesn't seem to be allowed
-#if XUA_DFU_EN
-    #define _XUA_ENABLE_BOS_DESC (1)
-#elif (XUA_USB_CONTROL_DESCS && ENUMERATE_CONTROL_INTF_AS_WINUSB)
-    #define _XUA_ENABLE_BOS_DESC (1)
-#else
-    #define _XUA_ENABLE_BOS_DESC (0)
+#ifndef _XUA_ENABLE_BOS_DESC
+#error _XUA_ENABLE_BOS_DESC not defined
 #endif
 
 #define STR_TABLE_ENTRY(name) char * name

@@ -15,6 +15,18 @@
 #include <stdio.h>
 #include "xua.h"
 
+// Enable BOS descriptor only when either DFU or control interface enumerating as winusb is enabled
+// since the only capability we advertise is the MSOS desc with DFU/control interface enumerating as WinUSB.
+// Enumerating with 0 capabilities doesn't seem to be allowed
+#if XUA_DFU_EN
+    #define _XUA_ENABLE_BOS_DESC (1)
+#elif (XUA_USB_CONTROL_DESCS && ENUMERATE_CONTROL_INTF_AS_WINUSB)
+    #define _XUA_ENABLE_BOS_DESC (1)
+#else
+    #define _XUA_ENABLE_BOS_DESC (0)
+#endif
+/* Keep descriptor .h includes below this point, after _XUA_ENABLE_BOS_DESC is defined above. */
+
 #if XUA_USB_EN
 #include "msos_descriptors.h"
 #include "msos_helpers.h"
