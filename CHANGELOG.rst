@@ -1,16 +1,20 @@
 lib_xua change log
 ==================
 
-UNRELEASED
-----------
+5.4.0
+-----
 
-  * CHANGED:  Migrating DFU support to ``lib_dfu``.
-  * CHANGED:  Moved xmosdfu application to ``lib_dfu``.
+  * ADDED:    DFU types now common to ``lib_dfu``
+  * CHANGED:  Moved `xmosdfu` application to ``lib_dfu``
 
   * Changes to dependencies:
 
-    - lib_dfu: Added dependency 1.1.0
-  
+    - lib_dfu: Added dependency 2.0.0
+
+    - lib_mic_array: 6.0.0 -> 7.0.0
+
+    - lib_xcore_math: 2.4.0 -> 2.4.1
+
 5.3.0
 -----
 
