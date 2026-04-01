@@ -135,6 +135,9 @@ Output/playback
 .. doxygendefine:: STREAM_FORMAT_OUTPUT_2_DATAFORMAT
 .. doxygendefine:: STREAM_FORMAT_OUTPUT_3_DATAFORMAT
 
+.. doxygendefine:: XUA_OUTPUT_AUDIO20_CHANNEL_MASK
+.. doxygendefine:: XUA_OUTPUT_AUDIO10_CHANNEL_MASK
+
 Input/recording
 ^^^^^^^^^^^^^^^
 

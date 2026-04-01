@@ -3,6 +3,8 @@
 #ifndef _XUA_CONF_FULL_H_
 #define _XUA_CONF_FULL_H_
 
+#include "xua_ep0_audio_channel_layout.h"
+
 #ifdef __xua_conf_h_exists__
     #include "xua_conf.h"
 #endif
