@@ -19,6 +19,12 @@ void AudioHwShutdown()
 void AudioHwConfig(unsigned samFreq, unsigned mClk, unsigned dsdMode, unsigned sampRes_DAC, unsigned sampRes_ADC) __attribute__ ((weak));
 void AudioHwConfig(unsigned samFreq, unsigned mClk, unsigned dsdMode, unsigned sampRes_DAC, unsigned sampRes_ADC)
 {
+    (void)samFreq;
+    (void)mClk;
+    (void)dsdMode;
+    (void)sampRes_DAC;
+    (void)sampRes_ADC;
+
     return;
 }
 
