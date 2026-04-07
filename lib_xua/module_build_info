@@ -16,7 +16,7 @@ DEPENDENT_MODULES = lib_adat(>=2.0.1) \
                     lib_xassert(>=4.3.2) \
                     lib_xud(>=4.0.1) \
                     lib_mic_array(>=7.0.0) \
-                    lib_dfu(>=2.0.0)
+                    lib_dfu
 
 MODULE_XCC_FLAGS = $(XCC_FLAGS) \
                    -O3 \
@@ -41,6 +41,7 @@ OPTIONAL_HEADERS += xua_conf.h \
 					xua_conf_declarations.h \
 					xua_conf_cores.h \
 					xua_conf_tasks.h \
+                    xua_conf_dfu.h \
 					static_hid_report.h \
 					xua_user_descriptors_incl.h \
 					xua_user_descriptors_decl.h \

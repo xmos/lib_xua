@@ -10,4 +10,6 @@
 
 #define DFU_USB_EN XUA_USB_EN
 
+#define DFU_BCD_DEVICE BCD_DEVICE
+
 #endif /* DFU_CONF_H */

@@ -89,9 +89,11 @@ PDM microphones
 DFU
 ^^^
 
-.. doxygendefine:: XUA_DFU_EN
+Please see ``lib_dfu`` documentation for additional configuration options,
+these defines can be overridden in an optional header file ``xua_conf_dfu.h``
+file or in the application's ``CMakeLists.txt`` for the relevant build configuration.
 
-.. .. doxygendefine:: DFU_FLASH_DEVICE
+.. doxygendefine:: XUA_DFU_EN
 
 HID
 ^^^
