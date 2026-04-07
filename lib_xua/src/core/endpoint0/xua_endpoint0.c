@@ -444,7 +444,7 @@ static void DFUNotifyEntry(NULLABLE_RESOURCE(chanend, c_aud_ctl), int handshake)
     /* Send STOP_AUDIO_FOR_DFU command. This will either pass through
         * buffering system (i.e. ep_buffer/decouple) if the device has USB audio
         * channels. Otherwise this directly interacts with AudioHub
-        * This command needs to be sent such that AudioHub runs the DFUHandler()
+        * This command needs to be sent such that AudioHub runs the dfu_usb_server()
         * task - in the case where AudioHub is running on tile[0] i.e the
         * flash tile and the USB code (i.e this task) are running on separate
         * tiles. It also means that Flash pins can be shared with "audio" pins.
@@ -500,7 +500,7 @@ void XUA_Endpoint0_init(chanend c_ep0_out, chanend c_ep0_in, NULLABLE_RESOURCE(c
         DFUdevDesc.iSerialNumber = offsetof(StringDescTable_t, serialStr)/sizeof(char *); /* Same as the run-time mode device descriptor */
     }
     /* Check if device has started in DFU mode */
-    if (DFUCheckInitState(c_aud_ctl)) {
+    if (DFUCheckInitState()) {
         DFUNotifyEntry(c_aud_ctl, 0 /* no handshake for init */);
     }
 #endif

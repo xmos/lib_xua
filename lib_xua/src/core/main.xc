@@ -39,8 +39,7 @@
 
 
 #if (XUA_DFU_EN == 1)
-[[distributable]]
-void DFUHandler(server interface i_dfu i);
+#include "dfu_usb_server.h"
 #endif
 
 /* Audio I/O - Port declarations */
@@ -531,9 +530,9 @@ int main()
 #if XUA_USB_EN
 #if ((XUA_XUD_TILE_NUM == 0) && (XUA_DFU_EN == 1))
             /* Check if USB is on the flash tile (tile 0) */
-            /* Expect to be distrbuted into XUA_Endpoint0() */
+            /* Expect to be distributed into XUA_Endpoint0() */
             [[distribute]]
-            DFUHandler(dfuInterface);
+            dfu_usb_server(dfuInterface);
 #endif
 
             /* Core USB task, buffering, USB etc */
@@ -706,7 +705,7 @@ int main()
 #if (XUA_XUD_TILE_NUM != 0) && (XUA_AUDIO_IO_TILE_NUM != 0) && (XUA_DFU_EN == 1)
         /* Run flash code on its own - hope it gets combined */
         //#warning Running DFU flash code on its own
-        on stdcore[0]: DFUHandler(dfuInterface);
+        on stdcore[0]: dfu_usb_server(dfuInterface);
 #endif
 #endif
 

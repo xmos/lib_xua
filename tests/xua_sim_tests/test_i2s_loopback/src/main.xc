@@ -126,11 +126,11 @@ void generator(chanend c_checker, chanend c_out)
         debug_printf("PASS\n");
       }
       outct(c_out, XUA_AUDCTL_SET_SAMPLE_FREQ);
-      //inuint(c_out); //This causes the DFUhandler to be called with exceptiopn in slave mode so skip this - we are out of here anyhow
+      //inuint(c_out); //This causes the dfu_usb_server to be called with exception in slave mode so skip this - we are out of here anyhow
 
     /* Give some time for AudioHub() to react to the command to stop accessing ports otherwise exit()
      * will trap in the port destructors
-     * Note, this is a bit of a cludge since ideally program would completely shutdown, however, AudioHub
+     * Note, this is a bit of a kludge since ideally program would completely shutdown, however, AudioHub
      * has a while(1)
      */
       timer t;
