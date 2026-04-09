@@ -15,6 +15,10 @@
     #include "xua_conf.h"
 #endif
 
+#ifdef __xua_conf_dfu_h_exists__
+    #include "xua_conf_dfu.h"
+#endif
+
 /*
  * Tile arrangement defines
  */
@@ -494,7 +498,7 @@
  */
 
 /**
- * @brief Disable USB functionalty just leaving AudioHub
+ * @brief Disable USB functionality just leaving AudioHub
  *
  * Default: Enabled
  */
