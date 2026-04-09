@@ -45,7 +45,7 @@ set(LIB_DEPENDENT_MODULES "lib_adat(2.0.1)"
                           "lib_xassert(4.3.2)"
                           "lib_mic_array(7.0.0)"
                           "lib_xud(4.0.1)"
-                          "humphrey-xmos/lib_dfu(feature/xua_support)")
+                          "humphrey-xmos/lib_dfu(feature/xua-support)")
 
 set(LIB_COMPILER_FLAGS -O3
                        -fasm-linenum

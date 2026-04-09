@@ -15,7 +15,7 @@ The USB device descriptors expose a DFU interface that handles updates to the bo
 The host sends DFU requests as Host to Device Class requests to the DFU interface.
 On receiving DFU commands from the host, the ``dfu_usb_class_int_requests`` function is called from the Endpoint 0 thread.
 This function calls the DFU handler functions over the ``dfuInterface`` XC interface.
-The DFU handler thread, ``DFUHandler`` that implements the server side of the ``dfuInterface`` has to be
+The DFU handler task, ``dfu_usb_server`` that implements the server side of the ``dfuInterface`` has to be
 scheduled on the same tile as the flash so it can access the flash memory.
 The ``dfuInterface`` interface essentially links USB to the
 `XMOS flash user library <https://www.xmos.com/documentation/XM-014363-PC/html/tools-guide/tools-ref/libraries/libquadflash-api/libquadflash-api.html>`_.
