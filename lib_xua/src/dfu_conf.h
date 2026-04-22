@@ -19,12 +19,18 @@
 
 /** See lib_dfu for documentation of the following. */
 
+#if (DFU_USB_EN && (XUA_XUD_TILE_NUM == 0))
+
 #ifndef POLL_TIMEOUT_DNLOAD_ENTRY_MSEC
 #define POLL_TIMEOUT_DNLOAD_ENTRY_MSEC 0
 #endif
 
+/*
+ * Erase cycle takes 500ms, this is the value reported to the host.
+ * As we are running operations inband the Erase happens while the host is waiting.
+ */
 #ifndef POLL_TIMEOUT_DNLOAD_ERASE_MSEC
-#define POLL_TIMEOUT_DNLOAD_ERASE_MSEC 8
+#define POLL_TIMEOUT_DNLOAD_ERASE_MSEC 0
 #endif
 
 #ifndef POLL_TIMEOUT_DNLOAD_FIRST_WRITE_MSEC
@@ -38,5 +44,11 @@
 #ifndef POLL_TIMEOUT_DNLOAD_MANIFEST_MSEC
 #define POLL_TIMEOUT_DNLOAD_MANIFEST_MSEC 0
 #endif
+
+#else
+
+/* Use ib_dfu defaults when running on other tiles */
+
+#endif /* DFU_USB_EN && (XUA_XUD_TILE_NUM == 0) */
 
 #endif /* DFU_CONF_H */
