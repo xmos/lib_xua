@@ -62,9 +62,7 @@ Known issues
 * Before DoP mode is detected a small number of DSD samples will be played out as PCM via I2S (lib_xua #162)
 * Volume control settings currently affect samples in both DSD and PCM modes. This results in invalid DSD output if volume control not set to 0 (#14887)
 * 88.2kHz and 176.4kHz sample frequencies are not exposed in Windows control panels.  These are known OS restrictions.
-* When DFU flash access fails the device NAKS the host indefinitely (sw_usb_audio #54)
 * In synchronous mode there is no nice transition of the reference signal when moving between internal and SOF clocks (lib_xua #275)
-* Binary images exceeding FLASH_MAX_UPGRADE_SIZE fail silently on DFU download (lib_xua #165)
 * Input does not come out of underflow for USB Audio Class 2 when sample rate is 16kHz and channel count is 2. (lib_xua #434). This will result in silence being streamed to the host. Please use USB Audio Class 1 for low channel count and sample rates.
 
 ****************
