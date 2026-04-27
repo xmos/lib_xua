@@ -69,7 +69,7 @@ def erase_flash(pytestconfig):
 
 def check_upload_file(upload_file):
     print("check upload file")
-    cmd = f"xflash --analyze {upload_file}".split()
+    cmd = f"xflash --analyze {str(upload_file)}".split()
     ret = subprocess.run(cmd, text=True, capture_output=True, timeout=10)
     assert ret.returncode == 0, f"Failed to analyze upload file, is file corrupted, cmd {cmd}\nstdout:\n{ret.stdout}\nstderr:\n{ret.stderr}"
 

@@ -25,10 +25,6 @@
 #define POLL_TIMEOUT_DNLOAD_ENTRY_MSEC 0
 #endif
 
-/*
- * Erase cycle takes 500ms, this is the value reported to the host.
- * As we are running operations inband the Erase happens while the host is waiting.
- */
 #ifndef POLL_TIMEOUT_DNLOAD_ERASE_MSEC
 #define POLL_TIMEOUT_DNLOAD_ERASE_MSEC 0
 #endif
