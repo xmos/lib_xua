@@ -44,7 +44,7 @@ For example::
         <Port Location="XS1_PORT_1B"  Name="PORT_I2S_LRCLK"/>
         <Port Location="XS1_PORT_1C"  Name="PORT_I2S_BCLK"/>
         <Port Location="XS1_PORT_1D"  Name="PORT_I2S_DAC0"/>
-        <port Location="XS1_PORT_1E"  Name="PORT_I2S_DAC1"/>
+        <Port Location="XS1_PORT_1E"  Name="PORT_I2S_DAC1"/>
         <Port Location="XS1_PORT_1F"  Name="PORT_I2S_ADC0"/>
         <Port Location="XS1_PORT_1G"  Name="PORT_I2S_ADC1"/>
     </Tile>

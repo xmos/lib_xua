@@ -45,7 +45,7 @@
 
 #else
 
-/* Use ib_dfu defaults when running on other tiles */
+/* Use lib_dfu defaults when running on other tiles */
 
 #endif /* DFU_USB_EN && (XUA_XUD_TILE_NUM == 0) */
 
