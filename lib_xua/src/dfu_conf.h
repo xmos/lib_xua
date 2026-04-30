@@ -17,6 +17,8 @@
 
 #define DFU_CONFIG_USB_INBAND_FUNCTIONS (DFU_USB_EN && (XUA_XUD_TILE_NUM == 0))
 
+#define DFU_QUAD_SPI_FLASH XUA_QUAD_SPI_FLASH
+
 /** See lib_dfu for documentation of the following. */
 
 #if (DFU_USB_EN && (XUA_XUD_TILE_NUM == 0))
