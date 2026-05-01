@@ -1,16 +1,21 @@
 lib_xua change log
 ==================
 
-UNRELEASED
-----------
+5.5.0
+-----
 
-  * ADDED: Configurable output channel layout macros for populating UAC2 ``bmChannelConfig``
-    and UAC1 ``wChannelConfig`` descriptor fields
+  * ADDED: Configurable output channel layout macros for populating UAC2
+    ``bmChannelConfig`` and UAC1 ``wChannelConfig`` descriptor fields
   * FIXED: Control and DFU descriptors ordering in UAC1.0 Config descriptor
-  * FIXED: Account for ADAT/SPDIF TX channels in samplesOut sizing in xua_audiohub
+  * FIXED: Account for ADAT/SPDIF TX channels in samplesOut sizing in
+    xua_audiohub
   * CHANGED:  DFU features now supported by ``lib_dfu``
   * CHANGED:  DFU now notified of USB enumeration progress by calling
     dfu_set_configured_state() when USB host sends SET_CONFIGURATION request
+
+  * Changes to dependencies:
+
+    - lib_dfu: 2.0.0 -> 2.1.0
 
 5.4.0
 -----
