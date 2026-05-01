@@ -94,7 +94,7 @@ The codebase expects 1-bit ports to be defined in the application XN file for th
 clock lines for example::
 
     <Port Location="XS1_PORT_1M"  Name="PORT_DSD_DAC0"/>
-    <port Location="XS1_PORT_1N"  Name="PORT_DSD_DAC1"/>
+    <Port Location="XS1_PORT_1N"  Name="PORT_DSD_DAC1"/>
     <Port Location="XS1_PORT_1G"  Name="PORT_DSD_CLK"/>
 
 .. note::

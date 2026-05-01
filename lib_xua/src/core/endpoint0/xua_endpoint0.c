@@ -444,7 +444,7 @@ static void DFUNotifyEntry(NULLABLE_RESOURCE(chanend, c_aud_ctl), int handshake)
     /* Send STOP_AUDIO_FOR_DFU command. This will either pass through
         * buffering system (i.e. ep_buffer/decouple) if the device has USB audio
         * channels. Otherwise this directly interacts with AudioHub
-        * This command needs to be sent such that AudioHub runs the DFUHandler()
+        * This command needs to be sent such that AudioHub runs the dfu_usb_server()
         * task - in the case where AudioHub is running on tile[0] i.e the
         * flash tile and the USB code (i.e this task) are running on separate
         * tiles. It also means that Flash pins can be shared with "audio" pins.
@@ -500,8 +500,9 @@ void XUA_Endpoint0_init(chanend c_ep0_out, chanend c_ep0_in, NULLABLE_RESOURCE(c
         DFUdevDesc.iSerialNumber = offsetof(StringDescTable_t, serialStr)/sizeof(char *); /* Same as the run-time mode device descriptor */
     }
     /* Check if device has started in DFU mode */
-    if (DFUCheckInitState(c_aud_ctl)) {
+    if (dfu_check_init_state()) {
         DFUNotifyEntry(c_aud_ctl, 0 /* no handshake for init */);
+        dfu_force_dfu_mode_active(dfuInterface);
     }
 #endif
 
@@ -740,6 +741,7 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
                         /* Check if moving into a configured state */
                         if((g_currentConfig == 0) && (sp.wValue == 1))
                         {
+                            dfu_usb_set_configured_state();
                             /* Consider host active with valid driver at this point */
                             UserHostActive(1);
                         }
@@ -786,14 +788,14 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
                     unsigned interfaceNum = sp.wIndex & 0xff;
 #if XUA_DFU_EN
                     /* DFU interface number changes based on which mode we are currently running in */
-                    unsigned dfu_if = (DFUModeIsActive()) ? 0 : INTERFACE_NUMBER_DFU;
+                    unsigned dfu_if = (dfu_is_mode_active()) ? 0 : INTERFACE_NUMBER_DFU;
 
                     if (interfaceNum == dfu_if)
                     {
                         /* If running in application mode stop audio */
                         /* Don't interrupt audio for save and restore cmds */
                         static unsigned int notify_audio_stop_for_DFU = 0;
-                        if (!DFUModeIsActive() && !notify_audio_stop_for_DFU)
+                        if (!dfu_is_mode_active() && !notify_audio_stop_for_DFU)
                         {
                             DFUNotifyEntry(c_aud_ctl, 1 /* handshake */);
                             notify_audio_stop_for_DFU = 1;  // So we notify AUDIO_STOP_FOR_DFU only once
@@ -815,7 +817,7 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
                      */
                     if(((interfaceNum == 0) || (interfaceNum == 1) || (interfaceNum == 2))
 #if XUA_DFU_EN
-                            && !DFUModeIsActive()
+                            && !dfu_is_mode_active()
 #endif
                         )
                     {
@@ -871,7 +873,7 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
                     sp.wIndex == MS_OS_20_DESCRIPTOR_INDEX)
                 {
                     int num_interfaces;
-                    if(DFUModeIsActive()) {
+                    if(dfu_is_mode_active()) {
                         // TODO - confirm if this is always one?
                         num_interfaces = DFUcfgDesc.Config.bNumInterfaces;
                     }
@@ -929,7 +931,7 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
                                 case (USB_DESCTYPE_BOS << 8):
                                 {
                                     int num_interfaces;
-                                    if(DFUModeIsActive()) {
+                                    if(dfu_is_mode_active()) {
                                         // TODO - confirm if this is always one?
                                         num_interfaces = DFUcfgDesc.Config.bNumInterfaces;
                                     }
@@ -964,7 +966,7 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
     if(result == XUD_RES_ERR)
     {
 #if XUA_DFU_EN
-        if (!DFUModeIsActive())
+        if (!dfu_is_mode_active())
         {
 #endif
 #if (XUA_AUDIO_CLASS_HS == 2) && (XUA_AUDIO_CLASS_FS == 1)
@@ -1141,6 +1143,7 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
 
             if(g_currentConfig)
             {
+                dfu_usb_clear_configured_state();
                 UserHostActive(0);
                 g_currentConfig = 0;
             }
@@ -1148,16 +1151,16 @@ void XUA_Endpoint0_loop(XUD_Result_t result, USB_SetupPacket_t sp, chanend c_ep0
 #if XUA_DFU_EN
 #if (XUA_XUD_TILE_NUM != 0) && (XUA_AUDIO_IO_TILE_NUM == 0)
             /* Support for 216-MC board, only process bus-reset event when DFU mode is active */
-            if (DFUModeIsActive())
+            if (dfu_is_mode_active())
             {
-                DFUProcessResetState(dfuInterface);
+                dfu_process_reset_state(dfuInterface);
             }
             else
             {
-                (void)DFUCheckInitState();
+                (void)dfu_check_init_state();
             }
 #else
-            DFUProcessResetState(dfuInterface);
+            dfu_process_reset_state(dfuInterface);
 #endif /* (XUA_XUD_TILE_NUM != 0) && (XUA_AUDIO_IO_TILE_NUM == 0) */
 #endif
         }

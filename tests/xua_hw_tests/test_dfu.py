@@ -67,6 +67,12 @@ def erase_flash(pytestconfig):
     assert ret.returncode == 0, f"Failed to erase flash, cmd {cmd}\nstdout:\n{ret.stdout}\nstderr:\n{ret.stderr}"
 
 
+def check_upload_file(upload_file):
+    print("check upload file")
+    cmd = f"xflash --analyze {str(upload_file)}".split()
+    ret = subprocess.run(cmd, text=True, capture_output=True, timeout=10)
+    assert ret.returncode == 0, f"Failed to analyze upload file, is file corrupted, cmd {cmd}\nstdout:\n{ret.stdout}\nstderr:\n{ret.stderr}"
+
 
 def cfg_list():
     bin_dir = Path(__file__).parent / "test_dfu" / "bin"
@@ -116,6 +122,8 @@ def test_dfu(pytestconfig, erase_flash, factory_xe, upgrade_bin, cfg, dfu_app):
         dfu_test.upload(upload_file)
         cfg_version2 = dfu_test.get_bcd_version()
         assert cfg_version2 == cfg_version
+
+        check_upload_file(upload_file)
 
         print("download")
         dfu_test.download(upgrade_bin)

@@ -36,6 +36,6 @@ pyyaml==6.0.2
 # of its own setup.py file, then this list must include an entry for that
 # setup.py file, e.g., '-e .' or '-e ./python' (without the quotes).
 -e git+ssh://git@github.com/xmos/test_support.git@bece044e38686f2f17457069508756bc976a8b6a#egg=test_support
--e git+ssh://git@github.com/xmos/hardware_test_tools.git@fac60ee1842c61f05ddf0b04ec997c5d7684bf24#egg=hardware_test_tools
+-e git+ssh://git@github.com/xmos/hardware_test_tools.git@adddab1c3186496e6683e82c9fe1f509111392bf#egg=hardware_test_tools
 -e git+ssh://git@github0.xmos.com/xmos-int/xtagctl.git@v2.0.0#egg=xtagctl
 

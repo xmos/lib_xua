@@ -72,8 +72,5 @@ set(LIB_COMPILER_FLAGS_xua_ep0_uacreqs.xc ${LIB_COMPILER_FLAGS} -Os -mno-dual-is
 set(LIB_COMPILER_FLAGS_dbcalc.xc ${LIB_COMPILER_FLAGS} -Os -mno-dual-issue)
 set(LIB_COMPILER_FLAGS_audioports.c ${LIB_COMPILER_FLAGS} -Os -mno-dual-issue)
 set(LIB_COMPILER_FLAGS_audioports.xc ${LIB_COMPILER_FLAGS} -Os -mno-dual-issue)
-set(LIB_COMPILER_FLAGS_dfu.xc ${LIB_COMPILER_FLAGS} -Os -mno-dual-issue)
-set(LIB_COMPILER_FLAGS_flash_interface.c ${LIB_COMPILER_FLAGS} -Os -mno-dual-issue)
-set(LIB_COMPILER_FLAGS_flashlib_user.c ${LIB_COMPILER_FLAGS} -Os -mno-dual-issue)
 
 XMOS_REGISTER_MODULE()

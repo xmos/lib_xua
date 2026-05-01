@@ -139,9 +139,9 @@ void XUA_Buffer_Decouple(chanend c_audio_out
 
 /*** BUFFER SIZES ***/
 /* How many packets to allow for in buffer - minimum is 5.
-2 for having in the aud_to_host buffer when it comes out of underflow, space available for 2 more for to accomodate cases when
+2 for having in the aud_to_host buffer when it comes out of underflow, space available for 2 more for to accommodate cases when
 2 pkts from audio hub get written into the aud_to_host buffer within 1 SOF period, and space for 1 extra packet to ensure that
-when the 4th packet gets written to the buffer, there's space to accomodate the next packet, otherwise handle_audio_request() will
+when the 4th packet gets written to the buffer, there's space to accommodate the next packet, otherwise handle_audio_request() will
 drop packets after writing the 4th packet in the buffer
 */
 #define BUFFER_PACKET_COUNT (5)

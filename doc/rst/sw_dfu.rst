@@ -6,7 +6,9 @@ Device Firmware Upgrade (DFU) over USB
 The DFU implementation in ``lib_xua`` is compliant with version 1.1 of
 `Universal Serial Bus Device Class Specification for Device Firmware Upgrade <https://www.usb.org/sites/default/files/DFU_1.1.pdf>`_.
 
-This section describes the DFU implementation in ``lib_xua``, which is supported by ``lib_dfu``.
+This section describes the DFU implementation in ``lib_xua``, which is supported by `lib_dfu <https://www.xmos.com/libraries/lib_dfu>`_ (https://www.xmos.com/libraries/lib_dfu).
+For details of the DFU API and the implementation, please see the `lib_dfu documentation <https://www.xmos.com/documentation/XM-015482-UG/html>`_.
+
 For information about using a DFU loader to send DFU commands to the USB Audio device, refer to appnote
 `AN02019: Using Device Firmware Upgrade (DFU) in USB Audio <www.xmos.com/file/an02019>`_.
 
@@ -15,7 +17,7 @@ The USB device descriptors expose a DFU interface that handles updates to the bo
 The host sends DFU requests as Host to Device Class requests to the DFU interface.
 On receiving DFU commands from the host, the ``dfu_usb_class_int_requests`` function is called from the Endpoint 0 thread.
 This function calls the DFU handler functions over the ``dfuInterface`` XC interface.
-The DFU handler thread, ``DFUHandler`` that implements the server side of the ``dfuInterface`` has to be
+The DFU handler task, ``dfu_usb_server`` that implements the server side of the ``dfuInterface`` has to be
 scheduled on the same tile as the flash so it can access the flash memory.
 The ``dfuInterface`` interface essentially links USB to the
 `XMOS flash user library <https://www.xmos.com/documentation/XM-014363-PC/html/tools-guide/tools-ref/libraries/libquadflash-api/libquadflash-api.html>`_.
@@ -64,18 +66,10 @@ Once the DFU download or upload process is complete, the host sends a ``DETACH``
    system loads the correct driver as the device switches between runtime and DFU modes. The runtime and DFU PID are defined as overridable
    defines ``PID_AUDIO_2`` and ``DFU_PID`` respectively in ``xua_conf_default.h``. Users can define custom PIDs in their application by overriding these defines.
 
-During the DFU download process, on receiving the first ``DFU_DNLOAD`` command (``wBlockNum`` = 0), the device erases
-``FLASH_MAX_UPGRADE_SIZE`` bytes of the upgrade section of the flash. This is done by repeatedly calling the function to erase a flash sector until the entire upgrade section is erased.
-and can take several seconds. To avoid the ``DFU_DNLOAD`` request timing out, the flash erase is instead done in the ``DFU_GETSTATUS`` handling
-code for block 0. So for block 0, the device ends up returning the status as ``dfuDNBUSY`` several times while the flash
-erase is in progress. :numref:`dfu_download_seq_diag` describes the DFU download process.
-
- .. _dfu_download_seq_diag:
- .. uml:: images/dfu_download.plantuml
-    :alt: Message sequence chart for the DFU download operation
-    :caption: Message sequence chart for the DFU download operation
-    :align: center
-    :width: 70%
+During the DFU download process, on receiving the first flash page worth of data via the ``DFU_DNLOAD`` commands, the device erases
+``FLASH_MAX_UPGRADE_SIZE`` bytes of the upgrade section of the flash. This is done by repeatedly calling the function to erase a flash sector until the entire upgrade section is erased
+and can take several seconds. To avoid the ``DFU_DNLOAD`` request timing out, the flash erase is instead done in the ``DFU_GETSTATUS`` handling code.
+While the flash erase is in progress, the device ends up returning the status as ``dfuDNBUSY`` several times. 
 
 .. note::
 

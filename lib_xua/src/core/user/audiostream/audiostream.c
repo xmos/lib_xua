@@ -8,5 +8,6 @@
 void UserAudioStreamState(int inputActive, int outputActive) __attribute__ ((weak));
 void UserAudioStreamState(int inputActive, int outputActive)
 {
-
+    (void)inputActive;
+    (void)outputActive;
 }
