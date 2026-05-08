@@ -1,4 +1,4 @@
-VERSION = 5.4.0
+VERSION = 5.5.0
 
 DEBUG ?= 0
 
@@ -16,7 +16,7 @@ DEPENDENT_MODULES = lib_adat(>=2.0.1) \
                     lib_xassert(>=4.3.2) \
                     lib_xud(>=4.0.1) \
                     lib_mic_array(>=7.0.0) \
-                    lib_dfu
+                    lib_dfu(>=2.1.0)
 
 MODULE_XCC_FLAGS = $(XCC_FLAGS) \
                    -O3 \
