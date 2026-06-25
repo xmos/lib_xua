@@ -936,6 +936,10 @@ void XUA_Buffer_Decouple(chanend c_mix_out
                 {
                     dsdMode = DSD_MODE_NATIVE;
                 }
+                else
+                {
+                    dsdMode = DSD_MODE_OFF;
+                }
 #endif
                 /* Wait for the audio code to request samples and respond with command */
                 g_output_stream_active = 1;
