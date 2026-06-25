@@ -1,6 +1,12 @@
 lib_xua change log
 ==================
 
+UNRELEASED
+---------
+
+  * FIXED:     dsdMode is not reset after switching playback from Native DSD back to PCM
+  * CHANGED:   Improve documentation for audio clock and port configuration
+
 5.5.0
 -----
 
