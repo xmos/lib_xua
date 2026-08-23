@@ -93,10 +93,10 @@ shown below::
     #define _XUA_CONF_H_
 
     /* Output channel count */
-    #define XUA_NUM_USB_CHAN_OUT (2)
+    #define NUM_USB_CHAN_OUT (2)
 
     /* Product string */
-    #define XUA_PRODUCT_STR_A2 "My Product"
+    #define PRODUCT_STR_A2 "My Product"
 
     #endif
 
@@ -165,4 +165,3 @@ If this file exists anywhere in the project source tree, its contents will be in
 Example contents of ``xua_conf_tasks.h``::
 
   on tile[1]: my_user_interface_task(c_usb_to_user_interface);
-

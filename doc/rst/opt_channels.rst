@@ -63,7 +63,7 @@ using defines in :numref:`opt_channel_mc_defines`. All values are in Hz.
    * - Define
      - Description
      - Default
-   * - ``CLK_441``
+   * - ``MCLK_441``
      - Master clock defines for 44100 rates (Hz)
      - ``(256 * 44100)``
    * - ``MCLK_48``
