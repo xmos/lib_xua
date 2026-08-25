@@ -3,15 +3,15 @@
 
 #include "xua.h"
 
-#ifndef MAX_MIX_COUNT
+#ifndef XUA_MAX_MIX_COUNT
 #error
 #endif
 
-#ifndef MIX_INPUTS
+#ifndef XUA_MIX_INPUTS
 #error
 #endif
 
-#if (MAX_MIX_COUNT > 0)
+#if (XUA_MAX_MIX_COUNT > 0)
 
 #define DOMIX_TOP(i) \
 .cc_top doMix##i.function,doMix##i; \
@@ -52,7 +52,7 @@ doMix##i##: ;\
 .size doMix##i, .-doMix##i; \
 .cc_bottom doMix##i##.function;
 
-#define N MIX_INPUTS
+#define N XUA_MIX_INPUTS
 #define BODY(i) \
           ldw       r2,cp[i]; \
           ldw       r11, dp[i];  \
@@ -63,64 +63,64 @@ doMix##i##: ;\
 
 
 
-#if(MAX_MIX_COUNT > 0)
+#if(XUA_MAX_MIX_COUNT > 0)
 DOMIX_TOP(0)
 #include "repeat.h"
 DOMIX_BOT(0)
 #endif
 
 
-#if(MAX_MIX_COUNT > 1)
+#if(XUA_MAX_MIX_COUNT > 1)
 DOMIX_TOP(1)
 #include "repeat.h"
 DOMIX_BOT(1)
 #endif
 
-#if(MAX_MIX_COUNT > 2)
+#if(XUA_MAX_MIX_COUNT > 2)
 DOMIX_TOP(2)
 #include "repeat.h"
 DOMIX_BOT(2)
 #endif
 
-#if(MAX_MIX_COUNT > 3)
+#if(XUA_MAX_MIX_COUNT > 3)
 DOMIX_TOP(3)
 #include "repeat.h"
 DOMIX_BOT(3)
 #endif
 
-#if(MAX_MIX_COUNT > 4)
+#if(XUA_MAX_MIX_COUNT > 4)
 DOMIX_TOP(4)
 #include "repeat.h"
 DOMIX_BOT(4)
 #endif
 
-#if(MAX_MIX_COUNT > 5)
+#if(XUA_MAX_MIX_COUNT > 5)
 DOMIX_TOP(5)
 #include "repeat.h"
 DOMIX_BOT(5)
 #endif
 
-#if(MAX_MIX_COUNT > 6)
+#if(XUA_MAX_MIX_COUNT > 6)
 DOMIX_TOP(6)
 #include "repeat.h"
 DOMIX_BOT(6)
 #endif
 
-#if(MAX_MIX_COUNT > 7)
+#if(XUA_MAX_MIX_COUNT > 7)
 DOMIX_TOP(7)
 #include "repeat.h"
 DOMIX_BOT(7)
 #endif
 
-#if(MAX_MIX_COUNT>8)
-#error MAX_MIX_COUNT>7
+#if(XUA_MAX_MIX_COUNT>8)
+#error XUA_MAX_MIX_COUNT>7
 #endif
 
 /* We need MIX_OUTPUT x setPtr functions */
 
 #undef N
 #undef BODY
-#define N MAX_MIX_COUNT
+#define N XUA_MAX_MIX_COUNT
 .cc_top setPtr.function,setPtr;
 .align    16 ;
 .globl setPtr;

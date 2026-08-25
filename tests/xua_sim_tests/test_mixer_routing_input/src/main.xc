@@ -3,9 +3,9 @@
 
 /* Tests that routing of mixer inputs behaves as expected
  *
- * The device supports MAX_MIX_COUNT mixers each with MIX_INPUTS inputs.
+ * The device supports XUA_MAX_MIX_COUNT mixers each with XUA_MIX_INPUTS inputs.
  *
- * This test also assumes/checks that the default routing into each of the MIX_INPUTS inputs into
+ * This test also assumes/checks that the default routing into each of the XUA_MIX_INPUTS inputs into
  * each of the M mixer units is as follows:
  *
  *   MIXER[0]:
@@ -16,9 +16,9 @@
       USB_TO_HOST[1]    -> MIXER[0].INPUT[NUM_USB_CHAN_OUT+1]
       ...
 
- *   MIXER[MAX_MIX_COUNT-1]:
- *    USB_FROM_HOST[0]  -> MIXER[MAX_MIX_COUNT-1].INPUT[0]
- *    USB_FROM_HOST[1]  -> MIXER[MAX_MIX_COUNT-1].INPUT[1]
+ *   MIXER[XUA_MAX_MIX_COUNT-1]:
+ *    USB_FROM_HOST[0]  -> MIXER[XUA_MAX_MIX_COUNT-1].INPUT[0]
+ *    USB_FROM_HOST[1]  -> MIXER[XUA_MAX_MIX_COUNT-1].INPUT[1]
  *   ...
  *
 */
@@ -46,9 +46,9 @@ struct ModelMixer
 {
     uint32_t deviceMap[NUM_USB_CHAN_OUT];
     uint32_t hostMap[NUM_USB_CHAN_IN];
-    uint32_t mixMap_input[MAX_MIX_COUNT];
-    uint32_t mixMap_src[MAX_MIX_COUNT];
-    uint32_t mixOutput[MAX_MIX_COUNT];
+    uint32_t mixMap_input[XUA_MAX_MIX_COUNT];
+    uint32_t mixMap_src[XUA_MAX_MIX_COUNT];
+    uint32_t mixOutput[XUA_MAX_MIX_COUNT];
 };
 
 void InitModel(struct ModelMixer &modelMixer)
@@ -63,7 +63,7 @@ void InitModel(struct ModelMixer &modelMixer)
         modelMixer.hostMap[i] = NUM_USB_CHAN_OUT+i;
     }
 
-    for(size_t i = 0; i < MAX_MIX_COUNT; i++)
+    for(size_t i = 0; i < XUA_MAX_MIX_COUNT; i++)
     {
         // This test only allows for one "active" input to each mixer
         modelMixer.mixMap_src[i] = i;
@@ -81,9 +81,9 @@ void GenExpectedSamples(struct ModelMixer &modelMixer,
                         uint32_t modelIn[NUM_USB_CHAN_IN])
 {
     /* First generate model mix outputs - run MIX tiles to allow mix inputs derived from mix outputs to propagate */
-    for(int j = 0; j < MAX_MIX_COUNT; j++)
+    for(int j = 0; j < XUA_MAX_MIX_COUNT; j++)
     {
-        for(size_t i = 0; i < MAX_MIX_COUNT; i++)
+        for(size_t i = 0; i < XUA_MAX_MIX_COUNT; i++)
         {
             int src = modelMixer.mixMap_src[i];
             modelMixer.mixOutput[i] = CreateSample(modelMixer.mixOutput, src);
@@ -171,7 +171,7 @@ void stim(chanend c_stim_ah, chanend c_stim_de, chanend c_mix_ctl)
     /* Firstly route mixer outputs to the audio interfaces (we could have chosen host)
      * such that we can observe and check the outputs from the mixer
      */
-    for(size_t i = 0; i < MAX_MIX_COUNT; i++)
+    for(size_t i = 0; i < XUA_MAX_MIX_COUNT; i++)
     {
         int map = SET_SAMPLES_TO_DEVICE_MAP;
         assert(i < NUM_USB_CHAN_OUT);
@@ -199,8 +199,8 @@ void stim(chanend c_stim_ah, chanend c_stim_de, chanend c_mix_ctl)
     for(int testIter = 0; testIter < TEST_ITERATIONS; testIter++)
     {
         /* Make a random update to the routing - route a random source to a random mix input */
-        unsigned mix = random_get_random_number(rg) % MAX_MIX_COUNT;
-        unsigned input = random_get_random_number(rg) % MIX_INPUTS;
+        unsigned mix = random_get_random_number(rg) % XUA_MAX_MIX_COUNT;
+        unsigned input = random_get_random_number(rg) % XUA_MIX_INPUTS;
 
         /* Note, we don't currently support a mix input dervived from another mix
          * This is not trivial to test since the current mixer implementation only allows for one

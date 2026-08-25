@@ -18,10 +18,10 @@
 #define CS_XU_MIXSEL (0x06)
 
 /* From decouple.xc */
-#if (OUT_VOLUME_IN_MIXER == 0) && (OUTPUT_VOLUME_CONTROL == 1)
+#if (XUA_OUT_VOLUME_IN_MIXER == 0) && (OUTPUT_VOLUME_CONTROL == 1)
 extern unsigned int multOut[NUM_USB_CHAN_OUT + 1];
 #endif
-#if (IN_VOLUME_IN_MIXER == 0) && (INPUT_VOLUME_CONTROL == 1)
+#if (XUA_IN_VOLUME_IN_MIXER == 0) && (INPUT_VOLUME_CONTROL == 1)
 extern unsigned int multIn[NUM_USB_CHAN_IN + 1];
 #endif
 
@@ -34,16 +34,16 @@ extern unsigned int mutesOut[];
 extern int volsIn[];
 extern unsigned int mutesIn[];
 
-#if (MIXER)
+#if (XUA_MIXER_EN)
 /* Mixer weights */
-extern short mixer1Weights[MIX_INPUTS * MAX_MIX_COUNT];
+extern short mixer1Weights[XUA_MIX_INPUTS * XUA_MAX_MIX_COUNT];
 
 /* Device channel mapping */
 extern unsigned char channelMapAud[NUM_USB_CHAN_OUT];
 extern unsigned char channelMapUsb[NUM_USB_CHAN_IN];
 
 /* Mixer input mapping */
-extern unsigned char mixSel[MAX_MIX_COUNT][MIX_INPUTS];
+extern unsigned char mixSel[XUA_MAX_MIX_COUNT][XUA_MIX_INPUTS];
 #endif
 
 /* Global var for current frequency, set to default freq */
@@ -135,7 +135,7 @@ static void updateMasterVol(int unitID, chanend ?c_mix_ctl)
 
                     int x = longMul(master_vol, vol, 29) * !mutesOut[0] * !mutesOut[i];
 
-#if (OUT_VOLUME_IN_MIXER)
+#if (XUA_OUT_VOLUME_IN_MIXER)
                     if (!isnull(c_mix_ctl))
                     {
                         outct(c_mix_ctl, XS1_CT_END);
@@ -167,7 +167,7 @@ static void updateMasterVol(int unitID, chanend ?c_mix_ctl)
 
                     int x = longMul(master_vol, vol, 29) * !mutesIn[0] * !mutesIn[i];
 
-#if (IN_VOLUME_IN_MIXER)
+#if (XUA_IN_VOLUME_IN_MIXER)
                     if (!isnull(c_mix_ctl))
                     {
                         outct(c_mix_ctl, XS1_CT_END);
@@ -214,7 +214,7 @@ static void updateVol(int unitID, int channel, chanend ?c_mix_ctl)
 
                 x = longMul(master_vol, vol, 29) * !mutesOut[0] * !mutesOut[channel];
 
-#if (OUT_VOLUME_IN_MIXER)
+#if (XUA_OUT_VOLUME_IN_MIXER)
                 if (!isnull(c_mix_ctl))
                 {
                     outct(c_mix_ctl, XS1_CT_END);
@@ -242,7 +242,7 @@ static void updateVol(int unitID, int channel, chanend ?c_mix_ctl)
 
                 x = longMul(master_vol, vol, 29) * !mutesIn[0] * !mutesIn[channel];
 
-#if (IN_VOLUME_IN_MIXER)
+#if (XUA_IN_VOLUME_IN_MIXER)
                 if (!isnull(c_mix_ctl))
                 {
                     outct(c_mix_ctl, XS1_CT_END);
@@ -670,7 +670,7 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
                     break; /* FU_USBIN */
 #endif
 
-#if ((MIXER) && (MAX_MIX_COUNT > 0))
+#if ((XUA_MIXER_EN) && (XUA_MAX_MIX_COUNT > 0))
                 case ID_XU_OUT:
                     {
                         int dst = sp.wValue & 0xff;
@@ -753,24 +753,24 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
                         if(datalength > 0)
                         {
                             /* CN bounds check for safety..*/
-                            if(cn < MIX_INPUTS)
+                            if(cn < XUA_MIX_INPUTS)
                             {
                                 //if(cs == CS_XU_MIXSEL)
                                 /* cs now contains mix number */
-                                if(cs < (MAX_MIX_COUNT + 1))
+                                if(cs < (XUA_MAX_MIX_COUNT + 1))
                                 {
                                     int source = (buffer, unsigned char[])[0];
 
                                     /* Check for "off" - update local state */
                                     if(source == 0xFF)
                                     {
-                                        source = (NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + MAX_MIX_COUNT);
+                                        source = (NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + XUA_MAX_MIX_COUNT);
                                     }
 
                                     if(cs == 0)
                                     {
                                         /* Update all mix maps */
-                                        for (int i = 0; i < MAX_MIX_COUNT; i++)
+                                        for (int i = 0; i < XUA_MAX_MIX_COUNT; i++)
                                         {
                                             /* i : Mix bus */
                                             /* cn: Mixer input */
@@ -796,11 +796,11 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
                         (buffer, unsigned char[])[0] = 0;
 
                         /* Channel Number bounds check for safety */
-                        if(cn < MIX_INPUTS)
+                        if(cn < XUA_MIX_INPUTS)
                         {
                             /* Inspect control selector */
                             /* TODO ideally have a return for cs = 0. I.e all mix maps */
-                            if((cs > 0) && (cs < (MAX_MIX_COUNT+1)))
+                            if((cs > 0) && (cs < (XUA_MAX_MIX_COUNT+1)))
                             {
                                 (buffer, unsigned char[])[0] = mixSel[cs-1][cn];
                                 return XUD_DoGetRequest(ep0_out, ep0_in, (buffer, unsigned char[]), 1, 1);
@@ -837,7 +837,7 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
 
                                 if (!isnull(c_mix_ctl))
                                 {
-                                    UpdateMixerWeight(c_mix_ctl, (cn) % MAX_MIX_COUNT, (cn) / MAX_MIX_COUNT, weightMult);
+                                    UpdateMixerWeight(c_mix_ctl, (cn) % XUA_MAX_MIX_COUNT, (cn) / XUA_MAX_MIX_COUNT, weightMult);
                                 }
                             }
 
@@ -987,13 +987,13 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
                     }
                     break;
 
-#if (MIXER)
+#if (XUA_MIXER_EN)
                 /* Mixer Unit */
                 case ID_MIXER_1:
                     storeShort((buffer, unsigned char[]), 0, 1);
-                    storeShort((buffer, unsigned char[]), 2, MIN_MIXER_VOLUME);
-                    storeShort((buffer, unsigned char[]), 4, MAX_MIXER_VOLUME);
-                    storeShort((buffer, unsigned char[]), 6, VOLUME_RES_MIXER);
+                    storeShort((buffer, unsigned char[]), 2, XUA_MIN_MIXER_VOLUME);
+                    storeShort((buffer, unsigned char[]), 4, XUA_MAX_MIXER_VOLUME);
+                    storeShort((buffer, unsigned char[]), 6, XUA_VOLUME_RES_MIXER);
                     return XUD_DoGetRequest(ep0_out, ep0_in, (buffer, unsigned char[]), sp.wLength, sp.wLength);
                     break;
 #endif
@@ -1006,7 +1006,7 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
             break; /* case: RANGE */
         }
 
-#if ((MIXER) && (MAX_MIX_COUNT > 0))
+#if ((XUA_MIXER_EN) && (XUA_MAX_MIX_COUNT > 0))
         case MEM:   /* Memory Requests (5.2.7.1) */
 
             unitID = sp.wIndex >> 8;
@@ -1067,9 +1067,9 @@ int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, c
                                 break;
 
                             case 1: /* Mixer Output levels */
-                                length = MAX_MIX_COUNT * 2; /* 2 bytes per chan */
+                                length = XUA_MAX_MIX_COUNT * 2; /* 2 bytes per chan */
 
-                                for(int i = 0; i < MAX_MIX_COUNT; i++)
+                                for(int i = 0; i < XUA_MAX_MIX_COUNT; i++)
                                 {
                                     if (!isnull(c_mix_ctl))
                                     {
@@ -1295,18 +1295,18 @@ XUD_Result_t AudioClassRequests_1(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket
             break;
         }
         case UAC_B_REQ_GET_MIN:
-            buffer[0] = (MIN_MIXER_VOLUME & 0xff);
-            buffer[1] = (MIN_MIXER_VOLUME >> 8);
+            buffer[0] = (XUA_MIN_MIXER_VOLUME & 0xff);
+            buffer[1] = (XUA_MIN_MIXER_VOLUME >> 8);
             return XUD_DoGetRequest(ep0_out, ep0_in, buffer, 2, sp.wLength);
 
         case UAC_B_REQ_GET_MAX:
-            buffer[0] = (MAX_MIXER_VOLUME & 0xff);
-            buffer[1] = (MAX_MIXER_VOLUME >> 8);
+            buffer[0] = (XUA_MAX_MIXER_VOLUME & 0xff);
+            buffer[1] = (XUA_MAX_MIXER_VOLUME >> 8);
             return XUD_DoGetRequest(ep0_out, ep0_in, buffer, 2, sp.wLength);
 
         case UAC_B_REQ_GET_RES:
-            buffer[0] = (VOLUME_RES_MIXER & 0xff);
-            buffer[1] = (VOLUME_RES_MIXER >> 8);
+            buffer[0] = (XUA_VOLUME_RES_MIXER & 0xff);
+            buffer[1] = (XUA_VOLUME_RES_MIXER >> 8);
             return XUD_DoGetRequest(ep0_out, ep0_in, buffer, 2, sp.wLength);
 
         default:

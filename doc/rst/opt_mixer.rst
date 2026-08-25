@@ -24,18 +24,25 @@ Basic configuration of mixer functionality is achieved with the the defines
    * - Define
      - Description
      - Default
-   * - ``MIXER``
+   * - ``XUA_MIXER_EN``
      - Enable mixer
      - ``0`` (Disabled)
-   * - ``MAX_MIX_COUNT``
+   * - ``XUA_MAX_MIX_COUNT``
      - Number of separate mix outputs to perform
      - ``8``
-   * - ``MIX_INPUTS``
+   * - ``XUA_MIX_INPUTS``
      - Number of channels input into the mixer
      - ``18``
 
 .. note::
 
-   The mixer threads always run on the tile defined by ``XUA_AUDIO_IO_TILE_NUM``
+   The mixer configuration defines were renamed from the historical
+   unprefixed names ``MIXER``, ``MAX_MIX_COUNT``, and ``MIX_INPUTS``.
+   Existing applications using the old names remain supported for
+   compatibility, but new configurations should use the ``XUA_``-prefixed
+   names.
 
+.. note::
+
+   The mixer threads always run on the tile defined by ``XUA_AUDIO_IO_TILE_NUM``
 
