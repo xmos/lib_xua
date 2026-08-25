@@ -276,7 +276,7 @@ void usb_audio_io(chanend ?c_aud_in,
 #if (XUA_SPDIF_TX_EN) && (XUA_SPDIF_TX_TILE_NUM != XUA_AUDIO_IO_TILE_NUM)
     chanend c_spdif_tx,
 #endif
-#if (MIXER)
+#if (XUA_MIXER_EN)
     chanend c_mix_ctl,
 #endif
     streaming chanend ?c_spdif_rx,
@@ -301,7 +301,7 @@ void usb_audio_io(chanend ?c_aud_in,
 #endif
 )
 {
-#if (MIXER)
+#if (XUA_MIXER_EN)
     chan c_mix_out;
 #endif
 
@@ -326,7 +326,7 @@ void usb_audio_io(chanend ?c_aud_in,
 
     par
     {
-#if (MIXER && XUA_USB_EN)
+#if (XUA_MIXER_EN && XUA_USB_EN)
         /* Mixer cores(s) */
         {
             thread_speed();
@@ -344,7 +344,7 @@ void usb_audio_io(chanend ?c_aud_in,
         /* Audio I/O core (pars additional S/PDIF TX Core) */
         {
             thread_speed();
-#if (MIXER)
+#if (XUA_MIXER_EN)
 #define AUDIO_CHANNEL c_mix_out
 #else
 #define AUDIO_CHANNEL c_aud_in
@@ -437,7 +437,7 @@ int main()
     chan c_midi;
 #endif
 
-#if (MIXER)
+#if (XUA_MIXER_EN)
     chan c_mix_ctl;
 #endif
 
@@ -496,7 +496,7 @@ int main()
 #endif
 
 
-#if (!MIXER)
+#if (!XUA_MIXER_EN)
 #define c_mix_ctl null
 #endif
 
@@ -638,7 +638,7 @@ int main()
 #if (XUA_SPDIF_TX_EN) && (XUA_SPDIF_TX_TILE_NUM != XUA_AUDIO_IO_TILE_NUM)
                 , c_spdif_tx
 #endif
-#if (MIXER)
+#if (XUA_MIXER_EN)
                 , c_mix_ctl
 #endif
                 , c_spdif_rx, c_adat_rx, c_clk_ctl, c_clk_int
