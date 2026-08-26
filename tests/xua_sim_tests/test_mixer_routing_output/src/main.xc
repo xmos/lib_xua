@@ -14,7 +14,7 @@
  *   USB_TO_HOST[1]   <- AUD_INTERFACE_INPUT[1]
  *   ...
  *
- * This test also assumes/checks that the default routing into each of the MIX_INPUTS inputs into
+ * This test also assumes/checks that the default routing into each of the XUA_MIX_INPUTS inputs into
  * each of the M mixer units is as follows:
  *
  *   MIXER[0]:
@@ -25,15 +25,15 @@
       USB_TO_HOST[1]    -> MIXER[0].INPUT[NUM_USB_CHAN_OUT+1]
       ...
 
- *   MIXER[MAX_MIX_COUNT-1]:
- *    USB_FROM_HOST[0]  -> MIXER[MAX_MIX_COUNT-1].INPUT[0]
- *    USB_FROM_HOST[1]  -> MIXER[MAX_MIX_COUNT-1].INPUT[1]
+ *   MIXER[XUA_MAX_MIX_COUNT-1]:
+ *    USB_FROM_HOST[0]  -> MIXER[XUA_MAX_MIX_COUNT-1].INPUT[0]
+ *    USB_FROM_HOST[1]  -> MIXER[XUA_MAX_MIX_COUNT-1].INPUT[1]
  *   ...
  *
  * (If the number of mixer inputs > NUM_USB_CHAN_OUT then see ordering in comment regarding
  * SOURCE_COUNT below)
  *
- * By default none of the MAX_MIX_COUNT output from the mixers are routed anywwhere, but this test ensures
+ * By default none of the XUA_MAX_MIX_COUNT output from the mixers are routed anywwhere, but this test ensures
  * that they can be.
  *
  * This test assumes that none of the mixer weights are changed.
@@ -63,11 +63,11 @@
 
 #include "mixer_test_shared.h"
 
-void UpdateModel(uint32_t modelOut[CHANNEL_MAP_AUD_SIZE], uint32_t modelMixerOut[MAX_MIX_COUNT], uint32_t modelIn[NUM_USB_CHAN_IN],
+void UpdateModel(uint32_t modelOut[CHANNEL_MAP_AUD_SIZE], uint32_t modelMixerOut[XUA_MAX_MIX_COUNT], uint32_t modelIn[NUM_USB_CHAN_IN],
      int map, int dst, int src)
 {
     unsigned sample = 0;
-    if(src == (NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + MAX_MIX_COUNT))
+    if(src == (NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + XUA_MAX_MIX_COUNT))
     {
         SET_SOURCE(sample, SRC_OFF);
     }
@@ -111,7 +111,7 @@ void stim(chanend c_stim_ah, chanend c_stim_de, chanend c_mix_ctl)
 {
     uint32_t modelOut[CHANNEL_MAP_AUD_SIZE];
     uint32_t modelIn[CHANNEL_MAP_USB_SIZE];
-    uint32_t modelMixerOut[MAX_MIX_COUNT];
+    uint32_t modelMixerOut[XUA_MAX_MIX_COUNT];
     uint32_t testCmd[] = {SET_SAMPLES_TO_HOST_MAP, SET_SAMPLES_TO_DEVICE_MAP};
 
     random_generator_t rg = random_create_generator_from_seed(TEST_SEED);
@@ -119,7 +119,7 @@ void stim(chanend c_stim_ah, chanend c_stim_de, chanend c_mix_ctl)
     /* By default the mixer should output samples from USB host unmodified
      * See mixer.xc L780
      */
-    for(size_t i = 0; i < MAX_MIX_COUNT; i++)
+    for(size_t i = 0; i < XUA_MAX_MIX_COUNT; i++)
     {
         uint32_t sample = 0;
         SET_SOURCE(sample, SRC_HOST);
@@ -157,7 +157,7 @@ void stim(chanend c_stim_ah, chanend c_stim_de, chanend c_mix_ctl)
         /* Make a random update to the routing - route a random source to a random destination */
         unsigned map = testCmd[random_get_random_number(rg) % (sizeof(testCmd)/sizeof(testCmd[0]))];
         unsigned dst = random_get_random_number(rg) % CHANNEL_MAP_AUD_SIZE; // TODO this should be CHANNEL_MAP_USB_SIZE for SET_SAMPLES_TO_HOST_MAP
-        unsigned src = random_get_random_number(rg) % (NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + MAX_MIX_COUNT);
+        unsigned src = random_get_random_number(rg) % (NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + XUA_MAX_MIX_COUNT);
 
         switch(map)
         {

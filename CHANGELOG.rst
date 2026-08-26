@@ -6,6 +6,17 @@ UNRELEASED
 
   * FIXED:     dsdMode is not reset after switching playback from Native DSD back to PCM
   * CHANGED:   Improve documentation for audio clock and port configuration
+  * CHANGED:   Mixer configuration defines renamed for consistency with the
+    other lib_xua options: ``MIXER`` -> ``XUA_MIXER_EN``, ``MAX_MIX_COUNT`` ->
+    ``XUA_MAX_MIX_COUNT``, ``MIX_INPUTS`` -> ``XUA_MIX_INPUTS``,
+    ``MIN_MIXER_VOLUME`` -> ``XUA_MIN_MIXER_VOLUME``,
+    ``MAX_MIXER_VOLUME`` -> ``XUA_MAX_MIXER_VOLUME``,
+    ``VOLUME_RES_MIXER`` -> ``XUA_VOLUME_RES_MIXER``,
+    ``OUT_VOLUME_IN_MIXER`` -> ``XUA_OUT_VOLUME_IN_MIXER``,
+    ``OUT_VOLUME_AFTER_MIX`` -> ``XUA_OUT_VOLUME_AFTER_MIX``,
+    ``IN_VOLUME_IN_MIXER`` -> ``XUA_IN_VOLUME_IN_MIXER``, and
+    ``IN_VOLUME_AFTER_MIX`` -> ``XUA_IN_VOLUME_AFTER_MIX``. The old names
+    are still accepted for compatibility.
 
 5.5.0
 -----
@@ -951,4 +962,3 @@ Legacy release history
 ----------------------
 
 Please see changelog in sw_usb_audio for changes prior to 6.8.0 release.
-

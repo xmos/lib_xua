@@ -26,7 +26,7 @@
 #include "mixer_test_shared.h"
 
 /* Mixer input mapping - from xua_endpoint0.c */
-extern unsigned char mixSel[MAX_MIX_COUNT][MIX_INPUTS];
+extern unsigned char mixSel[XUA_MAX_MIX_COUNT][XUA_MIX_INPUTS];
 
 /* From xua_ep0_uacreqs.xc */
 int AudioClassRequests_2(XUD_ep ep0_out, XUD_ep ep0_in, USB_SetupPacket_t &sp, chanend ?c_audioControl, chanend ?c_mix_ctl, chanend ?c_clk_ctl);
@@ -77,8 +77,8 @@ void Fake_Endpoint0(chanend c_mix_ctl)
     for(int testIter = 0; testIter < TEST_ITERATIONS; testIter++)
     {
         int unitId = ID_XU_MIXSEL;
-        unsigned mix = (random_get_random_number(rg) % (MAX_MIX_COUNT + 1)); // Mixs indexed from 1
-        unsigned input = random_get_random_number(rg) % MIX_INPUTS;
+        unsigned mix = (random_get_random_number(rg) % (XUA_MAX_MIX_COUNT + 1)); // Mixs indexed from 1
+        unsigned input = random_get_random_number(rg) % XUA_MIX_INPUTS;
 
         /* Note, we don't currently support a mix input dervived from another mix
          * This is not trivial to test since the current mixer implementation only allows for one
@@ -119,7 +119,7 @@ void Fake_Endpoint0(chanend c_mix_ctl)
         if(mix == 0)
         {
             /* If mix is 0 then we need to check that all mixers have been updated */
-            for(int i = 0; i < MAX_MIX_COUNT; i++)
+            for(int i = 0; i < XUA_MAX_MIX_COUNT; i++)
             {
                 assert(g_src == mixSel[i][cn]);
 

@@ -56,7 +56,7 @@ The mixing for the odd channels is offloaded to the ``mixer2`` thread.
     :align: center
     :width: 70%
 
-The mixer can also be configured in passthrough mode (``MAX_MIX_COUNT`` = 0), as shown in :numref:`mixer_passthrough`. In this mode, the ``mixer2`` thread is
+The mixer can also be configured in passthrough mode (``XUA_MAX_MIX_COUNT`` = 0), as shown in :numref:`mixer_passthrough`. In this mode, the ``mixer2`` thread is
 not present and the ``mixer1`` exchanges data with Audio Hub and Decouple along with any volume control operations without doing any actual mixing.
 
  .. _mixer_passthrough:

@@ -89,10 +89,10 @@ unsigned int mutesOut[NUM_USB_CHAN_OUT + 1];
 int volsIn[NUM_USB_CHAN_IN + 1];
 unsigned int mutesIn[NUM_USB_CHAN_IN + 1];
 
-#if (MIXER)
-short mixer1Weights[MIX_INPUTS * MAX_MIX_COUNT];
+#if (XUA_MIXER_EN)
+short mixer1Weights[XUA_MIX_INPUTS * XUA_MAX_MIX_COUNT];
 
-//unsigned char channelMap[NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + MAX_MIX_COUNT];
+//unsigned char channelMap[NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + XUA_MAX_MIX_COUNT];
 /* Mapping of channels to output audio interfaces */
 unsigned char channelMapAud[NUM_USB_CHAN_OUT];
 
@@ -100,7 +100,7 @@ unsigned char channelMapAud[NUM_USB_CHAN_OUT];
 unsigned char channelMapUsb[NUM_USB_CHAN_IN];
 
 /* Mapping of channels to Mixer(s) */
-unsigned char mixSel[MAX_MIX_COUNT][MIX_INPUTS];
+unsigned char mixSel[XUA_MAX_MIX_COUNT][XUA_MIX_INPUTS];
 #endif
 
 int min(int x, int y);
@@ -243,18 +243,18 @@ void XUA_Endpoint0_setVendorId(unsigned short vid) {
 #endif
 }
 
-#if (MIXER)
+#if (XUA_MIXER_EN)
 void InitLocalMixerState()
 {
-    for (int i = 0; i < MIX_INPUTS * MAX_MIX_COUNT; i++)
+    for (int i = 0; i < XUA_MIX_INPUTS * XUA_MAX_MIX_COUNT; i++)
     {
         mixer1Weights[i] = 0x8001; //-inf
     }
 
     /* Configure default connections */
-    for (int i = 0; i < MAX_MIX_COUNT; i++)
+    for (int i = 0; i < XUA_MAX_MIX_COUNT; i++)
     {
-        mixer1Weights[(i * MAX_MIX_COUNT) + i] = 0;
+        mixer1Weights[(i * XUA_MAX_MIX_COUNT) + i] = 0;
     }
 
 #if NUM_USB_CHAN_OUT > 0
@@ -273,8 +273,8 @@ void InitLocalMixerState()
 #endif
 
     /* Init mixer inputs */
-    for(int j = 0; j < MAX_MIX_COUNT; j++)
-        for(int i = 0; i < MIX_INPUTS; i++)
+    for(int j = 0; j < XUA_MAX_MIX_COUNT; j++)
+        for(int i = 0; i < XUA_MIX_INPUTS; i++)
         {
             mixSel[j][i] = i;
         }
@@ -485,7 +485,7 @@ void XUA_Endpoint0_init(chanend c_ep0_out, chanend c_ep0_in, NULLABLE_RESOURCE(c
 #endif
     }
 
-#if (MIXER)
+#if (XUA_MIXER_EN)
     /* Set up mixer default state */
     InitLocalMixerState();
 #endif

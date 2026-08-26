@@ -24,14 +24,14 @@
 #endif
 
 /* Volume and mute tables */
-#if (OUT_VOLUME_IN_MIXER == 0) && (OUTPUT_VOLUME_CONTROL == 1)
+#if (XUA_OUT_VOLUME_IN_MIXER == 0) && (OUTPUT_VOLUME_CONTROL == 1)
 unsigned int multOut[NUM_USB_CHAN_OUT + 1];
 unsafe
 {
     unsigned int volatile * unsafe multOutPtr = multOut;
 }
 #endif
-#if (IN_VOLUME_IN_MIXER == 0) && (INPUT_VOLUME_CONTROL == 1)
+#if (XUA_IN_VOLUME_IN_MIXER == 0) && (INPUT_VOLUME_CONTROL == 1)
 unsigned int multIn[NUM_USB_CHAN_IN + 1];
 unsafe
 {
@@ -136,7 +136,7 @@ static inline void _send_sample_4(chanend c_mix_out, int ch)
     read_via_xc_ptr(sample, g_aud_from_host_rdptr);
     g_aud_from_host_rdptr+=4;
 
-#if (OUTPUT_VOLUME_CONTROL == 1) && (!OUT_VOLUME_IN_MIXER)
+#if (OUTPUT_VOLUME_CONTROL == 1) && (!XUA_OUT_VOLUME_IN_MIXER)
     int mult;
     int h;
     unsigned l;
@@ -256,7 +256,7 @@ __builtin_unreachable();
                     g_aud_from_host_rdptr+=2;
                     sample <<= 16;
 
-#if (OUTPUT_VOLUME_CONTROL == 1) && (!OUT_VOLUME_IN_MIXER)
+#if (OUTPUT_VOLUME_CONTROL == 1) && (!XUA_OUT_VOLUME_IN_MIXER)
                     unsafe
                     {
                         mult = multOutPtr[i];
@@ -318,7 +318,7 @@ __builtin_unreachable();
                     }
                     unpackState++;
 
-#if (OUTPUT_VOLUME_CONTROL == 1) && (!OUT_VOLUME_IN_MIXER)
+#if (OUTPUT_VOLUME_CONTROL == 1) && (!XUA_OUT_VOLUME_IN_MIXER)
                     unsafe
                     {
                         mult = multOutPtr[i];
@@ -366,7 +366,7 @@ __builtin_unreachable();
                     /* Receive sample */
                     int sample = inuint(c_mix_out);
 #if (INPUT_VOLUME_CONTROL == 1)
-#if (!IN_VOLUME_IN_MIXER)
+#if (!XUA_IN_VOLUME_IN_MIXER)
                     /* Apply volume */
                     int mult;
                     int h;
@@ -379,7 +379,7 @@ __builtin_unreachable();
                     sample = h << 3;
 
                     /* Note, in 2 byte sub slot - ignore lower bits of macs */
-#elif (IN_VOLUME_IN_MIXER) && defined(IN_VOLUME_AFTER_MIX)
+#elif (XUA_IN_VOLUME_IN_MIXER) && defined(XUA_IN_VOLUME_AFTER_MIX)
                     sample = sample << 3;
 #endif
 #endif
@@ -399,7 +399,7 @@ __builtin_unreachable();
                     /* Receive sample */
                     int sample = inuint(c_mix_out);
 #if(INPUT_VOLUME_CONTROL == 1)
-#if (!IN_VOLUME_IN_MIXER)
+#if (!XUA_IN_VOLUME_IN_MIXER)
                     /* Apply volume */
                     int mult;
                     int h;
@@ -413,7 +413,7 @@ __builtin_unreachable();
 #if (STREAM_FORMAT_INPUT_RESOLUTION_32BIT_USED == 1)
                     sample |= (l >> 29) & 0x7; // Note, this step is not required if we assume sample depth is 24 (rather than 32)
 #endif
-#elif (IN_VOLUME_IN_MIXER) && (IN_VOLUME_AFTER_MIX)
+#elif (XUA_IN_VOLUME_IN_MIXER) && (XUA_IN_VOLUME_AFTER_MIX)
                     sample = sample << 3;
 #endif
 #endif
@@ -433,7 +433,7 @@ __builtin_unreachable();
                 {
                     /* Receive sample */
                     int sample = inuint(c_mix_out);
-#if (INPUT_VOLUME_CONTROL) && (!IN_VOLUME_IN_MIXER)
+#if (INPUT_VOLUME_CONTROL) && (!XUA_IN_VOLUME_IN_MIXER)
                     /* Apply volume */
                     int mult;
                     int h;
@@ -733,14 +733,14 @@ void XUA_Buffer_Decouple(chanend c_mix_out
     int dataFormatIn, usbSpeed;
 
     /* Init vol mult tables */
-#if (OUT_VOLUME_IN_MIXER == 0) && (OUTPUT_VOLUME_CONTROL == 1)
+#if (XUA_OUT_VOLUME_IN_MIXER == 0) && (OUTPUT_VOLUME_CONTROL == 1)
     for (int i = 0; i < NUM_USB_CHAN_OUT + 1; i++)
     unsafe{
         multOutPtr[i] = MAX_VOLUME_MULT;
     }
 #endif
 
-#if (IN_VOLUME_IN_MIXER == 0) && (INPUT_VOLUME_CONTROL == 1)
+#if (XUA_IN_VOLUME_IN_MIXER == 0) && (INPUT_VOLUME_CONTROL == 1)
     for (int i = 0; i < NUM_USB_CHAN_IN + 1; i++)
     unsafe{
         multInPtr[i] = MAX_VOLUME_MULT;
