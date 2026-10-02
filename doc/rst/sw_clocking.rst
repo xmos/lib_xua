@@ -7,7 +7,7 @@ External clock recovery (Clock Gen)
 ===================================
 
 To provide an audio master clock an application may use selectable oscillators, clock
-generation IC or, in the case of `xcore.ai` devices, an integrated secondary PLL, to generate fixed
+generation IC or, in the case of XCORE.AI devices, an integrated secondary PLL, to generate fixed
 master clock frequencies.
 
 It may also use an external PLL/Clock Multiplier to generate a master clock based on a reference from
@@ -16,7 +16,7 @@ the `xcore`.
 Using the internal secondary PLL on an external PLL/Clock Multiplier allows an Asynchronous mode
 design to lock to an external clock source from a digital stream (e.g. S/PDIF or ADAT input).
 ``lib_xua`` supports the Cirrus Logic CS2100 device or use of `lib_sw_pll <https://www.xmos.com/file/lib_sw_pll>`__
-(`xcore.ai` only) for this purpose. Other devices may be supported via code modification.
+(XCORE.AI only) for this purpose. Other devices may be supported via code modification.
 
 The Clock Recovery thread (Clock Gen) is responsible for either generating the reference frequency
 to the CS2100 device or driving ``lib_sw_pll`` from time measurements based on the local master clock
@@ -24,7 +24,7 @@ and the time of received samples. Clock Gen (via CS2100 or lib_sw_pll) generates
 used over the whole design. This thread also serves as a smaller buffer between ADAT and S/PDIF
 receiving threads and the Audio Hub thread.
 
-When using ``lib_sw_pll`` (`xcore.ai` only) a further thread is instantiated which performs the
+When using ``lib_sw_pll`` (XCORE.AI only) a further thread is instantiated which performs the
 sigma-delta modulation of the `xcore` PLL to ensure the lowest jitter over the audio band.
 See `lib_sw_pll <www.xmos.com/xmos/lib_sw_pll>`_ documentation for further details.
 
@@ -35,7 +35,7 @@ When running in an external clock mode (i.e. S/PDIF Clock" or "ADAT Clock" mode)
 received from the S/PDIF and/or ADAT receive thread. The external frequency is calculated through
 counting samples in a given period. Either the reference clock to the CS2100 is then generated based
 on the reception of these samples or the timing information is provided to ``lib_sw_pll`` to
-generate the phase-locked clock on-chip (`xcore.ai` only).
+generate the phase-locked clock on-chip (XCORE.AI only).
 
 If an external stream becomes invalid, the *Internal Clock* timer event will fire to ensure that
 valid master clock generation continues regardless of cable unplugs etc. Efforts are made to
@@ -58,6 +58,25 @@ Class 2.0 status/interrupt endpoint feature.
 
 .. note::
 
-   When running in Synchronous mode external digital input streams are currently not supported.
-   Such a feature would require sample-rate conversion to covert from the S/PDIF or ADAT clock
-   domain to the USB host clock domain. As such this thread is not used in a Synchronous mode device.
+   When running in Synchronous or Adaptive mode external digital input streams are not supported.
+   Such a feature would require sample-rate conversion to convert from the S/PDIF or ADAT clock
+   domain to the USB host clock domain. Enabling ``XUA_SPDIF_RX_EN`` or ``XUA_ADAT_RX_EN`` in these
+   modes causes a build error, and the Clock Gen thread is not instantiated.
+
+USB clock recovery (Synchronous and Adaptive modes)
+---------------------------------------------------
+
+In synchronous and adaptive modes the master clock follows the USB host rather than an external
+digital stream, and the Clock Gen thread is not used. Instead the endpoint buffering thread
+(``XUA_Buffer_Ep``) measures the local master clock against the host: against the USB SOF rate in
+synchronous mode, or against the number of sample frames received in playback packets in adaptive mode.
+
+When using ``lib_sw_pll`` (XCORE.AI only) the resulting error is sent to the same sigma-delta
+modulator thread described above, which adjusts the secondary PLL. In synchronous mode a CS2100 may be
+used instead, with ``XUA_Buffer_Ep`` generating its reference signal. Adaptive mode supports only
+``lib_sw_pll``.
+
+On a sample-rate change, Audio Hub notifies ``XUA_Buffer_Ep``, which restarts the PLL at the new master
+clock frequency. In adaptive mode any measurement spanning the restart is discarded.
+
+See :ref:`opt_sync_mclk_recovery` for configuration details.

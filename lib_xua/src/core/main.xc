@@ -213,7 +213,7 @@ void InitEpTypeTables()
 #if (NUM_USB_CHAN_IN > 0)
     epTypeTableIn[ENDPOINT_NUMBER_IN_AUDIO] = XUD_EPTYPE_ISO;
 #endif
-#if (NUM_USB_CHAN_OUT > 0) && ((NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP))
+#if XUA_EXPLICIT_FEEDBACK_ENABLED
     epTypeTableIn[ENDPOINT_NUMBER_IN_FEEDBACK] = XUD_EPTYPE_ISO;    /* Async feedback endpoint */
 #endif
 #if (XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
@@ -292,7 +292,7 @@ void usb_audio_io(chanend ?c_aud_in,
 #if ((XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN) && !XUA_USE_SW_PLL)
     , client interface pll_ref_if i_pll_ref
 #endif
-#if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
+#if XUA_USB_MCLK_RECOVERY_ENABLED
     , chanend c_audio_rate_change
 #endif
 #if ((XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN) && XUA_USE_SW_PLL)
@@ -482,7 +482,7 @@ int main()
 #if (ADJUSTABLE_MCLK_REQUIRED && XUA_USE_SW_PLL)
     chan c_sw_pll;
 #endif
-#if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
+#if XUA_USB_MCLK_RECOVERY_ENABLED
     chan c_audio_rate_change; /* Notification of new mclk freq to ep_buffer */
 #endif
 #if XUA_USB_EN
@@ -580,7 +580,7 @@ int main()
 #if (NUM_USB_CHAN_IN > 0)
                            c_xud_in[ENDPOINT_NUMBER_IN_AUDIO],         /* Audio In */
 #endif
-#if (NUM_USB_CHAN_OUT > 0) && ((NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP))
+#if XUA_EXPLICIT_FEEDBACK_ENABLED
                            c_xud_in[ENDPOINT_NUMBER_IN_FEEDBACK],      /* Audio FB */
 #endif
 #ifdef MIDI
@@ -598,7 +598,7 @@ int main()
                            , c_xud_in[ENDPOINT_NUMBER_IN_HID]
 #endif
                            , c_mix_out
-#if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
+#if XUA_USB_MCLK_RECOVERY_ENABLED
                            , c_audio_rate_change
     #if (!XUA_USE_SW_PLL)
                            , i_pll_ref
@@ -651,7 +651,7 @@ int main()
 #if ((XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN) && !XUA_USE_SW_PLL)
                 , i_pll_ref
 #endif
-#if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
+#if XUA_USB_MCLK_RECOVERY_ENABLED
                 , c_audio_rate_change
 #endif
 #if ((XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN) && XUA_USE_SW_PLL)
