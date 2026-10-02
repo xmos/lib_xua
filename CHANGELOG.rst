@@ -4,10 +4,11 @@ lib_xua change log
 UNRELEASED
 ---------
 
-  * FIXED:     dsdMode is not reset after switching playback from Native DSD back to PCM
-  * FIXED:     IN stream never leaving underflow, so only zeros are sent to the host,
-    at 8 kHz and 16 kHz on high-speed USB (and at 24 kHz with small subslot
-    and channel counts)
+  * ADDED:     Adaptive playback clock recovery using the XCORE.AI secondary PLL.
+    Requires XUA_USE_SW_PLL=1. The IN endpoint remains asynchronous and no
+    feedback endpoint is used.
+  * CHANGED:   UAC1 synchronous IN endpoints report bLockDelayUnits/wLockDelay
+    (2, 8) rather than Undefined (0, 0), matching UAC2 and the OUT endpoint.
   * CHANGED:   Improve documentation for audio clock and port configuration
   * CHANGED:   Mixer configuration defines renamed for consistency with the
     other lib_xua options: ``MIXER`` -> ``XUA_MIXER_EN``, ``MAX_MIX_COUNT`` ->
@@ -20,6 +21,21 @@ UNRELEASED
     ``IN_VOLUME_IN_MIXER`` -> ``XUA_IN_VOLUME_IN_MIXER``, and
     ``IN_VOLUME_AFTER_MIX`` -> ``XUA_IN_VOLUME_AFTER_MIX``. The old names
     are still accepted for compatibility.
+  * FIXED:     Restrict feedback endpoint allocation and descriptor fields to
+    asynchronous playback, including playback-only configurations. In sync
+    mode, IN endpoint numbers after the audio endpoints shift down by one.
+  * FIXED:     Asynchronous and adaptive capture packet sizing at full speed
+    no longer miscounts MCLK ticks when an SOF is handled more than about
+    1.33 ms after the previous one (e.g. after a missed SOF).
+  * FIXED:     Record-only asynchronous configurations with
+    UAC_FORCE_FEEDBACK_EP=0 mark the IN endpoint as asynchronous data rather
+    than implicit feedback.
+  * FIXED:     Use each input alternate's own subslot and resolution fields in
+    UAC2 format descriptors.
+  * FIXED:     dsdMode is not reset after switching playback from Native DSD back to PCM
+  * FIXED:     IN stream never leaving underflow, so only zeros are sent to the host,
+    at 8 kHz and 16 kHz on high-speed USB (and at 24 kHz with small subslot
+    and channel counts)
 
 5.5.0
 -----
