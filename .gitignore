@@ -26,6 +26,7 @@ _build*
 .lock-waf_*
 .waf-*/
 build/
+build_xmos/
 .build*
 *.pyc
 xscope.xmt
@@ -34,7 +35,7 @@ xscope.xmt
 *.gtkw
 *.vcd
 
-# Host binaries 
+# Host binaries
 host_usb_mixer_control/xmos_mixer
 
 # Documentation build

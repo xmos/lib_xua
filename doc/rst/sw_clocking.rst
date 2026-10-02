@@ -58,6 +58,24 @@ Class 2.0 status/interrupt endpoint feature.
 
 .. note::
 
-   When running in Synchronous mode external digital input streams are currently not supported.
-   Such a feature would require sample-rate conversion to covert from the S/PDIF or ADAT clock
-   domain to the USB host clock domain. As such this thread is not used in a Synchronous mode device.
+   When running in Synchronous or Adaptive mode external digital input streams are not supported.
+   Such a feature would require sample-rate conversion to convert from the S/PDIF or ADAT clock
+   domain to the USB host clock domain. As such this thread is not used in these modes.
+
+USB clock recovery (Synchronous and Adaptive modes)
+---------------------------------------------------
+
+In synchronous and adaptive modes the master clock follows the USB host rather than an external
+digital stream, and the Clock Gen thread is not used. Instead the endpoint buffering thread
+(``XUA_Buffer_Ep``) measures the local master clock against the host: against the USB SOF rate in
+synchronous mode, or against the number of sample frames received in playback packets in adaptive mode.
+
+When using ``lib_sw_pll`` (`xcore.ai` only) the resulting error is sent to the same sigma-delta
+modulator thread described above, which adjusts the secondary PLL. In synchronous mode a CS2100 may be
+used instead, with ``XUA_Buffer_Ep`` generating its reference signal. Adaptive mode supports only
+``lib_sw_pll``.
+
+On a sample-rate change, Audio Hub notifies ``XUA_Buffer_Ep``, which restarts the PLL at the new master
+clock frequency. In adaptive mode any measurement spanning the restart is discarded.
+
+See :ref:`opt_sync_mclk_recovery` for configuration details.
