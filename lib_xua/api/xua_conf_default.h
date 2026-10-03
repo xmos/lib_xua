@@ -1329,39 +1329,79 @@
 
 /* Mixer defines */
 
+#if !defined(XUA_MIXER_EN) && defined(MIXER)
+#define XUA_MIXER_EN               MIXER
+#endif
+
+#if !defined(XUA_MAX_MIX_COUNT) && defined(MAX_MIX_COUNT)
+#define XUA_MAX_MIX_COUNT          MAX_MIX_COUNT
+#endif
+
+#if !defined(XUA_MIX_INPUTS) && defined(MIX_INPUTS)
+#define XUA_MIX_INPUTS             MIX_INPUTS
+#endif
+
+#if !defined(XUA_MIN_MIXER_VOLUME) && defined(MIN_MIXER_VOLUME)
+#define XUA_MIN_MIXER_VOLUME       MIN_MIXER_VOLUME
+#endif
+
+#if !defined(XUA_MAX_MIXER_VOLUME) && defined(MAX_MIXER_VOLUME)
+#define XUA_MAX_MIXER_VOLUME       MAX_MIXER_VOLUME
+#endif
+
+#if !defined(XUA_VOLUME_RES_MIXER) && defined(VOLUME_RES_MIXER)
+#define XUA_VOLUME_RES_MIXER       VOLUME_RES_MIXER
+#endif
+
+#if !defined(XUA_OUT_VOLUME_IN_MIXER) && defined(OUT_VOLUME_IN_MIXER)
+#define XUA_OUT_VOLUME_IN_MIXER    OUT_VOLUME_IN_MIXER
+#endif
+
+#if !defined(XUA_OUT_VOLUME_AFTER_MIX) && defined(OUT_VOLUME_AFTER_MIX)
+#define XUA_OUT_VOLUME_AFTER_MIX   OUT_VOLUME_AFTER_MIX
+#endif
+
+#if !defined(XUA_IN_VOLUME_IN_MIXER) && defined(IN_VOLUME_IN_MIXER)
+#define XUA_IN_VOLUME_IN_MIXER     IN_VOLUME_IN_MIXER
+#endif
+
+#if !defined(XUA_IN_VOLUME_AFTER_MIX) && defined(IN_VOLUME_AFTER_MIX)
+#define XUA_IN_VOLUME_AFTER_MIX    IN_VOLUME_AFTER_MIX
+#endif
+
 /**
  * @brief Enable "mixer" core
  *
  * Default: 0 (Disabled)
  */
-#ifndef MIXER
-#define MIXER              (0)
+#ifndef XUA_MIXER_EN
+#define XUA_MIXER_EN              (0)
 #endif
 
 /**
  * @brief Number of seperate mixes to perform
  *
- * Default: 8 if MIXER enabled, else 0
+ * Default: 8 if XUA_MIXER_EN enabled, else 0
  */
-#if (MIXER)
-    #ifndef MAX_MIX_COUNT
-        #define MAX_MIX_COUNT          (8)
+#if (XUA_MIXER_EN)
+    #ifndef XUA_MAX_MIX_COUNT
+        #define XUA_MAX_MIX_COUNT          (8)
     #endif
 #else
-    #ifndef MAX_MIX_COUNT
-        #define MAX_MIX_COUNT          (0)
+    #ifndef XUA_MAX_MIX_COUNT
+        #define XUA_MAX_MIX_COUNT          (0)
     #endif
 #endif
 
 /**
  * @brief Number of channels input into the mixer.
  *
- * Note, total number of mixer nodes is MIX_INPUTS * MAX_MIX_COUNT
+ * Note, total number of mixer nodes is XUA_MIX_INPUTS * XUA_MAX_MIX_COUNT
  *
  * Default: 18
  */
-#ifndef MIX_INPUTS
-    #define MIX_INPUTS                 (18)
+#ifndef XUA_MIX_INPUTS
+    #define XUA_MIX_INPUTS                 (18)
 #endif
 
 /* Volume processing defines */
@@ -1401,8 +1441,8 @@
  *
  * Default: 0x8100 (-127db)
  */
-#ifndef MIN_MIXER_VOLUME
-#define MIN_MIXER_VOLUME             (0x8100)
+#ifndef XUA_MIN_MIXER_VOLUME
+#define XUA_MIN_MIXER_VOLUME             (0x8100)
 #endif
 
 /**
@@ -1410,8 +1450,8 @@
  *
  * Default: 0x0000 (0db)
  */
-#ifndef MAX_MIXER_VOLUME
-#define MAX_MIXER_VOLUME            (0x0000)
+#ifndef XUA_MAX_MIXER_VOLUME
+#define XUA_MAX_MIXER_VOLUME            (0x0000)
 #endif
 
 /**
@@ -1419,32 +1459,32 @@
  *
 * Default: 0x100 (1db)
 */
-#ifndef VOLUME_RES_MIXER
-#define VOLUME_RES_MIXER            (0x100)
+#ifndef XUA_VOLUME_RES_MIXER
+#define XUA_VOLUME_RES_MIXER            (0x100)
 #endif
 
 /* Handle out volume control in the mixer - enabled by default */
-#ifndef OUT_VOLUME_IN_MIXER
-#if MIXER
-    #define OUT_VOLUME_IN_MIXER     (1)
+#ifndef XUA_OUT_VOLUME_IN_MIXER
+#if XUA_MIXER_EN
+    #define XUA_OUT_VOLUME_IN_MIXER     (1)
 #else
-    #define OUT_VOLUME_IN_MIXER     (0)
+    #define XUA_OUT_VOLUME_IN_MIXER     (0)
 #endif
 #endif
 
-/* Apply out volume controls after the mix. Only relevant when OUT_VOLUME_IN_MIXER enabled. Enabled by default */
-#ifndef OUT_VOLUME_AFTER_MIX
-#define OUT_VOLUME_AFTER_MIX        (1)
+/* Apply out volume controls after the mix. Only relevant when XUA_OUT_VOLUME_IN_MIXER enabled. Enabled by default */
+#ifndef XUA_OUT_VOLUME_AFTER_MIX
+#define XUA_OUT_VOLUME_AFTER_MIX        (1)
 #endif
 
 /* Handle in volume control in the mixer - disabled by default */
-#ifndef IN_VOLUME_IN_MIXER
-#define IN_VOLUME_IN_MIXER          (0)
+#ifndef XUA_IN_VOLUME_IN_MIXER
+#define XUA_IN_VOLUME_IN_MIXER          (0)
 #endif
 
-/* Apply in volume controls after the mix. Only relevant when IN_VOLUMNE_IN MIXER enabled. Enabled by default */
-#ifndef IN_VOLUME_AFTER_MIX
-#define IN_VOLUME_AFTER_MIX         (1)
+/* Apply in volume controls after the mix. Only relevant when XUA_IN_VOLUME_IN_MIXER enabled. Enabled by default */
+#ifndef XUA_IN_VOLUME_AFTER_MIX
+#define XUA_IN_VOLUME_AFTER_MIX         (1)
 #endif
 
 /* Always enable explicit feedback EP, even when input stream is present */

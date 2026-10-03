@@ -16,7 +16,10 @@
 #define XUA_XUD_TILE_NUM      1
 #define XUA_AUDIO_IO_TILE_NUM 1
 
-#define MIXER 0
+/* Mixer tests enable the mixer via the legacy MIXER define */
+#if !defined(XUA_MIXER_EN) && !defined(MIXER)
+#define XUA_MIXER_EN 0
+#endif
 
 #define SPDIF_TX_INDEX 0
 #define VENDOR_STR "XMOS"

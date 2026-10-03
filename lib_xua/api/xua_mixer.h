@@ -36,7 +36,7 @@ void mixer(chanend c_to_host, chanend c_to_audio, chanend c_mix_ctl);
 #define XUA_MIXER_OFFSET_OUT        (0)
 #define XUA_MIXER_OFFSET_IN         (NUM_USB_CHAN_OUT)
 #define XUA_MIXER_OFFSET_MIX        (NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN)
-#define XUA_MIXER_OFFSET_OFF        (NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + MAX_MIX_COUNT)
+#define XUA_MIXER_OFFSET_OFF        (NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + XUA_MAX_MIX_COUNT)
 
 /* Defines uses for DB to actual muliplier conversion */
 #define XUA_MIXER_MULT_FRAC_BITS    (25)
