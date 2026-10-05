@@ -40,7 +40,7 @@ void XUA_Buffer(
 #if (NUM_USB_CHAN_IN > 0) || defined(__DOXYGEN__)
             chanend c_aud_in,
 #endif
-#if ((NUM_USB_CHAN_OUT > 0) && ((NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP))) || defined(__DOXYGEN__)
+#if XUA_EXPLICIT_FEEDBACK_ENABLED || defined(__DOXYGEN__)
             chanend c_aud_fb,
 #endif
 #if defined(MIDI) || defined(__DOXYGEN__)
@@ -59,7 +59,7 @@ void XUA_Buffer(
             chanend c_hid,
 #endif
             chanend c_aud
-#if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC) || defined(__DOXYGEN__)
+#if XUA_USB_MCLK_RECOVERY_ENABLED || defined(__DOXYGEN__)
             , chanend c_audio_rate_change
     #if (!XUA_USE_SW_PLL) || defined(__DOXYGEN__)
             , CLIENT_INTERFACE(pll_ref_if, i_pll_ref)
@@ -79,7 +79,7 @@ void XUA_Buffer_Ep(
 #if (NUM_USB_CHAN_IN > 0) || defined(__DOXYGEN__)
             chanend c_aud_in,
 #endif
-#if ((NUM_USB_CHAN_OUT > 0) && ((NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP))) || defined(__DOXYGEN__)
+#if XUA_EXPLICIT_FEEDBACK_ENABLED || defined(__DOXYGEN__)
             chanend c_aud_fb,
 #endif
 #ifdef MIDI
@@ -100,7 +100,7 @@ void XUA_Buffer_Ep(
 #ifdef XUA_CHAN_BUFF_CTRL
             , chanend c_buff_ctrl
 #endif
-#if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC) || defined(__DOXYGEN__)
+#if XUA_USB_MCLK_RECOVERY_ENABLED || defined(__DOXYGEN__)
             , chanend c_audio_rate_change
     #if (!XUA_USE_SW_PLL) || defined(__DOXYGEN__)
             , client interface pll_ref_if i_pll_ref

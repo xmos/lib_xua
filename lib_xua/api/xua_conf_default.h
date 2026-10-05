@@ -1456,6 +1456,12 @@
 #undef UAC_FORCE_FEEDBACK_EP
 #endif
 
+#ifdef UAC_FORCE_FEEDBACK_EP
+#define XUA_FORCE_EXPLICIT_FEEDBACK (1)
+#else
+#define XUA_FORCE_EXPLICIT_FEEDBACK (0)
+#endif
+
 /* Synchronisation defines */
 #define XUA_SYNCMODE_ASYNC (1) // USB_ENDPOINT_SYNCTYPE_ASYNC
 #define XUA_SYNCMODE_ADAPT (2) // USB_ENDPOINT_SYNCTYPE_ADAPT
@@ -1465,10 +1471,45 @@
 #define XUA_SYNCMODE XUA_SYNCMODE_ASYNC
 #endif
 
-#if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
-    #if (XUA_SPDIF_RX_EN|| XUA_ADAT_RX_EN)
-        #error "Digital input streams not supported in Sync mode"
-    #endif
+/*
+ * Adaptive USB Audio is supported for host-to-device playback only. Hosts,
+ * including the Windows class driver, treat adaptive device-to-host streams
+ * as asynchronous streams, so keep the record endpoint asynchronous.
+ */
+#define XUA_PLAYBACK_SYNCMODE XUA_SYNCMODE
+#if (XUA_SYNCMODE == XUA_SYNCMODE_ADAPT)
+#define XUA_RECORD_SYNCMODE XUA_SYNCMODE_ASYNC
+#else
+#define XUA_RECORD_SYNCMODE XUA_SYNCMODE
+#endif
+
+/* Feedback is meaningful only for asynchronous playback. */
+#define XUA_EXPLICIT_FEEDBACK_ENABLED \
+    ((NUM_USB_CHAN_OUT > 0) && \
+     (XUA_PLAYBACK_SYNCMODE == XUA_SYNCMODE_ASYNC) && \
+     ((NUM_USB_CHAN_IN == 0) || XUA_FORCE_EXPLICIT_FEEDBACK))
+
+#define XUA_IMPLICIT_FEEDBACK_ENABLED \
+    ((NUM_USB_CHAN_OUT > 0) && (NUM_USB_CHAN_IN > 0) && \
+     (XUA_PLAYBACK_SYNCMODE == XUA_SYNCMODE_ASYNC) && \
+     (XUA_RECORD_SYNCMODE == XUA_SYNCMODE_ASYNC) && \
+     !XUA_FORCE_EXPLICIT_FEEDBACK)
+
+/*
+ * MCLK is recovered from the USB stream by XUA_Buffer() (sync or adaptive playback).
+ * Digital RX builds instead hand MCLK control to clockgen, so the two are exclusive.
+ */
+#define XUA_USB_MCLK_RECOVERY_ENABLED ((XUA_SYNCMODE == XUA_SYNCMODE_SYNC) || \
+                                       (XUA_SYNCMODE == XUA_SYNCMODE_ADAPT))
+
+#if XUA_USB_MCLK_RECOVERY_ENABLED && (XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
+    #error "Digital input streams not supported in Sync or Adaptive mode"
+#endif
+
+/* The SW PLL only has profiles for 22.5792 and 24.576 MHz, and the adaptive rate measurement
+ * relies on this range */
+#if (XUA_SYNCMODE == XUA_SYNCMODE_ADAPT) && ((MCLK_441 != (512 * 44100)) || (MCLK_48 != (512 * 48000)))
+    #error "Adaptive mode requires MCLK_441 = 512 * 44100 and MCLK_48 = 512 * 48000"
 #endif
 
 /* Allows calling of user function before buffer starts. */
@@ -1505,7 +1546,7 @@ enum USBEndpointNumber_In
 #if (NUM_USB_CHAN_IN != 0)
     ENDPOINT_NUMBER_IN_AUDIO,
 #endif
-#if (NUM_USB_CHAN_OUT > 0) && ((NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP))
+#if XUA_EXPLICIT_FEEDBACK_ENABLED
     ENDPOINT_NUMBER_IN_FEEDBACK,
 #endif
 #if (XUA_SPDIF_RX_EN) || (XUA_ADAT_RX_EN)
@@ -1881,6 +1922,10 @@ enum USBEndpointNumber_Out
 #define XUA_FB_USE_REF_CLOCK    (0)
 #endif
 
+#if XUA_FB_USE_REF_CLOCK && (XUA_SYNCMODE == XUA_SYNCMODE_ADAPT)
+#error "XUA_FB_USE_REF_CLOCK not supported in Adaptive mode (MCLK is adjusted by the SW PLL)"
+#endif
+
 /**
  * @brief Enable Vendor specific control interface
  *
@@ -1934,10 +1979,10 @@ enum USBEndpointNumber_Out
 
 /*
  * Indicates whether an adjustable MCLK is required.
- *   1 = adjustable MCLK required (USB sync mode or SPDIF/ADAT RX enabled)
- *   0 = fixed MCLK required (USB async/adapt without digital RX)
+ *   1 = adjustable MCLK required (USB sync/adaptive playback or SPDIF/ADAT RX enabled)
+ *   0 = fixed MCLK required (USB async without digital RX)
  */
-#define ADJUSTABLE_MCLK_REQUIRED  ((XUA_SYNCMODE == XUA_SYNCMODE_SYNC) || XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
+#define ADJUSTABLE_MCLK_REQUIRED  (XUA_USB_MCLK_RECOVERY_ENABLED || XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN)
 
 /**
  * @brief UAC2.0 Audio channel location bit-mask for a given channel count.

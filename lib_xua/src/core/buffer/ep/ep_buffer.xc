@@ -10,6 +10,103 @@
 #include "xua_commands.h"
 #include "xud.h"
 #include "testct_byref.h"
+#if (XUA_SYNCMODE == XUA_SYNCMODE_ADAPT)
+#include "xua_adaptive_rate_control.h"
+#ifndef XUA_ADAPTIVE_TELEMETRY
+#define XUA_ADAPTIVE_TELEMETRY 0
+#endif
+#if XUA_ADAPTIVE_TELEMETRY
+#ifndef XSCOPE
+#error "Adaptive CSV telemetry requires -fxscope"
+#endif
+#define DEBUG_UNIT ADAPTIVE_RATE_TRACE
+#define DEBUG_PRINT_ENABLE_ADAPTIVE_RATE_TRACE 1
+#include "debug_print.h"
+
+/* Keep formatting and 64-bit division out of the per-packet path. */
+typedef struct {
+    unsigned windows;
+    unsigned frames;
+    unsigned mclk_ticks;
+    unsigned expected_ticks;
+    unsigned out_sum;
+    unsigned out_min;
+    unsigned out_max;
+    unsigned in_sum;
+    unsigned in_min;
+    unsigned in_max;
+} adaptive_telemetry_t;
+
+static void adaptiveTelemetryReset(adaptive_telemetry_t &telemetry)
+{
+    telemetry.windows = 0;
+    telemetry.frames = 0;
+    telemetry.mclk_ticks = 0;
+    telemetry.expected_ticks = 0;
+    telemetry.out_sum = 0;
+    telemetry.out_min = BUFF_SIZE_OUT;
+    telemetry.out_max = 0;
+    telemetry.in_sum = 0;
+    telemetry.in_min = BUFF_SIZE_IN;
+    telemetry.in_max = 0;
+}
+
+static void adaptiveTelemetryReport(adaptive_telemetry_t &telemetry,
+                                    const xua_adaptive_window_t &window,
+                                    unsigned mclks_per_sample)
+{
+    telemetry.frames += window.received_frames;
+    telemetry.mclk_ticks += window.mclk_ticks;
+    telemetry.expected_ticks += window.received_frames * mclks_per_sample;
+    /* Observational snapshots only: Decouple owns these variables. OUT
+     * includes packet headers/padding and excludes the uncommitted USB packet;
+     * IN counts committed packets, not the packet currently being assembled.
+     * Pointer loads are individually atomic, not a synchronized pair. */
+    unsigned out_fill = 0;
+    unsigned in_fill = 0;
+#if (NUM_USB_CHAN_OUT > 0)
+    unsigned wrptr, rdptr;
+    GET_SHARED_GLOBAL(wrptr, g_aud_from_host_wrptr);
+    GET_SHARED_GLOBAL(rdptr, g_aud_from_host_rdptr);
+    int distance = (int)(wrptr - rdptr);
+    if (distance < 0)
+        distance += BUFF_SIZE_OUT;
+    /* Packets may extend into the allocation's wrap margin. */
+    if (distance < 0)
+        distance = 0;
+    out_fill = (unsigned)distance;
+    if (out_fill > BUFF_SIZE_OUT)
+        out_fill = BUFF_SIZE_OUT;
+#endif
+#if (NUM_USB_CHAN_IN > 0)
+    GET_SHARED_GLOBAL(in_fill, g_aud_to_host_fill_level);
+#endif
+    if (telemetry.windows == 0)
+    {
+        telemetry.out_min = out_fill;
+        telemetry.in_min = in_fill;
+    }
+    telemetry.out_sum += out_fill;
+    telemetry.in_sum += in_fill;
+    if (out_fill < telemetry.out_min) telemetry.out_min = out_fill;
+    if (out_fill > telemetry.out_max) telemetry.out_max = out_fill;
+    if (in_fill < telemetry.in_min) telemetry.in_min = in_fill;
+    if (in_fill > telemetry.in_max) telemetry.in_max = in_fill;
+    if (++telemetry.windows == 64)
+    {
+        int error = (int)telemetry.mclk_ticks - (int)telemetry.expected_ticks;
+        int ppm = (int)(((int64_t)error * 1000000) / telemetry.expected_ticks);
+        debug_printf("adaptive,%u,%u,%u,%d,%d,%u,%u,%u,%u,%u,%u,%u,%u\n", telemetry.frames,
+                     telemetry.mclk_ticks, telemetry.expected_ticks, error, ppm,
+                     telemetry.out_sum / telemetry.windows, telemetry.out_min,
+                     telemetry.out_max, BUFF_SIZE_OUT,
+                     telemetry.in_sum / telemetry.windows, telemetry.in_min,
+                     telemetry.in_max, BUFF_SIZE_IN);
+        adaptiveTelemetryReset(telemetry);
+    }
+}
+#endif
+#endif
 
 #if XUA_HID_ENABLED
 #include "xua_hid_report.h"
@@ -77,9 +174,10 @@ unsigned int fb_clocks[4];
 //#define FB_TOLERANCE_TEST
 #define FB_TOLERANCE 0x100
 
-#if (MAX_FREQ != MIN_FREQ) || (XUA_LOW_POWER_NON_STREAMING && (XUA_SYNCMODE == XUA_SYNCMODE_ASYNC))
-/* Helper function to reset asynch feedback calculation when MCLK changes */
-static void resetAsynchFeedback(int &sofCount, unsigned &clocks, long long &clockcounter, unsigned &mod_from_last_time, unsigned sampleFreq)
+#if (MAX_FREQ != MIN_FREQ) || (XUA_SYNCMODE == XUA_SYNCMODE_ADAPT) || (XUA_LOW_POWER_NON_STREAMING && (XUA_SYNCMODE == XUA_SYNCMODE_ASYNC))
+/* Reset the MCLK/SOF rate estimate used for capture packet sizing and,
+ * in asynchronous playback mode, host feedback. */
+static void resetUsbAudioRateMeasurement(int &sofCount, unsigned &clocks, long long &clockcounter, unsigned &mod_from_last_time, unsigned sampleFreq)
 {
     sofCount = 0;
     clocks = 0;
@@ -101,7 +199,7 @@ void XUA_Buffer(
 #if (NUM_USB_CHAN_IN > 0)
     register chanend c_aud_in,
 #endif
-#if (NUM_USB_CHAN_OUT > 0) && ((NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP))
+#if XUA_EXPLICIT_FEEDBACK_ENABLED
     chanend c_aud_fb,
 #endif
 #ifdef MIDI
@@ -120,7 +218,7 @@ void XUA_Buffer(
     , chanend c_hid
 #endif
     , chanend c_aud
-#if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
+#if XUA_USB_MCLK_RECOVERY_ENABLED
     , chanend c_audio_rate_change
     #if(XUA_USE_SW_PLL)
     , chanend c_sw_pll
@@ -143,7 +241,7 @@ void XUA_Buffer(
 #if (NUM_USB_CHAN_IN > 0)
                 c_aud_in,                 /* USB Audio In */
 #endif
-#if (NUM_USB_CHAN_OUT > 0) && ((NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP))
+#if XUA_EXPLICIT_FEEDBACK_ENABLED
                 c_aud_fb,                 /* Audio FB */
 #endif
 #ifdef MIDI
@@ -163,7 +261,7 @@ void XUA_Buffer(
 #ifdef XUA_CHAN_BUFF_CTRL
                 , c_buff_ctrl
 #endif
-#if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
+#if XUA_USB_MCLK_RECOVERY_ENABLED
                 , c_audio_rate_change
     #if(XUA_USE_SW_PLL)
                , c_sw_pll
@@ -200,7 +298,7 @@ void XUA_Buffer_Ep(
 #if (NUM_USB_CHAN_IN > 0)
     register chanend c_aud_in,
 #endif
-#if (NUM_USB_CHAN_OUT > 0) && ((NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP))
+#if XUA_EXPLICIT_FEEDBACK_ENABLED
     chanend c_aud_fb,
 #endif
 #ifdef MIDI
@@ -221,7 +319,7 @@ void XUA_Buffer_Ep(
 #ifdef XUA_CHAN_BUFF_CTRL
     , chanend c_buff_ctrl
 #endif
-#if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
+#if XUA_USB_MCLK_RECOVERY_ENABLED
     , chanend c_audio_rate_change
     #if (XUA_USE_SW_PLL)
     , chanend c_sw_pll
@@ -239,7 +337,7 @@ void XUA_Buffer_Ep(
     XUD_ep ep_aud_in = XUD_InitEp(c_aud_in);
 #endif
 
-#if (NUM_USB_CHAN_OUT > 0) && ((NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP))
+#if XUA_EXPLICIT_FEEDBACK_ENABLED
     XUD_ep ep_aud_fb = XUD_InitEp(c_aud_fb);
 #endif
 
@@ -259,7 +357,7 @@ void XUA_Buffer_Ep(
 
     unsigned masterClockFreq = DEFAULT_MCLK_FREQ;
 
-#if (XUA_SYNCMODE == XUA_SYNCMODE_ASYNC)
+#if (XUA_SYNCMODE == XUA_SYNCMODE_ASYNC) || (XUA_SYNCMODE == XUA_SYNCMODE_ADAPT)
     unsigned lastClock = 0;
     unsigned streamChangeOngoing = 0; /* This is a local which is updated with g_streamChangeOngoing to monitor progress of audiohub command */
 #if (XUA_FB_USE_REF_CLOCK == 0)
@@ -267,12 +365,10 @@ void XUA_Buffer_Ep(
 #endif
 #endif
     
-#if (MAX_FREQ != MIN_FREQ) || (XUA_SYNCMODE != XUA_SYNCMODE_ADAPT)
     unsigned sampleFreq = DEFAULT_FREQ;
     unsigned clocks = 0;
-#endif
 
-#if (MAX_FREQ != MIN_FREQ) || (XUA_SYNCMODE == XUA_SYNCMODE_ASYNC)
+#if (MAX_FREQ != MIN_FREQ) || (XUA_SYNCMODE == XUA_SYNCMODE_ASYNC) || (XUA_SYNCMODE == XUA_SYNCMODE_ADAPT)
     long long clockcounter = 0;
 
     int sofCount = 0;
@@ -350,7 +446,7 @@ void XUA_Buffer_Ep(
 #endif
 
 #if (AUDIO_CLASS == 1)
-#if (NUM_USB_CHAN_OUT > 0) && ((NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP))
+#if XUA_EXPLICIT_FEEDBACK_ENABLED
     /* In UAC1 we dont use a stream start event (and we are always FS) so mark FB EP ready now */
     XUD_SetReady_In(ep_aud_fb, (fb_clocks, unsigned char[]), 3);
 #endif
@@ -391,6 +487,27 @@ void XUA_Buffer_Ep(
 #endif
 
 #endif /* (XUA_SYNCMODE == XUA_SYNCMODE_SYNC) */
+
+#if (XUA_SYNCMODE == XUA_SYNCMODE_ADAPT)
+#if !XUA_USE_SW_PLL
+#error "Adaptive playback requires XUA_USE_SW_PLL"
+#endif
+    xassert(!isnull(p_off_mclk) && "Error: must provide MCLK count port for adaptive playback");
+    unsigned adaptive_sof_count = 0;
+    unsigned adaptive_pll_restarting = 0;
+    timer adaptive_reference_timer;
+    xua_adaptive_window_t adaptive_window = {0};
+#if XUA_ADAPTIVE_TELEMETRY
+    adaptive_telemetry_t adaptive_telemetry = {0};
+#endif
+    unsigned adaptive_bytes_per_frame = (XUA_USB_BUS_SPEED == 2) ?
+        NUM_USB_CHAN_OUT * HS_STREAM_FORMAT_OUTPUT_1_SUBSLOT_BYTES :
+        NUM_USB_CHAN_OUT_FS * FS_STREAM_FORMAT_OUTPUT_1_SUBSLOT_BYTES;
+    xua_adaptive_window_reset(&adaptive_window);
+    restart_sigma_delta(c_sw_pll, masterClockFreq);
+    inuint(c_sw_pll);
+    inct(c_sw_pll);
+#endif
 
     while(1)
     {
@@ -444,7 +561,7 @@ void XUA_Buffer_Ep(
                         /* Note, Endpoint 0 will hold off host for a sufficient period to allow our feedback
                          * to stabilise (i.e. sofCount == 128 to fire) */
                         /* See also https://github.com/xmos/lib_xua/issues/467 */
-                        resetAsynchFeedback(sofCount, clocks, clockcounter, mod_from_last_time, sampleFreq);
+                        resetUsbAudioRateMeasurement(sofCount, clocks, clockcounter, mod_from_last_time, sampleFreq);
 #if XUA_FB_USE_REF_CLOCK
                         clock_remainder = 0;
 #endif
@@ -457,6 +574,13 @@ void XUA_Buffer_Ep(
                         {
                             masterClockFreq = MCLK_441;
                         }
+#if (XUA_SYNCMODE == XUA_SYNCMODE_ADAPT)
+                        xua_adaptive_window_reset(&adaptive_window);
+                        adaptive_sof_count = 0;
+#if XUA_ADAPTIVE_TELEMETRY
+                        adaptiveTelemetryReset(adaptive_telemetry);
+#endif
+#endif
                     }
 #endif /* (MAX_FREQ != MIN_FREQ) */
                     /* Ideally we want to wait for handshake (and pass back up) here.  But we cannot keep this
@@ -490,7 +614,17 @@ void XUA_Buffer_Ep(
                     SET_SHARED_GLOBAL(g_formatChange_DataFormat, formatChange_DataFormat);
                     SET_SHARED_GLOBAL(g_formatChange_SampRes, formatChange_SampRes);
 
-#if (NUM_USB_CHAN_OUT > 0) && ((NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP))
+#if (XUA_SYNCMODE == XUA_SYNCMODE_ADAPT)
+                    adaptive_bytes_per_frame = formatChange_NumChans * formatChange_SubSlot;
+                    xua_adaptive_window_reset(&adaptive_window);
+                    adaptive_sof_count = 0;
+#if XUA_ADAPTIVE_TELEMETRY
+                    adaptiveTelemetryReset(adaptive_telemetry);
+                    debug_printf("adaptive,frames,mclk_ticks,expected_ticks,error_ticks,error_ppm,out_avg,out_min,out_max,out_capacity,in_avg,in_min,in_max,in_capacity\n");
+#endif
+#endif
+
+#if XUA_EXPLICIT_FEEDBACK_ENABLED
                     /* Host is starting up the output stream. Setup (or potentially resize) feedback packet based on bus-speed
                      * This is only really important on inital start up (when bus-speed
                      was unknown) and when changing bus-speeds */
@@ -509,7 +643,7 @@ void XUA_Buffer_Ep(
                     /* Audiohub will startup again and MCLK may possibly have stopped and restarted */
                     /* Set g_speed to something sensible. We expect it to get over-written before stream time */
                     /* See also https://github.com/xmos/lib_xua/issues/467 */
-                    resetAsynchFeedback(sofCount, clocks, clockcounter, mod_from_last_time, sampleFreq);
+                    resetUsbAudioRateMeasurement(sofCount, clocks, clockcounter, mod_from_last_time, sampleFreq);
 #endif
                 }
                 else if (cmd == XUA_AUDCTL_SET_STREAM_INPUT_STOP)
@@ -519,6 +653,13 @@ void XUA_Buffer_Ep(
                 else if (cmd == XUA_AUDCTL_SET_STREAM_OUTPUT_STOP)
                 {
                     /* Do nothing - just let cmd propagate through to decouple */
+#if (XUA_SYNCMODE == XUA_SYNCMODE_ADAPT)
+                    xua_adaptive_window_reset(&adaptive_window);
+                    adaptive_sof_count = 0;
+#if XUA_ADAPTIVE_TELEMETRY
+                    adaptiveTelemetryReset(adaptive_telemetry);
+#endif
+#endif
                 }
 
                 /* Pass on sample freq change to decouple() via globals (saves a chanend) */
@@ -542,6 +683,14 @@ void XUA_Buffer_Ep(
 
             /* SOF notification from XUD_Manager() */
             case inuint_byref(c_sof, u_tmp):
+#if (XUA_SYNCMODE == XUA_SYNCMODE_ADAPT)
+                /* Continue servicing USB while the PLL restarts, but do not
+                 * measure capture rate or send playback errors across it. */
+                if (adaptive_pll_restarting)
+                {
+                    break;
+                }
+#endif
 #if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
                 unsigned usbSpeed;
                 GET_SHARED_GLOBAL(usbSpeed, g_curUsbSpeed);
@@ -598,7 +747,58 @@ void XUA_Buffer_Ep(
                 asm volatile("stw %0, dp[g_speed]"::"r"(clocks));
 
 
-#elif (XUA_SYNCMODE == XUA_SYNCMODE_ASYNC)
+#elif (XUA_SYNCMODE == XUA_SYNCMODE_ADAPT)
+                unsigned usb_speed;
+                GET_SHARED_GLOBAL(usb_speed, g_curUsbSpeed);
+                const unsigned sof_divider = (usb_speed == XUD_SPEED_HS) ? 8 : 1;
+
+                if (++adaptive_sof_count == sof_divider)
+                {
+                    adaptive_sof_count = 0;
+                    uint16_t mclk_pt;
+                    asm volatile("getts %0, res[%1]" : "=r" (mclk_pt) : "r" (p_off_mclk));
+                    unsigned reference_timestamp;
+                    adaptive_reference_timer :> reference_timestamp;
+
+                    if (xua_adaptive_window_sample(&adaptive_window, mclk_pt, reference_timestamp))
+                    {
+                        const unsigned mclks_per_sample = masterClockFreq / sampleFreq;
+                        int error = xua_adaptive_window_error(&adaptive_window, mclks_per_sample);
+
+                        /* Implausible windows (stream stopped or packets lost part way through)
+                         * leave the PLL at its last setting */
+                        if (xua_adaptive_window_error_valid(&adaptive_window, error))
+                        {
+                            outuint(c_sw_pll, error);
+                            outct(c_sw_pll, XS1_CT_END);
+#if XUA_ADAPTIVE_TELEMETRY
+                            adaptiveTelemetryReport(adaptive_telemetry, adaptive_window, mclks_per_sample);
+#endif
+                        }
+#if XUA_ADAPTIVE_TELEMETRY
+                        else
+                        {
+                            adaptiveTelemetryReset(adaptive_telemetry);
+                        }
+#endif
+                        xua_adaptive_window_next(&adaptive_window);
+                    }
+#if XUA_ADAPTIVE_TELEMETRY
+                    else if (adaptive_window.interval_count == 0)
+                    {
+                        /* A new baseline means a missing/delayed SOF or reset. */
+                        adaptiveTelemetryReset(adaptive_telemetry);
+                    }
+#endif
+                }
+
+#endif /* Sync/adaptive playback clock recovery */
+
+#if (XUA_SYNCMODE == XUA_SYNCMODE_ASYNC) || (XUA_SYNCMODE == XUA_SYNCMODE_ADAPT)
+                /* Capture packet sizing follows the actual audio MCLK in both
+                 * modes. Adaptive OUT does not transmit feedback to the host.
+                 * A reference-timer estimate cannot follow app-PLL adjustments,
+                 * so XUA_FB_USE_REF_CLOCK is rejected in adaptive mode. */
 
                 /* NOTE our feedback will be wrong for a couple of SOF's after a SF change due to
                  * lastClock being incorrect */
@@ -782,7 +982,7 @@ void XUA_Buffer_Ep(
 #endif
 
 #if (NUM_USB_CHAN_OUT > 0)
-#if (NUM_USB_CHAN_IN == 0) || defined(UAC_FORCE_FEEDBACK_EP) && (XUA_SYNCMODE == XUA_SYNCMODE_ASYNC)
+#if XUA_EXPLICIT_FEEDBACK_ENABLED
             /* Feedback Pipe */
             case XUD_SetData_Select(c_aud_fb, ep_aud_fb, result):
             {
@@ -806,6 +1006,21 @@ void XUA_Buffer_Ep(
             {
                 if ((result != XUD_RES_WAIT) || (XUD_USB_ISO_MAX_TXNS_PER_MICROFRAME == 1))
                 {
+#if (XUA_SYNCMODE == XUA_SYNCMODE_ADAPT)
+                    if (result == XUD_RES_OKAY && adaptive_bytes_per_frame &&
+                        !(length % adaptive_bytes_per_frame))
+                    {
+                        adaptive_window.received_frames += length / adaptive_bytes_per_frame;
+                    }
+                    else if (result != XUD_RES_OKAY || length != 0)
+                    {
+                        /* Discard a malformed/error window, not just its packet. */
+                        xua_adaptive_window_reset(&adaptive_window);
+#if XUA_ADAPTIVE_TELEMETRY
+                        adaptiveTelemetryReset(adaptive_telemetry);
+#endif
+                    }
+#endif
                     GET_SHARED_GLOBAL(aud_from_host_buffer, g_aud_from_host_buffer);
                     write_via_xc_ptr(aud_from_host_buffer, length);
                     /* Sync with decouple thread */
@@ -925,16 +1140,26 @@ void XUA_Buffer_Ep(
                 break;
 #endif  /* ifdef MIDI */
 
-#if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
+#if XUA_USB_MCLK_RECOVERY_ENABLED
             case c_audio_rate_change :> u_tmp:
                 unsigned selected_mclk_rate = u_tmp;
-                c_audio_rate_change :> u_tmp;                       /* Sample rate is discarded as only care about mclk */
+                c_audio_rate_change :> u_tmp; /* Hardware sample rate; adaptive uses it for USB sample scaling. */
+#if (XUA_SYNCMODE == XUA_SYNCMODE_ADAPT)
+                masterClockFreq = selected_mclk_rate;
+                sampleFreq = u_tmp / AUD_TO_USB_RATIO;
+                adaptive_pll_restarting = 1;
+#if XUA_ADAPTIVE_TELEMETRY
+                adaptiveTelemetryReset(adaptive_telemetry);
+#endif
+#endif
 #if (XUA_USE_SW_PLL)
+#if (XUA_SYNCMODE == XUA_SYNCMODE_SYNC)
                 sw_pll_pfd_init(&sw_pll_pfd,
                                 1,                                          /* How often the PFD is invoked per call */
                                 selected_mclk_rate / controller_rate_hz,    /* pll muliplication ratio integer */
                                 0,                                          /* Assume precise timing of sampling */
                                 pfd_ppm_max);
+#endif
                 restart_sigma_delta(c_sw_pll, selected_mclk_rate);
                                                                     /* Delay ACK until sw_pll says it is ready */
 #else
@@ -946,11 +1171,19 @@ void XUA_Buffer_Ep(
             /* This is fired when sw_pll has completed initialising a new mclk_rate */
             case inuint_byref(c_sw_pll, u_tmp):
                 inct(c_sw_pll);
+#if (XUA_SYNCMODE == XUA_SYNCMODE_ADAPT)
+                /* The PLL profile has changed; discard counts spanning its
+                 * restart before accepting a new capture-rate measurement. */
+                resetUsbAudioRateMeasurement(sofCount, clocks, clockcounter, mod_from_last_time, sampleFreq);
+                xua_adaptive_window_reset(&adaptive_window);
+                adaptive_sof_count = 0;
+                adaptive_pll_restarting = 0;
+#endif
                 c_audio_rate_change <: 0;     /* ACK back to audio to release */
 
                 break;
 #endif /* (XUA_USE_SW_PLL) */
-#endif /* (XUA_SYNCMODE == XUA_SYNCMODE_SYNC) */
+#endif /* XUA_USB_MCLK_RECOVERY_ENABLED */
 
 #if (0 < HID_CONTROLS)
             default:
