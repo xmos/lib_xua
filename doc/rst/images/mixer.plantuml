@@ -7,7 +7,7 @@ participant mixer2 as mixer2
 participant decoupler as decoupler
 
 
-title "Mixer: MAX_MIX_COUNT > 0"
+title "Mixer: XUA_MAX_MIX_COUNT > 0"
 loop while(1)
 mixer2 -> mixer1 : synchronise
 audiohub -> mixer1 : receive request

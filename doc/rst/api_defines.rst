@@ -167,16 +167,19 @@ Volume control
 Mixing
 ------
 
-.. doxygendefine:: MIXER
-.. doxygendefine:: MAX_MIX_COUNT
-.. doxygendefine:: MIX_INPUTS
-.. doxygendefine:: MIN_MIXER_VOLUME
-.. doxygendefine:: MAX_MIXER_VOLUME
-.. doxygendefine:: VOLUME_RES_MIXER
+.. doxygendefine:: XUA_MIXER_EN
+.. doxygendefine:: XUA_MAX_MIX_COUNT
+.. doxygendefine:: XUA_MIX_INPUTS
+.. doxygendefine:: XUA_MIN_MIXER_VOLUME
+.. doxygendefine:: XUA_MAX_MIXER_VOLUME
+.. doxygendefine:: XUA_VOLUME_RES_MIXER
+.. doxygendefine:: XUA_OUT_VOLUME_IN_MIXER
+.. doxygendefine:: XUA_OUT_VOLUME_AFTER_MIX
+.. doxygendefine:: XUA_IN_VOLUME_IN_MIXER
+.. doxygendefine:: XUA_IN_VOLUME_AFTER_MIX
 
 Power
 -----
 
 .. doxygendefine:: XUA_POWERMODE
 .. doxygendefine:: XUA_CHAN_BUFF_CTRL
-

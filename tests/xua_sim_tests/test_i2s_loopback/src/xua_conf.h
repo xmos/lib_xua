@@ -9,7 +9,7 @@
 #define XUA_XUD_TILE_NUM 1
 #endif
 #define XUA_AUDIO_IO_TILE_NUM 0
-#define MIXER 0
+#define XUA_MIXER_EN 0
 
 #ifndef MCLK_441
 #define MCLK_441 (512 * 44100)

@@ -10,8 +10,8 @@
 
 #define EXCLUDE_USB_AUDIO_MAIN
 
-#define MIXER                   (1)
-#define MAX_MIX_COUNT           (8)
+#define XUA_MIXER_EN                   (1)
+#define XUA_MAX_MIX_COUNT           (8)
 
 #define UAC_FORCE_FEEDBACK_EP   (0)
 #define XUA_NUM_PDM_MICS 0

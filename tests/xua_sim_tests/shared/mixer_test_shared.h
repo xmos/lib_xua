@@ -17,11 +17,11 @@
  * i.e.
  * [0:NUM_USB_CHAN_OUT-1] : Channels from USB Host
  * [NUM_USB_CHAN_OUT:NUM_USB_CHAN_IN-1] : Channels from Audio Interfaces
- * [NUM_USB_CHAN_N:MAX_MIX_COUNT-1] : Channels from Mixers
- * [MAX_MIX_COUNT]: "Off" (Essentially samples always 0)
+ * [NUM_USB_CHAN_N:XUA_MAX_MIX_COUNT-1] : Channels from Mixers
+ * [XUA_MAX_MIX_COUNT]: "Off" (Essentially samples always 0)
  */
 /* Note, One larger for an "off" channel for mixer sources" */
-#define SOURCE_COUNT (NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + MAX_MIX_COUNT + 1)
+#define SOURCE_COUNT (NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + XUA_MAX_MIX_COUNT + 1)
 
 #define SET_EXPECTED (9)
 #define TRIGGER      (7)
@@ -60,7 +60,7 @@ uint32_t CreateSample(uint32_t modelMixerOutput[], int src)
 {
     uint32_t sample = 0;
 
-    if(src == (NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + MAX_MIX_COUNT))
+    if(src == (NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + XUA_MAX_MIX_COUNT))
     {
         SET_SOURCE(sample, SRC_OFF);
     }
@@ -95,7 +95,7 @@ void PrintSourceString(unsigned source)
     {
         debug_printf("(DEVICE IN - AudioIF %d)", source - NUM_USB_CHAN_OUT);
     }
-    else if(source < (NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + MAX_MIX_COUNT))
+    else if(source < (NUM_USB_CHAN_OUT + NUM_USB_CHAN_IN + XUA_MAX_MIX_COUNT))
     {
         debug_printf("(MIX %d)", source - NUM_USB_CHAN_OUT - NUM_USB_CHAN_IN);
     }
