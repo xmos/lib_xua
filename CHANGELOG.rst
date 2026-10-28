@@ -10,6 +10,8 @@ UNRELEASED
   * CHANGED:   Adaptive playback configurations advertise asynchronous data IN
     endpoints and use the asynchronous MCLK/SOF estimator for capture packet
     sizing. Adaptive OUT does not allocate explicit or implicit feedback.
+  * CHANGED:   S/PDIF and ADAT receive clock recovery with XUA_USE_SW_PLL uses
+    the same windowed MCLK rate measurement as adaptive playback.
   * FIXED:      Restrict feedback endpoint allocation and descriptor fields to
     asynchronous playback, including playback-only configurations.
   * FIXED:     Use each input alternate's own subslot and resolution fields in

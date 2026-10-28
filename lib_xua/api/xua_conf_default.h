@@ -1517,6 +1517,17 @@
     #error "Adaptive mode requires MCLK_441 = 512 * 44100 and MCLK_48 = 512 * 48000"
 #endif
 
+/**
+ * @brief Debug option: emit adaptive playback rate and buffer fill telemetry as CSV over
+ *        xSCOPE, about once per second. Requires XSCOPE and -fxscope. Logging runs in the
+ *        endpoint buffer task and can perturb its timing, so disable for qualification.
+ *
+ * Default: 0 (Disabled)
+ */
+#ifndef XUA_ADAPTIVE_TELEMETRY
+#define XUA_ADAPTIVE_TELEMETRY (0)
+#endif
+
 /* Allows calling of user function before buffer starts. */
 #ifndef XUA_USER_FUNCTION_CALL_PRE_BUFFER
 #define XUA_USER_FUNCTION_CALL_PRE_BUFFER

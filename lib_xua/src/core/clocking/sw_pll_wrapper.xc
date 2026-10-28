@@ -72,47 +72,30 @@
     return {XS1_TIMER_HZ / sw_pll_sdm_rate[clkIndex], sw_pll_sdm_ctrl_mid[clkIndex]};
 }
 
-void do_sw_pll_phase_frequency_detector_dig_rx( unsigned short mclk_time_stamp,
-                                                unsigned mclks_per_sample,
-                                                chanend c_sw_pll,
-                                                int receivedSamples,
-                                                int &reset_sw_pll_pfd)
+int sw_pll_rate_window_update(xua_rate_window_t &window,
+                              unsigned short mclk_time_stamp,
+                              unsigned reference_timestamp,
+                              unsigned mclks_per_count,
+                              chanend c_sw_pll)
 {
-    const unsigned control_loop_rate_divider = 6; /* 300Hz * 2 edges / 6 -> 100Hz loop rate */
-    static unsigned control_loop_counter = 0;
-    static unsigned total_received_samples = 0;
-
-    /* Keep a store of the last mclk time stamp so we can work out the increment */
-    static unsigned short last_mclk_time_stamp = 0;
-
-    control_loop_counter++;
-
-    total_received_samples += receivedSamples;
-
-    if(control_loop_counter == control_loop_rate_divider)
+    if (!xua_rate_window_sample(&window, mclk_time_stamp, reference_timestamp))
     {
-        /* Calculate what the zero-error mclk count increment should be for this many samples */
-        const unsigned expected_mclk_inc = mclks_per_sample * total_received_samples / 2; /* divide by 2 because this fn is called per edge */
-
-        /* Calculate actualy time-stamped mclk count increment is */
-        const unsigned short actual_mclk_inc = mclk_time_stamp - last_mclk_time_stamp;
-
-        /* The difference is the raw error in terms of mclk counts */
-        short f_error = (int)actual_mclk_inc - (int)expected_mclk_inc;
-        if(reset_sw_pll_pfd)
-        {
-            f_error = 0;            /* Skip first measurement as it will likely be very out */
-            reset_sw_pll_pfd = 0;
-        }
-
-        /* send PFD output to the sigma delta thread */
-        outuint(c_sw_pll, (int) f_error);
-        outct(c_sw_pll, XS1_CT_END);
-
-        last_mclk_time_stamp = mclk_time_stamp;
-        control_loop_counter = 0;
-        total_received_samples = 0;
+        return 0;
     }
+
+    int error = xua_rate_window_error(&window, mclks_per_count);
+    int status = -1;
+
+    /* Implausible windows (stream stopped or samples lost part way through) leave the PLL
+     * at its last setting */
+    if (xua_rate_window_error_valid(&window, error))
+    {
+        outuint(c_sw_pll, error);
+        outct(c_sw_pll, XS1_CT_END);
+        status = 1;
+    }
+    xua_rate_window_next(&window);
+    return status;
 }
 
 void sw_pll_task(chanend c_sw_pll){

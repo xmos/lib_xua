@@ -383,7 +383,11 @@ void clockGen ( streaming chanend ?c_spdif_rx,
 #endif
 
 #if ((XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN) && XUA_USE_SW_PLL)
-    int reset_sw_pll_pfd = 1;
+    /* Rate measurement against MCLK: 6 intervals of samplesPerTick (~1.67 ms) per window.
+     * No interval timing bounds: gaps in the stream are caught by validSamples(), which
+     * marks the clock invalid and resets the window. */
+    xua_rate_window_t dig_rx_window = {0};
+    xua_rate_window_init(&dig_rx_window, 6, 0, UINT32_MAX);
     int require_ack_to_audio = 0;
     restart_sigma_delta(c_sw_pll, MCLK_48); /* default to 48kHz - this will be reset shortly when host selects rate */
 #endif
@@ -450,8 +454,8 @@ void clockGen ( streaming chanend ?c_spdif_rx,
                         {
                             // Send command to sw_pll to set dco setting to midpoint
                             sw_pll_set_pll_to_nominal(c_sw_pll, selected_mclk_rate);
-                            reset_sw_pll_pfd = 1; // To ignore the first ferror when the clk source gets switched to external since the first
-                            // mclk_time_stamp would be wrong wrt the last_mclk_time_stamp
+                            // Restart rate measurement as the last mclk_time_stamp is stale
+                            xua_rate_window_reset(&dig_rx_window);
                         }
 #endif
                         prev_clk_mode = clkMode;
@@ -569,7 +573,7 @@ void clockGen ( streaming chanend ?c_spdif_rx,
                         will be very off wrt the last_mclk_time_stamp which was recorded when the
                         clock was last valid
                         */
-                        reset_sw_pll_pfd = 1;
+                        xua_rate_window_reset(&dig_rx_window);
                         spdifCounters.receivedSamples = 0;
                     }
 #endif
@@ -596,7 +600,7 @@ void clockGen ( streaming chanend ?c_spdif_rx,
                     }
                     if(clockValid[CLOCK_ADAT] && (valid == 0))
                     {
-                        reset_sw_pll_pfd = 1;
+                        xua_rate_window_reset(&dig_rx_window);
                         adatCounters.receivedSamples = 0;
                     }
 #endif
@@ -626,7 +630,7 @@ void clockGen ( streaming chanend ?c_spdif_rx,
 #if XUA_USE_SW_PLL
                 mclks_per_sample = selected_mclk_rate / selected_sample_rate;
                 restart_sigma_delta(c_sw_pll, selected_mclk_rate);
-                reset_sw_pll_pfd = 1;
+                xua_rate_window_reset(&dig_rx_window);
                 /* We will shedule an ACK when sigma delta is up and running */
                 require_ack_to_audio = 1;
 #else
@@ -706,11 +710,9 @@ void clockGen ( streaming chanend ?c_spdif_rx,
                     if((spdifCounters.receivedSamples >=  spdifCounters.samplesPerTick))
                     {
 #if XUA_USE_SW_PLL
-                        do_sw_pll_phase_frequency_detector_dig_rx(  mclk_time_stamp,
-                                            mclks_per_sample,
-                                            c_sw_pll,
-                                            spdifCounters.receivedSamples,
-                                            reset_sw_pll_pfd);
+                        /* Samples are counted twice per sample period */
+                        dig_rx_window.received_samples += spdifCounters.receivedSamples;
+                        sw_pll_rate_window_update(dig_rx_window, mclk_time_stamp, 0, mclks_per_sample / 2, c_sw_pll);
 
                         /* Reset counters */
                         spdifCounters.receivedSamples = 0;
@@ -834,11 +836,9 @@ void clockGen ( streaming chanend ?c_spdif_rx,
                                     if ((adatCounters.receivedSamples >= adatCounters.samplesPerTick))
                                     {
 #if XUA_USE_SW_PLL
-                                        do_sw_pll_phase_frequency_detector_dig_rx(  mclk_time_stamp,
-                                            mclks_per_sample,
-                                            c_sw_pll,
-                                            adatCounters.receivedSamples,
-                                            reset_sw_pll_pfd);
+                                        /* Samples are counted twice per sample period */
+                                        dig_rx_window.received_samples += adatCounters.receivedSamples;
+                                        sw_pll_rate_window_update(dig_rx_window, mclk_time_stamp, 0, mclks_per_sample / 2, c_sw_pll);
                                         /* Reset counters */
                                         adatCounters.receivedSamples = 0;
 #else

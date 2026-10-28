@@ -11,10 +11,7 @@
 #include "xud.h"
 #include "testct_byref.h"
 #if (XUA_SYNCMODE == XUA_SYNCMODE_ADAPT)
-#include "xua_adaptive_rate_control.h"
-#ifndef XUA_ADAPTIVE_TELEMETRY
-#define XUA_ADAPTIVE_TELEMETRY 0
-#endif
+#include "xua_rate_window.h"
 #if XUA_ADAPTIVE_TELEMETRY
 #ifndef XSCOPE
 #error "Adaptive CSV telemetry requires -fxscope"
@@ -52,12 +49,12 @@ static void adaptiveTelemetryReset(adaptive_telemetry_t &telemetry)
 }
 
 static void adaptiveTelemetryReport(adaptive_telemetry_t &telemetry,
-                                    const xua_adaptive_window_t &window,
+                                    const xua_rate_window_t &window,
                                     unsigned mclks_per_sample)
 {
-    telemetry.frames += window.received_frames;
-    telemetry.mclk_ticks += window.mclk_ticks;
-    telemetry.expected_ticks += window.received_frames * mclks_per_sample;
+    telemetry.frames += window.completed_samples;
+    telemetry.mclk_ticks += window.completed_mclk_ticks;
+    telemetry.expected_ticks += window.completed_samples * mclks_per_sample;
     /* Observational snapshots only: Decouple owns these variables. OUT
      * includes packet headers/padding and excludes the uncommitted USB packet;
      * IN counts committed packets, not the packet currently being assembled.
@@ -499,14 +496,15 @@ void XUA_Buffer_Ep(
     unsigned adaptive_sof_count = 0;
     unsigned adaptive_pll_restarting = 0;
     timer adaptive_reference_timer;
-    xua_adaptive_window_t adaptive_window = {0};
+    xua_rate_window_t adaptive_window = {0};
 #if XUA_ADAPTIVE_TELEMETRY
     adaptive_telemetry_t adaptive_telemetry = {0};
 #endif
     unsigned adaptive_bytes_per_frame = (XUA_USB_BUS_SPEED == 2) ?
         NUM_USB_CHAN_OUT * HS_STREAM_FORMAT_OUTPUT_1_SUBSLOT_BYTES :
         NUM_USB_CHAN_OUT_FS * FS_STREAM_FORMAT_OUTPUT_1_SUBSLOT_BYTES;
-    xua_adaptive_window_reset(&adaptive_window);
+    xua_rate_window_init(&adaptive_window, XUA_RATE_WINDOW_ADAPTIVE_INTERVALS,
+                         XUA_RATE_WINDOW_ADAPTIVE_MIN_TICKS, XUA_RATE_WINDOW_ADAPTIVE_MAX_TICKS);
     restart_sigma_delta(c_sw_pll, masterClockFreq);
     inuint(c_sw_pll);
     inct(c_sw_pll);
@@ -578,7 +576,7 @@ void XUA_Buffer_Ep(
                             masterClockFreq = MCLK_441;
                         }
 #if (XUA_SYNCMODE == XUA_SYNCMODE_ADAPT)
-                        xua_adaptive_window_reset(&adaptive_window);
+                        xua_rate_window_reset(&adaptive_window);
                         adaptive_sof_count = 0;
 #if XUA_ADAPTIVE_TELEMETRY
                         adaptiveTelemetryReset(adaptive_telemetry);
@@ -619,7 +617,7 @@ void XUA_Buffer_Ep(
 
 #if (XUA_SYNCMODE == XUA_SYNCMODE_ADAPT)
                     adaptive_bytes_per_frame = formatChange_NumChans * formatChange_SubSlot;
-                    xua_adaptive_window_reset(&adaptive_window);
+                    xua_rate_window_reset(&adaptive_window);
                     adaptive_sof_count = 0;
 #if XUA_ADAPTIVE_TELEMETRY
                     adaptiveTelemetryReset(adaptive_telemetry);
@@ -657,7 +655,7 @@ void XUA_Buffer_Ep(
                 {
                     /* Do nothing - just let cmd propagate through to decouple */
 #if (XUA_SYNCMODE == XUA_SYNCMODE_ADAPT)
-                    xua_adaptive_window_reset(&adaptive_window);
+                    xua_rate_window_reset(&adaptive_window);
                     adaptive_sof_count = 0;
 #if XUA_ADAPTIVE_TELEMETRY
                     adaptiveTelemetryReset(adaptive_telemetry);
@@ -763,35 +761,21 @@ void XUA_Buffer_Ep(
                     unsigned reference_timestamp;
                     adaptive_reference_timer :> reference_timestamp;
 
-                    if (xua_adaptive_window_sample(&adaptive_window, mclk_pt, reference_timestamp))
+                    const unsigned mclks_per_sample = masterClockFreq / sampleFreq;
+                    int status = sw_pll_rate_window_update(adaptive_window, mclk_pt, reference_timestamp,
+                                                           mclks_per_sample, c_sw_pll);
+#if XUA_ADAPTIVE_TELEMETRY
+                    if (status > 0)
                     {
-                        const unsigned mclks_per_sample = masterClockFreq / sampleFreq;
-                        int error = xua_adaptive_window_error(&adaptive_window, mclks_per_sample);
-
-                        /* Implausible windows (stream stopped or packets lost part way through)
-                         * leave the PLL at its last setting */
-                        if (xua_adaptive_window_error_valid(&adaptive_window, error))
-                        {
-                            outuint(c_sw_pll, error);
-                            outct(c_sw_pll, XS1_CT_END);
-#if XUA_ADAPTIVE_TELEMETRY
-                            adaptiveTelemetryReport(adaptive_telemetry, adaptive_window, mclks_per_sample);
-#endif
-                        }
-#if XUA_ADAPTIVE_TELEMETRY
-                        else
-                        {
-                            adaptiveTelemetryReset(adaptive_telemetry);
-                        }
-#endif
-                        xua_adaptive_window_next(&adaptive_window);
+                        adaptiveTelemetryReport(adaptive_telemetry, adaptive_window, mclks_per_sample);
                     }
-#if XUA_ADAPTIVE_TELEMETRY
-                    else if (adaptive_window.interval_count == 0)
+                    else if ((status < 0) || (adaptive_window.interval_count == 0))
                     {
-                        /* A new baseline means a missing/delayed SOF or reset. */
+                        /* Discarded window, or a new baseline after a missing/delayed SOF or reset */
                         adaptiveTelemetryReset(adaptive_telemetry);
                     }
+#else
+                    (void)status;
 #endif
                 }
 
@@ -1013,12 +997,12 @@ void XUA_Buffer_Ep(
                     if (result == XUD_RES_OKAY && adaptive_bytes_per_frame &&
                         !(length % adaptive_bytes_per_frame))
                     {
-                        adaptive_window.received_frames += length / adaptive_bytes_per_frame;
+                        adaptive_window.received_samples += length / adaptive_bytes_per_frame;
                     }
                     else if (result != XUD_RES_OKAY || length != 0)
                     {
                         /* Discard a malformed/error window, not just its packet. */
-                        xua_adaptive_window_reset(&adaptive_window);
+                        xua_rate_window_reset(&adaptive_window);
 #if XUA_ADAPTIVE_TELEMETRY
                         adaptiveTelemetryReset(adaptive_telemetry);
 #endif
@@ -1180,7 +1164,7 @@ void XUA_Buffer_Ep(
                 /* The PLL profile has changed; discard counts spanning its
                  * restart before accepting a new capture-rate measurement. */
                 resetUsbAudioRateMeasurement(sofCount, clocks, clockcounter, mod_from_last_time, sampleFreq);
-                xua_adaptive_window_reset(&adaptive_window);
+                xua_rate_window_reset(&adaptive_window);
                 adaptive_sof_count = 0;
                 adaptive_pll_restarting = 0;
 #endif
