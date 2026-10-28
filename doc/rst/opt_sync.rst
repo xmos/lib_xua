@@ -64,6 +64,8 @@ steer one of the following clock sources:
 * **XCORE.AI secondary PLL** (``XUA_USE_SW_PLL=1``). The on-chip secondary PLL
   generates MCLK, and `lib_sw_pll <https://www.xmos.com/file/lib_sw_pll>`__ fine-tunes its frequency
   with a sigma-delta modulator running in a dedicated thread. Supported in synchronous and adaptive modes.
+  Both modes require 22.5792 MHz (``MCLK_441 = 512 * 44100``) and
+  24.576 MHz (``MCLK_48 = 512 * 48000``); other MCLK configurations cause a build error.
 * **External Cirrus Logic CS2100** (``XUA_USE_SW_PLL=0``). The `xcore` drives a reference signal to
   the CS2100, which multiplies it up to MCLK. Supported in synchronous mode only.
 
@@ -77,11 +79,12 @@ The measurement differs between the two modes:
   When using a CS2100, the reference signal is toggled from SOFs.
 * **Adaptive mode** locks MCLK to the rate at which the host sends samples. The number of complete
   sample frames received in playback (OUT) packets is counted and compared with the MCLK count over
-  16 ms windows; the error is passed to ``lib_sw_pll``. If a window has no playback, or the stream
-  stopped or packets were lost part way through it, the window is discarded and the PLL is left at
-  its previous setting. Adaptive mode
-  requires the secondary PLL; it is not supported with a CS2100, and the master clock must be
-  22.5792 MHz (``MCLK_441``) and 24.576 MHz (``MCLK_48``).
+  16 ms windows; the error is passed to ``lib_sw_pll``. While streaming, the host sends one playback
+  transfer every (micro)frame (one or more transactions when high-bandwidth isochronous endpoints
+  are enabled). If a window has no playback, or a (micro)frame without a transfer shows that one was
+  lost or the stream stopped part way through it, the window is discarded and the
+  PLL is left at its previous setting. Adaptive mode
+  requires the secondary PLL; it is not supported with a CS2100.
 
 In both modes the recovered MCLK clocks the whole audio subsystem (I2S/TDM, etc.).
 

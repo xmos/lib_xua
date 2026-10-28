@@ -101,3 +101,52 @@ unsigned queue_space_c_wrapper(const queue_t *q){
     }
 }
 
+/////////////////////// Harness for sw_pll_rate_window_update()
+
+#include "sw_pll_wrapper.h"
+
+#if XUA_USE_SW_PLL
+/* Never a valid error word: errors sent to the SW PLL are within (-32768, 32768) */
+#define RATE_WINDOW_HARNESS_DONE (0x80000000)
+
+/* Runs the real sw_pll_rate_window_update() with its channel connected to a receiver standing in
+ * for sw_pll_task(). Returns its status; *sent is 1 and *word holds the word received if it sent
+ * one. A marker word after the call tells the receiver whether anything was sent. */
+int sw_pll_rate_window_update_c_wrapper(xua_rate_window_t * unsafe window,
+                                        unsigned short mclk_time_stamp,
+                                        unsigned reference_timestamp,
+                                        unsigned mclks_per_count,
+                                        unsigned * unsafe sent,
+                                        unsigned * unsafe word)
+{
+    chan c;
+    int status = 0;
+    unsigned received = 0;
+    unsigned value = 0;
+    unsafe {
+        par {
+            {
+                status = sw_pll_rate_window_update(*window, mclk_time_stamp, reference_timestamp,
+                                                   mclks_per_count, c);
+                outuint(c, RATE_WINDOW_HARNESS_DONE);
+                outct(c, XS1_CT_END);
+            }
+            {
+                unsigned x = inuint(c);
+                inct(c);
+                if (x != RATE_WINDOW_HARNESS_DONE)
+                {
+                    received = 1;
+                    value = x;
+                    (void)inuint(c);
+                    inct(c);
+                }
+            }
+        }
+        *sent = received;
+        *word = value;
+    }
+    return status;
+}
+#endif
+

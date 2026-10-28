@@ -35,7 +35,9 @@ When running in an external clock mode (i.e. S/PDIF Clock" or "ADAT Clock" mode)
 received from the S/PDIF and/or ADAT receive thread. The external frequency is calculated through
 counting samples in a given period. Either the reference clock to the CS2100 is then generated based
 on the reception of these samples or the timing information is provided to ``lib_sw_pll`` to
-generate the phase-locked clock on-chip (XCORE.AI only).
+generate the phase-locked clock on-chip (XCORE.AI only). In the latter case the master clock is
+measured against the received samples over a 10 ms window, using the same rate measurement as
+adaptive playback (see :ref:`opt_sync_mclk_recovery`).
 
 If an external stream becomes invalid, the *Internal Clock* timer event will fire to ensure that
 valid master clock generation continues regardless of cable unplugs etc. Efforts are made to

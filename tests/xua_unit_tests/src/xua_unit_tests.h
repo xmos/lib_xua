@@ -23,6 +23,11 @@ unsigned queue_pop_byte_c_wrapper(queue_t *q, unsigned char array[]);
 unsigned queue_items_c_wrapper(const queue_t *q);
 unsigned queue_space_c_wrapper(const queue_t *q);
 
+#include "xua_rate_window.h"
+int sw_pll_rate_window_update_c_wrapper(xua_rate_window_t *window, unsigned short mclk_time_stamp,
+                                        unsigned reference_timestamp, unsigned mclks_per_count,
+                                        unsigned *sent, unsigned *word);
+
 #endif
 
 #endif /* XUA_UNIT_TESTS_H_ */

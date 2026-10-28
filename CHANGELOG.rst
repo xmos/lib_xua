@@ -7,6 +7,9 @@ UNRELEASED
   * ADDED:     Adaptive playback clock recovery using the XCORE.AI secondary PLL.
     Requires XUA_USE_SW_PLL=1. The IN endpoint remains asynchronous and no
     feedback endpoint is used.
+  * CHANGED:   S/PDIF and ADAT receive clock recovery with XUA_USE_SW_PLL uses
+    the same MCLK rate measurement as adaptive playback, and requires
+    MCLK_441 = 512 * 44100 and MCLK_48 = 512 * 48000.
   * CHANGED:   UAC1 synchronous IN endpoints report bLockDelayUnits/wLockDelay
     (2, 8) rather than Undefined (0, 0), matching UAC2 and the OUT endpoint.
   * CHANGED:   Improve documentation for audio clock and port configuration
@@ -24,6 +27,9 @@ UNRELEASED
   * FIXED:     Restrict feedback endpoint allocation and descriptor fields to
     asynchronous playback, including playback-only configurations. In sync
     mode, IN endpoint numbers after the audio endpoints shift down by one.
+  * FIXED:     Reject unsupported MCLK profiles in synchronous SW PLL builds.
+    Requires MCLK_441 = 512 * 44100 and MCLK_48 = 512 * 48000; synchronous
+    CS2100 configurations remain unrestricted by this check.
   * FIXED:     Asynchronous and adaptive capture packet sizing at full speed
     no longer miscounts MCLK ticks when an SOF is handled more than about
     1.33 ms after the previous one (e.g. after a missed SOF).

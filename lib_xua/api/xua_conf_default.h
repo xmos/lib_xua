@@ -1551,10 +1551,32 @@
     #error "Adaptive mode requires XUA_USE_SW_PLL"
 #endif
 
-/* The SW PLL only has profiles for 22.5792 and 24.576 MHz, and the adaptive rate measurement
- * relies on this range */
-#if (XUA_SYNCMODE == XUA_SYNCMODE_ADAPT) && ((MCLK_441 != (512 * 44100)) || (MCLK_48 != (512 * 48000)))
-    #error "Adaptive mode requires MCLK_441 = 512 * 44100 and MCLK_48 = 512 * 48000"
+/* USB clock recovery with the SW PLL: init_sw_pll() (sw_pll_wrapper.xc) only has secondary PLL
+ * profiles for 22.5792 and 24.576 MHz, and would silently use one of these for any other MCLK.
+ * lib_sw_pll itself takes the PLL settings from its caller. Synchronous CS2100 builds are not
+ * restricted to these frequencies. */
+#if XUA_USB_MCLK_RECOVERY_ENABLED && XUA_USE_SW_PLL && \
+    ((MCLK_441 != (512 * 44100)) || (MCLK_48 != (512 * 48000)))
+    #error "Sync/Adaptive mode with XUA_USE_SW_PLL requires MCLK_441 = 512 * 44100 and MCLK_48 = 512 * 48000"
+#endif
+
+/* Likewise for S/PDIF and ADAT receive clock recovery with the SW PLL, which uses the same
+ * init_sw_pll() profiles. Other MCLK frequencies remain available when the secondary PLL generates
+ * a fixed MCLK (no clock recovery). */
+#if (XUA_SPDIF_RX_EN || XUA_ADAT_RX_EN) && XUA_USE_SW_PLL && \
+    ((MCLK_441 != (512 * 44100)) || (MCLK_48 != (512 * 48000)))
+    #error "S/PDIF/ADAT RX with XUA_USE_SW_PLL requires MCLK_441 = 512 * 44100 and MCLK_48 = 512 * 48000"
+#endif
+
+/**
+ * @brief Debug option: emit adaptive playback rate and buffer fill telemetry as CSV over
+ *        xSCOPE, about once per second. Requires XSCOPE and -fxscope. Logging runs in the
+ *        endpoint buffer task and can perturb its timing, so disable for qualification.
+ *
+ * Default: 0 (Disabled)
+ */
+#ifndef XUA_ADAPTIVE_TELEMETRY
+#define XUA_ADAPTIVE_TELEMETRY (0)
 #endif
 
 /* Allows calling of user function before buffer starts. */
