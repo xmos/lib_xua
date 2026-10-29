@@ -7,6 +7,8 @@
 #include "xua.h"
 
 #if XUA_USE_SW_PLL
+#include "xua_rate_window.h"
+
 extern "C"
 {
     #include "sw_pll.h"
@@ -33,19 +35,27 @@ void sw_pll_task(chanend c_sw_pll);
  */
 void restart_sigma_delta(chanend c_sw_pll, unsigned mclk_rate);
 
-/** Performs a frequency comparsion between the incoming digital Rx stream and the local mclk.
+/** Measures MCLK against a sample stream and passes the error to the SW PLL.
+ *  Call at each measurement point, after adding the samples received since the last one to
+ *  window.received_samples. Once per complete window the error is checked for plausibility,
+ *  sent to the SW PLL if valid, and the next window started.
  *
- *  \param mclk_time_stamp  The captured mclk count (using port timer) at the time of sample Rx.
- *  \param mclks_per_sample The nominal number of mclks per audio sample.
- *  \param c_sw_pll         Channel connected to the sigma delta and controller thread.
- *  \param receivedSamples  The number of received samples since tha last call to this function.
- *  \param reset_sw_pll_pfd Reference to a flag which will be used to signal reset of this function's state.
+ *  \param window              Measurement window, set up with xua_rate_window_init() and
+ *                             reset with xua_rate_window_reset() when the stream is interrupted.
+ *  \param mclk_time_stamp     The captured mclk count (using port timer) at this point.
+ *  \param reference_timestamp The reference timer at this point; ignored if the window has no
+ *                             interval timing bounds.
+ *  \param mclks_per_count     The nominal number of mclks per unit added to received_samples.
+ *  \param c_sw_pll            Channel connected to the sigma delta and controller thread.
+ *
+ *  \returns 0 if the window is not yet complete, 1 if an error was sent, -1 if the window
+ *           was discarded as implausible.
  */
-void do_sw_pll_phase_frequency_detector_dig_rx( unsigned short mclk_time_stamp,
-                                                unsigned mclks_per_sample,
-                                                chanend c_sw_pll,
-                                                int receivedSamples,
-                                                int &reset_sw_pll_pfd);
+int sw_pll_rate_window_update(xua_rate_window_t &window,
+                              unsigned short mclk_time_stamp,
+                              unsigned reference_timestamp,
+                              unsigned mclks_per_count,
+                              chanend c_sw_pll);
 
 /** Initilaises the software PLL both hardware and state. Sets the mclk frequency to a nominal point.
  *

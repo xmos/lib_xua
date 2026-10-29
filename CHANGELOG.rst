@@ -4,6 +4,18 @@ lib_xua change log
 UNRELEASED
 ---------
 
+  * ADDED:     Adaptive playback clock recovery using the XCORE.AI secondary PLL.
+    Requires XUA_USE_SW_PLL=1; CS2100 adaptive operation is not implemented.
+    Rate recovery uses actual USB OUT frame counts without FIFO-centering control.
+  * CHANGED:   Adaptive playback configurations advertise asynchronous data IN
+    endpoints and use the asynchronous MCLK/SOF estimator for capture packet
+    sizing. Adaptive OUT does not allocate explicit or implicit feedback.
+  * CHANGED:   S/PDIF and ADAT receive clock recovery with XUA_USE_SW_PLL uses
+    the same windowed MCLK rate measurement as adaptive playback.
+  * FIXED:      Restrict feedback endpoint allocation and descriptor fields to
+    asynchronous playback, including playback-only configurations.
+  * FIXED:     Use each input alternate's own subslot and resolution fields in
+    UAC2 format descriptors.
   * FIXED:     dsdMode is not reset after switching playback from Native DSD back to PCM
   * CHANGED:   Improve documentation for audio clock and port configuration
   * CHANGED:   Mixer configuration defines renamed for consistency with the
