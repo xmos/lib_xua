@@ -5,6 +5,9 @@ UNRELEASED
 ---------
 
   * FIXED:     dsdMode is not reset after switching playback from Native DSD back to PCM
+  * FIXED:     IN stream never leaving underflow, so only zeros are sent to the host,
+    at 8 kHz and 16 kHz on high-speed USB (and at 24 kHz with small subslot
+    and channel counts)
   * CHANGED:   Improve documentation for audio clock and port configuration
   * CHANGED:   Mixer configuration defines renamed for consistency with the
     other lib_xua options: ``MIXER`` -> ``XUA_MIXER_EN``, ``MAX_MIX_COUNT`` ->
