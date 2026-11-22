@@ -4,10 +4,6 @@ lib_xua change log
 UNRELEASED
 ---------
 
-  * FIXED:     dsdMode is not reset after switching playback from Native DSD back to PCM
-  * FIXED:     IN stream never leaving underflow, so only zeros are sent to the host,
-    at 8 kHz and 16 kHz on high-speed USB (and at 24 kHz with small subslot
-    and channel counts)
   * CHANGED:   Improve documentation for audio clock and port configuration
   * CHANGED:   Mixer configuration defines renamed for consistency with the
     other lib_xua options: ``MIXER`` -> ``XUA_MIXER_EN``, ``MAX_MIX_COUNT`` ->
@@ -20,6 +16,11 @@ UNRELEASED
     ``IN_VOLUME_IN_MIXER`` -> ``XUA_IN_VOLUME_IN_MIXER``, and
     ``IN_VOLUME_AFTER_MIX`` -> ``XUA_IN_VOLUME_AFTER_MIX``. The old names
     are still accepted for compatibility.
+  * FIXED:     Initialise the CS2100 fallback timer deadline in synchronous mode.
+  * FIXED:     dsdMode is not reset after switching playback from Native DSD back to PCM
+  * FIXED:     IN stream never leaving underflow, so only zeros are sent to the host,
+    at 8 kHz and 16 kHz on high-speed USB (and at 24 kHz with small subslot
+    and channel counts)
 
 5.5.0
 -----

@@ -386,7 +386,7 @@ void XUA_Buffer_Ep(
     unsigned timeLastEdge;
     unsigned timeNextEdge;
     t_sofCheck :> timeLastEdge;
-    timeNextEdge + LOCAL_CLOCK_INCREMENT;
+    timeNextEdge = timeLastEdge + LOCAL_CLOCK_INCREMENT;
     i_pll_ref.toggle();
 #endif
 
