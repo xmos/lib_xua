@@ -1089,6 +1089,7 @@ void XUA_Buffer_Decouple(chanend c_mix_out
                     int min, mid, max;
                     GetADCCounts(sampFreq, min, mid, max);
                     const int min_pkt_size = ((min * g_curSubSlot_In * g_numUsbChan_In + 3) & ~0x3) + 4;
+                    const int max_pkt_size = ((max * g_curSubSlot_In * g_numUsbChan_In + 3) & ~0x3) + 4;
 
                     /*
                         Come out of underflow if there are exactly 2 packets in the buffer.
@@ -1097,8 +1098,9 @@ void XUA_Buffer_Decouple(chanend c_mix_out
                         For example, coming out of underflow with 3 packets in the buffer would mean handle_audio_request()
                         drops packets if 2 pkts are received from audio hub in 1 SOF period. Coming out of underflow with 4
                         packets would mean handle_audio_request would drop packets after writing 1 packet to the aud_to_host buffer.
+                        The upper bound is two maximum size packets, the level handle_audio_request() leaves after an overflow.
                     */
-                    if ((fillLevel >= (min_pkt_size*2)) && (fillLevel < (min_pkt_size*3)))
+                    if ((fillLevel >= (min_pkt_size*2)) && (fillLevel <= (max_pkt_size*2)))
                     {
                         int aud_to_host_rdptr;
                         GET_SHARED_GLOBAL(aud_to_host_rdptr, g_aud_to_host_rdptr);
