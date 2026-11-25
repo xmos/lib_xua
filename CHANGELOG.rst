@@ -30,6 +30,8 @@ UNRELEASED
   * FIXED:     Reject unsupported MCLK profiles in synchronous SW PLL builds.
     Requires MCLK_441 = 512 * 44100 and MCLK_48 = 512 * 48000; synchronous
     CS2100 configurations remain unrestricted by this check.
+  * FIXED:     Reject synchronous configurations with XUA_USB_EN=0, which have
+    no USB stream to recover MCLK from.
   * FIXED:     Asynchronous and adaptive capture packet sizing at full speed
     no longer miscounts MCLK ticks when an SOF is handled more than about
     1.33 ms after the previous one (e.g. after a missed SOF).

@@ -1546,6 +1546,16 @@
     #error "Digital input streams not supported in Sync or Adaptive mode"
 #endif
 
+/* USB clock recovery is driven by XUA_Buffer(), so needs the USB stack */
+#if XUA_USB_MCLK_RECOVERY_ENABLED && !XUA_USB_EN
+    #error "Sync/Adaptive mode requires XUA_USB_EN"
+#endif
+
+/* Adaptive clock recovery measures the host-to-device (playback) stream */
+#if (XUA_SYNCMODE == XUA_SYNCMODE_ADAPT) && (NUM_USB_CHAN_OUT == 0)
+    #error "Adaptive mode requires NUM_USB_CHAN_OUT > 0"
+#endif
+
 /* Adaptive clock recovery is only implemented with the SW PLL (no CS2100 support) */
 #if (XUA_SYNCMODE == XUA_SYNCMODE_ADAPT) && !XUA_USE_SW_PLL
     #error "Adaptive mode requires XUA_USE_SW_PLL"
