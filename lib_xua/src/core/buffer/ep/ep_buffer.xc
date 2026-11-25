@@ -12,6 +12,7 @@
 #include "testct_byref.h"
 #if (XUA_SYNCMODE == XUA_SYNCMODE_ADAPT)
 #include "xua_rate_window.h"
+#include "xua_usb_params_funcs.h"
 #if XUA_ADAPTIVE_TELEMETRY
 #ifndef XSCOPE
 #error "Adaptive CSV telemetry requires -fxscope"
@@ -616,7 +617,12 @@ void XUA_Buffer_Ep(
                     SET_SHARED_GLOBAL(g_formatChange_SampRes, formatChange_SampRes);
 
 #if (XUA_SYNCMODE == XUA_SYNCMODE_ADAPT)
+#if defined(XUA_USB_DESCRIPTOR_OVERWRITE_RATE_RES)
+                    /* Match decouple, which takes the subslot from the overwritten resolution */
+                    adaptive_bytes_per_frame = formatChange_NumChans * (get_usb_to_device_bit_res() >> 3);
+#else
                     adaptive_bytes_per_frame = formatChange_NumChans * formatChange_SubSlot;
+#endif
                     xua_rate_window_reset(&adaptive_window);
                     adaptive_sof_count = 0;
 #if XUA_ADAPTIVE_TELEMETRY
